@@ -6,7 +6,7 @@ exports[`Search should match snapshot 1`] = `
   <View
     style={
       Object {
-        "backgroundColor": "#1153ab",
+        "backgroundColor": "#192a4d",
         "height": 61,
         "paddingLeft": 14,
         "paddingRight": 5,

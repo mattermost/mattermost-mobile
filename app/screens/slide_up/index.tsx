@@ -9,7 +9,7 @@ import SlideUpPanel from '@components/slide_up_panel';
 import {NavigationTypes} from '@constants';
 import EventEmitter from '@mm-redux/utils/event_emitter';
 
-import type {Theme} from '@mm-redux/types/preferences';
+import type {Theme} from '@mm-redux/types/theme';
 
 type Props = {
     allowStayMiddle?: boolean;

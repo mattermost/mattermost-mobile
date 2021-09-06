@@ -10,10 +10,13 @@ import RNFetchBlob from 'rn-fetch-blob';
 
 import {Client4} from '@client/rest';
 import {DeviceTypes} from '@constants';
-import {GalleryItemProps} from '@mm-types/screens/gallery';
+import {ATTACHMENT_DOWNLOAD} from '@constants/attachment';
+import EventEmitter from '@mm-redux/utils/event_emitter';
 import {getLocalPath} from '@utils/file';
 
 import VideoControls, {VideoControlsRef} from './video_controls';
+
+import type {GalleryItemProps} from '@mm-types/screens/gallery';
 
 const GalleryVideo = ({file, deviceHeight, deviceWidth, intl, isActive, showHideHeaderFooter, theme}: GalleryItemProps) => {
     const statusBar = DeviceTypes.IS_IPHONE_WITH_INSETS ? 0 : 20;
@@ -42,8 +45,10 @@ const GalleryVideo = ({file, deviceHeight, deviceWidth, intl, isActive, showHide
     const videoEnded = () => {
         setPaused(true);
         controlsRef.current?.showControls(false);
+        showHideHeaderFooter?.(true);
         const requested = requestAnimationFrame(() => {
             videoRef.current?.seek(0);
+            controlsRef.current?.videoProgress(0);
             cancelAnimationFrame(requested);
         });
     };
@@ -60,9 +65,27 @@ const GalleryVideo = ({file, deviceHeight, deviceWidth, intl, isActive, showHide
             }),
             [{
                 text: intl.formatMessage({
-                    id: 'mobile.server_upgrade.button',
-                    defaultMessage: 'OK',
+                    id: 'mobile.video_playback.download',
+                    defaultMessage: 'Download Video',
                 }),
+                onPress: () => {
+                    setPaused(true);
+                    controlsRef.current?.showControls(false);
+                    EventEmitter.emit(ATTACHMENT_DOWNLOAD, false, (path: string) => {
+                        setUri(path);
+                        controlsRef.current?.showControls(false);
+                    });
+                },
+            }, {
+                text: intl.formatMessage({
+                    id: 'mobile.alert_dialog.alertCancel',
+                    defaultMessage: 'Cancel',
+                }),
+                onPress: () => {
+                    setPaused(true);
+                    showHideHeaderFooter?.(true);
+                    controlsRef.current?.showControls(false);
+                },
             }],
         );
     }, []);

@@ -8,7 +8,6 @@ import LocalAuth from 'react-native-local-auth';
 import RNFetchBlob from 'rn-fetch-blob';
 
 import Loading from '@components/loading';
-import {MAX_FILE_COUNT} from '@constants/post_draft';
 import {getAppCredentials} from '@init/credentials';
 import mattermostManaged from '@mattermost-managed';
 import {getFormattedFileSize, lookupMimeType} from '@mm-redux/utils/file_utils';
@@ -119,6 +118,7 @@ export function getErrorElement(
     state: ShareState,
     canUploadFiles: boolean,
     maxFileSize: number,
+    maxFileCount: number,
     team: Team | undefined | null,
     intl: typeof intlShape,
 ): ReactNode | undefined {
@@ -157,11 +157,11 @@ export function getErrorElement(
         return <ShareError message={storage}/>;
     }
 
-    if (state.files.length > MAX_FILE_COUNT) {
+    if (state.files.length > maxFileCount) {
         const fileCount = intl.formatMessage({
             id: 'mobile.extension.file_limit',
-            defaultMessage: 'Sharing is limited to a maximum of 5 files.',
-        });
+            defaultMessage: 'Sharing is limited to a maximum of {count} files.',
+        }, {count: maxFileCount});
 
         return <ShareError message={fileCount}/>;
     }

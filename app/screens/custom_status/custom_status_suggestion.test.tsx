@@ -14,7 +14,7 @@ describe('screens/custom_status_suggestion', () => {
         handleSuggestionClick: jest.fn(),
         emoji: 'calendar',
         text: 'In a meeting',
-        theme: Preferences.THEMES.default,
+        theme: Preferences.THEMES.denim,
         separator: false,
         duration: CustomStatusDuration.DONT_CLEAR,
     };

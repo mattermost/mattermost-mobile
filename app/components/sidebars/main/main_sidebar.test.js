@@ -24,7 +24,7 @@ describe('MainSidebar', () => {
         deviceWidth: 10,
         isLandscape: false,
         teamsCount: 2,
-        theme: Preferences.THEMES.default,
+        theme: Preferences.THEMES.denim,
     };
 
     const loadShallow = (props) => {
@@ -60,8 +60,8 @@ describe('MainSidebar', () => {
     });
 
     test('should re-render when the theme changes', () => {
-        const theme = Preferences.THEMES.default;
-        const newTheme = Preferences.THEMES.organization;
+        const theme = Preferences.THEMES.denim;
+        const newTheme = Preferences.THEMES.sapphire;
         const props = {
             ...baseProps,
             theme,

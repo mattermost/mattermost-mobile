@@ -1,16 +1,3 @@
-diff --git a/node_modules/react-native-local-auth/android/build.gradle b/node_modules/react-native-local-auth/android/build.gradle
-index 0c9a9c2..a7551eb 100644
---- a/node_modules/react-native-local-auth/android/build.gradle
-+++ b/node_modules/react-native-local-auth/android/build.gradle
-@@ -15,7 +15,7 @@ android {
-     buildToolsVersion "23.0.1"
- 
-     defaultConfig {
--        minSdkVersion 16
-+        minSdkVersion rootProject.hasProperty('minSdkVersion') ? rootProject.minSdkVersion : 16
-         targetSdkVersion 23
-         versionCode 1
-         versionName "1.0"
 diff --git a/node_modules/react-native-local-auth/LocalAuth.android.js b/node_modules/react-native-local-auth/LocalAuth.android.js
 index 49242b4..8deada5 100644
 --- a/node_modules/react-native-local-auth/LocalAuth.android.js
@@ -101,8 +88,29 @@ index 49242b4..8deada5 100644
 +    }
 +};
 \ No newline at end of file
+diff --git a/node_modules/react-native-local-auth/android/build.gradle b/node_modules/react-native-local-auth/android/build.gradle
+index 0c9a9c2..68eb199 100644
+--- a/node_modules/react-native-local-auth/android/build.gradle
++++ b/node_modules/react-native-local-auth/android/build.gradle
+@@ -11,12 +11,12 @@ buildscript {
+ apply plugin: 'com.android.library'
+ 
+ android {
+-    compileSdkVersion 23
+-    buildToolsVersion "23.0.1"
++    compileSdkVersion rootProject.hasProperty('compileSdkVersion') ? rootProject.compileSdkVersion : 23
++    buildToolsVersion rootProject.hasProperty('buildToolsVersion') ? rootProject.buildToolsVersion : "23.0.1"
+ 
+     defaultConfig {
+-        minSdkVersion 16
+-        targetSdkVersion 23
++        minSdkVersion rootProject.hasProperty('minSdkVersion') ? rootProject.minSdkVersion : 16
++        targetSdkVersion rootProject.hasProperty('targetSdkVersion') ? rootProject.targetSdkVersion : 29
+         versionCode 1
+         versionName "1.0"
+         ndk {
 diff --git a/node_modules/react-native-local-auth/android/src/main/java/io/tradle/reactlocalauth/LocalAuthModule.java b/node_modules/react-native-local-auth/android/src/main/java/io/tradle/reactlocalauth/LocalAuthModule.java
-index 38b78f1..a47afea 100644
+index 38b78f1..896e7dc 100644
 --- a/node_modules/react-native-local-auth/android/src/main/java/io/tradle/reactlocalauth/LocalAuthModule.java
 +++ b/node_modules/react-native-local-auth/android/src/main/java/io/tradle/reactlocalauth/LocalAuthModule.java
 @@ -6,6 +6,7 @@ import android.app.KeyguardManager;
@@ -185,7 +193,7 @@ index 38b78f1..a47afea 100644
        authPromise = null;
 diff --git a/node_modules/react-native-local-auth/react-native-local-auth.podspec b/node_modules/react-native-local-auth/react-native-local-auth.podspec
 new file mode 100644
-index 0000000..5f9a6b4
+index 0000000..40b4466
 --- /dev/null
 +++ b/node_modules/react-native-local-auth/react-native-local-auth.podspec
 @@ -0,0 +1,20 @@

@@ -25,7 +25,7 @@ describe('ChannelBase', () => {
             selectInitialChannel: jest.fn(),
         },
         componentId: channelBaseComponentId,
-        theme: Preferences.THEMES.default,
+        theme: Preferences.THEMES.denim,
     };
     const optionsForTheme = (theme) => {
         return {
@@ -63,9 +63,9 @@ describe('ChannelBase', () => {
         expect(mergeNavigationOptions.mock.calls).toEqual([]);
         mergeNavigationOptions.mockClear();
 
-        wrapper.setProps({theme: Preferences.THEMES.mattermostDark});
+        wrapper.setProps({theme: Preferences.THEMES.indigo});
 
-        const newThemeOptions = optionsForTheme(Preferences.THEMES.mattermostDark);
+        const newThemeOptions = optionsForTheme(Preferences.THEMES.indigo);
         expect(mergeNavigationOptions.mock.calls).toEqual([
             [baseProps.componentId, newThemeOptions],
             [componentIds[2], newThemeOptions],

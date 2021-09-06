@@ -11,7 +11,7 @@ import FormattedText from '@components/formatted_text';
 import StatusBar from '@components/status_bar';
 import TextInputWithLocalizedPlaceholder from '@components/text_input_with_localized_placeholder';
 import {General} from '@mm-redux/constants';
-import {Theme} from '@mm-redux/types/preferences';
+import {Theme} from '@mm-redux/types/theme';
 import {UserNotifyProps, UserProfile} from '@mm-redux/types/users';
 import Section from '@screens/settings/section';
 import SectionItem from '@screens/settings/section_item';

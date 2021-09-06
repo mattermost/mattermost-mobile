@@ -28,7 +28,7 @@ exports[`UploadRemove should match, full snapshot 1`] = `
     }
   >
     <CompassIcon
-      color="rgba(61,60,64,0.64)"
+      color="rgba(63,67,80,0.64)"
       name="close-circle"
       size={24}
     />

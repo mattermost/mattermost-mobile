@@ -37,7 +37,7 @@ describe('Permalink', () => {
         myChannelMemberships: {},
         onClose: jest.fn(),
         postIds: ['post_id_1', 'focused_post_id', 'post_id_3'],
-        theme: Preferences.THEMES.default,
+        theme: Preferences.THEMES.denim,
         componentId: 'component-id',
     };
 

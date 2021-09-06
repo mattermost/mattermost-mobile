@@ -108,10 +108,10 @@ const ViewTypes = keyMirror({
 });
 
 const RequiredServer = {
-    FULL_VERSION: '5.31.3',
+    FULL_VERSION: '5.37.0',
     MAJOR_VERSION: 5,
-    MIN_VERSION: 31,
-    PATCH_VERSION: 3,
+    MIN_VERSION: 37,
+    PATCH_VERSION: 0,
 };
 
 export default {

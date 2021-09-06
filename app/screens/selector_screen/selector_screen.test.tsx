@@ -61,7 +61,7 @@ describe('SelectorScreen', () => {
         onSelect: jest.fn(),
         data: [{text: 'text', value: 'value'}],
         dataSource: '',
-        theme: Preferences.THEMES.default,
+        theme: Preferences.THEMES.denim,
     };
 
     beforeAll(() => {

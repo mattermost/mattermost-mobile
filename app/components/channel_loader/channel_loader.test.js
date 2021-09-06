@@ -13,7 +13,7 @@ jest.useFakeTimers();
 describe('ChannelLoader', () => {
     const baseProps = {
         channelIsLoading: true,
-        theme: Preferences.THEMES.default,
+        theme: Preferences.THEMES.denim,
     };
 
     test('should match snapshot', () => {

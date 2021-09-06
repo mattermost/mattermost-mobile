@@ -29,7 +29,7 @@ describe('components/autocomplete/emoji_suggestion', () => {
         customEmojisEnabled: false,
         emojis,
         isSearch: false,
-        theme: Preferences.THEMES.default,
+        theme: Preferences.THEMES.denim,
         onChangeText: jest.fn(),
         onResultCountChange: jest.fn(),
         rootId: '',

@@ -5,10 +5,7 @@ import {connect} from 'react-redux';
 
 import {Client4} from '@client/rest';
 import {getCustomEmojisByName} from '@mm-redux/selectors/entities/emojis';
-import {getConfig} from '@mm-redux/selectors/entities/general';
-import {getCurrentUserId} from '@mm-redux/selectors/entities/users';
 import {GlobalState} from '@mm-redux/types/store';
-import {isMinimumServerVersion} from '@mm-redux/utils/helpers';
 import {EmojiIndicesByAlias, Emojis} from '@utils/emojis';
 
 import Emoji from './emoji';
@@ -18,7 +15,6 @@ type OwnProps = {
 }
 
 function mapStateToProps(state: GlobalState, ownProps: OwnProps) {
-    const config = getConfig(state);
     const emojiName = ownProps.emojiName;
     const customEmojis = getCustomEmojisByName(state);
     const serverUrl = Client4.getUrl();
@@ -41,11 +37,7 @@ function mapStateToProps(state: GlobalState, ownProps: OwnProps) {
         imageUrl = Client4.getCustomEmojiImageUrl(emoji!.id);
         isCustomEmoji = true;
     } else {
-        displayTextOnly = state.entities.emojis.nonExistentEmoji.has(emojiName) ||
-            config.EnableCustomEmoji !== 'true' ||
-            config.ExperimentalEnablePostMetadata === 'true' ||
-            getCurrentUserId(state) === '' ||
-            isMinimumServerVersion(Client4.getServerVersion(), 5, 12);
+        displayTextOnly = true;
     }
 
     return {

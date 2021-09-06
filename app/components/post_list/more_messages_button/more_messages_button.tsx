@@ -13,7 +13,7 @@ import {messageCount} from '@mm-redux/utils/post_list';
 import {t} from '@utils/i18n';
 import {makeStyleSheetFromTheme, hexToHue} from '@utils/theme';
 
-import type {Theme} from '@mm-redux/types/preferences';
+import type {Theme} from '@mm-redux/types/theme';
 
 const HIDDEN_TOP = -400;
 const SHOWN_TOP = 0;

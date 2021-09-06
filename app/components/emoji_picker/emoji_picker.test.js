@@ -45,7 +45,7 @@ describe('components/emoji_picker/emoji_picker.ios', () => {
         emojisBySection,
         fuse,
         isLandscape: false,
-        theme: Preferences.THEMES.default,
+        theme: Preferences.THEMES.denim,
     };
 
     const testCases = [

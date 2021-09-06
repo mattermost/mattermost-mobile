@@ -68,6 +68,7 @@ export default class EditPost extends PureComponent {
 
         this.rightButton.color = props.theme.sidebarHeaderTextColor;
         this.rightButton.text = context.intl.formatMessage({id: 'edit_post.save', defaultMessage: 'Save'});
+        this.rightButtonEnabled = true;
 
         setButtons(props.componentId, {
             leftButtons: [{...this.leftButton, icon: props.closeButton}],
@@ -99,14 +100,18 @@ export default class EditPost extends PureComponent {
 
     emitCanEditPost = (enabled) => {
         const {componentId} = this.props;
-        setButtons(componentId, {
-            leftButtons: [{...this.leftButton, icon: this.props.closeButton}],
-            rightButtons: [{...this.rightButton, enabled}],
-        });
+        if (this.rightButtonEnabled !== enabled) {
+            this.rightButtonEnabled = enabled;
+            setButtons(componentId, {
+                leftButtons: [{...this.leftButton, icon: this.props.closeButton}],
+                rightButtons: [{...this.rightButton, enabled}],
+            });
+        }
     };
 
     emitEditing = (loading) => {
         const {componentId} = this.props;
+        this.rightButtonEnabled = !loading;
         setButtons(componentId, {
             leftButtons: [{...this.leftButton, icon: this.props.closeButton}],
             rightButtons: [{...this.rightButton, enabled: !loading}],

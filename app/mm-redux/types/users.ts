@@ -8,11 +8,14 @@ export type UserNotifyProps = {
     auto_responder_active?: 'true' | 'false';
     auto_responder_message?: string;
     desktop: 'default' | 'all' | 'mention' | 'none';
+    desktop_threads?: 'all' | 'mention';
     desktop_notification_sound?: string;
     desktop_sound: 'true' | 'false';
     email: 'true' | 'false';
+    email_threads?: 'all' | 'mention';
     mark_unread: 'all' | 'mention';
     push: 'default' | 'all' | 'mention' | 'none';
+    push_threads?: 'all' | 'mention';
     push_status: 'ooo' | 'offline' | 'away' | 'dnd' | 'online';
     comments: 'never' | 'root' | 'any';
     first_name: 'true' | 'false';

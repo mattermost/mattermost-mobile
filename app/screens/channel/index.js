@@ -11,6 +11,7 @@ import {ViewTypes} from '@constants';
 import {getChannelStats} from '@mm-redux/actions/channels';
 import {getCurrentChannelId} from '@mm-redux/selectors/entities/channels';
 import {getServerVersion} from '@mm-redux/selectors/entities/general';
+import {getSelectedPost} from '@mm-redux/selectors/entities/posts';
 import {getTheme, isCollapsedThreadsEnabled} from '@mm-redux/selectors/entities/preferences';
 import {getCurrentTeam} from '@mm-redux/selectors/entities/teams';
 import {getCurrentUserId, getCurrentUserRoles, shouldShowTermsOfService} from '@mm-redux/selectors/entities/users';
@@ -46,6 +47,7 @@ function mapStateToProps(state) {
         currentUserId,
         isSupportedServer,
         isSystemAdmin,
+        selectedPost: getSelectedPost(state),
         showTermsOfService: shouldShowTermsOfService(state),
         teamName: currentTeam?.display_name,
         theme: getTheme(state),

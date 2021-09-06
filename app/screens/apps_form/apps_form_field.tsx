@@ -12,7 +12,7 @@ import {ViewTypes} from '@constants/index';
 import {AppFieldTypes} from '@mm-redux/constants/apps';
 import {AppField, AppFormValue, AppSelectOption} from '@mm-redux/types/apps';
 import {DialogOption} from '@mm-redux/types/integrations';
-import {Theme} from '@mm-redux/types/preferences';
+import {Theme} from '@mm-redux/types/theme';
 import {getMarkdownBlockStyles, getMarkdownTextStyles} from '@utils/markdown';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 

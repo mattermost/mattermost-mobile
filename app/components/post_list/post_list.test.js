@@ -25,7 +25,7 @@ describe('PostList', () => {
         postIds: ['post-id-1', 'post-id-2'],
         serverURL,
         siteURL: 'https://site-url.fake',
-        theme: Preferences.THEMES.default,
+        theme: Preferences.THEMES.denim,
     };
 
     // const deeplinkRoot = 'mattermost://server-url.fake';

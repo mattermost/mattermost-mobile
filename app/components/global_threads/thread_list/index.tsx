@@ -13,7 +13,7 @@ import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 import ThreadListHeader from './thread_list_header';
 
-import type {Theme} from '@mm-redux/types/preferences';
+import type {Theme} from '@mm-redux/types/theme';
 import type {UserThread} from '@mm-redux/types/threads';
 import type {$ID} from '@mm-redux/types/utilities';
 
