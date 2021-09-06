@@ -6,7 +6,7 @@ import {bindActionCreators} from 'redux';
 
 import {updateMe} from '@mm-redux/actions/users';
 import {getConfig} from '@mm-redux/selectors/entities/general';
-import {getMyPreferences, getTheme} from '@mm-redux/selectors/entities/preferences';
+import {getMyPreferences, getTheme, isCollapsedThreadsEnabled} from '@mm-redux/selectors/entities/preferences';
 import {getCurrentUser, getStatusForUserId} from '@mm-redux/selectors/entities/users';
 import {isLandscape} from '@selectors/device';
 
@@ -27,6 +27,7 @@ function mapStateToProps(state) {
         theme: getTheme(state),
         enableAutoResponder,
         isLandscape: isLandscape(state),
+        isCollapsedThreadsEnabled: isCollapsedThreadsEnabled(state),
     };
 }
 

@@ -25,7 +25,7 @@ describe('UserListRow', () => {
             username: 'user',
             delete_at: 0,
         },
-        theme: Preferences.THEMES.default,
+        theme: Preferences.THEMES.denim,
         teammateNameDisplay: 'test',
         testID: 'custom_list.user_item',
     };

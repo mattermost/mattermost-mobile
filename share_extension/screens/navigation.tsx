@@ -12,7 +12,7 @@ import Channels from './channel_list';
 import Share from './share';
 import Teams from './team_list';
 
-const theme = Preferences.THEMES.default;
+const theme = Preferences.THEMES.denim;
 
 const Stack = createStackNavigator();
 const defaultNavigationOptions = {

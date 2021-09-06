@@ -5,7 +5,7 @@ import PropTypes from 'prop-types';
 import React, {PureComponent} from 'react';
 import {Platform, StyleSheet, View} from 'react-native';
 
-import {MAX_FILE_COUNT, UPLOAD_FILES} from '@constants/post_draft';
+import {UPLOAD_FILES} from '@constants/post_draft';
 import EventEmitter from '@mm-redux/utils/event_emitter';
 
 import CameraAction from './camera_quick_action';
@@ -21,6 +21,7 @@ export default class QuickActions extends PureComponent {
         fileCount: PropTypes.number,
         inputEventType: PropTypes.string.isRequired,
         maxFileSize: PropTypes.number.isRequired,
+        maxFileCount: PropTypes.number.isRequired,
         onTextChange: PropTypes.func.isRequired,
         theme: PropTypes.object.isRequired,
     };
@@ -69,6 +70,7 @@ export default class QuickActions extends PureComponent {
             testID,
             canUploadFiles,
             fileCount,
+            maxFileCount,
             theme,
         } = this.props;
         const atInputActionTestID = `${testID}.at_input_action`;
@@ -79,7 +81,7 @@ export default class QuickActions extends PureComponent {
         const uploadProps = {
             disabled: !canUploadFiles,
             fileCount,
-            maxFileCount: MAX_FILE_COUNT,
+            maxFileCount,
             theme,
             onUploadFiles: this.handleUploadFiles,
         };

@@ -22,7 +22,7 @@ exports[`CameraButton should match snapshot 1`] = `
   testID="post_draft.quick_actions.camera_action"
 >
   <Icon
-    color="rgba(61,60,64,0.64)"
+    color="rgba(63,67,80,0.64)"
     name="camera-outline"
     size={24}
   />

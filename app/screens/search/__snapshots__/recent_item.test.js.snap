@@ -4,7 +4,7 @@ exports[`Search RecentItem should match snapshot and respond to events 1`] = `
 <ForwardRef
   key="test"
   onPress={[Function]}
-  underlayColor="rgba(69,120,191,0.5)"
+  underlayColor="rgba(40,66,123,0.5)"
 >
   <View
     style={
@@ -20,7 +20,7 @@ exports[`Search RecentItem should match snapshot and respond to events 1`] = `
     <Text
       style={
         Object {
-          "color": "#3d3c40",
+          "color": "#3f4350",
           "flex": 1,
           "fontSize": 14,
           "height": 20,
@@ -43,7 +43,7 @@ exports[`Search RecentItem should match snapshot and respond to events 1`] = `
       testID="search.recent_item.test.remove.button"
     >
       <CompassIcon
-        color="rgba(61,60,64,0.6)"
+        color="rgba(63,67,80,0.6)"
         name="close-circle-outline"
         size={20}
       />

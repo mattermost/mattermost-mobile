@@ -37,6 +37,7 @@ export default class NotificationSettingsEmailBase extends PureComponent {
             emailInterval,
             newInterval: this.computeEmailInterval(notifyProps?.email === 'true' && sendEmailNotifications, enableEmailBatching, emailInterval),
             showEmailNotificationsModal: false,
+            emailThreads: notifyProps.email_threads,
         };
     }
 
@@ -82,6 +83,16 @@ export default class NotificationSettingsEmailBase extends PureComponent {
     setEmailInterval = (value) => {
         this.setState({newInterval: value});
     };
+
+    setEmailThreads = (value, callback) => {
+        this.setState({emailThreads: value}, callback);
+    };
+
+    saveEmailThreadsNotifyProps = () => {
+        const {emailThreads} = this.state;
+        const {actions, notifyProps} = this.props;
+        actions.updateMe({notify_props: {...notifyProps, email_threads: emailThreads}});
+    }
 
     saveEmailNotifyProps = () => {
         const {emailInterval, newInterval} = this.state;

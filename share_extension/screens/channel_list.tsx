@@ -43,7 +43,7 @@ type SectionDataHeader = (info: {section: SectionListData<Channel>}) => React.Re
 
 export type ChannelListRoute = RouteProp<ChannnelListParams, 'Channels'>;
 
-const theme = Preferences.THEMES.default;
+const theme = Preferences.THEMES.denim;
 
 const ChannelList = ({intl}: ChannnelListProps) => {
     const navigation = useNavigation();

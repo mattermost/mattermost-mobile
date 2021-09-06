@@ -10,7 +10,7 @@ import {
 
 import {analytics} from '@init/analytics';
 import {Command, AutocompleteSuggestion, CommandArgs} from '@mm-redux/types/integrations';
-import {Theme} from '@mm-redux/types/preferences';
+import {Theme} from '@mm-redux/types/theme';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 
 import {AppCommandParser} from './app_command_parser/app_command_parser';

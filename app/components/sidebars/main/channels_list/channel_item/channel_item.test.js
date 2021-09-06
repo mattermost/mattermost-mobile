@@ -35,7 +35,7 @@ describe('ChannelItem', () => {
         onSelectChannel: () => true,
         shouldHideChannel: false,
         showUnreadForMsgs: true,
-        theme: Preferences.THEMES.default,
+        theme: Preferences.THEMES.denim,
         unreadMsgs: 1,
         isSearchResult: false,
         isBot: false,
