@@ -26,7 +26,7 @@ describe('SelectedOptions', () => {
             },
         ],
         dataSource: '',
-        theme: Preferences.THEMES.default,
+        theme: Preferences.THEMES.denim,
     };
 
     test('should match snapshot', () => {
