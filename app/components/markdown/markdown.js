@@ -64,6 +64,7 @@ export default class Markdown extends PureComponent {
         disableAtChannelMentionHighlight: PropTypes.bool,
         disableGallery: PropTypes.bool,
         enableLatex: PropTypes.bool,
+        enableInlineLatex: PropTypes.bool,
     };
 
     static defaultProps = {
@@ -178,7 +179,7 @@ export default class Markdown extends PureComponent {
         // Construct the text style based off of the parents of this node since RN's inheritance is limited
         const style = this.computeTextStyle(this.props.baseTextStyle, context);
 
-        if (this.props.enableLatex) { //For now we use the normal latex setting because inline latex is not yet merged
+        if (this.props.enableLatex && this.props.enableInlineLatex) { //For now we use the normal latex setting because inline latex is not yet merged
             // eslint-disable-next-line no-useless-escape
             const inlineLatexRegEx = /\$([^\$\n]+)\$(?!\w)/;
 
@@ -502,7 +503,7 @@ export default class Markdown extends PureComponent {
     render() {
         let ast;
 
-        if (this.props.enableLatex) {
+        if (this.props.enableLatex && this.props.enableInlineLatex) {
             const escapedContent = escapeLatexInputPreParser(this.props.value.toString());
             ast = this.parser.parse(escapedContent);
         } else {
