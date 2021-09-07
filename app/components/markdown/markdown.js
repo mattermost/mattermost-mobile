@@ -179,7 +179,7 @@ export default class Markdown extends PureComponent {
         // Construct the text style based off of the parents of this node since RN's inheritance is limited
         const style = this.computeTextStyle(this.props.baseTextStyle, context);
 
-        if (this.props.enableLatex && this.props.enableInlineLatex) { //For now we use the normal latex setting because inline latex is not yet merged
+        if (this.props.enableLatex && this.props.enableInlineLatex) {
             // eslint-disable-next-line no-useless-escape
             const inlineLatexRegEx = /\$([^\$\n]+)\$(?!\w)/;
 
