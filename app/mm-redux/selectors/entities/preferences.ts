@@ -109,7 +109,7 @@ export const getTeammateNameDisplaySetting = reselect.createSelector(
 
 export const isThemeSyncWithOsAvailable = (state: GlobalState) => {
     const version = state.entities.general.serverVersion;
-    return isMinimumServerVersion(version, 6, 1) || version.indexOf('dev') !== -1;
+    return isMinimumServerVersion(version, 6, 0) || version.indexOf('dev') !== -1;
 };
 
 export const getEnableThemeSync = reselect.createSelector(
