@@ -159,7 +159,7 @@ public class CustomPushNotificationHelper {
         int notificationId = postId != null ? postId.hashCode() : MESSAGE_NOTIFICATION_ID;
         NotificationPreferences notificationPreferences = NotificationPreferences.getInstance(context);
         
-        String is_crt_enabled = bundle.getString("is_crt_enabled") != null && bundle.getString("is_crt_enabled").equals("true");
+        Boolean is_crt_enabled = bundle.getString("is_crt_enabled") != null && bundle.getString("is_crt_enabled").equals("true");
         String groupId = is_crt_enabled && !android.text.TextUtils.isEmpty(rootId) ? rootId : channelId;
 
         addNotificationExtras(notification, bundle);
