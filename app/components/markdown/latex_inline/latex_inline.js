@@ -26,7 +26,7 @@ export default class LatexInline extends PureComponent {
                 onLayout={this.props.onLayout}
             >
                 <MathView
-                    style={[style.mathStyle, {maxWidth: this.props.maxMathWidth}]}
+                    style={[style.mathStyle, {maxWidth: this.props.maxMathWidth ? this.props.maxMathWidth : '100%'}]}
                     math={this.props.content}
                     onError={(errorMsg) => {
                         return <Text style={style.errorText}>{'Latex error: ' + errorMsg.message}</Text>;
