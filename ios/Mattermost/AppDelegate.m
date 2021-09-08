@@ -17,7 +17,6 @@
 
 NSString* const NOTIFICATION_MESSAGE_ACTION = @"message";
 NSString* const NOTIFICATION_CLEAR_ACTION = @"clear";
-NSString* const NOTIFICATION_CLEAR_THREAD_ACTION = @"clear_thread";
 NSString* const NOTIFICATION_UPDATE_BADGE_ACTION = @"update_badge";
 
 -(void)application:(UIApplication *)application handleEventsForBackgroundURLSession:(NSString *)identifier completionHandler:(void (^)(void))completionHandler {
@@ -136,7 +135,7 @@ NSString* const NOTIFICATION_UPDATE_BADGE_ACTION = @"update_badge";
         }
       }
 
-     [center removeDeliveredNotificationsWithIdentifiers:notificationIds];
+      [center removeDeliveredNotificationsWithIdentifiers:notificationIds];
     }];
   }
 }
