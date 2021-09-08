@@ -30,6 +30,21 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             borderTopLeftRadius: 12,
             overflow: 'hidden',
         },
+        logOutFrom: {
+            color: changeOpacity(theme.centerChannelColor, 0.64),
+            fontSize: 12,
+            lineHeight: 16,
+            fontFamily: 'Open Sans',
+            fontWeight: 'normal',
+            marginLeft: 50,
+        },
+        menuLabel: {
+            color: theme.centerChannelColor,
+            fontSize: 16,
+            lineHeight: 24,
+            fontFamily: 'Open Sans',
+            fontWeight: 'normal',
+        },
     };
 });
 
@@ -75,8 +90,13 @@ const AccountScreen = () => {
                         />
                         <DrawerItem
                             testID='account.set_custom_message.action'
-                            defaultMessage='Set a Custom Status'
-                            i18nId={t('account.set_custom_message')}
+                            labelComponent={
+                                <FormattedText
+                                    id={t('account.set_custom_message')}
+                                    defaultMessage='Set a Custom Status'
+                                    style={styles.menuLabel}
+                                />
+                            }
                             iconName='emoticon-outline'
                             onPress={goToSavedMessages}
                             separator={true}
@@ -84,8 +104,13 @@ const AccountScreen = () => {
                         />
                         <DrawerItem
                             testID='account.your_profile.action'
-                            defaultMessage='Your Profile'
-                            i18nId={t('account.your_profile')}
+                            labelComponent={
+                                <FormattedText
+                                    id={t('account.your_profile')}
+                                    defaultMessage='Your Profile'
+                                    style={styles.menuLabel}
+                                />
+                            }
                             iconName='account-outline'
                             onPress={goToSavedMessages}
                             separator={false}
@@ -93,8 +118,13 @@ const AccountScreen = () => {
                         />
                         <DrawerItem
                             testID='account.saved_messages.action'
-                            defaultMessage='Saved Messages'
-                            i18nId={t('account.saved_messages')}
+                            labelComponent={
+                                <FormattedText
+                                    id={t('account.saved_messages')}
+                                    defaultMessage='Saved Messages'
+                                    style={styles.menuLabel}
+                                />
+                            }
                             iconName='bookmark-outline'
                             onPress={goToSavedMessages}
                             separator={false}
@@ -102,8 +132,13 @@ const AccountScreen = () => {
                         />
                         <DrawerItem
                             testID='account.settings.action'
-                            defaultMessage='Settings'
-                            i18nId={t('account.settings')}
+                            labelComponent={
+                                <FormattedText
+                                    id={t('account.settings')}
+                                    defaultMessage='Settings'
+                                    style={styles.menuLabel}
+                                />
+                            }
                             iconName='settings-outline'
                             onPress={goToSavedMessages}
                             separator={true}
@@ -111,8 +146,13 @@ const AccountScreen = () => {
                         />
                         <DrawerItem
                             testID='account.logout.action'
-                            defaultMessage='Logout'
-                            i18nId={t('account.logout')}
+                            labelComponent={
+                                <FormattedText
+                                    id={t('account.logout')}
+                                    defaultMessage='Log out'
+                                    style={[styles.menuLabel, {color: theme.dndIndicator}]}
+                                />
+                            }
                             iconName='exit-to-app'
                             isDestructor={true}
                             onPress={goToSavedMessages}
@@ -123,14 +163,7 @@ const AccountScreen = () => {
                             id={t('account.logout_from')}
                             defaultMessage={'Log out of {serverName}'}//fixme: construct server name
                             values={{serverName}}
-                            style={{
-                                color: changeOpacity(theme.centerChannelColor, 0.64),
-                                fontSize: 12,
-                                lineHeight: 16,
-                                fontFamily: 'Open Sans',
-                                fontWeight: 'normal',
-                                marginLeft: 50,
-                            }}
+                            style={styles.logOutFrom}
                         />
                     </View>
                 </Animated.View>

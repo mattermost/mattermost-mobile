@@ -69,7 +69,11 @@ const DrawerItem = (props: DrawerItemProps) => {
             <FormattedText
                 id={i18nId}
                 defaultMessage={defaultMessage}
-                style={[style.label, destructor, centered ? style.centerLabel : {}]}
+                style={[
+                    style.label,
+                    destructor,
+                    centered ? style.centerLabel : {},
+                ]}
             />
         );
     }
