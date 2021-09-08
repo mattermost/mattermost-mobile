@@ -103,7 +103,7 @@ class PushNotifications {
                     doesNotificationMatch = notification.root_id === rootId;
                 } else if (collapsedThreadsEnabled) {
                     // Do not match when CRT is enabled BUT post is not a root post
-                    doesNotificationMatch = collapsedThreadsEnabled && !notification.root_id;
+                    doesNotificationMatch = !notification.root_id;
                 } else {
                     doesNotificationMatch = true;
                 }
