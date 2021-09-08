@@ -13,7 +13,7 @@ import {initialLaunch} from './app/init/launch';
 import NetworkManager from './app/init/network_manager';
 import ManagedApp from './app/init/managed_app';
 import PushNotifications from './app/init/push_notifications';
-import {registerScreens} from './app/screens/index';
+import {registerScreens} from './app/screens';
 import EphemeralStore from './app/store/ephemeral_store';
 import setFontFamily from './app/utils/font_family';
 
