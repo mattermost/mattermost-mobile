@@ -234,21 +234,10 @@ public class CustomPushNotification extends PushNotification {
 
         Bundle data = mNotificationProps.asBundle();
         final String channelId = data.getString("channel_id");
-        // final String postId = data.getString("post_id");
         final String rootId = data.getString("root_id");
         final Boolean isCRTEnabled = data.getBoolean("is_crt_enabled");
-        // Integer notificationId = CustomPushNotificationHelper.MESSAGE_NOTIFICATION_ID;
-
-        // if (postId != null) {
-        //     notificationId = postId.hashCode();
-        // }
 
         if (channelId != null) {
-            // Map<String, Map<String, JSONObject>> notificationsInChannel = loadNotificationsMap(mContext);
-            // Map<String, JSONObject> notifications = notificationsInChannel.get(channelId);
-            // notifications.remove(String.valueOf(notificationId));
-            // notificationsInChannel.put(channelId, notifications);
-            // saveNotificationsMap(mContext, notificationsInChannel);
             clearChannelNotifications(mContext, channelId, rootId, isCRTEnabled);
         }
     }
