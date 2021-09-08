@@ -2,6 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {useRoute} from '@react-navigation/native';
+
 import React from 'react';
 import {Text} from 'react-native';
 import Animated, {AnimatedLayout, FadeInLeft, FadeInRight} from 'react-native-reanimated';

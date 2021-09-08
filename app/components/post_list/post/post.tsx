@@ -11,9 +11,10 @@ import SystemAvatar from '@app/components/system_avatar';
 import SystemHeader from '@app/components/system_header';
 import TouchableWithFeedback from '@components/touchable_with_feedback';
 import * as Screens from '@constants/screens';
-import {useTheme} from '@context/theme';
 import {useServerUrl} from '@context/server_url';
+import {useTheme} from '@context/theme';
 import {showModalOverCurrentContext} from '@screens/navigation';
+import FileModel from '@typings/database/models/servers/file';
 import {fromAutoResponder, isFromWebhook, isPostPendingOrFailed, isSystemMessage} from '@utils/post';
 import {preventDoubleTap} from '@utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
@@ -26,7 +27,6 @@ import SystemMessage from './system_message';
 
 import type PostModel from '@typings/database/models/servers/post';
 import type UserModel from '@typings/database/models/servers/user';
-import FileModel from '@typings/database/models/servers/file';
 
 type PostProps = {
     appsEnabled: boolean;

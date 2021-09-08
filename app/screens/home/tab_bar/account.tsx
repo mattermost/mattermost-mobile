@@ -3,12 +3,13 @@
 
 import {withDatabase} from '@nozbe/watermelondb/DatabaseProvider';
 import withObservables from '@nozbe/with-observables';
+
 import React from 'react';
 import {View} from 'react-native';
 import {switchMap} from 'rxjs/operators';
 
-import ProfilePicture from '@components/profile_picture';
 import {MM_TABLES, SYSTEM_IDENTIFIERS} from '@app/constants/database';
+import ProfilePicture from '@components/profile_picture';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 
 import type {WithDatabaseArgs} from '@typings/database/database';

@@ -2,6 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {ClientResponse, ProgressPromise} from '@mattermost/react-native-network-client';
+
 import React, {forwardRef, useImperativeHandle, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
 import {Platform, StatusBar, StatusBarStyle, StyleSheet, View} from 'react-native';

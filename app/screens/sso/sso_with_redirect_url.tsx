@@ -7,10 +7,10 @@ import DeviceInfo from 'react-native-device-info';
 import {SafeAreaView} from 'react-native-safe-area-context';
 import urlParse from 'url-parse';
 
+import NetworkManager from '@app/init/network_manager';
 import FormattedText from '@components/formatted_text';
 import Loading from '@components/loading';
 import {REDIRECT_URL_SCHEME, REDIRECT_URL_SCHEME_DEV} from '@constants';
-import NetworkManager from '@app/init/network_manager';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {tryOpenURL} from '@utils/url';
 

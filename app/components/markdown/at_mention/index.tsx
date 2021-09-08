@@ -6,18 +6,19 @@ import {Database, Q} from '@nozbe/watermelondb';
 import {withDatabase} from '@nozbe/watermelondb/DatabaseProvider';
 import withObservables from '@nozbe/with-observables';
 import Clipboard from '@react-native-community/clipboard';
+
 import React, {useCallback, useMemo} from 'react';
 import {useIntl} from 'react-intl';
 import {DeviceEventEmitter, GestureResponderEvent, StyleProp, StyleSheet, Text, TextStyle, View} from 'react-native';
 import {of as of$} from 'rxjs';
 
+import CompassIcon from '@components/compass_icon';
 import SlideUpPanelItem, {ITEM_HEIGHT} from '@components/slide_up_panel_item';
-import {useTheme} from '@context/theme';
 import {Navigation, Preferences} from '@constants';
 import {MM_TABLES, SYSTEM_IDENTIFIERS} from '@constants/database';
+import {useTheme} from '@context/theme';
 import UserModel from '@database/models/server/user';
 import {getTeammateNameDisplaySetting} from '@helpers/api/preference';
-import CompassIcon from '@components/compass_icon';
 import {showModal, showModalOverCurrentContext} from '@screens/navigation';
 import {displayUsername, getUserMentionKeys, getUsersByUsername} from '@utils/user';
 

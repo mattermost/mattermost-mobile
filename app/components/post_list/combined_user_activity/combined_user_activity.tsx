@@ -6,9 +6,9 @@ import {useIntl} from 'react-intl';
 import {Keyboard, StyleProp, View, ViewStyle} from 'react-native';
 
 import {fetchMissinProfilesByIds, fetchMissinProfilesByUsernames} from '@actions/remote/user';
-import Markdown from '@components/markdown';
 import SystemAvatar from '@app/components/system_avatar';
 import SystemHeader from '@app/components/system_header';
+import Markdown from '@components/markdown';
 import TouchableWithFeedback from '@components/touchable_with_feedback';
 import {Post as PostConstants} from '@constants';
 import {useServerUrl} from '@context/server_url';

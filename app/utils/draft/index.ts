@@ -2,11 +2,12 @@
 // See LICENSE.txt for license information.
 
 import {MessageDescriptor} from '@formatjs/intl/src/types';
+
 import {Alert, AlertButton} from 'react-native';
 
-import type {IntlShape} from 'react-intl';
-
 import {t} from '@i18n';
+
+import type {IntlShape} from 'react-intl';
 
 export function errorBadChannel(intl: IntlShape) {
     const message = {

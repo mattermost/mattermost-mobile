@@ -8,7 +8,8 @@
   "parser": "@typescript-eslint/parser",
   "plugins": [
     "@typescript-eslint",
-    "mattermost"
+    "mattermost",
+    "import"
   ],
   "settings": {
     "react": {
@@ -58,7 +59,37 @@
       "singleLine": {
         "beforeColon": false,
         "afterColon": true
-      }}]
+      }}],
+    "@typescript-eslint/member-delimiter-style": 2,
+    "import/order": [
+      2,
+      {
+        "groups": ["builtin", "external", "parent", "sibling", "index", "type"],
+        "newlines-between": "always",
+        "pathGroups": [
+          {
+            "pattern": "@(@react-native-community|@react-native-cookies|@react-navigation|@rudderstack|@sentry|@testing-library|@storybook|@formatjs|@mattermost|@nozbe)/**",
+            "group": "external",
+            "position": "before"
+          },
+          {
+            "pattern": "@{**,*/**}",
+            "group": "external",
+            "position": "after"
+          },
+          {
+            "pattern": "app/**",
+            "group": "parent",
+            "position": "before"
+          }
+        ],
+        "alphabetize": {
+          "order": "asc",
+          "caseInsensitive": true
+        },
+        "pathGroupsExcludedImportTypes": ["type"]
+      }
+    ]
   },
   "overrides": [
     {

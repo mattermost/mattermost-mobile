@@ -3,10 +3,10 @@
 
 import {MM_TABLES} from '@constants/database';
 import {prepareBaseRecord} from '@database/operator/server_data_operator/transformers/index';
-
-import type CustomEmojiModel from '@typings/database/models/servers/custom_emoji';
-import type {TransformerArgs} from '@typings/database/database';
 import {OperationType} from '@typings/database/enums';
+
+import type {TransformerArgs} from '@typings/database/database';
+import type CustomEmojiModel from '@typings/database/models/servers/custom_emoji';
 import type RoleModel from '@typings/database/models/servers/role';
 import type SystemModel from '@typings/database/models/servers/system';
 import type TermsOfServiceModel from '@typings/database/models/servers/terms_of_service';

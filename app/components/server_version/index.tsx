@@ -3,13 +3,14 @@
 
 import {withDatabase} from '@nozbe/watermelondb/DatabaseProvider';
 import withObservables from '@nozbe/with-observables';
+
 import {useEffect} from 'react';
 import {useIntl} from 'react-intl';
 
+import {unsupportedServer} from '@app/utils/supported_server';
 import {View} from '@constants';
 import {MM_TABLES, SYSTEM_IDENTIFIERS} from '@constants/database';
 import {isMinimumServerVersion} from '@utils/helpers';
-import {unsupportedServer} from '@app/utils/supported_server';
 import {isSystemAdmin} from '@utils/user';
 
 import type {WithDatabaseArgs} from '@typings/database/database';

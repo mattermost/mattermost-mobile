@@ -2,6 +2,7 @@
 // See LICENSE.txt for license information.
 
 import withObservables from '@nozbe/with-observables';
+
 import React, {useCallback, useRef} from 'react';
 import {useIntl} from 'react-intl';
 import Button from 'react-native-button';

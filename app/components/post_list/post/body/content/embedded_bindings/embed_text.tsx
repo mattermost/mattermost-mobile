@@ -5,8 +5,8 @@ import React, {useCallback, useState} from 'react';
 import {LayoutChangeEvent, useWindowDimensions, ScrollView, View} from 'react-native';
 import Animated from 'react-native-reanimated';
 
-import Markdown from '@components/markdown';
 import ShowMoreButton from '@app/components/post_list/post/body/message/show_more_button';
+import Markdown from '@components/markdown';
 import {useShowMoreAnimatedStyle} from '@hooks/show_more';
 import {getMarkdownBlockStyles, getMarkdownTextStyles} from '@utils/markdown';
 import {makeStyleSheetFromTheme} from '@utils/theme';

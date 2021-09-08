@@ -4,6 +4,7 @@
 import {Q} from '@nozbe/watermelondb';
 import {withDatabase} from '@nozbe/watermelondb/DatabaseProvider';
 import withObservables from '@nozbe/with-observables';
+
 import React, {useCallback} from 'react';
 import {useIntl} from 'react-intl';
 import {StyleProp, Text, TextStyle} from 'react-native';

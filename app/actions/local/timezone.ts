@@ -3,9 +3,9 @@
 
 import {getTimeZone} from 'react-native-localize';
 
+import {updateMe} from '@actions/remote/user';
 import DatabaseManager from '@database/manager';
 import {queryUserById} from '@queries/servers/user';
-import {updateMe} from '@actions/remote/user';
 
 import type UserModel from '@typings/database/models/servers/user';
 

@@ -7,11 +7,11 @@ import React, {ReactElement, useRef} from 'react';
 import {useIntl} from 'react-intl';
 import {GestureResponderEvent, StyleProp, Text, TextStyle} from 'react-native';
 
+import {concatStyles, changeOpacity, makeStyleSheetFromTheme} from '@app/utils/theme';
 import AtMention from '@components/markdown/at_mention';
 import MarkdownLink from '@components/markdown/markdown_link';
 import {useTheme} from '@context/theme';
 import {getMarkdownTextStyles} from '@utils/markdown';
-import {concatStyles, changeOpacity, makeStyleSheetFromTheme} from '@app/utils/theme';
 
 import type {PrimitiveType} from 'intl-messageformat';
 

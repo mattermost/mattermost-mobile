@@ -3,7 +3,7 @@
 
 import {withDatabase} from '@nozbe/watermelondb/DatabaseProvider';
 import withObservables from '@nozbe/with-observables';
-import {goToScreen} from '@screens/navigation';
+
 import React, {useMemo} from 'react';
 import {useIntl} from 'react-intl';
 import {Text, View} from 'react-native';
@@ -16,6 +16,7 @@ import StatusBar from '@components/status_bar';
 import {Screens, Database} from '@constants';
 import {useServerUrl} from '@context/server_url';
 import {useTheme} from '@context/theme';
+import {goToScreen} from '@screens/navigation';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 
 import ChannelNavBar from './channel_nav_bar';

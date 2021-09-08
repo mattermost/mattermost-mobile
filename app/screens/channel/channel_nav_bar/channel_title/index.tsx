@@ -3,6 +3,7 @@
 
 import {withDatabase} from '@nozbe/watermelondb/DatabaseProvider';
 import withObservables from '@nozbe/with-observables';
+
 import React from 'react';
 import {TouchableOpacity, View} from 'react-native';
 
@@ -18,11 +19,11 @@ import ChannelDisplayName from './channel_display_name';
 import ChannelGuestLabel from './channel_guest_label';
 
 import type {WithDatabaseArgs} from '@typings/database/database';
-import type ChannelInfoModel from '@typings/database/models/servers/channel_info';
 import type ChannelModel from '@typings/database/models/servers/channel';
+import type ChannelInfoModel from '@typings/database/models/servers/channel_info';
 import type MyChannelSettingsModel from '@typings/database/models/servers/my_channel_settings';
-import type UserModel from '@typings/database/models/servers/user';
 import type SystemModel from '@typings/database/models/servers/system';
+import type UserModel from '@typings/database/models/servers/user';
 
 type WithChannelArgs = WithDatabaseArgs & {
     currentUserId: SystemModel;

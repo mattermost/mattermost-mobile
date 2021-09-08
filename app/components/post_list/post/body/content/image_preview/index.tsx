@@ -4,6 +4,7 @@
 import {Q} from '@nozbe/watermelondb';
 import {withDatabase} from '@nozbe/watermelondb/DatabaseProvider';
 import withObservables from '@nozbe/with-observables';
+
 import React, {useCallback, useEffect, useRef, useState} from 'react';
 import {StyleSheet, View} from 'react-native';
 import {of as of$} from 'rxjs';
@@ -16,10 +17,10 @@ import TouchableWithFeedback from '@components/touchable_with_feedback';
 import {Device} from '@constants';
 import {MM_TABLES, SYSTEM_IDENTIFIERS} from '@constants/database';
 import {useServerUrl} from '@context/server_url';
-import useDidUpdate from '@hooks/did_update';
 import {useSplitView} from '@hooks/device';
-import {generateId} from '@utils/general';
+import useDidUpdate from '@hooks/did_update';
 import {openGallerWithMockFile} from '@utils/gallery';
+import {generateId} from '@utils/general';
 import {calculateDimensions, getViewPortWidth, isGifTooLarge} from '@utils/images';
 import {changeOpacity} from '@utils/theme';
 import {isImageLink, isValidUrl} from '@utils/url';
