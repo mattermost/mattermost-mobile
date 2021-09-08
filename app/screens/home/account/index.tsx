@@ -78,7 +78,7 @@ const AccountScreen = () => {
                     >
                         <DrawerItem
                             testID='account.status.action'
-                            labelComponent={<StatusLabel/>}
+                            labelComponent={<StatusLabel labelStyle={styles.menuLabel}/>}
                             leftComponent={
                                 <UserStatus
                                     size={24}

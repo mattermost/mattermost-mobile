@@ -2,6 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React from 'react';
+import {TextStyle} from 'react-native';
 
 import FormattedText from '@components/formatted_text';
 import {General} from '@constants';
@@ -11,6 +12,7 @@ import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 type StatusLabelProps = {
     status?: string;
+    labelStyle?: TextStyle;
 }
 
 const getStyleSheet = makeStyleSheetFromTheme((theme) => {
@@ -24,7 +26,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     };
 });
 
-const StatusLabel = ({status = General.OFFLINE}: StatusLabelProps) => {
+const StatusLabel = ({status = General.OFFLINE, labelStyle}: StatusLabelProps) => {
     const theme = useTheme();
     const style = getStyleSheet(theme);
 
@@ -54,7 +56,7 @@ const StatusLabel = ({status = General.OFFLINE}: StatusLabelProps) => {
         <FormattedText
             id={i18nId}
             defaultMessage={defaultMessage}
-            style={style.label}
+            style={[style.label, labelStyle]}
             testID={`user_status.label.${status}`}
         />
     );
