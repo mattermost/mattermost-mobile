@@ -189,3 +189,14 @@ export function isCustomStatusExpired(user: UserModel) {
     const currentTime = timezone ? moment.tz(timezone) : moment();
     return currentTime.isSameOrAfter(expiryTime);
 }
+
+export function removeUserFromList(userId: string, list: UserProfile[]): UserProfile[] {
+    for (let i = list.length - 1; i >= 0; i--) {
+        if (list[i].id === userId) {
+            list.splice(i, 1);
+            return list;
+        }
+    }
+
+    return list;
+}

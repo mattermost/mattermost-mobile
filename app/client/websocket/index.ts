@@ -32,13 +32,15 @@ export default class WebSocketClient {
     private missedEventsCallback?: () => void;
     private reconnectCallback?: () => void;
     private errorCallback?: Function;
-    private closeCallback?: (errCount: number) => void;
+    private closeCallback?: (connectFailCount: number, lastDisconnect: number) => void;
     private connectingCallback?: () => void;
     private stop: boolean;
+    private lastConnect: number;
+    private lastDisconnect: number;
 
     private serverURL: string;
 
-    constructor(serverURL: string, token: string) {
+    constructor(serverURL: string, token: string, lastDisconnect = 0) {
         this.connectionId = '';
         this.token = token;
         this.responseSequence = 1;
@@ -46,9 +48,11 @@ export default class WebSocketClient {
         this.connectFailCount = 0;
         this.stop = false;
         this.serverURL = serverURL;
+        this.lastConnect = 0;
+        this.lastDisconnect = lastDisconnect;
     }
 
-    async initialize(opts = {}) {
+    public async initialize(opts = {}) {
         const defaults = {
             forceConnection: true,
         };
@@ -110,6 +114,8 @@ export default class WebSocketClient {
         this.conn = new WebSocket(url, [], {headers: {origin}});
 
         this.conn!.onopen = () => {
+            this.lastConnect = Date.now();
+
             // No need to reset sequence number here.
             if (!reliableWebSockets) {
                 this.serverSequence = 0;
@@ -136,6 +142,11 @@ export default class WebSocketClient {
         };
 
         this.conn!.onclose = () => {
+            const now = Date.now();
+            if (this.lastDisconnect < this.lastConnect) {
+                this.lastDisconnect = now;
+            }
+
             this.conn = undefined;
             this.responseSequence = 1;
 
@@ -146,7 +157,11 @@ export default class WebSocketClient {
             this.connectFailCount++;
 
             if (this.closeCallback) {
-                this.closeCallback(this.connectFailCount);
+                this.closeCallback(this.connectFailCount, this.lastDisconnect);
+            }
+
+            if (this.stop) {
+                return;
             }
 
             let retryTime = MIN_WEBSOCKET_RETRY_TIME;
@@ -242,35 +257,35 @@ export default class WebSocketClient {
         };
     }
 
-    setConnectingCallback(callback: () => void) {
+    public setConnectingCallback(callback: () => void) {
         this.connectingCallback = callback;
     }
 
-    setEventCallback(callback: Function) {
+    public setEventCallback(callback: Function) {
         this.eventCallback = callback;
     }
 
-    setFirstConnectCallback(callback: () => void) {
+    public setFirstConnectCallback(callback: () => void) {
         this.firstConnectCallback = callback;
     }
 
-    setMissedEventsCallback(callback: () => void) {
+    public setMissedEventsCallback(callback: () => void) {
         this.missedEventsCallback = callback;
     }
 
-    setReconnectCallback(callback: () => void) {
+    public setReconnectCallback(callback: () => void) {
         this.reconnectCallback = callback;
     }
 
-    setErrorCallback(callback: Function) {
+    public setErrorCallback(callback: Function) {
         this.errorCallback = callback;
     }
 
-    setCloseCallback(callback: (errCount: number) => void) {
+    public setCloseCallback(callback: (connectFailCount: number, lastDisconnect: number) => void) {
         this.closeCallback = callback;
     }
 
-    close(stop = false) {
+    public close(stop = false) {
         this.stop = stop;
         this.connectFailCount = 0;
         this.responseSequence = 1;
@@ -295,10 +310,14 @@ export default class WebSocketClient {
         }
     }
 
-    userTyping(channelId: string, parentId: string) {
+    public sendUserTypingEvent(channelId: string, parentId: string) {
         this.sendMessage('user_typing', {
             channel_id: channelId,
             parent_id: parentId,
         });
+    }
+
+    public isConnected(): boolean {
+        return this.conn?.readyState === WebSocket.OPEN; //|| (!this.stop && this.connectFailCount <= 2);
     }
 }

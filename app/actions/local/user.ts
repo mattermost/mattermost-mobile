@@ -1,0 +1,23 @@
+// Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
+// See LICENSE.txt for license information.
+
+import {queryCurrentUser} from '@app/queries/servers/user';
+import DatabaseManager from '@database/manager';
+import General from '@constants/general';
+
+export const setCurrentUserStatusOffline = async (serverUrl: string) => {
+    const {database, operator} = DatabaseManager.serverDatabases[serverUrl];
+    if (!database) {
+        return {error: `No database present for ${serverUrl}`};
+    }
+
+    const user = await queryCurrentUser(database);
+    if (!user) {
+        return {error: `No current user for ${serverUrl}`};
+    }
+
+    user.prepareSatus(General.OFFLINE);
+    operator.batchRecords([user]);
+
+    return null;
+};
