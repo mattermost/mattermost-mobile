@@ -13,7 +13,8 @@ export function bindings(state: AppBinding[] = [], action: GenericAction): AppBi
     case AppsTypes.RECEIVED_APP_BINDINGS: {
         return validateBindings(action.data) || [];
     }
-    case AppsTypes.CLEAR_APP_BINDINGS:
+    case AppsTypes.FAILED_TO_FETCH_APP_BINDINGS:
+    case AppsTypes.APPS_PLUGIN_DISABLED:
         if (state.length > 0) {
             return [];
         }
@@ -38,12 +39,11 @@ export function bindingsForms(state: AppCommandFormMap = {}, action: GenericActi
         };
         return newState;
     }
-    case AppsTypes.CLEAR_APP_BINDINGS: {
+    case AppsTypes.FAILED_TO_FETCH_APP_BINDINGS:
         if (Object.keys(state).length) {
             return {};
         }
         return state;
-    }
     default:
         return state;
     }
@@ -104,10 +104,26 @@ export function threadBindingsForms(state: AppCommandFormMap = {}, action: Gener
     }
 }
 
+export function pluginEnabled(state = true, action: GenericAction): boolean {
+    switch (action.type) {
+    case AppsTypes.APPS_PLUGIN_ENABLED:
+        return true;
+    case AppsTypes.APPS_PLUGIN_DISABLED:
+        return false;
+    case AppsTypes.RECEIVED_APP_BINDINGS:
+        return true;
+    case AppsTypes.FAILED_TO_FETCH_APP_BINDINGS:
+        return false;
+    default:
+        return state;
+    }
+}
+
 export default (combineReducers({
     bindings,
     bindingsForms,
     threadBindings,
     threadBindingsForms,
     threadBindingsChannelId,
+    pluginEnabled,
 }) as (b: AppsState, a: GenericAction) => AppsState);

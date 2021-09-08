@@ -19,6 +19,7 @@ import {
 import {savePreferences} from '@mm-redux/actions/preferences';
 import {addUserToTeam, getTeamByName, removeUserFromTeam, selectTeam} from '@mm-redux/actions/teams';
 import {General, Preferences} from '@mm-redux/constants';
+import {appsEnabled} from '@mm-redux/selectors/entities/apps';
 import {
     getCurrentChannelId,
     getRedirectChannelNameForTeam,
@@ -37,7 +38,6 @@ import {isMinimumServerVersion} from '@mm-redux/utils/helpers';
 import {getChannelReachable} from '@selectors/channel';
 import {getViewingGlobalThreads} from '@selectors/threads';
 import telemetry, {PERF_MARKERS} from '@telemetry';
-import {appsEnabled} from '@utils/apps';
 import {isDirectChannelVisible, isGroupChannelVisible, getChannelSinceValue, privateChannelJoinPrompt} from '@utils/channels';
 import {isPendingPost} from '@utils/general';
 

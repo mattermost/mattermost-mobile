@@ -8,11 +8,11 @@ import {AppCommandParser} from '@components/autocomplete/slash_suggestion/app_co
 import {IntegrationTypes} from '@mm-redux/action_types';
 import {executeCommand as executeCommandService} from '@mm-redux/actions/integrations';
 import {AppCallResponseTypes, AppCallTypes} from '@mm-redux/constants/apps';
+import {appsEnabled} from '@mm-redux/selectors/entities/apps';
 import {getCurrentTeamId} from '@mm-redux/selectors/entities/teams';
 import {DispatchFunc, GetStateFunc, ActionFunc} from '@mm-redux/types/actions';
 import {AppCallResponse} from '@mm-redux/types/apps';
 import {CommandArgs} from '@mm-redux/types/integrations';
-import {appsEnabled} from '@utils/apps';
 
 export function executeCommand(message: string, channelId: string, rootId: string, intl: typeof intlShape): ActionFunc {
     return async (dispatch: DispatchFunc, getState: GetStateFunc) => {

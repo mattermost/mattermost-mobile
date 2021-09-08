@@ -22,6 +22,7 @@ export type AppsState = {
     threadBindings: AppBinding[];
     threadBindingsForms: AppCommandFormMap;
     threadBindingsChannelId: string;
+    pluginEnabled: boolean;
 };
 
 export type AppBinding = {

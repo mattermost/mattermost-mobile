@@ -16,7 +16,7 @@ export function fetchAppBindings(userID: string, channelID: string): ActionFunc 
         return dispatch(bindClientFunc({
             clientFunc: () => Client4.getAppsBindings(userID, channelID, teamID),
             onSuccess: AppsTypes.RECEIVED_APP_BINDINGS,
-            onFailure: AppsTypes.CLEAR_APP_BINDINGS,
+            onFailure: AppsTypes.FAILED_TO_FETCH_APP_BINDINGS,
         }));
     };
 }
@@ -33,6 +33,7 @@ export function fetchThreadAppBindings(userID: string, channelID: string): Actio
             },
             onSuccess: AppsTypes.RECEIVED_THREAD_APP_BINDINGS,
             onRequest: AppsTypes.CLEAR_THREAD_APP_BINDINGS,
+            onFailure: AppsTypes.FAILED_TO_FETCH_APP_BINDINGS,
         }));
     };
 }

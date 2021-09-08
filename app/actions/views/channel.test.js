@@ -166,6 +166,9 @@ describe('Actions.Views.Channel', () => {
                     [currentTeamId]: {},
                 },
             },
+            apps: {
+                pluginEnabled: true,
+            },
         },
     };
 

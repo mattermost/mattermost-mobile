@@ -27,7 +27,7 @@ import {removeUserFromList} from '@mm-redux/utils/user_utils';
 import {getChannelSinceValue} from '@utils/channels';
 import websocketClient from '@websocket';
 
-import {handleRefreshAppsBindings} from './apps';
+import {handleAppsPluginDisabled, handleAppsPluginEnabled, handleRefreshAppsBindings} from './apps';
 import {
     handleChannelConvertedEvent,
     handleChannelCreatedEvent,
@@ -196,6 +196,7 @@ export function doReconnect(now: number) {
                             const postIds = getPostIdsInChannel(state, currentChannelId);
                             const since = getChannelSinceValue(state, currentChannelId, postIds);
                             dispatch(getPostsSince(currentChannelId, since));
+                            dispatch(handleRefreshAppsBindings());
                         }
                     }
 
@@ -409,9 +410,12 @@ function handleEvent(msg: WebSocketMessage) {
             return dispatch(handleThreadReadChanged(msg));
         case WebsocketEvents.THREAD_FOLLOW_CHANGED:
             return dispatch(handleThreadFollowChanged(msg));
-        case WebsocketEvents.APPS_FRAMEWORK_REFRESH_BINDINGS: {
+        case WebsocketEvents.APPS_FRAMEWORK_REFRESH_BINDINGS:
             return dispatch(handleRefreshAppsBindings());
-        }
+        case WebsocketEvents.APPS_FRAMEWORK_PLUGIN_ENABLED:
+            return dispatch(handleAppsPluginEnabled());
+        case WebsocketEvents.APPS_FRAMEWORK_PLUGIN_DISABLED:
+            return dispatch(handleAppsPluginDisabled());
         }
 
         return {data: true};
