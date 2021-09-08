@@ -37,6 +37,7 @@ export default class ChannelBase extends PureComponent {
         showTermsOfService: PropTypes.bool,
         skipMetrics: PropTypes.bool,
         viewingGlobalThreads: PropTypes.bool,
+        collapsedThreadsEnabled: PropTypes.bool.isRequired,
         selectedPost: PropTypes.shape({
             id: PropTypes.string.isRequired,
             channel_id: PropTypes.string.isRequired,
@@ -199,7 +200,7 @@ export default class ChannelBase extends PureComponent {
     loadChannels = (teamId) => {
         const {loadChannelsForTeam, selectInitialChannel} = this.props.actions;
         if (EphemeralStore.getStartFromNotification()) {
-            if (this.props.selectedPost) {
+            if (this.props.selectedPost && this.props.collapsedThreadsEnabled) {
                 EventEmitter.emit('goToThread', this.props.selectedPost);
             }
             // eslint-disable-next-line no-console

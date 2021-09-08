@@ -14,14 +14,12 @@ import {
     getUnreadChannels,
     getCurrentChannelId,
 } from '@mm-redux/selectors/entities/channels';
-import {getConfig, getLicense, hasNewPermissions} from '@mm-redux/selectors/entities/general';
 import {getTheme, getFavoritesPreferences, getSidebarPreferences, isCollapsedThreadsEnabled} from '@mm-redux/selectors/entities/preferences';
 import {haveITeamPermission} from '@mm-redux/selectors/entities/roles';
 import {getCurrentTeamId} from '@mm-redux/selectors/entities/teams';
-import {getCurrentUserId, getCurrentUserRoles} from '@mm-redux/selectors/entities/users';
+import {getCurrentUserRoles} from '@mm-redux/selectors/entities/users';
 import {showCreateOption} from '@mm-redux/utils/channel_utils';
 import {memoizeResult} from '@mm-redux/utils/helpers';
-import {isAdmin as checkIsAdmin, isSystemAdmin as checkIsSystemAdmin} from '@mm-redux/utils/user_utils';
 import {shouldShowLegacySidebar} from '@utils/categories';
 
 import List from './list';
@@ -36,13 +34,8 @@ const filterZeroUnreads = memoizeResult((sections) => {
 });
 
 function mapStateToProps(state) {
-    const config = getConfig(state);
     const collapsedThreadsEnabled = isCollapsedThreadsEnabled(state);
-    const license = getLicense(state);
-    const roles = getCurrentUserId(state) ? getCurrentUserRoles(state) : '';
     const currentTeamId = getCurrentTeamId(state);
-    const isAdmin = checkIsAdmin(roles);
-    const isSystemAdmin = checkIsSystemAdmin(roles);
     const sidebarPrefs = getSidebarPreferences(state);
     const lastUnreadChannel = DeviceTypes.IS_TABLET ? state.views.channel.keepChannelIdAsUnread : null;
 
@@ -70,15 +63,12 @@ function mapStateToProps(state) {
     const channelsByCategory = getChannelsByCategoryForCurrentTeam(state);
     const currentChannelId = getCurrentChannelId(state);
 
-    let canJoinPublicChannels = true;
-    if (hasNewPermissions(state)) {
-        canJoinPublicChannels = haveITeamPermission(state, {
-            team: currentTeamId,
-            permission: Permissions.JOIN_PUBLIC_CHANNELS,
-        });
-    }
-    const canCreatePublicChannels = showCreateOption(state, config, license, currentTeamId, General.OPEN_CHANNEL, isAdmin, isSystemAdmin);
-    const canCreatePrivateChannels = showCreateOption(state, config, license, currentTeamId, General.PRIVATE_CHANNEL, isAdmin, isSystemAdmin);
+    const canJoinPublicChannels = haveITeamPermission(state, {
+        team: currentTeamId,
+        permission: Permissions.JOIN_PUBLIC_CHANNELS,
+    });
+    const canCreatePublicChannels = showCreateOption(state, currentTeamId, General.OPEN_CHANNEL);
+    const canCreatePrivateChannels = showCreateOption(state, currentTeamId, General.PRIVATE_CHANNEL);
 
     const showLegacySidebar = shouldShowLegacySidebar(state);
 

@@ -8,7 +8,6 @@ import {getCurrentChannel, getChannel, isChannelReadOnlyById} from '@mm-redux/se
 import {getTheme} from '@mm-redux/selectors/entities/preferences';
 import {haveIChannelPermission} from '@mm-redux/selectors/entities/roles';
 import {getCurrentUserId} from '@mm-redux/selectors/entities/users';
-import {isMinimumServerVersion} from '@mm-redux/utils/helpers';
 import {getChannelMembersForDm} from '@selectors/channel';
 
 import PostDraft from './post_draft';
@@ -27,7 +26,7 @@ export function mapStateToProps(state, ownProps) {
         }
     }
 
-    if (channel && isMinimumServerVersion(state.entities.general.serverVersion, 5, 22)) {
+    if (channel) {
         canPost = haveIChannelPermission(
             state,
             {

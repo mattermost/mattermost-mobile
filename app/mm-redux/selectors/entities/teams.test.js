@@ -91,34 +91,6 @@ describe('Selectors.Teams', () => {
         assert.deepEqual(Selectors.getTeamMember(testState, team1.id, user2.id), membersInTeam[team1.id][user2.id]);
     });
 
-    it('getJoinableTeams', () => {
-        const openTeams = [team3, team4];
-        const joinableTeams = Selectors.getJoinableTeams(testState);
-        assert.strictEqual(joinableTeams[0], openTeams[0]);
-        assert.strictEqual(joinableTeams[1], openTeams[1]);
-    });
-
-    it('getSortedJoinableTeams', () => {
-        const openTeams = [team4, team3];
-        const joinableTeams = Selectors.getSortedJoinableTeams(testState);
-        assert.strictEqual(joinableTeams[0], openTeams[0]);
-        assert.strictEqual(joinableTeams[1], openTeams[1]);
-    });
-
-    it('getListableTeams', () => {
-        const openTeams = [team3, team4];
-        const listableTeams = Selectors.getListableTeams(testState);
-        assert.strictEqual(listableTeams[0], openTeams[0]);
-        assert.strictEqual(listableTeams[1], openTeams[1]);
-    });
-
-    it('getListedJoinableTeams', () => {
-        const openTeams = [team4, team3];
-        const joinableTeams = Selectors.getSortedListableTeams(testState);
-        assert.strictEqual(joinableTeams[0], openTeams[0]);
-        assert.strictEqual(joinableTeams[1], openTeams[1]);
-    });
-
     it('getJoinableTeamsUsingPermissions', () => {
         const privateTeams = [team1, team2];
         const openTeams = [team3, team4];
