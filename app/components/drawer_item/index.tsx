@@ -9,7 +9,7 @@ import FormattedText from '@components/formatted_text';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 type DrawerItemProps = {
-    centered: boolean;
+    centered?: boolean;
     defaultMessage?: string;
     i18nId: string;
     iconName: string;
