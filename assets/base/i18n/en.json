@@ -10,6 +10,12 @@
   "about.teamEditiont0": "Team Edition",
   "about.teamEditiont1": "Enterprise Edition",
   "about.title": "About {appTitle}",
+  "account.logout": "Logout",
+  "account.logout_from": "Log out of {serverName}",
+  "account.saved_messages": "Saved Messages",
+  "account.set_custom_message": "Set a Custom Status",
+  "account.settings": "Settings",
+  "account.your_profile": "Your Profile",
   "api.channel.add_guest.added": "{addedUsername} added to the channel as a guest by {username}.",
   "api.channel.add_member.added": "{addedUsername} added to the channel by {username}.",
   "api.channel.guest_join_channel.post_and_forget": "{username} joined the channel as a guest.",
@@ -240,5 +246,10 @@
   "signup.email": "Email and Password",
   "signup.google": "Google Apps",
   "signup.office365": "Office 365",
+  "status_dropdown.set_away": "Away",
+  "status_dropdown.set_dnd": "Do Not Disturb",
+  "status_dropdown.set_offline": "Offline",
+  "status_dropdown.set_online": "Online",
+  "status_dropdown.set_ooo": "Out Of Office",
   "web.root.signup_info": "All team communication in one place, searchable and accessible anywhere"
 }
