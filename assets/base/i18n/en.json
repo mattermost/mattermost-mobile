@@ -10,7 +10,7 @@
   "about.teamEditiont0": "Team Edition",
   "about.teamEditiont1": "Enterprise Edition",
   "about.title": "About {appTitle}",
-  "account.logout": "Logout",
+  "account.logout": "Log out",
   "account.logout_from": "Log out of {serverName}",
   "account.saved_messages": "Saved Messages",
   "account.set_custom_message": "Set a Custom Status",
