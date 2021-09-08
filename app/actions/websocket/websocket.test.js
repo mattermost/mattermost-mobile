@@ -302,6 +302,9 @@ describe('Actions.Websocket doReconnect', () => {
 
         const actions = testStore.getActions().map((a) => a.type);
         expect(actions).toEqual(expect.arrayContaining(expectedActions));
+
+        const fetchBindingsAction = testStore.getActions()[2].payload[1];
+        expect(fetchBindingsAction.type).toEqual('FAILED_TO_FETCH_APP_BINDINGS');
     });
 
     it('handle doReconnect after the current channel was archived and setting is off', async () => {
