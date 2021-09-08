@@ -84,6 +84,7 @@ describe('Actions.Websocket doReconnect', () => {
     const channel2 = TestHelper.fakeChannelWithId(team.id);
     const cMember1 = TestHelper.fakeChannelMember(me.id, channel1.id);
     const cMember2 = TestHelper.fakeChannelMember(me.id, channel2.id);
+    const post1 = TestHelper.fakePost(channel1.id);
 
     const currentTeamId = team.id;
     const currentUserId = me.id;
@@ -106,7 +107,7 @@ describe('Actions.Websocket doReconnect', () => {
             channels: {
                 currentChannelId,
                 channels: {
-                    currentChannelId: channel1,
+                    currentChannelId: channel1.id,
                 },
             },
             users: {
@@ -119,14 +120,33 @@ describe('Actions.Websocket doReconnect', () => {
                 myPreferences: {},
             },
             posts: {
-                posts: {},
-                postsInChannel: {},
+                posts: {
+                    [post1.id]: post1,
+                },
+                postsInChannel: {
+                    [channel1.id]: [
+                        {
+                            recent: true,
+                            order: [post1.id],
+                        },
+                    ],
+                },
+            },
+            apps: {
+                pluginEnabled: true,
             },
         },
         websocket: {
             connected: false,
             lastConnectAt: 0,
             lastDisconnectAt: 0,
+        },
+        views: {
+            channel: {
+                lastGetPosts: {
+                    [channel1.id]: 1,
+                },
+            },
         },
     };
 
@@ -170,15 +190,14 @@ describe('Actions.Websocket doReconnect', () => {
         await TestHelper.tearDown();
     });
 
-    it('handle doReconnect', async () => {
+    it('handle doReconnect base case', async () => {
         const state = {...initialState};
         const testStore = await mockStore(state);
         const timestamp = 1000;
         const expectedActions = [
             'BATCH_WS_SUCCESS',
-        ];
-        const expectedMissingActions = [
             'BATCH_WS_RECONNECT',
+            'BATCHING_REDUCER.BATCH',
         ];
 
         mockConfigRequest();
@@ -197,7 +216,9 @@ describe('Actions.Websocket doReconnect', () => {
         await TestHelper.wait(300);
         const actionTypes = testStore.getActions().map((a) => a.type);
         expect(actionTypes).toEqual(expectedActions);
-        expect(actionTypes).not.toEqual(expect.arrayContaining(expectedMissingActions));
+
+        const fetchBindingsAction = testStore.getActions()[2].payload[1];
+        expect(fetchBindingsAction.type).toEqual('FAILED_TO_FETCH_APP_BINDINGS');
     });
 
     it('handle doReconnect after the current channel was archived or the user left it', async () => {
@@ -260,9 +281,8 @@ describe('Actions.Websocket doReconnect', () => {
         const timestamp = 1000;
         const expectedActions = [
             'BATCH_WS_SUCCESS',
-        ];
-        const expectedMissingActions = [
             'BATCH_WS_RECONNECT',
+            'BATCHING_REDUCER.BATCH',
         ];
 
         mockConfigRequest({ExperimentalViewArchivedChannels: 'true'});
@@ -282,7 +302,6 @@ describe('Actions.Websocket doReconnect', () => {
 
         const actions = testStore.getActions().map((a) => a.type);
         expect(actions).toEqual(expect.arrayContaining(expectedActions));
-        expect(actions).not.toEqual(expect.arrayContaining(expectedMissingActions));
     });
 
     it('handle doReconnect after the current channel was archived and setting is off', async () => {
