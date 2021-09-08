@@ -11,8 +11,8 @@ import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 type DrawerItemProps = {
     centered?: boolean;
     defaultMessage?: string;
-    i18nId: string;
-    iconName: string;
+    i18nId?: string;
+    iconName?: string;
     isDestructor?: boolean;
     labelComponent?: ReactNode;
     leftComponent?: ReactNode;
