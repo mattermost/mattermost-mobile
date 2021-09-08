@@ -87,7 +87,7 @@ NSString* const NOTIFICATION_UPDATE_BADGE_ACTION = @"update_badge";
   NSString* channelId = [userInfo objectForKey:@"channel_id"];
   NSString* rootId = [userInfo objectForKey:@"root_id"];
   NSString* ackId = [userInfo objectForKey:@"ack_id"];
-  NSString* isCRTEnabled = [userInfo objectForKey:@"is_crt_enabled"];
+  BOOL isCRTEnabled = [[userInfo objectForKey:@"is_crt_enabled"] isEqualToString:@"true"];
   
   RuntimeUtils *utils = [[RuntimeUtils alloc] init];
   
@@ -103,13 +103,11 @@ NSString* const NOTIFICATION_UPDATE_BADGE_ACTION = @"update_badge";
   }];
 }
 
--(void)cleanNotificationsFromChannel:(NSString *)channelId :(NSString *)rootId :(NSString *)isCRTEnabled {
+-(void)cleanNotificationsFromChannel:(NSString *)channelId :(NSString *)rootId :(BOOL)isCRTEnabled {
   if ([UNUserNotificationCenter class]) {
     UNUserNotificationCenter *center = [UNUserNotificationCenter currentNotificationCenter];
     [center getDeliveredNotificationsWithCompletionHandler:^(NSArray<UNNotification *> * _Nonnull notifications) {
       NSMutableArray<NSString *> *notificationIds = [NSMutableArray new];
-      
-      BOOL threadClear = rootId != nil;
 
       for (UNNotification *prevNotification in notifications) {
         UNNotificationRequest *notificationRequest = [prevNotification request];
@@ -120,11 +118,14 @@ NSString* const NOTIFICATION_UPDATE_BADGE_ACTION = @"update_badge";
         NSString* rId = [[notificationContent userInfo] objectForKey:@"root_id"];
         if ([cId isEqualToString: channelId]) {
           BOOL doesNotificationMatch;
-          if (threadClear) {
-            doesNotificationMatch = pId == rootId || rId == rootId;
-          } else if ([isCRTEnabled isEqualToString:@"true"]) {
-            // With CRT ON, remove notifications without rootId
-            doesNotificationMatch = rId != nil;
+          if (isCRTEnabled) {
+            // Check if it is a thread notification
+            if (rootId != nil) {
+              doesNotificationMatch = [pId isEqualToString: rootId] || [rId isEqualToString: rootId];
+            } else {
+              // With CRT ON, remove notifications without rootId
+              doesNotificationMatch = rId == nil;
+            }
           } else {
             // Default condition, without CRT
             doesNotificationMatch = true;
