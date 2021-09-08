@@ -43,6 +43,8 @@ const AccountScreen = () => {
 
     const goToSavedMessages = () => {};
 
+    const serverName = 'Community Server'; //fixme: get this value right
+
     //fixme: User Status is being refreshed at multiple places - consider storing this value in a state
 
     return (
@@ -119,9 +121,16 @@ const AccountScreen = () => {
                         />
                         <FormattedText
                             id={t('account.logout_from')}
-                            defaultMessage={'Log out of Community Server'}
-
-                            // style={[style.label, destructor, centered ? style.centerLabel : {}]}
+                            defaultMessage={'Log out of {serverName}'}//fixme: construct server name
+                            values={{serverName}}
+                            style={{
+                                color: changeOpacity(theme.centerChannelColor, 0.64),
+                                fontSize: 12,
+                                lineHeight: 16,
+                                fontFamily: 'Open Sans',
+                                fontWeight: 'normal',
+                                marginLeft: 50,
+                            }}
                         />
                     </View>
                 </Animated.View>
