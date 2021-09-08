@@ -1,8 +1,12 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import StatusLabel from '@app/components/status_label';
+import UserStatus from '@app/components/user_status';
 import DrawerItem from '@components/drawer_item';
+import FormattedText from '@components/formatted_text';
 import {useTheme} from '@context/theme';
+import {t} from '@i18n';
 import {useRoute} from '@react-navigation/native';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import React from 'react';
@@ -15,6 +19,16 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
         container: {
             flex: 1,
             backgroundColor: theme.sidebarBg,
+        },
+        body: {
+            backgroundColor: theme.centerChannelBg,
+            width: '100%',
+            height: '60%',
+            position: 'absolute',
+            bottom: 0,
+            borderTopRightRadius: 12,
+            borderTopLeftRadius: 12,
+            overflow: 'hidden',
         },
     };
 });
@@ -29,63 +43,85 @@ const AccountScreen = () => {
 
     const goToSavedMessages = () => {};
 
+    //fixme: User Status is being refreshed at multiple places - consider storing this value in a state
+
     return (
         <SafeAreaView style={styles.container}>
             <AnimatedLayout style={{flex: 1}}>
                 <Animated.View
                     entering={entering.duration(150)}
-                    style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}
+                    style={{
+                        flex: 1,
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                    }}
                 >
-
                     <View
-                        style={{
-                            backgroundColor: theme.centerChannelBg,
-                            width: '100%',
-                            height: '60%',
-                            position: 'absolute',
-                            bottom: 0,
-                            borderTopRightRadius: 12,
-                            borderTopLeftRadius: 12,
-                            overflow: 'hidden',
-                        }}
+                        style={styles.body}
                     >
-
                         <DrawerItem
-                            testID='settings.sidebar.edit_profile.action'
+                            testID='account.status.action'
+                            labelComponent={<StatusLabel/>}
+                            leftComponent={
+                                <UserStatus
+                                    size={24}
+                                    status={'Online'}
+                                />}
+                            separator={false}
+                            onPress={goToSavedMessages} // fixme : do onPress action
+                            theme={theme}
+                        />
+                        <DrawerItem
+                            testID='account.set_custom_message.action'
+                            defaultMessage='Set a Custom Status'
+                            i18nId={t('account.set_custom_message')}
+                            iconName='emoticon-outline'
+                            onPress={goToSavedMessages}
+                            separator={true}
+                            theme={theme}
+                        />
+                        <DrawerItem
+                            testID='account.your_profile.action'
                             defaultMessage='Your Profile'
-                            i18nId='mobile.routes.edit_profile'
+                            i18nId={t('account.your_profile')}
                             iconName='account-outline'
                             onPress={goToSavedMessages}
                             separator={false}
                             theme={theme}
                         />
                         <DrawerItem
-                            testID='settings.sidebar.saved_messages.action'
+                            testID='account.saved_messages.action'
                             defaultMessage='Saved Messages'
-                            i18nId='search_header.title3'
+                            i18nId={t('account.saved_messages')}
                             iconName='bookmark-outline'
                             onPress={goToSavedMessages}
                             separator={false}
                             theme={theme}
                         />
                         <DrawerItem
-                            testID='settings.sidebar.settings.action'
+                            testID='account.settings.action'
                             defaultMessage='Settings'
-                            i18nId='mobile.routes.settings'
+                            i18nId={t('account.settings')}
                             iconName='settings-outline'
+                            onPress={goToSavedMessages}
+                            separator={true}
+                            theme={theme}
+                        />
+                        <DrawerItem
+                            testID='account.logout.action'
+                            defaultMessage='Logout'
+                            i18nId={t('account.logout')}
+                            iconName='exit-to-app'
+                            isDestructor={true}
                             onPress={goToSavedMessages}
                             separator={false}
                             theme={theme}
                         />
-                        <DrawerItem
-                            testID='settings.sidebar.logout.action'
-                            defaultMessage='Logout'
-                            i18nId='sidebar_right_menu.logout'
-                            iconName='exit-to-app'
-                            isDestructor={true}
-                            onPress={goToSavedMessages}
-                            separator={true}
-                            theme={theme}
+                        <FormattedText
+                            id={t('account.logout_from')}
+                            defaultMessage={'Log out of Community Server'}
+
+                            // style={[style.label, destructor, centered ? style.centerLabel : {}]}
                         />
                     </View>
                 </Animated.View>
