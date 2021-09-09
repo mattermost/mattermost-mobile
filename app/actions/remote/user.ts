@@ -294,7 +294,7 @@ export const fetchStatusByIds = async (serverUrl: string, userIds: string[], fet
                 const users = await database.get(Database.MM_TABLES.SERVER.USER).query(Q.where('id', Q.oneOf(userIds))).fetch() as UserModel[];
                 for (const user of users) {
                     const status = statuses.find((s) => s.user_id === user.id);
-                    user.prepareSatus(status?.status || General.OFFLINE);
+                    user.prepareStatus(status?.status || General.OFFLINE);
                 }
 
                 await operator.batchRecords(users);
@@ -380,7 +380,7 @@ export const fetchUsersByUsernames = async (serverUrl: string, usernames: string
     }
 };
 
-export const fetchMissinProfilesByIds = async (serverUrl: string, userIds: string[]) => {
+export const fetchMissingProfilesByIds = async (serverUrl: string, userIds: string[]) => {
     const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
     if (!operator) {
         return {error: `${serverUrl} database not found`};
@@ -399,7 +399,7 @@ export const fetchMissinProfilesByIds = async (serverUrl: string, userIds: strin
     }
 };
 
-export const fetchMissinProfilesByUsernames = async (serverUrl: string, usernames: string[]) => {
+export const fetchMissingProfilesByUsernames = async (serverUrl: string, usernames: string[]) => {
     const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
     if (!operator) {
         return {error: `${serverUrl} database not found`};
