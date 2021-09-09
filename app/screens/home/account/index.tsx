@@ -48,7 +48,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             color: changeOpacity(theme.centerChannelColor, 0.64),
             fontSize: 12,
             lineHeight: 16,
-            fontFamily: 'Open Sans',
+            fontFamily: 'OpenSans',
             fontWeight: 'normal',
             marginLeft: 50,
         },
@@ -56,8 +56,8 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             color: theme.centerChannelColor,
             fontSize: 16,
             lineHeight: 24,
-            fontFamily: 'Open Sans',
-            fontWeight: 'normal',
+            fontFamily: 'OpenSans',
+            fontWeight: '400',
         },
         animatedView: {
             flex: 1,
@@ -94,8 +94,12 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             fontSize: 16,
             lineHeight: 24,
             color: '#FFFFFF',
-            fontFamily: 'Open Sans',
+            fontFamily: 'OpenSans',
             marginTop: 4,
+        },
+        divider: {
+            backgroundColor: changeOpacity(theme.centerChannelColor, 0.2),
+            height: 1,
         },
     };
 });
@@ -191,6 +195,7 @@ const AccountScreen = ({currentUser}: AccountScreenProps) => {
                             separator={true}
                             theme={theme}
                         />
+                        <View style={styles.divider}/>
                         <DrawerItem
                             testID='account.your_profile.action'
                             labelComponent={getLabelComponent(t('account.your_profile'), 'Your Profile')}
