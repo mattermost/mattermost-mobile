@@ -47,7 +47,6 @@ function mapStateToProps(state) {
     const unreadsOnTop = true;
 
     const unreadChannelIds = getSortedUnreadChannelIds(state, lastUnreadChannel);
-    const unreadChannels = getUnreadChannels(state, lastUnreadChannel);
     const favoriteChannelIds = getSortedFavoriteChannelIds(state);
     const orderedChannelIds = filterZeroUnreads(getOrderedChannelIds(
         state,
@@ -59,6 +58,7 @@ function mapStateToProps(state) {
     ));
 
     // Grab our categories & channels
+    const unreadChannels = getUnreadChannels(state, lastUnreadChannel);
     const categories = getCategoriesForCurrentTeam(state);
     const channelsByCategory = getChannelsByCategoryForCurrentTeam(state);
     const currentChannelId = getCurrentChannelId(state);

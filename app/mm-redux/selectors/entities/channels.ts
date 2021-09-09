@@ -598,6 +598,7 @@ export const getUnreadChannels: (b: GlobalState, a?: Channel | null) => Array<Ch
     });
     return allUnreadChannels;
 });
+
 export const getMapAndSortedUnreadChannelIds: (c: GlobalState, b: Channel, a: SortingType) => Array<string> = createIdsSelector(getUnreadChannels, getCurrentUser, getMyChannelMemberships, getLastPostPerChannel, (state: GlobalState, lastUnreadChannel: Channel, sorting: SortingType = 'alpha') => sorting, (channels, currentUser, myMembers, lastPosts: RelationOneToOne<Channel, Post>, sorting: SortingType) => {
     return mapAndSortChannelIds(channels, currentUser, myMembers, lastPosts, sorting, true);
 });

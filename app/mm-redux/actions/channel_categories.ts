@@ -52,12 +52,14 @@ export function patchCategory(categoryId: string, patch: Partial<ChannelCategory
             ...patch,
         };
 
+        // Optimistic Client
+        dispatch({
+            type: ChannelCategoryTypes.RECEIVED_CATEGORY,
+            data: patchedCategory,
+        });
+
         try {
             await Client4.updateChannelCategory(currentUserId, category.team_id, patchedCategory);
-            dispatch({
-                type: ChannelCategoryTypes.RECEIVED_CATEGORY,
-                data: patchedCategory,
-            });
         } catch (error) {
             dispatch({
                 type: ChannelCategoryTypes.RECEIVED_CATEGORY,

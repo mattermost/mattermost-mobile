@@ -118,6 +118,7 @@
     "@types/react-test-renderer": "17.0.1",
     "@types/shallow-equals": "1.0.0",
     "@types/tinycolor2": "1.4.3",
+    "@types/underscore": "1.11.3",
     "@types/url-parse": "1.4.3",
     "@typescript-eslint/eslint-plugin": "4.28.5",
     "@typescript-eslint/parser": "4.28.5",

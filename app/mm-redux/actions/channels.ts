@@ -24,7 +24,7 @@ import {compareNotifyProps, getChannelsIdForTeam, getChannelByName as selectChan
 
 import {General, Preferences} from '../constants';
 
-import {addChannelToCategory} from './channel_categories';
+import {addChannelToCategory, addChannelToInitialCategory} from './channel_categories';
 import {logError} from './errors';
 import {bindClientFunc, forceLogoutIfNecessary} from './helpers';
 import {savePreferences, deletePreferences} from './preferences';
@@ -238,6 +238,9 @@ export function createGroupChannel(userIds: Array<string>): ActionFunc {
                 data: profilesInChannel,
             },
         ]));
+
+        dispatch(addChannelToInitialCategory(created, true));
+
         dispatch(loadRolesIfNeeded((member && member.roles && member.roles.split(' ')) || []));
 
         return {data: created};
@@ -711,10 +714,10 @@ export function leaveChannel(channelId: string): ActionFunc {
     };
 }
 
-export function joinChannel(userId: string, teamId: string, channelId: string, channelName: string): ActionFunc {
+export function joinChannel(userId: string, teamId: string, channelId: string, channelName: string, categoryId?: string): ActionFunc {
     return async (dispatch: DispatchFunc, getState: GetStateFunc) => {
         let member: ChannelMembership | undefined | null;
-        let channel;
+        let channel: Channel | undefined;
         try {
             if (channelId) {
                 member = await Client4.addToChannel(userId, channelId);
@@ -745,6 +748,11 @@ export function joinChannel(userId: string, teamId: string, channelId: string, c
                 data: member,
             },
         ]));
+
+        if (categoryId) {
+            dispatch(addChannelToCategory(categoryId, channel!.id));
+        }
+
         if (member) {
             dispatch(loadRolesIfNeeded(member.roles.split(' ')));
         }

@@ -51,6 +51,7 @@ export default class MoreChannels extends PureComponent {
         currentTeamId: PropTypes.string.isRequired,
         theme: PropTypes.object.isRequired,
         canShowArchivedChannels: PropTypes.bool.isRequired,
+        categoryId: PropTypes.string,
     };
 
     static defaultProps = {

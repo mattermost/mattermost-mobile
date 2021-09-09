@@ -15,6 +15,7 @@ import {
     TouchableHighlight,
     View,
 } from 'react-native';
+import {throttle} from 'underscore';
 
 import {showModal} from '@actions/navigation';
 import CompassIcon from '@components/compass_icon';
@@ -69,8 +70,8 @@ export default class List extends PureComponent {
         this.combinedActionsRef = React.createRef();
 
         this.state = {
-            sections: this.buildSections(props),
-            categorySections: this.buildCategorySections(),
+            sections: this.props.showLegacySidebar ? this.buildSections(props) : [],
+            categorySections: this.props.showLegacySidebar ? [] : this.buildCategorySections(),
             showIndicator: false,
             width: 0,
         };
@@ -104,26 +105,28 @@ export default class List extends PureComponent {
             canCreatePrivateChannels,
             orderedChannelIds,
             unreadChannelIds,
-            channelsByCategory,
             categories,
-            showLegacySidebar,
         } = prevProps;
 
-        if (this.props.canCreatePrivateChannels !== canCreatePrivateChannels ||
+        // If legacy sidebar, continue with legacy updates
+        if (this.props.showLegacySidebar) {
+            if (this.props.canCreatePrivateChannels !== canCreatePrivateChannels ||
             this.props.unreadChannelIds !== unreadChannelIds ||
-            this.props.orderedChannelIds !== orderedChannelIds ||
-            this.props.channelsByCategory !== channelsByCategory ||
-            this.props.categories !== categories ||
-            this.props.showLegacySidebar !== showLegacySidebar) {
-            this.setSections(this.buildSections(this.props));
-            this.setCategorySections(this.buildCategorySections());
-        }
+            this.props.orderedChannelIds !== orderedChannelIds) {
+                this.setSections(this.buildSections(this.props));
+            }
 
-        if (prevState.sections !== this.state.sections && this.listRef?._wrapperListRef?.getListRef()._viewabilityHelper) { //eslint-disable-line
-            this.listRef.recordInteraction();
-            this.updateUnreadIndicators({
+            if (prevState.sections !== this.state.sections && this.listRef?._wrapperListRef?.getListRef()._viewabilityHelper) { //eslint-disable-line
+                this.listRef.recordInteraction();
+                this.updateUnreadIndicators({
                 viewableItems: Array.from(this.listRef._wrapperListRef.getListRef()._viewabilityHelper._viewableItems.values()) //eslint-disable-line
-            });
+                });
+            }
+        } else if (
+            JSON.stringify(this.props.categories) !== JSON.stringify(categories) ||
+            this.props.unreadChannelIds !== unreadChannelIds) {
+            // Rebuild sections only if categories or unreads have changed
+            this.setCategorySections(this.buildCategorySections());
         }
     }
 
@@ -215,7 +218,7 @@ export default class List extends PureComponent {
         const actions = [];
 
         if (canJoinPublicChannels) {
-            actions.push(this.goToMoreChannels);
+            actions.push(() => this.goToMoreChannels(category.id));
             options.push({text: moreChannelsText, icon: 'globe'});
         }
 
@@ -302,12 +305,13 @@ export default class List extends PureComponent {
         showModal(screen, title, passProps, options);
     });
 
-    goToMoreChannels = preventDoubleTap(() => {
+    goToMoreChannels = preventDoubleTap((categoryId) => {
         const {intl} = this.context;
         const screen = 'MoreChannels';
         const title = intl.formatMessage({id: 'more_channels.title', defaultMessage: 'More Channels'});
         const passProps = {
             closeButton: this.closeButton,
+            categoryId,
         };
 
         EventEmitter.emit(NavigationTypes.CLOSE_MAIN_SIDEBAR);
@@ -401,8 +405,12 @@ export default class List extends PureComponent {
         );
     };
 
+    throttledCollapse = (id, collapsed) => {
+        throttle(this.props.onCollapseCategory(id, collapsed), 2500);
+    }
+
     renderCategoryHeader = ({section}) => {
-        const {styles, onCollapseCategory} = this.props;
+        const {styles} = this.props;
         const {action, id, name, collapsed, type, data} = section;
         const {intl} = this.context;
         const anchor = (id === 'sidebar.types.recent' || id === 'mobile.channel_list.channels');
@@ -446,7 +454,7 @@ export default class List extends PureComponent {
         }
 
         return (
-            <TouchableHighlight onPress={() => onCollapseCategory(id, !collapsed)}>
+            <TouchableHighlight onPress={() => this.throttledCollapse(id, !collapsed)}>
                 {header}
             </TouchableHighlight>
         );
