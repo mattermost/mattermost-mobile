@@ -4,7 +4,7 @@
 import {withDatabase} from '@nozbe/watermelondb/DatabaseProvider';
 import withObservables from '@nozbe/with-observables';
 import {useRoute} from '@react-navigation/native';
-import React, {useCallback} from 'react';
+import React, {useCallback, useEffect, useState} from 'react';
 import {StyleSheet, Text, TextStyle, View} from 'react-native';
 import Animated, {AnimatedLayout, FadeInLeft, FadeInRight} from 'react-native-reanimated';
 import {SafeAreaView} from 'react-native-safe-area-context';
@@ -17,12 +17,14 @@ import StatusLabel from '@components/status_label';
 import UserStatus from '@components/user_status';
 import {MM_TABLES, SYSTEM_IDENTIFIERS} from '@constants/database';
 import {useTheme} from '@context/theme';
+import DatabaseManager from '@database/manager';
 import {t} from '@i18n';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
-import type {WithDatabaseArgs} from '@typings/database/database';
+import type ServersModel from '@typings/database/models/app/servers';
 import type SystemModel from '@typings/database/models/servers/system';
 import type UserModel from '@typings/database/models/servers/user';
+import type {WithDatabaseArgs} from '@typings/database/database';
 
 const {SERVER: {SYSTEM, USER}, APP: {SERVERS}} = MM_TABLES;
 
@@ -105,16 +107,26 @@ type AccountScreenProps = {
 const AccountScreen = ({currentUser}: AccountScreenProps) => {
     const theme = useTheme();
     const route = useRoute();
+    const [serverName, setServerName] = useState('');
     const params = route.params! as { direction: string };
     const entering = params.direction === 'left' ? FadeInLeft : FadeInRight;
 
     const styles = getStyleSheet(theme);
 
+    // To retrieve the server display name
+    useEffect(() => {
+        const getServerDisplayName = async () => {
+            const appDatabase = DatabaseManager.appDatabase?.database;
+            const servers = await appDatabase!.get(SERVERS).query().fetch() as unknown as ServersModel[];
+            if (servers?.length > 0) {
+                const curServer = servers.reduce((a, b) => (b.lastActiveAt > a.lastActiveAt ? b : a));
+                setServerName(curServer.displayName);
+            }
+        };
+        getServerDisplayName();
+    }, []);
+
     const goToSavedMessages = () => {};
-
-    const serverName = 'Community Server'; //fixme: get this value right
-
-    //fixme: User Status is being refreshed at multiple places - consider storing this value in a state
 
     const firstName = currentUser.firstName;
     const lastName = currentUser.lastName;
