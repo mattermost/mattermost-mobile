@@ -24,7 +24,7 @@ import type {WithDatabaseArgs} from '@typings/database/database';
 import type SystemModel from '@typings/database/models/servers/system';
 import type UserModel from '@typings/database/models/servers/user';
 
-const {SERVER: {SYSTEM, USER}} = MM_TABLES;
+const {SERVER: {SYSTEM, USER}, APP: {SERVERS}} = MM_TABLES;
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     return {
@@ -116,9 +116,11 @@ const AccountScreen = ({currentUser}: AccountScreenProps) => {
 
     //fixme: User Status is being refreshed at multiple places - consider storing this value in a state
 
-    const fullName = 'Michael Scott';
-    const nickName = 'Mike';
-    const userName = '@michael.scott';
+    const firstName = currentUser.firstName;
+    const lastName = currentUser.lastName;
+    const nickName = currentUser.nickname ? ` (${currentUser.nickname})` : '';
+    const title = `${firstName} ${lastName}${nickName}`;
+    const userName = `@${currentUser.username}`;
 
     const getLabelComponent = useCallback((id: string, defaultMessage: string, otherStyle?: TextStyle) => {
         return (
@@ -149,17 +151,21 @@ const AccountScreen = ({currentUser}: AccountScreenProps) => {
                             statusStyle={styles.statusStyle}
                             statusSize={24}
                         />
-                        <Text style={styles.textFullName}>{`${fullName}(${nickName})`}</Text>
+                        <Text style={styles.textFullName}>{title}</Text>
                         <Text style={styles.textUserName}>{`${userName}`}</Text>
                     </View>
                     <View style={styles.body}>
                         <DrawerItem
                             testID='account.status.action'
-                            labelComponent={<StatusLabel labelStyle={styles.menuLabel}/>}
+                            labelComponent={
+                                <StatusLabel
+                                    labelStyle={styles.menuLabel}
+                                    status={currentUser.status}
+                                />}
                             leftComponent={
                                 <UserStatus
                                     size={24}
-                                    status={'Online'}
+                                    status={currentUser.status}
                                 />}
                             separator={false}
                             onPress={goToSavedMessages} // fixme : do onPress action
