@@ -112,9 +112,16 @@ const AccountScreen = ({currentUser}: AccountScreenProps) => {
                         <ProfilePicture
                             size={120}
                             iconSize={28}
-                            showStatus={false}
+                            showStatus={true}
                             author={currentUser}
                             testID={'account.profile_picture'}
+                            statusStyle={{
+                                right: 10,
+                                bottom: 10,
+                                borderColor: theme.sidebarBg,
+                                backgroundColor: theme.sidebarBg,
+                            }}
+                            statusSize={24}
                         />
                         <Text
                             style={{
