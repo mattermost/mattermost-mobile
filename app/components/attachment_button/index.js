@@ -179,7 +179,7 @@ export default class AttachmentButton extends PureComponent {
 
     attachFileFromLibrary = async () => {
         const options = {
-            quality: 0.8,
+            quality: 1,
             mediaType: 'mixed',
             includeBase64: false,
         };

@@ -17,7 +17,7 @@ import HeaderReply from './reply';
 import HeaderTag from './tag';
 
 import type {Post} from '@mm-redux/types/posts';
-import type {Theme} from '@mm-redux/types/preferences';
+import type {Theme} from '@mm-redux/types/theme';
 
 type HeaderProps = {
     commentCount: number;

@@ -20,7 +20,7 @@ exports[`Settings SelectTimezone should match snapshot 1`] = `
   <View
     style={
       Object {
-        "backgroundColor": "#1153ab",
+        "backgroundColor": "#192a4d",
         "height": 44,
         "paddingLeft": 8,
         "width": "100%",

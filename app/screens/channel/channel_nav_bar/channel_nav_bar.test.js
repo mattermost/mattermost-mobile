@@ -32,7 +32,7 @@ describe('ChannelNavBar', () => {
         openMainSidebar: jest.fn(),
         openSettingsSidebar: jest.fn(),
         onPress: jest.fn(),
-        theme: Preferences.THEMES.default,
+        theme: Preferences.THEMES.denim,
     };
 
     test('should match, full snapshot', () => {

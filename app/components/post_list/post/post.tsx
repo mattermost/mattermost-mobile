@@ -26,7 +26,7 @@ import PreHeader from './pre_header';
 import SystemMessage from './system_message';
 
 import type {Post as PostType} from '@mm-redux/types/posts';
-import type {Theme} from '@mm-redux/types/preferences';
+import type {Theme} from '@mm-redux/types/theme';
 
 type PostProps = {
     canDelete: boolean;

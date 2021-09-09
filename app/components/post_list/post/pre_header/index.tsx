@@ -9,7 +9,7 @@ import FormattedText from '@components/formatted_text';
 import {t} from '@utils/i18n';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 
-import type {Theme} from '@mm-redux/types/preferences';
+import type {Theme} from '@mm-redux/types/theme';
 
 type PreHeaderProps = {
     isConsecutivePost?: boolean;

@@ -21,7 +21,7 @@ describe('ChannelAddMembers', () => {
         currentTeamId: 'current_team_id',
         currentUserId: 'current_user_id',
         profilesNotInChannel: [],
-        theme: Preferences.THEMES.default,
+        theme: Preferences.THEMES.denim,
         componentId: 'component-id',
     };
 

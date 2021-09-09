@@ -60,27 +60,6 @@ describe('mapStateToProps', () => {
 
     const baseOwnProps = {};
 
-    test('haveIChannelPermission is not called when isMinimumServerVersion is not 5.22v', () => {
-        const state = {...baseState};
-        state.entities.general.serverVersion = '5.21';
-
-        mapStateToProps(state, baseOwnProps);
-        expect(isMinimumServerVersion(state.entities.general.serverVersion, 5, 22)).toBe(false);
-
-        expect(roleSelectors.haveIChannelPermission).not.toHaveBeenCalledWith(state, {
-            channel: undefined,
-            team: undefined,
-            permission: Permissions.CREATE_POST,
-            default: true,
-        });
-
-        expect(roleSelectors.haveIChannelPermission).not.toHaveBeenCalledWith(state, {
-            channel: undefined,
-            permission: Permissions.USE_CHANNEL_MENTIONS,
-            default: true,
-        });
-    });
-
     test('haveIChannelPermission is called when isMinimumServerVersion is 5.22v', () => {
         const state = {...baseState};
         state.entities.general.serverVersion = '5.22';

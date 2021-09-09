@@ -38,7 +38,7 @@ exports[`EditChannelInfo should match snapshot 1`] = `
       <View
         style={
           Object {
-            "backgroundColor": "rgba(61,60,64,0.06)",
+            "backgroundColor": "rgba(63,67,80,0.06)",
             "flex": 1,
             "paddingTop": 30,
           }
@@ -51,7 +51,7 @@ exports[`EditChannelInfo should match snapshot 1`] = `
               id="channel_modal.name"
               style={
                 Object {
-                  "color": "#3d3c40",
+                  "color": "#3f4350",
                   "fontSize": 14,
                   "marginLeft": 15,
                 }
@@ -79,10 +79,10 @@ exports[`EditChannelInfo should match snapshot 1`] = `
                   "id": "channel_modal.nameEx",
                 }
               }
-              placeholderTextColor="rgba(61,60,64,0.5)"
+              placeholderTextColor="rgba(63,67,80,0.5)"
               style={
                 Object {
-                  "color": "#3d3c40",
+                  "color": "#3f4350",
                   "fontSize": 14,
                   "height": 40,
                   "paddingHorizontal": 15,
@@ -108,7 +108,7 @@ exports[`EditChannelInfo should match snapshot 1`] = `
               id="channel_modal.purpose"
               style={
                 Object {
-                  "color": "#3d3c40",
+                  "color": "#3f4350",
                   "fontSize": 14,
                   "marginLeft": 15,
                 }
@@ -119,7 +119,7 @@ exports[`EditChannelInfo should match snapshot 1`] = `
               id="channel_modal.optional"
               style={
                 Object {
-                  "color": "rgba(61,60,64,0.5)",
+                  "color": "rgba(63,67,80,0.5)",
                   "fontSize": 14,
                   "marginLeft": 5,
                 }
@@ -148,11 +148,11 @@ exports[`EditChannelInfo should match snapshot 1`] = `
                   "id": "channel_modal.purposeEx",
                 }
               }
-              placeholderTextColor="rgba(61,60,64,0.5)"
+              placeholderTextColor="rgba(63,67,80,0.5)"
               style={
                 Array [
                   Object {
-                    "color": "#3d3c40",
+                    "color": "#3f4350",
                     "fontSize": 14,
                     "height": 40,
                     "paddingHorizontal": 15,
@@ -174,7 +174,7 @@ exports[`EditChannelInfo should match snapshot 1`] = `
               id="channel_modal.descriptionHelp"
               style={
                 Object {
-                  "color": "rgba(61,60,64,0.5)",
+                  "color": "rgba(63,67,80,0.5)",
                   "fontSize": 14,
                   "marginHorizontal": 15,
                   "marginTop": 10,
@@ -197,7 +197,7 @@ exports[`EditChannelInfo should match snapshot 1`] = `
             id="channel_modal.header"
             style={
               Object {
-                "color": "#3d3c40",
+                "color": "#3f4350",
                 "fontSize": 14,
                 "marginLeft": 15,
               }
@@ -208,7 +208,7 @@ exports[`EditChannelInfo should match snapshot 1`] = `
             id="channel_modal.optional"
             style={
               Object {
-                "color": "rgba(61,60,64,0.5)",
+                "color": "rgba(63,67,80,0.5)",
                 "fontSize": 14,
                 "marginLeft": 5,
               }
@@ -238,11 +238,11 @@ exports[`EditChannelInfo should match snapshot 1`] = `
                 "id": "channel_modal.headerEx",
               }
             }
-            placeholderTextColor="rgba(61,60,64,0.5)"
+            placeholderTextColor="rgba(63,67,80,0.5)"
             style={
               Array [
                 Object {
-                  "color": "#3d3c40",
+                  "color": "#3f4350",
                   "fontSize": 14,
                   "height": 40,
                   "paddingHorizontal": 15,
@@ -270,7 +270,7 @@ exports[`EditChannelInfo should match snapshot 1`] = `
             id="channel_modal.headerHelp"
             style={
               Object {
-                "color": "rgba(61,60,64,0.5)",
+                "color": "rgba(63,67,80,0.5)",
                 "fontSize": 14,
                 "marginHorizontal": 15,
                 "marginTop": 10,

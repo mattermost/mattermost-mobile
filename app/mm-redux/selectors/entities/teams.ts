@@ -3,7 +3,7 @@
 import * as reselect from 'reselect';
 
 import {Permissions, Preferences} from '@mm-redux/constants';
-import {getConfig, getCurrentUrl, isCompatibleWithJoinViewTeamPermissions} from '@mm-redux/selectors/entities/general';
+import {getConfig, getCurrentUrl} from '@mm-redux/selectors/entities/general';
 import {get as getPreference} from '@mm-redux/selectors/entities/preferences';
 import {haveISystemPermission} from '@mm-redux/selectors/entities/roles_helpers';
 import {GlobalState} from '@mm-redux/types/store';
@@ -147,15 +147,11 @@ export const getListableTeamIds = createIdsSelector(
     getTeamMemberships,
     (state) => haveISystemPermission(state, {permission: Permissions.LIST_PUBLIC_TEAMS}),
     (state) => haveISystemPermission(state, {permission: Permissions.LIST_PRIVATE_TEAMS}),
-    isCompatibleWithJoinViewTeamPermissions,
-    (teams, myMembers, canListPublicTeams, canListPrivateTeams, compatibleWithJoinViewTeamPermissions) => {
+    (teams, myMembers, canListPublicTeams, canListPrivateTeams) => {
         return Object.keys(teams).filter((id) => {
             const team = teams[id];
             const member = myMembers[id];
-            let canList = team.allow_open_invite;
-            if (compatibleWithJoinViewTeamPermissions) {
-                canList = (canListPrivateTeams && !team.allow_open_invite) || (canListPublicTeams && team.allow_open_invite);
-            }
+            const canList = (canListPrivateTeams && !team.allow_open_invite) || (canListPublicTeams && team.allow_open_invite);
             return team.delete_at === 0 && canList && !member;
         });
     },
@@ -189,15 +185,11 @@ export const getJoinableTeamIds = createIdsSelector(
     getTeamMemberships,
     (state: GlobalState) => haveISystemPermission(state, {permission: Permissions.JOIN_PUBLIC_TEAMS}),
     (state: GlobalState) => haveISystemPermission(state, {permission: Permissions.JOIN_PRIVATE_TEAMS}),
-    isCompatibleWithJoinViewTeamPermissions,
-    (teams, myMembers, canJoinPublicTeams, canJoinPrivateTeams, compatibleWithJoinViewTeamPermissions) => {
+    (teams, myMembers, canJoinPublicTeams, canJoinPrivateTeams) => {
         return Object.keys(teams).filter((id) => {
             const team = teams[id];
             const member = myMembers[id];
-            let canJoin = team.allow_open_invite;
-            if (compatibleWithJoinViewTeamPermissions) {
-                canJoin = (canJoinPrivateTeams && !team.allow_open_invite) || (canJoinPublicTeams && team.allow_open_invite);
-            }
+            const canJoin = (canJoinPrivateTeams && !team.allow_open_invite) || (canJoinPublicTeams && team.allow_open_invite);
             return team.delete_at === 0 && canJoin && !member;
         });
     },

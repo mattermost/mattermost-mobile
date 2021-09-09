@@ -34,7 +34,7 @@ describe('user_profile', () => {
         },
         teammateNameDisplay: 'username',
         teams: [],
-        theme: Preferences.THEMES.default,
+        theme: Preferences.THEMES.denim,
         enableTimezone: false,
         isMilitaryTime: false,
         isMyUser: false,

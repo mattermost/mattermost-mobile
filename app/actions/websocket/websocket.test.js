@@ -450,32 +450,6 @@ describe('Actions.Websocket notVisibleUsersActions', () => {
         expect(actions.length).toEqual(3);
         expect(actions).toEqual(expectedAction);
     });
-
-    it('should do nothing if the server version is less than 5.23', async () => {
-        const profiles = {
-            [me.id]: me,
-            [user.id]: user,
-            [user2.id]: user2,
-            [user3.id]: user3,
-            [user4.id]: user4,
-            [user5.id]: user5,
-        };
-        Client4.serverVersion = '5.22.0';
-
-        const state = {
-            entities: {
-                users: {
-                    currentUserId: me.id,
-                    profiles,
-                },
-            },
-        };
-
-        mockGetKnownUsersRequest([user.id, user3.id]);
-
-        const actions = await notVisibleUsersActions(state);
-        expect(actions.length).toEqual(0);
-    });
 });
 
 describe('Actions.Websocket handleUserTypingEvent', () => {

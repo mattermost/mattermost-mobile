@@ -12,7 +12,7 @@ import EventEmitter from '@mm-redux/utils/event_emitter';
 import {preventDoubleTap} from '@utils/tap';
 
 export const SHARE_EXTENSION_POST_EVENT = 'share-extesion-post-event';
-const theme = Preferences.THEMES.default;
+const theme = Preferences.THEMES.denim;
 
 const PostHeaderButton = () => {
     const canUploadFiles = useSelector(canUploadFilesOnMobile);

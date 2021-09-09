@@ -26,7 +26,7 @@ describe('SettingsSidebar', () => {
             id: 'user-id',
         },
         status: 'offline',
-        theme: Preferences.THEMES.default,
+        theme: Preferences.THEMES.denim,
         isCustomStatusEnabled: false,
         isCustomStatusExpired: false,
         isCustomStatusExpirySupported: false,

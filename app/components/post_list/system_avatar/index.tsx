@@ -7,7 +7,7 @@ import {StyleSheet, View} from 'react-native';
 import CompassIcon from '@components/compass_icon';
 import {ViewTypes} from '@constants';
 
-import type {Theme} from '@mm-redux/types/preferences';
+import type {Theme} from '@mm-redux/types/theme';
 
 type Props = {
     theme: Theme;

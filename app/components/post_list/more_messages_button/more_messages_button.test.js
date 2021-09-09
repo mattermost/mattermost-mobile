@@ -19,7 +19,7 @@ import MoreMessagesButton, {
 
 describe('MoreMessagesButton', () => {
     const baseProps = {
-        theme: Preferences.THEMES.default,
+        theme: Preferences.THEMES.denim,
         postIds: [],
         channelId: 'channel-id',
         unreadCount: 10,

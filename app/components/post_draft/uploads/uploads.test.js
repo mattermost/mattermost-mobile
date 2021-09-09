@@ -18,7 +18,7 @@ describe('Uploads', () => {
         initUploadFiles: jest.fn(),
         maxFileSize: 100,
         screenId: 'Channel',
-        theme: Preferences.THEMES.default,
+        theme: Preferences.THEMES.denim,
     };
 
     test('handleUploadFiles should return early if screen is not the top screen', async () => {

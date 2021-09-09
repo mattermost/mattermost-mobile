@@ -29,7 +29,7 @@ describe('Global Thread List', () => {
         loadMoreThreads: jest.fn(),
         markAllAsRead,
         testID,
-        theme: Preferences.THEMES.default,
+        theme: Preferences.THEMES.denim,
         threadIds: ['thread1'],
         viewingUnreads: true,
         viewAllThreads,

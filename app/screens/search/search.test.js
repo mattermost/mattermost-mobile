@@ -30,7 +30,7 @@ describe('Search', () => {
         archivedPostIds: [],
         recent: [],
         isSearchGettingMore: true,
-        theme: Preferences.THEMES.default,
+        theme: Preferences.THEMES.denim,
         enableDateSuggestion: true,
         timezoneOffsetInSeconds: 0,
         viewArchivedChannels: false,
