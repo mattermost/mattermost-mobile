@@ -7,6 +7,7 @@ import {autoUpdateTimezone, getDeviceTimezone, isTimezoneEnabled} from '@actions
 import {General, Database} from '@constants';
 import DatabaseManager from '@database/manager';
 import NetworkManager from '@init/network_manager';
+import WebsocketManager from '@init/websocket_manager';
 import {queryDeviceToken} from '@queries/app/global';
 import {queryCurrentUserId, queryCommonSystemValues} from '@queries/servers/system';
 import {getCSRFFromCookie} from '@utils/security';
@@ -16,6 +17,7 @@ import type {LoginArgs} from '@typings/database/database';
 import {logError} from './error';
 import {loginEntry} from './entry';
 import {fetchDataRetentionPolicy} from './systems';
+import {getServerCredentials} from '@app/init/credentials';
 
 const HTTP_UNAUTHORIZED = 401;
 
@@ -42,6 +44,11 @@ export const completeLogin = async (serverUrl: string, user: UserProfile) => {
         fetchDataRetentionPolicy(serverUrl);
     }
 
+    // Start websocket
+    const credentials = await getServerCredentials(serverUrl);
+    if (credentials?.token) {
+        WebsocketManager.createClient(serverUrl, credentials.token);
+    }
     return null;
 };
 

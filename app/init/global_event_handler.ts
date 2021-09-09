@@ -14,6 +14,7 @@ import * as analytics from '@init/analytics';
 import {getServerCredentials, removeServerCredentials} from '@init/credentials';
 import {getLaunchPropsFromDeepLink, relaunchApp} from '@init/launch';
 import NetworkManager from '@init/network_manager';
+import WebsocketManager from '@init/websocket_manager';
 import PushNotifications from '@init/push_notifications';
 import {queryCurrentUser} from '@queries/servers/user';
 import {LaunchType} from '@typings/launch';
@@ -84,8 +85,8 @@ class GlobalEventHandler {
     onLogout = async (serverUrl: string) => {
         await removeServerCredentials(serverUrl);
 
-        // TODO WebSocket: invalidate WebSocket client
         NetworkManager.invalidateClient(serverUrl);
+        WebsocketManager.invalidateClient(serverUrl);
         await DatabaseManager.deleteServerDatabase(serverUrl);
 
         const analyticsClient = analytics.get(serverUrl);
