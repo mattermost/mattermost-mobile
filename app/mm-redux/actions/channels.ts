@@ -751,6 +751,8 @@ export function joinChannel(userId: string, teamId: string, channelId: string, c
 
         if (categoryId) {
             dispatch(addChannelToCategory(categoryId, channel!.id));
+        } else {
+            dispatch(addChannelToInitialCategory(channel!));
         }
 
         if (member) {

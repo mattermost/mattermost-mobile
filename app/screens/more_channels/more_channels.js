@@ -1,6 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+/* eslint-disable max-lines */
 import PropTypes from 'prop-types';
 import React, {PureComponent} from 'react';
 import {intlShape} from 'react-intl';
@@ -268,7 +269,7 @@ export default class MoreChannels extends PureComponent {
         this.setState({adding: true});
 
         const channel = channels.find((c) => c.id === id);
-        const result = await actions.joinChannel(currentUserId, currentTeamId, id);
+        const result = await actions.joinChannel(currentUserId, currentTeamId, id, '', this.props.categoryId);
 
         if (result.error) {
             alertErrorWithFallback(

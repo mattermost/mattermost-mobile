@@ -503,7 +503,7 @@ export function makeGetChannelIdsForCategory() {
 // with inactive DMs/GMs and archived channels filtered out.
 export function makeFilterAndSortChannelsForCategory() {
     const filterArchivedChannels = makeFilterArchivedChannels();
-    const filterAutoclosedDMs = makeFilterAutoclosedDMs();
+    const filterAutoclosedDMs = legacyMakeFilterAutoclosedDMs();
     const filterManuallyClosedDMs = makeFilterManuallyClosedDMs();
     const filterUnreadChannels = makeFilterUnreadChannels();
     const sortChannels = makeSortChannels();
