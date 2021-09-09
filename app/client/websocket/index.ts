@@ -54,6 +54,7 @@ export default class WebSocketClient {
     }
 
     public async initialize(opts = {}) {
+        console.log('WSC: init');
         const defaults = {
             forceConnection: true,
         };
@@ -112,15 +113,29 @@ export default class WebSocketClient {
             url = `${connectionUrl}?connection_id=${this.connectionId}&sequence_number=${this.serverSequence}`;
         }
 
+        // Manually changing protocol since getOrCreateWebsocketClient does not accept http/s
+        if (url.startsWith('https:')) {
+            url = 'wss:' + url.substr('https:'.length);
+        }
+
+        if (url.startsWith('http:')) {
+            url = 'ws:' + url.substr('http:'.length);
+        }
+
         if (this.connectFailCount === 0) {
             console.log('websocket connecting to ' + url); //eslint-disable-line no-console
         }
 
-        const {client} = await getOrCreateWebSocketClient(url, {headers: {origin}});
-
-        this.conn = client;
+        try {
+            const {client} = await getOrCreateWebSocketClient(url, {headers: {origin}});
+            this.conn = client;
+        } catch (error) {
+            console.log(error);
+            return;
+        }
 
         this.conn!.onOpen(() => {
+            console.log('WSC: onOpen');
             this.lastConnect = Date.now();
 
             // No need to reset sequence number here.
@@ -149,6 +164,7 @@ export default class WebSocketClient {
         });
 
         this.conn!.onClose(() => {
+            console.log('WSC: onClose');
             const now = Date.now();
             if (this.lastDisconnect < this.lastConnect) {
                 this.lastDisconnect = now;
@@ -198,6 +214,8 @@ export default class WebSocketClient {
         });
 
         this.conn!.onError((evt: any) => {
+            console.log('WSC: on error');
+            console.log(evt);
             if (this.connectFailCount <= 1) {
                 console.log('websocket error'); //eslint-disable-line no-console
                 console.log(evt); //eslint-disable-line no-console
@@ -206,9 +224,15 @@ export default class WebSocketClient {
             if (this.errorCallback) {
                 this.errorCallback(evt);
             }
+
+            // Not sure if needed or not. In theory, whenever there is an error, it should also call close (and therefore, onClose)
+            // but I haven't seen that happening.
+            //this.conn?.close()
         });
 
         this.conn!.onMessage((evt: any) => {
+            console.log('WSC: on message');
+            console.log(evt);
             const msg = JSON.parse(evt.data);
 
             // This indicates a reply to a websocket request.
@@ -262,6 +286,8 @@ export default class WebSocketClient {
                 this.eventCallback(msg);
             }
         });
+
+        this.conn.open();
     }
 
     public setConnectingCallback(callback: () => void) {
@@ -293,6 +319,7 @@ export default class WebSocketClient {
     }
 
     public close(stop = false) {
+        console.log('WSC: close');
         this.stop = stop;
         this.connectFailCount = 0;
         this.responseSequence = 1;
@@ -303,6 +330,7 @@ export default class WebSocketClient {
     }
 
     public invalidate() {
+        console.log('WSC: invalidate');
         this.conn?.invalidate();
     }
 

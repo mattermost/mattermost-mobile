@@ -47,7 +47,11 @@ export const completeLogin = async (serverUrl: string, user: UserProfile) => {
     // Start websocket
     const credentials = await getServerCredentials(serverUrl);
     if (credentials?.token) {
-        WebsocketManager.createClient(serverUrl, credentials.token);
+        try {
+            WebsocketManager.createClient(serverUrl, credentials.token);
+        } catch {
+            // TODO: Anything to do if we cannot create the client at this point?
+        }
     }
     return null;
 };
