@@ -25,7 +25,10 @@ class WebsocketManager {
         await Promise.all(
             serverCredentials.map(
                 ({serverUrl, token}) => async () => {
-                    const {database} = DatabaseManager.serverDatabases[serverUrl];
+                    const database = DatabaseManager.serverDatabases[serverUrl]?.database;
+                    if (!database) {
+                        return;
+                    }
                     const lastDisconnect = await queryWebSocketLastDisconnected(database);
                     try {
                         this.createClient(serverUrl, token, lastDisconnect);
@@ -38,12 +41,11 @@ class WebsocketManager {
 
         AppState.addEventListener('change', this.onAppStateChange);
         NetInfo.addEventListener(this.onNetStateChange);
-
-        // TODO remove event listeners?
     }
 
     public invalidateClient = (serverURL: string) => {
         this.clients[serverURL]?.close();
+        this.clients[serverURL]?.invalidate();
         delete this.clients[serverURL];
     }
 

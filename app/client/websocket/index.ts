@@ -6,6 +6,7 @@ import {Platform} from 'react-native';
 import {WebsocketEvents} from '@constants';
 import {queryCommonSystemValues} from '@app/queries/servers/system';
 import DatabaseManager from '@database/manager';
+import {getOrCreateWebSocketClient, WebSocketClientInterface} from '@mattermost/react-native-network-client';
 
 const MAX_WEBSOCKET_FAILS = 7;
 const MIN_WEBSOCKET_RETRY_TIME = 3000; // 3 sec
@@ -13,7 +14,7 @@ const MIN_WEBSOCKET_RETRY_TIME = 3000; // 3 sec
 const MAX_WEBSOCKET_RETRY_TIME = 300000; // 5 mins
 
 export default class WebSocketClient {
-    private conn?: WebSocket;
+    private conn?: WebSocketClientInterface;
     private connectionTimeout: any;
     private connectionId: string;
     private token: string;
@@ -68,6 +69,10 @@ export default class WebSocketClient {
         }
 
         const database = DatabaseManager.serverDatabases[this.serverURL]?.database;
+        if (!database) {
+            return;
+        }
+
         const system = await queryCommonSystemValues(database);
         const connectionUrl = (system.config.WebsocketURL || this.serverURL) + '/api/v4/websocket';
 
@@ -111,9 +116,11 @@ export default class WebSocketClient {
             console.log('websocket connecting to ' + url); //eslint-disable-line no-console
         }
 
-        this.conn = new WebSocket(url, [], {headers: {origin}});
+        const {client} = await getOrCreateWebSocketClient(url, {headers: {origin}});
 
-        this.conn!.onopen = () => {
+        this.conn = client;
+
+        this.conn!.onOpen(() => {
             this.lastConnect = Date.now();
 
             // No need to reset sequence number here.
@@ -139,9 +146,9 @@ export default class WebSocketClient {
             }
 
             this.connectFailCount = 0;
-        };
+        });
 
-        this.conn!.onclose = () => {
+        this.conn!.onClose(() => {
             const now = Date.now();
             if (this.lastDisconnect < this.lastConnect) {
                 this.lastDisconnect = now;
@@ -188,9 +195,9 @@ export default class WebSocketClient {
                 },
                 retryTime,
             );
-        };
+        });
 
-        this.conn!.onerror = (evt: any) => {
+        this.conn!.onError((evt: any) => {
             if (this.connectFailCount <= 1) {
                 console.log('websocket error'); //eslint-disable-line no-console
                 console.log(evt); //eslint-disable-line no-console
@@ -199,9 +206,9 @@ export default class WebSocketClient {
             if (this.errorCallback) {
                 this.errorCallback(evt);
             }
-        };
+        });
 
-        this.conn!.onmessage = (evt: any) => {
+        this.conn!.onMessage((evt: any) => {
             const msg = JSON.parse(evt.data);
 
             // This indicates a reply to a websocket request.
@@ -254,7 +261,7 @@ export default class WebSocketClient {
                 this.serverSequence = msg.seq + 1;
                 this.eventCallback(msg);
             }
-        };
+        });
     }
 
     public setConnectingCallback(callback: () => void) {
@@ -293,6 +300,10 @@ export default class WebSocketClient {
         if (this.conn && this.conn.readyState === WebSocket.OPEN) {
             this.conn.close();
         }
+    }
+
+    public invalidate() {
+        this.conn?.invalidate();
     }
 
     private sendMessage(action: string, data: any) {

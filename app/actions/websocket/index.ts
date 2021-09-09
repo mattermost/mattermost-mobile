@@ -10,22 +10,29 @@ import DatabaseManager from '@database/manager';
 import NetworkManager from '@init/network_manager';
 
 export async function handleFirstConnect(serverURL: string) {
-    const database = DatabaseManager.serverDatabases[serverURL];
-    const {config} = await queryCommonSystemValues(database.database);
-    const lastDisconnect = await queryWebSocketLastDisconnected(database.database);
+    const database = DatabaseManager.serverDatabases[serverURL]?.database;
+    if (!database) {
+        return;
+    }
+    const {config} = await queryCommonSystemValues(database);
+    const lastDisconnect = await queryWebSocketLastDisconnected(database);
     if (lastDisconnect && config.EnableReliableWebSockets !== 'true') {
-        return doReconnect(serverURL);
+        doReconnect(serverURL);
+        return;
     }
 
-    return doFirstConnect(serverURL);
+    doFirstConnect(serverURL);
 }
 
 export async function handleReconnect(serverURL: string) {
-    return doReconnect(serverURL);
+    doReconnect(serverURL);
 }
 
 export async function handleClose(serverURL: string, lastDisconnect: number) {
-    const {operator} = DatabaseManager.serverDatabases[serverURL];
+    const operator = DatabaseManager.serverDatabases[serverURL]?.operator;
+    if (!operator) {
+        return;
+    }
     operator.handleSystem({
         systems: [
             {
@@ -39,6 +46,9 @@ export async function handleClose(serverURL: string, lastDisconnect: number) {
 
 async function doFirstConnect(serverURL: string) {
     const database = DatabaseManager.serverDatabases[serverURL];
+    if (!database) {
+        return;
+    }
     const lastDisconnectedAt = await queryWebSocketLastDisconnected(database.database);
 
     if (!lastDisconnectedAt) {
