@@ -4,9 +4,8 @@
 import {withDatabase} from '@nozbe/watermelondb/DatabaseProvider';
 import withObservables from '@nozbe/with-observables';
 import {useRoute} from '@react-navigation/native';
-
-import React from 'react';
-import {Text, View} from 'react-native';
+import React, {useCallback} from 'react';
+import {StyleSheet, Text, TextStyle, View} from 'react-native';
 import Animated, {AnimatedLayout, FadeInLeft, FadeInRight} from 'react-native-reanimated';
 import {SafeAreaView} from 'react-native-safe-area-context';
 import {switchMap} from 'rxjs/operators';
@@ -67,6 +66,35 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             width: 300,
             height: 300,
         },
+        upperBody: {
+            width: '100%',
+            height: '40%',
+            top: 0,
+            position: 'absolute',
+            paddingTop: 52,
+            paddingLeft: 20,
+        },
+        statusStyle: {
+            right: 10,
+            bottom: 10,
+            borderColor: theme.sidebarBg,
+            backgroundColor: theme.sidebarBg,
+        },
+        textFullName: {
+            fontSize: 28,
+            lineHeight: 36,
+            color: '#FFFFFF',
+            fontFamily: 'Metropolis-SemiBold',
+            fontWeight: '600',
+            marginTop: 16,
+        },
+        textUserName: {
+            fontSize: 16,
+            lineHeight: 24,
+            color: '#FFFFFF',
+            fontFamily: 'Open Sans',
+            marginTop: 4,
+        },
     };
 });
 
@@ -92,6 +120,16 @@ const AccountScreen = ({currentUser}: AccountScreenProps) => {
     const nickName = 'Mike';
     const userName = '@michael.scott';
 
+    const getLabelComponent = useCallback((id: string, defaultMessage: string, otherStyle?: TextStyle) => {
+        return (
+            <FormattedText
+                id={t(id)}
+                defaultMessage={defaultMessage}
+                style={StyleSheet.flatten([styles.menuLabel, otherStyle])}
+            />
+        );
+    }, []);
+
     return (
         <SafeAreaView style={styles.container}>
             <AnimatedLayout style={{flex: 1}}>
@@ -100,14 +138,7 @@ const AccountScreen = ({currentUser}: AccountScreenProps) => {
                     style={styles.animatedView}
                 >
                     <View
-                        style={{
-                            width: '100%',
-                            height: '40%',
-                            top: 0,
-                            position: 'absolute',
-                            paddingTop: 52,
-                            paddingLeft: 20,
-                        }}
+                        style={styles.upperBody}
                     >
                         <ProfilePicture
                             size={120}
@@ -115,61 +146,28 @@ const AccountScreen = ({currentUser}: AccountScreenProps) => {
                             showStatus={true}
                             author={currentUser}
                             testID={'account.profile_picture'}
-                            statusStyle={{
-                                right: 10,
-                                bottom: 10,
-                                borderColor: theme.sidebarBg,
-                                backgroundColor: theme.sidebarBg,
-                            }}
+                            statusStyle={styles.statusStyle}
                             statusSize={24}
                         />
-                        <Text
-                            style={{
-                                fontSize: 28,
-                                lineHeight: 36,
-                                color: '#FFFFFF',
-                                fontFamily: 'Metropolis-SemiBold',
-                                fontWeight: '600',
-                                marginTop: 16,
-                            }}
-                        >
-                            {`${fullName}(${nickName})`}
-                        </Text>
-                        <Text
-                            style={{
-                                fontSize: 16,
-                                lineHeight: 24,
-                                color: '#FFFFFF',
-                                fontFamily: 'Open Sans',
-                                marginTop: 4,
-                            }}
-                        >{`${userName}`}</Text>
+                        <Text style={styles.textFullName}>{`${fullName}(${nickName})`}</Text>
+                        <Text style={styles.textUserName}>{`${userName}`}</Text>
                     </View>
                     <View style={styles.body}>
                         <DrawerItem
                             testID='account.status.action'
-                            labelComponent={
-                                <StatusLabel labelStyle={styles.menuLabel}/>
-                            }
+                            labelComponent={<StatusLabel labelStyle={styles.menuLabel}/>}
                             leftComponent={
                                 <UserStatus
                                     size={24}
                                     status={'Online'}
-                                />
-                            }
+                                />}
                             separator={false}
                             onPress={goToSavedMessages} // fixme : do onPress action
                             theme={theme}
                         />
                         <DrawerItem
                             testID='account.set_custom_message.action'
-                            labelComponent={
-                                <FormattedText
-                                    id={t('account.set_custom_message')}
-                                    defaultMessage='Set a Custom Status'
-                                    style={styles.menuLabel}
-                                />
-                            }
+                            labelComponent={getLabelComponent(t('account.set_custom_message'), 'Set a Custom Status')}
                             iconName='emoticon-outline'
                             onPress={goToSavedMessages}
                             separator={true}
@@ -177,13 +175,7 @@ const AccountScreen = ({currentUser}: AccountScreenProps) => {
                         />
                         <DrawerItem
                             testID='account.your_profile.action'
-                            labelComponent={
-                                <FormattedText
-                                    id={t('account.your_profile')}
-                                    defaultMessage='Your Profile'
-                                    style={styles.menuLabel}
-                                />
-                            }
+                            labelComponent={getLabelComponent(t('account.your_profile'), 'Your Profile')}
                             iconName='account-outline'
                             onPress={goToSavedMessages}
                             separator={false}
@@ -191,13 +183,7 @@ const AccountScreen = ({currentUser}: AccountScreenProps) => {
                         />
                         <DrawerItem
                             testID='account.saved_messages.action'
-                            labelComponent={
-                                <FormattedText
-                                    id={t('account.saved_messages')}
-                                    defaultMessage='Saved Messages'
-                                    style={styles.menuLabel}
-                                />
-                            }
+                            labelComponent={getLabelComponent(t('account.saved_messages'), 'Saved Messages')}
                             iconName='bookmark-outline'
                             onPress={goToSavedMessages}
                             separator={false}
@@ -205,13 +191,7 @@ const AccountScreen = ({currentUser}: AccountScreenProps) => {
                         />
                         <DrawerItem
                             testID='account.settings.action'
-                            labelComponent={
-                                <FormattedText
-                                    id={t('account.settings')}
-                                    defaultMessage='Settings'
-                                    style={styles.menuLabel}
-                                />
-                            }
+                            labelComponent={getLabelComponent(t('account.settings'), 'Settings')}
                             iconName='settings-outline'
                             onPress={goToSavedMessages}
                             separator={true}
@@ -219,16 +199,7 @@ const AccountScreen = ({currentUser}: AccountScreenProps) => {
                         />
                         <DrawerItem
                             testID='account.logout.action'
-                            labelComponent={
-                                <FormattedText
-                                    id={t('account.logout')}
-                                    defaultMessage='Log out'
-                                    style={[
-                                        styles.menuLabel,
-                                        {color: theme.dndIndicator},
-                                    ]}
-                                />
-                            }
+                            labelComponent={getLabelComponent(t('account.logout'), 'Log out', {color: theme.dndIndicator})}
                             iconName='exit-to-app'
                             isDestructor={true}
                             onPress={goToSavedMessages}
@@ -248,18 +219,10 @@ const AccountScreen = ({currentUser}: AccountScreenProps) => {
     );
 };
 
-const withCurrentUser = withObservables(
-    [],
-    ({database}: WithDatabaseArgs) => ({
-        currentUser: database.
-            get(SYSTEM).
-            findAndObserve(SYSTEM_IDENTIFIERS.CURRENT_USER_ID).
-            pipe(
-                switchMap((id: SystemModel) =>
-                    database.get(USER).findAndObserve(id.value),
-                ),
-            ),
-    }),
+const withCurrentUser = withObservables([], ({database}: WithDatabaseArgs) => ({
+    currentUser: database.get(SYSTEM).findAndObserve(SYSTEM_IDENTIFIERS.CURRENT_USER_ID).
+        pipe(switchMap((id: SystemModel) => database.get(USER).findAndObserve(id.value))),
+}),
 );
 
 export default withDatabase(withCurrentUser(AccountScreen));
