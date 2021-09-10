@@ -68,12 +68,7 @@
         "newlines-between": "always",
         "pathGroups": [
           {
-            "pattern": "@(@react-native-community|@react-native-cookies|@react-navigation|@rudderstack|@sentry|@testing-library|@storybook|@formatjs|@mattermost|@nozbe)/**",
-            "group": "external",
-            "position": "before"
-          },
-          {
-            "pattern": "@{**,*/**}",
+            "pattern": "{@(@actions|@app|@assets|@client|@components|@constants|@context|@database|@helpers|@hooks|@init|@queries|@screens|@selectors|@share|@store|@telemetry|@typings|@test|@utils)/**,@(@constants|@i18n|@notifications|@store|@websocket)}",
             "group": "external",
             "position": "after"
           },

@@ -3,7 +3,6 @@
 
 import {withDatabase} from '@nozbe/watermelondb/DatabaseProvider';
 import withObservables from '@nozbe/with-observables';
-
 import React from 'react';
 import {DeviceEventEmitter, LayoutChangeEvent, Platform, useWindowDimensions, View} from 'react-native';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';

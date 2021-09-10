@@ -3,7 +3,6 @@
 
 import {Database} from '@nozbe/watermelondb';
 import DatabaseProvider from '@nozbe/watermelondb/DatabaseProvider';
-
 import React, {ComponentType, useEffect, useState} from 'react';
 
 import {MM_TABLES} from '@constants/database';

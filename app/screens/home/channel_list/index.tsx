@@ -2,7 +2,6 @@
 // See LICENSE.txt for license information.
 
 import {useIsFocused, useRoute} from '@react-navigation/native';
-
 import React from 'react';
 import {Text, View} from 'react-native';
 import Animated, {useAnimatedStyle, withTiming} from 'react-native-reanimated';

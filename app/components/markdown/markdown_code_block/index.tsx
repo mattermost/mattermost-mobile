@@ -3,7 +3,6 @@
 
 import {useManagedConfig} from '@mattermost/react-native-emm';
 import Clipboard from '@react-native-community/clipboard';
-
 import React, {useCallback} from 'react';
 import {useIntl} from 'react-intl';
 import {DeviceEventEmitter, Keyboard, StyleSheet, Text, TextStyle, View} from 'react-native';

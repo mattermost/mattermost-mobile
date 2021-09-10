@@ -2,7 +2,6 @@
 // See LICENSE.txt for license information.
 
 import {useManagedConfig} from '@mattermost/react-native-emm';
-
 import React, {useState} from 'react';
 
 import {ssoLogin} from '@actions/remote/session';

@@ -2,7 +2,6 @@
 // See LICENSE.txt for license information.
 
 import AsyncStorage from '@react-native-community/async-storage';
-
 import {Platform} from 'react-native';
 import * as KeyChain from 'react-native-keychain';
 

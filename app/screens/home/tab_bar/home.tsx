@@ -2,7 +2,6 @@
 // See LICENSE.txt for license information.
 
 import {Q} from '@nozbe/watermelondb';
-
 import React, {useEffect, useState} from 'react';
 import {Platform, View} from 'react-native';
 

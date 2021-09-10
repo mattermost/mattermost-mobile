@@ -2,7 +2,6 @@
 // See LICENSE.txt for license information.
 
 import {useManagedConfig, ManagedConfig} from '@mattermost/react-native-emm';
-
 import React, {useCallback, useEffect, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
 import {

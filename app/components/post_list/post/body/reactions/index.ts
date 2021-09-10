@@ -3,7 +3,6 @@
 
 import {withDatabase} from '@nozbe/watermelondb/DatabaseProvider';
 import withObservables from '@nozbe/with-observables';
-
 import {from as from$, of as of$} from 'rxjs';
 import {switchMap} from 'rxjs/operators';
 

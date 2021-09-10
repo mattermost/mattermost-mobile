@@ -4,13 +4,12 @@
 import {Q} from '@nozbe/watermelondb';
 import {withDatabase} from '@nozbe/watermelondb/DatabaseProvider';
 import withObservables from '@nozbe/with-observables';
-
 import React, {ReactElement, useCallback} from 'react';
 import {DeviceEventEmitter, FlatList, Platform, RefreshControl, StyleSheet, ViewToken} from 'react-native';
 import {of as of$} from 'rxjs';
 import {switchMap} from 'rxjs/operators';
 
-import CombinedUserActivity from '@app/components/post_list/combined_user_activity';
+import CombinedUserActivity from '@components/post_list/combined_user_activity';
 import DateSeparator from '@components/post_list/date_separator';
 import NewMessagesLine from '@components/post_list/new_message_line';
 import Post from '@components/post_list/post';
@@ -18,7 +17,6 @@ import {Preferences} from '@constants';
 import {MM_TABLES, SYSTEM_IDENTIFIERS} from '@constants/database';
 import {useTheme} from '@context/theme';
 import {getPreferenceAsBool} from '@helpers/api/preference';
-import UserModel from '@typings/database/models/servers/user';
 import {emptyFunction} from '@utils/general';
 import {getDateForDateLine, isCombinedUserActivityPost, isDateLine, isStartOfNewMessages, preparePostList} from '@utils/post_list';
 
@@ -28,6 +26,7 @@ import type PostModel from '@typings/database/models/servers/post';
 import type PostsInChannelModel from '@typings/database/models/servers/posts_in_channel';
 import type PreferenceModel from '@typings/database/models/servers/preference';
 import type SystemModel from '@typings/database/models/servers/system';
+import type UserModel from '@typings/database/models/servers/user';
 
 type RefreshProps = {
     children: ReactElement;

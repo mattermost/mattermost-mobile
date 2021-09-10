@@ -2,7 +2,6 @@
 // See LICENSE.txt for license information.
 
 import GenericClient from '@mattermost/react-native-network-client';
-
 import {Linking} from 'react-native';
 import urlParse from 'url-parse';
 

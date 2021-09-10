@@ -4,7 +4,6 @@
 import {Q} from '@nozbe/watermelondb';
 import {withDatabase} from '@nozbe/watermelondb/DatabaseProvider';
 import withObservables from '@nozbe/with-observables';
-
 import {of as of$} from 'rxjs';
 import {switchMap} from 'rxjs/operators';
 

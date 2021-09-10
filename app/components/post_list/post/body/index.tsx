@@ -7,7 +7,6 @@ import {StyleProp, View, ViewStyle} from 'react-native';
 import FormattedText from '@components/formatted_text';
 import JumboEmoji from '@components/jumbo_emoji';
 import {THREAD} from '@constants/screens';
-import FileModel from '@typings/database/models/servers/file';
 import {isEdited as postEdited} from '@utils/post';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 
@@ -18,6 +17,7 @@ import Files from './files';
 import Message from './message';
 import Reactions from './reactions';
 
+import type FileModel from '@typings/database/models/servers/file';
 import type PostModel from '@typings/database/models/servers/post';
 
 type BodyProps = {

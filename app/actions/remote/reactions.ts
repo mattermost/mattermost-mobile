@@ -1,5 +1,6 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
+
 import {Q} from '@nozbe/watermelondb';
 
 import {MM_TABLES, SYSTEM_IDENTIFIERS} from '@constants/database';

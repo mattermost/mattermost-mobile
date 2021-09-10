@@ -3,7 +3,6 @@
 
 import {withDatabase} from '@nozbe/watermelondb/DatabaseProvider';
 import withObservables from '@nozbe/with-observables';
-
 import React, {useEffect, useMemo, useRef, useState} from 'react';
 import {DeviceEventEmitter, StyleProp, StyleSheet, View, ViewStyle} from 'react-native';
 import {of as of$} from 'rxjs';

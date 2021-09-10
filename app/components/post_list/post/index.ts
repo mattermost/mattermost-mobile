@@ -4,14 +4,11 @@
 import {Q} from '@nozbe/watermelondb';
 import {withDatabase} from '@nozbe/watermelondb/DatabaseProvider';
 import withObservables from '@nozbe/with-observables';
-
 import {from as from$, of as of$} from 'rxjs';
 import {switchMap} from 'rxjs/operators';
 
 import {Permissions, Preferences} from '@constants';
 import {MM_TABLES, SYSTEM_IDENTIFIERS} from '@constants/database';
-import CustomEmojiModel from '@typings/database/models/servers/custom_emoji';
-import PostsInThreadModel from '@typings/database/models/servers/posts_in_thread';
 import {appsEnabled} from '@utils/apps';
 import {hasJumboEmojiOnly} from '@utils/emoji/helpers';
 import {areConsecutivePosts, isPostEphemeral} from '@utils/post';
@@ -20,7 +17,9 @@ import {canManageChannelMembers, hasPermissionForPost} from '@utils/role';
 import Post from './post';
 
 import type {WithDatabaseArgs} from '@typings/database/database';
+import type CustomEmojiModel from '@typings/database/models/servers/custom_emoji';
 import type PostModel from '@typings/database/models/servers/post';
+import type PostsInThreadModel from '@typings/database/models/servers/posts_in_thread';
 import type PreferenceModel from '@typings/database/models/servers/preference';
 import type SystemModel from '@typings/database/models/servers/system';
 import type UserModel from '@typings/database/models/servers/user';

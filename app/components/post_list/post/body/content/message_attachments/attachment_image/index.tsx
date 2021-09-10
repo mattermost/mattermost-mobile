@@ -4,7 +4,7 @@
 import React, {useCallback, useRef, useState} from 'react';
 import {View} from 'react-native';
 
-import FileIcon from '@app/components/post_list/post/body/files/file_icon';
+import FileIcon from '@components/post_list/post/body/files/file_icon';
 import ProgressiveImage from '@components/progressive_image';
 import TouchableWithFeedback from '@components/touchable_with_feedback';
 import {Device} from '@constants';

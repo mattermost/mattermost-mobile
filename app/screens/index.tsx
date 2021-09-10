@@ -2,7 +2,6 @@
 // See LICENSE.txt for license information.
 
 import {withManagedConfig} from '@mattermost/react-native-emm';
-
 import React from 'react';
 import {IntlProvider} from 'react-intl';
 import {Platform, StyleProp, ViewStyle} from 'react-native';

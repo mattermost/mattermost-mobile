@@ -3,7 +3,6 @@
 
 import {withDatabase} from '@nozbe/watermelondb/DatabaseProvider';
 import withObservables from '@nozbe/with-observables';
-
 import React, {useCallback} from 'react';
 import {useIntl} from 'react-intl';
 import {Alert, ScrollView, Text, View} from 'react-native';

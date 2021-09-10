@@ -7,13 +7,14 @@ import DatabaseManager from '@database/manager';
 import NetworkManager from '@init/network_manager';
 import {queryWebSocketLastDisconnected} from '@queries/servers/system';
 import {prepareMyTeams, queryMyTeamById} from '@queries/servers/team';
-import TeamModel from '@typings/database/models/servers/team';
-import TeamMembershipModel from '@typings/database/models/servers/team_membership';
 
 import {fetchMyChannelsForTeam} from './channel';
 import {fetchPostsForUnreadChannels} from './post';
 import {fetchRolesIfNeeded} from './role';
 import {forceLogoutIfNecessary} from './session';
+
+import type TeamModel from '@typings/database/models/servers/team';
+import type TeamMembershipModel from '@typings/database/models/servers/team_membership';
 
 export type MyTeamsRequest = {
     teams?: Team[];

@@ -2,7 +2,6 @@
 // See LICENSE.txt for license information.
 
 import CookieManager, {Cookie} from '@react-native-cookies/cookies';
-
 import {Alert, DeviceEventEmitter, Linking, Platform} from 'react-native';
 import semver from 'semver';
 

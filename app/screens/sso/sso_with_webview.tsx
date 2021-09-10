@@ -2,7 +2,6 @@
 // See LICENSE.txt for license information.
 
 import CookieManager, {Cookie, Cookies} from '@react-native-cookies/cookies';
-
 import React, {useEffect} from 'react';
 import {useIntl} from 'react-intl';
 import {Alert, Platform, Text, View} from 'react-native';

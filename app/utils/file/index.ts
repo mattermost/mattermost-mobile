@@ -2,7 +2,6 @@
 // See LICENSE.txt for license information.
 
 import Model from '@nozbe/watermelondb/Model';
-
 import mimeDB from 'mime-db';
 import {Platform} from 'react-native';
 import {FileSystem} from 'react-native-unimodules';

@@ -2,7 +2,6 @@
 // See LICENSE.txt for license information.
 
 import {render} from '@testing-library/react-native';
-
 import React from 'react';
 
 import {Preferences} from '@constants';

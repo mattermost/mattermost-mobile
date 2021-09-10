@@ -2,7 +2,6 @@
 // See LICENSE.txt for license information.
 
 import {act, waitFor} from '@testing-library/react-native';
-
 import React from 'react';
 
 import * as SessionAPICalls from '@actions/remote/session';

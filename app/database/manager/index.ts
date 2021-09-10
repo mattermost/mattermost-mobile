@@ -4,7 +4,6 @@
 import {Database, Q} from '@nozbe/watermelondb';
 import SQLiteAdapter from '@nozbe/watermelondb/adapters/sqlite';
 import logger from '@nozbe/watermelondb/utils/common/logger';
-
 import {DeviceEventEmitter, Platform} from 'react-native';
 import DeviceInfo from 'react-native-device-info';
 import {FileSystem} from 'react-native-unimodules';
@@ -21,14 +20,13 @@ import {ChannelModel, ChannelInfoModel, ChannelMembershipModel, CustomEmojiModel
     TermsOfServiceModel, UserModel,
 } from '@database/models/server';
 import AppDataOperator from '@database/operator/app_data_operator';
+import ServerDataOperator from '@database/operator/server_data_operator';
 import {schema as appSchema} from '@database/schema/app';
 import {serverSchema} from '@database/schema/server';
 import {queryActiveServer, queryServer} from '@queries/app/servers';
 import {DatabaseType} from '@typings/database/enums';
 import {deleteIOSDatabase, getIOSAppGroupDetails} from '@utils/mattermost_managed';
 import {hashCode} from '@utils/security';
-
-import ServerDataOperator from '../operator/server_data_operator';
 
 import type {AppDatabase, CreateServerDatabaseArgs, RegisterServerDatabaseArgs, Models, ServerDatabase, ServerDatabases} from '@typings/database/database';
 

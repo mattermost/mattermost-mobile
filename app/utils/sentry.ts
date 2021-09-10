@@ -2,7 +2,6 @@
 // See LICENSE.txt for license information.
 
 import {Breadcrumb, Severity} from '@sentry/types';
-
 import {Platform} from 'react-native';
 
 import Config from '@assets/config.json';

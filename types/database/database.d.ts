@@ -10,8 +10,8 @@ import {Class} from '@nozbe/watermelondb/utils/common';
 
 import {DatabaseType} from './enums';
 
-import type ServerDataOperator from '@app/database/operator/server_data_operator';
 import type AppDataOperator from '@database/operator/app_data_operator';
+import type ServerDataOperator from '@database/operator/server_data_operator';
 import type {Config} from '@typings/database/models/servers/config';
 import type {License} from '@typings/database/models/servers/license';
 import type System from '@typings/database/models/servers/system';

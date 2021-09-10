@@ -4,21 +4,19 @@
 import {Q} from '@nozbe/watermelondb';
 import {withDatabase} from '@nozbe/watermelondb/DatabaseProvider';
 import withObservables from '@nozbe/with-observables';
-
 import React, {useCallback, useEffect, useRef, useState} from 'react';
 import {StyleSheet, View} from 'react-native';
 import {of as of$} from 'rxjs';
 import {switchMap} from 'rxjs/operators';
 
 import {getRedirectLocation} from '@actions/remote/general';
-import FileIcon from '@app/components/post_list/post/body/files/file_icon';
+import FileIcon from '@components/post_list/post/body/files/file_icon';
 import ProgressiveImage from '@components/progressive_image';
 import TouchableWithFeedback from '@components/touchable_with_feedback';
 import {Device} from '@constants';
 import {MM_TABLES, SYSTEM_IDENTIFIERS} from '@constants/database';
 import {useServerUrl} from '@context/server_url';
 import {useSplitView} from '@hooks/device';
-import useDidUpdate from '@hooks/did_update';
 import {openGallerWithMockFile} from '@utils/gallery';
 import {generateId} from '@utils/general';
 import {calculateDimensions, getViewPortWidth, isGifTooLarge} from '@utils/images';
@@ -73,14 +71,6 @@ const ImagePreview = ({expandedLink, isReplyPost, link, metadata, postId, theme}
     useEffect(() => {
         if (!isImageLink(link) && expandedLink === undefined) {
             getRedirectLocation(serverUrl, link);
-        }
-    }, [link]);
-
-    useDidUpdate(() => {
-        if (expandedLink) {
-            setImageUrl(expandedLink);
-        } else if (link !== imageUrl) {
-            setImageUrl(link);
         }
     }, [link]);
 

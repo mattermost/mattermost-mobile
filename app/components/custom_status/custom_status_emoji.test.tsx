@@ -2,7 +2,6 @@
 // See LICENSE.txt for license information.
 
 import Database from '@nozbe/watermelondb/Database';
-
 import React from 'react';
 
 import CustomStatusEmoji from '@components/custom_status/custom_status_emoji';

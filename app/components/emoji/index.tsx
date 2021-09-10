@@ -4,7 +4,6 @@
 import {Q} from '@nozbe/watermelondb';
 import {withDatabase} from '@nozbe/watermelondb/DatabaseProvider';
 import withObservables from '@nozbe/with-observables';
-
 import React from 'react';
 import {
     Platform,
@@ -21,10 +20,10 @@ import {switchMap} from 'rxjs/operators';
 import {MM_TABLES, SYSTEM_IDENTIFIERS} from '@constants/database';
 import {useServerUrl} from '@context/server_url';
 import NetworkManager from '@init/network_manager';
-import CustomEmojiModel from '@typings/database/models/servers/custom_emoji';
 import {EmojiIndicesByAlias, Emojis} from '@utils/emoji';
 
 import type {WithDatabaseArgs} from '@typings/database/database';
+import type CustomEmojiModel from '@typings/database/models/servers/custom_emoji';
 import type SystemModel from '@typings/database/models/servers/system';
 
 const assetImages = new Map([['mattermost.png', require('@assets/images/emojis/mattermost.png')]]);

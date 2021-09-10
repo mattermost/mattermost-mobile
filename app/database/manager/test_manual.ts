@@ -2,7 +2,6 @@
 // See LICENSE.txt for license information.
 
 import {Q} from '@nozbe/watermelondb';
-
 import {Platform} from 'react-native';
 
 import {MM_TABLES} from '@constants/database';

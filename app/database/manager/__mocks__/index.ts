@@ -4,14 +4,12 @@
 import {Database, Q} from '@nozbe/watermelondb';
 import LokiJSAdapter from '@nozbe/watermelondb/adapters/lokijs';
 import logger from '@nozbe/watermelondb/utils/common/logger';
-
 import {DeviceEventEmitter, Platform} from 'react-native';
 import {FileSystem} from 'react-native-unimodules';
 import urlParse from 'url-parse';
 
-import AppDatabaseMigrations from '@app/database/migration/app';
-import {schema as appSchema} from '@app/database/schema/app';
 import {MIGRATION_EVENTS, MM_TABLES} from '@constants/database';
+import AppDatabaseMigrations from '@database/migration/app';
 import ServerDatabaseMigrations from '@database/migration/server';
 import {InfoModel, GlobalModel, ServersModel} from '@database/models/app';
 import {ChannelModel, ChannelInfoModel, ChannelMembershipModel, CustomEmojiModel, DraftModel, FileModel,
@@ -21,13 +19,13 @@ import {ChannelModel, ChannelInfoModel, ChannelMembershipModel, CustomEmojiModel
     TermsOfServiceModel, UserModel,
 } from '@database/models/server';
 import AppDataOperator from '@database/operator/app_data_operator';
+import ServerDataOperator from '@database/operator/server_data_operator';
+import {schema as appSchema} from '@database/schema/app';
 import {serverSchema} from '@database/schema/server';
 import {queryActiveServer, queryServer} from '@queries/app/servers';
 import {DatabaseType} from '@typings/database/enums';
 import {deleteIOSDatabase} from '@utils/mattermost_managed';
 import {hashCode} from '@utils/security';
-
-import ServerDataOperator from '../../operator/server_data_operator';
 
 import type {AppDatabase, CreateServerDatabaseArgs, Models, RegisterServerDatabaseArgs, ServerDatabase, ServerDatabases} from '@typings/database/database';
 

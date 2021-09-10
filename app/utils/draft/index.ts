@@ -2,7 +2,6 @@
 // See LICENSE.txt for license information.
 
 import {MessageDescriptor} from '@formatjs/intl/src/types';
-
 import {Alert, AlertButton} from 'react-native';
 
 import {t} from '@i18n';

@@ -7,11 +7,11 @@ import {Image, ScrollView, StatusBar, Text} from 'react-native';
 import {NavigationFunctionComponent} from 'react-native-navigation';
 import {SafeAreaView} from 'react-native-safe-area-context';
 
-import {changeOpacity, makeStyleSheetFromTheme} from '@app/utils/theme';
 import FormattedText from '@components/formatted_text';
 import {LOGIN, SSO} from '@constants/screens';
 import {goToScreen} from '@screens/navigation';
 import {preventDoubleTap} from '@utils/tap';
+import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 import EmailOption from './email';
 import GitLabOption from './gitlab';

@@ -2,7 +2,6 @@
 // See LICENSE.txt for license information.
 
 import withObservables from '@nozbe/with-observables';
-
 import React, {useCallback, useState} from 'react';
 import {useIntl} from 'react-intl';
 import {of as of$} from 'rxjs';

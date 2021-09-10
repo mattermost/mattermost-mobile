@@ -5,7 +5,6 @@ import {useManagedConfig} from '@mattermost/react-native-emm';
 import {withDatabase} from '@nozbe/watermelondb/DatabaseProvider';
 import withObservables from '@nozbe/with-observables';
 import Clipboard from '@react-native-community/clipboard';
-
 import React, {Children, ReactElement, useCallback} from 'react';
 import {useIntl} from 'react-intl';
 import {Alert, DeviceEventEmitter, StyleSheet, Text, View} from 'react-native';

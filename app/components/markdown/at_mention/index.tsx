@@ -6,7 +6,6 @@ import {Database, Q} from '@nozbe/watermelondb';
 import {withDatabase} from '@nozbe/watermelondb/DatabaseProvider';
 import withObservables from '@nozbe/with-observables';
 import Clipboard from '@react-native-community/clipboard';
-
 import React, {useCallback, useMemo} from 'react';
 import {useIntl} from 'react-intl';
 import {DeviceEventEmitter, GestureResponderEvent, StyleProp, StyleSheet, Text, TextStyle, View} from 'react-native';

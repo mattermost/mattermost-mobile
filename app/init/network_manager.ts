@@ -8,7 +8,6 @@ import {
     getOrCreateAPIClient,
     RetryTypes,
 } from '@mattermost/react-native-network-client';
-
 import {DeviceEventEmitter} from 'react-native';
 import DeviceInfo from 'react-native-device-info';
 

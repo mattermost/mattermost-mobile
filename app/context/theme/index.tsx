@@ -3,7 +3,6 @@
 
 import {Q} from '@nozbe/watermelondb';
 import withObservables from '@nozbe/with-observables';
-
 import React, {ComponentType, createContext, useEffect} from 'react';
 import {Appearance} from 'react-native';
 

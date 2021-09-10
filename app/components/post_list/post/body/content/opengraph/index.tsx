@@ -4,7 +4,6 @@
 import {Q} from '@nozbe/watermelondb';
 import {withDatabase} from '@nozbe/watermelondb/DatabaseProvider';
 import withObservables from '@nozbe/with-observables';
-
 import React from 'react';
 import {useIntl} from 'react-intl';
 import {Alert, Text, View} from 'react-native';
