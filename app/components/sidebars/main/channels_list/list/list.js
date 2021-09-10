@@ -15,7 +15,7 @@ import {
     TouchableHighlight,
     View,
 } from 'react-native';
-import {throttle} from 'underscore';
+import {throttle, isEqual} from 'underscore';
 
 import {showModal} from '@actions/navigation';
 import CompassIcon from '@components/compass_icon';
@@ -123,7 +123,7 @@ export default class List extends PureComponent {
                 });
             }
         } else if (
-            JSON.stringify(this.props.categories) !== JSON.stringify(categories) ||
+            !isEqual(this.props.categories, categories) ||
             this.props.unreadChannelIds !== unreadChannelIds) {
             // Rebuild sections only if categories or unreads have changed
             this.setCategorySections(this.buildCategorySections());

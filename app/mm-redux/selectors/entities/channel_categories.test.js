@@ -437,7 +437,7 @@ describe('legacyMakeFilterAutoclosedDMs', () => {
     test('should show a DM channel with a deactivated user if its the current channel', () => {
         const filterAutoclosedDMs = Selectors.legacyMakeFilterAutoclosedDMs(() => cutoff);
 
-        const otherUser = {id: 'otherUser', delete_at: cutoff - 2};
+        const otherUser = {id: 'otherUser', delete_at: cutoff + 2};
         const dmChannel = {id: 'dmChannel', name: `${currentUser.id}__${otherUser.id}`, type: General.DM_CHANNEL};
 
         const state = mergeObjects(baseState, {
@@ -775,6 +775,9 @@ describe('makeFilterManuallyClosedDMs', () => {
 
     const baseState = {
         entities: {
+            general: {
+                config: {},
+            },
             channels: {
                 myMembers: {},
             },
@@ -783,9 +786,6 @@ describe('makeFilterManuallyClosedDMs', () => {
             },
             users: {
                 currentUserId: currentUser.id,
-            },
-            general: {
-                config: {},
             },
         },
     };
@@ -1725,34 +1725,34 @@ describe('makeGetChannelsByCategory', () => {
             expect(result).toBe(previousResult);
         });
 
-        // test('should return a new object when user profiles change', () => {
-        //     // This behaviour isn't ideal, but it's better than the previous version which returns a new object
-        //     // whenever anything user-related changes
-        //     const getChannelsByCategory = Selectors.makeGetChannelsByCategory();
+        test('should return a new object when user profiles change', () => {
+            // This behaviour isn't ideal, but it's better than the previous version which returns a new object
+            // whenever anything user-related changes
+            const getChannelsByCategory = Selectors.makeGetChannelsByCategory();
 
-        //     const state = mergeObjects(baseState, {
-        //         entities: {
-        //             users: {
-        //                 profiles: {
-        //                     newUser: {id: 'newUser'},
-        //                 },
-        //             },
-        //         },
-        //     });
+            const state = mergeObjects(baseState, {
+                entities: {
+                    users: {
+                        profiles: {
+                            newUser: {id: 'newUser'},
+                        },
+                    },
+                },
+            });
 
-        //     const previousResult = getChannelsByCategory(baseState, 'team1');
-        //     const result = getChannelsByCategory(state, 'team1');
+            const previousResult = getChannelsByCategory(baseState, 'team1');
+            const result = getChannelsByCategory(state, 'team1');
 
-        //     expect(result).not.toBe(previousResult);
-        //     expect(result).toEqual(previousResult);
+            expect(result).not.toBe(previousResult);
+            expect(result).toEqual(previousResult);
 
-        //     // Categories not containing DMs/GMs and sorted alphabetically should still remain the same
-        //     expect(result.favoritesCategory).not.toBe(previousResult.favoritesCategory);
-        //     expect(result.favoritesCategory).toEqual(previousResult.favoritesCategory);
-        //     expect(result.channelsCategory).toBe(previousResult.channelsCategory);
-        //     expect(result.directMessagesCategory).toEqual(previousResult.directMessagesCategory);
-        //     expect(result.directMessagesCategory).toEqual(previousResult.directMessagesCategory);
-        // });
+            // Categories not containing DMs/GMs and sorted alphabetically should still remain the same
+            expect(result.favoritesCategory).not.toBe(previousResult.favoritesCategory);
+            expect(result.favoritesCategory).toEqual(previousResult.favoritesCategory);
+            expect(result.channelsCategory).toBe(previousResult.channelsCategory);
+            expect(result.directMessagesCategory).toEqual(previousResult.directMessagesCategory);
+            expect(result.directMessagesCategory).toEqual(previousResult.directMessagesCategory);
+        });
 
         test('should return the same object when other user state changes', () => {
             const getChannelsByCategory = Selectors.makeGetChannelsByCategory();

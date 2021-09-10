@@ -3,12 +3,12 @@
 
 /* eslint-disable max-lines */
 import {createSelector} from 'reselect';
-import shallow_equals from 'shallow-equals';
+import shallowEquals from 'shallow-equals';
 
 import {makeGetChannelsForIds, getCurrentChannelId, getMyChannelMemberships} from '@mm-redux/selectors/entities/channels';
 import {getCurrentUserLocale} from '@mm-redux/selectors/entities/i18n';
 import {getLastPostPerChannel} from '@mm-redux/selectors/entities/posts';
-import {getInt, getMyPreferences, getSidebarPreferences, getTeammateNameDisplaySetting, isCollapsedThreadsEnabled, shouldAutocloseDMs} from '@mm-redux/selectors/entities/preferences';
+import {getInt, getMyPreferences, getTeammateNameDisplaySetting, isCollapsedThreadsEnabled, shouldAutocloseDMs} from '@mm-redux/selectors/entities/preferences';
 import {getCurrentUserId} from '@mm-redux/selectors/entities/users';
 import {CategorySorting, ChannelCategory, ChannelCategoryType} from '@mm-redux/types/channel_categories';
 import {Channel, ChannelMembership} from '@mm-redux/types/channels';
@@ -55,11 +55,7 @@ export function getCategoryWhere(state: GlobalState, condition: (category: Chann
     return Object.values(categoriesByIds).find(condition);
 }
 
-// export function getCategoryIdsForTeam(state: GlobalState, teamId: string): string[] {
-// import {General, Preferences} from '../../constants';
-// import {CategoryTypes} from '../../constants/channel_categories';
-
-export function getCategoryIdsForTeam(state: GlobalState, teamId: string): string[] | undefined {
+export function getCategoryIdsForTeam(state: GlobalState, teamId: string): string[] {
     return state.entities.channelCategories.orderByTeam[teamId];
 }
 
@@ -91,19 +87,6 @@ export function makeFilterArchivedChannels(): (state: GlobalState, channels: Cha
     );
 }
 
-// Filters out all the unread channels
-export function makeFilterUnreadChannels(): (state: GlobalState, channels: Channel[]) => Channel[] {
-    return createSelector(
-        (state: GlobalState, channels: Channel[]) => channels,
-        isCollapsedThreadsEnabled,
-        getMyChannelMemberships,
-        (channels: Channel[], collapsedThreadsEnabled: boolean, myChannelMembers) => {
-            const filtered = channels.filter((channel) => channel && !isUnreadChannel(myChannelMembers, channel, collapsedThreadsEnabled));
-            return filtered.length === channels.length ? channels : filtered;
-        },
-    );
-}
-
 function getDefaultAutocloseCutoff() {
     return Date.now() - (7 * 24 * 60 * 60 * 1000);
 }
@@ -124,7 +107,7 @@ export function legacyMakeFilterAutoclosedDMs(getAutocloseCutoff = getDefaultAut
         getMyChannelMemberships,
         getLastPostPerChannel,
         isCollapsedThreadsEnabled,
-        (channels, categoryType, myPreferences, autocloseDMs, currentChannelId, profiles, currentUserId, myChannelMembers, lastPosts, collapsedThreadsEnabled) => {
+        (channels, categoryType, myPreferences, autocloseDMs, currentChannelId, profiles, currentUserId, myMembers, lastPosts, collapsedThreads) => {
             if (categoryType !== CategoryTypes.DIRECT_MESSAGES) {
                 // Only autoclose DMs that haven't been assigned to a category
                 return channels;
@@ -138,8 +121,13 @@ export function legacyMakeFilterAutoclosedDMs(getAutocloseCutoff = getDefaultAut
                     return true;
                 }
 
-                // Unread channels will never be hidden
-                if (isUnreadChannel(myChannelMembers, channel, collapsedThreadsEnabled)) {
+                if (isUnreadChannel(myMembers, channel, collapsedThreads)) {
+                    // Unread DMs/GMs are always visible
+                    return true;
+                }
+
+                if (currentChannelId === channel.id) {
+                    // The current channel is always visible
                     return true;
                 }
 
@@ -218,7 +206,6 @@ export function makeFilterAutoclosedDMs(): (state: GlobalState, channels: Channe
                 const pref = myPreferences[getPreferenceKey(category, name)];
                 return parseInt(pref ? pref.value! : '0', 10);
             };
-
             const getLastViewedAt = (channel: Channel) => {
                 // The server only ever sets the last_viewed_at to the time of the last post in channel, so we may need
                 // to use the preferences added for the previous version of autoclosing DMs.
@@ -306,7 +293,7 @@ export function makeFilterManuallyClosedDMs(): (state: GlobalState, channels: Ch
         getCurrentUserId,
         getMyChannelMemberships,
         isCollapsedThreadsEnabled,
-        (channels, myPreferences, currentChannelId, currentUserId, myMembers, collapsedThreadsEnabled) => {
+        (channels, myPreferences, currentChannelId, currentUserId, myMembers, collapsedThreads) => {
             const filtered = channels.filter((channel) => {
                 let preference;
 
@@ -314,7 +301,7 @@ export function makeFilterManuallyClosedDMs(): (state: GlobalState, channels: Ch
                     return true;
                 }
 
-                if (isUnreadChannel(myMembers, channel, collapsedThreadsEnabled)) {
+                if (isUnreadChannel(myMembers, channel, collapsedThreads)) {
                     // Unread DMs/GMs are always visible
                     return true;
                 }
@@ -490,7 +477,7 @@ export function makeGetChannelIdsForCategory() {
 
         const filteredChannelIds = filterAndSortChannelsForCategory(state, channels, category).map((channel) => channel.id);
 
-        if (shallow_equals(filteredChannelIds, lastChannelIds)) {
+        if (shallowEquals(filteredChannelIds, lastChannelIds)) {
             return lastChannelIds;
         }
 
@@ -503,9 +490,8 @@ export function makeGetChannelIdsForCategory() {
 // with inactive DMs/GMs and archived channels filtered out.
 export function makeFilterAndSortChannelsForCategory() {
     const filterArchivedChannels = makeFilterArchivedChannels();
-    const filterAutoclosedDMs = legacyMakeFilterAutoclosedDMs();
+    const filterAutoclosedDMs = makeFilterAutoclosedDMs();
     const filterManuallyClosedDMs = makeFilterManuallyClosedDMs();
-    const filterUnreadChannels = makeFilterUnreadChannels();
     const sortChannels = makeSortChannels();
 
     return (state: GlobalState, originalChannels: Channel[], category: ChannelCategory) => {
@@ -514,10 +500,6 @@ export function makeFilterAndSortChannelsForCategory() {
         channels = filterArchivedChannels(state, channels);
         channels = filterManuallyClosedDMs(state, channels);
         channels = filterAutoclosedDMs(state, channels, category.type);
-        const sidebarPreferences = getSidebarPreferences(state);
-        if (sidebarPreferences.unreads_at_top === 'true') {
-            channels = filterUnreadChannels(state, channels);
-        }
         channels = sortChannels(state, channels, category);
 
         return channels;
@@ -565,7 +547,7 @@ export function makeGetChannelsByCategory() {
         }
 
         // Do a shallow equality check of channelsByCategory to avoid returning a new object containing the same data
-        if (shallow_equals(channelsByCategory, lastChannelsByCategory)) {
+        if (shallowEquals(channelsByCategory, lastChannelsByCategory)) {
             return lastChannelsByCategory;
         }
 

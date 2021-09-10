@@ -12,7 +12,6 @@ import {getFavoritesPreferences, getMyPreferences, getTeammateNameDisplaySetting
 import {haveICurrentChannelPermission, haveIChannelPermission, haveITeamPermission} from '@mm-redux/selectors/entities/roles';
 import {getCurrentTeamId, getMyTeams, getTeamMemberships} from '@mm-redux/selectors/entities/teams';
 import {isCurrentUserSystemAdmin, getCurrentUserId} from '@mm-redux/selectors/entities/users';
-import {ChannelCategory} from '@mm-redux/types/channel_categories';
 import {Channel, ChannelStats, ChannelMembership, ChannelMemberCountsByGroup} from '@mm-redux/types/channels';
 import {Config} from '@mm-redux/types/config';
 import {Post} from '@mm-redux/types/posts';
@@ -23,11 +22,10 @@ import {ThreadsState} from '@mm-redux/types/threads';
 import {UsersState, UserProfile} from '@mm-redux/types/users';
 import {NameMappedObjects, UserIDMappedObjects, IDMappedObjects, RelationOneToOne, RelationOneToMany} from '@mm-redux/types/utilities';
 import {getMsgCountInChannel, buildDisplayableChannelListWithUnreadSection, completeDirectChannelInfo, completeDirectChannelDisplayName, getUserIdFromChannelName, getChannelByName as getChannelByNameHelper, isChannelMuted, getDirectChannelName, isAutoClosed, isDirectChannelVisible, isGroupChannelVisible, isGroupOrDirectChannelVisible, sortChannelsByDisplayName, isFavoriteChannel, isDefault, sortChannelsByRecency} from '@mm-redux/utils/channel_utils';
-import {createIdsSelector, memoizeResult} from '@mm-redux/utils/helpers';
+import {createIdsSelector} from '@mm-redux/utils/helpers';
 
 import {General, Permissions} from '../../constants';
 
-import {makeGetCategoriesForTeam, makeGetChannelsByCategory} from './channel_categories';
 import {getThreadCounts} from './threads';
 import {getUserIdsInChannels} from './users';
 
@@ -982,28 +980,6 @@ export function isManuallyUnread(state: GlobalState, channelId?: string): boolea
 export function getChannelMemberCountsByGroup(state: GlobalState, channelId: string): ChannelMemberCountsByGroup {
     return state.entities.channels.channelMemberCountsByGroup[channelId] || {};
 }
-
-/**
- * Channel Categories
- */
-
-export const getCategoriesForCurrentTeam: (state: GlobalState) => ChannelCategory[] = (() => {
-    const getCategoriesForTeam = makeGetCategoriesForTeam();
-
-    return memoizeResult((state: GlobalState) => {
-        const currentTeamId = getCurrentTeamId(state);
-        return getCategoriesForTeam(state, currentTeamId);
-    });
-})();
-
-export const getChannelsByCategoryForCurrentTeam: (state: GlobalState) => RelationOneToOne<ChannelCategory, Channel[]> = (() => {
-    const getChannelsByCategory = makeGetChannelsByCategory();
-
-    return memoizeResult((state: GlobalState) => {
-        const currentTeamId = getCurrentTeamId(state);
-        return getChannelsByCategory(state, currentTeamId);
-    });
-})();
 
 // makeGetChannelsForIds returns a selector that, given an array of channel IDs, returns a list of the corresponding
 // channels. Channels are returned in the same order as the given IDs with undefined entries replacing any invalid IDs.
