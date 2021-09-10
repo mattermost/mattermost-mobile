@@ -25,12 +25,14 @@ type OwnProps = {
     post: Post;
 }
 
+const emptyBindings: AppBinding[] = [];
+
 const getPostMenuBindings = makeAppBindingsSelector(AppBindingLocations.POST_MENU_ITEM);
 const getThreadPostMenuBindings = makeRHSAppBindingSelector(AppBindingLocations.POST_MENU_ITEM);
 
 function mapStateToProps(state: GlobalState, props: OwnProps) {
     const apps = appsEnabled(state);
-    let bindings: AppBinding[] | null = [];
+    let bindings: AppBinding[] | null = emptyBindings;
     if (apps) {
         if (props.post.channel_id === getCurrentChannelId(state)) {
             bindings = getPostMenuBindings(state);
