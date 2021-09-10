@@ -17,6 +17,7 @@ import {Device} from '@constants';
 import {MM_TABLES, SYSTEM_IDENTIFIERS} from '@constants/database';
 import {useServerUrl} from '@context/server_url';
 import {useSplitView} from '@hooks/device';
+import useDidUpdate from '@hooks/did_update';
 import {openGallerWithMockFile} from '@utils/gallery';
 import {generateId} from '@utils/general';
 import {calculateDimensions, getViewPortWidth, isGifTooLarge} from '@utils/images';
@@ -71,6 +72,14 @@ const ImagePreview = ({expandedLink, isReplyPost, link, metadata, postId, theme}
     useEffect(() => {
         if (!isImageLink(link) && expandedLink === undefined) {
             getRedirectLocation(serverUrl, link);
+        }
+    }, [link]);
+
+    useDidUpdate(() => {
+        if (expandedLink) {
+            setImageUrl(expandedLink);
+        } else if (link !== imageUrl) {
+            setImageUrl(link);
         }
     }, [link]);
 
