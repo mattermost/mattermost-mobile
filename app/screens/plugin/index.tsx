@@ -34,7 +34,7 @@ function Plugin({link}: PluginProps) {
                 automaticallyAdjustContentInsets={false}
                 cacheEnabled={false}
                 javaScriptEnabled={true}
-                injectedJavaScript={`const meta = document.createElement('meta'); meta.setAttribute('content', 'width=device-width, initial-scale=1, maximum-scale=1, user-scalable=2.0'); meta.setAttribute('name', 'viewport'); document.getElementsByTagName('head')[0].appendChild(meta); `}
+                injectedJavaScript={'const meta = document.createElement(\'meta\'); meta.setAttribute(\'content\', \'width=device-width, initial-scale=1\'); meta.setAttribute(\'name\', \'viewport\'); document.getElementsByTagName(\'head\')[0].appendChild(meta); '}
                 onShouldStartLoadWithRequest={() => true}
                 source={{uri: link, headers: HEADERS}}
                 startInLoadingState={true}
