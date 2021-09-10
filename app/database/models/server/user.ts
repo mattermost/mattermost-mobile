@@ -135,4 +135,10 @@ export default class UserModel extends Model {
 
     /** teams : All the team that this user is part of  */
     @children(TEAM_MEMBERSHIP) teams!: TeamMembershipModel[];
+
+    prepareSatus = (status: string) => {
+        this.prepareUpdate((u) => {
+            u.status = status;
+        });
+    }
 }

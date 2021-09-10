@@ -5,9 +5,9 @@ import React, {useEffect} from 'react';
 import {Platform, StyleProp, View, ViewProps, ViewStyle} from 'react-native';
 import FastImage from 'react-native-fast-image';
 
-// import {fetchStatusInBatch} from '@actions/remote/user';
-// import UserStatus from '@components/user_status';
+import {fetchStatusInBatch} from '@actions/remote/user';
 import CompassIcon from '@components/compass_icon';
+import UserStatus from '@components/user_status';
 import {useServerUrl} from '@context/server_url';
 import {useTheme} from '@context/theme';
 import NetworkManager from '@init/network_manager';
@@ -73,7 +73,7 @@ const ProfilePicture = ({author, iconSize, showStatus = true, size = 64, statusS
 
     useEffect(() => {
         if (author && !author.status && showStatus) {
-            // fetchStatusInBatch(serverUrl, author.id);
+            fetchStatusInBatch(serverUrl, author.id);
         }
     }, []);
 
@@ -86,10 +86,10 @@ const ProfilePicture = ({author, iconSize, showStatus = true, size = 64, statusS
     if (author?.status && !author.isBot && showStatus) {
         statusIcon = (
             <View style={[style.statusWrapper, statusStyle, {borderRadius: statusSize / 2}]}>
-                {/* <UserStatus
+                <UserStatus
                     size={statusSize}
                     status={author.status}
-                /> */}
+                />
             </View>
         );
     }

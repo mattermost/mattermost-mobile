@@ -10,6 +10,15 @@ import type PostInChannelModel from '@typings/database/models/servers/posts_in_c
 
 const {SERVER: {POST, POSTS_IN_CHANNEL}} = MM_TABLES;
 
+export const queryPostById = async (database: Database, postId: string) => {
+    try {
+        const userRecord = (await database.collections.get(MM_TABLES.SERVER.POST).find(postId)) as PostModel;
+        return userRecord;
+    } catch {
+        return undefined;
+    }
+};
+
 export const queryPostsInChannel = (database: Database, channelId: string): Promise<PostInChannelModel[]> => {
     try {
         return database.get(POSTS_IN_CHANNEL).query(
@@ -48,3 +57,4 @@ export const queryRecentPostsInChannel = async (database: Database, channelId: s
         return Promise.resolve([] as PostModel[]);
     }
 };
+

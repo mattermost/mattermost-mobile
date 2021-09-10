@@ -36,5 +36,5 @@ export default class PostsInThreadModel extends Model {
     @field('latest') latest!: number;
 
     /** post : The related record to the parent Post model */
-    @immutableRelation(POST, 'id') post!: Relation<PostModel>;
+    @immutableRelation(POST, 'root_id') post!: Relation<PostModel>;
 }

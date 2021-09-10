@@ -9,7 +9,9 @@ import {goToScreen} from '@screens/navigation';
 import {isImage, lookupMimeType} from '@utils/file';
 import {generateId} from '@utils/general';
 
-export function openGalleryAtIndex(index: number, files: FileInfo[]) {
+import type FileModel from '@typings/database/models/servers/file';
+
+export function openGalleryAtIndex(index: number, files: FileInfo[] | FileModel[]) {
     Keyboard.dismiss();
     requestAnimationFrame(() => {
         const screen = 'Gallery';

@@ -79,11 +79,28 @@ const UserHandler = (superclass: any) => class extends superclass {
      * @throws DataOperatorException
      * @returns {Promise<PreferenceModel[]>}
      */
-    handlePreferences = ({preferences, prepareRecordsOnly = true}: HandlePreferencesArgs): Promise<PreferenceModel[]> => {
+    handlePreferences = async ({preferences, prepareRecordsOnly = true, sync = false}: HandlePreferencesArgs): Promise<PreferenceModel[]> => {
         if (!preferences.length) {
             throw new DataOperatorException(
                 'An empty "preferences" array has been passed to the handlePreferences method',
             );
+        }
+
+        // WE NEED TO SYNC THE PREFS FROM WHAT WE GOT AND WHAT WE HAVE
+        const deleteRawValues: PreferenceType[] = [];
+        if (sync) {
+            const stored = await this.database.get(PREFERENCE).fetch() as PreferenceModel[];
+            for (const pref of stored) {
+                const exists = preferences.findIndex((p) => p.category === pref.category && p.name === pref.name) > -1;
+                if (!exists) {
+                    deleteRawValues.push({
+                        category: pref.category,
+                        name: pref.name,
+                        user_id: pref.userId,
+                        value: pref.value,
+                    });
+                }
+            }
         }
 
         const createOrUpdateRawValues = getUniqueRawsBy({raws: preferences, key: 'name'});
@@ -94,6 +111,7 @@ const UserHandler = (superclass: any) => class extends superclass {
             transformer: transformPreferenceRecord,
             prepareRecordsOnly,
             createOrUpdateRawValues,
+            deleteRawValues,
             tableName: PREFERENCE,
         });
     };

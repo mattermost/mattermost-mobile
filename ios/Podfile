@@ -40,4 +40,10 @@ end
 
   post_install do |installer|
     react_native_post_install(installer)
+
+    puts 'Patching Alamofire to include X-Uncompressed-Content-Length to measure download progress'
+    %x(patch Pods/Alamofire/Source/SessionDelegate.swift < patches/SessionDelegate.patch)
+
+    puts 'Patching XCDYouTube so it can playback videos'
+    %x(patch Pods/XCDYouTubeKit/XCDYouTubeKit/XCDYouTubeVideoOperation.m < patches/XCDYouTubeVideoOperation.patch)
   end

@@ -1,9 +1,16 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import NetworkManager from '@init/network_manager';
-
 import type {ClientResponse} from '@mattermost/react-native-network-client';
+
+import {SYSTEM_IDENTIFIERS} from '@constants/database';
+import DatabaseManager from '@database/manager';
+import NetworkManager from '@init/network_manager';
+import {queryExpandedLinks} from '@queries/servers/system';
+
+import {forceLogoutIfNecessary} from './session';
+
+import type {Client} from '@client/rest';
 
 export const doPing = async (serverUrl: string) => {
     const client = await NetworkManager.createClient(serverUrl);
@@ -41,3 +48,37 @@ export const doPing = async (serverUrl: string) => {
     return {error: undefined};
 };
 
+export const getRedirectLocation = async (serverUrl: string, link: string) => {
+    const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
+    if (!operator) {
+        return {error: `${serverUrl} database not found`};
+    }
+
+    let client: Client;
+    try {
+        client = NetworkManager.getClient(serverUrl);
+    } catch (error) {
+        return {error};
+    }
+
+    try {
+        const expandedLink = await client.getRedirectLocation(link);
+        if (expandedLink?.location) {
+            const storedLinks = await queryExpandedLinks(operator.database);
+            storedLinks[link] = expandedLink.location;
+            const expanded: IdValue = {
+                id: SYSTEM_IDENTIFIERS.EXPANDED_LINKS,
+                value: JSON.stringify(storedLinks),
+            };
+            await operator.handleSystem({
+                systems: [expanded],
+                prepareRecordsOnly: false,
+            });
+        }
+
+        return {expandedLink};
+    } catch (error) {
+        forceLogoutIfNecessary(serverUrl, error);
+        return {error};
+    }
+};

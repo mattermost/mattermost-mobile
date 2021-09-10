@@ -2,6 +2,7 @@
 // See LICENSE.txt for license information.
 
 import ActionType from './action_type';
+import Apps from './apps';
 import Attachment from './attachment';
 import Database from './database';
 import DeepLink from './deep_linking';
@@ -12,6 +13,7 @@ import List from './list';
 import Navigation from './navigation';
 import Network from './network';
 import Permissions from './permissions';
+import Post from './post';
 import Preferences from './preferences';
 import SSO, {REDIRECT_URL_SCHEME, REDIRECT_URL_SCHEME_DEV} from './sso';
 import Screens from './screens';
@@ -21,6 +23,7 @@ import WebsocketEvents from './websocket';
 export {
     ActionType,
     Attachment,
+    Apps,
     Database,
     DeepLink,
     Device,
@@ -30,6 +33,7 @@ export {
     Navigation,
     Network,
     Permissions,
+    Post,
     Preferences,
     REDIRECT_URL_SCHEME,
     REDIRECT_URL_SCHEME_DEV,

@@ -9,7 +9,7 @@ import Clipboard from '@react-native-community/clipboard';
 import React, {useCallback, useMemo} from 'react';
 import {useIntl} from 'react-intl';
 import {DeviceEventEmitter, GestureResponderEvent, StyleProp, StyleSheet, Text, TextStyle, View} from 'react-native';
-import {of} from 'rxjs';
+import {of as of$} from 'rxjs';
 
 import SlideUpPanelItem, {ITEM_HEIGHT} from '@components/slide_up_panel_item';
 import {useTheme} from '@context/theme';
@@ -29,21 +29,23 @@ import type SystemModel from '@typings/database/models/servers/system';
 import type UserModelType from '@typings/database/models/servers/user';
 
 type AtMentionProps = {
-    currentUserId: SystemModel;
+    currentUserId: string;
     database: Database;
+    disableAtChannelMentionHighlight?: boolean;
     groups: GroupModel[];
     isSearchResult?: boolean;
-    mentionKeys: Array<{key: string }>;
+    mentionKeys?: Array<{key: string }>;
     mentionName: string;
     mentionStyle: TextStyle;
     myGroups: GroupMembershipModel[];
     onPostPress?: (e: GestureResponderEvent) => void;
     teammateNameDisplay: string;
-    textStyle: StyleProp<TextStyle>;
+    textStyle?: StyleProp<TextStyle>;
     users: UserModelType[];
 }
 
 type AtMentionArgs = {
+    currentUserId: SystemModel;
     config: SystemModel;
     license: SystemModel;
     preferences: PreferenceModel[];
@@ -61,6 +63,7 @@ const style = StyleSheet.create({
 const AtMention = ({
     currentUserId,
     database,
+    disableAtChannelMentionHighlight,
     groups,
     isSearchResult,
     mentionName,
@@ -96,15 +99,15 @@ const AtMention = ({
         return new UserModel(database.get(USER), {username: ''});
     }, [users, mentionName]);
     const userMentionKeys = useMemo(() => {
-        if (user.id !== currentUserId.value) {
-            return [];
-        }
-
         if (mentionKeys) {
             return mentionKeys;
         }
+
+        if (user.id !== currentUserId) {
+            return [];
+        }
         return getUserMentionKeys(user, groups, myGroups);
-    }, [currentUserId.value, groups, mentionKeys, myGroups, user]);
+    }, [currentUserId, groups, mentionKeys, myGroups, user]);
 
     const getGroupFromMentionName = () => {
         const mentionNameTrimmed = mentionName.toLowerCase().replace(/[._-]*$/, '');
@@ -210,7 +213,7 @@ const AtMention = ({
             const pattern = new RegExp(/\b(all|channel|here)(?:\.\B|_\b|\b)/, 'i');
             const mentionMatch = pattern.exec(mentionName);
 
-            if (mentionMatch) {
+            if (mentionMatch && !disableAtChannelMentionHighlight) {
                 mention = mentionMatch.length > 1 ? mentionMatch[1] : mentionMatch[0];
                 suffix = mentionName.replace(mention, '');
                 isMention = true;
@@ -264,24 +267,27 @@ const withPreferences = withObservables([], ({database}: WithDatabaseArgs) => ({
     preferences: database.get(PREFERENCE).query(Q.where('category', Preferences.CATEGORY_DISPLAY_SETTINGS)).observe(),
 }));
 
-const withAtMention = withObservables(['mentionName', 'preferences', 'config', 'license'], ({database, mentionName, preferences, config, license}: WithDatabaseArgs & AtMentionArgs) => {
-    let mn = mentionName.toLowerCase();
-    if ((/[._-]$/).test(mn)) {
-        mn = mn.substring(0, mn.length - 1);
-    }
+const withAtMention = withObservables(
+    ['currentUserId', 'mentionName', 'preferences', 'config', 'license'],
+    ({currentUserId, database, mentionName, preferences, config, license}: WithDatabaseArgs & AtMentionArgs) => {
+        let mn = mentionName.toLowerCase();
+        if ((/[._-]$/).test(mn)) {
+            mn = mn.substring(0, mn.length - 1);
+        }
 
-    const teammateNameDisplay = of(getTeammateNameDisplaySetting(preferences, config.value, license.value));
+        const teammateNameDisplay = of$(getTeammateNameDisplaySetting(preferences, config.value, license.value));
 
-    return {
-        groups: database.get(GROUP).query(Q.where('delete_at', Q.eq(0))).observe(),
-        myGroups: database.get(GROUP_MEMBERSHIP).query().observe(),
-        teammateNameDisplay,
-        users: database.get(USER).query(
-            Q.where('username', Q.like(
-                `%${Q.sanitizeLikeString(mn)}%`,
-            )),
-        ).observeWithColumns(['username']),
-    };
-});
+        return {
+            currentUserId: of$(currentUserId.value),
+            groups: database.get(GROUP).query(Q.where('delete_at', Q.eq(0))).observe(),
+            myGroups: database.get(GROUP_MEMBERSHIP).query().observe(),
+            teammateNameDisplay,
+            users: database.get(USER).query(
+                Q.where('username', Q.like(
+                    `%${Q.sanitizeLikeString(mn)}%`,
+                )),
+            ).observeWithColumns(['username']),
+        };
+    });
 
-export default withDatabase(withPreferences(withAtMention(AtMention)));
+export default withDatabase(withPreferences(withAtMention(React.memo(AtMention))));

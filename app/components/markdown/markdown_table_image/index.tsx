@@ -89,7 +89,7 @@ const MarkTableImage = ({disabled, imagesMetadata, postId, serverURL, source}: M
     if (failed) {
         image = (
             <CompassIcon
-                name='jumbo-attachment-image-broken'
+                name='file-image-broken-outline-large'
                 size={24}
             />
         );

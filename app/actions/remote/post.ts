@@ -2,6 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {ActionType, General} from '@constants';
+import {SYSTEM_IDENTIFIERS} from '@constants/database';
 import DatabaseManager from '@database/manager';
 import {getNeededAtMentionedUsernames} from '@helpers/api/user';
 import NetworkManager from '@init/network_manager';
@@ -9,9 +10,9 @@ import {queryRecentPostsInChannel} from '@queries/servers/post';
 import {queryCurrentUserId, queryCurrentChannelId} from '@queries/servers/system';
 import {queryAllUsers} from '@queries/servers/user';
 
-import type {Client} from '@client/rest';
-
 import {forceLogoutIfNecessary} from './session';
+
+import type {Client} from '@client/rest';
 
 type PostsRequest = {
     error?: never;
@@ -186,9 +187,9 @@ export const fetchPostAuthors = async (serverUrl: string, posts: Post[], fetchOn
             const authors = result.flat();
 
             if (!fetchOnly && authors.length) {
-                operator.handleUsers({
+                await operator.handleUsers({
                     users: authors,
-                    prepareRecordsOnly: true,
+                    prepareRecordsOnly: false,
                 });
             }
 
@@ -196,6 +197,38 @@ export const fetchPostAuthors = async (serverUrl: string, posts: Post[], fetchOn
         }
 
         return {authors: [] as UserProfile[]};
+    } catch (error) {
+        forceLogoutIfNecessary(serverUrl, error);
+        return {error};
+    }
+};
+
+export const postActionWithCookie = async (serverUrl: string, postId: string, actionId: string, actionCookie: string, selectedOption = '') => {
+    const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
+    if (!operator) {
+        return {error: `${serverUrl} database not found`};
+    }
+
+    let client: Client;
+    try {
+        client = NetworkManager.getClient(serverUrl);
+    } catch (error) {
+        return {error};
+    }
+
+    try {
+        const data = await client.doPostActionWithCookie(postId, actionId, actionCookie, selectedOption);
+        if (data?.trigger_id) {
+            await operator.handleSystem({
+                systems: [{
+                    id: SYSTEM_IDENTIFIERS.INTEGRATION_TRIGGER_ID,
+                    value: data.trigger_id,
+                }],
+                prepareRecordsOnly: false,
+            });
+        }
+
+        return {data};
     } catch (error) {
         forceLogoutIfNecessary(serverUrl, error);
         return {error};

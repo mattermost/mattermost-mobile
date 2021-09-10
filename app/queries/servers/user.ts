@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {Database} from '@nozbe/watermelondb';
+import {Database, Q} from '@nozbe/watermelondb';
 
 import {MM_TABLES} from '@constants/database';
 
@@ -31,6 +31,24 @@ export const queryCurrentUser = async (database: Database) => {
 export const queryAllUsers = async (database: Database): Promise<UserModel[]> => {
     try {
         const userRecords = (await database.get(MM_TABLES.SERVER.USER).query().fetch()) as UserModel[];
+        return userRecords;
+    } catch {
+        return Promise.resolve([] as UserModel[]);
+    }
+};
+
+export const queryUsersById = async (database: Database, userIds: string[]): Promise<UserModel[]> => {
+    try {
+        const userRecords = (await database.get(MM_TABLES.SERVER.USER).query(Q.where('id', Q.oneOf(userIds))).fetch()) as UserModel[];
+        return userRecords;
+    } catch {
+        return Promise.resolve([] as UserModel[]);
+    }
+};
+
+export const queryUsersByUsername = async (database: Database, usernames: string[]): Promise<UserModel[]> => {
+    try {
+        const userRecords = (await database.get(MM_TABLES.SERVER.USER).query(Q.where('username', Q.oneOf(usernames))).fetch()) as UserModel[];
         return userRecords;
     } catch {
         return Promise.resolve([] as UserModel[]);

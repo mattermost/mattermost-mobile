@@ -8,7 +8,7 @@ import withObservables from '@nozbe/with-observables';
 import React, {Children, ReactElement, useCallback} from 'react';
 import {useIntl} from 'react-intl';
 import {Alert, DeviceEventEmitter, StyleSheet, Text, View} from 'react-native';
-import {of} from 'rxjs';
+import {of as of$} from 'rxjs';
 import urlParse from 'url-parse';
 
 import {switchToChannelByName} from '@actions/local/channel';
@@ -176,8 +176,8 @@ const withConfigValues = withObservables(['config'], ({config}: {config: SystemM
     const cfg: ClientConfig = config.value;
 
     return {
-        experimentalNormalizeMarkdownLinks: of(cfg.ExperimentalNormalizeMarkdownLinks),
-        siteURL: of(cfg.SiteURL),
+        experimentalNormalizeMarkdownLinks: of$(cfg.ExperimentalNormalizeMarkdownLinks),
+        siteURL: of$(cfg.SiteURL),
     };
 });
 

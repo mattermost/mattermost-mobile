@@ -1,0 +1,18 @@
+--- SessionDelegate.swifts	2021-08-10 16:26:55.000000000 -0400
++++ SessionDelegate.swift	2021-08-10 16:27:33.000000000 -0400
+@@ -286,6 +286,15 @@
+             return
+         }
+ 
++        let sizeString = ((downloadTask.response as? HTTPURLResponse)?.allHeaderFields["X-Uncompressed-Content-Length"]) as? String
++        if (sizeString != nil) {
++            let size = Int64(sizeString!)
++            downloadRequest.updateDownloadProgress(bytesWritten: bytesWritten,
++                                                   totalBytesExpectedToWrite: size!)
++            return
++            
++        }
++        
+         downloadRequest.updateDownloadProgress(bytesWritten: bytesWritten,
+                                                totalBytesExpectedToWrite: totalBytesExpectedToWrite)
+     }

@@ -1,8 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {Q, Query, Relation} from '@nozbe/watermelondb';
-import {field, immutableRelation, lazy} from '@nozbe/watermelondb/decorators';
+import {Relation} from '@nozbe/watermelondb';
+import {field, immutableRelation} from '@nozbe/watermelondb/decorators';
 import Model, {Associations} from '@nozbe/watermelondb/Model';
 
 import {MM_TABLES} from '@constants/database';
@@ -36,19 +36,9 @@ export default class GroupMembershipModel extends Model {
     /* user_id: The foreign key to the related User record*/
     @field('user_id') userId!: string;
 
-    /** memberGroup : The related group this user belongs to */
-    @immutableRelation(GROUP, 'group_id') memberGroup!: Relation<GroupModel>;
+    /** group : The related group this user belongs to */
+    @immutableRelation(GROUP, 'group_id') group!: Relation<GroupModel>;
 
-    /** memberUser : The related user in the group */
-    @immutableRelation(USER, 'user_id') memberUser!: Relation<UserModel>;
-
-    /**
-     * getAllGroupsForUser : Retrieves all the groups that the user is part of
-     */
-    @lazy getAllGroupsForUser = this.collections.get(GROUP).query(Q.on(USER, 'id', this.userId)) as Query<GroupModel>;
-
-    /**
-     * getAllUsersInGroup : Retrieves all the users who are part of this group
-     */
-    @lazy getAllUsersInGroup = this.collections.get(USER).query(Q.on(GROUP, 'id', this.groupId)) as Query<UserModel>;
+    /** user : The related user in the group */
+    @immutableRelation(USER, 'user_id') user!: Relation<UserModel>;
 }

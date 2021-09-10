@@ -36,5 +36,5 @@ export default class PostsInChannelModel extends Model {
     @field('latest') latest!: number;
 
     /** channel : The parent record of the channel for those posts */
-    @immutableRelation(CHANNEL, 'id') channel!: Relation<ChannelModel>;
+    @immutableRelation(CHANNEL, 'channel_id') channel!: Relation<ChannelModel>;
 }

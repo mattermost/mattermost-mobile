@@ -157,7 +157,7 @@ const MarkdownImage = ({
     if (failed) {
         return (
             <CompassIcon
-                name='jumbo-attachment-image-broken'
+                name='file-image-broken-outline-large'
                 size={24}
             />
         );
@@ -205,6 +205,7 @@ const MarkdownImage = ({
             <TouchableWithFeedback
                 onPress={handleLinkPress}
                 onLongPress={handleLinkLongPress}
+                style={{width, height}}
             >
                 {image}
             </TouchableWithFeedback>

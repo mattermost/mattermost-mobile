@@ -1,0 +1,53 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`UserStatus should match snapshot, away status 1`] = `
+<Icon
+  name="clock"
+  style={
+    Object {
+      "color": "#ffbc1f",
+      "fontSize": 32,
+    }
+  }
+  testID="user_status.icon.away"
+/>
+`;
+
+exports[`UserStatus should match snapshot, dnd status 1`] = `
+<Icon
+  name="minus-circle"
+  style={
+    Object {
+      "color": "#d24b4e",
+      "fontSize": 32,
+    }
+  }
+  testID="user_status.icon.dnd"
+/>
+`;
+
+exports[`UserStatus should match snapshot, online status 1`] = `
+<Icon
+  name="check-circle"
+  style={
+    Object {
+      "color": "#3db887",
+      "fontSize": 32,
+    }
+  }
+  testID="user_status.icon.online"
+/>
+`;
+
+exports[`UserStatus should match snapshot, should default to offline status 1`] = `
+<Icon
+  name="circle-outline"
+  style={
+    Object {
+      "color": "rgba(184,184,184,0.64)",
+      "fontSize": 32,
+    }
+  }
+  testID="user_status.icon.offline"
+/>
+`;
