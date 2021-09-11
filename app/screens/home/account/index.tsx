@@ -4,8 +4,9 @@
 import {withDatabase} from '@nozbe/watermelondb/DatabaseProvider';
 import withObservables from '@nozbe/with-observables';
 import {useRoute} from '@react-navigation/native';
+import {preventDoubleTap} from '@utils/tap';
 import React, {useCallback, useEffect, useState} from 'react';
-import {StyleSheet, Text, TextStyle, View} from 'react-native';
+import {DeviceEventEmitter, StyleSheet, Text, TextStyle, View} from 'react-native';
 import Animated, {AnimatedLayout, FadeInLeft, FadeInRight} from 'react-native-reanimated';
 import {SafeAreaView} from 'react-native-safe-area-context';
 import {switchMap} from 'rxjs/operators';
@@ -15,10 +16,13 @@ import FormattedText from '@components/formatted_text';
 import ProfilePicture from '@components/profile_picture';
 import StatusLabel from '@components/status_label';
 import UserStatus from '@components/user_status';
+import {Navigation} from '@constants';
+import General from '@constants/general';
 import {MM_TABLES, SYSTEM_IDENTIFIERS} from '@constants/database';
 import {useTheme} from '@context/theme';
 import DatabaseManager from '@database/manager';
 import {t} from '@i18n';
+import {dismissModal, showModalOverCurrentContext} from '@screens/navigation';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 import type ServersModel from '@typings/database/models/app/servers';
@@ -27,6 +31,7 @@ import type UserModel from '@typings/database/models/servers/user';
 import type {WithDatabaseArgs} from '@typings/database/database';
 
 const {SERVER: {SYSTEM, USER}, APP: {SERVERS}} = MM_TABLES;
+const {OUT_OF_OFFICE, OFFLINE, AWAY, ONLINE, DND} = General;
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     return {
@@ -132,10 +137,8 @@ const AccountScreen = ({currentUser}: AccountScreenProps) => {
 
     const goToSavedMessages = () => {};
 
-    const firstName = currentUser.firstName;
-    const lastName = currentUser.lastName;
     const nickName = currentUser.nickname ? ` (${currentUser.nickname})` : '';
-    const title = `${firstName} ${lastName}${nickName}`;
+    const title = `${currentUser.firstName} ${currentUser.lastName}${nickName}`;
     const userName = `@${currentUser.username}`;
 
     const getLabelComponent = useCallback((id: string, defaultMessage: string, otherStyle?: TextStyle) => {
@@ -146,6 +149,65 @@ const AccountScreen = ({currentUser}: AccountScreenProps) => {
                 style={StyleSheet.flatten([styles.menuLabel, otherStyle])}
             />
         );
+    }, []);
+
+    const handleSetStatus = useCallback(preventDoubleTap(() => {
+        const items = [
+            {
+                action: () => setStatus(ONLINE),
+                text: {
+                    id: t('mobile.set_status.online'),
+                    defaultMessage: 'Online',
+                },
+            },
+            {
+                action: () => setStatus(AWAY),
+                text: {
+                    id: t('mobile.set_status.away'),
+                    defaultMessage: 'Away',
+                },
+            },
+            {
+                action: () => setStatus(DND),
+                text: {
+                    id: t('mobile.set_status.dnd'),
+                    defaultMessage: 'Do Not Disturb',
+                },
+            },
+            {
+                action: () => setStatus(OFFLINE),
+                text: {
+                    id: t('mobile.set_status.offline'),
+                    defaultMessage: 'Offline',
+                },
+            },
+        ];
+
+        showModalOverCurrentContext('OptionsModal', {items});
+    }), []);
+
+    const setStatus = useCallback((status: string) => {
+        if (currentUser.status === OUT_OF_OFFICE) {
+            dismissModal();
+
+            //todo: implement this.confirmReset(status)
+            return;
+        }
+
+        updateStatus(status);
+        DeviceEventEmitter.emit(Navigation.NAVIGATION_CLOSE_MODAL);
+    }, []);
+
+    const updateStatus = useCallback((status: string) => {
+        currentUser.update((user) => {
+            user.status = status as unknown as string;
+        });
+
+        // todo: send the updated status to server
+        // this.props.actions.setStatus({
+        //     user_id: currentUser.id,
+        //     status,
+        // });
     }, []);
 
     return (
@@ -184,7 +246,7 @@ const AccountScreen = ({currentUser}: AccountScreenProps) => {
                                     status={currentUser.status}
                                 />}
                             separator={false}
-                            onPress={goToSavedMessages} // fixme : do onPress action
+                            onPress={handleSetStatus}
                             theme={theme}
                         />
                         <DrawerItem
