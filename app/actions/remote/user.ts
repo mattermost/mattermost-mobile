@@ -274,6 +274,25 @@ export const fetchStatusInBatch = (serverUrl: string, id: string) => {
     return debouncedFetchStatusesByIds.apply(null, [serverUrl]);
 };
 
+export const setStatus = async (serverUrl: string, status: UserStatus) => {
+    let client: Client;
+    try {
+        client = NetworkManager.getClient(serverUrl);
+    } catch (error) {
+        return {error};
+    }
+
+    try {
+        const data = await client.updateStatus(status);
+        return {
+            data,
+        };
+    } catch (error) {
+        forceLogoutIfNecessary(serverUrl, error);
+        return {error};
+    }
+};
+
 export const fetchStatusByIds = async (serverUrl: string, userIds: string[], fetchOnly = false) => {
     let client: Client;
     try {

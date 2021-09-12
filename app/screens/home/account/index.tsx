@@ -11,12 +11,14 @@ import Animated, {AnimatedLayout, FadeInLeft, FadeInRight} from 'react-native-re
 import {SafeAreaView} from 'react-native-safe-area-context';
 import {switchMap} from 'rxjs/operators';
 
+import {setStatus} from '@actions/remote/user';
 import DrawerItem from '@components/drawer_item';
 import FormattedText from '@components/formatted_text';
 import ProfilePicture from '@components/profile_picture';
 import StatusLabel from '@components/status_label';
 import UserStatus from '@components/user_status';
 import {Navigation} from '@constants';
+import {useServerUrl} from '@context/server_url';
 import General from '@constants/general';
 import {MM_TABLES, SYSTEM_IDENTIFIERS} from '@constants/database';
 import {useTheme} from '@context/theme';
@@ -118,6 +120,7 @@ type AccountScreenProps = {
 const AccountScreen = ({currentUser, database}: AccountScreenProps) => {
     const theme = useTheme();
     const route = useRoute();
+    const serverUrl = useServerUrl();
     const [serverName, setServerName] = useState('');
     const params = route.params! as { direction: string };
     const entering = params.direction === 'left' ? FadeInLeft : FadeInRight;
@@ -156,28 +159,28 @@ const AccountScreen = ({currentUser, database}: AccountScreenProps) => {
     const handleSetStatus = useCallback(preventDoubleTap(() => {
         const items = [
             {
-                action: () => setStatus(ONLINE),
+                action: () => setUserStatus(ONLINE),
                 text: {
                     id: t('mobile.set_status.online'),
                     defaultMessage: 'Online',
                 },
             },
             {
-                action: () => setStatus(AWAY),
+                action: () => setUserStatus(AWAY),
                 text: {
                     id: t('mobile.set_status.away'),
                     defaultMessage: 'Away',
                 },
             },
             {
-                action: () => setStatus(DND),
+                action: () => setUserStatus(DND),
                 text: {
                     id: t('mobile.set_status.dnd'),
                     defaultMessage: 'Do Not Disturb',
                 },
             },
             {
-                action: () => setStatus(OFFLINE),
+                action: () => setUserStatus(OFFLINE),
                 text: {
                     id: t('mobile.set_status.offline'),
                     defaultMessage: 'Offline',
@@ -188,7 +191,7 @@ const AccountScreen = ({currentUser, database}: AccountScreenProps) => {
         showModalOverCurrentContext('OptionsModal', {items});
     }), []);
 
-    const setStatus = useCallback((status: string) => {
+    const setUserStatus = useCallback((status: string) => {
         if (currentUser.status === OUT_OF_OFFICE) {
             dismissModal();
 
@@ -209,10 +212,12 @@ const AccountScreen = ({currentUser, database}: AccountScreenProps) => {
         });
 
         // todo: send the updated status to server
-        // this.props.actions.setStatus({
-        //     user_id: currentUser.id,
-        //     status,
-        // });
+        await setStatus(serverUrl, {
+            user_id: currentUser.id,
+            status,
+            manual: true,
+            last_activity_at: Date.now(),
+        });
     }, []);
 
     return (
