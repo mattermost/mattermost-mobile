@@ -352,7 +352,7 @@ export async function dismissModal(options = {}) {
         return;
     }
 
-    const componentId = EphemeralStore.getNavigationTopComponentId();
+    const componentId = EphemeralStore.getNavigationTopModalId();
 
     try {
         await Navigation.dismissModal(componentId, options);
