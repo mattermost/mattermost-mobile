@@ -6,6 +6,7 @@ import {StyleSheet, Text, TouchableOpacity, View} from 'react-native';
 
 import CompassIcon from '@components/compass_icon';
 import FormattedText from '@components/formatted_text';
+import {t} from '@i18n';
 import {preventDoubleTap} from '@utils/tap';
 
 type Props = {
@@ -81,7 +82,7 @@ const OptionsModalList = ({items = [], onCancelPress, onItemPress}: Props) => {
                 style={style.option}
             >
                 <FormattedText
-                    id='channel_modal.cancel'
+                    id={t('channel_modal.cancel')}
                     defaultMessage='Cancel'
                     style={style.optionText}
                 />
