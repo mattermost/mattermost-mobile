@@ -25,6 +25,7 @@ import {t} from '@i18n';
 import {dismissModal, showModalOverCurrentContext} from '@screens/navigation';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
+import type Database from '@nozbe/watermelondb/Database';
 import type ServersModel from '@typings/database/models/app/servers';
 import type SystemModel from '@typings/database/models/servers/system';
 import type UserModel from '@typings/database/models/servers/user';
@@ -111,9 +112,10 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
 
 type AccountScreenProps = {
     currentUser: UserModel;
+    database: Database;
 };
 
-const AccountScreen = ({currentUser}: AccountScreenProps) => {
+const AccountScreen = ({currentUser, database}: AccountScreenProps) => {
     const theme = useTheme();
     const route = useRoute();
     const [serverName, setServerName] = useState('');
@@ -198,9 +200,12 @@ const AccountScreen = ({currentUser}: AccountScreenProps) => {
         DeviceEventEmitter.emit(Navigation.NAVIGATION_CLOSE_MODAL);
     }, []);
 
-    const updateStatus = useCallback((status: string) => {
-        currentUser.update((user) => {
-            user.status = status as unknown as string;
+    const updateStatus = useCallback(async (status: string) => {
+        // writes to local db
+        await database.write(async () => {
+            await currentUser.update((user) => {
+                user.status = status as unknown as string;
+            });
         });
 
         // todo: send the updated status to server
