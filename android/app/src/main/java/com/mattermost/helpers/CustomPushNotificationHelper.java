@@ -89,10 +89,6 @@ public class CustomPushNotificationHelper {
                 }
             }
 
-//            if (serverUrl == null) {
-                message = "Unknown Server\n" + message;
-//            }
-
             messagingStyle.addMessage(message, timestamp, sender.build());
         }
     }
