@@ -11,7 +11,7 @@ import testConfig from '@support/test_config';
  * @returns {string} email url
  */
 export const getEmailUrl = () => {
-    const smtpUrl = testConfig.smtpUrl || 'http://localhost:10080';
+    const smtpUrl = testConfig.smtpUrl || 'http://localhost:9001';
 
     return `${smtpUrl}/api/v1/mailbox`;
 };
@@ -82,6 +82,7 @@ export const getMentionEmailTemplate = (sender, message, postId, siteName, teamN
         '<skip-local-time-check>',
         '',
         channelDisplayName,
+        '',
         message,
         '',
         'Want to change your notifications settings?',
