@@ -1,12 +1,13 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import moment from 'moment-timezone';
+
 // isMinimumServerVersion will return true if currentVersion is equal to higher or than
 // the provided minimum version. A non-equal major version will ignore minor and dot
 // versions, and a non-equal minor version will ignore dot version.
 // currentVersion is a string, e.g '4.6.0'
 // minMajorVersion, minMinorVersion, minDotVersion are integers
-
 export const isMinimumServerVersion = (currentVersion: string, minMajorVersion = 0, minMinorVersion = 0, minDotVersion = 0): boolean => {
     if (!currentVersion || typeof currentVersion !== 'string') {
         return false;
@@ -85,4 +86,8 @@ export function safeParseJSON(rawJson: string | Record<string, unknown>) {
     }
 
     return data;
+}
+
+export function getCurrentMomentForTimezone(timezone: string) {
+    return timezone ? moment.tz(timezone) : moment();
 }
