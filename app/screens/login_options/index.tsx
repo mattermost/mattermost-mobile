@@ -1,7 +1,6 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {LOGIN, SSO} from '@constants/screens';
 import React from 'react';
 import {useIntl} from 'react-intl';
 import {Image, ScrollView, StatusBar, Text} from 'react-native';
@@ -9,11 +8,10 @@ import {NavigationFunctionComponent} from 'react-native-navigation';
 import {SafeAreaView} from 'react-native-safe-area-context';
 
 import FormattedText from '@components/formatted_text';
+import {LOGIN, SSO} from '@constants/screens';
 import {goToScreen} from '@screens/navigation';
 import {preventDoubleTap} from '@utils/tap';
-import {changeOpacity, makeStyleSheetFromTheme} from '@app/utils/theme';
-
-import type {LaunchProps} from '@typings/launch';
+import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 import EmailOption from './email';
 import GitLabOption from './gitlab';
@@ -22,6 +20,8 @@ import LdapOption from './ldap';
 import Office365Option from './office365';
 import OpenIdOption from './open_id';
 import SamlOption from './saml';
+
+import type {LaunchProps} from '@typings/launch';
 
 interface LoginOptionsProps extends LaunchProps {
     componentId: string;

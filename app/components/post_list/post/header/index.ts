@@ -16,8 +16,8 @@ import Header from './header';
 
 import type {WithDatabaseArgs} from '@typings/database/database';
 import type PostModel from '@typings/database/models/servers/post';
-import type SystemModel from '@typings/database/models/servers/system';
 import type PreferenceModel from '@typings/database/models/servers/preference';
+import type SystemModel from '@typings/database/models/servers/system';
 
 type HeaderInputProps = {
     config: ClientConfig;

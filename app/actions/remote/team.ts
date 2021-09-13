@@ -12,8 +12,9 @@ import {fetchMyChannelsForTeam} from './channel';
 import {fetchPostsForUnreadChannels} from './post';
 import {fetchRolesIfNeeded} from './role';
 import {forceLogoutIfNecessary} from './session';
-import TeamModel from '@typings/database/models/servers/team';
-import TeamMembershipModel from '@typings/database/models/servers/team_membership';
+
+import type TeamModel from '@typings/database/models/servers/team';
+import type TeamMembershipModel from '@typings/database/models/servers/team_membership';
 
 export type MyTeamsRequest = {
     teams?: Team[];

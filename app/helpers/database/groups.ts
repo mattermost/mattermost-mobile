@@ -5,9 +5,9 @@ import {MM_TABLES} from '@constants/database';
 
 import type ChannelModel from '@typings/database/models/servers/channel';
 import type GroupModel from '@typings/database/models/servers/group';
+import type GroupMembershipModel from '@typings/database/models/servers/group_membership';
 import type GroupsChannelModel from '@typings/database/models/servers/groups_channel';
 import type GroupsTeamModel from '@typings/database/models/servers/groups_team';
-import type GroupMembershipModel from '@typings/database/models/servers/group_membership';
 import type PostModel from '@typings/database/models/servers/post';
 import type TeamModel from '@typings/database/models/servers/team';
 

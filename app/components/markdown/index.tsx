@@ -21,9 +21,9 @@ import MarkdownLink from './markdown_link';
 import MarkdownList from './markdown_list';
 import MarkdownListItem from './markdown_list_item';
 import MarkdownTable from './markdown_table';
+import MarkdownTableCell, {MarkdownTableCellProps} from './markdown_table_cell';
 import MarkdownTableImage from './markdown_table_image';
 import MarkdownTableRow, {MarkdownTableRowProps} from './markdown_table_row';
-import MarkdownTableCell, {MarkdownTableCellProps} from './markdown_table_cell';
 import {addListItemIndices, combineTextNodes, highlightMentions, pullOutImages} from './transform';
 
 import type {MarkdownBlockStyles, MarkdownTextStyles, UserMentionKey} from '@typings/global/markdown';

@@ -8,7 +8,8 @@
   "parser": "@typescript-eslint/parser",
   "plugins": [
     "@typescript-eslint",
-    "mattermost"
+    "mattermost",
+    "import"
   ],
   "settings": {
     "react": {
@@ -58,7 +59,32 @@
       "singleLine": {
         "beforeColon": false,
         "afterColon": true
-      }}]
+      }}],
+    "@typescript-eslint/member-delimiter-style": 2,
+    "import/order": [
+      2,
+      {
+        "groups": ["builtin", "external", "parent", "sibling", "index", "type"],
+        "newlines-between": "always",
+        "pathGroups": [
+          {
+            "pattern": "{@(@actions|@app|@assets|@client|@components|@constants|@context|@database|@helpers|@hooks|@init|@queries|@screens|@selectors|@share|@store|@telemetry|@typings|@test|@utils)/**,@(@constants|@i18n|@notifications|@store|@websocket)}",
+            "group": "external",
+            "position": "after"
+          },
+          {
+            "pattern": "app/**",
+            "group": "parent",
+            "position": "before"
+          }
+        ],
+        "alphabetize": {
+          "order": "asc",
+          "caseInsensitive": true
+        },
+        "pathGroupsExcludedImportTypes": ["type"]
+      }
+    ]
   },
   "overrides": [
     {

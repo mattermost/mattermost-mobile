@@ -1,10 +1,9 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import GenericClient from '@mattermost/react-native-network-client';
 import {Linking} from 'react-native';
 import urlParse from 'url-parse';
-
-import GenericClient from '@mattermost/react-native-network-client';
 
 import {Files} from '@constants';
 import {DeepLinkType, DeepLinkWithData} from '@typings/launch';

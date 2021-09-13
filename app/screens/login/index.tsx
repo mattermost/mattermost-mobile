@@ -1,5 +1,6 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
+import {useManagedConfig} from '@mattermost/react-native-emm';
 import React, {useCallback, useEffect, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
 import {
@@ -21,11 +22,10 @@ import Button from 'react-native-button';
 import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
 import {NavigationFunctionComponent} from 'react-native-navigation';
 
-import ErrorText from '@components/error_text';
-import {FORGOT_PASSWORD, MFA} from '@constants/screens';
-import FormattedText from '@components/formatted_text';
-import {useManagedConfig} from '@mattermost/react-native-emm';
 import {login} from '@actions/remote/session';
+import ErrorText from '@components/error_text';
+import FormattedText from '@components/formatted_text';
+import {FORGOT_PASSWORD, MFA} from '@constants/screens';
 import {t} from '@i18n';
 import {goToScreen, resetToChannel} from '@screens/navigation';
 import {preventDoubleTap} from '@utils/tap';

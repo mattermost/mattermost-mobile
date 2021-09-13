@@ -17,12 +17,12 @@ import {canManageChannelMembers, hasPermissionForPost} from '@utils/role';
 import Post from './post';
 
 import type {WithDatabaseArgs} from '@typings/database/database';
-import type PreferenceModel from '@typings/database/models/servers/preference';
+import type CustomEmojiModel from '@typings/database/models/servers/custom_emoji';
 import type PostModel from '@typings/database/models/servers/post';
+import type PostsInThreadModel from '@typings/database/models/servers/posts_in_thread';
+import type PreferenceModel from '@typings/database/models/servers/preference';
 import type SystemModel from '@typings/database/models/servers/system';
 import type UserModel from '@typings/database/models/servers/user';
-import PostsInThreadModel from '@typings/database/models/servers/posts_in_thread';
-import CustomEmojiModel from '@typings/database/models/servers/custom_emoji';
 
 const {SERVER: {CUSTOM_EMOJI, POST, PREFERENCE, SYSTEM, USER}} = MM_TABLES;
 

@@ -1,9 +1,6 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {DeviceEventEmitter} from 'react-native';
-import DeviceInfo from 'react-native-device-info';
-
 import Emm from '@mattermost/react-native-emm';
 import {
     APIClientErrorEvent,
@@ -11,6 +8,8 @@ import {
     getOrCreateAPIClient,
     RetryTypes,
 } from '@mattermost/react-native-network-client';
+import {DeviceEventEmitter} from 'react-native';
+import DeviceInfo from 'react-native-device-info';
 
 import LocalConfig from '@assets/config.json';
 import {Client} from '@client/rest';

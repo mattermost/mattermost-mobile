@@ -3,8 +3,8 @@
 
 import {MM_TABLES} from '@constants/database';
 
-import type ChannelModel from '@typings/database/models/servers/channel';
 import type {IdenticalRecordArgs, RangeOfValueArgs, RecordPair, RetrieveRecordsArgs} from '@typings/database/database';
+import type ChannelModel from '@typings/database/models/servers/channel';
 import type PostModel from '@typings/database/models/servers/post';
 import type SlashCommandModel from '@typings/database/models/servers/slash_command';
 import type TeamModel from '@typings/database/models/servers/team';

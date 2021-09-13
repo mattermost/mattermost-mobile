@@ -22,12 +22,11 @@ import FormattedText from '@components/formatted_text';
 import {Screens} from '@constants';
 import NetworkManager from '@init/network_manager';
 import {goToScreen} from '@screens/navigation';
+import {DeepLinkWithData, LaunchProps, LaunchType} from '@typings/launch';
 import {isMinimumServerVersion} from '@utils/helpers';
 import {preventDoubleTap} from '@utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {getServerUrlAfterRedirect, isValidUrl, sanitizeUrl} from '@utils/url';
-
-import {DeepLinkWithData, LaunchProps, LaunchType} from '@typings/launch';
 
 interface ServerProps extends LaunchProps {
     componentId: string;

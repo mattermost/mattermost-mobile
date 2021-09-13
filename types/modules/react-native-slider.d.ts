@@ -1,7 +1,6 @@
 /* eslint-disable header/header */
 declare module 'react-native-slider' {
     import {ComponentClass} from 'react';
-
     import {
         ImageSourcePropType,
         SpringAnimationConfig,

@@ -3,10 +3,10 @@
 
 import {MM_TABLES} from '@constants/database';
 import {prepareBaseRecord} from '@database/operator/server_data_operator/transformers/index';
+import {OperationType} from '@typings/database/enums';
 
 import type{TransformerArgs} from '@typings/database/database';
 import type DraftModel from '@typings/database/models/servers/draft';
-import {OperationType} from '@typings/database/enums';
 import type FileModel from '@typings/database/models/servers/file';
 import type PostModel from '@typings/database/models/servers/post';
 import type PostsInChannelModel from '@typings/database/models/servers/posts_in_channel';

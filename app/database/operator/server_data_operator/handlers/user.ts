@@ -17,14 +17,14 @@ import {
 import {getUniqueRawsBy} from '@database/operator/utils/general';
 import {sanitizeReactions} from '@database/operator/utils/reaction';
 
-import type ChannelMembershipModel from '@typings/database/models/servers/channel_membership';
-import type CustomEmojiModel from '@typings/database/models/servers/custom_emoji';
 import type {
     HandleChannelMembershipArgs,
     HandlePreferencesArgs,
     HandleReactionsArgs,
     HandleUsersArgs,
 } from '@typings/database/database';
+import type ChannelMembershipModel from '@typings/database/models/servers/channel_membership';
+import type CustomEmojiModel from '@typings/database/models/servers/custom_emoji';
 import type PreferenceModel from '@typings/database/models/servers/preference';
 import type ReactionModel from '@typings/database/models/servers/reaction';
 import type UserModel from '@typings/database/models/servers/user';

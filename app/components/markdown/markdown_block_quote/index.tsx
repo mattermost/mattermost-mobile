@@ -2,7 +2,6 @@
 // See LICENSE.txt for license information.
 
 import React, {ReactNode} from 'react';
-
 import {StyleSheet, TextStyle, View, ViewStyle} from 'react-native';
 
 import CompassIcon from '@components/compass_icon';

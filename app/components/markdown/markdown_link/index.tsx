@@ -2,9 +2,9 @@
 // See LICENSE.txt for license information.
 
 import {useManagedConfig} from '@mattermost/react-native-emm';
-import Clipboard from '@react-native-community/clipboard';
 import {withDatabase} from '@nozbe/watermelondb/DatabaseProvider';
 import withObservables from '@nozbe/with-observables';
+import Clipboard from '@react-native-community/clipboard';
 import React, {Children, ReactElement, useCallback} from 'react';
 import {useIntl} from 'react-intl';
 import {Alert, DeviceEventEmitter, StyleSheet, Text, View} from 'react-native';
@@ -20,8 +20,8 @@ import DeepLinkTypes from '@constants/deep_linking';
 import {useServerUrl} from '@context/server_url';
 import {dismissAllModals, popToRoot, showModalOverCurrentContext} from '@screens/navigation';
 import {errorBadChannel} from '@utils/draft';
-import {matchDeepLink, normalizeProtocol, tryOpenURL} from '@utils/url';
 import {preventDoubleTap} from '@utils/tap';
+import {matchDeepLink, normalizeProtocol, tryOpenURL} from '@utils/url';
 
 import type {WithDatabaseArgs} from '@typings/database/database';
 import type SystemModel from '@typings/database/models/servers/system';

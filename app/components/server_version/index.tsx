@@ -9,7 +9,7 @@ import {useIntl} from 'react-intl';
 import {View} from '@constants';
 import {MM_TABLES, SYSTEM_IDENTIFIERS} from '@constants/database';
 import {isMinimumServerVersion} from '@utils/helpers';
-import {unsupportedServer} from '@app/utils/supported_server';
+import {unsupportedServer} from '@utils/supported_server';
 import {isSystemAdmin} from '@utils/user';
 
 import type {WithDatabaseArgs} from '@typings/database/database';

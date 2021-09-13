@@ -3,9 +3,8 @@
 
 import {Linking} from 'react-native';
 
-import * as UrlUtils from '@utils/url';
-
 import {DeepLinkType} from '@typings/launch';
+import * as UrlUtils from '@utils/url';
 
 /* eslint-disable max-nested-callbacks */
 

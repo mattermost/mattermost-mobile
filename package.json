@@ -124,6 +124,7 @@
     "detox": "18.20.0",
     "eslint": "7.31.0",
     "eslint-plugin-header": "3.1.1",
+    "eslint-plugin-import": "2.23.4",
     "eslint-plugin-jest": "24.4.0",
     "eslint-plugin-mattermost": "github:mattermost/eslint-plugin-mattermost#46ad99355644a719bf32082f472048f526605181",
     "eslint-plugin-react": "7.24.0",

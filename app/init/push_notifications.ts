@@ -1,7 +1,6 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {DEFAULT_LOCALE, getLocalizedMessage, t} from '@i18n';
 import {AppState, DeviceEventEmitter, Platform} from 'react-native';
 import DeviceInfo from 'react-native-device-info';
 import {
@@ -18,6 +17,7 @@ import {
 import {Device, General, Navigation} from '@constants';
 import {GLOBAL_IDENTIFIERS} from '@constants/database';
 import DatabaseManager from '@database/manager';
+import {DEFAULT_LOCALE, getLocalizedMessage, t} from '@i18n';
 import {getLaunchPropsFromNotification, relaunchApp} from '@init/launch';
 import NativeNotifications from '@notifications';
 import {queryMentionCount} from '@queries/app/global';

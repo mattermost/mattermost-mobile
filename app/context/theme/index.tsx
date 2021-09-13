@@ -11,8 +11,8 @@ import {MM_TABLES, SYSTEM_IDENTIFIERS} from '@constants/database';
 import EphemeralStore from '@store/ephemeral_store';
 import {setNavigationStackStyles} from '@utils/theme';
 
-import type Database from '@nozbe/watermelondb/Database';
 import type {PreferenceModel, SystemModel} from '@database/models/server';
+import type Database from '@nozbe/watermelondb/Database';
 
 type Props = {
     currentTeamId: SystemModel[];
