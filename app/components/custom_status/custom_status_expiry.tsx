@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React from 'react';
-import moment from 'moment-timezone';
+import moment, {Moment} from 'moment-timezone';
 import {Text, TextStyle} from 'react-native';
 
 import {getUserTimezone} from '@actions/local/timezone';
@@ -23,7 +23,7 @@ type Props = {
     testID?: string;
     textStyles?: TextStyle;
     theme: Theme;
-    time: Date;
+    time: Date | Moment;
     withinBrackets?: boolean;
 }
 
