@@ -17,7 +17,7 @@ export const setCurrentUserStatusOffline = async (serverUrl: string) => {
     }
 
     user.prepareSatus(General.OFFLINE);
-    operator.batchRecords([user]);
+    await operator.batchRecords([user]);
 
     return null;
 };

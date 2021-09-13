@@ -185,11 +185,6 @@ export const loginEntry = async ({serverUrl, user, deviceToken}: AfterLoginArgs)
 const deferredLoginActions = async (
     serverUrl: string, user: UserProfile, prefData: MyPreferencesRequest, clData: ConfigAndLicenseRequest, teamData: MyTeamsRequest,
     chData?: MyChannelsRequest, initialTeam?: Team, initialChannel?: Channel) => {
-    // defer fetching posts for initial channel
-    if (initialChannel) {
-        fetchPostsForChannel(serverUrl, initialChannel.id);
-    }
-
     // defer sidebar DM & GM profiles
     if (chData?.channels?.length && chData.memberships?.length) {
         const directChannels = chData.channels.filter((c) => c.type === General.DM_CHANNEL || c.type === General.GM_CHANNEL);
@@ -199,8 +194,13 @@ const deferredLoginActions = async (
             await fetchMissingSidebarInfo(serverUrl, Array.from(channelsToFetchProfiles), user.locale, teammateDisplayNameSetting, user.id);
         }
 
+        // defer fetching posts for initial channel
+        if (initialChannel) {
+            await fetchPostsForChannel(serverUrl, initialChannel.id);
+        }
+
         // defer fetching posts for unread channels on initial team
-        fetchPostsForUnreadChannels(serverUrl, chData.channels, chData.memberships, initialChannel?.id);
+        await fetchPostsForUnreadChannels(serverUrl, chData.channels, chData.memberships, initialChannel?.id);
     }
 
     // defer groups for team

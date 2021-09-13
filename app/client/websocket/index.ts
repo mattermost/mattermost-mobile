@@ -4,7 +4,7 @@
 import {Platform} from 'react-native';
 
 import {WebsocketEvents} from '@constants';
-import {queryCommonSystemValues} from '@app/queries/servers/system';
+import {queryCommonSystemValues} from '@queries/servers/system';
 import DatabaseManager from '@database/manager';
 import {getOrCreateWebSocketClient, WebSocketClientInterface} from '@mattermost/react-native-network-client';
 
@@ -130,7 +130,7 @@ export default class WebSocketClient {
             const {client} = await getOrCreateWebSocketClient(url, {headers: {origin}});
             this.conn = client;
         } catch (error) {
-            console.log(error);
+            console.log('WS: Error', error);
             return;
         }
 
@@ -146,6 +146,7 @@ export default class WebSocketClient {
             if (this.token) {
                 // we check for the platform as a workaround until we fix on the server that further authentications
                 // are ignored
+                console.log('SEND AUTH CHALLENGE', this.conn?.readyState, this.token);
                 this.sendMessage('authentication_challenge', {token: this.token});
             }
 
@@ -214,8 +215,6 @@ export default class WebSocketClient {
         });
 
         this.conn!.onError((evt: any) => {
-            console.log('WSC: on error');
-            console.log(evt);
             if (this.connectFailCount <= 1) {
                 console.log('websocket error'); //eslint-disable-line no-console
                 console.log(evt); //eslint-disable-line no-console
@@ -224,16 +223,12 @@ export default class WebSocketClient {
             if (this.errorCallback) {
                 this.errorCallback(evt);
             }
-
-            // Not sure if needed or not. In theory, whenever there is an error, it should also call close (and therefore, onClose)
-            // but I haven't seen that happening.
-            //this.conn?.close()
         });
 
         this.conn!.onMessage((evt: any) => {
             console.log('WSC: on message');
             console.log(evt);
-            const msg = JSON.parse(evt.data);
+            const msg = evt.message;
 
             // This indicates a reply to a websocket request.
             // We ignore sequence number validation of message responses
@@ -287,6 +282,7 @@ export default class WebSocketClient {
             }
         });
 
+        console.log('OPEN THE WS')
         this.conn.open();
     }
 
@@ -325,6 +321,7 @@ export default class WebSocketClient {
         this.responseSequence = 1;
 
         if (this.conn && this.conn.readyState === WebSocket.OPEN) {
+            console.log('call on close');
             this.conn.close();
         }
     }
@@ -332,6 +329,7 @@ export default class WebSocketClient {
     public invalidate() {
         console.log('WSC: invalidate');
         this.conn?.invalidate();
+        this.conn = undefined;
     }
 
     private sendMessage(action: string, data: any) {

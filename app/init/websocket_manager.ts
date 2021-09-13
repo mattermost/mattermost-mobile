@@ -28,7 +28,7 @@ class WebsocketManager {
                 async ({serverUrl, token}) => {
                     const database = DatabaseManager.serverDatabases[serverUrl]?.database;
                     if (!database) {
-                        console.log('no database');
+                        console.log('no database for', serverUrl);
                         return;
                     }
                     const lastDisconnect = await queryWebSocketLastDisconnected(database);
@@ -54,7 +54,7 @@ class WebsocketManager {
 
     public createClient = (serverURL: string, bearerToken: string, storedLastDisconnect = 0) => {
         console.log('WSM: create');
-        console.log(storedLastDisconnect);
+        console.log('storedLastDisconnect', storedLastDisconnect);
         const client = new WebSocketClient(serverURL, bearerToken, storedLastDisconnect);
 
         client.setFirstConnectCallback(() => this.onFirstConnect(serverURL)); // TODO think about reconnect
@@ -65,6 +65,7 @@ class WebsocketManager {
         client.setCloseCallback((connectFailCount: number, lastDisconnect: number) => this.onWebsocketClose(serverURL, connectFailCount, lastDisconnect));
 
         if (this.netConnected) {
+            console.log('CREATE WS', serverURL)
             client.initialize();
         }
         this.clients[serverURL] = client;
@@ -82,7 +83,10 @@ class WebsocketManager {
     public openAll = () => {
         console.log('WSM: open all');
         for (const client of Object.values(this.clients)) {
-            client.initialize();
+            console.log('CLIENT', client.isConnected())
+            if (!client.isConnected()) {
+                client.initialize();
+            }
         }
     }
 
@@ -97,13 +101,13 @@ class WebsocketManager {
         handleFirstConnect(serverURL);
     }
 
-    private onWebsocketClose = (serverURL: string, connectFailCount: number, lastDisconnect: number) => {
+    private onWebsocketClose = async (serverURL: string, connectFailCount: number, lastDisconnect: number) => {
         console.log('WSM: on websocket close');
         console.log(connectFailCount);
-        console.log(lastDisconnect);
         if (connectFailCount <= 1) { // First fail
-            setCurrentUserStatusOffline(serverURL);
-            handleClose(serverURL, lastDisconnect);
+            console.log('STORE LAST DISCONNECT', lastDisconnect);
+            await setCurrentUserStatusOffline(serverURL);
+            await handleClose(serverURL, lastDisconnect);
 
             // TODO: Stop periodic status updates
         }
@@ -111,13 +115,13 @@ class WebsocketManager {
 
     private onAppStateChange = async (appState: AppStateStatus) => {
         console.log('WSM: AppStateChange');
-        console.log(appState);
-        console.log(this.previousAppState);
+        console.log('AppState', appState);
+        console.log('Previous AppState', this.previousAppState);
         if (appState === this.previousAppState) {
             return;
         }
 
-        if (this.previousAppState === 'active') {
+        if (appState !== 'active') {
             this.closeAll();
             this.previousAppState = appState;
             return;
@@ -125,6 +129,7 @@ class WebsocketManager {
 
         if (appState === 'active' && this.netConnected) { // Reopen the websockets only if there is connection
             this.openAll();
+            console.log('OPEN FROM STATE')
             this.previousAppState = appState;
             return;
         }
@@ -145,6 +150,7 @@ class WebsocketManager {
         this.netConnected = newState;
 
         if (this.netConnected && this.previousAppState === 'active') { // Reopen the websockets only if the app is active
+            console.log('OPEN FROM NET')
             this.openAll();
             return;
         }
