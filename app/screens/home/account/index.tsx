@@ -4,27 +4,20 @@
 import {withDatabase} from '@nozbe/watermelondb/DatabaseProvider';
 import withObservables from '@nozbe/with-observables';
 import {useRoute} from '@react-navigation/native';
-import {preventDoubleTap} from '@utils/tap';
 import React, {useCallback, useEffect, useState} from 'react';
-import {DeviceEventEmitter, StyleSheet, Text, TextStyle, View} from 'react-native';
+import {StyleSheet, Text, TextStyle, View} from 'react-native';
 import Animated, {AnimatedLayout, FadeInLeft, FadeInRight} from 'react-native-reanimated';
 import {SafeAreaView} from 'react-native-safe-area-context';
 import {switchMap} from 'rxjs/operators';
 
-import {setStatus} from '@actions/remote/user';
 import DrawerItem from '@components/drawer_item';
 import FormattedText from '@components/formatted_text';
 import ProfilePicture from '@components/profile_picture';
-import StatusLabel from '@components/status_label';
-import UserStatus from '@components/user_status';
-import {Navigation} from '@constants';
 import {useServerUrl} from '@context/server_url';
-import General from '@constants/general';
 import {MM_TABLES, SYSTEM_IDENTIFIERS} from '@constants/database';
 import {useTheme} from '@context/theme';
 import DatabaseManager from '@database/manager';
 import {t} from '@i18n';
-import {dismissModal, showModalOverCurrentContext} from '@screens/navigation';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 import type Database from '@nozbe/watermelondb/Database';
@@ -33,8 +26,9 @@ import type SystemModel from '@typings/database/models/servers/system';
 import type UserModel from '@typings/database/models/servers/user';
 import type {WithDatabaseArgs} from '@typings/database/database';
 
+import UserPresence from './components/user_status';
+
 const {SERVER: {SYSTEM, USER}, APP: {SERVERS}} = MM_TABLES;
-const {OUT_OF_OFFICE, OFFLINE, AWAY, ONLINE, DND} = General;
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     return {
@@ -140,6 +134,7 @@ const AccountScreen = ({currentUser, database}: AccountScreenProps) => {
         getServerDisplayName();
     }, []);
 
+    //fixme: remove placeholder callback method
     const goToSavedMessages = () => {};
 
     const nickName = currentUser.nickname ? ` (${currentUser.nickname})` : '';
@@ -154,70 +149,6 @@ const AccountScreen = ({currentUser, database}: AccountScreenProps) => {
                 style={StyleSheet.flatten([styles.menuLabel, otherStyle])}
             />
         );
-    }, []);
-
-    const handleSetStatus = useCallback(preventDoubleTap(() => {
-        const items = [
-            {
-                action: () => setUserStatus(ONLINE),
-                text: {
-                    id: t('mobile.set_status.online'),
-                    defaultMessage: 'Online',
-                },
-            },
-            {
-                action: () => setUserStatus(AWAY),
-                text: {
-                    id: t('mobile.set_status.away'),
-                    defaultMessage: 'Away',
-                },
-            },
-            {
-                action: () => setUserStatus(DND),
-                text: {
-                    id: t('mobile.set_status.dnd'),
-                    defaultMessage: 'Do Not Disturb',
-                },
-            },
-            {
-                action: () => setUserStatus(OFFLINE),
-                text: {
-                    id: t('mobile.set_status.offline'),
-                    defaultMessage: 'Offline',
-                },
-            },
-        ];
-
-        showModalOverCurrentContext('OptionsModal', {items});
-    }), []);
-
-    const setUserStatus = useCallback((status: string) => {
-        if (currentUser.status === OUT_OF_OFFICE) {
-            dismissModal();
-
-            //todo: implement this.confirmReset(status)
-            return;
-        }
-
-        updateStatus(status);
-        DeviceEventEmitter.emit(Navigation.NAVIGATION_CLOSE_MODAL);
-    }, []);
-
-    const updateStatus = useCallback(async (status: string) => {
-        // writes to local db
-        await database.write(async () => {
-            await currentUser.update((user) => {
-                user.status = status as unknown as string;
-            });
-        });
-
-        // todo: send the updated status to server
-        await setStatus(serverUrl, {
-            user_id: currentUser.id,
-            status,
-            manual: true,
-            last_activity_at: Date.now(),
-        });
     }, []);
 
     return (
@@ -243,20 +174,11 @@ const AccountScreen = ({currentUser, database}: AccountScreenProps) => {
                         <Text style={styles.textUserName}>{`${userName}`}</Text>
                     </View>
                     <View style={styles.body}>
-                        <DrawerItem
-                            testID='account.status.action'
-                            labelComponent={
-                                <StatusLabel
-                                    labelStyle={styles.menuLabel}
-                                    status={currentUser.status}
-                                />}
-                            leftComponent={
-                                <UserStatus
-                                    size={24}
-                                    status={currentUser.status}
-                                />}
-                            separator={false}
-                            onPress={handleSetStatus}
+                        <UserPresence
+                            currentUser={currentUser}
+                            database={database}
+                            serverUrl={serverUrl}
+                            styles={{menuLabel: styles.menuLabel}}
                             theme={theme}
                         />
                         <DrawerItem
