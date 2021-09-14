@@ -2,8 +2,8 @@
 // See LICENSE.txt for license information.
 
 import {Platform} from 'react-native';
-import {FileSystem} from 'react-native-unimodules';
 import DeviceInfo from 'react-native-device-info';
+import {FileSystem} from 'react-native-unimodules';
 
 import keyMirror from '@utils/key_mirror';
 

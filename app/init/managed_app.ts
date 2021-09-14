@@ -2,8 +2,8 @@
 // See LICENSE.txt for license information.
 
 import Emm, {ManagedConfig} from '@mattermost/react-native-emm';
-import {Alert, AlertButton, AppState, AppStateStatus, Platform} from 'react-native';
 import JailMonkey from 'jail-monkey';
+import {Alert, AlertButton, AppState, AppStateStatus, Platform} from 'react-native';
 
 import {DEFAULT_LOCALE, getTranslations, t} from '@i18n';
 import {getIOSAppGroupDetails} from '@utils/mattermost_managed';

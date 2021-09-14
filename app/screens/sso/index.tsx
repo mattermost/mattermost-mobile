@@ -4,15 +4,15 @@
 import {useManagedConfig} from '@mattermost/react-native-emm';
 import React, {useState} from 'react';
 
-import {SSO as SSOEnum} from '@constants';
 import {ssoLogin} from '@actions/remote/session';
+import {SSO as SSOEnum} from '@constants';
 import {resetToChannel} from '@screens/navigation';
 import {isMinimumServerVersion} from '@utils/helpers';
 
-import type {LaunchProps} from '@typings/launch';
-
 import SSOWithRedirectURL from './sso_with_redirect_url';
 import SSOWithWebView from './sso_with_webview';
+
+import type {LaunchProps} from '@typings/launch';
 
 interface SSOProps extends LaunchProps {
   config: Partial<ClientConfig>;

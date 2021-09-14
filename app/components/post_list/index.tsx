@@ -9,10 +9,10 @@ import {DeviceEventEmitter, FlatList, Platform, RefreshControl, StyleSheet, View
 import {of as of$} from 'rxjs';
 import {switchMap} from 'rxjs/operators';
 
-import Post from '@components/post_list/post';
-import CombinedUserActivity from '@app/components/post_list/combined_user_activity';
+import CombinedUserActivity from '@components/post_list/combined_user_activity';
 import DateSeparator from '@components/post_list/date_separator';
 import NewMessagesLine from '@components/post_list/new_message_line';
+import Post from '@components/post_list/post';
 import {Preferences} from '@constants';
 import {MM_TABLES, SYSTEM_IDENTIFIERS} from '@constants/database';
 import {useTheme} from '@context/theme';
@@ -26,7 +26,7 @@ import type PostModel from '@typings/database/models/servers/post';
 import type PostsInChannelModel from '@typings/database/models/servers/posts_in_channel';
 import type PreferenceModel from '@typings/database/models/servers/preference';
 import type SystemModel from '@typings/database/models/servers/system';
-import UserModel from '@typings/database/models/servers/user';
+import type UserModel from '@typings/database/models/servers/user';
 
 type RefreshProps = {
     children: ReactElement;

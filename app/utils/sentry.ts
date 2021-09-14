@@ -1,10 +1,11 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {Platform} from 'react-native';
 import {Breadcrumb, Severity} from '@sentry/types';
+import {Platform} from 'react-native';
 
 import Config from '@assets/config.json';
+
 import {ClientError} from './client_error';
 
 export const BREADCRUMB_UNCAUGHT_APP_ERROR = 'uncaught-app-error';

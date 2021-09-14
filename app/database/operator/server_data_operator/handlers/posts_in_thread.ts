@@ -4,9 +4,9 @@
 import {Q} from '@nozbe/watermelondb';
 
 import {Database} from '@constants';
-import {getRawRecordPairs, getValidRecordsForUpdate} from '@database/operator/utils/general';
-import {transformPostInThreadRecord} from '@database/operator/server_data_operator/transformers/post';
 import {getPostListEdges} from '@database//operator/utils/post';
+import {transformPostInThreadRecord} from '@database/operator/server_data_operator/transformers/post';
+import {getRawRecordPairs, getValidRecordsForUpdate} from '@database/operator/utils/general';
 
 import type {RecordPair} from '@typings/database/database';
 import type PostsInThreadModel from '@typings/database/models/servers/posts_in_thread';

@@ -8,8 +8,8 @@ import {queryPostById} from '@queries/servers/post';
 import {queryCurrentUserId} from '@queries/servers/system';
 import {generateId} from '@utils/general';
 
-import type UserModel from '@typings/database/models/servers/user';
 import type PostModel from '@typings/database/models/servers/post';
+import type UserModel from '@typings/database/models/servers/user';
 
 export const sendAddToChannelEphemeralPost = async (serverUrl: string, user: UserModel, addedUsernames: string[], messages: string[], channeId: string, postRootId = '') => {
     const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;

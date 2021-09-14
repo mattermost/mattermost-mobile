@@ -21,12 +21,13 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 import com.mattermost.helpers.CustomPushNotificationHelper;
 import com.mattermost.helpers.DatabaseHelper;
+import com.mattermost.helpers.Network;
+import com.mattermost.helpers.PushNotificationDataHelper;
 import com.mattermost.helpers.ResolvePromise;
-import com.wix.reactnativenotifications.core.NotificationIntentAdapter;
-import com.wix.reactnativenotifications.core.ProxyService;
 import com.wix.reactnativenotifications.core.notification.PushNotification;
 import com.wix.reactnativenotifications.core.AppLaunchHelper;
 import com.wix.reactnativenotifications.core.AppLifecycleFacade;
@@ -43,12 +44,16 @@ public class CustomPushNotification extends PushNotification {
     private static final String PUSH_TYPE_CLEAR = "clear";
     private static final String PUSH_TYPE_SESSION = "session";
     private static final String NOTIFICATIONS_IN_CHANNEL = "notificationsInChannel";
+    private final PushNotificationDataHelper dataHelper;
 
     public CustomPushNotification(Context context, Bundle bundle, AppLifecycleFacade appLifecycleFacade, AppLaunchHelper appLaunchHelper, JsIOHelper jsIoHelper) {
         super(context, bundle, appLifecycleFacade, appLaunchHelper, jsIoHelper);
         CustomPushNotificationHelper.createNotificationChannels(context);
+        dataHelper = new PushNotificationDataHelper(context);
 
         try {
+            Objects.requireNonNull(DatabaseHelper.Companion.getInstance()).init(context);
+            Network.init(context);
             PackageInfo pInfo = context.getPackageManager().getPackageInfo(context.getPackageName(), 0);
             String version = String.valueOf(pInfo.versionCode);
             String storedVersion = null;
@@ -151,7 +156,9 @@ public class CustomPushNotification extends PushNotification {
                 public void resolve(@Nullable Object value) {
                     if (isIdLoaded) {
                         Bundle response = (Bundle) value;
-                        addServerUrlToBundle(response);
+                        if (value != null) {
+                            addServerUrlToBundle(response);
+                        }
                     }
                 }
 
@@ -169,10 +176,14 @@ public class CustomPushNotification extends PushNotification {
                 if (!mAppLifecycleFacade.isAppVisible()) {
                     if (type.equals(PUSH_TYPE_MESSAGE)) {
                         if (channelId != null) {
+                            if (serverUrl != null) {
+                                dataHelper.fetchAndStoreDataForPushNotification(mNotificationProps.asBundle());
+                            }
+
                             Map<String, List<Integer>> notificationsInChannel = loadNotificationsMap(mContext);
                             List<Integer> list = notificationsInChannel.get(channelId);
                             if (list == null) {
-                                list = Collections.synchronizedList(new ArrayList(0));
+                                list = Collections.synchronizedList(new ArrayList<>(0));
                             }
 
                             list.add(0, notificationId);
@@ -259,7 +270,7 @@ public class CustomPushNotification extends PushNotification {
     private String addServerUrlToBundle(Bundle bundle) {
         String serverUrl = bundle.getString("server_url");
         if (serverUrl == null) {
-            serverUrl = DatabaseHelper.getOnlyServerUrl(mContext);
+            serverUrl = Objects.requireNonNull(DatabaseHelper.Companion.getInstance()).getOnlyServerUrl();
             bundle.putString("server_url", serverUrl);
             mNotificationProps = createProps(bundle);
         }
@@ -269,13 +280,13 @@ public class CustomPushNotification extends PushNotification {
 
     private static void saveNotificationsMap(Context context, Map<String, List<Integer>> inputMap) {
         SharedPreferences pSharedPref = context.getSharedPreferences(PUSH_NOTIFICATIONS, Context.MODE_PRIVATE);
-        if (pSharedPref != null && context != null) {
+        if (pSharedPref != null) {
             JSONObject json = new JSONObject(inputMap);
             String jsonString = json.toString();
             SharedPreferences.Editor editor = pSharedPref.edit();
-            editor.remove(NOTIFICATIONS_IN_CHANNEL).commit();
+            editor.remove(NOTIFICATIONS_IN_CHANNEL).apply();
             editor.putString(NOTIFICATIONS_IN_CHANNEL, jsonString);
-            editor.commit();
+            editor.apply();
         }
     }
 

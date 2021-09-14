@@ -12,10 +12,9 @@ import {t} from '@i18n';
 import {getMarkdownTextStyles} from '@utils/markdown';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
-import type {PrimitiveType} from 'intl-messageformat';
-
 import type PostModel from '@typings/database/models/servers/post';
 import type UserModel from '@typings/database/models/servers/user';
+import type {PrimitiveType} from 'intl-messageformat';
 
 type SystemMessageProps = {
     author?: UserModel;

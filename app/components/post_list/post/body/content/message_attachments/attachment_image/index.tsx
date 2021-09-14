@@ -4,13 +4,13 @@
 import React, {useCallback, useRef, useState} from 'react';
 import {View} from 'react-native';
 
-import FileIcon from '@app/components/post_list/post/body/files/file_icon';
+import FileIcon from '@components/post_list/post/body/files/file_icon';
 import ProgressiveImage from '@components/progressive_image';
 import TouchableWithFeedback from '@components/touchable_with_feedback';
 import {Device} from '@constants';
 import {useSplitView} from '@hooks/device';
-import {generateId} from '@utils/general';
 import {openGallerWithMockFile} from '@utils/gallery';
+import {generateId} from '@utils/general';
 import {isGifTooLarge, calculateDimensions, getViewPortWidth} from '@utils/images';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {isValidUrl} from '@utils/url';

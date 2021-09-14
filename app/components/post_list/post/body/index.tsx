@@ -17,8 +17,8 @@ import Files from './files';
 import Message from './message';
 import Reactions from './reactions';
 
+import type FileModel from '@typings/database/models/servers/file';
 import type PostModel from '@typings/database/models/servers/post';
-import FileModel from '@typings/database/models/servers/file';
 
 type BodyProps = {
     appsEnabled: boolean;

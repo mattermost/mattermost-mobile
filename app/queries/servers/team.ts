@@ -7,8 +7,8 @@ import {Database as DatabaseConstants} from '@constants';
 
 import type ServerDataOperator from '@database/operator/server_data_operator';
 import type MyTeamModel from '@typings/database/models/servers/my_team';
-import type TeamChannelHistoryModel from '@typings/database/models/servers/team_channel_history';
 import type TeamModel from '@typings/database/models/servers/team';
+import type TeamChannelHistoryModel from '@typings/database/models/servers/team_channel_history';
 
 const {MY_TEAM, TEAM, TEAM_CHANNEL_HISTORY} = DatabaseConstants.MM_TABLES.SERVER;
 

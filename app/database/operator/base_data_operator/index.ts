@@ -9,10 +9,10 @@ import {
     getValidRecordsForUpdate,
     retrieveRecords,
 } from '@database/operator/utils/general';
+import {OperationType} from '@typings/database/enums';
 
 import type {WriterInterface} from '@nozbe/watermelondb/Database';
 import type Model from '@nozbe/watermelondb/Model';
-
 import type {
     HandleRecordsArgs,
     OperationArgs,
@@ -20,7 +20,6 @@ import type {
     ProcessRecordsArgs,
     RecordPair,
 } from '@typings/database/database';
-import {OperationType} from '@typings/database/enums';
 
 export interface BaseDataOperatorType {
     database: Database;

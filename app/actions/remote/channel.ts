@@ -11,9 +11,8 @@ import {fetchRolesIfNeeded} from './role';
 import {forceLogoutIfNecessary} from './session';
 import {fetchProfilesPerChannels, fetchUsersByIds} from './user';
 
-import type {Model} from '@nozbe/watermelondb';
-
 import type {Client} from '@client/rest';
+import type {Model} from '@nozbe/watermelondb';
 
 export type MyChannelsRequest = {
     channels?: Channel[];

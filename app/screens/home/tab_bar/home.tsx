@@ -5,16 +5,15 @@ import {Q} from '@nozbe/watermelondb';
 import React, {useEffect, useState} from 'react';
 import {Platform, View} from 'react-native';
 
-import {MM_TABLES} from '@constants/database';
 import Badge from '@components/badge';
 import CompassIcon from '@components/compass_icon';
+import {MM_TABLES} from '@constants/database';
 import DatabaseManager from '@database/manager';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
-import type {Subscription} from 'rxjs';
-
 import type ServersModel from '@typings/database/models/app/servers';
 import type MyChannelModel from '@typings/database/models/servers/my_channel';
+import type {Subscription} from 'rxjs';
 
 type Props = {
     isFocused: boolean;

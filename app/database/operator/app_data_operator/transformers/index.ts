@@ -3,13 +3,12 @@
 
 import {MM_TABLES} from '@constants/database';
 import {prepareBaseRecord} from '@database/operator/server_data_operator/transformers';
+import {OperationType} from '@typings/database/enums';
 
 import type {Model} from '@nozbe/watermelondb';
-
-import type InfoModel from '@typings/database/models/app/info';
 import type {TransformerArgs} from '@typings/database/database';
-import {OperationType} from '@typings/database/enums';
 import type GlobalModel from '@typings/database/models/app/global';
+import type InfoModel from '@typings/database/models/app/info';
 
 const {INFO, GLOBAL} = MM_TABLES.APP;
 

@@ -23,8 +23,8 @@ import NetworkManager from '@init/network_manager';
 import {EmojiIndicesByAlias, Emojis} from '@utils/emoji';
 
 import type {WithDatabaseArgs} from '@typings/database/database';
+import type CustomEmojiModel from '@typings/database/models/servers/custom_emoji';
 import type SystemModel from '@typings/database/models/servers/system';
-import CustomEmojiModel from '@typings/database/models/servers/custom_emoji';
 
 const assetImages = new Map([['mattermost.png', require('@assets/images/emojis/mattermost.png')]]);
 

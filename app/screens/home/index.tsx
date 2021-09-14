@@ -1,8 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {NavigationContainer} from '@react-navigation/native';
 import {createBottomTabNavigator, BottomTabBarProps} from '@react-navigation/bottom-tabs';
+import {NavigationContainer} from '@react-navigation/native';
 import React from 'react';
 import {Platform} from 'react-native';
 import {enableScreens} from 'react-native-screens';

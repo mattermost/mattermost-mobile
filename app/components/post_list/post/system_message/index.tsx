@@ -3,9 +3,9 @@
 
 import withObservables from '@nozbe/with-observables';
 
-import type PostModel from '@typings/database/models/servers/post';
-
 import SystemMessage from './system_message';
+
+import type PostModel from '@typings/database/models/servers/post';
 
 const withPost = withObservables(['post'], ({post}: {post: PostModel}) => ({
     author: post.author.observe(),

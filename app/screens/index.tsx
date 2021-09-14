@@ -5,13 +5,13 @@ import {withManagedConfig} from '@mattermost/react-native-emm';
 import React from 'react';
 import {IntlProvider} from 'react-intl';
 import {Platform, StyleProp, ViewStyle} from 'react-native';
-import {Navigation, NavigationFunctionComponent} from 'react-native-navigation';
 import {gestureHandlerRootHOC} from 'react-native-gesture-handler';
+import {Navigation, NavigationFunctionComponent} from 'react-native-navigation';
 import {SafeAreaProvider} from 'react-native-safe-area-context';
 
 import {Screens} from '@constants';
-import {DEFAULT_LOCALE, getTranslations} from '@i18n';
 import {withServerDatabase} from '@database/components';
+import {DEFAULT_LOCALE, getTranslations} from '@i18n';
 
 // TODO: Remove this and uncomment screens as they get added
 /* eslint-disable */

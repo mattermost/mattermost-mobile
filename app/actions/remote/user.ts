@@ -2,21 +2,22 @@
 // See LICENSE.txt for license information.
 
 import {Q} from '@nozbe/watermelondb';
+
 import {fetchRolesIfNeeded} from '@actions/remote/role';
 import {Database, General} from '@constants';
 import DatabaseManager from '@database/manager';
 import {debounce} from '@helpers/api/general';
 import analytics from '@init/analytics';
 import NetworkManager from '@init/network_manager';
-import {prepareUsers, queryCurrentUser, queryUsersById, queryUsersByUsername} from '@queries/servers/user';
 import {queryCurrentUserId} from '@queries/servers/system';
+import {prepareUsers, queryCurrentUser, queryUsersById, queryUsersByUsername} from '@queries/servers/user';
+
+import {forceLogoutIfNecessary} from './session';
 
 import type {Client} from '@client/rest';
 import type {LoadMeArgs} from '@typings/database/database';
 import type RoleModel from '@typings/database/models/servers/role';
 import type UserModel from '@typings/database/models/servers/user';
-
-import {forceLogoutIfNecessary} from './session';
 
 export type ProfilesPerChannelRequest = {
     data?: ProfilesInChannelRequest[];

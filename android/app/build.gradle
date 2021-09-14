@@ -224,6 +224,7 @@ configurations.all {
 
 dependencies {
     implementation fileTree(dir: "libs", include: ["*.jar"])
+    implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-core:1.5.2'
 
     //noinspection GradleDynamicVersio
     implementation "com.facebook.react:react-native:+"  // From node_modules

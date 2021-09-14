@@ -5,8 +5,8 @@ import React from 'react';
 import {StyleSheet, TextStyle, View} from 'react-native';
 import DeviceInfo from 'react-native-device-info';
 
-import {t} from '@i18n';
 import FormattedText from '@components/formatted_text';
+import {t} from '@i18n';
 
 const style = StyleSheet.create({
     info: {

@@ -16,9 +16,8 @@ import {
     transformTermsOfServiceRecord,
 } from '@database/operator/server_data_operator/transformers/general';
 
-import type {Model} from '@nozbe/watermelondb';
-
 import type ServerDataOperator from '..';
+import type {Model} from '@nozbe/watermelondb';
 
 describe('*** DataOperator: Base Handlers tests ***', () => {
     let operator: ServerDataOperator;

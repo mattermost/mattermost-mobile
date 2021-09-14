@@ -1,8 +1,6 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import type {ClientResponse} from '@mattermost/react-native-network-client';
-
 import {SYSTEM_IDENTIFIERS} from '@constants/database';
 import DatabaseManager from '@database/manager';
 import NetworkManager from '@init/network_manager';
@@ -11,6 +9,7 @@ import {queryExpandedLinks} from '@queries/servers/system';
 import {forceLogoutIfNecessary} from './session';
 
 import type {Client} from '@client/rest';
+import type {ClientResponse} from '@mattermost/react-native-network-client';
 
 export const doPing = async (serverUrl: string) => {
     const client = await NetworkManager.createClient(serverUrl);

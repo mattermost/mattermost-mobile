@@ -8,15 +8,14 @@ import Animated from 'react-native-reanimated';
 import Markdown from '@components/markdown';
 import {SEARCH} from '@constants/screens';
 import {useShowMoreAnimatedStyle} from '@hooks/show_more';
-import {getMentionKeysForPost} from '@utils/post';
 import {getMarkdownTextStyles, getMarkdownBlockStyles} from '@utils/markdown';
-
+import {getMentionKeysForPost} from '@utils/post';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 
 import ShowMoreButton from './show_more_button';
 
-import type PostModel from '@typings/database/models/servers/post';
 import type GroupModel from '@typings/database/models/servers/group';
+import type PostModel from '@typings/database/models/servers/post';
 import type UserModel from '@typings/database/models/servers/user';
 
 type MessageProps = {
