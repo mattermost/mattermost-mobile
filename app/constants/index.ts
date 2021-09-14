@@ -4,6 +4,7 @@
 import ActionType from './action_type';
 import Apps from './apps';
 import Attachment from './attachment';
+import CustomStatusDuration from './custom_status';
 import Database from './database';
 import DeepLink from './deep_linking';
 import Device from './device';
@@ -22,8 +23,9 @@ import WebsocketEvents from './websocket';
 
 export {
     ActionType,
-    Attachment,
     Apps,
+    Attachment,
+    CustomStatusDuration,
     Database,
     DeepLink,
     Device,

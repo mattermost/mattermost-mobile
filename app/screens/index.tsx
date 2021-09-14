@@ -66,6 +66,9 @@ Navigation.setLazyComponentRegistrator((screenName) => {
         case Screens.CHANNEL:
         screen = withServerDatabase(require('@screens/channel').default);
         break;
+        case Screens.CUSTOM_STATUS:
+            screen = require('@screens/custom_status').default;
+            break;
     // case 'ChannelAddMembers':
     //     screen = require('@screens/channel_add_members').default;
     //     break;

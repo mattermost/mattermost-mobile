@@ -3,7 +3,7 @@
 
 import moment from 'moment-timezone';
 
-import {General, Preferences} from '@constants';
+import {CustomStatusDuration, General, Preferences} from '@constants';
 import {UserModel} from '@database/models/server';
 import {DEFAULT_LOCALE, getLocalizedMessage, t} from '@i18n';
 
