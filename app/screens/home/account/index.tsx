@@ -8,25 +8,27 @@ import React, {useCallback, useEffect, useState} from 'react';
 import {StyleSheet, Text, TextStyle, View} from 'react-native';
 import Animated, {AnimatedLayout, FadeInLeft, FadeInRight} from 'react-native-reanimated';
 import {SafeAreaView} from 'react-native-safe-area-context';
+import {of as of$} from 'rxjs';
 import {switchMap} from 'rxjs/operators';
 
 import DrawerItem from '@components/drawer_item';
 import FormattedText from '@components/formatted_text';
 import ProfilePicture from '@components/profile_picture';
-import {useServerUrl} from '@context/server_url';
 import {MM_TABLES, SYSTEM_IDENTIFIERS} from '@constants/database';
+import {useServerUrl} from '@context/server_url';
 import {useTheme} from '@context/theme';
 import DatabaseManager from '@database/manager';
 import {t} from '@i18n';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
+import CustomStatus from './components/custom_status';
+import UserPresence from './components/user_status';
+
 import type Database from '@nozbe/watermelondb/Database';
+import type {WithDatabaseArgs} from '@typings/database/database';
 import type ServersModel from '@typings/database/models/app/servers';
 import type SystemModel from '@typings/database/models/servers/system';
 import type UserModel from '@typings/database/models/servers/user';
-import type {WithDatabaseArgs} from '@typings/database/database';
-
-import UserPresence from './components/user_status';
 
 const {SERVER: {SYSTEM, USER}, APP: {SERVERS}} = MM_TABLES;
 
@@ -107,11 +109,12 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
 });
 
 type AccountScreenProps = {
+    config: ClientConfig;
     currentUser: UserModel;
     database: Database;
 };
 
-const AccountScreen = ({currentUser, database}: AccountScreenProps) => {
+const AccountScreen = ({config, currentUser, database}: AccountScreenProps) => {
     const theme = useTheme();
     const route = useRoute();
     const serverUrl = useServerUrl();
@@ -181,14 +184,18 @@ const AccountScreen = ({currentUser, database}: AccountScreenProps) => {
                             styles={{menuLabel: styles.menuLabel}}
                             theme={theme}
                         />
-                        <DrawerItem
-                            testID='account.set_custom_message.action'
-                            labelComponent={getLabelComponent(t('account.set_custom_message'), 'Set a Custom Status')}
-                            iconName='emoticon-outline'
-                            onPress={goToSavedMessages}
-                            separator={true}
-                            theme={theme}
+                        <CustomStatus
+                            config={config}
+                            currentUser={currentUser}
                         />
+                        {/*<DrawerItem*/}
+                        {/*    testID='account.set_custom_message.action'*/}
+                        {/*    labelComponent={getLabelComponent(t('account.set_custom_message'), 'Set a Custom Status')}*/}
+                        {/*    iconName='emoticon-outline'*/}
+                        {/*    onPress={goToSavedMessages}*/}
+                        {/*    separator={true}*/}
+                        {/*    theme={theme}*/}
+                        {/*/>*/}
                         <View style={styles.divider}/>
                         <DrawerItem
                             testID='account.your_profile.action'
@@ -237,8 +244,8 @@ const AccountScreen = ({currentUser, database}: AccountScreenProps) => {
 };
 
 const withCurrentUser = withObservables([], ({database}: WithDatabaseArgs) => ({
-    currentUser: database.get(SYSTEM).findAndObserve(SYSTEM_IDENTIFIERS.CURRENT_USER_ID).
-        pipe(switchMap((id: SystemModel) => database.get(USER).findAndObserve(id.value))),
+    currentUser: database.get(SYSTEM).findAndObserve(SYSTEM_IDENTIFIERS.CURRENT_USER_ID).pipe(switchMap((id: SystemModel) => database.get(USER).findAndObserve(id.value))),
+    config: database.get(SYSTEM).findAndObserve(SYSTEM_IDENTIFIERS.CONFIG).pipe(switchMap((cfg: SystemModel) => of$(cfg.value))),
 }),
 );
 
