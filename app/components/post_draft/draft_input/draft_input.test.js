@@ -110,6 +110,31 @@ describe('DraftInput', () => {
         expect(Alert.alert).toHaveBeenCalledWith('Confirm sending notifications to entire channel', expect.anything(), expect.anything());
     });
 
+    test('should send an alert when sending a message with a @here mention', () => {
+        const wrapper = shallowWithIntl(
+            <DraftInput
+                {...baseProps}
+                ref={ref}
+            />,
+        );
+        const message = '@here';
+        const instance = wrapper.instance();
+        expect(instance.input).toEqual({current: null});
+        instance.input = {
+            current: {
+                getValue: () => message,
+                setValue: jest.fn(),
+                changeDraft: jest.fn(),
+                resetTextInput: jest.fn(),
+            },
+        };
+
+        instance.handleSendMessage();
+        jest.runOnlyPendingTimers();
+        expect(Alert.alert).toBeCalled();
+        expect(Alert.alert).toHaveBeenCalledWith('Confirm sending notifications to entire channel', expect.anything(), expect.anything());
+    });
+
     test('should send an alert when sending a message with a group mention with group with count more than NOTIFY_ALL', () => {
         const wrapper = shallowWithIntl(
             <DraftInput
