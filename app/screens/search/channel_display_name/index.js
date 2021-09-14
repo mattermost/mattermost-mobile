@@ -17,9 +17,11 @@ function makeMapStateToProps() {
         const post = getPost(state, ownProps.postId);
         const channel = post ? getChannel(state, {id: post.channel_id}) : null;
         let channelTeamName = '';
-        const isDMorGM = channel.type === General.DM_CHANNEL || channel.type === General.GM_CHANNEL;
-        if (!isDMorGM) {
-            channelTeamName = getTeam(state, channel.team_id)?.display_name;
+        if (channel) {
+            const isDMorGM = channel.type === General.DM_CHANNEL || channel.type === General.GM_CHANNEL;
+            if (!isDMorGM) {
+                channelTeamName = getTeam(state, channel.team_id)?.display_name;
+            }
         }
 
         return {
