@@ -70,7 +70,14 @@ function sortChannelsByRecencyOrAlpha(locale: string, lastPosts: RelationOneToOn
 //     c. Remaining unread channels
 //   And then secondary by alphabetical ("alpha") or chronological ("recency") order
 
-export const mapAndSortChannelIds = (channels: Array<Channel>, currentUser: UserProfile, myMembers: RelationOneToOne<Channel, ChannelMembership>, lastPosts: RelationOneToOne<Channel, Post>, sorting: SortingType, sortMentionsFirst = false): Array<string> => {
+export const mapAndSortChannelIds = (
+    channels: Channel[],
+    currentUser: UserProfile,
+    myMembers: RelationOneToOne<Channel, ChannelMembership>,
+    lastPosts: RelationOneToOne<Channel, Post>,
+    sorting: SortingType,
+    sortMentionsFirst = false,
+): string[] => {
     const locale = currentUser.locale || General.DEFAULT_LOCALE;
 
     const mutedChannelIds = channels.
