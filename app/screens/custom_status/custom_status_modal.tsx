@@ -32,6 +32,7 @@ import {withServerUrl} from '@context/server_url';
 import {withTheme} from '@context/theme';
 import {t} from '@i18n';
 import ClearAfter from '@screens/custom_status/components/clear_after';
+import CustomStatusSuggestions from '@screens/custom_status/components/custom_status_suggestions';
 import RecentCustomStatuses from '@screens/custom_status/components/recent_custom_statuses';
 import CustomStatusSuggestion from '@screens/custom_status/custom_status_suggestion';
 import {dismissModal, showModal, mergeNavigationOptions, goToScreen} from '@screens/navigation';
@@ -44,22 +45,7 @@ import {getRoundedTime} from '../custom_status_clear_after/date_time_selector';
 import CustomStatusEmoji from './components/custom_status_emoji';
 import CustomStatusInput from './components/custom_status_input';
 
-type DefaultUserCustomStatus = {
-    emoji: string;
-    message: string;
-    messageDefault: string;
-    durationDefault: CustomStatusDuration;
-};
-
 const {DONT_CLEAR, THIRTY_MINUTES, ONE_HOUR, FOUR_HOURS, TODAY, THIS_WEEK, DATE_AND_TIME} = CustomStatusDuration;
-
-const defaultCustomStatusSuggestions: DefaultUserCustomStatus[] = [
-    {emoji: 'calendar', message: t('custom_status.suggestions.in_a_meeting'), messageDefault: 'In a meeting', durationDefault: CustomStatusDuration.ONE_HOUR},
-    {emoji: 'hamburger', message: t('custom_status.suggestions.out_for_lunch'), messageDefault: 'Out for lunch', durationDefault: THIRTY_MINUTES},
-    {emoji: 'sneezing_face', message: t('custom_status.suggestions.out_sick'), messageDefault: 'Out sick', durationDefault: TODAY},
-    {emoji: 'house', message: t('custom_status.suggestions.working_from_home'), messageDefault: 'Working from home', durationDefault: TODAY},
-    {emoji: 'palm_tree', message: t('custom_status.suggestions.on_a_vacation'), messageDefault: 'On a vacation', durationDefault: THIS_WEEK},
-];
 
 const defaultDuration: CustomStatusDuration = TODAY;
 
@@ -68,8 +54,8 @@ interface Props extends NavigationComponentProps {
     theme: Theme;
     customStatus: UserCustomStatus;
     userTimezone: string;
+    serverUrl: string;
     recentCustomStatuses: UserCustomStatus[];
-    isLandscape: boolean;
 
     // actions: {
     //     setCustomStatus: (customStatus: UserCustomStatus) => Promise<ActionResult>;
@@ -83,7 +69,7 @@ interface Props extends NavigationComponentProps {
 type State = {
     emoji?: string;
     text?: string;
-    duration: CustomStatusDuration;
+    duration: typeof CustomStatusDuration;
     expires_at: Moment;
 }
 
@@ -167,13 +153,15 @@ class CustomStatusModal extends NavigationComponent<Props, State> {
                     status.duration = duration;
                     status.expires_at = this.calculateExpiryTime(duration);
                 }
-                const {error} = await this.props.actions.setCustomStatus(status);
+
+                //todo: api call setCustomStatus
+                const {error} = await setCustomStatus(status);
                 if (error) {
                     DeviceEventEmitter.emit(SET_CUSTOM_STATUS_FAILURE);
                 }
             }
         } else if (customStatus?.emoji) {
-            unsetCustomStatus();
+            unsetCustomStatus(serverUrl);
         }
         Keyboard.dismiss();
         dismissModal();
@@ -222,50 +210,6 @@ class CustomStatusModal extends NavigationComponent<Props, State> {
         if (duration === DATE_AND_TIME) {
             this.openClearAfterModal();
         }
-    };
-
-    renderCustomStatusSuggestions = (style: Record<string, StyleProp<ViewStyle>>) => {
-        const {recentCustomStatuses, theme, intl, isExpirySupported} = this.props;
-        const recentCustomStatusTexts = recentCustomStatuses.map((status: UserCustomStatus) => status.text);
-        const customStatusSuggestions = defaultCustomStatusSuggestions.
-            map((status) => ({
-                emoji: status.emoji,
-                text: intl.formatMessage({id: status.message, defaultMessage: status.messageDefault}),
-                duration: status.durationDefault,
-            })).
-            filter((status: UserCustomStatus) => !recentCustomStatusTexts.includes(status.text)).
-            map((status: UserCustomStatus, index: number, arr: UserCustomStatus[]) => (
-                <CustomStatusSuggestion
-                    key={status.text}
-                    handleSuggestionClick={this.handleCustomStatusSuggestionClick}
-                    emoji={status.emoji}
-                    text={status.text}
-                    theme={theme}
-                    separator={index !== arr.length - 1}
-                    duration={status.duration}
-                    isExpirySupported={isExpirySupported}
-                />
-            ));
-
-        if (customStatusSuggestions.length === 0) {
-            return null;
-        }
-
-        return (
-            <>
-                <View style={style.separator}/>
-                <View testID='custom_status.suggestions'>
-                    <FormattedText
-                        id='custom_status.suggestions.title'
-                        defaultMessage='SUGGESTIONS'
-                        style={style.title}
-                    />
-                    <View style={style.block}>
-                        {customStatusSuggestions}
-                    </View>
-                </View>
-            </>
-        );
     };
 
     openEmojiPicker = preventDoubleTap(() => {
@@ -366,7 +310,13 @@ class CustomStatusModal extends NavigationComponent<Props, State> {
                                     theme={theme}
                                 />
                             )}
-                            {this.renderCustomStatusSuggestions(style)}
+                            <CustomStatusSuggestions
+                                intl={intl}
+                                isExpirySupported={isExpirySupported}
+                                onHandleCustomStatusSuggestionClick={this.handleCustomStatusSuggestionClick}
+                                recentCustomStatuses={recentCustomStatuses}
+                                theme={theme}
+                            />
                         </View>
                         <View style={style.separator}/>
                     </ScrollView>
@@ -396,12 +346,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             borderBottomWidth: 1,
             borderTopColor: changeOpacity(theme.centerChannelColor, 0.1),
             borderTopWidth: 1,
-        },
-        title: {
-            fontSize: 17,
-            marginBottom: 12,
-            color: changeOpacity(theme.centerChannelColor, 0.5),
-            marginLeft: 16,
         },
     };
 });
