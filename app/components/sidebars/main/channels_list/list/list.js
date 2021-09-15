@@ -503,16 +503,12 @@ export default class List extends PureComponent {
     }, 10);
 
     updateUnreadIndicators = ({viewableItems}) => {
-        const {unreadChannelIds, showLegacySidebar} = this.props;
+        const {unreadChannelIds} = this.props;
         const firstUnreadId = unreadChannelIds.length && unreadChannelIds[0];
 
         if (firstUnreadId && viewableItems.length) {
-            let isVisible;
-            if (showLegacySidebar) {
-                isVisible = viewableItems.find((v) => v.item === firstUnreadId);
-            } else {
-                isVisible = viewableItems.find((v) => v.item.id === firstUnreadId);
-            }
+            const isVisible = viewableItems.find((v) => v.item === firstUnreadId);
+
             return this.emitUnreadIndicatorChange(!isVisible);
         }
 
