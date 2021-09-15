@@ -1,6 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {isEqual} from 'underscore';
+
 import {Client4} from '@client/rest';
 import {getUser} from '@components/autocomplete/slash_suggestion/app_command_parser/app_command_parser_dependencies';
 import {ChannelCategoryTypes, ChannelTypes} from '@mm-redux/action_types';
@@ -140,19 +142,40 @@ export function fetchMyCategories(teamId: string) {
             return {error};
         }
 
-        return dispatch(batchActions([
-            {
-                type: ChannelCategoryTypes.RECEIVED_CATEGORIES,
-                data: data.categories,
-            },
-            {
-                type: ChannelCategoryTypes.RECEIVED_CATEGORY_ORDER,
-                data: {
-                    teamId,
-                    order: data.order,
+        /*
+         * The patchCategories method calls an optimistic dispatch for categories, so
+         * we have to make sure that the server state is different to the local state
+         * before we call another dispatch; which causes various re-render bugs.
+         *
+         * See https://github.com/mattermost/mattermost-mobile/pull/5460#pullrequestreview-755160667
+         */
+
+        // Get our state, and server data
+        const state = getState();
+        const mappedData = data.categories.reduce((prev, category) => {
+            prev[category.id] = category;
+            return prev;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        }, {} as any);
+
+        // If they are not the same, only then dispatch with the new data
+        if (!isEqual(mappedData, state.entities.channelCategories.orderByTeam)) {
+            return dispatch(batchActions([
+                {
+                    type: ChannelCategoryTypes.RECEIVED_CATEGORIES,
+                    data: data.categories,
                 },
-            },
-        ]));
+                {
+                    type: ChannelCategoryTypes.RECEIVED_CATEGORY_ORDER,
+                    data: {
+                        teamId,
+                        order: data.order,
+                    },
+                },
+            ]));
+        }
+
+        return {data: false};
     };
 }
 

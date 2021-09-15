@@ -15,7 +15,7 @@ import {
     TouchableHighlight,
     View,
 } from 'react-native';
-import {throttle, isEqual} from 'underscore';
+import {isEqual} from 'underscore';
 
 import {showModal} from '@actions/navigation';
 import CompassIcon from '@components/compass_icon';
@@ -403,12 +403,8 @@ export default class List extends PureComponent {
         );
     };
 
-    throttledCollapse = (id, collapsed) => {
-        throttle(this.props.onCollapseCategory(id, collapsed), 2500);
-    }
-
     renderCategoryHeader = ({section}) => {
-        const {styles} = this.props;
+        const {styles, onCollapseCategory} = this.props;
         const {action, id, name, collapsed, type, data} = section;
         const {intl} = this.context;
         const anchor = (id === 'sidebar.types.recent' || id === 'mobile.channel_list.channels');
@@ -452,7 +448,7 @@ export default class List extends PureComponent {
         }
 
         return (
-            <TouchableHighlight onPress={() => this.throttledCollapse(id, !collapsed)}>
+            <TouchableHighlight onPress={() => onCollapseCategory(id, !collapsed)}>
                 {header}
             </TouchableHighlight>
         );
