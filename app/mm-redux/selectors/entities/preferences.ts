@@ -8,7 +8,7 @@ import {getCurrentTeamId} from '@mm-redux/selectors/entities/teams';
 import {PreferenceType} from '@mm-redux/types/preferences';
 import {GlobalState} from '@mm-redux/types/store';
 import {Theme} from '@mm-redux/types/theme';
-import {createShallowSelector} from '@mm-redux/utils/helpers';
+import {createShallowSelector, isMinimumServerVersion} from '@mm-redux/utils/helpers';
 import {getPreferenceKey} from '@mm-redux/utils/preference_utils';
 import {setThemeDefaults} from '@mm-redux/utils/theme_utils';
 
@@ -230,7 +230,8 @@ export const getNewSidebarPreference = reselect.createSelector(
 
 export function shouldAutocloseDMs(state: GlobalState) {
     const config = getConfig(state);
-    if (!config.CloseUnusedDirectMessages || config.CloseUnusedDirectMessages === 'false') {
+    const {serverVersion} = state.entities.general;
+    if ((!config.CloseUnusedDirectMessages || config.CloseUnusedDirectMessages === 'false') && !isMinimumServerVersion(serverVersion, 6)) {
         return false;
     }
 
