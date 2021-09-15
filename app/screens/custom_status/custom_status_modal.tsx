@@ -1,23 +1,24 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {withDatabase} from '@nozbe/watermelondb/DatabaseProvider';
+import withObservables from '@nozbe/with-observables';
 import moment, {Moment} from 'moment-timezone';
 import React from 'react';
 import {injectIntl, IntlShape} from 'react-intl';
 import {DeviceEventEmitter, Dimensions, Keyboard, KeyboardAvoidingView, Platform, ScrollView, View} from 'react-native';
 import {EventSubscription, Navigation, NavigationButtonPressedEvent, NavigationComponent, NavigationComponentProps, Options, OptionsTopBarButton} from 'react-native-navigation';
 import {SafeAreaView} from 'react-native-safe-area-context';
+import {switchMap} from 'rxjs/operators';
 
-import {unsetCustomStatus} from '@actions/remote/user';
+import {removeRecentCustomStatus, setCustomStatus, unsetCustomStatus} from '@actions/remote/user';
 import CompassIcon from '@components/compass_icon';
 import StatusBar from '@components/status_bar';
 import {CustomStatusDuration, Device} from '@constants';
 import {SET_CUSTOM_STATUS_FAILURE} from '@constants/custom_status';
+import {MM_TABLES, SYSTEM_IDENTIFIERS} from '@constants/database';
 import {withServerUrl} from '@context/server_url';
 import {withTheme} from '@context/theme';
-import ClearAfter from '@screens/custom_status/components/clear_after';
-import CustomStatusSuggestions from '@screens/custom_status/components/custom_status_suggestions';
-import RecentCustomStatuses from '@screens/custom_status/components/recent_custom_statuses';
 import {dismissModal, goToScreen, mergeNavigationOptions, showModal} from '@screens/navigation';
 import {getCurrentMomentForTimezone} from '@utils/helpers';
 import {preventDoubleTap} from '@utils/tap';
@@ -25,23 +26,26 @@ import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 import {getRoundedTime} from '../custom_status_clear_after/date_time_selector';
 
+import ClearAfter from './components/clear_after';
 import CustomStatusInput from './components/custom_status_input';
+import CustomStatusSuggestions from './components/custom_status_suggestions';
+import RecentCustomStatuses from './components/recent_custom_statuses';
+
+import type {WithDatabaseArgs} from '@typings/database/database';
+import type SystemModel from '@typings/database/models/servers/system';
+import type UserModel from '@typings/database/models/servers/user';
+const {SERVER: {SYSTEM, USER}} = MM_TABLES;
 
 interface Props extends NavigationComponentProps {
-    intl: IntlShape;
-    theme: Theme;
+    currentUser: UserModel;
     customStatus: UserCustomStatus;
-    userTimezone: string;
-    serverUrl: string;
-    recentCustomStatuses: UserCustomStatus[];
-
-    // actions: {
-    //     setCustomStatus: (customStatus: UserCustomStatus) => Promise<ActionResult>;
-    //     unsetCustomStatus: () => ActionFunc;
-    //     removeRecentCustomStatus: (customStatus: UserCustomStatus) => ActionFunc;
-    // };
-    isExpirySupported: boolean;
+    intl: IntlShape;
     isCustomStatusExpired: boolean;
+    isExpirySupported: boolean;
+    recentCustomStatuses: UserCustomStatus[];
+    serverUrl: string;
+    theme: Theme;
+    userTimezone: string;
 }
 
 type CustomStatusDurationType = keyof typeof CustomStatusDuration
@@ -138,7 +142,8 @@ class CustomStatusModal extends NavigationComponent<Props, State> {
     handleSetStatus = async () => {
         const {emoji, text, duration} = this.state;
         const isStatusSet = emoji || text;
-        const {customStatus, isExpirySupported, serverUrl} = this.props;
+        const {currentUser, customStatus, isExpirySupported, serverUrl} = this.props;
+
         if (isStatusSet) {
             let isStatusSame = customStatus?.emoji === emoji && customStatus?.text === text && customStatus?.duration === duration;
             if (isStatusSame && duration === DATE_AND_TIME) {
@@ -156,8 +161,7 @@ class CustomStatusModal extends NavigationComponent<Props, State> {
                     status.expires_at = this.calculateExpiryTime(duration);
                 }
 
-                //todo: api call setCustomStatus
-                const {error} = await setCustomStatus(status);
+                const {error} = await setCustomStatus(serverUrl, currentUser, status);
                 if (error) {
                     DeviceEventEmitter.emit(SET_CUSTOM_STATUS_FAILURE);
                 }
@@ -194,8 +198,10 @@ class CustomStatusModal extends NavigationComponent<Props, State> {
 
     handleTextChange = (value: string) => this.setState({text: value});
 
-    //todo: this.props.actions.removeRecentCustomStatus
-    handleRecentCustomStatusClear = (status: UserCustomStatus) => removeRecentCustomStatus(status);
+    handleRecentCustomStatusClear = (status: UserCustomStatus) => {
+        const {serverUrl} = this.props;
+        removeRecentCustomStatus(serverUrl, status);
+    }
 
     clearHandle = () => {
         this.setState({emoji: '', text: '', duration: defaultDuration});
@@ -327,7 +333,13 @@ class CustomStatusModal extends NavigationComponent<Props, State> {
     }
 }
 
-export default injectIntl(withTheme(withServerUrl(CustomStatusModal)));
+const augmentCSM = injectIntl(withTheme(withServerUrl(CustomStatusModal)));
+
+const withUser = withObservables([], ({database}: WithDatabaseArgs) => ({
+    currentUser: database.get(SYSTEM).findAndObserve(SYSTEM_IDENTIFIERS.CURRENT_USER_ID).pipe(switchMap((id: SystemModel) => database.get(USER).findAndObserve(id.value)))}
+));
+
+export default withDatabase(withUser(augmentCSM));
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     return {

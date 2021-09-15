@@ -438,6 +438,50 @@ export const setStatus = async (serverUrl: string, status: UserStatus) => {
     }
 };
 
+export const setCustomStatus = async (serverUrl: string, user: UserModel, customStatus: UserCustomStatus) => {
+    let client: Client;
+    try {
+        client = NetworkManager.getClient(serverUrl);
+    } catch (error) {
+        return {error};
+    }
+
+    if (!user.props) {
+        user.props = {};
+    }
+
+    const oldCustomStatus = user.props.customStatus;
+    user.props.customStatus = JSON.stringify(customStatus);
+
+    try {
+        const data = await client.updateCustomStatus(customStatus);
+        console.log('>>> setCustomStatus data', data);
+    } catch (error) {
+        user.props.customStatus = oldCustomStatus;
+        return {error};
+    }
+
+    return {data: true};
+};
+
+export const removeRecentCustomStatus = async (serverUrl: string, customStatus: UserCustomStatus) => {
+    let client: Client;
+    try {
+        client = NetworkManager.getClient(serverUrl);
+    } catch (error) {
+        return {error};
+    }
+
+    try {
+        const data = await client.removeRecentCustomStatus(customStatus);
+        console.log('>>> removeRecentCustomStatus data', data);
+    } catch (error) {
+        return {error};
+    }
+
+    return {data: true};
+};
+
 export const unsetCustomStatus = async (serverUrl: string) => {
     let client: Client;
 
@@ -448,7 +492,8 @@ export const unsetCustomStatus = async (serverUrl: string) => {
     }
 
     try {
-        await client.unsetCustomStatus();
+        const data = await client.unsetCustomStatus();
+        console.log('>>>unsetCustomStatus  data', data);
     } catch (error) {
         return {error};
     }

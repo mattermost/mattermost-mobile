@@ -188,14 +188,6 @@ const AccountScreen = ({config, currentUser, database}: AccountScreenProps) => {
                             config={config}
                             currentUser={currentUser}
                         />
-                        {/*<DrawerItem*/}
-                        {/*    testID='account.set_custom_message.action'*/}
-                        {/*    labelComponent={getLabelComponent(t('account.set_custom_message'), 'Set a Custom Status')}*/}
-                        {/*    iconName='emoticon-outline'*/}
-                        {/*    onPress={goToSavedMessages}*/}
-                        {/*    separator={true}*/}
-                        {/*    theme={theme}*/}
-                        {/*/>*/}
                         <View style={styles.divider}/>
                         <DrawerItem
                             testID='account.your_profile.action'
@@ -243,10 +235,10 @@ const AccountScreen = ({config, currentUser, database}: AccountScreenProps) => {
     );
 };
 
-const withCurrentUser = withObservables([], ({database}: WithDatabaseArgs) => ({
+const withUserConfig = withObservables([], ({database}: WithDatabaseArgs) => ({
     currentUser: database.get(SYSTEM).findAndObserve(SYSTEM_IDENTIFIERS.CURRENT_USER_ID).pipe(switchMap((id: SystemModel) => database.get(USER).findAndObserve(id.value))),
     config: database.get(SYSTEM).findAndObserve(SYSTEM_IDENTIFIERS.CONFIG).pipe(switchMap((cfg: SystemModel) => of$(cfg.value))),
 }),
 );
 
-export default withDatabase(withCurrentUser(AccountScreen));
+export default withDatabase(withUserConfig(AccountScreen));
