@@ -10,8 +10,8 @@ import {
     getSortedFavoriteChannelIds,
     getSortedUnreadChannelIds,
     getOrderedChannelIds,
-    getUnreadChannels,
     getCurrentChannelId,
+    getChannel,
 } from '@mm-redux/selectors/entities/channels';
 import {getTheme, getFavoritesPreferences, getSidebarPreferences, isCollapsedThreadsEnabled} from '@mm-redux/selectors/entities/preferences';
 import {haveITeamPermission} from '@mm-redux/selectors/entities/roles';
@@ -39,10 +39,11 @@ function mapStateToProps(state) {
     const lastUnreadChannel = DeviceTypes.IS_TABLET ? state.views.channel.keepChannelIdAsUnread : null;
 
     // Unreads should always be on top in mobile (for now)
-    //
-    // const unreadsOnTop = getBool(state,
-    //     Preferences.CATEGORY_SIDEBAR_SETTINGS,
-    //     'show_unread_section');
+    /*
+    const unreadsOnTop = getBool(state,
+        Preferences.CATEGORY_SIDEBAR_SETTINGS,
+        'show_unread_section');
+    */
     const unreadsOnTop = true;
 
     const unreadChannelIds = getSortedUnreadChannelIds(state, lastUnreadChannel);
@@ -57,7 +58,7 @@ function mapStateToProps(state) {
     ));
 
     // Grab our categories & channels
-    const unreadChannels = getUnreadChannels(state, lastUnreadChannel);
+    const unreadChannels = unreadChannelIds.map((id) => getChannel(state, id));
 
     const getCategoriesForTeam = makeGetCategoriesForTeam();
     const categories = getCategoriesForTeam(state, currentTeamId);

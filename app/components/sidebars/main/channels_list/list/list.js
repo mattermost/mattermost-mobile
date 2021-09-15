@@ -115,18 +115,18 @@ export default class List extends PureComponent {
             this.props.orderedChannelIds !== orderedChannelIds) {
                 this.setSections(this.buildSections(this.props));
             }
-
-            if (prevState.sections !== this.state.sections && this.listRef?._wrapperListRef?.getListRef()._viewabilityHelper) { //eslint-disable-line
-                this.listRef.recordInteraction();
-                this.updateUnreadIndicators({
-                viewableItems: Array.from(this.listRef._wrapperListRef.getListRef()._viewabilityHelper._viewableItems.values()) //eslint-disable-line
-                });
-            }
         } else if (
             !isEqual(this.props.categories, categories) ||
             this.props.unreadChannelIds !== unreadChannelIds) {
             // Rebuild sections only if categories or unreads have changed
             this.setCategorySections(this.buildCategorySections());
+        }
+
+         if ((prevState.sections !== this.state.sections || prevState.categorySections !== this.state.categorySections) && this.listRef?._wrapperListRef?.getListRef()._viewabilityHelper) { //eslint-disable-line
+            this.listRef.recordInteraction();
+            this.updateUnreadIndicators({
+                viewableItems: Array.from(this.listRef._wrapperListRef.getListRef()._viewabilityHelper._viewableItems.values()) //eslint-disable-line
+            });
         }
     }
 
@@ -387,7 +387,7 @@ export default class List extends PureComponent {
     };
 
     renderCategoryItem = ({item, section}) => {
-        if (section.collapsed && this.props.currentChannelId !== item.id) {
+        if ((section.collapsed && this.props.currentChannelId !== item.id)) {
             return null;
         }
 
@@ -505,11 +505,16 @@ export default class List extends PureComponent {
     }, 10);
 
     updateUnreadIndicators = ({viewableItems}) => {
-        const {unreadChannelIds} = this.props;
-        const firstUnread = unreadChannelIds.length && unreadChannelIds[0];
-        if (firstUnread && viewableItems.length) {
-            const isVisible = viewableItems.find((v) => v.item === firstUnread);
+        const {unreadChannelIds, showLegacySidebar} = this.props;
+        const firstUnreadId = unreadChannelIds.length && unreadChannelIds[0];
 
+        if (firstUnreadId && viewableItems.length) {
+            let isVisible;
+            if (showLegacySidebar) {
+                isVisible = viewableItems.find((v) => v.item === firstUnreadId);
+            } else {
+                isVisible = viewableItems.find((v) => v.item.id === firstUnreadId);
+            }
             return this.emitUnreadIndicatorChange(!isVisible);
         }
 

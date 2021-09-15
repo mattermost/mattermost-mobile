@@ -73,6 +73,19 @@ export function makeGetCategoriesForTeam(): (state: GlobalState, teamId: string)
     );
 }
 
+export function makeFilterUnreadChannels():(state: GlobalState, channels: Channel[]) => Channel[] {
+    return createSelector(
+        (state: GlobalState, channels: Channel[]) => channels,
+        getMyChannelMemberships,
+        isCollapsedThreadsEnabled,
+        (channels: Channel[], myMemberships, threads) => {
+            const filtered = channels.filter((channel) => !isUnreadChannel(myMemberships, channel, threads));
+
+            return filtered.length === channels.length ? channels : filtered;
+        },
+    );
+}
+
 // makeFilterArchivedChannels returns a selector that filters a given list of channels based on whether or not the channel
 // is archived or is currently being viewed. The selector returns the original array if no channels are filtered out.
 export function makeFilterArchivedChannels(): (state: GlobalState, channels: Channel[]) => Channel[] {
@@ -492,6 +505,7 @@ export function makeFilterAndSortChannelsForCategory() {
     const filterArchivedChannels = makeFilterArchivedChannels();
     const filterAutoclosedDMs = makeFilterAutoclosedDMs();
     const filterManuallyClosedDMs = makeFilterManuallyClosedDMs();
+    const filterUnreadChannels = makeFilterUnreadChannels();
     const sortChannels = makeSortChannels();
 
     return (state: GlobalState, originalChannels: Channel[], category: ChannelCategory) => {
@@ -501,6 +515,7 @@ export function makeFilterAndSortChannelsForCategory() {
         channels = filterManuallyClosedDMs(state, channels);
         channels = filterAutoclosedDMs(state, channels, category.type);
         channels = sortChannels(state, channels, category);
+        channels = filterUnreadChannels(state, channels);
 
         return channels;
     };
