@@ -5,13 +5,12 @@ import {connect} from 'react-redux';
 import {DeviceTypes, ViewTypes} from '@constants';
 import {General} from '@mm-redux/constants';
 import Permissions from '@mm-redux/constants/permissions';
-import {makeGetCategoriesForTeam, makeGetChannelsByCategory} from '@mm-redux/selectors/entities/channel_categories';
+import {makeGetCategoriesForTeam} from '@mm-redux/selectors/entities/channel_categories';
 import {
     getSortedFavoriteChannelIds,
     getSortedUnreadChannelIds,
     getOrderedChannelIds,
     getCurrentChannelId,
-    getChannel,
 } from '@mm-redux/selectors/entities/channels';
 import {getTheme, getFavoritesPreferences, getSidebarPreferences, isCollapsedThreadsEnabled} from '@mm-redux/selectors/entities/preferences';
 import {haveITeamPermission} from '@mm-redux/selectors/entities/roles';
@@ -58,14 +57,8 @@ function mapStateToProps(state) {
     ));
 
     // Grab our categories & channels
-    const unreadChannels = unreadChannelIds.map((id) => getChannel(state, id));
-
     const getCategoriesForTeam = makeGetCategoriesForTeam();
     const categories = getCategoriesForTeam(state, currentTeamId);
-
-    const getChannelsByCategoryForCurrentTeam = makeGetChannelsByCategory();
-    const channelsByCategory = getChannelsByCategoryForCurrentTeam(state, currentTeamId);
-
     const currentChannelId = getCurrentChannelId(state);
 
     const canJoinPublicChannels = haveITeamPermission(state, {
@@ -86,10 +79,8 @@ function mapStateToProps(state) {
         unreadChannelIds,
         favoriteChannelIds,
         orderedChannelIds,
-        channelsByCategory,
         categories,
         showLegacySidebar,
-        unreadChannels,
         unreadsOnTop,
         currentChannelId,
     };

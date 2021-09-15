@@ -52,10 +52,8 @@ export default class List extends PureComponent {
         unreadChannelIds: PropTypes.array.isRequired,
         favoriteChannelIds: PropTypes.array.isRequired,
         orderedChannelIds: PropTypes.array.isRequired,
-        channelsByCategory: PropTypes.object,
         categories: PropTypes.array,
         showLegacySidebar: PropTypes.bool.isRequired,
-        unreadChannels: PropTypes.array,
         unreadsOnTop: PropTypes.bool.isRequired,
         currentChannelId: PropTypes.string,
     };
@@ -387,7 +385,7 @@ export default class List extends PureComponent {
     };
 
     renderCategoryItem = ({item, section}) => {
-        if ((section.collapsed && this.props.currentChannelId !== item.id)) {
+        if ((section.collapsed && this.props.currentChannelId !== item)) {
             return null;
         }
 
@@ -397,9 +395,9 @@ export default class List extends PureComponent {
         return (
             <ChannelItem
                 testID={channelItemTestID}
-                channelId={item.id}
-                isUnread={unreadChannelIds.includes(item.id)}
-                isFavorite={favoriteChannelIds.includes(item.id)}
+                channelId={item}
+                isUnread={unreadChannelIds.includes(item)}
+                isFavorite={favoriteChannelIds.includes(item)}
                 onSelectChannel={this.onSelectChannel}
             />
         );
@@ -464,22 +462,22 @@ export default class List extends PureComponent {
         const categoriesBySection = [];
 
         // Start with Unreads
-        if (this.props.unreadChannels.length && this.props.unreadsOnTop) {
+        if (this.props.unreadChannelIds.length && this.props.unreadsOnTop) {
             categoriesBySection.push({
                 id: 'unreads',
                 name: 'UNREADS',
-                data: this.props.unreadChannels,
+                data: this.props.unreadChannelIds,
                 type: CategoryTypes.UNREADS,
             });
         }
 
         // Add the rest
-        if (this.props.channelsByCategory && this.props.categories) {
+        if (this.props.categories) {
             this.props.categories.map((cat) => {
                 return categoriesBySection.push({
                     name: cat.display_name,
                     action: cat.type === 'direct_messages' ? this.goToDirectMessages : () => this.showCreateChannelOptions(cat),
-                    data: this.props.channelsByCategory[cat.id],
+                    data: cat.channel_ids.filter((id) => !this.props.unreadChannelIds.includes(id)),
                     ...cat,
                 });
             });
