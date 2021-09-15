@@ -3,51 +3,29 @@
 
 import moment, {Moment} from 'moment-timezone';
 import React from 'react';
-import {IntlShape, injectIntl} from 'react-intl';
-import {
-    View,
-    Text,
-    TouchableOpacity,
-    TextInput,
-    Keyboard,
-    KeyboardAvoidingView,
-    Platform,
-    ScrollView,
-    StyleProp,
-    ViewStyle,
-    DeviceEventEmitter,
-} from 'react-native';
-import {Navigation, NavigationComponent, NavigationComponentProps, OptionsTopBarButton, Options, NavigationButtonPressedEvent} from 'react-native-navigation';
+import {injectIntl, IntlShape} from 'react-intl';
+import {DeviceEventEmitter, Dimensions, Keyboard, KeyboardAvoidingView, Platform, ScrollView, View} from 'react-native';
+import {EventSubscription, Navigation, NavigationButtonPressedEvent, NavigationComponent, NavigationComponentProps, Options, OptionsTopBarButton} from 'react-native-navigation';
 import {SafeAreaView} from 'react-native-safe-area-context';
 
 import {unsetCustomStatus} from '@actions/remote/user';
 import CompassIcon from '@components/compass_icon';
-import ClearButton from '@components/custom_status/clear_button';
-import CustomStatusExpiry from '@components/custom_status/custom_status_expiry';
-import FormattedText from '@components/formatted_text';
 import StatusBar from '@components/status_bar';
 import {CustomStatusDuration, Device} from '@constants';
-import {CUSTOM_STATUS_TEXT_CHARACTER_LIMIT, SET_CUSTOM_STATUS_FAILURE} from '@constants/custom_status';
+import {SET_CUSTOM_STATUS_FAILURE} from '@constants/custom_status';
 import {withServerUrl} from '@context/server_url';
 import {withTheme} from '@context/theme';
-import {t} from '@i18n';
 import ClearAfter from '@screens/custom_status/components/clear_after';
 import CustomStatusSuggestions from '@screens/custom_status/components/custom_status_suggestions';
 import RecentCustomStatuses from '@screens/custom_status/components/recent_custom_statuses';
-import CustomStatusSuggestion from '@screens/custom_status/custom_status_suggestion';
-import {dismissModal, showModal, mergeNavigationOptions, goToScreen} from '@screens/navigation';
+import {dismissModal, goToScreen, mergeNavigationOptions, showModal} from '@screens/navigation';
 import {getCurrentMomentForTimezone} from '@utils/helpers';
 import {preventDoubleTap} from '@utils/tap';
-import {changeOpacity, getKeyboardAppearanceFromTheme, makeStyleSheetFromTheme} from '@utils/theme';
+import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 import {getRoundedTime} from '../custom_status_clear_after/date_time_selector';
 
-import CustomStatusEmoji from './components/custom_status_emoji';
 import CustomStatusInput from './components/custom_status_input';
-
-const {DONT_CLEAR, THIRTY_MINUTES, ONE_HOUR, FOUR_HOURS, TODAY, THIS_WEEK, DATE_AND_TIME} = CustomStatusDuration;
-
-const defaultDuration: CustomStatusDuration = TODAY;
 
 interface Props extends NavigationComponentProps {
     intl: IntlShape;
@@ -66,20 +44,29 @@ interface Props extends NavigationComponentProps {
     isCustomStatusExpired: boolean;
 }
 
+type CustomStatusDurationType = keyof typeof CustomStatusDuration
+
 type State = {
     emoji?: string;
     text?: string;
-    duration: typeof CustomStatusDuration;
+    duration: CustomStatusDurationType;
     expires_at: Moment;
+    isLandScape: boolean;
 }
+
+const {DONT_CLEAR, THIRTY_MINUTES, ONE_HOUR, FOUR_HOURS, TODAY, THIS_WEEK, DATE_AND_TIME} = CustomStatusDuration;
+const defaultDuration: CustomStatusDurationType = 'TODAY';
+
+const BTN_UPDATE_STATUS = 'update-custom-status';
 
 class CustomStatusModal extends NavigationComponent<Props, State> {
     rightButton: OptionsTopBarButton = {
-        id: 'update-custom-status',
+        id: BTN_UPDATE_STATUS,
         testID: 'custom_status.done.button',
         enabled: true,
         showAsAction: 'always',
     };
+    private navigationEventListener: EventSubscription | undefined;
 
     static options(): Options {
         return {
@@ -118,16 +105,31 @@ class CustomStatusModal extends NavigationComponent<Props, State> {
             text: isCurrentCustomStatusSet ? customStatus?.text : '',
             duration: isCurrentCustomStatusSet ? (customStatus?.duration ?? DONT_CLEAR) : defaultDuration,
             expires_at: initialCustomExpiryTime,
+            isLandScape: false,
         };
     }
 
     componentDidMount() {
-        Navigation.events().bindComponent(this);
+        this.navigationEventListener = Navigation.events().bindComponent(this);
+    }
+    componentWillUnmount() {
+        // Not mandatory
+        if (this.navigationEventListener) {
+            this.navigationEventListener.remove();
+        }
+    }
+
+    componentDidAppear() {
+        console.log('>>>  CustomStatusModal appeared');
+        const {width, height} = Dimensions.get('screen');
+        this.setState({
+            isLandScape: width > height,
+        });
     }
 
     navigationButtonPressed({buttonId}: NavigationButtonPressedEvent) {
         switch (buttonId) {
-            case 'update-custom-status':
+            case BTN_UPDATE_STATUS:
                 this.handleSetStatus();
                 break;
         }
@@ -167,7 +169,7 @@ class CustomStatusModal extends NavigationComponent<Props, State> {
         dismissModal();
     };
 
-    calculateExpiryTime = (duration: CustomStatusDuration): string => {
+    calculateExpiryTime = (duration: CustomStatusDurationType): string => {
         const {userTimezone} = this.props;
         const currentTime = getCurrentMomentForTimezone(userTimezone);
         const {expires_at} = this.state;
@@ -231,11 +233,10 @@ class CustomStatusModal extends NavigationComponent<Props, State> {
         this.setState({emoji});
     }
 
-    handleClearAfterClick = (duration: CustomStatusDuration, expires_at: string) =>
-        this.setState({
-            duration,
-            expires_at: duration === DATE_AND_TIME && expires_at ? moment(expires_at) : this.state.expires_at,
-        });
+    handleClearAfterClick = (duration: CustomStatusDurationType, expires_at: string) => this.setState({
+        duration,
+        expires_at: duration === DATE_AND_TIME && expires_at ? moment(expires_at) : this.state.expires_at,
+    });
 
     openClearAfterModal = async () => {
         const {intl, theme} = this.props;
@@ -252,28 +253,28 @@ class CustomStatusModal extends NavigationComponent<Props, State> {
     };
 
     render() {
-        const {emoji, text, duration, expires_at} = this.state;
-        const {currentUser, theme, intl, isExpirySupported, recentCustomStatuses} = this.props;
-
-        const isStatusSet = Boolean(emoji || text);
-        const style = getStyleSheet(theme);
-        const isLandscape = dimensions.width > dimensions.height;
+        const {duration, emoji, expires_at, isLandScape, text} = this.state;
+        const {currentUser, intl, isExpirySupported, recentCustomStatuses, theme} = this.props;
 
         let keyboardOffset = Device.IS_IPHONE_WITH_INSETS ? 110 : 60;
-        if (isLandscape) {
+        if (isLandScape) {
             keyboardOffset = Device.IS_IPHONE_WITH_INSETS ? 0 : 10;
         }
 
+        const isStatusSet = Boolean(emoji || text);
+
+        const style = getStyleSheet(theme);
+
         return (
             <SafeAreaView
-                testID='custom_status.screen'
                 style={style.container}
+                testID='custom_status.screen'
             >
                 <KeyboardAvoidingView
                     behavior='padding'
-                    style={style.container}
-                    keyboardVerticalOffset={keyboardOffset}
                     enabled={Platform.OS === 'ios'}
+                    keyboardVerticalOffset={keyboardOffset}
+                    style={style.container}
                 >
                     <ScrollView
                         bounces={false}
