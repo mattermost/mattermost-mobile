@@ -5,7 +5,7 @@ import {connect} from 'react-redux';
 import {DeviceTypes, ViewTypes} from '@constants';
 import {General} from '@mm-redux/constants';
 import Permissions from '@mm-redux/constants/permissions';
-import {makeGetCategoriesForTeam} from '@mm-redux/selectors/entities/channel_categories';
+import {makeGetCategoriesForTeam, makeGetChannelIdsForCategory} from '@mm-redux/selectors/entities/channel_categories';
 import {
     getSortedFavoriteChannelIds,
     getSortedUnreadChannelIds,
@@ -56,9 +56,18 @@ function mapStateToProps(state) {
         sidebarPrefs.favorite_at_top === 'true' && favoriteChannelIds.length,
     ));
 
-    // Grab our categories & channels
+    // This grabs all categories, with all channel ids inside
     const getCategoriesForTeam = makeGetCategoriesForTeam();
-    const categories = getCategoriesForTeam(state, currentTeamId);
+    const catsWithChannelIds = getCategoriesForTeam(state, currentTeamId);
+
+    const getChannelIds = makeGetChannelIdsForCategory();
+
+    // We just want the channel ids sorted and filtered
+    const categories = catsWithChannelIds.map((cat) => {
+        cat.channel_ids = getChannelIds(state, cat);
+        return cat;
+    });
+
     const currentChannelId = getCurrentChannelId(state);
 
     const canJoinPublicChannels = haveITeamPermission(state, {

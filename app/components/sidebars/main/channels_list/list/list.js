@@ -477,7 +477,7 @@ export default class List extends PureComponent {
                 return categoriesBySection.push({
                     name: cat.display_name,
                     action: cat.type === 'direct_messages' ? this.goToDirectMessages : () => this.showCreateChannelOptions(cat),
-                    data: cat.channel_ids.filter((id) => !this.props.unreadChannelIds.includes(id)),
+                    data: cat.channel_ids,
                     ...cat,
                 });
             });
