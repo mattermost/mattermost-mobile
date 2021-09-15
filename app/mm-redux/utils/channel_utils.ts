@@ -7,12 +7,12 @@ import {Channel, ChannelMembership, ChannelType, ChannelNotifyProps} from '@mm-r
 import {Post} from '@mm-redux/types/posts';
 import {PreferenceType} from '@mm-redux/types/preferences';
 import {GlobalState} from '@mm-redux/types/store';
-import {TeamMembership} from '@mm-redux/types/teams';
 import {UserProfile, UsersState, UserNotifyProps} from '@mm-redux/types/users';
 import {RelationOneToOne, IDMappedObjects} from '@mm-redux/types/utilities';
 
 import {General, Preferences, Permissions, Users} from '../constants';
 
+import {isMinimumServerVersion} from './helpers';
 import {getPreferenceKey, getPreferencesByCategory} from './preference_utils';
 import {displayUsername} from './user_utils';
 
@@ -144,6 +144,7 @@ export function isAutoClosed(
     channelArchiveTime: number,
     currentChannelId = '',
     now = Date.now(),
+    serverVersion = '',
 ): boolean {
     const cutoff = now - (7 * 24 * 60 * 60 * 1000);
     const viewTimePref = myPreferences[`${Preferences.CATEGORY_CHANNEL_APPROXIMATE_VIEW_TIME}--${channel.id}`];
@@ -162,7 +163,7 @@ export function isAutoClosed(
         return true;
     }
 
-    if (config.CloseUnusedDirectMessages !== 'true' || isFavoriteChannel(myPreferences, channel.id)) {
+    if ((config.CloseUnusedDirectMessages !== 'true' && !isMinimumServerVersion(serverVersion, 6)) || isFavoriteChannel(myPreferences, channel.id)) {
         return false;
     }
 
@@ -196,6 +197,7 @@ export function isDirectChannelVisible(
     isUnread?: boolean,
     currentChannelId = '',
     now?: number,
+    serverVersion?: string,
 ): boolean {
     const otherUser = typeof otherUserOrOtherUserId === 'object' ? otherUserOrOtherUserId : null;
     const otherUserId = typeof otherUserOrOtherUserId === 'object' ? otherUserOrOtherUserId.id : otherUserOrOtherUserId;
@@ -213,6 +215,7 @@ export function isDirectChannelVisible(
         otherUser ? otherUser.delete_at : 0,
         currentChannelId,
         now,
+        serverVersion,
     );
 }
 
@@ -229,6 +232,7 @@ export function isGroupChannelVisible(
     lastPost?: Post,
     isUnread?: boolean,
     now?: number,
+    serverVersion?: string,
 ): boolean {
     const gm = myPreferences[`${Preferences.CATEGORY_GROUP_CHANNEL_SHOW}--${channel.id}`];
 
@@ -244,6 +248,7 @@ export function isGroupChannelVisible(
         0,
         '',
         now,
+        serverVersion,
     );
 }
 
@@ -309,39 +314,6 @@ export function showDeleteOption(state: GlobalState, channel: Channel): boolean 
     } else if (channel.type === General.PRIVATE_CHANNEL) {
         return haveIChannelPermission(state, {channel: channel.id, team: channel.team_id, permission: Permissions.DELETE_PRIVATE_CHANNEL});
     }
-    return true;
-}
-
-// Backwards compatibility with pre-advanced permissions config settings.
-
-export function canManageMembersOldPermissions(channel: Channel, user: UserProfile, teamMember: TeamMembership, channelMember: ChannelMembership, config: any, license: any): boolean {
-    if (channel.type === General.DM_CHANNEL ||
-        channel.type === General.GM_CHANNEL ||
-        channel.name === General.DEFAULT_CHANNEL) {
-        return false;
-    }
-
-    if (license.IsLicensed !== 'true') {
-        return true;
-    }
-
-    if (channel.type === General.PRIVATE_CHANNEL) {
-        const isSystemAdmin = user.roles.includes(General.SYSTEM_ADMIN_ROLE);
-        if (config.RestrictPrivateChannelManageMembers === General.PERMISSIONS_SYSTEM_ADMIN && !isSystemAdmin) {
-            return false;
-        }
-
-        const isTeamAdmin = teamMember.roles.includes(General.TEAM_ADMIN_ROLE);
-        if (config.RestrictPrivateChannelManageMembers === General.PERMISSIONS_TEAM_ADMIN && !isTeamAdmin && !isSystemAdmin) {
-            return false;
-        }
-
-        const isChannelAdmin = channelMember.roles.includes(General.CHANNEL_ADMIN_ROLE);
-        if (config.RestrictPrivateChannelManageMembers === General.PERMISSIONS_CHANNEL_ADMIN && !isChannelAdmin && !isTeamAdmin && !isSystemAdmin) {
-            return false;
-        }
-    }
-
     return true;
 }
 

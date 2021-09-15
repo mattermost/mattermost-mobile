@@ -95,7 +95,6 @@ export type Config = {
     EnableUserCreation: string;
     EnableUserDeactivation: string;
     EnableUserTypingMessages: string;
-    EnableXToLeaveChannelsFromLHS: string;
     EnforceMultifactorAuthentication: string;
     ExperimentalChannelOrganization: string;
     ExperimentalChannelSidebarOrganization?: string;
