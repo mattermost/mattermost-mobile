@@ -505,8 +505,8 @@ export function makeFilterAndSortChannelsForCategory() {
     const filterArchivedChannels = makeFilterArchivedChannels();
     const filterAutoclosedDMs = makeFilterAutoclosedDMs();
     const filterManuallyClosedDMs = makeFilterManuallyClosedDMs();
-    const filterUnreadChannels = makeFilterUnreadChannels();
     const sortChannels = makeSortChannels();
+    const filterUnreadChannels = makeFilterUnreadChannels();
 
     return (state: GlobalState, originalChannels: Channel[], category: ChannelCategory) => {
         let channels = originalChannels;

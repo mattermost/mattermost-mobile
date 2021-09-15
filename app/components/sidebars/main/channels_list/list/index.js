@@ -60,9 +60,8 @@ function mapStateToProps(state) {
     const getCategoriesForTeam = makeGetCategoriesForTeam();
     const catsWithChannelIds = getCategoriesForTeam(state, currentTeamId);
 
-    const getChannelIds = makeGetChannelIdsForCategory();
-
     // We just want the channel ids sorted and filtered
+    const getChannelIds = makeGetChannelIdsForCategory();
     const categories = catsWithChannelIds.map((cat) => {
         cat.channel_ids = getChannelIds(state, cat);
         return cat;
