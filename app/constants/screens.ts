@@ -5,6 +5,7 @@ export const ABOUT = 'About';
 export const APP_FORM = 'AppForm';
 export const BOTTOM_SHEET = 'BottomSheet';
 export const CHANNEL = 'Channel';
+export const CLEAR_AFTER = 'ClearAfter';
 export const CUSTOM_STATUS = 'CustomStatus';
 export const FORGOT_PASSWORD = 'ForgotPassword';
 export const HOME = 'Home';
@@ -25,6 +26,7 @@ export default {
     APP_FORM,
     BOTTOM_SHEET,
     CHANNEL,
+    CLEAR_AFTER,
     CUSTOM_STATUS,
     FORGOT_PASSWORD,
     HOME,
