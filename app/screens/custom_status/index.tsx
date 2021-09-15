@@ -7,8 +7,9 @@ import moment, {Moment} from 'moment-timezone';
 import React from 'react';
 import {injectIntl, IntlShape} from 'react-intl';
 import {DeviceEventEmitter, Dimensions, Keyboard, KeyboardAvoidingView, Platform, ScrollView, View} from 'react-native';
-import {EventSubscription, Navigation, NavigationButtonPressedEvent, NavigationComponent, NavigationComponentProps, Options, OptionsTopBarButton} from 'react-native-navigation';
+import {EventSubscription, Navigation, NavigationButtonPressedEvent, NavigationComponent, NavigationComponentProps, Options} from 'react-native-navigation';
 import {SafeAreaView} from 'react-native-safe-area-context';
+import {of as of$} from 'rxjs';
 import {switchMap} from 'rxjs/operators';
 
 import {removeRecentCustomStatus, setCustomStatus, unsetCustomStatus} from '@actions/remote/user';
@@ -38,6 +39,7 @@ import type UserModel from '@typings/database/models/servers/user';
 const {SERVER: {SYSTEM, USER}} = MM_TABLES;
 
 interface Props extends NavigationComponentProps {
+    config: ClientConfig;
     currentUser: UserModel;
     intl: IntlShape;
     isExpirySupported: boolean;
@@ -63,12 +65,6 @@ const BTN_UPDATE_STATUS = 'update-custom-status';
 
 //fixme: find out how this value is stored         const recentCustomStatuses = getRecentCustomStatuses(state);
 class CustomStatusModal extends NavigationComponent<Props, State> {
-    rightButton: OptionsTopBarButton = {
-        enabled: true,
-        id: BTN_UPDATE_STATUS,
-        showAsAction: 'always',
-        testID: 'custom_status.done.button',
-    };
     private customStatus: UserCustomStatus | undefined;
     private navigationEventListener: EventSubscription | undefined;
     private readonly isCustomStatusExpired: boolean;
@@ -87,21 +83,25 @@ class CustomStatusModal extends NavigationComponent<Props, State> {
 
     constructor(props: Props) {
         super(props);
-        const {currentUser, intl, theme, componentId} = props;
+        const {config, currentUser, intl, theme, componentId} = props;
 
         this.userTimezone = getTimezone(currentUser.timezone);
         this.customStatus = getUserCustomStatus(currentUser);
         this.isCustomStatusExpired = verifyExpiredStatus(currentUser);
-        this.isExpirySupported = isCustomStatusExpirySupported();
-        this.rightButton.text = intl.formatMessage({id: 'mobile.custom_status.modal_confirm', defaultMessage: 'Done'});
-        this.rightButton.color = theme.sidebarHeaderTextColor;
+        this.isExpirySupported = isCustomStatusExpirySupported(config);
 
-        const options: Options = {
+        mergeNavigationOptions(componentId, {
             topBar: {
-                rightButtons: [this.rightButton],
+                rightButtons: [{
+                    enabled: true,
+                    id: BTN_UPDATE_STATUS,
+                    showAsAction: 'always',
+                    testID: 'custom_status.done.button',
+                    text: intl.formatMessage({id: 'mobile.custom_status.modal_confirm', defaultMessage: 'Done'}),
+                    color: theme.sidebarHeaderTextColor,
+                }],
             },
-        };
-        mergeNavigationOptions(componentId, options);
+        });
 
         const currentTime = getCurrentMomentForTimezone(this.userTimezone ?? '');
 
@@ -342,8 +342,9 @@ class CustomStatusModal extends NavigationComponent<Props, State> {
 const augmentCSM = injectIntl(withTheme(withServerUrl(CustomStatusModal)));
 
 const withUser = withObservables([], ({database}: WithDatabaseArgs) => ({
-    currentUser: database.get(SYSTEM).findAndObserve(SYSTEM_IDENTIFIERS.CURRENT_USER_ID).pipe(switchMap((id: SystemModel) => database.get(USER).findAndObserve(id.value)))}
-));
+    currentUser: database.get(SYSTEM).findAndObserve(SYSTEM_IDENTIFIERS.CURRENT_USER_ID).pipe(switchMap((id: SystemModel) => database.get(USER).findAndObserve(id.value))),
+    config: database.get(SYSTEM).findAndObserve(SYSTEM_IDENTIFIERS.CONFIG).pipe(switchMap((cfg: SystemModel) => of$(cfg.value))),
+}));
 
 export default withDatabase(withUser(augmentCSM));
 
