@@ -91,3 +91,7 @@ export function safeParseJSON(rawJson: string | Record<string, unknown>) {
 export function getCurrentMomentForTimezone(timezone: string) {
     return timezone ? moment.tz(timezone) : moment();
 }
+
+export function isCustomStatusExpirySupported(config: ClientConfig) {
+    return isMinimumServerVersion(config.Version, 5, 37);
+}

@@ -10,7 +10,7 @@ import {Screens} from '@constants';
 import {useServerUrl} from '@context/server_url';
 import {useTheme} from '@context/theme';
 import {showModal} from '@screens/navigation';
-import {isMinimumServerVersion} from '@utils/helpers';
+import {isCustomStatusExpirySupported as checkCustomStatusExpiry, isMinimumServerVersion} from '@utils/helpers';
 import {getUserCustomStatus, isCustomStatusExpired as checkCustomStatusIsExpired} from '@utils/user';
 
 import CustomLabel from './custom_label';
@@ -31,7 +31,7 @@ const CustomStatus = ({config, currentUser}: CustomStatusProps) => {
     const [showRetryMessage, setShowRetryMessage] = useState<boolean>(false);
 
     const isCustomStatusEnabled = config.EnableCustomUserStatuses === 'true' && isMinimumServerVersion(config.Version, 5, 36);
-    const isCustomStatusExpirySupported = isMinimumServerVersion(config.Version, 5, 37);
+    const isCustomStatusExpirySupported = checkCustomStatusExpiry(config);
     const isCustomStatusExpired = checkCustomStatusIsExpired(currentUser);
     const customStatus = getUserCustomStatus(currentUser);
 

@@ -20,9 +20,10 @@ import {MM_TABLES, SYSTEM_IDENTIFIERS} from '@constants/database';
 import {withServerUrl} from '@context/server_url';
 import {withTheme} from '@context/theme';
 import {dismissModal, goToScreen, mergeNavigationOptions, showModal} from '@screens/navigation';
-import {getCurrentMomentForTimezone} from '@utils/helpers';
+import {getCurrentMomentForTimezone, isCustomStatusExpirySupported} from '@utils/helpers';
 import {preventDoubleTap} from '@utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
+import {getTimezone, getUserCustomStatus, isCustomStatusExpired as verifyExpiredStatus} from '@utils/user';
 
 import {getRoundedTime} from '../custom_status_clear_after/date_time_selector';
 
@@ -38,14 +39,11 @@ const {SERVER: {SYSTEM, USER}} = MM_TABLES;
 
 interface Props extends NavigationComponentProps {
     currentUser: UserModel;
-    customStatus: UserCustomStatus;
     intl: IntlShape;
-    isCustomStatusExpired: boolean;
     isExpirySupported: boolean;
     recentCustomStatuses: UserCustomStatus[];
     serverUrl: string;
     theme: Theme;
-    userTimezone: string;
 }
 
 type CustomStatusDurationType = keyof typeof CustomStatusDuration
@@ -63,14 +61,19 @@ const defaultDuration: CustomStatusDurationType = 'TODAY';
 
 const BTN_UPDATE_STATUS = 'update-custom-status';
 
+//fixme: find out how this value is stored         const recentCustomStatuses = getRecentCustomStatuses(state);
 class CustomStatusModal extends NavigationComponent<Props, State> {
     rightButton: OptionsTopBarButton = {
-        id: BTN_UPDATE_STATUS,
-        testID: 'custom_status.done.button',
         enabled: true,
+        id: BTN_UPDATE_STATUS,
         showAsAction: 'always',
+        testID: 'custom_status.done.button',
     };
+    private customStatus: UserCustomStatus | undefined;
     private navigationEventListener: EventSubscription | undefined;
+    private readonly isCustomStatusExpired: boolean;
+    private readonly isExpirySupported: boolean;
+    private readonly userTimezone: string;
 
     static options(): Options {
         return {
@@ -84,8 +87,12 @@ class CustomStatusModal extends NavigationComponent<Props, State> {
 
     constructor(props: Props) {
         super(props);
-        const {customStatus, userTimezone, isCustomStatusExpired, intl, theme, componentId} = props;
+        const {currentUser, intl, theme, componentId} = props;
 
+        this.userTimezone = getTimezone(currentUser.timezone);
+        this.customStatus = getUserCustomStatus(currentUser);
+        this.isCustomStatusExpired = verifyExpiredStatus(currentUser);
+        this.isExpirySupported = isCustomStatusExpirySupported();
         this.rightButton.text = intl.formatMessage({id: 'mobile.custom_status.modal_confirm', defaultMessage: 'Done'});
         this.rightButton.color = theme.sidebarHeaderTextColor;
 
@@ -96,18 +103,18 @@ class CustomStatusModal extends NavigationComponent<Props, State> {
         };
         mergeNavigationOptions(componentId, options);
 
-        const currentTime = getCurrentMomentForTimezone(userTimezone);
+        const currentTime = getCurrentMomentForTimezone(this.userTimezone ?? '');
 
         let initialCustomExpiryTime: Moment = getRoundedTime(currentTime);
-        const isCurrentCustomStatusSet = !isCustomStatusExpired && (customStatus?.text || customStatus?.emoji);
-        if (isCurrentCustomStatusSet && customStatus?.duration === DATE_AND_TIME && customStatus?.expires_at) {
-            initialCustomExpiryTime = moment(customStatus?.expires_at);
+        const isCurrentCustomStatusSet = !this.isCustomStatusExpired && (this.customStatus?.text || this.customStatus?.emoji);
+        if (isCurrentCustomStatusSet && this.customStatus?.duration === DATE_AND_TIME && this.customStatus?.expires_at) {
+            initialCustomExpiryTime = moment(this.customStatus?.expires_at);
         }
 
         this.state = {
-            emoji: isCurrentCustomStatusSet ? customStatus?.emoji : '',
-            text: isCurrentCustomStatusSet ? customStatus?.text : '',
-            duration: isCurrentCustomStatusSet ? (customStatus?.duration ?? DONT_CLEAR) : defaultDuration,
+            emoji: isCurrentCustomStatusSet ? this.customStatus?.emoji : '',
+            text: isCurrentCustomStatusSet ? this.customStatus?.text : '',
+            duration: isCurrentCustomStatusSet ? (this.customStatus?.duration ?? DONT_CLEAR) : defaultDuration,
             expires_at: initialCustomExpiryTime,
             isLandScape: false,
         };
@@ -124,7 +131,7 @@ class CustomStatusModal extends NavigationComponent<Props, State> {
     }
 
     componentDidAppear() {
-        console.log('>>>  CustomStatusModal appeared');
+        // console.log('>>>  CustomStatusModal appeared');
         const {width, height} = Dimensions.get('screen');
         this.setState({
             isLandScape: width > height,
@@ -142,12 +149,12 @@ class CustomStatusModal extends NavigationComponent<Props, State> {
     handleSetStatus = async () => {
         const {emoji, text, duration} = this.state;
         const isStatusSet = emoji || text;
-        const {currentUser, customStatus, isExpirySupported, serverUrl} = this.props;
+        const {currentUser, serverUrl} = this.props;
 
         if (isStatusSet) {
-            let isStatusSame = customStatus?.emoji === emoji && customStatus?.text === text && customStatus?.duration === duration;
+            let isStatusSame = this.customStatus?.emoji === emoji && this.customStatus?.text === text && this.customStatus?.duration === duration;
             if (isStatusSame && duration === DATE_AND_TIME) {
-                isStatusSame = customStatus?.expires_at === this.calculateExpiryTime(duration);
+                isStatusSame = this.customStatus?.expires_at === this.calculateExpiryTime(duration);
             }
             if (!isStatusSame) {
                 const status: UserCustomStatus = {
@@ -156,7 +163,7 @@ class CustomStatusModal extends NavigationComponent<Props, State> {
                     duration: DONT_CLEAR,
                 };
 
-                if (isExpirySupported) {
+                if (this.isExpirySupported) {
                     status.duration = duration;
                     status.expires_at = this.calculateExpiryTime(duration);
                 }
@@ -166,7 +173,7 @@ class CustomStatusModal extends NavigationComponent<Props, State> {
                     DeviceEventEmitter.emit(SET_CUSTOM_STATUS_FAILURE);
                 }
             }
-        } else if (customStatus?.emoji) {
+        } else if (this.customStatus?.emoji) {
             unsetCustomStatus(serverUrl);
         }
         Keyboard.dismiss();
@@ -174,8 +181,7 @@ class CustomStatusModal extends NavigationComponent<Props, State> {
     };
 
     calculateExpiryTime = (duration: CustomStatusDurationType): string => {
-        const {userTimezone} = this.props;
-        const currentTime = getCurrentMomentForTimezone(userTimezone);
+        const currentTime = getCurrentMomentForTimezone(this.userTimezone);
         const {expires_at} = this.state;
         switch (duration) {
             case THIRTY_MINUTES:
@@ -260,7 +266,7 @@ class CustomStatusModal extends NavigationComponent<Props, State> {
 
     render() {
         const {duration, emoji, expires_at, isLandScape, text} = this.state;
-        const {currentUser, intl, isExpirySupported, recentCustomStatuses, theme} = this.props;
+        const {currentUser, intl, recentCustomStatuses, theme} = this.props;
 
         let keyboardOffset = Device.IS_IPHONE_WITH_INSETS ? 110 : 60;
         if (isLandScape) {
@@ -298,7 +304,7 @@ class CustomStatusModal extends NavigationComponent<Props, State> {
                                     text={text}
                                     theme={theme}
                                 />
-                                {isStatusSet && isExpirySupported && (
+                                {isStatusSet && this.isExpirySupported && (
                                     <ClearAfter
                                         currentUser={currentUser}
                                         duration={duration}
@@ -310,7 +316,7 @@ class CustomStatusModal extends NavigationComponent<Props, State> {
                             </View>
                             {recentCustomStatuses.length > 0 && (
                                 <RecentCustomStatuses
-                                    isExpirySupported={isExpirySupported}
+                                    isExpirySupported={this.isExpirySupported}
                                     onHandleClear={this.handleRecentCustomStatusClear}
                                     onHandleSuggestionClick={this.handleRecentCustomStatusSuggestionClick}
                                     recentCustomStatuses={recentCustomStatuses}
@@ -319,7 +325,7 @@ class CustomStatusModal extends NavigationComponent<Props, State> {
                             )}
                             <CustomStatusSuggestions
                                 intl={intl}
-                                isExpirySupported={isExpirySupported}
+                                isExpirySupported={this.isExpirySupported}
                                 onHandleCustomStatusSuggestionClick={this.handleCustomStatusSuggestionClick}
                                 recentCustomStatuses={recentCustomStatuses}
                                 theme={theme}
