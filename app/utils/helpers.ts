@@ -92,6 +92,10 @@ export function getCurrentMomentForTimezone(timezone: string) {
     return timezone ? moment.tz(timezone) : moment();
 }
 
+export function getUtcOffsetForTimeZone(timezone: string) {
+    return moment.tz(timezone).utcOffset();
+}
+
 export function isCustomStatusExpirySupported(config: ClientConfig) {
     return isMinimumServerVersion(config.Version, 5, 37);
 }

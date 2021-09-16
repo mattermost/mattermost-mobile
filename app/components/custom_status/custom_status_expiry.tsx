@@ -1,17 +1,17 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React from 'react';
 import moment, {Moment} from 'moment-timezone';
+import React from 'react';
 import {Text, TextStyle} from 'react-native';
 
 import {getUserTimezone} from '@actions/local/timezone';
-import {Preferences} from '@constants';
 import FormattedDate from '@components/formatted_date';
 import FormattedText from '@components/formatted_text';
 import FormattedTime from '@components/formatted_time';
-import {makeStyleSheetFromTheme} from '@utils/theme';
+import {Preferences} from '@constants';
 import {getCurrentMomentForTimezone} from '@utils/helpers';
+import {makeStyleSheetFromTheme} from '@utils/theme';
 
 import type UserModel from '@typings/database/models/servers/user';
 

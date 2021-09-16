@@ -27,7 +27,7 @@ import {preventDoubleTap} from '@utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {getTimezone, getUserCustomStatus, isCustomStatusExpired as verifyExpiredStatus} from '@utils/user';
 
-import {getRoundedTime} from '../custom_status_clear_after/date_time_selector';
+import {getRoundedTime} from '../custom_status_clear_after/components/date_time_selector';
 
 import ClearAfter from './components/clear_after';
 import CustomStatusInput from './components/custom_status_input';

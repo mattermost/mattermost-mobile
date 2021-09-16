@@ -12,7 +12,7 @@ import {CustomStatusDuration, CST} from '@constants/custom_status';
 import {preventDoubleTap} from '@utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
-import DateTimePicker from '../date_time_selector';
+import DateTimePicker from './date_time_selector';
 
 import type UserModel from '@typings/database/models/servers/user';
 import type {IntlShape} from 'react-intl';
