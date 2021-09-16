@@ -7,7 +7,7 @@ import {Text, TouchableOpacity, View} from 'react-native';
 import CompassIcon from '@components/compass_icon';
 import CustomStatusExpiry from '@components/custom_status/custom_status_expiry';
 import FormattedText from '@components/formatted_text';
-import {CustomStatusDuration} from '@constants/custom_status';
+import {CustomStatusDuration, CST} from '@constants/custom_status';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 import type UserModel from '@typings/database/models/servers/user';
@@ -16,7 +16,7 @@ import type {IntlShape} from 'react-intl';
 
 type Props = {
     currentUser: UserModel;
-    duration: keyof typeof CustomStatusDuration;
+    duration: CustomStatusDuration;
     intl: IntlShape;
     onOpenClearAfterModal: () => void;
     theme: Theme;
@@ -26,7 +26,7 @@ type Props = {
 const ClearAfter = ({currentUser, duration, intl, expiresAt, onOpenClearAfterModal, theme}: Props) => {
     const style = getStyleSheet(theme);
     const renderClearAfterTime = () => {
-        if (duration && duration === CustomStatusDuration.DATE_AND_TIME.value) {
+        if (duration && duration === CustomStatusDuration.DATE_AND_TIME) {
             return (
                 <View style={style.expiryTime}>
                     <CustomStatusExpiry
@@ -41,8 +41,8 @@ const ClearAfter = ({currentUser, duration, intl, expiresAt, onOpenClearAfterMod
 
         return (
             <FormattedText
-                id={CustomStatusDuration[duration].id}
-                defaultMessage={CustomStatusDuration[duration].defaultMessage}
+                id={CST[duration].id}
+                defaultMessage={CST[duration].defaultMessage}
                 style={style.expiryTime}
             />
         );

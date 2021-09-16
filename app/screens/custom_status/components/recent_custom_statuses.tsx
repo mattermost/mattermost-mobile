@@ -5,7 +5,7 @@ import React from 'react';
 import {View} from 'react-native';
 
 import FormattedText from '@components/formatted_text';
-import CustomStatusSuggestion from '@screens/custom_status/custom_status_suggestion';
+import CustomStatusSuggestion from '@screens/custom_status/components/custom_status_suggestion';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 type Props = {

@@ -50,18 +50,16 @@ interface Props extends NavigationComponentProps {
     theme: Theme;
 }
 
-type CustomStatusDurationType = keyof typeof CustomStatusDuration
-
 type State = {
     emoji?: string;
     text?: string;
-    duration: CustomStatusDurationType;
+    duration: CustomStatusDuration;
     expires_at: Moment;
     isLandScape: boolean;
 }
 
 const {DONT_CLEAR, THIRTY_MINUTES, ONE_HOUR, FOUR_HOURS, TODAY, THIS_WEEK, DATE_AND_TIME} = CustomStatusDuration;
-const defaultDuration: CustomStatusDurationType = 'TODAY';
+const defaultDuration: CustomStatusDuration = TODAY;
 
 const BTN_UPDATE_STATUS = 'update-custom-status';
 
@@ -180,7 +178,7 @@ class CustomStatusModal extends NavigationComponent<Props, State> {
         dismissModal();
     };
 
-    calculateExpiryTime = (duration: CustomStatusDurationType): string => {
+    calculateExpiryTime = (duration: CustomStatusDuration): string => {
         const currentTime = getCurrentMomentForTimezone(this.userTimezone);
         const {expires_at} = this.state;
         switch (duration) {
@@ -245,7 +243,7 @@ class CustomStatusModal extends NavigationComponent<Props, State> {
         this.setState({emoji});
     }
 
-    handleClearAfterClick = (duration: CustomStatusDurationType, expires_at: string) => this.setState({
+    handleClearAfterClick = (duration: CustomStatusDuration, expires_at: string) => this.setState({
         duration,
         expires_at: duration === DATE_AND_TIME && expires_at ? moment(expires_at) : this.state.expires_at,
     });
