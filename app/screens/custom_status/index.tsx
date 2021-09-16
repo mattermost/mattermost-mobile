@@ -1,6 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {Q} from '@nozbe/watermelondb';
 import {withDatabase} from '@nozbe/watermelondb/DatabaseProvider';
 import withObservables from '@nozbe/with-observables';
 import moment, {Moment} from 'moment-timezone';
@@ -10,7 +11,7 @@ import {DeviceEventEmitter, Dimensions, Keyboard, KeyboardAvoidingView, Platform
 import {EventSubscription, Navigation, NavigationButtonPressedEvent, NavigationComponent, NavigationComponentProps, Options} from 'react-native-navigation';
 import {SafeAreaView} from 'react-native-safe-area-context';
 import {of as of$} from 'rxjs';
-import {switchMap} from 'rxjs/operators';
+import {map, switchMap} from 'rxjs/operators';
 
 import {removeRecentCustomStatus, setCustomStatus, unsetCustomStatus} from '@actions/remote/user';
 import CompassIcon from '@components/compass_icon';
@@ -34,9 +35,10 @@ import CustomStatusSuggestions from './components/custom_status_suggestions';
 import RecentCustomStatuses from './components/recent_custom_statuses';
 
 import type {WithDatabaseArgs} from '@typings/database/database';
+import type PreferenceModel from '@typings/database/models/servers/preference';
 import type SystemModel from '@typings/database/models/servers/system';
 import type UserModel from '@typings/database/models/servers/user';
-const {SERVER: {SYSTEM, USER}} = MM_TABLES;
+const {SERVER: {PREFERENCE, SYSTEM, USER}} = MM_TABLES;
 
 interface Props extends NavigationComponentProps {
     config: ClientConfig;
@@ -63,7 +65,6 @@ const defaultDuration: CustomStatusDurationType = 'TODAY';
 
 const BTN_UPDATE_STATUS = 'update-custom-status';
 
-//fixme: find out how this value is stored         const recentCustomStatuses = getRecentCustomStatuses(state);
 class CustomStatusModal extends NavigationComponent<Props, State> {
     private customStatus: UserCustomStatus | undefined;
     private navigationEventListener: EventSubscription | undefined;
@@ -84,7 +85,6 @@ class CustomStatusModal extends NavigationComponent<Props, State> {
     constructor(props: Props) {
         super(props);
         const {config, currentUser, intl, theme, componentId} = props;
-
         this.userTimezone = getTimezone(currentUser.timezone);
         this.customStatus = getUserCustomStatus(currentUser);
         this.isCustomStatusExpired = verifyExpiredStatus(currentUser);
@@ -343,6 +343,22 @@ const augmentCSM = injectIntl(withTheme(withServerUrl(CustomStatusModal)));
 
 const withUser = withObservables([], ({database}: WithDatabaseArgs) => ({
     currentUser: database.get(SYSTEM).findAndObserve(SYSTEM_IDENTIFIERS.CURRENT_USER_ID).pipe(switchMap((id: SystemModel) => database.get(USER).findAndObserve(id.value))),
+    recentCustomStatuses: database.
+        get(SYSTEM).
+        findAndObserve(SYSTEM_IDENTIFIERS.CURRENT_USER_ID).
+        pipe(
+            switchMap((currentUserId: SystemModel) =>
+                database.get(PREFERENCE).
+                    query(
+                        Q.where('user_id', currentUserId.value),
+                        Q.where('name', 'recent_custom_statuses'),
+                    ).
+                    observe(),
+            ),
+            map((preference: PreferenceModel[]) => {
+                return of$(preference[0].value) as unknown as UserCustomStatus[];
+            }),
+        ),
     config: database.get(SYSTEM).findAndObserve(SYSTEM_IDENTIFIERS.CONFIG).pipe(switchMap((cfg: SystemModel) => of$(cfg.value))),
 }));
 
