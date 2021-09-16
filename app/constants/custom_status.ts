@@ -42,7 +42,7 @@ export const CST = {
     },
 };
 
-export const enum CustomStatusDuration {
+export enum CustomStatusDuration {
     DONT_CLEAR = 'DONT_CLEAR',
     THIRTY_MINUTES = 'THIRTY_MINUTES',
     ONE_HOUR = 'ONE_HOUR',

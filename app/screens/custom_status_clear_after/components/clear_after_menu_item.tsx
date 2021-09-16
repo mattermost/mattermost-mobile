@@ -3,34 +3,37 @@
 
 import moment, {Moment} from 'moment';
 import React, {useCallback} from 'react';
+import {useIntl} from 'react-intl';
 import {View, TouchableOpacity} from 'react-native';
 
 import CompassIcon from '@components/compass_icon';
 import CustomStatusExpiry from '@components/custom_status/custom_status_expiry';
 import CustomStatusText from '@components/custom_status/custom_status_text';
 import {CustomStatusDuration, CST} from '@constants/custom_status';
+import {useTheme} from '@context/theme';
 import {preventDoubleTap} from '@utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 import DateTimePicker from './date_time_selector';
 
 import type UserModel from '@typings/database/models/servers/user';
-import type {IntlShape} from 'react-intl';
 
 type Props = {
     currentUser: UserModel;
     duration: CustomStatusDuration;
     expiryTime?: string;
     handleItemClick: (duration: CustomStatusDuration, expiresAt: string) => void;
-    intl: IntlShape;
+
     isSelected: boolean;
     separator: boolean;
     showDateTimePicker?: boolean;
     showExpiryTime?: boolean;
-    theme: Theme;
+
 };
 
-const ClearAfterMenuItem = ({currentUser, duration, expiryTime = '', handleItemClick, intl, isSelected, separator, showDateTimePicker = false, showExpiryTime = false, theme}: Props) => {
+const ClearAfterMenuItem = ({currentUser, duration, expiryTime = '', handleItemClick, isSelected, separator, showDateTimePicker = false, showExpiryTime = false}: Props) => {
+    const theme = useTheme();
+    const intl = useIntl();
     const style = getStyleSheet(theme);
 
     const expiryMenuItems: { [key in CustomStatusDuration]: string } = {
@@ -91,6 +94,7 @@ const ClearAfterMenuItem = ({currentUser, duration, expiryTime = '', handleItemC
             </TouchableOpacity>
             {showDateTimePicker && (
                 <DateTimePicker
+                    currentUser={currentUser}
                     theme={theme}
                     handleChange={handleCustomExpiresAtChange}
                 />

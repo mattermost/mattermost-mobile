@@ -38,6 +38,7 @@ import type {WithDatabaseArgs} from '@typings/database/database';
 import type PreferenceModel from '@typings/database/models/servers/preference';
 import type SystemModel from '@typings/database/models/servers/system';
 import type UserModel from '@typings/database/models/servers/user';
+
 const {SERVER: {PREFERENCE, SYSTEM, USER}} = MM_TABLES;
 
 interface Props extends NavigationComponentProps {
@@ -59,7 +60,7 @@ type State = {
 }
 
 const {DONT_CLEAR, THIRTY_MINUTES, ONE_HOUR, FOUR_HOURS, TODAY, THIS_WEEK, DATE_AND_TIME} = CustomStatusDuration;
-const defaultDuration: CustomStatusDuration = TODAY;
+const DEFAULT_DURATION: CustomStatusDuration = TODAY;
 
 const BTN_UPDATE_STATUS = 'update-custom-status';
 
@@ -112,7 +113,7 @@ class CustomStatusModal extends NavigationComponent<Props, State> {
         this.state = {
             emoji: isCurrentCustomStatusSet ? this.customStatus?.emoji : '',
             text: isCurrentCustomStatusSet ? this.customStatus?.text : '',
-            duration: isCurrentCustomStatusSet ? (this.customStatus?.duration ?? DONT_CLEAR) : defaultDuration,
+            duration: isCurrentCustomStatusSet ? (this.customStatus?.duration ?? DONT_CLEAR) : DEFAULT_DURATION,
             expires_at: initialCustomExpiryTime,
             isLandScape: false,
         };
@@ -121,6 +122,7 @@ class CustomStatusModal extends NavigationComponent<Props, State> {
     componentDidMount() {
         this.navigationEventListener = Navigation.events().bindComponent(this);
     }
+
     componentWillUnmount() {
         // Not mandatory
         if (this.navigationEventListener) {
@@ -208,7 +210,7 @@ class CustomStatusModal extends NavigationComponent<Props, State> {
     }
 
     clearHandle = () => {
-        this.setState({emoji: '', text: '', duration: defaultDuration});
+        this.setState({emoji: '', text: '', duration: DEFAULT_DURATION});
     };
 
     handleCustomStatusSuggestionClick = (status: UserCustomStatus) => {
@@ -339,7 +341,7 @@ class CustomStatusModal extends NavigationComponent<Props, State> {
 
 const augmentCSM = injectIntl(withTheme(withServerUrl(CustomStatusModal)));
 
-const withUser = withObservables([], ({database}: WithDatabaseArgs) => ({
+const enhancedCSM = withObservables([], ({database}: WithDatabaseArgs) => ({
     currentUser: database.get(SYSTEM).findAndObserve(SYSTEM_IDENTIFIERS.CURRENT_USER_ID).pipe(switchMap((id: SystemModel) => database.get(USER).findAndObserve(id.value))),
     recentCustomStatuses: database.
         get(SYSTEM).
@@ -360,7 +362,7 @@ const withUser = withObservables([], ({database}: WithDatabaseArgs) => ({
     config: database.get(SYSTEM).findAndObserve(SYSTEM_IDENTIFIERS.CONFIG).pipe(switchMap((cfg: SystemModel) => of$(cfg.value))),
 }));
 
-export default withDatabase(withUser(augmentCSM));
+export default withDatabase(enhancedCSM(augmentCSM));
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     return {
