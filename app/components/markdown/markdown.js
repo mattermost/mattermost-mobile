@@ -186,7 +186,7 @@ export default class Markdown extends PureComponent {
             //Search for match
             const match = inlineLatexRegEx.exec(literal);
 
-            if (match) {
+            if (match && !(/\w/).exec(literal[match.index - 1])) { //Extra check to see if there is no word character in front of the matched latex code
                 const firstPart = literal.slice(0, match.index);
                 let latexCode = match[1];
                 const lastPart = literal.slice(match.index + match[0].length);
