@@ -14,6 +14,7 @@ describe('NotificationSettingsEmailAndroid', () => {
         currentUser: {id: 'current_user_id'},
         notifyProps: {
             email: 'true',
+            email_threads: 'all',
         },
         emailInterval: '30',
         enableEmailBatching: false,
@@ -22,8 +23,9 @@ describe('NotificationSettingsEmailAndroid', () => {
             savePreferences: jest.fn(),
         },
         sendEmailNotifications: true,
-        theme: Preferences.THEMES.default,
+        theme: Preferences.THEMES.denim,
         componentId: 'component-id',
+        isCollapsedThreadsEnabled: false,
     };
 
     test('should match snapshot', () => {
@@ -47,6 +49,33 @@ describe('NotificationSettingsEmailAndroid', () => {
 
         expect(wrapper.instance().renderEmailSection()).toMatchSnapshot();
         expect(wrapper.instance().renderEmailNotificationsModal(style)).toMatchSnapshot();
+    });
+
+    test('should match snapshot, renderEmailThreadsSection', () => {
+        const props = {
+            ...baseProps,
+            isCollapsedThreadsEnabled: true,
+        };
+
+        const wrapper = shallowWithIntl(
+            <NotificationSettingsEmailAndroid {...props}/>,
+        );
+
+        const style = {
+            divider: {},
+            modal: {},
+            modalBody: {},
+            modalTitleContainer: {},
+            modalTitle: {},
+            modalOptionDisabled: {},
+            modalHelpText: {},
+            modalFooter: {},
+            modalFooterContainer: {},
+            modalFooterOptionContainer: {},
+            modalFooterOption: {},
+        };
+
+        expect(wrapper.instance().renderEmailThreadsSection(style)).toMatchSnapshot();
     });
 
     test('should match state on setEmailInterval', () => {

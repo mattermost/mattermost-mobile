@@ -25,7 +25,8 @@ describe('PostInput', () => {
         onSend: jest.fn(),
         readonly: false,
         rootId: '',
-        theme: Preferences.THEMES.default,
+        screenId: 'Channel',
+        theme: Preferences.THEMES.denim,
         updateInitialValue: jest.fn(),
         userTyping: jest.fn(),
     };

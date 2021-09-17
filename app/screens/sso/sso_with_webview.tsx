@@ -18,7 +18,7 @@ import StatusBar from '@components/status_bar';
 import {ViewTypes} from '@constants';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
-import type {Theme} from '@mm-redux/types/preferences';
+import type {Theme} from '@mm-redux/types/theme';
 
 const HEADERS = {
     'X-Mobile-App': 'mattermost',

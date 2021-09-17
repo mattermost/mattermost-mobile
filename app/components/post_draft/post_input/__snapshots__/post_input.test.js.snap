@@ -12,10 +12,11 @@ exports[`PostInput should match, full snapshot 1`] = `
   onEndEditing={[Function]}
   onSelectionChange={[Function]}
   placeholder="Write to Test Channel"
-  placeholderTextColor="rgba(61,60,64,0.5)"
+  placeholderTextColor="rgba(63,67,80,0.5)"
+  screenId="Channel"
   style={
     Object {
-      "color": "#3d3c40",
+      "color": "#3f4350",
       "fontSize": 15,
       "lineHeight": 20,
       "maxHeight": 150,

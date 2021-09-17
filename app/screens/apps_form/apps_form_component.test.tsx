@@ -15,6 +15,7 @@ describe('AppsForm', () => {
             performLookupCall: jest.fn(),
             refreshOnSelect: jest.fn(),
             submit: jest.fn(),
+            handleGotoLocation: jest.fn(),
         },
         call: {
             context: {
@@ -70,7 +71,7 @@ describe('AppsForm', () => {
 
             ],
         },
-        theme: Preferences.THEMES.default,
+        theme: Preferences.THEMES.denim,
     };
 
     test('should set match snapshot', () => {

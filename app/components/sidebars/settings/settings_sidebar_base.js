@@ -49,7 +49,7 @@ export default class SettingsSidebarBase extends PureComponent {
     constructor(props) {
         super(props);
         this.state = {
-            showStatus: props.isCustomStatusEnabled,
+            showStatus: true,
             showRetryMessage: false,
         };
     }

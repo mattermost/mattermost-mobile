@@ -9,7 +9,7 @@ exports[`thread should match snapshot, has root post 1`] = `
     <View
       style={
         Object {
-          "backgroundColor": "rgba(61,60,64,0.2)",
+          "backgroundColor": "rgba(63,67,80,0.2)",
           "height": 1,
         }
       }
@@ -39,7 +39,7 @@ exports[`thread should match snapshot, has root post 1`] = `
           }
           renderFooter={
             <Loading
-              color="#3d3c40"
+              color="#3f4350"
               size="large"
               style={Object {}}
             />
@@ -87,14 +87,14 @@ exports[`thread should match snapshot, no root post, loading 1`] = `
     <View
       style={
         Object {
-          "backgroundColor": "rgba(61,60,64,0.2)",
+          "backgroundColor": "rgba(63,67,80,0.2)",
           "height": 1,
         }
       }
     />
     <Connect(StatusBar) />
     <Loading
-      color="#3d3c40"
+      color="#3f4350"
       size="large"
       style={Object {}}
     />
@@ -130,7 +130,7 @@ exports[`thread should match snapshot, render footer 1`] = `
   }
   renderFooter={
     <Loading
-      color="#3d3c40"
+      color="#3f4350"
       size="large"
       style={Object {}}
     />
@@ -170,14 +170,14 @@ exports[`thread should match snapshot, render footer 3`] = `
     <View
       style={
         Object {
-          "backgroundColor": "rgba(61,60,64,0.2)",
+          "backgroundColor": "rgba(63,67,80,0.2)",
           "height": 1,
         }
       }
     />
     <Connect(StatusBar) />
     <Loading
-      color="#3d3c40"
+      color="#3f4350"
       size="large"
       style={Object {}}
     />

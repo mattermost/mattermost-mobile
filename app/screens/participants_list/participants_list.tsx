@@ -10,7 +10,7 @@ import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 import ParticipantRow from './participant_row';
 
-import type {Theme} from '@mm-redux/types/preferences';
+import type {Theme} from '@mm-redux/types/theme';
 import type {UserProfile} from '@mm-redux/types/users';
 import type {$ID} from '@mm-redux/types/utilities';
 

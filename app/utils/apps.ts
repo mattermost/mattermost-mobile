@@ -69,16 +69,16 @@ export function fillAndTrimBindingsInformation(binding?: AppBinding) {
     }
 }
 
-export function validateBindings(binding?: AppBinding) {
-    filterInvalidChannelHeaderBindings(binding);
-    filterInvalidCommands(binding);
-    filterInvalidPostMenuBindings(binding);
-    binding?.bindings?.forEach(fillAndTrimBindingsInformation);
+export function validateBindings(bindings?: AppBinding[]) {
+    filterInvalidChannelHeaderBindings(bindings);
+    filterInvalidCommands(bindings);
+    filterInvalidPostMenuBindings(bindings);
+    bindings?.forEach(fillAndTrimBindingsInformation);
 }
 
 // filterInvalidCommands remove commands without a label
-function filterInvalidCommands(binding?: AppBinding) {
-    if (!binding) {
+function filterInvalidCommands(bindings?: AppBinding[]) {
+    if (!bindings) {
         return;
     }
 
@@ -91,13 +91,13 @@ function filterInvalidCommands(binding?: AppBinding) {
         b.bindings?.forEach(validateCommand);
     };
 
-    binding.bindings?.filter((b) => b.location === AppBindingLocations.COMMAND).forEach(validateCommand);
+    bindings?.filter((b) => b.location === AppBindingLocations.COMMAND).forEach(validateCommand);
 }
 
 // filterInvalidChannelHeaderBindings remove bindings
 // without a label.
-function filterInvalidChannelHeaderBindings(binding?: AppBinding) {
-    if (!binding) {
+function filterInvalidChannelHeaderBindings(bindings?: AppBinding[]) {
+    if (!bindings) {
         return;
     }
 
@@ -110,13 +110,13 @@ function filterInvalidChannelHeaderBindings(binding?: AppBinding) {
         b.bindings?.forEach(validateChannelHeaderBinding);
     };
 
-    binding.bindings?.filter((b) => b.location === AppBindingLocations.CHANNEL_HEADER_ICON).forEach(validateChannelHeaderBinding);
+    bindings?.filter((b) => b.location === AppBindingLocations.CHANNEL_HEADER_ICON).forEach(validateChannelHeaderBinding);
 }
 
 // filterInvalidPostMenuBindings remove bindings
 // without a label.
-function filterInvalidPostMenuBindings(binding?: AppBinding) {
-    if (!binding) {
+function filterInvalidPostMenuBindings(bindings?: AppBinding[]) {
+    if (!bindings) {
         return;
     }
 
@@ -129,7 +129,7 @@ function filterInvalidPostMenuBindings(binding?: AppBinding) {
         b.bindings?.forEach(validatePostMenuBinding);
     };
 
-    binding.bindings?.filter((b) => b.location === AppBindingLocations.POST_MENU_ITEM).forEach(validatePostMenuBinding);
+    bindings?.filter((b) => b.location === AppBindingLocations.POST_MENU_ITEM).forEach(validatePostMenuBinding);
 }
 
 export function createCallContext(

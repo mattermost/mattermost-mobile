@@ -23,6 +23,7 @@ import {NavigationTypes, ViewTypes} from '@constants';
 import {getLocalizedMessage} from '@i18n';
 import {setDeviceToken} from '@mm-redux/actions/general';
 import {General} from '@mm-redux/constants';
+import {isCollapsedThreadsEnabled} from '@mm-redux/selectors/entities/preferences';
 import EventEmitter from '@mm-redux/utils/event_emitter';
 import {getCurrentLocale} from '@selectors/i18n';
 import {getBadgeCount} from '@selectors/views';
@@ -31,7 +32,7 @@ import Store from '@store/store';
 import {waitForHydration} from '@store/utils';
 import {t} from '@utils/i18n';
 
-import type {DispatchFunc} from '@mm-redux/types/actions';
+import type {DispatchFunc, GetStateFunc} from '@mm-redux/types/actions';
 
 const CATEGORY = 'CAN_REPLY';
 const REPLY_ACTION = 'REPLY_ACTION';
@@ -100,18 +101,23 @@ class PushNotifications {
                 Notifications.ios.removeDeliveredNotifications(ids);
             }
 
-            if (Store.redux) {
-                const totalMentions = getBadgeCount(Store.redux.getState());
-                if (totalMentions > -1) {
-                    // replaces the badge count based on the redux store.
-                    badgeCount = totalMentions;
-                }
-            }
+            this.setBadgeCountByMentions(badgeCount);
+        }
+    }
 
-            if (Platform.OS === 'ios') {
-                badgeCount = badgeCount <= 0 ? 0 : badgeCount;
-                Notifications.ios.setBadgeCount(badgeCount);
+    setBadgeCountByMentions = (initialBadge = 0) => {
+        let badgeCount = initialBadge;
+        if (Store.redux) {
+            const totalMentions = getBadgeCount(Store.redux.getState());
+            if (totalMentions > -1) {
+                // replaces the badge count based on the redux store.
+                badgeCount = totalMentions;
             }
+        }
+
+        if (Platform.OS === 'ios') {
+            badgeCount = badgeCount <= 0 ? 0 : badgeCount;
+            Notifications.ios.setBadgeCount(badgeCount);
         }
     }
 
@@ -144,17 +150,18 @@ class PushNotifications {
             const interval = setInterval(() => {
                 if (Store.redux) {
                     clearInterval(interval);
-                    this.handleNotification(notification);
+                    this.handleNotification(notification, true);
                 }
             }, 500);
         }
     }
 
-    handleNotification = (notification: NotificationWithData) => {
+    handleNotification = (notification: NotificationWithData, isInitialNotification = false) => {
         const {payload, foreground, userInteraction} = notification;
 
         if (Store.redux && payload) {
             const dispatch = Store.redux.dispatch as DispatchFunc;
+            const getState = Store.redux.getState as GetStateFunc;
 
             waitForHydration(Store.redux, async () => {
                 switch (payload.type) {
@@ -167,8 +174,9 @@ class PushNotifications {
 
                     if (foreground) {
                         EventEmitter.emit(ViewTypes.NOTIFICATION_IN_APP, notification);
+                        this.setBadgeCountByMentions();
                     } else if (userInteraction && !payload.userInfo?.local) {
-                        dispatch(loadFromPushNotification(notification));
+                        dispatch(loadFromPushNotification(notification, isInitialNotification));
                         const componentId = EphemeralStore.getNavigationTopComponentId();
                         if (componentId) {
                             EventEmitter.emit(NavigationTypes.CLOSE_MAIN_SIDEBAR);
@@ -176,6 +184,13 @@ class PushNotifications {
 
                             await dismissAllModals();
                             await popToRoot();
+
+                            if (!isInitialNotification) {
+                                const {root_id: rootId, channel_id: channelId} = notification.payload || {};
+                                if (rootId && isCollapsedThreadsEnabled(getState())) {
+                                    EventEmitter.emit('goToThread', {id: rootId, channel_id: channelId});
+                                }
+                            }
                         }
                     }
                     break;

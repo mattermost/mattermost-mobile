@@ -12,7 +12,7 @@ import EditChannelInfo from './index';
 describe('EditChannelInfo', () => {
     const baseProps = {
         testID: 'edit_channel_info',
-        theme: Preferences.THEMES.default,
+        theme: Preferences.THEMES.denim,
         deviceWidth: 400,
         deviceHeight: 600,
         channelType: 'O',

@@ -51,7 +51,7 @@ describe('PostOptions', () => {
         post,
         showAddReaction: true,
         showAppOptions: true,
-        theme: Preferences.THEMES.default,
+        theme: Preferences.THEMES.denim,
     };
 
     function getWrapper(props = {}) {

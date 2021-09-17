@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import moment, {Moment} from 'moment';
-import React, {useCallback, useState} from 'react';
+import React, {useCallback} from 'react';
 import {injectIntl, intlShape} from 'react-intl';
 import {View, TouchableOpacity} from 'react-native';
 
@@ -10,7 +10,7 @@ import CompassIcon from '@components/compass_icon';
 import CustomStatusExpiry from '@components/custom_status/custom_status_expiry';
 import CustomStatusText from '@components/custom_status/custom_status_text';
 import {durationValues} from '@constants/custom_status';
-import {Theme} from '@mm-redux/types/preferences';
+import {Theme} from '@mm-redux/types/theme';
 import {CustomStatusDuration} from '@mm-redux/types/users';
 import {preventDoubleTap} from '@utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
@@ -26,6 +26,7 @@ type Props = {
     intl: typeof intlShape;
     showExpiryTime?: boolean;
     showDateTimePicker?: boolean;
+    expiryTime?: string;
 };
 
 const {
@@ -38,10 +39,8 @@ const {
     DATE_AND_TIME,
 } = CustomStatusDuration;
 
-const ClearAfterMenuItem = ({handleItemClick, duration, theme, separator, isSelected, intl, showExpiryTime = false, showDateTimePicker = false}: Props) => {
+const ClearAfterMenuItem = ({handleItemClick, duration, theme, separator, isSelected, intl, showExpiryTime = false, showDateTimePicker = false, expiryTime = ''}: Props) => {
     const style = getStyleSheet(theme);
-
-    const [expiry, setExpiry] = useState<string>('');
 
     const expiryMenuItems: { [key in CustomStatusDuration]: string } = {
         [DONT_CLEAR]: intl.formatMessage(durationValues[DONT_CLEAR]),
@@ -53,13 +52,11 @@ const ClearAfterMenuItem = ({handleItemClick, duration, theme, separator, isSele
         [DATE_AND_TIME]: intl.formatMessage({id: 'custom_status.expiry_dropdown.custom', defaultMessage: 'Custom'}),
     };
 
-    const handleClick = useCallback(
-        preventDoubleTap(() => {
-            handleItemClick(duration, '');
-        }), [handleItemClick, duration]);
+    const handleClick = preventDoubleTap(() => {
+        handleItemClick(duration, expiryTime);
+    });
 
     const handleCustomExpiresAtChange = useCallback((expiresAt: Moment) => {
-        setExpiry(expiresAt.toISOString());
         handleItemClick(duration, expiresAt.toISOString());
     }, [handleItemClick, duration]);
 
@@ -85,11 +82,11 @@ const ClearAfterMenuItem = ({handleItemClick, duration, theme, separator, isSele
                                 />
                             </View>
                         )}
-                        {showExpiryTime && expiry !== '' && (
+                        {showExpiryTime && expiryTime !== '' && (
                             <View style={style.rightPosition}>
                                 <CustomStatusExpiry
                                     theme={theme}
-                                    time={moment(expiry).toDate()}
+                                    time={moment(expiryTime).toDate()}
                                     textStyles={style.customStatusExpiry}
                                     showTimeCompulsory={true}
                                     showToday={true}

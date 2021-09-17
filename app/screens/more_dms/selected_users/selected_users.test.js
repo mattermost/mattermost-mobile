@@ -26,7 +26,7 @@ describe('SelectedUsers', () => {
         selectedIds: {
             userId1: true,
         },
-        theme: Preferences.THEMES.default,
+        theme: Preferences.THEMES.denim,
         teammateNameDisplay: 'full_name',
         warnCount: 1,
     };

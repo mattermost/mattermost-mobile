@@ -35,7 +35,7 @@ describe('Gallery', () => {
             {caption: 'Caption 2', source: 'source', data: 'data'},
         ],
         index: 0,
-        theme: Preferences.THEMES.default,
+        theme: Preferences.THEMES.denim,
         componentId: 'component-id',
     };
 

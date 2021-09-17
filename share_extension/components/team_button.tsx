@@ -24,7 +24,7 @@ interface TeamButtonProps {
     team?: Team | null;
 }
 
-const theme = Preferences.THEMES.default;
+const theme = Preferences.THEMES.denim;
 
 const TeamButton = ({intl, onSelect, team}: TeamButtonProps) => {
     const store = useStore();
@@ -86,6 +86,7 @@ const styles = StyleSheet.create({
         fontSize: 16,
         marginTop: 16,
         marginBottom: 3,
+        color: changeOpacity(theme.centerChannelColor, 0.7),
     },
     buttonValue: {
         color: changeOpacity(theme.centerChannelColor, 0.6),

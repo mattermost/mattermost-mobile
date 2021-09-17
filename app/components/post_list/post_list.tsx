@@ -26,7 +26,7 @@ import {INITIAL_BATCH_TO_RENDER, SCROLL_POSITION_CONFIG, VIEWABILITY_CONFIG} fro
 import PostListRefreshControl from './post_list_refresh_control';
 
 import type {ActionResult} from '@mm-redux/types/actions';
-import type {Theme} from '@mm-redux/types/preferences';
+import type {Theme} from '@mm-redux/types/theme';
 
 type PostListProps = {
     channelId?: string;

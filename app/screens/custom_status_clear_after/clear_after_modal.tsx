@@ -15,7 +15,7 @@ import {
 } from 'react-native-navigation';
 
 import {mergeNavigationOptions, popTopScreen} from '@actions/navigation';
-import {Theme} from '@mm-redux/types/preferences';
+import {Theme} from '@mm-redux/types/theme';
 import {CustomStatusDuration} from '@mm-redux/types/users';
 import {makeStyleSheetFromTheme, changeOpacity} from '@utils/theme';
 
@@ -155,6 +155,7 @@ class ClearAfterModal extends NavigationComponent<Props, State> {
                             theme={theme}
                             separator={false}
                             isSelected={duration === DATE_AND_TIME && expiresAt === ''}
+                            expiryTime={expiresAt}
                             showExpiryTime={showExpiryTime}
                             showDateTimePicker={duration === DATE_AND_TIME}
                         />

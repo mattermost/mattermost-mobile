@@ -71,7 +71,7 @@ describe('ThemeUtils', () => {
     describe('setThemeDefaults', () => {
         it('blank theme', () => {
             const input = {};
-            const expected = {...Preferences.THEMES.default};
+            const expected = {...Preferences.THEMES.denim};
             delete expected.type;
 
             assert.deepEqual(ThemeUtils.setThemeDefaults(input), expected);

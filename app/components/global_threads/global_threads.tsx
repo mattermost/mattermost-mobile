@@ -8,8 +8,8 @@ import {Alert, FlatList} from 'react-native';
 import ThreadList from './thread_list';
 
 import type {ActionResult} from '@mm-redux/types/actions';
-import type {Theme} from '@mm-redux/types/preferences';
 import type {Team} from '@mm-redux/types/teams';
+import type {Theme} from '@mm-redux/types/theme';
 import type {ThreadsState, UserThread} from '@mm-redux/types/threads';
 import type {UserProfile} from '@mm-redux/types/users';
 import type {$ID} from '@mm-redux/types/utilities';
@@ -54,8 +54,8 @@ function GlobalThreadsList({actions, allThreadIds, intl, teamId, theme, threadCo
     React.useEffect(() => {
         // Loads on mount, Loads on team change
         scrollToTop();
-        loadThreads('', ids[0]);
-    }, [teamId]);
+        loadThreads('', '', viewingUnreads);
+    }, [teamId, viewingUnreads]);
 
     // Prevent from being called when an active request is pending.
     const loadMoreThreads = async () => {
@@ -77,18 +77,6 @@ function GlobalThreadsList({actions, allThreadIds, intl, teamId, theme, threadCo
             const lastThreadId = ids[ids.length - 1];
             await loadThreads(lastThreadId, '', viewingUnreads);
         }
-    };
-
-    const handleViewAllThreads = () => {
-        scrollToTop();
-        loadThreads('', allThreadIds[0], false);
-        actions.handleViewingGlobalThreadsAll();
-    };
-
-    const handleViewUnreadThreads = () => {
-        scrollToTop();
-        loadThreads('', unreadThreadIds[0], true);
-        actions.handleViewingGlobalThreadsUnreads();
     };
 
     const markAllAsRead = () => {
@@ -131,8 +119,8 @@ function GlobalThreadsList({actions, allThreadIds, intl, teamId, theme, threadCo
             theme={theme}
             threadIds={ids}
             viewingUnreads={viewingUnreads}
-            viewAllThreads={handleViewAllThreads}
-            viewUnreadThreads={handleViewUnreadThreads}
+            viewAllThreads={actions.handleViewingGlobalThreadsAll}
+            viewUnreadThreads={actions.handleViewingGlobalThreadsUnreads}
         />
     );
 }

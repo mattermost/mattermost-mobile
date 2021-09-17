@@ -34,7 +34,7 @@ describe('ChannelsList FilteredList', () => {
         statuses: {},
         styles: {},
         term: 'term',
-        theme: Preferences.THEMES.default,
+        theme: Preferences.THEMES.denim,
         isLandscape: false,
     };
 

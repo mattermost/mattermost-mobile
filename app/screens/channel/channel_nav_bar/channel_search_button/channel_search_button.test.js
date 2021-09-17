@@ -12,7 +12,7 @@ import ChannelSearchButton from './channel_search_button';
 describe('ChannelSearchButton', () => {
     const baseProps = {
         actions: {clearSearch: jest.fn()},
-        theme: Preferences.THEMES.default,
+        theme: Preferences.THEMES.denim,
     };
 
     test('should match, full snapshot', () => {
