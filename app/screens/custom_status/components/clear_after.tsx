@@ -87,6 +87,14 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             height: 48,
             backgroundColor: theme.centerChannelBg,
         },
+        expiryTime: {
+            position: 'absolute',
+            right: 42,
+            color: changeOpacity(theme.centerChannelColor, 0.5),
+        },
+        customStatusExpiry: {
+            color: changeOpacity(theme.centerChannelColor, 0.5),
+        },
     };
 });
 

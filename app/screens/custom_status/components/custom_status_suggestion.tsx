@@ -38,11 +38,6 @@ const CustomStatusSuggestion = ({duration, emoji, expires_at, handleClear, handl
         }
     }, []);
 
-    // if (!(duration in CustomStatusDuration)) {
-    //     console.log('>>>  duration not in enum', duration, CustomStatusDuration);
-    //     return null;
-    // }
-
     const showCustomStatus = Boolean(duration && duration !== CustomStatusDuration.DATE_AND_TIME && isExpirySupported);
 
     const clearButton =
