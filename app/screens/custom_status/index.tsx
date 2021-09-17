@@ -89,7 +89,9 @@ class CustomStatusModal extends NavigationComponent<Props, State> {
         super(props);
         const {config, currentUser, intl, theme, componentId} = props;
         this.userTimezone = getTimezone(currentUser.timezone);
-        this.customStatus = getUserCustomStatus(currentUser);
+
+        //@ts-expect-error: The current Custom Status is stringified within the 'UserModel'; hence, we need to safely parse the JSON string
+        this.customStatus = safeParseJSON(getUserCustomStatus(currentUser)) as unknown as UserCustomStatus;
         this.isCustomStatusExpired = verifyExpiredStatus(currentUser);
         this.isExpirySupported = isCustomStatusExpirySupported(config);
 
