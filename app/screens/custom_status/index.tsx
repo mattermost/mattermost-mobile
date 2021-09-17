@@ -34,6 +34,7 @@ import CustomStatusInput from './components/custom_status_input';
 import CustomStatusSuggestions from './components/custom_status_suggestions';
 import RecentCustomStatuses from './components/recent_custom_statuses';
 
+import type Database from '@nozbe/watermelondb/Database';
 import type {WithDatabaseArgs} from '@typings/database/database';
 import type PreferenceModel from '@typings/database/models/servers/preference';
 import type SystemModel from '@typings/database/models/servers/system';
@@ -44,8 +45,10 @@ const {SERVER: {PREFERENCE, SYSTEM, USER}} = MM_TABLES;
 interface Props extends NavigationComponentProps {
     config: ClientConfig;
     currentUser: UserModel;
+    database: Database;
     intl: IntlShape;
     isExpirySupported: boolean;
+    prefRecentCST: PreferenceModel;
     recentCustomStatuses: UserCustomStatus[];
     serverUrl: string;
     theme: Theme;
@@ -150,12 +153,12 @@ class CustomStatusModal extends NavigationComponent<Props, State> {
         const {emoji, text, duration} = this.state;
         const isStatusSet = emoji || text;
         const {currentUser, serverUrl} = this.props;
-
         if (isStatusSet) {
             let isStatusSame = this.customStatus?.emoji === emoji && this.customStatus?.text === text && this.customStatus?.duration === duration;
             if (isStatusSame && duration === DATE_AND_TIME) {
                 isStatusSame = this.customStatus?.expires_at === this.calculateExpiryTime(duration);
             }
+
             if (!isStatusSame) {
                 const status: UserCustomStatus = {
                     emoji: emoji || 'speech_balloon',
@@ -167,8 +170,8 @@ class CustomStatusModal extends NavigationComponent<Props, State> {
                     status.duration = duration;
                     status.expires_at = this.calculateExpiryTime(duration);
                 }
-
                 const {error} = await setCustomStatus(serverUrl, currentUser, status);
+
                 if (error) {
                     DeviceEventEmitter.emit(SET_CUSTOM_STATUS_FAILURE);
                 }
@@ -204,9 +207,37 @@ class CustomStatusModal extends NavigationComponent<Props, State> {
 
     handleTextChange = (value: string) => this.setState({text: value});
 
-    handleRecentCustomStatusClear = (status: UserCustomStatus) => {
-        const {serverUrl} = this.props;
-        removeRecentCustomStatus(serverUrl, status);
+    handleRecentCustomStatusClear = async (status: UserCustomStatus) => {
+        const {database, prefRecentCST, serverUrl} = this.props;
+
+        //fixme: how do we retrigger updates after we have removed on item from that prefRecentCST array ????
+        //fixme: do we need to update the local db ?
+        const response = await removeRecentCustomStatus(serverUrl, status);
+
+        console.log('>>>  data ', response);
+
+        // if (response.data) {
+        if (true) {
+            //todo: take prev rcst
+            const prevCST = this.getRecentCustomStatus();
+
+            //todo: remove status from it
+            const updatedCST = prevCST.filter((cst) => {
+                return cst.emoji !== status.emoji && cst.text !== status.text && cst.duration !== status.duration && cst.expires_at !== status.expires_at;
+            });
+
+            console.log('>>>  aftermath >>> ', {
+                statusRemoved: status,
+                afterFilter: updatedCST,
+            });
+
+            //todo:  push new update to db
+            await database.write(async () => {
+                await prefRecentCST.update((pref: PreferenceModel) => {
+                    pref.value = JSON.stringify(updatedCST);
+                });
+            });
+        }
     }
 
     clearHandle = () => {
@@ -264,9 +295,21 @@ class CustomStatusModal extends NavigationComponent<Props, State> {
         goToScreen(screen, title, passProps);
     };
 
+    private getRecentCustomStatus = () => {
+        const {prefRecentCST} = this.props;
+
+        const rcs = safeParseJSON(prefRecentCST?.value);
+        if (typeof rcs === 'string') {
+            return [];
+        }
+        return rcs as unknown as UserCustomStatus[];
+    }
+
     render() {
         const {duration, emoji, expires_at, isLandScape, text} = this.state;
-        const {currentUser, intl, recentCustomStatuses, theme} = this.props;
+        const {currentUser, intl, theme} = this.props;
+
+        const recentCustomStatuses = this.getRecentCustomStatus();
 
         let keyboardOffset = Device.IS_IPHONE_WITH_INSETS ? 110 : 60;
         if (isLandScape) {
@@ -342,14 +385,10 @@ const augmentCSM = injectIntl(withTheme(withServerUrl(CustomStatusModal)));
 
 const enhancedCSM = withObservables([], ({database}: WithDatabaseArgs) => ({
     currentUser: database.get(SYSTEM).findAndObserve(SYSTEM_IDENTIFIERS.CURRENT_USER_ID).pipe(switchMap((id: SystemModel) => database.get(USER).findAndObserve(id.value))),
-    recentCustomStatuses: database.get(SYSTEM).findAndObserve(SYSTEM_IDENTIFIERS.CURRENT_USER_ID).pipe(
+    prefRecentCST: database.get(SYSTEM).findAndObserve(SYSTEM_IDENTIFIERS.CURRENT_USER_ID).pipe(
         switchMap((currentUserId: SystemModel) => database.get(PREFERENCE).query(Q.where('user_id', currentUserId.value), Q.where('name', 'recent_custom_statuses')).observe()),
         map((preference: PreferenceModel[]) => {
-            const rcs = safeParseJSON(preference?.[0].value);
-            if (typeof rcs === 'string') {
-                return [];
-            }
-            return rcs as unknown as UserCustomStatus[];
+            return preference?.[0];
         }),
     ),
     config: database.get(SYSTEM).findAndObserve(SYSTEM_IDENTIFIERS.CONFIG).pipe(switchMap((cfg: SystemModel) => of$(cfg.value))),

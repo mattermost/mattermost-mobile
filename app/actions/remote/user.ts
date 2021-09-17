@@ -454,8 +454,7 @@ export const setCustomStatus = async (serverUrl: string, user: UserModel, custom
     user.props.customStatus = JSON.stringify(customStatus);
 
     try {
-        const data = await client.updateCustomStatus(customStatus);
-        console.log('>>> setCustomStatus data', data);
+        await client.updateCustomStatus(customStatus);
     } catch (error) {
         user.props.customStatus = oldCustomStatus;
         return {error};
