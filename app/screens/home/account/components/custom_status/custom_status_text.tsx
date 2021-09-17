@@ -6,6 +6,7 @@ import React from 'react';
 import CustomText from '@components/custom_status/custom_status_text';
 import FormattedText from '@components/formatted_text';
 import {t} from '@i18n';
+import {changeOpacity} from '@utils/theme';
 
 type CustomStatusTextProps = {
     customStatus?: UserCustomStatus;
@@ -31,6 +32,9 @@ const CustomStatusText = ({isStatusSet, customStatus, theme}: CustomStatusTextPr
         <CustomText
             text={text}
             theme={theme}
+            textStyle={{
+                color: changeOpacity(theme.centerChannelColor, 1.0),
+            }}
         />);
 };
 

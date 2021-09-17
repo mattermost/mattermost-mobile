@@ -224,7 +224,7 @@ const AccountScreen = ({config, currentUser, database}: AccountScreenProps) => {
                         />
                         <FormattedText
                             id={t('account.logout_from')}
-                            defaultMessage={'Log out of {serverName}'} //fixme: construct server name
+                            defaultMessage={'Log out of {serverName}'}
                             values={{serverName}}
                             style={styles.logOutFrom}
                         />

@@ -1,15 +1,15 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
-import React from 'react';
 import moment from 'moment-timezone';
+import React from 'react';
 import {View} from 'react-native';
 
 import ClearButton from '@components/custom_status/clear_button';
 import CustomStatusExpiry from '@components/custom_status/custom_status_expiry';
 import FormattedText from '@components/formatted_text';
 import {t} from '@i18n';
+import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 import CustomStatusText from './custom_status_text';
 
