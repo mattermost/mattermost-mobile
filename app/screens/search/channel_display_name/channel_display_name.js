@@ -28,7 +28,7 @@ export default class ChannelDisplayName extends PureComponent {
                 <Text
                     style={styles.teamName}
                     numberOfLines={1}
-                >{' | ' + channelTeamName}</Text>
+                >{channelTeamName}</Text>
                 }
             </View>
         );
@@ -47,8 +47,13 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
             color: changeOpacity(theme.centerChannelColor, 0.5),
             fontSize: 12,
             fontWeight: '400',
-            padding: 1,
+            paddingBottom: 1,
+            paddingLeft: 8,
+            marginLeft: 8,
             flexShrink: 2,
+            borderStyle: 'solid',
+            borderLeftWidth: 1,
+            borderLeftColor: changeOpacity(theme.centerChannelColor, 0.5),
         },
         container: {
             flexDirection: 'row',

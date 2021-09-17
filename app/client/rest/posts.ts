@@ -178,11 +178,11 @@ const ClientPosts = (superclass: any) => class extends superclass {
         );
     };
 
-    getFlaggedPosts = async (userId: string, channelId = '', page = 0, perPage = PER_PAGE_DEFAULT) => {
-        analytics.trackAPI('api_posts_get_flagged');
+    getFlaggedPosts = async (userId: string, channelId = '', teamId = '', page = 0, perPage = PER_PAGE_DEFAULT) => {
+        analytics.trackAPI('api_posts_get_flagged', {team_id: teamId});
 
         return this.doFetch(
-            `${this.getUserRoute(userId)}/posts/flagged${buildQueryString({channel_id: channelId, page, per_page: perPage})}`,
+            `${this.getUserRoute(userId)}/posts/flagged${buildQueryString({channel_id: channelId, team_id: teamId, page, per_page: perPage})}`,
             {method: 'get'},
         );
     };

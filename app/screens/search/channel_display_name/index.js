@@ -7,11 +7,12 @@ import {General} from '@mm-redux/constants';
 import {makeGetChannel} from '@mm-redux/selectors/entities/channels';
 import {getPost} from '@mm-redux/selectors/entities/posts';
 import {getTheme} from '@mm-redux/selectors/entities/preferences';
-import {getTeam} from '@mm-redux/selectors/entities/teams';
+import {getTeam, getTeamMemberships} from '@mm-redux/selectors/entities/teams';
 
 import ChannelDisplayName from './channel_display_name';
 
-function makeMapStateToProps() {
+// Exported for testing
+export function makeMapStateToProps() {
     const getChannel = makeGetChannel();
     return (state, ownProps) => {
         const post = getPost(state, ownProps.postId);
@@ -19,7 +20,8 @@ function makeMapStateToProps() {
         let channelTeamName = '';
         if (channel) {
             const isDMorGM = channel.type === General.DM_CHANNEL || channel.type === General.GM_CHANNEL;
-            if (!isDMorGM) {
+            const memberships = getTeamMemberships(state);
+            if (!isDMorGM && memberships && Object.values(memberships).length > 1) {
                 channelTeamName = getTeam(state, channel.team_id)?.display_name;
             }
         }
