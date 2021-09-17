@@ -60,6 +60,7 @@ type State = {
     duration: CustomStatusDuration;
     expires_at: Moment;
     isLandScape: boolean;
+    track_prev_cst: UserCustomStatus[]; // for screen refresh only
 }
 
 const {DONT_CLEAR, THIRTY_MINUTES, ONE_HOUR, FOUR_HOURS, TODAY, THIS_WEEK, DATE_AND_TIME} = CustomStatusDuration;
@@ -119,6 +120,7 @@ class CustomStatusModal extends NavigationComponent<Props, State> {
             duration: isCurrentCustomStatusSet ? (this.customStatus?.duration ?? DONT_CLEAR) : DEFAULT_DURATION,
             expires_at: initialCustomExpiryTime,
             isLandScape: false,
+            track_prev_cst: [],
         };
     }
 
@@ -127,14 +129,12 @@ class CustomStatusModal extends NavigationComponent<Props, State> {
     }
 
     componentWillUnmount() {
-        // Not mandatory
         if (this.navigationEventListener) {
             this.navigationEventListener.remove();
         }
     }
 
     componentDidAppear() {
-        // console.log('>>>  CustomStatusModal appeared');
         const {width, height} = Dimensions.get('screen');
         this.setState({
             isLandScape: width > height,
@@ -210,33 +210,24 @@ class CustomStatusModal extends NavigationComponent<Props, State> {
     handleRecentCustomStatusClear = async (status: UserCustomStatus) => {
         const {database, prefRecentCST, serverUrl} = this.props;
 
-        //fixme: how do we retrigger updates after we have removed on item from that prefRecentCST array ????
-        //fixme: do we need to update the local db ?
         const response = await removeRecentCustomStatus(serverUrl, status);
 
-        console.log('>>>  data ', response);
-
-        // if (response.data) {
-        if (true) {
-            //todo: take prev rcst
+        //todo: Need to test this function again - had server issue when I did it.
+        if (response.data) {
             const prevCST = this.getRecentCustomStatus();
 
-            //todo: remove status from it
             const updatedCST = prevCST.filter((cst) => {
                 return cst.emoji !== status.emoji && cst.text !== status.text && cst.duration !== status.duration && cst.expires_at !== status.expires_at;
             });
 
-            console.log('>>>  aftermath >>> ', {
-                statusRemoved: status,
-                afterFilter: updatedCST,
-            });
-
-            //todo:  push new update to db
             await database.write(async () => {
                 await prefRecentCST.update((pref: PreferenceModel) => {
                     pref.value = JSON.stringify(updatedCST);
                 });
             });
+
+            // NOTE: The below setState is a workaround to re-trigger screen refresh after updating the custom statuses in database (since changing a query/array value does not trigger updates)
+            this.setState({track_prev_cst: updatedCST});
         }
     }
 
