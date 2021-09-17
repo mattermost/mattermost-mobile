@@ -323,6 +323,7 @@ class CustomStatusModal extends NavigationComponent<Props, State> {
                                 />
                             )}
                             <CustomStatusSuggestions
+                                intl={intl}
                                 isExpirySupported={this.isExpirySupported}
                                 onHandleCustomStatusSuggestionClick={this.handleCustomStatusSuggestionClick}
                                 recentCustomStatuses={recentCustomStatuses}

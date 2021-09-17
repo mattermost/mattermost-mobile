@@ -2,8 +2,8 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback} from 'react';
-import {injectIntl, IntlShape, useIntl} from 'react-intl';
-import {View, TouchableOpacity, Text} from 'react-native';
+import {useIntl} from 'react-intl';
+import {Text, TouchableOpacity, View} from 'react-native';
 
 import ClearButton from '@components/custom_status/clear_button';
 import CustomStatusText from '@components/custom_status/custom_status_text';
@@ -38,7 +38,12 @@ const CustomStatusSuggestion = ({duration, emoji, expires_at, handleClear, handl
         }
     }, []);
 
-    const showCustomStatus = Boolean(duration && duration !== CST.DATE_AND_TIME.value && isExpirySupported);
+    // if (!(duration in CustomStatusDuration)) {
+    //     console.log('>>>  duration not in enum', duration, CustomStatusDuration);
+    //     return null;
+    // }
+
+    const showCustomStatus = Boolean(duration && duration !== CustomStatusDuration.DATE_AND_TIME && isExpirySupported);
 
     const clearButton =
         handleClear && expires_at ? (

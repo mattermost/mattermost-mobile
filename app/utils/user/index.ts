@@ -3,7 +3,8 @@
 
 import moment from 'moment-timezone';
 
-import {CustomStatusDuration, General, Preferences} from '@constants';
+import {General, Preferences} from '@constants';
+import {CustomStatusDuration} from '@constants/custom_status';
 import {UserModel} from '@database/models/server';
 import {DEFAULT_LOCALE, getLocalizedMessage, t} from '@i18n';
 
@@ -181,7 +182,7 @@ export function isCustomStatusExpired(user: UserModel) {
         return true;
     }
 
-    if (customStatus.duration === CustomStatusDuration.DONT_CLEAR || !customStatus.duration) {
+    if (customStatus?.duration === CustomStatusDuration.DONT_CLEAR || !customStatus.duration) {
         return false;
     }
 

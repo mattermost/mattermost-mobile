@@ -6,7 +6,7 @@ import {IntlShape} from 'react-intl';
 import {View} from 'react-native';
 
 import FormattedText from '@components/formatted_text';
-import {CustomStatusDuration} from '@constants';
+import {CustomStatusDuration} from '@constants/custom_status';
 import {t} from '@i18n';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
@@ -43,7 +43,6 @@ const CustomStatusSuggestions = ({
     theme,
 }: Props) => {
     const style = getStyleSheet(theme);
-
     const recentCustomStatusTexts = recentCustomStatuses.map((status: UserCustomStatus) => status.text);
 
     const customStatusSuggestions = defaultCustomStatusSuggestions.
@@ -75,7 +74,7 @@ const CustomStatusSuggestions = ({
             <View style={style.separator}/>
             <View testID='custom_status.suggestions'>
                 <FormattedText
-                    id='custom_status.suggestions.title'
+                    id={t('custom_status.suggestions.title')}
                     defaultMessage='SUGGESTIONS'
                     style={style.title}
                 />
