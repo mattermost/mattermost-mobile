@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback} from 'react';
-import {injectIntl, IntlShape} from 'react-intl';
+import {injectIntl, IntlShape, useIntl} from 'react-intl';
 import {View, TouchableOpacity, Text} from 'react-native';
 
 import ClearButton from '@components/custom_status/clear_button';
@@ -18,15 +18,15 @@ type Props = {
     expires_at?: string;
     handleClear?: (status: UserCustomStatus) => void;
     handleSuggestionClick: (status: UserCustomStatus) => void;
-    intl: IntlShape;
     isExpirySupported: boolean;
     separator: boolean;
     text?: string;
     theme: Theme;
 };
 
-const CustomStatusSuggestion = ({duration, emoji, expires_at, handleClear, handleSuggestionClick, intl, isExpirySupported, separator, text, theme}: Props) => {
+const CustomStatusSuggestion = ({duration, emoji, expires_at, handleClear, handleSuggestionClick, isExpirySupported, separator, text, theme}: Props) => {
     const style = getStyleSheet(theme);
+    const intl = useIntl();
 
     const handleClick = useCallback(preventDoubleTap(() => {
         handleSuggestionClick({emoji, text, duration});
@@ -96,7 +96,7 @@ const CustomStatusSuggestion = ({duration, emoji, expires_at, handleClear, handl
     );
 };
 
-export default injectIntl(CustomStatusSuggestion);
+export default CustomStatusSuggestion;
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     return {

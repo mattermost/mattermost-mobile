@@ -2,6 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React from 'react';
+import {useIntl} from 'react-intl';
 import {TextInput, View} from 'react-native';
 
 import ClearButton from '@components/custom_status/clear_button';
@@ -13,7 +14,6 @@ import type {IntlShape} from 'react-intl';
 
 type Props = {
     emoji?: string;
-    intl: IntlShape;
     isStatusSet: boolean;
     onChangeText: (value: string) => void;
     onClearHandle: () => void;
@@ -22,8 +22,11 @@ type Props = {
     theme: Theme;
 }
 
-const CustomStatusInput = ({emoji, intl, isStatusSet, onChangeText, onClearHandle, onOpenEmojiPicker, text, theme}: Props) => {
+const CustomStatusInput = ({emoji, isStatusSet, onChangeText, onClearHandle, onOpenEmojiPicker, text, theme}: Props) => {
     const style = getStyleSheet(theme);
+    const intl = useIntl();
+    const placeholder = intl.formatMessage({id: 'custom_status.set_status', defaultMessage: 'Set a Status'});
+
     return (
         <View style={style.inputContainer}>
             <TextInput
@@ -36,7 +39,7 @@ const CustomStatusInput = ({emoji, intl, isStatusSet, onChangeText, onClearHandl
                 keyboardType='default'
                 maxLength={CUSTOM_STATUS_TEXT_CHARACTER_LIMIT}
                 onChangeText={onChangeText}
-                placeholder={intl.formatMessage({id: 'custom_status.set_status', defaultMessage: 'Set a Status'})}
+                placeholder={placeholder}
                 placeholderTextColor={changeOpacity(theme.centerChannelColor, 0.5)}
                 returnKeyType='go'
                 style={style.input}

@@ -22,7 +22,7 @@ import {MM_TABLES, SYSTEM_IDENTIFIERS} from '@constants/database';
 import {withServerUrl} from '@context/server_url';
 import {withTheme} from '@context/theme';
 import {dismissModal, goToScreen, mergeNavigationOptions, showModal} from '@screens/navigation';
-import {getCurrentMomentForTimezone, isCustomStatusExpirySupported} from '@utils/helpers';
+import {getCurrentMomentForTimezone, isCustomStatusExpirySupported, safeParseJSON} from '@utils/helpers';
 import {preventDoubleTap} from '@utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {getTimezone, getUserCustomStatus, isCustomStatusExpired as verifyExpiredStatus} from '@utils/user';
@@ -296,7 +296,6 @@ class CustomStatusModal extends NavigationComponent<Props, State> {
                             <View style={style.block}>
                                 <CustomStatusInput
                                     emoji={emoji}
-                                    intl={intl}
                                     isStatusSet={isStatusSet}
                                     onChangeText={this.handleTextChange}
                                     onClearHandle={this.clearHandle}
@@ -324,7 +323,6 @@ class CustomStatusModal extends NavigationComponent<Props, State> {
                                 />
                             )}
                             <CustomStatusSuggestions
-                                intl={intl}
                                 isExpirySupported={this.isExpirySupported}
                                 onHandleCustomStatusSuggestionClick={this.handleCustomStatusSuggestionClick}
                                 recentCustomStatuses={recentCustomStatuses}
@@ -343,26 +341,18 @@ const augmentCSM = injectIntl(withTheme(withServerUrl(CustomStatusModal)));
 
 const enhancedCSM = withObservables([], ({database}: WithDatabaseArgs) => ({
     currentUser: database.get(SYSTEM).findAndObserve(SYSTEM_IDENTIFIERS.CURRENT_USER_ID).pipe(switchMap((id: SystemModel) => database.get(USER).findAndObserve(id.value))),
-    recentCustomStatuses: database.
-        get(SYSTEM).
-        findAndObserve(SYSTEM_IDENTIFIERS.CURRENT_USER_ID).
-        pipe(
-            switchMap((currentUserId: SystemModel) =>
-                database.get(PREFERENCE).
-                    query(
-                        Q.where('user_id', currentUserId.value),
-                        Q.where('name', 'recent_custom_statuses'),
-                    ).
-                    observe(),
-            ),
-            map((preference: PreferenceModel[]) => {
-                return of$(preference[0].value) as unknown as UserCustomStatus[];
-            }),
-        ),
+    recentCustomStatuses: database.get(SYSTEM).findAndObserve(SYSTEM_IDENTIFIERS.CURRENT_USER_ID).pipe(
+        switchMap((currentUserId: SystemModel) => database.get(PREFERENCE).query(Q.where('user_id', currentUserId.value), Q.where('name', 'recent_custom_statuses')).observe()),
+        map((preference: PreferenceModel[]) => {
+            const rcs = safeParseJSON(preference?.[0].value);
+            if (typeof rcs === 'string') {
+                return [];
+            }
+            return rcs as unknown as UserCustomStatus[];
+        }),
+    ),
     config: database.get(SYSTEM).findAndObserve(SYSTEM_IDENTIFIERS.CONFIG).pipe(switchMap((cfg: SystemModel) => of$(cfg.value))),
 }));
-
-export default withDatabase(enhancedCSM(augmentCSM));
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     return {
@@ -385,3 +375,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
         },
     };
 });
+
+export default withDatabase(enhancedCSM(augmentCSM));
+
