@@ -16,7 +16,7 @@ import {map, switchMap} from 'rxjs/operators';
 import {removeRecentCustomStatus, setCustomStatus, unsetCustomStatus} from '@actions/remote/user';
 import CompassIcon from '@components/compass_icon';
 import StatusBar from '@components/status_bar';
-import {CustomStatusDuration, Device} from '@constants';
+import {CustomStatusDuration, Device, Screens} from '@constants';
 import {SET_CUSTOM_STATUS_FAILURE} from '@constants/custom_status';
 import {MM_TABLES, SYSTEM_IDENTIFIERS} from '@constants/database';
 import {withServerUrl} from '@context/server_url';
@@ -252,7 +252,7 @@ class CustomStatusModal extends NavigationComponent<Props, State> {
 
     openClearAfterModal = async () => {
         const {intl, theme} = this.props;
-        const screen = 'ClearAfter';
+        const screen = Screens.CLEAR_AFTER;
         const title = intl.formatMessage({id: 'mobile.custom_status.clear_after', defaultMessage: 'Clear After'});
         const passProps = {
             handleClearAfterClick: this.handleClearAfterClick,

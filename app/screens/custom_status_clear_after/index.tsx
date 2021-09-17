@@ -1,6 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {withDatabase} from '@nozbe/watermelondb/DatabaseProvider';
 import withObservables from '@nozbe/with-observables';
 import React from 'react';
 import {injectIntl, IntlShape} from 'react-intl';
@@ -193,9 +194,8 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     };
 });
 
-const enhancedCFM = withObservables([], ({database}: WithDatabaseArgs) => ({
+const enhancedCAM = withObservables([], ({database}: WithDatabaseArgs) => ({
     currentUser: database.get(SYSTEM).findAndObserve(SYSTEM_IDENTIFIERS.CURRENT_USER_ID).pipe(switchMap((id: SystemModel) => database.get(USER).findAndObserve(id.value))),
 }));
 
-export default enhancedCFM(injectIntl(ClearAfterModal));
-
+export default withDatabase(enhancedCAM(injectIntl(ClearAfterModal)));
