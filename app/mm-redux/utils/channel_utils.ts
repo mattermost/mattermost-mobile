@@ -630,17 +630,6 @@ export function filterChannelsMatchingTerm(channels: Array<Channel>, term: strin
     });
 }
 
-export function removeItem<T>(array: T[], item: T) {
-    const index = array.indexOf(item);
-    if (index === -1) {
-        return array;
-    }
-
-    const result = [...array];
-    result.splice(index, 1);
-    return result;
-}
-
 export function getMsgCountInChannel(collapsedThreadsEnabled: boolean, channel: Channel, member: ChannelMembership): number {
     return collapsedThreadsEnabled ? Math.max(channel.total_msg_count_root - member.msg_count_root, 0) : Math.max(channel.total_msg_count - member.msg_count, 0);
 }

@@ -1,10 +1,14 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {debounce} from 'underscore';
+
 import {fetchMyCategories, receivedCategoryOrder} from '@mm-redux/actions/channel_categories';
 import {getCurrentTeamId} from '@mm-redux/selectors/entities/teams';
 import {ActionResult, DispatchFunc, GetStateFunc} from '@mm-redux/types/actions';
 import {WebSocketMessage} from '@mm-redux/types/websocket';
+
+const fetchCats = debounce((dispatch: DispatchFunc, teamId: string) => dispatch(fetchMyCategories(teamId)), 1000);
 
 export function handleSidebarCategoryCreated(msg: WebSocketMessage) {
     return async (dispatch: DispatchFunc, getState: GetStateFunc): Promise<ActionResult> => {
@@ -34,7 +38,8 @@ export function handleSidebarCategoryUpdated(msg: WebSocketMessage) {
         }
 
         // Fetch all categories in case any other categories had channels moved out of them.
-        dispatch(fetchMyCategories(msg.broadcast.team_id));
+        // dispatch(fetchMyCategories(msg.broadcast.team_id));
+        fetchCats(dispatch, msg.broadcast.team_id);
 
         return {data: true};
     };

@@ -100,8 +100,6 @@ exports[`EditChannelInfo should match snapshot 1`] = `
               value="display_name"
             />
           </View>
-        </View>
-        <View>
           <View
             style={
               Object {

@@ -316,7 +316,7 @@ const ClientChannels = (superclass: any) => class extends superclass {
 
     // Channel Category Routes
     getChannelCategoriesRoute(userId: string, teamId: string) {
-        return `${this.getBaseRoute()}/users/${userId}/teams/${teamId}/channels/categories`;
+        return `${this.getUserRoute('me')}/teams/${teamId}/channels/categories`;
     }
 
     getChannelCategories = async (userId: string, teamId: string) => {

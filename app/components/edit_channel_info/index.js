@@ -216,6 +216,7 @@ export default class EditChannelInfo extends PureComponent {
         };
         const style = getStyleSheet(theme);
 
+        const showSelector = !displayHeaderOnly && this.props.onTypeChange;
         const displayHeaderOnly = channelType === General.DM_CHANNEL ||
             channelType === General.GM_CHANNEL;
 
@@ -263,7 +264,7 @@ export default class EditChannelInfo extends PureComponent {
                     {displayError}
                     <TouchableWithoutFeedback onPress={this.blur}>
                         <View style={style.scrollView}>
-                            {!displayHeaderOnly && this.props.onTypeChange && (
+                            {showSelector && (
                                 <View>
                                     <View>
                                         <FormattedText
@@ -348,10 +349,7 @@ export default class EditChannelInfo extends PureComponent {
                                             keyboardAppearance={getKeyboardAppearanceFromTheme(theme)}
                                         />
                                     </View>
-                                </View>
-                            )}
-                            {!displayHeaderOnly && (
-                                <View>
+
                                     <View style={style.titleContainer30}>
                                         <FormattedText
                                             style={style.title}
@@ -534,6 +532,10 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             paddingVertical: 10,
             marginLeft: 15,
         },
-        touchableIcon: {flex: 1, padding: 10, textAlign: 'right'},
+        touchableIcon: {
+            flex: 1,
+            padding: 10,
+            textAlign: 'right',
+        },
     };
 });

@@ -1,7 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {isEqual} from 'underscore';
+/* eslint-disable max-lines */
+import {isEqual} from 'lodash';
 
 import {Client4} from '@client/rest';
 import {getUser} from '@components/autocomplete/slash_suggestion/app_command_parser/app_command_parser_dependencies';
@@ -15,7 +16,7 @@ import {ActionFunc, batchActions, DispatchFunc, GetStateFunc} from '@mm-redux/ty
 import {CategorySorting, ChannelCategory, OrderedChannelCategories} from '@mm-redux/types/channel_categories';
 import {Channel} from '@mm-redux/types/channels';
 import {UserProfile} from '@mm-redux/types/users';
-import {$ID, RelationOneToMany} from '@mm-redux/types/utilities';
+import {$ID, IDMappedObjects, RelationOneToMany} from '@mm-redux/types/utilities';
 import {insertMultipleWithoutDuplicates, insertWithoutDuplicates, removeItem} from '@mm-redux/utils/array_utils';
 import {getUserIdFromChannelName} from '@mm-redux/utils/channel_utils';
 
@@ -54,14 +55,13 @@ export function patchCategory(categoryId: string, patch: Partial<ChannelCategory
             ...patch,
         };
 
-        // Optimistic Client
         dispatch({
             type: ChannelCategoryTypes.RECEIVED_CATEGORY,
             data: patchedCategory,
         });
 
         try {
-            await Client4.updateChannelCategory(currentUserId, category.team_id, patchedCategory);
+            Client4.updateChannelCategory(currentUserId, category.team_id, patchedCategory);
         } catch (error) {
             dispatch({
                 type: ChannelCategoryTypes.RECEIVED_CATEGORY,
@@ -143,39 +143,33 @@ export function fetchMyCategories(teamId: string) {
         }
 
         /*
-         * The patchCategories method calls an optimistic dispatch for categories, so
-         * we have to make sure that the server state is different to the local state
-         * before we call another dispatch; which causes various re-render bugs.
-         *
-         * See https://github.com/mattermost/mattermost-mobile/pull/5460#pullrequestreview-755160667
+         * Make sure that we don't dispatch an unnecessary update after fetching
          */
+        const categoriesInState = getState().entities.channelCategories.byId;
+        const mappedCats = data.order.reduce((prev, categoryId) => {
+            return {
+                ...prev,
+                [categoryId]: data.categories.find((category) => category.id === categoryId),
+            };
+        }, {} as IDMappedObjects<ChannelCategory>);
 
-        // Get our state, and server data
-        const state = getState();
-        const mappedData = data.categories.reduce((prev, category) => {
-            prev[category.id] = category;
-            return prev;
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        }, {} as any);
-
-        // If they are not the same, only then dispatch with the new data
-        if (!isEqual(mappedData, state.entities.channelCategories.orderByTeam)) {
-            return dispatch(batchActions([
-                {
-                    type: ChannelCategoryTypes.RECEIVED_CATEGORIES,
-                    data: data.categories,
-                },
-                {
-                    type: ChannelCategoryTypes.RECEIVED_CATEGORY_ORDER,
-                    data: {
-                        teamId,
-                        order: data.order,
-                    },
-                },
-            ]));
+        if (isEqual(mappedCats, categoriesInState)) {
+            return {data: false};
         }
 
-        return {data: false};
+        return dispatch(batchActions([
+            {
+                type: ChannelCategoryTypes.RECEIVED_CATEGORIES,
+                data: data.categories,
+            },
+            {
+                type: ChannelCategoryTypes.RECEIVED_CATEGORY_ORDER,
+                data: {
+                    teamId,
+                    order: data.order,
+                },
+            },
+        ]));
     };
 }
 

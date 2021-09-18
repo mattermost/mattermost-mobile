@@ -22,6 +22,8 @@ import {displayUsername} from '@mm-redux/utils/user_utils';
 import {General, Preferences} from '../../constants';
 import {CategoryTypes} from '../../constants/channel_categories';
 
+import {getCurrentTeamId} from './teams';
+
 export function getAllCategoriesByIds(state: GlobalState) {
     return state.entities.channelCategories.byId;
 }
@@ -72,6 +74,22 @@ export function makeGetCategoriesForTeam(): (state: GlobalState, teamId: string)
         },
     );
 }
+
+export const getCategoriesWithFilteredChannelIds: (state: GlobalState) => ChannelCategory[] = createSelector(
+    (state: GlobalState) => state,
+    getAllCategoriesByIds,
+    getCurrentTeamId,
+    makeGetChannelIdsForCategory,
+    (state, categoryIds, currentTeamId, getChannelIds) => {
+        const categories = Object.entries(categoryIds).
+            filter((cat) => cat[1].team_id === currentTeamId).
+            map((cat) => {
+                return {...cat[1], channel_ids: getChannelIds(state, cat[1])};
+            });
+
+        return categories;
+    },
+);
 
 export function makeFilterUnreadChannels():(state: GlobalState, channels: Channel[]) => Channel[] {
     return createSelector(

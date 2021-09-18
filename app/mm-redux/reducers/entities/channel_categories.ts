@@ -8,22 +8,32 @@ import {GenericAction} from '@mm-redux/types/actions';
 import {ChannelCategory} from '@mm-redux/types/channel_categories';
 import {Team} from '@mm-redux/types/teams';
 import {$ID, IDMappedObjects, RelationOneToOne} from '@mm-redux/types/utilities';
-import {removeItem} from '@mm-redux/utils/channel_utils';
+import {removeItem} from '@mm-redux/utils/array_utils';
 
 export function byId(state: IDMappedObjects<ChannelCategory> = {}, action: GenericAction) {
     switch (action.type) {
     case ChannelCategoryTypes.RECEIVED_CATEGORIES: {
         const categories: ChannelCategory[] = action.data;
 
-        return categories.reduce((nextState, category) => {
+        return categories.reduce((prev, category) => {
             return {
-                ...nextState,
+                ...prev,
                 [category.id]: {
-                    ...nextState[category.id],
+                    ...prev[category.id],
                     ...category,
                 },
             };
         }, state);
+    }
+    case ChannelCategoryTypes.RECEIVED_CATEGORY_ORDER: {
+        const order: string[] = action.data.order;
+
+        return order.reduce((prev, categoryId) => {
+            return {
+                ...prev,
+                [categoryId]: state[categoryId],
+            };
+        }, {} as IDMappedObjects<ChannelCategory>);
     }
     case ChannelCategoryTypes.RECEIVED_CATEGORY: {
         const category: ChannelCategory = action.data;

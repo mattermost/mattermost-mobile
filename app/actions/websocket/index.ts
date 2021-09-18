@@ -411,19 +411,14 @@ function handleEvent(msg: WebSocketMessage) {
             return dispatch(handleThreadFollowChanged(msg));
         case WebsocketEvents.APPS_FRAMEWORK_REFRESH_BINDINGS:
             return dispatch(handleRefreshAppsBindings());
-            break;
         case WebsocketEvents.SIDEBAR_CATEGORY_CREATED:
             return dispatch(handleSidebarCategoryCreated(msg));
-            break;
         case WebsocketEvents.SIDEBAR_CATEGORY_UPDATED:
-            dispatch(handleSidebarCategoryUpdated(msg));
-            break;
+            return dispatch(handleSidebarCategoryUpdated(msg));
         case WebsocketEvents.SIDEBAR_CATEGORY_DELETED:
-            dispatch(handleSidebarCategoryDeleted(msg));
-            break;
+            return dispatch(handleSidebarCategoryDeleted(msg));
         case WebsocketEvents.SIDEBAR_CATEGORY_ORDER_UPDATED:
-            dispatch(handleSidebarCategoryOrderUpdated(msg));
-            break;
+            return dispatch(handleSidebarCategoryOrderUpdated(msg));
         }
 
         return {data: true};

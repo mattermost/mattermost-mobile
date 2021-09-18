@@ -120,7 +120,9 @@ export default class List extends PureComponent {
             this.setCategorySections(this.buildCategorySections());
         }
 
-         if ((prevState.sections !== this.state.sections || prevState.categorySections !== this.state.categorySections) && this.listRef?._wrapperListRef?.getListRef()._viewabilityHelper) { //eslint-disable-line
+        if ((prevState.sections !== this.state.sections ||
+            prevState.categorySections !== this.state.categorySections)
+            && this.listRef?._wrapperListRef?.getListRef()._viewabilityHelper) { //eslint-disable-line
             this.listRef.recordInteraction();
             this.updateUnreadIndicators({
                 viewableItems: Array.from(this.listRef._wrapperListRef.getListRef()._viewabilityHelper._viewableItems.values()) //eslint-disable-line
@@ -469,14 +471,16 @@ export default class List extends PureComponent {
 
         // Add the rest
         if (this.props.categories) {
-            this.props.categories.map((cat) => {
-                return categoriesBySection.push({
+            this.props.categories.reduce((prev, cat) => {
+                prev.push({
                     name: cat.display_name,
                     action: cat.type === 'direct_messages' ? this.goToDirectMessages : () => this.showCreateChannelOptions(cat),
                     data: cat.channel_ids,
                     ...cat,
                 });
-            });
+
+                return prev;
+            }, categoriesBySection);
         }
 
         return categoriesBySection;
