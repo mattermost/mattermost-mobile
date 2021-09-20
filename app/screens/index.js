@@ -117,6 +117,9 @@ Navigation.setLazyComponentRegistrator((screenName) => {
     case 'MainSidebar':
         screen = require('app/components/sidebars/main').default;
         break;
+    case 'VoiceCall':
+        screen = require('@components/voice_channels/voice_call_screen').default;
+        break;
     case 'MFA':
         screen = require('@screens/mfa').default;
         break;

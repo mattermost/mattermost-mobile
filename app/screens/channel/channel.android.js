@@ -4,13 +4,14 @@
 import React from 'react';
 import {StyleSheet, View, BackHandler, ToastAndroid} from 'react-native';
 
-import {openMainSideMenu, openSettingsSideMenu} from '@actions/navigation';
+import {goToScreen, openMainSideMenu, openSettingsSideMenu} from '@actions/navigation';
 import AnnouncementBanner from '@components/announcement_banner';
 import GlobalThreadsList from '@components/global_threads';
 import InteractiveDialogController from '@components/interactive_dialog_controller';
 import KeyboardLayout from '@components/layout/keyboard_layout';
 import NetworkIndicator from '@components/network_indicator';
 import PostDraft from '@components/post_draft';
+import FloatingVoiceCall from '@components/voice_channels/floating_voice_call';
 import {NavigationTypes} from '@constants';
 import {CHANNEL_POST_TEXTBOX_CURSOR_CHANGE, CHANNEL_POST_TEXTBOX_VALUE_CHANGE} from '@constants/post_draft';
 import EventEmitter from '@mm-redux/utils/event_emitter';
@@ -109,6 +110,14 @@ export default class ChannelAndroid extends ChannelBase {
             <>
                 <View style={style.flex}>
                     {drawerContent}
+                    <FloatingVoiceCall
+                        muted={false}
+                        onMuteSet={() => null}
+                        volume={1}
+                        channelName={'OCTO: Voice channels'}
+                        user={{id: 'xohi8cki9787fgiryne716u84o', username: 'user-1'}}
+                        onExpand={() => goToScreen('VoiceCall', 'Voice Call')}
+                    />
                 </View>
                 <InteractiveDialogController
                     theme={theme}
