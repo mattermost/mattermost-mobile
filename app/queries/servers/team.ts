@@ -5,13 +5,13 @@ import {Database, Model, Q, Query, Relation} from '@nozbe/watermelondb';
 
 import {Database as DatabaseConstants} from '@constants';
 
+import {prepareDeleteChannel} from './channel';
+
 import type ServerDataOperator from '@database/operator/server_data_operator';
 import type ChannelModel from '@typings/database/models/servers/channel';
 import type MyTeamModel from '@typings/database/models/servers/my_team';
 import type TeamModel from '@typings/database/models/servers/team';
 import type TeamChannelHistoryModel from '@typings/database/models/servers/team_channel_history';
-
-import {prepareDeleteChannel} from './channel';
 
 const {MY_TEAM, TEAM, TEAM_CHANNEL_HISTORY} = DatabaseConstants.MM_TABLES.SERVER;
 
