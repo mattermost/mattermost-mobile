@@ -1,12 +1,15 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import deepEqual from 'deep-equal';
+
 import {logError} from '@actions/remote/error';
 import {forceLogoutIfNecessary} from '@actions/remote/session';
 import {SYSTEM_IDENTIFIERS} from '@constants/database';
 import DatabaseManager from '@database/manager';
 import {getServerCredentials} from '@init/credentials';
 import NetworkManager from '@init/network_manager';
+import {queryCommonSystemValues} from '@queries/servers/system';
 
 export type ConfigAndLicenseRequest = {
     config?: ClientConfig;
@@ -68,19 +71,29 @@ export const fetchConfigAndLicense = async (serverUrl: string, fetchOnly = false
             const credentials = await getServerCredentials(serverUrl);
             const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
             if (credentials && operator) {
-                const systems: IdValue[] = [{
-                    id: SYSTEM_IDENTIFIERS.CONFIG,
-                    value: JSON.stringify(config),
-                }, {
-                    id: SYSTEM_IDENTIFIERS.LICENSE,
-                    value: JSON.stringify(license),
-                }];
-
-                operator.handleSystem({systems, prepareRecordsOnly: false}).
-                    catch((error) => {
-                        // eslint-disable-next-line no-console
-                        console.log('An error ocurred while saving config & license', error);
+                const current = await queryCommonSystemValues(operator.database);
+                const systems: IdValue[] = [];
+                if (!deepEqual(config, current.config)) {
+                    systems.push({
+                        id: SYSTEM_IDENTIFIERS.CONFIG,
+                        value: JSON.stringify(config),
                     });
+                }
+
+                if (!deepEqual(license, current.license)) {
+                    systems.push({
+                        id: SYSTEM_IDENTIFIERS.LICENSE,
+                        value: JSON.stringify(license),
+                    });
+                }
+
+                if (systems.length) {
+                    operator.handleSystem({systems, prepareRecordsOnly: false}).
+                        catch((error) => {
+                            // eslint-disable-next-line no-console
+                            console.log('An error ocurred while saving config & license', error);
+                        });
+                }
             }
         }
 

@@ -5,21 +5,19 @@ import Model from '@nozbe/watermelondb/Model';
 
 import {ActionType, Database} from '@constants';
 import DataOperatorException from '@database/exceptions/data_operator_exception';
-import {isRecordDraftEqualToRaw, isRecordFileEqualToRaw, isRecordMetadataEqualToRaw, isRecordPostEqualToRaw} from '@database/operator/server_data_operator/comparators';
+import {isRecordDraftEqualToRaw, isRecordFileEqualToRaw, isRecordPostEqualToRaw} from '@database/operator/server_data_operator/comparators';
 import {
     transformDraftRecord,
     transformFileRecord,
-    transformPostMetadataRecord,
     transformPostRecord,
 } from '@database/operator/server_data_operator/transformers/post';
 import {getUniqueRawsBy} from '@database/operator/utils/general';
 import {createPostsChain} from '@database/operator/utils/post';
 
-import type {HandleDraftArgs, HandleFilesArgs, HandlePostMetadataArgs, HandlePostsArgs, ProcessRecordResults} from '@typings/database/database';
+import type {HandleDraftArgs, HandleFilesArgs, HandlePostsArgs, ProcessRecordResults} from '@typings/database/database';
 import type DraftModel from '@typings/database/models/servers/draft';
 import type FileModel from '@typings/database/models/servers/file';
 import type PostModel from '@typings/database/models/servers/post';
-import type PostMetadataModel from '@typings/database/models/servers/post_metadata';
 import type PostsInChannelModel from '@typings/database/models/servers/posts_in_channel';
 import type PostsInThreadModel from '@typings/database/models/servers/posts_in_thread';
 import type ReactionModel from '@typings/database/models/servers/reaction';
@@ -28,13 +26,11 @@ const {
     DRAFT,
     FILE,
     POST,
-    POST_METADATA,
 } = Database.MM_TABLES.SERVER;
 
 export interface PostHandlerMix {
     handleDraft: ({drafts, prepareRecordsOnly}: HandleDraftArgs) => Promise<DraftModel[]>;
     handleFiles: ({files, prepareRecordsOnly}: HandleFilesArgs) => Promise<FileModel[]>;
-    handlePostMetadata: ({metadatas, prepareRecordsOnly}: HandlePostMetadataArgs) => Promise<PostMetadataModel[]>;
     handlePosts: ({actionType, order, posts, previousPostId}: HandlePostsArgs) => Promise<void>;
     handlePostsInChannel: (posts: Post[]) => Promise<void>;
     handlePostsInThread: (rootPosts: PostsInThread[]) => Promise<void>;
@@ -85,12 +81,6 @@ const PostHandler = (superclass: any) => class extends superclass {
             return;
         }
 
-        // Get unique posts in case they are duplicated
-        const uniquePosts = getUniqueRawsBy({
-            raws: posts,
-            key: 'id',
-        }) as Post[];
-
         const emojis: CustomEmoji[] = [];
         const files: FileInfo[] = [];
         const metadatas: Metadata[] = [];
@@ -138,12 +128,15 @@ const PostHandler = (superclass: any) => class extends superclass {
                     delete data.files;
                 }
 
-                metadatas.push({
-                    data,
-                    id: post.id,
-                });
+                post.metadata = data;
             }
         }
+
+        // Get unique posts in case they are duplicated
+        const uniquePosts = getUniqueRawsBy({
+            raws: posts,
+            key: 'id',
+        }) as Post[];
 
         // Process the posts to get which ones need to be created and which updated
         const processedPosts = (await this.processRecords({
@@ -247,40 +240,6 @@ const PostHandler = (superclass: any) => class extends superclass {
     };
 
     /**
-     * handlePostMetadata: Handler responsible for the Create/Update operations occurring on the PostMetadata table from the 'Server' schema
-     * @param {HandlePostMetadataArgs} handlePostMetadata
-     * @param {{embed: RawEmbed[], postId: string}[] | undefined} handlePostMetadata.embeds
-     * @param {{images: Dictionary<PostImage>, postId: string}[] | undefined} handlePostMetadata.images
-     * @param {boolean} handlePostMetadata.prepareRecordsOnly
-     * @returns {Promise<PostMetadataModel[]>}
-     */
-    handlePostMetadata = async ({metadatas, prepareRecordsOnly}: HandlePostMetadataArgs): Promise<PostMetadataModel[]> => {
-        const processedMetas = (await this.processRecords({
-            createOrUpdateRawValues: metadatas,
-            tableName: POST_METADATA,
-            findMatchingRecordBy: isRecordMetadataEqualToRaw,
-            fieldName: 'id',
-        })) as ProcessRecordResults;
-
-        const postMetas = await this.prepareRecords({
-            createRaws: processedMetas.createRaws,
-            updateRaws: processedMetas.updateRaws,
-            transformer: transformPostMetadataRecord,
-            tableName: POST_METADATA,
-        });
-
-        if (prepareRecordsOnly) {
-            return postMetas;
-        }
-
-        if (postMetas?.length) {
-            await this.batchRecords(postMetas);
-        }
-
-        return postMetas;
-    };
-
-    /**
      * handlePostsInThread: Handler responsible for the Create/Update operations occurring on the PostsInThread table from the 'Server' schema
      * @param {PostsInThread[]} rootPosts
      * @returns {Promise<void>}
@@ -294,10 +253,8 @@ const PostHandler = (superclass: any) => class extends superclass {
             case ActionType.POSTS.RECEIVED_SINCE:
             case ActionType.POSTS.RECEIVED_AFTER:
             case ActionType.POSTS.RECEIVED_BEFORE:
+            case ActionType.POSTS.RECEIVED_NEW:
                 return this.handleReceivedPostsInThread(postsMap, prepareRecordsOnly) as Promise<PostsInThreadModel[]>;
-            case ActionType.POSTS.RECEIVED_NEW: {
-                return this.handleReceivedPostForThread(Object.values(postsMap)[0], prepareRecordsOnly) as Promise<PostsInThreadModel[]>;
-            }
         }
 
         return [];
@@ -328,7 +285,7 @@ const PostHandler = (superclass: any) => class extends superclass {
             case ActionType.POSTS.RECEIVED_BEFORE:
                 return this.handleReceivedPostsInChannelBefore(posts, prepareRecordsOnly) as Promise<PostsInChannelModel[]>;
             case ActionType.POSTS.RECEIVED_NEW:
-                return this.handleReceivedPostForChannel(posts[0], prepareRecordsOnly) as Promise<PostsInChannelModel[]>;
+                return this.handleReceivedPostForChannel(posts, prepareRecordsOnly) as Promise<PostsInChannelModel[]>;
         }
 
         return [];

@@ -9,12 +9,14 @@
 #import <UMReactNativeAdapter/UMModuleRegistryAdapter.h>
 #import <ReactNativeNavigation/ReactNativeNavigation.h>
 #import <UploadAttachments/UploadAttachments-Swift.h>
-#import <DatabaseHelper/DatabaseHelper-Swift.h>
+#import <UploadAttachments/MattermostBucket.h>
 #import <UserNotifications/UserNotifications.h>
 #import <RNHWKeyboardEvent.h>
 
 #import "Mattermost-Swift.h"
 #import <os/log.h>
+
+@import Gekidou;
 
 @interface AppDelegate () <RCTBridgeDelegate>
  
@@ -27,6 +29,7 @@
 NSString* const NOTIFICATION_MESSAGE_ACTION = @"message";
 NSString* const NOTIFICATION_CLEAR_ACTION = @"clear";
 NSString* const NOTIFICATION_UPDATE_BADGE_ACTION = @"update_badge";
+MattermostBucket* bucket = nil;
 
 -(void)application:(UIApplication *)application handleEventsForBackgroundURLSession:(NSString *)identifier completionHandler:(void (^)(void))completionHandler {
   os_log(OS_LOG_DEFAULT, "Mattermost will attach session from handleEventsForBackgroundURLSession!! identifier=%{public}@", identifier);
@@ -47,6 +50,10 @@ NSString* const NOTIFICATION_UPDATE_BADGE_ACTION = @"update_badge";
 {
   self.moduleRegistryAdapter = [[UMModuleRegistryAdapter alloc] initWithModuleRegistryProvider:[[UMModuleRegistryProvider alloc] init]];
 
+  if (bucket == nil) {
+    bucket = [[MattermostBucket alloc] init];
+  }
+  
   // Clear keychain on first run in case of reinstallation
   if (![[NSUserDefaults standardUserDefaults] objectForKey:@"FirstRun"]) {
 
@@ -91,15 +98,7 @@ NSString* const NOTIFICATION_UPDATE_BADGE_ACTION = @"update_badge";
   UIApplicationState state = [UIApplication sharedApplication].applicationState;
   NSString* action = [userInfo objectForKey:@"type"];
   NSString* channelId = [userInfo objectForKey:@"channel_id"];
-  NSString* ackId = [userInfo objectForKey:@"ack_id"];
-  
-  NSString* serverUrl = [userInfo objectForKey:@"server_url"];
-  if (serverUrl == nil) {
-    NSString* onlyServerUrl = [[DatabaseHelper default] getOnlyServerUrlObjc];
-    if ([onlyServerUrl length] > 0) {
-      serverUrl = onlyServerUrl;
-    }
-  }
+
 
   RuntimeUtils *utils = [[RuntimeUtils alloc] init];
 
@@ -107,10 +106,9 @@ NSString* const NOTIFICATION_UPDATE_BADGE_ACTION = @"update_badge";
     // If received a notification that a channel was read, remove all notifications from that channel (only with app in foreground/background)
     [self cleanNotificationsFromChannel:channelId];
   }
-  
-  // TODO: Fetch channel data if action is of type message
 
-  [[UploadSession shared] notificationReceiptWithNotificationId:ackId serverUrl:serverUrl receivedAt:round([[NSDate date] timeIntervalSince1970] * 1000.0) type:action];
+  [[Network default] postNotificationReceipt:userInfo];
+
   [utils delayWithSeconds:0.2 closure:^(void) {
     // This is to notify the NotificationCenter that something has changed.
     completionHandler(UIBackgroundFetchResultNewData);
@@ -192,4 +190,21 @@ RNHWKeyboardEvent *hwKeyEvent = nil;
   NSString *selected = sender.input;
   [hwKeyEvent sendHWKeyEvent:@"shift-enter"];
 }
+
+-(void)applicationDidBecomeActive:(UIApplication *)application {
+  [bucket setPreference:@"ApplicationIsForeground" value:@"true"];
+}
+
+-(void)applicationWillResignActive:(UIApplication *)application {
+  [bucket setPreference:@"ApplicationIsForeground" value:@"false"];
+}
+
+-(void)applicationDidEnterBackground:(UIApplication *)application {
+  [bucket setPreference:@"ApplicationIsForeground" value:@"false"];
+}
+
+-(void)applicationWillTerminate:(UIApplication *)application {
+  [bucket setPreference:@"ApplicationIsForeground" value:@"false"];
+}
+
 @end

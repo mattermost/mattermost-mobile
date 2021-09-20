@@ -3,20 +3,22 @@
 
 import {Alert} from 'react-native';
 
-import {unsupportedServer} from './supported_server';
+import {getIntlShape} from '@test/intl-test-helper';
+
+import {unsupportedServer} from '.';
 
 describe('Unsupported Server Alert', () => {
-    const formatMessage = jest.fn();
+    const intl = getIntlShape();
 
     it('should show the alert for sysadmin', () => {
         const alert = jest.spyOn(Alert, 'alert');
-        unsupportedServer(true, formatMessage);
+        unsupportedServer(true, intl);
         expect(alert?.mock?.calls?.[0]?.[2]?.length).toBe(2);
     });
 
     it('should show the alert for team admin / user', () => {
         const alert = jest.spyOn(Alert, 'alert');
-        unsupportedServer(false, formatMessage);
+        unsupportedServer(false, intl);
         expect(alert?.mock?.calls?.[0]?.[2]?.length).toBe(1);
     });
 });

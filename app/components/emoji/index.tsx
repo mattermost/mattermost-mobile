@@ -14,7 +14,8 @@ import {
     View,
 } from 'react-native';
 import FastImage, {ImageStyle} from 'react-native-fast-image';
-import {of} from 'rxjs';
+import {of as of$} from 'rxjs';
+import {switchMap} from 'rxjs/operators';
 
 import {MM_TABLES, SYSTEM_IDENTIFIERS} from '@constants/database';
 import {useServerUrl} from '@context/server_url';
@@ -22,8 +23,8 @@ import NetworkManager from '@init/network_manager';
 import {EmojiIndicesByAlias, Emojis} from '@utils/emoji';
 
 import type {WithDatabaseArgs} from '@typings/database/database';
+import type CustomEmojiModel from '@typings/database/models/servers/custom_emoji';
 import type SystemModel from '@typings/database/models/servers/system';
-import CustomEmojiModel from '@typings/database/models/servers/custom_emoji';
 
 const assetImages = new Map([['mattermost.png', require('@assets/images/emojis/mattermost.png')]]);
 
@@ -117,7 +118,7 @@ const Emoji = (props: Props) => {
             return null;
         }
         return (
-            <View style={Platform.select({android: {flex: 1}})}>
+            <View style={Platform.select({ios: {flex: 1, justifyContent: 'center'}})}>
                 <FastImage
                     key={key}
                     source={image}
@@ -138,7 +139,7 @@ const Emoji = (props: Props) => {
     const key = Platform.OS === 'android' ? (`${imageUrl}-${height}-${width}`) : null;
 
     return (
-        <View style={Platform.select({android: {flex: 1}})}>
+        <View style={Platform.select({ios: {flex: 1, justifyContent: 'center'}})}>
             <FastImage
                 key={key}
                 style={[customEmojiStyle, {width, height}]}
@@ -151,15 +152,16 @@ const Emoji = (props: Props) => {
 };
 
 const withSystemIds = withObservables([], ({database}: WithDatabaseArgs) => ({
-    config: database.get(MM_TABLES.SERVER.SYSTEM).findAndObserve(SYSTEM_IDENTIFIERS.CONFIG),
+    enableCustomEmoji: database.get(MM_TABLES.SERVER.SYSTEM).findAndObserve(SYSTEM_IDENTIFIERS.CONFIG).pipe(
+        switchMap((config: SystemModel) => of$(config.value.EnableCustomEmoji)),
+    ),
 }));
 
-const withCustomEmojis = withObservables(['config', 'emojiName'], ({config, database, emojiName}: WithDatabaseArgs & {config: SystemModel; emojiName: string}) => {
-    const cfg: ClientConfig = config.value;
-    const displayTextOnly = cfg.EnableCustomEmoji !== 'true';
+const withCustomEmojis = withObservables(['enableCustomEmoji', 'emojiName'], ({enableCustomEmoji, database, emojiName}: WithDatabaseArgs & {enableCustomEmoji: string; emojiName: string}) => {
+    const displayTextOnly = enableCustomEmoji !== 'true';
 
     return {
-        displayTextOnly: of(displayTextOnly),
+        displayTextOnly: of$(displayTextOnly),
         customEmojis: database.get(MM_TABLES.SERVER.CUSTOM_EMOJI).query(Q.where('name', emojiName)).observe(),
     };
 });

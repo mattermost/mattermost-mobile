@@ -23,7 +23,7 @@ describe('SSO with redirect url', () => {
         loginUrl: '',
         serverUrl: 'http://localhost:8065',
         setLoginError: jest.fn(),
-        theme: Preferences.THEMES.default,
+        theme: Preferences.THEMES.denim,
     };
 
     test('should show message when user navigates to the page', () => {

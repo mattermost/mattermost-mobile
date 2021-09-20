@@ -5,7 +5,7 @@ exports[`ErrorText should match snapshot 1`] = `
   style={
     Array [
       Object {
-        "color": "#fd5960",
+        "color": "#d24b4e",
         "fontSize": 12,
         "marginBottom": 15,
         "marginTop": 15,

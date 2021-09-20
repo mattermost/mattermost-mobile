@@ -3,9 +3,9 @@
 
 import {MM_TABLES} from '@constants/database';
 import {prepareBaseRecord} from '@database/operator/server_data_operator/transformers/index';
+import {OperationType} from '@typings/database/enums';
 
 import type {TransformerArgs} from '@typings/database/database';
-import {OperationType} from '@typings/database/enums';
 import type GroupModel from '@typings/database/models/servers/group';
 import type GroupMembershipModel from '@typings/database/models/servers/group_membership';
 import type GroupsChannelModel from '@typings/database/models/servers/groups_channel';

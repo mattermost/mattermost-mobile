@@ -78,7 +78,6 @@ describe('*** Operator: Post Handlers tests ***', () => {
                 user_id: 'q3mzxua9zjfczqakxdkowc6u6yy',
                 channel_id: 'xxoq1p6bqg7dkxb3kj1mcjoungw',
                 root_id: '',
-                parent_id: 'ps81iqbddesfby8jayz7owg4yypoo',
                 original_id: '',
                 message: "I'll second these kudos!  Thanks m!",
                 type: '',
@@ -173,7 +172,6 @@ describe('*** Operator: Post Handlers tests ***', () => {
                 user_id: 'hy5sq51sebfh58ktrce5ijtcwyy',
                 channel_id: 'xxoq1p6bqg7dkxb3kj1mcjoungw',
                 root_id: '8swgtrrdiff89jnsiwiip3y1eoe',
-                parent_id: '',
                 original_id: '',
                 message: 'a added to the channel by j.',
                 type: 'system_add_to_channel',
@@ -200,7 +198,6 @@ describe('*** Operator: Post Handlers tests ***', () => {
                 user_id: '44ud4m9tqwby3mphzzdwm7h31sr',
                 channel_id: 'xxoq1p6bqg7dkxb3kj1mcjoungw',
                 root_id: '8swgtrrdiff89jnsiwiip3y1eoe',
-                parent_id: 'ps81iqbwesfby8jayz7owg4yypo',
                 original_id: '',
                 message: 'Great work M!',
                 type: '',
@@ -222,7 +219,6 @@ describe('*** Operator: Post Handlers tests ***', () => {
         const actionType = ActionType.POSTS.RECEIVED_IN_CHANNEL;
 
         const spyOnHandleFiles = jest.spyOn(operator, 'handleFiles');
-        const spyOnHandlePostMetadata = jest.spyOn(operator, 'handlePostMetadata');
         const spyOnHandleReactions = jest.spyOn(operator, 'handleReactions');
         const spyOnHandleCustomEmojis = jest.spyOn(operator, 'handleCustomEmojis');
         const spyOnHandlePostsInThread = jest.spyOn(operator, 'handlePostsInThread');
@@ -273,51 +269,6 @@ describe('*** Operator: Post Handlers tests ***', () => {
                         '/9j/2wCEAAMCAgMCAgMDAwMEAwMEBQgFBQQEBQoHBwYIDAoMDAsKCwsNDhIQDQ4RDgsLEBYQERMUFRUVDA8XGBYUGBIUFRQBAwQEBQQFCQUFCRQNCw0UFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFP/AABEIABAAEAMBIgACEQEDEQH/xAGiAAABBQEBAQEBAQAAAAAAAAAAAQIDBAUGBwgJCgsQAAIBAwMCBAMFBQQEAAABfQECAwAEEQUSITFBBhNRYQcicRQygZGhCCNCscEVUtHwJDNicoIJChYXGBkaJSYnKCkqNDU2Nzg5OkNERUZHSElKU1RVVldYWVpjZGVmZ2hpanN0dXZ3eHl6g4SFhoeIiYqSk5SVlpeYmZqio6Slpqeoqaqys7S1tre4ubrCw8TFxsfIycrS09TV1tfY2drh4uPk5ebn6Onq8fLz9PX29/j5+gEAAwEBAQEBAQEBAQAAAAAAAAECAwQFBgcICQoLEQACAQIEBAMEBwUEBAABAncAAQIDEQQFITEGEkFRB2FxEyIygQgUQpGhscEJIzNS8BVictEKFiQ04SXxFxgZGiYnKCkqNTY3ODk6Q0RFRkdISUpTVFVWV1hZWmNkZWZnaGlqc3R1dnd4eXqCg4SFhoeIiYqSk5SVlpeYmZqio6Slpqeoqaqys7S1tre4ubrCw8TFxsfIycrS09TV1tfY2dri4+Tl5ufo6ery8/T19vf4+fr/2gAMAwEAAhEDEQA/AN/T/iZp+pX15FpUmnwLbXtpJpyy2sQLw8CcBXA+bksCDnHGOaf4W+P3xIshbQ6loB8RrbK11f3FpbBFW3ZwiFGHB2kr25BIOeCPPbX4S3407T7rTdDfxFNIpDyRaw9lsB4OECHGR15yO4GK6fRPhR4sGmSnxAs8NgchNOjvDPsjz8qSHA37cDk5JPPFdlOpTdPlcVt/Ku1lrvr17b67EPnjrH8/626H/9k=',
                 },
             ],
-            prepareRecordsOnly: true,
-        });
-
-        expect(spyOnHandlePostMetadata).toHaveBeenCalledTimes(1);
-        expect(spyOnHandlePostMetadata).toHaveBeenCalledWith({
-            metadatas: [{
-                data: {
-                    embeds: [
-                        {
-                            type: 'opengraph',
-                            url: 'https://github.com/mickmister/mattermost-plugin-default-theme',
-                            data: {
-                                type: 'object',
-                                url: 'https://github.com/mickmister/mattermost-plugin-default-theme',
-                                title: 'mickmister/mattermost-plugin-default-theme',
-                                description: 'Contribute to mickmister/mattermost-plugin-default-theme development by creating an account on GitHub.',
-                                determiner: '',
-                                site_name: 'GitHub',
-                                locale: '',
-                                locales_alternate: null,
-                                images: [
-                                    {
-                                        url: '',
-                                        secure_url: 'https://community-release.mattermost.com/api/v4/image?url=https%3A%2F%2Favatars1.githubusercontent.com%2Fu%2F6913320%3Fs%3D400%26v%3D4',
-                                        type: '',
-                                        width: 0,
-                                        height: 0,
-                                    },
-                                ],
-                                audios: null,
-                                videos: null,
-                            },
-                        },
-                    ],
-                    images: {
-                        'https://community-release.mattermost.com/api/v4/image?url=https%3A%2F%2Favatars1.githubusercontent.com%2Fu%2F6913320%3Fs%3D400%26v%3D4': {
-                            width: 400,
-                            height: 400,
-                            format: 'png',
-                            frame_count: 0,
-                        },
-                    },
-                },
-                id: '8swgtrrdiff89jnsiwiip3y1eoe',
-            }],
             prepareRecordsOnly: true,
         });
 

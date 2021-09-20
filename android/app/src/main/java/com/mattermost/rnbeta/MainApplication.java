@@ -126,8 +126,10 @@ public class MainApplication extends NavigationApplication implements INotificat
     super.onCreate();
     instance = this;
 
+    Context context = getApplicationContext();
+
     // Delete any previous temp files created by the app
-    File tempFolder = new File(getApplicationContext().getCacheDir(), RealPathUtil.CACHE_DIR_NAME);
+    File tempFolder = new File(context.getCacheDir(), RealPathUtil.CACHE_DIR_NAME);
     RealPathUtil.deleteTempFiles(tempFolder);
     Log.i("ReactNative", "Cleaning temp cache " + tempFolder.getAbsolutePath());
 

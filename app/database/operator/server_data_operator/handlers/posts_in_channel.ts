@@ -4,9 +4,8 @@
 import {Q} from '@nozbe/watermelondb';
 
 import {Database} from '@constants';
-import {retrieveRecords} from '@database/operator/utils/general';
-import {transformPostsInChannelRecord} from '@database/operator/server_data_operator/transformers/post';
 import {getPostListEdges} from '@database//operator/utils/post';
+import {transformPostsInChannelRecord} from '@database/operator/server_data_operator/transformers/post';
 
 import type PostsInChannelModel from '@typings/database/models/servers/posts_in_channel';
 
@@ -129,11 +128,10 @@ const PostsInChannelHandler = (superclass: any) => class extends superclass {
         let latest = 0;
 
         let recentChunk: PostsInChannelModel|undefined;
-        const chunks = (await retrieveRecords({
-            database: this.database,
-            tableName: POSTS_IN_CHANNEL,
-            condition: (Q.where('id', firstPost.channel_id), Q.experimentalSortBy('latest', Q.desc)),
-        })) as PostsInChannelModel[];
+        const chunks = (await this.database.get(POSTS_IN_CHANNEL).query(
+            Q.where('channel_id', firstPost.channel_id),
+            Q.experimentalSortBy('latest', Q.desc),
+        ).fetch()) as PostsInChannelModel[];
 
         if (chunks.length) {
             recentChunk = chunks[0];
@@ -176,8 +174,53 @@ const PostsInChannelHandler = (superclass: any) => class extends superclass {
         throw new Error(`handleReceivedPostsInChannelAfter Not implemented yet. posts count${posts.length} prepareRecordsOnly=${prepareRecordsOnly}`);
     }
 
-    handleReceivedPostForChannel = async (post: Post, prepareRecordsOnly = false): Promise<PostsInChannelModel[]> => {
-        throw new Error(`handleReceivedPostsInChannelAfter Not implemented yet. postId ${post.id} prepareRecordsOnly=${prepareRecordsOnly}`);
+    handleReceivedPostForChannel = async (posts: Post[], prepareRecordsOnly = false): Promise<PostsInChannelModel[]> => {
+        if (!posts.length) {
+            return [];
+        }
+
+        const {firstPost, lastPost} = getPostListEdges(posts);
+
+        // Channel Id for this chain of posts
+        const channelId = firstPost.channel_id;
+
+        // Find smallest 'create_at' value in chain
+        const earliest = firstPost.create_at;
+
+        // Find highest 'create_at' value in chain; -1 means we are dealing with one item in the posts array
+        const latest = lastPost.create_at;
+
+        // Find the records in the PostsInChannel table that have a matching channel_id
+        const chunks = (await this.database.get(POSTS_IN_CHANNEL).query(
+            Q.where('channel_id', channelId),
+            Q.experimentalSortBy('latest', Q.desc),
+        ).fetch()) as PostsInChannelModel[];
+
+        // chunk length 0; then it's a new chunk to be added to the PostsInChannel table
+        if (chunks.length === 0) {
+            return this._createPostsInChannelRecord(channelId, earliest, latest, prepareRecordsOnly);
+        }
+
+        let targetChunk = chunks[0];
+        if (targetChunk) {
+            // If the chunk was found, Update the chunk and return
+            if (prepareRecordsOnly) {
+                targetChunk.prepareUpdate((record) => {
+                    record.latest = Math.max(record.latest, latest);
+                });
+                return [targetChunk];
+            }
+
+            targetChunk = await this.database.write(async () => {
+                return targetChunk!.update((record) => {
+                    record.latest = Math.max(record.latest, latest);
+                });
+            });
+
+            return [targetChunk!];
+        }
+
+        return targetChunk;
     }
 };
 

@@ -11,16 +11,15 @@ import {General} from '@constants';
 import DatabaseManager from '@database/manager';
 import {privateChannelJoinPrompt} from '@helpers/api/channel';
 import {prepareMyChannelsForTeam, queryMyChannel} from '@queries/servers/channel';
-import {addChannelToTeamHistory, prepareMyTeams, queryMyTeamById, queryTeamById, queryTeamByName} from '@queries/servers/team';
 import {queryCommonSystemValues, setCurrentChannelId, setCurrentTeamAndChannelId} from '@queries/servers/system';
+import {addChannelToTeamHistory, prepareMyTeams, queryMyTeamById, queryTeamById, queryTeamByName} from '@queries/servers/team';
 import {PERMALINK_GENERIC_TEAM_NAME_REDIRECT} from '@utils/url';
-
-import type {IntlShape} from 'react-intl';
 
 import type ChannelModel from '@typings/database/models/servers/channel';
 import type MyChannelModel from '@typings/database/models/servers/my_channel';
 import type MyTeamModel from '@typings/database/models/servers/my_team';
 import type TeamModel from '@typings/database/models/servers/team';
+import type {IntlShape} from 'react-intl';
 
 export const switchToChannel = async (serverUrl: string, channelId: string) => {
     const database = DatabaseManager.serverDatabases[serverUrl]?.database;

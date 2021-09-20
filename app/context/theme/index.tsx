@@ -11,8 +11,8 @@ import {MM_TABLES, SYSTEM_IDENTIFIERS} from '@constants/database';
 import EphemeralStore from '@store/ephemeral_store';
 import {setNavigationStackStyles} from '@utils/theme';
 
-import type Database from '@nozbe/watermelondb/Database';
 import type {PreferenceModel, SystemModel} from '@database/models/server';
+import type Database from '@nozbe/watermelondb/Database';
 
 type Props = {
     currentTeamId: SystemModel[];
@@ -26,14 +26,14 @@ type WithThemeProps = {
 
 const {SERVER: {PREFERENCE, SYSTEM}} = MM_TABLES;
 
-function getDefaultThemeByAppearance(): Theme {
+export function getDefaultThemeByAppearance(): Theme {
     if (Appearance.getColorScheme() === 'dark') {
-        return Preferences.THEMES.windows10;
+        return Preferences.THEMES.onyx;
     }
-    return Preferences.THEMES.default;
+    return Preferences.THEMES.denim;
 }
 
-const ThemeContext = createContext(getDefaultThemeByAppearance());
+export const ThemeContext = createContext(getDefaultThemeByAppearance());
 const {Consumer, Provider} = ThemeContext;
 
 const ThemeProvider = ({currentTeamId, children, themes}: Props) => {

@@ -20,7 +20,8 @@
 -(UInt64)getMaxFileSize;
 -(UInt64)getMaxPostSize;
 -(NSArray *)getMyTeams;
--(NSString *)getTokenForServerUrl:(NSString *)url;
+-(NSString *)getServerUrl;
+-(NSString *)getToken;
 -(BOOL)getCanUploadFiles;
 -(void)updateEntities:(NSString *)content;
 @end

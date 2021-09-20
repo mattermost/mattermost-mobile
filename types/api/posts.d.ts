@@ -51,7 +51,6 @@ type Post = {
     user_id: string;
     channel_id: string;
     root_id: string;
-    parent_id: string;
     original_id: string;
     message: string;
     type: PostType;
@@ -116,3 +115,29 @@ type PostProps = {
 type PostResponse = PostOrderBlock & {
     posts: IDMappedObjects<Post>;
 };
+
+type MessageAttachment = {
+    id: number;
+    fallback: string;
+    color: string;
+    pretext: string;
+    author_name: string;
+    author_link: string;
+    author_icon: string;
+    title: string;
+    title_link: string;
+    text: string;
+    fields: MessageAttachmentField[];
+    image_url: string;
+    thumb_url: string;
+    footer: string;
+    footer_icon: string;
+    timestamp: number | string;
+    actions?: PostAction[];
+};
+
+type MessageAttachmentField = {
+    title: string;
+    value: any;
+    short: boolean;
+}

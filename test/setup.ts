@@ -3,9 +3,9 @@
 
 /* eslint-disable react/no-multi-comp */
 
+import MockAsyncStorage from 'mock-async-storage';
 import * as ReactNative from 'react-native';
 
-import MockAsyncStorage from 'mock-async-storage';
 import 'react-native-gesture-handler/jestSetup';
 require('react-native-reanimated/lib/reanimated2/jestUtils').setUpTests();
 

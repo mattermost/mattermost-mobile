@@ -1,8 +1,6 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {useServerUrl} from '@context/server_url';
-import {generateId} from '@utils/general';
 import React, {memo, useCallback, useRef, useState} from 'react';
 import {StyleSheet, View} from 'react-native';
 import parseUrl from 'url-parse';
@@ -10,7 +8,9 @@ import parseUrl from 'url-parse';
 import CompassIcon from '@components/compass_icon';
 import ProgressiveImage from '@components/progressive_image';
 import TouchableWithFeedback from '@components/touchable_with_feedback';
+import {useServerUrl} from '@context/server_url';
 import {openGallerWithMockFile} from '@utils/gallery';
+import {generateId} from '@utils/general';
 import {calculateDimensions, isGifTooLarge} from '@utils/images';
 
 type MarkdownTableImageProps = {
@@ -89,7 +89,7 @@ const MarkTableImage = ({disabled, imagesMetadata, postId, serverURL, source}: M
     if (failed) {
         image = (
             <CompassIcon
-                name='jumbo-attachment-image-broken'
+                name='file-image-broken-outline-large'
                 size={24}
             />
         );

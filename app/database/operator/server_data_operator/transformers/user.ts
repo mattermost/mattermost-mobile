@@ -3,10 +3,10 @@
 
 import {MM_TABLES} from '@constants/database';
 import {prepareBaseRecord} from '@database/operator/server_data_operator/transformers/index';
-
-import type ChannelMembershipModel from '@typings/database/models/servers/channel_membership';
-import type {TransformerArgs} from '@typings/database/database';
 import {OperationType} from '@typings/database/enums';
+
+import type {TransformerArgs} from '@typings/database/database';
+import type ChannelMembershipModel from '@typings/database/models/servers/channel_membership';
 import type PreferenceModel from '@typings/database/models/servers/preference';
 import type ReactionModel from '@typings/database/models/servers/reaction';
 import type UserModel from '@typings/database/models/servers/user';

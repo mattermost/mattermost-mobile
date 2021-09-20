@@ -7,9 +7,9 @@ import {Image, Text, TextInput, TouchableWithoutFeedback, View} from 'react-nati
 import Button from 'react-native-button';
 import {SafeAreaView} from 'react-native-safe-area-context';
 
+import {sendPasswordResetEmail} from '@actions/remote/session';
 import ErrorText from '@components/error_text';
 import FormattedText from '@components/formatted_text';
-import {sendPasswordResetEmail} from '@actions/remote/session';
 import {isEmail} from '@utils/helpers';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 

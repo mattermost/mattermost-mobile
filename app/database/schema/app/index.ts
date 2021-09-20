@@ -2,6 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {AppSchema, appSchema, tableSchema} from '@nozbe/watermelondb';
+
 import {MM_TABLES} from '@constants/database';
 
 const {INFO, GLOBAL, SERVERS} = MM_TABLES.APP;
