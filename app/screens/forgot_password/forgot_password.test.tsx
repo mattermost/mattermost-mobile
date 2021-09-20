@@ -4,8 +4,8 @@
 import {act, waitFor} from '@testing-library/react-native';
 import React from 'react';
 
-import {Preferences} from '@constants';
 import * as SessionAPICalls from '@actions/remote/session';
+import {Preferences} from '@constants';
 import {renderWithIntl, fireEvent} from '@test/intl-test-helper';
 
 import ForgotPassword from './index';

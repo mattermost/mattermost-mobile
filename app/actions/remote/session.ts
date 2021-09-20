@@ -4,6 +4,7 @@
 import {DeviceEventEmitter} from 'react-native';
 
 import {autoUpdateTimezone, getDeviceTimezone, isTimezoneEnabled} from '@actions/local/timezone';
+import {getServerCredentials} from '@app/init/credentials';
 import {General, Database} from '@constants';
 import DatabaseManager from '@database/manager';
 import NetworkManager from '@init/network_manager';
@@ -12,12 +13,11 @@ import {queryDeviceToken} from '@queries/app/global';
 import {queryCurrentUserId, queryCommonSystemValues} from '@queries/servers/system';
 import {getCSRFFromCookie} from '@utils/security';
 
-import type {LoginArgs} from '@typings/database/database';
-
-import {logError} from './error';
 import {loginEntry} from './entry';
+import {logError} from './error';
 import {fetchDataRetentionPolicy} from './systems';
-import {getServerCredentials} from '@app/init/credentials';
+
+import type {LoginArgs} from '@typings/database/database';
 
 const HTTP_UNAUTHORIZED = 401;
 

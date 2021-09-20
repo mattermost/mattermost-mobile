@@ -9,8 +9,8 @@ import FormattedTime from '@components/formatted_time';
 import {CHANNEL, THREAD} from '@constants/screens';
 import {useTheme} from '@context/theme';
 import {postUserDisplayName} from '@utils/post';
-import {displayUsername, getUserCustomStatus, getUserTimezone, isCustomStatusExpired} from '@utils/user';
 import {makeStyleSheetFromTheme} from '@utils/theme';
+import {displayUsername, getUserCustomStatus, getUserTimezone, isCustomStatusExpired} from '@utils/user';
 
 import HeaderCommentedOn from './commented_on';
 import HeaderDisplayName from './display_name';

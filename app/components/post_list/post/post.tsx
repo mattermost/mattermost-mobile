@@ -7,12 +7,12 @@ import {DeviceEventEmitter, Keyboard, StyleProp, View, ViewStyle} from 'react-na
 
 import {showPermalink} from '@actions/local/permalink';
 import {removePost} from '@actions/local/post';
-import SystemAvatar from '@app/components/system_avatar';
-import SystemHeader from '@app/components/system_header';
+import SystemAvatar from '@components/system_avatar';
+import SystemHeader from '@components/system_header';
 import TouchableWithFeedback from '@components/touchable_with_feedback';
 import * as Screens from '@constants/screens';
-import {useTheme} from '@context/theme';
 import {useServerUrl} from '@context/server_url';
+import {useTheme} from '@context/theme';
 import {showModalOverCurrentContext} from '@screens/navigation';
 import {fromAutoResponder, isFromWebhook, isPostPendingOrFailed, isSystemMessage} from '@utils/post';
 import {preventDoubleTap} from '@utils/tap';
@@ -24,9 +24,9 @@ import Header from './header';
 import PreHeader from './pre_header';
 import SystemMessage from './system_message';
 
+import type FileModel from '@typings/database/models/servers/file';
 import type PostModel from '@typings/database/models/servers/post';
 import type UserModel from '@typings/database/models/servers/user';
-import FileModel from '@typings/database/models/servers/file';
 
 type PostProps = {
     appsEnabled: boolean;

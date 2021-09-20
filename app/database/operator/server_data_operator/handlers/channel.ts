@@ -17,9 +17,9 @@ import {
 } from '@database/operator/server_data_operator/transformers/channel';
 import {getUniqueRawsBy} from '@database/operator/utils/general';
 
+import type {HandleChannelArgs, HandleChannelInfoArgs, HandleMyChannelArgs, HandleMyChannelSettingsArgs} from '@typings/database/database';
 import type ChannelModel from '@typings/database/models/servers/channel';
 import type ChannelInfoModel from '@typings/database/models/servers/channel_info';
-import type {HandleChannelArgs, HandleChannelInfoArgs, HandleMyChannelArgs, HandleMyChannelSettingsArgs} from '@typings/database/database';
 import type MyChannelModel from '@typings/database/models/servers/my_channel';
 import type MyChannelSettingsModel from '@typings/database/models/servers/my_channel_settings';
 

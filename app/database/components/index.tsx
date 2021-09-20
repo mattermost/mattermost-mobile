@@ -1,9 +1,9 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {ComponentType, useEffect, useState} from 'react';
 import {Database} from '@nozbe/watermelondb';
 import DatabaseProvider from '@nozbe/watermelondb/DatabaseProvider';
+import React, {ComponentType, useEffect, useState} from 'react';
 
 import {MM_TABLES} from '@constants/database';
 import ServerUrlProvider from '@context/server_url';

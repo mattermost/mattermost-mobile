@@ -1,6 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import Model from '@nozbe/watermelondb/Model';
 import mimeDB from 'mime-db';
 import {Platform} from 'react-native';
 import {FileSystem} from 'react-native-unimodules';
@@ -10,7 +11,6 @@ import {hashCode} from '@utils/security';
 import {removeProtocol} from '@utils/url';
 
 import type FileModel from '@typings/database/models/servers/file';
-import Model from '@nozbe/watermelondb/Model';
 
 const EXTRACT_TYPE_REGEXP = /^\s*([^;\s]*)(?:;|\s|$)/;
 const CONTENT_DISPOSITION_REGEXP = /inline;filename=".*\.([a-z]+)";/i;

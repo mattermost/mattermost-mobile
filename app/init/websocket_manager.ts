@@ -1,15 +1,16 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import NetInfo, {NetInfoState} from '@react-native-community/netinfo';
 import {AppState, AppStateStatus} from 'react-native';
 
-import type {ServerCredential} from '@typings/credentials';
-import WebSocketClient from '@app/client/websocket';
-import {handleClose, handleEvent, handleFirstConnect, handleReconnect} from '@actions/websocket';
-import NetInfo, {NetInfoState} from '@react-native-community/netinfo';
 import {setCurrentUserStatusOffline} from '@actions/local/user';
+import {handleClose, handleEvent, handleFirstConnect, handleReconnect} from '@actions/websocket';
+import WebSocketClient from '@app/client/websocket';
 import {queryWebSocketLastDisconnected} from '@app/queries/servers/system';
 import DatabaseManager from '@database/manager';
+
+import type {ServerCredential} from '@typings/credentials';
 
 class WebsocketManager {
     private clients: Record<string, WebSocketClient> = {};
@@ -65,7 +66,7 @@ class WebsocketManager {
         client.setCloseCallback((connectFailCount: number, lastDisconnect: number) => this.onWebsocketClose(serverURL, connectFailCount, lastDisconnect));
 
         if (this.netConnected) {
-            console.log('CREATE WS', serverURL)
+            console.log('CREATE WS', serverURL);
             client.initialize();
         }
         this.clients[serverURL] = client;
@@ -83,7 +84,7 @@ class WebsocketManager {
     public openAll = () => {
         console.log('WSM: open all');
         for (const client of Object.values(this.clients)) {
-            console.log('CLIENT', client.isConnected())
+            console.log('CLIENT', client.isConnected());
             if (!client.isConnected()) {
                 client.initialize();
             }
@@ -129,7 +130,7 @@ class WebsocketManager {
 
         if (appState === 'active' && this.netConnected) { // Reopen the websockets only if there is connection
             this.openAll();
-            console.log('OPEN FROM STATE')
+            console.log('OPEN FROM STATE');
             this.previousAppState = appState;
             return;
         }
@@ -150,7 +151,7 @@ class WebsocketManager {
         this.netConnected = newState;
 
         if (this.netConnected && this.previousAppState === 'active') { // Reopen the websockets only if the app is active
-            console.log('OPEN FROM NET')
+            console.log('OPEN FROM NET');
             this.openAll();
             return;
         }

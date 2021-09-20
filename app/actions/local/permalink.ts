@@ -3,8 +3,6 @@
 
 import {Keyboard} from 'react-native';
 
-import type {IntlShape} from 'react-intl';
-
 import {fetchMyChannelsForTeam} from '@actions/remote/channel';
 import DatabaseManager from '@database/manager';
 import {queryCommonSystemValues} from '@queries/servers/system';
@@ -15,6 +13,7 @@ import {changeOpacity} from '@utils/theme';
 import {PERMALINK_GENERIC_TEAM_NAME_REDIRECT} from '@utils/url';
 
 import type TeamModel from '@typings/database/models/servers/team';
+import type {IntlShape} from 'react-intl';
 
 let showingPermalink = false;
 

@@ -8,7 +8,7 @@ import {View} from 'react-native';
 import {switchMap} from 'rxjs/operators';
 
 import ProfilePicture from '@components/profile_picture';
-import {MM_TABLES, SYSTEM_IDENTIFIERS} from '@app/constants/database';
+import {MM_TABLES, SYSTEM_IDENTIFIERS} from '@constants/database';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 
 import type {WithDatabaseArgs} from '@typings/database/database';

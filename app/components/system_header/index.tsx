@@ -17,10 +17,9 @@ import {makeStyleSheetFromTheme} from '@utils/theme';
 import {getUserTimezone} from '@utils/user';
 
 import type {WithDatabaseArgs} from '@typings/database/database';
-
+import type PreferenceModel from '@typings/database/models/servers/preference';
 import type SystemModel from '@typings/database/models/servers/system';
 import type UserModel from '@typings/database/models/servers/user';
-import type PreferenceModel from '@typings/database/models/servers/preference';
 
 type withUserInputProps = {
     config: SystemModel;

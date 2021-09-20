@@ -4,8 +4,8 @@
 import React from 'react';
 
 import CompassIcon from '@components/compass_icon';
-import {useTheme} from '@context/theme';
 import {General} from '@constants';
+import {useTheme} from '@context/theme';
 import {changeOpacity} from '@utils/theme';
 
 type UserStatusProps = {

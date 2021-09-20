@@ -1,12 +1,12 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {getOrCreateWebSocketClient, WebSocketClientInterface} from '@mattermost/react-native-network-client';
 import {Platform} from 'react-native';
 
 import {WebsocketEvents} from '@constants';
-import {queryCommonSystemValues} from '@queries/servers/system';
 import DatabaseManager from '@database/manager';
-import {getOrCreateWebSocketClient, WebSocketClientInterface} from '@mattermost/react-native-network-client';
+import {queryCommonSystemValues} from '@queries/servers/system';
 
 const MAX_WEBSOCKET_FAILS = 7;
 const MIN_WEBSOCKET_RETRY_TIME = 3000; // 3 sec
@@ -282,7 +282,7 @@ export default class WebSocketClient {
             }
         });
 
-        console.log('OPEN THE WS')
+        console.log('OPEN THE WS');
         this.conn.open();
     }
 

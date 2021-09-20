@@ -10,26 +10,25 @@ import {FileSystem} from 'react-native-unimodules';
 import urlParse from 'url-parse';
 
 import {MIGRATION_EVENTS, MM_TABLES} from '@constants/database';
-import AppDataOperator from '@database/operator/app_data_operator';
 import AppDatabaseMigrations from '@database/migration/app';
-import {InfoModel, GlobalModel, ServersModel} from '@database/models/app';
-import {schema as appSchema} from '@database/schema/app';
 import ServerDatabaseMigrations from '@database/migration/server';
+import {InfoModel, GlobalModel, ServersModel} from '@database/models/app';
 import {ChannelModel, ChannelInfoModel, ChannelMembershipModel, CustomEmojiModel, DraftModel, FileModel,
     GroupModel, GroupMembershipModel, GroupsChannelModel, GroupsTeamModel, MyChannelModel, MyChannelSettingsModel, MyTeamModel,
     PostModel, PostsInChannelModel, PostsInThreadModel, PreferenceModel, ReactionModel, RoleModel,
     SlashCommandModel, SystemModel, TeamModel, TeamChannelHistoryModel, TeamMembershipModel, TeamSearchHistoryModel,
     TermsOfServiceModel, UserModel,
 } from '@database/models/server';
+import AppDataOperator from '@database/operator/app_data_operator';
+import ServerDataOperator from '@database/operator/server_data_operator';
+import {schema as appSchema} from '@database/schema/app';
 import {serverSchema} from '@database/schema/server';
 import {queryActiveServer, queryServer} from '@queries/app/servers';
+import {DatabaseType} from '@typings/database/enums';
 import {deleteIOSDatabase, getIOSAppGroupDetails} from '@utils/mattermost_managed';
 import {hashCode} from '@utils/security';
 
 import type {AppDatabase, CreateServerDatabaseArgs, RegisterServerDatabaseArgs, Models, ServerDatabase, ServerDatabases} from '@typings/database/database';
-import {DatabaseType} from '@typings/database/enums';
-
-import ServerDataOperator from '../operator/server_data_operator';
 
 const {SERVERS} = MM_TABLES.APP;
 const APP_DATABASE = 'app';

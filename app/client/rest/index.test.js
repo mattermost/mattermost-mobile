@@ -2,6 +2,7 @@
 // See LICENSE.txt for license information.
 
 import assert from 'assert';
+
 import nock from 'nock';
 
 import {HEADER_X_VERSION_ID} from '@client/rest/constants';

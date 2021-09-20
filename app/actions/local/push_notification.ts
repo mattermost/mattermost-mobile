@@ -2,12 +2,12 @@
 // See LICENSE.txt for license information.
 
 import moment from 'moment-timezone';
+import {createIntl} from 'react-intl';
 
 import {getSessions} from '@actions/remote/session';
 import {DEFAULT_LOCALE, getTranslations} from '@i18n';
 import PushNotifications from '@init/push_notifications';
 import {sortByNewest} from '@utils/general';
-import {createIntl} from 'react-intl';
 
 export const scheduleExpiredNotification = async (serverUrl: string, config: Partial<ClientConfig>, userId: string, locale = DEFAULT_LOCALE) => {
     if (config.ExtendSessionLengthWithActivity === 'true') {

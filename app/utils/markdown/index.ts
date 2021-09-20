@@ -2,6 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {Platform, StyleSheet} from 'react-native';
+
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 export function getCodeFont() {

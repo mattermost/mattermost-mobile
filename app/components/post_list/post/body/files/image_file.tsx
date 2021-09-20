@@ -12,9 +12,8 @@ import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 import FileIcon from './file_icon';
 
-import type {ResizeMode} from 'react-native-fast-image';
-
 import type {Client} from '@client/rest';
+import type {ResizeMode} from 'react-native-fast-image';
 
 type ImageFileProps = {
     backgroundColor?: string;

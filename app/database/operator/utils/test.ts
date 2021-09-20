@@ -5,11 +5,10 @@ import DatabaseManager from '@database/manager';
 import {createPostsChain, sanitizePosts} from '@database/operator/utils/post';
 import {sanitizeReactions} from '@database/operator/utils/reaction';
 
-import type {WriterInterface} from '@nozbe/watermelondb/Database';
-
-import type ReactionModel from '@typings/database/models/servers/reaction';
-
 import {mockedPosts, mockedReactions} from './mock';
+
+import type {WriterInterface} from '@nozbe/watermelondb/Database';
+import type ReactionModel from '@typings/database/models/servers/reaction';
 
 describe('DataOperator: Utils tests', () => {
     it('=> sanitizePosts: should filter between ordered and unordered posts', () => {

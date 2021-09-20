@@ -5,9 +5,9 @@ import {Post} from '@constants';
 import {DEFAULT_LOCALE} from '@i18n';
 import {displayUsername} from '@utils/user';
 
+import type GroupModel from '@typings/database/models/servers/group';
 import type PostModel from '@typings/database/models/servers/post';
 import type UserModel from '@typings/database/models/servers/user';
-import type GroupModel from '@typings/database/models/servers/group';
 import type {UserMentionKey} from '@typings/global/markdown';
 
 export function areConsecutivePosts(post: PostModel, previousPost: PostModel) {

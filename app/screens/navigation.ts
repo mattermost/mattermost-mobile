@@ -1,13 +1,14 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import merge from 'deepmerge';
 import {Appearance, DeviceEventEmitter, Keyboard, Platform} from 'react-native';
 import {Navigation, Options, OptionsModalPresentationStyle} from 'react-native-navigation';
-import merge from 'deepmerge';
 
 import {Device, Preferences, Screens} from '@constants';
 import NavigationConstants from '@constants/navigation';
 import EphemeralStore from '@store/ephemeral_store';
+
 import type {LaunchProps} from '@typings/launch';
 
 Navigation.setDefaultOptions({

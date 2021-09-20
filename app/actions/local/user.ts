@@ -2,8 +2,8 @@
 // See LICENSE.txt for license information.
 
 import {queryCurrentUser} from '@app/queries/servers/user';
-import DatabaseManager from '@database/manager';
 import General from '@constants/general';
+import DatabaseManager from '@database/manager';
 
 export const setCurrentUserStatusOffline = async (serverUrl: string) => {
     const {database, operator} = DatabaseManager.serverDatabases[serverUrl];

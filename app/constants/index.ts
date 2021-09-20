@@ -15,8 +15,8 @@ import Network from './network';
 import Permissions from './permissions';
 import Post from './post';
 import Preferences from './preferences';
-import SSO, {REDIRECT_URL_SCHEME, REDIRECT_URL_SCHEME_DEV} from './sso';
 import Screens from './screens';
+import SSO, {REDIRECT_URL_SCHEME, REDIRECT_URL_SCHEME_DEV} from './sso';
 import View, {Upgrade} from './view';
 import WebsocketEvents from './websocket';
 

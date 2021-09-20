@@ -4,8 +4,8 @@
 import {Q} from '@nozbe/watermelondb';
 
 import {Database} from '@constants';
-import {transformPostsInChannelRecord} from '@database/operator/server_data_operator/transformers/post';
 import {getPostListEdges} from '@database//operator/utils/post';
+import {transformPostsInChannelRecord} from '@database/operator/server_data_operator/transformers/post';
 
 import type PostsInChannelModel from '@typings/database/models/servers/posts_in_channel';
 
