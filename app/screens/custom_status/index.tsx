@@ -69,11 +69,8 @@ const DEFAULT_DURATION: CustomStatusDuration = TODAY;
 const BTN_UPDATE_STATUS = 'update-custom-status';
 
 class CustomStatusModal extends NavigationComponent<Props, State> {
-    private customStatus: UserCustomStatus | undefined;
     private navigationEventListener: EventSubscription | undefined;
-    private readonly isCustomStatusExpired: boolean;
-    private readonly isExpirySupported: boolean;
-    private readonly userTimezone: string;
+    private isCustomStatusExpired: boolean| undefined; // ok
 
     static options(): Options {
         return {
@@ -87,14 +84,9 @@ class CustomStatusModal extends NavigationComponent<Props, State> {
 
     constructor(props: Props) {
         super(props);
-        const {config, currentUser, intl, theme, componentId} = props;
-        this.userTimezone = getTimezone(currentUser.timezone);
+        const {intl, theme, componentId} = props;
 
-        //@ts-expect-error: The current Custom Status is stringified within the 'UserModel'; hence, we need to safely parse the JSON string
-        this.customStatus = safeParseJSON(getUserCustomStatus(currentUser)) as unknown as UserCustomStatus;
-        this.isCustomStatusExpired = verifyExpiredStatus(currentUser);
-        this.isExpirySupported = isCustomStatusExpirySupported(config);
-
+        this.setUp();
         mergeNavigationOptions(componentId, {
             topBar: {
                 rightButtons: [{
@@ -107,60 +99,80 @@ class CustomStatusModal extends NavigationComponent<Props, State> {
                 }],
             },
         });
-
-        const currentTime = getCurrentMomentForTimezone(this.userTimezone ?? '');
-
-        let initialCustomExpiryTime: Moment = getRoundedTime(currentTime);
-        const isCurrentCustomStatusSet = !this.isCustomStatusExpired && (this.customStatus?.text || this.customStatus?.emoji);
-        if (isCurrentCustomStatusSet && this.customStatus?.duration === DATE_AND_TIME && this.customStatus?.expires_at) {
-            initialCustomExpiryTime = moment(this.customStatus?.expires_at);
-        }
-
-        this.state = {
-            emoji: isCurrentCustomStatusSet ? this.customStatus?.emoji : '',
-            text: isCurrentCustomStatusSet ? this.customStatus?.text : '',
-            duration: isCurrentCustomStatusSet ? (this.customStatus?.duration ?? DONT_CLEAR) : DEFAULT_DURATION,
-            expires_at: initialCustomExpiryTime,
-            isLandScape: false,
-            track_prev_cst: [],
-        };
     }
 
-    componentDidMount() {
-        this.navigationEventListener = Navigation.events().bindComponent(this);
-    }
+      setUp = () => {
+          const {currentUser} = this.props;
+          const userTimezone = getTimezone(currentUser.timezone);
 
-    componentWillUnmount() {
-        if (this.navigationEventListener) {
-            this.navigationEventListener.remove();
-        }
-    }
+          const customStatus = this.getCustomStatus();
 
-    componentDidAppear() {
-        //todo: verify if this works correctly on tablet layout
-        const {width, height} = Dimensions.get('screen');
-        this.setState({
-            isLandScape: width > height,
-        });
-    }
+          this.isCustomStatusExpired = verifyExpiredStatus(currentUser);
 
-    navigationButtonPressed({buttonId}: NavigationButtonPressedEvent) {
-        switch (buttonId) {
-            case BTN_UPDATE_STATUS:
-                this.handleSetStatus();
-                break;
-        }
-    }
+          const currentTime = getCurrentMomentForTimezone(userTimezone ?? '');
+
+          let initialCustomExpiryTime: Moment = getRoundedTime(currentTime);
+          const isCurrentCustomStatusSet = !this.isCustomStatusExpired && (customStatus?.text || customStatus?.emoji);
+          if (isCurrentCustomStatusSet && customStatus?.duration === DATE_AND_TIME && customStatus?.expires_at) {
+              initialCustomExpiryTime = moment(customStatus?.expires_at);
+          }
+
+          this.state = {
+              emoji: isCurrentCustomStatusSet ? customStatus?.emoji : '',
+              text: isCurrentCustomStatusSet ? customStatus?.text : '',
+              duration: isCurrentCustomStatusSet ? (customStatus?.duration ?? DONT_CLEAR) : DEFAULT_DURATION,
+              expires_at: initialCustomExpiryTime,
+              isLandScape: false,
+              track_prev_cst: [],
+          };
+      }
+
+      getCustomStatus = () => {
+          const {currentUser} = this.props;
+          const cst = getUserCustomStatus(currentUser);
+          if (cst) {
+              return safeParseJSON(cst) as unknown as UserCustomStatus;
+          }
+          return undefined;
+      }
+
+      componentDidMount() {
+          this.navigationEventListener = Navigation.events().bindComponent(this);
+      }
+
+      componentWillUnmount() {
+          if (this.navigationEventListener) {
+              this.navigationEventListener.remove();
+          }
+      }
+
+      componentDidAppear() {
+          //todo: verify if this works correctly on tablet layout
+          const {width, height} = Dimensions.get('screen');
+          this.setState({
+              isLandScape: width > height,
+          });
+      }
+
+      navigationButtonPressed({buttonId}: NavigationButtonPressedEvent) {
+          switch (buttonId) {
+              case BTN_UPDATE_STATUS:
+                  this.handleSetStatus();
+                  break;
+          }
+      }
 
     handleSetStatus = async () => {
-        const {currentUser, serverUrl} = this.props;
+        const {config, currentUser, serverUrl} = this.props;
         const {emoji, text, duration} = this.state;
+        const customStatus = this.getCustomStatus();
+        const isExpirySupported = isCustomStatusExpirySupported(config);
 
         const isStatusSet = emoji || text;
         if (isStatusSet) {
-            let isStatusSame = this.customStatus?.emoji === emoji && this.customStatus?.text === text && this.customStatus?.duration === duration;
+            let isStatusSame = customStatus?.emoji === emoji && customStatus?.text === text && customStatus?.duration === duration;
             if (isStatusSame && duration === DATE_AND_TIME) {
-                isStatusSame = this.customStatus?.expires_at === this.calculateExpiryTime(duration);
+                isStatusSame = customStatus?.expires_at === this.calculateExpiryTime(duration);
             }
 
             if (!isStatusSame) {
@@ -170,7 +182,7 @@ class CustomStatusModal extends NavigationComponent<Props, State> {
                     duration: DONT_CLEAR,
                 };
 
-                if (this.isExpirySupported) {
+                if (isExpirySupported) {
                     status.duration = duration;
                     status.expires_at = this.calculateExpiryTime(duration);
                 }
@@ -183,7 +195,7 @@ class CustomStatusModal extends NavigationComponent<Props, State> {
                     await this.updateUserCustomStatus(status);
                 }
             }
-        } else if (this.customStatus?.emoji) {
+        } else if (customStatus?.emoji) {
             const unsetResponse = await unsetCustomStatus(serverUrl);
             if (unsetResponse?.data) {
                 await this.updateUserCustomStatus(null);
@@ -194,7 +206,10 @@ class CustomStatusModal extends NavigationComponent<Props, State> {
     };
 
     calculateExpiryTime = (duration: CustomStatusDuration): string => {
-        const currentTime = getCurrentMomentForTimezone(this.userTimezone);
+        const {currentUser} = this.props;
+        const userTimezone = getTimezone(currentUser.timezone);
+        const currentTime = getCurrentMomentForTimezone(userTimezone);
+
         const {expires_at} = this.state;
         switch (duration) {
             case THIRTY_MINUTES:
@@ -238,7 +253,7 @@ class CustomStatusModal extends NavigationComponent<Props, State> {
                     });
                 });
             } catch (e) {
-                //todo: do something about that error
+                //todo: do something about that error?
             }
 
             // NOTE: The below setState is a workaround to re-trigger screen refresh after updating the custom statuses in database (since changing a query/array value does not trigger updates)
@@ -301,103 +316,109 @@ class CustomStatusModal extends NavigationComponent<Props, State> {
         goToScreen(screen, title, passProps);
     };
 
-    private updateUserCustomStatus = async (nextCST: UserCustomStatus | null) => {
-        // updates the local value of the user's custom status
-        const {currentUser, database} = this.props;
-        try {
-            await database.write(async () => {
-                await currentUser.update((user: UserModel) => {
-                    user.props = nextCST;
-                });
-            });
-        } catch (e) {
-            //todo: do something about that error
-        }
-    }
-    private getRecentCustomStatus = () => {
-        const {prefRecentCST} = this.props;
+      updateUserCustomStatus = async (nextCST: UserCustomStatus | null) => {
+          // updates the local value of the user's custom status
+          const {currentUser, database} = this.props;
+          try {
+              console.log('>>> updateUserCustomStatus 1  ');
+              const currentProps = {...currentUser.props, customStatus: nextCST};
+              await database.write(async () => {
+                  await currentUser.update((user: UserModel) => {
+                      user.props = currentProps;
+                  });
+              });
+              console.log('>>> updateUserCustomStatus 2  ');
+          } catch (e) {
+              //todo: do something about that error
+              console.log('>>>  updateUserCustomStatus  3 err', e);
+          }
+      }
 
-        const rcs = safeParseJSON(prefRecentCST?.value);
-        if (typeof rcs === 'string') {
-            return [];
-        }
-        return rcs as unknown as UserCustomStatus[];
-    }
+      getRecentCustomStatus = () => {
+          const {prefRecentCST} = this.props;
 
-    render() {
-        const {duration, emoji, expires_at, isLandScape, text} = this.state;
-        const {currentUser, intl, theme} = this.props;
+          const rcs = safeParseJSON(prefRecentCST?.value);
+          if (typeof rcs === 'string') {
+              return [];
+          }
+          return rcs as unknown as UserCustomStatus[];
+      }
 
-        const recentCustomStatuses = this.getRecentCustomStatus();
+      render() {
+          const {duration, emoji, expires_at, isLandScape, text} = this.state;
+          const {config, currentUser, intl, theme} = this.props;
 
-        let keyboardOffset = Device.IS_IPHONE_WITH_INSETS ? 110 : 60;
-        if (isLandScape) {
-            keyboardOffset = Device.IS_IPHONE_WITH_INSETS ? 0 : 10;
-        }
+          const recentCustomStatuses = this.getRecentCustomStatus();
 
-        const isStatusSet = Boolean(emoji || text);
+          let keyboardOffset = Device.IS_IPHONE_WITH_INSETS ? 110 : 60;
+          if (isLandScape) {
+              keyboardOffset = Device.IS_IPHONE_WITH_INSETS ? 0 : 10;
+          }
 
-        const style = getStyleSheet(theme);
+          const isStatusSet = Boolean(emoji || text);
+          const isExpirySupported = isCustomStatusExpirySupported(config);
 
-        return (
-            <SafeAreaView
-                style={style.container}
-                testID='custom_status.screen'
-            >
-                <KeyboardAvoidingView
-                    behavior='padding'
-                    enabled={Platform.OS === 'ios'}
-                    keyboardVerticalOffset={keyboardOffset}
-                    style={style.container}
-                >
-                    <ScrollView
-                        bounces={false}
-                    >
-                        <StatusBar theme={theme}/>
-                        <View style={style.scrollView}>
-                            <View style={style.block}>
-                                <CustomStatusInput
-                                    emoji={emoji}
-                                    isStatusSet={isStatusSet}
-                                    onChangeText={this.handleTextChange}
-                                    onClearHandle={this.clearHandle}
-                                    onOpenEmojiPicker={this.openEmojiPicker}
-                                    text={text}
-                                    theme={theme}
-                                />
-                                {isStatusSet && this.isExpirySupported && (
-                                    <ClearAfter
-                                        currentUser={currentUser}
-                                        duration={duration}
-                                        expiresAt={expires_at}
-                                        intl={intl}
-                                        onOpenClearAfterModal={this.openClearAfterModal}
-                                        theme={theme}
-                                    />)}
-                            </View>
-                            {recentCustomStatuses.length > 0 && (
-                                <RecentCustomStatuses
-                                    isExpirySupported={this.isExpirySupported}
-                                    onHandleClear={this.handleRecentCustomStatusClear}
-                                    onHandleSuggestionClick={this.handleRecentCustomStatusSuggestionClick}
-                                    recentCustomStatuses={recentCustomStatuses}
-                                    theme={theme}
-                                />
-                            )}
-                            <CustomStatusSuggestions
-                                intl={intl}
-                                isExpirySupported={this.isExpirySupported}
-                                onHandleCustomStatusSuggestionClick={this.handleCustomStatusSuggestionClick}
-                                recentCustomStatuses={recentCustomStatuses}
-                                theme={theme}
-                            />
-                        </View>
-                        <View style={style.separator}/>
-                    </ScrollView>
-                </KeyboardAvoidingView>
-            </SafeAreaView>
-        );
-    }
+          const style = getStyleSheet(theme);
+
+          return (
+              <SafeAreaView
+                  style={style.container}
+                  testID='custom_status.screen'
+              >
+                  <KeyboardAvoidingView
+                      behavior='padding'
+                      enabled={Platform.OS === 'ios'}
+                      keyboardVerticalOffset={keyboardOffset}
+                      style={style.container}
+                  >
+                      <ScrollView
+                          bounces={false}
+                      >
+                          <StatusBar theme={theme}/>
+                          <View style={style.scrollView}>
+                              <View style={style.block}>
+                                  <CustomStatusInput
+                                      emoji={emoji}
+                                      isStatusSet={isStatusSet}
+                                      onChangeText={this.handleTextChange}
+                                      onClearHandle={this.clearHandle}
+                                      onOpenEmojiPicker={this.openEmojiPicker}
+                                      text={text}
+                                      theme={theme}
+                                  />
+                                  {isStatusSet && isExpirySupported && (
+                                      <ClearAfter
+                                          currentUser={currentUser}
+                                          duration={duration}
+                                          expiresAt={expires_at}
+                                          intl={intl}
+                                          onOpenClearAfterModal={this.openClearAfterModal}
+                                          theme={theme}
+                                      />)}
+                              </View>
+                              {recentCustomStatuses.length > 0 && (
+                                  <RecentCustomStatuses
+                                      isExpirySupported={isExpirySupported}
+                                      onHandleClear={this.handleRecentCustomStatusClear}
+                                      onHandleSuggestionClick={this.handleRecentCustomStatusSuggestionClick}
+                                      recentCustomStatuses={recentCustomStatuses}
+                                      theme={theme}
+                                  />
+                              )}
+                              <CustomStatusSuggestions
+                                  intl={intl}
+                                  isExpirySupported={isExpirySupported}
+                                  onHandleCustomStatusSuggestionClick={this.handleCustomStatusSuggestionClick}
+                                  recentCustomStatuses={recentCustomStatuses}
+                                  theme={theme}
+                              />
+                          </View>
+                          <View style={style.separator}/>
+                      </ScrollView>
+                  </KeyboardAvoidingView>
+              </SafeAreaView>
+          );
+      }
 }
 
 const augmentCSM = injectIntl(withTheme(withServerUrl(CustomStatusModal)));
