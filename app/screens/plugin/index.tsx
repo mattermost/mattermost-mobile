@@ -9,7 +9,7 @@ import StatusBar from '@components/status_bar';
 import {getTheme} from '@mm-redux/selectors/entities/preferences';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
-import type {Theme} from '@mm-redux/types/preferences';
+import type {Theme} from '@mm-redux/types/theme';
 import type {GlobalState} from '@mm-redux/types/store';
 
 const HEADERS = {
