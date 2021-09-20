@@ -215,7 +215,9 @@ class CustomStatusModal extends NavigationComponent<Props, State> {
         }
     };
 
-    handleTextChange = (value: string) => this.setState({text: value});
+    handleTextChange = (value: string) => {
+        this.setState({text: value});
+    }
 
     handleRecentCustomStatusClear = async (status: UserCustomStatus) => {
         const {database, prefRecentCST, serverUrl} = this.props;

@@ -473,7 +473,6 @@ export const removeRecentCustomStatus = async (serverUrl: string, customStatus: 
 
     try {
         const data = await client.removeRecentCustomStatus(customStatus);
-        console.log('>>> removeRecentCustomStatus data', data);
     } catch (error) {
         return {error};
     }
@@ -491,8 +490,7 @@ export const unsetCustomStatus = async (serverUrl: string) => {
     }
 
     try {
-        const data = await client.unsetCustomStatus();
-        console.log('>>>unsetCustomStatus  data', data);
+        await client.unsetCustomStatus();
     } catch (error) {
         return {error};
     }
