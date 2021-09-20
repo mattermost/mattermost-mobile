@@ -8,6 +8,7 @@ import {CustomStatusDuration} from '@constants/custom_status';
 import {UserModel} from '@database/models/server';
 import {DEFAULT_LOCALE, getLocalizedMessage, t} from '@i18n';
 
+import type {Database} from '@nozbe/watermelondb';
 import type GroupModel from '@typings/database/models/servers/group';
 import type GroupMembershipModel from '@typings/database/models/servers/group_membership';
 import type {UserMentionKey} from '@typings/global/markdown';
@@ -191,3 +192,17 @@ export function isCustomStatusExpired(user: UserModel) {
     const currentTime = timezone ? moment.tz(timezone) : moment();
     return currentTime.isSameOrAfter(expiryTime);
 }
+
+export const updateUserCustomStatus = async (status: UserCustomStatus | null, user: UserModel, database: Database) => {
+    // updates the local value of the user's custom status
+    try {
+        const currentProps = {...user.props, customStatus: {...status}};
+        await database.write(async () => {
+            await user.update((u: UserModel) => {
+                u.props = currentProps;
+            });
+        });
+    } catch (e) {
+        //todo: do something about that error ? Emit an error ?
+    }
+};
