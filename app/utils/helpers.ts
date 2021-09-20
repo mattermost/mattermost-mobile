@@ -99,3 +99,10 @@ export function getUtcOffsetForTimeZone(timezone: string) {
 export function isCustomStatusExpirySupported(config: ClientConfig) {
     return isMinimumServerVersion(config.Version, 5, 37);
 }
+
+export function toTitleCase(str: string) {
+    function doTitleCase(txt: string) {
+        return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();
+    }
+    return str.replace(/\w\S*/g, doTitleCase);
+}

@@ -32,6 +32,7 @@ const StatusLabel = ({status = General.OFFLINE, labelStyle}: StatusLabelProps) =
 
     let i18nId = t('status_dropdown.set_offline');
     let defaultMessage = 'Offline';
+
     switch (status) {
         case General.AWAY:
             i18nId = t('status_dropdown.set_away');

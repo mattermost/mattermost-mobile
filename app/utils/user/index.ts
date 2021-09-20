@@ -2,16 +2,19 @@
 // See LICENSE.txt for license information.
 
 import moment from 'moment-timezone';
+import {Alert} from 'react-native';
 
 import {General, Preferences} from '@constants';
 import {CustomStatusDuration} from '@constants/custom_status';
 import {UserModel} from '@database/models/server';
 import {DEFAULT_LOCALE, getLocalizedMessage, t} from '@i18n';
+import {toTitleCase} from '@utils/helpers';
 
 import type {Database} from '@nozbe/watermelondb';
 import type GroupModel from '@typings/database/models/servers/group';
 import type GroupMembershipModel from '@typings/database/models/servers/group_membership';
 import type {UserMentionKey} from '@typings/global/markdown';
+import type {IntlShape} from 'react-intl';
 
 export function displayUsername(user?: UserProfile | UserModel, locale?: string, teammateDisplayNameSetting?: string, useFallbackUsername = true) {
     let name = useFallbackUsername ? getLocalizedMessage(locale || DEFAULT_LOCALE, t('channel_loader.someone'), 'Someone') : '';
@@ -206,3 +209,43 @@ export const updateUserCustomStatus = async (status: UserCustomStatus | null, us
         //todo: do something about that error ? Emit an error ?
     }
 };
+
+export function confirmOutOfOfficeDisabled(intl: IntlShape, status: string, updateStatus: (status: string) => void) {
+    const userStatusId = 'modal.manual_status.auto_responder.message_' + status;
+    t('modal.manual_status.auto_responder.message_');
+    t('modal.manual_status.auto_responder.message_away');
+    t('modal.manual_status.auto_responder.message_dnd');
+    t('modal.manual_status.auto_responder.message_offline');
+    t('modal.manual_status.auto_responder.message_online');
+
+    let translatedStatus;
+    if (status === 'dnd') {
+        translatedStatus = intl.formatMessage({
+            id: 'mobile.set_status.dnd',
+            defaultMessage: 'Do Not Disturb',
+        });
+    } else {
+        translatedStatus = intl.formatMessage({
+            id: `mobile.set_status.${status}`,
+            defaultMessage: toTitleCase(status),
+        });
+    }
+
+    Alert.alert(
+        intl.formatMessage({
+            id: 'mobile.reset_status.title_ooo',
+            defaultMessage: 'Disable "Out Of Office"?',
+        }),
+        intl.formatMessage({
+            id: userStatusId,
+            defaultMessage: 'Would you like to switch your status to "{status}" and disable Automatic Replies?',
+        }, {status: translatedStatus}),
+        [{
+            text: intl.formatMessage({id: 'mobile.reset_status.alert_cancel', defaultMessage: 'Cancel'}),
+            style: 'cancel',
+        }, {
+            text: intl.formatMessage({id: 'mobile.reset_status.alert_ok', defaultMessage: 'OK'}),
+            onPress: () => updateStatus(status),
+        }],
+    );
+}

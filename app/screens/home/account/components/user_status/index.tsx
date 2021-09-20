@@ -2,6 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback} from 'react';
+import {useIntl} from 'react-intl';
 import {DeviceEventEmitter} from 'react-native';
 
 import {setStatus} from '@actions/remote/user';
@@ -13,6 +14,7 @@ import General from '@constants/general';
 import {t} from '@i18n';
 import {dismissModal, showModalOverCurrentContext} from '@screens/navigation';
 import {preventDoubleTap} from '@utils/tap';
+import {confirmOutOfOfficeDisabled} from '@utils/user';
 
 import type Database from '@nozbe/watermelondb/Database';
 import type UserModel from '@typings/database/models/servers/user';
@@ -28,55 +30,42 @@ type Props = {
 const {OUT_OF_OFFICE, OFFLINE, AWAY, ONLINE, DND} = General;
 
 const UserStatus = ({currentUser, database, serverUrl, theme, styles}: Props) => {
-    const handleSetStatus = useCallback(
-        preventDoubleTap(() => {
-            const items = [
-                {
-                    action: () => setUserStatus(ONLINE),
-                    text: {
-                        id: t('mobile.set_status.online'),
-                        defaultMessage: 'Online',
-                    },
-                },
-                {
-                    action: () => setUserStatus(AWAY),
-                    text: {
-                        id: t('mobile.set_status.away'),
-                        defaultMessage: 'Away',
-                    },
-                },
-                {
-                    action: () => setUserStatus(DND),
-                    text: {
-                        id: t('mobile.set_status.dnd'),
-                        defaultMessage: 'Do Not Disturb',
-                    },
-                },
-                {
-                    action: () => setUserStatus(OFFLINE),
-                    text: {
-                        id: t('mobile.set_status.offline'),
-                        defaultMessage: 'Offline',
-                    },
-                },
-            ];
+    const intl = useIntl();
 
-            showModalOverCurrentContext('OptionsModal', {items});
-        }),
-        [],
-    );
+    const handleSetStatus = useCallback(preventDoubleTap(() => {
+        const items = [
+            {
+                action: () => setUserStatus(ONLINE),
+                text: {
+                    id: t('mobile.set_status.online'),
+                    defaultMessage: 'Online',
+                },
+            },
+            {
+                action: () => setUserStatus(AWAY),
+                text: {
+                    id: t('mobile.set_status.away'),
+                    defaultMessage: 'Away',
+                },
+            },
+            {
+                action: () => setUserStatus(DND),
+                text: {
+                    id: t('mobile.set_status.dnd'),
+                    defaultMessage: 'Do Not Disturb',
+                },
+            },
+            {
+                action: () => setUserStatus(OFFLINE),
+                text: {
+                    id: t('mobile.set_status.offline'),
+                    defaultMessage: 'Offline',
+                },
+            },
+        ];
 
-    const setUserStatus = useCallback((status: string) => {
-        if (currentUser.status === OUT_OF_OFFICE) {
-            dismissModal();
-
-            //todo: implement this.confirmReset(status)
-            return;
-        }
-
-        updateStatus(status);
-        DeviceEventEmitter.emit(Navigation.NAVIGATION_CLOSE_MODAL);
-    }, []);
+        showModalOverCurrentContext('OptionsModal', {items});
+    }), []);
 
     const updateStatus = useCallback(async (status: string) => {
         await database.write(async () => {
@@ -91,6 +80,17 @@ const UserStatus = ({currentUser, database, serverUrl, theme, styles}: Props) =>
             manual: true,
             last_activity_at: Date.now(),
         });
+    }, []);
+
+    const setUserStatus = useCallback((status: string) => {
+        if (currentUser.status === OUT_OF_OFFICE) {
+            dismissModal();
+            return confirmOutOfOfficeDisabled(intl, status, updateStatus);
+        }
+
+        updateStatus(status);
+        DeviceEventEmitter.emit(Navigation.NAVIGATION_CLOSE_MODAL);
+        return null;
     }, []);
 
     return (
