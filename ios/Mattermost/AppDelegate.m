@@ -9,6 +9,7 @@
 #import <UMReactNativeAdapter/UMModuleRegistryAdapter.h>
 #import <ReactNativeNavigation/ReactNativeNavigation.h>
 #import <UploadAttachments/UploadAttachments-Swift.h>
+#import <UploadAttachments/MattermostBucket.h>
 #import <UserNotifications/UserNotifications.h>
 #import <RNHWKeyboardEvent.h>
 
@@ -28,6 +29,7 @@
 NSString* const NOTIFICATION_MESSAGE_ACTION = @"message";
 NSString* const NOTIFICATION_CLEAR_ACTION = @"clear";
 NSString* const NOTIFICATION_UPDATE_BADGE_ACTION = @"update_badge";
+MattermostBucket* bucket = nil;
 
 -(void)application:(UIApplication *)application handleEventsForBackgroundURLSession:(NSString *)identifier completionHandler:(void (^)(void))completionHandler {
   os_log(OS_LOG_DEFAULT, "Mattermost will attach session from handleEventsForBackgroundURLSession!! identifier=%{public}@", identifier);
@@ -48,6 +50,10 @@ NSString* const NOTIFICATION_UPDATE_BADGE_ACTION = @"update_badge";
 {
   self.moduleRegistryAdapter = [[UMModuleRegistryAdapter alloc] initWithModuleRegistryProvider:[[UMModuleRegistryProvider alloc] init]];
 
+  if (bucket == nil) {
+    bucket = [[MattermostBucket alloc] init];
+  }
+  
   // Clear keychain on first run in case of reinstallation
   if (![[NSUserDefaults standardUserDefaults] objectForKey:@"FirstRun"]) {
 
@@ -184,4 +190,21 @@ RNHWKeyboardEvent *hwKeyEvent = nil;
   NSString *selected = sender.input;
   [hwKeyEvent sendHWKeyEvent:@"shift-enter"];
 }
+
+-(void)applicationDidBecomeActive:(UIApplication *)application {
+  [bucket setPreference:@"ApplicationIsForeground" value:@"true"];
+}
+
+-(void)applicationWillResignActive:(UIApplication *)application {
+  [bucket setPreference:@"ApplicationIsForeground" value:@"false"];
+}
+
+-(void)applicationDidEnterBackground:(UIApplication *)application {
+  [bucket setPreference:@"ApplicationIsForeground" value:@"false"];
+}
+
+-(void)applicationWillTerminate:(UIApplication *)application {
+  [bucket setPreference:@"ApplicationIsForeground" value:@"false"];
+}
+
 @end

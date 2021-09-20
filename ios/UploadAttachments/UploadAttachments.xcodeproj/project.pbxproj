@@ -19,6 +19,7 @@
 		7FABE0F7221466F900D0F595 /* UploadManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7FABE0F6221466F900D0F595 /* UploadManager.swift */; };
 		7FABE0FA2214674200D0F595 /* StoreManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 7FABE0F82214674200D0F595 /* StoreManager.m */; };
 		7FABE0FC2214800F00D0F595 /* UploadSession.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7FABE0FB2214800F00D0F595 /* UploadSession.swift */; };
+		7FD4146126F3C663001A7F12 /* MattermostBucket.h in CopyFiles */ = {isa = PBXBuildFile; fileRef = 7FABE04D2213818A00D0F595 /* MattermostBucket.h */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -28,6 +29,7 @@
 			dstPath = "include/$(PRODUCT_NAME)";
 			dstSubfolderSpec = 16;
 			files = (
+				7FD4146126F3C663001A7F12 /* MattermostBucket.h in CopyFiles */,
 				7F80232C229C91AD0034D6D4 /* MMMConstants.h in CopyFiles */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
