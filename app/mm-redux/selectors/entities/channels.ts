@@ -70,7 +70,14 @@ function sortChannelsByRecencyOrAlpha(locale: string, lastPosts: RelationOneToOn
 //     c. Remaining unread channels
 //   And then secondary by alphabetical ("alpha") or chronological ("recency") order
 
-export const mapAndSortChannelIds = (channels: Array<Channel>, currentUser: UserProfile, myMembers: RelationOneToOne<Channel, ChannelMembership>, lastPosts: RelationOneToOne<Channel, Post>, sorting: SortingType, sortMentionsFirst = false): Array<string> => {
+export const mapAndSortChannelIds = (
+    channels: Channel[],
+    currentUser: UserProfile,
+    myMembers: RelationOneToOne<Channel, ChannelMembership>,
+    lastPosts: RelationOneToOne<Channel, Post>,
+    sorting: SortingType,
+    sortMentionsFirst = false,
+): string[] => {
     const locale = currentUser.locale || General.DEFAULT_LOCALE;
 
     const mutedChannelIds = channels.
@@ -589,10 +596,11 @@ export const getUnreadChannels: (b: GlobalState, a?: Channel | null) => Array<Ch
     });
     return allUnreadChannels;
 });
+
 export const getMapAndSortedUnreadChannelIds: (c: GlobalState, b: Channel, a: SortingType) => Array<string> = createIdsSelector(getUnreadChannels, getCurrentUser, getMyChannelMemberships, getLastPostPerChannel, (state: GlobalState, lastUnreadChannel: Channel, sorting: SortingType = 'alpha') => sorting, (channels, currentUser, myMembers, lastPosts: RelationOneToOne<Channel, Post>, sorting: SortingType) => {
     return mapAndSortChannelIds(channels, currentUser, myMembers, lastPosts, sorting, true);
 });
-export const getSortedUnreadChannelIds: (e: GlobalState, d: Channel|null, c: boolean, b: boolean, a: SortingType) => Array<string> = createIdsSelector(getUnreadChannelIds, (state: GlobalState, lastUnreadChannel: Channel, unreadsAtTop: boolean, favoritesAtTop: boolean, sorting: SortingType = 'alpha') => {
+export const getSortedUnreadChannelIds: (e: GlobalState, d: Channel|null, c: boolean, b: boolean, a: SortingType) => Array<string> = createIdsSelector(getUnreadChannelIds, (state: GlobalState, lastUnreadChannel: Channel, unreadsAtTop: boolean, favoritesAtTop: boolean, sorting: SortingType = 'recent') => {
     return getMapAndSortedUnreadChannelIds(state, lastUnreadChannel, sorting);
 }, (unreadChannelIds, mappedAndSortedUnreadChannelIds) => mappedAndSortedUnreadChannelIds); // Favorites
 
@@ -971,4 +979,17 @@ export function isManuallyUnread(state: GlobalState, channelId?: string): boolea
 
 export function getChannelMemberCountsByGroup(state: GlobalState, channelId: string): ChannelMemberCountsByGroup {
     return state.entities.channels.channelMemberCountsByGroup[channelId] || {};
+}
+
+// makeGetChannelsForIds returns a selector that, given an array of channel IDs, returns a list of the corresponding
+// channels. Channels are returned in the same order as the given IDs with undefined entries replacing any invalid IDs.
+// Note that memoization will fail if an array literal is passed in.
+export function makeGetChannelsForIds(): (state: GlobalState, ids: string[]) => Channel[] {
+    return createSelector(
+        getAllChannels,
+        (state: GlobalState, ids: string[]) => ids,
+        (allChannels, ids) => {
+            return ids.map((id) => allChannels[id]);
+        },
+    );
 }

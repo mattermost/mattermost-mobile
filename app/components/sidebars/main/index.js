@@ -7,6 +7,7 @@ import {bindActionCreators} from 'redux';
 import {setChannelDisplayName, handleSelectChannel} from '@actions/views/channel';
 import {makeDirectChannel} from '@actions/views/more_dms';
 import {handleNotViewingGlobalThreadsScreen} from '@actions/views/threads';
+import {setCategoryCollapsed} from '@mm-redux/actions/channel_categories';
 import {joinChannel} from '@mm-redux/actions/channels';
 import {getTeams} from '@mm-redux/actions/teams';
 import {getTheme} from '@mm-redux/selectors/entities/preferences';
@@ -37,6 +38,7 @@ function mapDispatchToProps(dispatch) {
             makeDirectChannel,
             setChannelDisplayName,
             handleSelectChannel,
+            setCategoryCollapsed,
             handleNotViewingGlobalThreadsScreen,
         }, dispatch),
     };

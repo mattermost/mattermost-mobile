@@ -292,7 +292,7 @@ export function showModal(name, title, passProps = {}, options = {}) {
 }
 
 export function showModalOverCurrentContext(name, passProps = {}, options = {}) {
-    const title = '';
+    const title = passProps.title || '';
 
     let animations;
     switch (Platform.OS) {

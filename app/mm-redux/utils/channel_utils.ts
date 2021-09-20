@@ -1,6 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+/* eslint-disable max-lines */
 import {haveITeamPermission, haveIChannelPermission} from '@mm-redux/selectors/entities/roles';
 import {Channel, ChannelMembership, ChannelType, ChannelNotifyProps} from '@mm-redux/types/channels';
 import {Post} from '@mm-redux/types/posts';
