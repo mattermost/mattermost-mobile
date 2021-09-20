@@ -137,6 +137,7 @@ class CustomStatusModal extends NavigationComponent<Props, State> {
     }
 
     componentDidAppear() {
+        //todo: verify if this works correctly on tablet layout
         const {width, height} = Dimensions.get('screen');
         this.setState({
             isLandScape: width > height,
@@ -152,9 +153,10 @@ class CustomStatusModal extends NavigationComponent<Props, State> {
     }
 
     handleSetStatus = async () => {
-        const {emoji, text, duration} = this.state;
-        const isStatusSet = emoji || text;
         const {currentUser, serverUrl} = this.props;
+        const {emoji, text, duration} = this.state;
+
+        const isStatusSet = emoji || text;
         if (isStatusSet) {
             let isStatusSame = this.customStatus?.emoji === emoji && this.customStatus?.text === text && this.customStatus?.duration === duration;
             if (isStatusSame && duration === DATE_AND_TIME) {
@@ -172,14 +174,20 @@ class CustomStatusModal extends NavigationComponent<Props, State> {
                     status.duration = duration;
                     status.expires_at = this.calculateExpiryTime(duration);
                 }
-                const {error} = await setCustomStatus(serverUrl, currentUser, status);
-
+                const {error, data = undefined} = await setCustomStatus(serverUrl, currentUser, status);
                 if (error) {
                     DeviceEventEmitter.emit(SET_CUSTOM_STATUS_FAILURE);
                 }
+
+                if (data) {
+                    await this.updateUserCustomStatus(status);
+                }
             }
         } else if (this.customStatus?.emoji) {
-            unsetCustomStatus(serverUrl);
+            const unsetResponse = await unsetCustomStatus(serverUrl);
+            if (unsetResponse?.data) {
+                await this.updateUserCustomStatus(null);
+            }
         }
         Keyboard.dismiss();
         dismissModal();
@@ -215,18 +223,21 @@ class CustomStatusModal extends NavigationComponent<Props, State> {
         const response = await removeRecentCustomStatus(serverUrl, status);
 
         //todo: Need to test this function again - had server issue when I did it.
-        if (response.data) {
+        if (response?.data) {
             const prevCST = this.getRecentCustomStatus();
 
             const updatedCST = prevCST.filter((cst) => {
                 return cst.emoji !== status.emoji && cst.text !== status.text && cst.duration !== status.duration && cst.expires_at !== status.expires_at;
             });
-
-            await database.write(async () => {
-                await prefRecentCST.update((pref: PreferenceModel) => {
-                    pref.value = JSON.stringify(updatedCST);
+            try {
+                await database.write(async () => {
+                    await prefRecentCST.update((pref: PreferenceModel) => {
+                        pref.value = JSON.stringify(updatedCST);
+                    });
                 });
-            });
+            } catch (e) {
+                //todo: do something about that error
+            }
 
             // NOTE: The below setState is a workaround to re-trigger screen refresh after updating the custom statuses in database (since changing a query/array value does not trigger updates)
             this.setState({track_prev_cst: updatedCST});
@@ -288,6 +299,19 @@ class CustomStatusModal extends NavigationComponent<Props, State> {
         goToScreen(screen, title, passProps);
     };
 
+    private updateUserCustomStatus = async (nextCST: UserCustomStatus | null) => {
+        // updates the local value of the user's custom status
+        const {currentUser, database} = this.props;
+        try {
+            await database.write(async () => {
+                await currentUser.update((user: UserModel) => {
+                    user.props = nextCST;
+                });
+            });
+        } catch (e) {
+            //todo: do something about that error
+        }
+    }
     private getRecentCustomStatus = () => {
         const {prefRecentCST} = this.props;
 

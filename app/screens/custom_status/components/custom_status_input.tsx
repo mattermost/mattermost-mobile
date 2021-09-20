@@ -7,10 +7,9 @@ import {TextInput, View} from 'react-native';
 
 import ClearButton from '@components/custom_status/clear_button';
 import {CUSTOM_STATUS_TEXT_CHARACTER_LIMIT} from '@constants/custom_status';
-import CustomStatusEmoji from '@screens/custom_status/components/custom_status_emoji';
 import {changeOpacity, getKeyboardAppearanceFromTheme, makeStyleSheetFromTheme} from '@utils/theme';
 
-import type {IntlShape} from 'react-intl';
+import CustomStatusEmoji from './custom_status_emoji';
 
 type Props = {
     emoji?: string;
