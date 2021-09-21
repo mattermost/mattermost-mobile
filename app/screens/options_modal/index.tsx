@@ -7,7 +7,7 @@ import {Animated, DeviceEventEmitter, Platform, StyleSheet, TouchableWithoutFeed
 import {Navigation} from '@constants';
 import {dismissModal} from '@screens/navigation';
 
-import OptionsModalList from './options_modal_list';
+import OptionsModalList from './components/options_modal_list';
 
 const DURATION = 200;
 

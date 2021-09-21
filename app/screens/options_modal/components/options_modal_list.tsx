@@ -5,8 +5,9 @@ import React, {useCallback} from 'react';
 import {Platform, StyleSheet, TouchableOpacity, View} from 'react-native';
 
 import FormattedText from '@components/formatted_text';
-import OptionsItem from '@components/options_item';
 import {preventDoubleTap} from '@utils/tap';
+
+import OptionsItem from './options_item';
 
 type Props = {
     items: any[];
