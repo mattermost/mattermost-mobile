@@ -3,9 +3,9 @@
 
 import React from 'react';
 
-import OptionModalListAndroid from './options_modal_list.android';
-import OptionModalListIOS from './options_modal_list.ios';
 import {renderWithIntl} from '@test/intl-test-helper';
+
+import OptionModalListIOS from './options_modal_list';
 
 describe('OptionModalList', () => {
     const baseProps = {
@@ -28,16 +28,9 @@ describe('OptionModalList', () => {
         title: 'test',
     };
 
-    test('should match snapshot for iOS', async () => {
+    test('should match snapshot ', async () => {
         const wrapper = renderWithIntl(
             <OptionModalListIOS {...baseProps}/>,
-        );
-        expect(wrapper.toJSON()).toMatchSnapshot();
-    });
-
-    test('should match snapshot for Android', async () => {
-        const wrapper = renderWithIntl(
-            <OptionModalListAndroid {...baseProps}/>,
         );
         expect(wrapper.toJSON()).toMatchSnapshot();
     });
