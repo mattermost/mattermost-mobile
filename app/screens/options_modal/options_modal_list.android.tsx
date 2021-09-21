@@ -2,11 +2,9 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback} from 'react';
-import {StyleSheet, Text, TouchableOpacity, View} from 'react-native';
+import {StyleSheet, View} from 'react-native';
 
-import CompassIcon from '@components/compass_icon';
-import FormattedText from '@components/formatted_text';
-import {t} from '@i18n';
+import OptionsItem from '@components/options_item';
 import {preventDoubleTap} from '@utils/tap';
 
 type Props = {
@@ -30,71 +28,15 @@ const OptionsModalList = ({items = [], onCancelPress, onItemPress}: Props) => {
         }, 250);
     }), []);
 
-    const renderOptions = useCallback(() => {
-        const options = items.map((item, index) => {
-            let textComponent;
-            let optionIconStyle = style.optionIcon;
-            if (typeof item.iconStyle !== 'undefined') {
-                optionIconStyle = item.iconStyle;
-            }
-
-            if (item.text.hasOwnProperty('id')) {
-                textComponent = (
-                    <FormattedText
-                        style={[style.optionText, item.textStyle]}
-                        {...item.text}
-                    />
-                );
-            } else {
-                textComponent = (
-                    <Text style={[style.optionText, item.textStyle]}>
-                        {item.text}
-                    </Text>
-                );
-            }
-
-            return (
-                <View
-                    key={index}
-                    style={style.optionBorder}
-                >
-                    <TouchableOpacity
-                        onPress={() => handleItemPress(item.action)}
-                        style={style.option}
-                    >
-                        {textComponent}
-                        {item.icon && (
-                            <CompassIcon
-                                name={item.icon}
-                                size={18}
-                                style={optionIconStyle}
-                            />
-                        )}
-                    </TouchableOpacity>
-                </View>
-            );
-        });
-
-        const cancel = (
-            <TouchableOpacity
-                key={items.length}
-                onPress={handleCancelPress}
-                style={style.option}
-            >
-                <FormattedText
-                    id={t('channel_modal.cancel')}
-                    defaultMessage='Cancel'
-                    style={style.optionText}
-                />
-            </TouchableOpacity>
-        );
-
-        return [...options, cancel];
-    }, []);
-
     return (
         <View style={style.wrapper}>
-            <View style={style.optionContainer}>{renderOptions()}</View>
+            <View style={style.optionContainer}>
+                <OptionsItem
+                    onHandleItemPress={handleItemPress}
+                    onHandleCancelPress={handleCancelPress}
+                    items={items}
+                />
+            </View>
         </View>
     );
 };

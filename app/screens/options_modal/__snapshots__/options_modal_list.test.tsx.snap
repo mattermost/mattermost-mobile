@@ -22,10 +22,12 @@ exports[`OptionModalList should match snapshot for Android 1`] = `
   >
     <View
       style={
-        Object {
-          "borderBottomColor": "rgba(0, 0, 0, 0.1)",
-          "borderBottomWidth": 1,
-        }
+        Array [
+          Object {
+            "borderBottomColor": "rgba(0, 0, 0, 0.1)",
+            "borderBottomWidth": 1,
+          },
+        ]
       }
     >
       <View
@@ -58,6 +60,7 @@ exports[`OptionModalList should match snapshot for Android 1`] = `
                 "fontSize": 16,
               },
               undefined,
+              false,
             ]
           }
         >
@@ -76,10 +79,9 @@ exports[`OptionModalList should match snapshot for Android 1`] = `
     </View>
     <View
       style={
-        Object {
-          "borderBottomColor": "rgba(0, 0, 0, 0.1)",
-          "borderBottomWidth": 1,
-        }
+        Array [
+          false,
+        ]
       }
     >
       <View
@@ -112,6 +114,7 @@ exports[`OptionModalList should match snapshot for Android 1`] = `
                 "fontSize": 16,
               },
               undefined,
+              false,
             ]
           }
         >
@@ -127,39 +130,6 @@ exports[`OptionModalList should match snapshot for Android 1`] = `
           }
         />
       </View>
-    </View>
-    <View
-      accessible={true}
-      focusable={true}
-      onClick={[Function]}
-      onResponderGrant={[Function]}
-      onResponderMove={[Function]}
-      onResponderRelease={[Function]}
-      onResponderTerminate={[Function]}
-      onResponderTerminationRequest={[Function]}
-      onStartShouldSetResponder={[Function]}
-      style={
-        Object {
-          "alignItems": "center",
-          "alignSelf": "stretch",
-          "flexDirection": "row",
-          "justifyContent": "space-between",
-          "opacity": 1,
-          "padding": 15,
-        }
-      }
-    >
-      <Text
-        style={
-          Object {
-            "color": "#000",
-            "flex": 1,
-            "fontSize": 16,
-          }
-        }
-      >
-        Cancel
-      </Text>
     </View>
   </View>
 </View>
@@ -205,7 +175,6 @@ exports[`OptionModalList should match snapshot for iOS 1`] = `
               "flexDirection": "row",
               "justifyContent": "space-between",
               "padding": 15,
-              "width": "100%",
             },
             Object {
               "borderBottomColor": "rgba(0, 0, 0, 0.1)",
@@ -214,15 +183,7 @@ exports[`OptionModalList should match snapshot for iOS 1`] = `
           ]
         }
       >
-        <Text
-          style={
-            Object {
-              "color": "#7f8180",
-              "flex": 1,
-              "textAlign": "center",
-            }
-          }
-        >
+        <Text>
           test
         </Text>
       </View>
@@ -254,7 +215,6 @@ exports[`OptionModalList should match snapshot for iOS 1`] = `
               "justifyContent": "space-between",
               "opacity": 1,
               "padding": 15,
-              "width": "100%",
             }
           }
         >
@@ -262,9 +222,9 @@ exports[`OptionModalList should match snapshot for iOS 1`] = `
             style={
               Array [
                 Object {
-                  "color": "#4E8ACC",
+                  "color": "#000",
                   "flex": 1,
-                  "fontSize": 20,
+                  "fontSize": 16,
                 },
                 undefined,
                 false,
@@ -275,10 +235,10 @@ exports[`OptionModalList should match snapshot for iOS 1`] = `
           </Text>
           <Icon
             name="camera"
-            size={24}
+            size={18}
             style={
               Object {
-                "color": "#4E8ACC",
+                "color": "#7f8180",
               }
             }
           />
@@ -309,7 +269,6 @@ exports[`OptionModalList should match snapshot for iOS 1`] = `
               "justifyContent": "space-between",
               "opacity": 1,
               "padding": 15,
-              "width": "100%",
             }
           }
         >
@@ -317,9 +276,9 @@ exports[`OptionModalList should match snapshot for iOS 1`] = `
             style={
               Array [
                 Object {
-                  "color": "#4E8ACC",
+                  "color": "#000",
                   "flex": 1,
-                  "fontSize": 20,
+                  "fontSize": 16,
                 },
                 undefined,
                 false,
@@ -330,10 +289,10 @@ exports[`OptionModalList should match snapshot for iOS 1`] = `
           </Text>
           <Icon
             name="photo"
-            size={24}
+            size={18}
             style={
               Object {
-                "color": "#4E8ACC",
+                "color": "#7f8180",
               }
             }
           />

@@ -2,15 +2,10 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback} from 'react';
-import {
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    View,
-} from 'react-native';
+import {StyleSheet, TouchableOpacity, View} from 'react-native';
 
-import CompassIcon from '@components/compass_icon';
 import FormattedText from '@components/formatted_text';
+import OptionsItem from '@components/options_item';
 import {preventDoubleTap} from '@utils/tap';
 
 type Props = {
@@ -35,82 +30,16 @@ const OptionsModalList = ({items = [], onCancelPress, onItemPress, title}: Props
         }, 100);
     }), []);
 
-    const renderOptions = useCallback(() => {
-        const options = items.map((item, index) => {
-            let textComponent;
-            let optionIconStyle = style.optionIcon;
-            if (typeof item.iconStyle !== 'undefined') {
-                optionIconStyle = item.iconStyle;
-            }
-
-            if (item.text.hasOwnProperty('id')) {
-                textComponent = (
-                    <FormattedText
-                        style={[style.optionText, item.textStyle, (!item.icon && {textAlign: 'center'})]}
-                        {...item.text}
-                    />
-                );
-            } else {
-                textComponent = <Text style={[style.optionText, item.textStyle, (!item.icon && {textAlign: 'center'})]}>{item.text}</Text>;
-            }
-
-            return (
-                <View
-                    key={index}
-                    style={[(index < items.length - 1 && style.optionBorder)]}
-                >
-                    <TouchableOpacity
-                        onPress={() => handleItemPress(item.action)}
-                        style={style.option}
-                    >
-                        {textComponent}
-                        {item.icon &&
-                        <CompassIcon
-                            name={item.icon}
-                            size={24}
-                            style={optionIconStyle}
-                        />
-                        }
-                    </TouchableOpacity>
-                </View>
-            );
-        });
-
-        let textComponent;
-        let titleView;
-        if (title) {
-            if (title.hasOwnProperty('id')) {
-                textComponent = (
-                    <FormattedText
-                        style={style.optionTitleText}
-                        {...title}
-                    />
-                );
-            } else {
-                textComponent = <Text style={style.optionTitleText}>{title}</Text>;
-            }
-
-            titleView = (
-                <View
-                    key={items.length}
-                    style={[style.option, style.optionBorder]}
-                >
-                    {textComponent}
-                </View>
-            );
-        }
-
-        return [
-            titleView,
-            ...options,
-        ];
-    }, []);
-
     return (
         <View style={style.container}>
             <View style={style.wrapper}>
                 <View style={[style.optionContainer]}>
-                    {renderOptions()}
+                    <OptionsItem
+                        onHandleItemPress={handleItemPress}
+                        onHandleCancelPress={handleCancelPress}
+                        items={items}
+                        title={title}
+                    />
                 </View>
                 <View style={style.optionContainer}>
                     <TouchableOpacity
