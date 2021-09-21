@@ -3,7 +3,7 @@
 
 import PropTypes from 'prop-types';
 import React, {PureComponent} from 'react';
-import {Text, View} from 'react-native';
+import {Platform, Text, View} from 'react-native';
 
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
@@ -59,7 +59,7 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
             height: 16,
             marginRight: 8,
             marginLeft: 8,
-            alignSelf: 'stretch',
+            alignSelf: Platform.select({ios: 'stretch'}),
         },
         container: {
             flexDirection: 'row',
