@@ -3,18 +3,16 @@
 
 import {Model} from '@nozbe/watermelondb';
 
+import {localRemoveUserFromTeam} from '@actions/local/team';
 import DatabaseManager from '@database/manager';
 import NetworkManager from '@init/network_manager';
 import {queryWebSocketLastDisconnected} from '@queries/servers/system';
-import {prepareMyTeams, queryMyTeamById} from '@queries/servers/team';
+import {prepareMyTeams} from '@queries/servers/team';
 
 import {fetchMyChannelsForTeam} from './channel';
 import {fetchPostsForUnreadChannels} from './post';
 import {fetchRolesIfNeeded} from './role';
 import {forceLogoutIfNecessary} from './session';
-
-import type TeamModel from '@typings/database/models/servers/team';
-import type TeamMembershipModel from '@typings/database/models/servers/team_membership';
 
 export type MyTeamsRequest = {
     teams?: Team[];
@@ -166,26 +164,8 @@ export const removeUserFromTeam = async (serverUrl: string, teamId: string, user
     try {
         await client.removeFromTeam(teamId, userId);
 
-        if (!fetchOnly && DatabaseManager.serverDatabases[serverUrl]) {
-            const {operator, database} = DatabaseManager.serverDatabases[serverUrl];
-            const myTeam = await queryMyTeamById(database, teamId);
-            const models: Model[] = [];
-            if (myTeam) {
-                const team = await myTeam.team.fetch() as TeamModel;
-                const members: TeamMembershipModel[] = await team.members.fetch();
-                const member = members.find((m) => m.userId === userId);
-
-                myTeam.prepareDestroyPermanently();
-                models.push(myTeam);
-                if (member) {
-                    member.prepareDestroyPermanently();
-                    models.push(member);
-                }
-
-                if (models.length) {
-                    await operator.batchRecords(models);
-                }
-            }
+        if (!fetchOnly) {
+            localRemoveUserFromTeam(serverUrl, teamId, userId);
         }
 
         return {error: undefined};

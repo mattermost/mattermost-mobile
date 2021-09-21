@@ -1,13 +1,17 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {WebsocketEvents} from '@app/constants';
+import {DeviceEventEmitter} from 'react-native';
+
+import {fetchMyChannelsForTeam} from '@actions/remote/channel';
+import {fetchPostsSince} from '@actions/remote/post';
+import {loadMe, updateAllusersSinceLastDisconnect} from '@actions/remote/user';
+import {General, WebsocketEvents} from '@app/constants';
 import {SYSTEM_IDENTIFIERS} from '@app/constants/database';
 import {queryCommonSystemValues, queryWebSocketLastDisconnected} from '@app/queries/servers/system';
-import {queryAllUsers} from '@app/queries/servers/user';
-import {removeUserFromList} from '@app/utils/user';
 import DatabaseManager from '@database/manager';
-import NetworkManager from '@init/network_manager';
+
+import {handleLeaveTeamEvent} from './teams';
 
 export async function handleFirstConnect(serverURL: string) {
     const database = DatabaseManager.serverDatabases[serverURL]?.database;
@@ -29,6 +33,7 @@ export async function handleReconnect(serverURL: string) {
 }
 
 export async function handleClose(serverURL: string, lastDisconnect: number) {
+    console.log('WSA: close');
     const operator = DatabaseManager.serverDatabases[serverURL]?.operator;
     if (!operator) {
         return;
@@ -45,33 +50,53 @@ export async function handleClose(serverURL: string, lastDisconnect: number) {
 }
 
 async function doFirstConnect(serverURL: string) {
+    console.log('WSA: doFirstConnect');
+    await updateAllusersSinceLastDisconnect(serverURL);
+}
+
+async function doReconnect(serverURL: string) {
+    console.log('WSA: doReconnect');
+
     const database = DatabaseManager.serverDatabases[serverURL];
     if (!database) {
         return;
     }
+
+    const {teamMemberships, config, error} = await loadMe(serverURL, {});
+    if (error) {
+        //TODO handle error
+        return;
+    }
+
+    const {currentUserId, currentTeamId, currentChannelId} = await queryCommonSystemValues(database.database);
     const lastDisconnectedAt = await queryWebSocketLastDisconnected(database.database);
+    const currentTeamMembership = teamMemberships?.find((tm) => tm.team_id === currentTeamId && tm.delete_at === 0);
 
-    if (!lastDisconnectedAt) {
-        return;
+    if (currentTeamMembership) {
+        const channelsRequest = await fetchMyChannelsForTeam(serverURL, currentTeamMembership.team_id, false, lastDisconnectedAt);
+        if (channelsRequest.error) {
+            // TODO handle error.
+            return; //?
+        }
+
+        const stillMemberOfCurrentChannel = channelsRequest.memberships?.find((cm) => cm.channel_id === currentChannelId);
+        const channelStillExist = channelsRequest.channels?.find((c) => c.id === currentChannelId);
+        const viewArchivedChannels = config?.ExperimentalViewArchivedChannels === 'true';
+
+        if (
+            !stillMemberOfCurrentChannel ||
+            !channelStillExist ||
+            (!viewArchivedChannels && channelStillExist.delete_at !== 0)
+        ) {
+            DeviceEventEmitter.emit(General.SWITCH_TO_DEFAULT_CHANNEL, currentTeamId);
+        } else {
+            fetchPostsSince(serverURL, currentChannelId, lastDisconnectedAt);
+        }
+    } else {
+        handleLeaveTeamEvent(serverURL, {data: {user_id: currentUserId, team_id: currentTeamId}});
     }
 
-    const {currentUserId} = await queryCommonSystemValues(database.database);
-    const users = await queryAllUsers(database.database);
-    const userIds = users.map((u) => u.id);
-    const userUpdates = await NetworkManager.getClient(serverURL).getProfilesByIds(userIds, {since: lastDisconnectedAt});
-
-    removeUserFromList(currentUserId, userUpdates);
-
-    if (!userUpdates.length) {
-        return;
-    }
-
-    database.operator.handleUsers({users: userUpdates, prepareRecordsOnly: false});
-}
-
-async function doReconnect(serverURL: string) {
-    // TODO
-    //setChanelRetryFailed(false);
+    await updateAllusersSinceLastDisconnect(serverURL);
 }
 
 export async function handleEvent(serverURL: string, msg: any) {
@@ -94,9 +119,8 @@ export async function handleEvent(serverURL: string, msg: any) {
 
         // return dispatch(handlePostUnread(msg));
         case WebsocketEvents.LEAVE_TEAM:
+            handleLeaveTeamEvent(serverURL, msg);
             break;
-
-        // return dispatch(handleLeaveTeamEvent(msg));
         case WebsocketEvents.UPDATE_TEAM:
             break;
 

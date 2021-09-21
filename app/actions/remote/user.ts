@@ -1,16 +1,17 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {Q} from '@nozbe/watermelondb';
+import {Model, Q} from '@nozbe/watermelondb';
 
 import {fetchRolesIfNeeded} from '@actions/remote/role';
+import {removeUserFromList} from '@app/utils/user';
 import {Database, General} from '@constants';
 import DatabaseManager from '@database/manager';
 import {debounce} from '@helpers/api/general';
 import analytics from '@init/analytics';
 import NetworkManager from '@init/network_manager';
-import {queryCurrentUserId} from '@queries/servers/system';
-import {prepareUsers, queryCurrentUser, queryUsersById, queryUsersByUsername} from '@queries/servers/user';
+import {queryCommonSystemValues, queryCurrentUserId, queryWebSocketLastDisconnected} from '@queries/servers/system';
+import {prepareUsers, queryAllUsers, queryCurrentUser, queryUsersById, queryUsersByUsername} from '@queries/servers/user';
 
 import {forceLogoutIfNecessary} from './session';
 
@@ -91,7 +92,12 @@ export const fetchProfilesPerChannels = async (serverUrl: string, channelIds: st
     }
 };
 
-export const loadMe = async (serverUrl: string, {deviceToken, user}: LoadMeArgs) => {
+export const loadMe = async (serverUrl: string, {deviceToken, user}: LoadMeArgs): Promise<{
+    error?: unknown;
+    currentUser?: UserProfile;
+    teamMemberships?: TeamMembership[];
+    config?: ClientConfig;
+}> => {
     let currentUser = user;
 
     const database = DatabaseManager.serverDatabases[serverUrl]?.database;
@@ -118,7 +124,6 @@ export const loadMe = async (serverUrl: string, {deviceToken, user}: LoadMeArgs)
         await forceLogoutIfNecessary(serverUrl, e);
         return {
             error: e,
-            currentUser: undefined,
         };
     }
 
@@ -222,11 +227,11 @@ export const loadMe = async (serverUrl: string, {deviceToken, user}: LoadMeArgs)
         if (flattenedModels?.length > 0) {
             await operator.batchRecords(flattenedModels);
         }
-    } catch (e) {
-        return {error: e, currentUser: undefined};
-    }
 
-    return {currentUser, error: undefined};
+        return {currentUser, teamMemberships, config};
+    } catch (e) {
+        return {error: e};
+    }
 };
 
 export const updateMe = async (serverUrl: string, user: UserModel) => {
@@ -417,4 +422,68 @@ export const fetchMissinProfilesByUsernames = async (serverUrl: string, username
         forceLogoutIfNecessary(serverUrl, error);
         return {error};
     }
+};
+
+export const updateAllusersSinceLastDisconnect = async (serverUrl: string) => {
+    const database = DatabaseManager.serverDatabases[serverUrl];
+    if (!database) {
+        return {error: `${serverUrl} database not found`};
+    }
+
+    const lastDisconnectedAt = await queryWebSocketLastDisconnected(database.database);
+
+    if (!lastDisconnectedAt) {
+        return {users: []};
+    }
+    const {currentUserId} = await queryCommonSystemValues(database.database);
+    const users = await queryAllUsers(database.database);
+    const userIds = users.map((u) => u.id);
+    const userUpdates = await NetworkManager.getClient(serverUrl).getProfilesByIds(userIds, {since: lastDisconnectedAt});
+
+    removeUserFromList(currentUserId, userUpdates);
+
+    if (!userUpdates.length) {
+        return {users: []};
+    }
+
+    database.operator.handleUsers({users: userUpdates, prepareRecordsOnly: false});
+
+    return {users: userUpdates};
+};
+
+export const updateUsersNoLongerVisible = async (serverUrl: string): Promise<{error?: unknown}> => {
+    let client: Client;
+    try {
+        client = NetworkManager.getClient(serverUrl);
+    } catch (error) {
+        return {error};
+    }
+
+    const serverDatabase = DatabaseManager.serverDatabases[serverUrl];
+    if (!serverDatabase) {
+        return {error: `${serverUrl} database not found`};
+    }
+
+    try {
+        const knownUsers = new Set(await client.getKnownUsers());
+        const currentUserId = await queryCurrentUserId(serverDatabase.database);
+        knownUsers.add(currentUserId);
+
+        const models: Model[] = [];
+        const allUsers = await queryAllUsers(serverDatabase.database);
+        for (const user of allUsers) {
+            if (!knownUsers.has(user.id)) {
+                user.prepareDestroyPermanently();
+                models.push(user);
+            }
+        }
+        if (models.length) {
+            serverDatabase.operator.batchRecords(models);
+        }
+    } catch (error) {
+        forceLogoutIfNecessary(serverUrl, error);
+        return {error};
+    }
+
+    return {};
 };

@@ -5,15 +5,19 @@ import NetInfo, {NetInfoState} from '@react-native-community/netinfo';
 import {AppState, AppStateStatus} from 'react-native';
 
 import {setCurrentUserStatusOffline} from '@actions/local/user';
+import {fetchStatusByIds} from '@actions/remote/user';
 import {handleClose, handleEvent, handleFirstConnect, handleReconnect} from '@actions/websocket';
 import WebSocketClient from '@app/client/websocket';
+import {General} from '@app/constants';
 import {queryWebSocketLastDisconnected} from '@app/queries/servers/system';
+import {queryAllUsers} from '@app/queries/servers/user';
 import DatabaseManager from '@database/manager';
 
 import type {ServerCredential} from '@typings/credentials';
 
 class WebsocketManager {
     private clients: Record<string, WebSocketClient> = {};
+    private statusUpdatesIntervalIDs: Record<string, NodeJS.Timer> = {};
     private previousAppState: AppStateStatus;
     private netConnected = false;
 
@@ -58,11 +62,11 @@ class WebsocketManager {
         console.log('storedLastDisconnect', storedLastDisconnect);
         const client = new WebSocketClient(serverURL, bearerToken, storedLastDisconnect);
 
-        client.setFirstConnectCallback(() => this.onFirstConnect(serverURL)); // TODO think about reconnect
+        client.setFirstConnectCallback(() => this.onFirstConnect(serverURL));
         client.setEventCallback((evt: any) => handleEvent(serverURL, evt));
 
-        //client.setMissedEventsCallback(() => {})
-        client.setReconnectCallback(() => handleReconnect(serverURL));
+        //client.setMissedEventsCallback(() => {}) Nothing to do on missedEvents callback
+        client.setReconnectCallback(() => this.onReconnect(serverURL));
         client.setCloseCallback((connectFailCount: number, lastDisconnect: number) => this.onWebsocketClose(serverURL, connectFailCount, lastDisconnect));
 
         if (this.netConnected) {
@@ -98,8 +102,13 @@ class WebsocketManager {
     private onFirstConnect = (serverURL: string) => {
         console.log('WSM: on first connect');
 
-        // TODO: Start periodic status updates
+        this.startPeriodicStatusUpdates(serverURL);
         handleFirstConnect(serverURL);
+    }
+
+    private onReconnect = (serverURL: string) => {
+        this.startPeriodicStatusUpdates(serverURL);
+        handleReconnect(serverURL);
     }
 
     private onWebsocketClose = async (serverURL: string, connectFailCount: number, lastDisconnect: number) => {
@@ -110,8 +119,43 @@ class WebsocketManager {
             await setCurrentUserStatusOffline(serverURL);
             await handleClose(serverURL, lastDisconnect);
 
-            // TODO: Stop periodic status updates
+            this.stopPeriodicStatusUpdates(serverURL);
         }
+    }
+
+    private startPeriodicStatusUpdates(serverURL: string) {
+        let currentId = this.statusUpdatesIntervalIDs[serverURL];
+        if (currentId != null) {
+            clearInterval(currentId);
+        }
+
+        const getStatusForUsers = async () => {
+            const database = DatabaseManager.serverDatabases[serverURL];
+            if (!database) {
+                return;
+            }
+
+            const users = await queryAllUsers(database.database);
+
+            const userIds = users.map((u) => u.id);
+            if (!userIds.length) {
+                return;
+            }
+
+            fetchStatusByIds(serverURL, userIds);
+        };
+
+        currentId = setInterval(getStatusForUsers, General.STATUS_INTERVAL);
+        this.statusUpdatesIntervalIDs[serverURL] = currentId;
+    }
+
+    private stopPeriodicStatusUpdates(serverURL: string) {
+        const currentId = this.statusUpdatesIntervalIDs[serverURL];
+        if (currentId != null) {
+            clearInterval(currentId);
+        }
+
+        delete this.statusUpdatesIntervalIDs[serverURL];
     }
 
     private onAppStateChange = async (appState: AppStateStatus) => {
