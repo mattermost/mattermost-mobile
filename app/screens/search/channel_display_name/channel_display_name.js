@@ -59,6 +59,7 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
             height: 16,
             marginRight: 8,
             marginLeft: 8,
+            alignSelf: 'stretch',
         },
         container: {
             flexDirection: 'row',
