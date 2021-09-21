@@ -55,6 +55,7 @@ exports[`SearchResultPost should match snapshot when team is provided 1`] = `
     <View
       style={
         Object {
+          "alignSelf": "stretch",
           "borderLeftColor": "rgba(63,67,80,0.2)",
           "borderLeftWidth": 1,
           "borderStyle": "solid",
