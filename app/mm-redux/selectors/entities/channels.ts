@@ -989,6 +989,9 @@ export function makeGetChannelsForIds(): (state: GlobalState, ids: string[]) => 
         getAllChannels,
         (state: GlobalState, ids: string[]) => ids,
         (allChannels, ids) => {
+            if (!ids) {
+                return [];
+            }
             return ids.map((id) => allChannels[id]);
         },
     );
