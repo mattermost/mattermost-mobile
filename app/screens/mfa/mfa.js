@@ -47,13 +47,13 @@ export default class Mfa extends PureComponent {
 
     componentDidMount() {
         if (Platform.OS === 'android') {
-            Keyboard.addListener('keyboardDidHide', this.handleAndroidKeyboard);
+            this.keyboardListener = Keyboard.addListener('keyboardDidHide', this.handleAndroidKeyboard);
         }
     }
 
     componentWillUnmount() {
         if (Platform.OS === 'android') {
-            Keyboard.removeListener('keyboardDidHide', this.handleAndroidKeyboard);
+            this.keyboardListener?.remove();
         }
     }
 

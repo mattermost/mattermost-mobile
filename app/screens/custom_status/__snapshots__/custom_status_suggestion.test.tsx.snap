@@ -1,7 +1,7 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`screens/custom_status_suggestion should match snapshot 1`] = `
-<ForwardRef
+<TouchableOpacity
   onPress={[Function]}
   testID="custom_status_suggestion.In a meeting"
 >
@@ -91,11 +91,11 @@ exports[`screens/custom_status_suggestion should match snapshot 1`] = `
       </View>
     </View>
   </View>
-</ForwardRef>
+</TouchableOpacity>
 `;
 
 exports[`screens/custom_status_suggestion should match snapshot with separator and clear button 1`] = `
-<ForwardRef
+<TouchableOpacity
   onPress={[Function]}
   testID="custom_status_suggestion.In a meeting"
 >
@@ -194,5 +194,5 @@ exports[`screens/custom_status_suggestion should match snapshot with separator a
       />
     </View>
   </View>
-</ForwardRef>
+</TouchableOpacity>
 `;

@@ -38,11 +38,11 @@ export default class LoginOptions extends PureComponent {
     };
 
     componentDidMount() {
-        Dimensions.addEventListener('change', this.orientationDidChange);
+        this.dimensionsListener = Dimensions.addEventListener('change', this.orientationDidChange);
     }
 
     componentWillUnmount() {
-        Dimensions.removeEventListener('change', this.orientationDidChange);
+        this.dimensionsListener?.remove();
     }
 
     goToLogin = preventDoubleTap(async () => {
