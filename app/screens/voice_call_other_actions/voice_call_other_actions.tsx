@@ -1,72 +1,64 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 import React from 'react';
-import {View, Text} from 'react-native';
+import {injectIntl, intlShape} from 'react-intl';
+import {View} from 'react-native';
 
 import {dismissModal} from '@actions/navigation';
-import FormattedText from '@components/formatted_text';
 import SlideUpPanel from '@components/slide_up_panel';
-import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
+
+import Action from './action';
 
 import type {Theme} from '@mm-redux/types/theme';
 
 type Props = {
     theme: Theme;
+    intl: typeof intlShape;
 }
 
-const VoiceCallOtherActions = ({theme}: Props) => {
+const VoiceCallOtherActions = ({theme, intl}: Props) => {
     const close = () => {
         dismissModal();
-    };
-
-    const renderHeader = () => {
-        const style = getStyleSheet(theme);
-        return (
-            <View style={style.header}>
-                <FormattedText
-                    id='mobile.participants.header'
-                    defaultMessage={'THREAD PARTICIPANTS'}
-                    style={style.headerText}
-                />
-            </View>
-        );
     };
 
     return (
         <View style={{flex: 1}}>
             <SlideUpPanel
                 onRequestClose={close}
-                initialPosition={0.55}
-                header={renderHeader}
-                headerHeight={37.5}
+                initialPosition={0.30}
                 theme={theme}
             >
-                <Text>{'Action'}</Text>
+                <Action
+                    destructive={false}
+                    icon='account-plus-outline'
+                    onPress={() => null}
+                    text={intl.formatMessage({id: 'voice_call.add_participants', defaultMessage: 'Add participants'})}
+                    theme={theme}
+                />
+                <Action
+                    destructive={false}
+                    icon='link-variant'
+                    onPress={() => null}
+                    text={intl.formatMessage({id: 'voice_call.copy_call_link', defaultMessage: 'Copy call link'})}
+                    theme={theme}
+                />
+                <Action
+                    destructive={false}
+                    icon='settings-outline'
+                    onPress={() => null}
+                    text={intl.formatMessage({id: 'voice_call.call_settings', defaultMessage: 'Call Settings'})}
+                    theme={theme}
+                />
+                <Action
+                    destructive={false}
+                    icon='send-outline'
+                    onPress={() => null}
+                    text={intl.formatMessage({id: 'voice_call.give_feedback', defaultMessage: 'Give Feedback'})}
+                    theme={theme}
+                />
             </SlideUpPanel>
         </View>
     );
 };
 
-const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
-    return {
-        header: {
-            backgroundColor: theme.centerChannelBg,
-            borderTopLeftRadius: 8,
-            borderTopRightRadius: 8,
-            height: 36.5,
-            maxWidth: 450,
-            paddingHorizontal: 0,
-            width: '100%',
-        },
-        headerText: {
-            color: changeOpacity(theme.centerChannelColor, 0.56),
-            fontSize: 12,
-            fontWeight: '600',
-            paddingHorizontal: 16,
-            paddingVertical: 0,
-            top: 16,
-        },
-    };
-});
-
-export default VoiceCallOtherActions;
+export default injectIntl(VoiceCallOtherActions);
