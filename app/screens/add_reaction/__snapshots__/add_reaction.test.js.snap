@@ -1,0 +1,18 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`AddReaction should match snapshot 1`] = `
+<View
+  style={
+    Object {
+      "flex": 1,
+    }
+  }
+  testID="add_reaction.screen"
+>
+  <Connect(EmojiPicker)
+    deviceWidth={750}
+    onEmojiPress={[Function]}
+    testID="add_reaction.emoji_picker"
+  />
+</View>
+`;
