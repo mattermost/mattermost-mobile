@@ -153,6 +153,34 @@ exports[`OptionModalList should match snapshot 1`] = `
           />
         </TouchableOpacity>
       </View>
+      <ForwardRef
+        onPress={[Function]}
+        style={
+          Object {
+            "alignItems": "center",
+            "alignSelf": "stretch",
+            "flexDirection": "row",
+            "justifyContent": "space-between",
+            "paddingHorizontal": 20,
+            "paddingVertical": 10,
+            "width": "100%",
+          }
+        }
+      >
+        <InjectIntl(FormattedText)
+          defaultMessage="Cancel"
+          id="channel_modal.cancel"
+          style={
+            Object {
+              "color": "#3D3C40",
+              "flex": 1,
+              "fontSize": 16,
+              "fontWeight": "400",
+              "lineHeight": 24,
+            }
+          }
+        />
+      </ForwardRef>
     </View>
   </View>
 </View>

@@ -32,6 +32,7 @@ export default class OptionsModal extends PureComponent {
             PropTypes.object,
         ]),
         subtitle: PropTypes.string,
+        hideCancel: PropTypes.bool,
     };
 
     static defaultProps = {
@@ -87,6 +88,7 @@ export default class OptionsModal extends PureComponent {
             items,
             title,
             subtitle,
+            hideCancel,
         } = this.props;
 
         return (
@@ -99,6 +101,7 @@ export default class OptionsModal extends PureComponent {
                             onItemPress={this.onItemPress}
                             title={title}
                             subtitle={subtitle}
+                            hideCancel={hideCancel}
                         />
                     </AnimatedView>
                 </View>

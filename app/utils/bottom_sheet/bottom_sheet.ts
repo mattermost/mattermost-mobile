@@ -17,6 +17,11 @@ export default {
             icon: typeof o === 'string' ? null : o.icon,
         }));
 
-        showModalOverCurrentContext('OptionsModal', {title: options.title || '', items, subtitle: options.subtitle});
+        showModalOverCurrentContext('OptionsModal', {
+            title: options.title || '',
+            items,
+            subtitle: options.subtitle,
+            hideCancel: options.hideCancel,
+        });
     },
 };
