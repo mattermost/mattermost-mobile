@@ -62,7 +62,7 @@ index e659a61..1bdf34e 100644
                  .build();
          OkHttpUrlLoader.Factory factory = new OkHttpUrlLoader.Factory(client);
 diff --git a/node_modules/react-native-fast-image/dist/index.d.ts b/node_modules/react-native-fast-image/dist/index.d.ts
-index 0b1afd5..2226715 100644
+index 956fe5b..394db9a 100644
 --- a/node_modules/react-native-fast-image/dist/index.d.ts
 +++ b/node_modules/react-native-fast-image/dist/index.d.ts
 @@ -89,6 +89,10 @@ export interface FastImageProps extends AccessibilityProps {
@@ -74,5 +74,5 @@ index 0b1afd5..2226715 100644
 +     */
 +    nativeID?: string;
  }
- interface FastImageStaticProperties {
+ export interface FastImageStaticProperties {
      resizeMode: typeof resizeMode;

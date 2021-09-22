@@ -9,7 +9,7 @@ exports[`TeamsListItem should match snapshot 1`] = `
   }
   testID="main.sidebar.teams_list.flat_list.teams_list_item"
 >
-  <ForwardRef
+  <TouchableHighlight
     onPress={[Function]}
     underlayColor="rgba(40,66,123,0.5)"
   >
@@ -110,6 +110,6 @@ exports[`TeamsListItem should match snapshot 1`] = `
         </Text>
       </View>
     </View>
-  </ForwardRef>
+  </TouchableHighlight>
 </View>
 `;

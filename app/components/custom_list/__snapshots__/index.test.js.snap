@@ -20,15 +20,12 @@ exports[`CustomList should match snapshot with FlatList 1`] = `
       },
     ]
   }
-  disableVirtualization={false}
-  horizontal={false}
   initialNumToRender={15}
   keyExtractor={[Function]}
   keyboardDismissMode="on-drag"
   keyboardShouldPersistTaps="always"
   maxToRenderPerBatch={16}
   numColumns={1}
-  onEndReachedThreshold={2}
   onLayout={[Function]}
   onScroll={[Function]}
   removeClippedSubviews={true}
@@ -41,8 +38,6 @@ exports[`CustomList should match snapshot with FlatList 1`] = `
       "flex": 1,
     }
   }
-  updateCellsBatchingPeriod={50}
-  windowSize={21}
 />
 `;
 
@@ -56,16 +51,12 @@ exports[`CustomList should match snapshot with SectionList 1`] = `
       "flexGrow": 1,
     }
   }
-  data={Array []}
-  disableVirtualization={false}
   extraData={false}
-  horizontal={false}
   initialNumToRender={15}
   keyExtractor={[Function]}
   keyboardDismissMode="on-drag"
   keyboardShouldPersistTaps="always"
   maxToRenderPerBatch={16}
-  onEndReachedThreshold={2}
   onLayout={[Function]}
   onScroll={[Function]}
   removeClippedSubviews={true}
@@ -89,8 +80,6 @@ exports[`CustomList should match snapshot with SectionList 1`] = `
       "flex": 1,
     }
   }
-  updateCellsBatchingPeriod={50}
-  windowSize={21}
 />
 `;
 

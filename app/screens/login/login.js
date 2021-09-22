@@ -63,13 +63,13 @@ export default class Login extends PureComponent {
     }
 
     componentDidMount() {
-        Dimensions.addEventListener('change', this.orientationDidChange);
+        this.dimensionsListener = Dimensions.addEventListener('change', this.orientationDidChange);
 
         this.setEmmUsernameIfAvailable();
     }
 
     componentWillUnmount() {
-        Dimensions.removeEventListener('change', this.orientationDidChange);
+        this.dimensionsListener?.remove();
     }
 
     goToChannel = () => {
