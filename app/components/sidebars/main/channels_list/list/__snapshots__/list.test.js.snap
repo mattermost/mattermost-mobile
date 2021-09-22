@@ -10,32 +10,24 @@ exports[`ChannelsList List should match snapshot 1`] = `
         "paddingBottom": 44,
       }
     }
-    data={Array []}
-    disableVirtualization={false}
-    horizontal={false}
-    initialNumToRender={10}
     keyExtractor={[Function]}
     keyboardDismissMode="interactive"
     keyboardShouldPersistTaps="always"
     maxToRenderPerBatch={10}
-    onEndReachedThreshold={2}
     onScrollBeginDrag={[Function]}
     onViewableItemsChanged={[Function]}
     removeClippedSubviews={false}
     renderItem={[Function]}
     renderSectionHeader={[Function]}
-    scrollEventThrottle={50}
     sections={Array []}
     stickySectionHeadersEnabled={true}
     testID="main.sidebar.channels_list.list"
-    updateCellsBatchingPeriod={50}
     viewabilityConfig={
       Object {
         "itemVisiblePercentThreshold": 100,
         "waitForInteraction": true,
       }
     }
-    windowSize={21}
   />
 </View>
 `;
@@ -51,32 +43,24 @@ exports[`ChannelsList List should match snapshot with collapsed threads enabled 
         "paddingBottom": 44,
       }
     }
-    data={Array []}
-    disableVirtualization={false}
-    horizontal={false}
-    initialNumToRender={10}
     keyExtractor={[Function]}
     keyboardDismissMode="interactive"
     keyboardShouldPersistTaps="always"
     maxToRenderPerBatch={10}
-    onEndReachedThreshold={2}
     onScrollBeginDrag={[Function]}
     onViewableItemsChanged={[Function]}
     removeClippedSubviews={false}
     renderItem={[Function]}
     renderSectionHeader={[Function]}
-    scrollEventThrottle={50}
     sections={Array []}
     stickySectionHeadersEnabled={true}
     testID="main.sidebar.channels_list.list"
-    updateCellsBatchingPeriod={50}
     viewabilityConfig={
       Object {
         "itemVisiblePercentThreshold": 100,
         "waitForInteraction": true,
       }
     }
-    windowSize={21}
   />
   <UnreadIndicatorIOS
     onPress={[Function]}
@@ -132,32 +116,24 @@ exports[`ChannelsList List should match snapshot with unreads not on top 1`] = `
         "paddingBottom": 44,
       }
     }
-    data={Array []}
-    disableVirtualization={false}
-    horizontal={false}
-    initialNumToRender={10}
     keyExtractor={[Function]}
     keyboardDismissMode="interactive"
     keyboardShouldPersistTaps="always"
     maxToRenderPerBatch={10}
-    onEndReachedThreshold={2}
     onScrollBeginDrag={[Function]}
     onViewableItemsChanged={[Function]}
     removeClippedSubviews={false}
     renderItem={[Function]}
     renderSectionHeader={[Function]}
-    scrollEventThrottle={50}
     sections={Array []}
     stickySectionHeadersEnabled={true}
     testID="main.sidebar.channels_list.list"
-    updateCellsBatchingPeriod={50}
     viewabilityConfig={
       Object {
         "itemVisiblePercentThreshold": 100,
         "waitForInteraction": true,
       }
     }
-    windowSize={21}
   />
   <UnreadIndicatorIOS
     onPress={[Function]}

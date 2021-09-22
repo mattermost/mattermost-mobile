@@ -1,7 +1,7 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`SettingsSidebarDrawerButton should match, full snapshot 1`] = `
-<ForwardRef
+<TouchableOpacity
   accessibilityHint="Opens the more options right hand sidebar"
   accessibilityLabel="More Options"
   accessibilityRole="button"
@@ -31,5 +31,5 @@ exports[`SettingsSidebarDrawerButton should match, full snapshot 1`] = `
       size={25}
     />
   </View>
-</ForwardRef>
+</TouchableOpacity>
 `;

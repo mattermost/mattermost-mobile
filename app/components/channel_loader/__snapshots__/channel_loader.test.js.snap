@@ -60,9 +60,7 @@ exports[`ChannelLoader should match snapshot 1`] = `
         }
       >
         <ActivityIndicator
-          animating={true}
           color="#FFFFFF"
-          hidesWhenStopped={true}
           size="small"
         />
       </View>

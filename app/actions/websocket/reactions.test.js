@@ -26,7 +26,7 @@ describe('Websocket Reaction Events', () => {
     });
 
     afterAll(async () => {
-        Actions.close()();
+        Actions.close();
         mockServer.stop();
         await TestHelper.tearDown();
     });
