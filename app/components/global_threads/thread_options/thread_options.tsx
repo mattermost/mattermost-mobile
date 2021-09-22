@@ -20,7 +20,7 @@ import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import ThreadOption from './thread_option';
 
 import type {Post} from '@mm-redux/types/posts';
-import type {Theme} from '@mm-redux/types/preferences';
+import type {Theme} from '@mm-redux/types/theme';
 import type {UserThread} from '@mm-redux/types/threads';
 import type {UserProfile} from '@mm-redux/types/users';
 import type {$ID} from '@mm-redux/types/utilities';

@@ -11,7 +11,7 @@ import {
 } from 'react-native';
 
 import CompassIcon from '@components/compass_icon';
-import {Theme} from '@mm-redux/types/preferences';
+import {Theme} from '@mm-redux/types/theme';
 import {preventDoubleTap} from '@utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
@@ -118,6 +118,8 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
         },
         footer: {
             marginHorizontal: 17,
+            borderBottomWidth: 0.5,
+            borderBottomColor: changeOpacity(theme.centerChannelColor, 0.2),
         },
     };
 });
