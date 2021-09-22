@@ -10,6 +10,7 @@ import {
     View,
     Platform,
 } from 'react-native';
+import FontAwesome5Icon from 'react-native-vector-icons/FontAwesome5';
 
 import Badge from '@components/badge';
 import ChannelIcon from '@components/channel_icon';
@@ -41,6 +42,7 @@ export default class ChannelItem extends PureComponent {
         isSearchResult: PropTypes.bool,
         viewingGlobalThreads: PropTypes.bool,
         customStatusEnabled: PropTypes.bool.isRequired,
+        channelHasCall: PropTypes.bool.isRequired,
     };
 
     static defaultProps = {
@@ -215,6 +217,13 @@ export default class ChannelItem extends PureComponent {
                         </Text>
                         {customStatus}
                         {badge}
+                        {this.props.channelHasCall &&
+                            <FontAwesome5Icon
+                                name='phone'
+                                size={16}
+                                style={style.hasCall}
+                            />
+                        }
                     </View>
                 </View>
             </TouchableHighlight>
@@ -288,6 +297,9 @@ export const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         },
         muted: {
             opacity: 0.5,
+        },
+        hasCall: {
+            color: theme.sidebarText,
         },
     };
 });

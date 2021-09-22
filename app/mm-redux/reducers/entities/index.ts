@@ -22,6 +22,7 @@ import teams from './teams';
 import threads from './threads';
 import typing from './typing';
 import users from './users';
+import voiceCalls from './voiceCalls';
 
 export default combineReducers({
     general,
@@ -43,4 +44,5 @@ export default combineReducers({
     threads,
     remoteCluster,
     apps,
+    voiceCalls,
 });

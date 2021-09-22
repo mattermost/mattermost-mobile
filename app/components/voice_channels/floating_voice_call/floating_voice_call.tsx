@@ -1,22 +1,29 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React from 'react';
+import React, {useCallback} from 'react';
 import {View, Text, Platform, TouchableOpacity, Pressable} from 'react-native';
 import FontAwesome5Icon from 'react-native-vector-icons/FontAwesome5';
 
 import CompassIcon from '@components/compass_icon';
 import FormattedText from '@components/formatted_text';
 import VoiceAvatar from '@components/voice_channels/voice_avatar';
+import {GenericAction} from '@mm-redux/types/actions';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 
+import type {Channel} from '@mm-redux/types/channels';
 import type {Theme} from '@mm-redux/types/theme';
+import type {Call} from '@mm-redux/types/voiceCalls';
 
 type Props = {
+    actions: {
+        muteMyself: (channelId: string) => GenericAction;
+        unmuteMyself: (channelId: string) => GenericAction;
+    };
     theme: Theme;
-    channelName: string;
+    channel: Channel;
     user: {id: string; username: string};
-    muted: boolean;
+    call: Call;
     volume: number;
     onMuteSet: (newMute: boolean) => void;
     onExpand: () => void;
@@ -70,7 +77,7 @@ const getStyleSheet = makeStyleSheetFromTheme((props: Props) => {
             textAlign: 'center',
             textAlignVertical: 'center',
             justifyContent: 'center',
-            backgroundColor: props.muted ? 'transparent' : '#3DB887',
+            backgroundColor: props.call.muted ? 'transparent' : '#3DB887',
             borderRadius: 4,
             margin: 4,
         },
@@ -83,6 +90,9 @@ const getStyleSheet = makeStyleSheetFromTheme((props: Props) => {
 });
 
 const FloatingVoiceCall = (props: Props) => {
+    if (!props.call) {
+        return null;
+    }
     const style = getStyleSheet(props);
     return (
         <View style={style.wrapper}>
@@ -103,7 +113,7 @@ const FloatingVoiceCall = (props: Props) => {
                         <FormattedText
                             id='floating_voice_call.channel-name'
                             defaultMessage='~{channelName}'
-                            values={{channelName: props.channelName}}
+                            values={{channelName: props.channel.display_name}}
                         />
                     </Text>
                 </View>
@@ -118,12 +128,17 @@ const FloatingVoiceCall = (props: Props) => {
                     />
                 </Pressable>
                 <TouchableOpacity
-                    onPress={() => props.onMuteSet(!props.muted)}
-                    onPressIn={() => props.onMuteSet(!props.muted)}
+                    onPress={useCallback(() => {
+                        if (props.call.muted) {
+                            props.actions.unmuteMyself(props.call.channelId);
+                        } else {
+                            props.actions.muteMyself(props.call.channelId);
+                        }
+                    }, [props.call.muted])}
                     style={style.pressable}
                 >
                     <FontAwesome5Icon
-                        name={props.muted ? 'microphone-slash' : 'microphone'}
+                        name={props.call.muted ? 'microphone-slash' : 'microphone'}
                         size={24}
                         style={style.micIcon}
                     />

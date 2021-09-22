@@ -21,6 +21,7 @@ import {ThreadsState} from './threads';
 import {Typing} from './typing';
 import {UsersState} from './users';
 import {Dictionary} from './utilities';
+import {VoiceCallsState} from './voiceCalls';
 
 export type GlobalState = {
     entities: {
@@ -58,6 +59,7 @@ export type GlobalState = {
             };
         };
         apps: AppsState;
+        voiceCalls: VoiceCallsState;
     };
     errors: Array<any>;
     requests: {

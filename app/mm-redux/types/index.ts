@@ -25,6 +25,7 @@ import * as threads from './threads';
 import * as typing from './typing';
 import * as users from './users';
 import * as utilities from './utilities';
+import * as voiceCalls from './voiceCalls';
 
 export {
     config,
@@ -32,6 +33,7 @@ export {
     bots,
     plugins,
     store,
+    voiceCalls,
     channels,
     errors,
     emojis,

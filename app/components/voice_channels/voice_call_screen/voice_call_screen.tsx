@@ -1,27 +1,27 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useEffect} from 'react';
+import React, {useEffect, useCallback} from 'react';
 import {Keyboard, View, Text, Platform, Pressable, SafeAreaView, ScrollView} from 'react-native';
 import FontAwesome5Icon from 'react-native-vector-icons/FontAwesome5';
 
 import {showModalOverCurrentContext, mergeNavigationOptions, popTopScreen} from '@actions/navigation';
 import CompassIcon from '@components/compass_icon';
 import VoiceAvatar from '@components/voice_channels/voice_avatar';
+import {GenericAction} from '@mm-redux/types/actions';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 
 import type {Theme} from '@mm-redux/types/theme';
+import type {Call} from '@mm-redux/types/voiceCalls';
 
 type Props = {
+    actions: {
+        muteMyself: (channelId: string) => GenericAction;
+        unmuteMyself: (channelId: string) => GenericAction;
+        leaveCall: () => GenericAction;
+    };
     theme: Theme;
-    users: {
-        id: string;
-        username: string;
-        handRaised: boolean;
-        muted: boolean;
-        volume: number;
-    }[];
-    muted: boolean;
+    call: Call;
 }
 
 const getStyleSheet = makeStyleSheetFromTheme((props: Props) => {
@@ -87,7 +87,7 @@ const getStyleSheet = makeStyleSheetFromTheme((props: Props) => {
             flexDirection: 'column',
             alignItems: 'center',
             padding: 30,
-            backgroundColor: props.muted ? 'rgba(255,255,255,0.16)' : '#3DB887',
+            backgroundColor: props.call.muted ? 'rgba(255,255,255,0.16)' : '#3DB887',
             borderRadius: 20,
             marginBottom: 10,
             marginTop: 20,
@@ -128,6 +128,10 @@ const getStyleSheet = makeStyleSheetFromTheme((props: Props) => {
 });
 
 const VoiceCallScreen = (props: Props) => {
+    if (!props.call) {
+        return null;
+    }
+
     const style = getStyleSheet(props);
     useEffect(() => {
         mergeNavigationOptions('VoiceCall', {topBar: {visible: false}});
@@ -163,7 +167,7 @@ const VoiceCallScreen = (props: Props) => {
                 <ScrollView alwaysBounceVertical={false}>
                     <View style={style.users}>
                         {/* TODO: Replace the key idx with user.id when the data is real */}
-                        {props.users.map((user, idx) => {
+                        {props.call.participants.map((user, idx) => {
                             return (
                                 <View
                                     style={style.user}
@@ -183,31 +187,48 @@ const VoiceCallScreen = (props: Props) => {
                     </View>
                 </ScrollView>
                 <View style={style.buttons}>
-                    <View style={style.mute}>
+                    <Pressable
+                        style={style.mute}
+                        onPress={useCallback(() => {
+                            if (props.call.muted) {
+                                props.actions.unmuteMyself(props.call.channelId);
+                            } else {
+                                props.actions.muteMyself(props.call.channelId);
+                            }
+                        }, [props.call.muted])}
+                    >
                         <FontAwesome5Icon
-                            name={props.muted ? 'microphone-slash' : 'microphone'}
+                            name={props.call.muted ? 'microphone-slash' : 'microphone'}
                             size={24}
                             style={style.muteIcon}
                         />
-                        <Text style={style.buttonText}>{props.muted ? 'Mute' : 'Unmute'}</Text>
-                    </View>
+                        <Text style={style.buttonText}>{props.call.muted ? 'Unmute' : 'Mute'}</Text>
+                    </Pressable>
                     <View style={style.otherButtons}>
-                        <View style={style.button}>
+                        <Pressable
+                            style={style.button}
+                            onPress={() => {
+                                popTopScreen();
+                                props.actions.leaveCall();
+                            }}
+                        >
                             <FontAwesome5Icon
                                 name='phone'
                                 size={24}
                                 style={{...style.buttonIcon, ...style.hangUpIcon}}
                             />
                             <Text style={style.buttonText}>{'Leave'}</Text>
-                        </View>
-                        <View style={style.button}>
+                        </Pressable>
+                        <Pressable
+                            style={style.button}
+                        >
                             <CompassIcon
                                 name='message-text-outline'
                                 size={24}
                                 style={style.buttonIcon}
                             />
                             <Text style={style.buttonText}>{'Chat thread'}</Text>
-                        </View>
+                        </Pressable>
                         <View style={style.button}>
                             <FontAwesome5Icon
                                 name='hand-paper'

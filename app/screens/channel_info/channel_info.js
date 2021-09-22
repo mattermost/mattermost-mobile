@@ -7,6 +7,8 @@ import {intlShape} from 'react-intl';
 import {
     ScrollView,
     View,
+    Pressable,
+    Text,
 } from 'react-native';
 import {Navigation} from 'react-native-navigation';
 import {SafeAreaView} from 'react-native-safe-area-context';
@@ -38,6 +40,8 @@ export default class ChannelInfo extends PureComponent {
             getChannelStats: PropTypes.func.isRequired,
             getCustomEmojisInText: PropTypes.func.isRequired,
             setChannelDisplayName: PropTypes.func.isRequired,
+            addFakeCall: PropTypes.func.isRequired,
+            joinCall: PropTypes.func.isRequired,
         }),
         currentChannel: PropTypes.object.isRequired,
         currentChannelCreatorName: PropTypes.string,
@@ -156,6 +160,16 @@ export default class ChannelInfo extends PureComponent {
                     testID='channel_info.edit_channel.action'
                     theme={theme}
                 />
+                <Pressable
+                    onPress={() => {
+                        // TODO: This is temporary hack to show things
+                        this.props.actions.addFakeCall(this.props.currentChannel.id);
+                        this.props.actions.joinCall(this.props.currentChannel.id);
+                        this.close();
+                    }}
+                >
+                    <Text>{'Start new voice call'}</Text>
+                </Pressable>
                 <Bindings
                     theme={theme}
                 />

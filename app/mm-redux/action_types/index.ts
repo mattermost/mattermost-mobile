@@ -21,6 +21,7 @@ import SearchTypes from './search';
 import TeamTypes from './teams';
 import ThreadTypes from './threads';
 import UserTypes from './users';
+import VoiceCallsTypes from './voiceCalls';
 
 export {
     ErrorTypes,
@@ -43,4 +44,5 @@ export {
     ThreadTypes,
     RemoteClusterTypes,
     AppsTypes,
+    VoiceCallsTypes,
 };
