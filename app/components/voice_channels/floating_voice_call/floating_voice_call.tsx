@@ -3,6 +3,7 @@
 
 import React from 'react';
 import {View, Text, Platform, TouchableOpacity, Pressable} from 'react-native';
+import FontAwesome5Icon from 'react-native-vector-icons/FontAwesome5';
 
 import CompassIcon from '@components/compass_icon';
 import FormattedText from '@components/formatted_text';
@@ -64,7 +65,11 @@ const getStyleSheet = makeStyleSheetFromTheme((props: Props) => {
         },
         micIcon: {
             color: props.theme.sidebarText,
-            padding: 8,
+            width: 42,
+            height: 42,
+            textAlign: 'center',
+            textAlignVertical: 'center',
+            justifyContent: 'center',
             backgroundColor: props.muted ? 'transparent' : '#3DB887',
             borderRadius: 4,
             margin: 4,
@@ -117,10 +122,10 @@ const FloatingVoiceCall = (props: Props) => {
                     onPressIn={() => props.onMuteSet(!props.muted)}
                     style={style.pressable}
                 >
-                    <CompassIcon
-                        style={style.micIcon}
-                        name='cellphone'
+                    <FontAwesome5Icon
+                        name={props.muted ? 'microphone-slash' : 'microphone'}
                         size={24}
+                        style={style.micIcon}
                     />
                 </TouchableOpacity>
             </View>

@@ -12,16 +12,12 @@ function mapStateToProps(state: GlobalState) {
     return {
         theme: getTheme(state),
         users: [
-            {id: 'xohi8cki9787fgiryne716u84o', username: 'user-1', volume: 1, handRaised: false, muted: false},
-            {id: 'xohi8cki9787fgiryne716u84o', username: 'user-1', volume: 1, handRaised: false, muted: false},
-            {id: 'xohi8cki9787fgiryne716u84o', username: 'user-1', volume: 1, handRaised: false, muted: false},
-            {id: 'xohi8cki9787fgiryne716u84o', username: 'user-1', volume: 1, handRaised: false, muted: false},
-            {id: 'xohi8cki9787fgiryne716u84o', username: 'user-1', volume: 1, handRaised: false, muted: false},
-            {id: 'xohi8cki9787fgiryne716u84o', username: 'user-1', volume: 1, handRaised: false, muted: false},
-            {id: 'xohi8cki9787fgiryne716u84o', username: 'user-1', volume: 1, handRaised: false, muted: false},
-            {id: 'xohi8cki9787fgiryne716u84o', username: 'user-1', volume: 1, handRaised: false, muted: false},
-            {id: 'xohi8cki9787fgiryne716u84o', username: 'user-1', volume: 1, handRaised: false, muted: false},
-            {id: 'xohi8cki9787fgiryne716u84o', username: 'user-1', volume: 1, handRaised: false, muted: false},
+            {id: 'xohi8cki9787fgiryne716u84o', username: 'mgdelacroix', volume: 1, handRaised: false, muted: false},
+            {id: 'xohi8cki9787fgiryne716u84o', username: 'harshil', volume: 0.5, handRaised: false, muted: true},
+            {id: 'xohi8cki9787fgiryne716u84o', username: 'hamedia', volume: 0, handRaised: true, muted: false},
+            {id: 'xohi8cki9787fgiryne716u84o', username: 'jespino', volume: 0, handRaised: false, muted: true},
+            {id: 'xohi8cki9787fgiryne716u84o', username: 'chen', volume: 0.7, handRaised: false, muted: false},
+            {id: 'xohi8cki9787fgiryne716u84o', username: 'scott', volume: 0.2, handRaised: false, muted: true},
         ],
         muted: false,
     };

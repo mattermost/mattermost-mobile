@@ -169,6 +169,9 @@ Navigation.setLazyComponentRegistrator((screenName) => {
     case 'PostOptions':
         screen = require('@screens/post_options').default;
         break;
+    case 'VoiceCallOtherActions':
+        screen = require('@screens/voice_call_other_actions').default;
+        break;
     case 'ReactionList':
         screen = require('@screens/reaction_list').default;
         break;

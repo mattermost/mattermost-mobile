@@ -1,10 +1,11 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React from 'react';
-import {View, Text, Platform, Pressable, SafeAreaView, ScrollView} from 'react-native';
+import React, {useEffect} from 'react';
+import {Keyboard, View, Text, Platform, Pressable, SafeAreaView, ScrollView} from 'react-native';
+import FontAwesome5Icon from 'react-native-vector-icons/FontAwesome5';
 
-import {popTopScreen} from '@actions/navigation';
+import {showModalOverCurrentContext, mergeNavigationOptions, popTopScreen} from '@actions/navigation';
 import CompassIcon from '@components/compass_icon';
 import VoiceAvatar from '@components/voice_channels/voice_avatar';
 import {makeStyleSheetFromTheme} from '@utils/theme';
@@ -120,11 +121,30 @@ const getStyleSheet = makeStyleSheetFromTheme((props: Props) => {
             height: 68,
             margin: 10,
         },
+        hangUpIcon: {
+            backgroundColor: '#D24B4E',
+        },
     };
 });
 
 const VoiceCallScreen = (props: Props) => {
     const style = getStyleSheet(props);
+    useEffect(() => {
+        mergeNavigationOptions('VoiceCall', {topBar: {visible: false}});
+    }, []);
+
+    const showOtherActions = () => {
+        const screen = 'VoiceCallOtherActions';
+        const passProps = {
+        };
+
+        Keyboard.dismiss();
+        const otherActionsRequest = requestAnimationFrame(() => {
+            showModalOverCurrentContext(screen, passProps);
+            cancelAnimationFrame(otherActionsRequest);
+        });
+    };
+
     return (
         <SafeAreaView style={style.wrapper}>
             <View style={style.container}>
@@ -164,50 +184,54 @@ const VoiceCallScreen = (props: Props) => {
                 </ScrollView>
                 <View style={style.buttons}>
                     <View style={style.mute}>
-                        <CompassIcon
-                            name='cellphone'
+                        <FontAwesome5Icon
+                            name={props.muted ? 'microphone-slash' : 'microphone'}
                             size={24}
                             style={style.muteIcon}
                         />
-                        <Text style={style.buttonText}>{'Mute'}</Text>
+                        <Text style={style.buttonText}>{props.muted ? 'Mute' : 'Unmute'}</Text>
                     </View>
                     <View style={style.otherButtons}>
                         <View style={style.button}>
-                            <CompassIcon
-                                name='cellphone'
+                            <FontAwesome5Icon
+                                name='phone'
                                 size={24}
-                                style={style.buttonIcon}
+                                style={{...style.buttonIcon, ...style.hangUpIcon}}
                             />
                             <Text style={style.buttonText}>{'Leave'}</Text>
                         </View>
                         <View style={style.button}>
                             <CompassIcon
-                                name='cellphone'
+                                name='message-text-outline'
                                 size={24}
                                 style={style.buttonIcon}
                             />
-                            <Text style={style.buttonText}>{'Chate thread'}</Text>
+                            <Text style={style.buttonText}>{'Chat thread'}</Text>
                         </View>
                         <View style={style.button}>
-                            <CompassIcon
-                                name='cellphone'
+                            <FontAwesome5Icon
+                                name='hand-paper'
                                 size={24}
                                 style={style.buttonIcon}
                             />
                             <Text style={style.buttonText}>{'Raise hand'}</Text>
                         </View>
-                        <View style={style.button}>
+                        <Pressable
+                            style={style.button}
+                            onPress={showOtherActions}
+                        >
                             <CompassIcon
-                                name='horizontal-dots'
+                                name='dots-horizontal'
                                 size={24}
                                 style={style.buttonIcon}
                             />
                             <Text style={style.buttonText}>{'More'}</Text>
-                        </View>
+                        </Pressable>
                     </View>
                 </View>
             </View>
         </SafeAreaView>
     );
 };
+
 export default VoiceCallScreen;

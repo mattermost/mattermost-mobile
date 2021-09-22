@@ -3,8 +3,8 @@
 
 import React from 'react';
 import {View} from 'react-native';
+import FontAwesome5Icon from 'react-native-vector-icons/FontAwesome5';
 
-import CompassIcon from '@components/compass_icon';
 import ProfilePicture from '@components/profile_picture';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 
@@ -51,7 +51,8 @@ const getStyleSheet = makeStyleSheetFromTheme((props: Props) => {
             borderColor: 'black',
             borderWidth: 2,
             color: 'white',
-            padding: 5,
+            textAlign: 'center',
+            textAlignVertical: 'center',
         },
         handRaised: {
             position: 'absolute',
@@ -62,9 +63,10 @@ const getStyleSheet = makeStyleSheetFromTheme((props: Props) => {
             borderRadius: 12,
             backgroundColor: 'black',
             color: 'white',
-            padding: 5,
             borderColor: 'black',
             borderWidth: 2,
+            textAlign: 'center',
+            textAlignVertical: 'center',
         },
     };
 });
@@ -80,15 +82,15 @@ const VoiceAvatar = (props: Props) => {
                         size={props.size === 'm' || !props.size ? 40 : 72}
                         showStatus={false}
                     />
-                    {props.handRaised !== undefined &&
-                        <CompassIcon
-                            name='cellphone'
-                            size={14}
+                    {props.muted !== undefined &&
+                        <FontAwesome5Icon
+                            name={props.muted ? 'microphone-slash' : 'microphone'}
+                            size={12}
                             style={style.mute}
                         />}
-                    {props.handRaised !== undefined &&
-                        <CompassIcon
-                            name='arrow-collapse'
+                    {props.handRaised === true &&
+                        <FontAwesome5Icon
+                            name={'hand-paper'}
                             size={14}
                             style={style.handRaised}
                         />}
