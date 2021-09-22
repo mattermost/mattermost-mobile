@@ -86,7 +86,7 @@ NSString* const NOTIFICATION_UPDATE_BADGE_ACTION = @"update_badge";
   NSString* channelId = [userInfo objectForKey:@"channel_id"];
   NSString* rootId = [userInfo objectForKey:@"root_id"];
   NSString* ackId = [userInfo objectForKey:@"ack_id"];
-  BOOL isCRTEnabled = [[userInfo objectForKey:@"is_crt_enabled"] isEqualToString:@"true"];
+  BOOL isCRTEnabled = [userInfo objectForKey:@"is_crt_enabled"];
   
   RuntimeUtils *utils = [[RuntimeUtils alloc] init];
   
