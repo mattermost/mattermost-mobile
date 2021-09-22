@@ -63,22 +63,14 @@ type State = {
     track_prev_cst: UserCustomStatus[]; // for screen refresh only
 };
 
-const {
-    DONT_CLEAR,
-    THIRTY_MINUTES,
-    ONE_HOUR,
-    FOUR_HOURS,
-    TODAY,
-    THIS_WEEK,
-    DATE_AND_TIME,
-} = CustomStatusDuration;
+const {DONT_CLEAR, THIRTY_MINUTES, ONE_HOUR, FOUR_HOURS, TODAY, THIS_WEEK, DATE_AND_TIME} = CustomStatusDuration;
 const DEFAULT_DURATION: CustomStatusDuration = TODAY;
 
 const BTN_UPDATE_STATUS = 'update-custom-status';
 
 class CustomStatusModal extends NavigationComponent<Props, State> {
     private navigationEventListener: EventSubscription | undefined;
-    private isCustomStatusExpired: boolean | undefined; // ok
+    private isCustomStatusExpired: boolean | undefined;
 
     static options(): Options {
         return {
@@ -128,11 +120,11 @@ class CustomStatusModal extends NavigationComponent<Props, State> {
         }
 
         this.state = {
-            emoji: isCurrentCustomStatusSet ? customStatus?.emoji : '',
-            text: isCurrentCustomStatusSet ? customStatus?.text : '',
             duration: isCurrentCustomStatusSet ? customStatus?.duration ?? DONT_CLEAR : DEFAULT_DURATION,
+            emoji: isCurrentCustomStatusSet ? customStatus?.emoji : '',
             expires_at: initialCustomExpiryTime,
             isLandScape: false,
+            text: isCurrentCustomStatusSet ? customStatus?.text : '',
             track_prev_cst: [],
         };
     };
@@ -296,7 +288,7 @@ class CustomStatusModal extends NavigationComponent<Props, State> {
     openEmojiPicker = preventDoubleTap(() => {
         const {theme, intl} = this.props;
         CompassIcon.getImageSource('close', 24, theme.sidebarHeaderTextColor).then((source) => {
-            const screen = 'AddReaction';
+            const screen = Screens.ADD_REACTION;
             const title = intl.formatMessage({id: 'mobile.custom_status.choose_emoji', defaultMessage: 'Choose an emoji'});
             const passProps = {closeButton: source, onEmojiPress: this.handleEmojiClick};
 
