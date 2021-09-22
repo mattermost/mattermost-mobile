@@ -44,7 +44,7 @@ describe('ThreadOptions', () => {
         intl,
         post,
         rootId: 'post_id',
-        theme: Preferences.THEMES.default,
+        theme: Preferences.THEMES.denim,
         thread,
     };
 
