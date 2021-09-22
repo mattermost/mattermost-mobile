@@ -82,14 +82,14 @@ export default class DrawerLayout extends Component {
     }
 
     componentDidMount() {
-        Dimensions.addEventListener('change', this.handleDimensionsChange);
+        this.dimensionsListener = Dimensions.addEventListener('change', this.handleDimensionsChange);
     }
 
     componentWillUnmount() {
         if (this.openValue) {
             this.openValue.removeListener(this.handleOpenValueChanged);
         }
-        Dimensions.removeEventListener('change', this.handleDimensionsChange);
+        this.dimensionsListener?.remove();
     }
 
     handleDimensionsChange = ({window}) => {

@@ -111,11 +111,11 @@ const ChannelNavBar = (props) => {
     useEffect(() => {
         handleDimensions();
         handlePermanentSidebar();
-        Dimensions.addEventListener('change', handleDimensions);
+        const dimensionsListener = Dimensions.addEventListener('change', handleDimensions);
         EventEmitter.on(DeviceTypes.PERMANENT_SIDEBAR_SETTINGS, handlePermanentSidebar);
 
         return () => {
-            Dimensions.removeEventListener('change', handleDimensions);
+            dimensionsListener.remove();
             EventEmitter.off(DeviceTypes.PERMANENT_SIDEBAR_SETTINGS, handlePermanentSidebar);
         };
     }, []);
