@@ -25,7 +25,6 @@ type Props = {
     user: {id: string; username: string};
     call: Call;
     volume: number;
-    onMuteSet: (newMute: boolean) => void;
     onExpand: () => void;
 }
 
