@@ -23,7 +23,7 @@ function makeProps(pushNotificationLevel) {
         notifyProps: {
             push: pushNotificationLevel,
         },
-        theme: Preferences.THEMES.default,
+        theme: Preferences.THEMES.denim,
     };
 }
 

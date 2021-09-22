@@ -5,12 +5,12 @@ exports[`Global Thread Item Should render thread item with unread messages dot 1
   onLongPress={[Function]}
   onPress={[Function]}
   testID="thread_item.post1.item"
-  underlayColor="rgba(22,109,224,0.08)"
+  underlayColor="rgba(28,88,217,0.08)"
 >
   <View
     style={
       Object {
-        "borderBottomColor": "rgba(61,60,64,0.08)",
+        "borderBottomColor": "rgba(63,67,80,0.08)",
         "borderBottomWidth": 1,
         "flex": 1,
         "flexDirection": "row",
@@ -31,7 +31,7 @@ exports[`Global Thread Item Should render thread item with unread messages dot 1
         style={
           Object {
             "alignSelf": "center",
-            "backgroundColor": "#579eff",
+            "backgroundColor": "#5d89ea",
             "borderRadius": 4,
             "height": 8,
             "marginTop": 5,
@@ -73,7 +73,7 @@ exports[`Global Thread Item Should render thread item with unread messages dot 1
             numberOfLines={1}
             style={
               Object {
-                "color": "#3d3c40",
+                "color": "#3f4350",
                 "fontSize": 15,
                 "fontWeight": "600",
                 "lineHeight": 22,
@@ -84,7 +84,7 @@ exports[`Global Thread Item Should render thread item with unread messages dot 1
           <View
             style={
               Object {
-                "backgroundColor": "rgba(61,60,64,0.08)",
+                "backgroundColor": "rgba(63,67,80,0.08)",
                 "borderRadius": 4,
                 "maxWidth": "50%",
               }
@@ -94,7 +94,7 @@ exports[`Global Thread Item Should render thread item with unread messages dot 1
               numberOfLines={1}
               style={
                 Object {
-                  "color": "#3d3c40",
+                  "color": "#3f4350",
                   "fontSize": 10,
                   "fontWeight": "600",
                   "letterSpacing": 0.1,
@@ -114,7 +114,7 @@ exports[`Global Thread Item Should render thread item with unread messages dot 1
         <InjectIntl(FriendlyDate)
           style={
             Object {
-              "color": "rgba(61,60,64,0.64)",
+              "color": "rgba(63,67,80,0.64)",
               "fontSize": 12,
               "fontWeight": "400",
             }
@@ -125,7 +125,7 @@ exports[`Global Thread Item Should render thread item with unread messages dot 1
         numberOfLines={2}
         style={
           Object {
-            "color": "#3d3c40",
+            "color": "#3f4350",
             "fontSize": 15,
             "lineHeight": 20,
           }
@@ -140,31 +140,31 @@ exports[`Global Thread Item Should render thread item with unread messages dot 1
         testID="thread_item.post1.footer"
         theme={
           Object {
-            "awayIndicator": "#ffbc42",
-            "buttonBg": "#166de0",
+            "awayIndicator": "#ffbc1f",
+            "buttonBg": "#1c58d9",
             "buttonColor": "#ffffff",
             "centerChannelBg": "#ffffff",
-            "centerChannelColor": "#3d3c40",
+            "centerChannelColor": "#3f4350",
             "codeTheme": "github",
-            "dndIndicator": "#f74343",
-            "errorTextColor": "#fd5960",
-            "linkColor": "#2389d7",
+            "dndIndicator": "#d24b4e",
+            "errorTextColor": "#d24b4e",
+            "linkColor": "#386fe5",
             "mentionBg": "#ffffff",
-            "mentionBj": "#ffffff",
-            "mentionColor": "#145dbf",
-            "mentionHighlightBg": "#ffe577",
-            "mentionHighlightLink": "#166de0",
-            "newMessageSeparator": "#ff8800",
-            "onlineIndicator": "#06d6a0",
-            "sidebarBg": "#145dbf",
-            "sidebarHeaderBg": "#1153ab",
+            "mentionColor": "#1e325c",
+            "mentionHighlightBg": "#ffd470",
+            "mentionHighlightLink": "#1b1d22",
+            "newMessageSeparator": "#cc8f00",
+            "onlineIndicator": "#3db887",
+            "sidebarBg": "#1e325c",
+            "sidebarHeaderBg": "#192a4d",
             "sidebarHeaderTextColor": "#ffffff",
+            "sidebarTeamBarBg": "#14213e",
             "sidebarText": "#ffffff",
-            "sidebarTextActiveBorder": "#579eff",
+            "sidebarTextActiveBorder": "#5d89ea",
             "sidebarTextActiveColor": "#ffffff",
-            "sidebarTextHoverBg": "#4578bf",
+            "sidebarTextHoverBg": "#28427b",
             "sidebarUnreadText": "#ffffff",
-            "type": "Mattermost",
+            "type": "Denim",
           }
         }
         thread={
@@ -189,12 +189,12 @@ exports[`Global Thread Item Should show unread mentions count 1`] = `
   onLongPress={[Function]}
   onPress={[Function]}
   testID="thread_item.post1.item"
-  underlayColor="rgba(22,109,224,0.08)"
+  underlayColor="rgba(28,88,217,0.08)"
 >
   <View
     style={
       Object {
-        "borderBottomColor": "rgba(61,60,64,0.08)",
+        "borderBottomColor": "rgba(63,67,80,0.08)",
         "borderBottomWidth": 1,
         "flex": 1,
         "flexDirection": "row",
@@ -215,7 +215,7 @@ exports[`Global Thread Item Should show unread mentions count 1`] = `
         style={
           Object {
             "alignSelf": "center",
-            "backgroundColor": "#145dbf",
+            "backgroundColor": "#1e325c",
             "borderRadius": 9,
             "height": 18,
             "width": 18,
@@ -271,7 +271,7 @@ exports[`Global Thread Item Should show unread mentions count 1`] = `
             numberOfLines={1}
             style={
               Object {
-                "color": "#3d3c40",
+                "color": "#3f4350",
                 "fontSize": 15,
                 "fontWeight": "600",
                 "lineHeight": 22,
@@ -282,7 +282,7 @@ exports[`Global Thread Item Should show unread mentions count 1`] = `
           <View
             style={
               Object {
-                "backgroundColor": "rgba(61,60,64,0.08)",
+                "backgroundColor": "rgba(63,67,80,0.08)",
                 "borderRadius": 4,
                 "maxWidth": "50%",
               }
@@ -292,7 +292,7 @@ exports[`Global Thread Item Should show unread mentions count 1`] = `
               numberOfLines={1}
               style={
                 Object {
-                  "color": "#3d3c40",
+                  "color": "#3f4350",
                   "fontSize": 10,
                   "fontWeight": "600",
                   "letterSpacing": 0.1,
@@ -312,7 +312,7 @@ exports[`Global Thread Item Should show unread mentions count 1`] = `
         <InjectIntl(FriendlyDate)
           style={
             Object {
-              "color": "rgba(61,60,64,0.64)",
+              "color": "rgba(63,67,80,0.64)",
               "fontSize": 12,
               "fontWeight": "400",
             }
@@ -323,7 +323,7 @@ exports[`Global Thread Item Should show unread mentions count 1`] = `
         numberOfLines={2}
         style={
           Object {
-            "color": "#3d3c40",
+            "color": "#3f4350",
             "fontSize": 15,
             "lineHeight": 20,
           }
@@ -338,31 +338,31 @@ exports[`Global Thread Item Should show unread mentions count 1`] = `
         testID="thread_item.post1.footer"
         theme={
           Object {
-            "awayIndicator": "#ffbc42",
-            "buttonBg": "#166de0",
+            "awayIndicator": "#ffbc1f",
+            "buttonBg": "#1c58d9",
             "buttonColor": "#ffffff",
             "centerChannelBg": "#ffffff",
-            "centerChannelColor": "#3d3c40",
+            "centerChannelColor": "#3f4350",
             "codeTheme": "github",
-            "dndIndicator": "#f74343",
-            "errorTextColor": "#fd5960",
-            "linkColor": "#2389d7",
+            "dndIndicator": "#d24b4e",
+            "errorTextColor": "#d24b4e",
+            "linkColor": "#386fe5",
             "mentionBg": "#ffffff",
-            "mentionBj": "#ffffff",
-            "mentionColor": "#145dbf",
-            "mentionHighlightBg": "#ffe577",
-            "mentionHighlightLink": "#166de0",
-            "newMessageSeparator": "#ff8800",
-            "onlineIndicator": "#06d6a0",
-            "sidebarBg": "#145dbf",
-            "sidebarHeaderBg": "#1153ab",
+            "mentionColor": "#1e325c",
+            "mentionHighlightBg": "#ffd470",
+            "mentionHighlightLink": "#1b1d22",
+            "newMessageSeparator": "#cc8f00",
+            "onlineIndicator": "#3db887",
+            "sidebarBg": "#1e325c",
+            "sidebarHeaderBg": "#192a4d",
             "sidebarHeaderTextColor": "#ffffff",
+            "sidebarTeamBarBg": "#14213e",
             "sidebarText": "#ffffff",
-            "sidebarTextActiveBorder": "#579eff",
+            "sidebarTextActiveBorder": "#5d89ea",
             "sidebarTextActiveColor": "#ffffff",
-            "sidebarTextHoverBg": "#4578bf",
+            "sidebarTextHoverBg": "#28427b",
             "sidebarUnreadText": "#ffffff",
-            "type": "Mattermost",
+            "type": "Denim",
           }
         }
         thread={

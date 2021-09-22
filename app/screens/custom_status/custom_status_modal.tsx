@@ -18,7 +18,7 @@ import StatusBar from '@components/status_bar';
 import {CustomStatus, DeviceTypes} from '@constants';
 import {durationValues} from '@constants/custom_status';
 import {ActionFunc, ActionResult} from '@mm-redux/types/actions';
-import {Theme} from '@mm-redux/types/preferences';
+import {Theme} from '@mm-redux/types/theme';
 import {CustomStatusDuration, UserCustomStatus} from '@mm-redux/types/users';
 import EventEmitter from '@mm-redux/utils/event_emitter';
 import CustomStatusSuggestion from '@screens/custom_status/custom_status_suggestion';

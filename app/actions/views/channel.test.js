@@ -166,6 +166,12 @@ describe('Actions.Views.Channel', () => {
                     [currentTeamId]: {},
                 },
             },
+            general: {
+                config: {
+                    EnableLegacySidebar: 'true',
+                },
+                serverVersion: '5.12.0',
+            },
         },
     };
 
@@ -174,7 +180,7 @@ describe('Actions.Views.Channel', () => {
     channelSelectors.getCurrentChannelId = jest.fn(() => currentChannelId);
     channelSelectors.getMyChannelMember = jest.fn(() => ({data: {member: {}}}));
 
-    const appChannelSelectors = require('app/selectors/channel');
+    const appChannelSelectors = require('@selectors/channel');
     const getChannelReachableOriginal = appChannelSelectors.getChannelReachable;
     appChannelSelectors.getChannelReachable = jest.fn(() => true);
 

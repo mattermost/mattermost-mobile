@@ -24,7 +24,7 @@ describe('ErrorTeamsList', () => {
             selectDefaultTeam: () => true,
         },
         componentId: 'component-id',
-        theme: Preferences.THEMES.default,
+        theme: Preferences.THEMES.denim,
     };
 
     test('should match snapshot', () => {

@@ -24,7 +24,6 @@ export function executeCommand(message: string, channelId: string, rootId: strin
             channel_id: channelId,
             team_id: teamId,
             root_id: rootId,
-            parent_id: rootId,
         };
 
         let msg = message;
@@ -40,7 +39,7 @@ export function executeCommand(message: string, channelId: string, rootId: strin
 
         const appsAreEnabled = appsEnabled(state);
         if (appsAreEnabled) {
-            const parser = new AppCommandParser({dispatch, getState}, intl, args.channel_id, args.root_id);
+            const parser = new AppCommandParser({dispatch, getState}, intl, args.channel_id, args.team_id, args.root_id);
             if (parser.isAppCommand(msg)) {
                 const {call, errorMessage} = await parser.composeCallFromCommand(msg);
                 const createErrorMessage = (errMessage: string) => {

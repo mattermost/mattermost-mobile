@@ -1,7 +1,6 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import PropTypes from 'prop-types';
 import React from 'react';
 import {Text, View} from 'react-native';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
@@ -10,9 +9,10 @@ import CompassIcon from '@components/compass_icon';
 import {BotTag, GuestTag} from '@components/tag';
 import TouchableWithFeedback from '@components/touchable_with_feedback';
 import {General} from '@mm-redux/constants';
+import {Theme} from '@mm-redux/types/theme';
 import {makeStyleSheetFromTheme, changeOpacity} from '@utils/theme';
 
-const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
+const getStyleFromTheme = makeStyleSheetFromTheme((theme: Theme) => {
     return {
         icon: {
             fontSize: 18,
@@ -38,7 +38,20 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
     };
 });
 
-const ChannelMentionItem = (props) => {
+type Props = {
+    channelId: string;
+    displayName?: string;
+    name?: string;
+    type?: string;
+    isBot: boolean;
+    isGuest: boolean;
+    onPress: (name?: string) => void;
+    theme: Theme;
+    shared: boolean;
+    testID?: string;
+};
+
+const ChannelMentionItem = (props: Props) => {
     const insets = useSafeAreaInsets();
     const {
         channelId,
@@ -55,7 +68,7 @@ const ChannelMentionItem = (props) => {
 
     const completeMention = () => {
         if (type === General.DM_CHANNEL || type === General.GM_CHANNEL) {
-            onPress('@' + displayName.replace(/ /g, ''));
+            onPress('@' + displayName?.replace(/ /g, ''));
         } else {
             onPress(name);
         }
@@ -118,17 +131,6 @@ const ChannelMentionItem = (props) => {
     }
 
     return component;
-};
-
-ChannelMentionItem.propTypes = {
-    channelId: PropTypes.string.isRequired,
-    displayName: PropTypes.string,
-    name: PropTypes.string,
-    type: PropTypes.string,
-    isBot: PropTypes.bool.isRequired,
-    isGuest: PropTypes.bool.isRequired,
-    onPress: PropTypes.func.isRequired,
-    theme: PropTypes.object.isRequired,
 };
 
 export default ChannelMentionItem;

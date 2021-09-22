@@ -55,7 +55,7 @@ describe('components/autocomplete/slash_suggestion', () => {
         commands: [sampleCommand],
         isSearch: false,
         maxListHeight: 50,
-        theme: Preferences.THEMES.default,
+        theme: Preferences.THEMES.denim,
         onChangeText: jest.fn(),
         onResultCountChange: jest.fn(),
         value: '',
@@ -210,33 +210,6 @@ describe('components/autocomplete/slash_suggestion', () => {
                 Suggestion: '/jitsi',
             },
         ]);
-    });
-
-    test('should show commands from app sub commands', async (done) => {
-        const props: Props = {
-            ...baseProps,
-        };
-
-        const wrapper = shallow<SlashSuggestion>(
-            <SlashSuggestion {...props}/>,
-            {context: {intl}},
-        );
-        wrapper.setProps({value: '/jira i', suggestions: []});
-
-        const expected: AutocompleteSuggestion[] = [
-            {
-                Complete: 'jira issue',
-                Description: 'Interact with Jira issues',
-                Hint: 'Issue hint',
-                IconData: 'Issue icon',
-                Suggestion: 'issue',
-            },
-        ];
-
-        setTimeout(() => {
-            expect(wrapper.state('dataSource')).toEqual(expected);
-            done();
-        });
     });
 
     test('should avoid using app commands when apps are disabled', async () => {

@@ -3,8 +3,7 @@
 import {shallow} from 'enzyme';
 import React from 'react';
 
-import OptionModalListAndroid from './options_modal_list.android';
-import OptionModalListIOS from './options_modal_list.ios';
+import OptionModalList from './options_modal_list';
 
 describe('OptionModalList', () => {
     const baseProps = {
@@ -27,16 +26,9 @@ describe('OptionModalList', () => {
         title: 'test',
     };
 
-    test('should match snapshot for iOS', async () => {
+    test('should match snapshot', async () => {
         const wrapper = shallow(
-            <OptionModalListIOS {...baseProps}/>,
-        );
-        expect(wrapper.getElement()).toMatchSnapshot();
-    });
-
-    test('should match snapshot for Android', async () => {
-        const wrapper = shallow(
-            <OptionModalListAndroid {...baseProps}/>,
+            <OptionModalList {...baseProps}/>,
         );
         expect(wrapper.getElement()).toMatchSnapshot();
     });

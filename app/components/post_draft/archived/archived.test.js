@@ -15,7 +15,7 @@ describe('PostDraft Archived', () => {
         deactivated: false,
         rootId: 'root-id',
         teamId: 'team-id',
-        theme: Preferences.THEMES.default,
+        theme: Preferences.THEMES.denim,
     };
 
     test('should match snapshot', () => {

@@ -17,15 +17,27 @@ describe('NotificationSettings', () => {
         },
         componentId: 'component-id',
         currentUser,
-        theme: Preferences.THEMES.default,
+        theme: Preferences.THEMES.denim,
         updateMeRequest: {},
         currentUserStatus: 'status',
         enableAutoResponder: false,
+        isCollapsedThreadsEnabled: false,
     };
 
     test('should match snapshot', () => {
         const wrapper = shallowWithIntl(
             <NotificationSettings {...baseProps}/>,
+        );
+
+        expect(wrapper.instance()).toMatchSnapshot();
+    });
+
+    test('should match snapshot, when CRT is ON', () => {
+        const wrapper = shallowWithIntl(
+            <NotificationSettings
+                {...baseProps}
+                isCollapsedThreadsEnabled={true}
+            />,
         );
 
         expect(wrapper.instance()).toMatchSnapshot();

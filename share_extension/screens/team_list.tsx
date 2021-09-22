@@ -29,7 +29,7 @@ type TeamListRoute = RouteProp<TeamListParams, 'Teams'>;
 
 type ListItem = (info: {item: Team}) => React.ReactElement;
 
-const theme = Preferences.THEMES.default;
+const theme = Preferences.THEMES.denim;
 
 const TeamList = () => {
     const navigation = useNavigation();

@@ -18,7 +18,7 @@ import ThreadFooter from '../thread_footer';
 
 import type {Channel} from '@mm-redux/types/channels';
 import type {Post} from '@mm-redux/types/posts';
-import type {Theme} from '@mm-redux/types/preferences';
+import type {Theme} from '@mm-redux/types/theme';
 import type {UserThread} from '@mm-redux/types/threads';
 import type {UserProfile} from '@mm-redux/types/users';
 

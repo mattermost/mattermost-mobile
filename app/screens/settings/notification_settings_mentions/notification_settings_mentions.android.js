@@ -360,8 +360,12 @@ class NotificationSettingsMentionsAndroid extends NotificationSettingsMentionsBa
                         theme={theme}
                     />
                     <View style={style.separator}/>
-                    {this.renderReplySection()}
-                    <View style={style.separator}/>
+                    {!this.props.isCollapsedThreadsEnabled && (
+                        <>
+                            {this.renderReplySection()}
+                            <View style={style.separator}/>
+                        </>
+                    )}
                 </ScrollView>
                 {this.renderKeywordsModal(style)}
                 {this.renderReplyModal(style)}

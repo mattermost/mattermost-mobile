@@ -92,7 +92,7 @@ export function resetToChannel(passProps = {}) {
 }
 
 export function resetToSelectServer(allowOtherServers) {
-    const theme = Preferences.THEMES.default;
+    const theme = Preferences.THEMES.denim;
 
     EphemeralStore.clearNavigationComponents();
 
@@ -292,7 +292,7 @@ export function showModal(name, title, passProps = {}, options = {}) {
 }
 
 export function showModalOverCurrentContext(name, passProps = {}, options = {}) {
-    const title = '';
+    const title = passProps.title || '';
 
     let animations;
     switch (Platform.OS) {

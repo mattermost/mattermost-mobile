@@ -5,7 +5,7 @@ import React, {PureComponent} from 'react';
 import {intlShape} from 'react-intl';
 
 import {goToScreen} from '@actions/navigation';
-import {Theme} from '@mm-redux/types/preferences';
+import {Theme} from '@mm-redux/types/theme';
 import ChannelInfoRow from '@screens/channel_info/channel_info_row';
 import {t} from '@utils/i18n';
 import {preventDoubleTap} from '@utils/tap';

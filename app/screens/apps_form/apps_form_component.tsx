@@ -16,8 +16,9 @@ import {AppCallResponseTypes, AppFieldTypes} from '@mm-redux/constants/apps';
 import {ActionResult} from '@mm-redux/types/actions';
 import {AppCallRequest, AppField, AppForm, AppFormValue, AppFormValues, AppLookupResponse, AppSelectOption, FormResponseData} from '@mm-redux/types/apps';
 import {DialogElement} from '@mm-redux/types/integrations';
-import {Theme} from '@mm-redux/types/preferences';
+import {Theme} from '@mm-redux/types/theme';
 import {checkDialogElementForError, checkIfErrorsMatchElements} from '@mm-redux/utils/integration_utils';
+import {filterEmptyOptions} from '@utils/apps';
 import {getMarkdownBlockStyles, getMarkdownTextStyles} from '@utils/markdown';
 import {preventDoubleTap} from '@utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
@@ -245,8 +246,11 @@ export default class AppsFormComponent extends PureComponent<Props, State> {
 
         const callResp = res.data!;
         switch (callResp.type) {
-        case AppCallResponseTypes.OK:
-            return callResp.data?.items || [];
+        case AppCallResponseTypes.OK: {
+            let items = callResp.data?.items || [];
+            items = items.filter(filterEmptyOptions);
+            return items;
+        }
         case AppCallResponseTypes.FORM:
         case AppCallResponseTypes.NAVIGATE: {
             const errMsg = intl.formatMessage({

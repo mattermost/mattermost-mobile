@@ -7,7 +7,7 @@ import {StyleSheet, View} from 'react-native';
 import CompassIcon from '@components/compass_icon';
 import {Preferences} from '@mm-redux/constants';
 
-const theme = Preferences.THEMES.default;
+const theme = Preferences.THEMES.denim;
 
 export function PublicChannel() {
     return (

@@ -11,6 +11,7 @@ import {getConfig} from '@mm-redux/selectors/entities/general';
 import {
     get as getPreference,
     getTheme,
+    isCollapsedThreadsEnabled,
 } from '@mm-redux/selectors/entities/preferences';
 import {getCurrentUser} from '@mm-redux/selectors/entities/users';
 import {getNotificationProps} from '@utils/notify_props';
@@ -38,6 +39,7 @@ function mapStateToProps(state) {
         emailInterval,
         sendEmailNotifications,
         theme: getTheme(state),
+        isCollapsedThreadsEnabled: isCollapsedThreadsEnabled(state),
     };
 }
 
