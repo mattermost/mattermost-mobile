@@ -1,8 +1,7 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`Global Thread Item Should render thread item with unread messages dot 1`] = `
-<ForwardRef
-  onLongPress={[Function]}
+<TouchableHighlight
   onPress={[Function]}
   testID="thread_item.post1.item"
   underlayColor="rgba(28,88,217,0.08)"
@@ -181,12 +180,11 @@ exports[`Global Thread Item Should render thread item with unread messages dot 1
       />
     </View>
   </View>
-</ForwardRef>
+</TouchableHighlight>
 `;
 
 exports[`Global Thread Item Should show unread mentions count 1`] = `
-<ForwardRef
-  onLongPress={[Function]}
+<TouchableHighlight
   onPress={[Function]}
   testID="thread_item.post1.item"
   underlayColor="rgba(28,88,217,0.08)"
@@ -380,5 +378,5 @@ exports[`Global Thread Item Should show unread mentions count 1`] = `
       />
     </View>
   </View>
-</ForwardRef>
+</TouchableHighlight>
 `;
