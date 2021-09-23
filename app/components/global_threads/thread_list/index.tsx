@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 import React from 'react';
 import {injectIntl, intlShape} from 'react-intl';
-import {FlatList, Platform, View} from 'react-native';
+import {FlatList, Platform, RefreshControl, View} from 'react-native';
 
 import EmptyState from '@components/global_threads/empty_state';
 import ThreadItem from '@components/global_threads/thread_item';
@@ -21,9 +21,11 @@ export type Props = {
     haveUnreads: boolean;
     intl: typeof intlShape;
     isLoading: boolean;
+    isRefreshing: boolean;
     loadMoreThreads: () => Promise<void>;
     listRef: React.RefObject<FlatList>;
     markAllAsRead: () => void;
+    onRefresh: () => void;
     testID: string;
     theme: Theme;
     threadIds: $ID<UserThread>[];
@@ -32,7 +34,7 @@ export type Props = {
     viewingUnreads: boolean;
 };
 
-function ThreadList({haveUnreads, intl, isLoading, loadMoreThreads, listRef, markAllAsRead, testID, theme, threadIds, viewAllThreads, viewUnreadThreads, viewingUnreads}: Props) {
+function ThreadList({haveUnreads, intl, isLoading, isRefreshing, loadMoreThreads, listRef, markAllAsRead, onRefresh, testID, theme, threadIds, viewAllThreads, viewUnreadThreads, viewingUnreads}: Props) {
     const style = getStyleSheet(theme);
 
     const handleEndReached = React.useCallback(() => {
@@ -105,6 +107,14 @@ function ThreadList({haveUnreads, intl, isLoading, loadMoreThreads, listRef, mar
                 onEndReached={handleEndReached}
                 onEndReachedThreshold={2}
                 ref={listRef}
+                refreshControl={(
+                    <RefreshControl
+                        refreshing={isRefreshing}
+                        onRefresh={onRefresh}
+                        colors={[theme.centerChannelColor]}
+                        tintColor={theme.centerChannelColor}
+                    />
+                )}
                 renderItem={renderPost}
                 initialNumToRender={INITIAL_BATCH_TO_RENDER}
                 maxToRenderPerBatch={Platform.select({android: 5})}

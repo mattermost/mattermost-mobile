@@ -97,7 +97,7 @@ function selectOrderedPostIds(posts: types.posts.Post[], lastViewedAt: number, i
 
         if (
             lastViewedAt &&
-            post.create_at > lastViewedAt &&
+            post.create_at >= lastViewedAt &&
             !addedNewMessagesIndicator &&
             indicateNewMessages
         ) {

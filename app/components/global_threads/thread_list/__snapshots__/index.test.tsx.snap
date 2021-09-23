@@ -138,6 +138,16 @@ exports[`Global Thread List Should render threads with functional tabs & mark al
     numColumns={1}
     onEndReached={[Function]}
     onEndReachedThreshold={2}
+    refreshControl={
+      <RefreshControlMock
+        colors={
+          Array [
+            "#3f4350",
+          ]
+        }
+        tintColor="#3f4350"
+      />
+    }
     removeClippedSubviews={true}
     renderItem={[Function]}
     scrollEventThrottle={50}

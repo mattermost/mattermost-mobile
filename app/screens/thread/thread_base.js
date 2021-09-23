@@ -104,8 +104,11 @@ export default class ThreadBase extends PureComponent {
         this.postDraft = React.createRef();
 
         this.state = {
-            lastViewedAt: props.myMember && props.myMember.last_viewed_at,
+            lastViewedAt: props.collapsedThreadsEnabled ? props.thread.last_viewed_at : props.myMember?.last_viewed_at,
         };
+
+        // If thread is opened with an unread, then skip upading the state's lastViewedAt to prevent it from hiding "New Messages" immediately after opening the thread
+        this.skipUpdatingLastViewedAt = props.collapsedThreadsEnabled && this.hasUnreadPost();
 
         this.bottomPadding = new Animated.Value(0);
         this.typingAnimations = [];
@@ -123,8 +126,21 @@ export default class ThreadBase extends PureComponent {
             return;
         }
 
-        if (!this.state.lastViewedAt) {
-            this.setState({lastViewedAt: nextProps.myMember && nextProps.myMember.last_viewed_at});
+        if (this.props.collapsedThreadsEnabled) {
+            if (this.props.thread.last_viewed_at !== nextProps.thread.last_viewed_at) {
+                if (this.skipUpdatingLastViewedAt) {
+                    // Skip for the first time
+                    this.skipUpdatingLastViewedAt = false;
+                } else {
+                    this.setState({
+                        lastViewedAt: nextProps.thread.last_viewed_at,
+                    });
+                }
+            }
+        } else if (!this.state.lastViewedAt) {
+            this.setState({
+                lastViewedAt: nextProps.myMember?.last_viewed_at,
+            });
         }
 
         if (this.props.postIds.length < nextProps.postIds.length) {
@@ -147,6 +163,14 @@ export default class ThreadBase extends PureComponent {
         this.props.actions.setThreadFollow(currentUserId, rootId, !thread?.is_following);
     }
 
+    hasUnreadPost() {
+        return Boolean(
+            this.props.thread.last_viewed_at < this.props.thread.last_reply_at ||
+            this.props.thread.unread_mentions ||
+            this.props.thread.unread_replies,
+        );
+    }
+
     markThreadRead(hasNewPost = false) {
         if (
             this.props.collapsedThreadsEnabled &&
@@ -154,9 +178,7 @@ export default class ThreadBase extends PureComponent {
             this.props.thread.is_following &&
             (
                 hasNewPost ||
-                this.props.thread.last_viewed_at < this.props.thread.last_reply_at ||
-                this.props.thread.unread_mentions ||
-                this.props.thread.unread_replies
+                this.hasUnreadPost()
             )
         ) {
             this.props.actions.updateThreadRead(
@@ -209,9 +231,7 @@ export default class ThreadBase extends PureComponent {
     }
 
     bottomPaddingAnimation = (visible) => {
-        const [padding, duration] = visible ?
-            [TYPING_HEIGHT, 200] :
-            [0, 400];
+        const [padding, duration] = visible ? [TYPING_HEIGHT, 200] : [0, 400];
 
         return Animated.timing(this.bottomPadding, {
             toValue: padding,
