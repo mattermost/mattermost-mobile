@@ -18,16 +18,24 @@ type Props = {
     currentUserId: $ID<UserProfile>;
     userProfiles: UserProfile[];
     teammateNameDisplay: string;
+    listTitle?: JSX.Element;
     theme: Theme;
 }
 
-const ParticipantsList = ({currentUserId, teammateNameDisplay, theme, userProfiles}: Props) => {
+const ParticipantsList = ({currentUserId, teammateNameDisplay, theme, userProfiles, listTitle}: Props) => {
     const close = () => {
         dismissModal();
     };
 
     const renderHeader = () => {
         const style = getStyleSheet(theme);
+        if (listTitle) {
+            return (
+                <View style={style.header}>
+                    {listTitle}
+                </View>
+            );
+        }
         return (
             <View style={style.header}>
                 <FormattedText

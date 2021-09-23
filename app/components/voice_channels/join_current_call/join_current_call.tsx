@@ -5,10 +5,11 @@ import React from 'react';
 import {View, Text, Platform, Pressable} from 'react-native';
 import FontAwesome5Icon from 'react-native-vector-icons/FontAwesome5';
 
+import Avatars from '@components/avatars';
+import FormattedText from '@components/formatted_text';
 import {GenericAction} from '@mm-redux/types/actions';
-import {makeStyleSheetFromTheme} from '@utils/theme';
+import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
-import type {Channel} from '@mm-redux/types/channels';
 import type {Theme} from '@mm-redux/types/theme';
 import type {Call} from '@mm-redux/types/voiceCalls';
 
@@ -17,7 +18,6 @@ type Props = {
         joinCall: (channelId: string) => GenericAction;
     };
     theme: Theme;
-    channel: Channel;
     call: Call;
 }
 
@@ -57,9 +57,21 @@ const getStyleSheet = makeStyleSheetFromTheme((props: Props) => {
             fontSize: 16,
         },
         started: {
+            flex: 1,
             color: props.theme.sidebarText,
             fontWeight: '400',
             marginLeft: 10,
+        },
+        avatars: {
+            marginRight: 5,
+        },
+        headerText: {
+            color: changeOpacity(props.theme.centerChannelColor, 0.56),
+            fontSize: 12,
+            fontWeight: '600',
+            paddingHorizontal: 16,
+            paddingVertical: 0,
+            top: 16,
         },
     };
 });
@@ -82,6 +94,19 @@ const JoinCurrentCall = (props: Props) => {
                 />
                 <Text style={style.joinCall}>{'Join Call'}</Text>
                 <Text style={style.started}>{'Started X minutes ago'}</Text>
+                <View style={style.avatars}>
+                    <Avatars
+                        userIds={props.call.participants.map((x) => x.id)}
+                        breakAt={1}
+                        listTitle={
+                            <FormattedText
+                                id='voice_calls.join_call.participants_list_header'
+                                defaultMessage={'CALL PARTICIPANTS'}
+                                style={style.headerText}
+                            />
+                        }
+                    />
+                </View>
             </View>
         </Pressable>
     );
