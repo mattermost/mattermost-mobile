@@ -8,7 +8,7 @@ import {getCurrentTeamId} from '@mm-redux/selectors/entities/teams';
 import {PreferenceType} from '@mm-redux/types/preferences';
 import {GlobalState} from '@mm-redux/types/store';
 import {Theme} from '@mm-redux/types/theme';
-import {createShallowSelector} from '@mm-redux/utils/helpers';
+import {createShallowSelector, isMinimumServerVersion} from '@mm-redux/utils/helpers';
 import {getPreferenceKey} from '@mm-redux/utils/preference_utils';
 import {setThemeDefaults} from '@mm-redux/utils/theme_utils';
 
@@ -171,12 +171,10 @@ const defaultSidebarPrefs = {
 
 export const getSidebarPreferences = reselect.createSelector(
     (state: GlobalState) => {
-        const config = getConfig(state);
-        return config.ExperimentalGroupUnreadChannels !== General.DISABLED && getBool(
+        return getBool(
             state,
             Preferences.CATEGORY_SIDEBAR_SETTINGS,
             'show_unread_section',
-            config.ExperimentalGroupUnreadChannels === General.DEFAULT_ON,
         );
     },
     (state) => {
@@ -193,6 +191,7 @@ export const getSidebarPreferences = reselect.createSelector(
             // Support unread settings for old implementation
             sidebarPrefs = {
                 ...defaultSidebarPrefs,
+
                 unreads_at_top: showUnreadSection ? 'true' : 'false',
             };
         }
@@ -230,7 +229,8 @@ export const getNewSidebarPreference = reselect.createSelector(
 
 export function shouldAutocloseDMs(state: GlobalState) {
     const config = getConfig(state);
-    if (!config.CloseUnusedDirectMessages || config.CloseUnusedDirectMessages === 'false') {
+    const {serverVersion} = state.entities.general;
+    if ((!config.CloseUnusedDirectMessages || config.CloseUnusedDirectMessages === 'false') && !isMinimumServerVersion(serverVersion, 6)) {
         return false;
     }
 

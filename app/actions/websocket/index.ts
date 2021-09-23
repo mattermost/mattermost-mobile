@@ -27,6 +27,7 @@ import {getChannelSinceValue} from '@utils/channels';
 import websocketClient from '@websocket';
 
 import {handleRefreshAppsBindings} from './apps';
+import {handleSidebarCategoryCreated, handleSidebarCategoryDeleted, handleSidebarCategoryOrderUpdated, handleSidebarCategoryUpdated} from './categories';
 import {
     handleChannelConvertedEvent,
     handleChannelCreatedEvent,
@@ -408,9 +409,16 @@ function handleEvent(msg: WebSocketMessage) {
             return dispatch(handleThreadReadChanged(msg));
         case WebsocketEvents.THREAD_FOLLOW_CHANGED:
             return dispatch(handleThreadFollowChanged(msg));
-        case WebsocketEvents.APPS_FRAMEWORK_REFRESH_BINDINGS: {
+        case WebsocketEvents.APPS_FRAMEWORK_REFRESH_BINDINGS:
             return dispatch(handleRefreshAppsBindings());
-        }
+        case WebsocketEvents.SIDEBAR_CATEGORY_CREATED:
+            return dispatch(handleSidebarCategoryCreated(msg));
+        case WebsocketEvents.SIDEBAR_CATEGORY_UPDATED:
+            return dispatch(handleSidebarCategoryUpdated(msg));
+        case WebsocketEvents.SIDEBAR_CATEGORY_DELETED:
+            return dispatch(handleSidebarCategoryDeleted(msg));
+        case WebsocketEvents.SIDEBAR_CATEGORY_ORDER_UPDATED:
+            return dispatch(handleSidebarCategoryOrderUpdated(msg));
         }
 
         return {data: true};

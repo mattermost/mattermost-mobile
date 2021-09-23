@@ -1,6 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+/* eslint-disable max-lines */
 import assert from 'assert';
 
 import * as Selectors from '@mm-redux/selectors/entities/channels';
@@ -2711,12 +2712,11 @@ describe('Selectors.Channels.getSortedUnreadChannelIds', () => {
         assert.ok(fromOriginalState === fromModifiedState);
         assert.ok(fromMentionState !== fromModifiedState);
 
-        // channel3 and channel1 are above all others
-        // since default order is "alpha", channel3 with display_name "ABC" should come first
-        assert.ok(fromMentionState[0] === channel3.id);
+        // Recency by default, so channel1 first
+        assert.ok(fromMentionState[0] === channel1.id);
 
-        // followed by channel1 with display_name "DEF"
-        assert.ok(fromMentionState[1] === channel1.id);
+        // followed by channel3
+        assert.ok(fromMentionState[1] === channel3.id);
 
         const hasMentionMutedChannelState = {
             ...mentionState,

@@ -86,7 +86,10 @@ export {
 export {getChannelByNameAndTeamName, getChannel, autocompleteChannels} from '@mm-redux/actions/channels';
 
 export {doAppCall} from '@actions/apps';
-export {createCallRequest} from '@utils/apps';
+export {
+    createCallRequest,
+    filterEmptyOptions,
+} from '@utils/apps';
 
 export const getStore = () => Store.redux;
 
