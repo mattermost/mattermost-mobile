@@ -51,7 +51,7 @@ exports[`Global Thread Footer Should render for channel view and unfollow the th
   >
     2 replies
   </Text>
-  <TouchableOpacity
+  <ForwardRef
     onPress={[Function]}
     style={
       Object {
@@ -75,7 +75,7 @@ exports[`Global Thread Footer Should render for channel view and unfollow the th
     >
       Following
     </Text>
-  </TouchableOpacity>
+  </ForwardRef>
 </View>
 `;
 

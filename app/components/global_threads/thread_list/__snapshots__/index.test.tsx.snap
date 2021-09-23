@@ -86,62 +86,105 @@ exports[`Global Thread List Should render threads with functional tabs & mark al
     viewUnreadThreads={[MockFunction]}
     viewingUnreads={true}
   />
-  <FlatList
-    ListEmptyComponent={
-      <EmptyState
-        intl={
-          Object {
-            "defaultFormats": Object {},
-            "defaultLocale": "en",
-            "formatDate": [Function],
-            "formatHTMLMessage": [Function],
-            "formatMessage": [Function],
-            "formatNumber": [Function],
-            "formatPlural": [Function],
-            "formatRelative": [Function],
-            "formatTime": [Function],
-            "formats": Object {},
-            "formatters": Object {
-              "getDateTimeFormat": [Function],
-              "getMessageFormat": [Function],
-              "getNumberFormat": [Function],
-              "getPluralFormat": [Function],
-              "getRelativeFormat": [Function],
-            },
-            "locale": "en",
-            "messages": Object {},
-            "now": [Function],
-            "onError": [Function],
-            "textComponent": "span",
-            "timeZone": null,
+  <PostListRefreshControl
+    enabled={true}
+    isInverted={false}
+    onRefresh={[MockFunction]}
+    refreshing={false}
+    theme={
+      Object {
+        "awayIndicator": "#ffbc1f",
+        "buttonBg": "#1c58d9",
+        "buttonColor": "#ffffff",
+        "centerChannelBg": "#ffffff",
+        "centerChannelColor": "#3f4350",
+        "codeTheme": "github",
+        "dndIndicator": "#d24b4e",
+        "errorTextColor": "#d24b4e",
+        "linkColor": "#386fe5",
+        "mentionBg": "#ffffff",
+        "mentionColor": "#1e325c",
+        "mentionHighlightBg": "#ffd470",
+        "mentionHighlightLink": "#1b1d22",
+        "newMessageSeparator": "#cc8f00",
+        "onlineIndicator": "#3db887",
+        "sidebarBg": "#1e325c",
+        "sidebarHeaderBg": "#192a4d",
+        "sidebarHeaderTextColor": "#ffffff",
+        "sidebarTeamBarBg": "#14213e",
+        "sidebarText": "#ffffff",
+        "sidebarTextActiveBorder": "#5d89ea",
+        "sidebarTextActiveColor": "#ffffff",
+        "sidebarTextHoverBg": "#28427b",
+        "sidebarUnreadText": "#ffffff",
+        "type": "Denim",
+      }
+    }
+  >
+    <FlatList
+      ListEmptyComponent={
+        <EmptyState
+          intl={
+            Object {
+              "defaultFormats": Object {},
+              "defaultLocale": "en",
+              "formatDate": [Function],
+              "formatHTMLMessage": [Function],
+              "formatMessage": [Function],
+              "formatNumber": [Function],
+              "formatPlural": [Function],
+              "formatRelative": [Function],
+              "formatTime": [Function],
+              "formats": Object {},
+              "formatters": Object {
+                "getDateTimeFormat": [Function],
+                "getMessageFormat": [Function],
+                "getNumberFormat": [Function],
+                "getPluralFormat": [Function],
+                "getRelativeFormat": [Function],
+              },
+              "locale": "en",
+              "messages": Object {},
+              "now": [Function],
+              "onError": [Function],
+              "textComponent": "span",
+              "timeZone": null,
+            }
           }
+          isUnreads={true}
+        />
+      }
+      ListFooterComponent={null}
+      contentContainerStyle={
+        Object {
+          "flexGrow": 1,
         }
-        isUnreads={true}
-      />
-    }
-    ListFooterComponent={null}
-    contentContainerStyle={
-      Object {
-        "flexGrow": 1,
       }
-    }
-    data={
-      Array [
-        "thread1",
-      ]
-    }
-    initialNumToRender={10}
-    keyExtractor={[Function]}
-    numColumns={1}
-    onEndReached={[Function]}
-    onEndReachedThreshold={2}
-    removeClippedSubviews={true}
-    renderItem={[Function]}
-    scrollIndicatorInsets={
-      Object {
-        "right": 1,
+      data={
+        Array [
+          "thread1",
+        ]
       }
-    }
-  />
+      disableVirtualization={false}
+      horizontal={false}
+      initialNumToRender={10}
+      keyExtractor={[Function]}
+      maxToRenderPerBatch={10}
+      numColumns={1}
+      onEndReached={[Function]}
+      onEndReachedThreshold={2}
+      onScroll={[Function]}
+      removeClippedSubviews={true}
+      renderItem={[Function]}
+      scrollEventThrottle={50}
+      scrollIndicatorInsets={
+        Object {
+          "right": 1,
+        }
+      }
+      updateCellsBatchingPeriod={50}
+      windowSize={21}
+    />
+  </PostListRefreshControl>
 </View>
 `;
