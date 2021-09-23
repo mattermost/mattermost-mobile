@@ -457,6 +457,13 @@ export function showOverlay(name, passProps, options = {}) {
         overlay: {
             interceptTouchOutside: false,
         },
+        ...Platform.select({
+            android: {
+                statusBar: {
+                    drawBehind: true,
+                },
+            },
+        }),
     };
 
     Navigation.showOverlay({

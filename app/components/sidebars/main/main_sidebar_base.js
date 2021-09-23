@@ -56,7 +56,7 @@ export default class MainSidebarBase extends Component {
         this.props.actions.getTeams();
         EventEmitter.on(NavigationTypes.CLOSE_MAIN_SIDEBAR, this.closeMainSidebar);
         EventEmitter.on(WebsocketEvents.CHANNEL_UPDATED, this.handleUpdateTitle);
-        Dimensions.addEventListener('change', this.handleDimensions);
+        this.dimensionsListener = Dimensions.addEventListener('change', this.handleDimensions);
     }
 
     shouldComponentUpdate(nextProps, nextState) {
@@ -91,7 +91,7 @@ export default class MainSidebarBase extends Component {
         this.mounted = false;
         EventEmitter.off(NavigationTypes.CLOSE_MAIN_SIDEBAR, this.closeMainSidebar);
         EventEmitter.off(WebsocketEvents.CHANNEL_UPDATED, this.handleUpdateTitle);
-        Dimensions.removeEventListener('change', this.handleDimensions);
+        this.dimensionsListener?.remove();
     }
 
     drawerSwiperRef = (ref) => {

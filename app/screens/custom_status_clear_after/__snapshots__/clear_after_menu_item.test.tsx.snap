@@ -2,7 +2,7 @@
 
 exports[`screens/clear_after_menu_item should match snapshot 1`] = `
 <View>
-  <ForwardRef
+  <TouchableOpacity
     onPress={[Function]}
     testID="clear_after.menu_item."
   >
@@ -68,13 +68,13 @@ exports[`screens/clear_after_menu_item should match snapshot 1`] = `
         />
       </View>
     </View>
-  </ForwardRef>
+  </TouchableOpacity>
 </View>
 `;
 
 exports[`screens/clear_after_menu_item should match snapshot with separator and selected check 1`] = `
 <View>
-  <ForwardRef
+  <TouchableOpacity
     onPress={[Function]}
     testID="clear_after.menu_item."
   >
@@ -168,6 +168,6 @@ exports[`screens/clear_after_menu_item should match snapshot with separator and 
         }
       }
     />
-  </ForwardRef>
+  </TouchableOpacity>
 </View>
 `;
