@@ -107,7 +107,7 @@ export default class ThreadBase extends PureComponent {
             lastViewedAt: props.collapsedThreadsEnabled ? props.thread.last_viewed_at : props.myMember?.last_viewed_at,
         };
 
-        // If thread is opened with an unread, then skip upading the state's lastViewedAt to prevent it from hiding "New Messages" immediately after opening the thread
+        // If thread is opened with an unread, then skip updating the state's lastViewedAt to prevent it from hiding "New Messages" immediately after opening the thread
         this.skipUpdatingLastViewedAt = props.collapsedThreadsEnabled && this.hasUnreadPost();
 
         this.bottomPadding = new Animated.Value(0);
