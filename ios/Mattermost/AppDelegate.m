@@ -116,7 +116,7 @@ NSString* const NOTIFICATION_UPDATE_BADGE_ACTION = @"update_badge";
         NSString* pId = [[notificationContent userInfo] objectForKey:@"post_id"];
         NSString* rId = [[notificationContent userInfo] objectForKey:@"root_id"];
         if ([cId isEqualToString: channelId]) {
-          BOOL doesNotificationMatch;
+          BOOL doesNotificationMatch = true;
           if (isCRTEnabled) {
             // Check if it is a thread notification
             if (rootId != nil) {
@@ -125,9 +125,6 @@ NSString* const NOTIFICATION_UPDATE_BADGE_ACTION = @"update_badge";
               // With CRT ON, remove notifications without rootId
               doesNotificationMatch = rId == nil;
             }
-          } else {
-            // Default condition, without CRT
-            doesNotificationMatch = true;
           }
           if (doesNotificationMatch) {
             [notificationIds addObject:identifier];

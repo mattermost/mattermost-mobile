@@ -15,6 +15,7 @@ import androidx.annotation.Nullable;
 import androidx.core.app.NotificationCompat;
 import androidx.core.app.NotificationManagerCompat;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -150,6 +151,8 @@ public class CustomPushNotification extends PushNotification {
         int notificationId = CustomPushNotificationHelper.MESSAGE_NOTIFICATION_ID;
         if (postId != null) {
             notificationId = postId.hashCode();
+        } else if (channelId != null) {
+            notificationId = channelId.hashCode();
         }
 
         if (ackId != null) {
@@ -193,7 +196,7 @@ public class CustomPushNotification extends PushNotification {
                                 Map<String, Map<String, JSONObject>> notificationsInChannel = loadNotificationsMap(mContext);
                                 Map<String, JSONObject> notifications = notificationsInChannel.get(groupId);
                                 if (notifications == null) {
-                                    notifications = new HashMap<String, JSONObject>();
+                                    notifications = Collections.synchronizedMap(new HashMap<String, JSONObject>());
                                 }
 
                                 if (notifications.size() > 0) {
