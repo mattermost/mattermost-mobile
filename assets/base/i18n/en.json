@@ -771,5 +771,6 @@
   "voice_call.call_settings": "Call Settings",
   "voice_call.copy_call_link": "Copy call link",
   "voice_call.give_feedback": "Give Feedback",
+  "voice_calls.join_call.participants_list_header": "CALL PARTICIPANTS",
   "web.root.signup_info": "All team communication in one place, searchable and accessible anywhere"
 }
