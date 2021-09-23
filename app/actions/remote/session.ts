@@ -15,6 +15,7 @@ import {loginEntry} from './entry';
 import {logError} from './error';
 import {fetchDataRetentionPolicy} from './systems';
 
+import type ClientError from '@client/rest/error';
 import type {LoginArgs} from '@typings/database/database';
 
 const HTTP_UNAUTHORIZED = 401;
@@ -72,7 +73,7 @@ export const getSessions = async (serverUrl: string, currentUserId: string) => {
         return await client.getSessions(currentUserId);
     } catch (e) {
         logError(e);
-        await forceLogoutIfNecessary(serverUrl, e);
+        await forceLogoutIfNecessary(serverUrl, e as ClientError);
     }
 
     return undefined;
@@ -91,7 +92,7 @@ export const login = async (serverUrl: string, {ldapOnly = false, loginId, mfaTo
     try {
         client = NetworkManager.getClient(serverUrl);
     } catch (error) {
-        return {error, failed: true};
+        return {error: error as Error, failed: true};
     }
 
     try {
@@ -122,15 +123,15 @@ export const login = async (serverUrl: string, {ldapOnly = false, loginId, mfaTo
         const csrfToken = await getCSRFFromCookie(serverUrl);
         client.setCSRFToken(csrfToken);
     } catch (error) {
-        return {error, failed: true};
+        return {error: error as Error, failed: true};
     }
 
     try {
         const {error, hasTeams, time} = await loginEntry({serverUrl, user});
         completeLogin(serverUrl, user);
-        return {error, failed: false, hasTeams, time};
+        return {error: error as ClientError, failed: false, hasTeams, time};
     } catch (error) {
-        return {error, failed: false, time: 0};
+        return {error: error as ClientError, failed: false, time: 0};
     }
 };
 
@@ -184,7 +185,7 @@ export const ssoLogin = async (serverUrl: string, bearerToken: string, csrfToken
     try {
         client = NetworkManager.getClient(serverUrl);
     } catch (error) {
-        return {error, failed: true};
+        return {error: error as Error, failed: true};
     }
 
     client.setBearerToken(bearerToken);
@@ -210,14 +211,14 @@ export const ssoLogin = async (serverUrl: string, bearerToken: string, csrfToken
             prepareRecordsOnly: false,
         });
     } catch (e) {
-        return {error: e, failed: true};
+        return {error: e as ClientError, failed: true};
     }
 
     try {
         const {error, hasTeams, time} = await loginEntry({serverUrl, user, deviceToken});
         completeLogin(serverUrl, user);
-        return {error, failed: false, hasTeams, time};
+        return {error: error as ClientError, failed: false, hasTeams, time};
     } catch (error) {
-        return {error, failed: false, time: 0};
+        return {error: error as ClientError, failed: false, time: 0};
     }
 };

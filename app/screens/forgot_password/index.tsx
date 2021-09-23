@@ -47,7 +47,7 @@ const ForgotPassword = ({serverUrl, theme}: Props) => {
             setIsPasswordLinkSent(true);
         }
 
-        setError(apiError);
+        setError(apiError as string);
     };
 
     const onBlur = useCallback(() => {

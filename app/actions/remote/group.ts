@@ -127,7 +127,7 @@ export const fetchGroupsForTeam = async (serverUrl: string, teamId: string) => {
         }
         return null;
     } catch (error) {
-        forceLogoutIfNecessary(serverUrl, error);
+        forceLogoutIfNecessary(serverUrl, error as ClientErrorProps);
         return {error};
     }
 };

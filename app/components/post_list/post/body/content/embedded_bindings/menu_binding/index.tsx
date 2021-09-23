@@ -65,12 +65,12 @@ const MenuBinding = ({binding, currentTeamId, post, teamID, theme}: Props) => {
 
         const res = await doAppCall(serverUrl, call, AppCallTypes.SUBMIT, intl, theme);
         if (res.error) {
-            const errorResponse = res.error;
+            const errorResponse = res.error as AppCallResponse<unknown>;
             const errorMessage = errorResponse.error || intl.formatMessage({
                 id: 'apps.error.unknown',
                 defaultMessage: 'Unknown error occurred.',
             });
-            postEphemeralCallResponseForPost(serverUrl, res.error, errorMessage, post);
+            postEphemeralCallResponseForPost(serverUrl, errorResponse, errorMessage, post);
             return;
         }
 

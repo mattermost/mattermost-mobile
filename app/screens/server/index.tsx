@@ -28,6 +28,8 @@ import {preventDoubleTap} from '@utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {getServerUrlAfterRedirect, isValidUrl, sanitizeUrl} from '@utils/url';
 
+import type ClientError from '@client/rest/error';
+
 interface ServerProps extends LaunchProps {
     componentId: string;
     theme: Theme;
@@ -150,7 +152,7 @@ const Server: NavigationFunctionComponent = ({componentId, extra, launchType, la
                 const nurl = serverUrl.replace('https:', 'http:');
                 pingServer(nurl, false);
             } else {
-                setError(result.error);
+                setError(result.error as ClientError);
                 setConnecting(false);
             }
 
@@ -159,7 +161,7 @@ const Server: NavigationFunctionComponent = ({componentId, extra, launchType, la
 
         const data = await fetchConfigAndLicense(serverUrl);
         if (data.error) {
-            setError(data.error);
+            setError(data.error as ClientError);
             setConnecting(false);
             return;
         }

@@ -5,6 +5,7 @@ import React, {useCallback, useEffect, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
 import {
     ActivityIndicator,
+    EventSubscription,
     Image,
     Keyboard,
     KeyboardAvoidingView,
@@ -17,6 +18,7 @@ import Button from 'react-native-button';
 import {SafeAreaView} from 'react-native-safe-area-context';
 
 import {login} from '@actions/remote/session';
+import ClientError from '@client/rest/error';
 import ErrorText from '@components/error_text';
 import FormattedText from '@components/formatted_text';
 import {t} from '@i18n';
@@ -48,12 +50,13 @@ const MFA = ({config, goToChannel, license, loginId, password, serverUrl, theme}
     }, []);
 
     useEffect(() => {
+        let listener: undefined | EventSubscription;
         if (Platform.OS === 'android') {
-            Keyboard.addListener('keyboardDidHide', onBlur);
+            listener = Keyboard.addListener('keyboardDidHide', onBlur);
         }
         return () => {
-            if (Platform.OS === 'android') {
-                Keyboard.removeListener('keyboardDidHide', onBlur);
+            if (listener) {
+                listener.remove();
             }
         };
     }, []);
@@ -83,7 +86,7 @@ const MFA = ({config, goToChannel, license, loginId, password, serverUrl, theme}
                 return;
             }
 
-            if (result.error.intl) {
+            if (result.error instanceof ClientError && result.error.intl) {
                 setError(intl.formatMessage({id: result.error.intl.id, defaultMessage: result.error.intl.defaultMessage}, result.error.intl.values));
                 return;
             }
