@@ -11,11 +11,11 @@ export default class ChannelDisplayName extends PureComponent {
     static propTypes = {
         displayName: PropTypes.string,
         theme: PropTypes.object.isRequired,
-        channelTeamName: PropTypes.string,
+        teamName: PropTypes.string,
     };
 
     render() {
-        const {displayName, theme, channelTeamName} = this.props;
+        const {displayName, theme, teamName} = this.props;
         const styles = getStyleFromTheme(theme);
 
         return (
@@ -24,13 +24,13 @@ export default class ChannelDisplayName extends PureComponent {
                     style={styles.channelName}
                     numberOfLines={1}
                 >{displayName}</Text>
-                {Boolean(channelTeamName) &&
+                {Boolean(teamName) &&
                 <>
                     <View style={styles.separator}/>
                     <Text
                         style={styles.teamName}
                         numberOfLines={1}
-                    >{channelTeamName}</Text>
+                    >{teamName}</Text>
                 </>
                 }
             </View>

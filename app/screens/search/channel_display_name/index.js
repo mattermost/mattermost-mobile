@@ -17,19 +17,19 @@ export function makeMapStateToProps() {
     return (state, ownProps) => {
         const post = getPost(state, ownProps.postId);
         const channel = post ? getChannel(state, {id: post.channel_id}) : null;
-        let channelTeamName = '';
+        let teamName = '';
         if (channel) {
             const isDMorGM = channel.type === General.DM_CHANNEL || channel.type === General.GM_CHANNEL;
             const memberships = getTeamMemberships(state);
             if (!isDMorGM && memberships && Object.values(memberships).length > 1) {
-                channelTeamName = getTeam(state, channel.team_id)?.display_name;
+                teamName = getTeam(state, channel.team_id)?.display_name;
             }
         }
 
         return {
             displayName: channel ? channel.display_name : '',
             theme: getTheme(state),
-            channelTeamName,
+            teamName,
         };
     };
 }

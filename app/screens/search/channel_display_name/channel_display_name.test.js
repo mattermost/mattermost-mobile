@@ -11,7 +11,7 @@ import ChannelDisplayName from './channel_display_name';
 describe('SearchResultPost', () => {
     const baseProps = {
         displayName: 'channel',
-        channelTeamName: '',
+        teamName: '',
         theme: Preferences.THEMES.denim,
     };
 
@@ -24,7 +24,7 @@ describe('SearchResultPost', () => {
     test('should match snapshot when team is provided', async () => {
         const props = {
             ...baseProps,
-            channelTeamName: 'team',
+            teamName: 'team',
         };
         const wrapper = shallow(<ChannelDisplayName {...props}/>);
 

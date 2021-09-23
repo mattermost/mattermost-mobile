@@ -111,7 +111,7 @@ describe('components/SearchResultsItem/WithStore', () => {
 
     test('should not show team name if user only belongs to one team', () => {
         const newProps = mstp(defaultState, defaultProps);
-        expect(newProps.channelTeamName).toBe('');
+        expect(newProps.teamName).toBe('');
     });
 
     test('should show team name for open and private channels when user belongs to more than one team', () => {
@@ -129,7 +129,7 @@ describe('components/SearchResultsItem/WithStore', () => {
             },
         };
         let newProps = mstp(state, defaultProps);
-        expect(newProps.channelTeamName).toBe(team.display_name);
+        expect(newProps.teamName).toBe(team.display_name);
 
         state = {
             ...state,
@@ -149,7 +149,7 @@ describe('components/SearchResultsItem/WithStore', () => {
         };
 
         newProps = mstp(state, defaultProps);
-        expect(newProps.channelTeamName).toBe(team.display_name);
+        expect(newProps.teamName).toBe(team.display_name);
     });
 
     test('should not show team name for dm and group channels when user belongs to more than one team', () => {
@@ -178,7 +178,7 @@ describe('components/SearchResultsItem/WithStore', () => {
         };
 
         let newProps = mstp(state, defaultProps);
-        expect(newProps.channelTeamName).toBe('');
+        expect(newProps.teamName).toBe('');
 
         state = {
             ...state,
@@ -197,6 +197,6 @@ describe('components/SearchResultsItem/WithStore', () => {
             },
         };
         newProps = mstp(state, defaultProps);
-        expect(newProps.channelTeamName).toBe('');
+        expect(newProps.teamName).toBe('');
     });
 });
