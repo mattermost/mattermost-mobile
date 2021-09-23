@@ -109,7 +109,7 @@ public class CustomPushNotification extends PushNotification {
             final NotificationManagerCompat notificationManager = NotificationManagerCompat.from(context);
 
             // rootId is available only when CRT is enabled & clearing the thread
-            final boolean isClearThread = !android.text.TextUtils.isEmpty(rootId);
+            final boolean isClearThread = isCRTEnabled && !android.text.TextUtils.isEmpty(rootId);
             
             Map<String, Map<String, JSONObject>> notificationsInChannel = loadNotificationsMap(context);
             String groupId = isClearThread ? rootId : channelId;
