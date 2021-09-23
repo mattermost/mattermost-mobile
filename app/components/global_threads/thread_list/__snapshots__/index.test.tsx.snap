@@ -145,6 +145,8 @@ exports[`Global Thread List Should render threads with functional tabs & mark al
             "#3f4350",
           ]
         }
+        onRefresh={[MockFunction]}
+        refreshing={false}
         tintColor="#3f4350"
       />
     }
