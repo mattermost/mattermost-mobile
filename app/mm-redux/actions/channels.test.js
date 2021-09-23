@@ -1,6 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+/* eslint-disable max-lines */
 import assert from 'assert';
 
 import nock from 'nock';
@@ -27,6 +28,12 @@ describe('Actions.Channels', () => {
             entities: {
                 users: {
                     currentUserId: TestHelper.basicUser.id,
+                },
+                general: {
+                    config: {
+                        EnableLegacySidebar: 'true',
+                    },
+                    serverVersion: '5.30.0',
                 },
             },
         };

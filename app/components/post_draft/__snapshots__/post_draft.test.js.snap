@@ -68,7 +68,9 @@ exports[`PostDraft Should render the Archived for channelIsArchived 1`] = `
   <View
     accessibilityRole="button"
     accessible={true}
+    collapsable={false}
     focusable={true}
+    nativeID="animatedComponent"
     onClick={[Function]}
     onResponderGrant={[Function]}
     onResponderMove={[Function]}
@@ -172,7 +174,9 @@ exports[`PostDraft Should render the Archived for deactivatedChannel 1`] = `
   <View
     accessibilityRole="button"
     accessible={true}
+    collapsable={false}
     focusable={true}
+    nativeID="animatedComponent"
     onClick={[Function]}
     onResponderGrant={[Function]}
     onResponderMove={[Function]}
@@ -213,6 +217,8 @@ exports[`PostDraft Should render the DraftInput 1`] = `
   inverted={false}
 >
   <View
+    collapsable={false}
+    nativeID="animatedComponent"
     style={
       Object {
         "bottom": 0,
@@ -279,7 +285,6 @@ exports[`PostDraft Should render the DraftInput 1`] = `
     >
       <View>
         <TextInput
-          allowFontScaling={true}
           autoCompleteType="off"
           blurOnSubmit={false}
           disableFullscreenUI={true}
@@ -292,7 +297,6 @@ exports[`PostDraft Should render the DraftInput 1`] = `
           onSelectionChange={[Function]}
           placeholder="Write to "
           placeholderTextColor="rgba(63,67,80,0.5)"
-          rejectResponderTermination={true}
           screenId="NavigationScreen1"
           style={
             Object {
@@ -319,8 +323,10 @@ exports[`PostDraft Should render the DraftInput 1`] = `
           }
         >
           <View
+            collapsable={false}
             forwardedRef={[Function]}
             isInteraction={true}
+            nativeID="animatedComponent"
             style={
               Object {
                 "display": "flex",
@@ -349,8 +355,10 @@ exports[`PostDraft Should render the DraftInput 1`] = `
             </RCTScrollView>
           </View>
           <View
+            collapsable={false}
             forwardedRef={[Function]}
             isInteraction={true}
+            nativeID="animatedComponent"
             style={
               Object {
                 "height": 0,
@@ -391,7 +399,9 @@ exports[`PostDraft Should render the DraftInput 1`] = `
           >
             <View
               accessible={true}
+              collapsable={false}
               focusable={true}
+              nativeID="animatedComponent"
               onClick={[Function]}
               onResponderGrant={[Function]}
               onResponderMove={[Function]}
@@ -417,7 +427,9 @@ exports[`PostDraft Should render the DraftInput 1`] = `
             </View>
             <View
               accessible={true}
+              collapsable={false}
               focusable={true}
+              nativeID="animatedComponent"
               onClick={[Function]}
               onResponderGrant={[Function]}
               onResponderMove={[Function]}
@@ -443,7 +455,9 @@ exports[`PostDraft Should render the DraftInput 1`] = `
             </View>
             <View
               accessible={true}
+              collapsable={false}
               focusable={true}
+              nativeID="animatedComponent"
               onClick={[Function]}
               onResponderGrant={[Function]}
               onResponderMove={[Function]}
@@ -469,7 +483,9 @@ exports[`PostDraft Should render the DraftInput 1`] = `
             </View>
             <View
               accessible={true}
+              collapsable={false}
               focusable={true}
+              nativeID="animatedComponent"
               onClick={[Function]}
               onResponderGrant={[Function]}
               onResponderMove={[Function]}
@@ -495,7 +511,9 @@ exports[`PostDraft Should render the DraftInput 1`] = `
             </View>
             <View
               accessible={true}
+              collapsable={false}
               focusable={true}
+              nativeID="animatedComponent"
               onClick={[Function]}
               onResponderGrant={[Function]}
               onResponderMove={[Function]}

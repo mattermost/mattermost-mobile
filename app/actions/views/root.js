@@ -97,6 +97,7 @@ export function loadFromPushNotification(notification, isInitialNotification) {
         }
 
         dispatch(handleSelectTeamAndChannel(teamId, channelId));
+        dispatch(selectPost(''));
 
         const {root_id: rootId} = notification.payload || {};
         if (isCollapsedThreadsEnabled(state) && rootId) {

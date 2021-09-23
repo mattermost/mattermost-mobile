@@ -104,7 +104,6 @@ const ClientUsers = (superclass: any) => class extends superclass {
 
     getKnownUsers = async () => {
         analytics.trackAPI('api_get_known_users');
-
         return this.doFetch(
             `${this.getUsersRoute()}/known`,
             {method: 'get'},

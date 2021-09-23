@@ -169,7 +169,6 @@ class Option extends React.PureComponent<OptionProps, OptionState> {
                     action={this.onPress}
                     defaultMessage={binding.label}
                     theme={theme}
-                    textId={binding.app_id + binding.location}
                     image={binding.icon ? {uri: binding.icon} : null}
                 />
             </>

@@ -17,6 +17,7 @@ describe('Uploads', () => {
         handleRemoveLastFile: jest.fn(),
         initUploadFiles: jest.fn(),
         maxFileSize: 100,
+        maxFileCount: 10,
         screenId: 'Channel',
         theme: Preferences.THEMES.denim,
     };

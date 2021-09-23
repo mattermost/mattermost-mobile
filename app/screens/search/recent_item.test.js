@@ -26,10 +26,10 @@ describe('Search RecentItem', () => {
         );
 
         expect(wrapper).toMatchSnapshot();
-        wrapper.find('ForwardRef').first().props().onPress();
+        wrapper.find('TouchableHighlight').first().props().onPress();
         expect(baseProps.setRecentValue).toHaveBeenCalledTimes(1);
         expect(baseProps.setRecentValue).toHaveBeenCalledWith(item);
-        wrapper.find('ForwardRef').at(1).props().onPress();
+        wrapper.find('TouchableOpacity').first().props().onPress();
         expect(baseProps.setRecentValue).toHaveBeenCalledTimes(1);
         expect(baseProps.setRecentValue).toHaveBeenCalledWith(item);
     });
