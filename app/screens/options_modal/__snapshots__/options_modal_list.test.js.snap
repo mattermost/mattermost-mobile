@@ -66,7 +66,7 @@ exports[`OptionModalList should match snapshot 1`] = `
         </Text>
       </View>
       <View>
-        <ForwardRef
+        <TouchableOpacity
           onPress={[Function]}
           style={
             Object {
@@ -107,10 +107,10 @@ exports[`OptionModalList should match snapshot 1`] = `
               ]
             }
           />
-        </ForwardRef>
+        </TouchableOpacity>
       </View>
       <View>
-        <ForwardRef
+        <TouchableOpacity
           onPress={[Function]}
           style={
             Object {
@@ -151,7 +151,7 @@ exports[`OptionModalList should match snapshot 1`] = `
               ]
             }
           />
-        </ForwardRef>
+        </TouchableOpacity>
       </View>
     </View>
   </View>

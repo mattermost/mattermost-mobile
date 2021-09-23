@@ -103,7 +103,7 @@ describe('components/autocomplete/app_slash_suggestion', () => {
         expect(wrapper.state('dataSource')).toEqual([]);
     });
 
-    test('should show commands from app sub commands', async (done) => {
+    test('should show commands from app sub commands', (done?: jest.DoneCallback) => {
         const props: Props = {
             ...baseProps,
         };
@@ -126,7 +126,9 @@ describe('components/autocomplete/app_slash_suggestion', () => {
 
         setTimeout(() => {
             expect(wrapper.state('dataSource')).toEqual(expected);
-            done();
+            if (done) {
+                done();
+            }
         });
     });
 

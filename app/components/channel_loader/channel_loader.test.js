@@ -23,6 +23,8 @@ describe('ChannelLoader', () => {
 
     test('should call setTimeout and setInterval for showIndicator and retryLoad on mount', () => {
         shallow(<ChannelLoader {...baseProps}/>);
+        const setTimeout = jest.spyOn(global, 'setTimeout');
+        const setInterval = jest.spyOn(global, 'setInterval');
         expect(setTimeout).not.toHaveBeenCalled();
         expect(setInterval).not.toHaveBeenCalled();
 
@@ -42,6 +44,8 @@ describe('ChannelLoader', () => {
             retryLoad: jest.fn(),
         };
         const wrapper = shallow(<ChannelLoader {...props}/>);
+        const clearTimeout = jest.spyOn(global, 'clearTimeout');
+        const clearInterval = jest.spyOn(global, 'clearInterval');
         const instance = wrapper.instance();
         instance.componentWillUnmount();
 

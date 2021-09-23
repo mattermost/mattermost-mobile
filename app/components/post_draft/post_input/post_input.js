@@ -62,10 +62,10 @@ export default class PostInput extends PureComponent {
         const event = this.props.rootId ? INSERT_TO_COMMENT : INSERT_TO_DRAFT;
         EventEmitter.on(event, this.handleInsertTextToDraft);
         EventEmitter.on(NavigationTypes.BLUR_POST_DRAFT, this.blur);
-        AppState.addEventListener('change', this.handleAppStateChange);
+        this.appStateListener = AppState.addEventListener('change', this.handleAppStateChange);
 
         if (Platform.OS === 'android') {
-            Keyboard.addListener('keyboardDidHide', this.handleAndroidKeyboard);
+            this.keyboardListener = Keyboard.addListener('keyboardDidHide', this.handleAndroidKeyboard);
         }
     }
 
@@ -73,10 +73,10 @@ export default class PostInput extends PureComponent {
         const event = this.props.rootId ? INSERT_TO_COMMENT : INSERT_TO_DRAFT;
         EventEmitter.off(NavigationTypes.BLUR_POST_DRAFT, this.blur);
         EventEmitter.off(event, this.handleInsertTextToDraft);
-        AppState.removeEventListener('change', this.handleAppStateChange);
+        this.appStateListener.remove();
 
         if (Platform.OS === 'android') {
-            Keyboard.removeListener('keyboardDidHide', this.handleAndroidKeyboard);
+            this.keyboardListener?.remove();
         }
 
         this.changeDraft(this.getValue());

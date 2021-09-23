@@ -1,7 +1,7 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`Search RecentItem should match snapshot and respond to events 1`] = `
-<ForwardRef
+<TouchableHighlight
   onPress={[Function]}
   underlayColor="rgba(40,66,123,0.5)"
 >
@@ -80,5 +80,5 @@ exports[`Search RecentItem should match snapshot and respond to events 1`] = `
       </Text>
     </View>
   </View>
-</ForwardRef>
+</TouchableHighlight>
 `;
