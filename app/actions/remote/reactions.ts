@@ -42,7 +42,7 @@ export const addReaction = async (serverUrl: string, postId: string, emojiName: 
 
         return {reaction};
     } catch (error) {
-        forceLogoutIfNecessary(serverUrl, error);
+        forceLogoutIfNecessary(serverUrl, error as ClientErrorProps);
         return {error};
     }
 };
@@ -79,7 +79,7 @@ export const removeReaction = async (serverUrl: string, postId: string, emojiNam
 
         return {reaction};
     } catch (error) {
-        forceLogoutIfNecessary(serverUrl, error);
+        forceLogoutIfNecessary(serverUrl, error as ClientErrorProps);
         return {error};
     }
 };

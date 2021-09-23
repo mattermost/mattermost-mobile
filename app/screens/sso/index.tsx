@@ -5,6 +5,7 @@ import {useManagedConfig} from '@mattermost/react-native-emm';
 import React, {useState} from 'react';
 
 import {ssoLogin} from '@actions/remote/session';
+import ClientError from '@client/rest/error';
 import {SSO as SSOEnum} from '@constants';
 import {resetToChannel} from '@screens/navigation';
 import {isMinimumServerVersion} from '@utils/helpers';
@@ -57,7 +58,7 @@ const SSO = ({config, extra, launchError, launchType, serverUrl, ssoType, theme}
             break;
     }
 
-    const onLoadEndError = (e: ClientErrorProps | string) => {
+    const onLoadEndError = (e: ClientErrorProps | Error | string) => {
         console.warn('Failed to set store from local data', e); // eslint-disable-line no-console
         if (typeof e === 'string') {
             setLoginError(e);
@@ -65,7 +66,7 @@ const SSO = ({config, extra, launchError, launchType, serverUrl, ssoType, theme}
         }
 
         let errorMessage = e.message;
-        if (e.url) {
+        if (e instanceof ClientError && e.url) {
             errorMessage += `\nURL: ${e.url}`;
         }
         setLoginError(errorMessage);

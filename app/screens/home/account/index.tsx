@@ -2,28 +2,45 @@
 // See LICENSE.txt for license information.
 
 import {useRoute} from '@react-navigation/native';
-import React from 'react';
+import React, {useCallback, useState} from 'react';
 import {Text} from 'react-native';
-import Animated, {AnimatedLayout, FadeInLeft, FadeInRight} from 'react-native-reanimated';
+import Animated, {useAnimatedStyle, withTiming} from 'react-native-reanimated';
 import {SafeAreaView} from 'react-native-safe-area-context';
 
 const AccountScreen = () => {
     const route = useRoute();
     const params = route.params! as {direction: string};
-    const entering = params.direction === 'left' ? FadeInLeft : FadeInRight;
+    const toLeft = params.direction === 'left';
+    const [start, setStart] = useState(false);
+
+    const onLayout = useCallback(() => {
+        setStart(true);
+    }, []);
+
+    const animated = useAnimatedStyle(() => {
+        if (start) {
+            return {
+                opacity: withTiming(1, {duration: 150}),
+                transform: [{translateX: withTiming(0, {duration: 150})}],
+            };
+        }
+
+        return {
+            opacity: withTiming(0, {duration: 150}),
+            transform: [{translateX: withTiming(toLeft ? -25 : 25, {duration: 150})}],
+        };
+    }, [start]);
 
     return (
         <SafeAreaView
             style={{flex: 1, backgroundColor: 'green'}}
         >
-            <AnimatedLayout style={{flex: 1}}>
-                <Animated.View
-                    entering={entering.duration(150)}
-                    style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}
-                >
-                    <Text style={{fontSize: 20, color: '#fff'}}>{'Account Screen'}</Text>
-                </Animated.View>
-            </AnimatedLayout>
+            <Animated.View
+                onLayout={onLayout}
+                style={[{flex: 1, justifyContent: 'center', alignItems: 'center'}, animated]}
+            >
+                <Text style={{fontSize: 20, color: '#fff'}}>{'Account Screen'}</Text>
+            </Animated.View>
         </SafeAreaView>
     );
 };

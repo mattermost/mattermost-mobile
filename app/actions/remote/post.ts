@@ -15,7 +15,7 @@ import {forceLogoutIfNecessary} from './session';
 import type {Client} from '@client/rest';
 
 type PostsRequest = {
-    error?: never;
+    error?: unknown;
     order?: string[];
     posts?: Post[];
     previousPostId?: string;
@@ -110,7 +110,7 @@ export const fetchPosts = async (serverUrl: string, channelId: string, page = 0,
         const data = await client.getPosts(channelId, page, perPage);
         return processPostsFetched(serverUrl, ActionType.POSTS.RECEIVED_IN_CHANNEL, data, fetchOnly);
     } catch (error) {
-        forceLogoutIfNecessary(serverUrl, error);
+        forceLogoutIfNecessary(serverUrl, error as ClientErrorProps);
         return {error};
     }
 };
@@ -127,7 +127,7 @@ export const fetchPostsSince = async (serverUrl: string, channelId: string, sinc
         const data = await client.getPostsSince(channelId, since);
         return processPostsFetched(serverUrl, ActionType.POSTS.RECEIVED_SINCE, data, fetchOnly);
     } catch (error) {
-        forceLogoutIfNecessary(serverUrl, error);
+        forceLogoutIfNecessary(serverUrl, error as ClientErrorProps);
         return {error};
     }
 };
@@ -198,7 +198,7 @@ export const fetchPostAuthors = async (serverUrl: string, posts: Post[], fetchOn
 
         return {authors: [] as UserProfile[]};
     } catch (error) {
-        forceLogoutIfNecessary(serverUrl, error);
+        forceLogoutIfNecessary(serverUrl, error as ClientErrorProps);
         return {error};
     }
 };
@@ -230,7 +230,7 @@ export const postActionWithCookie = async (serverUrl: string, postId: string, ac
 
         return {data};
     } catch (error) {
-        forceLogoutIfNecessary(serverUrl, error);
+        forceLogoutIfNecessary(serverUrl, error as ClientErrorProps);
         return {error};
     }
 };

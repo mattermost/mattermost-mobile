@@ -8,7 +8,7 @@ import {forceLogoutIfNecessary} from './session';
 
 export type MyPreferencesRequest = {
     preferences?: PreferenceType[];
-    error?: never;
+    error?: unknown;
 }
 
 export const fetchMyPreferences = async (serverUrl: string, fetchOnly = false): Promise<MyPreferencesRequest> => {
@@ -34,7 +34,7 @@ export const fetchMyPreferences = async (serverUrl: string, fetchOnly = false): 
 
         return {preferences};
     } catch (error) {
-        forceLogoutIfNecessary(serverUrl, error);
+        forceLogoutIfNecessary(serverUrl, error as ClientErrorProps);
         return {error};
     }
 };

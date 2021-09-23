@@ -4,7 +4,7 @@
 import {Q} from '@nozbe/watermelondb';
 import withObservables from '@nozbe/with-observables';
 import React, {ComponentType, createContext, useEffect} from 'react';
-import {Appearance} from 'react-native';
+import {Appearance, EventSubscription} from 'react-native';
 
 import {Preferences} from '@constants';
 import {MM_TABLES, SYSTEM_IDENTIFIERS} from '@constants/database';
@@ -59,9 +59,10 @@ const ThemeProvider = ({currentTeamId, children, themes}: Props) => {
     };
 
     useEffect(() => {
-        Appearance.addChangeListener(getTheme);
+        // @ts-expect-error ts module not yet updated
+        const listener = Appearance.addChangeListener(getTheme) as EventSubscription;
 
-        return () => Appearance.removeChangeListener(getTheme);
+        return () => listener.remove();
     }, []);
 
     return (<Provider value={getTheme()}>{children}</Provider>);

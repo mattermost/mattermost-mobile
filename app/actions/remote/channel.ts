@@ -17,7 +17,7 @@ import type {Model} from '@nozbe/watermelondb';
 export type MyChannelsRequest = {
     channels?: Channel[];
     memberships?: ChannelMembership[];
-    error?: never;
+    error?: unknown;
 }
 
 export const addMembersToChannel = async (serverUrl: string, channelId: string, userIds: string[], postRootId = '', fetchOnly = false) => {
@@ -46,7 +46,7 @@ export const addMembersToChannel = async (serverUrl: string, channelId: string, 
         }
         return {channelMemberships};
     } catch (error) {
-        forceLogoutIfNecessary(serverUrl, error);
+        forceLogoutIfNecessary(serverUrl, error as ClientErrorProps);
         return {error};
     }
 };
@@ -71,7 +71,7 @@ export const fetchChannelByName = async (serverUrl: string, teamId: string, chan
 
         return {channel};
     } catch (error) {
-        forceLogoutIfNecessary(serverUrl, error);
+        forceLogoutIfNecessary(serverUrl, error as ClientErrorProps);
         return {error};
     }
 };
@@ -127,7 +127,7 @@ export const fetchMyChannelsForTeam = async (serverUrl: string, teamId: string, 
 
         return {channels, memberships};
     } catch (error) {
-        forceLogoutIfNecessary(serverUrl, error);
+        forceLogoutIfNecessary(serverUrl, error as ClientErrorProps);
         return {error};
     }
 };
@@ -194,7 +194,7 @@ export const joinChannel = async (serverUrl: string, userId: string, teamId: str
             }
         }
     } catch (error) {
-        forceLogoutIfNecessary(serverUrl, error);
+        forceLogoutIfNecessary(serverUrl, error as ClientErrorProps);
         return {error};
     }
 

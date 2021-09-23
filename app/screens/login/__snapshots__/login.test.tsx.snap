@@ -77,7 +77,6 @@ exports[`Login Login screen should match snapshot 1`] = `
         }
       />
       <TextInput
-        allowFontScaling={true}
         autoCapitalize="none"
         autoCorrect={false}
         blurOnSubmit={false}
@@ -87,7 +86,6 @@ exports[`Login Login screen should match snapshot 1`] = `
         onSubmitEditing={[Function]}
         placeholder="Email or Username"
         placeholderTextColor="rgba(63,67,80,0.5)"
-        rejectResponderTermination={true}
         returnKeyType="next"
         style={
           Object {
@@ -108,7 +106,6 @@ exports[`Login Login screen should match snapshot 1`] = `
         value=""
       />
       <TextInput
-        allowFontScaling={true}
         autoCapitalize="none"
         autoCorrect={false}
         disableFullscreenUI={true}
@@ -116,7 +113,6 @@ exports[`Login Login screen should match snapshot 1`] = `
         onSubmitEditing={[Function]}
         placeholder="Password"
         placeholderTextColor="rgba(63,67,80,0.5)"
-        rejectResponderTermination={true}
         returnKeyType="go"
         secureTextEntry={true}
         style={
@@ -140,7 +136,9 @@ exports[`Login Login screen should match snapshot 1`] = `
       <View
         accessibilityRole="button"
         accessible={true}
+        collapsable={false}
         focusable={true}
+        nativeID="animatedComponent"
         onClick={[Function]}
         onResponderGrant={[Function]}
         onResponderMove={[Function]}
@@ -180,7 +178,9 @@ exports[`Login Login screen should match snapshot 1`] = `
       <View
         accessibilityRole="button"
         accessible={true}
+        collapsable={false}
         focusable={true}
+        nativeID="animatedComponent"
         onClick={[Function]}
         onResponderGrant={[Function]}
         onResponderMove={[Function]}
