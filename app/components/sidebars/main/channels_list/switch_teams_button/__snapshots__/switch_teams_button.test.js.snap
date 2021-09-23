@@ -4,7 +4,7 @@ exports[`SwitchTeamsButton should match snapshot 1`] = `
 <View
   testID="main.sidebar.channels_list.switch_teams.button"
 >
-  <ForwardRef
+  <TouchableHighlight
     onPress={[Function]}
     underlayColor="rgba(25,42,77,0.5)"
   >
@@ -59,7 +59,7 @@ exports[`SwitchTeamsButton should match snapshot 1`] = `
         testID="main.sidebar.channels_list.switch_teams.button.team_icon"
       />
     </View>
-  </ForwardRef>
+  </TouchableHighlight>
   <Badge
     containerStyle={
       Object {

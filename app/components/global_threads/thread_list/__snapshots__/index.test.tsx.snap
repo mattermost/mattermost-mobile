@@ -130,24 +130,18 @@ exports[`Global Thread List Should render threads with functional tabs & mark al
         "thread1",
       ]
     }
-    disableVirtualization={false}
-    horizontal={false}
     initialNumToRender={10}
     keyExtractor={[Function]}
-    maxToRenderPerBatch={10}
     numColumns={1}
     onEndReached={[Function]}
     onEndReachedThreshold={2}
     removeClippedSubviews={true}
     renderItem={[Function]}
-    scrollEventThrottle={50}
     scrollIndicatorInsets={
       Object {
         "right": 1,
       }
     }
-    updateCellsBatchingPeriod={50}
-    windowSize={21}
   />
 </View>
 `;

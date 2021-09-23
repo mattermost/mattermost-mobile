@@ -26,6 +26,7 @@ describe('ChannelBase', () => {
         },
         componentId: channelBaseComponentId,
         theme: Preferences.THEMES.denim,
+        collapsedThreadsEnabled: false,
     };
     const optionsForTheme = (theme) => {
         return {
