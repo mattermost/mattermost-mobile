@@ -147,8 +147,9 @@ const Login: NavigationFunctionComponent = ({config, extra, launchError, launchT
 
     const checkLoginResponse = (data: LoginActionResponse) => {
         let errorId = '';
-        if (typeof data.error === 'object' && data.error.server_error_id) {
-            errorId = data.error.server_error_id;
+        const clientError = data.error as ClientErrorProps;
+        if (clientError && clientError.server_error_id) {
+            errorId = clientError.server_error_id;
         }
 
         if (data.failed && MFA_EXPECTED_ERRORS.includes(errorId)) {
@@ -174,12 +175,12 @@ const Login: NavigationFunctionComponent = ({config, extra, launchError, launchT
         goToScreen(screen, title, {goToChannel, loginId, password, config, license, serverUrl, theme});
     };
 
-    const getLoginErrorMessage = (loginError: string | ClientErrorProps) => {
+    const getLoginErrorMessage = (loginError: string | ClientErrorProps | Error) => {
         if (typeof loginError === 'string') {
             return loginError;
         }
 
-        return getServerErrorForLogin(loginError);
+        return getServerErrorForLogin(loginError as ClientErrorProps);
     };
 
     const getServerErrorForLogin = (serverError?: ClientErrorProps) => {
