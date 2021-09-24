@@ -8,6 +8,7 @@ import {CustomStatusDuration} from './custom_status';
 import Database from './database';
 import DeepLink from './deep_linking';
 import Device from './device';
+import Emoji from './emoji';
 import Files from './files';
 import General from './general';
 import List from './list';
@@ -29,6 +30,7 @@ export {
     Database,
     DeepLink,
     Device,
+    Emoji,
     Files,
     General,
     List,

@@ -23,10 +23,13 @@ export const prepareMyPreferences = (operator: ServerDataOperator, preferences: 
 };
 
 export const queryPreferencesByCategoryAndName = (database: Database, category: string, name: string) => {
-    return database.get(MM_TABLES.SERVER.PREFERENCE).query(
-        Q.where('category', category),
-        Q.where('name', name),
-    ).fetch() as Promise<PreferenceModel[]>;
+    return database.
+        get(MM_TABLES.SERVER.PREFERENCE).
+        query(
+            Q.where('category', category),
+            Q.where('name', name),
+        ).
+        fetch() as Promise<PreferenceModel[]>;
 };
 
 export const queryThemeForCurrentTeam = async (database: Database) => {

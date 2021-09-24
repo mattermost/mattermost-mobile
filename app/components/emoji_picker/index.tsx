@@ -1,6 +1,5 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
-/* eslint-disable max-lines */
 
 import Fuse from 'fuse.js';
 import React, {PureComponent} from 'react';
@@ -8,10 +7,13 @@ import {injectIntl, IntlShape} from 'react-intl';
 import {ActivityIndicator, FlatList, Platform, SectionList, Text, TouchableOpacity, View} from 'react-native';
 import sectionListGetItemLayout from 'react-native-section-list-get-item-layout';
 
+import {getEmojisByName} from '@actions/local/custom_emoji';
+import {getCustomEmojis} from '@actions/remote/custom_emoji';
 import CompassIcon from '@components/compass_icon';
 import Emoji from '@components/emoji';
 import FormattedText from '@components/formatted_text';
 import {Device} from '@constants';
+import {withServerUrl} from '@context/server_url';
 import {withTheme} from '@context/theme';
 import {compareEmojis} from '@utils/emoji/helpers';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
@@ -38,6 +40,7 @@ type EmojiPickerProps = {
     intl: IntlShape;
     isLandscape: boolean;
     onEmojiPress: (emoji: string) => void;
+    serverUrl: string;
     theme: Theme;
 }
 
@@ -53,12 +56,12 @@ type EmojiPickerState = {
 };
 
 class EmojiPicker extends PureComponent<EmojiPickerProps, EmojiPickerState> {
-    private fuse: Fuse<unknown>;
+    private fuse: Promise<Fuse<unknown>> | undefined;
+    private readonly sectionListGetItemLayout: any;
     private rebuildEmojis: boolean | undefined;
     private scrollToSectionTries: number;
     private searchBarRef: any;
     private searchTermTimeout: NodeJS.Timeout | undefined;
-    private readonly sectionListGetItemLayout: any;
     private sectionListRef: any;
 
     constructor(props: EmojiPickerProps) {
@@ -85,12 +88,17 @@ class EmojiPicker extends PureComponent<EmojiPickerProps, EmojiPickerState> {
             missingPages: true,
             searchTerm: '',
         };
+    }
 
+    componentDidMount() {
         this.fuse = this.getFuseInstance();
     }
 
-    getFuseInstance = () => {
-        const emojis = selectEmojisByName(state);
+    getFuseInstance = async () => {
+        const {serverUrl} = this.props;
+
+        const {data: emojis} = await getEmojisByName(serverUrl);
+
         const options = {
             findAllMatches: true,
             ignoreLocation: true,
@@ -98,8 +106,12 @@ class EmojiPicker extends PureComponent<EmojiPickerProps, EmojiPickerState> {
             shouldSort: false,
         };
 
-        const list = emojis.length ? emojis : [];
-        return new Fuse(list, options);
+        if (emojis) {
+            const list = emojis.length ? emojis : [];
+            return new Fuse(list, options);
+        }
+
+        return null;
     }
 
     componentDidUpdate(prevProps: EmojiPickerProps) {
@@ -368,14 +380,12 @@ class EmojiPicker extends PureComponent<EmojiPickerProps, EmojiPickerState> {
     };
 
     loadMoreCustomEmojis = async () => {
-        if (!this.props.customEmojisEnabled) {
+        const {customEmojisEnabled, customEmojiPage, serverUrl} = this.props;
+        if (!customEmojisEnabled) {
             return;
         }
 
-        const {data} = await getCustomEmojis(
-            this.props.customEmojiPage,
-            EMOJIS_PER_PAGE,
-        );
+        const {data} = await getCustomEmojis(serverUrl, customEmojiPage, EMOJIS_PER_PAGE);
 
         this.setState({loadingMore: false});
 
@@ -385,10 +395,10 @@ class EmojiPicker extends PureComponent<EmojiPickerProps, EmojiPickerState> {
 
         if (data.length < EMOJIS_PER_PAGE) {
             this.setState({missingPages: false});
-            return;
         }
 
-        incrementEmojiPickerPage();
+        //todo: incrementEmojiPickerPage
+        // incrementEmojiPickerPage();
     };
 
     onScroll = (e) => {
@@ -675,4 +685,4 @@ export const getStyleSheetFromTheme = makeStyleSheetFromTheme((theme) => {
     };
 });
 
-export default injectIntl(withTheme(EmojiPicker));
+export default injectIntl(withServerUrl(withTheme(EmojiPicker)));
