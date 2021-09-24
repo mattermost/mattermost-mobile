@@ -6,9 +6,17 @@ import {AppBinding, AppCall, AppCallRequest, AppCallValues, AppContext, AppExpan
 import {Config} from '@mm-redux/types/config';
 import {GlobalState} from '@mm-redux/types/store';
 
-export function appsEnabled(state: GlobalState): boolean { // eslint-disable-line @typescript-eslint/no-unused-vars
+export function appsConfiguredAsEnabled(state: GlobalState): boolean { // eslint-disable-line @typescript-eslint/no-unused-vars
     const enabled = getConfig(state)?.['FeatureFlagAppsEnabled' as keyof Partial<Config>];
     return enabled === 'true';
+}
+
+export function appsPluginIsEnabled(state: GlobalState): boolean {
+    return state.entities.apps.pluginEnabled;
+}
+
+export function appsEnabled(state: GlobalState): boolean {
+    return appsConfiguredAsEnabled(state) && appsPluginIsEnabled(state);
 }
 
 export function cleanBinding(binding: AppBinding, topLocation: string): AppBinding {

@@ -6,11 +6,11 @@ import {bindActionCreators, Dispatch} from 'redux';
 import {createSelector} from 'reselect';
 
 import {getAutocompleteCommands, getCommandAutocompleteSuggestions} from '@mm-redux/actions/integrations';
-import {appsEnabled} from '@mm-redux/selectors/entities/apps';
 import {getAutocompleteCommandsList, getCommandAutocompleteSuggestionsList} from '@mm-redux/selectors/entities/integrations';
 import {getTheme} from '@mm-redux/selectors/entities/preferences';
 import {getCurrentTeamId} from '@mm-redux/selectors/entities/teams';
 import {GlobalState} from '@mm-redux/types/store';
+import {appsEnabled} from '@utils/apps';
 
 import SlashSuggestion from './slash_suggestion';
 

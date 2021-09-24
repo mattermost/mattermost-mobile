@@ -4,12 +4,12 @@
 import {connect} from 'react-redux';
 
 import {General} from '@mm-redux/constants';
-import {appsEnabled} from '@mm-redux/selectors/entities/apps';
 import {getChannel, canManageChannelMembers} from '@mm-redux/selectors/entities/channels';
 import {getCustomEmojisByName} from '@mm-redux/selectors/entities/emojis';
 import {makeIsPostCommentMention, postHasReactions} from '@mm-redux/selectors/entities/posts';
 import {memoizeResult} from '@mm-redux/utils/helpers';
 import {isPostEphemeral} from '@mm-redux/utils/post_utils';
+import {appsEnabled} from '@utils/apps';
 import {hasEmojisOnly} from '@utils/emoji_utils';
 
 import Body from './body';

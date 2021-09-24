@@ -3,9 +3,9 @@
 
 import {connect} from 'react-redux';
 
-import {appsEnabled} from '@mm-redux/selectors/entities/apps';
 import {getTheme} from '@mm-redux/selectors/entities/preferences';
 import {getDimensions} from '@selectors/device';
+import {appsEnabled} from '@utils/apps';
 
 import Autocomplete from './autocomplete';
 

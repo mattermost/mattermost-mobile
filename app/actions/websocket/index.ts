@@ -26,7 +26,7 @@ import {removeUserFromList} from '@mm-redux/utils/user_utils';
 import {getChannelSinceValue} from '@utils/channels';
 import websocketClient from '@websocket';
 
-import {handleAppsPluginDisabled, handleAppsPluginEnabled, handleRefreshAppsBindings} from './apps';
+import {handleAppsPluginDisabled, handleAppsPluginEnabled, handleRefreshAppsBindings, pingAppsPlugin} from './apps';
 import {handleSidebarCategoryCreated, handleSidebarCategoryDeleted, handleSidebarCategoryOrderUpdated, handleSidebarCategoryUpdated} from './categories';
 import {
     handleChannelConvertedEvent,
@@ -143,6 +143,8 @@ export function doReconnect(now: number) {
             setChannelRetryFailed(false),
         ], 'BATCH_WS_SUCCESS'));
 
+        dispatch(pingAppsPlugin());
+
         try {
             const {data: me}: any = await dispatch(loadMe(null, null, true));
 
@@ -196,7 +198,6 @@ export function doReconnect(now: number) {
                             const postIds = getPostIdsInChannel(state, currentChannelId);
                             const since = getChannelSinceValue(state, currentChannelId, postIds);
                             dispatch(getPostsSince(currentChannelId, since));
-                            dispatch(handleRefreshAppsBindings());
                         }
                     }
 
