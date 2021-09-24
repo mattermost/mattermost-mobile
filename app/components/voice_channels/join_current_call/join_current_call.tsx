@@ -25,10 +25,10 @@ const getStyleSheet = makeStyleSheetFromTheme((props: Props) => {
     return {
         wrapper: {
             position: 'absolute',
-            top: 60,
+            top: 55,
             width: '100%',
             height: '100%',
-            padding: 10,
+            padding: 0,
         },
         container: {
             ...Platform.select({
@@ -42,14 +42,14 @@ const getStyleSheet = makeStyleSheetFromTheme((props: Props) => {
             flexDirection: 'row',
             backgroundColor: '#3DB887',
             width: '100%',
-            borderRadius: 5,
-            padding: 4,
-            height: 64,
+            padding: 0,
+            height: 40,
             alignItems: 'center',
         },
         joinCallIcon: {
             color: props.theme.sidebarText,
-            margin: 10,
+            marginLeft: 10,
+            marginRight: 5,
         },
         joinCall: {
             color: props.theme.sidebarText,
@@ -89,14 +89,14 @@ const JoinCurrentCall = (props: Props) => {
             <View style={style.container}>
                 <FontAwesome5Icon
                     name='phone'
-                    size={24}
+                    size={16}
                     style={style.joinCallIcon}
                 />
                 <Text style={style.joinCall}>{'Join Call'}</Text>
                 <Text style={style.started}>{'Started X minutes ago'}</Text>
                 <View style={style.avatars}>
                     <Avatars
-                        userIds={props.call.participants.map((x) => x.id)}
+                        userIds={Object.values(props.call.participants).map((x) => x.id)}
                         breakAt={1}
                         listTitle={
                             <FormattedText

@@ -9,18 +9,14 @@ export type VoiceCallsState = {
 }
 
 export type Call = {
-	participants: CallParticipant[];
-    muted: boolean;
-    handRaised: boolean;
+	participants: Dictionary<CallParticipant>;
     channelId: string;
     startTime: number;
 }
 
 export type CallParticipant = {
     id: string;
-    username: string;
-    displayName: string;
     muted: boolean;
     handRaised: boolean;
-    volume: number;
+    isTalking: boolean;
 }

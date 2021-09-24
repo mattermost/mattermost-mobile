@@ -61,7 +61,7 @@ const getStyleSheet = makeStyleSheetFromTheme((props: Props) => {
             width: 24,
             height: 24,
             borderRadius: 12,
-            backgroundColor: 'black',
+            backgroundColor: '#FFBC1F',
             color: 'white',
             borderColor: 'black',
             borderWidth: 2,

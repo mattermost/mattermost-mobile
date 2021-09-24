@@ -3,8 +3,9 @@
 import {connect} from 'react-redux';
 import {bindActionCreators, Dispatch} from 'redux';
 
-import {muteMyself, unmuteMyself, leaveCall} from '@mm-redux/actions/voiceCalls';
-import {getTheme} from '@mm-redux/selectors/entities/preferences';
+import {raiseHand, unraiseHand, muteUser, unmuteUser, leaveCall} from '@mm-redux/actions/voiceCalls';
+import {getTheme, getTeammateNameDisplaySetting} from '@mm-redux/selectors/entities/preferences';
+import {getCurrentUserId} from '@mm-redux/selectors/entities/users';
 import {getCurrentCall} from '@mm-redux/selectors/entities/voiceCalls';
 
 import VoiceCallScreen from './voice_call_screen';
@@ -12,17 +13,24 @@ import VoiceCallScreen from './voice_call_screen';
 import type {GlobalState} from '@mm-redux/types/store';
 
 function mapStateToProps(state: GlobalState) {
+    const currentCall = getCurrentCall(state);
+    const currentUserId = getCurrentUserId(state);
     return {
         theme: getTheme(state),
-        call: getCurrentCall(state),
+        call: currentCall,
+        teammateNameDisplay: getTeammateNameDisplaySetting(state),
+        users: state.entities.users.profiles,
+        currentParticipant: currentCall && currentCall.participants[currentUserId],
     };
 }
 
 function mapDispatchToProps(dispatch: Dispatch) {
     return {
         actions: bindActionCreators({
-            muteMyself,
-            unmuteMyself,
+            muteUser,
+            unmuteUser,
+            raiseHand,
+            unraiseHand,
             leaveCall,
         }, dispatch),
     };

@@ -9,22 +9,26 @@ import CompassIcon from '@components/compass_icon';
 import FormattedText from '@components/formatted_text';
 import VoiceAvatar from '@components/voice_channels/voice_avatar';
 import {GenericAction} from '@mm-redux/types/actions';
+import {displayUsername} from '@mm-redux/utils/user_utils';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 
 import type {Channel} from '@mm-redux/types/channels';
 import type {Theme} from '@mm-redux/types/theme';
-import type {Call} from '@mm-redux/types/voiceCalls';
+import type {UserProfile} from '@mm-redux/types/users';
+import type {Call, CallParticipant} from '@mm-redux/types/voiceCalls';
 
 type Props = {
     actions: {
-        muteMyself: (channelId: string) => GenericAction;
-        unmuteMyself: (channelId: string) => GenericAction;
+        muteUser: (channelId: string, userId: string) => GenericAction;
+        unmuteUser: (channelId: string, userId: string) => GenericAction;
     };
     theme: Theme;
     channel: Channel;
-    user: {id: string; username: string};
+    speaker: CallParticipant;
+    speakerUser: UserProfile;
     call: Call;
-    volume: number;
+    currentParticipant: CallParticipant;
+    teammateNameDisplay: string;
     onExpand: () => void;
 }
 
@@ -76,7 +80,7 @@ const getStyleSheet = makeStyleSheetFromTheme((props: Props) => {
             textAlign: 'center',
             textAlignVertical: 'center',
             justifyContent: 'center',
-            backgroundColor: props.call.muted ? 'transparent' : '#3DB887',
+            backgroundColor: props.currentParticipant?.muted ? 'transparent' : '#3DB887',
             borderRadius: 4,
             margin: 4,
         },
@@ -97,15 +101,15 @@ const FloatingVoiceCall = (props: Props) => {
         <View style={style.wrapper}>
             <View style={style.container}>
                 <VoiceAvatar
-                    userId={props.user.id}
-                    volume={props.volume}
+                    userId={props.speaker.id}
+                    volume={props.speaker.isTalking ? 0.5 : 0}
                 />
                 <View style={style.userInfo}>
                     <Text style={style.speakingUser}>
                         <FormattedText
                             id='floating_voice_call.user-is-speaking'
-                            defaultMessage='User {username} is speaking'
-                            values={{username: props.user.username}}
+                            defaultMessage='{user} is speaking'
+                            values={{user: displayUsername(props.speakerUser, props.teammateNameDisplay)}}
                         />
                     </Text>
                     <Text style={style.currentChannel}>
@@ -128,16 +132,16 @@ const FloatingVoiceCall = (props: Props) => {
                 </Pressable>
                 <TouchableOpacity
                     onPress={useCallback(() => {
-                        if (props.call.muted) {
-                            props.actions.unmuteMyself(props.call.channelId);
+                        if (props.currentParticipant?.muted) {
+                            props.actions.unmuteUser(props.call.channelId, props.currentParticipant?.id);
                         } else {
-                            props.actions.muteMyself(props.call.channelId);
+                            props.actions.muteUser(props.call.channelId, props.currentParticipant?.id);
                         }
-                    }, [props.call.muted])}
+                    }, [props.currentParticipant?.muted])}
                     style={style.pressable}
                 >
                     <FontAwesome5Icon
-                        name={props.call.muted ? 'microphone-slash' : 'microphone'}
+                        name={props.currentParticipant?.muted ? 'microphone-slash' : 'microphone'}
                         size={24}
                         style={style.micIcon}
                     />

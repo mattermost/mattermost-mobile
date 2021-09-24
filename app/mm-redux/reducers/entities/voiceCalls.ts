@@ -21,42 +21,64 @@ function calls(state: Dictionary<Call> = {}, action: GenericAction) {
         delete nextState[newCall.channelId];
         return nextState;
     }
-    case VoiceCallsTypes.RECEIVED_MUTE_MYSELF_VOICE_CALL: {
-        const channelId = action.data;
+    case VoiceCallsTypes.RECEIVED_MUTE_USER_VOICE_CALL: {
+        const {channelId, userId} = action.data;
         if (!state[channelId]) {
             return state;
         }
-        const channelUpdate = {...state[channelId], muted: true};
+        if (!state[channelId].participants[userId]) {
+            return state;
+        }
+        const userUpdate = {...state[channelId].participants[userId], muted: true};
+        const channelUpdate = {...state[channelId], participants: {...state[channelId].participants}};
+        channelUpdate.participants[userId] = userUpdate;
         const nextState = {...state};
         nextState[channelId] = channelUpdate;
         return nextState;
     }
-    case VoiceCallsTypes.RECEIVED_UNMUTE_MYSELF_VOICE_CALL: {
-        const channelId = action.data;
+    case VoiceCallsTypes.RECEIVED_UNMUTE_USER_VOICE_CALL: {
+        const {channelId, userId} = action.data;
         if (!state[channelId]) {
             return state;
         }
-        const channelUpdate = {...state[channelId], muted: false};
+        if (!state[channelId].participants[userId]) {
+            return state;
+        }
+        const userUpdate = {...state[channelId].participants[userId], muted: false};
+        const channelUpdate = {...state[channelId], participants: {...state[channelId].participants}};
+        channelUpdate.participants[userId] = userUpdate;
         const nextState = {...state};
         nextState[channelId] = channelUpdate;
         return nextState;
     }
     case VoiceCallsTypes.RECEIVED_RAISE_HAND_VOICE_CALL: {
-        const channelId = action.data;
+        const {channelId, userId} = action.data;
         if (!state[channelId]) {
             return state;
         }
-        const channelUpdate = {...state[channelId], handRaised: true};
-        const nextState = {...state, channelUpdate};
+        if (!state[channelId].participants[userId]) {
+            return state;
+        }
+        const userUpdate = {...state[channelId].participants[userId], handRaised: true};
+        const channelUpdate = {...state[channelId], participants: {...state[channelId].participants}};
+        channelUpdate.participants[userId] = userUpdate;
+        const nextState = {...state};
+        nextState[channelId] = channelUpdate;
         return nextState;
     }
     case VoiceCallsTypes.RECEIVED_UNRAISE_HAND_VOICE_CALL: {
-        const channelId = action.data;
+        const {channelId, userId} = action.data;
         if (!state[channelId]) {
             return state;
         }
-        const channelUpdate = {...state[channelId], handRaised: false};
-        const nextState = {...state, channelUpdate};
+        if (!state[channelId].participants[userId]) {
+            return state;
+        }
+        const userUpdate = {...state[channelId].participants[userId], handRaised: false};
+        const channelUpdate = {...state[channelId], participants: {...state[channelId].participants}};
+        channelUpdate.participants[userId] = userUpdate;
+        const nextState = {...state};
+        nextState[channelId] = channelUpdate;
         return nextState;
     }
     default:

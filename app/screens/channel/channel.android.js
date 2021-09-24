@@ -113,7 +113,6 @@ export default class ChannelAndroid extends ChannelBase {
                     {drawerContent}
                     <FloatingVoiceCall
                         volume={1}
-                        user={{id: 'xohi8cki9787fgiryne716u84o', username: 'user-1'}}
                         onExpand={() => goToScreen('VoiceCall', 'Voice Call')}
                     />
                     <JoinCurrentCall/>

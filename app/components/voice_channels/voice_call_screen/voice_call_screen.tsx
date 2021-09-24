@@ -9,19 +9,27 @@ import {showModalOverCurrentContext, mergeNavigationOptions, popTopScreen} from 
 import CompassIcon from '@components/compass_icon';
 import VoiceAvatar from '@components/voice_channels/voice_avatar';
 import {GenericAction} from '@mm-redux/types/actions';
+import {displayUsername} from '@mm-redux/utils/user_utils';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 
 import type {Theme} from '@mm-redux/types/theme';
-import type {Call} from '@mm-redux/types/voiceCalls';
+import type {UserProfile} from '@mm-redux/types/users';
+import type {IDMappedObjects} from '@mm-redux/types/utilities';
+import type {Call, CallParticipant} from '@mm-redux/types/voiceCalls';
 
 type Props = {
     actions: {
-        muteMyself: (channelId: string) => GenericAction;
-        unmuteMyself: (channelId: string) => GenericAction;
+        muteUser: (channelId: string, userId: string) => GenericAction;
+        unmuteUser: (channelId: string, userId: string) => GenericAction;
+        raiseHand: (channelId: string, userId: string) => GenericAction;
+        unraiseHand: (channelId: string, userId: string) => GenericAction;
         leaveCall: () => GenericAction;
     };
     theme: Theme;
     call: Call;
+    users: IDMappedObjects<UserProfile>;
+    currentParticipant: CallParticipant;
+    teammateNameDisplay: string;
 }
 
 const getStyleSheet = makeStyleSheetFromTheme((props: Props) => {
@@ -87,7 +95,7 @@ const getStyleSheet = makeStyleSheetFromTheme((props: Props) => {
             flexDirection: 'column',
             alignItems: 'center',
             padding: 30,
-            backgroundColor: props.call.muted ? 'rgba(255,255,255,0.16)' : '#3DB887',
+            backgroundColor: props.currentParticipant?.muted ? 'rgba(255,255,255,0.16)' : '#3DB887',
             borderRadius: 20,
             marginBottom: 10,
             marginTop: 20,
@@ -115,6 +123,15 @@ const getStyleSheet = makeStyleSheetFromTheme((props: Props) => {
         buttonIcon: {
             color: props.theme.sidebarText,
             backgroundColor: 'rgba(255,255,255,0.12)',
+            borderRadius: 34,
+            padding: 22,
+            width: 68,
+            height: 68,
+            margin: 10,
+        },
+        handRaised: {
+            color: props.theme.sidebarText,
+            backgroundColor: '#FFBC1F',
             borderRadius: 34,
             padding: 22,
             width: 68,
@@ -149,6 +166,22 @@ const VoiceCallScreen = (props: Props) => {
         });
     };
 
+    const muteUnmuteHandler = useCallback(() => {
+        if (props.currentParticipant?.muted) {
+            props.actions.unmuteUser(props.call.channelId, props.currentParticipant?.id);
+        } else {
+            props.actions.muteUser(props.call.channelId, props.currentParticipant?.id);
+        }
+    }, [props.call.channelId, props.currentParticipant]);
+
+    const raiseUnraiseHandHandler = useCallback(() => {
+        if (props.currentParticipant?.handRaised) {
+            props.actions.unraiseHand(props.call.channelId, props.currentParticipant?.id);
+        } else {
+            props.actions.raiseHand(props.call.channelId, props.currentParticipant?.id);
+        }
+    }, [props.call.channelId, props.currentParticipant]);
+
     return (
         <SafeAreaView style={style.wrapper}>
             <View style={style.container}>
@@ -167,20 +200,20 @@ const VoiceCallScreen = (props: Props) => {
                 <ScrollView alwaysBounceVertical={false}>
                     <View style={style.users}>
                         {/* TODO: Replace the key idx with user.id when the data is real */}
-                        {props.call.participants.map((user, idx) => {
+                        {Object.entries(props.call.participants).map(([id, user]) => {
                             return (
                                 <View
                                     style={style.user}
-                                    key={idx}
+                                    key={id}
                                 >
                                     <VoiceAvatar
                                         userId={user.id}
-                                        volume={user.volume}
+                                        volume={user.isTalking ? 1 : 0}
                                         handRaised={user.handRaised}
                                         muted={user.muted}
                                         size='l'
                                     />
-                                    <Text style={style.username}>{user.username}</Text>
+                                    <Text style={style.username}>{displayUsername(props.users[user.id], props.teammateNameDisplay)}</Text>
                                 </View>
                             );
                         })}
@@ -189,20 +222,14 @@ const VoiceCallScreen = (props: Props) => {
                 <View style={style.buttons}>
                     <Pressable
                         style={style.mute}
-                        onPress={useCallback(() => {
-                            if (props.call.muted) {
-                                props.actions.unmuteMyself(props.call.channelId);
-                            } else {
-                                props.actions.muteMyself(props.call.channelId);
-                            }
-                        }, [props.call.muted])}
+                        onPress={muteUnmuteHandler}
                     >
                         <FontAwesome5Icon
-                            name={props.call.muted ? 'microphone-slash' : 'microphone'}
+                            name={props.currentParticipant?.muted ? 'microphone-slash' : 'microphone'}
                             size={24}
                             style={style.muteIcon}
                         />
-                        <Text style={style.buttonText}>{props.call.muted ? 'Unmute' : 'Mute'}</Text>
+                        <Text style={style.buttonText}>{props.currentParticipant?.muted ? 'Unmute' : 'Mute'}</Text>
                     </Pressable>
                     <View style={style.otherButtons}>
                         <Pressable
@@ -229,14 +256,17 @@ const VoiceCallScreen = (props: Props) => {
                             />
                             <Text style={style.buttonText}>{'Chat thread'}</Text>
                         </Pressable>
-                        <View style={style.button}>
+                        <Pressable
+                            style={style.button}
+                            onPress={raiseUnraiseHandHandler}
+                        >
                             <FontAwesome5Icon
                                 name='hand-paper'
                                 size={24}
-                                style={style.buttonIcon}
+                                style={props.currentParticipant?.handRaised ? style.handRaised : style.buttonIcon}
                             />
-                            <Text style={style.buttonText}>{'Raise hand'}</Text>
-                        </View>
+                            <Text style={style.buttonText}>{props.currentParticipant?.handRaised ? 'Unraise hand' : 'Raise hand'}</Text>
+                        </Pressable>
                         <Pressable
                             style={style.button}
                             onPress={showOtherActions}
