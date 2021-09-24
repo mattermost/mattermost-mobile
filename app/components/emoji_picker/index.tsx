@@ -260,20 +260,6 @@ class EmojiPicker extends PureComponent<EmojiPickerProps, EmojiPickerState> {
         return Math.floor(Number(((deviceWidth - (SECTION_MARGIN * shorten)) / ((EMOJI_SIZE + 7) + (EMOJI_GUTTER * shorten)))));
     };
 
-    renderItem = ({item, section}: {item: EmojisData; section: EmojiSection}) => {
-        return (
-            <View testID={section.defaultMessage}>
-                <EmojiPickerRow
-                    key={item.key}
-                    emojiGutter={EMOJI_GUTTER}
-                    emojiSize={EMOJI_SIZE}
-                    items={item.items}
-                    onEmojiPress={this.props.onEmojiPress}
-                />
-            </View>
-        );
-    };
-
     renderListComponent = (shorten: number) => {
         const {deviceWidth, theme} = this.props;
         const {emojis, filteredEmojis, searchTerm} = this.state;
@@ -289,24 +275,23 @@ class EmojiPicker extends PureComponent<EmojiPickerProps, EmojiPickerState> {
                     data={filteredEmojis}
                     keyboardShouldPersistTaps='always'
                     keyExtractor={this.flatListKeyExtractor}
-                    initialListSize={10}
                     ListEmptyComponent={this.renderEmptyList}
                     nativeID={SCROLLVIEW_NATIVE_ID}
-                    pageSize={10}
                     renderItem={this.flatListRenderItem}
                     removeClippedSubviews={true}
                     style={styles.flatList}
+
+                    // pageSize={10}
                 />
             );
         } else {
             listComponent = (
                 <SectionList
-                    ref={this.setSectionListRef}
+                    ListFooterComponent={this.renderFooter}
                     getItemLayout={this.sectionListGetItemLayout}
                     initialNumToRender={50}
-                    keyboardShouldPersistTaps='always'
                     keyboardDismissMode='interactive'
-                    ListFooterComponent={this.renderFooter}
+                    keyboardShouldPersistTaps='always'
                     nativeID={SCROLLVIEW_NATIVE_ID}
                     onEndReached={this.loadMoreCustomEmojis}
                     onEndReachedThreshold={Platform.OS === 'ios' ? 0 : 1}
@@ -314,6 +299,7 @@ class EmojiPicker extends PureComponent<EmojiPickerProps, EmojiPickerState> {
                     onScroll={this.onScroll}
                     onScrollToIndexFailed={this.handleScrollToSectionFailed}
                     pageSize={50}
+                    ref={this.setSectionListRef}
                     removeClippedSubviews={true}
                     renderItem={this.renderItem}
                     renderSectionHeader={this.renderSectionHeader}
@@ -325,6 +311,38 @@ class EmojiPicker extends PureComponent<EmojiPickerProps, EmojiPickerState> {
         }
 
         return listComponent;
+    };
+
+    renderItem = ({item, section}: {item: EmojisData; section: RenderableEmojis}) => {
+        return (
+            <View testID={section.id}>
+                <EmojiPickerRow
+                    key={item.key}
+                    emojiGutter={EMOJI_GUTTER}
+                    emojiSize={EMOJI_SIZE}
+                    items={item.items}
+                    onEmojiPress={this.props.onEmojiPress}
+                />
+            </View>
+        );
+    };
+
+    renderSectionHeader = ({section}: {section: RenderableEmojis}) => {
+        const {theme} = this.props;
+        const styles = getStyleSheetFromTheme(theme);
+
+        return (
+            <View
+                style={styles.sectionTitleContainer}
+                key={section.id}
+            >
+                <FormattedText
+                    style={styles.sectionTitle}
+                    id={section.id}
+                    defaultMessage={section.icon}
+                />
+            </View>
+        );
     };
 
     flatListKeyExtractor = (item: string) => item;
@@ -378,7 +396,7 @@ class EmojiPicker extends PureComponent<EmojiPickerProps, EmojiPickerState> {
             return;
         }
 
-        clearTimeout(this.setIndexTimeout);
+        // clearTimeout(this.setIndexTimeout);
 
         const {contentOffset} = e.nativeEvent;
         let nextIndex = this.state.emojiSectionIndexByOffset.findIndex(
@@ -430,24 +448,6 @@ class EmojiPicker extends PureComponent<EmojiPickerProps, EmojiPickerState> {
                 clearTimeout(sfTimeout);
             }, 200);
         }
-    };
-
-    renderSectionHeader = ({section}) => {
-        const {theme} = this.props;
-        const styles = getStyleSheetFromTheme(theme);
-
-        return (
-            <View
-                style={styles.sectionTitleContainer}
-                key={section.title}
-            >
-                <FormattedText
-                    style={styles.sectionTitle}
-                    id={section.id}
-                    defaultMessage={section.defaultMessage}
-                />
-            </View>
-        );
     };
 
     handleSectionIconPress = (index: number, isCustomSection = false) => {
