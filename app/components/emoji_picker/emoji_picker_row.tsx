@@ -6,16 +6,10 @@ import {StyleSheet, TouchableOpacity, View} from 'react-native';
 
 import Emoji from '@components/emoji';
 
-type EmojiItem = {
-    aliases: string[];
-    name: string;
-    short_name: string;
-};
-
 type EmojiPickerRowProps = {
     emojiGutter: number;
     emojiSize: number;
-    items: EmojiItem[];
+    items: EmojiAlias[];
     onEmojiPress: (emojiName: string) => void;
 };
 
@@ -23,7 +17,7 @@ const EmojiPickerRow = ({emojiGutter, emojiSize, items, onEmojiPress}: EmojiPick
     const memoizedEmojis = useMemo(() => items, [items]);
 
     const renderEmojis = useCallback(
-        () => (emoji: EmojiItem, index: number, emojis: EmojiItem[]) => {
+        () => (emoji: EmojiAlias, index: number, emojis: EmojiAlias[]) => {
             const size = emojiSize + 7;
             const style: any = [
                 styles.emoji,

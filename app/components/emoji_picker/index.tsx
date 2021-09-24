@@ -29,19 +29,6 @@ export function filterEmojiSearchInput(searchText: string) {
     return searchText.toLowerCase().replace(/^:|:$/g, '');
 }
 
-type EmojiAlias = {
-    aliases: string [];
-    name: string;
-}
-
-type EmojiSection = {
-    data: EmojiAlias[];
-    defaultMessage?: string;
-    icon: string;
-    id: string;
-    key: string;
-}
-
 type EmojiPickerProps = {
     customEmojiPage: number;
     customEmojisEnabled: boolean;
@@ -55,26 +42,15 @@ type EmojiPickerProps = {
 }
 
 type EmojiPickerState = {
-    emojis: RenderableEmojis[];
-    emojiSectionIndexByOffset: number[];
-    filteredEmojis: string[];
-    searchTerm: string;
     currentSectionIndex: number;
-    missingPages: boolean;
+    emojiSectionIndexByOffset: number[];
+    emojis: RenderableEmojis[];
+    filteredEmojis: string[];
     jumpToSection: boolean;
+    loadingMore: boolean;
+    missingPages: boolean;
+    searchTerm: string;
 };
-
-type EmojisData = {
-    key: string;
-    items: EmojiAlias[];
-}
-
-type RenderableEmojis = {
-    id: string;
-    icon: string;
-    key: string;
-    data: EmojisData[];
-}
 
 class EmojiPicker extends PureComponent<EmojiPickerProps, EmojiPickerState> {
     private fuse: Fuse<unknown>;
@@ -82,7 +58,8 @@ class EmojiPicker extends PureComponent<EmojiPickerProps, EmojiPickerState> {
     private scrollToSectionTries: number;
     private searchBarRef: any;
     private searchTermTimeout: NodeJS.Timeout | undefined;
-    private sectionListGetItemLayout: any;
+    private readonly sectionListGetItemLayout: any;
+    private sectionListRef: any;
 
     constructor(props: EmojiPickerProps) {
         super(props);
@@ -99,13 +76,14 @@ class EmojiPicker extends PureComponent<EmojiPickerProps, EmojiPickerState> {
 
         this.scrollToSectionTries = 0;
         this.state = {
-            emojis,
-            emojiSectionIndexByOffset,
-            filteredEmojis: [],
-            searchTerm: '',
             currentSectionIndex: 0,
-            missingPages: true,
+            emojiSectionIndexByOffset,
+            emojis,
+            filteredEmojis: [],
             jumpToSection: false, // fixme : should it be false or null
+            loadingMore: false,
+            missingPages: true,
+            searchTerm: '',
         };
 
         this.fuse = this.getFuseInstance();
@@ -141,11 +119,11 @@ class EmojiPicker extends PureComponent<EmojiPickerProps, EmojiPickerState> {
         this.setRebuiltEmojis();
     }
 
-    setSearchBarRef = (ref) => {
+    setSearchBarRef = (ref: any) => {
         this.searchBarRef = ref;
     };
 
-    setSectionListRef = (ref) => {
+    setSectionListRef = (ref: any) => {
         this.sectionListRef = ref;
     };
 
@@ -282,7 +260,7 @@ class EmojiPicker extends PureComponent<EmojiPickerProps, EmojiPickerState> {
         return Math.floor(Number(((deviceWidth - (SECTION_MARGIN * shorten)) / ((EMOJI_SIZE + 7) + (EMOJI_GUTTER * shorten)))));
     };
 
-    renderItem = ({item, section}) => {
+    renderItem = ({item, section}: {item: EmojisData; section: EmojiSection}) => {
         return (
             <View testID={section.defaultMessage}>
                 <EmojiPickerRow
@@ -296,7 +274,7 @@ class EmojiPicker extends PureComponent<EmojiPickerProps, EmojiPickerState> {
         );
     };
 
-    renderListComponent = (shorten) => {
+    renderListComponent = (shorten: number) => {
         const {deviceWidth, theme} = this.props;
         const {emojis, filteredEmojis, searchTerm} = this.state;
         const styles = getStyleSheetFromTheme(theme);
@@ -341,10 +319,7 @@ class EmojiPicker extends PureComponent<EmojiPickerProps, EmojiPickerState> {
                     renderSectionHeader={this.renderSectionHeader}
                     sections={emojis}
                     showsVerticalScrollIndicator={false}
-                    style={[
-                        styles.sectionList,
-                        {width: deviceWidth - SECTION_MARGIN * shorten},
-                    ]}
+                    style={[styles.sectionList, {width: deviceWidth - (SECTION_MARGIN * shorten)}]}
                 />
             );
         }
@@ -352,9 +327,9 @@ class EmojiPicker extends PureComponent<EmojiPickerProps, EmojiPickerState> {
         return listComponent;
     };
 
-    flatListKeyExtractor = (item) => item;
+    flatListKeyExtractor = (item: string) => item;
 
-    flatListRenderItem = ({item}) => {
+    flatListRenderItem = ({item}: {item: string}) => {
         const style = getStyleSheetFromTheme(this.props.theme);
 
         return (
@@ -379,7 +354,7 @@ class EmojiPicker extends PureComponent<EmojiPickerProps, EmojiPickerState> {
             return;
         }
 
-        const {data} = await this.props.actions.getCustomEmojis(
+        const {data} = await getCustomEmojis(
             this.props.customEmojiPage,
             EMOJIS_PER_PAGE,
         );
@@ -395,7 +370,7 @@ class EmojiPicker extends PureComponent<EmojiPickerProps, EmojiPickerState> {
             return;
         }
 
-        this.props.actions.incrementEmojiPickerPage();
+        incrementEmojiPickerPage();
     };
 
     onScroll = (e) => {
@@ -431,7 +406,7 @@ class EmojiPicker extends PureComponent<EmojiPickerProps, EmojiPickerState> {
         }
     };
 
-    scrollToSection = (index) => {
+    scrollToSection = (index: number) => {
         this.setState(
             {
                 jumpToSection: true,
