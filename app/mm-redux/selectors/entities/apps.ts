@@ -4,20 +4,9 @@
 import {createSelector} from 'reselect';
 
 import {AppBinding} from '@mm-redux/types/apps';
-import {Config} from '@mm-redux/types/config';
 import {GlobalState} from '@mm-redux/types/store';
 
-import {getConfig} from './general';
-
-export const appsEnabled = createSelector(
-    (state: GlobalState) => getConfig(state),
-    (state: GlobalState) => state.entities.apps.pluginEnabled as boolean,
-    (config: Partial<Config>, pluginEnabled: boolean) => {
-        const featureFlagEnabled = config?.['FeatureFlagAppsEnabled' as keyof Partial<Config>] === 'true';
-
-        return featureFlagEnabled && pluginEnabled;
-    },
-);
+import {appsEnabled} from '@utils/apps';
 
 export function getThreadAppsBindingsChannelId(state: GlobalState): string {
     return state.entities.apps.threadBindingsChannelId;
