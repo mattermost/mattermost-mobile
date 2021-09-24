@@ -86,9 +86,12 @@ class Option extends React.PureComponent<OptionProps> {
         const {post, teamID, binding, intl, theme} = this.props;
         const {doAppCall, postEphemeralCallResponseForPost} = this.props.actions;
 
-        if (!binding.call) {
+        const call = binding.form?.call || binding.call;
+
+        if (!call) {
             return;
         }
+
         const context = createCallContext(
             binding.app_id,
             binding.location,
@@ -97,15 +100,20 @@ class Option extends React.PureComponent<OptionProps> {
             post.id,
             post.root_id,
         );
-        const call = createCallRequest(
-            binding.call,
+        const callRequest = createCallRequest(
+            call,
             context,
             {
                 post: AppExpandLevels.ALL,
             },
         );
 
-        const callPromise = doAppCall(call, AppCallTypes.SUBMIT, intl);
+        if (binding.form) {
+            showAppForm(binding.form, callRequest, theme);
+            return;
+        }
+
+        const callPromise = doAppCall(callRequest, AppCallTypes.SUBMIT, intl);
         await this.close();
 
         const res = await callPromise;
@@ -134,7 +142,7 @@ class Option extends React.PureComponent<OptionProps> {
             this.props.actions.handleGotoLocation(callResp.navigate_to_url!, intl);
             break;
         case AppCallResponseTypes.FORM:
-            showAppForm(callResp.form, call, theme);
+            showAppForm(callResp.form, callRequest, theme);
             break;
         default: {
             const title = intl.formatMessage({

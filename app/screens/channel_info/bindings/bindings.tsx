@@ -88,7 +88,9 @@ class Option extends React.PureComponent<OptionProps, OptionState> {
             return;
         }
 
-        if (!binding.call) {
+        const call = binding.form?.call || binding.call;
+
+        if (!call) {
             return;
         }
 
@@ -98,14 +100,20 @@ class Option extends React.PureComponent<OptionProps, OptionState> {
             currentChannel.id,
             currentChannel.team_id || currentTeamId,
         );
-        const call = createCallRequest(
-            binding.call,
+        const callRequest = createCallRequest(
+            call,
             context,
         );
 
+        if (binding.form) {
+            await dismissModal();
+            showAppForm(binding.form, callRequest, theme);
+            return;
+        }
+
         this.setState({submitting: true});
 
-        const res = await doAppCall(call, AppCallTypes.SUBMIT, intl);
+        const res = await doAppCall(callRequest, AppCallTypes.SUBMIT, intl);
 
         this.setState({submitting: false});
 
