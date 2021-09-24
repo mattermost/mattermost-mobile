@@ -7,13 +7,11 @@ Array [
     "bindings": Array [
       Object {
         "app_id": "1",
-        "bindings": undefined,
         "call": Object {},
         "label": "a",
         "location": "/post_menu/locA",
       },
     ],
-    "call": Object {},
     "location": "/post_menu",
   },
   Object {
@@ -21,13 +19,11 @@ Array [
     "bindings": Array [
       Object {
         "app_id": "2",
-        "bindings": undefined,
         "call": Object {},
         "label": "a",
         "location": "/post_menu/locA",
       },
     ],
-    "call": Object {},
     "location": "/post_menu",
   },
   Object {
@@ -35,7 +31,6 @@ Array [
     "bindings": Array [
       Object {
         "app_id": "1",
-        "bindings": undefined,
         "call": Object {},
         "icon": "icon",
         "label": "b",
@@ -43,13 +38,11 @@ Array [
       },
       Object {
         "app_id": "1",
-        "bindings": undefined,
         "call": Object {},
         "label": "c",
         "location": "/channel_header/locC",
       },
     ],
-    "call": Object {},
     "location": "/channel_header",
   },
   Object {
@@ -57,14 +50,19 @@ Array [
     "bindings": Array [
       Object {
         "app_id": "2",
-        "bindings": undefined,
+        "call": Object {},
+        "icon": "icon",
+        "label": "locB",
+        "location": "/channel_header/locB",
+      },
+      Object {
+        "app_id": "2",
         "call": Object {},
         "icon": "icon",
         "label": "c",
         "location": "/channel_header/locC",
       },
     ],
-    "call": Object {},
     "location": "/channel_header",
   },
   Object {
@@ -72,13 +70,17 @@ Array [
     "bindings": Array [
       Object {
         "app_id": "3",
-        "bindings": undefined,
+        "call": Object {},
+        "label": "locB",
+        "location": "/channel_header/locB",
+      },
+      Object {
+        "app_id": "3",
         "call": Object {},
         "label": "c",
         "location": "/channel_header/locC",
       },
     ],
-    "call": Object {},
     "location": "/channel_header",
   },
   Object {
@@ -86,13 +88,11 @@ Array [
     "bindings": Array [
       Object {
         "app_id": "3",
-        "bindings": undefined,
         "call": Object {},
         "label": "c",
         "location": "/command/locC",
       },
     ],
-    "call": Object {},
     "location": "/command",
   },
 ]
@@ -105,20 +105,17 @@ Array [
     "bindings": Array [
       Object {
         "app_id": "1",
-        "bindings": undefined,
         "call": Object {},
         "label": "a",
         "location": "/post_menu/locA",
       },
       Object {
         "app_id": "1",
-        "bindings": undefined,
         "call": Object {},
         "label": "a",
         "location": "/post_menu/locB",
       },
     ],
-    "call": Object {},
     "location": "/post_menu",
   },
   Object {
@@ -126,14 +123,12 @@ Array [
     "bindings": Array [
       Object {
         "app_id": "1",
-        "bindings": undefined,
         "call": Object {},
         "icon": "icon",
         "label": "b",
         "location": "/channel_header/locB",
       },
     ],
-    "call": Object {},
     "location": "/channel_header",
   },
   Object {
@@ -144,23 +139,46 @@ Array [
         "bindings": Array [
           Object {
             "app_id": "3",
-            "bindings": undefined,
+            "call": Object {},
+            "label": "subC1",
+            "location": "/command/locC/subC1",
+          },
+          Object {
+            "app_id": "3",
             "call": Object {},
             "label": "c2",
             "location": "/command/locC/subC2",
           },
         ],
-        "call": Object {},
         "label": "c",
         "location": "/command/locC",
       },
+      Object {
+        "app_id": "3",
+        "bindings": Array [
+          Object {
+            "app_id": "3",
+            "call": Object {},
+            "label": "subC1",
+            "location": "/command/locD/subC1",
+          },
+        ],
+        "label": "d",
+        "location": "/command/locD",
+      },
     ],
-    "call": Object {},
     "location": "/command",
   },
   Object {
     "app_id": "1",
-    "bindings": Array [],
+    "bindings": Array [
+      Object {
+        "app_id": "1",
+        "call": Object {},
+        "label": "locC",
+        "location": "/command/locC",
+      },
+    ],
     "location": "/command",
   },
   Object {
@@ -171,14 +189,12 @@ Array [
         "bindings": Array [
           Object {
             "app_id": "2",
-            "bindings": undefined,
             "call": Object {},
             "label": "c1",
             "location": "/command/locC/subC1",
           },
           Object {
             "app_id": "2",
-            "bindings": undefined,
             "call": Object {},
             "label": "c2",
             "location": "/command/locC/subC2",
@@ -189,7 +205,6 @@ Array [
         "location": "/command/locC",
       },
     ],
-    "call": Object {},
     "location": "/command",
   },
 ]
@@ -202,13 +217,17 @@ Array [
     "bindings": Array [
       Object {
         "app_id": "1",
-        "bindings": undefined,
+        "call": Object {},
+        "label": "locA",
+        "location": "/post_menu/locA",
+      },
+      Object {
+        "app_id": "1",
         "call": Object {},
         "label": "a",
         "location": "/post_menu/locB",
       },
     ],
-    "call": Object {},
     "location": "/post_menu",
   },
   Object {
@@ -216,25 +235,29 @@ Array [
     "bindings": Array [
       Object {
         "app_id": "2",
-        "bindings": undefined,
         "call": Object {},
         "label": "a",
         "location": "/post_menu/locA",
       },
       Object {
         "app_id": "2",
-        "bindings": undefined,
         "call": Object {},
         "label": "b",
         "location": "/post_menu/locB",
       },
     ],
-    "call": Object {},
     "location": "/post_menu",
   },
   Object {
     "app_id": "3",
-    "bindings": Array [],
+    "bindings": Array [
+      Object {
+        "app_id": "3",
+        "call": Object {},
+        "label": "locA",
+        "location": "/post_menu/locA",
+      },
+    ],
     "location": "/post_menu",
   },
   Object {
@@ -242,14 +265,12 @@ Array [
     "bindings": Array [
       Object {
         "app_id": "1",
-        "bindings": undefined,
         "call": Object {},
         "icon": "icon",
         "label": "b",
         "location": "/channel_header/locB",
       },
     ],
-    "call": Object {},
     "location": "/channel_header",
   },
   Object {
@@ -257,13 +278,11 @@ Array [
     "bindings": Array [
       Object {
         "app_id": "3",
-        "bindings": undefined,
         "call": Object {},
         "label": "c",
         "location": "/command/locC",
       },
     ],
-    "call": Object {},
     "location": "/command",
   },
 ]
@@ -276,13 +295,11 @@ Array [
     "bindings": Array [
       Object {
         "app_id": "1",
-        "bindings": undefined,
         "call": Object {},
         "label": "a",
         "location": "/post_menu/locA",
       },
     ],
-    "call": Object {},
     "location": "/post_menu",
   },
   Object {
@@ -290,13 +307,11 @@ Array [
     "bindings": Array [
       Object {
         "app_id": "2",
-        "bindings": undefined,
         "call": Object {},
         "label": "a",
         "location": "/post_menu/locA",
       },
     ],
-    "call": Object {},
     "location": "/post_menu",
   },
   Object {
@@ -304,14 +319,12 @@ Array [
     "bindings": Array [
       Object {
         "app_id": "1",
-        "bindings": undefined,
         "call": Object {},
         "icon": "icon",
         "label": "b",
         "location": "/channel_header/locB",
       },
     ],
-    "call": Object {},
     "location": "/channel_header",
   },
   Object {
@@ -319,13 +332,11 @@ Array [
     "bindings": Array [
       Object {
         "app_id": "3",
-        "bindings": undefined,
         "call": Object {},
         "label": "c",
         "location": "/command/locC",
       },
     ],
-    "call": Object {},
     "location": "/command",
   },
 ]

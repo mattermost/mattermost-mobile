@@ -12,8 +12,8 @@ import FormattedTime from '@components/formatted_time';
 import Preferences from '@mm-redux/constants/preferences';
 import {getBool} from '@mm-redux/selectors/entities/preferences';
 import {getCurrentUserTimezone} from '@mm-redux/selectors/entities/timezone';
-import {Theme} from '@mm-redux/types/preferences';
 import {GlobalState} from '@mm-redux/types/store';
+import {Theme} from '@mm-redux/types/theme';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 import {getCurrentMomentForTimezone} from '@utils/timezone';
 

@@ -4,7 +4,7 @@
 import {analytics} from '@init/analytics';
 import {General} from '@mm-redux/constants';
 import {UserCustomStatus, UserProfile, UserStatus} from '@mm-redux/types/users';
-import {buildQueryString, isMinimumServerVersion} from '@mm-redux/utils/helpers';
+import {buildQueryString} from '@mm-redux/utils/helpers';
 
 import {PER_PAGE_DEFAULT} from './constants';
 
@@ -104,7 +104,6 @@ const ClientUsers = (superclass: any) => class extends superclass {
 
     getKnownUsers = async () => {
         analytics.trackAPI('api_get_known_users');
-
         return this.doFetch(
             `${this.getUsersRoute()}/known`,
             {method: 'get'},
@@ -255,13 +254,7 @@ const ClientUsers = (superclass: any) => class extends superclass {
     getProfilesInChannel = async (channelId: string, page = 0, perPage = PER_PAGE_DEFAULT, sort = '') => {
         analytics.trackAPI('api_profiles_get_in_channel', {channel_id: channelId});
 
-        const serverVersion = this.getServerVersion();
-        let queryStringObj;
-        if (isMinimumServerVersion(serverVersion, 4, 7)) {
-            queryStringObj = {in_channel: channelId, page, per_page: perPage, sort};
-        } else {
-            queryStringObj = {in_channel: channelId, page, per_page: perPage};
-        }
+        const queryStringObj = {in_channel: channelId, page, per_page: perPage, sort};
         return this.doFetch(
             `${this.getUsersRoute()}${buildQueryString(queryStringObj)}`,
             {method: 'get'},

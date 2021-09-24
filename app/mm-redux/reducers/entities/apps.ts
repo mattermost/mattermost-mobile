@@ -11,7 +11,11 @@ import {validateBindings} from '@utils/apps';
 export function bindings(state: AppBinding[] = [], action: GenericAction): AppBinding[] {
     switch (action.type) {
     case AppsTypes.RECEIVED_APP_BINDINGS: {
-        return validateBindings(action.data) || [];
+        const newBindings = validateBindings(action.data);
+        if (!newBindings.length && !state.length) {
+            return state;
+        }
+        return newBindings;
     }
     case AppsTypes.CLEAR_APP_BINDINGS:
         if (state.length > 0) {

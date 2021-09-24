@@ -8,7 +8,7 @@ import {showAppForm} from '@actions/navigation';
 import AutocompleteSelector from '@components/autocomplete_selector';
 import {AppExpandLevels, AppBindingLocations, AppCallTypes, AppCallResponseTypes} from '@mm-redux/constants/apps';
 import {ActionResult} from '@mm-redux/types/actions';
-import {Theme} from '@mm-redux/types/preferences';
+import {Theme} from '@mm-redux/types/theme';
 import {createCallContext, createCallRequest} from '@utils/apps';
 
 import type {AppBinding} from '@mm-redux/types/apps';
@@ -42,7 +42,9 @@ const MenuBinding = ({binding, doAppCall, intl, post, postEphemeralCallResponseF
             return;
         }
 
-        if (!bind.call) {
+        const call = bind.form?.call || bind.call;
+
+        if (!call) {
             return;
         }
 
@@ -54,13 +56,18 @@ const MenuBinding = ({binding, doAppCall, intl, post, postEphemeralCallResponseF
             post.id,
         );
 
-        const call = createCallRequest(
-            bind.call,
+        const callRequest = createCallRequest(
+            call,
             context,
             {post: AppExpandLevels.EXPAND_ALL},
         );
 
-        const res = await doAppCall(call, AppCallTypes.SUBMIT, intl);
+        if (bind.form) {
+            showAppForm(bind.form, callRequest);
+            return;
+        }
+
+        const res = await doAppCall(callRequest, AppCallTypes.SUBMIT, intl);
         if (res.error) {
             const errorResponse = res.error;
             const errorMessage = errorResponse.error || intl.formatMessage({

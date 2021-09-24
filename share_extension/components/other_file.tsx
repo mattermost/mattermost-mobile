@@ -12,7 +12,7 @@ interface OtherFileProps {
     extension?: string;
 }
 
-const theme = Preferences.THEMES.default;
+const theme = Preferences.THEMES.denim;
 const iconForExtension: Record<string, string> = {
     csv: 'jumbo-attachment-excel',
     pdf: 'jumbo-attachment-pdf',

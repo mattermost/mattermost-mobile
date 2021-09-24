@@ -12,7 +12,7 @@ import DisplaySettings from './display_settings';
 
 describe('DisplaySettings', () => {
     const baseProps = {
-        theme: Preferences.THEMES.default,
+        theme: Preferences.THEMES.denim,
         enableTheme: false,
         enableTimezone: false,
         componentId: 'component-id',

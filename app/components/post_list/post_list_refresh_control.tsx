@@ -4,7 +4,7 @@
 import React, {ReactElement} from 'react';
 import {Platform, RefreshControl, StyleSheet} from 'react-native';
 
-import type {Theme} from '@mm-redux/types/preferences';
+import type {Theme} from '@mm-redux/types/theme';
 
 type Props = {
     children: ReactElement;

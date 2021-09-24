@@ -10,8 +10,8 @@ import {getUser} from '@mm-redux/selectors/entities/users';
 import Avatar from './avatar';
 
 import type {Post} from '@mm-redux/types/posts';
-import type {Theme} from '@mm-redux/types/preferences';
 import type {GlobalState} from '@mm-redux/types/store';
+import type {Theme} from '@mm-redux/types/theme';
 
 type OwnProps = {
     pendingPostStyle?: StyleProp<ViewStyle>;

@@ -13,7 +13,6 @@ exports[`components/autocomplete/slash_suggestion should match snapshot 1`] = `
       },
     ]
   }
-  disableVirtualization={false}
   extraData={
     Object {
       "active": true,
@@ -29,17 +28,12 @@ exports[`components/autocomplete/slash_suggestion should match snapshot 1`] = `
       "lastCommandRequest": 1234,
     }
   }
-  horizontal={false}
-  initialNumToRender={10}
   keyExtractor={[Function]}
   keyboardShouldPersistTaps="always"
-  maxToRenderPerBatch={10}
   nestedScrollEnabled={false}
   numColumns={1}
-  onEndReachedThreshold={2}
   removeClippedSubviews={true}
   renderItem={[Function]}
-  scrollEventThrottle={50}
   style={
     Array [
       Object {
@@ -54,7 +48,5 @@ exports[`components/autocomplete/slash_suggestion should match snapshot 1`] = `
     ]
   }
   testID="slash_suggestion.list"
-  updateCellsBatchingPeriod={50}
-  windowSize={21}
 />
 `;
