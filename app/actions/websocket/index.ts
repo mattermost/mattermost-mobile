@@ -23,6 +23,7 @@ import {TeamMembership} from '@mm-redux/types/teams';
 import {WebSocketMessage} from '@mm-redux/types/websocket';
 import EventEmitter from '@mm-redux/utils/event_emitter';
 import {removeUserFromList} from '@mm-redux/utils/user_utils';
+import {appsConfiguredAsEnabled} from '@utils/apps';
 import {getChannelSinceValue} from '@utils/channels';
 import websocketClient from '@websocket';
 
@@ -143,7 +144,9 @@ export function doReconnect(now: number) {
             setChannelRetryFailed(false),
         ], 'BATCH_WS_SUCCESS'));
 
-        dispatch(pingAppsPlugin());
+        if (appsConfiguredAsEnabled(getState())) {
+            dispatch(pingAppsPlugin());
+        }
 
         try {
             const {data: me}: any = await dispatch(loadMe(null, null, true));
