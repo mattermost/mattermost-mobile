@@ -5,15 +5,7 @@
 import Fuse from 'fuse.js';
 import React, {PureComponent} from 'react';
 import {injectIntl, IntlShape} from 'react-intl';
-import {
-    ActivityIndicator,
-    FlatList,
-    Platform,
-    SectionList,
-    Text,
-    TouchableOpacity,
-    View,
-} from 'react-native';
+import {ActivityIndicator, FlatList, Platform, SectionList, Text, TouchableOpacity, View} from 'react-native';
 import sectionListGetItemLayout from 'react-native-section-list-get-item-layout';
 
 import CompassIcon from '@components/compass_icon';
@@ -22,7 +14,7 @@ import FormattedText from '@components/formatted_text';
 import {Device} from '@constants';
 import {withTheme} from '@context/theme';
 import {compareEmojis} from '@utils/emoji/helpers';
-import {makeStyleSheetFromTheme, changeOpacity} from '@utils/theme';
+import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 import EmojiPickerRow from './emoji_picker_row';
 
@@ -56,7 +48,6 @@ type EmojiPickerProps = {
     deviceWidth: number;
     emojis: string;
     emojisBySection: EmojiSection[];
-    fuse: typeof Fuse;
     intl: IntlShape;
     isLandscape: boolean;
     onEmojiPress: (emoji: string) => void;
@@ -64,8 +55,8 @@ type EmojiPickerProps = {
 }
 
 type EmojiPickerState = {
-    emojis;
-    emojiSectionIndexByOffset;
+    emojis: RenderableEmojis[];
+    emojiSectionIndexByOffset: number[];
     filteredEmojis: [];
     searchTerm: string;
     currentSectionIndex: number;
@@ -86,6 +77,7 @@ type RenderableEmojis = {
 }
 
 class EmojiPicker extends PureComponent<EmojiPickerProps, EmojiPickerState> {
+    private fuse: Fuse<unknown>;
     private rebuildEmojis: boolean | undefined;
     private scrollToSectionTries: number;
     private searchBarRef: any;
@@ -113,7 +105,23 @@ class EmojiPicker extends PureComponent<EmojiPickerProps, EmojiPickerState> {
             searchTerm: '',
             currentSectionIndex: 0,
             missingPages: true,
+            jumpToSection: false, // fixme : should it be false or null
         };
+
+        this.fuse = this.getFuseInstance();
+    }
+
+    getFuseInstance = () => {
+        const emojis = selectEmojisByName(state);
+        const options = {
+            findAllMatches: true,
+            ignoreLocation: true,
+            includeMatches: true,
+            shouldSort: false,
+        };
+
+        const list = emojis.length ? emojis : [];
+        return new Fuse(list, options);
     }
 
     componentDidUpdate(prevProps: EmojiPickerProps) {
@@ -192,7 +200,7 @@ class EmojiPicker extends PureComponent<EmojiPickerProps, EmojiPickerState> {
         return nextEmojis;
     };
 
-    measureEmojiSections = (emojiSections: RenderableEmojis[]) => {
+    measureEmojiSections = (emojiSections: RenderableEmojis[]): number[] => {
         let lastOffset = 0;
         return emojiSections.map((section) => {
             const start = lastOffset;
@@ -211,7 +219,7 @@ class EmojiPicker extends PureComponent<EmojiPickerProps, EmojiPickerState> {
         this.setState(nextState);
 
         if (!searchTerm) {
-            nextState.currentSectionIndex = 0; // ??? why ???
+            // nextState.currentSectionIndex = 0; // ??? why ???
             return;
         }
 
@@ -243,7 +251,6 @@ class EmojiPicker extends PureComponent<EmojiPickerProps, EmojiPickerState> {
     };
 
     searchEmojis = (searchTerm: string) => {
-        const {fuse} = this.props;
         const searchTermLowerCase = searchTerm.toLowerCase();
 
         if (!searchTerm) {
@@ -251,7 +258,7 @@ class EmojiPicker extends PureComponent<EmojiPickerProps, EmojiPickerState> {
         }
 
         const sorter = (a, b) => compareEmojis(a, b, searchTermLowerCase);
-        const fuzz = fuse.search(searchTermLowerCase);
+        const fuzz = this.fuse.search(searchTermLowerCase);
         const results = fuzz.reduce((values, r) => {
             const v = r.matches[0]?.value;
             if (v) {
@@ -260,6 +267,7 @@ class EmojiPicker extends PureComponent<EmojiPickerProps, EmojiPickerState> {
 
             return values;
         }, []);
+
         const data = results.sort(sorter);
 
         return data;
@@ -371,6 +379,7 @@ class EmojiPicker extends PureComponent<EmojiPickerProps, EmojiPickerState> {
             this.props.customEmojiPage,
             EMOJIS_PER_PAGE,
         );
+
         this.setState({loadingMore: false});
 
         if (!data) {
@@ -475,9 +484,8 @@ class EmojiPicker extends PureComponent<EmojiPickerProps, EmojiPickerState> {
         const {theme} = this.props;
         const styles = getStyleSheetFromTheme(theme);
 
-        return this.state.emojis.map((section, index) => {
-            const onPress = () =>
-                this.handleSectionIconPress(index, section.key === 'custom');
+        return this.state.emojis.map((section, index: number) => {
+            const onPress = () => this.handleSectionIconPress(index, section.key === 'custom');
 
             return (
                 <TouchableOpacity
