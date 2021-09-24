@@ -11,7 +11,7 @@ import SearchBar from '@components/search_bar';
 import {Device} from '@constants';
 import {changeOpacity, getKeyboardAppearanceFromTheme} from '@utils/theme';
 
-import {getStyleSheetFromTheme, SCROLLVIEW_NATIVE_ID} from './index';
+import {getStyleSheetFromTheme, SCROLL_VIEW_NATIVE_ID} from './index';
 
 type Props = {
     onAnimationComplete: (searchBarAnimationComplete: boolean) => void;
@@ -92,7 +92,7 @@ const EmojiPicker = ({onAnimationComplete, onCancelSearch, onChangeSearchTerm, o
         return (
             <KeyboardTrackingView
                 normalList={true}
-                scrollViewNativeID={SCROLLVIEW_NATIVE_ID}
+                scrollViewNativeID={SCROLL_VIEW_NATIVE_ID}
             >
                 {getSections()}
             </KeyboardTrackingView>

@@ -23,7 +23,7 @@ const EMOJI_GUTTER = 7;
 const EMOJIS_PER_PAGE = 200;
 const SECTION_HEADER_HEIGHT = 28;
 const SECTION_MARGIN = 15;
-export const SCROLLVIEW_NATIVE_ID = 'emojiPicker';
+export const SCROLL_VIEW_NATIVE_ID = 'emojiPicker';
 
 export function filterEmojiSearchInput(searchText: string) {
     return searchText.toLowerCase().replace(/^:|:$/g, '');
@@ -276,7 +276,7 @@ class EmojiPicker extends PureComponent<EmojiPickerProps, EmojiPickerState> {
                     keyboardShouldPersistTaps='always'
                     keyExtractor={this.flatListKeyExtractor}
                     ListEmptyComponent={this.renderEmptyList}
-                    nativeID={SCROLLVIEW_NATIVE_ID}
+                    nativeID={SCROLL_VIEW_NATIVE_ID}
                     renderItem={this.flatListRenderItem}
                     removeClippedSubviews={true}
                     style={styles.flatList}
@@ -292,7 +292,7 @@ class EmojiPicker extends PureComponent<EmojiPickerProps, EmojiPickerState> {
                     initialNumToRender={50}
                     keyboardDismissMode='interactive'
                     keyboardShouldPersistTaps='always'
-                    nativeID={SCROLLVIEW_NATIVE_ID}
+                    nativeID={SCROLL_VIEW_NATIVE_ID}
                     onEndReached={this.loadMoreCustomEmojis}
                     onEndReachedThreshold={Platform.OS === 'ios' ? 0 : 1}
                     onMomentumScrollEnd={this.onMomentumScrollEnd}
