@@ -1,25 +1,26 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React from 'react';
+import React, {useState, useEffect} from 'react';
 import {intlShape, injectIntl} from 'react-intl';
 import {Alert} from 'react-native';
+import {DoAppCall, PostEphemeralCallResponseForPost} from 'types/actions/apps';
 
 import {showAppForm} from '@actions/navigation';
-import {AppCallResponseTypes, AppCallTypes, AppExpandLevels} from '@mm-redux/constants/apps';
+import {Client4} from '@client/rest';
+import {AppBindingLocations, AppCallResponseTypes, AppCallTypes, AppExpandLevels} from '@mm-redux/constants/apps';
 import {ActionResult} from '@mm-redux/types/actions';
 import {AppBinding, AppCallResponse} from '@mm-redux/types/apps';
 import {Post} from '@mm-redux/types/posts';
 import {Theme} from '@mm-redux/types/theme';
 import {UserProfile} from '@mm-redux/types/users';
 import {isSystemMessage} from '@mm-redux/utils/post_utils';
-import {DoAppCall, PostEphemeralCallResponseForPost} from '@mm-types/actions/apps';
 import {createCallContext, createCallRequest} from '@utils/apps';
 
 import PostOption from '../post_option';
 
 type Props = {
-    bindings: AppBinding[];
+    bindings: AppBinding[] | null;
     theme: Theme;
     post: Post;
     currentUser: UserProfile;
@@ -34,13 +35,38 @@ type Props = {
     };
 }
 
+const fetchBindings = (userId: string, channelId: string, teamId: string, setState: React.Dispatch<React.SetStateAction<AppBinding[] | null>>) => {
+    Client4.getAppsBindings(userId, channelId, teamId).then(
+        (allBindings) => {
+            const headerBindings = allBindings.filter((b) => b.location === AppBindingLocations.POST_MENU_ITEM);
+            const postMenuBindings = headerBindings.reduce((accum: AppBinding[], current: AppBinding) => accum.concat(current.bindings || []), []);
+            setState(postMenuBindings);
+        },
+        () => {/* Do nothing */},
+    ).catch(() => {/* Do nothing */});
+};
+
 const Bindings = injectIntl((props: Props) => {
+    const [bindings, setBindings] = useState(props.bindings);
+    useEffect(() => {
+        if (bindings) {
+            return;
+        }
+
+        setBindings([]);
+        if (!props.appsEnabled) {
+            return;
+        }
+
+        fetchBindings(props.currentUser.id, props.post.channel_id, props.teamID, setBindings);
+    }, []);
+
     if (!props.appsEnabled) {
         return null;
     }
 
-    const {bindings, post, ...optionProps} = props;
-    if (bindings.length === 0) {
+    const {post, ...optionProps} = props;
+    if (!bindings || bindings.length === 0) {
         return null;
     }
 

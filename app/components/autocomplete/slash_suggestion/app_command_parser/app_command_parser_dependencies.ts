@@ -37,6 +37,8 @@ export type {
     DoAppCallResult,
 } from 'types/actions/apps';
 
+export {AppsTypes} from '@mm-redux/action_types';
+
 export type {AutocompleteSuggestion};
 
 export type {
@@ -65,7 +67,7 @@ export {
     COMMAND_SUGGESTION_USER,
 } from '@mm-redux/constants/apps';
 
-export {makeAppBindingsSelector} from '@mm-redux/selectors/entities/apps';
+export {makeAppBindingsSelector, makeRHSAppBindingSelector, getAppCommandForm, getAppRHSCommandForm} from '@mm-redux/selectors/entities/apps';
 
 export {getPost} from '@mm-redux/selectors/entities/posts';
 export {getChannel as selectChannel, getCurrentChannel, getChannelByName as selectChannelByName} from '@mm-redux/selectors/entities/channels';

@@ -33,7 +33,11 @@ describe('AppCommandParser', () => {
             ...reduxTestState,
             entities: {
                 ...reduxTestState.entities,
-                apps: {bindings},
+                apps: {
+                    bindings,
+                    threadBindings: bindings,
+                    threadBindingsForms: {},
+                },
             },
         } as any;
         const testStore = await mockStore(initialState);
