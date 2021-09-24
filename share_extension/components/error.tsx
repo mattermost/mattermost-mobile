@@ -11,7 +11,7 @@ interface ShareErrorProps {
     message?: string;
 }
 
-const theme = Preferences.THEMES.default;
+const theme = Preferences.THEMES.denim;
 
 const ShareError = ({message}: ShareErrorProps) => {
     let error;

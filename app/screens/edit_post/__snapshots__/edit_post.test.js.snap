@@ -14,7 +14,7 @@ exports[`EditPost should match snapshot 1`] = `
     <View
       style={
         Object {
-          "backgroundColor": "rgba(61,60,64,0.03)",
+          "backgroundColor": "rgba(63,67,80,0.03)",
           "flex": 1,
         }
       }
@@ -24,9 +24,9 @@ exports[`EditPost should match snapshot 1`] = `
           Array [
             Object {
               "backgroundColor": "#ffffff",
-              "borderBottomColor": "rgba(61,60,64,0.1)",
+              "borderBottomColor": "rgba(63,67,80,0.1)",
               "borderBottomWidth": 1,
-              "borderTopColor": "rgba(61,60,64,0.1)",
+              "borderTopColor": "rgba(63,67,80,0.1)",
               "borderTopWidth": 1,
               "marginTop": 2,
             },
@@ -51,11 +51,11 @@ exports[`EditPost should match snapshot 1`] = `
               "id": "edit_post.editPost",
             }
           }
-          placeholderTextColor="rgba(61,60,64,0.4)"
+          placeholderTextColor="rgba(63,67,80,0.4)"
           style={
             Array [
               Object {
-                "color": "#3d3c40",
+                "color": "#3f4350",
                 "fontSize": 14,
                 "padding": 15,
                 "textAlignVertical": "top",

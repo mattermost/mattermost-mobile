@@ -179,7 +179,7 @@ export default class AttachmentButton extends PureComponent {
 
     attachFileFromLibrary = async () => {
         const options = {
-            quality: 0.8,
+            quality: 1,
             mediaType: 'mixed',
             includeBase64: false,
         };
@@ -232,7 +232,7 @@ export default class AttachmentButton extends PureComponent {
 
         if (hasPermission) {
             try {
-                const res = await DocumentPicker.pick({type: [browseFileTypes]});
+                const res = await DocumentPicker.pickSingle({type: [browseFileTypes]});
                 emmProvider.inBackgroundSince = null;
                 if (Platform.OS === 'android') {
                     // For android we need to retrieve the realPath in case the file being imported is from the cloud

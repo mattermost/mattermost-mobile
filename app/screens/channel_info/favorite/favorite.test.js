@@ -22,7 +22,7 @@ describe('ChannelInfo -> Favorite', () => {
         favoriteChannel: jest.fn(),
         isFavorite: false,
         unfavoriteChannel: jest.fn(),
-        theme: Preferences.THEMES.default,
+        theme: Preferences.THEMES.denim,
     };
 
     test('should match snapshot for Favorite Channel', () => {

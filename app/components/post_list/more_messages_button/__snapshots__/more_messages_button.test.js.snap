@@ -5,7 +5,7 @@ exports[`MoreMessagesButton should match snapshot 1`] = `
   style={
     Array [
       Object {
-        "backgroundColor": "#166de0",
+        "backgroundColor": "#1c58d9",
         "elevation": 1,
         "flex": 1,
         "margin": 8,
@@ -33,7 +33,7 @@ exports[`MoreMessagesButton should match snapshot 1`] = `
       }
     }
     type="native"
-    underlayColor="hsl(214, 50%, 38%)"
+    underlayColor="hsl(221, 50%, 38%)"
   >
     <View
       style={
@@ -47,7 +47,7 @@ exports[`MoreMessagesButton should match snapshot 1`] = `
             "paddingLeft": 11,
             "paddingRight": 5,
             "paddingVertical": 1,
-            "shadowColor": "#3d3c40",
+            "shadowColor": "#3f4350",
             "shadowOffset": Object {
               "height": 6,
               "width": 0,

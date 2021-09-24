@@ -44,7 +44,7 @@ describe('DraftInput', () => {
         maxFileSize: 1024,
         maxMessageLength: 4000,
         rootId: '',
-        theme: Preferences.THEMES.default,
+        theme: Preferences.THEMES.denim,
         uploadFileRequestStatus: 'NOT_STARTED',
         value: '',
         userIsOutOfOffice: false,

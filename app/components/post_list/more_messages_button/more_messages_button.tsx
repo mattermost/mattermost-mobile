@@ -3,7 +3,7 @@
 
 import React from 'react';
 import {intlShape} from 'react-intl';
-import {ActivityIndicator, Animated, AppState, AppStateStatus, Text, View, ViewToken} from 'react-native';
+import {ActivityIndicator, Animated, AppState, AppStateStatus, NativeEventSubscription, Text, View, ViewToken} from 'react-native';
 
 import CompassIcon from '@components/compass_icon';
 import TouchableWithFeedback from '@components/touchable_with_feedback';
@@ -13,7 +13,7 @@ import {messageCount} from '@mm-redux/utils/post_list';
 import {t} from '@utils/i18n';
 import {makeStyleSheetFromTheme, hexToHue} from '@utils/theme';
 
-import type {Theme} from '@mm-redux/types/preferences';
+import type {Theme} from '@mm-redux/types/theme';
 
 const HIDDEN_TOP = -400;
 const SHOWN_TOP = 0;
@@ -64,6 +64,7 @@ export default class MoreMessageButton extends React.PureComponent<MoreMessagesB
         intl: intlShape.isRequired,
     };
 
+    appStateListener: NativeEventSubscription | undefined;
     autoCancelTimer: undefined | null | NodeJS.Timeout;
     buttonVisible = false;
     canceled = false;
@@ -78,14 +79,14 @@ export default class MoreMessageButton extends React.PureComponent<MoreMessagesB
     viewableItems: ViewToken[] = [];
 
     componentDidMount() {
-        AppState.addEventListener('change', this.onAppStateChange);
+        this.appStateListener = AppState.addEventListener('change', this.onAppStateChange);
         EventEmitter.on(ViewTypes.INDICATOR_BAR_VISIBLE, this.onIndicatorBarVisible);
         this.removeViewableItemsListener = this.props.registerViewableItemsListener(this.onViewableItemsChanged);
         this.removeScrollEndIndexListener = this.props.registerScrollEndIndexListener(this.onScrollEndIndex);
     }
 
     componentWillUnmount() {
-        AppState.removeEventListener('change', this.onAppStateChange);
+        this.appStateListener?.remove();
         EventEmitter.off(ViewTypes.INDICATOR_BAR_VISIBLE, this.onIndicatorBarVisible);
         if (this.removeViewableItemsListener) {
             this.removeViewableItemsListener();

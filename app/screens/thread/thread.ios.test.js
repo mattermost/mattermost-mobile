@@ -25,7 +25,7 @@ describe('thread', () => {
         displayName: 'channel_display_name',
         myMember: {last_viewed_at: 0, user_id: 'member_user_id'},
         rootId: 'root_id',
-        theme: Preferences.THEMES.default,
+        theme: Preferences.THEMES.denim,
         postIds: ['root_id', 'post_id_1', 'post_id_2'],
         channelIsArchived: false,
         threadLoadingStatus: {status: RequestStatus.STARTED},

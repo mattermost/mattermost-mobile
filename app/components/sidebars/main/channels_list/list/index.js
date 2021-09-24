@@ -1,24 +1,24 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
-
 import {connect} from 'react-redux';
 
 import {DeviceTypes, ViewTypes} from '@constants';
 import {General} from '@mm-redux/constants';
 import Permissions from '@mm-redux/constants/permissions';
+import {getCategoriesWithFilteredChannelIds} from '@mm-redux/selectors/entities/channel_categories';
 import {
     getSortedFavoriteChannelIds,
     getSortedUnreadChannelIds,
     getOrderedChannelIds,
+    getCurrentChannelId,
 } from '@mm-redux/selectors/entities/channels';
-import {getConfig, getLicense, hasNewPermissions} from '@mm-redux/selectors/entities/general';
 import {getTheme, getFavoritesPreferences, getSidebarPreferences, isCollapsedThreadsEnabled} from '@mm-redux/selectors/entities/preferences';
 import {haveITeamPermission} from '@mm-redux/selectors/entities/roles';
 import {getCurrentTeamId} from '@mm-redux/selectors/entities/teams';
-import {getCurrentUserId, getCurrentUserRoles} from '@mm-redux/selectors/entities/users';
+import {getCurrentUserRoles} from '@mm-redux/selectors/entities/users';
 import {showCreateOption} from '@mm-redux/utils/channel_utils';
 import {memoizeResult} from '@mm-redux/utils/helpers';
-import {isAdmin as checkIsAdmin, isSystemAdmin as checkIsSystemAdmin} from '@mm-redux/utils/user_utils';
+import {shouldShowLegacySidebar} from '@utils/categories';
 
 import List from './list';
 
@@ -32,15 +32,19 @@ const filterZeroUnreads = memoizeResult((sections) => {
 });
 
 function mapStateToProps(state) {
-    const config = getConfig(state);
     const collapsedThreadsEnabled = isCollapsedThreadsEnabled(state);
-    const license = getLicense(state);
-    const roles = getCurrentUserId(state) ? getCurrentUserRoles(state) : '';
     const currentTeamId = getCurrentTeamId(state);
-    const isAdmin = checkIsAdmin(roles);
-    const isSystemAdmin = checkIsSystemAdmin(roles);
     const sidebarPrefs = getSidebarPreferences(state);
     const lastUnreadChannel = DeviceTypes.IS_TABLET ? state.views.channel.keepChannelIdAsUnread : null;
+
+    // Unreads should always be on top in mobile (for now)
+    /*
+    const unreadsOnTop = getBool(state,
+        Preferences.CATEGORY_SIDEBAR_SETTINGS,
+        'show_unread_section');
+    */
+    const unreadsOnTop = true;
+
     const unreadChannelIds = getSortedUnreadChannelIds(state, lastUnreadChannel);
     const favoriteChannelIds = getSortedFavoriteChannelIds(state);
     const orderedChannelIds = filterZeroUnreads(getOrderedChannelIds(
@@ -52,25 +56,33 @@ function mapStateToProps(state) {
         sidebarPrefs.favorite_at_top === 'true' && favoriteChannelIds.length,
     ));
 
-    let canJoinPublicChannels = true;
-    if (hasNewPermissions(state)) {
-        canJoinPublicChannels = haveITeamPermission(state, {
-            team: currentTeamId,
-            permission: Permissions.JOIN_PUBLIC_CHANNELS,
-        });
-    }
-    const canCreatePublicChannels = showCreateOption(state, config, license, currentTeamId, General.OPEN_CHANNEL, isAdmin, isSystemAdmin);
-    const canCreatePrivateChannels = showCreateOption(state, config, license, currentTeamId, General.PRIVATE_CHANNEL, isAdmin, isSystemAdmin);
+    // Grab our categories and channels
+    const categories = getCategoriesWithFilteredChannelIds(state);
+
+    const currentChannelId = getCurrentChannelId(state);
+
+    const canJoinPublicChannels = haveITeamPermission(state, {
+        team: currentTeamId,
+        permission: Permissions.JOIN_PUBLIC_CHANNELS,
+    });
+    const canCreatePublicChannels = showCreateOption(state, currentTeamId, General.OPEN_CHANNEL);
+    const canCreatePrivateChannels = showCreateOption(state, currentTeamId, General.PRIVATE_CHANNEL);
+
+    const showLegacySidebar = shouldShowLegacySidebar(state);
 
     return {
+        theme: getTheme(state),
         canJoinPublicChannels,
         canCreatePrivateChannels,
         canCreatePublicChannels,
         collapsedThreadsEnabled,
-        favoriteChannelIds,
-        theme: getTheme(state),
         unreadChannelIds,
+        favoriteChannelIds,
         orderedChannelIds,
+        categories,
+        showLegacySidebar,
+        unreadsOnTop,
+        currentChannelId,
     };
 }
 

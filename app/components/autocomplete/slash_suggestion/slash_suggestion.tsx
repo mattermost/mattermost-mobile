@@ -8,11 +8,9 @@ import {
     Platform,
 } from 'react-native';
 
-import {Client4} from '@client/rest';
 import {analytics} from '@init/analytics';
 import {Command, AutocompleteSuggestion, CommandArgs} from '@mm-redux/types/integrations';
-import {Theme} from '@mm-redux/types/preferences';
-import {isMinimumServerVersion} from '@mm-redux/utils/helpers';
+import {Theme} from '@mm-redux/types/theme';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 
 import {AppCommandParser} from './app_command_parser/app_command_parser';
@@ -110,25 +108,21 @@ export default class SlashSuggestion extends PureComponent<Props, State> {
             }
 
             this.showBaseCommands(nextValue, nextCommands, this.props.channelId, this.props.currentTeamId, this.props.rootId);
-        } else if (isMinimumServerVersion(Client4.getServerVersion(), 5, 24)) {
-            if (nextSuggestions === prevProps.suggestions) {
-                const args = {
-                    channel_id: prevProps.channelId,
-                    team_id: prevProps.currentTeamId,
-                    ...(prevProps.rootId && {root_id: prevProps.rootId}),
-                };
-                this.props.actions.getCommandAutocompleteSuggestions(nextValue, nextTeamId, args);
-            } else {
-                const matches: AutocompleteSuggestion[] = [];
-                nextSuggestions.forEach((suggestion: AutocompleteSuggestion) => {
-                    if (!this.contains(matches, '/' + suggestion.Complete)) {
-                        matches.push(suggestion);
-                    }
-                });
-                this.updateSuggestions(matches);
-            }
+        } else if (nextSuggestions === prevProps.suggestions) {
+            const args = {
+                channel_id: prevProps.channelId,
+                team_id: prevProps.currentTeamId,
+                ...(prevProps.rootId && {root_id: prevProps.rootId}),
+            };
+            this.props.actions.getCommandAutocompleteSuggestions(nextValue, nextTeamId, args);
         } else {
-            this.setActive(false);
+            const matches: AutocompleteSuggestion[] = [];
+            nextSuggestions.forEach((suggestion: AutocompleteSuggestion) => {
+                if (!this.contains(matches, '/' + suggestion.Complete)) {
+                    matches.push(suggestion);
+                }
+            });
+            this.updateSuggestions(matches);
         }
     }
 

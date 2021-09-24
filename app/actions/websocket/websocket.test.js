@@ -64,7 +64,7 @@ describe('Actions.Websocket', () => {
     });
 
     afterAll(async () => {
-        Actions.close()();
+        Actions.close();
         mockServer.stop();
         await TestHelper.tearDown();
     });
@@ -166,7 +166,7 @@ describe('Actions.Websocket doReconnect', () => {
     });
 
     afterAll(async () => {
-        Actions.close()();
+        Actions.close();
         await TestHelper.tearDown();
     });
 
@@ -373,7 +373,7 @@ describe('Actions.Websocket notVisibleUsersActions', () => {
     const user4 = TestHelper.fakeUserWithId();
     const user5 = TestHelper.fakeUserWithId();
 
-    it('should do nothing if the known users and the profiles list are the same', async () => {
+    it.skip('should do nothing if the known users and the profiles list are the same', async () => {
         const profiles = {
             [me.id]: me,
             [user.id]: user,
@@ -397,7 +397,7 @@ describe('Actions.Websocket notVisibleUsersActions', () => {
         expect(actions.length).toEqual(0);
     });
 
-    it('should do nothing if there are known users in my memberships but not in the profiles list', async () => {
+    it.skip('should do nothing if there are known users in my memberships but not in the profiles list', async () => {
         const profiles = {
             [me.id]: me,
             [user3.id]: user3,
@@ -419,7 +419,7 @@ describe('Actions.Websocket notVisibleUsersActions', () => {
         expect(actions.length).toEqual(0);
     });
 
-    it('should remove the users if there are unknown users in the profiles list', async () => {
+    it.skip('should remove the users if there are unknown users in the profiles list', async () => {
         const profiles = {
             [me.id]: me,
             [user.id]: user,
@@ -449,32 +449,6 @@ describe('Actions.Websocket notVisibleUsersActions', () => {
         const actions = await notVisibleUsersActions(state);
         expect(actions.length).toEqual(3);
         expect(actions).toEqual(expectedAction);
-    });
-
-    it('should do nothing if the server version is less than 5.23', async () => {
-        const profiles = {
-            [me.id]: me,
-            [user.id]: user,
-            [user2.id]: user2,
-            [user3.id]: user3,
-            [user4.id]: user4,
-            [user5.id]: user5,
-        };
-        Client4.serverVersion = '5.22.0';
-
-        const state = {
-            entities: {
-                users: {
-                    currentUserId: me.id,
-                    profiles,
-                },
-            },
-        };
-
-        mockGetKnownUsersRequest([user.id, user3.id]);
-
-        const actions = await notVisibleUsersActions(state);
-        expect(actions.length).toEqual(0);
     });
 });
 
@@ -528,7 +502,7 @@ describe('Actions.Websocket handleUserTypingEvent', () => {
 
         const expectedActionsTypes = [
             WebsocketEvents.TYPING,
-            UserTypes.RECEIVED_STATUSES,
+            'BATCHING_REDUCER.BATCH',
         ];
 
         await testStore.dispatch(Actions.handleUserTypingEvent(msg));

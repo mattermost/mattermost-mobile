@@ -50,7 +50,7 @@ exports[`Permalink should match snapshot 1`] = `
           }
         }
       >
-        <ForwardRef
+        <TouchableOpacity
           onPress={[Function]}
           style={
             Object {
@@ -62,11 +62,11 @@ exports[`Permalink should match snapshot 1`] = `
           }
         >
           <CompassIcon
-            color="#3d3c40"
+            color="#3f4350"
             name="close"
             size={20}
           />
-        </ForwardRef>
+        </TouchableOpacity>
         <View
           style={
             Object {
@@ -81,7 +81,7 @@ exports[`Permalink should match snapshot 1`] = `
             numberOfLines={1}
             style={
               Object {
-                "color": "#3d3c40",
+                "color": "#3f4350",
                 "fontSize": 17,
                 "fontWeight": "600",
               }
@@ -101,7 +101,7 @@ exports[`Permalink should match snapshot 1`] = `
         <View
           style={
             Object {
-              "backgroundColor": "rgba(61,60,64,0.2)",
+              "backgroundColor": "rgba(63,67,80,0.2)",
               "height": 1,
             }
           }
@@ -118,7 +118,7 @@ exports[`Permalink should match snapshot 1`] = `
         }
       >
         <Loading
-          color="#3d3c40"
+          color="#3f4350"
           size="large"
           style={Object {}}
         />
@@ -135,7 +135,7 @@ exports[`Permalink should match snapshot 2`] = `
     style={
       Array [
         Object {
-          "color": "#3d3c40",
+          "color": "#3f4350",
           "fontSize": 16,
           "paddingRight": 20,
         },

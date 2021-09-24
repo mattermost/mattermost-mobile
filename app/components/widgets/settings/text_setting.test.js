@@ -8,7 +8,7 @@ import Preferences from '@mm-redux/constants/preferences';
 import TextSetting from './text_setting.js';
 
 describe('components/widgets/settings/TextSetting', () => {
-    const theme = Preferences.THEMES.default;
+    const theme = Preferences.THEMES.denim;
     test('onChange', () => {
         const onChange = jest.fn();
         const wrapper = shallow(

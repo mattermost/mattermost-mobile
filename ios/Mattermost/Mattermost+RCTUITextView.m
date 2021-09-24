@@ -18,6 +18,8 @@
 
 @implementation RCTUITextView (DisableCopyPaste)
 
+#pragma GCC diagnostic ignored "-Wundeclared-selector"
+
 - (BOOL)canPerformAction:(SEL)action withSender:(id)sender
 {
   NSDictionary *response = [[NSUserDefaults standardUserDefaults] dictionaryForKey:@"com.apple.configuration.managed"];

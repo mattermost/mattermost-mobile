@@ -4,6 +4,7 @@
 import PropTypes from 'prop-types';
 import React, {PureComponent} from 'react';
 import {
+    Platform,
     StyleSheet,
     Text,
     TouchableOpacity,
@@ -23,6 +24,7 @@ export default class OptionsModalList extends PureComponent {
             PropTypes.string,
             PropTypes.object,
         ]),
+        subtitle: PropTypes.string,
     };
 
     static defaultProps = {
@@ -57,24 +59,20 @@ export default class OptionsModalList extends PureComponent {
             if (item.text.hasOwnProperty('id')) {
                 textComponent = (
                     <FormattedText
-                        style={[style.optionText, item.textStyle, (!item.icon && {textAlign: 'center'})]}
+                        style={[style.optionText, item.textStyle, (!item.icon && {textAlign: 'left'})]}
                         {...item.text}
                     />
                 );
             } else {
-                textComponent = <Text style={[style.optionText, item.textStyle, (!item.icon && {textAlign: 'center'})]}>{item.text}</Text>;
+                textComponent = <Text style={[style.optionText, item.textStyle, (!item.icon && {textAlign: 'left'})]}>{item.text}</Text>;
             }
 
             return (
-                <View
-                    key={index}
-                    style={[(index < items.length - 1 && style.optionBorder)]}
-                >
+                <View key={index}>
                     <TouchableOpacity
                         onPress={() => this.handleItemPress(item.action)}
                         style={style.option}
                     >
-                        {textComponent}
                         {item.icon &&
                         <CompassIcon
                             name={item.icon}
@@ -82,6 +80,8 @@ export default class OptionsModalList extends PureComponent {
                             style={optionIconStyle}
                         />
                         }
+                        {textComponent}
+
                     </TouchableOpacity>
                 </View>
             );
@@ -89,6 +89,7 @@ export default class OptionsModalList extends PureComponent {
 
         let title;
         let titleComponent;
+        let subtitleComponent;
         if (this.props.title) {
             if (this.props.title.hasOwnProperty('id')) {
                 titleComponent = (
@@ -101,18 +102,29 @@ export default class OptionsModalList extends PureComponent {
                 titleComponent = <Text style={style.optionTitleText}>{this.props.title}</Text>;
             }
 
+            if (this.props.subtitle) {
+                subtitleComponent = (
+                    <Text
+                        key='subtitle'
+                        style={style.optionSubTitleText}
+                    >{this.props.subtitle}</Text>
+                );
+            }
+
             title = (
                 <View
                     key={items.length}
-                    style={[style.option, style.optionBorder]}
+                    style={[style.option, {paddingBottom: this.props.subtitle ? 0 : 10}]}
                 >
                     {titleComponent}
+
                 </View>
             );
         }
 
         return [
             title,
+            subtitleComponent,
             ...options,
         ];
     };
@@ -123,18 +135,6 @@ export default class OptionsModalList extends PureComponent {
                 <View style={style.wrapper}>
                     <View style={[style.optionContainer]}>
                         {this.renderOptions()}
-                    </View>
-                    <View style={style.optionContainer}>
-                        <TouchableOpacity
-                            onPress={this.handleCancelPress}
-                            style={style.option}
-                        >
-                            <FormattedText
-                                id='channel_modal.cancel'
-                                defaultMessage='Cancel'
-                                style={style.optionCancelText}
-                            />
-                        </TouchableOpacity>
                     </View>
                 </View>
             </View>
@@ -148,38 +148,53 @@ const style = StyleSheet.create({
         alignItems: 'center',
         flexDirection: 'row',
         justifyContent: 'space-between',
-        padding: 15,
+        paddingHorizontal: 20,
+        paddingVertical: 10,
         width: '100%',
-    },
-    optionBorder: {
-        borderBottomWidth: 1,
-        borderBottomColor: 'rgba(0, 0, 0, 0.1)',
-    },
-    optionCancelText: {
-        color: '#CC3239',
-        flex: 1,
-        fontSize: 20,
-        textAlign: 'center',
     },
     optionContainer: {
         alignSelf: 'stretch',
         backgroundColor: 'white',
-        borderRadius: 12,
-        marginBottom: 20,
-        marginHorizontal: 20,
+        borderTopLeftRadius: 12,
+        borderTopRightRadius: 12,
+        paddingVertical: 10,
+        ...Platform.select({
+            ios: {
+                paddingBottom: 25,
+            },
+            android: {
+                marginBottom: -10,
+            },
+        }),
+
     },
     optionIcon: {
-        color: '#4E8ACC',
+        color: 'rgba(61, 60, 64, 0.64)',
+        paddingRight: 10,
     },
     optionText: {
-        color: '#4E8ACC',
+        color: '#3D3C40',
         flex: 1,
-        fontSize: 20,
+        fontSize: 16,
+        lineHeight: 24,
+        fontWeight: '400',
     },
     optionTitleText: {
-        color: '#7f8180',
-        flex: 1,
-        textAlign: 'center',
+        fontSize: 24,
+        lineHeight: 32,
+        fontWeight: '600',
+        color: '#3D3C40',
+        width: '100%',
+        textAlign: 'left',
+    },
+    optionSubTitleText: {
+        width: '100%',
+        fontSize: 16,
+        lineHeight: 24,
+        color: 'rgba(61, 60, 64, 0.64)',
+        textAlign: 'left',
+        paddingHorizontal: 20,
+        paddingBottom: 10,
     },
     container: {
         flex: 1,
@@ -189,5 +204,9 @@ const style = StyleSheet.create({
     wrapper: {
         maxWidth: 450,
         width: '100%',
+    },
+    break: {
+        flexBasis: '100%',
+        height: 0,
     },
 });

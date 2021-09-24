@@ -10,7 +10,7 @@ import {AppCallResponseTypes, AppCallTypes} from '@mm-redux/constants/apps';
 import {ActionResult} from '@mm-redux/types/actions';
 import {AppBinding} from '@mm-redux/types/apps';
 import {Channel} from '@mm-redux/types/channels';
-import {Theme} from '@mm-redux/types/preferences';
+import {Theme} from '@mm-redux/types/theme';
 import {DoAppCall, PostEphemeralCallResponseForChannel} from '@mm-types/actions/apps';
 import Separator from '@screens/channel_info/separator';
 import {createCallContext, createCallRequest} from '@utils/apps';
@@ -93,7 +93,9 @@ class Option extends React.PureComponent<OptionProps, OptionState> {
             return;
         }
 
-        if (!binding.call) {
+        const call = binding.form?.call || binding.call;
+
+        if (!call) {
             return;
         }
 
@@ -103,14 +105,20 @@ class Option extends React.PureComponent<OptionProps, OptionState> {
             currentChannel.id,
             currentChannel.team_id || currentTeamId,
         );
-        const call = createCallRequest(
-            binding.call,
+        const callRequest = createCallRequest(
+            call,
             context,
         );
 
+        if (binding.form) {
+            await dismissModal();
+            showAppForm(binding.form, callRequest, theme);
+            return;
+        }
+
         this.setState({submitting: true});
 
-        const res = await doAppCall(call, AppCallTypes.SUBMIT, intl);
+        const res = await doAppCall(callRequest, AppCallTypes.SUBMIT, intl);
 
         this.setState({submitting: false});
 
@@ -174,7 +182,6 @@ class Option extends React.PureComponent<OptionProps, OptionState> {
                     action={this.onPress}
                     defaultMessage={binding.label}
                     theme={theme}
-                    textId={binding.app_id + binding.location}
                     image={binding.icon ? {uri: binding.icon} : null}
                 />
             </>

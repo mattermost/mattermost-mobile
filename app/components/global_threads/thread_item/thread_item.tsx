@@ -19,7 +19,7 @@ import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 import ThreadFooter from '../thread_footer';
 
-import type {Theme} from '@mm-redux/types/preferences';
+import type {Theme} from '@mm-redux/types/theme';
 
 export type DispatchProps = {
     actions: {
