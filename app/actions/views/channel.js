@@ -22,7 +22,6 @@ import {
 import {savePreferences} from '@mm-redux/actions/preferences';
 import {addUserToTeam, getTeamByName, removeUserFromTeam, selectTeam} from '@mm-redux/actions/teams';
 import {General, Preferences} from '@mm-redux/constants';
-import {appsEnabled} from '@mm-redux/selectors/entities/apps';
 import {
     getCurrentChannelId,
     getRedirectChannelNameForTeam,

@@ -5,7 +5,6 @@ import {createSelector} from 'reselect';
 
 import {AppBinding} from '@mm-redux/types/apps';
 import {GlobalState} from '@mm-redux/types/store';
-
 import {appsEnabled} from '@utils/apps';
 
 export function getThreadAppsBindingsChannelId(state: GlobalState): string {
