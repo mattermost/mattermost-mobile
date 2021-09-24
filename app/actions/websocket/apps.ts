@@ -8,7 +8,7 @@ import {getThreadAppsBindingsChannelId} from '@mm-redux/selectors/entities/apps'
 import {getCurrentChannelId} from '@mm-redux/selectors/entities/common';
 import {getCurrentUserId} from '@mm-redux/selectors/entities/users';
 import {ActionResult, DispatchFunc, GetStateFunc} from '@mm-redux/types/actions';
-import {appsEnabled} from '@utils/apps';
+import {appsEnabled, appsConfiguredAsEnabled} from '@utils/apps';
 
 export function handleRefreshAppsBindings() {
     return (dispatch: DispatchFunc, getState: GetStateFunc): ActionResult => {
@@ -42,7 +42,11 @@ export function handleAppsPluginDisabled() {
 }
 
 export function pingAppsPlugin() {
-    return async (dispatch: DispatchFunc) => {
+    return async (dispatch: DispatchFunc, getState: GetStateFunc) => {
+        if (!appsConfiguredAsEnabled(getState())) {
+            return {data: true};
+        }
+
         try {
             await Client4.pingAppsPlugin();
         } catch (err) {

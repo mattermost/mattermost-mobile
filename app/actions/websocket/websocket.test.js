@@ -93,7 +93,9 @@ describe('Actions.Websocket doReconnect', () => {
     const initialState = {
         entities: {
             general: {
-                config: {},
+                config: {
+                    FeatureFlagAppsEnabled: 'false',
+                },
             },
             teams: {
                 currentTeamId,
@@ -197,7 +199,6 @@ describe('Actions.Websocket doReconnect', () => {
         const expectedActions = [
             'BATCH_WS_SUCCESS',
             'BATCH_WS_RECONNECT',
-            'BATCHING_REDUCER.BATCH',
         ];
 
         mockConfigRequest();
@@ -216,9 +217,6 @@ describe('Actions.Websocket doReconnect', () => {
         await TestHelper.wait(300);
         const actionTypes = testStore.getActions().map((a) => a.type);
         expect(actionTypes).toEqual(expectedActions);
-
-        const fetchBindingsAction = testStore.getActions()[2].payload[1];
-        expect(fetchBindingsAction.type).toEqual('FAILED_TO_FETCH_APP_BINDINGS');
     });
 
     it('handle doReconnect after the current channel was archived or the user left it', async () => {
@@ -282,7 +280,6 @@ describe('Actions.Websocket doReconnect', () => {
         const expectedActions = [
             'BATCH_WS_SUCCESS',
             'BATCH_WS_RECONNECT',
-            'BATCHING_REDUCER.BATCH',
         ];
 
         mockConfigRequest({ExperimentalViewArchivedChannels: 'true'});
@@ -302,9 +299,6 @@ describe('Actions.Websocket doReconnect', () => {
 
         const actions = testStore.getActions().map((a) => a.type);
         expect(actions).toEqual(expect.arrayContaining(expectedActions));
-
-        const fetchBindingsAction = testStore.getActions()[2].payload[1];
-        expect(fetchBindingsAction.type).toEqual('FAILED_TO_FETCH_APP_BINDINGS');
     });
 
     it('handle doReconnect after the current channel was archived and setting is off', async () => {
@@ -382,6 +376,54 @@ describe('Actions.Websocket doReconnect', () => {
         const actions = testStore.getActions().map((a) => a.type);
         expect(actions).toEqual(expectedActions);
         expect(actions).not.toEqual(expect.arrayContaining(expectedMissingActions));
+    });
+
+    it('handle doReconnect apps are enabled', async () => {
+        const state = {
+            ...initialState,
+            entities: {
+                ...initialState.entities,
+                general: {
+                    ...initialState.entities.general,
+                    config: {
+                        ...initialState.entities.general.config,
+                        FeatureFlagAppsEnabled: 'true',
+                    },
+                },
+            },
+        };
+
+        const testStore = await mockStore(state);
+        const timestamp = 1000;
+        let expectedActions = [
+            'BATCH_WS_SUCCESS',
+            'APPS_PLUGIN_DISABLED',
+        ];
+
+        // Test unavailable case
+        nock(Client4.getAppsProxyRoute()).
+            get('/api/v1/ping').
+            reply(404);
+
+        await testStore.dispatch(Actions.doReconnect(timestamp));
+        await TestHelper.wait(300);
+        let actionTypes = testStore.getActions().map((a) => a.type);
+        expect(actionTypes).toEqual(expectedActions);
+
+        // Test available case
+        nock(Client4.getAppsProxyRoute()).
+            get('/api/v1/ping').
+            reply(200, {version: '0.8.0'});
+
+        expectedActions = [
+            'BATCH_WS_SUCCESS',
+            'APPS_PLUGIN_ENABLED',
+        ];
+
+        await testStore.dispatch(Actions.doReconnect(timestamp));
+        await TestHelper.wait(300);
+        actionTypes = testStore.getActions().map((a) => a.type).slice(2);
+        expect(actionTypes).toEqual(expectedActions);
     });
 });
 
