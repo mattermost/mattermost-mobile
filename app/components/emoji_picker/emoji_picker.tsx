@@ -3,12 +3,7 @@
 
 import React, {useCallback} from 'react';
 import {useIntl} from 'react-intl';
-import {
-    KeyboardAvoidingView,
-    Platform,
-    useWindowDimensions,
-    View,
-} from 'react-native';
+import {KeyboardAvoidingView, Platform, useWindowDimensions, View} from 'react-native';
 import {SafeAreaView} from 'react-native-safe-area-context';
 import {KeyboardTrackingView} from 'react-native-ui-lib/keyboard';
 
@@ -16,34 +11,21 @@ import SearchBar from '@components/search_bar';
 import {Device} from '@constants';
 import {changeOpacity, getKeyboardAppearanceFromTheme} from '@utils/theme';
 
-import {
-    getStyleSheetFromTheme,
-    SCROLLVIEW_NATIVE_ID,
-} from './emoji_picker_base';
+import {getStyleSheetFromTheme, SCROLLVIEW_NATIVE_ID} from './index';
 
-// extends EmojiPickerBase
 type Props = {
-    searchTerm: string;
-    theme: Theme;
-    testID: string;
-    onChangeSearchTerm: (term: string) => void;
-    onCancelSearch: (term: string) => void;
     onAnimationComplete: (searchBarAnimationComplete: boolean) => void;
-    renderSectionIcons: () => void;
-    renderListComponent: (margin: number) => JSX.Element;
+    onCancelSearch: (term: string) => void;
+    onChangeSearchTerm: (term: string) => void;
     onSetSearchBarRef: (ref: any) => void;
+    renderListComponent: (margin: number) => JSX.Element;
+    renderSectionIcons: () => void;
+    searchTerm: string;
+    testID: string;
+    theme: Theme;
 };
 
-const EmojiPicker = ({
-    onAnimationComplete,
-    onCancelSearch,
-    onChangeSearchTerm,
-    onSetSearchBarRef,
-    renderListComponent,
-    searchTerm,
-    testID,
-    theme,
-}: Props) => {
+const EmojiPicker = ({onAnimationComplete, onCancelSearch, onChangeSearchTerm, onSetSearchBarRef, renderListComponent, searchTerm, testID, theme}: Props) => {
     const {formatMessage} = useIntl();
     const {height, width} = useWindowDimensions();
 
@@ -117,15 +99,13 @@ const EmojiPicker = ({
         );
     }, []);
 
-    const shorten = Device.IS_IPHONE_WITH_INSETS && isLandscape ? 6 : 2;
-    const marginCoeff = isAndroid ? 2 : shorten;
-
     const renderContent = useCallback(() => {
+        const shorten = Device.IS_IPHONE_WITH_INSETS && isLandscape ? 6 : 2;
         return (
             <React.Fragment>
                 {renderSearchBar()}
                 <View style={styles.container}>
-                    {renderListComponent(marginCoeff)}
+                    {renderListComponent(isAndroid ? 2 : shorten)}
                     {getSectionIcons()}
                 </View>
             </React.Fragment>
