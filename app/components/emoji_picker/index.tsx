@@ -57,7 +57,7 @@ type EmojiPickerProps = {
 type EmojiPickerState = {
     emojis: RenderableEmojis[];
     emojiSectionIndexByOffset: number[];
-    filteredEmojis: [];
+    filteredEmojis: string[];
     searchTerm: string;
     currentSectionIndex: number;
     missingPages: boolean;
@@ -250,23 +250,27 @@ class EmojiPicker extends PureComponent<EmojiPickerProps, EmojiPickerState> {
         });
     };
 
-    searchEmojis = (searchTerm: string) => {
+    searchEmojis = (searchTerm: string): string[] => {
         const searchTermLowerCase = searchTerm.toLowerCase();
 
         if (!searchTerm) {
             return [];
         }
 
-        const sorter = (a, b) => compareEmojis(a, b, searchTermLowerCase);
+        const sorter = (a: string, b: string) => {
+            return compareEmojis(a, b, searchTermLowerCase);
+        };
+
         const fuzz = this.fuse.search(searchTermLowerCase);
+
         const results = fuzz.reduce((values, r) => {
-            const v = r.matches[0]?.value;
+            const v = r?.matches?.[0]?.value;
             if (v) {
                 values.push(v);
             }
 
             return values;
-        }, []);
+        }, [] as string[]);
 
         const data = results.sort(sorter);
 
