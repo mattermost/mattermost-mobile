@@ -25,7 +25,6 @@ export default class OptionsModalList extends PureComponent {
             PropTypes.object,
         ]),
         subtitle: PropTypes.string,
-        hideCancel: PropTypes.bool,
     };
 
     static defaultProps = {
@@ -48,7 +47,7 @@ export default class OptionsModalList extends PureComponent {
     });
 
     renderOptions = () => {
-        const {items, hideCancel} = this.props;
+        const {items} = this.props;
 
         const options = items.map((item, index) => {
             let textComponent;
@@ -87,20 +86,6 @@ export default class OptionsModalList extends PureComponent {
                 </View>
             );
         });
-
-        const cancel = (
-            <TouchableOpacity
-                key={'cancel-button'}
-                onPress={this.handleCancelPress}
-                style={style.option}
-            >
-                <FormattedText
-                    id='channel_modal.cancel'
-                    defaultMessage='Cancel'
-                    style={style.optionText}
-                />
-            </TouchableOpacity>
-        );
 
         let title;
         let titleComponent;
@@ -141,7 +126,6 @@ export default class OptionsModalList extends PureComponent {
             title,
             subtitleComponent,
             ...options,
-            hideCancel ? null : cancel,
         ];
     };
 
