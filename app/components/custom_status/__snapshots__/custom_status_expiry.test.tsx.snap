@@ -5,7 +5,7 @@ exports[`components/custom_status/custom_status_expiry should match snapshot 1`]
   style={
     Array [
       Object {
-        "color": "#3d3c40",
+        "color": "#3f4350",
         "fontSize": 15,
       },
       Object {},
@@ -24,7 +24,7 @@ exports[`components/custom_status/custom_status_expiry should match snapshot wit
   style={
     Array [
       Object {
-        "color": "#3d3c40",
+        "color": "#3f4350",
         "fontSize": 15,
       },
       Object {},

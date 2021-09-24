@@ -8,7 +8,7 @@ import {PostAction} from '@mm-redux/types/integration_actions';
 import ActionButton from './action_button';
 import ActionMenu from './action_menu';
 
-import type {Theme} from '@mm-redux/types/preferences';
+import type {Theme} from '@mm-redux/types/theme';
 
 type Props = {
     actions: PostAction[];

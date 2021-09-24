@@ -169,6 +169,12 @@ describe('Actions.Views.Channel', () => {
             apps: {
                 pluginEnabled: true,
             },
+            general: {
+                config: {
+                    EnableLegacySidebar: 'true',
+                },
+                serverVersion: '5.12.0',
+            },
         },
     };
 

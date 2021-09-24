@@ -181,10 +181,10 @@ const NetworkIndicator = ({
             }
         });
 
-        AppState.addEventListener('change', handleAppStateChange);
+        const listener = AppState.addEventListener('change', handleAppStateChange);
 
         return () => {
-            AppState.removeEventListener('change', handleAppStateChange);
+            listener.remove();
             if (clearNotificationTimeout.current && AppState.currentState !== 'active') {
                 clearTimeout(clearNotificationTimeout.current);
             }

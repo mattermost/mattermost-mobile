@@ -12,7 +12,6 @@ import {getTheme} from '@mm-redux/selectors/entities/preferences';
 import {getCurrentTeamId} from '@mm-redux/selectors/entities/teams';
 import {isTimezoneEnabled} from '@mm-redux/selectors/entities/timezone';
 import {getCurrentUser} from '@mm-redux/selectors/entities/users';
-import {isMinimumServerVersion} from '@mm-redux/utils/helpers';
 import {getUserCurrentTimezone} from '@mm-redux/utils/timezone_utils';
 import {makePreparePostIdsForSearchPosts} from '@selectors/post_list';
 import {getDeviceUtcOffset, getUtcOffsetForTimeZone} from '@utils/timezone';
@@ -45,9 +44,6 @@ function makeMapStateToProps() {
         const userCurrentTimezone = enableTimezone ? getUserCurrentTimezone(currentUser.timezone) : '';
         const timezoneOffsetInSeconds = (userCurrentTimezone.length > 0 ? getUtcOffsetForTimeZone(userCurrentTimezone) : getDeviceUtcOffset()) * 60;
 
-        const serverVersion = state.entities.general.serverVersion;
-        const enableDateSuggestion = isMinimumServerVersion(serverVersion, 5, 3);
-
         const isSearchGettingMore = state.entities.search.isSearchGettingMore;
 
         return {
@@ -58,7 +54,6 @@ function makeMapStateToProps() {
             recent: recent[currentTeamId],
             isSearchGettingMore,
             theme: getTheme(state),
-            enableDateSuggestion,
             timezoneOffsetInSeconds,
             viewArchivedChannels,
         };

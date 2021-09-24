@@ -48,7 +48,7 @@ describe('components/autocomplete/app_slash_suggestion', () => {
         currentTeamId: '',
         isSearch: false,
         maxListHeight: 50,
-        theme: Preferences.THEMES.default,
+        theme: Preferences.THEMES.denim,
         onChangeText: jest.fn(),
         onResultCountChange: jest.fn(),
         value: '',
@@ -109,7 +109,7 @@ describe('components/autocomplete/app_slash_suggestion', () => {
         expect(wrapper.state('dataSource')).toEqual([]);
     });
 
-    test('should show commands from app sub commands', async (done) => {
+    test('should show commands from app sub commands', (done?: jest.DoneCallback) => {
         const props: Props = {
             ...baseProps,
         };
@@ -132,7 +132,9 @@ describe('components/autocomplete/app_slash_suggestion', () => {
 
         setTimeout(() => {
             expect(wrapper.state('dataSource')).toEqual(expected);
-            done();
+            if (done) {
+                done();
+            }
         });
     });
 

@@ -23,9 +23,10 @@ exports[`screens/date_time_selector should match snapshot 1`] = `
   >
     <View
       accessibilityRole="button"
-      accessibilityState={Object {}}
       accessible={true}
+      collapsable={false}
       focusable={true}
+      nativeID="animatedComponent"
       onClick={[Function]}
       onResponderGrant={[Function]}
       onResponderMove={[Function]}
@@ -57,7 +58,7 @@ exports[`screens/date_time_selector should match snapshot 1`] = `
                 "textAlign": "center",
               },
               Object {
-                "color": "#166de0",
+                "color": "#1c58d9",
               },
             ]
           }
@@ -68,9 +69,10 @@ exports[`screens/date_time_selector should match snapshot 1`] = `
     </View>
     <View
       accessibilityRole="button"
-      accessibilityState={Object {}}
       accessible={true}
+      collapsable={false}
       focusable={true}
+      nativeID="animatedComponent"
       onClick={[Function]}
       onResponderGrant={[Function]}
       onResponderMove={[Function]}
@@ -102,7 +104,7 @@ exports[`screens/date_time_selector should match snapshot 1`] = `
                 "textAlign": "center",
               },
               Object {
-                "color": "#166de0",
+                "color": "#1c58d9",
               },
             ]
           }

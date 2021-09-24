@@ -43,6 +43,7 @@ import {
     getCurrentTeam,
     selectChannelByName,
     errorMessage as parserErrorMessage,
+    filterEmptyOptions,
     autocompleteUsersInChannel,
     autocompleteChannels,
     ExtendedAutocompleteSuggestion,
@@ -1296,7 +1297,8 @@ export class AppCommandParser {
             }));
         }
 
-        const items = callResponse?.data?.items;
+        let items = callResponse?.data?.items;
+        items = items?.filter(filterEmptyOptions);
         if (!items?.length) {
             return [{
                 Complete: '',
@@ -1322,7 +1324,7 @@ export class AppCommandParser {
             }
             return ({
                 Complete: complete,
-                Description: s.label,
+                Description: s.label || s.value,
                 Suggestion: s.value,
                 Hint: '',
                 IconData: s.icon_data || parsed.binding?.icon || '',

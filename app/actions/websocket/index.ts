@@ -22,12 +22,12 @@ import {GlobalState} from '@mm-redux/types/store';
 import {TeamMembership} from '@mm-redux/types/teams';
 import {WebSocketMessage} from '@mm-redux/types/websocket';
 import EventEmitter from '@mm-redux/utils/event_emitter';
-import {isMinimumServerVersion} from '@mm-redux/utils/helpers';
 import {removeUserFromList} from '@mm-redux/utils/user_utils';
 import {getChannelSinceValue} from '@utils/channels';
 import websocketClient from '@websocket';
 
 import {handleAppsPluginDisabled, handleAppsPluginEnabled, handleRefreshAppsBindings} from './apps';
+import {handleSidebarCategoryCreated, handleSidebarCategoryDeleted, handleSidebarCategoryOrderUpdated, handleSidebarCategoryUpdated} from './categories';
 import {
     handleChannelConvertedEvent,
     handleChannelCreatedEvent,
@@ -99,7 +99,7 @@ export function doFirstConnect(now: number) {
         const {lastDisconnectAt} = state.websocket;
         const actions: Array<GenericAction> = [wsConnected(now)];
 
-        if (isMinimumServerVersion(Client4.getServerVersion(), 5, 14) && lastDisconnectAt) {
+        if (lastDisconnectAt) {
             const currentUserId = getCurrentUserId(state);
             const users = getUsers(state);
             const userIds = Object.keys(users);
@@ -221,7 +221,7 @@ export function doReconnect(now: number) {
                     });
                 }
 
-                if (isMinimumServerVersion(Client4.getServerVersion(), 5, 14) && lastDisconnectAt) {
+                if (lastDisconnectAt) {
                     const userIds = Object.keys(users);
                     const userUpdates = await Client4.getProfilesByIds(userIds, {since: lastDisconnectAt});
 
@@ -416,6 +416,14 @@ function handleEvent(msg: WebSocketMessage) {
             return dispatch(handleAppsPluginEnabled());
         case WebsocketEvents.APPS_FRAMEWORK_PLUGIN_DISABLED:
             return dispatch(handleAppsPluginDisabled());
+        case WebsocketEvents.SIDEBAR_CATEGORY_CREATED:
+            return dispatch(handleSidebarCategoryCreated(msg));
+        case WebsocketEvents.SIDEBAR_CATEGORY_UPDATED:
+            return dispatch(handleSidebarCategoryUpdated(msg));
+        case WebsocketEvents.SIDEBAR_CATEGORY_DELETED:
+            return dispatch(handleSidebarCategoryDeleted(msg));
+        case WebsocketEvents.SIDEBAR_CATEGORY_ORDER_UPDATED:
+            return dispatch(handleSidebarCategoryOrderUpdated(msg));
         }
 
         return {data: true};

@@ -20,7 +20,7 @@ exports[`Settings SelectTimezone should match snapshot 1`] = `
   <View
     style={
       Object {
-        "backgroundColor": "#1153ab",
+        "backgroundColor": "#192a4d",
         "height": 44,
         "paddingLeft": 8,
         "width": "100%",
@@ -67,28 +67,21 @@ exports[`Settings SelectTimezone should match snapshot 1`] = `
   </View>
   <FlatList
     data={Array []}
-    disableVirtualization={false}
     getItemLayout={[Function]}
-    horizontal={false}
-    initialNumToRender={10}
     initialScrollIndex={1}
     keyExtractor={[Function]}
     keyboardDismissMode="on-drag"
     keyboardShouldPersistTaps="always"
     maxToRenderPerBatch={15}
     numColumns={1}
-    onEndReachedThreshold={2}
     removeClippedSubviews={true}
     renderItem={[Function]}
-    scrollEventThrottle={50}
-    updateCellsBatchingPeriod={50}
     viewabilityConfig={
       Object {
         "itemVisiblePercentThreshold": 100,
         "waitForInteraction": false,
       }
     }
-    windowSize={21}
   />
 </RNCSafeAreaView>
 `;

@@ -49,5 +49,9 @@ const WebsocketEvents = {
     APPS_FRAMEWORK_REFRESH_BINDINGS: 'custom_com.mattermost.apps_refresh_bindings',
     APPS_FRAMEWORK_PLUGIN_ENABLED: 'custom_com.mattermost.apps_plugin_enabled',
     APPS_FRAMEWORK_PLUGIN_DISABLED: 'custom_com.mattermost.apps_plugin_disabled',
+    SIDEBAR_CATEGORY_CREATED: 'sidebar_category_created',
+    SIDEBAR_CATEGORY_UPDATED: 'sidebar_category_updated',
+    SIDEBAR_CATEGORY_DELETED: 'sidebar_category_deleted',
+    SIDEBAR_CATEGORY_ORDER_UPDATED: 'sidebar_category_order_updated',
 };
 export default WebsocketEvents;

@@ -15,7 +15,7 @@ describe('EditPost', () => {
             editPost: jest.fn(),
         },
         post: {},
-        theme: Preferences.THEMES.default,
+        theme: Preferences.THEMES.denim,
     };
 
     test('should match snapshot', () => {

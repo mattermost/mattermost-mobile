@@ -9,7 +9,7 @@ import ClearButton from '@components/custom_status/clear_button';
 import CustomStatusText from '@components/custom_status/custom_status_text';
 import Emoji from '@components/emoji';
 import {durationValues} from '@constants/custom_status';
-import {Theme} from '@mm-redux/types/preferences';
+import {Theme} from '@mm-redux/types/theme';
 import {CustomStatusDuration, UserCustomStatus} from '@mm-redux/types/users';
 import {preventDoubleTap} from '@utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';

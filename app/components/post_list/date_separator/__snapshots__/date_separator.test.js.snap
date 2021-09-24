@@ -17,7 +17,7 @@ exports[`DateHeader component should match snapshot when timezone is UserTimezon
   <View
     style={
       Object {
-        "backgroundColor": "#3d3c40",
+        "backgroundColor": "#3f4350",
         "flex": 1,
         "height": 1,
         "opacity": 0.2,
@@ -62,38 +62,38 @@ exports[`DateHeader component should match snapshot when timezone is UserTimezon
       }
       style={
         Object {
-          "color": "#3d3c40",
+          "color": "#3f4350",
           "fontSize": 14,
           "fontWeight": "600",
         }
       }
       theme={
         Object {
-          "awayIndicator": "#ffbc42",
-          "buttonBg": "#166de0",
+          "awayIndicator": "#ffbc1f",
+          "buttonBg": "#1c58d9",
           "buttonColor": "#ffffff",
           "centerChannelBg": "#ffffff",
-          "centerChannelColor": "#3d3c40",
+          "centerChannelColor": "#3f4350",
           "codeTheme": "github",
-          "dndIndicator": "#f74343",
-          "errorTextColor": "#fd5960",
-          "linkColor": "#2389d7",
+          "dndIndicator": "#d24b4e",
+          "errorTextColor": "#d24b4e",
+          "linkColor": "#386fe5",
           "mentionBg": "#ffffff",
-          "mentionBj": "#ffffff",
-          "mentionColor": "#145dbf",
-          "mentionHighlightBg": "#ffe577",
-          "mentionHighlightLink": "#166de0",
-          "newMessageSeparator": "#ff8800",
-          "onlineIndicator": "#06d6a0",
-          "sidebarBg": "#145dbf",
-          "sidebarHeaderBg": "#1153ab",
+          "mentionColor": "#1e325c",
+          "mentionHighlightBg": "#ffd470",
+          "mentionHighlightLink": "#1b1d22",
+          "newMessageSeparator": "#cc8f00",
+          "onlineIndicator": "#3db887",
+          "sidebarBg": "#1e325c",
+          "sidebarHeaderBg": "#192a4d",
           "sidebarHeaderTextColor": "#ffffff",
+          "sidebarTeamBarBg": "#14213e",
           "sidebarText": "#ffffff",
-          "sidebarTextActiveBorder": "#579eff",
+          "sidebarTextActiveBorder": "#5d89ea",
           "sidebarTextActiveColor": "#ffffff",
-          "sidebarTextHoverBg": "#4578bf",
+          "sidebarTextHoverBg": "#28427b",
           "sidebarUnreadText": "#ffffff",
-          "type": "Mattermost",
+          "type": "Denim",
         }
       }
       timezone={
@@ -108,7 +108,7 @@ exports[`DateHeader component should match snapshot when timezone is UserTimezon
   <View
     style={
       Object {
-        "backgroundColor": "#3d3c40",
+        "backgroundColor": "#3f4350",
         "flex": 1,
         "height": 1,
         "opacity": 0.2,
@@ -135,7 +135,7 @@ exports[`DateHeader component should match snapshot when timezone is UserTimezon
   <View
     style={
       Object {
-        "backgroundColor": "#3d3c40",
+        "backgroundColor": "#3f4350",
         "flex": 1,
         "height": 1,
         "opacity": 0.2,
@@ -180,38 +180,38 @@ exports[`DateHeader component should match snapshot when timezone is UserTimezon
       }
       style={
         Object {
-          "color": "#3d3c40",
+          "color": "#3f4350",
           "fontSize": 14,
           "fontWeight": "600",
         }
       }
       theme={
         Object {
-          "awayIndicator": "#ffbc42",
-          "buttonBg": "#166de0",
+          "awayIndicator": "#ffbc1f",
+          "buttonBg": "#1c58d9",
           "buttonColor": "#ffffff",
           "centerChannelBg": "#ffffff",
-          "centerChannelColor": "#3d3c40",
+          "centerChannelColor": "#3f4350",
           "codeTheme": "github",
-          "dndIndicator": "#f74343",
-          "errorTextColor": "#fd5960",
-          "linkColor": "#2389d7",
+          "dndIndicator": "#d24b4e",
+          "errorTextColor": "#d24b4e",
+          "linkColor": "#386fe5",
           "mentionBg": "#ffffff",
-          "mentionBj": "#ffffff",
-          "mentionColor": "#145dbf",
-          "mentionHighlightBg": "#ffe577",
-          "mentionHighlightLink": "#166de0",
-          "newMessageSeparator": "#ff8800",
-          "onlineIndicator": "#06d6a0",
-          "sidebarBg": "#145dbf",
-          "sidebarHeaderBg": "#1153ab",
+          "mentionColor": "#1e325c",
+          "mentionHighlightBg": "#ffd470",
+          "mentionHighlightLink": "#1b1d22",
+          "newMessageSeparator": "#cc8f00",
+          "onlineIndicator": "#3db887",
+          "sidebarBg": "#1e325c",
+          "sidebarHeaderBg": "#192a4d",
           "sidebarHeaderTextColor": "#ffffff",
+          "sidebarTeamBarBg": "#14213e",
           "sidebarText": "#ffffff",
-          "sidebarTextActiveBorder": "#579eff",
+          "sidebarTextActiveBorder": "#5d89ea",
           "sidebarTextActiveColor": "#ffffff",
-          "sidebarTextHoverBg": "#4578bf",
+          "sidebarTextHoverBg": "#28427b",
           "sidebarUnreadText": "#ffffff",
-          "type": "Mattermost",
+          "type": "Denim",
         }
       }
       timezone={
@@ -226,7 +226,7 @@ exports[`DateHeader component should match snapshot when timezone is UserTimezon
   <View
     style={
       Object {
-        "backgroundColor": "#3d3c40",
+        "backgroundColor": "#3f4350",
         "flex": 1,
         "height": 1,
         "opacity": 0.2,
@@ -253,7 +253,7 @@ exports[`DateHeader component should match snapshot when timezone is set 1`] = `
   <View
     style={
       Object {
-        "backgroundColor": "#3d3c40",
+        "backgroundColor": "#3f4350",
         "flex": 1,
         "height": 1,
         "opacity": 0.2,
@@ -298,38 +298,38 @@ exports[`DateHeader component should match snapshot when timezone is set 1`] = `
       }
       style={
         Object {
-          "color": "#3d3c40",
+          "color": "#3f4350",
           "fontSize": 14,
           "fontWeight": "600",
         }
       }
       theme={
         Object {
-          "awayIndicator": "#ffbc42",
-          "buttonBg": "#166de0",
+          "awayIndicator": "#ffbc1f",
+          "buttonBg": "#1c58d9",
           "buttonColor": "#ffffff",
           "centerChannelBg": "#ffffff",
-          "centerChannelColor": "#3d3c40",
+          "centerChannelColor": "#3f4350",
           "codeTheme": "github",
-          "dndIndicator": "#f74343",
-          "errorTextColor": "#fd5960",
-          "linkColor": "#2389d7",
+          "dndIndicator": "#d24b4e",
+          "errorTextColor": "#d24b4e",
+          "linkColor": "#386fe5",
           "mentionBg": "#ffffff",
-          "mentionBj": "#ffffff",
-          "mentionColor": "#145dbf",
-          "mentionHighlightBg": "#ffe577",
-          "mentionHighlightLink": "#166de0",
-          "newMessageSeparator": "#ff8800",
-          "onlineIndicator": "#06d6a0",
-          "sidebarBg": "#145dbf",
-          "sidebarHeaderBg": "#1153ab",
+          "mentionColor": "#1e325c",
+          "mentionHighlightBg": "#ffd470",
+          "mentionHighlightLink": "#1b1d22",
+          "newMessageSeparator": "#cc8f00",
+          "onlineIndicator": "#3db887",
+          "sidebarBg": "#1e325c",
+          "sidebarHeaderBg": "#192a4d",
           "sidebarHeaderTextColor": "#ffffff",
+          "sidebarTeamBarBg": "#14213e",
           "sidebarText": "#ffffff",
-          "sidebarTextActiveBorder": "#579eff",
+          "sidebarTextActiveBorder": "#5d89ea",
           "sidebarTextActiveColor": "#ffffff",
-          "sidebarTextHoverBg": "#4578bf",
+          "sidebarTextHoverBg": "#28427b",
           "sidebarUnreadText": "#ffffff",
-          "type": "Mattermost",
+          "type": "Denim",
         }
       }
       timezone="America/New_York"
@@ -338,7 +338,7 @@ exports[`DateHeader component should match snapshot when timezone is set 1`] = `
   <View
     style={
       Object {
-        "backgroundColor": "#3d3c40",
+        "backgroundColor": "#3f4350",
         "flex": 1,
         "height": 1,
         "opacity": 0.2,
@@ -365,7 +365,7 @@ exports[`DateHeader component should match snapshot with suffix 1`] = `
   <View
     style={
       Object {
-        "backgroundColor": "#3d3c40",
+        "backgroundColor": "#3f4350",
         "flex": 1,
         "height": 1,
         "opacity": 0.2,
@@ -410,38 +410,38 @@ exports[`DateHeader component should match snapshot with suffix 1`] = `
       }
       style={
         Object {
-          "color": "#3d3c40",
+          "color": "#3f4350",
           "fontSize": 14,
           "fontWeight": "600",
         }
       }
       theme={
         Object {
-          "awayIndicator": "#ffbc42",
-          "buttonBg": "#166de0",
+          "awayIndicator": "#ffbc1f",
+          "buttonBg": "#1c58d9",
           "buttonColor": "#ffffff",
           "centerChannelBg": "#ffffff",
-          "centerChannelColor": "#3d3c40",
+          "centerChannelColor": "#3f4350",
           "codeTheme": "github",
-          "dndIndicator": "#f74343",
-          "errorTextColor": "#fd5960",
-          "linkColor": "#2389d7",
+          "dndIndicator": "#d24b4e",
+          "errorTextColor": "#d24b4e",
+          "linkColor": "#386fe5",
           "mentionBg": "#ffffff",
-          "mentionBj": "#ffffff",
-          "mentionColor": "#145dbf",
-          "mentionHighlightBg": "#ffe577",
-          "mentionHighlightLink": "#166de0",
-          "newMessageSeparator": "#ff8800",
-          "onlineIndicator": "#06d6a0",
-          "sidebarBg": "#145dbf",
-          "sidebarHeaderBg": "#1153ab",
+          "mentionColor": "#1e325c",
+          "mentionHighlightBg": "#ffd470",
+          "mentionHighlightLink": "#1b1d22",
+          "newMessageSeparator": "#cc8f00",
+          "onlineIndicator": "#3db887",
+          "sidebarBg": "#1e325c",
+          "sidebarHeaderBg": "#192a4d",
           "sidebarHeaderTextColor": "#ffffff",
+          "sidebarTeamBarBg": "#14213e",
           "sidebarText": "#ffffff",
-          "sidebarTextActiveBorder": "#579eff",
+          "sidebarTextActiveBorder": "#5d89ea",
           "sidebarTextActiveColor": "#ffffff",
-          "sidebarTextHoverBg": "#4578bf",
+          "sidebarTextHoverBg": "#28427b",
           "sidebarUnreadText": "#ffffff",
-          "type": "Mattermost",
+          "type": "Denim",
         }
       }
       timezone={null}
@@ -450,7 +450,7 @@ exports[`DateHeader component should match snapshot with suffix 1`] = `
   <View
     style={
       Object {
-        "backgroundColor": "#3d3c40",
+        "backgroundColor": "#3f4350",
         "flex": 1,
         "height": 1,
         "opacity": 0.2,
@@ -477,7 +477,7 @@ exports[`DateHeader component should match snapshot without suffix 1`] = `
   <View
     style={
       Object {
-        "backgroundColor": "#3d3c40",
+        "backgroundColor": "#3f4350",
         "flex": 1,
         "height": 1,
         "opacity": 0.2,
@@ -522,38 +522,38 @@ exports[`DateHeader component should match snapshot without suffix 1`] = `
       }
       style={
         Object {
-          "color": "#3d3c40",
+          "color": "#3f4350",
           "fontSize": 14,
           "fontWeight": "600",
         }
       }
       theme={
         Object {
-          "awayIndicator": "#ffbc42",
-          "buttonBg": "#166de0",
+          "awayIndicator": "#ffbc1f",
+          "buttonBg": "#1c58d9",
           "buttonColor": "#ffffff",
           "centerChannelBg": "#ffffff",
-          "centerChannelColor": "#3d3c40",
+          "centerChannelColor": "#3f4350",
           "codeTheme": "github",
-          "dndIndicator": "#f74343",
-          "errorTextColor": "#fd5960",
-          "linkColor": "#2389d7",
+          "dndIndicator": "#d24b4e",
+          "errorTextColor": "#d24b4e",
+          "linkColor": "#386fe5",
           "mentionBg": "#ffffff",
-          "mentionBj": "#ffffff",
-          "mentionColor": "#145dbf",
-          "mentionHighlightBg": "#ffe577",
-          "mentionHighlightLink": "#166de0",
-          "newMessageSeparator": "#ff8800",
-          "onlineIndicator": "#06d6a0",
-          "sidebarBg": "#145dbf",
-          "sidebarHeaderBg": "#1153ab",
+          "mentionColor": "#1e325c",
+          "mentionHighlightBg": "#ffd470",
+          "mentionHighlightLink": "#1b1d22",
+          "newMessageSeparator": "#cc8f00",
+          "onlineIndicator": "#3db887",
+          "sidebarBg": "#1e325c",
+          "sidebarHeaderBg": "#192a4d",
           "sidebarHeaderTextColor": "#ffffff",
+          "sidebarTeamBarBg": "#14213e",
           "sidebarText": "#ffffff",
-          "sidebarTextActiveBorder": "#579eff",
+          "sidebarTextActiveBorder": "#5d89ea",
           "sidebarTextActiveColor": "#ffffff",
-          "sidebarTextHoverBg": "#4578bf",
+          "sidebarTextHoverBg": "#28427b",
           "sidebarUnreadText": "#ffffff",
-          "type": "Mattermost",
+          "type": "Denim",
         }
       }
       timezone={null}
@@ -562,7 +562,7 @@ exports[`DateHeader component should match snapshot without suffix 1`] = `
   <View
     style={
       Object {
-        "backgroundColor": "#3d3c40",
+        "backgroundColor": "#3f4350",
         "flex": 1,
         "height": 1,
         "opacity": 0.2,
