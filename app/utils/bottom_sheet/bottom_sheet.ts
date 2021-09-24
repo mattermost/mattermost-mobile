@@ -21,7 +21,6 @@ export default {
             title: options.title || '',
             items,
             subtitle: options.subtitle,
-            hideCancel: options.hideCancel,
         });
     },
 };

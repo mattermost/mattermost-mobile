@@ -239,7 +239,6 @@ export default class List extends PureComponent {
             title: 'Add Channels',
             subtitle: `To the ${category.display_name} category`,
             cancelButtonIndex,
-            hideCancel: true,
         }, (value) => {
             if (value !== cancelButtonIndex) {
                 actions[value]();
