@@ -8,6 +8,7 @@ import FontAwesome5Icon from 'react-native-vector-icons/FontAwesome5';
 import {showModalOverCurrentContext, mergeNavigationOptions, popTopScreen} from '@actions/navigation';
 import CompassIcon from '@components/compass_icon';
 import VoiceAvatar from '@components/voice_channels/voice_avatar';
+import VoiceCallDuration from '@components/voice_channels/voice_call_duration';
 import {GenericAction} from '@mm-redux/types/actions';
 import {displayUsername} from '@mm-redux/utils/user_utils';
 import {makeStyleSheetFromTheme} from '@utils/theme';
@@ -186,7 +187,11 @@ const VoiceCallScreen = (props: Props) => {
         <SafeAreaView style={style.wrapper}>
             <View style={style.container}>
                 <View style={style.header}>
-                    <Text style={style.time}>{'21:48'}</Text>
+                    <VoiceCallDuration
+                        style={style.time}
+                        value={props.call.startTime}
+                        updateIntervalInSeconds={1}
+                    />
                     <Pressable
                         onPress={() => popTopScreen()}
                     >
