@@ -1,8 +1,19 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {Client4} from '@client/rest';
 import {VoiceCallsTypes} from '@mm-redux/action_types';
-import {GenericAction} from '@mm-redux/types/actions';
+import {GenericAction, ActionFunc} from '@mm-redux/types/actions';
+
+import {bindClientFunc} from './helpers';
+
+export function loadVoiceCalls(): ActionFunc {
+    return bindClientFunc({
+        clientFunc: Client4.getVoiceCalls,
+        onSuccess: VoiceCallsTypes.RECEIVED_VOICE_CALLS,
+        params: [],
+    });
+}
 
 // TODO: Remove this whenever we have the real backend connection
 export function addFakeCall(channelId: string): GenericAction {

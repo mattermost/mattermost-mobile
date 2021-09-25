@@ -290,6 +290,10 @@ export default class ClientBase {
         return `${this.url}/plugins/com.mattermost.apps`;
     }
 
+    getVoiceCallsRoute() {
+        return `${this.url}/plugins/com.mattermost.calls`;
+    }
+
     // Client Helpers
     handleRedirectProtocol = (url: string, response: RNFetchBlobFetchRepsonse) => {
         const serverUrl = this.getUrl();

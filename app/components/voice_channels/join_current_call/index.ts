@@ -19,6 +19,7 @@ function mapStateToProps(state: GlobalState) {
     return {
         theme: getTheme(state),
         call: call === currentCall ? null : call,
+        confirmToJoin: Boolean(currentCall && call),
     };
 }
 

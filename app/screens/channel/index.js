@@ -9,6 +9,7 @@ import {selectDefaultTeam} from '@actions/views/select_team';
 import {Client4} from '@client/rest';
 import {ViewTypes} from '@constants';
 import {getChannelStats} from '@mm-redux/actions/channels';
+import {loadVoiceCalls} from '@mm-redux/actions/voiceCalls';
 import {getCurrentChannelId} from '@mm-redux/selectors/entities/channels';
 import {getServerVersion} from '@mm-redux/selectors/entities/general';
 import {getSelectedPost} from '@mm-redux/selectors/entities/posts';
@@ -64,6 +65,7 @@ function mapDispatchToProps(dispatch) {
             loadChannelsForTeam,
             selectDefaultTeam,
             selectInitialChannel,
+            loadVoiceCalls,
         }, dispatch),
     };
 }

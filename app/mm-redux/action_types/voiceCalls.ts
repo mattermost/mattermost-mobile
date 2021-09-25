@@ -4,6 +4,7 @@
 import keyMirror from '@mm-redux/utils/key_mirror';
 
 export default keyMirror({
+    RECEIVED_VOICE_CALLS: null,
     RECEIVED_VOICE_CALL_STARTED: null,
     RECEIVED_VOICE_CALL_FINISHED: null,
     RECEIVED_JOINED_VOICE_CALL: null,

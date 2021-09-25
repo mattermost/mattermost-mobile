@@ -19,6 +19,7 @@ import ClientSharedChannels, {ClientSharedChannelsMix} from './shared_channels';
 import ClientTeams, {ClientTeamsMix} from './teams';
 import ClientTos, {ClientTosMix} from './tos';
 import ClientUsers, {ClientUsersMix} from './users';
+import ClientVoiceCalls, {ClientVoiceCallsMix} from './voiceCalls';
 
 interface Client extends ClientBase,
     ClientAppsMix,
@@ -34,7 +35,8 @@ interface Client extends ClientBase,
     ClientSharedChannelsMix,
     ClientTeamsMix,
     ClientTosMix,
-    ClientUsersMix
+    ClientUsersMix,
+    ClientVoiceCallsMix
 {}
 
 class Client extends mix(ClientBase).with(
@@ -52,6 +54,7 @@ class Client extends mix(ClientBase).with(
     ClientTeams,
     ClientTos,
     ClientUsers,
+    ClientVoiceCalls,
 ) {}
 
 const Client4 = new Client();

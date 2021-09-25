@@ -24,6 +24,7 @@ export default class ChannelBase extends PureComponent {
             loadChannelsForTeam: PropTypes.func.isRequired,
             selectDefaultTeam: PropTypes.func.isRequired,
             selectInitialChannel: PropTypes.func.isRequired,
+            loadVoiceCalls: PropTypes.func.isRequired,
         }).isRequired,
         componentId: PropTypes.string.isRequired,
         currentChannelId: PropTypes.string,
@@ -102,6 +103,7 @@ export default class ChannelBase extends PureComponent {
             // Only display the Alert if the TOS does not need to show first
             unsupportedServer(isSystemAdmin, this.context.intl.formatMessage);
         }
+        this.props.actions.loadVoiceCalls();
     }
 
     componentDidUpdate(prevProps) {

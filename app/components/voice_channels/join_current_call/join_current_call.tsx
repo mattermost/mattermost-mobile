@@ -1,8 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React from 'react';
-import {View, Text, Platform, Pressable} from 'react-native';
+import React, {useCallback} from 'react';
+import {View, Text, Platform, Pressable, Alert} from 'react-native';
 import FontAwesome5Icon from 'react-native-vector-icons/FontAwesome5';
 
 import Avatars from '@components/avatars';
@@ -19,6 +19,7 @@ type Props = {
     };
     theme: Theme;
     call: Call;
+    confirmToJoin: boolean;
 }
 
 const getStyleSheet = makeStyleSheetFromTheme((props: Props) => {
@@ -81,10 +82,31 @@ const JoinCurrentCall = (props: Props) => {
         return null;
     }
     const style = getStyleSheet(props);
+    const joinHandler = useCallback(() => {
+        if (props.confirmToJoin) {
+            // TODO: Translate it and add the channel names to the text
+            Alert.alert(
+                'Are you sure you want to switch to a different call?',
+                'You are already on a channel call in ~TODO. Do you want to leave your current call and join the call in ~TODO',
+                [
+                    {
+                        text: 'Cancel',
+                    },
+                    {
+                        text: 'Leave & Join',
+                        onPress: () => props.actions.joinCall(props.call.channelId),
+                        style: 'cancel',
+                    },
+                ],
+            );
+        } else {
+            props.actions.joinCall(props.call.channelId);
+        }
+    }, [props.call, props.confirmToJoin]);
     return (
         <Pressable
             style={style.wrapper}
-            onPress={() => props.actions.joinCall(props.call.channelId)}
+            onPress={joinHandler}
         >
             <View style={style.container}>
                 <FontAwesome5Icon

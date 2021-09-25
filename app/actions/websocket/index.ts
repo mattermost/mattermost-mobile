@@ -9,6 +9,7 @@ import {WebsocketEvents} from '@constants';
 import {ChannelTypes, GeneralTypes, PreferenceTypes, TeamTypes, UserTypes, RoleTypes} from '@mm-redux/action_types';
 import {getThreads} from '@mm-redux/actions/threads';
 import {getProfilesByIds, getStatusesByIds} from '@mm-redux/actions/users';
+import {loadVoiceCalls} from '@mm-redux/actions/voiceCalls';
 import {General} from '@mm-redux/constants';
 import {getCurrentChannelId, getCurrentChannelStats} from '@mm-redux/selectors/entities/channels';
 import {getConfig} from '@mm-redux/selectors/entities/general';
@@ -147,6 +148,8 @@ export function doReconnect(now: number) {
             const {data: me}: any = await dispatch(loadMe(null, null, true));
 
             if (!me.error) {
+                dispatch(loadVoiceCalls());
+
                 const roles = [];
 
                 if (me.roles?.length) {

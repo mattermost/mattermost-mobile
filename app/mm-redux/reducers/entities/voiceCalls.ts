@@ -9,6 +9,9 @@ import {Call} from '@mm-redux/types/voiceCalls';
 
 function calls(state: Dictionary<Call> = {}, action: GenericAction) {
     switch (action.type) {
+    case VoiceCallsTypes.RECEIVED_VOICE_CALLS: {
+        return action.data;
+    }
     case VoiceCallsTypes.RECEIVED_VOICE_CALL_STARTED: {
         const newCall = action.data;
         const nextState = {...state};
