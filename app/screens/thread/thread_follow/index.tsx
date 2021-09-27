@@ -5,7 +5,7 @@ import React from 'react';
 import {IntlShape} from 'react-intl';
 import {Platform, StyleSheet, Text, TouchableOpacity, View} from 'react-native';
 
-import {Theme} from '@mm-redux/types/preferences';
+import {Theme} from '@mm-redux/types/theme';
 import {changeOpacity} from '@mm-redux/utils/theme_utils';
 import {preventDoubleTap} from '@utils/tap';
 import {makeStyleSheetFromTheme} from '@utils/theme';

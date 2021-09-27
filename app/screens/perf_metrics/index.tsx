@@ -11,7 +11,7 @@ import telemetry, {PerfMetric} from '@telemetry';
 
 import PerfItem from './item';
 
-import type {Theme} from '@mm-redux/types/preferences';
+import type {Theme} from '@mm-redux/types/theme';
 
 const getStyleSheet = makeStyleFromTheme((theme: Theme) => {
     return {

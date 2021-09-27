@@ -370,6 +370,9 @@ function keepChannelIdAsUnread(state = null, action) {
 }
 
 function unreadMessageCount(state = {}, action) {
+    if (!action || !action.data) {
+        return state;
+    }
     switch (action.type) {
     case ChannelTypes.SET_UNREAD_MSG_COUNT: {
         const {channelId, count} = action.data;

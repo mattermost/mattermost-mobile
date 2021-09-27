@@ -1,7 +1,7 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`MainSidebarDrawerButton should match, full snapshot 1`] = `
-<ForwardRef
+<TouchableOpacity
   accessibilityHint="Opens the channels and teams drawer"
   accessibilityLabel="Channels and teams"
   accessibilityRole="button"
@@ -37,11 +37,11 @@ exports[`MainSidebarDrawerButton should match, full snapshot 1`] = `
       />
     </View>
   </View>
-</ForwardRef>
+</TouchableOpacity>
 `;
 
 exports[`MainSidebarDrawerButton should match, full snapshot 2`] = `
-<ForwardRef
+<TouchableOpacity
   accessibilityHint="Opens the channels and teams drawer"
   accessibilityLabel="Channels and teams"
   accessibilityRole="button"
@@ -76,7 +76,7 @@ exports[`MainSidebarDrawerButton should match, full snapshot 2`] = `
       <Badge
         containerStyle={
           Object {
-            "borderColor": "#1153ab",
+            "borderColor": "#192a4d",
             "borderRadius": 14,
             "borderWidth": 2,
             "position": "absolute",
@@ -87,7 +87,7 @@ exports[`MainSidebarDrawerButton should match, full snapshot 2`] = `
         count={1}
         countStyle={
           Object {
-            "color": "#145dbf",
+            "color": "#1e325c",
             "fontSize": 10,
             "fontWeight": "bold",
           }
@@ -107,5 +107,5 @@ exports[`MainSidebarDrawerButton should match, full snapshot 2`] = `
       />
     </View>
   </View>
-</ForwardRef>
+</TouchableOpacity>
 `;

@@ -11,6 +11,7 @@ import {ViewTypes} from '@constants';
 import {getChannelStats} from '@mm-redux/actions/channels';
 import {getCurrentChannelId} from '@mm-redux/selectors/entities/channels';
 import {getServerVersion} from '@mm-redux/selectors/entities/general';
+import {getSelectedPost} from '@mm-redux/selectors/entities/posts';
 import {getTheme, isCollapsedThreadsEnabled} from '@mm-redux/selectors/entities/preferences';
 import {getCurrentTeam} from '@mm-redux/selectors/entities/teams';
 import {getCurrentUserId, getCurrentUserRoles, shouldShowTermsOfService} from '@mm-redux/selectors/entities/users';
@@ -39,6 +40,7 @@ function mapStateToProps(state) {
 
     const currentTeamId = currentTeam?.delete_at === 0 ? currentTeam?.id : '';
     const currentChannelId = currentTeam?.delete_at === 0 ? getCurrentChannelId(state) : '';
+    const collapsedThreadsEnabled = isCollapsedThreadsEnabled(state);
 
     return {
         currentChannelId,
@@ -46,10 +48,12 @@ function mapStateToProps(state) {
         currentUserId,
         isSupportedServer,
         isSystemAdmin,
+        selectedPost: getSelectedPost(state),
+        collapsedThreadsEnabled,
         showTermsOfService: shouldShowTermsOfService(state),
         teamName: currentTeam?.display_name,
         theme: getTheme(state),
-        viewingGlobalThreads: isCollapsedThreadsEnabled(state) && getViewingGlobalThreads(state),
+        viewingGlobalThreads: collapsedThreadsEnabled && getViewingGlobalThreads(state),
     };
 }
 

@@ -7,7 +7,7 @@ import {intlShape} from 'react-intl';
 import {AppCallResponseTypes, AppCallTypes} from '@mm-redux/constants/apps';
 import {ActionResult} from '@mm-redux/types/actions';
 import {AppCallResponse, AppCallRequest, AppField, AppForm, AppFormValues, FormResponseData, AppLookupResponse} from '@mm-redux/types/apps';
-import {Theme} from '@mm-redux/types/preferences';
+import {Theme} from '@mm-redux/types/theme';
 import {DoAppCall, DoAppCallResult, PostEphemeralCallResponseForContext} from '@mm-types/actions/apps';
 import {makeCallErrorResponse} from '@utils/apps';
 

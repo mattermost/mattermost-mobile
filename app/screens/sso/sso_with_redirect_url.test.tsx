@@ -18,7 +18,7 @@ describe('SSO with redirect url', () => {
         onCSRFToken: jest.fn(),
         onMMToken: jest.fn(),
         setLoginError: jest.fn(),
-        theme: Preferences.THEMES.default,
+        theme: Preferences.THEMES.denim,
     };
 
     test('should show message when user navigates to the page', () => {

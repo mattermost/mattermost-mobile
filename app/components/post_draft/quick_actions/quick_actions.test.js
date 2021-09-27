@@ -16,8 +16,9 @@ describe('QuickActions', () => {
         fileCount: 1,
         inputEventType: 'input-event-type',
         maxFileSize: 10,
+        maxFileCount: 10,
         screenId: 'Channel',
-        theme: Preferences.THEMES.default,
+        theme: Preferences.THEMES.denim,
     };
 
     test('should match snapshot', () => {

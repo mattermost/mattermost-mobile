@@ -10,7 +10,7 @@ import {
 
 import FormattedText from '@components/formatted_text';
 import Markdown from '@components/markdown';
-import {Theme} from '@mm-redux/types/preferences';
+import {Theme} from '@mm-redux/types/theme';
 import {getMarkdownBlockStyles, getMarkdownTextStyles} from '@utils/markdown';
 import {
     changeOpacity,

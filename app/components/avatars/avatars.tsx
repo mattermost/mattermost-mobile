@@ -10,7 +10,7 @@ import TouchableWithFeedback from '@components/touchable_with_feedback';
 import {ViewTypes} from '@constants';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
-import type {Theme} from '@mm-redux/types/preferences';
+import type {Theme} from '@mm-redux/types/theme';
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     const size = ViewTypes.AVATAR_LIST_PICTURE_SIZE;

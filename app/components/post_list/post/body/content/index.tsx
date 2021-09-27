@@ -12,7 +12,7 @@ import Opengraph from './opengraph';
 import YouTube from './youtube';
 
 import type {Post} from '@mm-redux/types/posts';
-import type {Theme} from '@mm-redux/types/preferences';
+import type {Theme} from '@mm-redux/types/theme';
 
 type ContentProps = {
     isReplyPost: boolean;

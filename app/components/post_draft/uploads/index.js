@@ -5,10 +5,10 @@ import {connect} from 'react-redux';
 
 import {handleRemoveLastFile, initUploadFiles} from '@actions/views/file_upload';
 import {getCurrentChannelId} from '@mm-redux/selectors/entities/channels';
-import {canUploadFilesOnMobile, getConfig} from '@mm-redux/selectors/entities/general';
+import {canUploadFilesOnMobile, getConfig, getServerVersion} from '@mm-redux/selectors/entities/general';
 import {getDimensions} from '@selectors/device';
 import {checkForFileUploadingInChannel} from '@selectors/file';
-import {getAllowedServerMaxFileSize} from '@utils/file';
+import {getAllowedServerMaxFileSize, getMaxFileCount} from '@utils/file';
 
 import Uploads from './uploads';
 
@@ -24,6 +24,7 @@ function mapStateToProps(state, ownProps) {
         deviceHeight,
         filesUploadingForCurrentChannel: checkForFileUploadingInChannel(state, channelId, ownProps.rootId),
         maxFileSize: getAllowedServerMaxFileSize(config),
+        maxFileCount: getMaxFileCount(getServerVersion(state)),
     };
 }
 

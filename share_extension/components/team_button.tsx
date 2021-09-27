@@ -24,7 +24,7 @@ interface TeamButtonProps {
     team?: Team | null;
 }
 
-const theme = Preferences.THEMES.default;
+const theme = Preferences.THEMES.denim;
 
 const TeamButton = ({intl, onSelect, team}: TeamButtonProps) => {
     const store = useStore();

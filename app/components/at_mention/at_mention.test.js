@@ -16,7 +16,7 @@ describe('AtMention', () => {
         mentionName: 'John.Smith',
         mentionStyle: {color: '#ff0000'},
         textStyle: {backgroundColor: 'yellow'},
-        theme: Preferences.THEMES.default,
+        theme: Preferences.THEMES.denim,
     };
 
     test('should match snapshot, no highlight', () => {

@@ -11,7 +11,7 @@ interface CloseHeaderButtonProps {
     onPress: () => void;
 }
 
-const theme = Preferences.THEMES.default;
+const theme = Preferences.THEMES.denim;
 
 const CloseHeaderButton = ({onPress}: CloseHeaderButtonProps) => {
     return (

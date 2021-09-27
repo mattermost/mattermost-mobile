@@ -10,7 +10,7 @@ import urlParse from 'url-parse';
 import {setDeepLinkURL} from '@actions/views/root';
 import FormattedText from '@components/formatted_text';
 import Loading from '@components/loading';
-import {Theme} from '@mm-redux/types/preferences';
+import {Theme} from '@mm-redux/types/theme';
 import Store from '@store/store';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {tryOpenURL} from '@utils/url';

@@ -17,7 +17,7 @@ jest.mock('app/mattermost_managed', () => ({
 
 describe('SidebarSettings', () => {
     const baseProps = {
-        theme: Preferences.THEMES.default,
+        theme: Preferences.THEMES.denim,
     };
 
     test('should match, full snapshot', async () => {
@@ -54,6 +54,7 @@ describe('SidebarSettings', () => {
                 setChannelDisplayName: jest.fn(),
                 setChannelLoading: jest.fn(),
                 joinChannel: jest.fn(),
+                setCategoryCollapsed: jest.fn(),
             },
             blurPostTextBox: jest.fn(),
             currentTeamId: 'current-team-id',
@@ -61,7 +62,7 @@ describe('SidebarSettings', () => {
             deviceWidth: 10,
             isLandscape: false,
             teamsCount: 2,
-            theme: Preferences.THEMES.default,
+            theme: Preferences.THEMES.denim,
         };
 
         const mainSidebar = shallowWithIntl(

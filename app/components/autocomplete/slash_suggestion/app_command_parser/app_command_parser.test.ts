@@ -33,7 +33,11 @@ describe('AppCommandParser', () => {
             ...reduxTestState,
             entities: {
                 ...reduxTestState.entities,
-                apps: {bindings},
+                apps: {
+                    bindings,
+                    threadBindings: bindings,
+                    threadBindingsForms: {},
+                },
             },
         } as any;
         const testStore = await mockStore(initialState);
@@ -938,6 +942,10 @@ describe('AppCommandParser', () => {
             const {call} = await parser.composeCallFromCommand(cmd);
             expect(call).toEqual({
                 ...base,
+                context: {
+                    ...base.context,
+                    location: '/command/jira/issue/create',
+                },
                 raw_command: cmd,
                 expand: {},
                 query: undefined,
@@ -961,6 +969,10 @@ describe('AppCommandParser', () => {
             const {call} = await parser.composeCallFromCommand(cmd);
             expect(call).toEqual({
                 ...base,
+                context: {
+                    ...base.context,
+                    location: '/command/jira/issue/create',
+                },
                 expand: {},
                 selected_field: undefined,
                 query: undefined,

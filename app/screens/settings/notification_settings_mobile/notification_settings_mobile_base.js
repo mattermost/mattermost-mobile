@@ -86,6 +86,10 @@ export default class NotificationSettingsMobileBase extends PureComponent {
         this.setState({push}, callback);
     };
 
+    setMobilePushThreads = (value, callback) => {
+        this.setState({push_threads: value}, callback);
+    };
+
     setMobilePushStatus = (value, callback) => {
         this.setState({push_status: value}, callback);
     };
@@ -100,6 +104,7 @@ export default class NotificationSettingsMobileBase extends PureComponent {
             mention_keys: mentionKeys,
             push,
             push_status: pushStatus,
+            push_threads: pushThreads,
         } = this.state;
 
         this.props.onBack({
@@ -111,6 +116,7 @@ export default class NotificationSettingsMobileBase extends PureComponent {
             mention_keys: mentionKeys,
             push,
             push_status: pushStatus,
+            push_threads: pushThreads,
             user_id: this.props.currentUser.id,
         });
     };

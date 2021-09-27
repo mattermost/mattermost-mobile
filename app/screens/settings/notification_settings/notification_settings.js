@@ -34,6 +34,7 @@ export default class NotificationSettings extends PureComponent {
         updateMeRequest: PropTypes.object.isRequired,
         currentUserStatus: PropTypes.string.isRequired,
         enableAutoResponder: PropTypes.bool.isRequired,
+        isCollapsedThreadsEnabled: PropTypes.bool.isRequired,
     };
 
     static contextTypes = {
@@ -89,13 +90,15 @@ export default class NotificationSettings extends PureComponent {
     };
 
     goToNotificationSettingsMentions = () => {
-        const {currentUser} = this.props;
+        const {currentUser, isCollapsedThreadsEnabled} = this.props;
         const {intl} = this.context;
         const screen = 'NotificationSettingsMentions';
-        const title = intl.formatMessage({
-            id: 'mobile.notification_settings.mentions_replies',
-            defaultMessage: 'Mentions and Replies',
-        });
+
+        const id = isCollapsedThreadsEnabled ? 'mobile.notification_settings.mentions' : 'mobile.notification.notification_settings.mentions_replies';
+        const defaultMessage = isCollapsedThreadsEnabled ? 'Mentions' : 'Mentions and Replies';
+
+        const title = intl.formatMessage({id, defaultMessage});
+
         const passProps = {
             currentUser,
             onBack: this.saveNotificationProps,
@@ -190,7 +193,7 @@ export default class NotificationSettings extends PureComponent {
     };
 
     render() {
-        const {theme, enableAutoResponder} = this.props;
+        const {theme, enableAutoResponder, isCollapsedThreadsEnabled} = this.props;
         const style = getStyleSheet(theme);
         const showArrow = Platform.OS === 'ios';
 
@@ -210,6 +213,9 @@ export default class NotificationSettings extends PureComponent {
             );
         }
 
+        const mentionsI18nId = isCollapsedThreadsEnabled ? t('mobile.notification_settings.mentions') : t('mobile.notification_settings.mentions_replies');
+        const mentionsI18nDefault = isCollapsedThreadsEnabled ? 'Mentions' : 'Mentions and Replies';
+
         return (
             <SafeAreaView
                 edges={['left', 'right']}
@@ -223,8 +229,8 @@ export default class NotificationSettings extends PureComponent {
                 >
                     <View style={style.divider}/>
                     <SettingsItem
-                        defaultMessage='Mentions and Replies'
-                        i18nId={t('mobile.notification_settings.mentions_replies')}
+                        defaultMessage={mentionsI18nDefault}
+                        i18nId={mentionsI18nId}
                         iconName='at'
                         onPress={() => this.handlePress(this.goToNotificationSettingsMentions)}
                         separator={true}
