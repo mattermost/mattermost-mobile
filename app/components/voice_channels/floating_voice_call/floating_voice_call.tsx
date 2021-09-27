@@ -12,6 +12,8 @@ import {GenericAction} from '@mm-redux/types/actions';
 import {displayUsername} from '@mm-redux/utils/user_utils';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 
+// import {newClient} from '@utils/voice_calls_connection';
+
 import type {Channel} from '@mm-redux/types/channels';
 import type {Theme} from '@mm-redux/types/theme';
 import type {UserProfile} from '@mm-redux/types/users';
@@ -92,10 +94,16 @@ const getStyleSheet = makeStyleSheetFromTheme((props: Props) => {
     };
 });
 
+// let voiceClient ;
+
 const FloatingVoiceCall = (props: Props) => {
     if (!props.call) {
         return null;
     }
+
+    // useEffect(() => {
+    //     voiceClient = newClient(props.call.channelId);
+    // });
     const style = getStyleSheet(props);
     return (
         <View style={style.wrapper}>

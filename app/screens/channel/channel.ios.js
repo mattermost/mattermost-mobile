@@ -5,6 +5,7 @@ import React from 'react';
 import {View} from 'react-native';
 import {SafeAreaView} from 'react-native-safe-area-context';
 
+import {goToScreen} from '@actions/navigation';
 import AnnouncementBanner from '@components/announcement_banner';
 import Autocomplete from '@components/autocomplete';
 import GlobalThreadsList from '@components/global_threads';
@@ -14,6 +15,8 @@ import PostDraft from '@components/post_draft';
 import MainSidebar from '@components/sidebars/main';
 import SettingsSidebar from '@components/sidebars/settings';
 import StatusBar from '@components/status_bar';
+import FloatingVoiceCall from '@components/voice_channels/floating_voice_call';
+import JoinCurrentCall from '@components/voice_channels/join_current_call';
 import DEVICE from '@constants/device';
 import {ACCESSORIES_CONTAINER_NATIVE_ID, CHANNEL_POST_TEXTBOX_CURSOR_CHANGE, CHANNEL_POST_TEXTBOX_VALUE_CHANGE} from '@constants/post_draft';
 import {makeStyleSheetFromTheme} from '@utils/theme';
@@ -141,6 +144,11 @@ export default class ChannelIOS extends ChannelBase {
                 <SettingsSidebar ref={this.settingsSidebarRef}>
                     <View style={style.backdrop}>
                         {drawerContent}
+                        <FloatingVoiceCall
+                            volume={1}
+                            onExpand={() => goToScreen('VoiceCall', 'Voice Call')}
+                        />
+                        <JoinCurrentCall/>
                     </View>
                 </SettingsSidebar>
                 <InteractiveDialogController

@@ -90,6 +90,7 @@
     "semver": "7.3.5",
     "serialize-error": "8.1.0",
     "shallow-equals": "1.0.0",
+    "simple-peer": "9.11.0",
     "tinycolor2": "1.4.2",
     "url-parse": "1.5.3"
   },
@@ -119,6 +120,7 @@
     "@types/react-test-renderer": "17.0.1",
     "@types/semver": "7.3.8",
     "@types/shallow-equals": "1.0.0",
+    "@types/simple-peer": "9.11.3",
     "@types/tinycolor2": "1.4.3",
     "@types/underscore": "1.11.3",
     "@types/url-parse": "1.4.4",

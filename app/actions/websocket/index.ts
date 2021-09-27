@@ -51,6 +51,13 @@ import {handleRoleAddedEvent, handleRoleRemovedEvent, handleRoleUpdatedEvent} fr
 import {handleLeaveTeamEvent, handleUpdateTeamEvent, handleTeamAddedEvent} from './teams';
 import {handleThreadUpdated, handleThreadReadChanged, handleThreadFollowChanged} from './threads';
 import {handleStatusChangedEvent, handleUserAddedEvent, handleUserRemovedEvent, handleUserRoleUpdated, handleUserUpdatedEvent} from './users';
+import {
+    handleVoiceCallStarted,
+    handleVoiceCallUserConnected,
+    handleVoiceCallUserDisconnected,
+    handleVoiceCallUserMuted,
+    handleVoiceCallUserUnmuted,
+} from './voiceCalls';
 
 export function init(additionalOptions: any = {}) {
     return async (dispatch: DispatchFunc, getState: GetStateFunc) => {
@@ -422,6 +429,22 @@ function handleEvent(msg: WebSocketMessage) {
             return dispatch(handleSidebarCategoryDeleted(msg));
         case WebsocketEvents.SIDEBAR_CATEGORY_ORDER_UPDATED:
             return dispatch(handleSidebarCategoryOrderUpdated(msg));
+        case WebsocketEvents.VOICE_CALLS_CHANNEL_ENABLED:
+            // TODO: Not implemented yet
+            return {data: true};
+        case WebsocketEvents.VOICE_CALLS_CHANNEL_DISABLED:
+            // TODO: Not implemented yet
+            return {data: true};
+        case WebsocketEvents.VOICE_CALLS_USER_CONNECTED:
+            return dispatch(handleVoiceCallUserConnected(msg));
+        case WebsocketEvents.VOICE_CALLS_USER_DISCONNECTED:
+            return dispatch(handleVoiceCallUserDisconnected(msg));
+        case WebsocketEvents.VOICE_CALLS_USER_MUTED:
+            return dispatch(handleVoiceCallUserMuted(msg));
+        case WebsocketEvents.VOICE_CALLS_USER_UNMUTED:
+            return dispatch(handleVoiceCallUserUnmuted(msg));
+        case WebsocketEvents.VOICE_CALLS_CALL_START:
+            return dispatch(handleVoiceCallStarted(msg));
         }
 
         return {data: true};

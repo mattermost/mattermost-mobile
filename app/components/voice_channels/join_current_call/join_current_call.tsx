@@ -6,8 +6,8 @@ import {View, Text, Platform, Pressable, Alert} from 'react-native';
 import FontAwesome5Icon from 'react-native-vector-icons/FontAwesome5';
 
 import Avatars from '@components/avatars';
-import FormattedText from '@components/formatted_text';
 import FormattedRelativeTime from '@components/formatted_relative_time';
+import FormattedText from '@components/formatted_text';
 import {GenericAction} from '@mm-redux/types/actions';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 

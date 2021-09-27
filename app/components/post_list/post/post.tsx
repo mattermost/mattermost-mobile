@@ -24,6 +24,7 @@ import Body from './body';
 import Header from './header';
 import PreHeader from './pre_header';
 import SystemMessage from './system_message';
+import VoiceCallMessage from './voice_call_message';
 
 import type {Post as PostType} from '@mm-redux/types/posts';
 import type {Theme} from '@mm-redux/types/theme';
@@ -235,6 +236,13 @@ const Post = ({
     if (isSystemMessage(post) && !isPostEphemeral(post) && !isAutoResponder) {
         body = (
             <SystemMessage
+                post={post}
+                theme={theme}
+            />
+        );
+    } else if (post.type === 'custom_calls') {
+        body = (
+            <VoiceCallMessage
                 post={post}
                 theme={theme}
             />
