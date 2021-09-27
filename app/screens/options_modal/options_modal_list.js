@@ -157,16 +157,13 @@ const style = StyleSheet.create({
         backgroundColor: 'white',
         borderTopLeftRadius: 12,
         borderTopRightRadius: 12,
-        paddingVertical: 10,
+        paddingTop: 10,
+        paddingBottom: 25,
         ...Platform.select({
-            ios: {
-                paddingBottom: 25,
-            },
             android: {
-                marginBottom: -10,
+                marginBottom: [28, 29].includes(Platform.Version) ? -12 : 0, // Fix for Android 28/29
             },
         }),
-
     },
     optionIcon: {
         color: 'rgba(61, 60, 64, 0.64)',
