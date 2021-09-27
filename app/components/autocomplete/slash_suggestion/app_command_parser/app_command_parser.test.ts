@@ -419,6 +419,60 @@ describe('AppCommandParser', () => {
                 command: '/jira issue create --project == test',
                 submit: {expectError: 'Multiple `=` signs are not allowed.'},
             },
+            {
+                title: 'rest field',
+                command: '/jira issue rest hello world',
+                autocomplete: {verify: (parsed: ParsedCommand): void => {
+                    expect(parsed.state).toBe(ParseState.Rest);
+                    expect(parsed.binding?.label).toBe('rest');
+                    expect(parsed.incomplete).toBe('hello world');
+                    expect(parsed.values?.summary).toBe(undefined);
+                }},
+                submit: {verify: (parsed: ParsedCommand): void => {
+                    expect(parsed.state).toBe(ParseState.Rest);
+                    expect(parsed.binding?.label).toBe('rest');
+                    expect(parsed.values?.summary).toBe('hello world');
+                }},
+            },
+            {
+                title: 'rest field with other field',
+                command: '/jira issue rest --verbose true hello world',
+                autocomplete: {verify: (parsed: ParsedCommand): void => {
+                    expect(parsed.state).toBe(ParseState.Rest);
+                    expect(parsed.binding?.label).toBe('rest');
+                    expect(parsed.incomplete).toBe('hello world');
+                    expect(parsed.values?.summary).toBe(undefined);
+                    expect(parsed.values?.verbose).toBe('true');
+                }},
+                submit: {verify: (parsed: ParsedCommand): void => {
+                    expect(parsed.state).toBe(ParseState.Rest);
+                    expect(parsed.binding?.label).toBe('rest');
+                    expect(parsed.values?.summary).toBe('hello world');
+                    expect(parsed.values?.verbose).toBe('true');
+                }},
+            },
+            {
+                title: 'rest field as flag with other field',
+                command: '/jira issue rest --summary "hello world" --verbose true',
+                autocomplete: {verify: (parsed: ParsedCommand): void => {
+                    expect(parsed.state).toBe(ParseState.EndValue);
+                    expect(parsed.binding?.label).toBe('rest');
+                    expect(parsed.incomplete).toBe('true');
+                    expect(parsed.values?.summary).toBe('hello world');
+                    expect(parsed.values?.verbose).toBe(undefined);
+                }},
+                submit: {verify: (parsed: ParsedCommand): void => {
+                    expect(parsed.state).toBe(ParseState.EndValue);
+                    expect(parsed.binding?.label).toBe('rest');
+                    expect(parsed.values?.summary).toBe('hello world');
+                    expect(parsed.values?.verbose).toBe('true');
+                }},
+            },
+            {
+                title: 'error: rest after rest field flag',
+                command: '/jira issue rest --summary "hello world" --verbose true hello world',
+                submit: {expectError: 'Unable to identify argument.'},
+            },
         ];
 
         table.forEach((tc) => {
@@ -508,6 +562,13 @@ describe('AppCommandParser', () => {
                     IconData: 'Create icon',
                     Description: 'Create a new Jira issue',
                 },
+                {
+                    Suggestion: 'rest',
+                    Complete: 'jira issue rest',
+                    Hint: 'rest hint',
+                    IconData: 'rest icon',
+                    Description: 'rest description',
+                },
             ]);
         });
 
@@ -528,6 +589,14 @@ describe('AppCommandParser', () => {
                     IconData: 'Create icon',
                     Description: 'Create a new Jira issue',
                 },
+                {
+                    Suggestion: 'rest',
+                    Complete: 'JiRa IsSuE rest',
+                    Hint: 'rest hint',
+                    IconData: 'rest icon',
+                    Description: 'rest description',
+                },
+
             ]);
         });
 
@@ -859,7 +928,7 @@ describe('AppCommandParser', () => {
             context: {
                 app_id: 'jira',
                 channel_id: 'current_channel_id',
-                location: '/command',
+                location: '/command/jira/issue/create',
                 root_id: 'root_id',
                 team_id: 'team_id',
             },

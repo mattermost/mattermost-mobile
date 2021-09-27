@@ -2,7 +2,6 @@
 // See LICENSE.txt for license information.
 
 import {intlShape} from 'react-intl';
-import {Alert} from 'react-native';
 
 import {getUserByUsername, getUser, autocompleteUsers} from '@mm-redux/actions/users';
 import {getCurrentTeamId, getCurrentTeam} from '@mm-redux/selectors/entities/teams';
@@ -112,14 +111,6 @@ export type ExtendedAutocompleteSuggestion = AutocompleteSuggestion & {
 
 export const getExecuteSuggestion = (_: ParsedCommand): AutocompleteSuggestion | null => { // eslint-disable-line @typescript-eslint/no-unused-vars
     return null;
-};
-
-export const displayError = (intl: typeof intlShape, body: string) => {
-    const title = intl.formatMessage({
-        id: 'mobile.general.error.title',
-        defaultMessage: 'Error',
-    });
-    Alert.alert(title, body);
 };
 
 export const errorMessage = (intl: typeof intlShape, error: string, _command: string, _position: number): string => { // eslint-disable-line @typescript-eslint/no-unused-vars
