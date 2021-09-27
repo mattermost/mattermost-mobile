@@ -4,7 +4,6 @@
 import PropTypes from 'prop-types';
 import React, {PureComponent} from 'react';
 import {
-    Platform,
     StyleSheet,
     Text,
     TouchableOpacity,
@@ -159,11 +158,6 @@ const style = StyleSheet.create({
         borderTopRightRadius: 12,
         paddingTop: 10,
         paddingBottom: 25,
-        ...Platform.select({
-            android: {
-                marginBottom: [28, 29].includes(Platform.Version) ? -12 : 0, // Fix for Android 28/29
-            },
-        }),
     },
     optionIcon: {
         color: 'rgba(61, 60, 64, 0.64)',
@@ -194,9 +188,11 @@ const style = StyleSheet.create({
         paddingBottom: 10,
     },
     container: {
-        flex: 1,
         alignItems: 'center',
         justifyContent: 'flex-end',
+        bottom: 0,
+        height: '100%',
+        width: '100%',
     },
     wrapper: {
         maxWidth: 450,
