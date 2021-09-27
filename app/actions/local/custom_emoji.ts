@@ -1,16 +1,19 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {Database} from '@nozbe/watermelondb';
-
 import {Preferences} from '@constants';
+import {MM_TABLES, SYSTEM_IDENTIFIERS} from '@constants/database';
 import DatabaseManager from '@database/manager';
 import {queryAllCustomEmojis} from '@queries/servers/custom_status';
 import {queryPreferencesByCategoryAndName} from '@queries/servers/preference';
 import {queryCommonSystemValues} from '@queries/servers/system';
-import CustomEmojiModel from '@typings/database/models/servers/custom_emoji';
-import PreferenceModel from '@typings/database/models/servers/preference';
-import {Emojis, EmojiIndicesByAlias} from '@utils/emoji';
+import SystemModel from '@typings/database/models/servers/system';
+import {Emojis, EmojiIndicesByAlias, CategoryNames, EmojiIndicesByCategory, CategoryTranslations, CategoryMessage} from '@utils/emoji';
+import {isCustomEmojiEnabled} from '@utils/emoji/helpers';
+
+import type {Database} from '@nozbe/watermelondb';
+import type CustomEmojiModel from '@typings/database/models/servers/custom_emoji';
+import type PreferenceModel from '@typings/database/models/servers/preference';
 
 type EmojiDetails = {
     name: string;
@@ -37,13 +40,11 @@ const getSkin = (emoji: EmojiDetails) => {
 export const getCustomEmojis = async (database: Database) => {
     try {
         const systemValues = await queryCommonSystemValues(database);
-
-        if (systemValues.config.EnableCustomEmoji !== 'true') {
+        const isCSEnabled = isCustomEmojiEnabled(systemValues.config);
+        if (!isCSEnabled) {
             return {};
         }
-
         const customEmojis = (await queryAllCustomEmojis(database)) as unknown as CustomEmojiModel[];
-
         return {customEmojis};
     } catch (error) {
         return {error};
@@ -81,6 +82,78 @@ export const getEmojisByName = async (serverUrl: string) => {
         }
 
         return {data: Array.from(emoticons)};
+    } catch (error) {
+        return {error};
+    }
+};
+
+const icons = {
+    recent: 'clock-outline',
+    'smileys-emotion': 'emoticon-happy-outline',
+    'people-body': 'eye-outline',
+    'animals-nature': 'leaf-outline',
+    'food-drink': 'food-apple',
+    'travel-places': 'airplane-variant',
+    activities: 'basketball',
+    objects: 'lightbulb-outline',
+    symbols: 'heart-outline',
+    flags: 'flag-outline',
+    custom: 'emoticon-custom-outline',
+};
+
+const categoryToI18n = {};
+CategoryNames.forEach((name: any) => {
+    categoryToI18n[name] = {
+        id: CategoryTranslations.get(name),
+        defaultMessage: CategoryMessage.get(name),
+        icon: icons[name],
+    };
+});
+
+//fixme: you might be doing the same READING twice !!!
+export const selectEmojisBySection = async (serverUrl: string) => {
+    const database = DatabaseManager.serverDatabases[serverUrl]?.database;
+    if (!database) {
+        return {error: `${serverUrl} database not found`};
+    }
+    try {
+        const customEmojiRecords = await getEmojisByName(serverUrl);
+        const recentEmojiRecords = await database.get(MM_TABLES.SERVER.SYSTEM).find(SYSTEM_IDENTIFIERS.RECENT_REACTIONS) as SystemModel;
+        const skinToneRecords = (await queryPreferencesByCategoryAndName(database, Preferences.CATEGORY_EMOJI, Preferences.EMOJI_SKINTONE)) as unknown as PreferenceModel[];
+
+        const skinTone = skinToneRecords?.[0]?.value;
+        const recentEmojis = recentEmojiRecords.value as string[];
+        const customEmojis = customEmojiRecords?.data as string[];
+
+        if (!customEmojis || !skinTone || !recentEmojis) {
+            return {
+                error: 'Something went wrong in fetching the emojis, skin tone and custom emojis',
+            };
+        }
+
+        const customEmojiItems = customEmojis.map((emoji) => ({name: emoji}));
+        const recentItems = recentEmojis.map((emoji) => ({name: emoji}));
+
+        const filteredCategories = CategoryNames.filter((category) => category !== 'recent' || recentItems.length > 0);
+
+        const emoticons = filteredCategories.map((category) => {
+            const data = EmojiIndicesByCategory.get(skinTone!)?.get(category).map(fillEmoji);
+
+            if (category === 'custom') {
+                data.push(...customEmojiItems);
+            } else if (category === 'recent') {
+                data.push(...recentItems);
+            }
+            const section = {
+                ...categoryToI18n[category],
+                key: category,
+                data,
+            };
+
+            return section;
+        });
+
+        return emoticons;
     } catch (error) {
         return {error};
     }

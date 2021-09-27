@@ -19,13 +19,23 @@ type Props = {
     onChangeSearchTerm: (term: string) => void;
     onSetSearchBarRef: (ref: any) => void;
     renderListComponent: (margin: number) => JSX.Element;
-    renderSectionIcons: () => void;
+
+    // renderSectionIcons: () => void;
     searchTerm: string;
     testID: string;
     theme: Theme;
 };
 
-const EmojiPicker = ({onAnimationComplete, onCancelSearch, onChangeSearchTerm, onSetSearchBarRef, renderListComponent, searchTerm, testID, theme}: Props) => {
+const EmojiPicker = ({
+    onAnimationComplete,
+    onCancelSearch,
+    onChangeSearchTerm,
+    onSetSearchBarRef,
+    renderListComponent,
+    searchTerm,
+    testID,
+    theme,
+}: Props) => {
     const {formatMessage} = useIntl();
     const {height, width} = useWindowDimensions();
 

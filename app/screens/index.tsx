@@ -55,7 +55,7 @@ Navigation.setLazyComponentRegistrator((screenName) => {
         screen =  withServerDatabase(require('@screens/about').default);
         break;
     case Screens.ADD_REACTION:
-        screen = require('@screens/add_reaction').default;
+        screen = withServerDatabase(require('@screens/add_reaction').default);
         break;
     // case 'AdvancedSettings':
     //     screen = require('@screens/settings/advanced_settings').default;

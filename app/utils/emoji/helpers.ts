@@ -3,6 +3,8 @@
 
 import emojiRegex from 'emoji-regex';
 
+// import SystemModel from '@typings/database/models/servers/system';
+
 import {Emojis, EmojiIndicesByAlias} from './';
 
 const RE_NAMED_EMOJI = /(:([a-zA-Z0-9_+-]+):)/g;
@@ -188,3 +190,12 @@ export function compareEmojis(emojiA: string | Partial<EmojiType>, emojiB: strin
 
     return doDefaultComparison(aName!, bName!);
 }
+
+export const isCustomEmojiEnabled = (config: ClientConfig) => {
+    //fixme:  uncomment the below
+    // if (config instanceof SystemModel) {
+    //     return config?.value?.EnableCustomEmoji !== 'true';
+    // }
+
+    return config?.EnableCustomEmoji === 'true';
+};

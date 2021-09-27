@@ -239,7 +239,6 @@ const AccountScreen = ({config, currentUser, database}: AccountScreenProps) => {
 const withUserConfig = withObservables([], ({database}: WithDatabaseArgs) => ({
     currentUser: database.get(SYSTEM).findAndObserve(SYSTEM_IDENTIFIERS.CURRENT_USER_ID).pipe(switchMap((id: SystemModel) => database.get(USER).findAndObserve(id.value))),
     config: database.get(SYSTEM).findAndObserve(SYSTEM_IDENTIFIERS.CONFIG).pipe(switchMap((cfg: SystemModel) => of$(cfg.value))),
-}),
-);
+}));
 
 export default withDatabase(withUserConfig(AccountScreen));

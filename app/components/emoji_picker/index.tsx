@@ -1,25 +1,33 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {withDatabase} from '@nozbe/watermelondb/DatabaseProvider';
+import withObservables from '@nozbe/with-observables';
 import Fuse from 'fuse.js';
 import React, {PureComponent} from 'react';
 import {injectIntl, IntlShape} from 'react-intl';
 import {ActivityIndicator, FlatList, Platform, SectionList, Text, TouchableOpacity, View} from 'react-native';
 import sectionListGetItemLayout from 'react-native-section-list-get-item-layout';
+import {of as of$} from 'rxjs';
+import {from as from$} from 'rxjs';
+import {switchMap} from 'rxjs/operators';
 
-import {getEmojisByName} from '@actions/local/custom_emoji';
+import {getEmojisByName, selectEmojisBySection} from '@actions/local/custom_emoji';
 import {getCustomEmojis} from '@actions/remote/custom_emoji';
 import CompassIcon from '@components/compass_icon';
 import Emoji from '@components/emoji';
 import FormattedText from '@components/formatted_text';
 import {Device} from '@constants';
+import {MM_TABLES, SYSTEM_IDENTIFIERS} from '@constants/database';
 import {withServerUrl} from '@context/server_url';
 import {withTheme} from '@context/theme';
-import {compareEmojis} from '@utils/emoji/helpers';
+import {WithDatabaseArgs} from '@typings/database/database';
+import SystemModel from '@typings/database/models/servers/system';
+import {compareEmojis, isCustomEmojiEnabled} from '@utils/emoji/helpers';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
+import EmojiPickerComponent from './emoji_picker';
 import EmojiPickerRow from './emoji_picker_row';
-
 const EMOJI_SIZE = 30;
 const EMOJI_GUTTER = 7;
 const EMOJIS_PER_PAGE = 200;
@@ -32,8 +40,8 @@ export function filterEmojiSearchInput(searchText: string) {
 }
 
 type EmojiPickerProps = {
+    config: ClientConfig;
     customEmojiPage: number;
-    customEmojisEnabled: boolean;
     deviceWidth: number;
     emojis: string;
     emojisBySection: EmojiSection[];
@@ -42,6 +50,7 @@ type EmojiPickerProps = {
     onEmojiPress: (emoji: string) => void;
     serverUrl: string;
     theme: Theme;
+    testID: string;
 }
 
 type EmojiPickerState = {
@@ -56,7 +65,8 @@ type EmojiPickerState = {
 };
 
 class EmojiPicker extends PureComponent<EmojiPickerProps, EmojiPickerState> {
-    private fuse: Promise<Fuse<unknown>> | undefined;
+    private fuse: Fuse<unknown> | null | undefined;
+    private readonly customEmojisEnabled: boolean;
     private readonly sectionListGetItemLayout: any;
     private rebuildEmojis: boolean | undefined;
     private scrollToSectionTries: number;
@@ -74,9 +84,16 @@ class EmojiPicker extends PureComponent<EmojiPickerProps, EmojiPickerState> {
             getSectionHeaderHeight: () => SECTION_HEADER_HEIGHT,
         });
 
-        const emojis = this.renderableEmojis(props.emojisBySection, props.deviceWidth);
+        const {serverUrl, deviceWidth, config} = props;
+
+        //fixme:  wrong place to call this method
+        const emojisBySection = selectEmojisBySection(serverUrl);
+        console.log('>>>  emojisBySection', JSON.stringify(emojisBySection));
+
+        const emojis = this.renderableEmojis(emojisBySection, deviceWidth);
         const emojiSectionIndexByOffset = this.measureEmojiSections(emojis);
 
+        this.customEmojisEnabled = isCustomEmojiEnabled(config);
         this.scrollToSectionTries = 0;
         this.state = {
             currentSectionIndex: 0,
@@ -87,11 +104,13 @@ class EmojiPicker extends PureComponent<EmojiPickerProps, EmojiPickerState> {
             loadingMore: false,
             missingPages: true,
             searchTerm: '',
+
+        //    customEmojiPage : fixme : track this value in State
         };
     }
 
-    componentDidMount() {
-        this.fuse = this.getFuseInstance();
+    async componentDidMount() {
+        this.fuse = await this.getFuseInstance();
     }
 
     getFuseInstance = async () => {
@@ -99,12 +118,7 @@ class EmojiPicker extends PureComponent<EmojiPickerProps, EmojiPickerState> {
 
         const {data: emojis} = await getEmojisByName(serverUrl);
 
-        const options = {
-            findAllMatches: true,
-            ignoreLocation: true,
-            includeMatches: true,
-            shouldSort: false,
-        };
+        const options = {findAllMatches: true, ignoreLocation: true, includeMatches: true, shouldSort: false};
 
         if (emojis) {
             const list = emojis.length ? emojis : [];
@@ -251,20 +265,24 @@ class EmojiPicker extends PureComponent<EmojiPickerProps, EmojiPickerState> {
             return compareEmojis(a, b, searchTermLowerCase);
         };
 
-        const fuzz = this.fuse.search(searchTermLowerCase);
+        const fuzz = this.fuse?.search(searchTermLowerCase);
 
-        const results = fuzz.reduce((values, r) => {
-            const v = r?.matches?.[0]?.value;
-            if (v) {
-                values.push(v);
-            }
+        if (fuzz) {
+            const results = fuzz.reduce((values, r) => {
+                const v = r?.matches?.[0]?.value;
+                if (v) {
+                    values.push(v);
+                }
 
-            return values;
-        }, [] as string[]);
+                return values;
+            }, [] as string[]);
 
-        const data = results.sort(sorter);
+            const data = results.sort(sorter);
 
-        return data;
+            return data;
+        }
+
+        return [];
     };
 
     getNumberOfColumns = (deviceWidth: number) => {
@@ -380,8 +398,8 @@ class EmojiPicker extends PureComponent<EmojiPickerProps, EmojiPickerState> {
     };
 
     loadMoreCustomEmojis = async () => {
-        const {customEmojisEnabled, customEmojiPage, serverUrl} = this.props;
-        if (!customEmojisEnabled) {
+        const {customEmojiPage, serverUrl} = this.props;
+        if (!this.customEmojisEnabled) {
             return;
         }
 
@@ -548,6 +566,24 @@ class EmojiPicker extends PureComponent<EmojiPickerProps, EmojiPickerState> {
             </View>
         );
     };
+
+    render() {
+        const {searchTerm} = this.state;
+        const {testID, theme} = this.props;
+
+        return (
+            <EmojiPickerComponent
+                onAnimationComplete={this.setRebuiltEmojis}
+                onCancelSearch={this.cancelSearch}
+                onChangeSearchTerm={this.changeSearchTerm}
+                onSetSearchBarRef={this.setSearchBarRef}
+                renderListComponent={this.renderListComponent}
+                searchTerm={searchTerm}
+                testID={testID}
+                theme={theme}
+            />
+        );
+    }
 }
 
 export const getStyleSheetFromTheme = makeStyleSheetFromTheme((theme) => {
@@ -685,4 +721,14 @@ export const getStyleSheetFromTheme = makeStyleSheetFromTheme((theme) => {
     };
 });
 
-export default injectIntl(withServerUrl(withTheme(EmojiPicker)));
+const AugmentedEmojiPicker = injectIntl(withServerUrl(withTheme(EmojiPicker)));
+
+const withConfig = withObservables([], ({database}: WithDatabaseArgs) => {
+    //fixme: add the below line of code
+    // const emojisBySection = from;
+    return {
+        config: database.get(MM_TABLES.SERVER.SYSTEM).findAndObserve(SYSTEM_IDENTIFIERS.CONFIG).pipe(switchMap((cfg: SystemModel) => of$(cfg.value))),
+    };
+});
+
+export default withDatabase(withConfig(AugmentedEmojiPicker));
