@@ -29,6 +29,7 @@ import {getUserIdFromChannelName} from '@mm-redux/utils/channel_utils';
 import {parseNeededCustomEmojisFromText} from '@mm-redux/utils/emoji_utils';
 import {isCombinedUserActivityPost} from '@mm-redux/utils/post_list';
 import {isFromWebhook, isSystemMessage, shouldIgnorePost} from '@mm-redux/utils/post_utils';
+import {getThreadLastViewedAt} from '@selectors/threads';
 
 import {getMyChannelMember, markChannelAsUnread, markChannelAsRead, markChannelAsViewed} from './channels';
 import {getCustomEmojiByName, getCustomEmojisByName} from './emojis';
@@ -41,7 +42,6 @@ import {
     savePreferences,
 } from './preferences';
 import {getProfilesByIds, getProfilesByUsernames, getStatusesByIds} from './users';
-import { getThreadLastViewedAt } from '@selectors/threads';
 
 // receivedPost should be dispatched after a single post from the server. This typically happens when an existing post
 // is updated.
