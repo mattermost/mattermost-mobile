@@ -557,7 +557,6 @@ export default class List extends PureComponent {
                     ref={this.setListRef}
                     sections={showLegacySidebar ? sections : categorySections}
                     contentContainerStyle={{paddingBottom}}
-                    removeClippedSubviews={Platform.OS === 'android'}
                     renderItem={showLegacySidebar ? this.renderItem : this.renderCategoryItem}
                     renderSectionHeader={showLegacySidebar ? this.renderSectionHeader : this.renderCategoryHeader}
                     keyboardShouldPersistTaps={'always'}
