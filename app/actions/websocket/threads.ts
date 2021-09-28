@@ -1,7 +1,9 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
+import {updateThreadLastViewedAt} from '@actions/views/threads';
 import {handleThreadArrived, handleReadChanged, handleAllMarkedRead, handleFollowChanged, getThread as fetchThread} from '@mm-redux/actions/threads';
 import {getCurrentUserId} from '@mm-redux/selectors/entities/common';
+import {getSelectedPost} from '@mm-redux/selectors/entities/posts';
 import {getCurrentTeamId} from '@mm-redux/selectors/entities/teams';
 import {getThread} from '@mm-redux/selectors/entities/threads';
 import {ActionResult, DispatchFunc, GetStateFunc} from '@mm-redux/types/actions';
@@ -27,21 +29,27 @@ export function handleThreadReadChanged(msg: WebSocketMessage) {
             const thread = getThread(state, msg.data.thread_id);
 
             // Mark only following threads as read.
-            if (thread?.is_following) {
-                dispatch(
-                    handleReadChanged(
-                        msg.data.thread_id,
-                        msg.broadcast.team_id,
-                        msg.data.channel_id,
-                        {
-                            lastViewedAt: msg.data.timestamp,
-                            prevUnreadMentions: thread.unread_mentions,
-                            newUnreadMentions: msg.data.unread_mentions,
-                            prevUnreadReplies: thread.unread_replies,
-                            newUnreadReplies: msg.data.unread_replies,
-                        },
-                    ),
-                );
+            if (thread) {
+                const selectedPost = getSelectedPost(state);
+                if (selectedPost?.id !== thread.id) {
+                    dispatch(updateThreadLastViewedAt(thread.id, msg.data.timestamp));
+                }
+                if (thread.is_following) {
+                    dispatch(
+                        handleReadChanged(
+                            msg.data.thread_id,
+                            msg.broadcast.team_id,
+                            msg.data.channel_id,
+                            {
+                                lastViewedAt: msg.data.timestamp,
+                                prevUnreadMentions: thread.unread_mentions,
+                                newUnreadMentions: msg.data.unread_mentions,
+                                prevUnreadReplies: thread.unread_replies,
+                                newUnreadReplies: msg.data.unread_replies,
+                            },
+                        ),
+                    );
+                }
             }
         } else {
             dispatch(handleAllMarkedRead(msg.broadcast.team_id));

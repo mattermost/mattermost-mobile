@@ -19,6 +19,7 @@ export default class ThreadBase extends PureComponent {
         actions: PropTypes.shape({
             selectPost: PropTypes.func.isRequired,
             setThreadFollow: PropTypes.func.isRequired,
+            updateThreadLastViewedAt: PropTypes.func,
             updateThreadRead: PropTypes.func,
         }).isRequired,
         componentId: PropTypes.string,
@@ -26,6 +27,7 @@ export default class ThreadBase extends PureComponent {
         collapsedThreadsEnabled: PropTypes.bool,
         currentUserId: PropTypes.string,
         displayName: PropTypes.string,
+        lastViewedAt: PropTypes.number,
         myMember: PropTypes.object.isRequired,
         postIds: PropTypes.array.isRequired,
         rootId: PropTypes.string.isRequired,
@@ -104,11 +106,8 @@ export default class ThreadBase extends PureComponent {
         this.postDraft = React.createRef();
 
         this.state = {
-            lastViewedAt: props.collapsedThreadsEnabled ? props.thread.last_viewed_at : props.myMember?.last_viewed_at,
+            lastViewedAt: props.lastViewedAt,
         };
-
-        // If thread is opened with an unread, then skip updating the state's lastViewedAt to prevent it from hiding "New Messages" immediately after opening the thread
-        this.skipUpdatingLastViewedAt = props.collapsedThreadsEnabled && this.hasUnreadPost();
 
         this.bottomPadding = new Animated.Value(0);
         this.typingAnimations = [];
@@ -126,20 +125,12 @@ export default class ThreadBase extends PureComponent {
             return;
         }
 
-        if (this.props.collapsedThreadsEnabled) {
-            if (this.props.thread.last_viewed_at !== nextProps.thread.last_viewed_at) {
-                if (this.skipUpdatingLastViewedAt) {
-                    // Skip for the first time
-                    this.skipUpdatingLastViewedAt = false;
-                } else {
-                    this.setState({
-                        lastViewedAt: nextProps.thread.last_viewed_at,
-                    });
-                }
-            }
-        } else if (!this.state.lastViewedAt) {
+        if (
+            (!this.props.collapsedThreadsEnabled && !this.state.lastViewedAt) ||
+            (this.props.collapsedThreadsEnabled && this.props.lastViewedAt !== nextProps.lastViewedAt)
+        ) {
             this.setState({
-                lastViewedAt: nextProps.myMember?.last_viewed_at,
+                lastViewedAt: nextProps.lastViewedAt,
             });
         }
 
@@ -172,20 +163,24 @@ export default class ThreadBase extends PureComponent {
     }
 
     markThreadRead(hasNewPost = false) {
-        if (
-            this.props.collapsedThreadsEnabled &&
-            this.props.thread &&
-            this.props.thread.is_following &&
-            (
-                hasNewPost ||
-                this.hasUnreadPost()
-            )
-        ) {
-            this.props.actions.updateThreadRead(
-                this.props.currentUserId,
-                this.props.rootId,
-                Date.now(),
-            );
+        const {thread} = this.props;
+
+        if (this.props.collapsedThreadsEnabled && thread?.is_following) {
+            // Update lastViewedAt on marking thread as read on openining the screen.
+            if (!hasNewPost) {
+                this.props.actions.updateThreadLastViewedAt(
+                    thread.id,
+                    thread.last_viewed_at,
+                );
+            }
+
+            if (hasNewPost || this.hasUnreadPost()) {
+                this.props.actions.updateThreadRead(
+                    this.props.currentUserId,
+                    this.props.rootId,
+                    Date.now(),
+                );
+            }
         }
     }
 
