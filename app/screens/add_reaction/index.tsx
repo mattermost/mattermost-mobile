@@ -24,7 +24,7 @@ type AddReactionProps = {
 };
 
 const AddReaction = ({closeButton, componentId, onEmojiPress}: AddReactionProps) => {
-    const {width} = useWindowDimensions();
+    const {height, width} = useWindowDimensions();
 
     const theme = useTheme();
     const intl = useIntl();
@@ -71,6 +71,7 @@ const AddReaction = ({closeButton, componentId, onEmojiPress}: AddReactionProps)
             style={styles.container}
         >
             <EmojiPicker
+                isLandscape={width > height}
                 deviceWidth={width}
                 intl={intl}
                 onEmojiPress={handleEmojiPress}

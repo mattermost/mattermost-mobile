@@ -27,6 +27,7 @@ import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 import EmojiPickerComponent from './emoji_picker';
 import EmojiPickerRow from './emoji_picker_row';
+
 const EMOJI_SIZE = 30;
 const EMOJI_GUTTER = 7;
 const EMOJIS_PER_PAGE = 200;
@@ -40,11 +41,12 @@ export function filterEmojiSearchInput(searchText: string) {
 
 type EmojiPickerProps = {
     deviceWidth: number;
-    onEmojiPress: (emoji: string) => void;
     intl: IntlShape;
-    theme: Theme;
+    isLandscape: boolean;
+    onEmojiPress: (emoji: string) => void;
     serverUrl: string;
     testID: string;
+    theme: Theme;
 }
 
 type EmojiPickerState = {
@@ -113,7 +115,6 @@ class EmojiPicker extends PureComponent<ConnectedEmojiPickerProps, EmojiPickerSt
          this.fuse = await this.getFuseInstance();
 
          const {emoticons: emojisBySection} = await selectEmojisBySection(serverUrl);
-
          if (emojisBySection) {
              const emojis = this.renderableEmojis(emojisBySection, deviceWidth);
              const emojiSectionIndexByOffset = this.measureEmojiSections(emojis);
@@ -141,20 +142,21 @@ class EmojiPicker extends PureComponent<ConnectedEmojiPickerProps, EmojiPickerSt
     }
 
     componentDidUpdate(prevProps: EmojiPickerProps) {
-        this.rebuildEmojis = false;
-        if (this.props.deviceWidth !== prevProps.deviceWidth) {
-            this.rebuildEmojis = true;
-
-            if (this.searchBarRef) {
-                this.searchBarRef.blur();
-            }
-        }
-
-        if (this.props.emojis !== prevProps.emojis) {
-            this.rebuildEmojis = true;
-        }
-
-        this.setRebuiltEmojis();
+        //fixme:  rework this componentDidUpdate
+        // this.rebuildEmojis = false;
+        // if (this.props.deviceWidth !== prevProps.deviceWidth) {
+        //     this.rebuildEmojis = true;
+        //
+        //     if (this.searchBarRef) {
+        //         this.searchBarRef.blur();
+        //     }
+        // }
+        //
+        // if (this.props.emojis !== prevProps.emojis) {
+        //     this.rebuildEmojis = true;
+        // }
+        //
+        // this.setRebuiltEmojis();
     }
 
     setSearchBarRef = (ref: any) => {
@@ -166,12 +168,10 @@ class EmojiPicker extends PureComponent<ConnectedEmojiPickerProps, EmojiPickerSt
     };
 
     setRebuiltEmojis = (searchBarAnimationComplete = true) => {
+        const {emojisBySection, deviceWidth} = this.props;
         if (this.rebuildEmojis && searchBarAnimationComplete) {
             this.rebuildEmojis = false;
-            const emojis = this.renderableEmojis(
-                this.props.emojisBySection,
-                this.props.deviceWidth,
-            );
+            const emojis = this.renderableEmojis(emojisBySection, deviceWidth);
             this.setState({emojis});
         }
     };
@@ -298,7 +298,8 @@ class EmojiPicker extends PureComponent<ConnectedEmojiPickerProps, EmojiPickerSt
     };
 
     getNumberOfColumns = (deviceWidth: number) => {
-        const shorten = Device.IS_IPHONE_WITH_INSETS && this.props.isLandscape ? 4 : 2;
+        const {isLandscape} = this.props;
+        const shorten = Device.IS_IPHONE_WITH_INSETS && isLandscape ? 4 : 2;
         return Math.floor(Number(((deviceWidth - (SECTION_MARGIN * shorten)) / ((EMOJI_SIZE + 7) + (EMOJI_GUTTER * shorten)))));
     };
 
@@ -358,6 +359,7 @@ class EmojiPicker extends PureComponent<ConnectedEmojiPickerProps, EmojiPickerSt
     };
 
     renderItem = ({item, section}: {item: EmojisData; section: RenderableEmojis}) => {
+        const {onEmojiPress} = this.props;
         return (
             <View testID={section.id}>
                 <EmojiPickerRow
@@ -365,7 +367,7 @@ class EmojiPicker extends PureComponent<ConnectedEmojiPickerProps, EmojiPickerSt
                     emojiGutter={EMOJI_GUTTER}
                     emojiSize={EMOJI_SIZE}
                     items={item.items}
-                    onEmojiPress={this.props.onEmojiPress}
+                    onEmojiPress={onEmojiPress}
                 />
             </View>
         );
@@ -392,11 +394,13 @@ class EmojiPicker extends PureComponent<ConnectedEmojiPickerProps, EmojiPickerSt
     flatListKeyExtractor = (item: string) => item;
 
     flatListRenderItem = ({item}: {item: string}) => {
-        const style = getStyleSheetFromTheme(this.props.theme);
+        const {theme, onEmojiPress} = this.props;
+        const style = getStyleSheetFromTheme(theme);
 
+        //fixme:  what is onEmojiPress ???
         return (
             <TouchableOpacity
-                onPress={() => this.props.onEmojiPress(item)}
+                onPress={() => onEmojiPress(item)}
                 style={style.flatListRow}
             >
                 <View style={style.flatListEmoji}>
@@ -485,12 +489,13 @@ class EmojiPicker extends PureComponent<ConnectedEmojiPickerProps, EmojiPickerSt
     };
 
     handleSectionIconPress = (index: number, isCustomSection = false) => {
-        this.scrollToSectionTries = 0;
-        this.scrollToSection(index);
-
-        if (isCustomSection && this.props.customEmojiPage === 0) {
-            this.loadMoreCustomEmojis();
-        }
+        //fixme: rework this method
+        // this.scrollToSectionTries = 0;
+        // this.scrollToSection(index);
+        //
+        // if (isCustomSection && this.props.customEmojiPage === 0) {
+        //     this.loadMoreCustomEmojis();
+        // }
     };
 
     renderSectionIcons = () => {

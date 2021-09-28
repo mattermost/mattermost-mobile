@@ -127,7 +127,7 @@ export const selectEmojisBySection = async (serverUrl: string) => {
     if (!database) {
         return {error: `${serverUrl} database not found`};
     }
-    console.log('>>>  selectEmojisBySection api local has been called ', {});
+
     try {
         const customEmojiRecords = await getEmojisByName(serverUrl);
         const recentEmojiRecords = await database.get(MM_TABLES.SERVER.SYSTEM).query(Q.where('id', SYSTEM_IDENTIFIERS.RECENT_REACTIONS)).fetch() as SystemModel[];
