@@ -4,6 +4,7 @@
 import {intlShape} from 'react-intl';
 import {Alert} from 'react-native';
 
+import {showModal} from '@actions/navigation';
 import {handleSelectChannel, handleSelectChannelByName, loadChannelsByTeamName} from '@actions/views/channel';
 import {makeDirectChannel} from '@actions/views/more_dms';
 import {showPermalink} from '@actions/views/permalink';
@@ -145,6 +146,9 @@ export function handleGotoLocation(href: string, intl: typeof intlShape): Action
                 }
                 dispatch(makeGroupMessageVisibleIfNecessary(match.id));
                 dispatch(handleSelectChannel(match.id));
+                break;
+            case DeepLinkTypes.PLUGIN:
+                showModal('PluginInternal', match.id, {link: url});
                 break;
             }
         } else {

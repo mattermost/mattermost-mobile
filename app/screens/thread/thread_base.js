@@ -21,8 +21,11 @@ export default class ThreadBase extends PureComponent {
             setThreadFollow: PropTypes.func.isRequired,
             updateThreadLastViewedAt: PropTypes.func,
             updateThreadRead: PropTypes.func,
+            fetchThreadAppBindings: PropTypes.func.isRequired,
+            clearThreadAppBindings: PropTypes.func.isRequired,
         }).isRequired,
         componentId: PropTypes.string,
+        channelId: PropTypes.string,
         channelType: PropTypes.string,
         collapsedThreadsEnabled: PropTypes.bool,
         currentUserId: PropTypes.string,
@@ -35,6 +38,7 @@ export default class ThreadBase extends PureComponent {
         channelIsArchived: PropTypes.bool,
         thread: PropTypes.object,
         threadLoadingStatus: PropTypes.object,
+        shouldFetchBindings: PropTypes.bool,
     };
 
     static defaultProps = {
@@ -117,6 +121,9 @@ export default class ThreadBase extends PureComponent {
         this.markThreadRead();
         this.removeTypingAnimation = this.registerTypingAnimation(this.bottomPaddingAnimation);
         EventEmitter.on(TYPING_VISIBLE, this.runTypingAnimations);
+        if (this.props.shouldFetchBindings) {
+            this.props.actions.fetchThreadAppBindings(this.props.currentUserId, this.props.channelId);
+        }
     }
 
     componentWillReceiveProps(nextProps) {
@@ -147,6 +154,9 @@ export default class ThreadBase extends PureComponent {
         this.props.actions.selectPost('');
         this.removeTypingAnimation();
         EventEmitter.off(TYPING_VISIBLE, this.runTypingAnimations);
+        if (this.props.shouldFetchBindings) {
+            this.props.actions.clearThreadAppBindings();
+        }
     }
 
     handleThreadFollow() {

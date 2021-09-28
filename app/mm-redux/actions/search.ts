@@ -114,13 +114,12 @@ export function getFlaggedPosts(): ActionFunc {
     return async (dispatch: DispatchFunc, getState: GetStateFunc) => {
         const state = getState();
         const userId = getCurrentUserId(state);
-        const teamId = getCurrentTeamId(state);
 
         dispatch({type: SearchTypes.SEARCH_FLAGGED_POSTS_REQUEST});
 
         let posts;
         try {
-            posts = await Client4.getFlaggedPosts(userId, '', teamId);
+            posts = await Client4.getFlaggedPosts(userId);
 
             await Promise.all([getProfilesAndStatusesForPosts(posts.posts, dispatch, getState) as any, dispatch(getMissingChannelsFromPosts(posts.posts)) as any]);
         } catch (error) {
@@ -202,7 +201,6 @@ export function clearPinnedPosts(channelId: string): ActionFunc {
 export function getRecentMentions(): ActionFunc {
     return async (dispatch: DispatchFunc, getState: GetStateFunc) => {
         const state = getState();
-        const teamId = getCurrentTeamId(state);
 
         let posts;
         try {
@@ -213,7 +211,7 @@ export function getRecentMentions(): ActionFunc {
             const terms = termKeys.map(({key}) => key).join(' ').trim() + ' ';
 
             analytics.trackAPI('api_posts_search_mention');
-            posts = await Client4.searchPosts(teamId, terms, true);
+            posts = await Client4.searchPosts('', terms, true);
 
             const profilesAndStatuses = getProfilesAndStatusesForPosts(posts.posts, dispatch, getState);
             const missingChannels = dispatch(getMissingChannelsFromPosts(posts.posts));
