@@ -12,8 +12,6 @@ import ClearIcon from './components/clear_icon';
 import SearchIcon from './components/search_icon';
 import {getSearchStyles} from './styles';
 
-import TimingAnimationConfig = Animated.TimingAnimationConfig;
-
 const LEFT_COMPONENT_INITIAL_POSITION = Platform.OS === 'ios' ? 7 : 0;
 
 type SearchProps = {
@@ -179,8 +177,8 @@ export default class Search extends PureComponent<SearchProps, SearchState> {
     expandAnimation = () => {
         return new Promise((resolve) => {
             Animated.parallel([
-                Animated.timing(this.leftComponentAnimated, {toValue: -115, duration: 200} as TimingAnimationConfig),
-                Animated.timing(this.searchContainerAnimated, {toValue: this.state.leftComponentWidth * -1, duration: 200} as TimingAnimationConfig),
+                Animated.timing(this.leftComponentAnimated, {toValue: -115, duration: 200} as Animated.TimingAnimationConfig),
+                Animated.timing(this.searchContainerAnimated, {toValue: this.state.leftComponentWidth * -1, duration: 200} as Animated.TimingAnimationConfig),
             ]).start(resolve);
         });
     };
@@ -188,8 +186,8 @@ export default class Search extends PureComponent<SearchProps, SearchState> {
     collapseAnimation = () => {
         return new Promise((resolve) => {
             Animated.parallel([
-                Animated.timing(this.leftComponentAnimated, {toValue: LEFT_COMPONENT_INITIAL_POSITION, duration: 200} as TimingAnimationConfig),
-                Animated.timing(this.searchContainerAnimated, {toValue: 0, duration: 200} as TimingAnimationConfig),
+                Animated.timing(this.leftComponentAnimated, {toValue: LEFT_COMPONENT_INITIAL_POSITION, duration: 200} as Animated.TimingAnimationConfig),
+                Animated.timing(this.searchContainerAnimated, {toValue: 0, duration: 200} as Animated.TimingAnimationConfig),
             ]).start(resolve);
         });
     };

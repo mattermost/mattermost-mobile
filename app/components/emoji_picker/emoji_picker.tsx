@@ -19,8 +19,7 @@ type Props = {
     onChangeSearchTerm: (term: string) => void;
     onSetSearchBarRef: (ref: any) => void;
     renderListComponent: (margin: number) => JSX.Element;
-
-    // renderSectionIcons: () => void;
+    renderSectionIcons: () => void;
     searchTerm: string;
     testID: string;
     theme: Theme;
@@ -32,6 +31,7 @@ const EmojiPicker = ({
     onChangeSearchTerm,
     onSetSearchBarRef,
     renderListComponent,
+    renderSectionIcons,
     searchTerm,
     testID,
     theme,
@@ -89,7 +89,7 @@ const EmojiPicker = ({
             return (
                 <View style={styles.bottomContentWrapper}>
                     <View style={styles.bottomContent}>
-                        {getSectionIcons()}
+                        {renderSectionIcons()}
                     </View>
                 </View>
             );

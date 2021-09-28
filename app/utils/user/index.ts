@@ -212,11 +212,13 @@ export const updateUserCustomStatus = async (status: UserCustomStatus | null, us
 
 export function confirmOutOfOfficeDisabled(intl: IntlShape, status: string, updateStatus: (status: string) => void) {
     const userStatusId = 'modal.manual_status.auto_responder.message_' + status;
-    t('modal.manual_status.auto_responder.message_');
-    t('modal.manual_status.auto_responder.message_away');
-    t('modal.manual_status.auto_responder.message_dnd');
-    t('modal.manual_status.auto_responder.message_offline');
-    t('modal.manual_status.auto_responder.message_online');
+
+    //fixme: what do the below lines do ?
+    // t('modal.manual_status.auto_responder.message_');
+    // t('modal.manual_status.auto_responder.message_away');
+    // t('modal.manual_status.auto_responder.message_dnd');
+    // t('modal.manual_status.auto_responder.message_offline');
+    // t('modal.manual_status.auto_responder.message_online');
 
     let translatedStatus;
     if (status === 'dnd') {
