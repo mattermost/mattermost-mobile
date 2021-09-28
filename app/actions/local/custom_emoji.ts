@@ -1,6 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {Q} from '@nozbe/watermelondb';
+
 import {Preferences} from '@constants';
 import {MM_TABLES, SYSTEM_IDENTIFIERS} from '@constants/database';
 import DatabaseManager from '@database/manager';
@@ -110,26 +112,30 @@ CategoryNames.forEach((name: any) => {
     };
 });
 
+function fillEmoji(indice: string) {
+    const emoji = Emojis[indice];
+    return {
+        name: 'short_name' in emoji ? emoji.short_name : emoji.name,
+        aliases: 'short_names' in emoji ? emoji.short_names : [],
+    };
+}
+
 //fixme: you might be doing the same READING twice !!!
 export const selectEmojisBySection = async (serverUrl: string) => {
     const database = DatabaseManager.serverDatabases[serverUrl]?.database;
+
     if (!database) {
         return {error: `${serverUrl} database not found`};
     }
+    console.log('>>>  selectEmojisBySection api local has been called ', {});
     try {
         const customEmojiRecords = await getEmojisByName(serverUrl);
-        const recentEmojiRecords = await database.get(MM_TABLES.SERVER.SYSTEM).find(SYSTEM_IDENTIFIERS.RECENT_REACTIONS) as SystemModel;
+        const recentEmojiRecords = await database.get(MM_TABLES.SERVER.SYSTEM).query(Q.where('id', SYSTEM_IDENTIFIERS.RECENT_REACTIONS)).fetch() as SystemModel[];
         const skinToneRecords = (await queryPreferencesByCategoryAndName(database, Preferences.CATEGORY_EMOJI, Preferences.EMOJI_SKINTONE)) as unknown as PreferenceModel[];
 
-        const skinTone = skinToneRecords?.[0]?.value;
-        const recentEmojis = recentEmojiRecords.value as string[];
-        const customEmojis = customEmojiRecords?.data as string[];
-
-        if (!customEmojis || !skinTone || !recentEmojis) {
-            return {
-                error: 'Something went wrong in fetching the emojis, skin tone and custom emojis',
-            };
-        }
+        const skinTone = skinToneRecords?.[0]?.value ?? 'default';
+        const recentEmojis = recentEmojiRecords?.[0]?.value as string[] ?? [];
+        const customEmojis = customEmojiRecords?.data as string[] ?? [];
 
         const customEmojiItems = customEmojis.map((emoji) => ({name: emoji}));
         const recentItems = recentEmojis.map((emoji) => ({name: emoji}));
@@ -137,7 +143,7 @@ export const selectEmojisBySection = async (serverUrl: string) => {
         const filteredCategories = CategoryNames.filter((category) => category !== 'recent' || recentItems.length > 0);
 
         const emoticons = filteredCategories.map((category) => {
-            const data = EmojiIndicesByCategory.get(skinTone!)?.get(category).map(fillEmoji);
+            const data = EmojiIndicesByCategory.get(skinTone).get(category).map(fillEmoji);
 
             if (category === 'custom') {
                 data.push(...customEmojiItems);
@@ -153,8 +159,9 @@ export const selectEmojisBySection = async (serverUrl: string) => {
             return section;
         });
 
-        return emoticons;
+        return {emoticons};
     } catch (error) {
+        console.error('>>>  error', {error});
         return {error};
     }
 };

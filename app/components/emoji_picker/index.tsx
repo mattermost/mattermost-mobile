@@ -6,22 +6,20 @@ import {withDatabase} from '@nozbe/watermelondb/DatabaseProvider';
 import withObservables from '@nozbe/with-observables';
 import Fuse from 'fuse.js';
 import React, {PureComponent} from 'react';
-import {injectIntl, IntlShape} from 'react-intl';
+import {IntlShape} from 'react-intl';
 import {ActivityIndicator, FlatList, Platform, SectionList, Text, TouchableOpacity, View} from 'react-native';
 import sectionListGetItemLayout from 'react-native-section-list-get-item-layout';
 import {of as of$} from 'rxjs';
-import {from as from$} from 'rxjs';
 import {switchMap} from 'rxjs/operators';
 
 import {getEmojisByName, selectEmojisBySection} from '@actions/local/custom_emoji';
 import {getCustomEmojis} from '@actions/remote/custom_emoji';
 import CompassIcon from '@components/compass_icon';
 import Emoji from '@components/emoji';
+import EmptyList from '@components/emoji_picker/empty_list';
 import FormattedText from '@components/formatted_text';
 import {Device} from '@constants';
 import {MM_TABLES, SYSTEM_IDENTIFIERS} from '@constants/database';
-import {withServerUrl} from '@context/server_url';
-import {withTheme} from '@context/theme';
 import {WithDatabaseArgs} from '@typings/database/database';
 import SystemModel from '@typings/database/models/servers/system';
 import {compareEmojis, isCustomEmojiEnabled} from '@utils/emoji/helpers';
@@ -88,21 +86,14 @@ class EmojiPicker extends PureComponent<ConnectedEmojiPickerProps, EmojiPickerSt
             getSectionHeaderHeight: () => SECTION_HEADER_HEIGHT,
         });
 
-        const {serverUrl, config} = props;
-
-        //fixme:  wrong place to call this method
-        const emojisBySection = selectEmojisBySection(serverUrl);
-        console.log('>>>  emojisBySection', JSON.stringify(emojisBySection));
-
-        const emojis = this.renderableEmojis(emojisBySection, props.deviceWidth);
-        const emojiSectionIndexByOffset = this.measureEmojiSections(emojis);
+        const {config} = props;
 
         this.customEmojisEnabled = isCustomEmojiEnabled(config);
         this.scrollToSectionTries = 0;
         this.state = {
             currentSectionIndex: 0,
-            emojiSectionIndexByOffset,
-            emojis,
+            emojiSectionIndexByOffset: [],
+            emojis: [],
             filteredEmojis: [],
             jumpToSection: false, // fixme : should it be false or null
             loadingMore: false,
@@ -114,8 +105,25 @@ class EmojiPicker extends PureComponent<ConnectedEmojiPickerProps, EmojiPickerSt
     }
 
     async componentDidMount() {
-        this.fuse = await this.getFuseInstance();
+        await this.setUp();
     }
+
+     setUp = async () => {
+         const {serverUrl, deviceWidth} = this.props;
+         this.fuse = await this.getFuseInstance();
+
+         const {emoticons: emojisBySection} = await selectEmojisBySection(serverUrl);
+
+         if (emojisBySection) {
+             const emojis = this.renderableEmojis(emojisBySection, deviceWidth);
+             const emojiSectionIndexByOffset = this.measureEmojiSections(emojis);
+
+             this.setState({
+                 emojis,
+                 emojiSectionIndexByOffset,
+             });
+         }
+     }
 
     getFuseInstance = async () => {
         const {serverUrl} = this.props;
@@ -309,7 +317,9 @@ class EmojiPicker extends PureComponent<ConnectedEmojiPickerProps, EmojiPickerSt
                     data={filteredEmojis}
                     keyboardShouldPersistTaps='always'
                     keyExtractor={this.flatListKeyExtractor}
-                    ListEmptyComponent={this.renderEmptyList}
+                    ListEmptyComponent={
+                        <EmptyList searchTerm={searchTerm}/>
+                    }
                     nativeID={SCROLL_VIEW_NATIVE_ID}
                     renderItem={this.flatListRenderItem}
                     removeClippedSubviews={true}
@@ -457,17 +467,9 @@ class EmojiPicker extends PureComponent<ConnectedEmojiPickerProps, EmojiPickerSt
     };
 
     scrollToSection = (index: number) => {
-        this.setState(
-            {
-                jumpToSection: true,
-                currentSectionIndex: index,
-            },
+        this.setState({jumpToSection: true, currentSectionIndex: index},
             () => {
-                this.sectionListRef.scrollToLocation({
-                    sectionIndex: index,
-                    itemIndex: 0,
-                    viewOffset: 25,
-                });
+                this.sectionListRef.scrollToLocation({sectionIndex: index, itemIndex: 0, viewOffset: 25});
             },
         );
     };
@@ -494,7 +496,7 @@ class EmojiPicker extends PureComponent<ConnectedEmojiPickerProps, EmojiPickerSt
     renderSectionIcons = () => {
         const {theme} = this.props;
         const styles = getStyleSheetFromTheme(theme);
-
+        console.log('>>>  renderSectionIcons parent');
         return this.state.emojis.map((section, index: number) => {
             const onPress = () => this.handleSectionIconPress(index, section.key === 'custom');
 
@@ -532,49 +534,10 @@ class EmojiPicker extends PureComponent<ConnectedEmojiPickerProps, EmojiPickerSt
         );
     };
 
-    renderEmptyList = () => {
-        const {theme} = this.props;
-        const {formatMessage} = this.context.intl;
-        const {searchTerm} = this.state;
-        const styles = getStyleSheetFromTheme(theme);
-        const title = formatMessage(
-            {
-                id: 'mobile.emoji_picker.search.not_found_title',
-                defaultMessage: 'No results found for "{searchTerm}"',
-            },
-            {
-                searchTerm,
-            },
-        );
-        const description = formatMessage({
-            id: 'mobile.emoji_picker.search.not_found_description',
-            defaultMessage: 'Check the spelling or try another search.',
-        });
-        return (
-            <View style={[styles.flex, styles.flexCenter]}>
-                <View style={styles.flexCenter}>
-                    <View style={styles.notFoundIcon}>
-                        <CompassIcon
-                            name='magnify'
-                            size={72}
-                            color={theme.buttonBg}
-                        />
-                    </View>
-                    <Text style={[styles.notFoundText, styles.notFoundText20]}>
-                        {title}
-                    </Text>
-                    <Text style={[styles.notFoundText, styles.notFoundText15]}>
-                        {description}
-                    </Text>
-                </View>
-            </View>
-        );
-    };
-
     render() {
         const {searchTerm} = this.state;
         const {testID, theme} = this.props;
-
+        console.log('>>>  in render method ');
         return (
             <EmojiPickerComponent
                 onAnimationComplete={this.setRebuiltEmojis}
@@ -582,6 +545,7 @@ class EmojiPicker extends PureComponent<ConnectedEmojiPickerProps, EmojiPickerSt
                 onChangeSearchTerm={this.changeSearchTerm}
                 onSetSearchBarRef={this.setSearchBarRef}
                 renderListComponent={this.renderListComponent}
+                renderSectionIcons={this.renderSectionIcons}
                 searchTerm={searchTerm}
                 testID={testID}
                 theme={theme}
@@ -654,31 +618,6 @@ export const getStyleSheetFromTheme = makeStyleSheetFromTheme((theme) => {
             borderRightColor: changeOpacity(theme.centerChannelColor, 0.2),
             overflow: 'hidden',
         },
-        flexCenter: {
-            flexDirection: 'column',
-            alignItems: 'center',
-            justifyContent: 'center',
-        },
-        notFoundIcon: {
-            backgroundColor: changeOpacity(theme.centerChannelColor, 0.04),
-            width: 120,
-            height: 120,
-            borderRadius: 60,
-            display: 'flex',
-            justifyContent: 'center',
-            alignItems: 'center',
-        },
-        notFoundText: {
-            color: theme.centerChannelColor,
-            marginTop: 16,
-        },
-        notFoundText20: {
-            fontSize: 20,
-            fontWeight: '600',
-        },
-        notFoundText15: {
-            fontSize: 15,
-        },
         searchBar: {
             backgroundColor: changeOpacity(theme.centerChannelColor, 0.2),
             paddingVertical: 5,
@@ -726,8 +665,6 @@ export const getStyleSheetFromTheme = makeStyleSheetFromTheme((theme) => {
 });
 
 const withConfig = withObservables([], ({database}: WithDatabaseArgs) => {
-    //fixme: add the below line of code
-    // const emojisBySection = from;
     return {
         config: database.get(MM_TABLES.SERVER.SYSTEM).findAndObserve(SYSTEM_IDENTIFIERS.CONFIG).pipe(switchMap((cfg: SystemModel) => of$(cfg.value))),
     };
