@@ -87,7 +87,7 @@ const ButtonBinding = ({currentTeamId, binding, post, teamID, theme}: Props) => 
         pressed.current = false;
 
         if (res.error) {
-            const errorResponse = res.error;
+            const errorResponse = res.error as AppCallResponse<unknown>;
             const errorMessage = errorResponse.error || intl.formatMessage({
                 id: 'apps.error.unknown',
                 defaultMessage: 'Unknown error occurred.',

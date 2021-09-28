@@ -8,132 +8,6 @@
 import Foundation
 import SQLite
 
-public struct EmbedMedia: Codable {
-    let type: String?
-    let url: String?
-    let secure_url: String?
-    let width: Int64?
-    let height: Int64?
-}
-
-public struct EmbedData: Codable {
-    let type: String?
-    let url: String?
-    let title: String?
-    let description: String?
-    let determiner: String?
-    let site_name: String?
-    let locale: String?
-    let locales_alternate: String?
-    let images: [EmbedMedia]?
-    let audios: [EmbedMedia]?
-    let videos: [EmbedMedia]?
-}
-
-public struct Embed: Codable {
-    let type: String?
-    let url: String?
-    let data: EmbedData?
-}
-
-public struct Emoji: Codable {
-    let id: String
-    let name: String
-}
-
-public struct File: Codable {
-    let id: String
-    let post_id: String
-    let name: String
-    let `extension`: String
-    let size: Int64
-    let mime_type: String
-    let width: Int64
-    let height: Int64
-    let local_path: String?
-    let mini_preview: String?
-}
-
-public struct Reaction: Codable {
-    let user_id: String
-    let post_id: String
-    let emoji_name: String
-    let create_at: Int64
-}
-
-public struct Image: Codable {
-    let width: Int64
-    let height: Int64
-    let format: String
-    let frame_count: Int64
-}
-
-public struct PostMetadata: Codable {
-    let embeds: [Embed]?
-    let images: [String:Image]?
-    var emojis: [Emoji]?
-    var files: [File]?
-    var reactions: [Reaction]?
-}
-
-public struct PostPropsAddChannelMember: Codable {
-    let post_id: String
-    let usernames: String
-    let not_in_channel_usernames: String
-    let user_ids: String
-    let not_in_channel_user_ids: String
-    let not_in_groups_usernames: String
-    let not_in_groups_user_ids: String
-}
-
-public struct PostPropsAttachment: Codable {
-    let id: Int64
-    let fallback: String
-    let color: String
-    let pretext: String
-    let author_name: String
-    let author_link: String
-    let author_icon: String
-    let title: String
-    let title_link: String
-    let text: String
-    let image_url: String
-    let thumb_url: String
-    let footer: String
-    let footer_icon: String
-    
-    // TODO:
-    // fields
-    // timestamp
-    // actions
-}
-
-public struct PostProps: Codable {
-    let userId: String?
-    let username: String?
-    let addedUserId: String?
-    let removedUserId: String?
-    let removedUsername: String?
-    let deleteBy: String?
-    let old_header: String?
-    let new_header: String?
-    let old_purpose: String?
-    let new_purpose: String?
-    let old_displayname: String?
-    let new_displayname: String?
-    let mentionHighlightDisabled: Bool?
-    let disable_group_highlight: Bool?
-    let override_username: Bool?
-    let from_webhook: Bool?
-    let override_icon_url: Bool?
-    let override_icon_emoji: Bool?
-    let add_channel_member: PostPropsAddChannelMember?
-    let attachments: [PostPropsAttachment]?
-    
-    // TODO:
-    // appBindings
-}
-
 public struct Post: Codable {
     let id: String
     let create_at: Int64
@@ -147,21 +21,62 @@ public struct Post: Codable {
     let original_id: String
     let message: String
     let type: String
-    var props: PostProps?
-    let hashtag: String?
-    let pending_post_id: String?
-    let reply_count: Int64
-    let file_ids: [String]?
-    let metadata: PostMetadata?
-    let last_reply_at: Int64?
-    let failed: Bool?
-    let ownPost: Bool?
-    let participants: [String]?
-    var prev_post_id: String?
+    let props: String
+    let pending_post_id: String
+    let metadata: String
+    var prev_post_id: String
+    
+    public enum PostKeys: String, CodingKey {
+        case id = "id"
+        case create_at = "create_at"
+        case update_at = "update_at"
+        case delete_at = "delete_at"
+        case edit_at = "edit_at"
+        case is_pinned = "is_pinned"
+        case user_id = "user_id"
+        case channel_id = "channel_id"
+        case root_id = "root_id"
+        case original_id = "original_id"
+        case message = "message"
+        case type = "type"
+        case props = "props"
+        case pending_post_id = "pending_post_id"
+        case metadata = "metadata"
+    }
+    
+    public init(from decoder: Decoder) throws {
+        let values = try decoder.container(keyedBy: PostKeys.self)
+        prev_post_id = ""
+        id = try values.decode(String.self, forKey: .id)
+        create_at = try values.decode(Int64.self, forKey: .create_at)
+        update_at = try values.decode(Int64.self, forKey: .update_at)
+        delete_at = try values.decode(Int64.self, forKey: .delete_at)
+        edit_at = try values.decode(Int64.self, forKey: .edit_at)
+        is_pinned = try values.decode(Bool.self, forKey: .is_pinned)
+        user_id = try values.decode(String.self, forKey: .user_id)
+        channel_id = try values.decode(String.self, forKey: .channel_id)
+        root_id = try values.decode(String.self, forKey: .root_id)
+        original_id = try values.decode(String.self, forKey: .original_id)
+        message = try values.decode(String.self, forKey: .message)
+        let meta = try values.decode([String:Any].self, forKey: .metadata)
+        metadata = Database.default.json(from: meta) ?? "{}"
+        type = try values.decode(String.self, forKey: .type)
+        pending_post_id = try values.decode(String.self, forKey: .pending_post_id)
+        let propsData = try values.decode([String:Any].self, forKey: .props)
+        props = Database.default.json(from: propsData) ?? "{}"
+    }
 }
 
 struct MetadataSetters {
-    let postMetadataSetters: [[Setter]]
+    let metadata: String
+    let reactionSetters: [[Setter]]
+    let fileSetters: [[Setter]]
+    let emojiSetters: [[Setter]]
+}
+
+struct PostSetters {
+    let id: String
+    let postSetters: [Setter]
     let reactionSetters: [[Setter]]
     let fileSetters: [[Setter]]
     let emojiSetters: [[Setter]]
@@ -228,32 +143,31 @@ extension Database {
         return (0, 0)
     }
     
-    public func handlePostData(_ postData: PostData, _ channelId: String, _ serverUrl: String, _ usedSince: Bool = false) throws {
-        try insertAndDeletePosts(postData.posts, channelId, serverUrl)
-        try handlePostsInChannel(postData, channelId, serverUrl, usedSince)
-        try handlePostMetadata(postData.posts, channelId, serverUrl)
-        try handlePostsInThread(postData.posts, serverUrl)
+    public func handlePostData(_ db: Connection, _ postData: PostData, _ channelId: String, _ usedSince: Bool = false) throws {
+        let sortedChainedPosts = chainAndSortPosts(postData)
+        try insertOrUpdatePosts(db, sortedChainedPosts, channelId)
+        try handlePostsInChannel(db, channelId, postData, usedSince)
+        try handlePostsInThread(db, postData.posts)
     }
     
-    private func handlePostsInChannel(_ postData: PostData, _ channelId: String, _ serverUrl: String, _ usedSince: Bool = false) throws {
-        let sortedChainedPosts = chainAndSortPosts(postData)
-        let earliest = sortedChainedPosts.first!.create_at
-        let latest = sortedChainedPosts.last!.create_at
+    private func handlePostsInChannel(_ db: Connection, _ channelId: String, _ postData: PostData, _ usedSince: Bool = false) throws {
+        let firstId = postData.order.first
+        let lastId = postData.order.last
+        let earliest = postData.posts.first(where: { $0.id == lastId})!.create_at
+        let latest = postData.posts.first(where: { $0.id == firstId})!.create_at
         
         if usedSince {
-            try updatePostsInChannelLatestOnly(latest, channelId, serverUrl)
+            try updatePostsInChannelLatestOnly(db, channelId, latest)
         } else {
-            let updated = try updatePostsInChannelEarliestAndLatest(earliest, latest, channelId, serverUrl)
+            let updated = try updatePostsInChannelEarliestAndLatest(db, channelId, earliest, latest)
             if (!updated) {
-                try insertPostsInChannel(earliest, latest, channelId, serverUrl)
+                try insertPostsInChannel(db, channelId, earliest, latest)
             }
         }
     }
     
-    private func handlePostsInThread(_ posts: [Post], _ serverUrl: String) throws {
-        let db = try getDatabaseForServer(serverUrl)
-        
-        let postsInThreadSetters = try createPostsInThreadSetters(from: posts, withServerUrl: serverUrl)
+    private func handlePostsInThread(_ db: Connection, _ posts: [Post]) throws {
+        let postsInThreadSetters = try createPostsInThreadSetters(db, from: posts)
         if !postsInThreadSetters.isEmpty {
             let insertQuery = postsInThreadTable.insertMany(or: .replace, postsInThreadSetters)
             try db.run(insertQuery)
@@ -262,44 +176,45 @@ extension Database {
     
     private func chainAndSortPosts(_ postData: PostData) -> [Post] {
         let order = postData.order
-        let prevPostId = postData.prev_post_id
         let posts = postData.posts
-
-        return order.enumerated().reduce([Post]()) { (chainedPosts: [Post], current) in
-            let index = current.0
-            let postId = current.1
+        var prevPostId = ""
+        
+        return posts.sorted(by: {$0.create_at < $1.create_at}).enumerated().map { (index, post) in
+            var modified = post
+            if (index == 0) {
+                modified.prev_post_id = postData.prev_post_id
+            } else {
+                modified.prev_post_id = prevPostId
+            }
             
-            var post = posts.first(where: {$0.id == postId})!
-            post.prev_post_id = index == order.count - 1 ?
-                prevPostId :
-                order[index + 1]
-                
-            return chainedPosts + [post]
-        }.sorted(by: { $0.create_at < $1.create_at })
+            if (order.contains(post.id)) {
+                prevPostId = post.id
+            }
+            
+            return modified
+        }
     }
     
-    private func updatePostsInChannelLatestOnly(_ latest: Int64, _ channelId: String, _ serverUrl: String) throws {
-        let db = try getDatabaseForServer(serverUrl)
-        
+    private func updatePostsInChannelLatestOnly(_ db: Connection, _ channelId: String, _ latest: Int64) throws {
         let channelIdCol = Expression<String>("channel_id")
         let latestCol = Expression<Int64>("latest")
+        let statusCol = Expression<String>("_status")
         
         let query = postsInChannelTable
             .where(channelIdCol == channelId)
             .order(latestCol.desc)
             .limit(1)
-            .update(latestCol <- latest)
+            .update(latestCol <- latest, statusCol <- "updated")
         
         try db.run(query)
     }
     
-    private func updatePostsInChannelEarliestAndLatest(_ earliest: Int64, _ latest: Int64, _ channelId: String, _ serverUrl: String) throws -> Bool {
-        let db = try getDatabaseForServer(serverUrl)
-        
+    private func updatePostsInChannelEarliestAndLatest(_ db: Connection, _ channelId: String, _ earliest: Int64, _ latest: Int64) throws -> Bool {
         let idCol = Expression<String>("id")
         let channelIdCol = Expression<String>("channel_id")
         let earliestCol = Expression<Int64>("earliest")
         let latestCol = Expression<Int64>("latest")
+        let statusCol = Expression<String>("_status")
         
         let query = postsInChannelTable
             .where(channelIdCol == channelId && (earliestCol <= earliest || latestCol >= latest))
@@ -313,7 +228,7 @@ extension Database {
             
             let updateQuery = postsInChannelTable
                 .filter(idCol == recordId)
-                .update(earliestCol <- min(earliest, recordEarliest), latestCol <- max(latest, recordLatest))
+                .update(earliestCol <- min(earliest, recordEarliest), latestCol <- max(latest, recordLatest), statusCol <- "updated")
             
             try db.run(updateQuery)
             
@@ -323,20 +238,20 @@ extension Database {
         return false
     }
     
-    private func insertPostsInChannel(_ earliest: Int64, _ latest: Int64, _ channelId: String, _ serverUrl: String) throws {
-        let db = try getDatabaseForServer(serverUrl)
-        
-        let rowIdCol = Expression<Int64>("rowid")
+    private func insertPostsInChannel(_ db: Connection, _ channelId: String, _ earliest: Int64, _ latest: Int64) throws {
+        let idCol = Expression<String>("id")
         let channelIdCol = Expression<String>("channel_id")
         let earliestCol = Expression<Int64>("earliest")
         let latestCol = Expression<Int64>("latest")
+        let statusCol = Expression<String>("_status")
+        let id = generateId()
         
         let query = postsInChannelTable
-            .insert(channelIdCol <- channelId, earliestCol <- earliest, latestCol <- latest)
-        let newRecordId = try db.run(query)
+            .insert(idCol <- id, channelIdCol <- channelId, earliestCol <- earliest, latestCol <- latest, statusCol <- "created")
+        try db.run(query)
         
         let deleteQuery = postsInChannelTable
-            .where(rowIdCol != newRecordId &&
+            .where(idCol != id &&
                     channelIdCol == channelId &&
                     earliestCol >= earliest &&
                     latestCol <= latest)
@@ -345,54 +260,33 @@ extension Database {
         try db.run(deleteQuery)
     }
     
-    private func insertAndDeletePosts(_ posts: [Post], _ channelId: String, _ serverUrl: String) throws {
-        let db = try getDatabaseForServer(serverUrl)
-
+    private func insertOrUpdatePosts(_ db: Connection, _ posts: [Post], _ channelId: String) throws {
         let setters = createPostSetters(from: posts)
-        let insertQuery = postTable.insertMany(or: .replace, setters)
-        try db.run(insertQuery)
-
-        let deleteIds = posts.reduce([String]()) { (accumulated, post) in
-            if let deleteId = post.pending_post_id {
-                return accumulated + [deleteId]
+        for setter in setters {
+            let insertPost = postTable.insert(or: .replace, setter.postSetters)
+            try db.run(insertPost)
+            
+            if !setter.emojiSetters.isEmpty {
+                let insertEmojis = emojiTable.insertMany(or: .ignore, setter.emojiSetters)
+                try db.run(insertEmojis)
             }
-
-            return accumulated
-        }
-        let id = Expression<String>("id")
-        let deleteQuery = postTable
-            .filter(deleteIds.contains(id))
-            .delete()
-        try db.run(deleteQuery)
-    }
-    
-    private func handlePostMetadata(_ posts: [Post], _ channelId: String, _ serverUrl: String) throws {
-        let db = try getDatabaseForServer(serverUrl)
-
-        let setters = createPostMetadataSetters(from: posts)
-        
-        if !setters.postMetadataSetters.isEmpty {
-            let insertQuery = postMetadataTable.insertMany(or: .replace, setters.postMetadataSetters)
-            try db.run(insertQuery)
-        }
-        
-        if !setters.reactionSetters.isEmpty {
-            let insertQuery = reactionTable.insertMany(or: .replace, setters.reactionSetters)
-            try db.run(insertQuery)
-        }
-        
-        if !setters.fileSetters.isEmpty {
-            let insertQuery = fileTable.insertMany(or: .replace, setters.fileSetters)
-            try db.run(insertQuery)
-        }
-        
-        if !setters.emojiSetters.isEmpty {
-            let insertQuery = emojiTable.insertMany(or: .replace, setters.emojiSetters)
-            try db.run(insertQuery)
+            
+            if !setter.fileSetters.isEmpty {
+                let insertFiles = fileTable.insertMany(or: .ignore, setter.fileSetters)
+                try db.run(insertFiles)
+            }
+            
+            if !setter.reactionSetters.isEmpty {
+                let postIdCol = Expression<String>("post_id")
+                let deletePreviousReactions = reactionTable.where(postIdCol == setter.id).delete()
+                try db.run(deletePreviousReactions)
+                let insertReactions = reactionTable.insertMany(setter.reactionSetters)
+                try db.run(insertReactions)
+            }
         }
     }
     
-    private func createPostSetters(from posts: [Post]) -> [[Setter]] {
+    private func createPostSetters(from posts: [Post]) -> [PostSetters] {
         let id = Expression<String>("id")
         let createAt = Expression<Int64>("create_at")
         let updateAt = Expression<Int64>("update_at")
@@ -404,21 +298,18 @@ extension Database {
         let rootId = Expression<String>("root_id")
         let originalId = Expression<String>("original_id")
         let message = Expression<String>("message")
+        let metadata = Expression<String>("metadata")
         let type = Expression<String>("type")
-//        let hashtag = Expression<String?>("hashtag")
         let pendingPostId = Expression<String?>("pending_post_id")
-//        let replyCount = Expression<Int64>("reply_count")
-//        let fileIds = Expression<String?>("file_ids")
-//        let lastReplyAt = Expression<Int64?>("last_reply_at")
-//        let failed = Expression<Bool?>("failed")
-//        let ownPost = Expression<Bool?>("ownPost")
         let prevPostId = Expression<String?>("previous_post_id")
-//        let participants = Expression<String?>("participants")
         let props = Expression<String?>("props")
+        let statusCol = Expression<String>("_status")
         
-        var setters = [[Setter]]()
+        var postsSetters: [PostSetters] = []
+        
         for post in posts {
             var setter = [Setter]()
+            let metadataSetters = createPostMetadataSetters(from: post)
             setter.append(id <- post.id)
             setter.append(createAt <- post.create_at)
             setter.append(updateAt <- post.update_at)
@@ -430,32 +321,28 @@ extension Database {
             setter.append(rootId <- post.root_id)
             setter.append(originalId <- post.original_id)
             setter.append(message <- post.message)
+            setter.append(metadata <- metadataSetters.metadata)
             setter.append(type <- post.type)
-//            setter.append(hashtag <- post.hashtag)
             setter.append(pendingPostId <- post.pending_post_id)
-//            setter.append(replyCount <- post.reply_count)
-//            setter.append(fileIds <- json(from: post.file_ids))
-//            setter.append(lastReplyAt <- post.last_reply_at)
-//            setter.append(failed <- post.failed)
-//            setter.append(ownPost <- post.ownPost)
             setter.append(prevPostId <- post.prev_post_id)
-//            setter.append(participants <- json(from: post.participants))
+            setter.append(props <- post.props)
+            setter.append(statusCol <- "created")
 
-            if let postProps = post.props {
-                let propsJSON = try! JSONEncoder().encode(postProps)
-                let propsString = String(data: propsJSON, encoding: String.Encoding.utf8)
-                setter.append(props <- propsString)
-            }
-
-            setters.append(setter)
+            let postSetter = PostSetters(
+                id: post.id,
+                postSetters: setter,
+                reactionSetters: metadataSetters.reactionSetters,
+                fileSetters: metadataSetters.fileSetters,
+                emojiSetters: metadataSetters.emojiSetters
+            )
+            postsSetters.append(postSetter)
         }
         
-        return setters
+        return postsSetters
     }
     
-    private func createPostMetadataSetters(from posts: [Post]) -> MetadataSetters {
+    private func createPostMetadataSetters(from post: Post) -> MetadataSetters {
         let id = Expression<String>("id")
-        let data = Expression<String>("data")
         let userId = Expression<String>("user_id")
         let postId = Expression<String>("post_id")
         let emojiName = Expression<String>("emoji_name")
@@ -468,85 +355,86 @@ extension Database {
         let height = Expression<Int64>("height")
         let localPath = Expression<String?>("local_path")
         let imageThumbnail = Expression<String?>("image_thumbnail")
+        let statusCol = Expression<String>("_status")
         
-        var postMetadataSetters = [[Setter]]()
+        var metadataString = "{}"
         var reactionSetters = [[Setter]]()
         var fileSetters = [[Setter]]()
         var emojiSetters = [[Setter]]()
         
-        for post in posts {
-            if var metadata = post.metadata {
-                // Reaction setters
-                if let reactions = metadata.reactions {
-                    for reaction in reactions {
+        let json = try? JSONSerialization.jsonObject(with: post.metadata.data(using: .utf8)!, options: [])
+        if var metadata = json as? [String: Any] {
+            // Reaction setters
+            if let reactions = metadata["reactions"] as? [Any] {
+                for reaction in reactions {
+                    if let r = reaction as? [String: Any] {
                         var reactionSetter = [Setter]()
-                        reactionSetter.append(userId <- reaction.user_id)
-                        reactionSetter.append(postId <- reaction.post_id)
-                        reactionSetter.append(emojiName <- reaction.emoji_name)
-                        reactionSetter.append(createAt <- reaction.create_at)
-                        
+                        reactionSetter.append(id <- generateId())
+                        reactionSetter.append(userId <- r["user_id"] as! String)
+                        reactionSetter.append(postId <- r["post_id"] as! String)
+                        reactionSetter.append(emojiName <- r["emoji_name"] as! String)
+                        reactionSetter.append(createAt <- r["create_at"] as! Int64)
+                        reactionSetter.append(statusCol <- "created")
+
                         reactionSetters.append(reactionSetter)
                     }
-                    
-                    metadata.reactions = nil
                 }
-                
-                // File setters
-                if let files = metadata.files {
-                    for file in files {
+                metadata.removeValue(forKey: "reactions")
+            }
+
+            // File setters
+            if let files = metadata["files"] as? [Any] {
+                for file in files {
+                    if let f = file as? [String: Any] {
                         var fileSetter = [Setter]()
-                        fileSetter.append(id <- file.id)
-                        fileSetter.append(postId <- file.post_id)
-                        fileSetter.append(name <- file.name)
-                        fileSetter.append(ext <- file.`extension`)
-                        fileSetter.append(size <- file.size)
-                        fileSetter.append(mimeType <- file.mime_type)
-                        fileSetter.append(width <- file.width)
-                        fileSetter.append(height <- file.height)
-                        fileSetter.append(localPath <- file.local_path)
-                        fileSetter.append(imageThumbnail <- file.mini_preview)
-                        
+                        fileSetter.append(id <- f["id"] as! String)
+                        fileSetter.append(postId <- f["post_id"] as! String)
+                        fileSetter.append(name <- f["name"] as! String)
+                        fileSetter.append(ext <- f["extension"] as! String)
+                        fileSetter.append(size <- f["size"] as! Int64)
+                        fileSetter.append(mimeType <- f["mime_type"] as! String)
+                        fileSetter.append(width <- f["width"] as! Int64)
+                        fileSetter.append(height <- f["height"] as! Int64)
+                        fileSetter.append(localPath <- "")
+                        fileSetter.append(imageThumbnail <- f["mini_preview"] as? String)
+                        fileSetter.append(statusCol <- "created")
+
                         fileSetters.append(fileSetter)
                     }
-                    
-                    metadata.files = nil
                 }
                 
-                // Emoji setters
-                if let emojis = metadata.emojis {
-                    for emoji in emojis {
-                        var emojiSetter = [Setter]()
-                        emojiSetter.append(id <- emoji.id)
-                        emojiSetter.append(name <- emoji.name)
-                        
-                        emojiSetters.append(emojiSetter)
-                    }
-                    
-                    metadata.emojis = nil
-                }
-                
-                // Metadata setter
-                var metadataSetter = [Setter]()
-                
-                metadataSetter.append(id <- post.id)
-                
-                let dataJSON = try! JSONEncoder().encode(metadata)
-                let dataString = String(data: dataJSON, encoding: String.Encoding.utf8)!
-                metadataSetter.append(data <- dataString)
-                
-                postMetadataSetters.append(metadataSetter)
+                metadata.removeValue(forKey: "files")
             }
+
+            // Emoji setters
+            if let emojis = metadata["emojis"] as? [Any] {
+                for emoji in emojis {
+                    if let e = emoji as? [String: Any] {
+                        var emojiSetter = [Setter]()
+                       emojiSetter.append(id <- e["id"] as! String)
+                       emojiSetter.append(name <- e["name"] as! String)
+                        emojiSetter.append(statusCol <- "created")
+
+                       emojiSetters.append(emojiSetter)
+                    }
+                }
+                
+                metadata.removeValue(forKey: "emojis")
+            }
+
+            // Remaining Metadata
+            
+            let dataJSON = try! JSONSerialization.data(withJSONObject: metadata, options: [])
+            metadataString = String(data: dataJSON, encoding: String.Encoding.utf8)!
         }
 
-        return MetadataSetters(postMetadataSetters: postMetadataSetters,
+        return MetadataSetters(metadata: metadataString,
                                reactionSetters: reactionSetters,
                                fileSetters: fileSetters,
                                emojiSetters: emojiSetters)
     }
     
-    private func createPostsInThreadSetters(from posts: [Post], withServerUrl serverUrl: String) throws -> [[Setter]] {
-        let db = try getDatabaseForServer(serverUrl)
-        
+    private func createPostsInThreadSetters(_ db: Connection, from posts: [Post]) throws -> [[Setter]] {
         var setters = [[Setter]]()
         var postsInThread = [String: [Post]]()
         
@@ -562,6 +450,7 @@ extension Database {
         let rootIdCol = Expression<String>("root_id")
         let earliestCol = Expression<Int64>("earliest")
         let latestCol = Expression<Int64>("latest")
+        let statusCol = Expression<String>("_status")
         
         for (rootId, posts) in postsInThread {
             let sortedPosts = posts.sorted(by: { $0.create_at < $1.create_at })
@@ -579,13 +468,15 @@ extension Database {
                 let updateQuery = postsInThreadTable
                     .where(rootIdCol == rootId && earliestCol == rowEarliest && latestCol == rowLatest)
                     .update(earliestCol <- min(earliest, rowEarliest),
-                            latestCol <- max(latest, rowLatest))
+                            latestCol <- max(latest, rowLatest), statusCol <- "updated")
                 try db.run(updateQuery)
             } else {
                 var setter = [Setter]()
+                setter.append(Expression<String>("id") <- generateId())
                 setter.append(rootIdCol <- rootId)
                 setter.append(earliestCol <- earliest)
                 setter.append(latestCol <- latest)
+                setter.append(statusCol <- "created")
                 
                 setters.append(setter)
             }

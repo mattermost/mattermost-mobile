@@ -14,9 +14,9 @@
 		13B07FC11A68108700A75B9A /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 13B07FB71A68108700A75B9A /* main.m */; };
 		2D5296A8926B4D7FBAF2D6E2 /* OpenSans-Light.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 6561AEAC21CC40B8A72ABB93 /* OpenSans-Light.ttf */; };
 		4953BF602368AE8600593328 /* SwimeProxy.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4953BF5F2368AE8600593328 /* SwimeProxy.swift */; };
-		49AE36FF26D4455800EF4E52 /* BuildFile in Frameworks */ = {isa = PBXBuildFile; productRef = 49AE36FE26D4455800EF4E52 /* SwiftPackageProductDependency */; };
-		49AE370126D4455D00EF4E52 /* BuildFile in Frameworks */ = {isa = PBXBuildFile; productRef = 49AE370026D4455D00EF4E52 /* SwiftPackageProductDependency */; };
-		49AE370526D5CD7800EF4E52 /* BuildFile in Frameworks */ = {isa = PBXBuildFile; productRef = 49AE370426D5CD7800EF4E52 /* SwiftPackageProductDependency */; };
+		49AE36FF26D4455800EF4E52 /* Gekidou in Frameworks */ = {isa = PBXBuildFile; productRef = 49AE36FE26D4455800EF4E52 /* Gekidou */; };
+		49AE370126D4455D00EF4E52 /* Gekidou in Frameworks */ = {isa = PBXBuildFile; productRef = 49AE370026D4455D00EF4E52 /* Gekidou */; };
+		49AE370526D5CD7800EF4E52 /* Gekidou in Frameworks */ = {isa = PBXBuildFile; productRef = 49AE370426D5CD7800EF4E52 /* Gekidou */; };
 		49B4C050230C981C006E919E /* libUploadAttachments.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 7FABE04522137F2A00D0F595 /* libUploadAttachments.a */; };
 		531BEBC72513E93C00BC05B1 /* compass-icons.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 531BEBC52513E93C00BC05B1 /* compass-icons.ttf */; };
 		536CC6C323E79287002C478C /* RNNotificationEventHandler+HandleReplyAction.m in Sources */ = {isa = PBXBuildFile; fileRef = 536CC6C123E79287002C478C /* RNNotificationEventHandler+HandleReplyAction.m */; };
@@ -168,7 +168,6 @@
 		7F240ADA220E089300637665 /* Item.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Item.swift; sourceTree = "<group>"; };
 		7F240ADC220E094A00637665 /* TeamsViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TeamsViewController.swift; sourceTree = "<group>"; };
 		7F292A701E8AB73400A450A3 /* SplashScreenResource */ = {isa = PBXFileReference; lastKnownFileType = folder; path = SplashScreenResource; sourceTree = "<group>"; };
-		7F292AA51E8ABB1100A450A3 /* splash.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = splash.png; path = SplashScreenResource/splash.png; sourceTree = "<group>"; };
 		7F325D6DAAF1047EB948EFF7 /* Pods-Mattermost-MattermostTests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Mattermost-MattermostTests.debug.xcconfig"; path = "Target Support Files/Pods-Mattermost-MattermostTests/Pods-Mattermost-MattermostTests.debug.xcconfig"; sourceTree = "<group>"; };
 		7F43D6051F6BF9EB001FC614 /* libPods-Mattermost.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = "libPods-Mattermost.a"; path = "../../../../../../../Library/Developer/Xcode/DerivedData/Mattermost-czlinsdviifujheezzjvmisotjrm/Build/Products/Debug-iphonesimulator/libPods-Mattermost.a"; sourceTree = "<group>"; };
 		7F54ABFAE6CE4A6DB11D1ED7 /* Roboto-BlackItalic.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "Roboto-BlackItalic.ttf"; path = "../assets/fonts/Roboto-BlackItalic.ttf"; sourceTree = "<group>"; };
@@ -220,7 +219,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				49AE370526D5CD7800EF4E52 /* BuildFile in Frameworks */,
+				49AE370526D5CD7800EF4E52 /* Gekidou in Frameworks */,
 				49B4C050230C981C006E919E /* libUploadAttachments.a in Frameworks */,
 				6C9B1EFD6561083917AF06CF /* libPods-Mattermost.a in Frameworks */,
 			);
@@ -230,7 +229,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				49AE36FF26D4455800EF4E52 /* BuildFile in Frameworks */,
+				49AE36FF26D4455800EF4E52 /* Gekidou in Frameworks */,
 				7FABE0562213884700D0F595 /* libUploadAttachments.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -239,7 +238,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				49AE370126D4455D00EF4E52 /* BuildFile in Frameworks */,
+				49AE370126D4455D00EF4E52 /* Gekidou in Frameworks */,
 				7F581F78221EEA7C0099E66B /* libUploadAttachments.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -309,7 +308,6 @@
 				7F151D43221B082A00FAD8F3 /* Mattermost-Bridging-Header.h */,
 				7FEB10991F61019C0039A015 /* MattermostManaged.h */,
 				7FEB109A1F61019C0039A015 /* MattermostManaged.m */,
-				7F292AA51E8ABB1100A450A3 /* splash.png */,
 				7F0F4B0924BA173900E14C60 /* LaunchScreen.storyboard */,
 				7FCEFB9126B7934F006DC1DE /* SDWebImageDownloaderOperation+Swizzle.h */,
 				7FCEFB9226B7934F006DC1DE /* SDWebImageDownloaderOperation+Swizzle.m */,
@@ -476,7 +474,7 @@
 			);
 			name = Mattermost;
 			packageProductDependencies = (
-				49AE370426D5CD7800EF4E52 /* SwiftPackageProductDependency */,
+				49AE370426D5CD7800EF4E52 /* Gekidou */,
 			);
 			productName = "Hello World";
 			productReference = 13B07F961A680F5B00A75B9A /* Mattermost.app */;
@@ -497,7 +495,7 @@
 			);
 			name = MattermostShare;
 			packageProductDependencies = (
-				49AE36FE26D4455800EF4E52 /* SwiftPackageProductDependency */,
+				49AE36FE26D4455800EF4E52 /* Gekidou */,
 			);
 			productName = MattermostShare;
 			productReference = 7F240A19220D3A2300637665 /* MattermostShare.appex */;
@@ -518,7 +516,7 @@
 			);
 			name = NotificationService;
 			packageProductDependencies = (
-				49AE370026D4455D00EF4E52 /* SwiftPackageProductDependency */,
+				49AE370026D4455D00EF4E52 /* Gekidou */,
 			);
 			productName = NotificationService;
 			productReference = 7F581D32221ED5C60099E66B /* NotificationService.appex */;
@@ -1250,15 +1248,15 @@
 /* End XCConfigurationList section */
 
 /* Begin XCSwiftPackageProductDependency section */
-		49AE36FE26D4455800EF4E52 /* SwiftPackageProductDependency */ = {
+		49AE36FE26D4455800EF4E52 /* Gekidou */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = Gekidou;
 		};
-		49AE370026D4455D00EF4E52 /* SwiftPackageProductDependency */ = {
+		49AE370026D4455D00EF4E52 /* Gekidou */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = Gekidou;
 		};
-		49AE370426D5CD7800EF4E52 /* SwiftPackageProductDependency */ = {
+		49AE370426D5CD7800EF4E52 /* Gekidou */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = Gekidou;
 		};

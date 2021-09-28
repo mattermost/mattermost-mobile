@@ -57,6 +57,7 @@ public class Database: NSObject {
     internal var reactionTable = Table("Reaction")
     internal var fileTable = Table("File")
     internal var emojiTable = Table("CustomEmoji")
+    internal var userTable = Table("User")
     
     @objc public static let `default` = Database()
     
@@ -77,10 +78,28 @@ public class Database: NSObject {
         }
     }
     
+    public func generateId() -> String {
+        let alphabet = "0123456789abcdefghijklmnopqrstuvwxyz"
+        let alphabetLenght = alphabet.count
+        let idLenght = 16
+        var id = ""
+        
+        for _ in 1...(idLenght / 2) {
+            let random = floor(drand48() * Double(alphabetLenght) * Double(alphabetLenght))
+            let firstIndex = Int(floor(random / Double(alphabetLenght)))
+            let lastIndex = Int(random) % alphabetLenght
+            id += String(alphabet[firstIndex])
+            id += String(alphabet[lastIndex])
+        }
+        
+        return id
+    }
+    
     public func getOnlyServerUrl() throws -> String {
         let db = try Connection(DEFAULT_DB_PATH)
         let url = Expression<String>("url")
-        let query = serversTable.select(url)
+        let lastActiveAt = Expression<Int64>("last_active_at")
+        let query = serversTable.select(url).filter(lastActiveAt > 0)
         
         var serverUrl: String?
         for result in try db.prepare(query) {
@@ -126,7 +145,20 @@ public class Database: NSObject {
         throw DatabaseError.NoResults(query.asSQL())
     }
     
-    private func json(from object:Any?) -> String? {
+    internal func queryCurrentUser(_ serverUrl: String) throws -> Row? {
+        let currentUserId = try queryCurrentUserId(serverUrl)
+        let idCol = Expression<String>("id")
+        let query = userTable.where(idCol == currentUserId)
+        let db = try getDatabaseForServer(serverUrl)
+
+        if let result = try db.pluck(query) {
+            return result
+        }
+        
+        throw DatabaseError.NoResults(query.asSQL())
+    }
+    
+    internal func json(from object:Any?) -> String? {
         guard let object = object, let data = try? JSONSerialization.data(withJSONObject: object, options: []) else {
             return nil
         }

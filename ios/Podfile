@@ -2,7 +2,7 @@ require_relative '../node_modules/react-native/scripts/react_native_pods'
 require_relative '../node_modules/@react-native-community/cli-platform-ios/native_modules'
 require_relative '../node_modules/react-native-unimodules/cocoapods.rb'
 
-platform :ios, '11.0'
+platform :ios, '12.1'
 
 target 'Mattermost' do
   # Pods for Mattermost
@@ -40,10 +40,13 @@ end
 
   post_install do |installer|
     react_native_post_install(installer)
-
-    puts 'Patching Alamofire to include X-Uncompressed-Content-Length to measure download progress'
-    %x(patch Pods/Alamofire/Source/SessionDelegate.swift < patches/SessionDelegate.patch)
-
     puts 'Patching XCDYouTube so it can playback videos'
     %x(patch Pods/XCDYouTubeKit/XCDYouTubeKit/XCDYouTubeVideoOperation.m < patches/XCDYouTubeVideoOperation.patch)
+    installer.pods_project.targets.each do |target|
+      if target.name != "RCT-Folly"
+        target.build_configurations.each do |config|
+          config.build_settings.delete 'IPHONEOS_DEPLOYMENT_TARGET'
+        end
+      end
+    end
   end

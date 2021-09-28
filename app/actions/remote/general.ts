@@ -77,7 +77,7 @@ export const getRedirectLocation = async (serverUrl: string, link: string) => {
 
         return {expandedLink};
     } catch (error) {
-        forceLogoutIfNecessary(serverUrl, error);
+        forceLogoutIfNecessary(serverUrl, error as ClientErrorProps);
         return {error};
     }
 };

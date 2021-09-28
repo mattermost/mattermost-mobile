@@ -16,19 +16,20 @@ import {prepareUsers, queryAllUsers, queryCurrentUser, queryUsersById, queryUser
 import {forceLogoutIfNecessary} from './session';
 
 import type {Client} from '@client/rest';
+import type ClientError from '@client/rest/error';
 import type {LoadMeArgs} from '@typings/database/database';
 import type RoleModel from '@typings/database/models/servers/role';
 import type UserModel from '@typings/database/models/servers/user';
 
 export type ProfilesPerChannelRequest = {
     data?: ProfilesInChannelRequest[];
-    error?: never;
+    error?: unknown;
 }
 
 export type ProfilesInChannelRequest = {
     users?: UserProfile[];
     channelId: string;
-    error?: never;
+    error?: unknown;
 }
 
 export const fetchProfilesInChannel = async (serverUrl: string, channelId: string, excludeUserId?: string, fetchOnly = false): Promise<ProfilesInChannelRequest> => {
@@ -57,7 +58,7 @@ export const fetchProfilesInChannel = async (serverUrl: string, channelId: strin
 
         return {channelId, users: uniqueUsers};
     } catch (error) {
-        forceLogoutIfNecessary(serverUrl, error);
+        forceLogoutIfNecessary(serverUrl, error as ClientError);
         return {channelId, error};
     }
 };
@@ -121,7 +122,7 @@ export const loadMe = async (serverUrl: string, {deviceToken, user}: LoadMeArgs)
             currentUser = await client.getMe();
         }
     } catch (e) {
-        await forceLogoutIfNecessary(serverUrl, e);
+        await forceLogoutIfNecessary(serverUrl, e as ClientError);
         return {
             error: e,
         };
@@ -252,7 +253,7 @@ export const updateMe = async (serverUrl: string, user: UserModel) => {
     try {
         data = await client.patchMe(user._raw);
     } catch (e) {
-        forceLogoutIfNecessary(serverUrl, e);
+        forceLogoutIfNecessary(serverUrl, e as ClientError);
         return {error: e};
     }
 
@@ -309,7 +310,7 @@ export const fetchStatusByIds = async (serverUrl: string, userIds: string[], fet
 
         return {statuses};
     } catch (error) {
-        forceLogoutIfNecessary(serverUrl, error);
+        forceLogoutIfNecessary(serverUrl, error as ClientError);
         return {error};
     }
 };
@@ -345,7 +346,7 @@ export const fetchUsersByIds = async (serverUrl: string, userIds: string[], fetc
 
         return {users};
     } catch (error) {
-        forceLogoutIfNecessary(serverUrl, error);
+        forceLogoutIfNecessary(serverUrl, error as ClientError);
         return {error};
     }
 };
@@ -381,7 +382,7 @@ export const fetchUsersByUsernames = async (serverUrl: string, usernames: string
 
         return {users};
     } catch (error) {
-        forceLogoutIfNecessary(serverUrl, error);
+        forceLogoutIfNecessary(serverUrl, error as ClientError);
         return {error};
     }
 };
@@ -400,7 +401,7 @@ export const fetchMissinProfilesByIds = async (serverUrl: string, userIds: strin
         }
         return {users};
     } catch (error) {
-        forceLogoutIfNecessary(serverUrl, error);
+        forceLogoutIfNecessary(serverUrl, error as ClientError);
         return {error};
     }
 };
@@ -419,7 +420,7 @@ export const fetchMissinProfilesByUsernames = async (serverUrl: string, username
         }
         return {users};
     } catch (error) {
-        forceLogoutIfNecessary(serverUrl, error);
+        forceLogoutIfNecessary(serverUrl, error as ClientError);
         return {error};
     }
 };

@@ -73,8 +73,12 @@ class NotificationService: UNNotificationServiceExtension {
         }
       }
     }
-    
-    Network.default.fetchAndStoreDataForPushNotification(bestAttemptContent, withContentHandler: contentHandler)
+
+    if (MattermostBucket.init().getPreference("ApplicationIsForeground") as? String != "true") {
+      Network.default.fetchAndStoreDataForPushNotification(bestAttemptContent, withContentHandler: contentHandler)
+    } else if let contentHandler = contentHandler {
+      contentHandler(bestAttemptContent)
+    }
   }
   
   override func serviceExtensionTimeWillExpire() {

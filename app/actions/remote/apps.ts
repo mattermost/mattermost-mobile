@@ -80,7 +80,7 @@ export async function doAppCall<Res=unknown>(serverUrl: string, call: AppCallReq
             }
         }
     } catch (error) {
-        const errMsg = error.message || intl.formatMessage({
+        const errMsg = (error as Error).message || intl.formatMessage({
             id: 'apps.error.responses.unexpected_error',
             defaultMessage: 'Received an unexpected error.',
         });
