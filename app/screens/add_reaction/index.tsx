@@ -2,10 +2,13 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback, useEffect} from 'react';
+import {useIntl} from 'react-intl';
 import {Keyboard, StyleSheet, useWindowDimensions, View} from 'react-native';
 import {Navigation} from 'react-native-navigation';
 
 import EmojiPicker from '@components/emoji_picker';
+import {useServerUrl} from '@context/server_url';
+import {useTheme} from '@context/theme';
 import {dismissModal, setButtons} from '@screens/navigation';
 
 const styles = StyleSheet.create({
@@ -22,6 +25,10 @@ type AddReactionProps = {
 
 const AddReaction = ({closeButton, componentId, onEmojiPress}: AddReactionProps) => {
     const {width} = useWindowDimensions();
+
+    const theme = useTheme();
+    const intl = useIntl();
+    const serverUrl = useServerUrl();
 
     useEffect(() => {
         setButtons(componentId, {
@@ -65,8 +72,11 @@ const AddReaction = ({closeButton, componentId, onEmojiPress}: AddReactionProps)
         >
             <EmojiPicker
                 deviceWidth={width}
+                intl={intl}
                 onEmojiPress={handleEmojiPress}
+                serverUrl={serverUrl}
                 testID='add_reaction.emoji_picker'
+                theme={theme}
             />
         </View>
     );

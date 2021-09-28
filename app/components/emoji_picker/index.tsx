@@ -1,6 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {Database} from '@nozbe/watermelondb';
 import {withDatabase} from '@nozbe/watermelondb/DatabaseProvider';
 import withObservables from '@nozbe/with-observables';
 import Fuse from 'fuse.js';
@@ -40,16 +41,11 @@ export function filterEmojiSearchInput(searchText: string) {
 }
 
 type EmojiPickerProps = {
-    config: ClientConfig;
-    customEmojiPage: number;
     deviceWidth: number;
-    emojis: string;
-    emojisBySection: EmojiSection[];
-    intl: IntlShape;
-    isLandscape: boolean;
     onEmojiPress: (emoji: string) => void;
-    serverUrl: string;
+    intl: IntlShape;
     theme: Theme;
+    serverUrl: string;
     testID: string;
 }
 
@@ -64,7 +60,15 @@ type EmojiPickerState = {
     searchTerm: string;
 };
 
-class EmojiPicker extends PureComponent<EmojiPickerProps, EmojiPickerState> {
+type ConnectedEmojiPickerProps = EmojiPickerProps & {
+    database: Database;
+    config: ClientConfig;
+    customEmojiPage: number;
+    emojis: string;
+    emojisBySection: EmojiSection[];
+}
+
+class EmojiPicker extends PureComponent<ConnectedEmojiPickerProps, EmojiPickerState> {
     private fuse: Fuse<unknown> | null | undefined;
     private readonly customEmojisEnabled: boolean;
     private readonly sectionListGetItemLayout: any;
@@ -74,7 +78,7 @@ class EmojiPicker extends PureComponent<EmojiPickerProps, EmojiPickerState> {
     private searchTermTimeout: NodeJS.Timeout | undefined;
     private sectionListRef: any;
 
-    constructor(props: EmojiPickerProps) {
+    constructor(props: ConnectedEmojiPickerProps) {
         super(props);
 
         this.sectionListGetItemLayout = sectionListGetItemLayout({
@@ -84,13 +88,13 @@ class EmojiPicker extends PureComponent<EmojiPickerProps, EmojiPickerState> {
             getSectionHeaderHeight: () => SECTION_HEADER_HEIGHT,
         });
 
-        const {serverUrl, deviceWidth, config} = props;
+        const {serverUrl, config} = props;
 
         //fixme:  wrong place to call this method
         const emojisBySection = selectEmojisBySection(serverUrl);
         console.log('>>>  emojisBySection', JSON.stringify(emojisBySection));
 
-        const emojis = this.renderableEmojis(emojisBySection, deviceWidth);
+        const emojis = this.renderableEmojis(emojisBySection, props.deviceWidth);
         const emojiSectionIndexByOffset = this.measureEmojiSections(emojis);
 
         this.customEmojisEnabled = isCustomEmojiEnabled(config);
@@ -721,8 +725,6 @@ export const getStyleSheetFromTheme = makeStyleSheetFromTheme((theme) => {
     };
 });
 
-const AugmentedEmojiPicker = injectIntl(withServerUrl(withTheme(EmojiPicker)));
-
 const withConfig = withObservables([], ({database}: WithDatabaseArgs) => {
     //fixme: add the below line of code
     // const emojisBySection = from;
@@ -731,4 +733,6 @@ const withConfig = withObservables([], ({database}: WithDatabaseArgs) => {
     };
 });
 
-export default withDatabase(withConfig(AugmentedEmojiPicker));
+const ConnectedEmojiPicker: React.FC<EmojiPickerProps> = withDatabase(withConfig(EmojiPicker));
+
+export default ConnectedEmojiPicker;
