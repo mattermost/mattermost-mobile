@@ -22,7 +22,6 @@ type EmojiSectionListProps = {
     onMomentumScrollEnd: () => void;
     onScroll: (e: NativeSyntheticEvent<NativeScrollEvent>) => void;
     onSetSectionListRef: (ref: any) => void;
-    searchTerm: string;
     margin: number;
 };
 
@@ -37,13 +36,12 @@ const EmojiSectionList = ({
     onMomentumScrollEnd,
     onScroll,
     onSetSectionListRef,
-    searchTerm,
     margin,
 }: EmojiSectionListProps) => {
     const theme = useTheme();
     const styles = getStyleSheetFromTheme(theme);
 
-    const renderSectionItem = useCallback(({item, section}) => {
+    const renderSectionItem = ({item, section}) => {
         return (
             <EmojiPickerRow
                 emojiGutter={EMOJI_GUTTER}
@@ -55,7 +53,7 @@ const EmojiSectionList = ({
                 section={section}
             />
         );
-    }, []);
+    };
 
     const renderSectionHeader = useCallback(({section}) => {
         return (
@@ -72,10 +70,6 @@ const EmojiSectionList = ({
             <Footer/>
         );
     }, []);
-
-    if (searchTerm) {
-        return null;
-    }
 
     return (
         <SectionList

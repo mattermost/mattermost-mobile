@@ -33,10 +33,6 @@ const EmojiFlatList = ({filteredEmojis, searchTerm, onEmojiPress}: EmojiFlatList
         );
     }, []);
 
-    if (!searchTerm) {
-        return null;
-    }
-
     return (
         <FlatList
             contentContainerStyle={contentContainerStyle}

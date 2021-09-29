@@ -103,21 +103,21 @@ class EmojiPicker extends PureComponent<ConnectedEmojiPickerProps, EmojiPickerSt
         await this.setUp();
     }
 
-     setUp = async () => {
-         const {serverUrl, deviceWidth} = this.props;
-         this.fuse = await this.getFuseInstance();
+    setUp = async () => {
+        const {serverUrl, deviceWidth} = this.props;
+        this.fuse = await this.getFuseInstance();
 
-         const {emoticons: emojisBySection} = await selectEmojisBySection(serverUrl);
-         if (emojisBySection) {
-             const emojis = this.renderableEmojis(emojisBySection, deviceWidth);
-             const emojiSectionIndexByOffset = this.measureEmojiSections(emojis);
+        const {emoticons: emojisBySection} = await selectEmojisBySection(serverUrl);
+        if (emojisBySection) {
+            const emojis = this.renderableEmojis(emojisBySection, deviceWidth);
+            const emojiSectionIndexByOffset = this.measureEmojiSections(emojis);
 
-             this.setState({
-                 emojis,
-                 emojiSectionIndexByOffset,
-             });
-         }
-     }
+            this.setState({
+                emojis,
+                emojiSectionIndexByOffset,
+            });
+        }
+    }
 
     getFuseInstance = async () => {
         const {serverUrl} = this.props;
