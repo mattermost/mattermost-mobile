@@ -7,20 +7,19 @@ import withObservables from '@nozbe/with-observables';
 import Fuse from 'fuse.js';
 import React, {PureComponent} from 'react';
 import {IntlShape} from 'react-intl';
-import {FlatList, Platform, SectionList, TouchableOpacity, View} from 'react-native';
+import {FlatList, Platform, SectionList} from 'react-native';
 import sectionListGetItemLayout from 'react-native-section-list-get-item-layout';
 import {of as of$} from 'rxjs';
 import {switchMap} from 'rxjs/operators';
 
 import {getEmojisByName, selectEmojisBySection} from '@actions/local/custom_emoji';
 import {getCustomEmojis} from '@actions/remote/custom_emoji';
-import CompassIcon from '@components/compass_icon';
 import {Device} from '@constants';
 import {MM_TABLES, SYSTEM_IDENTIFIERS} from '@constants/database';
 import {WithDatabaseArgs} from '@typings/database/database';
 import SystemModel from '@typings/database/models/servers/system';
 import {compareEmojis, isCustomEmojiEnabled} from '@utils/emoji/helpers';
-import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
+import {makeStyleSheetFromTheme} from '@utils/theme';
 
 import TouchableEmoji from './components/emoji_flatlist_item';
 import EmojiPickerComponent from './components/emoji_picker';
@@ -28,6 +27,7 @@ import EmojiPickerRow from './components/emoji_picker_row';
 import EmptyList from './components/empty_list';
 import Footer from './components/footer';
 import SectionHeader from './components/section_header';
+import SectionIcons from './components/section_icons';
 
 const EMOJI_SIZE = 30;
 const EMOJI_GUTTER = 7;
@@ -78,7 +78,7 @@ class EmojiPicker extends PureComponent<ConnectedEmojiPickerProps, EmojiPickerSt
     private searchBarRef: any;
     private searchTermTimeout: NodeJS.Timeout | undefined;
     private sectionListRef: any;
-    private styles: any;
+    private readonly styles: any;
 
     constructor(props: ConnectedEmojiPickerProps) {
         super(props);
@@ -307,6 +307,7 @@ class EmojiPicker extends PureComponent<ConnectedEmojiPickerProps, EmojiPickerSt
         return Math.floor(Number(((deviceWidth - (SECTION_MARGIN * shorten)) / ((EMOJI_SIZE + 7) + (EMOJI_GUTTER * shorten)))));
     };
 
+    //fixme: to be reworked
     renderListComponent = (shorten: number) => {
         const {deviceWidth} = this.props;
         const {emojis, filteredEmojis, searchTerm} = this.state;
@@ -485,28 +486,15 @@ class EmojiPicker extends PureComponent<ConnectedEmojiPickerProps, EmojiPickerSt
     };
 
     renderSectionIcons = () => {
-        const {sectionIconContainer, sectionIcon, sectionIconHighlight} = this.styles;
+        const {emojis, currentSectionIndex} = this.state;
 
-        return this.state.emojis.map((section, index: number) => {
-            const onPress = () => this.handleSectionIconPress(index, section.key === 'custom');
-
-            return (
-                <TouchableOpacity
-                    key={section.key}
-                    onPress={onPress}
-                    style={sectionIconContainer}
-                >
-                    <CompassIcon
-                        name={section.icon}
-                        size={17}
-                        style={[
-                            sectionIcon,
-                            index === this.state.currentSectionIndex && sectionIconHighlight,
-                        ]}
-                    />
-                </TouchableOpacity>
-            );
-        });
+        return (
+            <SectionIcons
+                currentSectionIndex={currentSectionIndex}
+                emojis={emojis}
+                onHandleSectionIconPress={this.handleSectionIconPress}
+            />
+        );
     };
 
     renderFooter = () => {
@@ -556,18 +544,6 @@ const getStyleSheetFromTheme = makeStyleSheetFromTheme((theme) => {
                     marginBottom: 35,
                 },
             }),
-        },
-        sectionIcon: {
-            color: changeOpacity(theme.centerChannelColor, 0.3),
-        },
-        sectionIconContainer: {
-            flex: 1,
-            height: 35,
-            alignItems: 'center',
-            justifyContent: 'center',
-        },
-        sectionIconHighlight: {
-            color: theme.centerChannelColor,
         },
     };
 });

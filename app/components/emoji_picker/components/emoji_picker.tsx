@@ -19,7 +19,7 @@ type Props = {
     onChangeSearchTerm: (term: string) => void;
     onSetSearchBarRef: (ref: any) => void;
     renderListComponent: (margin: number) => JSX.Element;
-    renderSectionIcons: () => JSX.Element[];
+    renderSectionIcons: () => JSX.Element;
     searchTerm: string;
     testID: string;
     theme: Theme;
