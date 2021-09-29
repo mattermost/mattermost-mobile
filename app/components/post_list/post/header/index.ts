@@ -21,6 +21,7 @@ import type SystemModel from '@typings/database/models/servers/system';
 
 type HeaderInputProps = {
     config: ClientConfig;
+    differentThreadSequence: boolean;
     license: ClientLicense;
     preferences: PreferenceModel[];
     post: PostModel;
@@ -33,8 +34,8 @@ const withBaseHeaderProps = withObservables([], ({database}: WithDatabaseArgs & 
 }));
 
 const withHeaderProps = withObservables(
-    ['preferences', 'post'],
-    ({config, post, license, database, preferences}: WithDatabaseArgs & HeaderInputProps) => {
+    ['preferences', 'post', 'differentThreadSequence'],
+    ({config, post, license, database, preferences, differentThreadSequence}: WithDatabaseArgs & HeaderInputProps) => {
         const author = post.author.observe();
         const enablePostUsernameOverride = of$(config.EnablePostUsernameOverride === 'true');
         const isTimezoneEnabled = of$(config.ExperimentalTimezone === 'true');
@@ -47,13 +48,13 @@ const withHeaderProps = withObservables(
                 Q.where('delete_at', Q.eq(0)),
             ),
         ).observeCount();
-        const rootPostAuthor = post.root.observe().pipe(switchMap((root) => {
+        const rootPostAuthor = differentThreadSequence ? post.root.observe().pipe(switchMap((root) => {
             if (root.length) {
                 return root[0].author.observe();
             }
 
             return of$(null);
-        }));
+        })) : of$(null);
 
         return {
             author,
