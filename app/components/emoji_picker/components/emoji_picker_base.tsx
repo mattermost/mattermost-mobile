@@ -151,7 +151,7 @@ const EmojiPicker = ({
         );
     }, []);
 
-    const renderListComponent = useCallback((margin: number) => {
+    const renderListComponent = (margin: number) => {
         if (searchTerm) {
             return (
                 <EmojiFlatList
@@ -174,13 +174,12 @@ const EmojiPicker = ({
                 onMomentumScrollEnd={onMomentumScrollEnd}
                 onScroll={onScroll}
                 onSetSectionListRef={onSetSectionListRef}
-                searchTerm={searchTerm}
                 margin={margin}
             />
         );
-    }, []);
+    };
 
-    const renderContent = useCallback(() => {
+    const renderContent = () => {
         const shorten = Device.IS_IPHONE_WITH_INSETS && isLandscape ? 6 : 2;
         return (
             <React.Fragment>
@@ -191,9 +190,9 @@ const EmojiPicker = ({
                 </View>
             </React.Fragment>
         );
-    }, []);
+    };
 
-    const renderIOSContent = useCallback(() => {
+    const renderIOSContent = () => {
         let keyboardOffset = Device.IS_IPHONE_WITH_INSETS ? 80 : 60;
         if (isLandscape) {
             keyboardOffset = Device.IS_IPHONE_WITH_INSETS ? 0 : 10;
@@ -214,7 +213,7 @@ const EmojiPicker = ({
                 </KeyboardAvoidingView>
             </SafeAreaView>
         );
-    }, []);
+    };
 
     return isAndroid ? renderContent() : renderIOSContent();
 };
