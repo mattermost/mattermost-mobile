@@ -12,6 +12,40 @@ function calls(state: Dictionary<Call> = {}, action: GenericAction) {
     case VoiceCallsTypes.RECEIVED_VOICE_CALLS: {
         return action.data;
     }
+    case VoiceCallsTypes.RECEIVED_LEFT_VOICE_CALL: {
+        const {channelId, userId} = action.data;
+        if (!state[channelId]) {
+            return state;
+        }
+        if (!state[channelId].participants[userId]) {
+            return state;
+        }
+        const channelUpdate = {...state[channelId], participants: {...state[channelId].participants}};
+        delete channelUpdate.participants[userId];
+        const nextState = {...state};
+        if (Object.keys(channelUpdate.participants).length === 0) {
+            delete nextState[channelId];
+        } else {
+            nextState[channelId] = channelUpdate;
+        }
+        return nextState;
+    }
+    case VoiceCallsTypes.RECEIVED_JOINED_VOICE_CALL: {
+        const {channelId, userId} = action.data;
+        if (!state[channelId]) {
+            return state;
+        }
+        const channelUpdate = {...state[channelId], participants: {...state[channelId].participants}};
+        channelUpdate.participants[userId] = {
+            id: userId,
+            muted: false,
+            handRaised: false,
+            isTalking: false,
+        };
+        const nextState = {...state};
+        nextState[channelId] = channelUpdate;
+        return nextState;
+    }
     case VoiceCallsTypes.RECEIVED_VOICE_CALL_STARTED: {
         const newCall = action.data;
         const nextState = {...state};
@@ -91,10 +125,10 @@ function calls(state: Dictionary<Call> = {}, action: GenericAction) {
 
 function joined(state = '', action: GenericAction) {
     switch (action.type) {
-    case VoiceCallsTypes.RECEIVED_JOINED_VOICE_CALL: {
+    case VoiceCallsTypes.RECEIVED_MYSELF_JOINED_VOICE_CALL: {
         return action.data;
     }
-    case VoiceCallsTypes.RECEIVED_LEFT_VOICE_CALL: {
+    case VoiceCallsTypes.RECEIVED_MYSELF_LEFT_VOICE_CALL: {
         return '';
     }
     default:

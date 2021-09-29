@@ -21,8 +21,8 @@ import type {Call, CallParticipant} from '@mm-redux/types/voiceCalls';
 
 type Props = {
     actions: {
-        muteUser: (channelId: string, userId: string) => GenericAction;
-        unmuteUser: (channelId: string, userId: string) => GenericAction;
+        muteMyself: (channelId: string) => GenericAction;
+        unmuteMyself: (channelId: string) => GenericAction;
     };
     theme: Theme;
     channel: Channel;
@@ -109,8 +109,8 @@ const FloatingVoiceCall = (props: Props) => {
         <View style={style.wrapper}>
             <View style={style.container}>
                 <VoiceAvatar
-                    userId={props.speaker.id}
-                    volume={props.speaker.isTalking ? 0.5 : 0}
+                    userId={props.speaker?.id}
+                    volume={props.speaker?.isTalking ? 0.5 : 0}
                 />
                 <View style={style.userInfo}>
                     <Text style={style.speakingUser}>
@@ -141,9 +141,9 @@ const FloatingVoiceCall = (props: Props) => {
                 <TouchableOpacity
                     onPress={useCallback(() => {
                         if (props.currentParticipant?.muted) {
-                            props.actions.unmuteUser(props.call.channelId, props.currentParticipant?.id);
+                            props.actions.unmuteMyself(props.call.channelId);
                         } else {
-                            props.actions.muteUser(props.call.channelId, props.currentParticipant?.id);
+                            props.actions.muteMyself(props.call.channelId);
                         }
                     }, [props.currentParticipant?.muted])}
                     style={style.pressable}

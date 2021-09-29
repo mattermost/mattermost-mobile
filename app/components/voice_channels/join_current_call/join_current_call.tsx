@@ -124,7 +124,7 @@ const JoinCurrentCall = (props: Props) => {
                 </Text>
                 <View style={style.avatars}>
                     <Avatars
-                        userIds={Object.values(props.call.participants).map((x) => x.id)}
+                        userIds={Object.values(props.call.participants || {}).map((x) => x.id)}
                         breakAt={1}
                         listTitle={
                             <FormattedText

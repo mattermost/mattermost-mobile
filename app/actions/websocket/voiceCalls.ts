@@ -8,35 +8,35 @@ import {WebSocketMessage} from '@mm-redux/types/websocket';
 export function handleVoiceCallUserDisconnected(msg: WebSocketMessage): GenericAction {
     return {
         type: VoiceCallsTypes.RECEIVED_LEFT_VOICE_CALL,
-        data: {channelId: msg.data.channel_id, userId: msg.data.userID},
+        data: {channelId: msg.broadcast.channel_id, userId: msg.data.userID},
     };
 }
 
 export function handleVoiceCallUserConnected(msg: WebSocketMessage): GenericAction {
     return {
         type: VoiceCallsTypes.RECEIVED_JOINED_VOICE_CALL,
-        data: {channelId: msg.data.channel_id, userId: msg.data.userID},
+        data: {channelId: msg.broadcast.channel_id, userId: msg.data.userID},
     };
 }
 
 export function handleVoiceCallUserMuted(msg: WebSocketMessage): GenericAction {
     return {
         type: VoiceCallsTypes.RECEIVED_MUTE_USER_VOICE_CALL,
-        data: {channelId: msg.data.channel_id, userId: msg.data.userID},
+        data: {channelId: msg.broadcast.channel_id, userId: msg.data.userID},
     };
 }
 
 export function handleVoiceCallUserUnmuted(msg: WebSocketMessage): GenericAction {
     return {
         type: VoiceCallsTypes.RECEIVED_UNMUTE_USER_VOICE_CALL,
-        data: {channelId: msg.data.channel_id, userId: msg.data.userID},
+        data: {channelId: msg.broadcast.channel_id, userId: msg.data.userID},
     };
 }
 
 export function handleVoiceCallStarted(msg: WebSocketMessage): GenericAction {
     return {
         type: VoiceCallsTypes.RECEIVED_VOICE_CALL_STARTED,
-        data: {channelId: msg.data.channel_id, startTime: msg.data.start_at},
+        data: {channelId: msg.data.channelID, startTime: msg.data.start_at, participants: {}},
     };
 }
 

@@ -20,8 +20,8 @@ import type {Call, CallParticipant} from '@mm-redux/types/voiceCalls';
 
 type Props = {
     actions: {
-        muteUser: (channelId: string, userId: string) => GenericAction;
-        unmuteUser: (channelId: string, userId: string) => GenericAction;
+        muteMyself: (channelId: string) => GenericAction;
+        unmuteMyself: (channelId: string) => GenericAction;
         raiseHand: (channelId: string, userId: string) => GenericAction;
         unraiseHand: (channelId: string, userId: string) => GenericAction;
         leaveCall: () => GenericAction;
@@ -169,9 +169,9 @@ const VoiceCallScreen = (props: Props) => {
 
     const muteUnmuteHandler = useCallback(() => {
         if (props.currentParticipant?.muted) {
-            props.actions.unmuteUser(props.call.channelId, props.currentParticipant?.id);
+            props.actions.unmuteMyself(props.call.channelId);
         } else {
-            props.actions.muteUser(props.call.channelId, props.currentParticipant?.id);
+            props.actions.muteMyself(props.call.channelId);
         }
     }, [props.call.channelId, props.currentParticipant]);
 

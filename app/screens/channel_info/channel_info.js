@@ -40,7 +40,6 @@ export default class ChannelInfo extends PureComponent {
             getChannelStats: PropTypes.func.isRequired,
             getCustomEmojisInText: PropTypes.func.isRequired,
             setChannelDisplayName: PropTypes.func.isRequired,
-            addFakeCall: PropTypes.func.isRequired,
             joinCall: PropTypes.func.isRequired,
         }),
         currentChannel: PropTypes.object.isRequired,
@@ -162,8 +161,6 @@ export default class ChannelInfo extends PureComponent {
                 />
                 <Pressable
                     onPress={() => {
-                        // TODO: This is temporary hack to show things
-                        this.props.actions.addFakeCall(this.props.currentChannel.id);
                         this.props.actions.joinCall(this.props.currentChannel.id);
                         this.close();
                     }}

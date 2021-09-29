@@ -3,7 +3,7 @@
 import {connect} from 'react-redux';
 import {bindActionCreators, Dispatch} from 'redux';
 
-import {muteUser, unmuteUser} from '@mm-redux/actions/voiceCalls';
+import {muteMyself, unmuteMyself} from '@mm-redux/actions/voiceCalls';
 import {getChannel} from '@mm-redux/selectors/entities/channels';
 import {getTheme, getTeammateNameDisplaySetting} from '@mm-redux/selectors/entities/preferences';
 import {getCurrentUserId} from '@mm-redux/selectors/entities/users';
@@ -32,8 +32,8 @@ function mapStateToProps(state: GlobalState) {
 function mapDispatchToProps(dispatch: Dispatch) {
     return {
         actions: bindActionCreators({
-            muteUser,
-            unmuteUser,
+            muteMyself,
+            unmuteMyself,
         }, dispatch),
     };
 }

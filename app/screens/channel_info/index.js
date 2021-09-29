@@ -7,7 +7,7 @@ import {bindActionCreators} from 'redux';
 import {setChannelDisplayName} from '@actions/views/channel';
 import {getChannelStats} from '@mm-redux/actions/channels';
 import {getCustomEmojisInText} from '@mm-redux/actions/emojis';
-import {addFakeCall, joinCall} from '@mm-redux/actions/voiceCalls';
+import {joinCall} from '@mm-redux/actions/voiceCalls';
 import {General} from '@mm-redux/constants';
 import {getCurrentChannel, getCurrentChannelStats} from '@mm-redux/selectors/entities/channels';
 import {getTeammateNameDisplaySetting, getTheme} from '@mm-redux/selectors/entities/preferences';
@@ -80,7 +80,6 @@ function mapDispatchToProps(dispatch) {
             getChannelStats,
             getCustomEmojisInText,
             setChannelDisplayName,
-            addFakeCall,
             joinCall,
         }, dispatch),
     };
