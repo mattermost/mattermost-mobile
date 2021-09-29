@@ -1,12 +1,12 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React from 'react';
+import React, {memo} from 'react';
 import {useIntl} from 'react-intl';
 import {Text, View} from 'react-native';
 
-import {useTheme} from '@app/context/theme';
 import CompassIcon from '@components/compass_icon';
+import {useTheme} from '@context/theme';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 type EmptyListProps = {
@@ -87,4 +87,4 @@ const getStyleSheetFromTheme = makeStyleSheetFromTheme((theme) => {
     };
 });
 
-export default EmptyList;
+export default memo(EmptyList);

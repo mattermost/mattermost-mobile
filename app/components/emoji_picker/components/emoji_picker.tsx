@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback} from 'react';
+import React, {memo, useCallback} from 'react';
 import {useIntl} from 'react-intl';
 import {KeyboardAvoidingView, Platform, useWindowDimensions, View} from 'react-native';
 import {SafeAreaView} from 'react-native-safe-area-context';
@@ -9,9 +9,9 @@ import {KeyboardTrackingView} from 'react-native-ui-lib/keyboard';
 
 import SearchBar from '@components/search_bar';
 import {Device} from '@constants';
-import {changeOpacity, getKeyboardAppearanceFromTheme} from '@utils/theme';
+import {changeOpacity, getKeyboardAppearanceFromTheme, makeStyleSheetFromTheme} from '@utils/theme';
 
-import {getStyleSheetFromTheme, SCROLL_VIEW_NATIVE_ID} from './index';
+import {SCROLL_VIEW_NATIVE_ID} from '../index';
 
 type Props = {
     onAnimationComplete: (searchBarAnimationComplete: boolean) => void;
@@ -19,23 +19,13 @@ type Props = {
     onChangeSearchTerm: (term: string) => void;
     onSetSearchBarRef: (ref: any) => void;
     renderListComponent: (margin: number) => JSX.Element;
-    renderSectionIcons: () => void;
+    renderSectionIcons: () => JSX.Element[];
     searchTerm: string;
     testID: string;
     theme: Theme;
 };
 
-const EmojiPicker = ({
-    onAnimationComplete,
-    onCancelSearch,
-    onChangeSearchTerm,
-    onSetSearchBarRef,
-    renderListComponent,
-    renderSectionIcons,
-    searchTerm,
-    testID,
-    theme,
-}: Props) => {
+const EmojiPicker = ({onAnimationComplete, onCancelSearch, onChangeSearchTerm, onSetSearchBarRef, renderListComponent, renderSectionIcons, searchTerm, testID, theme}: Props) => {
     const {formatMessage} = useIntl();
     const {height, width} = useWindowDimensions();
 
@@ -147,5 +137,52 @@ const EmojiPicker = ({
 
     return isAndroid ? renderContent() : renderIOSContent();
 };
+
+const getStyleSheetFromTheme = makeStyleSheetFromTheme((theme: Theme) => {
+    return {
+        flex: {
+            flex: 1,
+        },
+        container: {
+            alignItems: 'center',
+            backgroundColor: theme.centerChannelBg,
+            flex: 1,
+        },
+        searchBar: {
+            backgroundColor: changeOpacity(theme.centerChannelColor, 0.2),
+            paddingVertical: 5,
+            ...Platform.select({
+                ios: {
+                    paddingLeft: 8,
+                },
+            }),
+            height: 50,
+        },
+        bottomContentWrapper: {
+            ...Platform.select({
+                android: {
+                    position: 'absolute',
+                    bottom: 0,
+                    left: 0,
+                    right: 0,
+                },
+                ios: {
+                    width: '100%',
+                    flexDirection: 'row',
+                },
+            }),
+            backgroundColor: theme.centerChannelBg,
+            height: 35,
+        },
+        bottomContent: {
+            backgroundColor: changeOpacity(theme.centerChannelColor, 0.1),
+            borderTopColor: changeOpacity(theme.centerChannelColor, 0.3),
+            borderTopWidth: 1,
+            flexDirection: 'row',
+            justifyContent: 'space-between',
+            width: '100%',
+        },
+    };
+});
 
 export default EmojiPicker;

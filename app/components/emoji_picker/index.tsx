@@ -7,7 +7,7 @@ import withObservables from '@nozbe/with-observables';
 import Fuse from 'fuse.js';
 import React, {PureComponent} from 'react';
 import {IntlShape} from 'react-intl';
-import {ActivityIndicator, FlatList, Platform, SectionList, Text, TouchableOpacity, View} from 'react-native';
+import {ActivityIndicator, FlatList, Platform, SectionList, TouchableOpacity, View} from 'react-native';
 import sectionListGetItemLayout from 'react-native-section-list-get-item-layout';
 import {of as of$} from 'rxjs';
 import {switchMap} from 'rxjs/operators';
@@ -15,8 +15,9 @@ import {switchMap} from 'rxjs/operators';
 import {getEmojisByName, selectEmojisBySection} from '@actions/local/custom_emoji';
 import {getCustomEmojis} from '@actions/remote/custom_emoji';
 import CompassIcon from '@components/compass_icon';
-import Emoji from '@components/emoji';
-import EmptyList from '@components/emoji_picker/empty_list';
+import TouchableEmoji from '@components/emoji_picker/components/emoji_flatlist_item';
+import EmptyList from '@components/emoji_picker/components/empty_list';
+import SectionHeader from '@components/emoji_picker/components/section_header';
 import FormattedText from '@components/formatted_text';
 import {Device} from '@constants';
 import {MM_TABLES, SYSTEM_IDENTIFIERS} from '@constants/database';
@@ -25,13 +26,13 @@ import SystemModel from '@typings/database/models/servers/system';
 import {compareEmojis, isCustomEmojiEnabled} from '@utils/emoji/helpers';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
-import EmojiPickerComponent from './emoji_picker';
-import EmojiPickerRow from './emoji_picker_row';
+import EmojiPickerComponent from './components/emoji_picker';
+import EmojiPickerRow from './components/emoji_picker_row';
 
 const EMOJI_SIZE = 30;
 const EMOJI_GUTTER = 7;
 const EMOJIS_PER_PAGE = 200;
-const SECTION_HEADER_HEIGHT = 28;
+export const SECTION_HEADER_HEIGHT = 28;
 const SECTION_MARGIN = 15;
 export const SCROLL_VIEW_NATIVE_ID = 'emojiPicker';
 
@@ -142,21 +143,21 @@ class EmojiPicker extends PureComponent<ConnectedEmojiPickerProps, EmojiPickerSt
     }
 
     componentDidUpdate(prevProps: EmojiPickerProps) {
+        this.rebuildEmojis = false;
+        if (this.props.deviceWidth !== prevProps.deviceWidth) {
+            this.rebuildEmojis = true;
+
+            if (this.searchBarRef) {
+                this.searchBarRef.blur();
+            }
+        }
+
         //fixme:  rework this componentDidUpdate
-        // this.rebuildEmojis = false;
-        // if (this.props.deviceWidth !== prevProps.deviceWidth) {
-        //     this.rebuildEmojis = true;
-        //
-        //     if (this.searchBarRef) {
-        //         this.searchBarRef.blur();
-        //     }
-        // }
-        //
         // if (this.props.emojis !== prevProps.emojis) {
         //     this.rebuildEmojis = true;
         // }
-        //
-        // this.setRebuiltEmojis();
+
+        this.setRebuiltEmojis();
     }
 
     setSearchBarRef = (ref: any) => {
@@ -325,8 +326,6 @@ class EmojiPicker extends PureComponent<ConnectedEmojiPickerProps, EmojiPickerSt
                     renderItem={this.flatListRenderItem}
                     removeClippedSubviews={true}
                     style={styles.flatList}
-
-                    // pageSize={10}
                 />
             );
         } else {
@@ -343,7 +342,6 @@ class EmojiPicker extends PureComponent<ConnectedEmojiPickerProps, EmojiPickerSt
                     onMomentumScrollEnd={this.onMomentumScrollEnd}
                     onScroll={this.onScroll}
                     onScrollToIndexFailed={this.handleScrollToSectionFailed}
-                    pageSize={50}
                     ref={this.setSectionListRef}
                     removeClippedSubviews={true}
                     renderItem={this.renderItem}
@@ -361,7 +359,10 @@ class EmojiPicker extends PureComponent<ConnectedEmojiPickerProps, EmojiPickerSt
     renderItem = ({item, section}: {item: EmojisData; section: RenderableEmojis}) => {
         const {onEmojiPress} = this.props;
         return (
-            <View testID={section.id}>
+            <View
+                testID={section.id}
+                key={`Picker-Row-${section.id}${item.key}`}
+            >
                 <EmojiPickerRow
                     key={item.key}
                     emojiGutter={EMOJI_GUTTER}
@@ -374,44 +375,21 @@ class EmojiPicker extends PureComponent<ConnectedEmojiPickerProps, EmojiPickerSt
     };
 
     renderSectionHeader = ({section}: {section: RenderableEmojis}) => {
-        const {theme} = this.props;
-        const styles = getStyleSheetFromTheme(theme);
-
         return (
-            <View
-                style={styles.sectionTitleContainer}
-                key={section.id}
-            >
-                <FormattedText
-                    style={styles.sectionTitle}
-                    id={section.id}
-                    defaultMessage={section.icon}
-                />
-            </View>
+            <SectionHeader section={section}/>
         );
     };
 
     flatListKeyExtractor = (item: string) => item;
 
     flatListRenderItem = ({item}: {item: string}) => {
-        const {theme, onEmojiPress} = this.props;
-        const style = getStyleSheetFromTheme(theme);
+        const {onEmojiPress} = this.props;
 
-        //fixme:  what is onEmojiPress ???
         return (
-            <TouchableOpacity
-                onPress={() => onEmojiPress(item)}
-                style={style.flatListRow}
-            >
-                <View style={style.flatListEmoji}>
-                    <Emoji
-                        emojiName={item}
-                        textStyle={style.emojiText}
-                        size={20}
-                    />
-                </View>
-                <Text style={style.flatListEmojiName}>{`:${item}:`}</Text>
-            </TouchableOpacity>
+            <TouchableEmoji
+                onEmojiPress={onEmojiPress}
+                item={item}
+            />
         );
     };
 
@@ -422,6 +400,7 @@ class EmojiPicker extends PureComponent<ConnectedEmojiPickerProps, EmojiPickerSt
         }
 
         const {data} = await getCustomEmojis(serverUrl, customEmojiPage, EMOJIS_PER_PAGE);
+        console.log('>>>  loadMoreCustomEmojis activated', {data});
 
         this.setState({loadingMore: false});
 
@@ -432,6 +411,8 @@ class EmojiPicker extends PureComponent<ConnectedEmojiPickerProps, EmojiPickerSt
         if (data.length < EMOJIS_PER_PAGE) {
             this.setState({missingPages: false});
         }
+
+        console.log('>>>  about to call incrementEmojiPickerPage', {data});
 
         //todo: incrementEmojiPickerPage
         // incrementEmojiPickerPage();
@@ -489,19 +470,20 @@ class EmojiPicker extends PureComponent<ConnectedEmojiPickerProps, EmojiPickerSt
     };
 
     handleSectionIconPress = (index: number, isCustomSection = false) => {
+        console.log('>>>  handleSectionIconPress activated', {index, isCustomSection});
+
         //fixme: rework this method
-        // this.scrollToSectionTries = 0;
-        // this.scrollToSection(index);
-        //
-        // if (isCustomSection && this.props.customEmojiPage === 0) {
-        //     this.loadMoreCustomEmojis();
-        // }
+        this.scrollToSectionTries = 0;
+        this.scrollToSection(index);
+
+        if (isCustomSection && this.props.customEmojiPage === 0) {
+            this.loadMoreCustomEmojis();
+        }
     };
 
     renderSectionIcons = () => {
         const {theme} = this.props;
         const styles = getStyleSheetFromTheme(theme);
-        console.log('>>>  renderSectionIcons parent');
         return this.state.emojis.map((section, index: number) => {
             const onPress = () => this.handleSectionIconPress(index, section.key === 'custom');
 
@@ -542,7 +524,7 @@ class EmojiPicker extends PureComponent<ConnectedEmojiPickerProps, EmojiPickerSt
     render() {
         const {searchTerm} = this.state;
         const {testID, theme} = this.props;
-        console.log('>>>  in render method ');
+
         return (
             <EmojiPickerComponent
                 onAnimationComplete={this.setRebuiltEmojis}
@@ -559,79 +541,15 @@ class EmojiPicker extends PureComponent<ConnectedEmojiPickerProps, EmojiPickerSt
     }
 }
 
-export const getStyleSheetFromTheme = makeStyleSheetFromTheme((theme) => {
+const getStyleSheetFromTheme = makeStyleSheetFromTheme((theme) => {
     return {
         flex: {
             flex: 1,
-        },
-        bottomContent: {
-            backgroundColor: changeOpacity(theme.centerChannelColor, 0.1),
-            borderTopColor: changeOpacity(theme.centerChannelColor, 0.3),
-            borderTopWidth: 1,
-            flexDirection: 'row',
-            justifyContent: 'space-between',
-            width: '100%',
-        },
-        bottomContentWrapper: {
-            ...Platform.select({
-                android: {
-                    position: 'absolute',
-                    bottom: 0,
-                    left: 0,
-                    right: 0,
-                },
-                ios: {
-                    width: '100%',
-                    flexDirection: 'row',
-                },
-            }),
-            backgroundColor: theme.centerChannelBg,
-            height: 35,
-        },
-        container: {
-            alignItems: 'center',
-            backgroundColor: theme.centerChannelBg,
-            flex: 1,
-        },
-        emojiText: {
-            color: '#000',
-            fontWeight: 'bold',
         },
         flatList: {
             flex: 1,
             backgroundColor: theme.centerChannelBg,
             alignSelf: 'stretch',
-        },
-        flatListEmoji: {
-            marginRight: 5,
-        },
-        flatListEmojiName: {
-            fontSize: 13,
-            color: theme.centerChannelColor,
-        },
-        flatListRow: {
-            height: 40,
-            flexDirection: 'row',
-            alignItems: 'center',
-            paddingHorizontal: 8,
-            backgroundColor: theme.centerChannelBg,
-            borderTopWidth: 1,
-            borderTopColor: changeOpacity(theme.centerChannelColor, 0.2),
-            borderLeftWidth: 1,
-            borderLeftColor: changeOpacity(theme.centerChannelColor, 0.2),
-            borderRightWidth: 1,
-            borderRightColor: changeOpacity(theme.centerChannelColor, 0.2),
-            overflow: 'hidden',
-        },
-        searchBar: {
-            backgroundColor: changeOpacity(theme.centerChannelColor, 0.2),
-            paddingVertical: 5,
-            ...Platform.select({
-                ios: {
-                    paddingLeft: 8,
-                },
-            }),
-            height: 50,
         },
         sectionList: {
             ...Platform.select({
@@ -652,16 +570,7 @@ export const getStyleSheetFromTheme = makeStyleSheetFromTheme((theme) => {
         sectionIconHighlight: {
             color: theme.centerChannelColor,
         },
-        sectionTitle: {
-            color: changeOpacity(theme.centerChannelColor, 0.2),
-            fontSize: 15,
-            fontWeight: '700',
-        },
-        sectionTitleContainer: {
-            height: SECTION_HEADER_HEIGHT,
-            justifyContent: 'center',
-            backgroundColor: theme.centerChannelBg,
-        },
+
         loading: {
             flex: 1,
             alignItems: 'center',
