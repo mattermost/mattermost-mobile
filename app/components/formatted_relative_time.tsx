@@ -14,14 +14,13 @@ type FormattedRelativeTimeProps = TextProps & {
 }
 
 const FormattedRelativeTime = ({timezone, value, ...props}: FormattedRelativeTimeProps) => {
-    // TODO: Discover why the startTime is 3 days in the future
     const getFormattedRelativeTime = () => {
         let zone = timezone;
         if (typeof timezone === 'object') {
             zone = timezone.useAutomaticTimezone ? timezone.automaticTimezone : timezone.manualTimezone;
         }
 
-        return timezone ? moment.tz(value, zone as string).toNow() : moment(value).toNow();
+        return timezone ? moment.tz(value, zone as string).fromNow() : moment(value).fromNow();
     };
 
     const [formattedTime, setFormattedTime] = useState(getFormattedRelativeTime());

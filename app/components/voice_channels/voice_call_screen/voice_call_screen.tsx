@@ -204,12 +204,11 @@ const VoiceCallScreen = (props: Props) => {
                 </View>
                 <ScrollView alwaysBounceVertical={false}>
                     <View style={style.users}>
-                        {/* TODO: Replace the key idx with user.id when the data is real */}
-                        {Object.entries(props.call.participants).map(([id, user]) => {
+                        {Object.values(props.call.participants).map((user) => {
                             return (
                                 <View
                                     style={style.user}
-                                    key={id}
+                                    key={user.id}
                                 >
                                     <VoiceAvatar
                                         userId={user.id}

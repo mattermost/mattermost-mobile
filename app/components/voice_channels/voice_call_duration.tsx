@@ -11,7 +11,6 @@ type VoiceCallDurationProps = TextProps & {
 }
 
 const VoiceCallDuration = ({value, ...props}: VoiceCallDurationProps) => {
-    // TODO: Understand why the time is not matching the frontend time
     const getVoiceCallDuration = () => {
         const now = moment();
         const startTime = moment(value);
@@ -22,9 +21,9 @@ const VoiceCallDuration = ({value, ...props}: VoiceCallDurationProps) => {
         const hours = Math.floor(totalMinutes / 60);
 
         if (hours > 0) {
-            return `(${value})${hours}:${minutes < 10 ? '0' + minutes : minutes}:${seconds < 10 ? '0' + seconds : seconds}`;
+            return `${hours}:${minutes < 10 ? '0' + minutes : minutes}:${seconds < 10 ? '0' + seconds : seconds}`;
         }
-        return `(${value})${minutes < 10 ? '0' + minutes : minutes}:${seconds < 10 ? '0' + seconds : seconds}`;
+        return `${minutes < 10 ? '0' + minutes : minutes}:${seconds < 10 ? '0' + seconds : seconds}`;
     };
 
     const [formattedTime, setFormattedTime] = useState(getVoiceCallDuration());
