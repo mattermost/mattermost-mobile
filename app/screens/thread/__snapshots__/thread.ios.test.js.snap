@@ -27,7 +27,6 @@ exports[`thread should match snapshot, has root post 1`] = `
       >
         <Connect(InjectIntl(PostList))
           currentUserId="member_user_id"
-          lastViewedAt={0}
           location="Thread"
           postIds={
             Array [
@@ -117,7 +116,6 @@ exports[`thread should match snapshot, no root post, loading 1`] = `
 exports[`thread should match snapshot, render footer 1`] = `
 <Connect(InjectIntl(PostList))
   currentUserId="member_user_id"
-  lastViewedAt={0}
   location="Thread"
   postIds={
     Array [
@@ -142,7 +140,6 @@ exports[`thread should match snapshot, render footer 1`] = `
 exports[`thread should match snapshot, render footer 2`] = `
 <Connect(InjectIntl(PostList))
   currentUserId="member_user_id"
-  lastViewedAt={0}
   location="Thread"
   postIds={
     Array [
