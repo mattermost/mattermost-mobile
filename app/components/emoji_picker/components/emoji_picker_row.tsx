@@ -9,11 +9,13 @@ import Emoji from '@components/emoji';
 type EmojiPickerRowProps = {
     emojiGutter: number;
     emojiSize: number;
+    item: EmojisData;
     items: EmojiAlias[];
     onEmojiPress: (emojiName: string) => void;
+    section: RenderableEmojis;
 };
 
-const EmojiPickerRow = ({emojiGutter, emojiSize, items, onEmojiPress}: EmojiPickerRowProps) => {
+const EmojiPickerRow = ({emojiGutter, emojiSize, item, items, onEmojiPress, section}: EmojiPickerRowProps) => {
     const memoizedEmojis = useMemo(() => items, [items]);
 
     const renderEmojis = useCallback((emoji: EmojiAlias, index: number, emojis: EmojiAlias[]) => {
@@ -55,8 +57,13 @@ const EmojiPickerRow = ({emojiGutter, emojiSize, items, onEmojiPress}: EmojiPick
     }, []);
 
     return (
-        <View style={[styles.columnStyle, {marginVertical: emojiGutter}]}>
-            {memoizedEmojis.map(renderEmojis)}
+        <View
+            testID={section.id}
+            key={`Picker-Row-${section.id}${item.key}`}
+        >
+            <View style={[styles.columnStyle, {marginVertical: emojiGutter}]}>
+                {memoizedEmojis.map(renderEmojis)}
+            </View>
         </View>
     );
 };

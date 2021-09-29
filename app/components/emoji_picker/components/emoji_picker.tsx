@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {memo, useCallback} from 'react';
+import React, {useCallback} from 'react';
 import {useIntl} from 'react-intl';
 import {KeyboardAvoidingView, Platform, useWindowDimensions, View} from 'react-native';
 import {SafeAreaView} from 'react-native-safe-area-context';
