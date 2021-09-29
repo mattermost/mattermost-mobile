@@ -20,6 +20,11 @@ import type {LoadMeArgs} from '@typings/database/database';
 import type RoleModel from '@typings/database/models/servers/role';
 import type UserModel from '@typings/database/models/servers/user';
 
+export type MyUserRequest = {
+    user?: UserProfile;
+    error?: unknown;
+}
+
 export type ProfilesPerChannelRequest = {
     data?: ProfilesInChannelRequest[];
     error?: unknown;
@@ -30,6 +35,31 @@ export type ProfilesInChannelRequest = {
     channelId: string;
     error?: unknown;
 }
+
+export const fetchMe = async (serverUrl: string, fetchOnly = false): Promise<MyUserRequest> => {
+    let client;
+    try {
+        client = NetworkManager.getClient(serverUrl);
+    } catch (error) {
+        return {error};
+    }
+
+    try {
+        const user = await client.getMe();
+
+        if (!fetchOnly) {
+            const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
+            if (operator) {
+                operator.handleUsers({users: [user], prepareRecordsOnly: false});
+            }
+        }
+
+        return {user};
+    } catch (error) {
+        await forceLogoutIfNecessary(serverUrl, error as ClientErrorProps);
+        return {error};
+    }
+};
 
 export const fetchProfilesInChannel = async (serverUrl: string, channelId: string, excludeUserId?: string, fetchOnly = false): Promise<ProfilesInChannelRequest> => {
     let client: Client;

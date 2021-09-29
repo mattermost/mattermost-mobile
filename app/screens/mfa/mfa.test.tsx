@@ -18,7 +18,7 @@ jest.mock('@actions/remote/session', () => {
 describe('*** MFA Screen ***', () => {
     const baseProps = {
         config: {},
-        goToChannel: jest.fn(),
+        goToHome: jest.fn(),
         loginId: 'loginId',
         password: 'passwd',
         license: {},
@@ -34,10 +34,10 @@ describe('*** MFA Screen ***', () => {
     test('should call login method on submit', async () => {
         const props = {
             ...baseProps,
-            goToChannel: jest.fn(),
+            goToHome: jest.fn(),
         };
 
-        const spyOnGoToChannel = jest.spyOn(props, 'goToChannel');
+        const spyOnGoToHome = jest.spyOn(props, 'goToHome');
         const {getByTestId} = renderWithIntl(<Mfa {...props}/>);
         const submitBtn = getByTestId('login_mfa.submit');
         const inputText = getByTestId('login_mfa.input');
@@ -47,6 +47,6 @@ describe('*** MFA Screen ***', () => {
             fireEvent.press(submitBtn);
         });
 
-        expect(spyOnGoToChannel).toHaveBeenCalled();
+        expect(spyOnGoToHome).toHaveBeenCalled();
     });
 });
