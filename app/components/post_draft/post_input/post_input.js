@@ -6,10 +6,11 @@ import React, {PureComponent} from 'react';
 import {intlShape} from 'react-intl';
 import {Alert, AppState, findNodeHandle, Keyboard, NativeModules, Platform} from 'react-native';
 
-import PasteableTextInput from '@components/pasteable_text_input';
 import {NavigationTypes} from '@constants';
 import DEVICE from '@constants/device';
-import {INSERT_TO_COMMENT, INSERT_TO_DRAFT} from '@constants/post_draft';
+import {INSERT_TO_COMMENT, INSERT_TO_DRAFT, PASTE_FILES} from '@constants/post_draft';
+import mattermostManaged from '@mattermost-managed';
+import PasteableTextInput from '@mattermost/react-native-paste-input';
 import {debounce} from '@mm-redux/actions/helpers';
 import EventEmitter from '@mm-redux/utils/event_emitter';
 import {t} from '@utils/i18n';
@@ -55,6 +56,7 @@ export default class PostInput extends PureComponent {
         this.state = {
             keyboardType: 'default',
             longMessageAlertShown: false,
+            disableCopyAndPaste: mattermostManaged.getCachedConfig()?.copyAndPasteProtection === 'true',
         };
     }
 
@@ -63,6 +65,7 @@ export default class PostInput extends PureComponent {
         EventEmitter.on(event, this.handleInsertTextToDraft);
         EventEmitter.on(NavigationTypes.BLUR_POST_DRAFT, this.blur);
         this.appStateListener = AppState.addEventListener('change', this.handleAppStateChange);
+        this.managedListener = mattermostManaged.addEventListener('managedConfigDidChange', this.onManagedConfigurationChange);
 
         if (Platform.OS === 'android') {
             this.keyboardListener = Keyboard.addListener('keyboardDidHide', this.handleAndroidKeyboard);
@@ -73,6 +76,7 @@ export default class PostInput extends PureComponent {
         const event = this.props.rootId ? INSERT_TO_COMMENT : INSERT_TO_DRAFT;
         EventEmitter.off(NavigationTypes.BLUR_POST_DRAFT, this.blur);
         EventEmitter.off(event, this.handleInsertTextToDraft);
+        mattermostManaged.removeEventListener(this.managedListener);
         this.appStateListener.remove();
 
         if (Platform.OS === 'android') {
@@ -254,6 +258,14 @@ export default class PostInput extends PureComponent {
         });
     };
 
+    onManagedConfigurationChange = (config) => {
+        this.setState({disableCopyAndPaste: config.copyAndPasteProtection === 'true'});
+    }
+
+    onPaste = (error, files) => {
+        EventEmitter.emit(PASTE_FILES, error, files, this.props.screenId);
+    }
+
     resetTextInput = () => {
         if (this.input.current) {
             this.input.current.setNativeProps({
@@ -287,6 +299,7 @@ export default class PostInput extends PureComponent {
             <PasteableTextInput
                 testID={testID}
                 ref={this.input}
+                disableCopyPaste={this.state.disableCopyAndPaste}
                 style={{...style.input, maxHeight}}
                 onChangeText={this.handleTextChange}
                 onSelectionChange={this.handlePostDraftSelectionChanged}
@@ -297,6 +310,7 @@ export default class PostInput extends PureComponent {
                 underlineColorAndroid='transparent'
                 keyboardType={this.state.keyboardType}
                 onEndEditing={this.handleEndEditing}
+                onPaste={this.onPaste}
                 disableFullscreenUI={true}
                 textContentType='none'
                 autoCompleteType='off'
