@@ -179,7 +179,7 @@
   "emoji_skin.medium_skin_tone": "medium skin tone",
   "file_upload.fileAbove": "Files must be less than {max}",
   "floating_voice_call.channel-name": "~{channelName}",
-  "floating_voice_call.user-is-speaking": "{user} is speaking",
+  "floating_voice_call.user-is-speaking": "{username} is speaking",
   "friendly_date.daysAgo": "{count} {count, plural, one {day} other {days}} ago",
   "friendly_date.hoursAgo": "{count} {count, plural, one {hour} other {hours}} ago",
   "friendly_date.minsAgo": "{count} {count, plural, one {min} other {mins}} ago",

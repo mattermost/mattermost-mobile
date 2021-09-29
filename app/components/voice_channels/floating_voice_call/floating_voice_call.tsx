@@ -116,8 +116,8 @@ const FloatingVoiceCall = (props: Props) => {
                     <Text style={style.speakingUser}>
                         <FormattedText
                             id='floating_voice_call.user-is-speaking'
-                            defaultMessage='{user} is speaking'
-                            values={{user: displayUsername(props.speakerUser, props.teammateNameDisplay)}}
+                            defaultMessage='{username} is speaking'
+                            values={{username: displayUsername(props.speakerUser, props.teammateNameDisplay)}}
                         />
                     </Text>
                     <Text style={style.currentChannel}>
