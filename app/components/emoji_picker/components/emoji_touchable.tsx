@@ -13,7 +13,7 @@ type TouchableEmojiProps = {
     onEmojiPress: (emojiName: string) => void;
 }
 
-const TouchableEmoji = ({item, onEmojiPress}: TouchableEmojiProps) => {
+const EmojiTouchable = ({item, onEmojiPress}: TouchableEmojiProps) => {
     const theme = useTheme();
     const style = getStyleSheetFromTheme(theme);
 
@@ -66,4 +66,4 @@ const getStyleSheetFromTheme = makeStyleSheetFromTheme((theme: Theme) => {
     };
 });
 
-export default memo(TouchableEmoji);
+export default memo(EmojiTouchable);

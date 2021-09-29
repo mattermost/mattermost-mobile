@@ -3,10 +3,20 @@
 
 import React, {useCallback} from 'react';
 import {useIntl} from 'react-intl';
-import {KeyboardAvoidingView, Platform, useWindowDimensions, View} from 'react-native';
+import {
+    KeyboardAvoidingView,
+    NativeScrollEvent,
+    NativeSyntheticEvent,
+    Platform,
+    useWindowDimensions,
+    View,
+} from 'react-native';
 import {SafeAreaView} from 'react-native-safe-area-context';
 import {KeyboardTrackingView} from 'react-native-ui-lib/keyboard';
 
+import EmojiFlatList from '@components/emoji_picker/components/emoji_flatlist';
+import EmojiSectionList from '@components/emoji_picker/components/emoji_sectionlist';
+import SectionIcons from '@components/emoji_picker/components/section_icons';
 import SearchBar from '@components/search_bar';
 import {Device} from '@constants';
 import {changeOpacity, getKeyboardAppearanceFromTheme, makeStyleSheetFromTheme} from '@utils/theme';
@@ -14,18 +24,50 @@ import {changeOpacity, getKeyboardAppearanceFromTheme, makeStyleSheetFromTheme} 
 import {SCROLL_VIEW_NATIVE_ID} from '../index';
 
 type Props = {
+    currentSectionIndex: number;
+    deviceWidth: number;
+    emojis: RenderableEmojis[];
+    filteredEmojis: string[];
+    itemLayout: any;
+    missingPages: boolean;
     onAnimationComplete: (searchBarAnimationComplete: boolean) => void;
     onCancelSearch: (term: string) => void;
     onChangeSearchTerm: (term: string) => void;
+    onEmojiPress: (emoji: string) => void;
+    onHandleScrollToSectionFailed: ({index}: {index: number}) => void;
+    onHandleSectionIconPress: (index: number, isCustomSection: boolean) => void;
+    onLoadMoreCustomEmojis: () => void;
+    onMomentumScrollEnd: () => void;
+    onScroll: (e: NativeSyntheticEvent<NativeScrollEvent>) => void;
     onSetSearchBarRef: (ref: any) => void;
-    renderListComponent: (margin: number) => JSX.Element;
-    renderSectionIcons: () => JSX.Element;
+    onSetSectionListRef: (ref: any) => void;
     searchTerm: string;
     testID: string;
     theme: Theme;
 };
 
-const EmojiPicker = ({onAnimationComplete, onCancelSearch, onChangeSearchTerm, onSetSearchBarRef, renderListComponent, renderSectionIcons, searchTerm, testID, theme}: Props) => {
+const EmojiPicker = ({
+    currentSectionIndex,
+    deviceWidth,
+    emojis,
+    filteredEmojis,
+    itemLayout,
+    missingPages,
+    onAnimationComplete,
+    onCancelSearch,
+    onChangeSearchTerm,
+    onEmojiPress,
+    onHandleScrollToSectionFailed,
+    onHandleSectionIconPress,
+    onLoadMoreCustomEmojis,
+    onMomentumScrollEnd,
+    onScroll,
+    onSetSearchBarRef,
+    onSetSectionListRef,
+    searchTerm,
+    testID,
+    theme,
+}: Props) => {
     const {formatMessage} = useIntl();
     const {height, width} = useWindowDimensions();
 
@@ -70,6 +112,16 @@ const EmojiPicker = ({onAnimationComplete, onCancelSearch, onChangeSearchTerm, o
         );
     }, []);
 
+    const renderSectionIcons = useCallback(() => {
+        return (
+            <SectionIcons
+                currentSectionIndex={currentSectionIndex}
+                emojis={emojis}
+                onHandleSectionIconPress={onHandleSectionIconPress}
+            />
+        );
+    }, []);
+
     const getSectionIcons = useCallback(() => {
         if (searchTerm) {
             return null;
@@ -96,6 +148,35 @@ const EmojiPicker = ({onAnimationComplete, onCancelSearch, onChangeSearchTerm, o
             >
                 {getSections()}
             </KeyboardTrackingView>
+        );
+    }, []);
+
+    const renderListComponent = useCallback((margin: number) => {
+        if (searchTerm) {
+            return (
+                <EmojiFlatList
+                    filteredEmojis={filteredEmojis}
+                    searchTerm={searchTerm}
+                    onEmojiPress={onEmojiPress}
+                />
+            );
+        }
+
+        return (
+            <EmojiSectionList
+                deviceWidth={deviceWidth}
+                emojis={emojis}
+                itemLayout={itemLayout}
+                missingPages={missingPages}
+                onEmojiPress={onEmojiPress}
+                onHandleScrollToSectionFailed={onHandleScrollToSectionFailed}
+                onLoadMoreCustomEmojis={onLoadMoreCustomEmojis}
+                onMomentumScrollEnd={onMomentumScrollEnd}
+                onScroll={onScroll}
+                onSetSectionListRef={onSetSectionListRef}
+                searchTerm={searchTerm}
+                margin={margin}
+            />
         );
     }, []);
 

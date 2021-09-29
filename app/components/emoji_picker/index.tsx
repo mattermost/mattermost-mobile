@@ -7,7 +7,7 @@ import withObservables from '@nozbe/with-observables';
 import Fuse from 'fuse.js';
 import React, {PureComponent} from 'react';
 import {IntlShape} from 'react-intl';
-import {FlatList, NativeScrollEvent, NativeSyntheticEvent, Platform, SectionList} from 'react-native';
+import {NativeScrollEvent, NativeSyntheticEvent} from 'react-native';
 import sectionListGetItemLayout from 'react-native-section-list-get-item-layout';
 import {of as of$} from 'rxjs';
 import {switchMap} from 'rxjs/operators';
@@ -19,24 +19,17 @@ import {MM_TABLES, SYSTEM_IDENTIFIERS} from '@constants/database';
 import {WithDatabaseArgs} from '@typings/database/database';
 import SystemModel from '@typings/database/models/servers/system';
 import {compareEmojis, isCustomEmojiEnabled} from '@utils/emoji/helpers';
-import {makeStyleSheetFromTheme} from '@utils/theme';
 
-import TouchableEmoji from './components/emoji_flatlist_item';
 import EmojiPickerBase from './components/emoji_picker_base';
-import EmojiPickerRow from './components/emoji_picker_row';
-import EmptyList from './components/empty_list';
-import Footer from './components/footer';
-import SectionHeader from './components/section_header';
-import SectionIcons from './components/section_icons';
 
-const EMOJI_SIZE = 30;
-const EMOJI_GUTTER = 7;
-const EMOJIS_PER_PAGE = 200;
+export const EMOJI_SIZE = 30;
+export const EMOJI_GUTTER = 7;
+export const EMOJIS_PER_PAGE = 200;
 export const SECTION_HEADER_HEIGHT = 28;
-const SECTION_MARGIN = 15;
+export const SECTION_MARGIN = 15;
 export const SCROLL_VIEW_NATIVE_ID = 'emojiPicker';
 
-export function filterEmojiSearchInput(searchText: string) {
+function filterEmojiSearchInput(searchText: string) {
     return searchText.toLowerCase().replace(/^:|:$/g, '');
 }
 
@@ -88,7 +81,7 @@ class EmojiPicker extends PureComponent<ConnectedEmojiPickerProps, EmojiPickerSt
             getSectionHeaderHeight: () => SECTION_HEADER_HEIGHT,
         });
 
-        const {config, theme} = props;
+        const {config} = props;
 
         this.customEmojisEnabled = isCustomEmojiEnabled(config);
         this.scrollToSectionTries = 0;
@@ -104,8 +97,6 @@ class EmojiPicker extends PureComponent<ConnectedEmojiPickerProps, EmojiPickerSt
 
         //    customEmojiPage : fixme : track this value in State
         };
-
-        this.styles = getStyleSheetFromTheme(theme);
     }
 
     async componentDidMount() {
@@ -304,95 +295,6 @@ class EmojiPicker extends PureComponent<ConnectedEmojiPickerProps, EmojiPickerSt
         return Math.floor(Number(((deviceWidth - (SECTION_MARGIN * shorten)) / ((EMOJI_SIZE + 7) + (EMOJI_GUTTER * shorten)))));
     };
 
-    //fixme: to be reworked
-    renderListComponent = (shorten: number) => {
-        const {deviceWidth} = this.props;
-        const {emojis, filteredEmojis, searchTerm} = this.state;
-        const {flex, flatList, sectionList} = this.styles;
-
-        let listComponent;
-        if (searchTerm) {
-            const contentContainerStyle = filteredEmojis.length ? null : flex;
-
-            listComponent = (
-                <FlatList
-                    contentContainerStyle={contentContainerStyle}
-                    data={filteredEmojis}
-                    initialNumToRender={50}
-                    keyboardShouldPersistTaps='always'
-                    keyExtractor={this.flatListKeyExtractor}
-                    ListEmptyComponent={
-                        <EmptyList searchTerm={searchTerm}/>
-                    }
-                    nativeID={SCROLL_VIEW_NATIVE_ID}
-                    renderItem={this.flatListRenderItem}
-                    removeClippedSubviews={true}
-                    style={flatList}
-                />
-            );
-        } else {
-            listComponent = (
-                <SectionList
-                    ListFooterComponent={this.renderFooter}
-                    getItemLayout={this.sectionListGetItemLayout}
-                    initialNumToRender={50}
-                    keyboardDismissMode='interactive'
-                    keyboardShouldPersistTaps='always'
-                    nativeID={SCROLL_VIEW_NATIVE_ID}
-                    onEndReached={this.loadMoreCustomEmojis}
-                    onEndReachedThreshold={Platform.OS === 'ios' ? 0 : 1}
-                    onMomentumScrollEnd={this.onMomentumScrollEnd}
-                    onScroll={this.onScroll}
-                    onScrollToIndexFailed={this.handleScrollToSectionFailed}
-                    ref={this.setSectionListRef}
-                    removeClippedSubviews={true}
-                    renderItem={this.renderSectionItem}
-                    renderSectionHeader={this.renderSectionHeader}
-                    sections={emojis}
-                    showsVerticalScrollIndicator={false}
-                    style={[sectionList, {width: deviceWidth - (SECTION_MARGIN * shorten)}]}
-                />
-            );
-        }
-
-        return listComponent;
-    };
-
-    // memoize this return value
-    renderSectionItem = ({item, section}: {item: EmojisData; section: RenderableEmojis}) => {
-        const {onEmojiPress} = this.props;
-        return (
-            <EmojiPickerRow
-                emojiGutter={EMOJI_GUTTER}
-                emojiSize={EMOJI_SIZE}
-                item={item}
-                items={item.items}
-                key={item.key}
-                onEmojiPress={onEmojiPress}
-                section={section}
-            />
-        );
-    };
-
-    renderSectionHeader = ({section}: {section: RenderableEmojis}) => {
-        return (
-            <SectionHeader section={section}/>
-        );
-    };
-
-    flatListKeyExtractor = (item: string) => item;
-
-    flatListRenderItem = ({item}: {item: string}) => {
-        const {onEmojiPress} = this.props;
-
-        return (
-            <TouchableEmoji
-                onEmojiPress={onEmojiPress}
-                item={item}
-            />
-        );
-    };
-
     loadMoreCustomEmojis = async () => {
         const {customEmojiPage, serverUrl} = this.props;
         if (!this.customEmojisEnabled) {
@@ -400,7 +302,6 @@ class EmojiPicker extends PureComponent<ConnectedEmojiPickerProps, EmojiPickerSt
         }
 
         const {data} = await getCustomEmojis(serverUrl, customEmojiPage, EMOJIS_PER_PAGE);
-        console.log('>>>  loadMoreCustomEmojis activated', {data});
 
         this.setState({loadingMore: false});
 
@@ -411,8 +312,6 @@ class EmojiPicker extends PureComponent<ConnectedEmojiPickerProps, EmojiPickerSt
         if (data.length < EMOJIS_PER_PAGE) {
             this.setState({missingPages: false});
         }
-
-        console.log('>>>  about to call incrementEmojiPickerPage', {data});
 
         //todo: incrementEmojiPickerPage
         // incrementEmojiPickerPage();
@@ -471,8 +370,6 @@ class EmojiPicker extends PureComponent<ConnectedEmojiPickerProps, EmojiPickerSt
     };
 
     handleSectionIconPress = (index: number, isCustomSection = false) => {
-        console.log('>>>  handleSectionIconPress activated', {index, isCustomSection});
-
         //fixme: rework this method
         this.scrollToSectionTries = 0;
         this.scrollToSection(index);
@@ -482,41 +379,29 @@ class EmojiPicker extends PureComponent<ConnectedEmojiPickerProps, EmojiPickerSt
         }
     };
 
-    renderSectionIcons = () => {
-        const {emojis, currentSectionIndex} = this.state;
-
-        return (
-            <SectionIcons
-                currentSectionIndex={currentSectionIndex}
-                emojis={emojis}
-                onHandleSectionIconPress={this.handleSectionIconPress}
-            />
-        );
-    };
-
-    renderFooter = () => {
-        const {missingPages} = this.state;
-        if (!missingPages) {
-            return null;
-        }
-
-        return (
-            <Footer/>
-        );
-    };
-
     render() {
-        const {searchTerm} = this.state;
-        const {testID, theme} = this.props;
+        const {currentSectionIndex, emojis, filteredEmojis, missingPages, searchTerm} = this.state;
+        const {deviceWidth, onEmojiPress, testID, theme} = this.props;
 
         return (
             <EmojiPickerBase
+                currentSectionIndex={currentSectionIndex}
+                deviceWidth={deviceWidth}
+                emojis={emojis}
+                filteredEmojis={filteredEmojis}
+                itemLayout={this.sectionListGetItemLayout}
+                missingPages={missingPages}
                 onAnimationComplete={this.setRebuiltEmojis}
                 onCancelSearch={this.cancelSearch}
                 onChangeSearchTerm={this.changeSearchTerm}
+                onEmojiPress={onEmojiPress}
+                onHandleScrollToSectionFailed={this.handleScrollToSectionFailed}
+                onHandleSectionIconPress={this.handleSectionIconPress}
+                onLoadMoreCustomEmojis={this.loadMoreCustomEmojis}
+                onMomentumScrollEnd={this.onMomentumScrollEnd}
+                onScroll={this.onScroll}
                 onSetSearchBarRef={this.setSearchBarRef}
-                renderListComponent={this.renderListComponent}
-                renderSectionIcons={this.renderSectionIcons}
+                onSetSectionListRef={this.setSectionListRef}
                 searchTerm={searchTerm}
                 testID={testID}
                 theme={theme}
@@ -524,26 +409,6 @@ class EmojiPicker extends PureComponent<ConnectedEmojiPickerProps, EmojiPickerSt
         );
     }
 }
-
-const getStyleSheetFromTheme = makeStyleSheetFromTheme((theme) => {
-    return {
-        flex: {
-            flex: 1,
-        },
-        flatList: {
-            flex: 1,
-            backgroundColor: theme.centerChannelBg,
-            alignSelf: 'stretch',
-        },
-        sectionList: {
-            ...Platform.select({
-                android: {
-                    marginBottom: 35,
-                },
-            }),
-        },
-    };
-});
 
 const withConfig = withObservables([], ({database}: WithDatabaseArgs) => {
     return {
