@@ -129,6 +129,10 @@ android {
         targetCompatibility JavaVersion.VERSION_1_8
     }
 
+    packagingOptions {
+        pickFirst '**/libc++_shared.so'
+    }
+
     defaultConfig {
         applicationId "com.mattermost.rnbeta"
         minSdkVersion rootProject.ext.minSdkVersion
@@ -275,7 +279,7 @@ dependencies {
 
     androidTestImplementation('com.wix:detox:+')
 
-    implementation project(':watermelondb')
+    implementation project(':watermelondb-jsi')
 }
 
 // Run this once to be able to run the application with BUCK
