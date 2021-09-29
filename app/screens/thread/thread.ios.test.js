@@ -17,6 +17,8 @@ describe('thread', () => {
         actions: {
             selectPost: jest.fn(),
             setThreadFollow: jest.fn(),
+            fetchThreadAppBindings: jest.fn(),
+            clearThreadAppBindings: jest.fn(),
         },
         channelId: 'channel_id',
         channelType: General.OPEN_CHANNEL,
@@ -27,6 +29,9 @@ describe('thread', () => {
         postIds: ['root_id', 'post_id_1', 'post_id_2'],
         channelIsArchived: false,
         threadLoadingStatus: {status: RequestStatus.STARTED},
+        teamId: 'team_id',
+        userId: 'user_id',
+        postBindings: [],
     };
 
     test('should match snapshot, has root post', () => {
