@@ -81,7 +81,7 @@ const ChannelListScreen = (props: ChannelProps) => {
                 <View style={[styles.flex, {alignItems: 'center', justifyContent: 'center'}, tabletSidebarStyle]}>
                     <Text
                         onPress={() => goToScreen('Channel', '', undefined, {topBar: {visible: false}})}
-                        style={{fontSize: 20, color: '#fff'}}
+                        style={{fontSize: 20, color: theme.centerChannelColor}}
                     >
                         {'Channel List'}
                     </Text>
