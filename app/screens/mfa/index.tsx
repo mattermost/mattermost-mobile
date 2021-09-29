@@ -27,7 +27,7 @@ import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 type MFAProps = {
     config: Partial<ClientConfig>;
-    goToChannel: (time: number, error?: never) => void;
+    goToHome: (time: number, error?: never) => void;
     license: Partial<ClientLicense>;
     loginId: string;
     password: string;
@@ -35,7 +35,7 @@ type MFAProps = {
     theme: Theme;
 }
 
-const MFA = ({config, goToChannel, license, loginId, password, serverUrl, theme}: MFAProps) => {
+const MFA = ({config, goToHome, license, loginId, password, serverUrl, theme}: MFAProps) => {
     const intl = useIntl();
     const [token, setToken] = useState<string>('');
     const [error, setError] = useState<string>('');
@@ -98,7 +98,7 @@ const MFA = ({config, goToChannel, license, loginId, password, serverUrl, theme}
             console.log('GO TO NO TEAMS');
             return;
         }
-        goToChannel(result.time || 0, result.error as never);
+        goToHome(result.time || 0, result.error as never);
     });
 
     const getProceedView = () => {

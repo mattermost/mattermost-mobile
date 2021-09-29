@@ -83,10 +83,10 @@ const SSO = ({config, extra, launchError, launchType, serverUrl, ssoType, theme}
             console.log('GO TO NO TEAMS');
             return;
         }
-        goToChannel(result.time || 0, result.error as never);
+        goToHome(result.time || 0, result.error as never);
     };
 
-    const goToChannel = (time: number, error?: never) => {
+    const goToHome = (time: number, error?: never) => {
         const hasError = launchError || Boolean(error);
         resetToHome({extra, launchError: hasError, launchType, serverUrl, time});
     };
