@@ -22,7 +22,7 @@ import type UserModel from '@typings/database/models/servers/user';
 
 export type MyUserRequest = {
     user?: UserProfile;
-    error?: never;
+    error?: unknown;
 }
 
 export type ProfilesPerChannelRequest = {
@@ -56,7 +56,7 @@ export const fetchMe = async (serverUrl: string, fetchOnly = false): Promise<MyU
 
         return {user};
     } catch (error) {
-        await forceLogoutIfNecessary(serverUrl, error);
+        await forceLogoutIfNecessary(serverUrl, error as ClientErrorProps);
         return {error};
     }
 };

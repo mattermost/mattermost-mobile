@@ -3,9 +3,14 @@
 
 import {Database, Model, Q, Query, Relation} from '@nozbe/watermelondb';
 
-import {Database as DatabaseConstants} from '@constants';
+import {Database as DatabaseConstants, Preferences} from '@constants';
+import {getPreferenceValue} from '@helpers/api/preference';
+import {selectDefaultTeam} from '@helpers/api/team';
 
 import {prepareDeleteChannel} from './channel';
+import {queryPreferencesByCategoryAndName} from './preference';
+import {queryConfig} from './system';
+import {queryCurrentUser} from './user';
 
 import type ServerDataOperator from '@database/operator/server_data_operator';
 import type ChannelModel from '@typings/database/models/servers/channel';
@@ -153,4 +158,31 @@ export const queryMyTeams = async (database: Database): Promise<MyTeamModel[]|un
     } catch {
         return undefined;
     }
+};
+
+export const queryAvailableTeamIds = async (database: Database, excludeTeamId: string, teams?: Team[], preferences?: PreferenceType[], locale?: string): Promise<string[]> => {
+    let availableTeamIds: string[] = [];
+
+    if (teams) {
+        let teamOrderPreference;
+        if (preferences) {
+            teamOrderPreference = getPreferenceValue(preferences, Preferences.TEAMS_ORDER, '', '') as string;
+        } else {
+            const dbPreferences = await queryPreferencesByCategoryAndName(database, Preferences.TEAMS_ORDER, '');
+            teamOrderPreference = dbPreferences[0].value;
+        }
+
+        const userLocale = locale || (await queryCurrentUser(database))?.locale;
+        const config = await queryConfig(database);
+        const defaultTeam = selectDefaultTeam(teams, userLocale, teamOrderPreference, config.ExperimentalPrimaryTeam);
+
+        availableTeamIds = [defaultTeam!.id];
+    } else {
+        const dbTeams = await queryMyTeams(database);
+        if (dbTeams) {
+            availableTeamIds = dbTeams.map((team) => team.id);
+        }
+    }
+
+    return availableTeamIds.filter((id) => id !== excludeTeamId);
 };

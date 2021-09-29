@@ -5,13 +5,13 @@ import {Database, Model, Q, Query, Relation} from '@nozbe/watermelondb';
 
 import {MM_TABLES} from '@constants/database';
 
+import {prepareDeletePost} from './post';
+
 import type ServerDataOperator from '@database/operator/server_data_operator';
 import type ChannelModel from '@typings/database/models/servers/channel';
 import type ChannelInfoModel from '@typings/database/models/servers/channel_info';
 import type MyChannelModel from '@typings/database/models/servers/my_channel';
-import PostModel from '@typings/database/models/servers/post';
-
-import {prepareDeletePost} from './post';
+import type PostModel from '@typings/database/models/servers/post';
 
 const {SERVER: {CHANNEL, MY_CHANNEL}} = MM_TABLES;
 

@@ -9,7 +9,7 @@ import {Screens} from '@constants';
 import DatabaseManager from '@database/manager';
 import {getActiveServerUrl, getServerCredentials} from '@init/credentials';
 import {queryThemeForCurrentTeam} from '@queries/servers/preference';
-import {goToScreen, resetToChannel, resetToSelectServer} from '@screens/navigation';
+import {goToScreen, resetToHome, resetToSelectServer} from '@screens/navigation';
 import EphemeralStore from '@store/ephemeral_store';
 import {DeepLinkChannel, DeepLinkDM, DeepLinkGM, DeepLinkPermalink, DeepLinkType, DeepLinkWithData, LaunchProps, LaunchType} from '@typings/launch';
 import {parseDeepLink} from '@utils/url';
@@ -71,7 +71,7 @@ const launchApp = async (props: LaunchProps, resetNavigation = true) => {
                 EphemeralStore.theme = await queryThemeForCurrentTeam(database);
             }
 
-            launchToChannel({...props, serverUrl}, resetNavigation);
+            launchToHome({...props, serverUrl}, resetNavigation);
 
             return;
         }
@@ -80,7 +80,7 @@ const launchApp = async (props: LaunchProps, resetNavigation = true) => {
     launchToServer(props, resetNavigation);
 };
 
-const launchToChannel = (props: LaunchProps, resetNavigation: Boolean) => {
+const launchToHome = (props: LaunchProps, resetNavigation: Boolean) => {
     switch (props.launchType) {
         case LaunchType.DeepLink:
             // TODO:
@@ -102,8 +102,8 @@ const launchToChannel = (props: LaunchProps, resetNavigation: Boolean) => {
 
     if (resetNavigation) {
         // eslint-disable-next-line no-console
-        console.log('Launch app in Channel screen');
-        resetToChannel(passProps);
+        console.log('Launch app in Home screen');
+        resetToHome(passProps);
         return;
     }
 

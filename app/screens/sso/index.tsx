@@ -7,7 +7,7 @@ import React, {useState} from 'react';
 import {ssoLogin} from '@actions/remote/session';
 import ClientError from '@client/rest/error';
 import {SSO as SSOEnum} from '@constants';
-import {resetToChannel} from '@screens/navigation';
+import {resetToHome} from '@screens/navigation';
 import {isMinimumServerVersion} from '@utils/helpers';
 
 import SSOWithRedirectURL from './sso_with_redirect_url';
@@ -88,7 +88,7 @@ const SSO = ({config, extra, launchError, launchType, serverUrl, ssoType, theme}
 
     const goToChannel = (time: number, error?: never) => {
         const hasError = launchError || Boolean(error);
-        resetToChannel({extra, launchError: hasError, launchType, serverUrl, time});
+        resetToHome({extra, launchError: hasError, launchType, serverUrl, time});
     };
 
     const isSSOWithRedirectURLAvailable = isMinimumServerVersion(config.Version!, 5, 33, 0);
