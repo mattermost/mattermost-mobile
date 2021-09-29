@@ -7,7 +7,7 @@ import withObservables from '@nozbe/with-observables';
 import Fuse from 'fuse.js';
 import React, {PureComponent} from 'react';
 import {IntlShape} from 'react-intl';
-import {FlatList, Platform, SectionList} from 'react-native';
+import {FlatList, NativeScrollEvent, NativeSyntheticEvent, Platform, SectionList} from 'react-native';
 import sectionListGetItemLayout from 'react-native-section-list-get-item-layout';
 import {of as of$} from 'rxjs';
 import {switchMap} from 'rxjs/operators';
@@ -22,7 +22,7 @@ import {compareEmojis, isCustomEmojiEnabled} from '@utils/emoji/helpers';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 
 import TouchableEmoji from './components/emoji_flatlist_item';
-import EmojiPickerComponent from './components/emoji_picker';
+import EmojiPickerBase from './components/emoji_picker_base';
 import EmojiPickerRow from './components/emoji_picker_row';
 import EmptyList from './components/empty_list';
 import Footer from './components/footer';
@@ -84,9 +84,7 @@ class EmojiPicker extends PureComponent<ConnectedEmojiPickerProps, EmojiPickerSt
         super(props);
 
         this.sectionListGetItemLayout = sectionListGetItemLayout({
-            getItemHeight: () => {
-                return (EMOJI_SIZE + 7) + (EMOJI_GUTTER * 2);
-            },
+            getItemHeight: () => (EMOJI_SIZE + 7) + (EMOJI_GUTTER * 2),
             getSectionHeaderHeight: () => SECTION_HEADER_HEIGHT,
         });
 
@@ -239,7 +237,6 @@ class EmojiPicker extends PureComponent<ConnectedEmojiPickerProps, EmojiPickerSt
         this.setState(nextState);
 
         if (!searchTerm) {
-            // nextState.currentSectionIndex = 0; // ??? why ???
             return;
         }
 
@@ -421,7 +418,7 @@ class EmojiPicker extends PureComponent<ConnectedEmojiPickerProps, EmojiPickerSt
         // incrementEmojiPickerPage();
     };
 
-    onScroll = (e) => {
+    onScroll = (e: NativeSyntheticEvent<NativeScrollEvent>) => {
         const {currentSectionIndex, emojiSectionIndexByOffset, jumpToSection} = this.state;
 
         if (jumpToSection) {
@@ -513,7 +510,7 @@ class EmojiPicker extends PureComponent<ConnectedEmojiPickerProps, EmojiPickerSt
         const {testID, theme} = this.props;
 
         return (
-            <EmojiPickerComponent
+            <EmojiPickerBase
                 onAnimationComplete={this.setRebuiltEmojis}
                 onCancelSearch={this.cancelSearch}
                 onChangeSearchTerm={this.changeSearchTerm}

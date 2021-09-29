@@ -18,26 +18,32 @@ const SectionIcons = ({emojis, currentSectionIndex, onHandleSectionIconPress}: S
     const theme = useTheme();
     const {sectionIconContainer, sectionIcon, sectionIconHighlight} = getStyleSheetFromTheme(theme);
 
-    return emojis.map((section, index: number) => {
-        const onPress = () => onHandleSectionIconPress(index, section.key === 'custom');
+    return (
+        <>
+            {
+                emojis.map((section, index: number) => {
+                    const onPress = () => onHandleSectionIconPress(index, section.key === 'custom');
 
-        return (
-            <TouchableOpacity
-                key={section.key}
-                onPress={onPress}
-                style={sectionIconContainer}
-            >
-                <CompassIcon
-                    name={section.icon}
-                    size={17}
-                    style={[
-                        sectionIcon,
-                        index === currentSectionIndex && sectionIconHighlight,
-                    ]}
-                />
-            </TouchableOpacity>
-        );
-    });
+                    return (
+                        <TouchableOpacity
+                            key={section.key}
+                            onPress={onPress}
+                            style={sectionIconContainer}
+                        >
+                            <CompassIcon
+                                name={section.icon}
+                                size={17}
+                                style={[
+                                    sectionIcon,
+                                    index === currentSectionIndex && sectionIconHighlight,
+                                ]}
+                            />
+                        </TouchableOpacity>
+                    );
+                })
+            }
+        </>
+    );
 };
 
 const getStyleSheetFromTheme = makeStyleSheetFromTheme((theme) => {
