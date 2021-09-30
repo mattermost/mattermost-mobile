@@ -18,7 +18,6 @@ export const getCustomEmojis = async (serverUrl: string, page = 0, perPage: numb
 
     try {
         data = await client.getCustomEmojis(page, perPage, sort);
-        console.log('>>>  getCustomEmojis', JSON.stringify(data));
     } catch (error) {
         forceLogoutIfNecessary(serverUrl, error);
         logError(error);

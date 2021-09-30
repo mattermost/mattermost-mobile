@@ -45,6 +45,7 @@ type EmojiPickerProps = {
 
 type EmojiPickerState = {
     currentSectionIndex: number;
+    customEmojiPage: number;
     emojiSectionIndexByOffset: number[];
     emojis: RenderableEmojis[];
     filteredEmojis: string[];
@@ -57,7 +58,6 @@ type EmojiPickerState = {
 type ConnectedEmojiPickerProps = EmojiPickerProps & {
     database: Database;
     config: ClientConfig;
-    customEmojiPage: number;
     emojis: string;
     emojisBySection: EmojiSection[];
 }
@@ -87,6 +87,7 @@ class EmojiPicker extends PureComponent<ConnectedEmojiPickerProps, EmojiPickerSt
         this.scrollToSectionTries = 0;
         this.state = {
             currentSectionIndex: 0,
+            customEmojiPage: 0,
             emojiSectionIndexByOffset: [],
             emojis: [],
             filteredEmojis: [],
@@ -94,8 +95,6 @@ class EmojiPicker extends PureComponent<ConnectedEmojiPickerProps, EmojiPickerSt
             loadingMore: false,
             missingPages: true,
             searchTerm: undefined,
-
-        //    customEmojiPage : fixme : track this value in State
         };
     }
 
@@ -295,28 +294,6 @@ class EmojiPicker extends PureComponent<ConnectedEmojiPickerProps, EmojiPickerSt
         return Math.floor(Number(((deviceWidth - (SECTION_MARGIN * shorten)) / ((EMOJI_SIZE + 7) + (EMOJI_GUTTER * shorten)))));
     };
 
-    loadMoreCustomEmojis = async () => {
-        const {customEmojiPage, serverUrl} = this.props;
-        if (!this.customEmojisEnabled) {
-            return;
-        }
-
-        const {data} = await getCustomEmojis(serverUrl, customEmojiPage, EMOJIS_PER_PAGE);
-
-        this.setState({loadingMore: false});
-
-        if (!data) {
-            return;
-        }
-
-        if (data.length < EMOJIS_PER_PAGE) {
-            this.setState({missingPages: false});
-        }
-
-        //todo: incrementEmojiPickerPage
-        // incrementEmojiPickerPage();
-    };
-
     onScroll = (e: NativeSyntheticEvent<NativeScrollEvent>) => {
         const {currentSectionIndex, emojiSectionIndexByOffset, jumpToSection} = this.state;
 
@@ -370,13 +347,38 @@ class EmojiPicker extends PureComponent<ConnectedEmojiPickerProps, EmojiPickerSt
     };
 
     handleSectionIconPress = (index: number, isCustomSection = false) => {
-        //fixme: rework this method
+        const {customEmojiPage} = this.state;
+
         this.scrollToSectionTries = 0;
         this.scrollToSection(index);
 
-        if (isCustomSection && this.props.customEmojiPage === 0) {
+        if (isCustomSection && customEmojiPage === 0) {
             this.loadMoreCustomEmojis();
         }
+    };
+
+    loadMoreCustomEmojis = async () => {
+        const {serverUrl} = this.props;
+        const {customEmojiPage} = this.state;
+        if (!this.customEmojisEnabled) {
+            return;
+        }
+
+        const {data} = await getCustomEmojis(serverUrl, customEmojiPage, EMOJIS_PER_PAGE);
+
+        this.setState({loadingMore: false});
+
+        if (!data) {
+            return;
+        }
+
+        if (data.length < EMOJIS_PER_PAGE) {
+            this.setState({missingPages: false});
+        }
+
+        this.setState((prevState) => ({
+            customEmojiPage: prevState.customEmojiPage + 1,
+        }));
     };
 
     render() {

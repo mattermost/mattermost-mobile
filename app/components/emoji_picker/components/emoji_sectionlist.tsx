@@ -25,19 +25,7 @@ type EmojiSectionListProps = {
     margin: number;
 };
 
-const EmojiSectionList = ({
-    deviceWidth,
-    emojis,
-    itemLayout,
-    missingPages,
-    onEmojiPress,
-    onHandleScrollToSectionFailed,
-    onLoadMoreCustomEmojis,
-    onMomentumScrollEnd,
-    onScroll,
-    onSetSectionListRef,
-    margin,
-}: EmojiSectionListProps) => {
+const EmojiSectionList = ({deviceWidth, emojis, itemLayout, missingPages, onEmojiPress, onHandleScrollToSectionFailed, onLoadMoreCustomEmojis, onMomentumScrollEnd, onScroll, onSetSectionListRef, margin}: EmojiSectionListProps) => {
     const theme = useTheme();
     const styles = getStyleSheetFromTheme(theme);
 
