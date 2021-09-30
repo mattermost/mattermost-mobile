@@ -13,7 +13,7 @@ import SystemModel from '@typings/database/models/servers/system';
 import {Emojis, EmojiIndicesByAlias, CategoryNames, EmojiIndicesByCategory, CategoryTranslations, CategoryMessage} from '@utils/emoji';
 import {isCustomEmojiEnabled} from '@utils/emoji/helpers';
 
-import type {Database} from '@nozbe/watermelondb';
+import type Database from '@nozbe/watermelondb/Database';
 import type CustomEmojiModel from '@typings/database/models/servers/custom_emoji';
 import type PreferenceModel from '@typings/database/models/servers/preference';
 
@@ -39,19 +39,56 @@ const getSkin = (emoji: EmojiDetails) => {
     return null;
 };
 
-export const getCustomEmojis = async (database: Database) => {
+export const getCustomEmojis = async (database: Database): Promise<CustomEmojiModel[]> => {
     try {
         const systemValues = await queryCommonSystemValues(database);
         const isCSEnabled = isCustomEmojiEnabled(systemValues.config);
         if (!isCSEnabled) {
-            return {};
+            return [];
         }
         const customEmojis = (await queryAllCustomEmojis(database)) as unknown as CustomEmojiModel[];
-        return {customEmojis};
-    } catch (error) {
-        return {error};
+        return customEmojis;
+    } catch (e) {
+        return [];
     }
 };
+
+const icons: Record<string, string> = {
+    recent: 'clock-outline',
+    'smileys-emotion': 'emoticon-happy-outline',
+    'people-body': 'eye-outline',
+    'animals-nature': 'leaf-outline',
+    'food-drink': 'food-apple',
+    'travel-places': 'airplane-variant',
+    activities: 'basketball',
+    objects: 'lightbulb-outline',
+    symbols: 'heart-outline',
+    flags: 'flag-outline',
+    custom: 'emoticon-custom-outline',
+};
+
+type CategoryTranslation = {
+    id?: string;
+    defaultMessage: string;
+    icon: string;
+}
+
+const categoryToI18n: Record<string, CategoryTranslation> = {};
+CategoryNames.forEach((name: string) => {
+    categoryToI18n[name] = {
+        id: CategoryTranslations.get(name),
+        defaultMessage: CategoryMessage.get(name),
+        icon: icons[name],
+    };
+});
+
+function fillEmoji(indice: number) {
+    const emoji = Emojis[indice];
+    return {
+        name: 'short_name' in emoji ? emoji.short_name : emoji.name,
+        aliases: 'short_names' in emoji ? emoji.short_names : [],
+    };
+}
 
 export const getEmojisByName = async (serverUrl: string) => {
     let skinTone;
@@ -68,7 +105,7 @@ export const getEmojisByName = async (serverUrl: string) => {
             skinTone = 'default';
         }
 
-        const {customEmojis} = await getCustomEmojis(database);
+        const customEmojis = await getCustomEmojis(database);
 
         const emoticons = new Set();
 
@@ -80,7 +117,9 @@ export const getEmojisByName = async (serverUrl: string) => {
         }
 
         if (customEmojis) {
-            customEmojis.map((cs) => emoticons.add(cs.name));
+            customEmojis.map((cs) => {
+                return emoticons.add(cs.name);
+            });
         }
 
         return {data: Array.from(emoticons)};
@@ -89,38 +128,6 @@ export const getEmojisByName = async (serverUrl: string) => {
     }
 };
 
-const icons = {
-    recent: 'clock-outline',
-    'smileys-emotion': 'emoticon-happy-outline',
-    'people-body': 'eye-outline',
-    'animals-nature': 'leaf-outline',
-    'food-drink': 'food-apple',
-    'travel-places': 'airplane-variant',
-    activities: 'basketball',
-    objects: 'lightbulb-outline',
-    symbols: 'heart-outline',
-    flags: 'flag-outline',
-    custom: 'emoticon-custom-outline',
-};
-
-const categoryToI18n = {};
-CategoryNames.forEach((name: any) => {
-    categoryToI18n[name] = {
-        id: CategoryTranslations.get(name),
-        defaultMessage: CategoryMessage.get(name),
-        icon: icons[name],
-    };
-});
-
-function fillEmoji(indice: string) {
-    const emoji = Emojis[indice];
-    return {
-        name: 'short_name' in emoji ? emoji.short_name : emoji.name,
-        aliases: 'short_names' in emoji ? emoji.short_names : [],
-    };
-}
-
-//fixme: you might be doing the same READING twice !!!
 export const selectEmojisBySection = async (serverUrl: string) => {
     const database = DatabaseManager.serverDatabases[serverUrl]?.database;
 
@@ -143,13 +150,14 @@ export const selectEmojisBySection = async (serverUrl: string) => {
         const filteredCategories = CategoryNames.filter((category) => category !== 'recent' || recentItems.length > 0);
 
         const emoticons = filteredCategories.map((category) => {
-            const data = EmojiIndicesByCategory.get(skinTone).get(category).map(fillEmoji);
+            const data = EmojiIndicesByCategory.get(skinTone)!.get(category).map(fillEmoji);
 
             if (category === 'custom') {
                 data.push(...customEmojiItems);
             } else if (category === 'recent') {
                 data.push(...recentItems);
             }
+
             const section = {
                 ...categoryToI18n[category],
                 key: category,
@@ -159,9 +167,8 @@ export const selectEmojisBySection = async (serverUrl: string) => {
             return section;
         });
 
-        return {emoticons};
+        return {emoticons, emojis: customEmojis};
     } catch (error) {
-        console.error('>>>  error', {error});
         return {error};
     }
 };
