@@ -258,7 +258,7 @@ PODS:
     - React-Core
   - react-native-passcode-status (1.1.2):
     - React
-  - react-native-paste-input (0.1.5):
+  - react-native-paste-input (0.2.0):
     - React-Core
     - Swime (= 3.0.6)
   - react-native-safe-area (0.5.1):
@@ -743,7 +743,7 @@ SPEC CHECKSUMS:
   react-native-netinfo: 92e6e4476eb8bf6fc2d7c0a6ca0a1406f663d73a
   react-native-notifications: 97c14bf84c64bd6a6eb7bdcdb916036d93d33428
   react-native-passcode-status: e78f76b3c8db613e6ced6bd40b54aa4f53374173
-  react-native-paste-input: 9cd8431f231c7437de89746cf7258b881b442aa9
+  react-native-paste-input: 5da631cf8210a9e61d577f987f7fb8b0ef966121
   react-native-safe-area: e8230b0017d76c00de6b01e2412dcf86b127c6a3
   react-native-safe-area-context: 584dc04881deb49474363f3be89e4ca0e854c057
   react-native-startup-time: 1a068b744ce5097a85ebe0fbff691b05961c324d

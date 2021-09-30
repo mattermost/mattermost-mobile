@@ -253,6 +253,7 @@ export default class PostInput extends PureComponent {
         }
 
         this.value = completed;
+
         this.input.current.setNativeProps({
             text: completed,
         });
