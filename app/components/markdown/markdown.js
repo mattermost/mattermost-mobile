@@ -9,7 +9,7 @@ import {
     Platform,
     Text,
     View,
-    useWindowDimensions,
+    Dimensions,
 } from 'react-native';
 
 import AtMention from '@components/at_mention';
@@ -166,6 +166,49 @@ export default class Markdown extends PureComponent {
         return contextStyles.length ? concatStyles(baseStyle, contextStyles) : baseStyle;
     };
 
+    onInlineLatexLayout = (event) => {
+        const mathLineHeight = Math.max(event.nativeEvent.layout.height, this.state.inlineLatexHeight);
+        this.setState({inlineLatexHeight: mathLineHeight});
+    }
+
+    /**
+     * Renders inline latex blocks if found.
+     * If no inline latex is found returns null
+     */
+    renderInlineLatexText = (literal, context) => {
+        // eslint-disable-next-line no-useless-escape
+        const inlineLatexRegEx = /\$([^\$\n]+)\$(?!\w)/;
+
+        //Search for match
+        const match = inlineLatexRegEx.exec(literal);
+
+        if (match && !(/\w/).exec(literal[match.index - 1])) { //Extra check to see if there is no word character in front of the matched latex code
+            const firstPart = literal.slice(0, match.index);
+            let latexCode = match[1];
+            const lastPart = literal.slice(match.index + match[0].length);
+
+            latexCode = unEscapeLatexCodeInText(latexCode); //Unescape code
+
+            latexCode = latexCode.replace('&', '\\&'); //For some reason the slash before an & character is missing when you type it.
+
+            return (
+                <Text
+                    style={{lineHeight: this.state.inlineLatexHeight}}
+                >
+                    {this.renderText({context, literal: firstPart})}
+                    <LatexInline
+                        content={latexCode}
+                        onLayout={this.onInlineLatexLayout}
+                        maxMathWidth={Dimensions.get('window').width * 0.75}
+                    />
+                    {this.renderText({context, literal: lastPart})}
+                </Text>
+            );
+        }
+
+        return null;
+    }
+
     renderText = ({context, literal}) => {
         if (context.indexOf('image') !== -1) {
             // If this text is displayed, it will be styled by the image component
@@ -180,37 +223,9 @@ export default class Markdown extends PureComponent {
         const style = this.computeTextStyle(this.props.baseTextStyle, context);
 
         if (this.props.enableLatex && this.props.enableInlineLatex) {
-            // eslint-disable-next-line no-useless-escape
-            const inlineLatexRegEx = /\$([^\$\n]+)\$(?!\w)/;
-
-            //Search for match
-            const match = inlineLatexRegEx.exec(literal);
-
-            if (match && !(/\w/).exec(literal[match.index - 1])) { //Extra check to see if there is no word character in front of the matched latex code
-                const firstPart = literal.slice(0, match.index);
-                let latexCode = match[1];
-                const lastPart = literal.slice(match.index + match[0].length);
-
-                latexCode = unEscapeLatexCodeInText(latexCode); //Unescape code
-
-                latexCode = latexCode.replace('&', '\\&'); //For some reason the slash before an & character is missing when you type it.
-
-                return (
-                    <Text
-                        style={{lineHeight: this.state.inlineLatexHeight}}
-                    >
-                        {this.renderText({context, literal: firstPart})}
-                        <LatexInline
-                            content={latexCode}
-                            onLayout={(event) => {
-                                const mathLineHeight = Math.max(event.nativeEvent.layout.height, this.state.inlineLatexHeight);
-                                this.setState({inlineLatexHeight: mathLineHeight});
-                            }}
-                            maxMathWidth={useWindowDimensions().width * 0.75}
-                        />
-                        {this.renderText({context, literal: lastPart})}
-                    </Text>
-                );
+            const inlineLatexRender = this.renderInlineLatexText(literal, context);
+            if (inlineLatexRender != null) {
+                return inlineLatexRender;
             }
         }
 
