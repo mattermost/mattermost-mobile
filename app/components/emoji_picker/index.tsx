@@ -140,7 +140,7 @@ class EmojiPicker extends PureComponent<ConnectedEmojiPickerProps, EmojiPickerSt
             }
         }
 
-        //fixme:  rework this componentDidUpdate
+        //fixme:  is the below needed ?
         // if (this.props.emojis !== prevProps.emojis) {
         //     this.rebuildEmojis = true;
         // }

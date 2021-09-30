@@ -23,6 +23,26 @@ type EmojiDetails = {
     [x: string]: any;
 };
 
+type CategoryTranslation = {
+    id?: string;
+    defaultMessage: string;
+    icon: string;
+}
+
+const ICONS: Record<string, string> = {
+    recent: 'clock-outline',
+    'smileys-emotion': 'emoticon-happy-outline',
+    'people-body': 'eye-outline',
+    'animals-nature': 'leaf-outline',
+    'food-drink': 'food-apple',
+    'travel-places': 'airplane-variant',
+    activities: 'basketball',
+    objects: 'lightbulb-outline',
+    symbols: 'heart-outline',
+    flags: 'flag-outline',
+    custom: 'emoticon-custom-outline',
+};
+
 // if an emoji
 // - has `skin_variations` then it uses the default skin (yellow)
 // - has `skins` it's first value is considered the skin version (it can contain more values)
@@ -53,32 +73,12 @@ export const getCustomEmojis = async (database: Database): Promise<CustomEmojiMo
     }
 };
 
-const icons: Record<string, string> = {
-    recent: 'clock-outline',
-    'smileys-emotion': 'emoticon-happy-outline',
-    'people-body': 'eye-outline',
-    'animals-nature': 'leaf-outline',
-    'food-drink': 'food-apple',
-    'travel-places': 'airplane-variant',
-    activities: 'basketball',
-    objects: 'lightbulb-outline',
-    symbols: 'heart-outline',
-    flags: 'flag-outline',
-    custom: 'emoticon-custom-outline',
-};
-
-type CategoryTranslation = {
-    id?: string;
-    defaultMessage: string;
-    icon: string;
-}
-
 const categoryToI18n: Record<string, CategoryTranslation> = {};
 CategoryNames.forEach((name: string) => {
     categoryToI18n[name] = {
         id: CategoryTranslations.get(name),
         defaultMessage: CategoryMessage.get(name),
-        icon: icons[name],
+        icon: ICONS[name],
     };
 });
 
@@ -91,8 +91,6 @@ function fillEmoji(indice: number) {
 }
 
 export const getEmojisByName = async (serverUrl: string) => {
-    let skinTone;
-
     const database = DatabaseManager.serverDatabases[serverUrl]?.database;
     if (!database) {
         return {error: `${serverUrl} database not found`};
@@ -100,10 +98,7 @@ export const getEmojisByName = async (serverUrl: string) => {
 
     try {
         const skinToneRecord = (await queryPreferencesByCategoryAndName(database, Preferences.CATEGORY_EMOJI, Preferences.EMOJI_SKINTONE)) as unknown as PreferenceModel[];
-        skinTone = skinToneRecord?.[0]?.value;
-        if (!skinTone) {
-            skinTone = 'default';
-        }
+        const skinTone = skinToneRecord?.[0]?.value ?? 'default';
 
         const customEmojis = await getCustomEmojis(database);
 
