@@ -1,6 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {PropTypes} from 'prop-types';
 import React from 'react';
 import {Keyboard, View, Text, StyleSheet, Platform} from 'react-native';
 import MathView from 'react-native-math-view';
@@ -18,6 +19,12 @@ import MarkdownCodeBlock from '../markdown_code_block/markdown_code_block';
 const MAX_LINES = 2;
 
 export default class LatexCodeBlock extends MarkdownCodeBlock {
+    static propTypes = {
+        theme: PropTypes.object.isRequired,
+        content: PropTypes.string.isRequired,
+        textStyle: PropTypes.oneOfType([PropTypes.object, PropTypes.number, PropTypes.array]),
+    };
+
     handlePress = preventDoubleTap(() => {
         const {language, content} = this.props;
         const {intl} = this.context;
@@ -51,7 +58,7 @@ export default class LatexCodeBlock extends MarkdownCodeBlock {
         });
     });
 
-    trimContent = (content) => {
+    splitContent = (content) => {
         const lines = splitLatexCodeInLines(content);
 
         const numberOfLines = lines.length;
@@ -68,10 +75,6 @@ export default class LatexCodeBlock extends MarkdownCodeBlock {
             numberOfLines,
         };
     };
-
-    onWebViewMessage = (data) => {
-        this.setState({webViewHeight: data});
-    }
 
     onErrorMessage = (errorMsg) => {
         const style = getStyleSheet(this.props.theme);
@@ -101,7 +104,7 @@ export default class LatexCodeBlock extends MarkdownCodeBlock {
             );
         }
 
-        const {content, numberOfLines} = this.trimContent(this.props.content);
+        const {content, numberOfLines} = this.splitContent(this.props.content);
 
         let plusMoreLines = null;
         if (numberOfLines > MAX_LINES) {
