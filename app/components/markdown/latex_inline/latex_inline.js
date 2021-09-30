@@ -16,6 +16,18 @@ export default class LatexInline extends PureComponent {
         maxMathWidth: PropTypes.oneOfType([PropTypes.number, PropTypes.string]),
     };
 
+    onErrorMessage = (errorMsg) => {
+        const style = getStyleSheet(this.props.theme);
+
+        return <Text style={style.errorText}>{'Latex error: ' + errorMsg.message}</Text>;
+    }
+
+    onRenderErrorMessage = (errorMsg) => {
+        const style = getStyleSheet(this.props.theme);
+
+        return <Text style={style.errorText}>{'Latex render error: ' + errorMsg.error.message}</Text>;
+    }
+
     render() {
         const style = getStyleSheet(this.props.theme);
 
@@ -28,12 +40,8 @@ export default class LatexInline extends PureComponent {
                 <MathView
                     style={[style.mathStyle, {maxWidth: this.props.maxMathWidth ? this.props.maxMathWidth : '100%'}]}
                     math={this.props.content}
-                    onError={(errorMsg) => {
-                        return <Text style={style.errorText}>{'Latex error: ' + errorMsg.message}</Text>;
-                    }}
-                    renderError={(errorMsg) => {
-                        return <Text style={style.errorText}>{'Latex render error: ' + errorMsg.error.message}</Text>;
-                    }}
+                    onError={this.onErrorMessage}
+                    renderError={this.onRenderErrorMessage}
                     resizeMode={'contain'}
                 />
             </View>
