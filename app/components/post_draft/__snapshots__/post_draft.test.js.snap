@@ -284,31 +284,49 @@ exports[`PostDraft Should render the DraftInput 1`] = `
       }
     >
       <View>
-        <TextInput
+        <PasteInput
+          accessible={true}
+          autoCapitalize="sentences"
           autoCompleteType="off"
           blurOnSubmit={false}
+          disableCopyPaste={false}
           disableFullscreenUI={true}
+          focusable={true}
           keyboardAppearance="light"
           keyboardType="default"
+          mostRecentEventCount={0}
           multiline={true}
+          onBlur={[Function]}
+          onChange={[Function]}
           onChangeText={[Function]}
+          onClick={[Function]}
           onEndEditing={[Function]}
+          onFocus={[Function]}
           onPaste={[Function]}
+          onResponderGrant={[Function]}
+          onResponderMove={[Function]}
+          onResponderRelease={[Function]}
+          onResponderTerminate={[Function]}
+          onResponderTerminationRequest={[Function]}
+          onScroll={[Function]}
           onSelectionChange={[Function]}
+          onStartShouldSetResponder={[Function]}
           placeholder="Write to "
           placeholderTextColor="rgba(63,67,80,0.5)"
           screenId="NavigationScreen1"
           style={
-            Object {
-              "color": "#3f4350",
-              "fontSize": 15,
-              "lineHeight": 20,
-              "maxHeight": 150,
-              "minHeight": 30,
-              "paddingBottom": 6,
-              "paddingHorizontal": 12,
-              "paddingTop": 6,
-            }
+            Array [
+              Object {
+                "color": "#3f4350",
+                "fontSize": 15,
+                "lineHeight": 20,
+                "maxHeight": 150,
+                "minHeight": 30,
+                "paddingBottom": 6,
+                "paddingHorizontal": 12,
+                "paddingTop": 6,
+              },
+            ]
           }
           testID="post_draft.post.input"
           textContentType="none"
