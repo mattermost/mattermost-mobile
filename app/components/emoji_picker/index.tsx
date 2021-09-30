@@ -12,7 +12,7 @@ import sectionListGetItemLayout from 'react-native-section-list-get-item-layout'
 import {of as of$} from 'rxjs';
 import {switchMap} from 'rxjs/operators';
 
-import {getEmojisByName, selectEmojisBySection} from '@actions/local/custom_emoji';
+import {selectEmojisBySection} from '@actions/local/custom_emoji';
 import {getCustomEmojis} from '@actions/remote/custom_emoji';
 import {Device} from '@constants';
 import {MM_TABLES, SYSTEM_IDENTIFIERS} from '@constants/database';
@@ -47,11 +47,11 @@ type EmojiPickerState = {
     currentSectionIndex: number;
     customEmojiPage: number;
     emojiSectionIndexByOffset: number[];
-    emojis: RenderableEmojis[];
     filteredEmojis: string[];
     jumpToSection: boolean;
     loadingMore: boolean;
     missingPages: boolean;
+    renderableEmojis: RenderableEmojis[];
     searchTerm: string | undefined;
 };
 
@@ -89,11 +89,11 @@ class EmojiPicker extends PureComponent<ConnectedEmojiPickerProps, EmojiPickerSt
             currentSectionIndex: 0,
             customEmojiPage: 0,
             emojiSectionIndexByOffset: [],
-            emojis: [],
             filteredEmojis: [],
             jumpToSection: false, // fixme : should it be false or null
             loadingMore: false,
             missingPages: true,
+            renderableEmojis: [],
             searchTerm: undefined,
         };
     }
@@ -104,25 +104,22 @@ class EmojiPicker extends PureComponent<ConnectedEmojiPickerProps, EmojiPickerSt
 
     setUp = async () => {
         const {serverUrl, deviceWidth} = this.props;
-        this.fuse = await this.getFuseInstance();
 
-        const {emoticons: emojisBySection} = await selectEmojisBySection(serverUrl);
+        const {emoticons: emojisBySection, emojis} = await selectEmojisBySection(serverUrl);
+        this.fuse = await this.getFuseInstance(emojis ?? []);
+
         if (emojisBySection) {
-            const emojis = this.renderableEmojis(emojisBySection, deviceWidth);
-            const emojiSectionIndexByOffset = this.measureEmojiSections(emojis);
+            const renderableEmojis = this.renderableEmojis(emojisBySection, deviceWidth);
+            const emojiSectionIndexByOffset = this.measureEmojiSections(renderableEmojis);
 
             this.setState({
-                emojis,
+                renderableEmojis,
                 emojiSectionIndexByOffset,
             });
         }
     }
 
-    getFuseInstance = async () => {
-        const {serverUrl} = this.props;
-
-        const {data: emojis} = await getEmojisByName(serverUrl);
-
+    getFuseInstance = async (emojis: string[]) => {
         const options = {findAllMatches: true, ignoreLocation: true, includeMatches: true, shouldSort: false};
 
         if (emojis) {
@@ -163,8 +160,8 @@ class EmojiPicker extends PureComponent<ConnectedEmojiPickerProps, EmojiPickerSt
         const {emojisBySection, deviceWidth} = this.props;
         if (this.rebuildEmojis && searchBarAnimationComplete) {
             this.rebuildEmojis = false;
-            const emojis = this.renderableEmojis(emojisBySection, deviceWidth);
-            this.setState({emojis});
+            const renderableEmojis = this.renderableEmojis(emojisBySection, deviceWidth);
+            this.setState({renderableEmojis});
         }
     };
 
@@ -382,14 +379,14 @@ class EmojiPicker extends PureComponent<ConnectedEmojiPickerProps, EmojiPickerSt
     };
 
     render() {
-        const {currentSectionIndex, emojis, filteredEmojis, missingPages, searchTerm} = this.state;
+        const {currentSectionIndex, renderableEmojis, filteredEmojis, missingPages, searchTerm} = this.state;
         const {deviceWidth, onEmojiPress, testID, theme} = this.props;
 
         return (
             <EmojiPickerBase
                 currentSectionIndex={currentSectionIndex}
                 deviceWidth={deviceWidth}
-                emojis={emojis}
+                emojis={renderableEmojis}
                 filteredEmojis={filteredEmojis}
                 itemLayout={this.sectionListGetItemLayout}
                 missingPages={missingPages}
