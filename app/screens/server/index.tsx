@@ -351,23 +351,21 @@ const Server: NavigationFunctionComponent = ({componentId, extra, launchType, la
                     accessible={false}
                 >
                     <View style={styles.formContainer}>
-                        <View>
-                            <FormattedText
-                                style={styles.welcomeText}
-                                id='mobile.components.select_server_view.msg_welcome'
-                                defaultMessage='Welcome'
-                            />
-                            <FormattedText
-                                style={styles.connectText}
-                                id='mobile.components.select_server_view.msg_connect'
-                                defaultMessage='Let’s Connect to a Server'
-                            />
-                            <FormattedText
-                                style={styles.descriptionText}
-                                id='mobile.components.select_server_view.msg_description'
-                                defaultMessage="A Server is your team's communication hub which is accessed through a unique URL"
-                            />
-                        </View>
+                        <FormattedText
+                            style={styles.welcomeText}
+                            id='mobile.components.select_server_view.msg_welcome'
+                            defaultMessage='Welcome'
+                        />
+                        <FormattedText
+                            style={styles.connectText}
+                            id='mobile.components.select_server_view.msg_connect'
+                            defaultMessage='Let’s Connect to a Server'
+                        />
+                        <FormattedText
+                            style={styles.descriptionText}
+                            id='mobile.components.select_server_view.msg_description'
+                            defaultMessage="A Server is your team's communication hub which is accessed through a unique URL"
+                        />
                         <PaperTextInput
                             mode='outlined'
                             testID='select_server.server_url.input'
@@ -387,17 +385,15 @@ const Server: NavigationFunctionComponent = ({componentId, extra, launchType, la
                             disableFullscreenUI={true}
                         />
                         {Boolean(urlError) &&
-                            <View>
-                                <HelperText
-                                    type='error'
-                                    style={styles.urlHelper}
-                                >
-                                    <CompassIcon
-                                        name='alert-outline'
-                                    />
-                                    {' ' + urlError}
-                                </HelperText>
-                            </View>
+                        <HelperText
+                            type='error'
+                            style={styles.urlHelper}
+                        >
+                            <CompassIcon
+                                name='alert-outline'
+                            />
+                            {' ' + urlError}
+                        </HelperText>
                         }
                         <PaperTextInput
                             mode='outlined'
@@ -416,14 +412,12 @@ const Server: NavigationFunctionComponent = ({componentId, extra, launchType, la
                             underlineColorAndroid='transparent'
                             disableFullscreenUI={true}
                         />
-                        <View>
-                            <HelperText
-                                type='info'
-                                style={styles.displayNameHelper}
-                            >
-                                {displayNameHelperText}
-                            </HelperText>
-                        </View>
+                        <HelperText
+                            type='info'
+                            style={styles.displayNameHelper}
+                        >
+                            {displayNameHelperText}
+                        </HelperText>
                         <Button
                             disabled={buttonDisabled}
                             testID='select_server.connect.button'
@@ -465,8 +459,8 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         justifyContent: 'center',
         alignItems: 'center',
         alignSelf: 'stretch',
-        paddingRight: 20,
-        paddingLeft: 20,
+        paddingRight: 24,
+        paddingLeft: 24,
     },
     disabledInput: {
         backgroundColor: changeOpacity(theme.centerChannelColor, 0.1),
@@ -477,7 +471,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     connectButton: {
         backgroundColor: changeOpacity(theme.centerChannelColor, 0.08),
         flex: 0,
-        borderRadius: 3,
+        borderRadius: 4,
         alignItems: 'center',
         alignSelf: 'stretch',
         marginTop: 32,
@@ -511,7 +505,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         alignSelf: 'stretch',
         marginTop: 12,
         marginBottom: 0,
-        left: 20,
         fontWeight: '600',
         fontFamily: 'Metropolis',
         color: changeOpacity(theme.centerChannelColor, 0.64),
@@ -519,7 +512,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     connectText: {
         width: 270,
         height: 96,
-        left: 20,
         fontFamily: 'Metropolis',
         fontSize: 40,
         lineHeight: 48,
@@ -531,6 +523,8 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         marginTop: 12,
         marginBottom: 0,
         marginRight: 20,
+        marginLeft: 0,
+        paddingLeft: 0,
         flexGrow: 0,
         fontWeight: '600',
         display: 'flex',
@@ -538,7 +532,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     descriptionText: {
         width: 374,
         height: 48,
-        left: 20,
         fontFamily: 'Open Sans',
         fontStyle: 'normal',
         fontWeight: 'normal',
@@ -556,7 +549,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         width: 374,
         marginTop: 4,
         marginBottom: 0,
-        padding: 0,
+        paddingLeft: 0,
         flex: 0,
         fontFamily: 'Open Sans',
         fontStyle: 'normal',
