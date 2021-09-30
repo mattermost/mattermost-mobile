@@ -14,7 +14,7 @@ import {switchMap} from 'rxjs/operators';
 
 import {selectEmojisBySection} from '@actions/local/custom_emoji';
 import {getCustomEmojis} from '@actions/remote/custom_emoji';
-import {Device} from '@constants';
+import {Device, Emoji} from '@constants';
 import {MM_TABLES, SYSTEM_IDENTIFIERS} from '@constants/database';
 import {WithDatabaseArgs} from '@typings/database/database';
 import SystemModel from '@typings/database/models/servers/system';
@@ -361,7 +361,7 @@ class EmojiPicker extends PureComponent<ConnectedEmojiPickerProps, EmojiPickerSt
             return;
         }
 
-        const {data} = await getCustomEmojis(serverUrl, customEmojiPage, EMOJIS_PER_PAGE);
+        const {data} = await getCustomEmojis(serverUrl, customEmojiPage, EMOJIS_PER_PAGE, Emoji.SORT_BY_NAME, true);
 
         this.setState({loadingMore: false});
 

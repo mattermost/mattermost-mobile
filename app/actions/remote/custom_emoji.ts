@@ -3,6 +3,7 @@
 
 import {logError} from '@actions/remote/error';
 import {forceLogoutIfNecessary} from '@actions/remote/session';
+import {fetchUsersByIds} from '@actions/remote/user';
 import {Client} from '@client/rest';
 import {Emoji, General} from '@constants';
 import NetworkManager from '@init/network_manager';
@@ -18,21 +19,16 @@ export const getCustomEmojis = async (serverUrl: string, page = 0, perPage: numb
 
     try {
         data = await client.getCustomEmojis(page, perPage, sort);
+        const userIds = data.map((customEmoji) => customEmoji.creator_id);
+
+        if (loadUsers) {
+            fetchUsersByIds(serverUrl, userIds);
+        }
     } catch (error) {
         forceLogoutIfNecessary(serverUrl, error);
         logError(error);
         return {error};
     }
-
-    //fixme: fix the below code
-    // if (loadUsers) {
-    //     dispatch(loadProfilesForCustomEmojis(data));
-    // }
-    //
-    // dispatch({
-    //     type: EmojiTypes.RECEIVED_CUSTOM_EMOJIS,
-    //     data,
-    // });
 
     return {data};
 };

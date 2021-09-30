@@ -330,7 +330,6 @@ export const fetchUsersByIds = async (serverUrl: string, userIds: string[], fetc
         const exisingUsers = await queryUsersById(operator.database, userIds);
         const usersToLoad = userIds.filter((id) => (id !== currentUserId && !exisingUsers.find((u) => u.id === id)));
         const users = await client.getProfilesByIds([...new Set(usersToLoad)]);
-
         if (!fetchOnly) {
             await operator.handleUsers({
                 users,
