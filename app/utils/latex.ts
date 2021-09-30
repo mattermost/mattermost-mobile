@@ -20,7 +20,7 @@ export function splitLatexCodeInLines(content: string): Array<string> {
         } else if (i === outLines.length - 2) {
             outLines = outLines.slice(0, i).concat([outLines[i] + '\\\\' + outLines[i + 1]]);
         } else {
-            return outLines;
+            break;
         }
     }
 
