@@ -239,7 +239,7 @@ PODS:
   - React-jsinspector (0.65.1)
   - react-native-cameraroll (4.0.4):
     - React-Core
-  - react-native-cookies (6.0.10):
+  - react-native-cookies (6.0.11):
     - React-Core
   - react-native-document-picker (6.0.4):
     - React-Core
@@ -249,7 +249,7 @@ PODS:
     - React-Core
   - react-native-local-auth (1.6.0):
     - React
-  - react-native-mmkv-storage (0.6.3):
+  - react-native-mmkv-storage (0.6.4):
     - MMKV (= 1.2.10)
     - React-Core
   - react-native-netinfo (6.0.2):
@@ -272,7 +272,7 @@ PODS:
     - react-native-video/Video (= 5.1.1)
   - react-native-video/Video (5.1.1):
     - React-Core
-  - react-native-webview (11.13.0):
+  - react-native-webview (11.13.1):
     - React-Core
   - React-perflogger (0.65.1)
   - React-RCTActionSheet (0.65.1):
@@ -367,7 +367,7 @@ PODS:
     - React-Core
     - React-Core/DevSupport
     - React-RCTNetwork
-  - RNFastImage (8.5.8):
+  - RNFastImage (8.5.11):
     - React-Core
     - SDWebImage (~> 5.11.1)
     - SDWebImageWebPCoder (~> 0.8.4)
@@ -377,7 +377,7 @@ PODS:
     - React-Core
   - RNKeychain (7.0.0):
     - React-Core
-  - RNLocalize (2.1.4):
+  - RNLocalize (2.1.5):
     - React-Core
   - RNPermissions (3.0.5):
     - React-Core
@@ -415,7 +415,7 @@ PODS:
   - RNRudderSdk (1.0.0):
     - React
     - Rudder (>= 1.0.20)
-  - RNScreens (3.7.2):
+  - RNScreens (3.8.0):
     - React-Core
     - React-RCTImage
   - RNSentry (3.1.1):
@@ -522,7 +522,7 @@ DEPENDENCIES:
   - RNSVG (from `../node_modules/react-native-svg`)
   - RNVectorIcons (from `../node_modules/react-native-vector-icons`)
   - Swime (= 3.0.6)
-  - XCDYouTubeKit (from `https://github.com/hinge-agency/XCDYouTubeKit.git`, branch `fix/issue-534-XCDYouTubeVideoErrorDomain-error-code-3`)
+  - XCDYouTubeKit (from `https://github.com/KODIKAS-NL/XCDYouTubeKit.git`, commit `7c5ea8fe159d096a8f2cdc88c29bb6e4ac79dcde`, branch `master`)
   - Yoga (from `../node_modules/react-native/ReactCommon/yoga`)
 
 SPEC REPOS:
@@ -693,15 +693,16 @@ EXTERNAL SOURCES:
   RNVectorIcons:
     :path: "../node_modules/react-native-vector-icons"
   XCDYouTubeKit:
-    :branch: fix/issue-534-XCDYouTubeVideoErrorDomain-error-code-3
-    :git: https://github.com/hinge-agency/XCDYouTubeKit.git
+    :branch: master
+    :commit: 7c5ea8fe159d096a8f2cdc88c29bb6e4ac79dcde
+    :git: https://github.com/KODIKAS-NL/XCDYouTubeKit.git
   Yoga:
     :path: "../node_modules/react-native/ReactCommon/yoga"
 
 CHECKOUT OPTIONS:
   XCDYouTubeKit:
-    :commit: 38170db3934e575ad4bfb782dedc544f304b482f
-    :git: https://github.com/hinge-agency/XCDYouTubeKit.git
+    :commit: 7c5ea8fe159d096a8f2cdc88c29bb6e4ac79dcde
+    :git: https://github.com/KODIKAS-NL/XCDYouTubeKit.git
 
 SPEC CHECKSUMS:
   boost-for-react-native: 39c7adb57c4e60d6c5479dd8623128eb5b3f0f2c
@@ -734,12 +735,12 @@ SPEC CHECKSUMS:
   React-jsiexecutor: 43f2542aed3c26e42175b339f8d37fe3dd683765
   React-jsinspector: 41e58e5b8e3e0bf061fdf725b03f2144014a8fb0
   react-native-cameraroll: 88f4e62d9ecd0e1f253abe4f685474f2ea14bfa2
-  react-native-cookies: 47ef7ec7839e99f738f6ee64fbb2d4d224e36a65
+  react-native-cookies: cd92f3824ed1e32a20802e8185101e14bb5b76da
   react-native-document-picker: a7950caaee8587002c9acbc7fe497a342094d93a
   react-native-hw-keyboard-event: b517cefb8d5c659a38049c582de85ff43337dc53
   react-native-image-picker: 92f51a85a62c2d829dcbd0dda5af99e6f988a113
   react-native-local-auth: 49d336dcf0cb0268a930100013a6525844093844
-  react-native-mmkv-storage: c9d4880c55b6c6728eeed49a4042043997cccf36
+  react-native-mmkv-storage: ef0108761e775232be39fda2f41fef040406d858
   react-native-netinfo: 92e6e4476eb8bf6fc2d7c0a6ca0a1406f663d73a
   react-native-notifications: 97c14bf84c64bd6a6eb7bdcdb916036d93d33428
   react-native-passcode-status: e78f76b3c8db613e6ced6bd40b54aa4f53374173
@@ -748,7 +749,7 @@ SPEC CHECKSUMS:
   react-native-safe-area-context: 584dc04881deb49474363f3be89e4ca0e854c057
   react-native-startup-time: 1a068b744ce5097a85ebe0fbff691b05961c324d
   react-native-video: 0bb76b6d6b77da3009611586c7dbf817b947f30e
-  react-native-webview: 133a6a5149f963259646e710b4545c67ef35d7c9
+  react-native-webview: 3680f8b7d2b62e97b781efdc5e74a39179b2a5e2
   React-perflogger: fd28ee1f2b5b150b00043f0301d96bd417fdc339
   React-RCTActionSheet: 7f3fa0855c346aa5d7c60f9ced16e067db6d29fa
   React-RCTAnimation: 2119a18ee26159004b001bc56404ca5dbaae6077
@@ -771,16 +772,16 @@ SPEC CHECKSUMS:
   RNDateTimePicker: 7658208086d86d09e1627b5c34ba0cf237c60140
   RNDeviceInfo: cc7de0772378f85d8f36ae439df20f05c590a651
   RNDevMenu: fd325b5554b61fe7f48d9205a3877cf5ee88cd7c
-  RNFastImage: adef7f9c9a7aeca0141807ee5a8be8a3eb240dd8
+  RNFastImage: 1f2cab428712a4baaf78d6169eaec7f622556dd7
   RNFileViewer: 83cc066ad795b1f986791d03b56fe0ee14b6a69f
   RNGestureHandler: a479ebd5ed4221a810967000735517df0d2db211
   RNKeychain: f75b8c8b2f17d3b2aa1f25b4a0ac5b83d947ff8f
-  RNLocalize: 7f1e5792b65a839af55a9552d05b3558b66d017e
+  RNLocalize: 74b82db20cc3895ccc25af992c644879bcec2815
   RNPermissions: 7043bacbf928eae25808275cfe73799b8f618911
   RNReactNativeHapticFeedback: 653a8c126a0f5e88ce15ffe280b3ff37e1fbb285
   RNReanimated: ad24db8af24e3fe1b5c462785bc3db8d5baae2ee
   RNRudderSdk: 9aa881c2bf754dc3b05e392340a5e3663a970f0a
-  RNScreens: 0591543e343c7444ea1756b6265d81a4295922c9
+  RNScreens: 6e1ea5787989f92b0671049b808aef64fa1ef98c
   RNSentry: 49abc89b0190b4c8afe0fa5d065f98e36cb53233
   RNShare: a22398d8d02336133e28bf8b6e0b47b31abade41
   RNSVG: 551acb6562324b1d52a4e0758f7ca0ec234e278f
@@ -794,6 +795,6 @@ SPEC CHECKSUMS:
   Yoga: aa0cb45287ebe1004c02a13f279c55a95f1572f4
   YoutubePlayer-in-WKWebView: cfbf46da51d7370662a695a8f351e5fa1d3e1008
 
-PODFILE CHECKSUM: f483866b9447c19a98b8e645e530f742d67a8aa5
+PODFILE CHECKSUM: 7e85da3529fca53891b73953a50095c822a1b868
 
 COCOAPODS: 1.10.2
