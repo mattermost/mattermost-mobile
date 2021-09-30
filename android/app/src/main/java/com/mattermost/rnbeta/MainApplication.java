@@ -57,7 +57,6 @@ private final ReactNativeHost mReactNativeHost =
       // Packages that cannot be auto linked yet can be added manually here, for example:
       // packages.add(new MyReactNativePackage());
       packages.add(new RNNotificationsPackage(MainApplication.this));
-      packages.add(new RNPasteableTextInputPackage());
       packages.add(
         new TurboReactPackage() {
               @Override
