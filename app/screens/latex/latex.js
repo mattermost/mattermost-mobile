@@ -1,10 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import PropTypes from 'prop-types';
 import React from 'react';
 import {
-    BackHandler,
     ScrollView,
     Text,
     View,
@@ -13,29 +11,12 @@ import {
 import MathView from 'react-native-math-view';
 import {SafeAreaView} from 'react-native-safe-area-context';
 
-import {popTopScreen} from '@actions/navigation';
 import {splitLatexCodeInLines} from '@utils/latex';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 
-export default class Latex extends React.PureComponent {
-    static propTypes = {
-        theme: PropTypes.object.isRequired,
-        content: PropTypes.string.isRequired,
-    };
+import Code from '../code/code';
 
-    componentDidMount() {
-        BackHandler.addEventListener('hardwareBackPress', this.handleAndroidBack);
-    }
-
-    componentWillUnmount() {
-        BackHandler.removeEventListener('hardwareBackPress', this.handleAndroidBack);
-    }
-
-    handleAndroidBack = () => {
-        popTopScreen();
-        return true;
-    };
-
+export default class Latex extends Code {
     onErrorMessage = (errorMsg) => {
         const style = getStyleSheet(this.props.theme);
 
