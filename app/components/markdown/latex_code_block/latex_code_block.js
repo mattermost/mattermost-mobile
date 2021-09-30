@@ -18,10 +18,6 @@ import MarkdownCodeBlock from '../markdown_code_block/markdown_code_block';
 const MAX_LINES = 2;
 
 export default class LatexCodeBlock extends MarkdownCodeBlock {
-    static defaultProps = {
-        language: 'latex',
-    };
-
     handlePress = preventDoubleTap(() => {
         const {language, content} = this.props;
         const {intl} = this.context;
@@ -93,18 +89,16 @@ export default class LatexCodeBlock extends MarkdownCodeBlock {
         const style = getStyleSheet(this.props.theme);
 
         let language = null;
-        if (this.props.language) {
-            const languageDisplayName = getDisplayNameForLanguage(this.props.language);
+        const languageDisplayName = getDisplayNameForLanguage('latex');
 
-            if (languageDisplayName) {
-                language = (
-                    <View style={style.language}>
-                        <Text style={style.languageText}>
-                            {languageDisplayName}
-                        </Text>
-                    </View>
-                );
-            }
+        if (languageDisplayName) {
+            language = (
+                <View style={style.language}>
+                    <Text style={style.languageText}>
+                        {languageDisplayName}
+                    </Text>
+                </View>
+            );
         }
 
         const {content, numberOfLines} = this.trimContent(this.props.content);
