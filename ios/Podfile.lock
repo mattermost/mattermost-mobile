@@ -4,21 +4,20 @@ PODS:
   - BVLinearGradient (2.5.6):
     - React
   - DoubleConversion (1.1.6)
-  - EXConstants (11.0.2):
+  - EXConstants (12.0.0):
     - ExpoModulesCore
-    - UMCore
-  - EXFileSystem (11.1.3):
+  - EXErrorRecovery (3.0.0):
     - ExpoModulesCore
-    - UMCore
-  - ExpoModulesCore (0.2.0):
-    - ExpoModulesCore/Core (= 0.2.0)
-    - ExpoModulesCore/Interfaces (= 0.2.0)
-    - UMCore
-  - ExpoModulesCore/Core (0.2.0):
-    - UMCore
-  - ExpoModulesCore/Interfaces (0.2.0):
-    - ExpoModulesCore/Core
-    - UMCore
+  - EXFileSystem (13.0.0):
+    - ExpoModulesCore
+  - EXFont (10.0.0):
+    - ExpoModulesCore
+  - EXKeepAwake (10.0.0):
+    - ExpoModulesCore
+  - Expo (43.0.0-beta.2):
+    - ExpoModulesCore
+  - ExpoModulesCore (0.4.1):
+    - React-Core
   - FBLazyVector (0.65.1)
   - FBReactNativeSpec (0.65.1):
     - RCT-Folly (= 2021.04.26.00)
@@ -244,7 +243,7 @@ PODS:
   - React-jsinspector (0.65.1)
   - react-native-cameraroll (4.0.4):
     - React-Core
-  - react-native-cookies (6.0.10):
+  - react-native-cookies (6.0.11):
     - React-Core
   - react-native-document-picker (6.0.4):
     - React-Core
@@ -261,7 +260,7 @@ PODS:
     - SwiftyJSON (~> 5.0)
   - react-native-notifications (4.1.2):
     - React-Core
-  - react-native-paste-input (0.1.4):
+  - react-native-paste-input (0.2.0):
     - React-Core
     - Swime (= 3.0.6)
   - react-native-safe-area-context (3.3.2):
@@ -271,7 +270,7 @@ PODS:
     - react-native-video/Video (= 5.1.1)
   - react-native-video/Video (5.1.1):
     - React-Core
-  - react-native-webview (11.13.0):
+  - react-native-webview (11.13.1):
     - React-Core
   - React-perflogger (0.65.1)
   - React-RCTActionSheet (0.65.1):
@@ -364,7 +363,7 @@ PODS:
     - React-Core
     - React-Core/DevSupport
     - React-RCTNetwork
-  - RNFastImage (8.5.8):
+  - RNFastImage (8.5.11):
     - React-Core
     - SDWebImage (~> 5.11.1)
     - SDWebImageWebPCoder (~> 0.8.4)
@@ -374,7 +373,7 @@ PODS:
     - React-Core
   - RNKeychain (7.0.0):
     - React-Core
-  - RNLocalize (2.1.4):
+  - RNLocalize (2.1.5):
     - React-Core
   - RNPermissions (3.0.5):
     - React-Core
@@ -412,7 +411,7 @@ PODS:
   - RNRudderSdk (1.0.0):
     - React
     - Rudder (>= 1.0.20)
-  - RNScreens (3.7.2):
+  - RNScreens (3.8.0):
     - React-Core
     - React-RCTImage
   - RNSentry (3.1.1):
@@ -438,14 +437,9 @@ PODS:
   - Starscream (4.0.4)
   - SwiftyJSON (5.0.1)
   - Swime (3.0.6)
-  - UMAppLoader (2.2.0)
-  - UMCore (7.1.2)
-  - UMReactNativeAdapter (6.3.7):
+  - UMAppLoader (3.0.0)
+  - UMTaskManagerInterface (7.0.0):
     - ExpoModulesCore
-    - React-Core
-    - UMCore
-  - UMTaskManagerInterface (6.2.0):
-    - UMCore
   - WatermelonDB (0.23.0):
     - React
     - React-jsi
@@ -457,7 +451,11 @@ DEPENDENCIES:
   - BVLinearGradient (from `../node_modules/react-native-linear-gradient`)
   - DoubleConversion (from `../node_modules/react-native/third-party-podspecs/DoubleConversion.podspec`)
   - EXConstants (from `../node_modules/expo-constants/ios`)
+  - EXErrorRecovery (from `../node_modules/expo-error-recovery/ios`)
   - EXFileSystem (from `../node_modules/expo-file-system/ios`)
+  - EXFont (from `../node_modules/expo-font/ios`)
+  - EXKeepAwake (from `../node_modules/expo-keep-awake/ios`)
+  - Expo (from `../node_modules/expo/ios`)
   - ExpoModulesCore (from `../node_modules/expo-modules-core/ios`)
   - FBLazyVector (from `../node_modules/react-native/Libraries/FBLazyVector`)
   - FBReactNativeSpec (from `../node_modules/react-native/React/FBReactNativeSpec`)
@@ -530,8 +528,6 @@ DEPENDENCIES:
   - Starscream (from `https://github.com/mattermost/Starscream.git`, commit `1b4b93708fb63d2665625a11e57461772a65364a`)
   - Swime (= 3.0.6)
   - UMAppLoader (from `../node_modules/unimodules-app-loader/ios`)
-  - "UMCore (from `../node_modules/@unimodules/core/ios`)"
-  - "UMReactNativeAdapter (from `../node_modules/@unimodules/react-native-adapter/ios`)"
   - UMTaskManagerInterface (from `../node_modules/unimodules-task-manager-interface/ios`)
   - "WatermelonDB (from `../node_modules/@nozbe/watermelondb`)"
   - XCDYouTubeKit (= 2.8.2)
@@ -559,8 +555,16 @@ EXTERNAL SOURCES:
     :podspec: "../node_modules/react-native/third-party-podspecs/DoubleConversion.podspec"
   EXConstants:
     :path: "../node_modules/expo-constants/ios"
+  EXErrorRecovery:
+    :path: "../node_modules/expo-error-recovery/ios"
   EXFileSystem:
     :path: "../node_modules/expo-file-system/ios"
+  EXFont:
+    :path: "../node_modules/expo-font/ios"
+  EXKeepAwake:
+    :path: "../node_modules/expo-keep-awake/ios"
+  Expo:
+    :path: "../node_modules/expo/ios"
   ExpoModulesCore:
     :path: "../node_modules/expo-modules-core/ios"
   FBLazyVector:
@@ -700,10 +704,6 @@ EXTERNAL SOURCES:
     :git: https://github.com/mattermost/Starscream.git
   UMAppLoader:
     :path: "../node_modules/unimodules-app-loader/ios"
-  UMCore:
-    :path: "../node_modules/@unimodules/core/ios"
-  UMReactNativeAdapter:
-    :path: "../node_modules/@unimodules/react-native-adapter/ios"
   UMTaskManagerInterface:
     :path: "../node_modules/unimodules-task-manager-interface/ios"
   WatermelonDB:
@@ -721,9 +721,13 @@ SPEC CHECKSUMS:
   boost-for-react-native: 39c7adb57c4e60d6c5479dd8623128eb5b3f0f2c
   BVLinearGradient: e3aad03778a456d77928f594a649e96995f1c872
   DoubleConversion: 831926d9b8bf8166fd87886c4abab286c2422662
-  EXConstants: 4cb52b6d8f636c767104a44bf7db3873e9c01a6f
-  EXFileSystem: 0a04aba8da751b9ac954065911bcf166503f8267
-  ExpoModulesCore: 2734852616127a6c1fc23012197890a6f3763dc7
+  EXConstants: b14b472da01b8191c1cfe86f29caa1e0c6a46bed
+  EXErrorRecovery: 5c6809f41216275516e6283138d54c993ffe4c89
+  EXFileSystem: b96409b960006d667f9c4489aead40beba901458
+  EXFont: d174dd294c32beeaad2c4ff70eed84a0f60fad6f
+  EXKeepAwake: 8aa32396a5972d26e75e538603aad0f032396503
+  Expo: 429dc60983eb2466cd62053335c6e2426baaf2a0
+  ExpoModulesCore: 8185e4de18e1e8bdf58e6387af51b7b1cb2ea1b7
   FBLazyVector: 33c82491102f20ecddb6c6a2c273696ace3191e0
   FBReactNativeSpec: df8f81d2a7541ee6755a047b398a5cb5a72acd0e
   fmt: ff9d55029c625d3757ed641535fd4a75fedc7ce9
@@ -745,17 +749,17 @@ SPEC CHECKSUMS:
   React-jsiexecutor: 43f2542aed3c26e42175b339f8d37fe3dd683765
   React-jsinspector: 41e58e5b8e3e0bf061fdf725b03f2144014a8fb0
   react-native-cameraroll: 88f4e62d9ecd0e1f253abe4f685474f2ea14bfa2
-  react-native-cookies: 47ef7ec7839e99f738f6ee64fbb2d4d224e36a65
+  react-native-cookies: cd92f3824ed1e32a20802e8185101e14bb5b76da
   react-native-document-picker: a7950caaee8587002c9acbc7fe497a342094d93a
   react-native-emm: 7b22d6d2f7f68d218e5e2a6149084f0e6bbc4f5e
   react-native-hw-keyboard-event: b517cefb8d5c659a38049c582de85ff43337dc53
   react-native-netinfo: 92e6e4476eb8bf6fc2d7c0a6ca0a1406f663d73a
   react-native-network-client: 30ab97e7e6c8d6f2d2b10cc1ebad0cbf9c894c6e
   react-native-notifications: 97c14bf84c64bd6a6eb7bdcdb916036d93d33428
-  react-native-paste-input: 4d6ecc3875153212b5503b6da093277db4ace241
+  react-native-paste-input: 5da631cf8210a9e61d577f987f7fb8b0ef966121
   react-native-safe-area-context: 584dc04881deb49474363f3be89e4ca0e854c057
   react-native-video: 0bb76b6d6b77da3009611586c7dbf817b947f30e
-  react-native-webview: 133a6a5149f963259646e710b4545c67ef35d7c9
+  react-native-webview: 3680f8b7d2b62e97b781efdc5e74a39179b2a5e2
   React-perflogger: fd28ee1f2b5b150b00043f0301d96bd417fdc339
   React-RCTActionSheet: 7f3fa0855c346aa5d7c60f9ced16e067db6d29fa
   React-RCTAnimation: 2119a18ee26159004b001bc56404ca5dbaae6077
@@ -777,16 +781,16 @@ SPEC CHECKSUMS:
   RNCMaskedView: 0e1bc4bfa8365eba5fbbb71e07fbdc0555249489
   RNDeviceInfo: cc7de0772378f85d8f36ae439df20f05c590a651
   RNDevMenu: fd325b5554b61fe7f48d9205a3877cf5ee88cd7c
-  RNFastImage: adef7f9c9a7aeca0141807ee5a8be8a3eb240dd8
+  RNFastImage: 1f2cab428712a4baaf78d6169eaec7f622556dd7
   RNFileViewer: 83cc066ad795b1f986791d03b56fe0ee14b6a69f
   RNGestureHandler: a479ebd5ed4221a810967000735517df0d2db211
   RNKeychain: f75b8c8b2f17d3b2aa1f25b4a0ac5b83d947ff8f
-  RNLocalize: 7f1e5792b65a839af55a9552d05b3558b66d017e
+  RNLocalize: 74b82db20cc3895ccc25af992c644879bcec2815
   RNPermissions: 7043bacbf928eae25808275cfe73799b8f618911
   RNReactNativeHapticFeedback: 653a8c126a0f5e88ce15ffe280b3ff37e1fbb285
   RNReanimated: ad24db8af24e3fe1b5c462785bc3db8d5baae2ee
   RNRudderSdk: 9aa881c2bf754dc3b05e392340a5e3663a970f0a
-  RNScreens: 0591543e343c7444ea1756b6265d81a4295922c9
+  RNScreens: 6e1ea5787989f92b0671049b808aef64fa1ef98c
   RNSentry: 49abc89b0190b4c8afe0fa5d065f98e36cb53233
   RNShare: a22398d8d02336133e28bf8b6e0b47b31abade41
   RNSVG: 551acb6562324b1d52a4e0758f7ca0ec234e278f
@@ -799,10 +803,8 @@ SPEC CHECKSUMS:
   Starscream: 5178aed56b316f13fa3bc55694e583d35dd414d9
   SwiftyJSON: 2f33a42c6fbc52764d96f13368585094bfd8aa5e
   Swime: d7b2c277503b6cea317774aedc2dce05613f8b0b
-  UMAppLoader: 21af63390e55c82e037fb9752d93114a80ecf16e
-  UMCore: ce3a4faa010239063b8343895b29a6d97b01069d
-  UMReactNativeAdapter: bb7922210cf6fdb5768f78685f3c3a2060299119
-  UMTaskManagerInterface: 2be431101b73604e64fbfffcf759336f9d8fccbb
+  UMAppLoader: 671576daa3fd3017d4879a5f23fc0dd3b36422a8
+  UMTaskManagerInterface: ab9c907a9e0eccf6bd9e16245d30e456cfb0eb37
   WatermelonDB: 577c61fceff16e9f9103b59d14aee4850c0307b6
   XCDYouTubeKit: 79baadb0560673a67c771eba45f83e353fd12c1f
   Yoga: aa0cb45287ebe1004c02a13f279c55a95f1572f4
