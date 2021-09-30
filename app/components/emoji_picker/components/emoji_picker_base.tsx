@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback} from 'react';
+import React from 'react';
 import {useIntl} from 'react-intl';
 import {
     KeyboardAvoidingView,
@@ -41,7 +41,7 @@ type Props = {
     onScroll: (e: NativeSyntheticEvent<NativeScrollEvent>) => void;
     onSetSearchBarRef: (ref: any) => void;
     onSetSectionListRef: (ref: any) => void;
-    searchTerm: string;
+    searchTerm: string | undefined;
     testID: string;
     theme: Theme;
 };
@@ -77,7 +77,7 @@ const EmojiPicker = ({
     const searchBarTestID = `${testID}.search_bar`;
     const styles = getStyleSheetFromTheme(theme);
 
-    const renderSearchBar = useCallback(() => {
+    const renderSearchBar = () => {
         const searchBarInput = {
             backgroundColor: theme.centerChannelBg,
             color: theme.centerChannelColor,
@@ -110,9 +110,9 @@ const EmojiPicker = ({
                 />
             </View>
         );
-    }, []);
+    };
 
-    const renderSectionIcons = useCallback(() => {
+    const renderSectionIcons = () => {
         return (
             <SectionIcons
                 currentSectionIndex={currentSectionIndex}
@@ -120,13 +120,9 @@ const EmojiPicker = ({
                 onHandleSectionIconPress={onHandleSectionIconPress}
             />
         );
-    }, []);
+    };
 
-    const getSectionIcons = useCallback(() => {
-        if (searchTerm) {
-            return null;
-        }
-
+    const getSectionIcons = () => {
         const getSections = () => {
             return (
                 <View style={styles.bottomContentWrapper}>
@@ -149,7 +145,7 @@ const EmojiPicker = ({
                 {getSections()}
             </KeyboardTrackingView>
         );
-    }, []);
+    };
 
     const renderListComponent = (margin: number) => {
         if (searchTerm) {
@@ -186,7 +182,7 @@ const EmojiPicker = ({
                 {renderSearchBar()}
                 <View style={styles.container}>
                     {renderListComponent(isAndroid ? 2 : shorten)}
-                    {getSectionIcons()}
+                    {!searchTerm && getSectionIcons()}
                 </View>
             </React.Fragment>
         );

@@ -41,7 +41,7 @@ const EmojiSectionList = ({
     const theme = useTheme();
     const styles = getStyleSheetFromTheme(theme);
 
-    const renderSectionItem = ({item, section}) => {
+    const renderSectionItem = ({item, section}: {item: EmojisData; section: RenderableEmojis}) => {
         return (
             <EmojiPickerRow
                 emojiGutter={EMOJI_GUTTER}

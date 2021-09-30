@@ -51,7 +51,7 @@ type EmojiPickerState = {
     jumpToSection: boolean;
     loadingMore: boolean;
     missingPages: boolean;
-    searchTerm: string;
+    searchTerm: string | undefined;
 };
 
 type ConnectedEmojiPickerProps = EmojiPickerProps & {
@@ -93,7 +93,7 @@ class EmojiPicker extends PureComponent<ConnectedEmojiPickerProps, EmojiPickerSt
             jumpToSection: false, // fixme : should it be false or null
             loadingMore: false,
             missingPages: true,
-            searchTerm: '',
+            searchTerm: undefined,
 
         //    customEmojiPage : fixme : track this value in State
         };
@@ -254,7 +254,7 @@ class EmojiPicker extends PureComponent<ConnectedEmojiPickerProps, EmojiPickerSt
         this.setState({
             currentSectionIndex: 0,
             filteredEmojis: [],
-            searchTerm: '',
+            searchTerm: undefined,
         });
     };
 
