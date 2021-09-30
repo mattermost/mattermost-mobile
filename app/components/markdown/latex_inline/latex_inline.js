@@ -49,7 +49,7 @@ export default class LatexInline extends PureComponent {
     }
 }
 
-const getStyleSheet = makeStyleSheetFromTheme(() => {
+const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     return {
         mathStyle: {
             marginBottom: -7,
@@ -60,7 +60,7 @@ const getStyleSheet = makeStyleSheetFromTheme(() => {
         },
         errorText: {
             flexDirection: 'row',
-            color: 'rgb(255, 0, 0)',
+            color: theme.errorTextColor,
             flexWrap: 'wrap',
         },
     };

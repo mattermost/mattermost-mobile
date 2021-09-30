@@ -87,7 +87,7 @@ export default class Latex extends React.PureComponent {
     }
 }
 
-const getStyleSheet = makeStyleSheetFromTheme(() => {
+const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     const codeVerticalPadding = Platform.select({
         ios: 4,
         android: 0,
@@ -115,7 +115,7 @@ const getStyleSheet = makeStyleSheetFromTheme(() => {
         errorText: {
             fontSize: 14,
             marginHorizontal: 5,
-            color: 'rgb(255, 0, 0)',
+            color: theme.errorTextColor,
         },
     };
 });

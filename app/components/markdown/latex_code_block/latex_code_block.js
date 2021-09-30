@@ -206,7 +206,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         errorText: {
             fontSize: 14,
             marginHorizontal: 5,
-            color: 'rgb(255, 0, 0)',
+            color: theme.errorTextColor,
         },
     };
 });
