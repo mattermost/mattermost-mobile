@@ -73,11 +73,11 @@ x(n - 1), & \\text{for } 0 \\leq n \\leq 1
     });
 
     test('Escaping Function', () => {
-        const content = 'this is some text and then there is $latex _code_ here with symbols **bold** ~~~strike~~ `Inline code` $ and then there is more text';
+        const content = 'this is some text and then there is $latex _code_ here with symbols **bold** ~~strike~~ `Inline code` $ and then there is more text';
 
         const result = escapeLatexInputPreParser(content);
 
-        expect(result).toEqual(content.replace(/_/g, '\\_').replace(/\*\*/g, '\\*\\*').replace(/~~/g, '\\~\\~').replace(/`/g, '\\`'));
+        expect(result).toEqual('this is some text and then there is $latex \\_code\\_ here with symbols \\*\\*bold\\*\\* \\~\\~strike\\~\\~ \\`Inline code\\` $ and then there is more text');
 
         expect(unEscapeLatexCodeInText(result)).toEqual(content);
     });
