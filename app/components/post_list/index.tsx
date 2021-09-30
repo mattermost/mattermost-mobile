@@ -214,8 +214,8 @@ const PostList = ({currentTimezone, currentUsername, isTimezoneEnabled, lastView
                 keyExtractor={(item) => (typeof item === 'string' ? item : item.id)}
                 style={{flex: 1}}
                 contentContainerStyle={{paddingTop: 5}}
-                initialNumToRender={10}
-                maxToRenderPerBatch={Platform.select({android: 5})}
+                initialNumToRender={25}
+                maxToRenderPerBatch={25}
                 removeClippedSubviews={true}
                 onViewableItemsChanged={onViewableItemsChanged}
                 viewabilityConfig={VIEWABILITY_CONFIG}

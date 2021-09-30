@@ -11,10 +11,12 @@ import {getServerCredentials} from '@init/credentials';
 import NetworkManager from '@init/network_manager';
 import {queryCommonSystemValues} from '@queries/servers/system';
 
+import type ClientError from '@client/rest/error';
+
 export type ConfigAndLicenseRequest = {
     config?: ClientConfig;
     license?: ClientLicense;
-    error?: never;
+    error?: unknown;
 }
 
 export const fetchDataRetentionPolicy = async (serverUrl: string) => {
@@ -29,7 +31,7 @@ export const fetchDataRetentionPolicy = async (serverUrl: string) => {
     try {
         data = await client.getDataRetentionPolicy();
     } catch (error) {
-        forceLogoutIfNecessary(serverUrl, error);
+        forceLogoutIfNecessary(serverUrl, error as ClientError);
 
         logError(error);
         return {error};
@@ -99,7 +101,7 @@ export const fetchConfigAndLicense = async (serverUrl: string, fetchOnly = false
 
         return {config, license};
     } catch (error) {
-        forceLogoutIfNecessary(serverUrl, error);
+        forceLogoutIfNecessary(serverUrl, error as ClientError);
         return {error};
     }
 };

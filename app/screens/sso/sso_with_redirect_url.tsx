@@ -87,10 +87,10 @@ const SSOWithRedirectURL = ({doSSOLogin, loginError, loginUrl, serverUrl, setLog
             }
         };
 
-        Linking.addEventListener('url', onURLChange);
+        const listener = Linking.addEventListener('url', onURLChange);
         init(false);
         return () => {
-            Linking.removeEventListener('url', onURLChange);
+            listener.remove();
         };
     }, []);
 

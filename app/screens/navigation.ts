@@ -29,7 +29,7 @@ function getThemeFromState() {
     return Preferences.THEMES.denim;
 }
 
-export function resetToChannel(passProps = {}) {
+export function resetToHome(passProps = {}) {
     const theme = getThemeFromState();
 
     EphemeralStore.clearNavigationComponents();

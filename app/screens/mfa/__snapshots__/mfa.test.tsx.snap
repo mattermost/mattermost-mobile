@@ -101,7 +101,6 @@ exports[`*** MFA Screen *** MFA screen should match snapshot 1`] = `
         
       </Text>
       <TextInput
-        allowFontScaling={true}
         autoCapitalize="none"
         autoCorrect={false}
         disableFullscreenUI={true}
@@ -110,7 +109,6 @@ exports[`*** MFA Screen *** MFA screen should match snapshot 1`] = `
         onSubmitEditing={[Function]}
         placeholder="MFA Token"
         placeholderTextColor="rgba(63,67,80,0.5)"
-        rejectResponderTermination={true}
         returnKeyType="go"
         style={
           Object {
@@ -133,7 +131,9 @@ exports[`*** MFA Screen *** MFA screen should match snapshot 1`] = `
       <View
         accessibilityRole="button"
         accessible={true}
+        collapsable={false}
         focusable={true}
+        nativeID="animatedComponent"
         onClick={[Function]}
         onResponderGrant={[Function]}
         onResponderMove={[Function]}

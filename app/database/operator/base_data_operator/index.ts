@@ -187,7 +187,7 @@ export default class BaseDataOperator {
                 });
             }
         } catch (e) {
-            throw new DataOperatorException('batchRecords error ', e);
+            throw new DataOperatorException('batchRecords error ', e as Error);
         }
     };
 

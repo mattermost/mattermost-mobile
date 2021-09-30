@@ -94,7 +94,7 @@ const DocumentFile = forwardRef<DocumentFileRef, DocumentFileProps>(({background
             setDownloading(false);
             setProgress(0);
 
-            if (error.message !== 'cancelled') {
+            if ((error as Error).message !== 'cancelled') {
                 alertDownloadFailed(intl);
             }
         }

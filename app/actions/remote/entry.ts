@@ -8,22 +8,26 @@ import {General, Preferences} from '@constants';
 import DatabaseManager from '@database/manager';
 import {getPreferenceValue, getTeammateNameDisplaySetting} from '@helpers/api/preference';
 import {selectDefaultTeam} from '@helpers/api/team';
+import {DEFAULT_LOCALE} from '@i18n';
 import NetworkManager from '@init/network_manager';
-import {prepareMyChannelsForTeam} from '@queries/servers/channel';
-import {prepareMyPreferences} from '@queries/servers/preference';
-import {prepareCommonSystemValues} from '@queries/servers/system';
-import {addChannelToTeamHistory, prepareMyTeams} from '@queries/servers/team';
+import {queryAllChannelsForTeam, queryChannelsById} from '@queries/servers/channel';
+import {prepareModels} from '@queries/servers/entry';
+import {prepareCommonSystemValues, queryCommonSystemValues, queryConfig, queryCurrentTeamId, queryWebSocketLastDisconnected, setCurrentTeamAndChannelId} from '@queries/servers/system';
+import {addChannelToTeamHistory, deleteMyTeams, queryAvailableTeamIds, queryMyTeams, queryTeamsById} from '@queries/servers/team';
+import {queryCurrentUser} from '@queries/servers/user';
 import {selectDefaultChannelForTeam} from '@utils/channel';
 
 import {fetchMissingSidebarInfo, fetchMyChannelsForTeam, MyChannelsRequest} from './channel';
 import {fetchGroupsForTeam} from './group';
 import {fetchPostsForChannel, fetchPostsForUnreadChannels} from './post';
 import {MyPreferencesRequest, fetchMyPreferences} from './preference';
-import {fetchRolesIfNeeded} from './role';
+import {fetchRoles, fetchRolesIfNeeded} from './role';
 import {ConfigAndLicenseRequest, fetchConfigAndLicense} from './systems';
 import {fetchMyTeams, fetchTeamsChannelsAndUnreadPosts, MyTeamsRequest} from './team';
+import {fetchMe, MyUserRequest} from './user';
 
 import type {Client} from '@client/rest';
+import type ClientError from '@client/rest/error';
 
 type AfterLoginArgs = {
     serverUrl: string;
@@ -31,10 +35,77 @@ type AfterLoginArgs = {
     deviceToken?: string;
 }
 
+type AppEntryData = {
+    initialTeamId: string;
+    teamData: MyTeamsRequest;
+    chData?: MyChannelsRequest;
+    prefData: MyPreferencesRequest;
+    meData: MyUserRequest;
+    removeTeamIds?: string[];
+    removeChannelIds?: string[];
+}
+
+type AppEntryError = {
+    error?: Error | ClientError | string;
+}
+
+export const appEntry = async (serverUrl: string) => {
+    const dt = Date.now();
+
+    const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
+    if (!operator) {
+        return {error: `${serverUrl} database not found`};
+    }
+    const {database} = operator;
+
+    const currentTeamId = await queryCurrentTeamId(database);
+    const fetchedData = await fetchAppEntryData(serverUrl, currentTeamId);
+    const fetchedError = (fetchedData as AppEntryError).error;
+
+    if (fetchedError) {
+        return {error: fetchedError, time: Date.now() - dt};
+    }
+
+    const {initialTeamId, teamData, chData, prefData, meData, removeTeamIds, removeChannelIds} = fetchedData as AppEntryData;
+
+    if (initialTeamId !== currentTeamId) {
+        // Immediately set the new team as the current team in the database so that the UI
+        // renders the correct team.
+        setCurrentTeamAndChannelId(operator, initialTeamId, '');
+    }
+
+    let removeTeams;
+    if (removeTeamIds?.length) {
+        // Immediately delete myTeams so that the UI renders only teams the user is a member of.
+        removeTeams = await queryTeamsById(database, removeTeamIds);
+        await deleteMyTeams(operator, removeTeams!);
+    }
+
+    fetchRoles(serverUrl, teamData?.memberships, chData?.memberships, meData?.user);
+
+    let removeChannels;
+    if (removeChannelIds?.length) {
+        removeChannels = await queryChannelsById(database, removeChannelIds);
+    }
+
+    const modelPromises = await prepareModels({operator, initialTeamId, removeTeams, removeChannels, teamData, chData, prefData, meData});
+    const models = await Promise.all(modelPromises);
+    if (models.length) {
+        await operator.batchRecords(models.flat() as Model[]);
+    }
+
+    const {id: currentUserId, locale: currentUserLocale} = meData.user || (await queryCurrentUser(database))!;
+    const {config, license} = await queryCommonSystemValues(database);
+    deferredAppEntryActions(serverUrl, currentUserId, currentUserLocale, prefData.preferences, config, license, teamData, chData, initialTeamId);
+
+    const error = teamData.error || chData?.error || prefData.error || meData.error;
+    return {error, time: Date.now() - dt};
+};
+
 export const loginEntry = async ({serverUrl, user, deviceToken}: AfterLoginArgs) => {
     const dt = Date.now();
-    const database = DatabaseManager.serverDatabases[serverUrl]?.database;
-    if (!database) {
+    const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
+    if (!operator) {
         return {error: `${serverUrl} database not found`};
     }
 
@@ -111,29 +182,7 @@ export const loginEntry = async ({serverUrl, user, deviceToken}: AfterLoginArgs)
             }
         }
 
-        const modelPromises: Array<Promise<Model[]>> = [];
-        const {operator} = DatabaseManager.serverDatabases[serverUrl];
-
-        if (prefData.preferences) {
-            const prefModel = prepareMyPreferences(operator, prefData.preferences!);
-            if (prefModel) {
-                modelPromises.push(prefModel);
-            }
-        }
-
-        if (teamData.teams) {
-            const teamModels = prepareMyTeams(operator, teamData.teams!, teamData.memberships!, teamData.unreads!);
-            if (teamModels) {
-                modelPromises.push(...teamModels);
-            }
-        }
-
-        if (chData?.channels?.length) {
-            const channelModels = await prepareMyChannelsForTeam(operator, initialTeam!.id, chData.channels, chData.memberships!);
-            if (channelModels) {
-                modelPromises.push(...channelModels);
-            }
-        }
+        const modelPromises = await prepareModels({operator, teamData, chData, prefData, initialTeamId: initialTeam?.id});
 
         const systemModels = prepareCommonSystemValues(
             operator,
@@ -167,7 +216,6 @@ export const loginEntry = async ({serverUrl, user, deviceToken}: AfterLoginArgs)
         const error = clData.error || prefData.error || teamData.error || chData?.error;
         return {error, time: Date.now() - dt, hasTeams: Boolean((myTeams?.length || 0) > 0 && !teamData.error)};
     } catch (error) {
-        const {operator} = DatabaseManager.serverDatabases[serverUrl];
         const systemModels = await prepareCommonSystemValues(operator, {
             config: ({} as ClientConfig),
             license: ({} as ClientLicense),
@@ -179,6 +227,145 @@ export const loginEntry = async ({serverUrl, user, deviceToken}: AfterLoginArgs)
         }
 
         return {error};
+    }
+};
+
+const fetchAppEntryData = async (serverUrl: string, initialTeamId: string): Promise<AppEntryData | AppEntryError> => {
+    const database = DatabaseManager.serverDatabases[serverUrl]?.database;
+    if (!database) {
+        return {error: `${serverUrl} database not found`};
+    }
+
+    const lastDisconnected = await queryWebSocketLastDisconnected(database);
+    const includeDeletedChannels = true;
+    const fetchOnly = true;
+
+    // Fetch in parallel teams / team membership / team unreads / channels for current team / user preferences / user
+    const promises: [Promise<MyTeamsRequest>, Promise<MyChannelsRequest | undefined>, Promise<MyPreferencesRequest>, Promise<MyUserRequest>] = [
+        fetchMyTeams(serverUrl, fetchOnly),
+        initialTeamId ? fetchMyChannelsForTeam(serverUrl, initialTeamId, includeDeletedChannels, lastDisconnected, fetchOnly) : Promise.resolve(undefined),
+        fetchMyPreferences(serverUrl, fetchOnly),
+        fetchMe(serverUrl, fetchOnly),
+    ];
+
+    const resolution = await Promise.all(promises);
+    const [teamData, , prefData, meData] = resolution;
+    let [, chData] = resolution;
+
+    if (!initialTeamId && teamData.teams?.length && teamData.memberships?.length) {
+        // If no initial team was set in the database but got teams in the response
+        const config = await queryConfig(database);
+        const teamOrderPreference = getPreferenceValue(prefData.preferences || [], Preferences.TEAMS_ORDER, '', '') as string;
+        const teamMembers = teamData.memberships.map((m) => m.team_id);
+        const myTeams = teamData.teams!.filter((t) => teamMembers?.includes(t.id));
+        const defaultTeam = selectDefaultTeam(myTeams, meData.user?.locale || DEFAULT_LOCALE, teamOrderPreference, config.ExperimentalPrimaryTeam);
+        if (defaultTeam?.id) {
+            chData = await fetchMyChannelsForTeam(serverUrl, defaultTeam.id, includeDeletedChannels, lastDisconnected, fetchOnly);
+        }
+    }
+
+    let data: AppEntryData = {
+        initialTeamId,
+        teamData,
+        chData,
+        prefData,
+        meData,
+    };
+
+    if (teamData.teams?.length === 0) {
+        // User is no longer a member of any team
+        const myTeams = await queryMyTeams(database);
+        const removeTeamIds: string[] = myTeams?.map((myTeam) => myTeam.id) || [];
+
+        return {
+            ...data,
+            initialTeamId: '',
+            removeTeamIds,
+        };
+    }
+
+    const inTeam = teamData.teams?.find((t) => t.id === initialTeamId);
+    const chError = chData?.error as ClientError | undefined;
+    if (!inTeam || chError?.status_code === 403) {
+        // User is no longer a member of the current team
+        const removeTeamIds = [initialTeamId];
+
+        const availableTeamIds = await queryAvailableTeamIds(database, initialTeamId, teamData.teams, prefData.preferences, meData.user?.locale);
+        const alternateTeamData = await fetchAlternateTeamData(serverUrl, availableTeamIds, removeTeamIds, includeDeletedChannels, lastDisconnected, fetchOnly);
+
+        data = {
+            ...data,
+            ...alternateTeamData,
+        };
+    }
+
+    if (data.chData?.channels) {
+        const removeChannelIds: string[] = [];
+        const fetchedChannelIds = data.chData.channels.map((channel) => channel.id);
+
+        const channels = await queryAllChannelsForTeam(database, initialTeamId);
+        for (const channel of channels) {
+            if (!fetchedChannelIds.includes(channel.id)) {
+                removeChannelIds.push(channel.id);
+            }
+        }
+
+        data = {
+            ...data,
+            removeChannelIds,
+        };
+    }
+
+    return data;
+};
+
+const fetchAlternateTeamData = async (serverUrl: string, availableTeamIds: string[], removeTeamIds: string[], includeDeleted = true, since = 0, fetchOnly = false) => {
+    let initialTeamId = '';
+    let chData;
+
+    for (const teamId of availableTeamIds) {
+        // eslint-disable-next-line no-await-in-loop
+        chData = await fetchMyChannelsForTeam(serverUrl, teamId, includeDeleted, since, fetchOnly);
+        const chError = chData.error as ClientError | undefined;
+        if (chError?.status_code === 403) {
+            removeTeamIds.push(teamId);
+        } else {
+            initialTeamId = teamId;
+            break;
+        }
+    }
+
+    if (chData) {
+        return {initialTeamId, chData, removeTeamIds};
+    }
+
+    return {initialTeamId, removeTeamIds};
+};
+
+const deferredAppEntryActions = async (
+    serverUrl: string, currentUserId: string, currentUserLocale: string, preferences: PreferenceType[] | undefined, config: ClientConfig, license: ClientLicense, teamData: MyTeamsRequest,
+    chData: MyChannelsRequest | undefined, initialTeamId: string) => {
+    // defer sidebar DM & GM profiles
+    if (chData?.channels?.length && chData.memberships?.length) {
+        const directChannels = chData.channels.filter((c) => c.type === General.DM_CHANNEL || c.type === General.GM_CHANNEL);
+        const channelsToFetchProfiles = new Set<Channel>(directChannels);
+        if (channelsToFetchProfiles.size) {
+            const teammateDisplayNameSetting = getTeammateNameDisplaySetting(preferences || [], config, license);
+            await fetchMissingSidebarInfo(serverUrl, Array.from(channelsToFetchProfiles), currentUserLocale, teammateDisplayNameSetting, currentUserId);
+        }
+
+        // defer fetching posts for unread channels on initial team
+        fetchPostsForUnreadChannels(serverUrl, chData.channels, chData.memberships);
+    }
+
+    // defer groups for team
+    if (initialTeamId) {
+        await fetchGroupsForTeam(serverUrl, initialTeamId);
+    }
+
+    // defer fetch channels and unread posts for other teams
+    if (teamData.teams?.length && teamData.memberships?.length) {
+        fetchTeamsChannelsAndUnreadPosts(serverUrl, teamData.teams, teamData.memberships, initialTeamId);
     }
 };
 
