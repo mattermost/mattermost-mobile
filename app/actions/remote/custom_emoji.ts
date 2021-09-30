@@ -8,7 +8,15 @@ import {Client} from '@client/rest';
 import {Emoji, General} from '@constants';
 import NetworkManager from '@init/network_manager';
 
-export const getCustomEmojis = async (serverUrl: string, page = 0, perPage: number = General.PAGE_SIZE_DEFAULT, sort: string = Emoji.SORT_BY_NAME, loadUsers = false) => {
+type GetCustomEmojisArgs = {
+    serverUrl: string;
+    page?: number;
+    perPage?: number ;
+    sort?: string;
+    loadUsers?: boolean;
+}
+
+export const getCustomEmojis = async ({serverUrl, page = 0, perPage = General.PAGE_SIZE_DEFAULT, sort = Emoji.SORT_BY_NAME, loadUsers = false}: GetCustomEmojisArgs) => {
     let data;
     let client: Client;
     try {

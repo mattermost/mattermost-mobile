@@ -361,7 +361,7 @@ class EmojiPicker extends PureComponent<ConnectedEmojiPickerProps, EmojiPickerSt
             return;
         }
 
-        const {data} = await getCustomEmojis(serverUrl, customEmojiPage, EMOJIS_PER_PAGE, Emoji.SORT_BY_NAME, true);
+        const {data} = await getCustomEmojis({serverUrl, page: customEmojiPage, perPage: EMOJIS_PER_PAGE, loadUsers: true});
 
         this.setState({loadingMore: false});
 
