@@ -166,7 +166,7 @@ class Option extends React.PureComponent<OptionProps> {
 
         return (
             <PostOption
-                icon={{uri: binding.icon}}
+                icon={{uri: binding.icon!}}
                 text={binding.label}
                 onPress={this.onPress}
                 theme={theme}

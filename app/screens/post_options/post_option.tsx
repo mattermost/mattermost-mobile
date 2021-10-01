@@ -9,16 +9,20 @@ import {
     TouchableNativeFeedback,
     View,
 } from 'react-native';
+import FastImage from 'react-native-fast-image';
 
 import CompassIcon from '@components/compass_icon';
 import {Theme} from '@mm-redux/types/theme';
 import {preventDoubleTap} from '@utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
+import {isValidUrl} from '@utils/url';
 
 type Props = {
-    testID: string;
-    destructive: boolean;
-    icon: string;
+    testID?: string;
+    destructive?: boolean;
+    icon: string | {
+        uri: string;
+    };
     onPress: () => void;
     text: string;
     theme: Theme;
@@ -48,6 +52,31 @@ function ThreadOption({destructive, icon, onPress, testID, text, theme}: Props) 
         },
     });
 
+    const imageStyle = [style.icon, destructive ? style.destructive : null];
+    let image;
+    let iconStyle = [style.iconContainer];
+    if (typeof icon === 'object') {
+        if (icon.uri) {
+            imageStyle.push({width: 24, height: 24});
+            image = isValidUrl(icon.uri) && (
+                <FastImage
+                    source={icon}
+                    style={imageStyle}
+                />
+            );
+        } else {
+            iconStyle = [style.noIconContainer];
+        }
+    } else {
+        image = (
+            <CompassIcon
+                name={icon}
+                size={24}
+                style={[style.icon, destructive ? style.destructive : null]}
+            />
+        );
+    }
+
     return (
         <View
             testID={testID}
@@ -59,12 +88,8 @@ function ThreadOption({destructive, icon, onPress, testID, text, theme}: Props) 
                 style={style.row}
             >
                 <View style={style.row}>
-                    <View style={style.iconContainer}>
-                        <CompassIcon
-                            name={icon}
-                            size={24}
-                            style={[style.icon, destructive ? style.destructive : null]}
-                        />
+                    <View style={iconStyle}>
+                        {image}
                     </View>
                     <View style={style.textContainer}>
                         <Text style={[style.text, destructive ? style.destructive : null]}>
@@ -85,6 +110,9 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
         container: {
             height: 51,
             width: '100%',
+        },
+        destructive: {
+            color: '#D0021B',
         },
         row: {
             flex: 1,

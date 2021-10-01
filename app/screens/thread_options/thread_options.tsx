@@ -13,11 +13,10 @@ import SlideUpPanel from '@components/slide_up_panel';
 import {BOTTOM_MARGIN} from '@components/slide_up_panel/slide_up_panel';
 import {GLOBAL_THREADS} from '@constants/screen';
 import EventEmitter from '@mm-redux/utils/event_emitter';
+import ThreadOption from '@screens/post_options/post_option';
 import {OPTION_HEIGHT, getInitialPosition} from '@screens/post_options/post_options_utils';
 import {t} from '@utils/i18n';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
-
-import ThreadOption from './thread_option';
 
 import type {Post} from '@mm-redux/types/posts';
 import type {Theme} from '@mm-redux/types/theme';
