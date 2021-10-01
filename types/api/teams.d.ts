@@ -49,9 +49,3 @@ type TeamsState = {
     groupsAssociatedToTeam: any;
     totalCount: number;
 };
-
-type TeamUnread = {
-    team_id: string;
-    mention_count: number;
-    msg_count: number;
-};

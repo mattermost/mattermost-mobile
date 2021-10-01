@@ -130,7 +130,7 @@ export const loginEntry = async ({serverUrl, user, deviceToken}: AfterLoginArgs)
         let initialChannel: Channel|undefined;
         let myTeams: Team[]|undefined;
 
-        // Fetch in parallel server config & license / user preferences / teams / team membership / team unreads
+        // Fetch in parallel server config & license / user preferences / teams / team membership
         const promises: [Promise<ConfigAndLicenseRequest>, Promise<MyPreferencesRequest>, Promise<MyTeamsRequest>] = [
             fetchConfigAndLicense(serverUrl, true),
             fetchMyPreferences(serverUrl, true),
@@ -269,7 +269,7 @@ const fetchAppEntryData = async (serverUrl: string, initialTeamId: string): Prom
     const includeDeletedChannels = true;
     const fetchOnly = true;
 
-    // Fetch in parallel teams / team membership / team unreads / channels for current team / user preferences / user
+    // Fetch in parallel teams / team membership / channels for current team / user preferences / user
     const promises: [Promise<MyTeamsRequest>, Promise<MyChannelsRequest | undefined>, Promise<MyPreferencesRequest>, Promise<MyUserRequest>] = [
         fetchMyTeams(serverUrl, fetchOnly),
         initialTeamId ? fetchMyChannelsForTeam(serverUrl, initialTeamId, includeDeletedChannels, lastDisconnected, fetchOnly) : Promise.resolve(undefined),

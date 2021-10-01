@@ -64,8 +64,6 @@ describe('*** TEAM Prepare Records Test ***', () => {
                 raw: {
                     id: 'teamA',
                     roles: 'roleA, roleB, roleC',
-                    is_unread: true,
-                    mentions_count: 3,
                 },
             },
         });
