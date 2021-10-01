@@ -28,7 +28,7 @@ type Props = {
     theme: Theme;
 };
 
-function ThreadOption({destructive, icon, onPress, testID, text, theme}: Props) {
+function PostOption({destructive, icon, onPress, testID, text, theme}: Props) {
     const style = getStyleSheet(theme);
 
     const handleOnPress = React.useCallback(preventDoubleTap(onPress, 500), []);
@@ -103,7 +103,7 @@ function ThreadOption({destructive, icon, onPress, testID, text, theme}: Props) 
     );
 }
 
-export default ThreadOption;
+export default PostOption;
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     return {
