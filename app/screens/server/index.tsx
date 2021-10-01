@@ -30,6 +30,7 @@ import {isMinimumServerVersion} from '@utils/helpers';
 import {preventDoubleTap} from '@utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {getServerUrlAfterRedirect, isValidUrl, sanitizeUrl} from '@utils/url';
+import ServerSvg from './background_svg';
 
 import {DeepLinkWithData, LaunchProps, LaunchType} from '@typings/launch';
 
@@ -339,6 +340,9 @@ const Server: NavigationFunctionComponent = ({componentId, extra, launchType, la
             testID='select_server.screen'
             style={styles.container}
         >
+            <View style={styles.serverSvg}>
+                <ServerSvg/>
+            </View>
             <KeyboardAvoidingView
                 behavior='padding'
                 style={styles.flex}
@@ -385,15 +389,15 @@ const Server: NavigationFunctionComponent = ({componentId, extra, launchType, la
                             disableFullscreenUI={true}
                         />
                         {Boolean(urlError) &&
-                        <HelperText
-                            type='error'
-                            style={styles.urlHelper}
-                        >
-                            <CompassIcon
-                                name='alert-outline'
-                            />
-                            {' ' + urlError}
-                        </HelperText>
+                            <HelperText
+                                type='error'
+                                style={styles.urlHelper}
+                            >
+                                <CompassIcon
+                                    name='alert-outline'
+                                />
+                                {' ' + urlError}
+                            </HelperText>
                         }
                         <PaperTextInput
                             mode='outlined'
@@ -452,6 +456,9 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     },
     flex: {
         flex: 1,
+    },
+    serverSvg: {
+        position: 'absolute',
     },
     formContainer: {
         flex: 1,
