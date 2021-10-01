@@ -43,7 +43,7 @@ export const prepareModels = async ({operator, initialTeamId, removeTeams, remov
     }
 
     if (teamData?.teams?.length) {
-        const teamModels = prepareMyTeams(operator, teamData.teams, teamData.memberships || [], teamData.unreads || []);
+        const teamModels = prepareMyTeams(operator, teamData.teams, teamData.memberships || []);
         if (teamModels) {
             modelPromises.push(...teamModels);
         }

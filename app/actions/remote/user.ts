@@ -163,7 +163,6 @@ export const loadMe = async (serverUrl: string, {deviceToken, user}: LoadMeArgs)
 
         // Goes into myTeam table
         const teamMembersRequest = client.getMyTeamMembers();
-        const teamUnreadRequest = client.getMyTeamUnreads();
 
         const preferencesRequest = client.getMyPreferences();
         const configRequest = client.getClientConfigOld();
@@ -172,14 +171,12 @@ export const loadMe = async (serverUrl: string, {deviceToken, user}: LoadMeArgs)
         const [
             teams,
             teamMemberships,
-            teamUnreads,
             preferences,
             config,
             license,
         ] = await Promise.all([
             teamsRequest,
             teamMembersRequest,
-            teamUnreadRequest,
             preferencesRequest,
             configRequest,
             licenseRequest,
@@ -189,9 +186,8 @@ export const loadMe = async (serverUrl: string, {deviceToken, user}: LoadMeArgs)
         const teamRecords = operator.handleTeam({prepareRecordsOnly: true, teams});
         const teamMembershipRecords = operator.handleTeamMemberships({prepareRecordsOnly: true, teamMemberships});
 
-        const myTeams = teamUnreads.map((unread) => {
-            const matchingTeam = teamMemberships.find((team) => team.team_id === unread.team_id);
-            return {id: unread.team_id, roles: matchingTeam?.roles ?? '', is_unread: unread.msg_count > 0, mentions_count: unread.mention_count};
+        const myTeams = teamMemberships.map((tm) => {
+            return {id: tm.team_id, roles: tm.roles ?? ''};
         });
 
         const myTeamRecords = operator.handleMyTeam({

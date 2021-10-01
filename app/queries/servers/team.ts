@@ -46,14 +46,13 @@ export const addChannelToTeamHistory = async (operator: ServerDataOperator, team
     return operator.handleTeamChannelHistory({teamChannelHistories: [tch], prepareRecordsOnly});
 };
 
-export const prepareMyTeams = (operator: ServerDataOperator, teams: Team[], memberships: TeamMembership[], unreads: TeamUnread[]) => {
+export const prepareMyTeams = (operator: ServerDataOperator, teams: Team[], memberships: TeamMembership[]) => {
     try {
         const teamRecords = operator.handleTeam({prepareRecordsOnly: true, teams});
         const teamMemberships = memberships.filter((m) => teams.find((t) => t.id === m.team_id));
         const teamMembershipRecords = operator.handleTeamMemberships({prepareRecordsOnly: true, teamMemberships});
-        const myTeams: MyTeam[] = unreads.map((unread) => {
-            const matchingTeam = teamMemberships.find((team) => team.team_id === unread.team_id);
-            return {id: unread.team_id, roles: matchingTeam?.roles ?? '', is_unread: unread.msg_count > 0, mentions_count: unread.mention_count};
+        const myTeams: MyTeam[] = teamMemberships.map((tm) => {
+            return {id: tm.team_id, roles: tm.roles ?? ''};
         });
         const myTeamRecords = operator.handleMyTeam({
             prepareRecordsOnly: true,
