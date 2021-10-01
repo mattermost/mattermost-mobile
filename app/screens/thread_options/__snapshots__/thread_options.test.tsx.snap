@@ -57,7 +57,7 @@ exports[`ThreadOptions should match snapshot, showing all possible options 1`] =
         }
       }
     />
-    <ThreadOption
+    <PostOption
       destructive={false}
       icon="reply-outline"
       onPress={[Function]}
@@ -93,7 +93,7 @@ exports[`ThreadOptions should match snapshot, showing all possible options 1`] =
         }
       }
     />
-    <ThreadOption
+    <PostOption
       destructive={false}
       icon="message-minus-outline"
       onPress={[Function]}
@@ -129,7 +129,7 @@ exports[`ThreadOptions should match snapshot, showing all possible options 1`] =
         }
       }
     />
-    <ThreadOption
+    <PostOption
       destructive={false}
       icon="globe"
       onPress={[Function]}
@@ -165,7 +165,7 @@ exports[`ThreadOptions should match snapshot, showing all possible options 1`] =
         }
       }
     />
-    <ThreadOption
+    <PostOption
       destructive={false}
       icon="mark-as-unread"
       onPress={[Function]}
@@ -201,7 +201,7 @@ exports[`ThreadOptions should match snapshot, showing all possible options 1`] =
         }
       }
     />
-    <ThreadOption
+    <PostOption
       destructive={false}
       icon="bookmark-outline"
       onPress={[Function]}
@@ -237,7 +237,7 @@ exports[`ThreadOptions should match snapshot, showing all possible options 1`] =
         }
       }
     />
-    <ThreadOption
+    <PostOption
       destructive={false}
       icon="link-variant"
       onPress={[Function]}
