@@ -7,6 +7,7 @@ import {Platform} from 'react-native';
 import {FileSystem} from 'react-native-unimodules';
 
 import {Files} from '@constants';
+import {deleteEntititesFile, getIOSAppGroupDetails} from '@utils/mattermost_managed';
 import {hashCode} from '@utils/security';
 import {removeProtocol} from '@utils/url';
 
@@ -125,6 +126,28 @@ export async function getFileCacheSize() {
     }
 
     return 0;
+}
+
+export async function deleteV1Data() {
+    const dir = Platform.OS === 'ios' ? getIOSAppGroupDetails().appGroupSharedDirectory : FileSystem.documentDirectory;
+
+    try {
+        const mmkvDirInfo = await FileSystem.getInfoAsync(`${dir}/mmkv`);
+        if (mmkvDirInfo.exists) {
+            await FileSystem.deleteAsync(mmkvDirInfo.uri, {idempotent: true});
+        }
+    } catch {
+        // do nothing
+    }
+
+    try {
+        const entitiesInfo = await FileSystem.getInfoAsync(`${dir}/entities`);
+        if (entitiesInfo.exists) {
+            deleteEntititesFile();
+        }
+    } catch (e) {
+        // do nothing
+    }
 }
 
 export async function deleteFileCache(serverUrl: string) {

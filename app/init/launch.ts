@@ -1,14 +1,16 @@
 ﻿// Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {Linking} from 'react-native';
+import Emm from '@mattermost/react-native-emm';
+import {Alert, Linking} from 'react-native';
 import {Notifications} from 'react-native-notifications';
 
-import {appEntry} from '@actions/remote/entry';
+import {appEntry, upgradeEntry} from '@actions/remote/entry';
 import {Screens} from '@constants';
 import DatabaseManager from '@database/manager';
 import {getActiveServerUrl, getServerCredentials} from '@init/credentials';
 import {queryThemeForCurrentTeam} from '@queries/servers/preference';
+import {queryCurrentUserId} from '@queries/servers/system';
 import {goToScreen, resetToHome, resetToSelectServer} from '@screens/navigation';
 import EphemeralStore from '@store/ephemeral_store';
 import {DeepLinkChannel, DeepLinkDM, DeepLinkGM, DeepLinkPermalink, DeepLinkType, DeepLinkWithData, LaunchProps, LaunchType} from '@typings/launch';
@@ -67,12 +69,30 @@ const launchApp = async (props: LaunchProps, resetNavigation = true) => {
         const credentials = await getServerCredentials(serverUrl);
         if (credentials) {
             const database = DatabaseManager.serverDatabases[serverUrl]?.database;
+            let hasCurrentUser = false;
             if (database) {
                 EphemeralStore.theme = await queryThemeForCurrentTeam(database);
+                const currentUserId = await queryCurrentUserId(database);
+                hasCurrentUser = Boolean(currentUserId);
             }
 
-            launchToHome({...props, serverUrl}, resetNavigation);
+            if (!hasCurrentUser) {
+                // migrating from v1
+                const result = await upgradeEntry(serverUrl);
+                if (result.error) {
+                    Alert.alert(
+                        'Error Upgrading',
+                        `An error ocurred while upgrading the app to the new version.\n\nDetails: ${result.error}\n\nThe app will now quit.`,
+                        [{
+                            text: 'OK',
+                            onPress: () => Emm.exitApp(),
+                        }],
+                    );
+                    return;
+                }
+            }
 
+            launchToHome({...props, launchType: hasCurrentUser ? LaunchType.Normal : LaunchType.Upgrade, serverUrl}, resetNavigation);
             return;
         }
     }
@@ -91,8 +111,9 @@ const launchToHome = (props: LaunchProps, resetNavigation: Boolean) => {
             // pushNotificationEntry({props.serverUrl, props.extra})
             break;
         }
-        default:
+        case LaunchType.Normal:
             appEntry(props.serverUrl!);
+            break;
     }
 
     const passProps = {
@@ -108,7 +129,7 @@ const launchToHome = (props: LaunchProps, resetNavigation: Boolean) => {
     }
 
     const title = '';
-    goToScreen(Screens.CHANNEL, title, passProps);
+    goToScreen(Screens.HOME, title, passProps);
 };
 
 const launchToServer = (props: LaunchProps, resetNavigation: Boolean) => {
