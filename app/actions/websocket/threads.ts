@@ -1,12 +1,14 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
+import {batchActions} from 'redux-batched-actions';
+
 import {updateThreadLastViewedAt} from '@actions/views/threads';
 import {handleThreadArrived, handleReadChanged, handleAllMarkedRead, handleFollowChanged, getThread as fetchThread} from '@mm-redux/actions/threads';
 import {getCurrentUserId} from '@mm-redux/selectors/entities/common';
 import {getSelectedPost} from '@mm-redux/selectors/entities/posts';
 import {getCurrentTeamId} from '@mm-redux/selectors/entities/teams';
 import {getThread} from '@mm-redux/selectors/entities/threads';
-import {ActionResult, DispatchFunc, GetStateFunc} from '@mm-redux/types/actions';
+import {ActionResult, DispatchFunc, GenericAction, GetStateFunc} from '@mm-redux/types/actions';
 import {WebSocketMessage} from '@mm-redux/types/websocket';
 
 export function handleThreadUpdated(msg: WebSocketMessage) {
@@ -30,12 +32,13 @@ export function handleThreadReadChanged(msg: WebSocketMessage) {
 
             // Mark only following threads as read.
             if (thread) {
+                const actions: GenericAction[] = [];
                 const selectedPost = getSelectedPost(state);
                 if (selectedPost?.id !== thread.id) {
-                    dispatch(updateThreadLastViewedAt(thread.id, msg.data.timestamp));
+                    actions.push(updateThreadLastViewedAt(thread.id, msg.data.timestamp));
                 }
                 if (thread.is_following) {
-                    dispatch(
+                    actions.push(
                         handleReadChanged(
                             msg.data.thread_id,
                             msg.broadcast.team_id,
@@ -49,6 +52,9 @@ export function handleThreadReadChanged(msg: WebSocketMessage) {
                             },
                         ),
                     );
+                }
+                if (actions.length) {
+                    dispatch(batchActions(actions));
                 }
             }
         } else {
