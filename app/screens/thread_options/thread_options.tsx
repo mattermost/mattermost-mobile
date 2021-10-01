@@ -103,7 +103,7 @@ function ThreadOptions({actions, currentTeamName, currentTeamUrl, currentUserId,
     const getReplyOption = () => {
         const key = 'reply';
         const icon = 'reply-outline';
-        const message = {id: t('global_threads.options.reply'), defaultMessage: 'Reply'};
+        const message = {id: t('mobile.post_info.reply'), defaultMessage: 'Reply'};
         const onPress = handleReply;
         return getOption(key, icon, message, onPress);
     };
@@ -172,7 +172,7 @@ function ThreadOptions({actions, currentTeamName, currentTeamUrl, currentUserId,
             onPress = handleMarkAsRead;
         } else {
             key = 'mark_as_unread';
-            message = {id: t('global_threads.options.mark_as_unread'), defaultMessage: 'Mark as Unread'};
+            message = {id: t('mobile.post_info.mark_unread'), defaultMessage: 'Mark as Unread'};
             onPress = handleMarkAsUnread;
         }
         return getOption(key, icon, message, onPress);
@@ -201,11 +201,11 @@ function ThreadOptions({actions, currentTeamName, currentTeamUrl, currentUserId,
 
         if (isFlagged) {
             key = 'unflag';
-            message = {id: t('global_threads.options.unsave'), defaultMessage: 'Unsave'};
+            message = {id: t('mobile.post_info.unflag'), defaultMessage: 'Unsave'};
             onPress = handleUnflagPost;
         } else {
             key = 'flagged';
-            message = {id: t('global_threads.options.save'), defaultMessage: 'Save'};
+            message = {id: t('mobile.post_info.flag'), defaultMessage: 'Save'};
             onPress = handleFlagPost;
         }
 
@@ -225,7 +225,7 @@ function ThreadOptions({actions, currentTeamName, currentTeamUrl, currentUserId,
     const getCopyPermalink = () => {
         const key = 'permalink';
         const icon = 'link-variant';
-        const message = {id: t('global_threads.options.copy_link'), defaultMessage: 'Copy Link'};
+        const message = {id: t('get_post_link_modal.title'), defaultMessage: 'Copy Link'};
         const onPress = handleCopyPermalink;
         return getOption(key, icon, message, onPress);
     };

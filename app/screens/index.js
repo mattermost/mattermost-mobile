@@ -106,7 +106,7 @@ Navigation.setLazyComponentRegistrator((screenName) => {
         screen = require('@screens/gallery').default;
         break;
     case 'GlobalThreadOptions':
-        screen = require('@components/global_threads/thread_options').default;
+        screen = require('@screens/thread_options').default;
         break;
     case 'InteractiveDialog':
         screen = require('@screens/interactive_dialog').default;
