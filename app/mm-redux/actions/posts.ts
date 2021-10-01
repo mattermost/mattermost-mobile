@@ -15,7 +15,7 @@ import {getCustomEmojisByName as selectCustomEmojisByName} from '@mm-redux/selec
 import {getConfig} from '@mm-redux/selectors/entities/general';
 import * as Selectors from '@mm-redux/selectors/entities/posts';
 import {isCollapsedThreadsEnabled} from '@mm-redux/selectors/entities/preferences';
-import {getThread, getThreadTeamId} from '@mm-redux/selectors/entities/threads';
+import {getThreadTeamId} from '@mm-redux/selectors/entities/threads';
 import {getCurrentUserId, getUsersByUsername} from '@mm-redux/selectors/entities/users';
 import {Action, ActionResult, batchActions, DispatchFunc, GetStateFunc, GenericAction} from '@mm-redux/types/actions';
 import {ChannelUnread} from '@mm-redux/types/channels';
@@ -29,7 +29,6 @@ import {getUserIdFromChannelName} from '@mm-redux/utils/channel_utils';
 import {parseNeededCustomEmojisFromText} from '@mm-redux/utils/emoji_utils';
 import {isCombinedUserActivityPost} from '@mm-redux/utils/post_list';
 import {isFromWebhook, isSystemMessage, shouldIgnorePost} from '@mm-redux/utils/post_utils';
-import {getThreadLastViewedAt} from '@selectors/threads';
 
 import {getMyChannelMember, markChannelAsUnread, markChannelAsRead, markChannelAsViewed} from './channels';
 import {getCustomEmojiByName, getCustomEmojisByName} from './emojis';
@@ -1302,16 +1301,6 @@ export function lastPostActions(post: Post, websocketMessageProps: any) {
 
         if (shouldIgnorePost(post)) {
             return;
-        }
-
-        const isCRTReply = collapsedThreadsEnabled && post.root_id;
-        if (isCRTReply) {
-            const thread = getThread(state, post.root_id);
-
-            // update the new messages line (when there are no previous unreads)
-            if (thread && thread.last_reply_at < getThreadLastViewedAt(state, thread.id)) {
-                // dispatch(updateThreadLastViewedAt(thread.id, post.create_at));
-            }
         }
 
         let markAsRead = false;
