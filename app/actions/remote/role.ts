@@ -8,7 +8,7 @@ import {queryRoles} from '@queries/servers/role';
 import {forceLogoutIfNecessary} from './session';
 
 export type RolesRequest = {
-    error?: never;
+    error?: unknown;
     roles?: Role[];
 }
 
@@ -52,7 +52,34 @@ export const fetchRolesIfNeeded = async (serverUrl: string, updatedRoles: string
 
         return {roles};
     } catch (error) {
-        forceLogoutIfNecessary(serverUrl, error);
+        forceLogoutIfNecessary(serverUrl, error as ClientErrorProps);
         return {error};
+    }
+};
+
+export const fetchRoles = async (serverUrl: string, teamMembership?: TeamMembership[], channelMembership?: ChannelMembership[], user?: UserProfile) => {
+    const rolesToFetch = new Set<string>(user?.roles.split(' ') || []);
+
+    if (teamMembership?.length) {
+        const teamRoles: string[] = [];
+        const teamMembers: string[] = [];
+
+        teamMembership?.forEach((tm) => {
+            teamRoles.push(...tm.roles.split(' '));
+            teamMembers.push(tm.team_id);
+        });
+
+        teamRoles.forEach(rolesToFetch.add, rolesToFetch);
+    }
+
+    if (channelMembership?.length) {
+        for (let i = 0; i < channelMembership!.length; i++) {
+            const member = channelMembership[i];
+            member.roles.split(' ').forEach(rolesToFetch.add, rolesToFetch);
+        }
+    }
+
+    if (rolesToFetch.size > 0) {
+        fetchRolesIfNeeded(serverUrl, Array.from(rolesToFetch));
     }
 };

@@ -3,7 +3,7 @@
 
 import React, {PureComponent, ReactNode} from 'react';
 import {injectIntl, IntlShape} from 'react-intl';
-import {Dimensions, LayoutChangeEvent, Platform, ScaledSize, ScrollView, View} from 'react-native';
+import {Dimensions, EventSubscription, LayoutChangeEvent, Platform, ScaledSize, ScrollView, View} from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 
 import CompassIcon from '@components/compass_icon';
@@ -37,6 +37,7 @@ type MarkdownTableProps = MarkdownTableInputProps & {
 class MarkdownTable extends PureComponent<MarkdownTableProps, MarkdownTableState> {
     private rowsSliced: boolean | undefined;
     private colsSliced: boolean | undefined;
+    private dimensionsListener: EventSubscription | undefined;
 
     state = {
         containerWidth: 0,
@@ -46,14 +47,14 @@ class MarkdownTable extends PureComponent<MarkdownTableProps, MarkdownTableState
     };
 
     componentDidMount() {
-        Dimensions.addEventListener('change', this.setMaxPreviewColumns);
+        this.dimensionsListener = Dimensions.addEventListener('change', this.setMaxPreviewColumns);
 
         const window = Dimensions.get('window');
         this.setMaxPreviewColumns({window});
     }
 
     componentWillUnmount() {
-        Dimensions.removeEventListener('change', this.setMaxPreviewColumns);
+        this.dimensionsListener?.remove();
     }
 
     setMaxPreviewColumns = ({window}: {window: ScaledSize}) => {

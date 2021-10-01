@@ -1,11 +1,17 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import Model from '@nozbe/watermelondb/Model';
 import mimeDB from 'mime-db';
 import {Platform} from 'react-native';
 import {FileSystem} from 'react-native-unimodules';
 
+import {Files} from '@constants';
+import {deleteEntititesFile, getIOSAppGroupDetails} from '@utils/mattermost_managed';
 import {hashCode} from '@utils/security';
+import {removeProtocol} from '@utils/url';
+
+import type FileModel from '@typings/database/models/servers/file';
 
 const EXTRACT_TYPE_REGEXP = /^\s*([^;\s]*)(?:;|\s|$)/;
 const CONTENT_DISPOSITION_REGEXP = /inline;filename=".*\.([a-z]+)";/i;
@@ -122,6 +128,28 @@ export async function getFileCacheSize() {
     return 0;
 }
 
+export async function deleteV1Data() {
+    const dir = Platform.OS === 'ios' ? getIOSAppGroupDetails().appGroupSharedDirectory : FileSystem.documentDirectory;
+
+    try {
+        const mmkvDirInfo = await FileSystem.getInfoAsync(`${dir}/mmkv`);
+        if (mmkvDirInfo.exists) {
+            await FileSystem.deleteAsync(mmkvDirInfo.uri, {idempotent: true});
+        }
+    } catch {
+        // do nothing
+    }
+
+    try {
+        const entitiesInfo = await FileSystem.getInfoAsync(`${dir}/entities`);
+        if (entitiesInfo.exists) {
+            deleteEntititesFile();
+        }
+    } catch (e) {
+        // do nothing
+    }
+}
+
 export async function deleteFileCache(serverUrl: string) {
     const serverDir = hashCode(serverUrl);
     const cacheDir = `${FileSystem.cacheDirectory}/${serverDir}`;
@@ -196,8 +224,14 @@ export const getAllowedServerMaxFileSize = (config: ClientConfig) => {
     return config && config.MaxFileSize ? parseInt(config.MaxFileSize, 10) : DEFAULT_SERVER_MAX_FILE_SIZE;
 };
 
-export const isGif = (file?: FileInfo) => {
-    let mime = file?.mime_type || '';
+export const isGif = (file?: FileInfo | FileModel) => {
+    if (!file) {
+        return false;
+    }
+
+    const fi = file as FileInfo;
+    const fm = file as FileModel;
+    let mime = fi.mime_type || fm.mimeType || '';
     if (mime && mime.includes(';')) {
         mime = mime.split(';')[0];
     } else if (!mime && file?.name) {
@@ -207,10 +241,27 @@ export const isGif = (file?: FileInfo) => {
     return mime === 'image/gif';
 };
 
-export const isImage = (file?: FileInfo) => (file?.has_preview_image || isGif(file) || file?.mime_type?.startsWith('image/'));
+export const isImage = (file?: FileInfo | FileModel) => {
+    if (!file) {
+        return false;
+    }
+    const fi = file as FileInfo;
+    const fm = file as FileModel;
 
-export const isDocument = (file?: FileInfo) => {
-    let mime = file?.mime_type || '';
+    const hasPreview = Boolean(fi.mini_preview || fm.imageThumbnail);
+    const mimeType = fi.mime_type || fm.mimeType || '';
+
+    return (hasPreview || isGif(file) || mimeType.startsWith('image/'));
+};
+
+export const isDocument = (file?: FileInfo | FileModel) => {
+    if (!file) {
+        return false;
+    }
+
+    const fi = file as FileInfo;
+    const fm = file as FileModel;
+    let mime = fi.mime_type || fm.mimeType || '';
     if (mime && mime.includes(';')) {
         mime = mime.split(';')[0];
     } else if (!mime && file?.name) {
@@ -220,8 +271,14 @@ export const isDocument = (file?: FileInfo) => {
     return SUPPORTED_DOCS_FORMAT!.includes(mime);
 };
 
-export const isVideo = (file?: FileInfo) => {
-    let mime = file?.mime_type || '';
+export const isVideo = (file?: FileInfo | FileModel) => {
+    if (!file) {
+        return false;
+    }
+
+    const fi = file as FileInfo;
+    const fm = file as FileModel;
+    let mime = fi.mime_type || fm.mimeType || '';
     if (mime && mime.includes(';')) {
         mime = mime.split(';')[0];
     } else if (!mime && file?.name) {
@@ -230,3 +287,81 @@ export const isVideo = (file?: FileInfo) => {
 
     return SUPPORTED_VIDEO_FORMAT!.includes(mime);
 };
+
+export function getFormattedFileSize(file: FileInfo): string {
+    const bytes = file.size;
+    const fileSizes = [
+        ['TB', 1024 * 1024 * 1024 * 1024],
+        ['GB', 1024 * 1024 * 1024],
+        ['MB', 1024 * 1024],
+        ['KB', 1024],
+    ];
+    const size = fileSizes.find((unitAndMinBytes) => {
+        const minBytes = unitAndMinBytes[1];
+        return bytes > minBytes;
+    });
+
+    if (size) {
+        return `${Math.floor(bytes / (size[1] as number))} ${size[0]}`;
+    }
+
+    return `${bytes} B`;
+}
+
+export function getFileType(file: FileInfo): string {
+    if (!file || !file.extension) {
+        return 'other';
+    }
+
+    const fileExt = file.extension.toLowerCase();
+    const fileTypes = [
+        'image',
+        'code',
+        'pdf',
+        'video',
+        'audio',
+        'spreadsheet',
+        'text',
+        'word',
+        'presentation',
+        'patch',
+        'zip',
+    ];
+    return fileTypes.find((fileType) => {
+        const constForFileTypeExtList = `${fileType}_types`.toUpperCase();
+        const fileTypeExts = Files[constForFileTypeExtList];
+        return fileTypeExts.indexOf(fileExt) > -1;
+    }) || 'other';
+}
+
+export function getLocalFilePathFromFile(dir: string, serverUrl: string, file: FileInfo | FileModel) {
+    if (dir && serverUrl) {
+        const server = removeProtocol(serverUrl);
+        if (file?.name) {
+            let extension: string | undefined = file.extension;
+            let filename = file.name;
+
+            if (!extension) {
+                const mimeType = (file instanceof Model) ? file.mimeType : file.mime_type;
+                extension = getExtensionFromMime(mimeType);
+            }
+
+            if (extension && filename.includes(`.${extension}`)) {
+                filename = filename.replace(`.${extension}`, '');
+            } else {
+                const fileParts = file.name.split('.');
+
+                if (fileParts.length > 1) {
+                    extension = fileParts.pop();
+                    filename = fileParts.join('.');
+                }
+            }
+
+            return `${dir}/${server}/${filename}-${hashCode(file.id!)}.${extension}`;
+        } else if (file?.id && file?.extension) {
+            return `${dir}/${server}/${file.id}.${file.extension}`;
+        }
+    }
+
+    return undefined;
+}

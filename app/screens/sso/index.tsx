@@ -4,15 +4,16 @@
 import {useManagedConfig} from '@mattermost/react-native-emm';
 import React, {useState} from 'react';
 
-import {SSO as SSOEnum} from '@constants';
 import {ssoLogin} from '@actions/remote/session';
-import {resetToChannel} from '@screens/navigation';
+import ClientError from '@client/rest/error';
+import {SSO as SSOEnum} from '@constants';
+import {resetToHome} from '@screens/navigation';
 import {isMinimumServerVersion} from '@utils/helpers';
-
-import type {LaunchProps} from '@typings/launch';
 
 import SSOWithRedirectURL from './sso_with_redirect_url';
 import SSOWithWebView from './sso_with_webview';
+
+import type {LaunchProps} from '@typings/launch';
 
 interface SSOProps extends LaunchProps {
   config: Partial<ClientConfig>;
@@ -57,7 +58,7 @@ const SSO = ({config, extra, launchError, launchType, serverUrl, ssoType, theme}
             break;
     }
 
-    const onLoadEndError = (e: ClientErrorProps | string) => {
+    const onLoadEndError = (e: ClientErrorProps | Error | string) => {
         console.warn('Failed to set store from local data', e); // eslint-disable-line no-console
         if (typeof e === 'string') {
             setLoginError(e);
@@ -65,7 +66,7 @@ const SSO = ({config, extra, launchError, launchType, serverUrl, ssoType, theme}
         }
 
         let errorMessage = e.message;
-        if (e.url) {
+        if (e instanceof ClientError && e.url) {
             errorMessage += `\nURL: ${e.url}`;
         }
         setLoginError(errorMessage);
@@ -82,12 +83,12 @@ const SSO = ({config, extra, launchError, launchType, serverUrl, ssoType, theme}
             console.log('GO TO NO TEAMS');
             return;
         }
-        goToChannel(result.time || 0, result.error as never);
+        goToHome(result.time || 0, result.error as never);
     };
 
-    const goToChannel = (time: number, error?: never) => {
+    const goToHome = (time: number, error?: never) => {
         const hasError = launchError || Boolean(error);
-        resetToChannel({extra, launchError: hasError, launchType, serverUrl, time});
+        resetToHome({extra, launchError: hasError, launchType, serverUrl, time});
     };
 
     const isSSOWithRedirectURLAvailable = isMinimumServerVersion(config.Version!, 5, 33, 0);

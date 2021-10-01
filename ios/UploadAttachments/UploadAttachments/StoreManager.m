@@ -1,6 +1,5 @@
 #import "StoreManager.h"
 #import "MMMConstants.h"
-#import <DatabaseHelper/DatabaseHelper-Swift.h>
 
 @implementation StoreManager
 +(instancetype)shared {
@@ -144,23 +143,27 @@
   return [self sortDictArrayByDisplayName:myTeams];
 }
 
--(NSString *)getTokenForServer:(NSString *)url {
+-(NSString *)getServerUrl {
+    NSDictionary *general = [self.entities objectForKey:@"general"];
+    NSDictionary *credentials = [general objectForKey:@"credentials"];
+  
+    if (credentials) {
+        return [credentials objectForKey:@"url"];
+    }
+    
+    return nil;
+}
+
+-(NSString *)getToken {
     NSBundle *bundle = [NSBundle mainBundle];
     NSString *appGroupId = [bundle objectForInfoDictionaryKey:@"AppGroupIdentifier"];
     NSDictionary *options = @{
         @"accessGroup": appGroupId
     };
-    
-    NSString *serverUrl = url;
-    if (serverUrl == nil) {
-      NSString* onlyServerUrl = [[DatabaseHelper default] getOnlyServerUrlObjc];
-      if ([onlyServerUrl length] > 0) {
-        serverUrl = onlyServerUrl;
-      }
-    }
+    NSString* serverUrl = [self getServerUrl];
 
     if (serverUrl) {
-        NSDictionary *credentials = [self.keychain getInternetCredentialsForServer:serverUrl withOptions:options];
+        NSDictionary *credentials = [self.keychain getInternetCredentialsForServer:[self getServerUrl] withOptions:options];
   
         return [credentials objectForKey:@"password"];
     }

@@ -1,0 +1,84 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`AttachmentFooter it matches snapshot when both footer and footer_icon are provided 1`] = `
+<View
+  style={
+    Object {
+      "flex": 1,
+      "flexDirection": "row",
+      "marginTop": 5,
+    }
+  }
+>
+  <View
+    style={
+      Array [
+        Object {
+          "overflow": "hidden",
+        },
+        Object {
+          "height": 12,
+          "marginRight": 5,
+          "marginTop": 1,
+          "width": 12,
+        },
+      ]
+    }
+  >
+    <FastImageView
+      resizeMode="cover"
+      source={
+        Object {
+          "uri": "https://images.com/image.png",
+        }
+      }
+      style={
+        Object {
+          "bottom": 0,
+          "left": 0,
+          "position": "absolute",
+          "right": 0,
+          "top": 0,
+        }
+      }
+    />
+  </View>
+  <Text
+    ellipsizeMode="tail"
+    numberOfLines={1}
+    style={
+      Object {
+        "color": "rgba(63,67,80,0.5)",
+        "fontSize": 11,
+      }
+    }
+  >
+    This is the footer!
+  </Text>
+</View>
+`;
+
+exports[`AttachmentFooter it matches snapshot when footer text is provided 1`] = `
+<View
+  style={
+    Object {
+      "flex": 1,
+      "flexDirection": "row",
+      "marginTop": 5,
+    }
+  }
+>
+  <Text
+    ellipsizeMode="tail"
+    numberOfLines={1}
+    style={
+      Object {
+        "color": "rgba(63,67,80,0.5)",
+        "fontSize": 11,
+      }
+    }
+  >
+    This is the footer!
+  </Text>
+</View>
+`;

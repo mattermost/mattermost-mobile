@@ -2,8 +2,8 @@
 // See LICENSE.txt for license information.
 
 import {createElement, isValidElement} from 'react';
-import {StyleProp, Text, TextProps, TextStyle, ViewStyle} from 'react-native';
 import {useIntl} from 'react-intl';
+import {StyleProp, Text, TextProps, TextStyle, ViewStyle} from 'react-native';
 
 type FormattedTextProps = TextProps & {
     id: string;

@@ -8,10 +8,10 @@ import {useIntl} from 'react-intl';
 import {DeviceEventEmitter, Keyboard, StyleSheet, Text, TextStyle, View} from 'react-native';
 
 import FormattedText from '@components/formatted_text';
-import {useTheme} from '@context/theme';
 import SlideUpPanelItem, {ITEM_HEIGHT} from '@components/slide_up_panel_item';
 import TouchableWithFeedback from '@components/touchable_with_feedback';
 import {Navigation} from '@constants';
+import {useTheme} from '@context/theme';
 import {goToScreen, showModalOverCurrentContext} from '@screens/navigation';
 import {getDisplayNameForLanguage} from '@utils/markdown';
 import {preventDoubleTap} from '@utils/tap';

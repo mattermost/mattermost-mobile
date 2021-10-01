@@ -1,14 +1,17 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {Database, Q} from '@nozbe/watermelondb';
+import {Database, Model, Q, Query, Relation} from '@nozbe/watermelondb';
 
 import {MM_TABLES} from '@constants/database';
+
+import {prepareDeletePost} from './post';
 
 import type ServerDataOperator from '@database/operator/server_data_operator';
 import type ChannelModel from '@typings/database/models/servers/channel';
 import type ChannelInfoModel from '@typings/database/models/servers/channel_info';
 import type MyChannelModel from '@typings/database/models/servers/my_channel';
+import type PostModel from '@typings/database/models/servers/post';
 
 const {SERVER: {CHANNEL, MY_CHANNEL}} = MM_TABLES;
 
@@ -53,6 +56,41 @@ export const prepareMyChannelsForTeam = async (operator: ServerDataOperator, tea
     }
 };
 
+export const prepareDeleteChannel = async (channel: ChannelModel): Promise<Model[]> => {
+    const preparedModels: Model[] = [channel.prepareDestroyPermanently()];
+
+    const relations: Array<Relation<Model>> = [channel.membership, channel.info, channel.settings];
+    for await (const relation of relations) {
+        try {
+            const model = await relation.fetch();
+            if (model) {
+                preparedModels.push(model.prepareDestroyPermanently());
+            }
+        } catch {
+            // Record not found, do nothing
+        }
+    }
+
+    const associatedChildren: Array<Query<any>> = [
+        channel.members,
+        channel.drafts,
+        channel.groupsChannel,
+        channel.postsInChannel,
+    ];
+    for await (const children of associatedChildren) {
+        const models = await children.fetch() as Model[];
+        models.forEach((model) => preparedModels.push(model.prepareDestroyPermanently()));
+    }
+
+    const posts = await channel.posts.fetch() as PostModel[];
+    for await (const post of posts) {
+        const preparedPost = await prepareDeletePost(post);
+        preparedModels.push(...preparedPost);
+    }
+
+    return preparedModels;
+};
+
 export const queryAllChannelsForTeam = (database: Database, teamId: string) => {
     return database.get(CHANNEL).query(Q.where('team_id', teamId)).fetch() as Promise<ChannelModel[]>;
 };
@@ -74,6 +112,15 @@ export const queryChannelByName = async (database: Database, channelName: string
         }
 
         return undefined;
+    } catch {
+        return undefined;
+    }
+};
+
+export const queryChannelsById = async (database: Database, channelIds: string[]): Promise<ChannelModel[]|undefined> => {
+    try {
+        const channels = (await database.get(CHANNEL).query(Q.where('id', Q.oneOf(channelIds))).fetch()) as ChannelModel[];
+        return channels;
     } catch {
         return undefined;
     }

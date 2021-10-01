@@ -4,15 +4,15 @@
 import {Q} from '@nozbe/watermelondb';
 import withObservables from '@nozbe/with-observables';
 import React, {ComponentType, createContext, useEffect} from 'react';
-import {Appearance} from 'react-native';
+import {Appearance, EventSubscription} from 'react-native';
 
 import {Preferences} from '@constants';
 import {MM_TABLES, SYSTEM_IDENTIFIERS} from '@constants/database';
 import EphemeralStore from '@store/ephemeral_store';
 import {setNavigationStackStyles} from '@utils/theme';
 
-import type Database from '@nozbe/watermelondb/Database';
 import type {PreferenceModel, SystemModel} from '@database/models/server';
+import type Database from '@nozbe/watermelondb/Database';
 
 type Props = {
     currentTeamId: SystemModel[];
@@ -26,14 +26,14 @@ type WithThemeProps = {
 
 const {SERVER: {PREFERENCE, SYSTEM}} = MM_TABLES;
 
-function getDefaultThemeByAppearance(): Theme {
+export function getDefaultThemeByAppearance(): Theme {
     if (Appearance.getColorScheme() === 'dark') {
         return Preferences.THEMES.onyx;
     }
     return Preferences.THEMES.denim;
 }
 
-const ThemeContext = createContext(getDefaultThemeByAppearance());
+export const ThemeContext = createContext(getDefaultThemeByAppearance());
 const {Consumer, Provider} = ThemeContext;
 
 const ThemeProvider = ({currentTeamId, children, themes}: Props) => {
@@ -59,9 +59,10 @@ const ThemeProvider = ({currentTeamId, children, themes}: Props) => {
     };
 
     useEffect(() => {
-        Appearance.addChangeListener(getTheme);
+        // @ts-expect-error ts module not yet updated
+        const listener = Appearance.addChangeListener(getTheme) as EventSubscription;
 
-        return () => Appearance.removeChangeListener(getTheme);
+        return () => listener.remove();
     }, []);
 
     return (<Provider value={getTheme()}>{children}</Provider>);

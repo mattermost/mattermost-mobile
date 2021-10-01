@@ -1,8 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {Alert, DeviceEventEmitter, Linking, Platform} from 'react-native';
 import CookieManager, {Cookie} from '@react-native-cookies/cookies';
+import {Alert, DeviceEventEmitter, Linking, Platform} from 'react-native';
 import semver from 'semver';
 
 import {fetchConfigAndLicense} from '@actions/remote/systems';

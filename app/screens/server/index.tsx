@@ -8,31 +8,32 @@ import {
     EventSubscription, Keyboard, KeyboardAvoidingView,
     Platform, StatusBar, StatusBarStyle, StyleSheet, TextInput, TouchableWithoutFeedback, View,
 } from 'react-native';
-import CompassIcon from '@components/compass_icon';
-
-import {ActivityIndicator, HelperText, TextInput as PaperTextInput} from 'react-native-paper';
 import Button from 'react-native-button';
 import {Navigation, NavigationFunctionComponent} from 'react-native-navigation';
-import {Colors} from 'react-native/Libraries/NewAppScreen';
+import {ActivityIndicator, HelperText, TextInput as PaperTextInput} from 'react-native-paper';
 import {SafeAreaView} from 'react-native-safe-area-context';
+import {Colors} from 'react-native/Libraries/NewAppScreen';
 import tinyColor from 'tinycolor2';
 
 import {doPing} from '@actions/remote/general';
 import {fetchConfigAndLicense} from '@actions/remote/systems';
 import LocalConfig from '@assets/config.json';
 import AppVersion from '@components/app_version';
+import CompassIcon from '@components/compass_icon';
 import ErrorText from '@components/error_text';
 import FormattedText from '@components/formatted_text';
 import {Screens} from '@constants';
 import NetworkManager from '@init/network_manager';
 import {goToScreen} from '@screens/navigation';
+import {DeepLinkWithData, LaunchProps, LaunchType} from '@typings/launch';
 import {isMinimumServerVersion} from '@utils/helpers';
 import {preventDoubleTap} from '@utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {getServerUrlAfterRedirect, isValidUrl, sanitizeUrl} from '@utils/url';
+
 import ServerSvg from './background_svg';
 
-import {DeepLinkWithData, LaunchProps, LaunchType} from '@typings/launch';
+import type ClientError from '@client/rest/error';
 
 interface ServerProps extends LaunchProps {
     componentId: string;
@@ -173,6 +174,7 @@ const Server: NavigationFunctionComponent = ({componentId, extra, launchType, la
                 const nurl = serverUrl.replace('https:', 'http:');
                 pingServer(nurl, false);
             } else {
+                setError(result.error as ClientError);
                 setConnecting(false);
             }
             setUrlError(defaultServerUrlMessage);
@@ -184,6 +186,7 @@ const Server: NavigationFunctionComponent = ({componentId, extra, launchType, la
         if (data.error) {
             setUrlError(defaultServerUrlMessage);
             setButtonDisabled(true);
+            setError(data.error as ClientError);
             setConnecting(false);
             return;
         }

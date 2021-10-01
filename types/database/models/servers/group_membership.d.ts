@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {Query, Relation} from '@nozbe/watermelondb';
+import {Relation} from '@nozbe/watermelondb';
 import Model, {Associations} from '@nozbe/watermelondb/Model';
 
 /**
@@ -17,19 +17,9 @@ export default class GroupMembershipModel extends Model {
     groupId: string;
     userId: string;
 
-    /** memberGroup : The related group this user belongs to */
-    memberGroup: Relation<GroupModel>;
+    /** group : The related group this user belongs to */
+    group: Relation<GroupModel>;
 
-    /** memberUser : The related user in the group */
-    memberUser: Relation<UserModel>;
-
-    /**
-     * getAllGroupsForUser : Retrieves all the groups that the user is part of
-     */
-    getAllGroupsForUser: Query<GroupModel>;
-
-    /**
-     * getAllUsersInGroup : Retrieves all the users who are part of this group
-     */
-    getAllUsersInGroup: Query<UserModel>;
+    /** user : The related user in the group */
+    user: Relation<UserModel>;
 }

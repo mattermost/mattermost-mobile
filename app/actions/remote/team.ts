@@ -12,14 +12,16 @@ import {fetchMyChannelsForTeam} from './channel';
 import {fetchPostsForUnreadChannels} from './post';
 import {fetchRolesIfNeeded} from './role';
 import {forceLogoutIfNecessary} from './session';
-import TeamModel from '@typings/database/models/servers/team';
-import TeamMembershipModel from '@typings/database/models/servers/team_membership';
+
+import type ClientError from '@client/rest/error';
+import type TeamModel from '@typings/database/models/servers/team';
+import type TeamMembershipModel from '@typings/database/models/servers/team_membership';
 
 export type MyTeamsRequest = {
     teams?: Team[];
     memberships?: TeamMembership[];
     unreads?: TeamUnread[];
-    error?: never;
+    error?: unknown;
 }
 
 export const addUserToTeam = async (serverUrl: string, teamId: string, userId: string, fetchOnly = false) => {
@@ -61,7 +63,7 @@ export const addUserToTeam = async (serverUrl: string, teamId: string, userId: s
 
         return {member, unreads};
     } catch (error) {
-        forceLogoutIfNecessary(serverUrl, error);
+        forceLogoutIfNecessary(serverUrl, error as ClientError);
         return {error};
     }
 };
@@ -101,7 +103,7 @@ export const fetchMyTeams = async (serverUrl: string, fetchOnly = false): Promis
 
         return {teams, memberships, unreads};
     } catch (error) {
-        forceLogoutIfNecessary(serverUrl, error);
+        forceLogoutIfNecessary(serverUrl, error as ClientError);
         return {error};
     }
 };
@@ -149,7 +151,7 @@ export const fetchTeamByName = async (serverUrl: string, teamName: string, fetch
 
         return {team};
     } catch (error) {
-        forceLogoutIfNecessary(serverUrl, error);
+        forceLogoutIfNecessary(serverUrl, error as ClientError);
         return {error};
     }
 };
@@ -189,7 +191,7 @@ export const removeUserFromTeam = async (serverUrl: string, teamId: string, user
 
         return {error: undefined};
     } catch (error) {
-        forceLogoutIfNecessary(serverUrl, error);
+        forceLogoutIfNecessary(serverUrl, error as ClientError);
         return {error};
     }
 };

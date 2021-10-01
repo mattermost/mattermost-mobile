@@ -23,7 +23,7 @@ type ProgressiveImageProps = {
     isBackgroundImage?: boolean;
     onError: () => void;
     resizeMode?: ResizeMode;
-    style?: ViewStyle;
+    style?: StyleProp<ViewStyle>;
     thumbnailUri?: string;
     tintDefaultSource?: boolean;
 };

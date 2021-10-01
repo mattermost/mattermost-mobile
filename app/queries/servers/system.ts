@@ -81,6 +81,24 @@ export const queryCommonSystemValues = async (serverDatabase: Database) => {
     };
 };
 
+export const queryConfig = async (serverDatabase: Database) => {
+    try {
+        const config = await serverDatabase.get(SYSTEM).find(SYSTEM_IDENTIFIERS.CONFIG) as SystemModel;
+        return (config?.value || {}) as ClientConfig;
+    } catch {
+        return {} as ClientConfig;
+    }
+};
+
+export const queryExpandedLinks = async (serverDatabase: Database) => {
+    try {
+        const expandedLinks = await serverDatabase.get(SYSTEM).find(SYSTEM_IDENTIFIERS.EXPANDED_LINKS) as SystemModel;
+        return (expandedLinks?.value || {}) as Record<string, string>;
+    } catch {
+        return {};
+    }
+};
+
 export const queryWebSocketLastDisconnected = async (serverDatabase: Database) => {
     try {
         const websocketLastDisconnected = await serverDatabase.get(SYSTEM).find(SYSTEM_IDENTIFIERS.WEBSOCKET) as SystemModel;

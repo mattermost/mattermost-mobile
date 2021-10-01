@@ -3,8 +3,8 @@
 
 import React, {useEffect, useState} from 'react';
 import {DeviceEventEmitter, View, TouchableOpacity, useWindowDimensions} from 'react-native';
-import Animated, {useAnimatedStyle, withTiming} from 'react-native-reanimated';
 import {Shadow} from 'react-native-neomorph-shadows';
+import Animated, {useAnimatedStyle, withTiming} from 'react-native-reanimated';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';

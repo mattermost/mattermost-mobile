@@ -60,8 +60,8 @@ RCT_EXPORT_METHOD(isRunningInSplitView:(RCTPromiseResolveBlock)resolve rejecter:
 
 RCT_EXPORT_METHOD(deleteDatabaseDirectory: (NSString *)databaseName  shouldRemoveDirectory: (BOOL) shouldRemoveDirectory callback: (RCTResponseSenderBlock)callback){
   @try {
-      NSDictionary * appGroupDir = [self appGroupSharedDirectory];
-      NSString * databaseDir;
+      NSDictionary *appGroupDir = [self appGroupSharedDirectory];
+      NSString *databaseDir;
 
       if(databaseName){
         databaseDir = [NSString stringWithFormat:@"%@/%@%@", appGroupDir[@"databasePath"], databaseName , @".db"];
@@ -72,18 +72,34 @@ RCT_EXPORT_METHOD(deleteDatabaseDirectory: (NSString *)databaseName  shouldRemov
       }
 
 
-      NSFileManager * fileManager = [NSFileManager defaultManager];
+      NSFileManager *fileManager = [NSFileManager defaultManager];
       NSError *error = nil;
 
       BOOL  successCode  = [fileManager removeItemAtPath:databaseDir error:&error];
-      NSNumber * success= [NSNumber numberWithBool:successCode];
+      NSNumber *success= [NSNumber numberWithBool:successCode];
 
       callback(@[(error ?: [NSNull null]), success]);
   }
   @catch (NSException *exception) {
       NSLog(@"%@", exception.reason);
+    callback(@[exception.reason, @NO]);
   }
 }
 
+RCT_EXPORT_METHOD(deleteEntititesFile: (RCTResponseSenderBlock) callback) {
+  @try {
+    NSDictionary *appGroupDir = [self appGroupSharedDirectory];
+    NSString *entities = [NSString stringWithFormat:@"%@/entities", appGroupDir[@"sharedDirectory"]];
+    NSFileManager *fileManager = [NSFileManager defaultManager];
+    NSError *error = nil;
+
+    BOOL  successCode  = [fileManager removeItemAtPath:entities error:&error];
+    NSNumber *success= [NSNumber numberWithBool:successCode];
+    callback(@[success]);
+  }
+  @catch (NSException *exception) {
+    callback(@[@NO]);
+  }
+}
 
 @end

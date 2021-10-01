@@ -2,8 +2,8 @@
 // See LICENSE.txt for license information.
 
 import {MM_TABLES} from '@constants/database';
-import BaseDataOperator from '@database/operator/base_data_operator';
 import DataOperatorException from '@database/exceptions/data_operator_exception';
+import BaseDataOperator from '@database/operator/base_data_operator';
 import {
     isRecordCustomEmojiEqualToRaw,
     isRecordRoleEqualToRaw,
@@ -19,10 +19,9 @@ import {
 import {getUniqueRawsBy} from '@database/operator/utils/general';
 
 import type {Model} from '@nozbe/watermelondb';
-
 import type {HandleCustomEmojiArgs, HandleRoleArgs, HandleSystemArgs, HandleTOSArgs, OperationArgs} from '@typings/database/database';
-import type RoleModel from '@typings/database/models/servers/role';
 import type CustomEmojiModel from '@typings/database/models/servers/custom_emoji';
+import type RoleModel from '@typings/database/models/servers/role';
 import type SystemModel from '@typings/database/models/servers/system';
 import type TermsOfServiceModel from '@typings/database/models/servers/terms_of_service';
 

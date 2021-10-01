@@ -1,0 +1,16 @@
+{
+  "object": {
+    "pins": [
+      {
+        "package": "SQLite.swift",
+        "repositoryURL": "https://github.com/stephencelis/SQLite.swift.git",
+        "state": {
+          "branch": null,
+          "revision": "9af51e2edf491c0ea632e369a6566e09b65aa333",
+          "version": "0.13.0"
+        }
+      }
+    ]
+  },
+  "version": 1
+}

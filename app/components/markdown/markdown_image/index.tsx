@@ -157,7 +157,7 @@ const MarkdownImage = ({
     if (failed) {
         return (
             <CompassIcon
-                name='jumbo-attachment-image-broken'
+                name='file-image-broken-outline-large'
                 size={24}
             />
         );
@@ -168,7 +168,7 @@ const MarkdownImage = ({
         if (Platform.OS === 'android' && (height > ANDROID_MAX_HEIGHT || width > ANDROID_MAX_WIDTH)) {
             // Android has a cap on the max image size that can be displayed
             image = (
-                <Text style={errorTextStyle}>
+                <Text style={[errorTextStyle, style.container]}>
                     <FormattedText
                         id='mobile.markdown.image.too_large'
                         defaultMessage='Image exceeds max dimensions of {maxWidth} by {maxHeight}:'
@@ -186,7 +186,7 @@ const MarkdownImage = ({
                     disabled={disabled}
                     onLongPress={handleLinkLongPress}
                     onPress={handlePreviewImage}
-                    style={{width, height}}
+                    style={[{width, height}, style.container]}
                 >
                     <ProgressiveImage
                         id={fileInfo.id}
@@ -205,6 +205,7 @@ const MarkdownImage = ({
             <TouchableWithFeedback
                 onPress={handleLinkPress}
                 onLongPress={handleLinkLongPress}
+                style={[{width, height}, style.container]}
             >
                 {image}
             </TouchableWithFeedback>
@@ -212,10 +213,7 @@ const MarkdownImage = ({
     }
 
     return (
-        <View
-            style={style.container}
-            testID='markdown_image'
-        >
+        <View testID='markdown_image'>
             {image}
         </View>
     );

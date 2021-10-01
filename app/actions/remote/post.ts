@@ -2,6 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {ActionType, General} from '@constants';
+import {SYSTEM_IDENTIFIERS} from '@constants/database';
 import DatabaseManager from '@database/manager';
 import {getNeededAtMentionedUsernames} from '@helpers/api/user';
 import NetworkManager from '@init/network_manager';
@@ -9,12 +10,12 @@ import {queryRecentPostsInChannel} from '@queries/servers/post';
 import {queryCurrentUserId, queryCurrentChannelId} from '@queries/servers/system';
 import {queryAllUsers} from '@queries/servers/user';
 
-import type {Client} from '@client/rest';
-
 import {forceLogoutIfNecessary} from './session';
 
+import type {Client} from '@client/rest';
+
 type PostsRequest = {
-    error?: never;
+    error?: unknown;
     order?: string[];
     posts?: Post[];
     previousPostId?: string;
@@ -109,7 +110,7 @@ export const fetchPosts = async (serverUrl: string, channelId: string, page = 0,
         const data = await client.getPosts(channelId, page, perPage);
         return processPostsFetched(serverUrl, ActionType.POSTS.RECEIVED_IN_CHANNEL, data, fetchOnly);
     } catch (error) {
-        forceLogoutIfNecessary(serverUrl, error);
+        forceLogoutIfNecessary(serverUrl, error as ClientErrorProps);
         return {error};
     }
 };
@@ -126,7 +127,7 @@ export const fetchPostsSince = async (serverUrl: string, channelId: string, sinc
         const data = await client.getPostsSince(channelId, since);
         return processPostsFetched(serverUrl, ActionType.POSTS.RECEIVED_SINCE, data, fetchOnly);
     } catch (error) {
-        forceLogoutIfNecessary(serverUrl, error);
+        forceLogoutIfNecessary(serverUrl, error as ClientErrorProps);
         return {error};
     }
 };
@@ -186,9 +187,9 @@ export const fetchPostAuthors = async (serverUrl: string, posts: Post[], fetchOn
             const authors = result.flat();
 
             if (!fetchOnly && authors.length) {
-                operator.handleUsers({
+                await operator.handleUsers({
                     users: authors,
-                    prepareRecordsOnly: true,
+                    prepareRecordsOnly: false,
                 });
             }
 
@@ -197,7 +198,39 @@ export const fetchPostAuthors = async (serverUrl: string, posts: Post[], fetchOn
 
         return {authors: [] as UserProfile[]};
     } catch (error) {
-        forceLogoutIfNecessary(serverUrl, error);
+        forceLogoutIfNecessary(serverUrl, error as ClientErrorProps);
+        return {error};
+    }
+};
+
+export const postActionWithCookie = async (serverUrl: string, postId: string, actionId: string, actionCookie: string, selectedOption = '') => {
+    const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
+    if (!operator) {
+        return {error: `${serverUrl} database not found`};
+    }
+
+    let client: Client;
+    try {
+        client = NetworkManager.getClient(serverUrl);
+    } catch (error) {
+        return {error};
+    }
+
+    try {
+        const data = await client.doPostActionWithCookie(postId, actionId, actionCookie, selectedOption);
+        if (data?.trigger_id) {
+            await operator.handleSystem({
+                systems: [{
+                    id: SYSTEM_IDENTIFIERS.INTEGRATION_TRIGGER_ID,
+                    value: data.trigger_id,
+                }],
+                prepareRecordsOnly: false,
+            });
+        }
+
+        return {data};
+    } catch (error) {
+        forceLogoutIfNecessary(serverUrl, error as ClientErrorProps);
         return {error};
     }
 };
