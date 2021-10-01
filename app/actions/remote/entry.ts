@@ -16,6 +16,7 @@ import {prepareCommonSystemValues, queryCommonSystemValues, queryConfig, queryCu
 import {addChannelToTeamHistory, deleteMyTeams, queryAvailableTeamIds, queryMyTeams, queryTeamsById} from '@queries/servers/team';
 import {queryCurrentUser} from '@queries/servers/user';
 import {selectDefaultChannelForTeam} from '@utils/channel';
+import {deleteV1Data} from '@utils/file';
 
 import {fetchMissingSidebarInfo, fetchMyChannelsForTeam, MyChannelsRequest} from './channel';
 import {fetchGroupsForTeam} from './group';
@@ -99,7 +100,7 @@ export const appEntry = async (serverUrl: string) => {
     deferredAppEntryActions(serverUrl, currentUserId, currentUserLocale, prefData.preferences, config, license, teamData, chData, initialTeamId);
 
     const error = teamData.error || chData?.error || prefData.error || meData.error;
-    return {error, time: Date.now() - dt};
+    return {error, time: Date.now() - dt, userId: meData?.user?.id};
 };
 
 export const loginEntry = async ({serverUrl, user, deviceToken}: AfterLoginArgs) => {
@@ -227,6 +228,34 @@ export const loginEntry = async ({serverUrl, user, deviceToken}: AfterLoginArgs)
         }
 
         return {error};
+    }
+};
+
+export const upgradeEntry = async (serverUrl: string) => {
+    const dt = Date.now();
+    const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
+    if (!operator) {
+        return {error: `${serverUrl} database not found`};
+    }
+
+    try {
+        const configAndLicense = await fetchConfigAndLicense(serverUrl, false);
+        const entry = await appEntry(serverUrl);
+
+        const error = configAndLicense.error || entry.error;
+
+        if (!error) {
+            const models = await prepareCommonSystemValues(operator, {currentUserId: entry.userId});
+            if (models?.length) {
+                await operator.batchRecords(models);
+            }
+            DatabaseManager.setActiveServerDatabase(serverUrl);
+            deleteV1Data();
+        }
+
+        return {error, time: Date.now() - dt};
+    } catch (e) {
+        return {error: e, time: Date.now() - dt};
     }
 };
 
