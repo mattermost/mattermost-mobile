@@ -1,8 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React from 'react';
 import PropTypes from 'prop-types';
+import React from 'react';
 import {
     Image,
     Switch,
@@ -10,11 +10,11 @@ import {
     TouchableHighlight,
     View,
 } from 'react-native';
+import FastImage from 'react-native-fast-image';
 
 import CompassIcon from '@components/compass_icon';
 import FormattedText from '@components/formatted_text';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
-import FastImage from 'react-native-fast-image';
 import {isValidUrl} from '@utils/url';
 
 function createTouchableComponent(children, action) {
@@ -79,17 +79,24 @@ function channelInfoRow(props) {
         );
     }
 
+    const labelStyle = [style.label, {color: textColor || theme.centerChannelColor}];
+    let label = <Text style={labelStyle}>{defaultMessage}</Text>;
+    if (textId) {
+        label = (
+            <FormattedText
+                style={labelStyle}
+                id={textId}
+                defaultMessage={defaultMessage}
+            />
+        );
+    }
     const RowComponent = (
         <View
             testID={testID}
             style={style.container}
         >
             {iconElement}
-            <FormattedText
-                style={[style.label, {color: textColor || theme.centerChannelColor}]}
-                id={textId}
-                defaultMessage={defaultMessage}
-            />
+            {label}
             <Text style={style.detail}>{detail}</Text>
             {actionElement}
         </View>
@@ -120,7 +127,7 @@ channelInfoRow.propTypes = {
     imageTintColor: PropTypes.string,
     isLandscape: PropTypes.bool,
     rightArrow: PropTypes.bool,
-    textId: PropTypes.string.isRequired,
+    textId: PropTypes.string,
     togglable: PropTypes.bool,
     textColor: PropTypes.string,
     theme: PropTypes.object.isRequired,

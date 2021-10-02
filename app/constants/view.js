@@ -99,19 +99,26 @@ const ViewTypes = keyMirror({
 
     INDICATOR_BAR_VISIBLE: null,
     CHANNEL_NAV_BAR_CHANGED: null,
+
+    VIEWING_GLOBAL_THREADS_SCREEN: null,
+    NOT_VIEWING_GLOBAL_THREADS_SCREEN: null,
+
+    VIEWING_GLOBAL_THREADS_UNREADS: null,
+    VIEWING_GLOBAL_THREADS_ALL: null,
 });
 
 const RequiredServer = {
-    FULL_VERSION: '5.31.3',
+    FULL_VERSION: '5.37.0',
     MAJOR_VERSION: 5,
-    MIN_VERSION: 31,
-    PATCH_VERSION: 3,
+    MIN_VERSION: 37,
+    PATCH_VERSION: 0,
 };
 
 export default {
     ...ViewTypes,
     RequiredServer,
     POST_VISIBILITY_CHUNK_SIZE: 60,
+    CRT_CHUNK_SIZE: 60,
     FEATURE_TOGGLE_PREFIX: 'feature_enabled_',
     EMBED_PREVIEW: 'embed_preview',
     LINK_PREVIEW_DISPLAY: 'link_previews',

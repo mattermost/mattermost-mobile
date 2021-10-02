@@ -1,14 +1,13 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React from 'react';
 import PropTypes from 'prop-types';
+import React from 'react';
 import {Text, View} from 'react-native';
 import FastImage from 'react-native-fast-image';
 
 import {Client4} from '@client/rest';
-
-import {makeStyleSheetFromTheme} from 'app/utils/theme';
+import {makeStyleSheetFromTheme} from '@utils/theme';
 
 export default class TeamIcon extends React.PureComponent {
     static propTypes = {
@@ -104,10 +103,10 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             borderRadius: 2,
             alignItems: 'center',
             justifyContent: 'center',
-            backgroundColor: theme.sidebarText,
+            backgroundColor: theme.sidebarBg,
         },
         text: {
-            color: theme.sidebarBg,
+            color: theme.sidebarText,
             fontFamily: 'OpenSans',
             fontWeight: '600',
             fontSize: 15,
@@ -119,6 +118,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             bottom: 0,
             left: 0,
             right: 0,
+            backgroundColor: 'white',
         },
     };
 });

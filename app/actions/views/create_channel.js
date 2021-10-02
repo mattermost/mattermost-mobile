@@ -1,12 +1,14 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {handleSelectChannel, setChannelDisplayName} from './channel';
+import {addChannelToCategory} from '@mm-redux/actions/channel_categories';
 import {createChannel} from '@mm-redux/actions/channels';
 import {getCurrentTeamId} from '@mm-redux/selectors/entities/teams';
 import {getCurrentUserId} from '@mm-redux/selectors/entities/users';
 import {cleanUpUrlable} from '@mm-redux/utils/channel_utils';
 import {generateId} from '@mm-redux/utils/helpers';
+
+import {handleSelectChannel, setChannelDisplayName} from './channel';
 
 export function generateChannelNameFromDisplayName(displayName) {
     let name = cleanUpUrlable(displayName);
@@ -18,7 +20,7 @@ export function generateChannelNameFromDisplayName(displayName) {
     return name;
 }
 
-export function handleCreateChannel(displayName, purpose, header, type) {
+export function handleCreateChannel(displayName, purpose, header, type, categoryId) {
     return async (dispatch, getState) => {
         const state = getState();
         const currentUserId = getCurrentUserId(state);
@@ -36,6 +38,10 @@ export function handleCreateChannel(displayName, purpose, header, type) {
         if (data && data.id) {
             dispatch(setChannelDisplayName(displayName));
             dispatch(handleSelectChannel(data.id));
+
+            if (categoryId) {
+                dispatch(addChannelToCategory(categoryId, data.id));
+            }
         }
     };
 }

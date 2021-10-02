@@ -1,6 +1,10 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+/* eslint-disable max-lines */
+
+import deepEqual from 'deep-equal';
+import PropTypes, {string} from 'prop-types';
 import React from 'react';
 import {injectIntl} from 'react-intl';
 import {
@@ -13,17 +17,16 @@ import {
     View,
 } from 'react-native';
 
-import deepEqual from 'deep-equal';
-import PropTypes from 'prop-types';
-
 import FormattedText from '@components/formatted_text';
 import RadioButtonGroup from '@components/radio_button';
 import StatusBar from '@components/status_bar';
 import PushNotifications from '@init/push_notifications';
 import {RequestStatus} from '@mm-redux/constants';
+import {displayUsername} from '@mm-redux/utils/user_utils';
 import SectionItem from '@screens/settings/section_item';
-import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {getNotificationProps} from '@utils/notify_props';
+import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
+
 import NotificationPreferences from 'app/notification_preferences';
 
 import NotificationSettingsMobileBase from './notification_settings_mobile_base';
@@ -31,6 +34,7 @@ import NotificationSettingsMobileBase from './notification_settings_mobile_base'
 class NotificationSettingsMobileAndroid extends NotificationSettingsMobileBase {
     static propTypes = {
         ...NotificationSettingsMobileBase.propTypes,
+        teammateNameDisplay: string,
         updateMeRequest: PropTypes.object.isRequired,
     }
 
@@ -61,6 +65,15 @@ class NotificationSettingsMobileAndroid extends NotificationSettingsMobileBase {
 
     onMobilePushChanged = (value) => {
         this.setState({newPush: value});
+    };
+
+    onMobilePushThreadChanged = (value) => {
+        let pushThreads = 'mention';
+        if (value) {
+            pushThreads = 'all';
+        }
+
+        this.setMobilePushThreads(pushThreads, this.saveNotificationProps);
     };
 
     onMobilePushStatusChanged = (value) => {
@@ -607,6 +620,34 @@ class NotificationSettingsMobileAndroid extends NotificationSettingsMobileBase {
         );
     }
 
+    renderMobilePushThreadsSection(style) {
+        const {theme} = this.props;
+
+        return (
+            <View>
+                <SectionItem
+                    label={(
+                        <FormattedText
+                            id='mobile.notification_settings.push_threads.title_android'
+                            defaultMessage='Thread reply notifications'
+                        />
+                    )}
+                    description={(
+                        <FormattedText
+                            id='mobile.notification_settings.push_threads.description'
+                            defaultMessage={'Notify me about all replies to threads I\'m following'}
+                        />
+                    )}
+                    action={this.onMobilePushThreadChanged}
+                    actionType='toggle'
+                    selected={this.state.push_threads === 'all'}
+                    theme={theme}
+                />
+                <View style={style.separator}/>
+            </View>
+        );
+    }
+
     renderNotificationOptions(style) {
         if (Platform.Version >= 26) {
             return null;
@@ -641,6 +682,7 @@ class NotificationSettingsMobileAndroid extends NotificationSettingsMobileBase {
             mention_keys: mentionKeys,
             push,
             push_status: pushStatus,
+            push_threads: pushThreads,
         } = this.state;
 
         const {currentUser} = this.props;
@@ -654,6 +696,7 @@ class NotificationSettingsMobileAndroid extends NotificationSettingsMobileBase {
             mention_keys: mentionKeys,
             push,
             push_status: pushStatus,
+            push_threads: pushThreads,
             user_id: currentUser.id,
         };
 
@@ -694,13 +737,15 @@ class NotificationSettingsMobileAndroid extends NotificationSettingsMobileBase {
     };
 
     sendTestNotification = () => {
-        const {intl} = this.props;
+        const {currentUser, intl, teammateNameDisplay} = this.props;
 
         PushNotifications.localNotification({
             body: intl.formatMessage({
                 id: 'mobile.notification_settings_mobile.test_push',
                 defaultMessage: 'This is a test push notification',
             }),
+            sender_name: displayUsername(currentUser, teammateNameDisplay),
+            sender_id: currentUser.id,
             userInfo: {
                 local: true,
                 test: true,
@@ -731,7 +776,7 @@ class NotificationSettingsMobileAndroid extends NotificationSettingsMobileBase {
     };
 
     render() {
-        const {theme} = this.props;
+        const {theme, isCollapsedThreadsEnabled} = this.props;
         const style = getStyleSheet(theme);
 
         return (
@@ -747,6 +792,9 @@ class NotificationSettingsMobileAndroid extends NotificationSettingsMobileBase {
                 >
                     {this.renderMobilePushSection()}
                     <View style={style.separator}/>
+                    {isCollapsedThreadsEnabled && this.state.push === 'mention' && (
+                        this.renderMobilePushThreadsSection(style)
+                    )}
                     {this.renderMobilePushStatusSection(style)}
                     {this.renderNotificationOptions(style)}
                     {this.renderMobileTestSection(style)}

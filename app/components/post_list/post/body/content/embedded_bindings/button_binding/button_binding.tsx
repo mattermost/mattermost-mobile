@@ -5,16 +5,19 @@ import React, {useCallback, useRef} from 'react';
 import {intlShape, injectIntl} from 'react-intl';
 import Button from 'react-native-button';
 
-import {preventDoubleTap} from 'app/utils/tap';
-import {makeStyleSheetFromTheme, changeOpacity} from 'app/utils/theme';
-import {getStatusColors} from '@utils/message_attachment_colors';
-import ButtonBindingText from './button_binding_text';
-import {Theme} from '@mm-redux/types/preferences';
+import {showAppForm} from '@actions/navigation';
+import {AppExpandLevels, AppBindingLocations, AppCallTypes, AppCallResponseTypes} from '@mm-redux/constants/apps';
+import {ActionResult} from '@mm-redux/types/actions';
 import {AppBinding} from '@mm-redux/types/apps';
 import {Post} from '@mm-redux/types/posts';
-import {DoAppCall, PostEphemeralCallResponseForPost} from 'types/actions/apps';
-import {AppExpandLevels, AppBindingLocations, AppCallTypes, AppCallResponseTypes} from '@mm-redux/constants/apps';
+import {Theme} from '@mm-redux/types/theme';
+import {DoAppCall, PostEphemeralCallResponseForPost} from '@mm-types/actions/apps';
 import {createCallContext, createCallRequest} from '@utils/apps';
+import {getStatusColors} from '@utils/message_attachment_colors';
+import {preventDoubleTap} from '@utils/tap';
+import {makeStyleSheetFromTheme, changeOpacity} from '@utils/theme';
+
+import ButtonBindingText from './button_binding_text';
 
 type Props = {
     binding: AppBinding;
@@ -22,6 +25,7 @@ type Props = {
     intl: typeof intlShape;
     post: Post;
     postEphemeralCallResponseForPost: PostEphemeralCallResponseForPost;
+    handleGotoLocation: (href: string, intl: any) => Promise<ActionResult>;
     teamID: string;
     theme: Theme;
 }
@@ -49,16 +53,20 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     };
 });
 
-const ButtonBinding = ({binding, doAppCall, intl, post, postEphemeralCallResponseForPost, teamID, theme}: Props) => {
+const ButtonBinding = ({binding, doAppCall, intl, post, postEphemeralCallResponseForPost, teamID, theme, handleGotoLocation}: Props) => {
     const pressed = useRef(false);
     const style = getStyleSheet(theme);
 
     const onPress = useCallback(preventDoubleTap(async () => {
-        if (!binding.call || pressed.current) {
+        if (pressed.current) {
             return;
         }
 
-        pressed.current = true;
+        const call = binding.form?.call || binding.call;
+
+        if (!call) {
+            return;
+        }
 
         const context = createCallContext(
             binding.app_id,
@@ -68,13 +76,20 @@ const ButtonBinding = ({binding, doAppCall, intl, post, postEphemeralCallRespons
             post.id,
         );
 
-        const call = createCallRequest(
-            binding.call,
+        const callRequest = createCallRequest(
+            call,
             context,
             {post: AppExpandLevels.EXPAND_ALL},
         );
 
-        const res = await doAppCall(call, AppCallTypes.SUBMIT, intl);
+        if (binding.form) {
+            showAppForm(binding.form, callRequest, theme);
+            return;
+        }
+
+        pressed.current = true;
+
+        const res = await doAppCall(callRequest, AppCallTypes.SUBMIT, intl);
         pressed.current = false;
 
         if (res.error) {
@@ -96,7 +111,10 @@ const ButtonBinding = ({binding, doAppCall, intl, post, postEphemeralCallRespons
             }
             return;
         case AppCallResponseTypes.NAVIGATE:
+            handleGotoLocation(callResp.navigate_to_url!, intl);
+            return;
         case AppCallResponseTypes.FORM:
+            showAppForm(callResp.form, call, theme);
             return;
         default: {
             const errorMessage = intl.formatMessage({
@@ -108,7 +126,7 @@ const ButtonBinding = ({binding, doAppCall, intl, post, postEphemeralCallRespons
             postEphemeralCallResponseForPost(callResp, errorMessage, post);
         }
         }
-    }), []);
+    }), [theme]);
 
     return (
         <Button

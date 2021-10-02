@@ -6,19 +6,18 @@ import {Animated, View} from 'react-native';
 
 import Autocomplete from '@components/autocomplete';
 import Loading from '@components/loading';
-import PostList from '@components/post_list';
 import PostDraft from '@components/post_draft';
+import PostList from '@components/post_list';
 import SafeAreaView from '@components/safe_area_view';
 import StatusBar from '@components/status_bar';
 import DEVICE from '@constants/device';
+import {THREAD_POST_TEXTBOX_CURSOR_CHANGE, THREAD_POST_TEXTBOX_VALUE_CHANGE} from '@constants/post_draft';
 import {THREAD} from '@constants/screen';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 import ThreadBase from './thread_base';
 
 const ACCESSORIES_CONTAINER_NATIVE_ID = 'threadAccessoriesContainer';
-const THREAD_POST_TEXTBOX_CURSOR_CHANGE = 'onThreadTextBoxCursorChange';
-const THREAD_POST_TEXTBOX_VALUE_CHANGE = 'onThreadTextBoxValueChange';
 const SCROLLVIEW_NATIVE_ID = 'threadPostList';
 
 export default class ThreadIOS extends ThreadBase {
@@ -55,6 +54,7 @@ export default class ThreadIOS extends ThreadBase {
                             currentUserId={myMember && myMember.user_id}
                             lastViewedAt={this.state.lastViewedAt}
                             location={THREAD}
+                            rootId={rootId}
                             scrollViewNativeID={SCROLLVIEW_NATIVE_ID}
                         />
                     </Animated.View>

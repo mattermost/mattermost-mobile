@@ -2,6 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {useNavigation} from '@react-navigation/native';
+
 import React from 'react';
 import {injectIntl, intlShape} from 'react-intl';
 import {StyleSheet, Text, TouchableHighlight, View} from 'react-native';
@@ -11,10 +12,11 @@ import FormattedText from '@components/formatted_text';
 import {getMyTeams} from '@mm-redux/actions/teams';
 import {Preferences} from '@mm-redux/constants';
 import {DispatchFunc} from '@mm-redux/types/actions';
+import {loadTeamChannels, getTeamDefaultChannel} from '@share/actions';
+import {changeOpacity} from '@utils/theme';
+
 import type {Channel} from '@mm-redux/types/channels';
 import type {Team} from '@mm-redux/types/teams';
-import {changeOpacity} from '@utils/theme';
-import {loadTeamChannels, getTeamDefaultChannel} from '@share/actions';
 
 interface TeamButtonProps {
     intl: typeof intlShape;
@@ -22,7 +24,7 @@ interface TeamButtonProps {
     team?: Team | null;
 }
 
-const theme = Preferences.THEMES.default;
+const theme = Preferences.THEMES.denim;
 
 const TeamButton = ({intl, onSelect, team}: TeamButtonProps) => {
     const store = useStore();
@@ -84,6 +86,7 @@ const styles = StyleSheet.create({
         fontSize: 16,
         marginTop: 16,
         marginBottom: 3,
+        color: changeOpacity(theme.centerChannelColor, 0.7),
     },
     buttonValue: {
         color: changeOpacity(theme.centerChannelColor, 0.6),

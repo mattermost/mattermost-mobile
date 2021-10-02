@@ -4,9 +4,10 @@
 import React from 'react';
 import {Text, TextStyle} from 'react-native';
 
-import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import FormattedText from '@components/formatted_text';
-import type {Theme} from '@mm-redux/types/preferences';
+import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
+
+import type {Theme} from '@mm-redux/types/theme';
 
 interface ComponentProps {
     text: string | typeof FormattedText;

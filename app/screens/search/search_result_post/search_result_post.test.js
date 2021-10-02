@@ -4,7 +4,7 @@
 import React from 'react';
 
 import {Preferences} from '@mm-redux/constants';
-import {shallowWithIntl} from 'test/intl-test-helper';
+import {shallowWithIntl} from '@test/intl-test-helper';
 
 import SearchResultPost from './search_result_post';
 
@@ -15,7 +15,7 @@ describe('SearchResultPost', () => {
         highlightPinnedOrFlagged: false,
         skipFlaggedHeader: false,
         skipPinnedHeader: false,
-        theme: Preferences.THEMES.default,
+        theme: Preferences.THEMES.denim,
     };
 
     test('should match snapshot', async () => {

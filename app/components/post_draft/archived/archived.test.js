@@ -4,8 +4,8 @@
 import React from 'react';
 
 import Preferences from '@mm-redux/constants/preferences';
+import {shallowWithIntl} from '@test/intl-test-helper';
 
-import {shallowWithIntl} from 'test/intl-test-helper';
 import Archived from './index';
 
 describe('PostDraft Archived', () => {
@@ -15,7 +15,7 @@ describe('PostDraft Archived', () => {
         deactivated: false,
         rootId: 'root-id',
         teamId: 'team-id',
-        theme: Preferences.THEMES.default,
+        theme: Preferences.THEMES.denim,
     };
 
     test('should match snapshot', () => {

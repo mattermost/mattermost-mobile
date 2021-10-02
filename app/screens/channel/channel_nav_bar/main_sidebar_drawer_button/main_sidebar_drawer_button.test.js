@@ -5,7 +5,7 @@ import React from 'react';
 
 import Badge from '@components/badge';
 import Preferences from '@mm-redux/constants/preferences';
-import {shallowWithIntl} from 'test/intl-test-helper';
+import {shallowWithIntl} from '@test/intl-test-helper';
 
 import MainSidebarDrawerButton from './main_sidebar_drawer_button';
 
@@ -13,7 +13,7 @@ describe('MainSidebarDrawerButton', () => {
     const baseProps = {
         openSidebar: jest.fn(),
         badgeCount: 0,
-        theme: Preferences.THEMES.default,
+        theme: Preferences.THEMES.denim,
         visible: false,
     };
 

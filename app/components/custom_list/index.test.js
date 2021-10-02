@@ -1,9 +1,9 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {shallow} from 'enzyme';
 import React from 'react';
 import {View} from 'react-native';
-import {shallow} from 'enzyme';
 
 import Preferences from '@mm-redux/constants/preferences';
 
@@ -24,7 +24,7 @@ describe('CustomList', () => {
         listScrollRenderAheadDistance: 0,
         showSections: true,
         selectable: true,
-        theme: Preferences.THEMES.default,
+        theme: Preferences.THEMES.denim,
     };
 
     test('should match snapshot with FlatList', () => {

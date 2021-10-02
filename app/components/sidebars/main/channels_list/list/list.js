@@ -1,8 +1,10 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
+/* eslint-disable max-lines */
 
-import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
+import React, {PureComponent} from 'react';
+import {intlShape} from 'react-intl';
 import {
     Dimensions,
     findNodeHandle,
@@ -13,21 +15,21 @@ import {
     TouchableHighlight,
     View,
 } from 'react-native';
-import {intlShape} from 'react-intl';
+import {isEqual} from 'underscore';
 
-import EventEmitter from '@mm-redux/utils/event_emitter';
-import {General} from '@mm-redux/constants';
-import {debounce} from '@mm-redux/actions/helpers';
-
+import {showModal} from '@actions/navigation';
 import CompassIcon from '@components/compass_icon';
 import ChannelItem from '@components/sidebars/main/channels_list/channel_item';
+import ThreadsSidebarEntry from '@components/sidebars/main/threads_entry';
 import {DeviceTypes, ListTypes, NavigationTypes} from '@constants';
 import {SidebarSectionTypes} from '@constants/view';
-
+import {debounce} from '@mm-redux/actions/helpers';
+import {General} from '@mm-redux/constants';
+import {CategoryTypes} from '@mm-redux/constants/channel_categories';
+import EventEmitter from '@mm-redux/utils/event_emitter';
 import BottomSheet from '@utils/bottom_sheet';
 import {t} from '@utils/i18n';
 import {preventDoubleTap} from '@utils/tap';
-import {showModal} from '@actions/navigation';
 
 const VIEWABILITY_CONFIG = {
     ...ListTypes.VISIBILITY_CONFIG_DEFAULTS,
@@ -39,15 +41,21 @@ let UnreadIndicator = null;
 export default class List extends PureComponent {
     static propTypes = {
         testID: PropTypes.string,
+        styles: PropTypes.object.isRequired,
+        theme: PropTypes.object.isRequired,
+        onSelectChannel: PropTypes.func.isRequired,
+        onCollapseCategory: PropTypes.func.isRequired,
         canJoinPublicChannels: PropTypes.bool.isRequired,
         canCreatePrivateChannels: PropTypes.bool.isRequired,
         canCreatePublicChannels: PropTypes.bool.isRequired,
-        favoriteChannelIds: PropTypes.array.isRequired,
-        onSelectChannel: PropTypes.func.isRequired,
+        collapsedThreadsEnabled: PropTypes.bool,
         unreadChannelIds: PropTypes.array.isRequired,
-        styles: PropTypes.object.isRequired,
-        theme: PropTypes.object.isRequired,
+        favoriteChannelIds: PropTypes.array.isRequired,
         orderedChannelIds: PropTypes.array.isRequired,
+        categories: PropTypes.array,
+        showLegacySidebar: PropTypes.bool.isRequired,
+        unreadsOnTop: PropTypes.bool.isRequired,
+        currentChannelId: PropTypes.string,
     };
 
     static contextTypes = {
@@ -60,7 +68,8 @@ export default class List extends PureComponent {
         this.combinedActionsRef = React.createRef();
 
         this.state = {
-            sections: this.buildSections(props),
+            sections: this.props.showLegacySidebar ? this.buildSections(props) : [],
+            categorySections: this.props.showLegacySidebar ? [] : this.buildCategorySections(),
             showIndicator: false,
             width: 0,
         };
@@ -85,20 +94,35 @@ export default class List extends PureComponent {
         this.setState({sections});
     }
 
+    setCategorySections(categorySections) {
+        this.setState({categorySections});
+    }
+
     componentDidUpdate(prevProps, prevState) {
         const {
             canCreatePrivateChannels,
             orderedChannelIds,
             unreadChannelIds,
+            categories,
         } = prevProps;
 
-        if (this.props.canCreatePrivateChannels !== canCreatePrivateChannels ||
+        // If legacy sidebar, continue with legacy updates
+        if (this.props.showLegacySidebar) {
+            if (this.props.canCreatePrivateChannels !== canCreatePrivateChannels ||
             this.props.unreadChannelIds !== unreadChannelIds ||
             this.props.orderedChannelIds !== orderedChannelIds) {
-            this.setSections(this.buildSections(this.props));
+                this.setSections(this.buildSections(this.props));
+            }
+        } else if (
+            !isEqual(this.props.categories, categories) ||
+            this.props.unreadChannelIds !== unreadChannelIds) {
+            // Rebuild sections only if categories or unreads have changed
+            this.setCategorySections(this.buildCategorySections());
         }
 
-        if (prevState.sections !== this.state.sections && this.listRef?._wrapperListRef?.getListRef()._viewabilityHelper) { //eslint-disable-line
+        if ((prevState.sections !== this.state.sections ||
+            prevState.categorySections !== this.state.categorySections)
+            && this.listRef?._wrapperListRef?.getListRef()._viewabilityHelper) { //eslint-disable-line
             this.listRef.recordInteraction();
             this.updateUnreadIndicators({
                 viewableItems: Array.from(this.listRef._wrapperListRef.getListRef()._viewabilityHelper._viewableItems.values()) //eslint-disable-line
@@ -168,15 +192,17 @@ export default class List extends PureComponent {
             orderedChannelIds,
         } = props;
 
-        return orderedChannelIds.map((s) => {
+        const sections = orderedChannelIds.map((s) => {
             return {
                 ...this.getSectionConfigByType(props, s.type),
                 data: s.items,
             };
         });
+
+        return sections;
     };
 
-    showCreateChannelOptions = () => {
+    showCreateChannelOptions = (category) => {
         const {formatMessage} = this.context.intl;
         const {
             canJoinPublicChannels,
@@ -184,31 +210,25 @@ export default class List extends PureComponent {
             canCreatePublicChannels,
         } = this.props;
 
-        const moreChannelsText = formatMessage({id: 'more_channels.title', defaultMessage: 'More Channels'});
-        const newPublicChannelText = formatMessage({id: 'mobile.create_channel.public', defaultMessage: 'New Public Channel'});
-        const newPrivateChannelText = formatMessage({id: 'mobile.create_channel.private', defaultMessage: 'New Private Channel'});
-        const newDirectChannelText = formatMessage({id: 'mobile.more_dms.title', defaultMessage: 'New Conversation'});
+        const moreChannelsText = formatMessage({id: 'more_channels.title', defaultMessage: 'Browse for a Channel'});
+        const newChannelText = formatMessage({id: 'mobile.create_channel', defaultMessage: 'Create a new Channel'});
+        const newDirectChannelText = formatMessage({id: 'mobile.more_dms.title', defaultMessage: 'Add a Conversation'});
         const cancelText = formatMessage({id: 'mobile.post.cancel', defaultMessage: 'Cancel'});
         const options = [];
         const actions = [];
 
         if (canJoinPublicChannels) {
-            actions.push(this.goToMoreChannels);
-            options.push(moreChannelsText);
+            actions.push(() => this.goToMoreChannels(category.id));
+            options.push({text: moreChannelsText, icon: 'globe'});
         }
 
-        if (canCreatePublicChannels) {
-            actions.push(this.goToCreatePublicChannel);
-            options.push(newPublicChannelText);
-        }
-
-        if (canCreatePrivateChannels) {
-            actions.push(this.goToCreatePrivateChannel);
-            options.push(newPrivateChannelText);
+        if (canCreatePrivateChannels || canCreatePublicChannels) {
+            actions.push(() => this.goToCreateChannel(category.id));
+            options.push({text: newChannelText, icon: 'plus'});
         }
 
         actions.push(this.goToDirectMessages);
-        options.push(newDirectChannelText);
+        options.push({text: newDirectChannelText, icon: 'account-plus-outline'});
         options.push(cancelText);
 
         const cancelButtonIndex = options.length - 1;
@@ -216,6 +236,8 @@ export default class List extends PureComponent {
         BottomSheet.showBottomSheetWithOptions({
             anchor: this.combinedActionsRef?.current ? findNodeHandle(this.combinedActionsRef.current) : null,
             options,
+            title: 'Add Channels',
+            subtitle: `To the ${category.display_name} category`,
             cancelButtonIndex,
         }, (value) => {
             if (value !== cancelButtonIndex) {
@@ -250,6 +272,20 @@ export default class List extends PureComponent {
         showModal(screen, title, passProps);
     });
 
+    goToCreateChannel = preventDoubleTap((categoryId) => {
+        const {intl} = this.context;
+        const screen = 'CreateChannel';
+        const title = intl.formatMessage({id: 'mobile.create_channel', defaultMessage: 'Create a new Channel'});
+        const passProps = {
+            channelType: General.OPEN_CHANNEL,
+            closeButton: this.closeButton,
+            categoryId,
+        };
+
+        EventEmitter.emit(NavigationTypes.CLOSE_MAIN_SIDEBAR);
+        showModal(screen, title, passProps);
+    });
+
     goToDirectMessages = preventDoubleTap(() => {
         const {intl} = this.context;
         const screen = 'MoreDirectMessages';
@@ -260,6 +296,7 @@ export default class List extends PureComponent {
                 leftButtons: [{
                     id: 'close-dms',
                     icon: this.closeButton,
+                    testID: 'close.more_direct_messages.button',
                 }],
             },
         };
@@ -268,12 +305,13 @@ export default class List extends PureComponent {
         showModal(screen, title, passProps, options);
     });
 
-    goToMoreChannels = preventDoubleTap(() => {
+    goToMoreChannels = preventDoubleTap((categoryId) => {
         const {intl} = this.context;
         const screen = 'MoreChannels';
         const title = intl.formatMessage({id: 'more_channels.title', defaultMessage: 'More Channels'});
         const passProps = {
             closeButton: this.closeButton,
+            categoryId,
         };
 
         EventEmitter.emit(NavigationTypes.CLOSE_MAIN_SIDEBAR);
@@ -348,6 +386,106 @@ export default class List extends PureComponent {
         );
     };
 
+    renderCategoryItem = ({item, section}) => {
+        if ((section.collapsed && this.props.currentChannelId !== item)) {
+            return null;
+        }
+
+        const {testID, favoriteChannelIds, unreadChannelIds} = this.props;
+        const channelItemTestID = `${testID}.channel_item`;
+
+        return (
+            <ChannelItem
+                testID={channelItemTestID}
+                channelId={item}
+                isUnread={unreadChannelIds.includes(item)}
+                isFavorite={favoriteChannelIds.includes(item)}
+                onSelectChannel={this.onSelectChannel}
+            />
+        );
+    };
+
+    renderCategoryHeader = ({section}) => {
+        const {styles, onCollapseCategory} = this.props;
+        const {action, id, name, collapsed, type, data} = section;
+        const {intl} = this.context;
+        const anchor = (id === 'sidebar.types.recent' || id === 'mobile.channel_list.channels');
+
+        const title = () => {
+            switch (type) {
+            case CategoryTypes.UNREADS:
+                return intl.formatMessage({id: 'mobile.channel_list.unreads', defaultMessage: 'unreads'}).toUpperCase();
+            case CategoryTypes.FAVORITES:
+                return intl.formatMessage({id: 'sidebar.favorites', defaultMessage: 'favorites'}).toUpperCase();
+            case CategoryTypes.CHANNELS:
+                return intl.formatMessage({id: 'mobile.channel_list.channels', defaultMessage: 'channels'}).toUpperCase();
+            case CategoryTypes.DIRECT_MESSAGES:
+                return intl.formatMessage({id: 'sidebar.direct', defaultMessage: 'direct messages'}).toUpperCase();
+            default:
+                return name.toUpperCase();
+            }
+        };
+
+        const header = (
+            <View style={styles.titleContainer}>
+                {(type !== CategoryTypes.UNREADS && data.length > 0) &&
+                    <CompassIcon
+                        name={collapsed ? 'chevron-right' : 'chevron-down'}
+                        ref={anchor ? this.combinedActionsRef : null}
+                        style={styles.chevron}
+                    />
+                }
+                <Text style={styles.title}>
+                    {title()}
+                </Text>
+                <View style={styles.separatorContainer}>
+                    <Text> </Text>
+                </View>
+                {action && this.renderSectionAction(styles, action, anchor, id)}
+            </View>
+        );
+
+        if (type === CategoryTypes.UNREADS || data.length === 0) {
+            return header;
+        }
+
+        return (
+            <TouchableHighlight onPress={() => onCollapseCategory(id, !collapsed)}>
+                {header}
+            </TouchableHighlight>
+        );
+    }
+
+    buildCategorySections = () => {
+        const categoriesBySection = [];
+
+        // Start with Unreads
+        if (this.props.unreadChannelIds.length && this.props.unreadsOnTop) {
+            categoriesBySection.push({
+                id: 'unreads',
+                name: 'UNREADS',
+                data: this.props.unreadChannelIds,
+                type: CategoryTypes.UNREADS,
+            });
+        }
+
+        // Add the rest
+        if (this.props.categories) {
+            this.props.categories.reduce((prev, cat) => {
+                prev.push({
+                    name: cat.display_name,
+                    action: cat.type === 'direct_messages' ? this.goToDirectMessages : () => this.showCreateChannelOptions(cat),
+                    data: cat.channel_ids,
+                    ...cat,
+                });
+
+                return prev;
+            }, categoriesBySection);
+        }
+
+        return categoriesBySection;
+    }
+
     scrollToTop = () => {
         //eslint-disable-next-line no-underscore-dangle
         if (this.listRef?._wrapperListRef) {
@@ -366,9 +504,10 @@ export default class List extends PureComponent {
 
     updateUnreadIndicators = ({viewableItems}) => {
         const {unreadChannelIds} = this.props;
-        const firstUnread = unreadChannelIds.length && unreadChannelIds[0];
-        if (firstUnread && viewableItems.length) {
-            const isVisible = viewableItems.find((v) => v.item === firstUnread);
+        const firstUnreadId = unreadChannelIds.length && unreadChannelIds[0];
+
+        if (firstUnreadId && viewableItems.length) {
+            const isVisible = viewableItems.find((v) => v.item === firstUnreadId);
 
             return this.emitUnreadIndicatorChange(!isVisible);
         }
@@ -397,23 +536,29 @@ export default class List extends PureComponent {
     };
 
     render() {
-        const {testID, styles, theme} = this.props;
-        const {sections, showIndicator} = this.state;
+        const {testID, styles, theme, showLegacySidebar, collapsedThreadsEnabled} = this.props;
+        const {sections, categorySections, showIndicator} = this.state;
 
         const paddingBottom = this.listContentPadding();
+        const indicatorStyle = [styles.above];
+        if (collapsedThreadsEnabled) {
+            indicatorStyle.push({marginTop: 64});
+        }
 
         return (
             <View
                 style={styles.container}
                 onLayout={this.onLayout}
             >
+                {collapsedThreadsEnabled && (
+                    <ThreadsSidebarEntry/>
+                )}
                 <SectionList
                     ref={this.setListRef}
-                    sections={sections}
+                    sections={showLegacySidebar ? sections : categorySections}
                     contentContainerStyle={{paddingBottom}}
-                    removeClippedSubviews={Platform.OS === 'android'}
-                    renderItem={this.renderItem}
-                    renderSectionHeader={this.renderSectionHeader}
+                    renderItem={showLegacySidebar ? this.renderItem : this.renderCategoryItem}
+                    renderSectionHeader={showLegacySidebar ? this.renderSectionHeader : this.renderCategoryHeader}
                     keyboardShouldPersistTaps={'always'}
                     keyExtractor={this.keyExtractor}
                     onViewableItemsChanged={this.updateUnreadIndicators}
@@ -427,7 +572,7 @@ export default class List extends PureComponent {
                 <UnreadIndicator
                     onPress={this.scrollToTop}
                     theme={theme}
-                    style={styles.above}
+                    style={indicatorStyle}
                     visible={showIndicator}
                 />
                 }

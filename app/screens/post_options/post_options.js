@@ -1,11 +1,12 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {PureComponent} from 'react';
-import PropTypes from 'prop-types';
-import {Alert, StyleSheet, View} from 'react-native';
 import Clipboard from '@react-native-community/clipboard';
+
+import PropTypes from 'prop-types';
+import React, {PureComponent} from 'react';
 import {intlShape} from 'react-intl';
+import {Alert, StyleSheet, View} from 'react-native';
 
 import {showModal, dismissModal} from '@actions/navigation';
 import CompassIcon from '@components/compass_icon';
@@ -13,14 +14,15 @@ import ReactionPicker from '@components/reaction_picker';
 import SlideUpPanel from '@components/slide_up_panel';
 import {BOTTOM_MARGIN} from '@components/slide_up_panel/slide_up_panel';
 import {REACTION_PICKER_HEIGHT} from '@constants/reaction_picker';
+import {CHANNEL} from '@constants/screen';
 import EventEmitter from '@mm-redux/utils/event_emitter';
 import {isSystemMessage} from '@mm-redux/utils/post_utils';
 import {t} from '@utils/i18n';
 import {preventDoubleTap} from '@utils/tap';
 
+import Bindings from './bindings';
 import PostOption from './post_option';
 import {OPTION_HEIGHT, getInitialPosition} from './post_options_utils';
-import Bindings from './bindings';
 
 export default class PostOptions extends PureComponent {
     static propTypes = {
@@ -32,6 +34,7 @@ export default class PostOptions extends PureComponent {
             removePost: PropTypes.func.isRequired,
             unflagPost: PropTypes.func.isRequired,
             unpinPost: PropTypes.func.isRequired,
+            setThreadFollow: PropTypes.func.isRequired,
             setUnreadPost: PropTypes.func.isRequired,
         }).isRequired,
         canAddReaction: PropTypes.bool,
@@ -48,8 +51,10 @@ export default class PostOptions extends PureComponent {
         currentUserId: PropTypes.string.isRequired,
         deviceHeight: PropTypes.number.isRequired,
         isFlagged: PropTypes.bool,
+        location: PropTypes.string,
         post: PropTypes.object.isRequired,
         theme: PropTypes.object.isRequired,
+        thread: PropTypes.object,
     };
 
     static contextTypes = {
@@ -103,6 +108,33 @@ export default class PostOptions extends PureComponent {
         }
 
         return null;
+    }
+
+    getFollowThreadOption = () => {
+        const {location, thread} = this.props;
+        if (location !== CHANNEL || !thread) {
+            return null;
+        }
+        const key = 'follow';
+        let icon;
+        let message;
+        if (thread.is_following) {
+            icon = 'message-minus-outline';
+            if (thread?.participants?.length) {
+                message = {id: t('threads.unfollowThread'), defaultMessage: 'Unfollow Thread'};
+            } else {
+                message = {id: t('threads.unfollowMessage'), defaultMessage: 'Unfollow Message'};
+            }
+        } else {
+            icon = 'message-plus-outline';
+            if (thread?.participants?.length) {
+                message = {id: t('threads.followThread'), defaultMessage: 'Follow Thread'};
+            } else {
+                message = {id: t('threads.followMessage'), defaultMessage: 'Follow Message'};
+            }
+        }
+        const onPress = this.handleToggleFollow;
+        return this.getOption(key, icon, message, onPress);
     }
 
     getCopyPermalink = () => {
@@ -249,6 +281,7 @@ export default class PostOptions extends PureComponent {
     getPostOptions = () => {
         const actions = [
             this.getReplyOption(),
+            this.getFollowThreadOption(),
             this.getMarkAsUnreadOption(),
             this.getCopyPermalink(),
             this.getFlagOption(),
@@ -283,6 +316,12 @@ export default class PostOptions extends PureComponent {
         this.closeWithAnimation(() => {
             EventEmitter.emit('goToThread', post);
         });
+    };
+
+    handleToggleFollow = () => {
+        const {actions, currentUserId, thread} = this.props;
+        actions.setThreadFollow(currentUserId, thread.id, !thread.is_following);
+        this.closeWithAnimation();
     };
 
     handleAddReaction = preventDoubleTap((emoji) => {
@@ -330,11 +369,11 @@ export default class PostOptions extends PureComponent {
     };
 
     handleMarkUnread = () => {
-        const {actions, post, currentUserId} = this.props;
+        const {actions, currentUserId, location, post} = this.props;
 
         this.closeWithAnimation();
         requestAnimationFrame(() => {
-            actions.setUnreadPost(currentUserId, post.id);
+            actions.setUnreadPost(currentUserId, post.id, location);
         });
     }
 

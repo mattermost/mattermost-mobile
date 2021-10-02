@@ -3,7 +3,7 @@
 import React from 'react';
 
 import Preferences from '@mm-redux/constants/preferences';
-import {shallowWithIntl} from 'test/intl-test-helper';
+import {shallowWithIntl} from '@test/intl-test-helper';
 
 import EditProfile from './edit_profile.js';
 
@@ -29,7 +29,7 @@ describe('edit_profile', () => {
         nicknameDisabled: true,
         positionDisabled: true,
         profilePictureDisabled: true,
-        theme: Preferences.THEMES.default,
+        theme: Preferences.THEMES.denim,
         currentUser: {
             first_name: 'Dwight',
             last_name: 'Schrute',

@@ -9,8 +9,8 @@ import {launchImageLibrary, ImageLibraryOptions} from 'react-native-image-picker
 import CompassIcon from '@components/compass_icon';
 import TouchableWithFeedback from '@components/touchable_with_feedback';
 import {NavigationTypes} from '@constants';
+import {ICON_SIZE, MAX_FILE_COUNT_WARNING} from '@constants/post_draft';
 import EventEmitter from '@mm-redux/utils/event_emitter';
-import {ICON_SIZE, MAX_FILE_COUNT, MAX_FILE_COUNT_WARNING} from '@constants/post_draft';
 import {lookupMimeType} from '@utils/file';
 import {hasPhotoPermission} from '@utils/permission';
 import {changeOpacity} from '@utils/theme';
@@ -27,12 +27,12 @@ const style = StyleSheet.create({
     },
 });
 
-const ImageQuickAction = ({disabled, fileCount = 0, intl, maxFileCount = MAX_FILE_COUNT, onUploadFiles, testID = '', theme}: QuickActionAttachmentProps) => {
+const ImageQuickAction = ({disabled, fileCount = 0, intl, maxFileCount, onUploadFiles, testID = '', theme}: QuickActionAttachmentProps) => {
     const attachFileFromLibrary = async () => {
         const selectionLimit = maxFileCount - fileCount;
         const options: ImageLibraryOptions = {
             selectionLimit,
-            quality: 0.8,
+            quality: 1,
             mediaType: 'mixed',
             includeBase64: false,
         };
@@ -42,7 +42,7 @@ const ImageQuickAction = ({disabled, fileCount = 0, intl, maxFileCount = MAX_FIL
         if (hasPermission) {
             launchImageLibrary(options, async (response) => {
                 StatusBar.setHidden(false);
-                if (response.errorCode || response.didCancel) {
+                if (response.errorCode || response.didCancel || !response.assets) {
                     return;
                 }
 

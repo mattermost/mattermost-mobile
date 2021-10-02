@@ -2,21 +2,22 @@
 // See LICENSE.txt for license information.
 
 import React, {ReactNode, useRef} from 'react';
-import {Keyboard, StyleProp, View, ViewStyle} from 'react-native';
 import {injectIntl, intlShape} from 'react-intl';
+import {Keyboard, StyleProp, View, ViewStyle} from 'react-native';
 
 import {showModalOverCurrentContext} from '@actions/navigation';
+import ThreadFooter from '@components/global_threads/thread_footer';
+import SystemAvatar from '@components/post_list/system_avatar';
 import SystemHeader from '@components/post_list/system_header';
 import TouchableWithFeedback from '@components/touchable_with_feedback';
 import * as Screens from '@constants/screen';
 import {Posts} from '@mm-redux/constants';
+import {UserThread} from '@mm-redux/types/threads';
+import {UserProfile} from '@mm-redux/types/users';
 import EventEmitter from '@mm-redux/utils/event_emitter';
 import {fromAutoResponder, isPostEphemeral, isPostPendingOrFailed, isSystemMessage} from '@mm-redux/utils/post_utils';
-import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {preventDoubleTap} from '@utils/tap';
-
-import type {Post as PostType} from '@mm-redux/types/posts';
-import type {Theme} from '@mm-redux/types/preferences';
+import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 import Avatar from './avatar';
 import Body from './body';
@@ -24,8 +25,12 @@ import Header from './header';
 import PreHeader from './pre_header';
 import SystemMessage from './system_message';
 
+import type {Post as PostType} from '@mm-redux/types/posts';
+import type {Theme} from '@mm-redux/types/theme';
+
 type PostProps = {
     canDelete: boolean;
+    collapsedThreadsEnabled: boolean;
     enablePostUsernameOverride: boolean;
     highlight?: boolean;
     highlightPinnedOrFlagged?: boolean;
@@ -43,9 +48,12 @@ type PostProps = {
     showPermalink: (intl: typeof intlShape, teamName: string, postId: string) => null;
     skipFlaggedHeader?: boolean;
     skipPinnedHeader?: boolean;
+    style?: StyleProp<ViewStyle>;
     teammateNameDisplay: string;
     testID?: string;
-    theme: Theme
+    theme: Theme;
+    thread: UserThread;
+    threadStarter: UserProfile;
 };
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
@@ -64,6 +72,20 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             opacity: 1,
         },
         highlightPinnedOrFlagged: {backgroundColor: changeOpacity(theme.mentionHighlightBg, 0.2)},
+        badgeContainer: {
+            position: 'absolute',
+            left: 28,
+            bottom: 9,
+        },
+        unreadDot: {
+            width: 8,
+            height: 8,
+            borderRadius: 4,
+            backgroundColor: theme.sidebarTextActiveBorder,
+            alignSelf: 'center',
+            top: -6,
+            left: 4,
+        },
         pendingPost: {opacity: 0.5},
         postStyle: {
             overflow: 'hidden',
@@ -89,12 +111,12 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
 });
 
 const Post = ({
-    canDelete, enablePostUsernameOverride, highlight, highlightPinnedOrFlagged = true, intl, isConsecutivePost, isFirstReply, isFlagged, isLastReply,
-    location, post, removePost, rootPostAuthor, shouldRenderReplyButton, skipFlaggedHeader, skipPinnedHeader, showAddReaction = true, showPermalink,
-    teammateNameDisplay, testID, theme,
+    canDelete, collapsedThreadsEnabled, enablePostUsernameOverride, highlight, highlightPinnedOrFlagged = true, intl, isConsecutivePost, isFirstReply, isFlagged, isLastReply,
+    location, post, removePost, rootPostAuthor, shouldRenderReplyButton, skipFlaggedHeader, skipPinnedHeader, showAddReaction = true, showPermalink, style,
+    teammateNameDisplay, testID, theme, thread, threadStarter,
 }: PostProps) => {
     const pressDetected = useRef(false);
-    const style = getStyleSheet(theme);
+    const styles = getStyleSheet(theme);
 
     const handlePress = preventDoubleTap(() => {
         pressDetected.current = true;
@@ -158,24 +180,27 @@ const Post = ({
     const highlightFlagged = isFlagged && !skipFlaggedHeader;
     const hightlightPinned = post.is_pinned && !skipPinnedHeader;
     const itemTestID = `${testID}.${post.id}`;
-    const rightColumnStyle = [style.rightColumn, (post.root_id && isLastReply && style.rightColumnPadding)];
-    const pendingPostStyle: StyleProp<ViewStyle> | undefined = isPostPendingOrFailed(post) ? style.pendingPost : undefined;
+    const rightColumnStyle = [styles.rightColumn, (post.root_id && isLastReply && styles.rightColumnPadding)];
+    const pendingPostStyle: StyleProp<ViewStyle> | undefined = isPostPendingOrFailed(post) ? styles.pendingPost : undefined;
+    const isAutoResponder = fromAutoResponder(post);
 
     let highlightedStyle: StyleProp<ViewStyle>;
     if (highlight) {
-        highlightedStyle = style.highlight;
+        highlightedStyle = styles.highlight;
     } else if ((highlightFlagged || hightlightPinned) && highlightPinnedOrFlagged) {
-        highlightedStyle = style.highlightPinnedOrFlagged;
+        highlightedStyle = styles.highlightPinnedOrFlagged;
     }
 
     let header: ReactNode;
     let postAvatar: ReactNode;
     let consecutiveStyle: StyleProp<ViewStyle>;
     if (isConsecutivePost) {
-        consecutiveStyle = style.consective;
-        postAvatar = <View style={style.consecutivePostContainer}/>;
+        consecutiveStyle = styles.consective;
+        postAvatar = <View style={styles.consecutivePostContainer}/>;
     } else {
-        postAvatar = (
+        postAvatar = isAutoResponder ? (
+            <SystemAvatar theme={theme}/>
+        ) : (
             <Avatar
                 pendingPostStyle={pendingPostStyle}
                 post={post}
@@ -183,7 +208,7 @@ const Post = ({
             />
         );
 
-        if (isSystemMessage(post)) {
+        if (isSystemMessage(post) && !isAutoResponder) {
             header = (
                 <SystemHeader
                     createAt={post.create_at}
@@ -193,6 +218,7 @@ const Post = ({
         } else {
             header = (
                 <Header
+                    collapsedThreadsEnabled={collapsedThreadsEnabled}
                     enablePostUsernameOverride={enablePostUsernameOverride}
                     location={location}
                     post={post}
@@ -206,7 +232,7 @@ const Post = ({
     }
 
     let body;
-    if (isSystemMessage(post) && !isPostEphemeral(post)) {
+    if (isSystemMessage(post) && !isPostEphemeral(post) && !isAutoResponder) {
         body = (
             <SystemMessage
                 post={post}
@@ -228,10 +254,39 @@ const Post = ({
         );
     }
 
+    let footer;
+    if (
+        collapsedThreadsEnabled &&
+        Boolean(thread) &&
+        post.state !== Posts.POST_DELETED &&
+        (thread?.is_following || thread?.participants?.length)
+    ) {
+        footer = (
+            <ThreadFooter
+                testID={`${itemTestID}.footer`}
+                theme={theme}
+                thread={thread}
+                threadStarter={threadStarter}
+                location={Screens.CHANNEL}
+            />
+        );
+    }
+
+    let badge;
+    if (thread?.unread_mentions || thread?.unread_replies) {
+        if (thread.unread_replies && thread.unread_replies > 0) {
+            badge = (
+                <View style={styles.badgeContainer}>
+                    <View style={styles.unreadDot}/>
+                </View>
+            );
+        }
+    }
+
     return (
         <View
             testID={testID}
-            style={[style.postStyle, highlightedStyle]}
+            style={[styles.postStyle, style, highlightedStyle]}
         >
             <TouchableWithFeedback
                 testID={itemTestID}
@@ -250,12 +305,14 @@ const Post = ({
                         skipPinnedHeader={skipPinnedHeader}
                         theme={theme}
                     />
-                    <View style={[style.container, consecutiveStyle]}>
+                    <View style={[styles.container, consecutiveStyle]}>
                         {postAvatar}
                         <View style={rightColumnStyle}>
                             {header}
                             {body}
+                            {footer}
                         </View>
+                        {badge}
                     </View>
                 </>
             </TouchableWithFeedback>

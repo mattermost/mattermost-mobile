@@ -11,7 +11,7 @@ import UserStatus from '@components/user_status';
 import {useDidUpdate} from '@hooks';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
-import type {Theme} from '@mm-redux/types/preferences';
+import type {Theme} from '@mm-redux/types/theme';
 import type {UserProfile} from '@mm-redux/types/users';
 
 const STATUS_BUFFER = Platform.select({
@@ -118,13 +118,13 @@ const ProfilePicture = (props: ProfilePictureProps) => {
     }, [props.profileImageUri]);
 
     useDidUpdate(() => {
-        const {user} = props;
+        const {edit, user} = props;
 
         const url = user ? Client4.getProfilePictureUrl(user.id, user.last_picture_update) : undefined;
-        if (url !== pictureUrl) {
+        if (url !== pictureUrl && !edit) {
             setPictureUrl(url);
         }
-    }, [props.user]);
+    }, [props.user, props.edit]);
 
     let statusIcon;
     let statusStyle = props.statusStyle;

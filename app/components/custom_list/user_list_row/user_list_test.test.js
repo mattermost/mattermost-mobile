@@ -4,7 +4,7 @@
 import React from 'react';
 
 import Preferences from '@mm-redux/constants/preferences';
-import {shallowWithIntl} from 'test/intl-test-helper';
+import {shallowWithIntl} from '@test/intl-test-helper';
 
 import UserListRow from './user_list_row';
 
@@ -25,7 +25,7 @@ describe('UserListRow', () => {
             username: 'user',
             delete_at: 0,
         },
-        theme: Preferences.THEMES.default,
+        theme: Preferences.THEMES.denim,
         teammateNameDisplay: 'test',
         testID: 'custom_list.user_item',
     };

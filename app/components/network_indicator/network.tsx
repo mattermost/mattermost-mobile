@@ -2,6 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {useNetInfo} from '@react-native-community/netinfo';
+
 import React, {useEffect, useRef, useState} from 'react';
 import {ActivityIndicator, AppState, AppStateStatus, Platform, StyleSheet, View} from 'react-native';
 import Animated, {Easing, interpolateColor, runOnJS, useAnimatedStyle, useSharedValue, withTiming} from 'react-native-reanimated';
@@ -33,7 +34,7 @@ type AppStateCallBack = (appState: AppStateStatus) => Promise<void>;
 
 type ConnectionChangedEvent = {
     hasInternet: boolean;
-    serverReachable: boolean
+    serverReachable: boolean;
 };
 
 const MAX_WEBSOCKET_RETRIES = 3;
@@ -173,25 +174,35 @@ const NetworkIndicator = ({
             handleWebSocket(active);
 
             if (active) {
-                // Clear the notifications for the current channel after one second
+                // Clear the notifications for the current channel after two seconds
                 // this is done so we can cancel it in case the app is brought to the
                 // foreground by tapping a notification from another channel
-                clearNotificationTimeout.current = setTimeout(clearNotifications, 1000);
+                clearNotificationTimeout.current = setTimeout(clearNotifications, 2000);
             }
         });
 
-        AppState.addEventListener('change', handleAppStateChange);
+        const listener = AppState.addEventListener('change', handleAppStateChange);
 
         return () => {
-            AppState.removeEventListener('change', handleAppStateChange);
+            listener.remove();
+            if (clearNotificationTimeout.current && AppState.currentState !== 'active') {
+                clearTimeout(clearNotificationTimeout.current);
+            }
         };
-    }, [netinfo.isInternetReachable]);
+    }, [netinfo.isInternetReachable, channelId]);
 
     useEffect(() => {
-        if (clearNotificationTimeout.current) {
-            clearTimeout(clearNotificationTimeout.current);
-            clearNotificationTimeout.current = undefined;
+        if (channelId) {
+            clearNotificationTimeout.current = setTimeout(() => {
+                PushNotifications.clearChannelNotifications(channelId);
+            }, 1500);
         }
+
+        return () => {
+            if (clearNotificationTimeout.current && channelId) {
+                clearTimeout(clearNotificationTimeout.current);
+            }
+        };
     }, [channelId]);
 
     useEffect(() => {

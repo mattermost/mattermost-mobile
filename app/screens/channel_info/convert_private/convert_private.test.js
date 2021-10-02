@@ -2,9 +2,9 @@
 // See LICENSE.txt for license information.
 
 import React from 'react';
-import {shallowWithIntl} from 'test/intl-test-helper';
 
 import Preferences from '@mm-redux/constants/preferences';
+import {shallowWithIntl} from '@test/intl-test-helper';
 
 import ConvertPrivate from './convert_private';
 
@@ -22,7 +22,7 @@ describe('ChannelInfo -> ConvertPrivate', () => {
         channelId: '123',
         convertChannelToPrivate: jest.fn(),
         displayName: 'Test Channel',
-        theme: Preferences.THEMES.default,
+        theme: Preferences.THEMES.denim,
     };
 
     test('should match snapshot for Convert to Private Channel', () => {

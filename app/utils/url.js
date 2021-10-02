@@ -3,14 +3,13 @@
 
 import {Linking} from 'react-native';
 
+import {DeepLinkTypes} from '@constants';
+import {getCurrentServerUrl} from '@init/credentials';
+import {Files} from '@mm-redux/constants';
+import {emptyErrorHandlingFunction, emptyFunction} from '@utils/general';
+
 import {latinise} from './latinise.js';
 import {escapeRegex} from './markdown';
-
-import {Files} from '@mm-redux/constants';
-import {getCurrentServerUrl} from '@init/credentials';
-
-import {DeepLinkTypes} from '@constants';
-import {emptyErrorHandlingFunction, emptyFunction} from '@utils/general';
 
 const ytRegex = /(?:http|https):\/\/(?:www\.|m\.)?(?:(?:youtube\.com\/(?:(?:v\/)|(?:(?:watch|embed\/watch)(?:\/|.*v=))|(?:embed\/)|(?:user\/[^/]+\/u\/[0-9]\/)))|(?:youtu\.be\/))([^#&?]*)/;
 
@@ -142,6 +141,11 @@ export function matchDeepLink(url, serverURL, siteURL) {
     match = new RegExp(linkRoot + '\\/([^\\/]+)\\/messages\\/(\\S+)').exec(urlToMatch);
     if (match) {
         return {type: DeepLinkTypes.GROUPCHANNEL, teamName: match[1], id: match[2]};
+    }
+
+    match = new RegExp(linkRoot + '\\/plugins\\/([^\\/]+)\\/(\\S+)').exec(urlToMatch);
+    if (match) {
+        return {type: DeepLinkTypes.PLUGIN, id: match[1]};
     }
 
     return null;

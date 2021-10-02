@@ -1,8 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
+import React, {PureComponent} from 'react';
 import {
     Animated,
     Platform,
@@ -11,11 +11,10 @@ import {
     View,
 } from 'react-native';
 
+import {dismissModal} from '@actions/navigation';
+import {NavigationTypes} from '@constants';
 import EventEmitter from '@mm-redux/utils/event_emitter';
-
-import {NavigationTypes} from 'app/constants';
-import {emptyFunction} from 'app/utils/general';
-import {dismissModal} from 'app/actions/navigation';
+import {emptyFunction} from '@utils/general';
 
 import OptionsModalList from './options_modal_list';
 
@@ -32,6 +31,7 @@ export default class OptionsModal extends PureComponent {
             PropTypes.string,
             PropTypes.object,
         ]),
+        subtitle: PropTypes.string,
     };
 
     static defaultProps = {
@@ -86,17 +86,19 @@ export default class OptionsModal extends PureComponent {
         const {
             items,
             title,
+            subtitle,
         } = this.props;
 
         return (
             <TouchableWithoutFeedback onPress={this.handleCancel}>
                 <View style={style.wrapper}>
-                    <AnimatedView style={{height: this.props.deviceHeight, left: 0, top: this.state.top, width: this.props.deviceWidth}}>
+                    <AnimatedView style={{top: this.state.top}}>
                         <OptionsModalList
                             items={items}
                             onCancelPress={this.handleCancel}
                             onItemPress={this.onItemPress}
                             title={title}
+                            subtitle={subtitle}
                         />
                     </AnimatedView>
                 </View>

@@ -1,14 +1,14 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
-import React from 'react';
 import {shallow} from 'enzyme';
+import React from 'react';
 
 import Preferences from '@mm-redux/constants/preferences';
 
 import TextSetting from './text_setting.js';
 
 describe('components/widgets/settings/TextSetting', () => {
-    const theme = Preferences.THEMES.default;
+    const theme = Preferences.THEMES.denim;
     test('onChange', () => {
         const onChange = jest.fn();
         const wrapper = shallow(

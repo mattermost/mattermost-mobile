@@ -1,16 +1,16 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React from 'react';
 import Fuse from 'fuse.js';
+import React from 'react';
 
 import Preferences from '@mm-redux/constants/preferences';
 import {selectEmojisByName, selectEmojisBySection} from '@selectors/emojis';
 import initialState from '@store/initial_state';
-import {shallowWithIntl} from 'test/intl-test-helper';
+import {shallowWithIntl} from '@test/intl-test-helper';
 
-import {filterEmojiSearchInput} from './emoji_picker_base';
 import EmojiPicker from './emoji_picker.ios';
+import {filterEmojiSearchInput} from './emoji_picker_base';
 
 jest.useFakeTimers();
 
@@ -45,7 +45,7 @@ describe('components/emoji_picker/emoji_picker.ios', () => {
         emojisBySection,
         fuse,
         isLandscape: false,
-        theme: Preferences.THEMES.default,
+        theme: Preferences.THEMES.denim,
     };
 
     const testCases = [
@@ -60,17 +60,17 @@ describe('components/emoji_picker/emoji_picker.ios', () => {
     ];
 
     testCases.forEach((testCase) => {
-        test(`'${testCase.input}' should return '${testCase.output}'`, async () => {
+        test(`'${testCase.input}' should return '${testCase.output}'`, () => {
             expect(filterEmojiSearchInput(testCase.input)).toEqual(testCase.output);
         });
     });
 
-    test('should match snapshot', async () => {
+    test('should match snapshot', () => {
         const wrapper = shallowWithIntl(<EmojiPicker {...baseProps}/>);
         expect(wrapper.getElement()).toMatchSnapshot();
     });
 
-    test('searchEmojis should return the right values on fuse', async () => {
+    test('searchEmojis should return the right values on fuse', () => {
         const input = '1';
         const output = ['100', '1234', '1st_place_medal', '+1', '-1', 'clock1', 'clock10', 'clock1030', 'clock11', 'clock1130', 'clock12', 'clock1230', 'clock130', 'u7121', 'u7981'];
 
@@ -79,7 +79,7 @@ describe('components/emoji_picker/emoji_picker.ios', () => {
         expect(result).toEqual(output);
     });
 
-    test('should rebuild emojis emojis when emojis change', async () => {
+    test('should rebuild emojis emojis when emojis change', () => {
         const wrapper = shallowWithIntl(<EmojiPicker {...baseProps}/>);
         const instance = wrapper.instance();
         const renderableEmojis = jest.spyOn(instance, 'renderableEmojis');
@@ -92,7 +92,7 @@ describe('components/emoji_picker/emoji_picker.ios', () => {
         expect(renderableEmojis).toHaveBeenCalledWith(baseProps.emojisBySection, baseProps.deviceWidth);
     });
 
-    test('should set rebuilt emojis when rebuildEmojis is true and searchBarAnimationComplete is true', async () => {
+    test('should set rebuilt emojis when rebuildEmojis is true and searchBarAnimationComplete is true', () => {
         const wrapper = shallowWithIntl(<EmojiPicker {...baseProps}/>);
         const instance = wrapper.instance();
         instance.setState = jest.fn();
@@ -107,7 +107,7 @@ describe('components/emoji_picker/emoji_picker.ios', () => {
         expect(instance.rebuildEmojis).toBe(false);
     });
 
-    test('should not set rebuilt emojis when rebuildEmojis is false and searchBarAnimationComplete is true', async () => {
+    test('should not set rebuilt emojis when rebuildEmojis is false and searchBarAnimationComplete is true', () => {
         const wrapper = shallowWithIntl(<EmojiPicker {...baseProps}/>);
         const instance = wrapper.instance();
         instance.setState = jest.fn();
@@ -120,7 +120,7 @@ describe('components/emoji_picker/emoji_picker.ios', () => {
         expect(instance.setState).not.toHaveBeenCalled();
     });
 
-    test('should not set rebuilt emojis when rebuildEmojis is true and searchBarAnimationComplete is false', async () => {
+    test('should not set rebuilt emojis when rebuildEmojis is true and searchBarAnimationComplete is false', () => {
         const wrapper = shallowWithIntl(<EmojiPicker {...baseProps}/>);
         const instance = wrapper.instance();
         instance.setState = jest.fn();

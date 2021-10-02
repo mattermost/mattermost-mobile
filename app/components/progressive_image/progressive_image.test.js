@@ -1,8 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React from 'react';
 import {shallow} from 'enzyme';
+import React from 'react';
 
 import Preferences from '@mm-redux/constants/preferences';
 
@@ -18,7 +18,7 @@ describe('ProgressiveImage', () => {
             onError: jest.fn(),
             resizeMethod: 'auto',
             resizeMode: 'contain',
-            theme: Preferences.THEMES.default,
+            theme: Preferences.THEMES.denim,
             tintDefaultSource: false,
             defaultSource: undefined,
         };
@@ -34,7 +34,7 @@ describe('ProgressiveImage', () => {
             onError: jest.fn(),
             resizeMethod: 'auto',
             resizeMode: 'contain',
-            theme: Preferences.THEMES.default,
+            theme: Preferences.THEMES.denim,
             tintDefaultSource: false,
         };
 
@@ -49,7 +49,7 @@ describe('ProgressiveImage', () => {
             onError: jest.fn(),
             resizeMethod: 'auto',
             resizeMode: 'contain',
-            theme: Preferences.THEMES.default,
+            theme: Preferences.THEMES.denim,
             tintDefaultSource: false,
             defaultSource: null,
         };
@@ -67,7 +67,7 @@ describe('MiniPreview', () => {
             onError: jest.fn(),
             resizeMethod: 'auto',
             resizeMode: 'contain',
-            theme: Preferences.THEMES.default,
+            theme: Preferences.THEMES.denim,
             tintDefaultSource: false,
             defaultSource: null,
             inViewPort: false,
@@ -84,7 +84,7 @@ describe('MiniPreview', () => {
             onError: jest.fn(),
             resizeMethod: 'auto',
             resizeMode: 'contain',
-            theme: Preferences.THEMES.default,
+            theme: Preferences.THEMES.denim,
             tintDefaultSource: false,
             defaultSource: null,
             inViewPort: false,

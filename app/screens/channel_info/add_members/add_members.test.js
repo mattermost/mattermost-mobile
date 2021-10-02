@@ -2,9 +2,9 @@
 // See LICENSE.txt for license information.
 
 import React from 'react';
-import {shallowWithIntl} from 'test/intl-test-helper';
 
 import Preferences from '@mm-redux/constants/preferences';
+import {shallowWithIntl} from '@test/intl-test-helper';
 
 import AddMembers from './add_members';
 
@@ -20,7 +20,7 @@ describe('ChannelInfo -> Add Members', () => {
     const baseProps = {
         canManageUsers: true,
         groupConstrained: false,
-        theme: Preferences.THEMES.default,
+        theme: Preferences.THEMES.denim,
     };
 
     test('should match snapshot', () => {

@@ -3,12 +3,13 @@
 
 import {connect} from 'react-redux';
 
-import {getTheme} from '@mm-redux/selectors/entities/preferences';
+import {getTheme, isCollapsedThreadsEnabled} from '@mm-redux/selectors/entities/preferences';
 
 import NotificationSettingsMentions from './notification_settings_mentions';
 
 function mapStateToProps(state) {
     return {
+        isCollapsedThreadsEnabled: isCollapsedThreadsEnabled(state),
         theme: getTheme(state),
     };
 }

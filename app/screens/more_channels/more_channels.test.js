@@ -5,8 +5,7 @@ import React from 'react';
 
 import * as NavigationActions from '@actions/navigation';
 import Preferences from '@mm-redux/constants/preferences';
-
-import {shallowWithIntl} from 'test/intl-test-helper';
+import {shallowWithIntl} from '@test/intl-test-helper';
 
 import MoreChannels from './more_channels.js';
 
@@ -30,7 +29,7 @@ describe('MoreChannels', () => {
         closeButton: {},
         currentUserId: 'current_user_id',
         currentTeamId: 'current_team_id',
-        theme: Preferences.THEMES.default,
+        theme: Preferences.THEMES.denim,
         componentId: 'component-id',
         canShowArchivedChannels: true,
     };

@@ -6,7 +6,7 @@ import {StyleProp, ViewStyle} from 'react-native';
 import Animated from 'react-native-reanimated';
 
 import type {FileInfo} from '@mm-redux/types/files';
-import type {Theme} from '@mm-redux/types/preferences';
+import type {Theme} from '@mm-redux/types/theme';
 
 export interface ActionCallback {
     (callback: CallbackFunctionWithoutArguments): void;
@@ -108,11 +108,11 @@ export interface ToastProps {
 }
 
 export interface ToastRef {
-    show: ShowToast
+    show: ShowToast;
 }
 
 export interface ToastState {
-    animation?: CompositeAnimation,
+    animation?: CompositeAnimation;
     duration?: number;
     callback?: () => void;
 }

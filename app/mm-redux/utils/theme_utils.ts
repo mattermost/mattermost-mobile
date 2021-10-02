@@ -1,7 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {Theme} from '@mm-redux/types/preferences';
+import {Theme, ThemeTypeMap} from '@mm-redux/types/theme';
+
 import {Preferences} from '../constants';
 
 export function makeStyleFromTheme(getStyleFromTheme: (a: any) => any): (a: any) => any {
@@ -70,7 +71,7 @@ function blendComponent(background: number, foreground: number, opacity: number)
     return ((1 - opacity) * background) + (opacity * foreground);
 }
 
-export function blendColors(background: string, foreground: string, opacity: number): string {
+export function blendColors(background: string, foreground: string, opacity: number, hex = false): string {
     const backgroundComponents = getComponents(background);
     const foregroundComponents = getComponents(foreground);
 
@@ -95,21 +96,76 @@ export function blendColors(background: string, foreground: string, opacity: num
         opacity,
     );
 
+    if (hex) {
+        let r = red.toString(16);
+        let g = green.toString(16);
+        let b = blue.toString(16);
+
+        if (r.length === 1) {
+            r = '0' + r;
+        }
+        if (g.length === 1) {
+            g = '0' + g;
+        }
+        if (b.length === 1) {
+            b = '0' + b;
+        }
+
+        return `#${r + g + b}`;
+    }
+
     return `rgba(${red},${green},${blue},${alpha})`;
 }
 
-// setThemeDefaults will set defaults on the theme for any unset properties.
-export function setThemeDefaults(theme: Theme): Theme {
-    const defaultTheme = Preferences.THEMES.default;
+// object mapping theme types to their respective keys for retrieving the source themes directly
+// - supports mapping old themes to new themes
+const themeTypeMap: ThemeTypeMap = {
+    Mattermost: 'denim',
+    Organization: 'sapphire',
+    'Mattermost Dark': 'indigo',
+    'Windows Dark': 'onyx',
+    Denim: 'denim',
+    Sapphire: 'sapphire',
+    Quartz: 'quartz',
+    Indigo: 'indigo',
+    Onyx: 'onyx',
+};
 
-    for (const property in defaultTheme) {
-        if (property === 'type') {
-            continue;
-        }
-        if (theme[property] == null) {
-            theme[property] = defaultTheme[property];
+// setThemeDefaults will set defaults on the theme for any unset properties.
+export function setThemeDefaults(theme: Partial<Theme>): Theme {
+    const defaultTheme = Preferences.THEMES.denim;
+
+    const processedTheme = {...theme};
+
+    // If this is a system theme, return the source theme object matching the theme preference type
+    if (theme.type && theme.type !== 'custom' && Object.keys(themeTypeMap).includes(theme.type)) {
+        return Preferences.THEMES[themeTypeMap[theme.type]];
+    }
+
+    for (const key of Object.keys(defaultTheme)) {
+        if (theme[key]) {
+            // Fix a case where upper case theme colours are rendered as black
+            processedTheme[key] = theme[key]?.toLowerCase();
         }
     }
 
-    return theme;
+    for (const property in defaultTheme) {
+        if (property === 'type' || (property === 'sidebarTeamBarBg' && theme.sidebarHeaderBg)) {
+            continue;
+        }
+        if (theme[property] == null) {
+            processedTheme[property] = defaultTheme[property];
+        }
+
+        // Backwards compatability with old name
+        if (!theme.mentionBg && theme.mentionBj) {
+            processedTheme.mentionBg = theme.mentionBj;
+        }
+    }
+
+    if (!theme.sidebarTeamBarBg && theme.sidebarHeaderBg) {
+        processedTheme.sidebarTeamBarBg = blendColors(theme.sidebarHeaderBg, '#000000', 0.2, true);
+    }
+
+    return processedTheme as Theme;
 }

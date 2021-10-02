@@ -1,13 +1,14 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React from 'react';
 import {shallow} from 'enzyme';
+import React from 'react';
 
+import AutocompleteSelector from '@components/autocomplete_selector';
+import BoolSetting from '@components/widgets/settings/bool_setting';
+import RadioSetting from '@components/widgets/settings/radio_setting';
 import Preferences from '@mm-redux/constants/preferences';
-import RadioSetting from 'app/components/widgets/settings/radio_setting';
-import BoolSetting from 'app/components/widgets/settings/bool_setting';
-import AutocompleteSelector from 'app/components/autocomplete_selector';
+
 import DialogElement from './dialog_element.js';
 
 describe('DialogElement', () => {
@@ -17,7 +18,7 @@ describe('DialogElement', () => {
         type: 'text',
     };
 
-    const theme = Preferences.THEMES.default;
+    const theme = Preferences.THEMES.denim;
     test('secureTextEntry is true and multiline is false when subtype is password', () => {
         const wrapper = shallow(
             <DialogElement

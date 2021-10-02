@@ -6,12 +6,12 @@ import {Text, View} from 'react-native';
 
 import {makeStyleSheetFromTheme} from '@utils/theme';
 
-import type {Theme} from '@mm-redux/types/preferences';
+import type {Theme} from '@mm-redux/types/theme';
 import type {PerfMetric} from '@telemetry';
 
 type PerfItemProps = {
     metric: PerfMetric;
-    theme: Theme
+    theme: Theme;
 };
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({

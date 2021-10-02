@@ -4,7 +4,7 @@
 import React from 'react';
 
 import Preferences from '@mm-redux/constants/preferences';
-import {shallowWithIntl} from 'test/intl-test-helper';
+import {shallowWithIntl} from '@test/intl-test-helper';
 
 import Search from './search';
 
@@ -30,7 +30,7 @@ describe('Search', () => {
         archivedPostIds: [],
         recent: [],
         isSearchGettingMore: true,
-        theme: Preferences.THEMES.default,
+        theme: Preferences.THEMES.denim,
         enableDateSuggestion: true,
         timezoneOffsetInSeconds: 0,
         viewArchivedChannels: false,

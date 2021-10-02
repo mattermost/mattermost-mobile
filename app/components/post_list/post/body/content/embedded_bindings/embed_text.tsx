@@ -11,11 +11,11 @@ import {useShowMoreAnimatedStyle} from '@hooks/show_more';
 import {getMarkdownBlockStyles, getMarkdownTextStyles} from '@utils/markdown';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 
-import type {Theme} from '@mm-redux/types/preferences';
+import type {Theme} from '@mm-redux/types/theme';
 
 type Props = {
-    theme: Theme,
-    value: string,
+    theme: Theme;
+    value: string;
 }
 
 const SHOW_MORE_HEIGHT = 54;

@@ -6,7 +6,7 @@ import React from 'react';
 import Preferences from '@mm-redux/constants/preferences';
 import {selectEmojisByName} from '@selectors/emojis';
 import initialState from '@store/initial_state';
-import {shallowWithIntl} from 'test/intl-test-helper';
+import {shallowWithIntl} from '@test/intl-test-helper';
 
 import EmojiSuggestion from './emoji_suggestion';
 
@@ -29,7 +29,7 @@ describe('components/autocomplete/emoji_suggestion', () => {
         customEmojisEnabled: false,
         emojis,
         isSearch: false,
-        theme: Preferences.THEMES.default,
+        theme: Preferences.THEMES.denim,
         onChangeText: jest.fn(),
         onResultCountChange: jest.fn(),
         rootId: '',

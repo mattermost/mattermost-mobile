@@ -2,10 +2,10 @@
 // See LICENSE.txt for license information.
 
 import React from 'react';
-import {shallowWithIntl} from 'test/intl-test-helper';
 
 import {General} from '@mm-redux/constants';
 import Preferences from '@mm-redux/constants/preferences';
+import {shallowWithIntl} from '@test/intl-test-helper';
 
 import Leave from './leave';
 
@@ -39,7 +39,7 @@ describe('ChannelInfo -> Leave', () => {
         isFavorite: false,
         isGroupMessage: false,
         isPublic: true,
-        theme: Preferences.THEMES.default,
+        theme: Preferences.THEMES.denim,
     };
 
     test('should match snapshot for Leave Public Channel', () => {

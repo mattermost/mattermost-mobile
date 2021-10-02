@@ -1,0 +1,173 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`screens/clear_after_menu_item should match snapshot 1`] = `
+<View>
+  <TouchableOpacity
+    onPress={[Function]}
+    testID="clear_after.menu_item."
+  >
+    <View
+      style={
+        Object {
+          "backgroundColor": "#ffffff",
+          "display": "flex",
+          "flexDirection": "row",
+          "padding": 10,
+        }
+      }
+    >
+      <View
+        style={
+          Object {
+            "alignItems": "center",
+            "flex": 1,
+            "flexDirection": "row",
+            "marginBottom": 2,
+            "marginLeft": 5,
+            "position": "relative",
+            "width": "70%",
+          }
+        }
+      >
+        <CustomStatusText
+          text="Don't clear"
+          textStyle={
+            Object {
+              "color": "#3f4350",
+            }
+          }
+          theme={
+            Object {
+              "awayIndicator": "#ffbc1f",
+              "buttonBg": "#1c58d9",
+              "buttonColor": "#ffffff",
+              "centerChannelBg": "#ffffff",
+              "centerChannelColor": "#3f4350",
+              "codeTheme": "github",
+              "dndIndicator": "#d24b4e",
+              "errorTextColor": "#d24b4e",
+              "linkColor": "#386fe5",
+              "mentionBg": "#ffffff",
+              "mentionColor": "#1e325c",
+              "mentionHighlightBg": "#ffd470",
+              "mentionHighlightLink": "#1b1d22",
+              "newMessageSeparator": "#cc8f00",
+              "onlineIndicator": "#3db887",
+              "sidebarBg": "#1e325c",
+              "sidebarHeaderBg": "#192a4d",
+              "sidebarHeaderTextColor": "#ffffff",
+              "sidebarTeamBarBg": "#14213e",
+              "sidebarText": "#ffffff",
+              "sidebarTextActiveBorder": "#5d89ea",
+              "sidebarTextActiveColor": "#ffffff",
+              "sidebarTextHoverBg": "#28427b",
+              "sidebarUnreadText": "#ffffff",
+              "type": "Denim",
+            }
+          }
+        />
+      </View>
+    </View>
+  </TouchableOpacity>
+</View>
+`;
+
+exports[`screens/clear_after_menu_item should match snapshot with separator and selected check 1`] = `
+<View>
+  <TouchableOpacity
+    onPress={[Function]}
+    testID="clear_after.menu_item."
+  >
+    <View
+      style={
+        Object {
+          "backgroundColor": "#ffffff",
+          "display": "flex",
+          "flexDirection": "row",
+          "padding": 10,
+        }
+      }
+    >
+      <View
+        style={
+          Object {
+            "alignItems": "center",
+            "flex": 1,
+            "flexDirection": "row",
+            "marginBottom": 2,
+            "marginLeft": 5,
+            "position": "relative",
+            "width": "70%",
+          }
+        }
+      >
+        <CustomStatusText
+          text="Don't clear"
+          textStyle={
+            Object {
+              "color": "#3f4350",
+            }
+          }
+          theme={
+            Object {
+              "awayIndicator": "#ffbc1f",
+              "buttonBg": "#1c58d9",
+              "buttonColor": "#ffffff",
+              "centerChannelBg": "#ffffff",
+              "centerChannelColor": "#3f4350",
+              "codeTheme": "github",
+              "dndIndicator": "#d24b4e",
+              "errorTextColor": "#d24b4e",
+              "linkColor": "#386fe5",
+              "mentionBg": "#ffffff",
+              "mentionColor": "#1e325c",
+              "mentionHighlightBg": "#ffd470",
+              "mentionHighlightLink": "#1b1d22",
+              "newMessageSeparator": "#cc8f00",
+              "onlineIndicator": "#3db887",
+              "sidebarBg": "#1e325c",
+              "sidebarHeaderBg": "#192a4d",
+              "sidebarHeaderTextColor": "#ffffff",
+              "sidebarTeamBarBg": "#14213e",
+              "sidebarText": "#ffffff",
+              "sidebarTextActiveBorder": "#5d89ea",
+              "sidebarTextActiveColor": "#ffffff",
+              "sidebarTextHoverBg": "#28427b",
+              "sidebarUnreadText": "#ffffff",
+              "type": "Denim",
+            }
+          }
+        />
+        <View
+          style={
+            Object {
+              "position": "absolute",
+              "right": 14,
+            }
+          }
+        >
+          <CompassIcon
+            name="check"
+            size={24}
+            style={
+              Object {
+                "borderRadius": 1000,
+                "color": "#1c58d9",
+              }
+            }
+          />
+        </View>
+      </View>
+    </View>
+    <View
+      style={
+        Object {
+          "backgroundColor": "rgba(63,67,80,0.2)",
+          "height": 1,
+          "marginHorizontal": 16,
+        }
+      }
+    />
+  </TouchableOpacity>
+</View>
+`;

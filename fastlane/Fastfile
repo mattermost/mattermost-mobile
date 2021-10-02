@@ -508,7 +508,9 @@ platform :ios do
   lane :replace_assets do
     if ENV['REPLACE_ASSETS'] == 'true'
       sh 'cp -R ../dist/assets/release/icons/ios/* ../ios/Mattermost/Images.xcassets/AppIcon.appiconset/'
-      sh 'cp -R ../dist/assets/release/splash_screen/ios/* ../ios/SplashScreenResource/'
+      sh 'cp -R ../dist/assets/release/splash_screen/ios/LaunchScreen.storyboard ../ios/SplashScreenResource/LaunchScreen.storyboard'
+      sh 'cp -R ../dist/assets/release/splash_screen/ios/SplashBackground.imageset ../ios/Mattermost/Images.xcassets/'
+      sh 'cp -R ../dist/assets/release/splash_screen/ios/SplashIcon.imageset ../ios/Mattermost/Images.xcassets/'
     end
   end
 

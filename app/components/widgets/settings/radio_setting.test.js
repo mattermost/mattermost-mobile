@@ -1,16 +1,16 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
+import {shallow} from 'enzyme';
 import React from 'react';
 import {TouchableOpacity} from 'react-native';
-import {shallow} from 'enzyme';
-
-import Preferences from '@mm-redux/constants/preferences';
 
 import CompassIcon from '@components/compass_icon';
+import Preferences from '@mm-redux/constants/preferences';
+
 import RadioSetting from './radio_setting.js';
 
 describe('components/widgets/settings/RadioSetting', () => {
-    const theme = Preferences.THEMES.default;
+    const theme = Preferences.THEMES.denim;
     const options = [
         {text: 'this is engineering', value: 'Engineering'},
         {text: 'this is sales', value: 'Sales'},

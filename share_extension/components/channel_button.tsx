@@ -2,14 +2,16 @@
 // See LICENSE.txt for license information.
 
 import {useNavigation} from '@react-navigation/native';
+
 import React from 'react';
 import {injectIntl, intlShape} from 'react-intl';
 import {StyleSheet, Text, TouchableHighlight, View} from 'react-native';
 
 import FormattedText from '@components/formatted_text';
 import {Preferences} from '@mm-redux/constants';
-import type {Channel} from '@mm-redux/types/channels';
 import {changeOpacity} from '@utils/theme';
+
+import type {Channel} from '@mm-redux/types/channels';
 
 interface ChannelButtonProps {
     channel?: Channel | null;
@@ -18,7 +20,7 @@ interface ChannelButtonProps {
     teamId?: string;
 }
 
-const theme = Preferences.THEMES.default;
+const theme = Preferences.THEMES.denim;
 
 const ChannelButton = ({channel, intl, onSelect, teamId}: ChannelButtonProps) => {
     const navigation = useNavigation();
@@ -79,6 +81,7 @@ const styles = StyleSheet.create({
         fontSize: 16,
         marginTop: 16,
         marginBottom: 3,
+        color: changeOpacity(theme.centerChannelColor, 0.7),
     },
     buttonValue: {
         color: changeOpacity(theme.centerChannelColor, 0.6),

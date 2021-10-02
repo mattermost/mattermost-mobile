@@ -1,16 +1,16 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import merge from 'deepmerge';
 import {Keyboard, Platform} from 'react-native';
 import {Navigation} from 'react-native-navigation';
-import merge from 'deepmerge';
 
+import CompassIcon from '@components/compass_icon';
+import {DeviceTypes, NavigationTypes} from '@constants';
+import {CHANNEL} from '@constants/screen';
 import {Preferences} from '@mm-redux/constants';
 import {getTheme} from '@mm-redux/selectors/entities/preferences';
 import EventEmmiter from '@mm-redux/utils/event_emitter';
-
-import {DeviceTypes, NavigationTypes} from '@constants';
-import {CHANNEL} from '@constants/screen';
 import EphemeralStore from '@store/ephemeral_store';
 import Store from '@store/store';
 
@@ -92,7 +92,7 @@ export function resetToChannel(passProps = {}) {
 }
 
 export function resetToSelectServer(allowOtherServers) {
-    const theme = Preferences.THEMES.default;
+    const theme = Preferences.THEMES.denim;
 
     EphemeralStore.clearNavigationComponents();
 
@@ -292,8 +292,51 @@ export function showModal(name, title, passProps = {}, options = {}) {
 }
 
 export function showModalOverCurrentContext(name, passProps = {}, options = {}) {
-    const title = '';
-    const animationsEnabled = (Platform.OS === 'android').toString();
+    const title = passProps.title || '';
+
+    let animations;
+    switch (Platform.OS) {
+    case 'android':
+        animations = {
+            showModal: {
+                waitForRender: true,
+                alpha: {
+                    from: 0,
+                    to: 1,
+                    duration: 250,
+                },
+            },
+            dismissModal: {
+                alpha: {
+                    from: 1,
+                    to: 0,
+                    duration: 250,
+                },
+            },
+        };
+        break;
+    default:
+        animations = {
+            showModal: {
+                enter: {
+                    enabled: false,
+                },
+                exit: {
+                    enabled: false,
+                },
+            },
+            dismissModal: {
+                enter: {
+                    enabled: false,
+                },
+                exit: {
+                    enabled: false,
+                },
+            },
+        };
+        break;
+    }
+
     const defaultOptions = {
         modalPresentationStyle: 'overCurrentContext',
         layout: {
@@ -304,25 +347,7 @@ export function showModalOverCurrentContext(name, passProps = {}, options = {}) 
             visible: false,
             height: 0,
         },
-        animations: {
-            showModal: {
-                waitForRender: true,
-                enabled: animationsEnabled,
-                alpha: {
-                    from: 0,
-                    to: 1,
-                    duration: 250,
-                },
-            },
-            dismissModal: {
-                enabled: animationsEnabled,
-                alpha: {
-                    from: 1,
-                    to: 0,
-                    duration: 250,
-                },
-            },
-        },
+        animations,
     };
     const mergeOptions = merge(defaultOptions, options);
 
@@ -348,12 +373,40 @@ export function showSearchModal(initialValue = '') {
     showModal(name, title, passProps, options);
 }
 
+export const showAppForm = async (form, call, theme) => {
+    const closeButton = await CompassIcon.getImageSource('close', 24, theme.sidebarHeaderTextColor);
+
+    let submitButtons;
+    const customSubmitButtons = form.submit_buttons && form.fields.find((f) => f.name === form.submit_buttons)?.options;
+
+    if (!customSubmitButtons?.length) {
+        submitButtons = [{
+            id: 'submit-form',
+            showAsAction: 'always',
+            text: 'Submit',
+        }];
+    }
+
+    const options = {
+        topBar: {
+            leftButtons: [{
+                id: 'close-dialog',
+                icon: closeButton,
+            }],
+            rightButtons: submitButtons,
+        },
+    };
+
+    const passProps = {form, call};
+    showModal('AppForm', form.title, passProps, options);
+};
+
 export async function dismissModal(options = {}) {
     if (!EphemeralStore.hasModalsOpened()) {
         return;
     }
 
-    const componentId = EphemeralStore.getNavigationTopComponentId();
+    const componentId = options.componentId || EphemeralStore.getNavigationTopComponentId();
 
     try {
         await Navigation.dismissModal(componentId, options);
@@ -404,6 +457,13 @@ export function showOverlay(name, passProps, options = {}) {
         overlay: {
             interceptTouchOutside: false,
         },
+        ...Platform.select({
+            android: {
+                statusBar: {
+                    drawBehind: true,
+                },
+            },
+        }),
     };
 
     Navigation.showOverlay({

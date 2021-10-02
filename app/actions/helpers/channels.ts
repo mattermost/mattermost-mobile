@@ -1,23 +1,21 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {ChannelTypes, PreferenceTypes, RoleTypes, UserTypes} from '@mm-redux/action_types';
 import {Client4} from '@client/rest';
+import {ChannelTypes, PreferenceTypes, RoleTypes, UserTypes} from '@mm-redux/action_types';
 import {General, Preferences} from '@mm-redux/constants';
 import {getCurrentChannelId, getRedirectChannelNameForTeam, getChannelsNameMapInTeam} from '@mm-redux/selectors/entities/channels';
 import {getConfig} from '@mm-redux/selectors/entities/general';
 import {getMyPreferences} from '@mm-redux/selectors/entities/preferences';
 import {getCurrentUserId, getUsers, getUserIdsInChannels} from '@mm-redux/selectors/entities/users';
-import {getChannelByName as selectChannelByName, getUserIdFromChannelName, isAutoClosed} from '@mm-redux/utils/channel_utils';
-import {getPreferenceKey} from '@mm-redux/utils/preference_utils';
-
 import {ActionResult, GenericAction} from '@mm-redux/types/actions';
 import {Channel, ChannelMembership} from '@mm-redux/types/channels';
 import {PreferenceType} from '@mm-redux/types/preferences';
 import {GlobalState} from '@mm-redux/types/store';
 import {UserProfile} from '@mm-redux/types/users';
 import {RelationOneToMany} from '@mm-redux/types/utilities';
-
+import {getChannelByName as selectChannelByName, getUserIdFromChannelName, isAutoClosed} from '@mm-redux/utils/channel_utils';
+import {getPreferenceKey} from '@mm-redux/utils/preference_utils';
 import {isDirectChannelVisible, isGroupChannelVisible} from '@utils/channels';
 import {buildPreference} from '@utils/preferences';
 
@@ -120,7 +118,7 @@ export async function fetchMyChannelMember(channelId: string) {
     }
 }
 
-export function markChannelAsUnread(state: GlobalState, teamId: string, channelId: string, mentions: Array<string>): Array<GenericAction> {
+export function markChannelAsUnread(state: GlobalState, teamId: string, channelId: string, mentions: Array<string>, isRoot = false): Array<GenericAction> {
     const {myMembers} = state.entities.channels;
     const {currentUserId} = state.entities.users;
 
@@ -129,6 +127,7 @@ export function markChannelAsUnread(state: GlobalState, teamId: string, channelI
         data: {
             channelId,
             amount: 1,
+            amountRoot: isRoot ? 1 : 0,
         },
     }, {
         type: ChannelTypes.INCREMENT_UNREAD_MSG_COUNT,
@@ -136,6 +135,7 @@ export function markChannelAsUnread(state: GlobalState, teamId: string, channelI
             teamId,
             channelId,
             amount: 1,
+            amountRoot: isRoot ? 1 : 0,
             onlyMentions: myMembers[channelId] && myMembers[channelId].notify_props &&
                 myMembers[channelId].notify_props.mark_unread === General.MENTION,
         },
@@ -148,6 +148,7 @@ export function markChannelAsUnread(state: GlobalState, teamId: string, channelI
                 teamId,
                 channelId,
                 amount: 1,
+                amountRoot: isRoot ? 1 : 0,
             },
         });
     }
@@ -327,7 +328,8 @@ function fetchDirectMessageProfileIfNeeded(state: GlobalState, channel: Channel,
     const otherUserId = getUserIdFromChannelName(currentUserId, channel.name);
     const otherUser = users[otherUserId];
     const dmVisible = isDirectChannelVisible(currentUserId, myPreferences, channel);
-    const dmAutoClosed = isAutoClosed(config, myPreferences, channel, channel.last_post_at, otherUser ? otherUser.delete_at : 0, currentChannelId);
+    const {serverVersion} = state.entities.general;
+    const dmAutoClosed = isAutoClosed(config, myPreferences, channel, channel.last_post_at, otherUser ? otherUser.delete_at : 0, currentChannelId, undefined, serverVersion);
     const member = channelMembers.find((cm) => cm.channel_id === channel.id);
     const dmIsUnread = member ? member.mention_count > 0 : false;
     const dmFetchProfile = dmIsUnread || (dmVisible && !dmAutoClosed);
@@ -354,7 +356,9 @@ function fetchGroupMessageProfilesIfNeeded(state: GlobalState, channel: Channel,
     const myPreferences = getMyPreferences(state);
     const config = getConfig(state);
     const gmVisible = isGroupChannelVisible(myPreferences, channel);
-    const gmAutoClosed = isAutoClosed(config, myPreferences, channel, channel.last_post_at, 0);
+    const {serverVersion} = state.entities.general;
+    const currentChannelId = getCurrentChannelId(state);
+    const gmAutoClosed = isAutoClosed(config, myPreferences, channel, channel.last_post_at, 0, currentChannelId, undefined, serverVersion);
     const channelMember = channelMembers.find((cm) => cm.channel_id === channel.id);
     let hasMentions = false;
     let isUnread = false;

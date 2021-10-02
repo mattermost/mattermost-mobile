@@ -5,7 +5,7 @@ import React from 'react';
 
 import FailedNetworkAction from '@components/failed_network_action';
 import Preferences from '@mm-redux/constants/preferences';
-import {shallowWithIntl} from 'test/intl-test-helper.js';
+import {shallowWithIntl} from '@test/intl-test-helper.js';
 
 import ErrorTeamsList from './error_teams_list';
 
@@ -24,7 +24,7 @@ describe('ErrorTeamsList', () => {
             selectDefaultTeam: () => true,
         },
         componentId: 'component-id',
-        theme: Preferences.THEMES.default,
+        theme: Preferences.THEMES.denim,
     };
 
     test('should match snapshot', () => {

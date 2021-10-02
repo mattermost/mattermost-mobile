@@ -1,6 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {UserProfile} from './users';
+
 export type AppManifest = {
     app_id: string;
     display_name: string;
@@ -16,6 +18,10 @@ export type AppModalState = {
 
 export type AppsState = {
     bindings: AppBinding[];
+    bindingsForms: AppCommandFormMap;
+    threadBindings: AppBinding[];
+    threadBindingsForms: AppCommandFormMap;
+    threadBindingsChannelId: string;
 };
 
 export type AppBinding = {
@@ -177,6 +183,14 @@ export type AppField = {
     max_length?: number;
 };
 
+export type UserAutocomplete = {
+    users: UserProfile[];
+
+    // out_of_channel contains users that aren't in the given channel. It's only populated when autocompleting users in
+    // a given channel ID.
+    out_of_channel?: UserProfile[];
+};
+
 export type AutocompleteSuggestion = {
     suggestion: string;
     complete?: string;
@@ -209,3 +223,5 @@ export type FormResponseData = {
 export type AppLookupResponse = {
     items: AppSelectOption[];
 }
+
+export type AppCommandFormMap = {[location: string]: AppForm}

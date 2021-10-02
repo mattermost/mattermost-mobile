@@ -2,13 +2,13 @@
 // See LICENSE.txt for license information.
 
 import React, {PureComponent} from 'react';
-import {Alert} from 'react-native';
 import {intlShape} from 'react-intl';
+import {Alert} from 'react-native';
 
 import {ActionResult} from '@mm-redux/types/actions';
 import {Channel} from '@mm-redux/types/channels';
 import {FormattedMsg} from '@mm-redux/types/general';
-import {Theme} from '@mm-redux/types/preferences';
+import {Theme} from '@mm-redux/types/theme';
 import ChannelInfoRow from '@screens/channel_info/channel_info_row';
 import Separator from '@screens/channel_info/separator';
 import {t} from '@utils/i18n';

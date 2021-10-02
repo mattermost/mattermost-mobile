@@ -4,11 +4,11 @@
 import React from 'react';
 import {StyleProp, View, ViewStyle} from 'react-native';
 
-import FormattedText from '@components/formatted_text';
 import FormattedDate from '@components/formatted_date';
+import FormattedText from '@components/formatted_text';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 
-import type {Theme} from '@mm-redux/types/preferences';
+import type {Theme} from '@mm-redux/types/theme';
 import type {UserTimezone} from '@mm-redux/types/users';
 
 type DateSeparatorProps = {

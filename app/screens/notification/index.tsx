@@ -4,14 +4,15 @@
 import React, {useEffect, useRef, useState} from 'react';
 import {Platform, StyleSheet, Text, TouchableOpacity, View} from 'react-native';
 import * as Animatable from 'react-native-animatable';
-import {Navigation} from 'react-native-navigation';
 import {PanGestureHandler} from 'react-native-gesture-handler';
-import {useDispatch} from 'react-redux';
+import {Navigation} from 'react-native-navigation';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
+import {useDispatch, useSelector} from 'react-redux';
 
 import {popToRoot, dismissAllModals, dismissOverlay} from '@actions/navigation';
 import {loadFromPushNotification} from '@actions/views/root';
 import {NavigationTypes} from '@constants';
+import {isCollapsedThreadsEnabled} from '@mm-redux/selectors/entities/preferences';
 import EventEmitter from '@mm-redux/utils/event_emitter';
 import {changeOpacity} from '@utils/theme';
 
@@ -49,6 +50,7 @@ const Notification = ({componentId, notification}: NotificationProps) => {
     const dispatch = useDispatch();
     const dismissTimerRef = useRef<NodeJS.Timeout | null>(null);
     const tapped = useRef<boolean>(false);
+    const collapsedThreadsEnabled = useSelector(isCollapsedThreadsEnabled);
 
     const animateDismissOverlay = () => {
         cancelDismissTimer();
@@ -100,6 +102,11 @@ const Notification = ({componentId, notification}: NotificationProps) => {
             if (componentId === screen && tapped.current) {
                 await dismissAllModals();
                 await popToRoot();
+
+                const {root_id: rootId, channel_id: channelId} = notification.payload || {};
+                if (rootId && collapsedThreadsEnabled) {
+                    EventEmitter.emit('goToThread', {id: rootId, channel_id: channelId});
+                }
             }
         });
 

@@ -1,8 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React from 'react';
 import {shallow} from 'enzyme';
+import React from 'react';
 
 import Preferences from '@mm-redux/constants/preferences';
 
@@ -18,7 +18,7 @@ describe('Search RecentItem', () => {
     const baseProps = {
         item,
         setModifierValue: jest.fn(),
-        theme: Preferences.THEMES.default,
+        theme: Preferences.THEMES.denim,
     };
 
     test('should match snapshot and respond to events', () => {
@@ -27,7 +27,7 @@ describe('Search RecentItem', () => {
         );
 
         expect(wrapper.getElement()).toMatchSnapshot();
-        wrapper.find('ForwardRef').first().props().onPress();
+        wrapper.find('TouchableHighlight').first().props().onPress();
         expect(baseProps.setModifierValue).toHaveBeenCalledTimes(1);
         expect(baseProps.setModifierValue).toHaveBeenCalledWith(item.value);
     });

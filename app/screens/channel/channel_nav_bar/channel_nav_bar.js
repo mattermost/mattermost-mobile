@@ -1,20 +1,22 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useEffect, useState} from 'react';
-import PropTypes from 'prop-types';
-import {Dimensions, Platform, View} from 'react-native';
 import AsyncStorage from '@react-native-community/async-storage';
+
+import PropTypes from 'prop-types';
+import React, {useEffect, useState} from 'react';
+import {Dimensions, Platform, View, Text} from 'react-native';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
+import FormattedText from '@components/formatted_text';
 import {DeviceTypes, ViewTypes} from '@constants';
+import mattermostManaged from '@mattermost-managed';
 import EventEmitter from '@mm-redux/utils/event_emitter';
 import {makeStyleSheetFromTheme} from '@utils/theme';
-import mattermostManaged from 'app/mattermost_managed';
 
-import MainSidebarDrawerButton from './main_sidebar_drawer_button';
 import ChannelSearchButton from './channel_search_button';
 import ChannelTitle from './channel_title';
+import MainSidebarDrawerButton from './main_sidebar_drawer_button';
 import SettingsSidebarDrawerButton from './settings_sidebar_drawer_button';
 
 const {
@@ -42,11 +44,26 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
                 },
             }),
         },
+        wrapper: {
+            alignItems: 'center',
+            flex: 1,
+            position: 'relative',
+            top: -1,
+            flexDirection: 'row',
+            justifyContent: 'flex-start',
+            width: '90%',
+        },
+        threadsTitle: {
+            color: theme.sidebarHeaderTextColor,
+            fontSize: 18,
+            fontWeight: '600',
+            textAlign: 'center',
+        },
     };
 });
 
 const ChannelNavBar = (props) => {
-    const {isLandscape, onPress, openMainSidebar, openSettingsSidebar, theme} = props;
+    const {isLandscape, onPress, openMainSidebar, openSettingsSidebar, theme, isGlobalThreads} = props;
     const insets = useSafeAreaInsets();
     const style = getStyleFromTheme(theme);
     const [splitView, setSplitView] = useState(false);
@@ -94,11 +111,11 @@ const ChannelNavBar = (props) => {
     useEffect(() => {
         handleDimensions();
         handlePermanentSidebar();
-        Dimensions.addEventListener('change', handleDimensions);
+        const dimensionsListener = Dimensions.addEventListener('change', handleDimensions);
         EventEmitter.on(DeviceTypes.PERMANENT_SIDEBAR_SETTINGS, handlePermanentSidebar);
 
         return () => {
-            Dimensions.removeEventListener('change', handleDimensions);
+            dimensionsListener.remove();
             EventEmitter.off(DeviceTypes.PERMANENT_SIDEBAR_SETTINGS, handlePermanentSidebar);
         };
     }, []);
@@ -125,6 +142,33 @@ const ChannelNavBar = (props) => {
         break;
     }
 
+    let title;
+    if (isGlobalThreads) {
+        title = (<View style={style.wrapper}>
+            <Text
+                ellipsizeMode='tail'
+                numberOfLines={1}
+                style={style.threadsTitle}
+            >
+                <FormattedText
+                    numberOfLines={1}
+                    ellipsizeMode='tail'
+                    id='threads'
+                    defaultMessage='Threads'
+                />
+            </Text>
+        </View>
+        );
+    } else {
+        title = (
+            <ChannelTitle
+                onPress={onPress}
+                canHaveSubtitle={canHaveSubtitle}
+            />
+
+        );
+    }
+
     return (
         <View
             onLayout={onLayout}
@@ -134,10 +178,7 @@ const ChannelNavBar = (props) => {
                 openSidebar={openMainSidebar}
                 visible={drawerButtonVisible()}
             />
-            <ChannelTitle
-                onPress={onPress}
-                canHaveSubtitle={canHaveSubtitle}
-            />
+            {title}
             <ChannelSearchButton
                 theme={theme}
             />
@@ -152,6 +193,7 @@ ChannelNavBar.propTypes = {
     openSettingsSidebar: PropTypes.func.isRequired,
     onPress: PropTypes.func.isRequired,
     theme: PropTypes.object.isRequired,
+    isGlobalThreads: PropTypes.bool,
 };
 
 export default ChannelNavBar;

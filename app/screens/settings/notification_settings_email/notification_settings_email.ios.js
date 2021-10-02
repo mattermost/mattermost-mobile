@@ -2,7 +2,6 @@
 // See LICENSE.txt for license information.
 
 import React from 'react';
-
 import {
     ScrollView,
     View,
@@ -12,14 +11,23 @@ import {SafeAreaView} from 'react-native-safe-area-context';
 import FormattedText from '@components/formatted_text';
 import StatusBar from '@components/status_bar';
 import {Preferences} from '@mm-redux/constants';
-import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
-import {t} from '@utils/i18n';
 import Section from '@screens/settings/section';
 import SectionItem from '@screens/settings/section_item';
+import {t} from '@utils/i18n';
+import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 import NotificationSettingsEmailBase from './notification_settings_email_base';
 
 class NotificationSettingsEmailIos extends NotificationSettingsEmailBase {
+    handleEmailThreadsChanged = (value) => {
+        let emailThreads = 'mention';
+        if (value) {
+            emailThreads = 'all';
+        }
+
+        this.setEmailThreads(emailThreads, this.saveEmailThreadsNotifyProps);
+    };
+
     renderEmailSection() {
         const {
             enableEmailBatching,
@@ -114,8 +122,37 @@ class NotificationSettingsEmailIos extends NotificationSettingsEmailBase {
         );
     }
 
-    render() {
+    renderEmailThreadsSection(style) {
         const {theme} = this.props;
+
+        return (
+            <Section
+                headerId={t('user.settings.notifications.email_threads.title')}
+                headerDefaultMessage='THREAD REPLY NOTIFICATIONS'
+                footerId={t('user.settings.notifications.email_threads.info')}
+                footerDefaultMessage={'When enabled, any reply to a thread you\'re following will send an email notification.'}
+                theme={theme}
+            >
+                <SectionItem
+                    label={(
+                        <FormattedText
+                            id='user.settings.notifications.email_threads.description'
+                            defaultMessage={'Notify me about all replies to threads I\'m following'}
+                        />
+                    )}
+                    description={<View/>}
+                    action={this.handleEmailThreadsChanged}
+                    actionType='toggle'
+                    selected={this.state.emailThreads === 'all'}
+                    theme={theme}
+                />
+                <View style={style.separator}/>
+            </Section>
+        );
+    }
+
+    render() {
+        const {theme, isCollapsedThreadsEnabled, notifyProps} = this.props;
         const style = getStyleSheet(theme);
 
         return (
@@ -131,6 +168,9 @@ class NotificationSettingsEmailIos extends NotificationSettingsEmailBase {
                     alwaysBounceVertical={false}
                 >
                     {this.renderEmailSection()}
+                    {isCollapsedThreadsEnabled && notifyProps.email === 'true' && (
+                        this.renderEmailThreadsSection(style)
+                    )}
                 </ScrollView>
             </SafeAreaView>
         );

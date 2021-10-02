@@ -5,10 +5,10 @@ import React from 'react';
 
 import PostList from '@components/post_list';
 import {TYPING_VISIBLE} from '@constants/post_draft';
-import Preferences from '@mm-redux/constants/preferences';
 import {General, RequestStatus} from '@mm-redux/constants';
+import Preferences from '@mm-redux/constants/preferences';
 import EventEmitter from '@mm-redux/utils/event_emitter';
-import {shallowWithIntl} from 'test/intl-test-helper';
+import {shallowWithIntl} from '@test/intl-test-helper';
 
 import ThreadIOS from './thread.ios';
 
@@ -16,16 +16,22 @@ describe('thread', () => {
     const baseProps = {
         actions: {
             selectPost: jest.fn(),
+            setThreadFollow: jest.fn(),
+            fetchThreadAppBindings: jest.fn(),
+            clearThreadAppBindings: jest.fn(),
         },
         channelId: 'channel_id',
         channelType: General.OPEN_CHANNEL,
         displayName: 'channel_display_name',
         myMember: {last_viewed_at: 0, user_id: 'member_user_id'},
         rootId: 'root_id',
-        theme: Preferences.THEMES.default,
+        theme: Preferences.THEMES.denim,
         postIds: ['root_id', 'post_id_1', 'post_id_2'],
         channelIsArchived: false,
         threadLoadingStatus: {status: RequestStatus.STARTED},
+        teamId: 'team_id',
+        userId: 'user_id',
+        postBindings: [],
     };
 
     test('should match snapshot, has root post', () => {

@@ -1,18 +1,18 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React from 'react';
 import {shallow} from 'enzyme';
+import React from 'react';
 
+import Autocomplete from '@components/autocomplete';
 import Preferences from '@mm-redux/constants/preferences';
 
-import Autocomplete from 'app/components/autocomplete';
 import EditChannelInfo from './index';
 
 describe('EditChannelInfo', () => {
     const baseProps = {
         testID: 'edit_channel_info',
-        theme: Preferences.THEMES.default,
+        theme: Preferences.THEMES.denim,
         deviceWidth: 400,
         deviceHeight: 600,
         channelType: 'O',

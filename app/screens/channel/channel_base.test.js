@@ -8,8 +8,8 @@ import * as NavigationActions from '@actions/navigation';
 import {General, Preferences} from '@mm-redux/constants';
 import EventEmitter from '@mm-redux/utils/event_emitter';
 import EphemeralStore from '@store/ephemeral_store';
+import {shallowWithIntl} from '@test/intl-test-helper';
 import {emptyFunction} from '@utils/general';
-import {shallowWithIntl} from 'test/intl-test-helper';
 
 import ChannelBase from './channel_base';
 
@@ -25,7 +25,8 @@ describe('ChannelBase', () => {
             selectInitialChannel: jest.fn(),
         },
         componentId: channelBaseComponentId,
-        theme: Preferences.THEMES.default,
+        theme: Preferences.THEMES.denim,
+        collapsedThreadsEnabled: false,
     };
     const optionsForTheme = (theme) => {
         return {
@@ -63,9 +64,9 @@ describe('ChannelBase', () => {
         expect(mergeNavigationOptions.mock.calls).toEqual([]);
         mergeNavigationOptions.mockClear();
 
-        wrapper.setProps({theme: Preferences.THEMES.mattermostDark});
+        wrapper.setProps({theme: Preferences.THEMES.indigo});
 
-        const newThemeOptions = optionsForTheme(Preferences.THEMES.mattermostDark);
+        const newThemeOptions = optionsForTheme(Preferences.THEMES.indigo);
         expect(mergeNavigationOptions.mock.calls).toEqual([
             [baseProps.componentId, newThemeOptions],
             [componentIds[2], newThemeOptions],

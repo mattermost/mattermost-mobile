@@ -4,7 +4,7 @@
 import {analytics} from '@init/analytics';
 import {FileInfo} from '@mm-redux/types/files';
 import {Post} from '@mm-redux/types/posts';
-import {buildQueryString} from '@mm-redux/utils/helpers';
+import {buildQueryString, isMinimumServerVersion} from '@mm-redux/utils/helpers';
 
 import {PER_PAGE_DEFAULT} from './constants';
 
@@ -14,11 +14,16 @@ export interface ClientPostsMix {
     getPost: (postId: string) => Promise<Post>;
     patchPost: (postPatch: Partial<Post> & {id: string}) => Promise<Post>;
     deletePost: (postId: string) => Promise<any>;
-    getPostThread: (postId: string) => Promise<any>;
-    getPosts: (channelId: string, page?: number, perPage?: number) => Promise<any>;
-    getPostsSince: (channelId: string, since: number) => Promise<any>;
-    getPostsBefore: (channelId: string, postId: string, page?: number, perPage?: number) => Promise<any>;
-    getPostsAfter: (channelId: string, postId: string, page?: number, perPage?: number) => Promise<any>;
+    getPostThread: (postId: string, fetchThreads?: boolean, collapsedThreads?: boolean, collapsedThreadsExtended?: boolean) => Promise<any>;
+    getPosts: (channelId: string, page?: number, perPage?: number, fetchThreads?: boolean, collapsedThreads?: boolean, collapsedThreadsExtended?: boolean) => Promise<any>;
+    getPostsSince: (channelId: string, since: number, fetchThreads?: boolean, collapsedThreads?: boolean, collapsedThreadsExtended?: boolean) => Promise<any>;
+    getPostsBefore: (channelId: string, postId: string, page?: number, perPage?: number, fetchThreads?: boolean, collapsedThreads?: boolean, collapsedThreadsExtended?: boolean) => Promise<any>;
+    getPostsAfter: (channelId: string, postId: string, page?: number, perPage?: number, fetchThreads?: boolean, collapsedThreads?: boolean, collapsedThreadsExtended?: boolean) => Promise<any>;
+    getUserThreads: (userId: string, teamId: string, before?: string, after?: string, pageSize?: number, extended?: boolean, deleted?: boolean, unread?: boolean, since?: number) => Promise<any>;
+    getUserThread: (userId: string, teamId: string, threadId: string, extended?: boolean) => Promise<any>;
+    updateThreadsReadForUser: (userId: string, teamId: string) => Promise<any>;
+    updateThreadReadForUser: (userId: string, teamId: string, threadId: string, timestamp: number) => Promise<any>;
+    updateThreadFollowForUser: (userId: string, teamId: string, threadId: string, state: boolean) => Promise<any>;
     getFileInfosForPost: (postId: string) => Promise<FileInfo[]>;
     getFlaggedPosts: (userId: string, channelId?: string, teamId?: string, page?: number, perPage?: number) => Promise<any>;
     getPinnedPosts: (channelId: string) => Promise<any>;
@@ -82,42 +87,87 @@ const ClientPosts = (superclass: any) => class extends superclass {
         );
     };
 
-    getPostThread = async (postId: string) => {
+    getPostThread = async (postId: string, fetchThreads = true, collapsedThreads = false, collapsedThreadsExtended = false) => {
         return this.doFetch(
-            `${this.getPostRoute(postId)}/thread`,
+            `${this.getPostRoute(postId)}/thread${buildQueryString({skipFetchThreads: !fetchThreads, collapsedThreads, collapsedThreadsExtended})}`,
             {method: 'get'},
         );
     };
 
-    getPosts = async (channelId: string, page = 0, perPage = PER_PAGE_DEFAULT) => {
+    getPosts = async (channelId: string, page = 0, perPage = PER_PAGE_DEFAULT, fetchThreads = true, collapsedThreads = false, collapsedThreadsExtended = false) => {
         return this.doFetch(
-            `${this.getChannelRoute(channelId)}/posts${buildQueryString({page, per_page: perPage})}`,
+            `${this.getChannelRoute(channelId)}/posts${buildQueryString({page, per_page: perPage, skipFetchThreads: !fetchThreads, collapsedThreads, collapsedThreadsExtended})}`,
             {method: 'get'},
         );
     };
 
-    getPostsSince = async (channelId: string, since: number) => {
+    getPostsSince = async (channelId: string, since: number, fetchThreads = true, collapsedThreads = false, collapsedThreadsExtended = false) => {
         return this.doFetch(
-            `${this.getChannelRoute(channelId)}/posts${buildQueryString({since})}`,
+            `${this.getChannelRoute(channelId)}/posts${buildQueryString({since, skipFetchThreads: !fetchThreads, collapsedThreads, collapsedThreadsExtended})}`,
             {method: 'get'},
         );
     };
 
-    getPostsBefore = async (channelId: string, postId: string, page = 0, perPage = PER_PAGE_DEFAULT) => {
+    getPostsBefore = async (channelId: string, postId: string, page = 0, perPage = PER_PAGE_DEFAULT, fetchThreads = true, collapsedThreads = false, collapsedThreadsExtended = false) => {
         analytics.trackAPI('api_posts_get_before', {channel_id: channelId});
 
         return this.doFetch(
-            `${this.getChannelRoute(channelId)}/posts${buildQueryString({before: postId, page, per_page: perPage})}`,
+            `${this.getChannelRoute(channelId)}/posts${buildQueryString({before: postId, page, per_page: perPage, skipFetchThreads: !fetchThreads, collapsedThreads, collapsedThreadsExtended})}`,
             {method: 'get'},
         );
     };
 
-    getPostsAfter = async (channelId: string, postId: string, page = 0, perPage = PER_PAGE_DEFAULT) => {
+    getPostsAfter = async (channelId: string, postId: string, page = 0, perPage = PER_PAGE_DEFAULT, fetchThreads = true, collapsedThreads = false, collapsedThreadsExtended = false) => {
         analytics.trackAPI('api_posts_get_after', {channel_id: channelId});
 
         return this.doFetch(
-            `${this.getChannelRoute(channelId)}/posts${buildQueryString({after: postId, page, per_page: perPage})}`,
+            `${this.getChannelRoute(channelId)}/posts${buildQueryString({after: postId, page, per_page: perPage, skipFetchThreads: !fetchThreads, collapsedThreads, collapsedThreadsExtended})}`,
             {method: 'get'},
+        );
+    };
+
+    getUserThreads = async (userId: string, teamId: string, before = '', after = '', perPage = PER_PAGE_DEFAULT, extended = false, deleted = false, unread = false, since = 0) => {
+        const serverVersion = this.getServerVersion();
+        let queryStringObj;
+        if (isMinimumServerVersion(serverVersion, 6, 0)) {
+            queryStringObj = {before, after, per_page: perPage, extended, deleted, unread, since};
+        } else {
+            queryStringObj = {before, after, pageSize: perPage, extended, deleted, unread, since};
+        }
+        return this.doFetch(
+            `${this.getUserThreadsRoute(userId, teamId)}${buildQueryString(queryStringObj)}`,
+            {method: 'get'},
+        );
+    };
+
+    getUserThread = async (userId: string, teamId: string, threadId: string, extended = false) => {
+        return this.doFetch(
+            `${this.getUserThreadRoute(userId, teamId, threadId)}${buildQueryString({extended})}`,
+            {method: 'get'},
+        );
+    };
+
+    updateThreadsReadForUser = (userId: string, teamId: string) => {
+        const url = `${this.getUserThreadsRoute(userId, teamId)}/read`;
+        return this.doFetch(
+            url,
+            {method: 'put'},
+        );
+    };
+
+    updateThreadReadForUser = (userId: string, teamId: string, threadId: string, timestamp: number) => {
+        const url = `${this.getUserThreadRoute(userId, teamId, threadId)}/read/${timestamp}`;
+        return this.doFetch(
+            url,
+            {method: 'put'},
+        );
+    };
+
+    updateThreadFollowForUser = (userId: string, teamId: string, threadId: string, state: boolean) => {
+        const url = this.getUserThreadRoute(userId, teamId, threadId) + '/following';
+        return this.doFetch(
+            url,
+            {method: state ? 'put' : 'delete'},
         );
     };
 
@@ -150,7 +200,7 @@ const ClientPosts = (superclass: any) => class extends superclass {
 
         return this.doFetch(
             `${this.getUserRoute(userId)}/posts/${postId}/set_unread`,
-            {method: 'post'},
+            {method: 'post', body: JSON.stringify({collapsed_threads_supported: true})},
         );
     }
 
@@ -200,8 +250,13 @@ const ClientPosts = (superclass: any) => class extends superclass {
     searchPostsWithParams = async (teamId: string, params: any) => {
         analytics.trackAPI('api_posts_search', {team_id: teamId});
 
+        let route = `${this.getPostsRoute()}/search`;
+        if (teamId) {
+            route = `${this.getTeamRoute(teamId)}/posts/search`;
+        }
+
         return this.doFetch(
-            `${this.getTeamRoute(teamId)}/posts/search`,
+            route,
             {method: 'post', body: JSON.stringify(params)},
         );
     };

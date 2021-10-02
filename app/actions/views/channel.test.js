@@ -4,14 +4,13 @@
 import configureStore from 'redux-mock-store';
 import thunk from 'redux-thunk';
 
-import testHelper from 'test/test_helper';
-
 import * as ChannelActions from '@actions/views/channel';
 import {ViewTypes} from '@constants';
 import {ChannelTypes} from '@mm-redux/action_types';
+import {General} from '@mm-redux/constants';
 import postReducer from '@mm-redux/reducers/entities/posts';
 import initialState from '@store/initial_state';
-import {General} from '@mm-redux/constants';
+import testHelper from '@test/test_helper';
 
 const {
     handleSelectChannel,
@@ -167,6 +166,12 @@ describe('Actions.Views.Channel', () => {
                     [currentTeamId]: {},
                 },
             },
+            general: {
+                config: {
+                    EnableLegacySidebar: 'true',
+                },
+                serverVersion: '5.12.0',
+            },
         },
     };
 
@@ -175,7 +180,7 @@ describe('Actions.Views.Channel', () => {
     channelSelectors.getCurrentChannelId = jest.fn(() => currentChannelId);
     channelSelectors.getMyChannelMember = jest.fn(() => ({data: {member: {}}}));
 
-    const appChannelSelectors = require('app/selectors/channel');
+    const appChannelSelectors = require('@selectors/channel');
     const getChannelReachableOriginal = appChannelSelectors.getChannelReachable;
     appChannelSelectors.getChannelReachable = jest.fn(() => true);
 

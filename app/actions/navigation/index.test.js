@@ -1,20 +1,19 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import merge from 'deepmerge';
 import {Platform} from 'react-native';
 import {Navigation} from 'react-native-navigation';
 import configureMockStore from 'redux-mock-store';
 import thunk from 'redux-thunk';
-import merge from 'deepmerge';
-
-import EventEmitter from '@mm-redux/utils/event_emitter';
 
 import * as NavigationActions from '@actions/navigation';
+import {NavigationTypes} from '@constants';
 import Preferences from '@mm-redux/constants/preferences';
+import EventEmitter from '@mm-redux/utils/event_emitter';
 import EphemeralStore from '@store/ephemeral_store';
 import intitialState from '@store/initial_state';
 import Store from '@store/store';
-import {NavigationTypes} from '@constants';
 
 jest.unmock('@actions/navigation');
 const mockStore = configureMockStore([thunk]);
@@ -38,7 +37,7 @@ describe('@actions/navigation', () => {
     const topComponentId = 'top-component-id';
     const name = 'name';
     const title = 'title';
-    const theme = Preferences.THEMES.default;
+    const theme = Preferences.THEMES.denim;
     const passProps = {
         testProp: 'prop',
     };
@@ -301,7 +300,6 @@ describe('@actions/navigation', () => {
     test('showModalOverCurrentContext should call Navigation.showModal', () => {
         const showModal = jest.spyOn(Navigation, 'showModal');
 
-        const animationsEnabled = (Platform.OS === 'android').toString();
         const showModalOverCurrentContextTitle = '';
         const showModalOverCurrentContextOptions = {
             modalPresentationStyle: 'overCurrentContext',
@@ -315,20 +313,19 @@ describe('@actions/navigation', () => {
             },
             animations: {
                 showModal: {
-                    waitForRender: true,
-                    enabled: animationsEnabled,
-                    alpha: {
-                        from: 0,
-                        to: 1,
-                        duration: 250,
+                    enter: {
+                        enabled: false,
+                    },
+                    exit: {
+                        enabled: false,
                     },
                 },
                 dismissModal: {
-                    enabled: animationsEnabled,
-                    alpha: {
-                        from: 1,
-                        to: 0,
-                        duration: 250,
+                    enter: {
+                        enabled: false,
+                    },
+                    exit: {
+                        enabled: false,
                     },
                 },
             },

@@ -1,31 +1,31 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
-import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
+import React, {PureComponent} from 'react';
 import {intlShape} from 'react-intl';
 import {
     Platform,
     View,
     Keyboard,
 } from 'react-native';
-import {Navigation} from 'react-native-navigation';
 import {KeyboardTrackingView} from 'react-native-keyboard-tracking-view';
+import {Navigation} from 'react-native-navigation';
 import {SafeAreaView} from 'react-native-safe-area-context';
 
-import Autocomplete from 'app/components/autocomplete';
-import ErrorText from 'app/components/error_text';
-import Loading from 'app/components/loading';
-import StatusBar from 'app/components/status_bar';
-import TextInputWithLocalizedPlaceholder from 'app/components/text_input_with_localized_placeholder';
+import {dismissModal, setButtons} from '@actions/navigation';
+import Autocomplete from '@components/autocomplete';
+import ErrorText from '@components/error_text';
+import Loading from '@components/loading';
+import StatusBar from '@components/status_bar';
+import TextInputWithLocalizedPlaceholder from '@components/text_input_with_localized_placeholder';
 import DEVICE from '@constants/device';
-import {switchKeyboardForCodeBlocks} from 'app/utils/markdown';
+import {t} from '@utils/i18n';
+import {switchKeyboardForCodeBlocks} from '@utils/markdown';
 import {
     changeOpacity,
     makeStyleSheetFromTheme,
     getKeyboardAppearanceFromTheme,
-} from 'app/utils/theme';
-import {t} from 'app/utils/i18n';
-import {dismissModal, setButtons} from 'app/actions/navigation';
+} from '@utils/theme';
 
 export default class EditPost extends PureComponent {
     static propTypes = {
@@ -68,6 +68,7 @@ export default class EditPost extends PureComponent {
 
         this.rightButton.color = props.theme.sidebarHeaderTextColor;
         this.rightButton.text = context.intl.formatMessage({id: 'edit_post.save', defaultMessage: 'Save'});
+        this.rightButtonEnabled = true;
 
         setButtons(props.componentId, {
             leftButtons: [{...this.leftButton, icon: props.closeButton}],
@@ -99,14 +100,18 @@ export default class EditPost extends PureComponent {
 
     emitCanEditPost = (enabled) => {
         const {componentId} = this.props;
-        setButtons(componentId, {
-            leftButtons: [{...this.leftButton, icon: this.props.closeButton}],
-            rightButtons: [{...this.rightButton, enabled}],
-        });
+        if (this.rightButtonEnabled !== enabled) {
+            this.rightButtonEnabled = enabled;
+            setButtons(componentId, {
+                leftButtons: [{...this.leftButton, icon: this.props.closeButton}],
+                rightButtons: [{...this.rightButton, enabled}],
+            });
+        }
     };
 
     emitEditing = (loading) => {
         const {componentId} = this.props;
+        this.rightButtonEnabled = !loading;
         setButtons(componentId, {
             leftButtons: [{...this.leftButton, icon: this.props.closeButton}],
             rightButtons: [{...this.rightButton, enabled: !loading}],

@@ -4,8 +4,7 @@
 import React from 'react';
 
 import Preferences from '@mm-redux/constants/preferences';
-
-import {shallowWithIntl} from 'test/intl-test-helper';
+import {shallowWithIntl} from '@test/intl-test-helper';
 
 import PinnedPosts from './pinned_posts';
 
@@ -18,7 +17,7 @@ describe('PinnedPosts', () => {
             showPermalink: jest.fn(),
             selectPost: jest.fn(),
         },
-        theme: Preferences.THEMES.default,
+        theme: Preferences.THEMES.denim,
         currentChannelId: 'channelId',
     };
 

@@ -7,17 +7,17 @@
 // - Use element testID when selecting an element. Create one if none.
 // *******************************************************************
 
+import {
+    Channel,
+    Post,
+    Setup,
+} from '@support/server_api';
 import {PostOptions} from '@support/ui/component';
 import {
     ChannelScreen,
     AddReactionScreen,
     ReactionListScreen,
 } from '@support/ui/screen';
-import {
-    Channel,
-    Post,
-    Setup,
-} from '@support/server_api';
 
 describe('Emojis and Reactions', () => {
     const {
@@ -125,8 +125,9 @@ describe('Emojis and Reactions', () => {
         await AddReactionScreen.open();
 
         // * Verify Emojis exist in recently used section
-        await expect(element(by.text('🦊').withAncestor(by.id('RECENTLY USED')))).toExist();
-        await expect(element(by.text('🐶').withAncestor(by.id('RECENTLY USED')))).toExist();
+        await expect(element(by.text('Recent'))).toExist();
+        await expect(element(by.text('🦊'))).toExist();
+        await expect(element(by.text('🐶'))).toExist();
 
         // # Close AddReaction Screen
         await AddReactionScreen.close();

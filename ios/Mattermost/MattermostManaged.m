@@ -182,8 +182,16 @@ RCT_EXPORT_METHOD(supportsFaceId:(RCTPromiseResolveBlock)resolve
   [context canEvaluatePolicy:LAPolicyDeviceOwnerAuthentication error:&error];
 
   resolve(@{
-            @"supportsFaceId": @(context.biometryType == LABiometryTypeFaceID && @available(iOS 11.0, *))
+            @"supportsFaceId": @(context.biometryType == LABiometryTypeFaceID)
             });
+}
+
+RCT_EXPORT_METHOD(addListener:(NSString *)eventName) {
+  // Keep: Required for RN built in Event Emitter Calls.
+}
+
+RCT_EXPORT_METHOD(removeListeners:(double)count) {
+  // Keep: Required for RN built in Event Emitter Calls.
 }
 
 @end

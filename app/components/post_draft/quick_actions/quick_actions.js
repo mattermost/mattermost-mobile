@@ -1,25 +1,27 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
+import React, {PureComponent} from 'react';
 import {Platform, StyleSheet, View} from 'react-native';
 
-import {MAX_FILE_COUNT, UPLOAD_FILES} from '@constants/post_draft';
+import {UPLOAD_FILES} from '@constants/post_draft';
 import EventEmitter from '@mm-redux/utils/event_emitter';
 
 import CameraAction from './camera_quick_action';
-import ImageAction from './image_quick_action';
 import FileAction from './file_quick_action';
+import ImageAction from './image_quick_action';
 import InputAction from './input_quick_action';
 
 export default class QuickActions extends PureComponent {
     static propTypes = {
         testID: PropTypes.string,
+        screenId: PropTypes.string.isRequired,
         canUploadFiles: PropTypes.bool,
         fileCount: PropTypes.number,
         inputEventType: PropTypes.string.isRequired,
         maxFileSize: PropTypes.number.isRequired,
+        maxFileCount: PropTypes.number.isRequired,
         onTextChange: PropTypes.func.isRequired,
         theme: PropTypes.object.isRequired,
     };
@@ -59,8 +61,8 @@ export default class QuickActions extends PureComponent {
         this.props.onTextChange(newValue);
     }
 
-    handleUploadFiles(files) {
-        EventEmitter.emit(UPLOAD_FILES, files);
+    handleUploadFiles = (files) => {
+        EventEmitter.emit(UPLOAD_FILES, files, this.props.screenId);
     }
 
     render() {
@@ -68,6 +70,7 @@ export default class QuickActions extends PureComponent {
             testID,
             canUploadFiles,
             fileCount,
+            maxFileCount,
             theme,
         } = this.props;
         const atInputActionTestID = `${testID}.at_input_action`;
@@ -78,7 +81,7 @@ export default class QuickActions extends PureComponent {
         const uploadProps = {
             disabled: !canUploadFiles,
             fileCount,
-            maxFileCount: MAX_FILE_COUNT,
+            maxFileCount,
             theme,
             onUploadFiles: this.handleUploadFiles,
         };

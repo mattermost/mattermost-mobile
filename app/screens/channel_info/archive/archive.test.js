@@ -2,9 +2,9 @@
 // See LICENSE.txt for license information.
 
 import React from 'react';
-import {shallowWithIntl} from 'test/intl-test-helper';
 
 import Preferences from '@mm-redux/constants/preferences';
+import {shallowWithIntl} from '@test/intl-test-helper';
 
 import Archive from './archive';
 
@@ -30,7 +30,7 @@ describe('ChannelInfo -> Archive', () => {
         unarchiveChannel: jest.fn(),
         selectPenultimateChannel: jest.fn(),
         teamId: 'team-123',
-        theme: Preferences.THEMES.default,
+        theme: Preferences.THEMES.denim,
         viewArchivedChannels: true,
     };
 

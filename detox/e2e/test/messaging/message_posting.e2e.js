@@ -10,16 +10,16 @@
 import moment from 'moment-timezone';
 
 import {
+    Channel,
+    Post,
+    Setup,
+} from '@support/server_api';
+import {
     MainSidebar,
     PostOptions,
     TeamsList,
 } from '@support/ui/component';
 import {ChannelScreen} from '@support/ui/screen';
-import {
-    Channel,
-    Post,
-    Setup,
-} from '@support/server_api';
 import {
     getAdminAccount,
     isAndroid,
@@ -82,6 +82,7 @@ describe('Messaging', () => {
         } = PostOptions;
 
         // # Log in as sysadmin
+        await device.reloadReactNative();
         await ChannelScreen.logout();
         await ChannelScreen.open(getAdminAccount());
 

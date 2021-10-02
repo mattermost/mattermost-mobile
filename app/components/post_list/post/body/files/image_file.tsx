@@ -4,15 +4,15 @@
 import React, {useState} from 'react';
 import {StyleProp, StyleSheet, useWindowDimensions, View, ViewStyle} from 'react-native';
 
-import ProgressiveImage from '@components/progressive_image';
 import {Client4} from '@client/rest';
+import ProgressiveImage from '@components/progressive_image';
 import {calculateDimensions} from '@utils/images';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
-import type {FileInfo} from '@mm-redux/types/files';
-import type {Theme} from '@mm-redux/types/preferences';
-
 import FileIcon from './file_icon';
+
+import type {FileInfo} from '@mm-redux/types/files';
+import type {Theme} from '@mm-redux/types/theme';
 
 type ImageFileProps = {
     backgroundColor?: string;
@@ -123,7 +123,6 @@ const ImageFile = ({
                 id={file.id}
                 style={{height: file.height, width: file.width}}
                 tintDefaultSource={!file.localPath && !failed}
-                filename={file.name}
                 onError={handleError}
                 resizeMode={'contain'}
                 resizeMethod={resizeMethod}
@@ -167,7 +166,6 @@ const ImageFile = ({
             id={file.id}
             style={[isSingleImage ? null : style.imagePreview, imageDimensions]}
             tintDefaultSource={!file.localPath && !failed}
-            filename={file.name}
             onError={handleError}
             resizeMode={resizeMode}
             resizeMethod={resizeMethod}

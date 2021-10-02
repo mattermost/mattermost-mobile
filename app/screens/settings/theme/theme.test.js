@@ -4,7 +4,7 @@
 import React from 'react';
 
 import Preferences from '@mm-redux/constants/preferences';
-import {shallowWithIntl} from 'test/intl-test-helper';
+import {shallowWithIntl} from '@test/intl-test-helper';
 
 import Theme from './theme';
 import ThemeTile from './theme_tile';
@@ -23,7 +23,7 @@ describe('Theme', () => {
         isLandscape: false,
         isTablet: false,
         teamId: 'test-team',
-        theme: Preferences.THEMES.default,
+        theme: Preferences.THEMES.denim,
         userId: 'test-user',
     };
 
@@ -33,6 +33,6 @@ describe('Theme', () => {
         );
 
         expect(wrapper.getElement()).toMatchSnapshot();
-        expect(wrapper.find(ThemeTile)).toHaveLength(4);
+        expect(wrapper.find(ThemeTile)).toHaveLength(5);
     });
 });

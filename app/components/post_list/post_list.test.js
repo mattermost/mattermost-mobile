@@ -4,7 +4,7 @@
 import React from 'react';
 
 import Preferences from '@mm-redux/constants/preferences';
-import {shallowWithIntl} from 'test/intl-test-helper';
+import {shallowWithIntl} from '@test/intl-test-helper';
 
 import PostList from './post_list';
 
@@ -25,7 +25,7 @@ describe('PostList', () => {
         postIds: ['post-id-1', 'post-id-2'],
         serverURL,
         siteURL: 'https://site-url.fake',
-        theme: Preferences.THEMES.default,
+        theme: Preferences.THEMES.denim,
     };
 
     // const deeplinkRoot = 'mattermost://server-url.fake';

@@ -2,8 +2,9 @@
 // See LICENSE.txt for license information.
 
 import {NavigationContainer} from '@react-navigation/native';
-import React from 'react';
 import {createStackNavigator} from '@react-navigation/stack';
+
+import React from 'react';
 
 import {Preferences} from '@mm-redux/constants';
 
@@ -11,7 +12,7 @@ import Channels from './channel_list';
 import Share from './share';
 import Teams from './team_list';
 
-const theme = Preferences.THEMES.default;
+const theme = Preferences.THEMES.denim;
 
 const Stack = createStackNavigator();
 const defaultNavigationOptions = {

@@ -8,15 +8,17 @@
 // *******************************************************************
 
 import {
-    ChannelScreen,
-    SearchScreen,
-    ThreadScreen,
-} from '@support/ui/screen';
-import {
     Channel,
     Post,
     Setup,
 } from '@support/server_api';
+import {
+    ChannelScreen,
+    SearchScreen,
+    PermalinkScreen,
+    ThreadScreen,
+} from '@support/ui/screen';
+import {isIos} from '@support/utils';
 
 describe('Hashtags', () => {
     const {postMessage} = ChannelScreen;
@@ -86,12 +88,12 @@ describe('Hashtags', () => {
         await searchInput.typeText(invalid1);
         await searchInput.tapReturnKey();
         await element(by.text(invalid1).withAncestor(by.id(SearchScreen.testID.searchResultsList))).atIndex(1).tap();
-        await ThreadScreen.toBeVisible();
 
-        // # Go back to channel
-        await ThreadScreen.back();
-        await searchInput.clearText();
-        await SearchScreen.cancel();
+        // * Verify at permalink screen
+        await PermalinkScreen.toBeVisible();
+
+        // # Jump to recent messages
+        await PermalinkScreen.jumpToRecentMessages();
     });
 
     it('MM-T357 should be able to tap on hashtag from search result reply thread', async () => {
@@ -102,18 +104,30 @@ describe('Hashtags', () => {
         // * Verify tapping on hashtag shows result containing post of hashtag
         await element(by.text(hashtag)).tap();
         await SearchScreen.toBeVisible();
-        await expect(element(by.text(hashtag)).atIndex(1)).toExist();
+        if (isIos()) {
+            await expect(element(by.text(hashtag)).atIndex(1)).toExist();
+        } else {
+            await expect(element(by.text(hashtag)).atIndex(0)).toExist();
+        }
 
         // # Open reply thread from search result and tap on hashtag
         const {post} = await Post.apiGetLastPostInChannel(townSquareChannel.id);
-        const {searchResultPostItem} = await getSearchResultPostItem(post.id, hashtag);
-        await searchResultPostItem.tap();
+        const {searchResultPostItemHeaderReply} = await getSearchResultPostItem(post.id, hashtag);
+        await searchResultPostItemHeaderReply.tap();
         await ThreadScreen.toBeVisible();
-        await element(by.text(hashtag)).atIndex(1).tap();
+        if (isIos()) {
+            await element(by.text(hashtag)).atIndex(1).tap();
+        } else {
+            await element(by.text(hashtag)).atIndex(0).tap();
+        }
 
         // * Verify tapping on hashtag from reply thread shows result containing post of hashtag
         await SearchScreen.toBeVisible();
-        await expect(element(by.text(hashtag)).atIndex(1)).toExist();
+        if (isIos()) {
+            await expect(element(by.text(hashtag)).atIndex(1)).toExist();
+        } else {
+            await expect(element(by.text(hashtag)).atIndex(0)).toExist();
+        }
 
         // # Go back to channel
         await searchInput.clearText();

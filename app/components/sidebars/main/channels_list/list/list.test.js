@@ -1,8 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React from 'react';
 import {shallow} from 'enzyme';
+import React from 'react';
 
 import Preferences from '@mm-redux/constants/preferences';
 
@@ -15,16 +15,43 @@ describe('ChannelsList List', () => {
         canJoinPublicChannels: true,
         canCreatePrivateChannels: true,
         canCreatePublicChannels: true,
+        showLegacySidebar: true,
+        collapsedThreadsEnabled: false,
         favoriteChannelIds: [],
         unreadChannelIds: [],
         styles: {},
-        theme: Preferences.THEMES.default,
+        theme: Preferences.THEMES.denim,
         orderedChannelIds: [],
         isLandscape: false,
+        onCollapseCategory: jest.fn(),
+        unreadChannels: [],
+        unreadsOnTop: true,
     };
 
     test('should match snapshot', () => {
         const wrapper = shallow(<List {...baseProps}/>);
+
+        expect(wrapper.getElement()).toMatchSnapshot();
+    });
+
+    test('should match snapshot with unreads not on top', () => {
+        const wrapper = shallow(
+            <List
+                {...baseProps}
+                unreadsOnTop={false}
+            />,
+        );
+
+        expect(wrapper.getElement()).toMatchSnapshot();
+    });
+
+    test('should match snapshot with collapsed threads enabled', () => {
+        const wrapper = shallow(
+            <List
+                {...baseProps}
+                collapsedThreadsEnabled={true}
+            />,
+        );
 
         expect(wrapper.getElement()).toMatchSnapshot();
     });

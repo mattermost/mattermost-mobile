@@ -3,9 +3,9 @@
 
 import React from 'react';
 import {Alert} from 'react-native';
-import {shallowWithIntl} from 'test/intl-test-helper';
 
 import Preferences from '@mm-redux/constants/preferences';
+import {shallowWithIntl} from '@test/intl-test-helper';
 
 import PostOptions from './post_options';
 
@@ -18,6 +18,7 @@ describe('PostOptions', () => {
         removePost: jest.fn(),
         unflagPost: jest.fn(),
         unpinPost: jest.fn(),
+        setThreadFollow: jest.fn(),
         setUnreadPost: jest.fn(),
     };
 
@@ -39,6 +40,7 @@ describe('PostOptions', () => {
         canMarkAsUnread: true,
         canEditUntil: -1,
         channelIsReadOnly: false,
+        currentTeamId: 'current_team_id',
         currentTeamUrl: 'http://localhost:8065/team-name',
         currentUserId: 'user1',
         deviceHeight: 600,
@@ -49,7 +51,7 @@ describe('PostOptions', () => {
         post,
         showAddReaction: true,
         showAppOptions: true,
-        theme: Preferences.THEMES.default,
+        theme: Preferences.THEMES.denim,
     };
 
     function getWrapper(props = {}) {

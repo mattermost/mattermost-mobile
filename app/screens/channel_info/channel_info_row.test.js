@@ -2,9 +2,9 @@
 // See LICENSE.txt for license information.
 
 import React from 'react';
-import {shallowWithIntl} from 'test/intl-test-helper';
 
 import Preferences from '@mm-redux/constants/preferences';
+import {shallowWithIntl} from '@test/intl-test-helper';
 
 import ChannelInfoRow from './channel_info_row';
 
@@ -22,7 +22,7 @@ describe('ChannelInfoRow', () => {
         textId: 'text-id',
         togglable: false,
         textColor: '#000000',
-        theme: Preferences.THEMES.default,
+        theme: Preferences.THEMES.denim,
     };
 
     test('should match snapshot', () => {

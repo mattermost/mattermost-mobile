@@ -3,12 +3,12 @@
 
 /* eslint-disable camelcase, no-console */
 
-const express = require('express');
 const axios = require('axios');
 var ClientOAuth2 = require('client-oauth2');
+const express = require('express');
 
-const webhookUtils = require('./e2e/utils/webhook_utils');
 const postMessageAs = require('./e2e/plugins/post_message_as');
+const webhookUtils = require('./e2e/utils/webhook_utils');
 const port = 3000;
 
 const {
@@ -103,7 +103,6 @@ async function postOAuthMessage(req, res) {
                 message,
                 type: '',
                 create_at: createAt,
-                parent_id: rootId,
                 root_id: rootId,
             },
         });

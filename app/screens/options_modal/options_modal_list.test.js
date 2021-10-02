@@ -1,10 +1,9 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
-import React from 'react';
 import {shallow} from 'enzyme';
+import React from 'react';
 
-import OptionModalListIOS from './options_modal_list.ios';
-import OptionModalListAndroid from './options_modal_list.android';
+import OptionModalList from './options_modal_list';
 
 describe('OptionModalList', () => {
     const baseProps = {
@@ -27,16 +26,9 @@ describe('OptionModalList', () => {
         title: 'test',
     };
 
-    test('should match snapshot for iOS', async () => {
+    test('should match snapshot', async () => {
         const wrapper = shallow(
-            <OptionModalListIOS {...baseProps}/>,
-        );
-        expect(wrapper.getElement()).toMatchSnapshot();
-    });
-
-    test('should match snapshot for Android', async () => {
-        const wrapper = shallow(
-            <OptionModalListAndroid {...baseProps}/>,
+            <OptionModalList {...baseProps}/>,
         );
         expect(wrapper.getElement()).toMatchSnapshot();
     });

@@ -1,8 +1,9 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {PureComponent} from 'react';
+/* eslint-disable max-lines */
 import PropTypes from 'prop-types';
+import React, {PureComponent} from 'react';
 import {intlShape} from 'react-intl';
 import {Keyboard, View, Text} from 'react-native';
 import {Navigation} from 'react-native-navigation';
@@ -21,8 +22,8 @@ import {NavigationTypes} from '@constants';
 import {debounce} from '@mm-redux/actions/helpers';
 import {General} from '@mm-redux/constants';
 import EventEmitter from '@mm-redux/utils/event_emitter';
-import {alertErrorWithFallback, emptyFunction} from '@utils/general';
 import BottomSheet from '@utils/bottom_sheet';
+import {alertErrorWithFallback, emptyFunction} from '@utils/general';
 import {
     changeOpacity,
     makeStyleSheetFromTheme,
@@ -51,6 +52,7 @@ export default class MoreChannels extends PureComponent {
         currentTeamId: PropTypes.string.isRequired,
         theme: PropTypes.object.isRequired,
         canShowArchivedChannels: PropTypes.bool.isRequired,
+        categoryId: PropTypes.string,
     };
 
     static defaultProps = {
@@ -267,7 +269,7 @@ export default class MoreChannels extends PureComponent {
         this.setState({adding: true});
 
         const channel = channels.find((c) => c.id === id);
-        const result = await actions.joinChannel(currentUserId, currentTeamId, id);
+        const result = await actions.joinChannel(currentUserId, currentTeamId, id, '', this.props.categoryId);
 
         if (result.error) {
             alertErrorWithFallback(

@@ -2,9 +2,9 @@
 // See LICENSE.txt for license information.
 
 import React from 'react';
-import {shallowWithIntl} from 'test/intl-test-helper';
 
 import Preferences from '@mm-redux/constants/preferences';
+import {shallowWithIntl} from '@test/intl-test-helper';
 
 import IgnoreMentions from './ignore_mentions';
 
@@ -20,7 +20,7 @@ describe('ChannelInfo -> IgnoreMentions', () => {
     const baseProps = {
         channelId: '123',
         ignore: false,
-        theme: Preferences.THEMES.default,
+        theme: Preferences.THEMES.denim,
         updateChannelNotifyProps: jest.fn(),
         userId: 'user-123',
     };

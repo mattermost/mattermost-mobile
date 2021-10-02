@@ -1,9 +1,9 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React from 'react';
+import React, {useEffect} from 'react';
 import {injectIntl, intlShape} from 'react-intl';
-import {Keyboard, View} from 'react-native';
+import {Keyboard, StyleProp, View, ViewStyle} from 'react-native';
 
 import {showModalOverCurrentContext} from '@actions/navigation';
 import Markdown from '@components/markdown';
@@ -15,22 +15,25 @@ import {emptyFunction} from '@utils/general';
 import {getMarkdownTextStyles} from '@utils/markdown';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
-import type {Post} from '@mm-redux/types/posts';
-import type {Theme} from '@mm-redux/types/preferences';
-
 import LastUsers from './last_users';
 import {postTypeMessages} from './messages';
+
+import type {Post} from '@mm-redux/types/posts';
+import type {Theme} from '@mm-redux/types/theme';
 
 type Props = {
     canDelete: boolean;
     currentUserId?: string;
     currentUsername?: string;
+    getMissingProfilesByIds: (ids: string[]) => void;
+    getMissingProfilesByUsernames: (usernames: string[]) => void;
     intl: typeof intlShape;
     post: Post;
     showJoinLeave: boolean;
     testID?: string;
     theme: Theme;
     usernamesById: Record<string, string>;
+    style?: StyleProp<ViewStyle>;
 }
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
@@ -86,18 +89,29 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
 });
 
 const CombinedUserActivity = ({
-    canDelete, currentUserId, currentUsername, intl, post,
-    showJoinLeave, testID, theme, usernamesById,
+    canDelete, currentUserId, currentUsername, getMissingProfilesByIds, getMissingProfilesByUsernames,
+    intl, post, showJoinLeave, testID, theme, usernamesById, style,
 }: Props) => {
     const itemTestID = `${testID}.${post.id}`;
     const textStyles = getMarkdownTextStyles(theme);
-    const {allUsernames, messageData} = post.props.user_activity;
+    const {allUserIds, allUsernames, messageData} = post.props.user_activity;
     const styles = getStyleSheet(theme);
     const content = [];
     const removedUserIds: string[] = [];
 
+    const loadUserProfiles = () => {
+        if (allUserIds.length) {
+            getMissingProfilesByIds(allUserIds);
+        }
+
+        if (allUsernames.length) {
+            getMissingProfilesByUsernames(allUsernames);
+        }
+    };
+
     const getUsernames = (userIds: string[]) => {
         const someone = intl.formatMessage({id: 'channel_loader.someone', defaultMessage: 'Someone'});
+        const you = intl.formatMessage({id: 'combined_system_message.you', defaultMessage: 'You'});
         const usernames = userIds.reduce((acc: string[], id: string) => {
             if (id !== currentUserId && id !== currentUsername) {
                 const name = usernamesById[id];
@@ -107,9 +121,9 @@ const CombinedUserActivity = ({
         }, []);
 
         if (currentUserId && userIds.includes(currentUserId)) {
-            usernames.unshift(allUsernames[currentUserId]);
+            usernames.unshift(you);
         } else if (currentUsername && userIds.includes(currentUsername)) {
-            usernames.unshift(allUsernames[currentUsername]);
+            usernames.unshift(you);
         }
 
         return usernames;
@@ -184,6 +198,10 @@ const CombinedUserActivity = ({
         );
     };
 
+    useEffect(() => {
+        loadUserProfiles();
+    }, [allUserIds, allUsernames]);
+
     for (const message of messageData) {
         const {postType, actorId} = message;
         let userIds = message.userIds;
@@ -215,6 +233,7 @@ const CombinedUserActivity = ({
 
     return (
         <View
+            style={style}
             testID={testID}
         >
             <TouchableWithFeedback

@@ -3,9 +3,9 @@
 
 import {Node, Parser} from 'commonmark';
 import Renderer from 'commonmark-react-renderer';
+import PropTypes from 'prop-types';
 import React, {PureComponent} from 'react';
 import {Platform, Text, View} from 'react-native';
-import PropTypes from 'prop-types';
 
 import Emoji from '@components/emoji';
 import FormattedText from '@components/formatted_text';
@@ -39,6 +39,7 @@ export default class MarkdownEmoji extends PureComponent {
                 paragraph: this.renderParagraph,
                 document: this.renderParagraph,
                 text: this.renderText,
+                hardbreak: this.renderNewLine,
             },
         });
     };
@@ -73,9 +74,13 @@ export default class MarkdownEmoji extends PureComponent {
 
     renderText = ({context, literal}) => {
         const style = this.computeTextStyle(this.props.baseTextStyle, context);
-
         return <Text style={style}>{literal}</Text>;
     };
+
+    renderNewLine = ({context}) => {
+        const style = this.computeTextStyle(this.props.baseTextStyle, context);
+        return <Text style={style}>{'\n'}</Text>;
+    }
 
     renderEditedIndicator = ({context}) => {
         let spacer = '';
@@ -101,12 +106,12 @@ export default class MarkdownEmoji extends PureComponent {
     };
 
     render() {
-        const ast = this.parser.parse(this.props.value);
+        const ast = this.parser.parse(this.props.value.replace(/\n*$/, ''));
 
         if (this.props.isEdited) {
             const editIndicatorNode = new Node('edited_indicator');
             if (ast.lastChild && ['heading', 'paragraph'].includes(ast.lastChild.type)) {
-                ast.lastChild.appendChild(editIndicatorNode);
+                ast.appendChild(editIndicatorNode);
             } else {
                 const node = new Node('paragraph');
                 node.appendChild(editIndicatorNode);

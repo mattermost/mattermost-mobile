@@ -1,28 +1,20 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React from 'react';
-import {Text, View} from 'react-native';
 import PropTypes from 'prop-types';
+import React from 'react';
 import {intlShape} from 'react-intl';
+import {Text, View} from 'react-native';
 import {SafeAreaView} from 'react-native-safe-area-context';
-
-import Preferences from '@mm-redux/constants/preferences';
 
 import FormattedText from '@components/formatted_text';
 import StatusBar from '@components/status_bar';
+import Preferences from '@mm-redux/constants/preferences';
 import Section from '@screens/settings/section';
 import SectionItem from '@screens/settings/section_item';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 import ThemeTile from './theme_tile';
-
-const thumbnailImages = {
-    default: require('@assets/images/themes/mattermost.png'),
-    organization: require('@assets/images/themes/organization.png'),
-    mattermostDark: require('@assets/images/themes/mattermost_dark.png'),
-    windows10: require('@assets/images/themes/windows_dark.png'),
-};
 
 export default class Theme extends React.PureComponent {
     static propTypes = {
@@ -87,8 +79,8 @@ export default class Theme extends React.PureComponent {
                 action={this.setTheme}
                 actionValue={allowedTheme.key}
                 selected={allowedTheme.type.toLowerCase() === theme.type.toLowerCase()}
-                theme={theme}
-                imageSrc={thumbnailImages[allowedTheme.key]}
+                tileTheme={allowedTheme}
+                activeTheme={theme}
                 isLandscape={isLandscape}
                 isTablet={isTablet}
             />
@@ -157,9 +149,9 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         },
         tilesContainer: {
             marginBottom: 30,
+            paddingLeft: 8,
             flexDirection: 'row',
             flexWrap: 'wrap',
-            justifyContent: 'center',
             backgroundColor: theme.centerChannelBg,
             borderTopWidth: 1,
             borderBottomWidth: 1,

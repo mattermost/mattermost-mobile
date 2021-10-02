@@ -1,18 +1,16 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
+import React, {PureComponent} from 'react';
 import {intlShape} from 'react-intl';
 import {Alert, Animated, Keyboard, StyleSheet} from 'react-native';
 
+import {showModal, showModalOverCurrentContext} from '@actions/navigation';
+import CompassIcon from '@components/compass_icon';
+import {TYPING_VISIBLE} from '@constants/post_draft';
 import {General} from '@mm-redux/constants';
 import EventEmitter from '@mm-redux/utils/event_emitter';
-
-import {showModal, showModalOverCurrentContext} from '@actions/navigation';
-import {TYPING_VISIBLE} from '@constants/post_draft';
-import CompassIcon from '@components/compass_icon';
-import PushNotifications from '@init/push_notifications';
 import EphemeralStore from '@store/ephemeral_store';
 import telemetry, {PERF_MARKERS} from '@telemetry';
 import {unsupportedServer} from '@utils/supported_server';
@@ -37,6 +35,13 @@ export default class ChannelBase extends PureComponent {
         teamName: PropTypes.string,
         theme: PropTypes.object.isRequired,
         showTermsOfService: PropTypes.bool,
+        skipMetrics: PropTypes.bool,
+        viewingGlobalThreads: PropTypes.bool,
+        collapsedThreadsEnabled: PropTypes.bool.isRequired,
+        selectedPost: PropTypes.shape({
+            id: PropTypes.string.isRequired,
+            channel_id: PropTypes.string.isRequired,
+        }),
     };
 
     static contextTypes = {
@@ -45,6 +50,7 @@ export default class ChannelBase extends PureComponent {
 
     static defaultProps = {
         disableTermsModal: false,
+        viewingGlobalThreads: false,
     };
 
     constructor(props) {
@@ -85,7 +91,6 @@ export default class ChannelBase extends PureComponent {
         }
 
         if (currentChannelId) {
-            this.clearChannelNotifications();
             requestAnimationFrame(() => {
                 actions.getChannelStats(currentChannelId);
             });
@@ -123,8 +128,6 @@ export default class ChannelBase extends PureComponent {
         }
 
         if (this.props.currentChannelId && this.props.currentChannelId !== prevProps.currentChannelId) {
-            this.clearChannelNotifications();
-
             requestAnimationFrame(() => {
                 this.props.actions.getChannelStats(this.props.currentChannelId);
             });
@@ -135,13 +138,6 @@ export default class ChannelBase extends PureComponent {
         EventEmitter.off('leave_team', this.handleLeaveTeam);
         EventEmitter.off(TYPING_VISIBLE, this.runTypingAnimations);
         EventEmitter.off(General.REMOVED_FROM_CHANNEL, this.handleRemovedFromChannel);
-    }
-
-    clearChannelNotifications = () => {
-        const clearNotificationsTimeout = setTimeout(() => {
-            clearTimeout(clearNotificationsTimeout);
-            PushNotifications.clearChannelNotifications(this.props.currentChannelId);
-        }, 1000);
     }
 
     registerTypingAnimation = (animation) => {
@@ -204,6 +200,9 @@ export default class ChannelBase extends PureComponent {
     loadChannels = (teamId) => {
         const {loadChannelsForTeam, selectInitialChannel} = this.props.actions;
         if (EphemeralStore.getStartFromNotification()) {
+            if (this.props.selectedPost && this.props.collapsedThreadsEnabled) {
+                EventEmitter.emit('goToThread', this.props.selectedPost);
+            }
             // eslint-disable-next-line no-console
             console.log('Switch to channel from a push notification');
             EphemeralStore.setStartFromNotification(false);

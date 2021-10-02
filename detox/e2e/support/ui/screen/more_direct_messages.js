@@ -10,13 +10,16 @@ class MoreDirectMessagesScreen {
     testID = {
         moreDirectMessagesScreenPrefix: 'more_direct_messages.',
         moreDirectMessagesScreen: 'more_direct_messages.screen',
+        closeMoreDirectMessagesButton: 'close.more_direct_messages.button',
         startButton: 'more_direct_messages.start.button',
+        selectedUser: 'more_direct_messages.selected_user',
         usersList: 'more_direct_messages.custom_list',
         userItem: 'more_direct_messages.custom_list.user_item',
         userItemDisplayUsername: 'more_direct_messages.custom_list.user_item.display_username',
     }
 
     moreDirectMessagesScreen = element(by.id(this.testID.moreDirectMessagesScreen));
+    closeMoreDirectMessagesButton = element(by.id(this.testID.closeMoreDirectMessagesButton));
     startButton = element(by.id(this.testID.startButton));
     usersList = element(by.id(this.testID.usersList));
 
@@ -26,15 +29,28 @@ class MoreDirectMessagesScreen {
     cancelButton = SearchBar.getCancelButton(this.testID.moreDirectMessagesScreenPrefix);
     clearButton = SearchBar.getClearButton(this.testID.moreDirectMessagesScreenPrefix);
 
+    getSelectedUser = (userId) => {
+        const selectedUserTestID = `${this.testID.selectedUser}.${userId}`;
+        const selectedUserMatcher = by.id(selectedUserTestID);
+        const selectedUserDisplayUsernameMatcher = by.id(`${selectedUserTestID}.display_username`).withAncestor(selectedUserMatcher);
+        const selectedUserRemoveButtonMatcher = by.id(`${selectedUserTestID}.remove.button`).withAncestor(selectedUserMatcher);
+
+        return {
+            selectedUser: element(selectedUserMatcher),
+            selectedUserDisplayUsername: element(selectedUserDisplayUsernameMatcher),
+            selectedUserRemoveButton: element(selectedUserRemoveButtonMatcher),
+        };
+    }
+
     getUser = (userId, diplayUsername) => {
         const userItemTestID = `${this.testID.userItem}.${userId}`;
         const baseMatcher = by.id(userItemTestID);
         const userItemMatcher = diplayUsername ? baseMatcher.withDescendant(by.text(diplayUsername)) : baseMatcher;
-        const userItemUsernameDisplayMatcher = by.id(this.testID.userItemDisplayUsername).withAncestor(userItemMatcher);
+        const userItemDisplayUsernameMatcher = by.id(this.testID.userItemDisplayUsername).withAncestor(userItemMatcher);
 
         return {
             userItem: element(userItemMatcher),
-            userItemUsernameDisplay: element(userItemUsernameDisplayMatcher),
+            userItemDisplayUsername: element(userItemDisplayUsernameMatcher),
         };
     }
 

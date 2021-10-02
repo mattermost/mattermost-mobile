@@ -4,7 +4,7 @@
 import React from 'react';
 
 import Preferences from '@mm-redux/constants/preferences';
-import {shallowWithIntl} from 'test/intl-test-helper';
+import {shallowWithIntl} from '@test/intl-test-helper';
 
 import RecentMentions from './recent_mentions';
 
@@ -17,7 +17,7 @@ describe('RecentMentions', () => {
             showPermalink: jest.fn(),
             selectPost: jest.fn(),
         },
-        theme: Preferences.THEMES.default,
+        theme: Preferences.THEMES.denim,
     };
 
     test('should match snapshot', () => {

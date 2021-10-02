@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
-import React from 'react';
 import {shallow} from 'enzyme';
+import React from 'react';
 import {IntlProvider} from 'react-intl';
 
 import Preferences from '@mm-redux/constants/preferences';
@@ -59,14 +59,14 @@ describe('SelectorScreen', () => {
         onSelect: jest.fn(),
         data: [{text: 'text', value: 'value'}],
         dataSource: null,
-        theme: Preferences.THEMES.default,
+        theme: Preferences.THEMES.denim,
     };
 
     beforeAll(() => {
         jest.useFakeTimers();
     });
 
-    test('should match snapshot for explicit options', async () => {
+    test('should match snapshot for explicit options', () => {
         const wrapper = shallow(
             <SelectorScreen {...baseProps}/>,
             {context: {intl}},
@@ -74,7 +74,7 @@ describe('SelectorScreen', () => {
         expect(wrapper.getElement()).toMatchSnapshot();
     });
 
-    test('should match snapshot for users', async () => {
+    test('should match snapshot for users', () => {
         const props = {
             ...baseProps,
             dataSource: 'users',
@@ -91,7 +91,7 @@ describe('SelectorScreen', () => {
         expect(wrapper.getElement()).toMatchSnapshot();
     });
 
-    test('should match snapshot for channels', async () => {
+    test('should match snapshot for channels', () => {
         const props = {
             ...baseProps,
             dataSource: 'channels',
@@ -108,7 +108,7 @@ describe('SelectorScreen', () => {
         expect(wrapper.getElement()).toMatchSnapshot();
     });
 
-    test('should match snapshot for searching', async () => {
+    test('should match snapshot for searching', () => {
         const props = {
             ...baseProps,
             dataSource: 'channels',
@@ -145,36 +145,35 @@ describe('SelectorScreen', () => {
         );
 
         jest.runAllTimers();
-        await (() => new Promise(setImmediate))();
+        setTimeout(() => {
+            expect(props.getDynamicOptions).toHaveBeenCalledWith('');
+            expect(wrapper.state().data).toEqual([
+                {text: 'Without Query Text', value: 'without_query'},
+            ]);
+            expect(wrapper.state().searchResults).toEqual([]);
 
-        expect(props.getDynamicOptions).toHaveBeenCalledWith('');
-        expect(wrapper.state().data).toEqual([
-            {text: 'Without Query Text', value: 'without_query'},
-        ]);
-        expect(wrapper.state().searchResults).toEqual([]);
-
-        let customList = wrapper.find('CustomList');
-        expect(customList.props().data).toEqual([
-            {text: 'Without Query Text', value: 'without_query'},
-        ]);
+            const customList = wrapper.find('CustomList');
+            expect(customList.props().data).toEqual([
+                {text: 'Without Query Text', value: 'without_query'},
+            ]);
+        });
 
         // Search for value
         wrapper.instance().onSearch('mysearch');
 
-        jest.runAllTimers();
-        await (() => new Promise(setImmediate))();
+        setTimeout(() => {
+            expect(props.getDynamicOptions).toHaveBeenCalledWith('mysearch');
+            expect(wrapper.state().data).toEqual([
+                {text: 'Without Query Text', value: 'without_query'},
+            ]);
+            expect(wrapper.state().searchResults).toEqual([
+                {text: 'With Query Text', value: 'with_query'},
+            ]);
 
-        expect(props.getDynamicOptions).toHaveBeenCalledWith('mysearch');
-        expect(wrapper.state().data).toEqual([
-            {text: 'Without Query Text', value: 'without_query'},
-        ]);
-        expect(wrapper.state().searchResults).toEqual([
-            {text: 'With Query Text', value: 'with_query'},
-        ]);
-
-        customList = wrapper.find('CustomList');
-        expect(customList.props().data).toEqual([
-            {text: 'With Query Text', value: 'with_query'},
-        ]);
+            const customList = wrapper.find('CustomList');
+            expect(customList.props().data).toEqual([
+                {text: 'With Query Text', value: 'with_query'},
+            ]);
+        });
     });
 });

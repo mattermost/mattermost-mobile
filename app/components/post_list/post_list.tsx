@@ -1,9 +1,9 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {ReactElement, useCallback, useEffect, useLayoutEffect, useRef} from 'react';
+import React, {ReactElement, useCallback, useEffect, useLayoutEffect, useRef, useState} from 'react';
 import {injectIntl, intlShape} from 'react-intl';
-import {DeviceEventEmitter, FlatList, Platform, RefreshControl, StyleSheet, ViewToken} from 'react-native';
+import {DeviceEventEmitter, FlatList, NativeScrollEvent, NativeSyntheticEvent, Platform, StyleSheet, ViewToken} from 'react-native';
 
 import {DeepLinkTypes, NavigationTypes} from '@constants';
 import * as Screens from '@constants/screen';
@@ -11,22 +11,22 @@ import {useResetNativeScrollView} from '@hooks';
 import {Posts} from '@mm-redux/constants';
 import EventEmitter from '@mm-redux/utils/event_emitter';
 import {getDateForDateLine, isCombinedUserActivityPost, isDateLine, isStartOfNewMessages} from '@mm-redux/utils/post_list';
+import telemetry, {PERF_MARKERS} from '@telemetry';
 import {badDeepLink, errorBadChannel} from '@utils/draft';
 import {emptyFunction} from '@utils/general';
 import {makeExtraData} from '@utils/list_view';
 import {matchDeepLink, PERMALINK_GENERIC_TEAM_NAME_REDIRECT} from '@utils/url';
-import telemetry, {PERF_MARKERS} from '@telemetry';
-
-import {INITIAL_BATCH_TO_RENDER, SCROLL_POSITION_CONFIG, VIEWABILITY_CONFIG} from './post_list_config';
-
-import type {ActionResult} from '@mm-redux/types/actions';
-import type {Theme} from '@mm-redux/types/preferences';
 
 import CombinedUserActivity from './combined_user_activity';
 import DateSeparator from './date_separator';
 import MoreMessagesButton from './more_messages_button';
 import NewMessagesLine from './new_message_line';
 import Post from './post';
+import {INITIAL_BATCH_TO_RENDER, SCROLL_POSITION_CONFIG, VIEWABILITY_CONFIG} from './post_list_config';
+import PostListRefreshControl from './post_list_refresh_control';
+
+import type {ActionResult} from '@mm-redux/types/actions';
+import type {Theme} from '@mm-redux/types/theme';
 
 type PostListProps = {
     channelId?: string;
@@ -34,6 +34,7 @@ type PostListProps = {
     currentTeamName: string;
     deepLinkURL?: string;
     extraData: never;
+    getPostThread: (rootId: string) => Promise<ActionResult>;
     handleSelectChannelByName: (channelName: string, teamName: string, errorHandler: (intl: typeof intlShape) => void, intl: typeof intlShape) => Promise<ActionResult>;
     highlightPinnedOrFlagged?: boolean;
     highlightPostId?: string;
@@ -43,7 +44,9 @@ type PostListProps = {
     location: string;
     onLoadMoreUp: () => void;
     postIds: string[];
+    refreshChannelWithRetry: (channelId: string) => Promise<ActionResult>;
     renderFooter: () => ReactElement | null;
+    rootId?: string;
     scrollViewNativeID?: string;
     serverURL: string;
     shouldRenderReplyButton?: boolean;
@@ -52,7 +55,7 @@ type PostListProps = {
     setDeepLinkURL: (url?: string) => void;
     showPermalink: (intl: typeof intlShape, teamName: string, postId: string, openAsPermalink?: boolean) => Promise<{}>;
     testID?: string;
-    theme: Theme
+    theme: Theme;
 }
 
 type ViewableItemsChanged = {
@@ -76,13 +79,21 @@ const styles = StyleSheet.create({
     postListContent: {
         paddingTop: 5,
     },
+    scale: {
+        ...Platform.select({
+            android: {
+                scaleY: -1,
+            },
+        }),
+    },
 });
 
 const buildExtraData = makeExtraData();
 
 const PostList = ({
-    channelId, currentTeamName = '', closePermalink, deepLinkURL, extraData, handleSelectChannelByName, highlightPostId, highlightPinnedOrFlagged, initialIndex, intl,
-    loadMorePostsVisible, location, onLoadMoreUp = emptyFunction, postIds = [], renderFooter = (() => null),
+    channelId, currentTeamName = '', closePermalink, deepLinkURL, extraData, getPostThread,
+    handleSelectChannelByName, highlightPostId, highlightPinnedOrFlagged, initialIndex, intl, loadMorePostsVisible,
+    location, onLoadMoreUp = emptyFunction, postIds = [], refreshChannelWithRetry, renderFooter = (() => null), rootId,
     serverURL = '', setDeepLinkURL, showMoreMessagesButton, showPermalink, siteURL = '', scrollViewNativeID, shouldRenderReplyButton, testID, theme,
 }: PostListProps) => {
     const prevChannelId = useRef(channelId);
@@ -90,6 +101,8 @@ const PostList = ({
     const flatListRef = useRef<FlatList<never>>(null);
     const onScrollEndIndexListener = useRef<onScrollEndIndexListenerEvent>();
     const onViewableItemsChangedListener = useRef<ViewableItemsChangedListenerEvent>();
+    const [refreshing, setRefreshing] = useState(false);
+    const [offsetY, setOffsetY] = useState(0);
 
     const registerViewableItemsListener = useCallback((listener) => {
         onViewableItemsChangedListener.current = listener;
@@ -116,6 +129,18 @@ const PostList = ({
 
     const onPermalinkPress = (postId: string, teamName: string) => {
         showPermalink(intl, teamName, postId);
+    };
+
+    const onRefresh = async () => {
+        if (location === Screens.CHANNEL && channelId) {
+            setRefreshing(true);
+            await refreshChannelWithRetry(channelId);
+            setRefreshing(false);
+        } else if (location === Screens.THREAD && rootId) {
+            setRefreshing(true);
+            await getPostThread(rootId);
+            setRefreshing(false);
+        }
     };
 
     const onScrollToIndexFailed = useCallback((info: ScrollIndexFailed) => {
@@ -164,6 +189,7 @@ const PostList = ({
                     theme={theme}
                     moreMessages={moreNewMessages && checkForPostId}
                     testID={`${testID}.new_messages_line`}
+                    style={styles.scale}
                 />
             );
         } else if (isDateLine(item)) {
@@ -171,6 +197,7 @@ const PostList = ({
                 <DateSeparator
                     date={getDateForDateLine(item)}
                     theme={theme}
+                    style={styles.scale}
                 />
             );
         }
@@ -178,6 +205,7 @@ const PostList = ({
         if (isCombinedUserActivityPost(item)) {
             const postProps = {
                 postId: item,
+                style: styles.scale,
                 testID: `${testID}.combined_user_activity`,
                 theme,
             };
@@ -215,6 +243,7 @@ const PostList = ({
             <Post
                 highlight={highlightPostId === item}
                 postId={item}
+                style={styles.scale}
                 testID={`${testID}.post`}
                 {...postProps}
             />
@@ -229,6 +258,17 @@ const PostList = ({
             viewPosition: 1, // 0 is at bottom
         });
     }, []);
+
+    const onScroll = useCallback((event: NativeSyntheticEvent<NativeScrollEvent>) => {
+        if (Platform.OS === 'android') {
+            const {y} = event.nativeEvent.contentOffset;
+            if (y === 0) {
+                setOffsetY(y);
+            } else if (offsetY === 0 && y !== 0) {
+                setOffsetY(y);
+            }
+        }
+    }, [offsetY]);
 
     useResetNativeScrollView(scrollViewNativeID, postIds);
 
@@ -257,10 +297,10 @@ const PostList = ({
 
             if (match) {
                 if (match.type === DeepLinkTypes.CHANNEL) {
-                    handleSelectChannelByName(match.channelName!, match.teamName, errorBadChannel, intl);
+                    handleSelectChannelByName(match.channelName!, match.teamName!, errorBadChannel, intl);
                 } else if (match.type === DeepLinkTypes.PERMALINK) {
                     const teamName = match.teamName === PERMALINK_GENERIC_TEAM_NAME_REDIRECT ? currentTeamName : match.teamName;
-                    onPermalinkPress(match.postId!, teamName);
+                    onPermalinkPress(match.postId!, teamName!);
                 }
             } else {
                 badDeepLink(intl);
@@ -271,10 +311,20 @@ const PostList = ({
     }, [deepLinkURL]);
 
     useLayoutEffect(() => {
+        let scrollFrame: number;
         if (postIds.length && channelId !== prevChannelId.current) {
             telemetry.end([PERF_MARKERS.CHANNEL_RENDER]);
             prevChannelId.current = channelId;
+            scrollFrame = requestAnimationFrame(() => {
+                flatListRef.current?.scrollToOffset({animated: true, offset: 0});
+            });
         }
+
+        return () => {
+            if (scrollFrame) {
+                cancelAnimationFrame(scrollFrame);
+            }
+        };
     }, [channelId, postIds]);
 
     useLayoutEffect(() => {
@@ -283,49 +333,47 @@ const PostList = ({
         }
     }, [initialIndex, highlightPostId]);
 
-    let refreshControl;
-    if (location === Screens.PERMALINK) {
-        // Hack so that the scrolling the permalink does not dismisses the modal screens
-        refreshControl = (
-            <RefreshControl
-                refreshing={false}
-                enabled={Platform.OS === 'ios'}
-                colors={[theme.centerChannelColor]}
-                tintColor={theme.centerChannelColor}
-            />);
-    }
+    const list = (
+        <FlatList
+            contentContainerStyle={styles.postListContent}
+            data={postIds}
+            extraData={buildExtraData(channelId, highlightPostId, extraData, loadMorePostsVisible)}
+            initialNumToRender={INITIAL_BATCH_TO_RENDER}
+            key={`recyclerFor-${channelId}-${hasPostsKey}`}
+            keyboardDismissMode={'interactive'}
+            keyboardShouldPersistTaps={'handled'}
+            keyExtractor={keyExtractor}
+            ListFooterComponent={renderFooter}
+            listKey={`recyclerFor-${channelId}`}
+            maintainVisibleContentPosition={SCROLL_POSITION_CONFIG}
+            maxToRenderPerBatch={Platform.select({android: 5})}
+            nativeID={scrollViewNativeID}
+            onEndReached={onLoadMoreUp}
+            onEndReachedThreshold={2}
+            onScroll={onScroll}
+            onScrollToIndexFailed={onScrollToIndexFailed}
+            onViewableItemsChanged={onViewableItemsChanged}
+            ref={flatListRef}
+            removeClippedSubviews={true}
+            renderItem={renderItem}
+            scrollEventThrottle={60}
+            style={styles.flex}
+            windowSize={Posts.POST_CHUNK_SIZE / 2}
+            viewabilityConfig={VIEWABILITY_CONFIG}
+            testID={testID}
+        />
+    );
 
     return (
         <>
-            <FlatList
-                contentContainerStyle={styles.postListContent}
-                data={postIds}
-                extraData={buildExtraData(channelId, highlightPostId, extraData, loadMorePostsVisible)}
-                initialNumToRender={INITIAL_BATCH_TO_RENDER}
-                inverted={true}
-                key={`recyclerFor-${channelId}-${hasPostsKey}`}
-                keyboardDismissMode={'interactive'}
-                keyboardShouldPersistTaps={'handled'}
-                keyExtractor={keyExtractor}
-                ListFooterComponent={renderFooter}
-                listKey={`recyclerFor-${channelId}`}
-                maintainVisibleContentPosition={SCROLL_POSITION_CONFIG}
-                maxToRenderPerBatch={Platform.select({android: 5})}
-                nativeID={scrollViewNativeID}
-                onScrollToIndexFailed={onScrollToIndexFailed}
-                ref={flatListRef}
-                onEndReached={onLoadMoreUp}
-                onEndReachedThreshold={2}
-                removeClippedSubviews={true}
-                renderItem={renderItem}
-                scrollEventThrottle={60}
-                style={styles.flex}
-                windowSize={Posts.POST_CHUNK_SIZE / 2}
-                viewabilityConfig={VIEWABILITY_CONFIG}
-                onViewableItemsChanged={onViewableItemsChanged}
-                refreshControl={refreshControl}
-                testID={testID}
-            />
+            <PostListRefreshControl
+                enabled={offsetY === 0}
+                refreshing={refreshing}
+                onRefresh={onRefresh}
+                theme={theme}
+            >
+                {list}
+            </PostListRefreshControl>
             {showMoreMessagesButton &&
                 <MoreMessagesButton
                     channelId={channelId}
