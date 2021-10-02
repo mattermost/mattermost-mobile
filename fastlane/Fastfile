@@ -317,7 +317,7 @@ platform :ios do
       api_key = get_apple_api_key()
       match(
           api_key: api_key,
-          type: 'adhoc'
+          type: ENV['MATCH_TYPE'] || 'adhoc'
       )
     end
   end
