@@ -31,6 +31,7 @@ target 'Mattermost' do
 
   post_install do |installer|
     react_native_post_install(installer)
+    __apply_Xcode_12_5_M1_post_install_workaround(installer)
     installer.pods_project.targets.each do |target|
       if target.name != "RCT-Folly"
         target.build_configurations.each do |config|

@@ -416,6 +416,11 @@ exports[`PostDraft Should render the DraftInput 1`] = `
             testID="post_draft.quick_actions"
           >
             <View
+              accessibilityState={
+                Object {
+                  "disabled": false,
+                }
+              }
               accessible={true}
               collapsable={false}
               focusable={true}
@@ -444,6 +449,11 @@ exports[`PostDraft Should render the DraftInput 1`] = `
               />
             </View>
             <View
+              accessibilityState={
+                Object {
+                  "disabled": false,
+                }
+              }
               accessible={true}
               collapsable={false}
               focusable={true}
@@ -472,6 +482,11 @@ exports[`PostDraft Should render the DraftInput 1`] = `
               />
             </View>
             <View
+              accessibilityState={
+                Object {
+                  "disabled": false,
+                }
+              }
               accessible={true}
               collapsable={false}
               focusable={true}
@@ -500,6 +515,11 @@ exports[`PostDraft Should render the DraftInput 1`] = `
               />
             </View>
             <View
+              accessibilityState={
+                Object {
+                  "disabled": false,
+                }
+              }
               accessible={true}
               collapsable={false}
               focusable={true}
@@ -528,6 +548,11 @@ exports[`PostDraft Should render the DraftInput 1`] = `
               />
             </View>
             <View
+              accessibilityState={
+                Object {
+                  "disabled": false,
+                }
+              }
               accessible={true}
               collapsable={false}
               focusable={true}
