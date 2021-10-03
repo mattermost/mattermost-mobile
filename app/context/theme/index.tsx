@@ -59,7 +59,6 @@ const ThemeProvider = ({currentTeamId, children, themes}: Props) => {
     };
 
     useEffect(() => {
-        // @ts-expect-error ts module not yet updated
         const listener = Appearance.addChangeListener(getTheme) as EventSubscription;
 
         return () => listener.remove();
