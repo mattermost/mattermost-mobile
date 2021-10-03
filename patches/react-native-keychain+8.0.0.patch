@@ -1,3 +1,15 @@
+diff --git a/node_modules/react-native-keychain/RNKeychainManager/RNKeychainManager.h b/node_modules/react-native-keychain/RNKeychainManager/RNKeychainManager.h
+index 4a1234f..f3e2308 100644
+--- a/node_modules/react-native-keychain/RNKeychainManager/RNKeychainManager.h
++++ b/node_modules/react-native-keychain/RNKeychainManager/RNKeychainManager.h
+@@ -10,5 +10,6 @@
+ #import <React/RCTLog.h>
+ 
+ @interface RNKeychainManager : NSObject <RCTBridgeModule>
+-
++-(OSStatus)deleteCredentialsForServer:(NSString *)server;
++-(NSArray<NSString*>*)getAllServersForInternetPasswords;
+ @end
 diff --git a/node_modules/react-native-keychain/RNKeychainManager/RNKeychainManager.m b/node_modules/react-native-keychain/RNKeychainManager/RNKeychainManager.m
 index 1e7021c..6990ae4 100644
 --- a/node_modules/react-native-keychain/RNKeychainManager/RNKeychainManager.m
@@ -117,7 +129,7 @@ index 6ca68cb..dacb1ed 100644
        promise.resolve(true);
      } catch (KeyStoreAccessException e) {
 diff --git a/node_modules/react-native-keychain/index.js b/node_modules/react-native-keychain/index.js
-index 75c0d5c..f1878e2 100644
+index 75c0d5c..e6c44d8 100644
 --- a/node_modules/react-native-keychain/index.js
 +++ b/node_modules/react-native-keychain/index.js
 @@ -352,6 +352,21 @@ export function canImplyAuthentication(options?: Options): Promise<boolean> {
