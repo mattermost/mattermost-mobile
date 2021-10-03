@@ -10,7 +10,7 @@ import {Screens} from '@constants';
 import {useServerUrl} from '@context/server_url';
 import {useTheme} from '@context/theme';
 import {showModal} from '@screens/navigation';
-import {isCustomStatusExpirySupported as checkCustomStatusExpiry, isMinimumServerVersion} from '@utils/helpers';
+import {isCustomStatusExpirySupported as checkCustomStatusExpiry, isMinimumServerVersion, safeParseJSON} from '@utils/helpers';
 import {getUserCustomStatus, isCustomStatusExpired as checkCustomStatusIsExpired, updateUserCustomStatus} from '@utils/user';
 
 import CustomLabel from './custom_label';
@@ -30,16 +30,14 @@ const CustomStatus = ({config, currentUser, database}: CustomStatusProps) => {
     const intl = useIntl();
     const serverUrl = useServerUrl();
 
-    const cst = getUserCustomStatus(currentUser);
-    const hasCST = cst && Object.keys(cst!).length > 0;
-
+    const customStatus = safeParseJSON(getUserCustomStatus(currentUser) as string) as UserCustomStatus;
+    const hasCST = customStatus && Object.keys(customStatus!).length > 0;
     const [showStatus, setShowStatus] = useState<boolean>(hasCST ?? false);
     const [showRetryMessage, setShowRetryMessage] = useState<boolean>(false);
 
     const isCustomStatusEnabled = config.EnableCustomUserStatuses === 'true' && isMinimumServerVersion(config.Version, 5, 36);
     const isCustomStatusExpirySupported = checkCustomStatusExpiry(config);
     const isCustomStatusExpired = checkCustomStatusIsExpired(currentUser);
-    const customStatus = getUserCustomStatus(currentUser);
 
     if (!isCustomStatusEnabled) {
         return null;

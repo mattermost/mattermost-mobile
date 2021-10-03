@@ -384,24 +384,24 @@ const ClientUsers = (superclass: any) => class extends superclass {
         );
     };
 
-    updateCustomStatus = (customStatus: UserCustomStatus) => {
+    updateCustomStatus = async (customStatus: UserCustomStatus) => {
         return this.doFetch(
             `${this.getUserRoute('me')}/status/custom`,
-            {method: 'put', body: JSON.stringify(customStatus)},
+            {method: 'put', body: customStatus},
         );
     };
 
-    unsetCustomStatus = () => {
+    unsetCustomStatus = async () => {
         return this.doFetch(
             `${this.getUserRoute('me')}/status/custom`,
             {method: 'delete'},
         );
     };
 
-    removeRecentCustomStatus = (customStatus: UserCustomStatus) => {
+    removeRecentCustomStatus = async (customStatus: UserCustomStatus) => {
         return this.doFetch(
             `${this.getUserRoute('me')}/status/custom/recent/delete`,
-            {method: 'post', body: JSON.stringify(customStatus)},
+            {method: 'post', body: customStatus},
         );
     };
 };

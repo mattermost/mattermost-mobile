@@ -464,7 +464,7 @@ export const setStatus = async (serverUrl: string, status: UserStatus) => {
     }
 };
 
-export const setCustomStatus = async (serverUrl: string, user: UserModel, customStatus: UserCustomStatus) => {
+export const updateCustomStatus = async (serverUrl: string, user: UserModel, customStatus: UserCustomStatus) => {
     let client: Client;
     try {
         client = NetworkManager.getClient(serverUrl);
@@ -481,12 +481,11 @@ export const setCustomStatus = async (serverUrl: string, user: UserModel, custom
 
     try {
         await client.updateCustomStatus(customStatus);
+        return {data: true};
     } catch (error) {
         user.props.customStatus = oldCustomStatus;
         return {error};
     }
-
-    return {data: true};
 };
 
 export const removeRecentCustomStatus = async (serverUrl: string, customStatus: UserCustomStatus) => {
