@@ -8,7 +8,7 @@ import {MM_TABLES, SYSTEM_IDENTIFIERS} from '@constants/database';
 import DatabaseManager from '@database/manager';
 import {queryAllCustomEmojis} from '@queries/servers/custom_status';
 import {queryPreferencesByCategoryAndName} from '@queries/servers/preference';
-import {queryCommonSystemValues} from '@queries/servers/system';
+import {queryConfig} from '@queries/servers/system';
 import SystemModel from '@typings/database/models/servers/system';
 import {Emojis, EmojiIndicesByAlias, CategoryNames, EmojiIndicesByCategory, CategoryTranslations, CategoryMessage} from '@utils/emoji';
 import {isCustomEmojiEnabled} from '@utils/emoji/helpers';
@@ -61,9 +61,8 @@ const getSkin = (emoji: EmojiDetails) => {
 
 export const getCustomEmojis = async (database: Database): Promise<CustomEmojiModel[]> => {
     try {
-        const systemValues = await queryCommonSystemValues(database);
-        const isCSEnabled = isCustomEmojiEnabled(systemValues.config);
-        if (!isCSEnabled) {
+        const config: ClientConfig = await queryConfig(database);
+        if (!isCustomEmojiEnabled(config)) {
             return [];
         }
         const customEmojis = (await queryAllCustomEmojis(database)) as unknown as CustomEmojiModel[];
