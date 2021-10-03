@@ -11,12 +11,6 @@ export default class MyTeamModel extends Model {
     /** table (name) : MyTeam */
     static table: string;
 
-    /** is_unread : Boolean flag for unread messages on team level */
-    isUnread: boolean;
-
-    /** mentions_count : Count of posts in which the user has been mentioned */
-    mentionsCount: number;
-
     /** roles : The different permissions that this user has in the team, concatenated together with comma to form a single string. */
     roles: string;
 

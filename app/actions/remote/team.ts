@@ -20,7 +20,6 @@ import type TeamMembershipModel from '@typings/database/models/servers/team_memb
 export type MyTeamsRequest = {
     teams?: Team[];
     memberships?: TeamMembership[];
-    unreads?: TeamUnread[];
     error?: unknown;
 }
 
@@ -34,7 +33,6 @@ export const addUserToTeam = async (serverUrl: string, teamId: string, userId: s
 
     try {
         const member = await client.addToTeam(teamId, userId);
-        const unreads = await client.getTeamUnreads(teamId);
 
         if (!fetchOnly) {
             fetchRolesIfNeeded(serverUrl, member.roles.split(' '));
@@ -43,8 +41,6 @@ export const addUserToTeam = async (serverUrl: string, teamId: string, userId: s
                 const myTeams: MyTeam[] = [{
                     id: member.team_id,
                     roles: member.roles,
-                    is_unread: unreads.msg_count > 0,
-                    mentions_count: unreads.mention_count,
                 }];
 
                 const models = await Promise.all([
@@ -61,7 +57,7 @@ export const addUserToTeam = async (serverUrl: string, teamId: string, userId: s
             }
         }
 
-        return {member, unreads};
+        return {member};
     } catch (error) {
         forceLogoutIfNecessary(serverUrl, error as ClientError);
         return {error};
@@ -77,17 +73,16 @@ export const fetchMyTeams = async (serverUrl: string, fetchOnly = false): Promis
     }
 
     try {
-        const [teams, memberships, unreads] = await Promise.all<Team[], TeamMembership[], TeamUnread[]>([
+        const [teams, memberships] = await Promise.all<Team[], TeamMembership[]>([
             client.getMyTeams(),
             client.getMyTeamMembers(),
-            client.getMyTeamUnreads(),
         ]);
 
         if (!fetchOnly) {
             const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
             const modelPromises: Array<Promise<Model[]>> = [];
             if (operator) {
-                const prepare = prepareMyTeams(operator, teams, memberships, unreads);
+                const prepare = prepareMyTeams(operator, teams, memberships);
                 if (prepare) {
                     modelPromises.push(...prepare);
                 }
@@ -101,7 +96,7 @@ export const fetchMyTeams = async (serverUrl: string, fetchOnly = false): Promis
             }
         }
 
-        return {teams, memberships, unreads};
+        return {teams, memberships};
     } catch (error) {
         forceLogoutIfNecessary(serverUrl, error as ClientError);
         return {error};
