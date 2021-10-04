@@ -238,8 +238,12 @@ export function confirmOutOfOfficeDisabled(intl: IntlShape, status: string, upda
     );
 }
 
-export const getRecentCustomStatus = (recentCustomStatuses: SystemModel) => {
-    const rcs = safeParseJSON(recentCustomStatuses?.value);
+export const getRecentCustomStatus = (recentStatuses?: SystemModel) => {
+    if (!recentStatuses) {
+        return [];
+    }
+
+    const rcs = safeParseJSON(recentStatuses?.value);
     if (typeof rcs === 'string') {
         return [];
     }

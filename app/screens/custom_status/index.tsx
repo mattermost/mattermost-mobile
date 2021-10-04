@@ -1,7 +1,6 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {Q} from '@nozbe/watermelondb';
 import {withDatabase} from '@nozbe/watermelondb/DatabaseProvider';
 import withObservables from '@nozbe/with-observables';
 import moment, {Moment} from 'moment-timezone';
@@ -11,7 +10,7 @@ import {DeviceEventEmitter, Dimensions, Keyboard, KeyboardAvoidingView, Platform
 import {EventSubscription, Navigation, NavigationButtonPressedEvent, NavigationComponent, NavigationComponentProps, Options} from 'react-native-navigation';
 import {SafeAreaView} from 'react-native-safe-area-context';
 import {of as of$} from 'rxjs';
-import {switchMap, map as map$} from 'rxjs/operators';
+import {switchMap} from 'rxjs/operators';
 
 import {updateLocalCustomStatus} from '@actions/local/user';
 import {removeRecentCustomStatus, updateCustomStatus, unsetCustomStatus} from '@actions/remote/user';
@@ -262,7 +261,6 @@ class CustomStatusModal extends NavigationComponent<Props, State> {
 
         if (response?.data) {
             const rcst = getRecentCustomStatus(recentCustomStatuses);
-            console.log('>>>  recentCustomStatuses.statuses', {s: rcst});
             const removeIndex = rcst.findIndex((cs) => {
                 return (
                     cs.emoji === status.emoji &&
@@ -280,7 +278,7 @@ class CustomStatusModal extends NavigationComponent<Props, State> {
                     });
                 });
             } catch (e) {
-                //todo: do something about that error?
+                // do nothing
             }
         }
     };
@@ -349,7 +347,6 @@ class CustomStatusModal extends NavigationComponent<Props, State> {
 
         const isStatusSet = Boolean(emoji || text);
         const isExpirySupported = isCustomStatusExpirySupported(config);
-
         const recentStatuses = getRecentCustomStatus(recentCustomStatuses);
 
         const style = getStyleSheet(theme);
@@ -416,32 +413,18 @@ class CustomStatusModal extends NavigationComponent<Props, State> {
 
 const augmentCSM = injectIntl(withTheme(withServerUrl(CustomStatusModal)));
 
-const enhancedCSM = withObservables(['recentCustomStatuses'], ({database}: WithDatabaseArgs) => ({
+const enhancedCSM = withObservables([], ({database}: WithDatabaseArgs) => ({
     currentUser: database.
         get(SYSTEM).
         findAndObserve(SYSTEM_IDENTIFIERS.CURRENT_USER_ID).
-        pipe(
-            switchMap((id: SystemModel) =>
-                database.get(USER).findAndObserve(id.value),
-            ),
-        ),
+        pipe(switchMap((id: SystemModel) => database.get(USER).findAndObserve(id.value))),
     config: database.
         get(SYSTEM).
         findAndObserve(SYSTEM_IDENTIFIERS.CONFIG).
         pipe(switchMap((cfg: SystemModel) => of$(cfg.value))),
-
     recentCustomStatuses: database.
         get(SYSTEM).
-        query(Q.where('id', SYSTEM_IDENTIFIERS.RECENT_CUSTOM_STATUS)).
-        observe().
-        pipe(map$((systems: SystemModel[]) => {
-            return systems?.[0];
-
-            // return from$({
-            //     record,
-            //     statuses: record ? getRecentCustomStatus(record) : [],
-            // });
-        })),
+        findAndObserve(SYSTEM_IDENTIFIERS.RECENT_CUSTOM_STATUS),
 }));
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
