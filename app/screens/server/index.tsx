@@ -347,7 +347,7 @@ const Server: NavigationFunctionComponent = ({componentId, extra, launchType, la
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     appInfo: {
-        color: theme.centerChannelColor,
+        color: theme.centerChannelColor || '',
     },
     container: {
         flex: 1,

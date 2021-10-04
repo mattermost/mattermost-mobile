@@ -4,6 +4,7 @@
 import {Linking} from 'react-native';
 import {Notifications} from 'react-native-notifications';
 
+import {logout} from '@actions/remote/session';
 import {Screens} from '@constants';
 import DatabaseManager from '@database/manager';
 import {getActiveServerUrl, getServerCredentials} from '@init/credentials';
@@ -63,6 +64,8 @@ const launchApp = async (props: LaunchProps, resetNavigation = true) => {
     }
 
     if (serverUrl) {
+        // logout(serverUrl);
+
         const credentials = await getServerCredentials(serverUrl);
         if (credentials) {
             const database = DatabaseManager.serverDatabases[serverUrl]?.database;

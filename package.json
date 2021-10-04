@@ -171,6 +171,7 @@
     "postinstall": "patch-package && ./scripts/postinstall.sh",
     "prestorybook": "rnstl",
     "start": "react-native start",
+    "link": "react-native link",
     "storybook": "start-storybook -p 7007",
     "test": "jest --forceExit --runInBand",
     "test:coverage": "jest --coverage",
