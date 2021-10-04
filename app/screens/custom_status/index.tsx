@@ -11,8 +11,9 @@ import {DeviceEventEmitter, Dimensions, Keyboard, KeyboardAvoidingView, Platform
 import {EventSubscription, Navigation, NavigationButtonPressedEvent, NavigationComponent, NavigationComponentProps, Options} from 'react-native-navigation';
 import {SafeAreaView} from 'react-native-safe-area-context';
 import {of as of$} from 'rxjs';
-import {map, switchMap} from 'rxjs/operators';
+import {switchMap, map as map$} from 'rxjs/operators';
 
+import {updateLocalCustomStatus} from '@actions/local/user';
 import {removeRecentCustomStatus, updateCustomStatus, unsetCustomStatus} from '@actions/remote/user';
 import CompassIcon from '@components/compass_icon';
 import StatusBar from '@components/status_bar';
@@ -25,7 +26,12 @@ import {dismissModal, goToScreen, mergeNavigationOptions, showModal} from '@scre
 import {getCurrentMomentForTimezone, isCustomStatusExpirySupported, safeParseJSON} from '@utils/helpers';
 import {preventDoubleTap} from '@utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
-import {getTimezone, getUserCustomStatus, isCustomStatusExpired as verifyExpiredStatus, updateUserCustomStatus} from '@utils/user';
+import {
+    getRecentCustomStatus,
+    getTimezone,
+    getUserCustomStatus,
+    isCustomStatusExpired as verifyExpiredStatus,
+} from '@utils/user';
 
 import {getRoundedTime} from '../custom_status_clear_after/components/date_time_selector';
 
@@ -36,11 +42,10 @@ import RecentCustomStatuses from './components/recent_custom_statuses';
 
 import type Database from '@nozbe/watermelondb/Database';
 import type {WithDatabaseArgs} from '@typings/database/database';
-import type PreferenceModel from '@typings/database/models/servers/preference';
 import type SystemModel from '@typings/database/models/servers/system';
 import type UserModel from '@typings/database/models/servers/user';
 
-const {SERVER: {PREFERENCE, SYSTEM, USER}} = MM_TABLES;
+const {SERVER: {SYSTEM, USER}} = MM_TABLES;
 
 interface Props extends NavigationComponentProps {
     config: ClientConfig;
@@ -48,8 +53,7 @@ interface Props extends NavigationComponentProps {
     database: Database;
     intl: IntlShape;
     isExpirySupported: boolean;
-    prefRecentCST: PreferenceModel;
-    recentCustomStatuses: UserCustomStatus[];
+    recentCustomStatuses: SystemModel;
     serverUrl: string;
     theme: Theme;
 }
@@ -163,11 +167,11 @@ class CustomStatusModal extends NavigationComponent<Props, State> {
     }
 
     handleSetStatus = async () => {
-        const {config, currentUser, serverUrl, database} = this.props;
+        const {config, currentUser, serverUrl, recentCustomStatuses} = this.props;
         const {emoji, text, duration} = this.state;
         const customStatus = this.getCustomStatus();
         const isExpirySupported = isCustomStatusExpirySupported(config);
-
+        const recentStatuses = getRecentCustomStatus(recentCustomStatuses);
         const isStatusSet = emoji || text;
         if (isStatusSet) {
             let isStatusSame = customStatus?.emoji === emoji && customStatus?.text === text && customStatus?.duration === duration;
@@ -192,7 +196,12 @@ class CustomStatusModal extends NavigationComponent<Props, State> {
                 }
 
                 if (data) {
-                    await updateUserCustomStatus(status, currentUser, database);
+                    await updateLocalCustomStatus({
+                        recentStatuses,
+                        serverUrl,
+                        status,
+                        user: currentUser,
+                    });
 
                     this.setState({
                         duration: status.duration,
@@ -206,7 +215,12 @@ class CustomStatusModal extends NavigationComponent<Props, State> {
             const unsetResponse = await unsetCustomStatus(serverUrl);
 
             if (unsetResponse?.data) {
-                await updateUserCustomStatus(null, currentUser, database);
+                await updateLocalCustomStatus({
+                    recentStatuses,
+                    serverUrl,
+                    status: undefined,
+                    user: currentUser,
+                });
             }
         }
         Keyboard.dismiss();
@@ -248,15 +262,20 @@ class CustomStatusModal extends NavigationComponent<Props, State> {
 
         if (response?.data) {
             const rcst = getRecentCustomStatus(recentCustomStatuses);
-
+            console.log('>>>  recentCustomStatuses.statuses', {s: rcst});
             const removeIndex = rcst.findIndex((cs) => {
-                return (cs.emoji === status.emoji && cs.text === status.text && cs.duration === status.duration && cs.expires_at === status.expires_at);
+                return (
+                    cs.emoji === status.emoji &&
+                    cs.text === status.text &&
+                    cs.duration === status.duration &&
+                    cs.expires_at === status.expires_at
+                );
             });
             rcst.splice(removeIndex, 1);
 
             try {
                 await database.write(async () => {
-                    await recentCustomStatuses.update((system: SystemModel) => {
+                    await recentCustomStatuses?.update((system: SystemModel) => {
                         system.value = JSON.stringify(rcst);
                     });
                 });
@@ -264,16 +283,6 @@ class CustomStatusModal extends NavigationComponent<Props, State> {
                 //todo: do something about that error?
             }
         }
-    };
-
-    getRecentCustomStatus = () => {
-        const {prefRecentCST} = this.props;
-
-        const rcs = safeParseJSON(prefRecentCST?.value);
-        if (typeof rcs === 'string') {
-            return [];
-        }
-        return rcs as unknown as UserCustomStatus[];
     };
 
     clearHandle = () => {
@@ -331,9 +340,7 @@ class CustomStatusModal extends NavigationComponent<Props, State> {
 
     render() {
         const {duration, emoji, expires_at, isLandScape, text} = this.state;
-        const {config, currentUser, intl, theme} = this.props;
-
-        const recentCustomStatuses = this.getRecentCustomStatus();
+        const {config, currentUser, intl, recentCustomStatuses, theme} = this.props;
 
         let keyboardOffset = Device.IS_IPHONE_WITH_INSETS ? 110 : 60;
         if (isLandScape) {
@@ -342,6 +349,8 @@ class CustomStatusModal extends NavigationComponent<Props, State> {
 
         const isStatusSet = Boolean(emoji || text);
         const isExpirySupported = isCustomStatusExpirySupported(config);
+
+        const recentStatuses = getRecentCustomStatus(recentCustomStatuses);
 
         const style = getStyleSheet(theme);
 
@@ -380,12 +389,12 @@ class CustomStatusModal extends NavigationComponent<Props, State> {
                                     />
                                 )}
                             </View>
-                            {recentCustomStatuses.length > 0 && (
+                            {recentStatuses.length > 0 && (
                                 <RecentCustomStatuses
                                     isExpirySupported={isExpirySupported}
                                     onHandleClear={this.handleRecentCustomStatusClear}
                                     onHandleSuggestionClick={this.handleRecentCustomStatusSuggestionClick}
-                                    recentCustomStatuses={recentCustomStatuses}
+                                    recentCustomStatuses={recentStatuses}
                                     theme={theme}
                                 />
                             )}
@@ -393,7 +402,7 @@ class CustomStatusModal extends NavigationComponent<Props, State> {
                                 intl={intl}
                                 isExpirySupported={isExpirySupported}
                                 onHandleCustomStatusSuggestionClick={this.handleCustomStatusSuggestionClick}
-                                recentCustomStatuses={recentCustomStatuses}
+                                recentCustomStatuses={recentStatuses}
                                 theme={theme}
                             />
                         </View>
@@ -407,18 +416,32 @@ class CustomStatusModal extends NavigationComponent<Props, State> {
 
 const augmentCSM = injectIntl(withTheme(withServerUrl(CustomStatusModal)));
 
-const enhancedCSM = withObservables([], ({database}: WithDatabaseArgs) => ({
-    currentUser: database.get(SYSTEM).findAndObserve(SYSTEM_IDENTIFIERS.CURRENT_USER_ID).pipe(switchMap((id: SystemModel) => database.get(USER).findAndObserve(id.value))),
-    prefRecentCST: database.get(SYSTEM).findAndObserve(SYSTEM_IDENTIFIERS.CURRENT_USER_ID).
+const enhancedCSM = withObservables(['recentCustomStatuses'], ({database}: WithDatabaseArgs) => ({
+    currentUser: database.
+        get(SYSTEM).
+        findAndObserve(SYSTEM_IDENTIFIERS.CURRENT_USER_ID).
         pipe(
-            switchMap((currentUserId: SystemModel) =>
-                database.get(PREFERENCE).query(Q.where('user_id', currentUserId.value), Q.where('name', 'recent_custom_statuses')).observe(),
+            switchMap((id: SystemModel) =>
+                database.get(USER).findAndObserve(id.value),
             ),
-            map((preference: PreferenceModel[]) => {
-                return preference?.[0];
-            }),
         ),
-    config: database.get(SYSTEM).findAndObserve(SYSTEM_IDENTIFIERS.CONFIG).pipe(switchMap((cfg: SystemModel) => of$(cfg.value))),
+    config: database.
+        get(SYSTEM).
+        findAndObserve(SYSTEM_IDENTIFIERS.CONFIG).
+        pipe(switchMap((cfg: SystemModel) => of$(cfg.value))),
+
+    recentCustomStatuses: database.
+        get(SYSTEM).
+        query(Q.where('id', SYSTEM_IDENTIFIERS.RECENT_CUSTOM_STATUS)).
+        observe().
+        pipe(map$((systems: SystemModel[]) => {
+            return systems?.[0];
+
+            // return from$({
+            //     record,
+            //     statuses: record ? getRecentCustomStatus(record) : [],
+            // });
+        })),
 }));
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {

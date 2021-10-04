@@ -5,19 +5,15 @@ import {SYSTEM_IDENTIFIERS} from '@constants/database';
 import DatabaseManager from '@database/manager';
 
 import type Model from '@nozbe/watermelondb/Model';
-import type SystemModel from '@typings/database/models/servers/system';
 import type UserModel from '@typings/database/models/servers/user';
 
 type UpdateUserCustomStatusArgs = {
     status?: UserCustomStatus;
     user: UserModel;
-    recentCustomStatuses: {
-        record: SystemModel;
-        statuses: UserCustomStatus[];
-    };
+    recentStatuses: UserCustomStatus[];
     serverUrl: string;
 }
-export const updateLocalCustomStatus = async ({status, user, recentCustomStatuses, serverUrl}: UpdateUserCustomStatusArgs) => {
+export const updateLocalCustomStatus = async ({status, user, recentStatuses, serverUrl}: UpdateUserCustomStatusArgs) => {
     const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
 
     try {
@@ -31,10 +27,9 @@ export const updateLocalCustomStatus = async ({status, user, recentCustomStatuse
         models.push(userModel);
 
         if (status) {
-            const rcst = recentCustomStatuses.statuses;
-            rcst.unshift(status);
+            recentStatuses.unshift(status);
 
-            const systemModels: Model[] = await operator?.handleSystem({prepareRecordsOnly: true, systems: [{id: SYSTEM_IDENTIFIERS.RECENT_CUSTOM_STATUS, value: JSON.stringify(rcst)}]});
+            const systemModels: Model[] = await operator?.handleSystem({prepareRecordsOnly: true, systems: [{id: SYSTEM_IDENTIFIERS.RECENT_CUSTOM_STATUS, value: JSON.stringify(recentStatuses)}]});
             if (systemModels.length) {
                 models = models.concat(systemModels);
             }
