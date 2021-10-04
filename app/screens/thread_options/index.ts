@@ -23,19 +23,17 @@ import ThreadOptions, {OwnProps} from './thread_options';
 
 import type {GlobalState} from '@mm-redux/types/store';
 
-export function makeMapStateToProps() {
-    return (state: GlobalState, ownProps: OwnProps) => {
-        const myPreferences = getMyPreferences(state);
-        return {
-            ...getDimensions(state),
-            currentTeamName: getCurrentTeam(state)?.name,
-            currentTeamUrl: getCurrentTeamUrl(state),
-            currentUserId: getCurrentUserId(state),
-            isFlagged: isPostFlagged(ownProps.rootId, myPreferences),
-            post: getPost(state, ownProps.rootId),
-            theme: getTheme(state),
-            thread: getThread(state, ownProps.rootId),
-        };
+export function makeMapStateToProps(state: GlobalState, ownProps: OwnProps) {
+    const myPreferences = getMyPreferences(state);
+    return {
+        ...getDimensions(state),
+        currentTeamName: getCurrentTeam(state)?.name,
+        currentTeamUrl: getCurrentTeamUrl(state),
+        currentUserId: getCurrentUserId(state),
+        isFlagged: isPostFlagged(ownProps.rootId, myPreferences),
+        post: getPost(state, ownProps.rootId),
+        theme: getTheme(state),
+        thread: getThread(state, ownProps.rootId),
     };
 }
 
