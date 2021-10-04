@@ -14,7 +14,6 @@ import {makeStyleSheetFromTheme} from '@utils/theme';
 type EmojiSectionListProps = {
     deviceWidth: number;
     emojis: RenderableEmojis[];
-    itemLayout: any;
     missingPages: boolean;
     onEmojiPress: (emoji: string) => void;
     onHandleScrollToSectionFailed: ({index}: {index: number}) => void;
@@ -25,20 +24,18 @@ type EmojiSectionListProps = {
     margin: number;
 };
 
-const EmojiSectionList = ({deviceWidth, emojis, itemLayout, missingPages, onEmojiPress, onHandleScrollToSectionFailed, onLoadMoreCustomEmojis, onMomentumScrollEnd, onScroll, onSetSectionListRef, margin}: EmojiSectionListProps) => {
+const EmojiSectionList = ({deviceWidth, emojis, missingPages, onEmojiPress, onHandleScrollToSectionFailed, onLoadMoreCustomEmojis, onMomentumScrollEnd, onScroll, onSetSectionListRef, margin}: EmojiSectionListProps) => {
     const theme = useTheme();
     const styles = getStyleSheetFromTheme(theme);
 
-    const renderSectionItem = ({item, section}: {item: EmojisData; section: RenderableEmojis}) => {
+    const renderSectionItem = ({item}: any) => {
         return (
             <EmojiPickerRow
                 emojiGutter={EMOJI_GUTTER}
                 emojiSize={EMOJI_SIZE}
                 item={item}
-                items={item.items}
                 key={item.key}
                 onEmojiPress={onEmojiPress}
-                section={section}
             />
         );
     };
@@ -62,7 +59,6 @@ const EmojiSectionList = ({deviceWidth, emojis, itemLayout, missingPages, onEmoj
     return (
         <SectionList
             ListFooterComponent={renderFooter}
-            getItemLayout={itemLayout}
             initialNumToRender={50}
             keyboardDismissMode='interactive'
             keyboardShouldPersistTaps='always'

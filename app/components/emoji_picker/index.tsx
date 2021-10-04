@@ -8,13 +8,12 @@ import Fuse from 'fuse.js';
 import React, {PureComponent} from 'react';
 import {IntlShape} from 'react-intl';
 import {NativeScrollEvent, NativeSyntheticEvent} from 'react-native';
-import sectionListGetItemLayout from 'react-native-section-list-get-item-layout';
 import {of as of$} from 'rxjs';
 import {switchMap} from 'rxjs/operators';
 
 import {selectEmojisBySection} from '@actions/local/custom_emoji';
 import {getCustomEmojis} from '@actions/remote/custom_emoji';
-import {Device, Emoji} from '@constants';
+import {Device} from '@constants';
 import {MM_TABLES, SYSTEM_IDENTIFIERS} from '@constants/database';
 import {WithDatabaseArgs} from '@typings/database/database';
 import SystemModel from '@typings/database/models/servers/system';
@@ -65,7 +64,6 @@ type ConnectedEmojiPickerProps = EmojiPickerProps & {
 class EmojiPicker extends PureComponent<ConnectedEmojiPickerProps, EmojiPickerState> {
     private fuse: Fuse<unknown> | null | undefined;
     private readonly customEmojisEnabled: boolean;
-    private readonly sectionListGetItemLayout: any;
     private rebuildEmojis: boolean | undefined;
     private scrollToSectionTries: number;
     private searchBarRef: any;
@@ -75,11 +73,6 @@ class EmojiPicker extends PureComponent<ConnectedEmojiPickerProps, EmojiPickerSt
 
     constructor(props: ConnectedEmojiPickerProps) {
         super(props);
-
-        this.sectionListGetItemLayout = sectionListGetItemLayout({
-            getItemHeight: () => (EMOJI_SIZE + 7) + (EMOJI_GUTTER * 2),
-            getSectionHeaderHeight: () => SECTION_HEADER_HEIGHT,
-        });
 
         const {config} = props;
 
@@ -109,7 +102,7 @@ class EmojiPicker extends PureComponent<ConnectedEmojiPickerProps, EmojiPickerSt
         this.fuse = await this.getFuseInstance(emojis ?? []);
 
         if (emojisBySection) {
-            const renderableEmojis = this.renderableEmojis(emojisBySection, deviceWidth);
+            const renderableEmojis = this.renderableEmojis(emojisBySection as EmojiSection[], deviceWidth);
             const emojiSectionIndexByOffset = this.measureEmojiSections(renderableEmojis);
 
             this.setState({
@@ -388,7 +381,8 @@ class EmojiPicker extends PureComponent<ConnectedEmojiPickerProps, EmojiPickerSt
                 deviceWidth={deviceWidth}
                 emojis={renderableEmojis}
                 filteredEmojis={filteredEmojis}
-                itemLayout={this.sectionListGetItemLayout}
+
+                // itemLayout={this.sectionListGetItemLayout}
                 missingPages={missingPages}
                 onAnimationComplete={this.setRebuiltEmojis}
                 onCancelSearch={this.cancelSearch}
