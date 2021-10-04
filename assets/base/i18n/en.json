@@ -76,7 +76,7 @@
   "custom_status.expiry_time.tomorrow": "Tomorrow",
   "custom_status.expiry.at": "at",
   "custom_status.expiry.until": "Until",
-  "custom_status.failure_message": "",
+    "custom_status.failure_message": "Failed to update status. Try again",
   "custom_status.set_status": "Set a Status",
   "custom_status.suggestions.in_a_meeting": "In a meeting",
   "custom_status.suggestions.on_a_vacation": "On a vacation",

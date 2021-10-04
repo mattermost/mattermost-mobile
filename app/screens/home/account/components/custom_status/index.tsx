@@ -1,12 +1,14 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useState} from 'react';
+import React, {useEffect, useState} from 'react';
 import {useIntl} from 'react-intl';
+import {DeviceEventEmitter} from 'react-native';
 
 import {unsetCustomStatus} from '@actions/remote/user';
 import DrawerItem from '@components/drawer_item';
 import {Screens} from '@constants';
+import {SET_CUSTOM_STATUS_FAILURE} from '@constants/custom_status';
 import {useServerUrl} from '@context/server_url';
 import {useTheme} from '@context/theme';
 import {showModal} from '@screens/navigation';
@@ -39,6 +41,16 @@ const CustomStatus = ({config, currentUser, database}: CustomStatusProps) => {
     const isCustomStatusExpirySupported = checkCustomStatusExpiry(config);
     const isCustomStatusExpired = checkCustomStatusIsExpired(currentUser);
 
+    useEffect(() => {
+        const onSetCustomStatusError = () => {
+            setShowRetryMessage(true);
+        };
+
+        const listener = DeviceEventEmitter.addListener(SET_CUSTOM_STATUS_FAILURE, onSetCustomStatusError);
+
+        return () => listener.remove();
+    }, []);
+
     if (!isCustomStatusEnabled) {
         return null;
     }
@@ -61,6 +73,7 @@ const CustomStatus = ({config, currentUser, database}: CustomStatusProps) => {
 
     const goToCustomStatusScreen = () => {
         showModal(Screens.CUSTOM_STATUS, intl.formatMessage({id: 'mobile.routes.custom_status', defaultMessage: 'Set a Status'}));
+        setShowRetryMessage(false);
     };
 
     return (

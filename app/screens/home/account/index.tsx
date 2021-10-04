@@ -5,7 +5,7 @@ import {withDatabase} from '@nozbe/watermelondb/DatabaseProvider';
 import withObservables from '@nozbe/with-observables';
 import {useRoute} from '@react-navigation/native';
 import React, {useCallback, useEffect, useState} from 'react';
-import {StyleSheet, Text, TextStyle, View} from 'react-native';
+import {ScrollView, StyleSheet, Text, TextStyle, View} from 'react-native';
 import Animated, {useAnimatedStyle, withTiming} from 'react-native-reanimated';
 import {SafeAreaView} from 'react-native-safe-area-context';
 import {of as of$} from 'rxjs';
@@ -37,6 +37,11 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
         container: {
             flex: 1,
             backgroundColor: theme.sidebarBg,
+        },
+        animatedView: {
+            flex: 1,
+            justifyContent: 'center',
+            alignItems: 'center',
         },
         body: {
             backgroundColor: theme.centerChannelBg,
@@ -177,80 +182,86 @@ const AccountScreen = ({config, currentUser, database}: AccountScreenProps) => {
 
     return (
         <SafeAreaView style={styles.container}>
-            <Animated.View
-                onLayout={onLayout}
-                style={[{flex: 1, justifyContent: 'center', alignItems: 'center'}, animated]}
+            <ScrollView
+                contentContainerStyle={styles.container}
+                alwaysBounceVertical={false}
             >
-                <View
-                    style={styles.upperBody}
+                <Animated.View
+                    onLayout={onLayout}
+                    style={[styles.animatedView, animated]}
                 >
-                    <ProfilePicture
-                        size={120}
-                        iconSize={28}
-                        showStatus={true}
-                        author={currentUser}
-                        testID={'account.profile_picture'}
-                        statusStyle={styles.statusStyle}
-                        statusSize={24}
-                    />
-                    <Text style={styles.textFullName}>{title}</Text>
-                    <Text style={styles.textUserName}>{`${userName}`}</Text>
-                </View>
-                <View style={styles.body}>
-                    <UserPresence
-                        currentUser={currentUser}
-                        database={database}
-                        serverUrl={serverUrl}
-                        styles={{menuLabel: styles.menuLabel}}
-                        theme={theme}
-                    />
-                    <CustomStatus
-                        config={config}
-                        currentUser={currentUser}
-                        database={database}
-                    />
-                    <View style={styles.divider}/>
-                    <DrawerItem
-                        testID='account.your_profile.action'
-                        labelComponent={getLabelComponent(t('account.your_profile'), 'Your Profile')}
-                        iconName='account-outline'
-                        onPress={goToSavedMessages}
-                        separator={false}
-                        theme={theme}
-                    />
-                    <DrawerItem
-                        testID='account.saved_messages.action'
-                        labelComponent={getLabelComponent(t('account.saved_messages'), 'Saved Messages')}
-                        iconName='bookmark-outline'
-                        onPress={goToSavedMessages}
-                        separator={false}
-                        theme={theme}
-                    />
-                    <DrawerItem
-                        testID='account.settings.action'
-                        labelComponent={getLabelComponent(t('account.settings'), 'Settings')}
-                        iconName='settings-outline'
-                        onPress={goToSavedMessages}
-                        separator={true}
-                        theme={theme}
-                    />
-                    <DrawerItem
-                        testID='account.logout.action'
-                        labelComponent={getLabelComponent(t('account.logout'), 'Log out', {color: theme.dndIndicator})}
-                        iconName='exit-to-app'
-                        isDestructor={true}
-                        onPress={goToSavedMessages}
-                        separator={false}
-                        theme={theme}
-                    />
-                    <FormattedText
-                        id={t('account.logout_from')}
-                        defaultMessage={'Log out of {serverName}'}
-                        values={{serverName}}
-                        style={styles.logOutFrom}
-                    />
-                </View>
-            </Animated.View>
+                    <View
+                        style={styles.upperBody}
+                    >
+                        <ProfilePicture
+                            size={120}
+                            iconSize={28}
+                            showStatus={true}
+                            author={currentUser}
+                            testID={'account.profile_picture'}
+                            statusStyle={styles.statusStyle}
+                            statusSize={24}
+                        />
+                        <Text style={styles.textFullName}>{title}</Text>
+                        <Text style={styles.textUserName}>{`${userName}`}</Text>
+                    </View>
+                    <View style={styles.body}>
+                        <UserPresence
+                            currentUser={currentUser}
+                            database={database}
+                            serverUrl={serverUrl}
+                            styles={{menuLabel: styles.menuLabel}}
+                            theme={theme}
+                        />
+                        <CustomStatus
+                            config={config}
+                            currentUser={currentUser}
+                            database={database}
+                        />
+                        <View style={styles.divider}/>
+                        <DrawerItem
+                            testID='account.your_profile.action'
+                            labelComponent={getLabelComponent(t('account.your_profile'), 'Your Profile')}
+                            iconName='account-outline'
+                            onPress={goToSavedMessages}
+                            separator={false}
+                            theme={theme}
+                        />
+                        <DrawerItem
+                            testID='account.saved_messages.action'
+                            labelComponent={getLabelComponent(t('account.saved_messages'), 'Saved Messages')}
+                            iconName='bookmark-outline'
+                            onPress={goToSavedMessages}
+                            separator={false}
+                            theme={theme}
+                        />
+                        <DrawerItem
+                            testID='account.settings.action'
+                            labelComponent={getLabelComponent(t('account.settings'), 'Settings')}
+                            iconName='settings-outline'
+                            onPress={goToSavedMessages}
+                            separator={true}
+                            theme={theme}
+                        />
+                        <DrawerItem
+                            testID='account.logout.action'
+                            labelComponent={getLabelComponent(t('account.logout'), 'Log out', {color: theme.dndIndicator})}
+                            iconName='exit-to-app'
+                            isDestructor={true}
+                            onPress={goToSavedMessages}
+                            separator={false}
+                            theme={theme}
+                        />
+                        <FormattedText
+                            id={t('account.logout_from')}
+                            defaultMessage={'Log out of {serverName}'}
+                            values={{serverName}}
+                            style={styles.logOutFrom}
+                        />
+                    </View>
+                </Animated.View>
+            </ScrollView>
+
         </SafeAreaView>
     );
 };
