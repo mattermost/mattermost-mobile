@@ -13,7 +13,7 @@ import {SafeAreaView} from 'react-native-safe-area-context';
 import {of as of$} from 'rxjs';
 import {map, switchMap} from 'rxjs/operators';
 
-import {removeRecentCustomStatus, setCustomStatus, unsetCustomStatus} from '@actions/remote/user';
+import {removeRecentCustomStatus, updateCustomStatus, unsetCustomStatus} from '@actions/remote/user';
 import CompassIcon from '@components/compass_icon';
 import StatusBar from '@components/status_bar';
 import {CustomStatusDuration, Device, Screens} from '@constants';
@@ -188,17 +188,25 @@ class CustomStatusModal extends NavigationComponent<Props, State> {
                     status.duration = duration;
                     status.expires_at = this.calculateExpiryTime(duration);
                 }
-                const {error, data = undefined} = await setCustomStatus(serverUrl, currentUser, status);
+                const {error, data = undefined} = await updateCustomStatus(serverUrl, currentUser, status);
                 if (error) {
                     DeviceEventEmitter.emit(SET_CUSTOM_STATUS_FAILURE);
                 }
 
                 if (data) {
                     await updateUserCustomStatus(status, currentUser, database);
+
+                    this.setState({
+                        duration: status.duration,
+                        emoji: status.emoji,
+                        expires_at: moment(status.expires_at),
+                        text: status.text,
+                    });
                 }
             }
         } else if (customStatus?.emoji) {
             const unsetResponse = await unsetCustomStatus(serverUrl);
+
             if (unsetResponse?.data) {
                 await updateUserCustomStatus(null, currentUser, database);
             }
@@ -268,6 +276,16 @@ class CustomStatusModal extends NavigationComponent<Props, State> {
         }
     };
 
+    getRecentCustomStatus = () => {
+        const {prefRecentCST} = this.props;
+
+        const rcs = safeParseJSON(prefRecentCST?.value);
+        if (typeof rcs === 'string') {
+            return [];
+        }
+        return rcs as unknown as UserCustomStatus[];
+    };
+
     clearHandle = () => {
         this.setState({emoji: '', text: '', duration: DEFAULT_DURATION});
     };
@@ -319,16 +337,6 @@ class CustomStatusModal extends NavigationComponent<Props, State> {
         };
 
         goToScreen(screen, title, passProps);
-    };
-
-    getRecentCustomStatus = () => {
-        const {prefRecentCST} = this.props;
-
-        const rcs = safeParseJSON(prefRecentCST?.value);
-        if (typeof rcs === 'string') {
-            return [];
-        }
-        return rcs as unknown as UserCustomStatus[];
     };
 
     render() {
