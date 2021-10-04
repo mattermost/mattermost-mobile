@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback} from 'react';
-import {StyleProp, Text, View, ViewStyle} from 'react-native';
+import {StyleProp, Text, TextStyle, View, ViewStyle} from 'react-native';
 import FastImage, {ImageStyle, Source} from 'react-native-fast-image';
 
 import CompassIcon from '@components/compass_icon';
@@ -15,7 +15,9 @@ import {isValidUrl} from '@utils/url';
 type SlideUpPanelProps = {
     destructive?: boolean;
     icon?: string | Source;
+    imageStyles?: StyleProp<TextStyle>;
     onPress: () => void;
+    textStyles?: TextStyle;
     testID?: string;
     text: string;
 }
@@ -69,7 +71,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     };
 });
 
-const SlideUpPanelItem = ({destructive, icon, onPress, testID, text}: SlideUpPanelProps) => {
+const SlideUpPanelItem = ({destructive, icon, imageStyles, onPress, testID, text, textStyles}: SlideUpPanelProps) => {
     const theme = useTheme();
     const handleOnPress = useCallback(preventDoubleTap(onPress, 500), []);
     const style = getStyleSheet(theme);
@@ -77,7 +79,7 @@ const SlideUpPanelItem = ({destructive, icon, onPress, testID, text}: SlideUpPan
     let image;
     let iconStyle: StyleProp<ViewStyle> = [style.iconContainer];
     if (icon) {
-        const imageStyle: StyleProp<ImageStyle> = [style.icon];
+        const imageStyle: StyleProp<ImageStyle> = [style.icon, imageStyles];
         if (destructive) {
             imageStyle.push(style.destructive);
         }
@@ -120,7 +122,7 @@ const SlideUpPanelItem = ({destructive, icon, onPress, testID, text}: SlideUpPan
                         <View style={iconStyle}>{image}</View>
                     }
                     <View style={style.textContainer}>
-                        <Text style={[style.text, destructive ? style.destructive : null]}>{text}</Text>
+                        <Text style={[style.text, destructive ? style.destructive : null, textStyles]}>{text}</Text>
                     </View>
                 </View>
             </TouchableWithFeedback>
