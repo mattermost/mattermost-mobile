@@ -10,7 +10,7 @@ import {DeviceEventEmitter, Dimensions, Keyboard, KeyboardAvoidingView, Platform
 import {EventSubscription, Navigation, NavigationButtonPressedEvent, NavigationComponent, NavigationComponentProps, Options} from 'react-native-navigation';
 import {SafeAreaView} from 'react-native-safe-area-context';
 import {of as of$} from 'rxjs';
-import {switchMap} from 'rxjs/operators';
+import {switchMap, catchError} from 'rxjs/operators';
 
 import {updateLocalCustomStatus} from '@actions/local/user';
 import {removeRecentCustomStatus, updateCustomStatus, unsetCustomStatus} from '@actions/remote/user';
@@ -171,6 +171,7 @@ class CustomStatusModal extends NavigationComponent<Props, State> {
         const customStatus = this.getCustomStatus();
         const isExpirySupported = isCustomStatusExpirySupported(config);
         const recentStatuses = getRecentCustomStatus(recentCustomStatuses);
+
         const isStatusSet = emoji || text;
         if (isStatusSet) {
             let isStatusSame = customStatus?.emoji === emoji && customStatus?.text === text && customStatus?.duration === duration;
@@ -264,16 +265,16 @@ class CustomStatusModal extends NavigationComponent<Props, State> {
             const removeIndex = rcst.findIndex((cs) => {
                 return (
                     cs.emoji === status.emoji &&
-                    cs.text === status.text &&
-                    cs.duration === status.duration &&
-                    cs.expires_at === status.expires_at
+                        cs.text === status.text &&
+                        cs.duration === status.duration &&
+                        cs.expires_at === status.expires_at
                 );
             });
             rcst.splice(removeIndex, 1);
 
             try {
                 await database.write(async () => {
-                    await recentCustomStatuses?.update((system: SystemModel) => {
+                    await recentCustomStatuses.update((system: SystemModel) => {
                         system.value = JSON.stringify(rcst);
                     });
                 });
@@ -418,13 +419,17 @@ const enhancedCSM = withObservables([], ({database}: WithDatabaseArgs) => ({
         get(SYSTEM).
         findAndObserve(SYSTEM_IDENTIFIERS.CURRENT_USER_ID).
         pipe(switchMap((id: SystemModel) => database.get(USER).findAndObserve(id.value))),
+
     config: database.
         get(SYSTEM).
         findAndObserve(SYSTEM_IDENTIFIERS.CONFIG).
         pipe(switchMap((cfg: SystemModel) => of$(cfg.value))),
+
     recentCustomStatuses: database.
         get(SYSTEM).
-        findAndObserve(SYSTEM_IDENTIFIERS.RECENT_CUSTOM_STATUS),
+        findAndObserve(SYSTEM_IDENTIFIERS.RECENT_CUSTOM_STATUS).pipe(
+            catchError(() => of$(null)),
+        ),
 }));
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
