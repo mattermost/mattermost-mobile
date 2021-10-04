@@ -3,16 +3,9 @@
 
 import React from 'react';
 import {useIntl} from 'react-intl';
-import {
-    KeyboardAvoidingView,
-    NativeScrollEvent,
-    NativeSyntheticEvent,
-    Platform,
-    useWindowDimensions,
-    View,
-} from 'react-native';
+import {KeyboardAvoidingView, NativeScrollEvent, NativeSyntheticEvent, Platform, useWindowDimensions, View} from 'react-native';
+import {KeyboardTrackingView} from 'react-native-keyboard-tracking-view';
 import {SafeAreaView} from 'react-native-safe-area-context';
-import {KeyboardTrackingView} from 'react-native-ui-lib/keyboard';
 
 import EmojiFlatList from '@components/emoji_picker/components/emoji_flatlist';
 import EmojiSectionList from '@components/emoji_picker/components/emoji_sectionlist';
