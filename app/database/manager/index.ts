@@ -90,6 +90,7 @@ class DatabaseManager {
               dbName: databaseFilePath,
               migrationEvents: this.buildMigrationCallbacks(databaseName),
               migrations: AppDatabaseMigrations,
+              jsi: true,
               schema,
           });
 
@@ -131,6 +132,7 @@ class DatabaseManager {
                    dbName: databaseFilePath,
                    migrationEvents: this.buildMigrationCallbacks(databaseName),
                    migrations,
+                   jsi: true,
                    schema,
                });
 
