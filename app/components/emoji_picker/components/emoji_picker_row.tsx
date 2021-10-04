@@ -10,13 +10,11 @@ type EmojiPickerRowProps = {
     emojiGutter: number;
     emojiSize: number;
     item: EmojisData;
-    items: EmojiAlias[];
     onEmojiPress: (emojiName: string) => void;
-    section: RenderableEmojis;
 };
 
-const EmojiPickerRow = ({emojiGutter, emojiSize, item, items, onEmojiPress, section}: EmojiPickerRowProps) => {
-    const memoizedEmojis = useMemo(() => items, [items]);
+const EmojiPickerRow = ({emojiGutter, emojiSize, item, onEmojiPress}: EmojiPickerRowProps) => {
+    const memoizedEmojis = useMemo(() => item.items, [item]);
 
     const renderEmojis = useCallback((emoji: EmojiAlias, index: number, emojis: EmojiAlias[]) => {
         const size = emojiSize + 7;
@@ -58,8 +56,8 @@ const EmojiPickerRow = ({emojiGutter, emojiSize, item, items, onEmojiPress, sect
 
     return (
         <View
-            testID={section.id}
-            key={`Picker-Row-${section.id}${item.key}`}
+            key={`Picker-Row-${item.key}`}
+            testID={`Picker-Row-${item.key}`}
         >
             <View style={[styles.columnStyle, {marginVertical: emojiGutter}]}>
                 {memoizedEmojis.map(renderEmojis)}

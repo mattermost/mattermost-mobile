@@ -61,6 +61,7 @@ type ConnectedEmojiPickerProps = EmojiPickerProps & {
     emojisBySection: EmojiSection[];
 }
 
+//todo: The EmojiPicker should be refactored.
 class EmojiPicker extends PureComponent<ConnectedEmojiPickerProps, EmojiPickerState> {
     private fuse: Fuse<unknown> | null | undefined;
     private readonly customEmojisEnabled: boolean;
@@ -381,8 +382,6 @@ class EmojiPicker extends PureComponent<ConnectedEmojiPickerProps, EmojiPickerSt
                 deviceWidth={deviceWidth}
                 emojis={renderableEmojis}
                 filteredEmojis={filteredEmojis}
-
-                // itemLayout={this.sectionListGetItemLayout}
                 missingPages={missingPages}
                 onAnimationComplete={this.setRebuiltEmojis}
                 onCancelSearch={this.cancelSearch}
