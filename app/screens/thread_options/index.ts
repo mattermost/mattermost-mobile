@@ -23,7 +23,7 @@ import ThreadOptions, {OwnProps} from './thread_options';
 
 import type {GlobalState} from '@mm-redux/types/store';
 
-export function makeMapStateToProps(state: GlobalState, ownProps: OwnProps) {
+export function mapStateToProps(state: GlobalState, ownProps: OwnProps) {
     const myPreferences = getMyPreferences(state);
     return {
         ...getDimensions(state),
