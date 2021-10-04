@@ -16,7 +16,8 @@ import type {GlobalState} from '@mm-redux/types/store';
 function mapStateToProps(state: GlobalState) {
     const currentCall = getCurrentCall(state);
     const currentUserId = getCurrentUserId(state);
-    const speaker = currentCall && (Object.values(currentCall.participants).find((v) => v.isTalking === true) || Object.values(currentCall.participants)[0]);
+    const speakerId = currentCall && currentCall.speakers && currentCall.speakers[0];
+    const speaker = currentCall && ((speakerId && currentCall.participants[speakerId]) || Object.values(currentCall.participants)[0]);
     const currentParticipant = currentCall?.participants[currentUserId];
     return {
         theme: getTheme(state),

@@ -57,6 +57,8 @@ import {
     handleVoiceCallUserDisconnected,
     handleVoiceCallUserMuted,
     handleVoiceCallUserUnmuted,
+    handleVoiceCallUserVoiceOn,
+    handleVoiceCallUserVoiceOff,
 } from './voiceCalls';
 
 export function init(additionalOptions: any = {}) {
@@ -443,6 +445,10 @@ function handleEvent(msg: WebSocketMessage) {
             return dispatch(handleVoiceCallUserMuted(msg));
         case WebsocketEvents.VOICE_CALLS_USER_UNMUTED:
             return dispatch(handleVoiceCallUserUnmuted(msg));
+        case WebsocketEvents.VOICE_CALLS_USER_VOICE_ON:
+            return dispatch(handleVoiceCallUserVoiceOn(msg));
+        case WebsocketEvents.VOICE_CALLS_USER_VOICE_OFF:
+            return dispatch(handleVoiceCallUserVoiceOff(msg));
         case WebsocketEvents.VOICE_CALLS_CALL_START:
             return dispatch(handleVoiceCallStarted(msg));
         }

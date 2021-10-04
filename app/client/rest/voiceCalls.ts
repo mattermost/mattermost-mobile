@@ -26,6 +26,7 @@ const ClientVoiceCalls = (superclass: any) => class extends superclass {
                     }, {}),
                     channelId: channel.channel_id,
                     startTime: channel.call.start_at,
+                    speakers: [],
                 };
             }
         }

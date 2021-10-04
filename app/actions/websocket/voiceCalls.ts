@@ -33,6 +33,20 @@ export function handleVoiceCallUserUnmuted(msg: WebSocketMessage): GenericAction
     };
 }
 
+export function handleVoiceCallUserVoiceOn(msg: WebSocketMessage): GenericAction {
+    return {
+        type: VoiceCallsTypes.RECEIVED_VOICE_ON_USER_VOICE_CALL,
+        data: {channelId: msg.broadcast.channel_id, userId: msg.data.userID},
+    };
+}
+
+export function handleVoiceCallUserVoiceOff(msg: WebSocketMessage): GenericAction {
+    return {
+        type: VoiceCallsTypes.RECEIVED_VOICE_OFF_USER_VOICE_CALL,
+        data: {channelId: msg.broadcast.channel_id, userId: msg.data.userID},
+    };
+}
+
 export function handleVoiceCallStarted(msg: WebSocketMessage): GenericAction {
     return {
         type: VoiceCallsTypes.RECEIVED_VOICE_CALL_STARTED,

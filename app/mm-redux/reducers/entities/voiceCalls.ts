@@ -88,6 +88,41 @@ function calls(state: Dictionary<Call> = {}, action: GenericAction) {
         nextState[channelId] = channelUpdate;
         return nextState;
     }
+    case VoiceCallsTypes.RECEIVED_VOICE_ON_USER_VOICE_CALL: {
+        const {channelId, userId} = action.data;
+        if (!state[channelId]) {
+            return state;
+        }
+        if (!state[channelId].participants[userId]) {
+            return state;
+        }
+        const userUpdate = {...state[channelId].participants[userId], isTalking: true};
+        const channelUpdate = {...state[channelId], participants: {...state[channelId].participants}};
+        channelUpdate.participants[userId] = userUpdate;
+        channelUpdate.speakers = [userId, ...(channelUpdate.speakers, [])];
+        const nextState = {...state};
+        nextState[channelId] = channelUpdate;
+        return nextState;
+    }
+    case VoiceCallsTypes.RECEIVED_VOICE_OFF_USER_VOICE_CALL: {
+        const {channelId, userId} = action.data;
+        if (!state[channelId]) {
+            return state;
+        }
+        if (!state[channelId].participants[userId]) {
+            return state;
+        }
+        const userUpdate = {...state[channelId].participants[userId], isTalking: false};
+        const channelUpdate = {...state[channelId], participants: {...state[channelId].participants}};
+        channelUpdate.participants[userId] = userUpdate;
+        channelUpdate.speakers = channelUpdate.speakers?.filter((id) => id !== userId);
+        if (!channelUpdate.speakers || channelUpdate.speakers.length === 0) {
+            channelUpdate.speakers = [userId];
+        }
+        const nextState = {...state};
+        nextState[channelId] = channelUpdate;
+        return nextState;
+    }
     case VoiceCallsTypes.RECEIVED_RAISE_HAND_VOICE_CALL: {
         const {channelId, userId} = action.data;
         if (!state[channelId]) {

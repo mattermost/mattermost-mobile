@@ -2,11 +2,13 @@
 // See LICENSE.txt for license information.
 
 import {Client4} from '@client/rest';
-import {getCurrentServerUrl} from '@init/credentials';
 import {VoiceCallsTypes} from '@mm-redux/action_types';
 import {GenericAction, ActionFunc} from '@mm-redux/types/actions';
+import {newClient} from '@utils/voice_calls_connection';
 
 import {bindClientFunc} from './helpers';
+
+let ws: any = null;
 
 export function loadVoiceCalls(): ActionFunc {
     return bindClientFunc({
@@ -17,7 +19,9 @@ export function loadVoiceCalls(): ActionFunc {
 }
 
 export function joinCall(channelId: string): GenericAction {
-    // TODO: Start a new call or join to the current one before updating the local store
+    newClient(channelId, () => null).then((c) => {
+        ws = c;
+    });
     return {
         type: VoiceCallsTypes.RECEIVED_MYSELF_JOINED_VOICE_CALL,
         data: channelId,
@@ -25,39 +29,25 @@ export function joinCall(channelId: string): GenericAction {
 }
 
 export function leaveCall(): GenericAction {
-    // TODO: Disconnect from the call before updating the local store
+    if (ws) {
+        ws.disconnect();
+    }
     return {
         type: VoiceCallsTypes.RECEIVED_MYSELF_LEFT_VOICE_CALL,
     };
 }
 
-// TODO: Remove this whenever we have the real backend connection
-export function muteMyself(channelId: string): GenericAction {
-    getCurrentServerUrl().then((serverURL) => {
-        const finalServerURL = (serverURL || '').startsWith('https:') ? (serverURL || '').replace('https://', 'wss://') : (serverURL || '').replace('http://', 'ws://');
-        const ws = new WebSocket(`${finalServerURL}/plugins/com.mattermost.calls/${channelId}/ws`);
-        setTimeout(async () => {
-            await ws.send(JSON.stringify({
-                type: 'mute',
-            }));
-            ws.close();
-        }, 1000);
-    });
+export function muteMyself(): GenericAction {
+    if (ws) {
+        ws.mute();
+    }
     return {type: 'empty'};
 }
 
-// TODO: Remove this whenever we have the real backend connection
-export function unmuteMyself(channelId: string): GenericAction {
-    getCurrentServerUrl().then((serverURL) => {
-        const finalServerURL = (serverURL || '').startsWith('https:') ? (serverURL || '').replace('https://', 'wss://') : (serverURL || '').replace('http://', 'ws://');
-        const ws = new WebSocket(`${finalServerURL}/plugins/com.mattermost.calls/${channelId}/ws`);
-        setTimeout(async () => {
-            await ws.send(JSON.stringify({
-                type: 'mute',
-            }));
-            ws.close();
-        }, 1000);
-    });
+export function unmuteMyself(): GenericAction {
+    if (ws) {
+        ws.unmute();
+    }
     return {type: 'empty'};
 }
 

@@ -511,6 +511,7 @@
 				AE4769B235D14E6C9C64EA78 /* Upload Debug Symbols to Sentry */,
 				7FFE32A91FD9CB650038C7A0 /* Embed App Extensions */,
 				ED4C644925C525E30315E09E /* [CP] Copy Pods Resources */,
+				E23E84F30F683B193780BB30 /* [CP] Embed Pods Frameworks */,
 			);
 			buildRules = (
 			);
@@ -757,6 +758,24 @@
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
 			shellScript = "./uploadDebugSymbols.sh\n";
+		};
+		E23E84F30F683B193780BB30 /* [CP] Embed Pods Frameworks */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-Mattermost/Pods-Mattermost-frameworks.sh",
+				"${PODS_XCFRAMEWORKS_BUILD_DIR}/react-native-webrtc/WebRTC.framework/WebRTC",
+			);
+			name = "[CP] Embed Pods Frameworks";
+			outputPaths = (
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/WebRTC.framework",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-Mattermost/Pods-Mattermost-frameworks.sh\"\n";
+			showEnvVarsInLog = 0;
 		};
 		ED4C644925C525E30315E09E /* [CP] Copy Pods Resources */ = {
 			isa = PBXShellScriptBuildPhase;

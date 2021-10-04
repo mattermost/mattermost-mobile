@@ -12,6 +12,7 @@ export type Call = {
 	participants: Dictionary<CallParticipant>;
     channelId: string;
     startTime: number;
+    speakers: string[];
 }
 
 export type CallParticipant = {

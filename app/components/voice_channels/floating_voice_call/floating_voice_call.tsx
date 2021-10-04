@@ -94,16 +94,11 @@ const getStyleSheet = makeStyleSheetFromTheme((props: Props) => {
     };
 });
 
-// let voiceClient ;
-
 const FloatingVoiceCall = (props: Props) => {
     if (!props.call) {
         return null;
     }
 
-    // useEffect(() => {
-    //     voiceClient = newClient(props.call.channelId);
-    // });
     const style = getStyleSheet(props);
     return (
         <View style={style.wrapper}>
