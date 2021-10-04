@@ -60,7 +60,6 @@ type State = {
     duration: CustomStatusDuration;
     expires_at: Moment;
     isLandScape: boolean;
-    track_prev_cst: UserCustomStatus[]; // for screen refresh only
 };
 
 const {DONT_CLEAR, THIRTY_MINUTES, ONE_HOUR, FOUR_HOURS, TODAY, THIS_WEEK, DATE_AND_TIME} = CustomStatusDuration;
@@ -125,7 +124,6 @@ class CustomStatusModal extends NavigationComponent<Props, State> {
             expires_at: initialCustomExpiryTime,
             isLandScape: false,
             text: isCurrentCustomStatusSet ? customStatus?.text : '',
-            track_prev_cst: [],
         };
     };
 
@@ -245,34 +243,26 @@ class CustomStatusModal extends NavigationComponent<Props, State> {
     };
 
     handleRecentCustomStatusClear = async (status: UserCustomStatus) => {
-        const {database, prefRecentCST, serverUrl} = this.props;
-
+        const {database, recentCustomStatuses, serverUrl} = this.props;
         const response = await removeRecentCustomStatus(serverUrl, status);
 
-        //todo: Need to test this function again - had server issue when I did it.
         if (response?.data) {
-            const prevCST = this.getRecentCustomStatus();
+            const rcst = getRecentCustomStatus(recentCustomStatuses);
 
-            const updatedCST = prevCST.filter((cst) => {
-                return (
-                    cst.emoji !== status.emoji &&
-                    cst.text !== status.text &&
-                    cst.duration !== status.duration &&
-                    cst.expires_at !== status.expires_at
-                );
+            const removeIndex = rcst.findIndex((cs) => {
+                return (cs.emoji === status.emoji && cs.text === status.text && cs.duration === status.duration && cs.expires_at === status.expires_at);
             });
+            rcst.splice(removeIndex, 1);
+
             try {
                 await database.write(async () => {
-                    await prefRecentCST.update((pref: PreferenceModel) => {
-                        pref.value = JSON.stringify(updatedCST);
+                    await recentCustomStatuses.update((system: SystemModel) => {
+                        system.value = JSON.stringify(rcst);
                     });
                 });
             } catch (e) {
                 //todo: do something about that error?
             }
-
-            // NOTE: The below setState is a workaround to re-trigger screen refresh after updating the custom statuses in database (since changing a query/array value does not trigger updates)
-            this.setState({track_prev_cst: updatedCST});
         }
     };
 

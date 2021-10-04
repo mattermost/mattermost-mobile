@@ -24,21 +24,6 @@ const RecentCustomStatuses = ({isExpirySupported, onHandleClear, onHandleSuggest
         return null;
     }
 
-    const recentStatuses = recentCustomStatuses.map((status: UserCustomStatus, index: number) => (
-        <CustomStatusSuggestion
-            key={status.text}
-            handleSuggestionClick={onHandleSuggestionClick}
-            handleClear={onHandleClear}
-            emoji={status?.emoji}
-            text={status?.text}
-            theme={theme}
-            separator={index !== recentCustomStatuses.length - 1}
-            duration={status.duration}
-            expires_at={status.expires_at}
-            isExpirySupported={isExpirySupported}
-        />
-    ));
-
     return (
         <>
             <View style={style.separator}/>
@@ -49,7 +34,20 @@ const RecentCustomStatuses = ({isExpirySupported, onHandleClear, onHandleSuggest
                     style={style.title}
                 />
                 <View style={style.block}>
-                    {recentStatuses}
+                    {recentCustomStatuses.map((status: UserCustomStatus, index: number) => (
+                        <CustomStatusSuggestion
+                            key={status.text}
+                            handleSuggestionClick={onHandleSuggestionClick}
+                            handleClear={onHandleClear}
+                            emoji={status?.emoji}
+                            text={status?.text}
+                            theme={theme}
+                            separator={index !== recentCustomStatuses.length - 1}
+                            duration={status.duration}
+                            expires_at={status.expires_at}
+                            isExpirySupported={isExpirySupported}
+                        />
+                    ))}
                 </View>
             </View >
         </>

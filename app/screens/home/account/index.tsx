@@ -68,11 +68,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             fontFamily: 'OpenSans',
             fontWeight: '400',
         },
-        animatedView: {
-            flex: 1,
-            justifyContent: 'center',
-            alignItems: 'center',
-        },
         userInfo: {
             width: 300,
             height: 300,
@@ -261,12 +256,11 @@ const AccountScreen = ({config, currentUser, database}: AccountScreenProps) => {
                     </View>
                 </Animated.View>
             </ScrollView>
-
         </SafeAreaView>
     );
 };
 
-const withUserConfig = withObservables([], ({database}: WithDatabaseArgs) => ({
+const withUserConfig = withObservables(['currentUser'], ({database}: WithDatabaseArgs) => ({
     currentUser: database.get(SYSTEM).findAndObserve(SYSTEM_IDENTIFIERS.CURRENT_USER_ID).pipe(switchMap((id: SystemModel) => database.get(USER).findAndObserve(id.value))),
     config: database.get(SYSTEM).findAndObserve(SYSTEM_IDENTIFIERS.CONFIG).pipe(switchMap((cfg: SystemModel) => of$(cfg.value))),
 }));
