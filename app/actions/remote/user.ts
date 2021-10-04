@@ -458,7 +458,7 @@ export const setStatus = async (serverUrl: string, status: UserStatus) => {
         return {
             data,
         };
-    } catch (error) {
+    } catch (error: any) {
         forceLogoutIfNecessary(serverUrl, error);
         return {error};
     }
@@ -497,7 +497,7 @@ export const removeRecentCustomStatus = async (serverUrl: string, customStatus: 
     }
 
     try {
-        const data = await client.removeRecentCustomStatus(customStatus);
+        await client.removeRecentCustomStatus(customStatus);
     } catch (error) {
         return {error};
     }

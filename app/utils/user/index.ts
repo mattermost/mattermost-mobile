@@ -8,11 +8,11 @@ import {General, Preferences} from '@constants';
 import {CustomStatusDuration} from '@constants/custom_status';
 import {UserModel} from '@database/models/server';
 import {DEFAULT_LOCALE, getLocalizedMessage, t} from '@i18n';
-import {toTitleCase} from '@utils/helpers';
+import {safeParseJSON, toTitleCase} from '@utils/helpers';
 
-import type {Database} from '@nozbe/watermelondb';
 import type GroupModel from '@typings/database/models/servers/group';
 import type GroupMembershipModel from '@typings/database/models/servers/group_membership';
+import type SystemModel from '@typings/database/models/servers/system';
 import type {UserMentionKey} from '@typings/global/markdown';
 import type {IntlShape} from 'react-intl';
 
@@ -196,20 +196,6 @@ export function isCustomStatusExpired(user: UserModel) {
     return currentTime.isSameOrAfter(expiryTime);
 }
 
-export const updateUserCustomStatus = async (status: UserCustomStatus | null, user: UserModel, database: Database) => {
-    // updates the local value of the user's custom status
-    try {
-        const currentProps = {...user.props, customStatus: {...status}};
-        await database.write(async () => {
-            await user.update((u: UserModel) => {
-                u.props = currentProps;
-            });
-        });
-    } catch (e) {
-        //todo: do something about that error ? Emit an error ?
-    }
-};
-
 export function confirmOutOfOfficeDisabled(intl: IntlShape, status: string, updateStatus: (status: string) => void) {
     const userStatusId = 'modal.manual_status.auto_responder.message_' + status;
 
@@ -251,3 +237,11 @@ export function confirmOutOfOfficeDisabled(intl: IntlShape, status: string, upda
         }],
     );
 }
+
+export const getRecentCustomStatus = (recentCustomStatuses: SystemModel) => {
+    const rcs = safeParseJSON(recentCustomStatuses?.value);
+    if (typeof rcs === 'string') {
+        return [];
+    }
+    return rcs as unknown as UserCustomStatus[];
+};
