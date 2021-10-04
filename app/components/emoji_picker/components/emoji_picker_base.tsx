@@ -21,7 +21,6 @@ type Props = {
     deviceWidth: number;
     emojis: RenderableEmojis[];
     filteredEmojis: string[];
-    itemLayout: any;
     missingPages: boolean;
     onAnimationComplete: (searchBarAnimationComplete: boolean) => void;
     onCancelSearch: (term: string) => void;
@@ -39,28 +38,7 @@ type Props = {
     theme: Theme;
 };
 
-const EmojiPicker = ({
-    currentSectionIndex,
-    deviceWidth,
-    emojis,
-    filteredEmojis,
-    itemLayout,
-    missingPages,
-    onAnimationComplete,
-    onCancelSearch,
-    onChangeSearchTerm,
-    onEmojiPress,
-    onHandleScrollToSectionFailed,
-    onHandleSectionIconPress,
-    onLoadMoreCustomEmojis,
-    onMomentumScrollEnd,
-    onScroll,
-    onSetSearchBarRef,
-    onSetSectionListRef,
-    searchTerm,
-    testID,
-    theme,
-}: Props) => {
+const EmojiPicker = ({currentSectionIndex, deviceWidth, emojis, filteredEmojis, missingPages, onAnimationComplete, onCancelSearch, onChangeSearchTerm, onEmojiPress, onHandleScrollToSectionFailed, onHandleSectionIconPress, onLoadMoreCustomEmojis, onMomentumScrollEnd, onScroll, onSetSearchBarRef, onSetSectionListRef, searchTerm, testID, theme}: Props) => {
     const {formatMessage} = useIntl();
     const {height, width} = useWindowDimensions();
 
@@ -105,29 +83,21 @@ const EmojiPicker = ({
         );
     };
 
-    const renderSectionIcons = () => {
-        return (
-            <SectionIcons
-                currentSectionIndex={currentSectionIndex}
-                emojis={emojis}
-                onHandleSectionIconPress={onHandleSectionIconPress}
-            />
-        );
-    };
-
     const getSectionIcons = () => {
-        const getSections = () => {
-            return (
-                <View style={styles.bottomContentWrapper}>
-                    <View style={styles.bottomContent}>
-                        {renderSectionIcons()}
-                    </View>
+        const bottomSectionIcons = (
+            <View style={styles.bottomContentWrapper}>
+                <View style={styles.bottomContent}>
+                    <SectionIcons
+                        currentSectionIndex={currentSectionIndex}
+                        emojis={emojis}
+                        onHandleSectionIconPress={onHandleSectionIconPress}
+                    />
                 </View>
-            );
-        };
+            </View>
+        );
 
         if (isAndroid) {
-            return getSections();
+            return bottomSectionIcons;
         }
 
         return (
@@ -135,7 +105,7 @@ const EmojiPicker = ({
                 normalList={true}
                 scrollViewNativeID={SCROLL_VIEW_NATIVE_ID}
             >
-                {getSections()}
+                {bottomSectionIcons}
             </KeyboardTrackingView>
         );
     };
@@ -155,7 +125,6 @@ const EmojiPicker = ({
             <EmojiSectionList
                 deviceWidth={deviceWidth}
                 emojis={emojis}
-                itemLayout={itemLayout}
                 missingPages={missingPages}
                 onEmojiPress={onEmojiPress}
                 onHandleScrollToSectionFailed={onHandleScrollToSectionFailed}

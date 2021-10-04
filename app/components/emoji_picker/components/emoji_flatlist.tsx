@@ -4,11 +4,13 @@
 import React, {useCallback} from 'react';
 import {FlatList} from 'react-native';
 
-import {SCROLL_VIEW_NATIVE_ID} from '@components/emoji_picker';
-import TouchableEmoji from '@components/emoji_picker/components/emoji_touchable';
-import EmptyList from '@components/emoji_picker/components/empty_list';
 import {useTheme} from '@context/theme';
 import {makeStyleSheetFromTheme} from '@utils/theme';
+
+import {SCROLL_VIEW_NATIVE_ID} from '../index';
+
+import EmojiTouchable from './emoji_touchable';
+import EmptyList from './empty_list';
 
 type EmojiFlatListProps = {
     filteredEmojis: string[];
@@ -26,7 +28,7 @@ const EmojiFlatList = ({filteredEmojis, searchTerm, onEmojiPress}: EmojiFlatList
 
     const renderItem = useCallback(({item}) => {
         return (
-            <TouchableEmoji
+            <EmojiTouchable
                 onEmojiPress={onEmojiPress}
                 item={item}
             />
