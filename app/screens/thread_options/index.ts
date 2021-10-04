@@ -50,4 +50,4 @@ function mapDispatchToProps(dispatch: Dispatch) {
     };
 }
 
-export default connect(makeMapStateToProps, mapDispatchToProps)(ThreadOptions);
+export default connect(mapStateToProps, mapDispatchToProps)(ThreadOptions);
