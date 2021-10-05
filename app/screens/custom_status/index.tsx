@@ -397,15 +397,13 @@ class CustomStatusModal extends NavigationComponent<Props, State> {
                                 />
                             )
                             }
-                            {recentStatuses.length > 0 && (
-                                <CustomStatusSuggestions
-                                    intl={intl}
-                                    isExpirySupported={isExpirySupported}
-                                    onHandleCustomStatusSuggestionClick={this.handleCustomStatusSuggestionClick}
-                                    recentCustomStatuses={recentStatuses}
-                                    theme={theme}
-                                />)
-                            }
+                            <CustomStatusSuggestions
+                                intl={intl}
+                                isExpirySupported={isExpirySupported}
+                                onHandleCustomStatusSuggestionClick={this.handleCustomStatusSuggestionClick}
+                                recentCustomStatuses={recentStatuses}
+                                theme={theme}
+                            />
                         </View>
                         <View style={style.separator}/>
                     </ScrollView>
