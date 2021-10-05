@@ -43,7 +43,7 @@ export const retryInitialTeamAndChannel = async (serverUrl: string) => {
             return {error: true};
         }
 
-        // Fetch in parallel server config & license / user preferences / teams / team membership / team unreads
+        // Fetch in parallel server config & license / user preferences / teams / team membership
         const promises: [Promise<ConfigAndLicenseRequest>, Promise<MyPreferencesRequest>, Promise<MyTeamsRequest>] = [
             fetchConfigAndLicense(serverUrl, true),
             fetchMyPreferences(serverUrl, true),
@@ -103,7 +103,7 @@ export const retryInitialTeamAndChannel = async (serverUrl: string) => {
             modelPromises.push(prefModel);
         }
 
-        const teamModels = prepareMyTeams(operator, teamData.teams!, teamData.memberships!, teamData.unreads!);
+        const teamModels = prepareMyTeams(operator, teamData.teams!, teamData.memberships!);
         if (teamModels) {
             modelPromises.push(...teamModels);
         }

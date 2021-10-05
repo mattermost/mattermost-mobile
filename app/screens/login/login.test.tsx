@@ -115,7 +115,7 @@ describe('Login', () => {
                 'MFA',
                 'Multi-factor Authentication',
                 {
-                    goToChannel: expect.anything(),
+                    goToHome: expect.anything(),
                     loginId,
                     password,
                     config: {EnableSignInWithEmail: 'true', EnableSignInWithUsername: 'true'},

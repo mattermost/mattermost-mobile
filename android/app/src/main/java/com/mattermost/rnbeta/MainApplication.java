@@ -1,11 +1,14 @@
 package com.mattermost.rnbeta;
 
+import com.facebook.react.bridge.JSIModuleSpec;
+import com.facebook.react.bridge.JavaScriptContextHolder;
 import com.mattermost.rnbeta.generated.BasePackageList;
 
 import android.content.Context;
 import android.os.Bundle;
 import android.util.Log;
 import java.io.File;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -42,6 +45,7 @@ import org.unimodules.adapters.react.ReactModuleRegistryProvider;
 
 import com.mattermost.networkclient.RCTOkHttpClientFactory;
 import com.swmansion.reanimated.ReanimatedJSIModulePackage;
+import com.nozbe.watermelondb.jsi.WatermelonDBJSIPackage;
 
 public class MainApplication extends NavigationApplication implements INotificationsApplication, INotificationsDrawerApplication {
   public static MainApplication instance;
@@ -107,7 +111,19 @@ public class MainApplication extends NavigationApplication implements INotificat
 
       @Override
       protected JSIModulePackage getJSIModulePackage() {
-        return new ReanimatedJSIModulePackage();
+        return new JSIModulePackage() {
+          @Override
+          public List<JSIModuleSpec> getJSIModules(
+            final ReactApplicationContext reactApplicationContext,
+            final JavaScriptContextHolder jsContext
+          ) {
+            List<JSIModuleSpec> modules = Arrays.asList();
+            modules.addAll(new WatermelonDBJSIPackage().getJSIModules(reactApplicationContext, jsContext));
+            modules.addAll(new ReanimatedJSIModulePackage().getJSIModules(reactApplicationContext, jsContext));
+
+            return modules;
+          }
+        };
       }
 
       @Override

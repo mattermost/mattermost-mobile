@@ -110,8 +110,6 @@ describe('*** Operator: Team Handlers tests ***', () => {
             {
                 id: 'teamA',
                 roles: 'roleA, roleB, roleC',
-                is_unread: true,
-                mentions_count: 3,
             },
         ];
 

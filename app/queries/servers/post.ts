@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {Database, Q} from '@nozbe/watermelondb';
+import {Database, Model, Q, Query, Relation} from '@nozbe/watermelondb';
 
 import {MM_TABLES} from '@constants/database';
 
@@ -9,6 +9,33 @@ import type PostModel from '@typings/database/models/servers/post';
 import type PostInChannelModel from '@typings/database/models/servers/posts_in_channel';
 
 const {SERVER: {POST, POSTS_IN_CHANNEL}} = MM_TABLES;
+
+export const prepareDeletePost = async (post: PostModel): Promise<Model[]> => {
+    const preparedModels: Model[] = [post.prepareDestroyPermanently()];
+    const relations: Array<Relation<Model> | Query<Model>> = [post.drafts, post.postsInThread];
+    for await (const relation of relations) {
+        try {
+            const model = await relation.fetch();
+            if (model) {
+                if (Array.isArray(model)) {
+                    model.forEach((m) => preparedModels.push(m.prepareDestroyPermanently()));
+                } else {
+                    preparedModels.push(model.prepareDestroyPermanently());
+                }
+            }
+        } catch {
+            // Record not found, do nothing
+        }
+    }
+
+    const associatedChildren: Array<Query<any>> = [post.files, post.reactions];
+    for await (const children of associatedChildren) {
+        const models = await children.fetch() as Model[];
+        models.forEach((model) => preparedModels.push(model.prepareDestroyPermanently()));
+    }
+
+    return preparedModels;
+};
 
 export const queryPostById = async (database: Database, postId: string) => {
     try {

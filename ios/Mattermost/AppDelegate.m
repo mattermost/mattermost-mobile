@@ -3,6 +3,7 @@
 #import <React/RCTBundleURLProvider.h>
 #import <React/RCTRootView.h>
 #import <React/RCTLinkingManager.h>
+#import <RNKeychain/RNKeychainManager.h>
 
 #import <UMCore/UMModuleRegistry.h>
 #import <UMReactNativeAdapter/UMNativeModulesProxy.h>
@@ -57,15 +58,12 @@ MattermostBucket* bucket = nil;
   // Clear keychain on first run in case of reinstallation
   if (![[NSUserDefaults standardUserDefaults] objectForKey:@"FirstRun"]) {
 
-    NSString *service = [[NSBundle mainBundle] bundleIdentifier];
-    NSDictionary *query = @{
-                            (__bridge NSString *)kSecClass: (__bridge id)(kSecClassGenericPassword),
-                            (__bridge NSString *)kSecAttrService: service,
-                            (__bridge NSString *)kSecReturnAttributes: (__bridge id)kCFBooleanTrue,
-                            (__bridge NSString *)kSecReturnData: (__bridge id)kCFBooleanFalse
-                            };
-
-    SecItemDelete((__bridge CFDictionaryRef) query);
+    RNKeychainManager *keychain = [[RNKeychainManager alloc] init];
+    NSArray<NSString*> *servers = [keychain getAllServersForInternetPasswords];
+    NSLog(@"Servers %@", servers);
+    for (NSString *server in servers) {
+      [keychain deleteCredentialsForServer:server];
+    }
 
     [[NSUserDefaults standardUserDefaults] setValue:@YES forKey:@"FirstRun"];
     [[NSUserDefaults standardUserDefaults] synchronize];

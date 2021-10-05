@@ -10,8 +10,6 @@ const {MY_TEAM} = MM_TABLES.SERVER;
 export default tableSchema({
     name: MY_TEAM,
     columns: [
-        {name: 'is_unread', type: 'boolean'},
-        {name: 'mentions_count', type: 'number'},
         {name: 'roles', type: 'string'},
     ],
 });
