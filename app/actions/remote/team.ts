@@ -162,7 +162,7 @@ export const removeUserFromTeam = async (serverUrl: string, teamId: string, user
         await client.removeFromTeam(teamId, userId);
 
         if (!fetchOnly) {
-            localRemoveUserFromTeam(serverUrl, teamId, userId);
+            localRemoveUserFromTeam(serverUrl, teamId);
         }
 
         return {error: undefined};
