@@ -311,11 +311,13 @@ platform :ios do
     end
   end
 
-  desc 'Get iOS adhoc profiles'
-  lane :adhoc do
-    if ENV['MATCH_TYPE'] != 'adhoc' && !ENV['MATCH_PASSWORD'].nil? && !ENV['MATCH_PASSWORD'].empty?
+  desc 'Get iOS match profiles'
+  lane :match do
+    if !ENV['MATCH_PASSWORD'].nil? && !ENV['MATCH_PASSWORD'].empty?
+      api_key = get_apple_api_key()
       match(
-          type: 'adhoc'
+          api_key: api_key,
+          type: ENV['MATCH_TYPE'] || 'adhoc'
       )
     end
   end
@@ -847,12 +849,9 @@ def send_message_to_mattermost(options)
   end
 end
 
-def submit_to_testflight(ipa_path)
-  ipa = (Dir.glob(ipa_path).select { |f| File.file? f}).first
-
-  if !ipa.nil?
-    UI.success("ipa file #{ipa}")
-    unless ENV['IOS_API_KEY_ID'].nil? || ENV['IOS_API_KEY_ID'].empty? ||
+def get_apple_api_key
+  api_key = ''
+  unless ENV['IOS_API_KEY_ID'].nil? || ENV['IOS_API_KEY_ID'].empty? ||
     ENV['IOS_API_ISSUER_ID'].nil? || ENV['IOS_API_ISSUER_ID'].empty? ||
     ENV['IOS_API_KEY'].nil? || ENV['IOS_API_KEY'].empty?
       api_key_path = "#{ENV['IOS_API_KEY_ID']}.p8"
@@ -873,6 +872,18 @@ def submit_to_testflight(ipa_path)
       )
     
       File.delete("../#{api_key_path}")
+    end
+
+    return api_key
+end
+
+def submit_to_testflight(ipa_path)
+  ipa = (Dir.glob(ipa_path).select { |f| File.file? f}).first
+
+  if !ipa.nil?
+    UI.success("ipa file #{ipa}")
+    api_key = get_apple_api_key()
+    unless api_key.empty?
       pilot(
         ipa: ipa,
         api_key: api_key
