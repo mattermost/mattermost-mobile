@@ -105,9 +105,9 @@ Navigation.setLazyComponentRegistrator((screenName) => {
     // case 'EditPost':
     //     screen = require('@screens/edit_post').default;
     //     break;
-    // case 'EditProfile':
-    //     screen = require('@screens/edit_profile').default;
-    //     break;
+    case Screens.EDIT_PROFILE:
+        screen = withServerDatabase((require('@screens/edit_profile').default));
+        break;
     // case 'ErrorTeamsList':
     //     screen = require('@screens/error_teams_list').default;
     //     break;

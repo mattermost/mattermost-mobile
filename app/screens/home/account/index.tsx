@@ -5,6 +5,7 @@ import {withDatabase} from '@nozbe/watermelondb/DatabaseProvider';
 import withObservables from '@nozbe/with-observables';
 import {useRoute} from '@react-navigation/native';
 import React, {useCallback, useEffect, useState} from 'react';
+import {useIntl} from 'react-intl';
 import {ScrollView, StyleSheet, Text, TextStyle, View} from 'react-native';
 import Animated, {useAnimatedStyle, withTiming} from 'react-native-reanimated';
 import {SafeAreaView} from 'react-native-safe-area-context';
@@ -14,11 +15,13 @@ import {switchMap} from 'rxjs/operators';
 import DrawerItem from '@components/drawer_item';
 import FormattedText from '@components/formatted_text';
 import ProfilePicture from '@components/profile_picture';
+import {Screens} from '@constants';
 import {MM_TABLES, SYSTEM_IDENTIFIERS} from '@constants/database';
 import {useServerUrl} from '@context/server_url';
 import {useTheme} from '@context/theme';
 import DatabaseManager from '@database/manager';
 import {t} from '@i18n';
+import {showModal} from '@screens/navigation';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 import CustomStatus from './components/custom_status';
@@ -115,11 +118,12 @@ type AccountScreenProps = {
 };
 
 const AccountScreen = ({config, currentUser, database}: AccountScreenProps) => {
-    const theme = useTheme();
-    const [start, setStart] = useState(false);
-    const serverUrl = useServerUrl();
     const [serverName, setServerName] = useState('');
+    const [start, setStart] = useState(false);
+    const intl = useIntl();
     const route = useRoute();
+    const serverUrl = useServerUrl();
+    const theme = useTheme();
 
     const params = route.params! as {direction: string};
     const toLeft = params.direction === 'left';
@@ -175,6 +179,11 @@ const AccountScreen = ({config, currentUser, database}: AccountScreenProps) => {
         );
     }, []);
 
+    const goToEditProfileScreen = () => {
+        const commandType = 'ShowModal';
+        showModal(Screens.EDIT_PROFILE, intl.formatMessage({id: 'mobile.routes.edit_profile', defaultMessage: 'Edit Profile'}), {currentUser, commandType});
+    };
+
     return (
         <SafeAreaView style={styles.container}>
             <ScrollView
@@ -217,7 +226,7 @@ const AccountScreen = ({config, currentUser, database}: AccountScreenProps) => {
                             testID='account.your_profile.action'
                             labelComponent={getLabelComponent(t('account.your_profile'), 'Your Profile')}
                             iconName='account-outline'
-                            onPress={goToSavedMessages}
+                            onPress={goToEditProfileScreen}
                             separator={false}
                             theme={theme}
                         />
