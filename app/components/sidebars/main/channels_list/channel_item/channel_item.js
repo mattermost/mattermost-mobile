@@ -299,6 +299,9 @@ export const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         },
         hasCall: {
             color: theme.sidebarText,
+            flex: 1,
+            textAlign: 'right',
+            marginRight: 20,
         },
     };
 });
