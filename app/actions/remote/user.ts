@@ -20,6 +20,11 @@ import type {LoadMeArgs} from '@typings/database/database';
 import type RoleModel from '@typings/database/models/servers/role';
 import type UserModel from '@typings/database/models/servers/user';
 
+export type MyUserRequest = {
+    user?: UserProfile;
+    error?: unknown;
+}
+
 export type ProfilesPerChannelRequest = {
     data?: ProfilesInChannelRequest[];
     error?: unknown;
@@ -30,6 +35,31 @@ export type ProfilesInChannelRequest = {
     channelId: string;
     error?: unknown;
 }
+
+export const fetchMe = async (serverUrl: string, fetchOnly = false): Promise<MyUserRequest> => {
+    let client;
+    try {
+        client = NetworkManager.getClient(serverUrl);
+    } catch (error) {
+        return {error};
+    }
+
+    try {
+        const user = await client.getMe();
+
+        if (!fetchOnly) {
+            const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
+            if (operator) {
+                operator.handleUsers({users: [user], prepareRecordsOnly: false});
+            }
+        }
+
+        return {user};
+    } catch (error) {
+        await forceLogoutIfNecessary(serverUrl, error as ClientErrorProps);
+        return {error};
+    }
+};
 
 export const fetchProfilesInChannel = async (serverUrl: string, channelId: string, excludeUserId?: string, fetchOnly = false): Promise<ProfilesInChannelRequest> => {
     let client: Client;
@@ -133,7 +163,6 @@ export const loadMe = async (serverUrl: string, {deviceToken, user}: LoadMeArgs)
 
         // Goes into myTeam table
         const teamMembersRequest = client.getMyTeamMembers();
-        const teamUnreadRequest = client.getMyTeamUnreads();
 
         const preferencesRequest = client.getMyPreferences();
         const configRequest = client.getClientConfigOld();
@@ -142,14 +171,12 @@ export const loadMe = async (serverUrl: string, {deviceToken, user}: LoadMeArgs)
         const [
             teams,
             teamMemberships,
-            teamUnreads,
             preferences,
             config,
             license,
         ] = await Promise.all([
             teamsRequest,
             teamMembersRequest,
-            teamUnreadRequest,
             preferencesRequest,
             configRequest,
             licenseRequest,
@@ -159,9 +186,8 @@ export const loadMe = async (serverUrl: string, {deviceToken, user}: LoadMeArgs)
         const teamRecords = operator.handleTeam({prepareRecordsOnly: true, teams});
         const teamMembershipRecords = operator.handleTeamMemberships({prepareRecordsOnly: true, teamMemberships});
 
-        const myTeams = teamUnreads.map((unread) => {
-            const matchingTeam = teamMemberships.find((team) => team.team_id === unread.team_id);
-            return {id: unread.team_id, roles: matchingTeam?.roles ?? '', is_unread: unread.msg_count > 0, mentions_count: unread.mention_count};
+        const myTeams = teamMemberships.map((tm) => {
+            return {id: tm.team_id, roles: tm.roles ?? ''};
         });
 
         const myTeamRecords = operator.handleMyTeam({

@@ -27,7 +27,7 @@ import ErrorText from '@components/error_text';
 import FormattedText from '@components/formatted_text';
 import {FORGOT_PASSWORD, MFA} from '@constants/screens';
 import {t} from '@i18n';
-import {goToScreen, resetToChannel} from '@screens/navigation';
+import {goToScreen, resetToHome} from '@screens/navigation';
 import {preventDoubleTap} from '@utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
@@ -136,13 +136,13 @@ const Login: NavigationFunctionComponent = ({config, extra, launchError, launchT
                 console.log('GO TO NO TEAMS');
                 return;
             }
-            await goToChannel(result.time || 0, result.error as never);
+            goToHome(result.time || 0, result.error as never);
         }
     };
 
-    const goToChannel = async (time: number, loginError?: never) => {
+    const goToHome = (time: number, loginError?: never) => {
         const hasError = launchError || Boolean(loginError);
-        resetToChannel({extra, launchError: hasError, launchType, serverUrl, time});
+        resetToHome({extra, launchError: hasError, launchType, serverUrl, time});
     };
 
     const checkLoginResponse = (data: LoginActionResponse) => {
@@ -172,7 +172,7 @@ const Login: NavigationFunctionComponent = ({config, extra, launchError, launchT
     const goToMfa = () => {
         const screen = MFA;
         const title = intl.formatMessage({id: 'mobile.routes.mfa', defaultMessage: 'Multi-factor Authentication'});
-        goToScreen(screen, title, {goToChannel, loginId, password, config, license, serverUrl, theme});
+        goToScreen(screen, title, {goToHome, loginId, password, config, license, serverUrl, theme});
     };
 
     const getLoginErrorMessage = (loginError: string | ClientErrorProps | Error) => {

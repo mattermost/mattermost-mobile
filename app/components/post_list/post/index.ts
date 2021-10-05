@@ -40,7 +40,7 @@ async function shouldHighlightReplyBar(currentUser: UserModel, post: PostModel, 
     let rootPost: PostModel | undefined;
     const myPosts = await postsInThread.collections.get(POST).query(
         Q.and(
-            Q.where('root_id', post.id || post.rootId),
+            Q.where('root_id', post.rootId || post.id),
             Q.where('create_at', Q.between(postsInThread.earliest, postsInThread.latest)),
             Q.where('user_id', currentUser.id),
         ),
@@ -59,8 +59,8 @@ async function shouldHighlightReplyBar(currentUser: UserModel, post: PostModel, 
         commentsNotifyLevel = currentUser.notifyProps.comments;
     }
 
-    const fromCurrentUser = post.userId !== currentUser.id || Boolean(post.props?.from_webhook);
-    if (!fromCurrentUser) {
+    const notCurrentUser = post.userId !== currentUser.id || Boolean(post.props?.from_webhook);
+    if (notCurrentUser) {
         if (commentsNotifyLevel === Preferences.COMMENTS_ANY && (threadCreatedByCurrentUser || threadRepliedToByCurrentUser)) {
             return true;
         } else if (commentsNotifyLevel === Preferences.COMMENTS_ROOT && threadCreatedByCurrentUser) {
@@ -109,8 +109,9 @@ const withPost = withObservables(
                 return of$(false);
             }));
 
+        let differentThreadSequence = true;
         if (post.rootId) {
-            const differentThreadSequence = previousPost?.rootId ? previousPost?.rootId !== post.rootId : previousPost?.id !== post.rootId;
+            differentThreadSequence = previousPost?.rootId ? previousPost?.rootId !== post.rootId : previousPost?.id !== post.rootId;
             isFirstReply = of$(differentThreadSequence || (previousPost?.id === post.rootId || previousPost?.rootId === post.rootId));
             isLastReply = of$(!(nextPost?.rootId === post.rootId));
         }
@@ -130,6 +131,7 @@ const withPost = withObservables(
             appsEnabled: of$(appsEnabled(partialConfig)),
             canDelete,
             currentUser,
+            differentThreadSequence: of$(differentThreadSequence),
             files: post.files.observe(),
             highlightReplyBar,
             isConsecutivePost,

@@ -41,6 +41,7 @@ export const LaunchType = {
     Normal: 'normal',
     DeepLink: 'deeplink',
     Notification: 'notification',
+    Upgrade: 'upgrade',
 } as const;
 
 export type LaunchType = typeof LaunchType[keyof typeof LaunchType];

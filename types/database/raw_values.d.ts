@@ -42,8 +42,6 @@ type GroupTeamRelation = {
 type MyTeam = {
     id: string;
     roles: string;
-    is_unread: boolean;
-    mentions_count: number;
 };
 
 type PostsInChannel = {

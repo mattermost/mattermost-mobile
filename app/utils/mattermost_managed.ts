@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {NativeModules} from 'react-native';
+import {NativeModules, Platform} from 'react-native';
 
 const {MattermostManaged} = NativeModules;
 
@@ -42,4 +42,16 @@ export const deleteIOSDatabase = ({
 }: IOSDeleteDatabase) => {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     MattermostManaged.deleteDatabaseDirectory(databaseName, shouldRemoveDirectory, () => null);
+};
+
+export const deleteEntititesFile = (callback?: (success: boolean) => void) => {
+    if (Platform.OS === 'ios') {
+        MattermostManaged.deleteEntititesFile((result: boolean) => {
+            if (callback) {
+                callback(result);
+            }
+        });
+    } else if (callback) {
+        callback(true);
+    }
 };

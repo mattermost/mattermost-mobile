@@ -32,6 +32,7 @@ type PostProps = {
     appsEnabled: boolean;
     canDelete: boolean;
     currentUser: UserModel;
+    differentThreadSequence: boolean;
     files: FileModel[];
     highlight?: boolean;
     highlightPinnedOrFlagged?: boolean;
@@ -95,7 +96,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
 });
 
 const Post = ({
-    appsEnabled, canDelete, currentUser, files, highlight, highlightPinnedOrFlagged = true, highlightReplyBar,
+    appsEnabled, canDelete, currentUser, differentThreadSequence, files, highlight, highlightPinnedOrFlagged = true, highlightReplyBar,
     isConsecutivePost, isEphemeral, isFirstReply, isFlagged, isJumboEmoji, isLastReply, isPostAddChannelMember,
     location, post, reactionsCount, shouldRenderReplyButton, skipFlaggedHeader, skipPinnedHeader, showAddReaction = true, style,
     testID,
@@ -207,6 +208,7 @@ const Post = ({
             header = (
                 <Header
                     currentUser={currentUser}
+                    differentThreadSequence={differentThreadSequence}
                     isAutoResponse={isAutoResponder}
                     isEphemeral={isEphemeral}
                     isPendingOrFailed={isPendingOrFailed}
