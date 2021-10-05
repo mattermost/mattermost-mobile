@@ -19,16 +19,14 @@ import {getUserCustomStatus, isCustomStatusExpired as checkCustomStatusIsExpired
 import CustomLabel from './custom_label';
 import CustomStatusEmoji from './custom_status_emoji';
 
-import type {Database} from '@nozbe/watermelondb';
 import type UserModel from '@typings/database/models/servers/user';
 
 type CustomStatusProps = {
     config: ClientConfig;
     currentUser: UserModel;
-    database: Database;
 }
 
-const CustomStatus = ({config, currentUser, database}: CustomStatusProps) => {
+const CustomStatus = ({config, currentUser}: CustomStatusProps) => {
     const theme = useTheme();
     const intl = useIntl();
     const serverUrl = useServerUrl();
