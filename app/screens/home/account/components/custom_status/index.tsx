@@ -30,11 +30,9 @@ const CustomStatus = ({config, currentUser}: CustomStatusProps) => {
     const theme = useTheme();
     const intl = useIntl();
     const serverUrl = useServerUrl();
+    const [showRetryMessage, setShowRetryMessage] = useState<boolean>(false);
 
     const customStatus = safeParseJSON(getUserCustomStatus(currentUser) as string) as UserCustomStatus;
-    const hasCST = customStatus && Object.keys(customStatus!).length > 0;
-    const [showStatus, setShowStatus] = useState<boolean>(hasCST ?? false);
-    const [showRetryMessage, setShowRetryMessage] = useState<boolean>(false);
 
     const isCustomStatusEnabled = config.EnableCustomUserStatuses === 'true' && isMinimumServerVersion(config.Version, 5, 36);
     const isCustomStatusExpirySupported = checkCustomStatusExpiry(config);
@@ -54,15 +52,13 @@ const CustomStatus = ({config, currentUser}: CustomStatusProps) => {
         return null;
     }
 
-    const isStatusSet = !isCustomStatusExpired && customStatus?.emoji && showStatus;
+    const isStatusSet = !isCustomStatusExpired && (customStatus?.text || customStatus?.emoji);
 
     const clearCustomStatus = async () => {
-        setShowStatus(false);
         setShowRetryMessage(false);
 
         const {data, error} = await unsetCustomStatus(serverUrl);
         if (error) {
-            setShowStatus(true);
             setShowRetryMessage(true);
         }
         if (data) {
@@ -95,7 +91,7 @@ const CustomStatus = ({config, currentUser}: CustomStatusProps) => {
             }
             leftComponent={
                 <CustomStatusEmoji
-                    customStatus={customStatus}
+                    emoji={customStatus?.emoji}
                     isStatusSet={Boolean(isStatusSet)}
                     theme={theme}
                 />}

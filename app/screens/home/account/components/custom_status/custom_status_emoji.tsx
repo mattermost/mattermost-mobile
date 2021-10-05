@@ -9,21 +9,21 @@ import Emoji from '@components/emoji';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 type CustomStatusEmojiProps = {
-    customStatus?: UserCustomStatus;
+    emoji?: string;
     isStatusSet: boolean;
     theme: Theme;
 }
 
-const CustomStatusEmoji = ({customStatus, isStatusSet, theme}: CustomStatusEmojiProps) => {
+const CustomStatusEmoji = ({emoji, isStatusSet, theme}: CustomStatusEmojiProps) => {
     const styles = getStyleSheet(theme);
 
     return (
         <View
-            testID={`custom_status.emoji.${isStatusSet ? customStatus?.emoji : 'default'}`}
+            testID={`custom_status.emoji.${isStatusSet ? emoji : 'default'}`}
         >
-            {isStatusSet && customStatus?.emoji ? (
+            {isStatusSet && emoji ? (
                 <Emoji
-                    emojiName={customStatus?.emoji}
+                    emojiName={emoji}
                     size={20}
                 />
             ) : (
