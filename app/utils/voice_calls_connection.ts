@@ -9,9 +9,10 @@ import {
     MediaStreamTrack,
     mediaDevices,
 } from 'react-native-webrtc';
-import Peer from 'simple-peer';
 
 import {Client4} from '@client/rest';
+
+import Peer from './simple-peer';
 
 // TODO: Enable voice detector
 // import VoiceActivityDetector from './voice_calls_activity_detector';
@@ -30,14 +31,27 @@ export async function newClient(channelID: string, closeCb: () => void) {
     let peer: any = null;
     const streams: MediaStream[] = [];
 
-    const stream = await mediaDevices.getUserMedia({
-        video: false,
-        audio: true,
-    }) as MediaStream;
+    let stream: MediaStream;
+    try {
+        stream = await mediaDevices.getUserMedia({
+            video: false,
+            audio: true,
+        }) as MediaStream;
+    } catch (err) {
+        // TODO: handle the error
+        // console.log(err);
+        return {
+            disconnect: () => null,
+            mute: () => null,
+            unmute: () => null,
+        };
+    }
 
-    const audioTrack = stream.getAudioTracks()[0];
-    audioTrack.enabled = true;
+    // const audioTrack = stream.getAudioTracks()[0];
+    // audioTrack.enabled = true;
     streams.push(stream);
+
+    // alert(JSON.stringify(mediaDevices.enumerateDevices()))
 
     // const AudioContext = window.AudioContext || window.webkitAudioContext;
     // if (!AudioContext) {
@@ -63,10 +77,6 @@ export async function newClient(channelID: string, closeCb: () => void) {
     //     }
     // });
 
-    const getStreams = () => {
-        return streams;
-    };
-
     const disconnect = () => {
         ws.close();
 
@@ -90,7 +100,7 @@ export async function newClient(channelID: string, closeCb: () => void) {
         //     voiceDetector.stop();
         // }
 
-        audioTrack.enabled = true;
+        // audioTrack.enabled = true;
         if (ws) {
             ws.send(JSON.stringify({
                 type: 'mute',
@@ -103,7 +113,7 @@ export async function newClient(channelID: string, closeCb: () => void) {
         //     voiceDetector.start();
         // }
 
-        audioTrack.enabled = true;
+        // audioTrack.enabled = true;
         if (ws) {
             ws.send(JSON.stringify({
                 type: 'unmute',
@@ -113,7 +123,7 @@ export async function newClient(channelID: string, closeCb: () => void) {
 
     // ws.onerror = (err) => console.log(err);
 
-    ws.onopen = () => {
+    ws.onopen = async () => {
         peer = new Peer({
             initiator: true,
             stream,
@@ -153,7 +163,6 @@ export async function newClient(channelID: string, closeCb: () => void) {
     };
 
     client = {
-        getStreams,
         disconnect,
         mute,
         unmute,
