@@ -38,6 +38,21 @@ export const addChannelToTeamHistory = async (operator: ServerDataOperator, team
     return operator.handleTeamChannelHistory({teamChannelHistories: [tch], prepareRecordsOnly});
 };
 
+export const queryLastChannelFromTeam = async (database: Database, teamId: string) => {
+    let channelId: string | undefined;
+
+    try {
+        const teamChannelHistory = await database.get<TeamChannelHistoryModel>(TEAM_CHANNEL_HISTORY).find(teamId);
+        if (teamChannelHistory.channelIds.length) {
+            channelId = teamChannelHistory.channelIds[0];
+        }
+    } catch {
+        // Do nothing
+    }
+
+    return channelId;
+};
+
 export const prepareMyTeams = (operator: ServerDataOperator, teams: Team[], memberships: TeamMembership[], unreads: TeamUnread[]) => {
     try {
         const teamRecords = operator.handleTeam({prepareRecordsOnly: true, teams});

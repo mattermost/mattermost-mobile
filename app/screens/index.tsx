@@ -61,7 +61,7 @@ Navigation.setLazyComponentRegistrator((screenName) => {
     //     screen = require('@screens/settings/advanced_settings').default;
     //     break;
         case Screens.BOTTOM_SHEET:
-        screen = require('@screens/bottom_sheet').default;
+        screen = withServerDatabase(require('@screens/bottom_sheet').default);
         break;
         case Screens.CHANNEL:
         screen = withServerDatabase(require('@screens/channel').default);

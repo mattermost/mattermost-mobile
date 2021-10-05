@@ -121,6 +121,8 @@
   "mobile.about.serverVersion": "Server Version: {version} (Build {number})",
   "mobile.about.serverVersionNoBuild": "Server Version: {version}",
   "mobile.action_menu.select": "Select an option",
+  "mobile.add_team.create_team": "Create a New Team",
+  "mobile.add_team.join_team": "Join Another Team",
   "mobile.components.select_server_view.connect": "Connect",
   "mobile.components.select_server_view.connecting": "Connecting...",
   "mobile.components.select_server_view.enterServerUrl": "Enter Server URL",

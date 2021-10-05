@@ -7,6 +7,7 @@ import {Text, View} from 'react-native';
 import Animated, {useAnimatedStyle, withTiming} from 'react-native-reanimated';
 import {SafeAreaView} from 'react-native-safe-area-context';
 
+import TeamSidebar from '@app/components/team_sidebar';
 import {Device, View as ViewConstants} from '@constants';
 import {useTheme} from '@context/theme';
 import {useSplitView} from '@hooks/device';
@@ -73,8 +74,9 @@ const ChannelListScreen = (props: ChannelProps) => {
 
     return (
         <SafeAreaView
-            style={styles.flex}
+            style={[styles.flex, {flexDirection: 'row'}]}
         >
+            <TeamSidebar/>
             <Animated.View
                 style={[styles.content, animated]}
             >

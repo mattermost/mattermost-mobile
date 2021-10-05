@@ -16,10 +16,12 @@ type Theme = {
     sidebarTextActiveColor: string;
     sidebarHeaderBg: string;
     sidebarHeaderTextColor: string;
+    sidebarTeamBarBg: string;
     onlineIndicator: string;
     awayIndicator: string;
     dndIndicator: string;
     mentionBg: string;
+    mentionBj: string;
     mentionColor: string;
     centerChannelBg: string;
     centerChannelColor: string;
