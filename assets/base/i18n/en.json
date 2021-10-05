@@ -482,6 +482,8 @@
   "mobile.post_pre_header.flagged": "Saved",
   "mobile.post_pre_header.pinned": "Pinned",
   "mobile.post_pre_header.pinned_flagged": "Pinned and Saved",
+  "mobile.post_textbox.entire_channel_here.message": "By using @here you are about to send notifications to up to {totalMembers, number} {totalMembers, plural, one {person} other {people}}. Are you sure you want to do this?",
+  "mobile.post_textbox.entire_channel_here.message.with_timezones": "By using @here you are about to send notifications up to {totalMembers, number} {totalMembers, plural, one {person} other {people}} in {timezones, number} {timezones, plural, one {timezone} other {timezones}}. Are you sure you want to do this?",
   "mobile.post_textbox.entire_channel.cancel": "Cancel",
   "mobile.post_textbox.entire_channel.confirm": "Confirm",
   "mobile.post_textbox.entire_channel.message": "By using @all or @channel you are about to send notifications to {totalMembers, number} {totalMembers, plural, one {person} other {people}}. Are you sure you want to do this?",
