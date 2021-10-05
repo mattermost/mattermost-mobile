@@ -211,7 +211,6 @@ const AccountScreen = ({config, currentUser, database}: AccountScreenProps) => {
                         <CustomStatus
                             config={config}
                             currentUser={currentUser}
-                            database={database}
                         />
                         <View style={styles.divider}/>
                         <DrawerItem
