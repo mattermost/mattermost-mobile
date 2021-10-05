@@ -155,7 +155,7 @@ export default class Search extends PureComponent<SearchProps, SearchState> {
 
     onClear = () => {
         this.focus();
-        this.props.onChangeText(''); // this.props.onChangeText('', true);
+        this.props.onChangeText('');
     };
 
     onCancel = () => {

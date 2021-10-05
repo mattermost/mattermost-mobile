@@ -28,6 +28,7 @@ import type SystemModel from '@typings/database/models/servers/system';
 import type UserModel from '@typings/database/models/servers/user';
 
 const {SERVER: {SYSTEM, USER}} = MM_TABLES;
+const CLEAR_AFTER = 'update-custom-status-clear-after';
 
 interface Props extends NavigationComponentProps {
     currentUser: UserModel;
@@ -62,7 +63,7 @@ class ClearAfterModal extends NavigationComponent<Props, State> {
                 rightButtons: [{
                     color: props.theme.sidebarHeaderTextColor,
                     enabled: true,
-                    id: 'update-custom-status-clear-after',
+                    id: CLEAR_AFTER,
                     showAsAction: 'always',
                     testID: 'clear_after.done.button',
                     text: props.intl.formatMessage({
@@ -88,7 +89,7 @@ class ClearAfterModal extends NavigationComponent<Props, State> {
 
     navigationButtonPressed({buttonId}: NavigationButtonPressedEvent) {
         switch (buttonId) {
-            case 'update-custom-status-clear-after':
+            case CLEAR_AFTER:
                 this.onDone();
                 break;
         }
