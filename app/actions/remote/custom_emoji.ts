@@ -33,7 +33,7 @@ export const getCustomEmojis = async ({serverUrl, page = 0, perPage = General.PA
             fetchUsersByIds(serverUrl, userIds);
         }
     } catch (error) {
-        forceLogoutIfNecessary(serverUrl, error);
+        forceLogoutIfNecessary(serverUrl, error as ClientErrorProps);
         logError(error);
         return {error};
     }

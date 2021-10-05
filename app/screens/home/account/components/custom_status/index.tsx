@@ -5,6 +5,7 @@ import React, {useEffect, useState} from 'react';
 import {useIntl} from 'react-intl';
 import {DeviceEventEmitter} from 'react-native';
 
+import {updateLocalCustomStatus} from '@actions/local/user';
 import {unsetCustomStatus} from '@actions/remote/user';
 import DrawerItem from '@components/drawer_item';
 import {Screens} from '@constants';
@@ -13,7 +14,7 @@ import {useServerUrl} from '@context/server_url';
 import {useTheme} from '@context/theme';
 import {showModal} from '@screens/navigation';
 import {isCustomStatusExpirySupported as checkCustomStatusExpiry, isMinimumServerVersion, safeParseJSON} from '@utils/helpers';
-import {getUserCustomStatus, isCustomStatusExpired as checkCustomStatusIsExpired, updateUserCustomStatus} from '@utils/user';
+import {getUserCustomStatus, isCustomStatusExpired as checkCustomStatusIsExpired} from '@utils/user';
 
 import CustomLabel from './custom_label';
 import CustomStatusEmoji from './custom_status_emoji';
@@ -67,7 +68,11 @@ const CustomStatus = ({config, currentUser, database}: CustomStatusProps) => {
             setShowRetryMessage(true);
         }
         if (data) {
-            await updateUserCustomStatus(null, currentUser, database);
+            await updateLocalCustomStatus({
+                serverUrl,
+                status: undefined,
+                user: currentUser,
+            });
         }
     };
 

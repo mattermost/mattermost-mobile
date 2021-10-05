@@ -61,7 +61,7 @@ type ConnectedEmojiPickerProps = EmojiPickerProps & {
     emojisBySection: EmojiSection[];
 }
 
-//todo: The EmojiPicker should be refactored.
+//todo: The EmojiPicker can be further refactored to optimize the way it renders.
 class EmojiPicker extends PureComponent<ConnectedEmojiPickerProps, EmojiPickerState> {
     private fuse: Fuse<unknown> | null | undefined;
     private readonly customEmojisEnabled: boolean;

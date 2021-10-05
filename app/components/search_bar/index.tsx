@@ -34,7 +34,7 @@ type SearchProps = {
     keyboardType: KeyboardTypeOptions | undefined;
     leftComponent: JSX.Element;
     onBlur: () => void;
-    onCancelButtonPress: () => void;
+    onCancelButtonPress: (text: string) => void;
     onChangeText: (text: string) => void;
     onFocus: () => void;
     onSearchButtonPress: (value: string) => void;

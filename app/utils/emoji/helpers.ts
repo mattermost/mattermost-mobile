@@ -3,7 +3,7 @@
 
 import emojiRegex from 'emoji-regex';
 
-// import SystemModel from '@typings/database/models/servers/system';
+import SystemModel from '@database/models/server/system';
 
 import {Emojis, EmojiIndicesByAlias} from './';
 
@@ -191,11 +191,10 @@ export function compareEmojis(emojiA: string | Partial<EmojiType>, emojiB: strin
     return doDefaultComparison(aName!, bName!);
 }
 
-export const isCustomEmojiEnabled = (config: ClientConfig) => {
-    //fixme:  uncomment the below
-    // if (config instanceof SystemModel) {
-    //     return config?.value?.EnableCustomEmoji !== 'true';
-    // }
+export const isCustomEmojiEnabled = (config: ClientConfig | SystemModel) => {
+    if (config instanceof SystemModel) {
+        return config?.value?.EnableCustomEmoji === 'true';
+    }
 
     return config?.EnableCustomEmoji === 'true';
 };

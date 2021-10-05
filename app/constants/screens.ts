@@ -15,6 +15,7 @@ export const LOGIN = 'Login';
 export const LOGIN_OPTIONS = 'LoginOptions';
 export const MAIN_SIDEBAR = 'MainSidebar';
 export const MFA = 'MFA';
+export const OPTIONS_MODAL = 'OptionsModal';
 export const PERMALINK = 'Permalink';
 export const SEARCH = 'Search';
 export const SERVER = 'Server';
@@ -37,6 +38,7 @@ export default {
     LOGIN_OPTIONS,
     MAIN_SIDEBAR,
     MFA,
+    OPTIONS_MODAL,
     PERMALINK,
     SEARCH,
     SERVER,
