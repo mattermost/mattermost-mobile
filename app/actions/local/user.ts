@@ -6,7 +6,12 @@ import General from '@constants/general';
 import DatabaseManager from '@database/manager';
 
 export const setCurrentUserStatusOffline = async (serverUrl: string) => {
-    const {database, operator} = DatabaseManager.serverDatabases[serverUrl];
+    const serverDatabase = DatabaseManager.serverDatabases[serverUrl];
+    if (!serverDatabase) {
+        return null;
+    }
+
+    const {database, operator} = serverDatabase;
     if (!database) {
         return {error: `No database present for ${serverUrl}`};
     }

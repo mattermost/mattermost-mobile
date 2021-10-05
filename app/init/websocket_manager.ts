@@ -26,14 +26,12 @@ class WebsocketManager {
     }
 
     public init = async (serverCredentials: ServerCredential[]) => {
-        console.log('WSM: init');
         this.netConnected = Boolean((await NetInfo.fetch()).isConnected);
         await Promise.all(
             serverCredentials.map(
                 async ({serverUrl, token}) => {
                     const database = DatabaseManager.serverDatabases[serverUrl]?.database;
                     if (!database) {
-                        console.log('no database for', serverUrl);
                         return;
                     }
                     const lastDisconnect = await queryWebSocketLastDisconnected(database);
@@ -50,87 +48,75 @@ class WebsocketManager {
         NetInfo.addEventListener(this.onNetStateChange);
     }
 
-    public invalidateClient = (serverURL: string) => {
-        console.log('WSM: invalidate');
-        this.clients[serverURL]?.close();
-        this.clients[serverURL]?.invalidate();
-        delete this.clients[serverURL];
+    public invalidateClient = (serverUrl: string) => {
+        this.clients[serverUrl]?.close();
+        this.clients[serverUrl]?.invalidate();
+        delete this.clients[serverUrl];
     }
 
-    public createClient = (serverURL: string, bearerToken: string, storedLastDisconnect = 0) => {
-        console.log('WSM: create');
-        console.log('storedLastDisconnect', storedLastDisconnect);
-        const client = new WebSocketClient(serverURL, bearerToken, storedLastDisconnect);
+    public createClient = (serverUrl: string, bearerToken: string, storedLastDisconnect = 0) => {
+        const client = new WebSocketClient(serverUrl, bearerToken, storedLastDisconnect);
 
-        client.setFirstConnectCallback(() => this.onFirstConnect(serverURL));
-        client.setEventCallback((evt: any) => handleEvent(serverURL, evt));
+        client.setFirstConnectCallback(() => this.onFirstConnect(serverUrl));
+        client.setEventCallback((evt: any) => handleEvent(serverUrl, evt));
 
         //client.setMissedEventsCallback(() => {}) Nothing to do on missedEvents callback
-        client.setReconnectCallback(() => this.onReconnect(serverURL));
-        client.setCloseCallback((connectFailCount: number, lastDisconnect: number) => this.onWebsocketClose(serverURL, connectFailCount, lastDisconnect));
+        client.setReconnectCallback(() => this.onReconnect(serverUrl));
+        client.setCloseCallback((connectFailCount: number, lastDisconnect: number) => this.onWebsocketClose(serverUrl, connectFailCount, lastDisconnect));
 
         if (this.netConnected) {
-            console.log('CREATE WS', serverURL);
             client.initialize();
         }
-        this.clients[serverURL] = client;
+        this.clients[serverUrl] = client;
 
-        return this.clients[serverURL];
+        return this.clients[serverUrl];
     }
 
     public closeAll = () => {
-        console.log('WSM: close all');
         for (const client of Object.values(this.clients)) {
             client.close(true);
         }
     }
 
     public openAll = () => {
-        console.log('WSM: open all');
         for (const client of Object.values(this.clients)) {
-            console.log('CLIENT', client.isConnected());
             if (!client.isConnected()) {
                 client.initialize();
             }
         }
     }
 
-    public isConnected = (serverURL: string): boolean => {
-        return this.clients[serverURL]?.isConnected();
+    public isConnected = (serverUrl: string): boolean => {
+        return this.clients[serverUrl]?.isConnected();
     }
 
-    private onFirstConnect = (serverURL: string) => {
-        console.log('WSM: on first connect');
-
-        this.startPeriodicStatusUpdates(serverURL);
-        handleFirstConnect(serverURL);
+    private onFirstConnect = (serverUrl: string) => {
+        this.startPeriodicStatusUpdates(serverUrl);
+        handleFirstConnect(serverUrl);
     }
 
-    private onReconnect = (serverURL: string) => {
-        this.startPeriodicStatusUpdates(serverURL);
-        handleReconnect(serverURL);
+    private onReconnect = (serverUrl: string) => {
+        this.startPeriodicStatusUpdates(serverUrl);
+        handleReconnect(serverUrl);
     }
 
-    private onWebsocketClose = async (serverURL: string, connectFailCount: number, lastDisconnect: number) => {
-        console.log('WSM: on websocket close');
-        console.log(connectFailCount);
+    private onWebsocketClose = async (serverUrl: string, connectFailCount: number, lastDisconnect: number) => {
         if (connectFailCount <= 1) { // First fail
-            console.log('STORE LAST DISCONNECT', lastDisconnect);
-            await setCurrentUserStatusOffline(serverURL);
-            await handleClose(serverURL, lastDisconnect);
+            await setCurrentUserStatusOffline(serverUrl);
+            await handleClose(serverUrl, lastDisconnect);
 
-            this.stopPeriodicStatusUpdates(serverURL);
+            this.stopPeriodicStatusUpdates(serverUrl);
         }
     }
 
-    private startPeriodicStatusUpdates(serverURL: string) {
-        let currentId = this.statusUpdatesIntervalIDs[serverURL];
+    private startPeriodicStatusUpdates(serverUrl: string) {
+        let currentId = this.statusUpdatesIntervalIDs[serverUrl];
         if (currentId != null) {
             clearInterval(currentId);
         }
 
         const getStatusForUsers = async () => {
-            const database = DatabaseManager.serverDatabases[serverURL];
+            const database = DatabaseManager.serverDatabases[serverUrl];
             if (!database) {
                 return;
             }
@@ -142,26 +128,23 @@ class WebsocketManager {
                 return;
             }
 
-            fetchStatusByIds(serverURL, userIds);
+            fetchStatusByIds(serverUrl, userIds);
         };
 
         currentId = setInterval(getStatusForUsers, General.STATUS_INTERVAL);
-        this.statusUpdatesIntervalIDs[serverURL] = currentId;
+        this.statusUpdatesIntervalIDs[serverUrl] = currentId;
     }
 
-    private stopPeriodicStatusUpdates(serverURL: string) {
-        const currentId = this.statusUpdatesIntervalIDs[serverURL];
+    private stopPeriodicStatusUpdates(serverUrl: string) {
+        const currentId = this.statusUpdatesIntervalIDs[serverUrl];
         if (currentId != null) {
             clearInterval(currentId);
         }
 
-        delete this.statusUpdatesIntervalIDs[serverURL];
+        delete this.statusUpdatesIntervalIDs[serverUrl];
     }
 
     private onAppStateChange = async (appState: AppStateStatus) => {
-        console.log('WSM: AppStateChange');
-        console.log('AppState', appState);
-        console.log('Previous AppState', this.previousAppState);
         if (appState === this.previousAppState) {
             return;
         }
@@ -174,7 +157,6 @@ class WebsocketManager {
 
         if (appState === 'active' && this.netConnected) { // Reopen the websockets only if there is connection
             this.openAll();
-            console.log('OPEN FROM STATE');
             this.previousAppState = appState;
             return;
         }
@@ -183,10 +165,6 @@ class WebsocketManager {
     }
 
     private onNetStateChange = async (netState: NetInfoState) => {
-        console.log('WSM: onNetStateChange');
-        console.log(netState);
-        console.log(netState.isConnected);
-        console.log(this.netConnected);
         const newState = Boolean(netState.isConnected);
         if (this.netConnected === newState) {
             return;
@@ -195,7 +173,6 @@ class WebsocketManager {
         this.netConnected = newState;
 
         if (this.netConnected && this.previousAppState === 'active') { // Reopen the websockets only if the app is active
-            console.log('OPEN FROM NET');
             this.openAll();
             return;
         }

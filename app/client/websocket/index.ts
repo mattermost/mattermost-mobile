@@ -2,7 +2,6 @@
 // See LICENSE.txt for license information.
 
 import {getOrCreateWebSocketClient, WebSocketClientInterface} from '@mattermost/react-native-network-client';
-import {Platform} from 'react-native';
 
 import {WebsocketEvents} from '@constants';
 import DatabaseManager from '@database/manager';
@@ -39,22 +38,21 @@ export default class WebSocketClient {
     private lastConnect: number;
     private lastDisconnect: number;
 
-    private serverURL: string;
+    private serverUrl: string;
 
-    constructor(serverURL: string, token: string, lastDisconnect = 0) {
+    constructor(serverUrl: string, token: string, lastDisconnect = 0) {
         this.connectionId = '';
         this.token = token;
         this.responseSequence = 1;
         this.serverSequence = 0;
         this.connectFailCount = 0;
         this.stop = false;
-        this.serverURL = serverURL;
+        this.serverUrl = serverUrl;
         this.lastConnect = 0;
         this.lastDisconnect = lastDisconnect;
     }
 
     public async initialize(opts = {}) {
-        console.log('WSC: init');
         const defaults = {
             forceConnection: true,
         };
@@ -69,13 +67,13 @@ export default class WebSocketClient {
             return;
         }
 
-        const database = DatabaseManager.serverDatabases[this.serverURL]?.database;
+        const database = DatabaseManager.serverDatabases[this.serverUrl]?.database;
         if (!database) {
             return;
         }
 
         const system = await queryCommonSystemValues(database);
-        const connectionUrl = (system.config.WebsocketURL || this.serverURL) + '/api/v4/websocket';
+        const connectionUrl = (system.config.WebsocketURL || this.serverUrl) + '/api/v4/websocket';
 
         if (this.connectingCallback) {
             this.connectingCallback();
@@ -87,16 +85,6 @@ export default class WebSocketClient {
         let origin;
         if (captured) {
             origin = captured[0];
-
-            if (Platform.OS === 'android') {
-                // this is done cause for android having the port 80 or 443 will fail the connection
-                // the websocket will append them
-                const split = origin.split(':');
-                const port = split[2];
-                if (port === '80' || port === '443') {
-                    origin = `${split[0]}:${split[1]}`;
-                }
-            }
         } else {
             // If we're unable to set the origin header, the websocket won't connect, but the URL is likely malformed anyway
             const errorMessage = 'websocket failed to parse origin from ' + connectionUrl;
@@ -130,12 +118,10 @@ export default class WebSocketClient {
             const {client} = await getOrCreateWebSocketClient(url, {headers: {origin}});
             this.conn = client;
         } catch (error) {
-            console.log('WS: Error', error);
             return;
         }
 
         this.conn!.onOpen(() => {
-            console.log('WSC: onOpen');
             this.lastConnect = Date.now();
 
             // No need to reset sequence number here.
@@ -146,7 +132,6 @@ export default class WebSocketClient {
             if (this.token) {
                 // we check for the platform as a workaround until we fix on the server that further authentications
                 // are ignored
-                console.log('SEND AUTH CHALLENGE', this.conn?.readyState, this.token);
                 this.sendMessage('authentication_challenge', {token: this.token});
             }
 
@@ -165,7 +150,6 @@ export default class WebSocketClient {
         });
 
         this.conn!.onClose(() => {
-            console.log('WSC: onClose');
             const now = Date.now();
             if (this.lastDisconnect < this.lastConnect) {
                 this.lastDisconnect = now;
@@ -226,8 +210,6 @@ export default class WebSocketClient {
         });
 
         this.conn!.onMessage((evt: any) => {
-            console.log('WSC: on message');
-            console.log(evt);
             const msg = evt.message;
 
             // This indicates a reply to a websocket request.
@@ -282,7 +264,6 @@ export default class WebSocketClient {
             }
         });
 
-        console.log('OPEN THE WS');
         this.conn.open();
     }
 
@@ -315,19 +296,16 @@ export default class WebSocketClient {
     }
 
     public close(stop = false) {
-        console.log('WSC: close');
         this.stop = stop;
         this.connectFailCount = 0;
         this.responseSequence = 1;
 
         if (this.conn && this.conn.readyState === WebSocket.OPEN) {
-            console.log('call on close');
             this.conn.close();
         }
     }
 
     public invalidate() {
-        console.log('WSC: invalidate');
         this.conn?.invalidate();
         this.conn = undefined;
     }

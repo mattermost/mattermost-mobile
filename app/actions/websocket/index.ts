@@ -5,36 +5,35 @@ import {DeviceEventEmitter} from 'react-native';
 
 import {fetchMyChannelsForTeam} from '@actions/remote/channel';
 import {fetchPostsSince} from '@actions/remote/post';
-import {loadMe, updateAllusersSinceLastDisconnect} from '@actions/remote/user';
+import {loadMe, updateAllUsersSinceLastDisconnect} from '@actions/remote/user';
 import {General, WebsocketEvents} from '@app/constants';
 import {SYSTEM_IDENTIFIERS} from '@app/constants/database';
-import {queryCommonSystemValues, queryWebSocketLastDisconnected} from '@app/queries/servers/system';
+import {queryCommonSystemValues, queryConfig, queryWebSocketLastDisconnected} from '@app/queries/servers/system';
 import DatabaseManager from '@database/manager';
 
 import {handleLeaveTeamEvent} from './teams';
 
-export async function handleFirstConnect(serverURL: string) {
-    const database = DatabaseManager.serverDatabases[serverURL]?.database;
+export async function handleFirstConnect(serverUrl: string) {
+    const database = DatabaseManager.serverDatabases[serverUrl]?.database;
     if (!database) {
         return;
     }
-    const {config} = await queryCommonSystemValues(database);
+    const config = await queryConfig(database);
     const lastDisconnect = await queryWebSocketLastDisconnected(database);
     if (lastDisconnect && config.EnableReliableWebSockets !== 'true') {
-        doReconnect(serverURL);
+        doReconnect(serverUrl);
         return;
     }
 
-    doFirstConnect(serverURL);
+    doFirstConnect(serverUrl);
 }
 
-export async function handleReconnect(serverURL: string) {
-    doReconnect(serverURL);
+export async function handleReconnect(serverUrl: string) {
+    doReconnect(serverUrl);
 }
 
-export async function handleClose(serverURL: string, lastDisconnect: number) {
-    console.log('WSA: close');
-    const operator = DatabaseManager.serverDatabases[serverURL]?.operator;
+export async function handleClose(serverUrl: string, lastDisconnect: number) {
+    const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
     if (!operator) {
         return;
     }
@@ -49,20 +48,17 @@ export async function handleClose(serverURL: string, lastDisconnect: number) {
     });
 }
 
-async function doFirstConnect(serverURL: string) {
-    console.log('WSA: doFirstConnect');
-    await updateAllusersSinceLastDisconnect(serverURL);
+async function doFirstConnect(serverUrl: string) {
+    await updateAllUsersSinceLastDisconnect(serverUrl);
 }
 
-async function doReconnect(serverURL: string) {
-    console.log('WSA: doReconnect');
-
-    const database = DatabaseManager.serverDatabases[serverURL];
+async function doReconnect(serverUrl: string) {
+    const database = DatabaseManager.serverDatabases[serverUrl];
     if (!database) {
         return;
     }
 
-    const {teamMemberships, config, error} = await loadMe(serverURL, {});
+    const {teamMemberships, config, error} = await loadMe(serverUrl, {});
     if (error) {
         //TODO handle error
         return;
@@ -73,7 +69,7 @@ async function doReconnect(serverURL: string) {
     const currentTeamMembership = teamMemberships?.find((tm) => tm.team_id === currentTeamId && tm.delete_at === 0);
 
     if (currentTeamMembership) {
-        const channelsRequest = await fetchMyChannelsForTeam(serverURL, currentTeamMembership.team_id, false, lastDisconnectedAt);
+        const channelsRequest = await fetchMyChannelsForTeam(serverUrl, currentTeamMembership.team_id, false, lastDisconnectedAt);
         if (channelsRequest.error) {
             // TODO handle error.
             return; //?
@@ -90,16 +86,16 @@ async function doReconnect(serverURL: string) {
         ) {
             DeviceEventEmitter.emit(General.SWITCH_TO_DEFAULT_CHANNEL, currentTeamId);
         } else {
-            fetchPostsSince(serverURL, currentChannelId, lastDisconnectedAt);
+            fetchPostsSince(serverUrl, currentChannelId, lastDisconnectedAt);
         }
     } else {
-        handleLeaveTeamEvent(serverURL, {data: {user_id: currentUserId, team_id: currentTeamId}});
+        handleLeaveTeamEvent(serverUrl, {data: {user_id: currentUserId, team_id: currentTeamId}});
     }
 
-    await updateAllusersSinceLastDisconnect(serverURL);
+    await updateAllUsersSinceLastDisconnect(serverUrl);
 }
 
-export async function handleEvent(serverURL: string, msg: any) {
+export async function handleEvent(serverUrl: string, msg: any) {
     switch (msg.event) {
         case WebsocketEvents.POSTED:
         case WebsocketEvents.EPHEMERAL_MESSAGE:
@@ -119,7 +115,7 @@ export async function handleEvent(serverURL: string, msg: any) {
 
         // return dispatch(handlePostUnread(msg));
         case WebsocketEvents.LEAVE_TEAM:
-            handleLeaveTeamEvent(serverURL, msg);
+            handleLeaveTeamEvent(serverUrl, msg);
             break;
         case WebsocketEvents.UPDATE_TEAM:
             break;

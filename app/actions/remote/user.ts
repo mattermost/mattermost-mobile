@@ -4,13 +4,12 @@
 import {Model, Q} from '@nozbe/watermelondb';
 
 import {fetchRolesIfNeeded} from '@actions/remote/role';
-import {removeUserFromList} from '@app/utils/user';
 import {Database, General} from '@constants';
 import DatabaseManager from '@database/manager';
 import {debounce} from '@helpers/api/general';
 import analytics from '@init/analytics';
 import NetworkManager from '@init/network_manager';
-import {queryCommonSystemValues, queryCurrentUserId, queryWebSocketLastDisconnected} from '@queries/servers/system';
+import {queryCurrentUserId, queryWebSocketLastDisconnected} from '@queries/servers/system';
 import {prepareUsers, queryAllUsers, queryCurrentUser, queryUsersById, queryUsersByUsername} from '@queries/servers/user';
 
 import {forceLogoutIfNecessary} from './session';
@@ -451,7 +450,7 @@ export const fetchMissinProfilesByUsernames = async (serverUrl: string, username
     }
 };
 
-export const updateAllusersSinceLastDisconnect = async (serverUrl: string) => {
+export const updateAllUsersSinceLastDisconnect = async (serverUrl: string) => {
     const database = DatabaseManager.serverDatabases[serverUrl];
     if (!database) {
         return {error: `${serverUrl} database not found`};
@@ -462,18 +461,19 @@ export const updateAllusersSinceLastDisconnect = async (serverUrl: string) => {
     if (!lastDisconnectedAt) {
         return {users: []};
     }
-    const {currentUserId} = await queryCommonSystemValues(database.database);
+    const currentUserId = await queryCurrentUserId(database.database);
     const users = await queryAllUsers(database.database);
-    const userIds = users.map((u) => u.id);
-    const userUpdates = await NetworkManager.getClient(serverUrl).getProfilesByIds(userIds, {since: lastDisconnectedAt});
-
-    removeUserFromList(currentUserId, userUpdates);
-
-    if (!userUpdates.length) {
-        return {users: []};
+    const userIds = users.map((u) => u.id).filter((id) => id !== currentUserId);
+    let userUpdates: UserProfile[] = [];
+    try {
+        userUpdates = await NetworkManager.getClient(serverUrl).getProfilesByIds(userIds, {since: lastDisconnectedAt});
+    } catch {
+        // Do nothing
     }
 
-    database.operator.handleUsers({users: userUpdates, prepareRecordsOnly: false});
+    if (userUpdates.length) {
+        database.operator.handleUsers({users: userUpdates, prepareRecordsOnly: false});
+    }
 
     return {users: userUpdates};
 };
