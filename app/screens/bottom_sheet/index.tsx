@@ -109,9 +109,7 @@ const BottomSheet = ({closeButtonId, initialSnapIndex = 0, renderContent, snapPo
         return (
             <>
                 <View style={styles.separator}/>
-                <View style={{flex: 1, backgroundColor: 'red'}}>
-                    {renderContainer()}
-                </View>
+                {renderContainer()}
             </>
         );
     }
