@@ -78,7 +78,7 @@ export default function AddTeam({canCreateTeams, otherTeams}: Props) {
                 snapPoints: [height, 10],
             }, {swipeToDismiss: true});
         }
-    }, [canCreateTeams, otherTeams, isTablet]);
+    }, [canCreateTeams, otherTeams, isTablet, theme]);
 
     return (
         <View style={styles.container}>

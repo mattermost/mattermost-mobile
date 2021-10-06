@@ -5,9 +5,10 @@ import {useIsFocused, useRoute} from '@react-navigation/native';
 import React from 'react';
 import {Text, View} from 'react-native';
 import Animated, {useAnimatedStyle, withTiming} from 'react-native-reanimated';
-import {SafeAreaView} from 'react-native-safe-area-context';
+import {SafeAreaView, useSafeAreaInsets} from 'react-native-safe-area-context';
 
-import TeamSidebar from '@app/components/team_sidebar';
+import TeamSidebar from '@components/team_sidebar';
+import {TEAM_SIDEBAR_WIDTH} from '@components/team_sidebar/team_sidebar';
 import {Device, View as ViewConstants} from '@constants';
 import {useTheme} from '@context/theme';
 import {useSplitView} from '@hooks/device';
@@ -47,12 +48,13 @@ const ChannelListScreen = (props: ChannelProps) => {
     const showTabletLayout = Device.IS_TABLET && !isSplitView;
     const route = useRoute();
     const isFocused = useIsFocused();
+    const insets = useSafeAreaInsets();
     const params = route.params as {direction: string};
 
     let tabletSidebarStyle;
     if (showTabletLayout) {
         const {TABLET} = ViewConstants;
-        tabletSidebarStyle = {maxWidth: TABLET.SIDEBAR_WIDTH};
+        tabletSidebarStyle = {maxWidth: (TABLET.SIDEBAR_WIDTH - TEAM_SIDEBAR_WIDTH)};
     }
 
     const animated = useAnimatedStyle(() => {
@@ -73,26 +75,30 @@ const ChannelListScreen = (props: ChannelProps) => {
     }, [isFocused, params]);
 
     return (
-        <SafeAreaView
-            style={styles.content}
-        >
-            <TeamSidebar/>
-            <Animated.View
-                style={[styles.content, animated]}
+        <>
+            {Boolean(insets.top) && <View style={{height: insets.top, backgroundColor: theme.sidebarBg}}/>}
+            <SafeAreaView
+                style={styles.content}
+                edges={['bottom', 'left', 'right']}
             >
-                <View style={[styles.flex, {alignItems: 'center', justifyContent: 'center'}, tabletSidebarStyle]}>
-                    <Text
-                        onPress={() => goToScreen('Channel', '', undefined, {topBar: {visible: false}})}
-                        style={{fontSize: 20, color: theme.centerChannelColor}}
-                    >
-                        {'Channel List'}
-                    </Text>
-                </View>
-                {showTabletLayout &&
-                    <Channel {...props}/>
-                }
-            </Animated.View>
-        </SafeAreaView>
+                <TeamSidebar/>
+                <Animated.View
+                    style={[styles.content, animated]}
+                >
+                    <View style={[styles.flex, {alignItems: 'center', justifyContent: 'center'}, tabletSidebarStyle]}>
+                        <Text
+                            onPress={() => goToScreen('Channel', '', undefined, {topBar: {visible: false}})}
+                            style={{fontSize: 20, color: theme.centerChannelColor}}
+                        >
+                            {'Channel List'}
+                        </Text>
+                    </View>
+                    {showTabletLayout &&
+                        <Channel {...props}/>
+                    }
+                </Animated.View>
+            </SafeAreaView>
+        </>
     );
 };
 

@@ -20,6 +20,8 @@ type Props = {
     otherTeams: TeamModel[];
 }
 
+export const TEAM_SIDEBAR_WIDTH = 72;
+
 export default function TeamSidebar({canCreateTeams, otherTeams}: Props) {
     const theme = useTheme();
     const styles = getStyleSheet(theme);
@@ -50,7 +52,7 @@ export default function TeamSidebar({canCreateTeams, otherTeams}: Props) {
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     return {
         container: {
-            width: 72,
+            width: TEAM_SIDEBAR_WIDTH,
             height: '100%',
             backgroundColor: theme.sidebarBg,
             display: 'flex',
