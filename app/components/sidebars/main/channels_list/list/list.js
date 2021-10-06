@@ -472,6 +472,9 @@ export default class List extends PureComponent {
         // Add the rest
         if (this.props.categories) {
             this.props.categories.reduce((prev, cat) => {
+                if (cat.type === 'favorites' && !cat.channel_ids.length) {
+                    return prev;
+                }
                 prev.push({
                     name: cat.display_name,
                     action: cat.type === 'direct_messages' ? this.goToDirectMessages : () => this.showCreateChannelOptions(cat),
