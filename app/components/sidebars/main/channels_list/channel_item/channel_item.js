@@ -10,10 +10,10 @@ import {
     View,
     Platform,
 } from 'react-native';
-import FontAwesome5Icon from 'react-native-vector-icons/FontAwesome5';
 
 import Badge from '@components/badge';
 import ChannelIcon from '@components/channel_icon';
+import CompassIcon from '@components/compass_icon';
 import CustomStatusEmoji from '@components/custom_status/custom_status_emoji';
 import {General} from '@mm-redux/constants';
 import {preventDoubleTap} from '@utils/tap';
@@ -217,8 +217,8 @@ export default class ChannelItem extends PureComponent {
                         {customStatus}
                         {badge}
                         {this.props.channelHasCall &&
-                            <FontAwesome5Icon
-                                name='phone'
+                            <CompassIcon
+                                name='phone-in-talk'
                                 size={16}
                                 style={style.hasCall}
                             />

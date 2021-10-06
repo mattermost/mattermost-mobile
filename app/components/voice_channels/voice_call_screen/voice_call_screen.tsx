@@ -228,8 +228,8 @@ const VoiceCallScreen = (props: Props) => {
                         style={style.mute}
                         onPress={muteUnmuteHandler}
                     >
-                        <FontAwesome5Icon
-                            name={props.currentParticipant?.muted ? 'microphone-slash' : 'microphone'}
+                        <CompassIcon
+                            name={props.currentParticipant?.muted ? 'microphone-off' : 'microphone'}
                             size={24}
                             style={style.muteIcon}
                         />
@@ -243,8 +243,8 @@ const VoiceCallScreen = (props: Props) => {
                                 props.actions.leaveCall();
                             }}
                         >
-                            <FontAwesome5Icon
-                                name='phone'
+                            <CompassIcon
+                                name='phone-hangup'
                                 size={24}
                                 style={{...style.buttonIcon, ...style.hangUpIcon}}
                             />

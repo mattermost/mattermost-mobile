@@ -5,6 +5,7 @@ import React from 'react';
 import {View} from 'react-native';
 import FontAwesome5Icon from 'react-native-vector-icons/FontAwesome5';
 
+import CompassIcon from '@components/compass_icon';
 import ProfilePicture from '@components/profile_picture';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 
@@ -83,9 +84,9 @@ const VoiceAvatar = (props: Props) => {
                         showStatus={false}
                     />
                     {props.muted !== undefined &&
-                        <FontAwesome5Icon
-                            name={props.muted ? 'microphone-slash' : 'microphone'}
-                            size={12}
+                        <CompassIcon
+                            name={props.muted ? 'microphone-off' : 'microphone'}
+                            size={16}
                             style={style.mute}
                         />}
                     {props.handRaised === true &&

@@ -3,8 +3,8 @@
 
 import React, {useCallback} from 'react';
 import {View, Alert, Pressable} from 'react-native';
-import FontAwesome5Icon from 'react-native-vector-icons/FontAwesome5';
 
+import CompassIcon from '@components/compass_icon';
 import FormattedRelativeTime from '@components/formatted_relative_time';
 import FormattedText from '@components/formatted_text';
 import {displayUsername} from '@mm-redux/utils/user_utils';
@@ -91,8 +91,8 @@ const VoiceCallMessage = ({post, user, teammateNameDisplay, confirmToJoin, theme
     }, [post.channel_id, confirmToJoin]);
     return (
         <View style={style.messageStyle}>
-            <FontAwesome5Icon
-                name='phone'
+            <CompassIcon
+                name='phone-in-talk'
                 size={16}
                 style={style.joinCallIcon}
             />
@@ -112,8 +112,8 @@ const VoiceCallMessage = ({post, user, teammateNameDisplay, confirmToJoin, theme
                 style={style.joinCallButton}
                 onPress={joinHandler}
             >
-                <FontAwesome5Icon
-                    name='phone'
+                <CompassIcon
+                    name='phone-outline'
                     size={16}
                     style={style.joinCallButtonIcon}
                 />

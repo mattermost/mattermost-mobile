@@ -3,7 +3,6 @@
 
 import React, {useCallback} from 'react';
 import {View, Text, Platform, TouchableOpacity, Pressable} from 'react-native';
-import FontAwesome5Icon from 'react-native-vector-icons/FontAwesome5';
 
 import CompassIcon from '@components/compass_icon';
 import FormattedText from '@components/formatted_text';
@@ -143,8 +142,8 @@ const FloatingVoiceCall = (props: Props) => {
                     }, [props.currentParticipant?.muted])}
                     style={style.pressable}
                 >
-                    <FontAwesome5Icon
-                        name={props.currentParticipant?.muted ? 'microphone-slash' : 'microphone'}
+                    <CompassIcon
+                        name={props.currentParticipant?.muted ? 'microphone-off' : 'microphone'}
                         size={24}
                         style={style.micIcon}
                     />

@@ -3,8 +3,8 @@
 
 import React, {useCallback} from 'react';
 import {View, Text, Platform, Pressable, Alert} from 'react-native';
-import FontAwesome5Icon from 'react-native-vector-icons/FontAwesome5';
 
+import CompassIcon from '@components/compass_icon';
 import Avatars from '@components/avatars';
 import FormattedRelativeTime from '@components/formatted_relative_time';
 import FormattedText from '@components/formatted_text';
@@ -110,8 +110,8 @@ const JoinCurrentCall = (props: Props) => {
             onPress={joinHandler}
         >
             <View style={style.container}>
-                <FontAwesome5Icon
-                    name='phone'
+                <CompassIcon
+                    name='phone-in-talk'
                     size={16}
                     style={style.joinCallIcon}
                 />
