@@ -11,7 +11,13 @@ export default {
             callback(index);
         }
 
-        const items = options.options.splice(0, options.cancelButtonIndex).map((o: string | {icon: string; text: string}, index: any) => ({
+        let items = options.options;
+
+        if (typeof options.cancelButtonIndex === 'number') {
+            items = items.splice(0, options.cancelButtonIndex);
+        }
+
+        items = items.map((o: string | {icon: string; text: string}, index: any) => ({
             action: () => itemAction(index),
             text: typeof o === 'string' ? o : o.text,
             icon: typeof o === 'string' ? null : o.icon,
