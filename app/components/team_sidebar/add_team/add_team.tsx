@@ -13,6 +13,7 @@ import {useTheme} from '@context/theme';
 import {useSplitView} from '@hooks/device';
 import {showModal, showModalOverCurrentContext} from '@screens/navigation';
 import TeamModel from '@typings/database/models/servers/team';
+import {preventDoubleTap} from '@utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 import AddTeamSlideUp from './add_team_slide_up';
@@ -34,7 +35,7 @@ export default function AddTeam({canCreateTeams, otherTeams}: Props) {
     const isTablet = Device.IS_TABLET && !isSplitView;
     const maxHeight = Math.round((dimensions.height * 0.9));
 
-    const onPress = useCallback(() => {
+    const onPress = useCallback(preventDoubleTap(() => {
         const renderContent = () => {
             return (
                 <AddTeamSlideUp
@@ -78,7 +79,7 @@ export default function AddTeam({canCreateTeams, otherTeams}: Props) {
                 snapPoints: [height, 10],
             }, {swipeToDismiss: true});
         }
-    }, [canCreateTeams, otherTeams, isTablet, theme]);
+    }), [canCreateTeams, otherTeams, isTablet, theme]);
 
     return (
         <View style={styles.container}>
