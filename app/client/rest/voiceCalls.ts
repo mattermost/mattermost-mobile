@@ -15,11 +15,12 @@ const ClientVoiceCalls = (superclass: any) => class extends superclass {
             `${this.getVoiceCallsRoute()}/channels`,
             {method: 'get'},
         );
-        const results: Dictionary<Call> = {};
+        const callsResults: Dictionary<Call> = {};
+        const enabledChannels: Dictionary<boolean> = {};
         for (let i = 0; i < resp.length; i++) {
             const channel = resp[i];
             if (channel.call) {
-                results[channel.channel_id] = {
+                callsResults[channel.channel_id] = {
                     participants: channel.call.users.reduce((prev: Dictionary<CallParticipant>, cur: string) => {
                         prev[cur] = {id: cur, muted: false, isTalking: false, handRaised: false};
                         return prev;
@@ -29,8 +30,26 @@ const ClientVoiceCalls = (superclass: any) => class extends superclass {
                     speakers: [],
                 };
             }
+            enabledChannels[channel.channel_id] = channel.enabled;
         }
-        return results;
+        return {
+            calls: callsResults,
+            enabled: enabledChannels,
+        };
+    }
+
+    enableChannelCalls = async (channelId: string) => {
+        return this.doFetch(
+            `${this.getVoiceCallsRoute()}/${channelId}`,
+            {method: 'post', body: JSON.stringify({enabled: true})},
+        );
+    }
+
+    disableChannelCalls = async (channelId: string) => {
+        return this.doFetch(
+            `${this.getVoiceCallsRoute()}/${channelId}`,
+            {method: 'post', body: JSON.stringify({enabled: false})},
+        );
     }
 };
 

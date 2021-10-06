@@ -54,3 +54,16 @@ export function handleVoiceCallStarted(msg: WebSocketMessage): GenericAction {
     };
 }
 
+export function handleVoiceCallChannelEnabled(msg: WebSocketMessage): GenericAction {
+    return {
+        type: VoiceCallsTypes.RECEIVED_CHANNEL_VOICE_CALL_ENABLED,
+        data: msg.broadcast.channel_id,
+    };
+}
+
+export function handleVoiceCallChannelDisabled(msg: WebSocketMessage): GenericAction {
+    return {
+        type: VoiceCallsTypes.RECEIVED_CHANNEL_VOICE_CALL_DISABLED,
+        data: msg.broadcast.channel_id,
+    };
+}

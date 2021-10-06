@@ -7,8 +7,6 @@ import {intlShape} from 'react-intl';
 import {
     ScrollView,
     View,
-    Pressable,
-    Text,
 } from 'react-native';
 import {Navigation} from 'react-native-navigation';
 import {SafeAreaView} from 'react-native-safe-area-context';
@@ -25,6 +23,7 @@ import Bindings from './bindings';
 import ChannelInfoHeader from './channel_info_header';
 import ConvertPrivate from './convert_private';
 import EditChannel from './edit_channel';
+import EnableDisableCalls from './enable_disable_calls';
 import Favorite from './favorite';
 import IgnoreMentions from './ignore_mentions';
 import Leave from './leave';
@@ -33,6 +32,7 @@ import Mute from './mute';
 import NotificationPreference from './notification_preference';
 import Pinned from './pinned';
 import Separator from './separator';
+import StartCall from './start_call';
 
 export default class ChannelInfo extends PureComponent {
     static propTypes = {
@@ -41,6 +41,8 @@ export default class ChannelInfo extends PureComponent {
             getCustomEmojisInText: PropTypes.func.isRequired,
             setChannelDisplayName: PropTypes.func.isRequired,
             joinCall: PropTypes.func.isRequired,
+            enableChannelCalls: PropTypes.func.isRequired,
+            disableChannelCalls: PropTypes.func.isRequired,
         }),
         currentChannel: PropTypes.object.isRequired,
         currentChannelCreatorName: PropTypes.string,
@@ -55,6 +57,7 @@ export default class ChannelInfo extends PureComponent {
         isCustomStatusEnabled: PropTypes.bool.isRequired,
         isCustomStatusExpired: PropTypes.bool.isRequired,
         isCustomStatusExpirySupported: PropTypes.bool.isRequired,
+        isVoiceEnabled: PropTypes.bool.isRequired,
     };
 
     static defaultProps = {
@@ -98,7 +101,7 @@ export default class ChannelInfo extends PureComponent {
     };
 
     actionsRows = (channelIsArchived) => {
-        const {currentChannel, currentUserId, isDirectMessage, theme} = this.props;
+        const {currentChannel, currentUserId, isDirectMessage, theme, isVoiceEnabled} = this.props;
 
         if (channelIsArchived) {
             return (
@@ -159,14 +162,25 @@ export default class ChannelInfo extends PureComponent {
                     testID='channel_info.edit_channel.action'
                     theme={theme}
                 />
-                <Pressable
-                    onPress={() => {
-                        this.props.actions.joinCall(this.props.currentChannel.id);
+                <StartCall
+                    testID='channel_info.start_call.action'
+                    theme={theme}
+                    currentChannelId={currentChannel.id}
+                    joinCall={(channelId) => {
+                        this.props.actions.joinCall(channelId);
                         this.close();
                     }}
-                >
-                    <Text>{'Start new voice call'}</Text>
-                </Pressable>
+                    canStartCall={isVoiceEnabled/* TODO: also check permissions */}
+                />
+                <EnableDisableCalls
+                    testID='channel_info.start_call.action'
+                    theme={theme}
+                    currentChannelId={currentChannel.id}
+                    enableCalls={this.props.actions.enableChannelCalls}
+                    disableCalls={this.props.actions.disableChannelCalls}
+                    canEnableDisableCalls={true}
+                    enabled={isVoiceEnabled}
+                />
                 <Bindings
                     theme={theme}
                 />

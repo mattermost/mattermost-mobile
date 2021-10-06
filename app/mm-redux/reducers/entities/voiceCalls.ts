@@ -10,7 +10,7 @@ import {Call} from '@mm-redux/types/voiceCalls';
 function calls(state: Dictionary<Call> = {}, action: GenericAction) {
     switch (action.type) {
     case VoiceCallsTypes.RECEIVED_VOICE_CALLS: {
-        return action.data;
+        return action.data.calls;
     }
     case VoiceCallsTypes.RECEIVED_LEFT_VOICE_CALL: {
         const {channelId, userId} = action.data;
@@ -171,7 +171,28 @@ function joined(state = '', action: GenericAction) {
     }
 }
 
+function enabled(state: Dictionary<boolean> = {}, action: GenericAction) {
+    switch (action.type) {
+    case VoiceCallsTypes.RECEIVED_VOICE_CALLS: {
+        return action.data.enabled;
+    }
+    case VoiceCallsTypes.RECEIVED_CHANNEL_VOICE_CALL_ENABLED: {
+        const nextState = {...state};
+        nextState[action.data] = true;
+        return nextState;
+    }
+    case VoiceCallsTypes.RECEIVED_CHANNEL_VOICE_CALL_DISABLED: {
+        const nextState = {...state};
+        nextState[action.data] = false;
+        return nextState;
+    }
+    default:
+        return state;
+    }
+}
+
 export default combineReducers({
     calls,
+    enabled,
     joined,
 });

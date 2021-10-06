@@ -3,10 +3,11 @@
 
 import {Client4} from '@client/rest';
 import {VoiceCallsTypes} from '@mm-redux/action_types';
-import {GenericAction, ActionFunc} from '@mm-redux/types/actions';
+import {GenericAction, ActionFunc, DispatchFunc, GetStateFunc} from '@mm-redux/types/actions';
 import {newClient} from '@utils/voice_calls_connection';
 
-import {bindClientFunc} from './helpers';
+import {logError} from './errors';
+import {bindClientFunc, forceLogoutIfNecessary} from './helpers';
 
 let ws: any = null;
 
@@ -16,6 +17,38 @@ export function loadVoiceCalls(): ActionFunc {
         onSuccess: VoiceCallsTypes.RECEIVED_VOICE_CALLS,
         params: [],
     });
+}
+
+export function enableChannelCalls(channelId: string): ActionFunc {
+    return async (dispatch: DispatchFunc, getState: GetStateFunc) => {
+        try {
+            await Client4.enableChannelCalls(channelId);
+        } catch (error) {
+            forceLogoutIfNecessary(error, dispatch, getState);
+            dispatch(logError(error));
+            return {error};
+        }
+
+        dispatch({type: VoiceCallsTypes.RECEIVED_CHANNEL_VOICE_CALL_ENABLED, data: channelId});
+
+        return {data: channelId};
+    };
+}
+
+export function disableChannelCalls(channelId: string): ActionFunc {
+    return async (dispatch: DispatchFunc, getState: GetStateFunc) => {
+        try {
+            await Client4.disableChannelCalls(channelId);
+        } catch (error) {
+            forceLogoutIfNecessary(error, dispatch, getState);
+            dispatch(logError(error));
+            return {error};
+        }
+
+        dispatch({type: VoiceCallsTypes.RECEIVED_CHANNEL_VOICE_CALL_DISABLED, data: channelId});
+
+        return {data: channelId};
+    };
 }
 
 export function joinCall(channelId: string): GenericAction {

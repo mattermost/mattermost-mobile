@@ -59,6 +59,8 @@ import {
     handleVoiceCallUserUnmuted,
     handleVoiceCallUserVoiceOn,
     handleVoiceCallUserVoiceOff,
+    handleVoiceCallChannelEnabled,
+    handleVoiceCallChannelDisabled,
 } from './voiceCalls';
 
 export function init(additionalOptions: any = {}) {
@@ -432,11 +434,9 @@ function handleEvent(msg: WebSocketMessage) {
         case WebsocketEvents.SIDEBAR_CATEGORY_ORDER_UPDATED:
             return dispatch(handleSidebarCategoryOrderUpdated(msg));
         case WebsocketEvents.VOICE_CALLS_CHANNEL_ENABLED:
-            // TODO: Not implemented yet
-            return {data: true};
+            return dispatch(handleVoiceCallChannelEnabled(msg));
         case WebsocketEvents.VOICE_CALLS_CHANNEL_DISABLED:
-            // TODO: Not implemented yet
-            return {data: true};
+            return dispatch(handleVoiceCallChannelDisabled(msg));
         case WebsocketEvents.VOICE_CALLS_USER_CONNECTED:
             return dispatch(handleVoiceCallUserConnected(msg));
         case WebsocketEvents.VOICE_CALLS_USER_DISCONNECTED:

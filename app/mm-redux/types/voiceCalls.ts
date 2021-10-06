@@ -5,6 +5,7 @@ import {Dictionary} from './utilities';
 
 export type VoiceCallsState = {
     calls: Dictionary<Call>;
+    enabled: Dictionary<boolean>;
     joined: string;
 }
 
