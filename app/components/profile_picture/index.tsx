@@ -58,6 +58,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     };
 });
 
+//fixme: to port again
 const ProfilePicture = ({author, iconSize, showStatus = true, size = 64, statusSize = 14, statusStyle, testID}: ProfilePictureProps) => {
     const theme = useTheme();
     const serverUrl = useServerUrl();

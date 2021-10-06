@@ -32,7 +32,7 @@ export const VALID_MIME_TYPES = [
     'application/x-win-bitmap',
 ];
 
-export const HOLDERS = {
+export const HOLDERS: { [id: string]: any } = {
     firstName: {
         id: t('user.settings.general.firstName'),
         defaultMessage: 'First Name',
