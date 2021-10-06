@@ -12,11 +12,12 @@ import {Device, Screens} from '@constants';
 import {useTheme} from '@context/theme';
 import {useSplitView} from '@hooks/device';
 import {showModal, showModalOverCurrentContext} from '@screens/navigation';
-import TeamModel from '@typings/database/models/servers/team';
 import {preventDoubleTap} from '@utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 import AddTeamSlideUp from './add_team_slide_up';
+
+import type TeamModel from '@typings/database/models/servers/team';
 
 const ITEM_HEIGHT = 72;
 const CREATE_HEIGHT = 97;
