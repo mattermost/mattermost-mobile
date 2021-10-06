@@ -10,17 +10,17 @@ import {switchMap} from 'rxjs/operators';
 import {Permissions} from '@app/constants';
 import {hasPermission} from '@app/utils/role';
 import {MM_TABLES, SYSTEM_IDENTIFIERS} from '@constants/database';
-import TeamModel from '@typings/database/models/servers/team';
-import TeamMembershipModel from '@typings/database/models/servers/team_membership';
 
 import TeamSidebar from './team_sidebar';
 
 import type {WithDatabaseArgs} from '@typings/database/database';
+import type MyTeam from '@typings/database/models/servers/my_team';
 import type RoleModel from '@typings/database/models/servers/role';
 import type SystemModel from '@typings/database/models/servers/system';
+import type TeamModel from '@typings/database/models/servers/team';
 import type UserModel from '@typings/database/models/servers/user';
 
-const {SERVER: {SYSTEM, TEAM_MEMBERSHIP, TEAM, USER, ROLE}} = MM_TABLES;
+const {SERVER: {SYSTEM, MY_TEAM, TEAM, USER, ROLE}} = MM_TABLES;
 
 type PropsInput = WithDatabaseArgs & {
     currentUser: UserModel;
@@ -36,9 +36,10 @@ const withTeams = withObservables([], ({currentUser, database}: PropsInput) => {
     const roles = database.get<RoleModel>(ROLE).query(Q.where('name', Q.oneOf(rolesArray))).observe();
     const canCreateTeams = roles.pipe(switchMap((r) => of$(hasPermission(r, Permissions.CREATE_TEAM, false))));
 
-    const otherTeams = database.get<TeamMembershipModel>(TEAM_MEMBERSHIP).query().observe().pipe(
+    const otherTeams = database.get<MyTeam>(MY_TEAM).query().observe().pipe(
         switchMap((mm) => {
-            const ids = mm.map((m) => m.teamId); //eslint-disable-line max-nested-callbacks
+            // eslint-disable-next-line max-nested-callbacks
+            const ids = mm.map((m) => m.id);
             return database.get<TeamModel>(TEAM).query(Q.where('id', Q.notIn(ids))).observe();
         }),
     );

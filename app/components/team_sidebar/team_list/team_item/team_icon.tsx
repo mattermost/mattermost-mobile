@@ -1,12 +1,13 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
+
 import React, {useCallback, useEffect, useRef, useState} from 'react';
 import {View, Text} from 'react-native';
 import FastImage from 'react-native-fast-image';
 
-import NetworkManager from '@app/init/network_manager';
 import {useServerUrl} from '@context/server_url';
 import {useTheme} from '@context/theme';
+import NetworkManager from '@init/network_manager';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 
 type Props = {
@@ -54,7 +55,7 @@ export default function TeamIcon({id, lastIconUpdate, displayName, selected}: Pr
         teamIconContent = (
             <FastImage
                 style={styles.image}
-                source={{uri: client.getTeamIconUrl(id, lastIconUpdate)}}
+                source={{uri: `${serverUrl}${client.getTeamIconUrl(id, lastIconUpdate)}`}}
                 onError={handleImageError}
             />
         );

@@ -1,27 +1,30 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
+
 import React, {useEffect} from 'react';
 import {View} from 'react-native';
 
 import {fetchAllTeams} from '@actions/remote/team';
-import {useServerUrl} from '@app/context/server_url';
-import {useTheme} from '@app/context/theme';
-import TeamModel from '@typings/database/models/servers/team';
+import {useServerUrl} from '@context/server_url';
+import {useTheme} from '@context/theme';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 
 import AddTeam from './add_team/add_team';
 import ServerIcon from './server_icon/server_icon';
 import TeamList from './team_list';
 
+import type TeamModel from '@typings/database/models/servers/team';
+
 type Props = {
     canCreateTeams: boolean;
     otherTeams: TeamModel[];
 }
+
 export default function TeamSidebar({canCreateTeams, otherTeams}: Props) {
     const theme = useTheme();
     const styles = getStyleSheet(theme);
-
     const serverUrl = useServerUrl();
+
     useEffect(() => {
         fetchAllTeams(serverUrl);
     }, [serverUrl]);

@@ -1,17 +1,18 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
+
 import React, {useCallback} from 'react';
 import {DeviceEventEmitter, Text, View} from 'react-native';
 
 import {addUserToTeam} from '@actions/remote/team';
-import TouchableWithFeedback from '@app/components/touchable_with_feedback';
-import {Navigation} from '@app/constants';
-import {useServerUrl} from '@app/context/server_url';
-import {useTheme} from '@app/context/theme';
-import TeamModel from '@typings/database/models/servers/team';
+import TeamIcon from '@components/team_sidebar/team_list/team_item/team_icon';
+import TouchableWithFeedback from '@components/touchable_with_feedback';
+import {Navigation} from '@constants';
+import {useServerUrl} from '@context/server_url';
+import {useTheme} from '@context/theme';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 
-import TeamIcon from '../../team_list/team_item/team_icon';
+import type TeamModel from '@typings/database/models/servers/team';
 
 type Props = {
     team: TeamModel;

@@ -1,10 +1,11 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
+
 import React from 'react';
 import {GestureResponderEvent, Text, View} from 'react-native';
 
-import TouchableWithFeedback from '@app/components/touchable_with_feedback';
 import CompassIcon from '@components/compass_icon';
+import TouchableWithFeedback from '@components/touchable_with_feedback';
 import {useTheme} from '@context/theme';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 
@@ -18,29 +19,27 @@ export default function Button({onPress, icon, text}: Props) {
     const styles = getStyleSheet(theme);
 
     return (
-        <View>
-            <TouchableWithFeedback
-                onPress={onPress}
-                type='opacity'
-                style={styles.button}
-            >
-                {icon && (
-                    <View style={styles.icon_container}>
-                        <CompassIcon
-                            size={24}
-                            name={icon}
-                            color={theme.buttonColor}
-                        />
-                    </View>
-                )}
-                {text && (
-                    <Text
-                        style={styles.text}
-                    >{text}</Text>
-                )}
+        <TouchableWithFeedback
+            onPress={onPress}
+            type='opacity'
+            style={styles.button}
+        >
+            {icon && (
+                <View style={styles.icon_container}>
+                    <CompassIcon
+                        size={24}
+                        name={icon}
+                        color={theme.buttonColor}
+                    />
+                </View>
+            )}
+            {text && (
+                <Text
+                    style={styles.text}
+                >{text}</Text>
+            )}
 
-            </TouchableWithFeedback>
-        </View>
+        </TouchableWithFeedback>
     );
 }
 

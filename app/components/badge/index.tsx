@@ -11,7 +11,7 @@ type Props = {
   /**
    * Whether the badge is visible
    */
-  visible?: boolean;
+  visible: boolean;
 
   /**
    * Content of the `Badge`.

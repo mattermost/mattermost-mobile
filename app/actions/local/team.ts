@@ -3,6 +3,7 @@
 
 import {NativeModules} from 'react-native';
 
+import {fetchPostsForChannel} from '@actions/remote/post';
 import {Device} from '@constants';
 import DatabaseManager from '@database/manager';
 import {queryCurrentTeamId, setCurrentTeamAndChannelId} from '@queries/servers/system';
@@ -19,14 +20,16 @@ export const handleTeamChange = async (serverUrl: string, teamId: string) => {
         return;
     }
 
-    // TODO Consider store team visit history
-
     let channelId = '';
     if (Device.IS_TABLET) {
-        const splitView = await isRunningInSplitView();
-        if (!splitView) {
-            channelId = await queryLastChannelFromTeam(database, teamId) || '';
+        const {isSplitView} = await isRunningInSplitView();
+        if (!isSplitView) {
+            channelId = await queryLastChannelFromTeam(database, teamId);
+            if (channelId) {
+                fetchPostsForChannel(serverUrl, channelId);
+            }
         }
     }
+
     setCurrentTeamAndChannelId(operator, teamId, channelId);
 };

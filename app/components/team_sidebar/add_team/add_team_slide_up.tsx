@@ -1,10 +1,11 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
+
 import React, {useCallback} from 'react';
 import {useIntl} from 'react-intl';
-import {DeviceEventEmitter, Text, View} from 'react-native';
+import {DeviceEventEmitter, Text, useWindowDimensions, View} from 'react-native';
 
-import {Navigation} from '@app/constants';
+import {Navigation} from '@constants';
 import {useTheme} from '@context/theme';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
@@ -16,11 +17,15 @@ import type TeamModel from '@typings/database/models/servers/team';
 type Props = {
     otherTeams: TeamModel[];
     canCreateTeams: boolean;
+    showTitle?: boolean;
 }
-export default function AddTeamSlideUp({otherTeams, canCreateTeams}: Props) {
+
+export default function AddTeamSlideUp({otherTeams, canCreateTeams, showTitle = true}: Props) {
     const theme = useTheme();
     const styles = getStyleSheet(theme);
     const intl = useIntl();
+    const dimensions = useWindowDimensions();
+    const separatorWidth = Math.max(dimensions.width + 16, 450);
 
     const onPressCreate = useCallback(() => {
         //TODO Create team screen
@@ -29,13 +34,15 @@ export default function AddTeamSlideUp({otherTeams, canCreateTeams}: Props) {
 
     return (
         <View style={styles.container}>
-            <View>
-                <Text style={styles.headerText}>{intl.formatMessage({id: 'mobile.add_team.join_team', defaultMessage: 'Join Another Team'})}</Text>
-            </View>
+            {showTitle &&
+                <View>
+                    <Text style={styles.headerText}>{intl.formatMessage({id: 'mobile.add_team.join_team', defaultMessage: 'Join Another Team'})}</Text>
+                </View>
+            }
             <TeamList teams={otherTeams}/>
             {canCreateTeams && (
                 <>
-                    <View style={styles.separator}/>
+                    <View style={[styles.separator, {width: separatorWidth}]}/>
                     <Button
                         onPress={onPressCreate}
                         icon={'plus'}
@@ -50,9 +57,7 @@ export default function AddTeamSlideUp({otherTeams, canCreateTeams}: Props) {
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     return {
         container: {
-            display: 'flex',
-            backgroundColor: theme.centerChannelBg,
-            height: '100%',
+            flex: 1,
         },
         headerText: {
             color: theme.centerChannelColor,
@@ -62,7 +67,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
         },
         separator: {
             height: 1,
-            width: '100%',
+            right: 16,
             borderTopWidth: 1,
             borderColor: changeOpacity(theme.centerChannelColor, 0.08),
             marginBottom: 20,

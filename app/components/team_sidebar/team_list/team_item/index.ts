@@ -7,8 +7,8 @@ import withObservables from '@nozbe/with-observables';
 import {of as of$} from 'rxjs';
 import {switchMap} from 'rxjs/operators';
 
-import {MyChannelModel} from '@app/database/models/server';
 import {MM_TABLES, SYSTEM_IDENTIFIERS} from '@constants/database';
+import {MyChannelModel} from '@database/models/server';
 
 import TeamItem from './team_item';
 
@@ -34,17 +34,17 @@ type WithTeamsArgs = WithDatabaseArgs & {
 const withTeams = withObservables(['myTeam'], ({myTeam, database}: WithTeamsArgs) => {
     const myChannels = database.get<MyChannelModel>(MY_CHANNEL).query(Q.on(CHANNEL, Q.and(Q.where('delete_at', Q.eq(0)), Q.where('team_id', Q.eq(myTeam.id))))).observeWithColumns(['mentions_count', 'message_count']);
     const mentionCount = myChannels.pipe(
-        switchMap((val) => of$(val.reduce((acc, v) => acc + v.mentionsCount, 0))), //eslint-disable-line max-nested-callbacks
+        // eslint-disable-next-line max-nested-callbacks
+        switchMap((val) => of$(val.reduce((acc, v) => acc + v.mentionsCount, 0))),
     );
     const hasUnreads = myChannels.pipe(
-        switchMap((val) => of$(val.reduce((acc, v) => acc + v.messageCount, 0) > 0)), //eslint-disable-line max-nested-callbacks
+        // eslint-disable-next-line max-nested-callbacks
+        switchMap((val) => of$(val.reduce((acc, v) => acc + v.messageCount, 0) > 0)),
     );
     return {
         team: myTeam.team.observe(),
         mentionCount,
         hasUnreads,
-
-        // myChannels,
     };
 });
 

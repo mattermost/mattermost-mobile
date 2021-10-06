@@ -117,8 +117,7 @@ export const fetchAllTeams = async (serverUrl: string, fetchOnly = false): Promi
         if (!fetchOnly) {
             const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
             if (operator) {
-                const teamRecords = await operator.handleTeam({prepareRecordsOnly: true, teams});
-                await operator.batchRecords(teamRecords);
+                await operator.handleTeam({prepareRecordsOnly: false, teams});
             }
         }
 

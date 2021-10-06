@@ -1,12 +1,17 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
-import React, {useCallback} from 'react';
-import {useWindowDimensions, View} from 'react-native';
 
-import TouchableWithFeedback from '@app/components/touchable_with_feedback';
-import {showModalOverCurrentContext} from '@app/screens/navigation';
+import React, {useCallback} from 'react';
+import {useIntl} from 'react-intl';
+import {useWindowDimensions, View} from 'react-native';
+import {OptionsModalPresentationStyle} from 'react-native-navigation';
+
 import CompassIcon from '@components/compass_icon';
+import TouchableWithFeedback from '@components/touchable_with_feedback';
+import {Device, Screens} from '@constants';
 import {useTheme} from '@context/theme';
+import {useSplitView} from '@hooks/device';
+import {showModal, showModalOverCurrentContext} from '@screens/navigation';
 import TeamModel from '@typings/database/models/servers/team';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
@@ -24,6 +29,9 @@ export default function AddTeam({canCreateTeams, otherTeams}: Props) {
     const theme = useTheme();
     const styles = getStyleSheet(theme);
     const dimensions = useWindowDimensions();
+    const intl = useIntl();
+    const isSplitView = useSplitView();
+    const isTablet = Device.IS_TABLET && !isSplitView;
     const maxHeight = Math.round((dimensions.height * 0.9));
 
     const onPress = useCallback(() => {
@@ -32,17 +40,45 @@ export default function AddTeam({canCreateTeams, otherTeams}: Props) {
                 <AddTeamSlideUp
                     otherTeams={otherTeams}
                     canCreateTeams={canCreateTeams}
+                    showTitle={!isTablet}
                 />
             );
         };
 
         const height = Math.min(maxHeight, HEADER_HEIGHT + (otherTeams.length * ITEM_HEIGHT) + (canCreateTeams ? CREATE_HEIGHT : 0));
 
-        showModalOverCurrentContext('BottomSheet', {
-            renderContent,
-            snapPoints: [height, 10],
-        });
-    }, [canCreateTeams, otherTeams]);
+        if (isTablet) {
+            const closeButton = CompassIcon.getImageSourceSync('close', 24, theme.centerChannelColor);
+            const closeButtonId = 'close-join-team';
+            showModal(Screens.BOTTOM_SHEET, intl.formatMessage({id: 'mobile.add_team.join_team', defaultMessage: 'Join Another Team'}), {
+                closeButtonId,
+                renderContent,
+                snapPoints: [height, 10],
+            }, {
+                modalPresentationStyle: OptionsModalPresentationStyle.formSheet,
+                swipeToDismiss: true,
+                topBar: {
+                    leftButtons: [{
+                        id: closeButtonId,
+                        icon: closeButton,
+                        testID: closeButtonId,
+                    }],
+                    leftButtonColor: changeOpacity(theme.centerChannelColor, 0.56),
+                    background: {
+                        color: theme.centerChannelBg,
+                    },
+                    title: {
+                        color: theme.centerChannelColor,
+                    },
+                },
+            });
+        } else {
+            showModalOverCurrentContext(Screens.BOTTOM_SHEET, {
+                renderContent,
+                snapPoints: [height, 10],
+            }, {swipeToDismiss: true});
+        }
+    }, [canCreateTeams, otherTeams, isTablet]);
 
     return (
         <View style={styles.container}>

@@ -1,12 +1,13 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
+
 import React from 'react';
 import {Platform, View} from 'react-native';
 
 import {handleTeamChange} from '@actions/local/team';
-import Badge from '@app/components/badge';
-import TouchableWithFeedback from '@app/components/touchable_with_feedback';
-import {useServerUrl} from '@app/context/server_url';
+import Badge from '@components/badge';
+import TouchableWithFeedback from '@components/touchable_with_feedback';
+import {useServerUrl} from '@context/server_url';
 import {useTheme} from '@context/theme';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 
@@ -18,8 +19,6 @@ type Props = {
     team: TeamModel;
     hasUnreads: boolean;
     mentionCount: number;
-
-    // myChannels: MyChannelModel[];
     currentTeamId: string;
 }
 
@@ -31,7 +30,7 @@ export default function TeamItem({team, hasUnreads, mentionCount, currentTeamId}
 
     const hasBadge = Boolean(mentionCount || hasUnreads);
 
-    let mentionText = mentionCount.toString();
+    let mentionText = mentionCount ? mentionCount.toString() : '';
     let left = 32;
     switch (true) {
         case mentionCount > 99:

@@ -4,9 +4,9 @@
 import React from 'react';
 import {View} from 'react-native';
 
-import {useTheme} from '@app/context/theme';
-import {changeOpacity, makeStyleSheetFromTheme} from '@app/utils/theme';
 import CompassIcon from '@components/compass_icon';
+import {useTheme} from '@context/theme';
+import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 // TODO PLACEHOLDER
 export default function ServerIcon() {

@@ -74,7 +74,7 @@ const ChannelListScreen = (props: ChannelProps) => {
 
     return (
         <SafeAreaView
-            style={[styles.flex, {flexDirection: 'row'}]}
+            style={styles.content}
         >
             <TeamSidebar/>
             <Animated.View

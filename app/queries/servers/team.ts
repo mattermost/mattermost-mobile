@@ -7,7 +7,7 @@ import {Database as DatabaseConstants, Preferences} from '@constants';
 import {getPreferenceValue} from '@helpers/api/preference';
 import {selectDefaultTeam} from '@helpers/api/team';
 
-import {prepareDeleteChannel} from './channel';
+import {prepareDeleteChannel, queryDefaultChannelForTeam} from './channel';
 import {queryPreferencesByCategoryAndName} from './preference';
 import {queryConfig} from './system';
 import {queryCurrentUser} from './user';
@@ -47,7 +47,7 @@ export const addChannelToTeamHistory = async (operator: ServerDataOperator, team
 };
 
 export const queryLastChannelFromTeam = async (database: Database, teamId: string) => {
-    let channelId: string | undefined;
+    let channelId = '';
 
     try {
         const teamChannelHistory = await database.get<TeamChannelHistoryModel>(TEAM_CHANNEL_HISTORY).find(teamId);
@@ -55,7 +55,11 @@ export const queryLastChannelFromTeam = async (database: Database, teamId: strin
             channelId = teamChannelHistory.channelIds[0];
         }
     } catch {
-        // Do nothing
+        // No channel history for the team
+        const channel = await queryDefaultChannelForTeam(database, teamId);
+        if (channel) {
+            channelId = channel.id;
+        }
     }
 
     return channelId;
