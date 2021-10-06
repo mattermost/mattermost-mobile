@@ -57,7 +57,8 @@ export default class ThreadBase extends PureComponent {
 
         if (props.collapsedThreadsEnabled) {
             // Without unique id, it breaks navigation from permalink view.
-            this.threadFollowId = Math.floor(Math.random() * 0x10000000000).toString(16);
+            // Adding prefix "!screen" to exclude it from being added to stack
+            this.threadFollowId = '!screen-' + Math.floor(Math.random() * 0x10000000000).toString(16);
 
             let titleText;
             if (channelType === General.DM_CHANNEL) {
