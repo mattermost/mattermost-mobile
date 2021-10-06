@@ -81,10 +81,10 @@ const ChannelListScreen = (props: ChannelProps) => {
                 style={styles.content}
                 edges={['bottom', 'left', 'right']}
             >
-                <TeamSidebar/>
                 <Animated.View
                     style={[styles.content, animated]}
                 >
+                    <TeamSidebar/>
                     <View style={[styles.flex, {alignItems: 'center', justifyContent: 'center'}, tabletSidebarStyle]}>
                         <Text
                             onPress={() => goToScreen('Channel', '', undefined, {topBar: {visible: false}})}
