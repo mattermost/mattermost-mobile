@@ -378,7 +378,8 @@ export async function dismissAllModals(options = {}) {
     }
 }
 
-export function setButtons(componentId: string, buttons = {leftButtons: [], rightButtons: []}) {
+type NavButtons = {leftButtons?: any[]; rightButtons?: any[]}
+export function setButtons(componentId: string, buttons: NavButtons = {leftButtons: [], rightButtons: []}) {
     const options = {
         topBar: {
             ...buttons,

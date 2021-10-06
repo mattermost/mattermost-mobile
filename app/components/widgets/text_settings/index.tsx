@@ -20,19 +20,19 @@ export interface IntlText {
 }
 
 type TextSettingProps = {
-    disabled: boolean;
+    disabled?: boolean;
     disabledText: string;
-    errorText: string | number;
-    helpText: string | number;
+    errorText?: string | number;
+    helpText?: string | number;
     id: string;
-    keyboardType: 'default' | 'number-pad' | 'decimal-pad' | 'numeric' | 'email-address' | 'phone-pad' | 'url';
+    keyboardType?: 'default' | 'number-pad' | 'decimal-pad' | 'numeric' | 'email-address' | 'phone-pad' | 'url';
     label: IntlText | string;
-    maxLength: number;
-    multiline: boolean;
+    maxLength?: number;
+    multiline?: boolean;
     onChange: (id: string, value: string) => void;
-    optional: boolean;
-    placeholder: string;
-    secureTextEntry: boolean;
+    optional?: boolean;
+    placeholder?: string;
+    secureTextEntry?: boolean;
     testID: string;
     value: string;
 };
@@ -61,7 +61,7 @@ const TextSetting = (props: TextSettingProps) => {
                     label={label}
                     testID={testID}
                 />
-                <OptionalContent optional={optional}/>
+                <OptionalContent optional={Boolean(optional)}/>
             </View>
             <View style={[style.inputContainer, noEditing]}>
                 <View>

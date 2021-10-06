@@ -4,6 +4,7 @@
 import {t} from '@i18n';
 
 export const MAX_SIZE = 20 * 1024 * 1024;
+
 export const VALID_MIME_TYPES = [
     'image/jpeg',
     'image/jpeg',
@@ -30,6 +31,7 @@ export const VALID_MIME_TYPES = [
     'application/x-bmp',
     'application/x-win-bitmap',
 ];
+
 export const HOLDERS = {
     firstName: {
         id: t('user.settings.general.firstName'),
