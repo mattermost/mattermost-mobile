@@ -113,10 +113,9 @@ export default class List extends PureComponent {
             this.props.orderedChannelIds !== orderedChannelIds) {
                 this.setSections(this.buildSections(this.props));
             }
-        } else if (
+        } else if ( // Rebuild sections only if categories or unreads have changed
             !isEqual(this.props.categories, categories) ||
-            this.props.unreadChannelIds !== unreadChannelIds) {
-            // Rebuild sections only if categories or unreads have changed
+            !isEqual(this.props.unreadChannelIds, unreadChannelIds)) {
             this.setCategorySections(this.buildCategorySections());
         }
 
