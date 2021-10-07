@@ -30,7 +30,7 @@ export const VALID_MIME_TYPES = [
     'application/bmp',
     'application/x-bmp',
     'application/x-win-bitmap',
-];
+] as const;
 
 export const HOLDERS: { [id: string]: any } = {
     firstName: {

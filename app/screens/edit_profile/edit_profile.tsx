@@ -1,26 +1,19 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {getFormattedFileSize} from '@mm-redux/utils/file_utils';
 import React, {PureComponent} from 'react';
-import {Alert, View} from 'react-native';
-import DocumentPicker from 'react-native-document-picker';
+import {View} from 'react-native';
 import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scrollview';
 import {EventSubscription, Navigation} from 'react-native-navigation';
 import {SafeAreaView} from 'react-native-safe-area-context';
-import RNFetchBlob from 'rn-fetch-blob';
 
 import StatusBar from '@components/status_bar/index';
-import TextSetting from '@components/widgets/text_settings';
 import {t} from '@i18n';
-import {HOLDERS, MAX_SIZE} from '@screens/edit_profile/constants';
+import {VALID_MIME_TYPES} from '@screens/edit_profile/constants';
 import {dismissModal, popTopScreen, setButtons} from '@screens/navigation';
 import UserModel from '@typings/database/models/servers/user';
-import {buildFileUploadData, encodeHeaderURIStringToUTF8} from '@utils/file';
 import {preventDoubleTap} from '@utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
-
-import mattermostBucket from 'app/mattermost_bucket';
 
 import CommonFieldSettings from './components/common_field_settings';
 import DisplayError from './components/display_error';
@@ -43,18 +36,29 @@ type EditProfileProps = {
     intl: IntlShape;
 };
 
-type EditProfileState = {
+type Fields = {
     email: string;
-    error: Error | null;
     firstName: string;
     lastName: string;
     nickname: string;
     position: string;
-    profileImage: string | undefined;
-    isProfileImageRemoved: boolean;
     username: string;
+}
+type EditProfileState = Fields & {
+    error: Error | null;
     updating: boolean;
+    profileImage: UploadedFile | undefined;
+    isProfileImageRemoved: boolean;
 };
+
+type UploadedFile = {
+    fileName: string;
+    fileSize: number;
+    height: number;
+    type: typeof VALID_MIME_TYPES[number];
+    uri: string;
+    width: number;
+}
 
 export default class EditProfile extends PureComponent<EditProfileProps, EditProfileState> {
     private scrollViewRef: any;
@@ -62,18 +66,11 @@ export default class EditProfile extends PureComponent<EditProfileProps, EditPro
 
     constructor(props: EditProfileProps) {
         super(props);
-        const {componentId, currentUser, theme, intl} = props;
+        const {componentId, currentUser} = props;
         const {email, firstName, lastName, nickname, position, username} = currentUser;
 
         const buttons = {
-            rightButtons: [{
-                id: 'update-profile',
-                enabled: false,
-                showAsAction: 'always',
-                testID: 'edit_profile.save.button',
-                color: theme.sidebarHeaderTextColor,
-                text: intl.formatMessage({id: t('mobile.account.settings.save'), defaultMessage: 'Save'}),
-            }],
+            rightButtons: [this.getRightButton()],
         };
 
         setButtons(componentId, buttons);
@@ -92,6 +89,18 @@ export default class EditProfile extends PureComponent<EditProfileProps, EditPro
         };
     }
 
+    getRightButton = () => {
+        const {intl, theme} = this.props;
+        return {
+            id: 'update-profile',
+            enabled: false,
+            showAsAction: 'always',
+            testID: 'edit_profile.save.button',
+            color: theme.sidebarHeaderTextColor,
+            text: intl.formatMessage({id: t('mobile.account.settings.save'), defaultMessage: 'Save'}),
+        };
+    }
+
     componentDidMount() {
         this.navigationEventListener = Navigation.events().bindComponent(this);
     }
@@ -107,7 +116,7 @@ export default class EditProfile extends PureComponent<EditProfileProps, EditPro
         }
     }
 
-    canUpdate = (updatedField) => {
+    canUpdate = (updatedField: Partial<Fields>) => {
         const {currentUser} = this.props;
         const keys = Object.keys(this.state);
         const newState = {...this.state, ...(updatedField || {})};
@@ -119,16 +128,18 @@ export default class EditProfile extends PureComponent<EditProfileProps, EditPro
             let userKey;
             switch (key) {
                 case 'firstName':
-                    userKey = 'first_name';
+                    userKey = 'firstName';
                     break;
                 case 'lastName':
-                    userKey = 'last_name';
+                    userKey = 'lastName';
                     break;
                 default:
                     userKey = key;
                     break;
             }
 
+            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+            // @ts-ignore
             if (currentUser[userKey] !== newState[key]) {
                 return true;
             }
@@ -149,7 +160,7 @@ export default class EditProfile extends PureComponent<EditProfileProps, EditPro
     emitCanUpdateAccount = (enabled: boolean) => {
         const {componentId} = this.props;
         const buttons = {
-            rightButtons: [{...this.rightButton, enabled}],
+            rightButtons: [{...this.getRightButton(), enabled}],
         };
 
         setButtons(componentId, buttons);
@@ -175,7 +186,8 @@ export default class EditProfile extends PureComponent<EditProfileProps, EditPro
 
         if (profileImage) {
             actions.setProfileImageUri(profileImage.uri);
-            this.uploadProfileImage().catch(this.handleUploadError);
+
+            // this.uploadProfileImage().catch(this.handleUploadError);
         }
 
         if (isProfileImageRemoved) {
@@ -193,82 +205,11 @@ export default class EditProfile extends PureComponent<EditProfileProps, EditPro
         this.close();
     });
 
-    handleUploadProfileImage = (images) => {
-        const image = images && images.length > 0 && images[0];
-        this.setState({profileImage: image});
-        this.emitCanUpdateAccount(true);
-    };
-
-    handleRemoveProfileImage = () => {
-        this.setState({isProfileImageRemoved: true});
-        this.emitCanUpdateAccount(true);
-    };
-
-    uploadProfileImage = async () => {
-        const {profileImage} = this.state;
-        const {currentUser} = this.props;
-        const fileData = buildFileUploadData(profileImage);
-
-        const headers = {
-            Authorization: `Bearer ${Client4.getToken()}`,
-            'X-Requested-With': 'XMLHttpRequest',
-            'Content-Type': 'multipart/form-data',
-            'X-CSRF-Token': Client4.csrf,
-        };
-
-        const fileInfo = {
-            name: 'image',
-            filename: encodeHeaderURIStringToUTF8(fileData.name),
-            data: RNFetchBlob.wrap(profileImage.uri.replace('file://', '')),
-            type: fileData.type,
-        };
-
-        const certificate = await mattermostBucket.getPreference('cert');
-        const options = {
-            timeout: 10000,
-            certificate,
-        };
-
-        return RNFetchBlob.config(options).fetch(
-            'POST',
-            `${Client4.getUserRoute(currentUser.id)}/image`,
-            headers,
-            [fileInfo],
-        );
-    };
-
     updateField = (id: string, name: string) => {
-        const field = {[id]: name};
-        this.setState(field, () => {
+        const field: Partial<Fields> = {[id]: name};
+        this.setState(field as EditProfileState, () => {
             this.emitCanUpdateAccount(this.canUpdate(field));
         });
-    };
-
-    onShowFileSizeWarning = () => {
-        const {intl} = this.props;
-
-        const fileSizeWarning = intl.formatMessage(
-            {
-                id: 'file_upload.fileAbove',
-                defaultMessage: 'Files must be less than {max}',
-            },
-            {
-                max: getFormattedFileSize({size: MAX_SIZE}),
-            },
-        );
-
-        Alert.alert(fileSizeWarning);
-    };
-
-    onShowUnsupportedMimeTypeWarning = () => {
-        const {intl} = this.props;
-        const fileTypeWarning = intl.formatMessage({
-            id: 'mobile.file_upload.unsupportedMimeType',
-            defaultMessage:
-                'Only BMP, JPG or PNG images may be used for profile pictures.',
-        });
-
-        Alert.alert('', fileTypeWarning);
     };
 
     setScrollViewRef = (ref: any) => {
