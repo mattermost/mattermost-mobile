@@ -173,7 +173,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         borderColor: '#d6e9c6',
     },
     emailId: {
-        fontWeight: 'bold',
+        fontFamily: 'OpenSans-Semibold',
     },
     successTxtColor: {
         color: '#3c763d',
