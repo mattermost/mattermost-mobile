@@ -11,8 +11,11 @@ import {EventSubscription, Navigation} from 'react-native-navigation';
 import {SafeAreaView} from 'react-native-safe-area-context';
 import {switchMap} from 'rxjs/operators';
 
+import {updateUserProfile} from '@actions/local/user';
+import {updateMe} from '@actions/remote/user';
 import StatusBar from '@components/status_bar/index';
 import {MM_TABLES, SYSTEM_IDENTIFIERS} from '@constants/database';
+import {withServerUrl} from '@context/server_url';
 import {t} from '@i18n';
 import {VALID_MIME_TYPES} from '@screens/edit_profile/constants';
 import {dismissModal, popTopScreen, setButtons} from '@screens/navigation';
@@ -33,17 +36,11 @@ type EditProfileProps = {
     config: SystemModel;
     currentUser: UserModel;
     intl: IntlShape;
+    serverUrl: string;
     theme: Theme;
 };
-type Fields = {
-    email: string;
-    firstName: string;
-    lastName: string;
-    nickname: string;
-    position: string;
-    username: string;
-}
-type EditProfileState = Fields & {
+
+type EditProfileState = UserInfo & {
     error: Error | null;
     updating: boolean;
     profileImage: UploadedFile | undefined;
@@ -170,7 +167,7 @@ class EditProfile extends PureComponent<EditProfileProps, EditProfileState> {
         }
     };
 
-    canUpdate = (updatedField?: Partial<Fields>) => {
+    canUpdate = (updatedField?: Partial<UserInfo>) => {
         const {currentUser} = this.props;
         const keys = Object.keys(this.state);
         const newState = {...this.state, ...(updatedField || {})};
@@ -206,8 +203,9 @@ class EditProfile extends PureComponent<EditProfileProps, EditProfileState> {
         this.emitCanUpdateAccount(false);
         this.setState({error: null, updating: true});
 
+        const {currentUser, serverUrl} = this.props;
         const {email, firstName, lastName, nickname, position, username} = this.state;
-        const user = {email, first_name: firstName, last_name: lastName, nickname, position, username};
+        const userInfo = {email, firstName, lastName, nickname, position, username};
 
         //todo: To be handled in next PRs
         // if (profileImage) {actions.setProfileImageUri(profileImage.uri);/* this.uploadProfileImage().catch(this.handleUploadError);*/}
@@ -216,10 +214,13 @@ class EditProfile extends PureComponent<EditProfileProps, EditProfileState> {
         // if (isProfileImageRemoved) {actions.removeProfileImage(currentUser.id);}
 
         if (this.canUpdate()) {
-            const {error} = await updateUser(user);
-            if (error) {
-                this.handleRequestError(error);
-                return;
+            const {data} = await updateUserProfile(serverUrl, currentUser, userInfo);
+            if (data) {
+                const {error} = await updateMe(serverUrl, currentUser);
+                if (error) {
+                    this.handleRequestError(error as Error);
+                    return;
+                }
             }
         }
 
@@ -227,7 +228,7 @@ class EditProfile extends PureComponent<EditProfileProps, EditProfileState> {
     });
 
     updateField = (id: string, name: string) => {
-        const field: Partial<Fields> = {[id]: name};
+        const field: Partial<UserInfo> = {[id]: name};
         this.setState(field as EditProfileState, () => {
             this.emitCanUpdateAccount(this.canUpdate(field));
         });
@@ -343,4 +344,4 @@ export default withDatabase(withObservables([], ({database}: WithDatabaseArgs) =
         switchMap((userId: SystemModel) => database.get(MM_TABLES.SERVER.USER).findAndObserve(userId.id)),
     ),
     config: database.get(MM_TABLES.SERVER.SYSTEM).findAndObserve(SYSTEM_IDENTIFIERS.CONFIG),
-}))(injectIntl(EditProfile)));
+}))(injectIntl(withServerUrl(EditProfile))));
