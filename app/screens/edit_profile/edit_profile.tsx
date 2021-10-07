@@ -5,8 +5,8 @@ import {withDatabase} from '@nozbe/watermelondb/DatabaseProvider';
 import withObservables from '@nozbe/with-observables';
 import React, {PureComponent} from 'react';
 import {injectIntl, IntlShape} from 'react-intl';
-import {View} from 'react-native';
-import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scrollview';
+import {ScrollView, View} from 'react-native';
+import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
 import {EventSubscription, Navigation} from 'react-native-navigation';
 import {SafeAreaView} from 'react-native-safe-area-context';
 import {switchMap} from 'rxjs/operators';
@@ -35,7 +35,6 @@ type EditProfileProps = {
     intl: IntlShape;
     theme: Theme;
 };
-
 type Fields = {
     email: string;
     firstName: string;
@@ -50,7 +49,6 @@ type EditProfileState = Fields & {
     profileImage: UploadedFile | undefined;
     isProfileImageRemoved: boolean;
 };
-
 type UploadedFile = {
     fileName: string;
     fileSize: number;
@@ -67,7 +65,7 @@ class EditProfile extends PureComponent<EditProfileProps, EditProfileState> {
     private nicknameDisabled: boolean | undefined;
     private positionDisabled: boolean | undefined;
     private profilePictureDisabled: boolean | undefined;
-    private scrollViewRef: any;
+    private readonly scrollViewRef: React.RefObject<KeyboardAwareScrollView>;
 
     constructor(props: EditProfileProps) {
         super(props);
@@ -94,6 +92,8 @@ class EditProfile extends PureComponent<EditProfileProps, EditProfileState> {
         };
 
         this.setUp();
+
+        this.scrollViewRef = React.createRef<KeyboardAwareScrollView>();
     }
 
     setUp = () => {
@@ -143,7 +143,34 @@ class EditProfile extends PureComponent<EditProfileProps, EditProfileState> {
         }
     }
 
-    canUpdate = (updatedField: Partial<Fields>) => {
+    close = () => {
+        const {commandType, componentId} = this.props;
+        if (commandType === 'Push') {
+            popTopScreen(componentId);
+        } else {
+            dismissModal({componentId});
+        }
+    };
+
+    emitCanUpdateAccount = (enabled: boolean) => {
+        const {componentId} = this.props;
+        const buttons = {
+            rightButtons: [{...this.getRightButton(), enabled}],
+        };
+
+        setButtons(componentId, buttons);
+    };
+
+    handleRequestError = (error: Error) => {
+        this.setState({error, updating: false});
+        this.emitCanUpdateAccount(true);
+        if (this.scrollViewRef?.current) {
+            const scrollView = this.scrollViewRef?.current as unknown as ScrollView;
+            scrollView.scrollTo({x: 0, y: 0});
+        }
+    };
+
+    canUpdate = (updatedField?: Partial<Fields>) => {
         const {currentUser} = this.props;
         const keys = Object.keys(this.state);
         const newState = {...this.state, ...(updatedField || {})};
@@ -175,54 +202,21 @@ class EditProfile extends PureComponent<EditProfileProps, EditProfileState> {
         return false;
     };
 
-    close = () => {
-        const {commandType, componentId} = this.props;
-        if (commandType === 'Push') {
-            popTopScreen(componentId);
-        } else {
-            dismissModal({componentId});
-        }
-    };
-
-    emitCanUpdateAccount = (enabled: boolean) => {
-        const {componentId} = this.props;
-        const buttons = {
-            rightButtons: [{...this.getRightButton(), enabled}],
-        };
-
-        setButtons(componentId, buttons);
-    };
-
-    handleRequestError = (error: Error) => {
-        this.setState({error, updating: false});
-        this.emitCanUpdateAccount(true);
-        if (this.setScrollViewRef) {
-            this.setScrollViewRef.props.scrollTo({x: 0, y: 0});
-        }
-    };
-
     submitUser = preventDoubleTap(async () => {
         this.emitCanUpdateAccount(false);
         this.setState({error: null, updating: true});
 
-        const {email, firstName, isProfileImageRemoved, lastName, nickname, position, profileImage, username} = this.state;
-
+        const {email, firstName, lastName, nickname, position, username} = this.state;
         const user = {email, first_name: firstName, last_name: lastName, nickname, position, username};
 
-        const {currentUser} = this.props;
+        //todo: To be handled in next PRs
+        // if (profileImage) {actions.setProfileImageUri(profileImage.uri);/* this.uploadProfileImage().catch(this.handleUploadError);*/}
 
-        if (profileImage) {
-            actions.setProfileImageUri(profileImage.uri);
-
-            // this.uploadProfileImage().catch(this.handleUploadError);
-        }
-
-        if (isProfileImageRemoved) {
-            actions.removeProfileImage(currentUser.id);
-        }
+        //todo: To be handled in next PRs
+        // if (isProfileImageRemoved) {actions.removeProfileImage(currentUser.id);}
 
         if (this.canUpdate()) {
-            const {error} = await actions.updateUser(user);
+            const {error} = await updateUser(user);
             if (error) {
                 this.handleRequestError(error);
                 return;
@@ -239,8 +233,8 @@ class EditProfile extends PureComponent<EditProfileProps, EditProfileState> {
         });
     };
 
-    setScrollViewRef = (ref: any) => {
-        this.setScrollViewRef = ref;
+    setScrollViewRef = () => {
+        return this.scrollViewRef;
     };
 
     render() {
