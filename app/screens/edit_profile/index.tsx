@@ -133,10 +133,10 @@ class EditProfile extends PureComponent<EditProfileProps, EditProfileState> {
         this.navigationEventListener = Navigation.events().bindComponent(this);
     }
 
-    navigationButtonPressed({buttonId}: {buttonId: string}) {
+    async navigationButtonPressed({buttonId}: {buttonId: string}) {
         switch (buttonId) {
             case 'update-profile':
-                this.submitUser();
+                await this.submitUser();
                 break;
             case 'close-settings':
                 this.close();

@@ -63,9 +63,9 @@ export const updateUserProfile = async (serverUrl: string, user: UserModel, user
     }
 
     try {
-        const {email, firstName, lastName, nickname, position, username} =
-            userInfo;
-        const updatedUser = await database.write(async () => {
+        const {email, firstName, lastName, nickname, position, username} = userInfo;
+
+        await database.write(async () => {
             await user.update((u: UserModel) => {
                 u.email = email;
                 u.firstName = firstName;
