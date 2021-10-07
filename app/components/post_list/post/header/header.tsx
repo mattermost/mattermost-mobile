@@ -56,6 +56,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
         time: {
             color: theme.centerChannelColor,
             fontSize: 12,
+            lineHeight: 16,
             marginTop: 5,
             opacity: 0.5,
             flex: 1,

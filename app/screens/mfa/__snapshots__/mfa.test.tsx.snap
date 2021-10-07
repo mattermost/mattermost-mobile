@@ -66,8 +66,8 @@ exports[`*** MFA Screen *** MFA screen should match snapshot 1`] = `
             Array [
               Object {
                 "color": "#3f4350",
+                "fontFamily": "OpenSans-Semibold",
                 "fontSize": 32,
-                "fontWeight": "600",
                 "marginBottom": 15,
                 "marginTop": 15,
                 "textAlign": "center",
@@ -75,7 +75,6 @@ exports[`*** MFA Screen *** MFA screen should match snapshot 1`] = `
               Object {
                 "color": "rgba(63,67,80,0.6)",
                 "fontSize": 20,
-                "fontWeight": "400",
               },
             ]
           }
