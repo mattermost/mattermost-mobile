@@ -1,16 +1,23 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {withDatabase} from '@nozbe/watermelondb/DatabaseProvider';
+import withObservables from '@nozbe/with-observables';
 import React, {PureComponent} from 'react';
+import {injectIntl, IntlShape} from 'react-intl';
 import {View} from 'react-native';
 import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scrollview';
 import {EventSubscription, Navigation} from 'react-native-navigation';
 import {SafeAreaView} from 'react-native-safe-area-context';
+import {switchMap} from 'rxjs/operators';
 
 import StatusBar from '@components/status_bar/index';
+import {MM_TABLES, SYSTEM_IDENTIFIERS} from '@constants/database';
 import {t} from '@i18n';
 import {VALID_MIME_TYPES} from '@screens/edit_profile/constants';
 import {dismissModal, popTopScreen, setButtons} from '@screens/navigation';
+import {WithDatabaseArgs} from '@typings/database/database';
+import SystemModel from '@typings/database/models/servers/system';
 import UserModel from '@typings/database/models/servers/user';
 import {preventDoubleTap} from '@utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
@@ -20,20 +27,13 @@ import DisplayError from './components/display_error';
 import EmailSettings from './components/email_settings';
 import ProfileUpdating from './components/profile_updating';
 
-import type {IntlShape} from 'react-intl';
-
 type EditProfileProps = {
-    componentId: string;
-    currentUser: UserModel;
-    firstNameDisabled: boolean;
-    lastNameDisabled: boolean;
-    nicknameDisabled: boolean;
-    positionDisabled: boolean;
-    profilePictureDisabled: boolean;
-    theme: Theme;
     commandType: string;
-    isLandscape: boolean;
+    componentId: string;
+    config: SystemModel;
+    currentUser: UserModel;
     intl: IntlShape;
+    theme: Theme;
 };
 
 type Fields = {
@@ -60,9 +60,14 @@ type UploadedFile = {
     width: number;
 }
 
-export default class EditProfile extends PureComponent<EditProfileProps, EditProfileState> {
-    private scrollViewRef: any;
+class EditProfile extends PureComponent<EditProfileProps, EditProfileState> {
+    private firstNameDisabled: boolean | undefined;
+    private lastNameDisabled: boolean | undefined;
     private navigationEventListener: EventSubscription | undefined;
+    private nicknameDisabled: boolean | undefined;
+    private positionDisabled: boolean | undefined;
+    private profilePictureDisabled: boolean | undefined;
+    private scrollViewRef: any;
 
     constructor(props: EditProfileProps) {
         super(props);
@@ -87,6 +92,28 @@ export default class EditProfile extends PureComponent<EditProfileProps, EditPro
             updating: false,
             username,
         };
+
+        this.setUp();
+    }
+
+    setUp = () => {
+        const {currentUser: {authService: service}, config: {value: configValue}} = this.props;
+
+        this.firstNameDisabled = (service === 'ldap' && configValue.LdapFirstNameAttributeSet === 'true') ||
+            (service === 'saml' && configValue.SamlFirstNameAttributeSet === 'true') ||
+            (['gitlab', 'google', 'office365'].includes(service));
+
+        this.lastNameDisabled = (service === 'ldap' && configValue.LdapLastNameAttributeSet === 'true') ||
+            (service === 'saml' && configValue.SamlLastNameAttributeSet === 'true') ||
+            (['gitlab', 'google', 'office365'].includes(service));
+
+        this.nicknameDisabled = (service === 'ldap' && configValue.LdapNicknameAttributeSet === 'true') ||
+            (service === 'saml' && configValue.SamlNicknameAttributeSet === 'true');
+
+        this.positionDisabled = (service === 'ldap' && configValue.LdapPositionAttributeSet === 'true') ||
+            (service === 'saml' && configValue.SamlPositionAttributeSet === 'true');
+
+        this.profilePictureDisabled = (service === 'ldap' || service === 'saml') && configValue.LdapPictureAttributeSet === 'true';
     }
 
     getRightButton = () => {
@@ -217,7 +244,7 @@ export default class EditProfile extends PureComponent<EditProfileProps, EditPro
     };
 
     render() {
-        const {currentUser, firstNameDisabled, lastNameDisabled, nicknameDisabled, positionDisabled, theme} = this.props;
+        const {currentUser, theme} = this.props;
         const {email, error, firstName, lastName, nickname, position, updating, username} = this.state;
 
         const style = getStyleSheet(theme);
@@ -242,14 +269,14 @@ export default class EditProfile extends PureComponent<EditProfileProps, EditPro
                         {/* todo: To be implemented {this.renderProfilePicture()} */}
                         <CommonFieldSettings
                             id={'firstName'}
-                            isDisabled={firstNameDisabled}
+                            isDisabled={Boolean(this.firstNameDisabled)}
                             onChange={this.updateField}
                             value={firstName}
                         />
                         <View style={style.separator}/>
                         <CommonFieldSettings
                             id={'lastName'}
-                            isDisabled={lastNameDisabled}
+                            isDisabled={Boolean(this.lastNameDisabled)}
                             onChange={this.updateField}
                             value={lastName}
                         />
@@ -270,7 +297,7 @@ export default class EditProfile extends PureComponent<EditProfileProps, EditPro
                         <View style={style.separator}/>
                         <CommonFieldSettings
                             id={'nickname'}
-                            isDisabled={nicknameDisabled}
+                            isDisabled={Boolean(this.nicknameDisabled)}
                             onChange={this.updateField}
                             value={nickname}
                             maxLength={22}
@@ -278,7 +305,7 @@ export default class EditProfile extends PureComponent<EditProfileProps, EditPro
                         <View style={style.separator}/>
                         <CommonFieldSettings
                             id={'position'}
-                            isDisabled={positionDisabled}
+                            isDisabled={Boolean(this.positionDisabled)}
                             onChange={this.updateField}
                             value={position}
                             maxLength={128}
@@ -316,3 +343,10 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         },
     };
 });
+
+export default withDatabase(withObservables([], ({database}: WithDatabaseArgs) => ({
+    currentUser: database.get(MM_TABLES.SERVER.SYSTEM).findAndObserve(SYSTEM_IDENTIFIERS.CURRENT_USER_ID).pipe(
+        switchMap((userId: SystemModel) => database.get(MM_TABLES.SERVER.USER).findAndObserve(userId.id)),
+    ),
+    config: database.get(MM_TABLES.SERVER.SYSTEM).findAndObserve(SYSTEM_IDENTIFIERS.CONFIG),
+}))(injectIntl(EditProfile)));
