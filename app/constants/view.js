@@ -105,6 +105,8 @@ const ViewTypes = keyMirror({
 
     VIEWING_GLOBAL_THREADS_UNREADS: null,
     VIEWING_GLOBAL_THREADS_ALL: null,
+
+    THREAD_LAST_VIEWED_AT: null,
 });
 
 const RequiredServer = {

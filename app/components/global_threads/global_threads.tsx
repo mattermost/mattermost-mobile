@@ -38,6 +38,7 @@ function GlobalThreadsList({actions, allThreadIds, intl, teamId, theme, threadCo
     const listRef = React.useRef<FlatList>(null);
 
     const [isLoading, setIsLoading] = React.useState<boolean>(true);
+    const [isRefreshing, setIsRefreshing] = React.useState<boolean>(false);
 
     const scrollToTop = () => {
         listRef.current?.scrollToOffset({offset: 0});
@@ -79,6 +80,16 @@ function GlobalThreadsList({actions, allThreadIds, intl, teamId, theme, threadCo
         }
     };
 
+    const onRefresh = async () => {
+        if (!isLoading) {
+            if (!isRefreshing) {
+                setIsRefreshing(true);
+            }
+            await loadThreads('', '', viewingUnreads);
+            setIsRefreshing(false);
+        }
+    };
+
     const markAllAsRead = () => {
         Alert.alert(
             intl.formatMessage({
@@ -112,9 +123,11 @@ function GlobalThreadsList({actions, allThreadIds, intl, teamId, theme, threadCo
         <ThreadList
             haveUnreads={haveUnreads}
             isLoading={isLoading}
+            isRefreshing={isRefreshing}
             listRef={listRef}
             loadMoreThreads={loadMoreThreads}
             markAllAsRead={markAllAsRead}
+            onRefresh={onRefresh}
             testID={'global_threads'}
             theme={theme}
             threadIds={ids}

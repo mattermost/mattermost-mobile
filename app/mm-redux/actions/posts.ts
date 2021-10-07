@@ -2,6 +2,7 @@
 // See LICENSE.txt for license information.
 /* eslint-disable max-lines */
 
+import {updateThreadLastViewedAt} from '@actions/views/threads';
 import {Client4} from '@client/rest';
 import {WebsocketEvents} from '@constants';
 import {THREAD} from '@constants/screen';
@@ -447,7 +448,10 @@ export function setUnreadPost(userId: string, postId: string, location: string) 
             if (isUnreadFromThreadScreen) {
                 const currentTeamId = getThreadTeamId(state, postId);
                 const threadId = post.root_id || post.id;
-                dispatch(handleFollowChanged(threadId, currentTeamId, true));
+                const actions: GenericAction[] = [];
+                actions.push(handleFollowChanged(threadId, currentTeamId, true));
+                actions.push(updateThreadLastViewedAt(threadId, post.create_at));
+                dispatch(batchActions(actions));
                 await dispatch(updateThreadRead(userId, threadId, post.create_at));
                 return {data: true};
             }

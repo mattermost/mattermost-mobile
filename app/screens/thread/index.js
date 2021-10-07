@@ -4,6 +4,7 @@
 import {connect} from 'react-redux';
 import {bindActionCreators} from 'redux';
 
+import {updateThreadLastViewedAt} from '@actions/views/threads';
 import {fetchThreadAppBindings, clearThreadAppBindings} from '@mm-redux/actions/apps';
 import {selectPost} from '@mm-redux/actions/posts';
 import {setThreadFollow, updateThreadRead} from '@mm-redux/actions/threads';
@@ -12,6 +13,7 @@ import {getCurrentChannelId, getCurrentUserId} from '@mm-redux/selectors/entitie
 import {makeGetPostIdsForThread} from '@mm-redux/selectors/entities/posts';
 import {getTheme, isCollapsedThreadsEnabled} from '@mm-redux/selectors/entities/preferences';
 import {getThread} from '@mm-redux/selectors/entities/threads';
+import {getThreadLastViewedAt} from '@selectors/threads';
 
 import Thread from './thread';
 
@@ -21,6 +23,12 @@ function makeMapStateToProps() {
         const channel = getChannel(state, ownProps.channelId);
 
         const collapsedThreadsEnabled = isCollapsedThreadsEnabled(state);
+        const myMember = getMyCurrentChannelMembership(state);
+        const thread = collapsedThreadsEnabled ? getThread(state, ownProps.rootId, true) : null;
+        let lastViewedAt = myMember?.last_viewed_at;
+        if (collapsedThreadsEnabled) {
+            lastViewedAt = getThreadLastViewedAt(state, thread.id);
+        }
         return {
             channelId: ownProps.channelId,
             channelIsArchived: channel ? channel.delete_at !== 0 : false,
@@ -28,10 +36,11 @@ function makeMapStateToProps() {
             collapsedThreadsEnabled,
             currentUserId: getCurrentUserId(state),
             displayName: channel ? channel.display_name : '',
-            myMember: getMyCurrentChannelMembership(state),
+            lastViewedAt,
+            myMember,
             postIds: getPostIdsForThread(state, ownProps.rootId),
             theme: getTheme(state),
-            thread: collapsedThreadsEnabled ? getThread(state, ownProps.rootId, true) : null,
+            thread,
             threadLoadingStatus: state.requests.posts.getPostThread,
             shouldFetchBindings: ownProps.channelId !== getCurrentChannelId(state),
         };
@@ -44,6 +53,7 @@ function mapDispatchToProps(dispatch) {
             selectPost,
             setThreadFollow,
             updateThreadRead,
+            updateThreadLastViewedAt,
             fetchThreadAppBindings,
             clearThreadAppBindings,
         }, dispatch),
