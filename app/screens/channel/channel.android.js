@@ -11,8 +11,9 @@ import InteractiveDialogController from '@components/interactive_dialog_controll
 import KeyboardLayout from '@components/layout/keyboard_layout';
 import NetworkIndicator from '@components/network_indicator';
 import PostDraft from '@components/post_draft';
-import FloatingVoiceCall from '@components/voice_channels/floating_voice_call';
-import JoinCurrentCall from '@components/voice_channels/join_current_call';
+import CurrentVoiceCall from '@components/voice_channels/current_voice_call';
+import FloatingVoiceCallContainer from '@components/voice_channels/floating_voice_call_container';
+import JoinVoiceCall from '@components/voice_channels/join_voice_call';
 import {NavigationTypes} from '@constants';
 import {CHANNEL_POST_TEXTBOX_CURSOR_CHANGE, CHANNEL_POST_TEXTBOX_VALUE_CHANGE} from '@constants/post_draft';
 import EventEmitter from '@mm-redux/utils/event_emitter';
@@ -104,6 +105,12 @@ export default class ChannelAndroid extends ChannelBase {
                 {component}
                 <NetworkIndicator/>
                 <AnnouncementBanner/>
+                <FloatingVoiceCallContainer>
+                    <JoinVoiceCall/>
+                    <CurrentVoiceCall
+                        onExpand={() => goToScreen('VoiceCall', 'Voice Call')}
+                    />
+                </FloatingVoiceCallContainer>
             </>
         );
 
@@ -111,11 +118,6 @@ export default class ChannelAndroid extends ChannelBase {
             <>
                 <View style={style.flex}>
                     {drawerContent}
-                    <FloatingVoiceCall
-                        volume={1}
-                        onExpand={() => goToScreen('VoiceCall', 'Voice Call')}
-                    />
-                    <JoinCurrentCall/>
                 </View>
                 <InteractiveDialogController
                     theme={theme}

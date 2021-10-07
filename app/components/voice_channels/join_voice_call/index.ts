@@ -8,7 +8,7 @@ import {getCurrentChannelId} from '@mm-redux/selectors/entities/channels';
 import {getTheme} from '@mm-redux/selectors/entities/preferences';
 import {getVoiceCalls, getCurrentCall} from '@mm-redux/selectors/entities/voiceCalls';
 
-import JoinCurrentCall from './join_current_call';
+import JoinVoiceCall from './join_voice_call';
 
 import type {GlobalState} from '@mm-redux/types/store';
 
@@ -31,4 +31,4 @@ function mapDispatchToProps(dispatch: Dispatch) {
     };
 }
 
-export default connect(mapStateToProps, mapDispatchToProps)(JoinCurrentCall);
+export default connect(mapStateToProps, mapDispatchToProps)(JoinVoiceCall);

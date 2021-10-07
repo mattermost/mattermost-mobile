@@ -112,6 +112,7 @@ const getStyleSheet = makeStyleSheetFromTheme((props: Props) => {
             padding: 10,
             backgroundColor: 'rgba(255,255,255,0.12)',
             borderRadius: 4,
+            overflow: 'hidden',
         },
         muteIcon: {
             color: props.theme.sidebarText,
@@ -127,6 +128,7 @@ const getStyleSheet = makeStyleSheetFromTheme((props: Props) => {
             width: 68,
             height: 68,
             margin: 10,
+            overflow: 'hidden',
         },
         hangUpIcon: {
             backgroundColor: '#D24B4E',

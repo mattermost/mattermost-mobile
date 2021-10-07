@@ -46,12 +46,14 @@ const getStyleSheet = makeStyleSheetFromTheme((props: Props) => {
             width: 24,
             height: 24,
             borderRadius: 12,
+            padding: 2,
             backgroundColor: props.muted ? 'black' : '#3DB887',
             borderColor: 'black',
             borderWidth: 2,
             color: 'white',
             textAlign: 'center',
             textAlignVertical: 'center',
+            overflow: 'hidden',
         },
     };
 });

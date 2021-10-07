@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback} from 'react';
-import {View, Text, Platform, TouchableOpacity, Pressable} from 'react-native';
+import {View, Text, TouchableOpacity, Pressable} from 'react-native';
 
 import CompassIcon from '@components/compass_icon';
 import FormattedText from '@components/formatted_text';
@@ -36,24 +36,9 @@ type Props = {
 const getStyleSheet = makeStyleSheetFromTheme((props: Props) => {
     return {
         wrapper: {
-            position: 'absolute',
-            top: 60,
-            width: '100%',
-            height: '100%',
             padding: 10,
         },
-        pressable: {
-            zIndex: 10,
-        },
         container: {
-            ...Platform.select({
-                android: {
-                    elevation: 3,
-                },
-                ios: {
-                    zIndex: 3,
-                },
-            }),
             flexDirection: 'row',
             backgroundColor: '#3F4350',
             width: '100%',
@@ -61,6 +46,9 @@ const getStyleSheet = makeStyleSheetFromTheme((props: Props) => {
             padding: 4,
             height: 64,
             alignItems: 'center',
+        },
+        pressable: {
+            zIndex: 10,
         },
         userInfo: {
             flex: 1,
@@ -84,6 +72,8 @@ const getStyleSheet = makeStyleSheetFromTheme((props: Props) => {
             backgroundColor: props.currentParticipant?.muted ? 'transparent' : '#3DB887',
             borderRadius: 4,
             margin: 4,
+            padding: 9,
+            overflow: 'hidden',
         },
         expandIcon: {
             color: props.theme.sidebarText,
@@ -93,7 +83,7 @@ const getStyleSheet = makeStyleSheetFromTheme((props: Props) => {
     };
 });
 
-const FloatingVoiceCall = (props: Props) => {
+const CurrentVoiceCall = (props: Props) => {
     if (!props.call) {
         return null;
     }
@@ -109,14 +99,14 @@ const FloatingVoiceCall = (props: Props) => {
                 <View style={style.userInfo}>
                     <Text style={style.speakingUser}>
                         <FormattedText
-                            id='floating_voice_call.user-is-speaking'
+                            id='current_voice_call.user-is-speaking'
                             defaultMessage='{username} is speaking'
                             values={{username: displayUsername(props.speakerUser, props.teammateNameDisplay)}}
                         />
                     </Text>
                     <Text style={style.currentChannel}>
                         <FormattedText
-                            id='floating_voice_call.channel-name'
+                            id='current_voice_call.channel-name'
                             defaultMessage='~{channelName}'
                             values={{channelName: props.channel.display_name}}
                         />
@@ -152,4 +142,4 @@ const FloatingVoiceCall = (props: Props) => {
         </View>
     );
 };
-export default FloatingVoiceCall;
+export default CurrentVoiceCall;

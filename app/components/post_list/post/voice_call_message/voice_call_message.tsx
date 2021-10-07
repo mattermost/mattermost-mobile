@@ -44,6 +44,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             borderRadius: 8,
             marginRight: 5,
             color: 'white',
+            overflow: 'hidden',
         },
         joinCallButtonText: {
             color: 'white',

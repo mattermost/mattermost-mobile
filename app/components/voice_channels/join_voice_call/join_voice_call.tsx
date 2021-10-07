@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback} from 'react';
-import {View, Text, Platform, Pressable, Alert} from 'react-native';
+import {View, Text, Pressable, Alert} from 'react-native';
 
 import Avatars from '@components/avatars';
 import CompassIcon from '@components/compass_icon';
@@ -25,27 +25,12 @@ type Props = {
 
 const getStyleSheet = makeStyleSheetFromTheme((props: Props) => {
     return {
-        wrapper: {
-            position: 'absolute',
-            top: 55,
-            width: '100%',
-            height: '100%',
-            padding: 0,
-        },
         container: {
-            ...Platform.select({
-                android: {
-                    elevation: 3,
-                },
-                ios: {
-                    zIndex: 3,
-                },
-            }),
             flexDirection: 'row',
             backgroundColor: '#3DB887',
             width: '100%',
-            padding: 0,
-            height: 40,
+            padding: 5,
+            justifyContent: 'center',
             alignItems: 'center',
         },
         joinCallIcon: {
@@ -78,7 +63,7 @@ const getStyleSheet = makeStyleSheetFromTheme((props: Props) => {
     };
 });
 
-const JoinCurrentCall = (props: Props) => {
+const JoinVoiceCall = (props: Props) => {
     if (!props.call) {
         return null;
     }
@@ -106,37 +91,35 @@ const JoinCurrentCall = (props: Props) => {
     }, [props.call, props.confirmToJoin]);
     return (
         <Pressable
-            style={style.wrapper}
+            style={style.container}
             onPress={joinHandler}
         >
-            <View style={style.container}>
-                <CompassIcon
-                    name='phone-in-talk'
-                    size={16}
-                    style={style.joinCallIcon}
+            <CompassIcon
+                name='phone-in-talk'
+                size={16}
+                style={style.joinCallIcon}
+            />
+            <Text style={style.joinCall}>{'Join Call'}</Text>
+            <Text style={style.started}>
+                <FormattedRelativeTime
+                    value={props.call.startTime}
+                    updateIntervalInSeconds={1}
                 />
-                <Text style={style.joinCall}>{'Join Call'}</Text>
-                <Text style={style.started}>
-                    <FormattedRelativeTime
-                        value={props.call.startTime}
-                        updateIntervalInSeconds={1}
-                    />
-                </Text>
-                <View style={style.avatars}>
-                    <Avatars
-                        userIds={Object.values(props.call.participants || {}).map((x) => x.id)}
-                        breakAt={1}
-                        listTitle={
-                            <FormattedText
-                                id='voice_calls.join_call.participants_list_header'
-                                defaultMessage={'CALL PARTICIPANTS'}
-                                style={style.headerText}
-                            />
-                        }
-                    />
-                </View>
+            </Text>
+            <View style={style.avatars}>
+                <Avatars
+                    userIds={Object.values(props.call.participants || {}).map((x) => x.id)}
+                    breakAt={1}
+                    listTitle={
+                        <FormattedText
+                            id='voice_calls.join_call.participants_list_header'
+                            defaultMessage={'CALL PARTICIPANTS'}
+                            style={style.headerText}
+                        />
+                    }
+                />
             </View>
         </Pressable>
     );
 };
-export default JoinCurrentCall;
+export default JoinVoiceCall;

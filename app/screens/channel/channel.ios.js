@@ -15,8 +15,9 @@ import PostDraft from '@components/post_draft';
 import MainSidebar from '@components/sidebars/main';
 import SettingsSidebar from '@components/sidebars/settings';
 import StatusBar from '@components/status_bar';
-import FloatingVoiceCall from '@components/voice_channels/floating_voice_call';
-import JoinCurrentCall from '@components/voice_channels/join_current_call';
+import CurrentVoiceCall from '@components/voice_channels/current_voice_call';
+import FloatingVoiceCallContainer from '@components/voice_channels/floating_voice_call_container';
+import JoinVoiceCall from '@components/voice_channels/join_voice_call';
 import DEVICE from '@constants/device';
 import {ACCESSORIES_CONTAINER_NATIVE_ID, CHANNEL_POST_TEXTBOX_CURSOR_CHANGE, CHANNEL_POST_TEXTBOX_VALUE_CHANGE} from '@constants/post_draft';
 import {makeStyleSheetFromTheme} from '@utils/theme';
@@ -85,6 +86,12 @@ export default class ChannelIOS extends ChannelBase {
             <>
                 <AnnouncementBanner/>
                 <NetworkIndicator/>
+                <FloatingVoiceCallContainer>
+                    <JoinVoiceCall/>
+                    <CurrentVoiceCall
+                        onExpand={() => goToScreen('VoiceCall', 'Voice Call')}
+                    />
+                </FloatingVoiceCallContainer>
             </>
         );
         const header = (
@@ -144,11 +151,6 @@ export default class ChannelIOS extends ChannelBase {
                 <SettingsSidebar ref={this.settingsSidebarRef}>
                     <View style={style.backdrop}>
                         {drawerContent}
-                        <FloatingVoiceCall
-                            volume={1}
-                            onExpand={() => goToScreen('VoiceCall', 'Voice Call')}
-                        />
-                        <JoinCurrentCall/>
                     </View>
                 </SettingsSidebar>
                 <InteractiveDialogController

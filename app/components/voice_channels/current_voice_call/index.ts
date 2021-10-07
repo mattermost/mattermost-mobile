@@ -9,7 +9,7 @@ import {getTheme, getTeammateNameDisplaySetting} from '@mm-redux/selectors/entit
 import {getCurrentUserId} from '@mm-redux/selectors/entities/users';
 import {getCurrentCall} from '@mm-redux/selectors/entities/voiceCalls';
 
-import FloatingVoiceCall from './floating_voice_call';
+import CurrentVoiceCall from './current_voice_call';
 
 import type {GlobalState} from '@mm-redux/types/store';
 
@@ -39,4 +39,4 @@ function mapDispatchToProps(dispatch: Dispatch) {
     };
 }
 
-export default connect(mapStateToProps, mapDispatchToProps)(FloatingVoiceCall);
+export default connect(mapStateToProps, mapDispatchToProps)(CurrentVoiceCall);
