@@ -143,7 +143,14 @@ const VoiceCallScreen = (props: Props) => {
 
     const style = getStyleSheet(props);
     useEffect(() => {
-        mergeNavigationOptions('VoiceCall', {topBar: {visible: false}});
+        mergeNavigationOptions('VoiceCall', {
+            layout: {
+                componentBackgroundColor: 'black',
+            },
+            topBar: {
+                visible: false,
+            },
+        });
     }, []);
 
     const showOtherActions = () => {
