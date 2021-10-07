@@ -5,6 +5,7 @@ import React from 'react';
 import {useIntl} from 'react-intl';
 
 import TextSetting from '@components/widgets/text_settings';
+import {t} from '@i18n';
 import {HOLDERS} from '@screens/edit_profile/constants';
 
 type CommonFieldSettingsProps = {
@@ -16,33 +17,6 @@ type CommonFieldSettingsProps = {
     maxLength?: number;
 }
 
-const DISABLED_TEXTS: { [id: string]: any } = {
-    firstName: {
-        id: 'user.settings.general.field_handled_externally',
-        defaultMessage: 'This field is handled through your login provider. If you want to change it, you need to do so through your login provider.',
-    },
-    lastName: {
-        id: 'user.settings.general.field_handled_externally',
-        defaultMessage:
-    'This field is handled through your login provider. If you want to change it, you need to do so through your login provider.',
-    },
-    username: {
-        id: 'user.settings.general.field_handled_externally',
-        defaultMessage:
-            'This field is handled through your login provider. If you want to change it, you need to do so through your login provider.',
-    },
-    nickname: {
-        id: 'user.settings.general.field_handled_externally',
-        defaultMessage:
-            'This field is handled through your login provider. If you want to change it, you need to do so through your login provider.',
-    },
-    position: {
-        id: 'user.settings.general.field_handled_externally',
-        defaultMessage:
-            'This field is handled through your login provider. If you want to change it, you need to do so through your login provider.',
-    },
-};
-
 const CommonFieldSettings = ({isDisabled, id, value, onChange, optional, maxLength}: CommonFieldSettingsProps) => {
     const intl = useIntl();
 
@@ -51,7 +25,10 @@ const CommonFieldSettings = ({isDisabled, id, value, onChange, optional, maxLeng
             disabled={isDisabled}
             id={id}
             label={HOLDERS[id]}
-            disabledText={intl.formatMessage(DISABLED_TEXTS[id])}
+            disabledText={intl.formatMessage({
+                id: t('user.settings.general.field_handled_externally'),
+                defaultMessage: 'This field is handled through your login provider. If you want to change it, you need to do so through your login provider.',
+            })}
             onChange={onChange}
             value={value}
             testID={`edit_profile.text_setting.${id}`}

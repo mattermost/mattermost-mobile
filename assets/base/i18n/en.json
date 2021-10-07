@@ -296,6 +296,7 @@
   "user.settings.general.emailLdapCantUpdate": "Login occurs through AD/LDAP. Email cannot be updated. Email address used for notifications is {email}.",
   "user.settings.general.emailOffice365CantUpdate": "Login occurs through Office 365. Email cannot be updated. Email address used for notifications is {email}.",
   "user.settings.general.emailSamlCantUpdate": "Login occurs through SAML. Email cannot be updated. Email address used for notifications is {email}.",
+  "user.settings.general.field_handled_externally": "This field is handled through your login provider. If you want to change it, you need to do so through your login provider.",
   "user.settings.general.firstName": "First Name",
   "user.settings.general.lastName": "Last Name",
   "user.settings.general.nickname": "Nickname",
