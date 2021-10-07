@@ -4,8 +4,8 @@
 import React, {useCallback} from 'react';
 import {View, Text, Platform, Pressable, Alert} from 'react-native';
 
-import CompassIcon from '@components/compass_icon';
 import Avatars from '@components/avatars';
+import CompassIcon from '@components/compass_icon';
 import FormattedRelativeTime from '@components/formatted_relative_time';
 import FormattedText from '@components/formatted_text';
 import {GenericAction} from '@mm-redux/types/actions';

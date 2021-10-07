@@ -25,7 +25,7 @@ const VoiceCallOtherActions = ({theme, intl}: Props) => {
         <View style={{flex: 1}}>
             <SlideUpPanel
                 onRequestClose={close}
-                initialPosition={0.30}
+                initialPosition={0.24}
                 theme={theme}
             >
                 <Action
@@ -40,13 +40,6 @@ const VoiceCallOtherActions = ({theme, intl}: Props) => {
                     icon='link-variant'
                     onPress={() => null}
                     text={intl.formatMessage({id: 'voice_call.copy_call_link', defaultMessage: 'Copy call link'})}
-                    theme={theme}
-                />
-                <Action
-                    destructive={false}
-                    icon='settings-outline'
-                    onPress={() => null}
-                    text={intl.formatMessage({id: 'voice_call.call_settings', defaultMessage: 'Call Settings'})}
                     theme={theme}
                 />
                 <Action

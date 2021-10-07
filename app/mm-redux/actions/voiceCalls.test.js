@@ -14,12 +14,12 @@ export function addFakeCall(channelId) {
         type: VoiceCallsTypes.RECEIVED_VOICE_CALL_STARTED,
         data: {
             participants: {
-                xohi8cki9787fgiryne716u84o: {id: 'xohi8cki9787fgiryne716u84o', isTalking: true, handRaised: false, muted: false},
-                xohi8cki9787fgiryne716u841: {id: 'xohi8cki9787fgiryne716u84o', isTalking: true, handRaised: false, muted: true},
-                xohi8cki9787fgiryne716u842: {id: 'xohi8cki9787fgiryne716u84o', isTalking: false, handRaised: true, muted: false},
-                xohi8cki9787fgiryne716u843: {id: 'xohi8cki9787fgiryne716u84o', isTalking: false, handRaised: false, muted: true},
-                xohi8cki9787fgiryne716u844: {id: 'xohi8cki9787fgiryne716u84o', isTalking: true, handRaised: false, muted: false},
-                xohi8cki9787fgiryne716u845: {id: 'xohi8cki9787fgiryne716u84o', isTalking: true, handRaised: false, muted: true},
+                xohi8cki9787fgiryne716u84o: {id: 'xohi8cki9787fgiryne716u84o', isTalking: true, muted: false},
+                xohi8cki9787fgiryne716u841: {id: 'xohi8cki9787fgiryne716u84o', isTalking: true, muted: true},
+                xohi8cki9787fgiryne716u842: {id: 'xohi8cki9787fgiryne716u84o', isTalking: false, uted: false},
+                xohi8cki9787fgiryne716u843: {id: 'xohi8cki9787fgiryne716u84o', isTalking: false, muted: true},
+                xohi8cki9787fgiryne716u844: {id: 'xohi8cki9787fgiryne716u84o', isTalking: true, muted: false},
+                xohi8cki9787fgiryne716u845: {id: 'xohi8cki9787fgiryne716u84o', isTalking: true, muted: true},
             },
             channelId,
             startTime: (new Date()).getTime(),
@@ -73,24 +73,6 @@ describe('Actions.VoiceCalls', () => {
         assert.equal(true, result);
         await store.dispatch(VoiceCallsActions.unmuteUser('channel-id', 'xohi8cki9787fgiryne716u841'));
         result = store.getState().entities.voiceCalls.calls['channel-id'].participants.xohi8cki9787fgiryne716u841.muted;
-        assert.equal(false, result);
-    });
-
-    it('raiseHand', async () => {
-        await store.dispatch(addFakeCall('channel-id'));
-        let result = store.getState().entities.voiceCalls.calls['channel-id'].participants.xohi8cki9787fgiryne716u84o.handRaised;
-        assert.equal(false, result);
-        await store.dispatch(VoiceCallsActions.raiseHand('channel-id', 'xohi8cki9787fgiryne716u84o'));
-        result = store.getState().entities.voiceCalls.calls['channel-id'].participants.xohi8cki9787fgiryne716u84o.handRaised;
-        assert.equal(true, result);
-    });
-
-    it('unraiseHand', async () => {
-        await store.dispatch(addFakeCall('channel-id'));
-        let result = store.getState().entities.voiceCalls.calls['channel-id'].participants.xohi8cki9787fgiryne716u842.handRaised;
-        assert.equal(true, result);
-        await store.dispatch(VoiceCallsActions.unraiseHand('channel-id', 'xohi8cki9787fgiryne716u842'));
-        result = store.getState().entities.voiceCalls.calls['channel-id'].participants.xohi8cki9787fgiryne716u842.handRaised;
         assert.equal(false, result);
     });
 });

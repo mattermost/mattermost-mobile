@@ -83,19 +83,3 @@ export function unmuteMyself(): GenericAction {
     }
     return {type: 'empty'};
 }
-
-// TODO: Remove this whenever we have the real backend connection
-export function raiseHand(channelId: string, userId: string): GenericAction {
-    return {
-        type: VoiceCallsTypes.RECEIVED_RAISE_HAND_VOICE_CALL,
-        data: {channelId, userId},
-    };
-}
-
-// TODO: Remove this whenever we have the real backend connection
-export function unraiseHand(channelId: string, userId: string): GenericAction {
-    return {
-        type: VoiceCallsTypes.RECEIVED_UNRAISE_HAND_VOICE_CALL,
-        data: {channelId, userId},
-    };
-}

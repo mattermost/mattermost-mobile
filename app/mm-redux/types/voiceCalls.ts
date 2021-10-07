@@ -19,6 +19,5 @@ export type Call = {
 export type CallParticipant = {
     id: string;
     muted: boolean;
-    handRaised: boolean;
     isTalking: boolean;
 }

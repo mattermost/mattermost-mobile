@@ -3,10 +3,10 @@
 
 import React, {useEffect, useCallback} from 'react';
 import {Keyboard, View, Text, Platform, Pressable, SafeAreaView, ScrollView} from 'react-native';
-import FontAwesome5Icon from 'react-native-vector-icons/FontAwesome5';
 
 import {showModalOverCurrentContext, mergeNavigationOptions, popTopScreen} from '@actions/navigation';
 import CompassIcon from '@components/compass_icon';
+import FormattedText from '@components/formatted_text';
 import VoiceAvatar from '@components/voice_channels/voice_avatar';
 import VoiceCallDuration from '@components/voice_channels/voice_call_duration';
 import {GenericAction} from '@mm-redux/types/actions';
@@ -22,8 +22,6 @@ type Props = {
     actions: {
         muteMyself: (channelId: string) => GenericAction;
         unmuteMyself: (channelId: string) => GenericAction;
-        raiseHand: (channelId: string, userId: string) => GenericAction;
-        unraiseHand: (channelId: string, userId: string) => GenericAction;
         leaveCall: () => GenericAction;
     };
     theme: Theme;
@@ -130,15 +128,6 @@ const getStyleSheet = makeStyleSheetFromTheme((props: Props) => {
             height: 68,
             margin: 10,
         },
-        handRaised: {
-            color: props.theme.sidebarText,
-            backgroundColor: '#FFBC1F',
-            borderRadius: 34,
-            padding: 22,
-            width: 68,
-            height: 68,
-            margin: 10,
-        },
         hangUpIcon: {
             backgroundColor: '#D24B4E',
         },
@@ -175,14 +164,6 @@ const VoiceCallScreen = (props: Props) => {
         }
     }, [props.call.channelId, props.currentParticipant]);
 
-    const raiseUnraiseHandHandler = useCallback(() => {
-        if (props.currentParticipant?.handRaised) {
-            props.actions.unraiseHand(props.call.channelId, props.currentParticipant?.id);
-        } else {
-            props.actions.raiseHand(props.call.channelId, props.currentParticipant?.id);
-        }
-    }, [props.call.channelId, props.currentParticipant]);
-
     return (
         <SafeAreaView style={style.wrapper}>
             <View style={style.container}>
@@ -213,7 +194,6 @@ const VoiceCallScreen = (props: Props) => {
                                     <VoiceAvatar
                                         userId={user.id}
                                         volume={user.isTalking ? 1 : 0}
-                                        handRaised={user.handRaised}
                                         muted={user.muted}
                                         size='l'
                                     />
@@ -233,7 +213,18 @@ const VoiceCallScreen = (props: Props) => {
                             size={24}
                             style={style.muteIcon}
                         />
-                        <Text style={style.buttonText}>{props.currentParticipant?.muted ? 'Unmute' : 'Mute'}</Text>
+                        {props.currentParticipant?.muted &&
+                            <FormattedText
+                                style={style.buttonText}
+                                id='voice_call.unmute'
+                                defaultMessage='Unmute'
+                            />}
+                        {!props.currentParticipant?.muted &&
+                            <FormattedText
+                                style={style.buttonText}
+                                id='voice_call.mute'
+                                defaultMessage='Mute'
+                            />}
                     </Pressable>
                     <View style={style.otherButtons}>
                         <Pressable
@@ -248,7 +239,11 @@ const VoiceCallScreen = (props: Props) => {
                                 size={24}
                                 style={{...style.buttonIcon, ...style.hangUpIcon}}
                             />
-                            <Text style={style.buttonText}>{'Leave'}</Text>
+                            <FormattedText
+                                style={style.buttonText}
+                                id='voice_call.leave'
+                                defaultMessage='Leave'
+                            />
                         </Pressable>
                         <Pressable
                             style={style.button}
@@ -258,18 +253,25 @@ const VoiceCallScreen = (props: Props) => {
                                 size={24}
                                 style={style.buttonIcon}
                             />
-                            <Text style={style.buttonText}>{'Chat thread'}</Text>
+                            <FormattedText
+                                style={style.buttonText}
+                                id='voice_call.chat_thread'
+                                defaultMessage='Chat thread'
+                            />
                         </Pressable>
                         <Pressable
                             style={style.button}
-                            onPress={raiseUnraiseHandHandler}
                         >
-                            <FontAwesome5Icon
-                                name='hand-paper'
+                            <CompassIcon
+                                name='settings-outline'
                                 size={24}
-                                style={props.currentParticipant?.handRaised ? style.handRaised : style.buttonIcon}
+                                style={style.buttonIcon}
                             />
-                            <Text style={style.buttonText}>{props.currentParticipant?.handRaised ? 'Unraise hand' : 'Raise hand'}</Text>
+                            <FormattedText
+                                style={style.buttonText}
+                                id='voice_call.settings'
+                                defaultMessage='Settings'
+                            />
                         </Pressable>
                         <Pressable
                             style={style.button}
@@ -280,7 +282,11 @@ const VoiceCallScreen = (props: Props) => {
                                 size={24}
                                 style={style.buttonIcon}
                             />
-                            <Text style={style.buttonText}>{'More'}</Text>
+                            <FormattedText
+                                style={style.buttonText}
+                                id='voice_call.more'
+                                defaultMessage='More'
+                            />
                         </Pressable>
                     </View>
                 </View>

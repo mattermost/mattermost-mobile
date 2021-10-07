@@ -39,7 +39,6 @@ function calls(state: Dictionary<Call> = {}, action: GenericAction) {
         channelUpdate.participants[userId] = {
             id: userId,
             muted: false,
-            handRaised: false,
             isTalking: false,
         };
         const nextState = {...state};
@@ -119,36 +118,6 @@ function calls(state: Dictionary<Call> = {}, action: GenericAction) {
         if (!channelUpdate.speakers || channelUpdate.speakers.length === 0) {
             channelUpdate.speakers = [userId];
         }
-        const nextState = {...state};
-        nextState[channelId] = channelUpdate;
-        return nextState;
-    }
-    case VoiceCallsTypes.RECEIVED_RAISE_HAND_VOICE_CALL: {
-        const {channelId, userId} = action.data;
-        if (!state[channelId]) {
-            return state;
-        }
-        if (!state[channelId].participants[userId]) {
-            return state;
-        }
-        const userUpdate = {...state[channelId].participants[userId], handRaised: true};
-        const channelUpdate = {...state[channelId], participants: {...state[channelId].participants}};
-        channelUpdate.participants[userId] = userUpdate;
-        const nextState = {...state};
-        nextState[channelId] = channelUpdate;
-        return nextState;
-    }
-    case VoiceCallsTypes.RECEIVED_UNRAISE_HAND_VOICE_CALL: {
-        const {channelId, userId} = action.data;
-        if (!state[channelId]) {
-            return state;
-        }
-        if (!state[channelId].participants[userId]) {
-            return state;
-        }
-        const userUpdate = {...state[channelId].participants[userId], handRaised: false};
-        const channelUpdate = {...state[channelId], participants: {...state[channelId].participants}};
-        channelUpdate.participants[userId] = userUpdate;
         const nextState = {...state};
         nextState[channelId] = channelUpdate;
         return nextState;

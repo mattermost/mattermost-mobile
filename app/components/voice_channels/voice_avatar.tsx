@@ -3,7 +3,6 @@
 
 import React from 'react';
 import {View} from 'react-native';
-import FontAwesome5Icon from 'react-native-vector-icons/FontAwesome5';
 
 import CompassIcon from '@components/compass_icon';
 import ProfilePicture from '@components/profile_picture';
@@ -12,7 +11,6 @@ import {makeStyleSheetFromTheme} from '@utils/theme';
 type Props = {
     userId: string;
     volume: number;
-    handRaised?: boolean;
     muted?: boolean;
     size?: 'm' | 'l';
 }
@@ -55,20 +53,6 @@ const getStyleSheet = makeStyleSheetFromTheme((props: Props) => {
             textAlign: 'center',
             textAlignVertical: 'center',
         },
-        handRaised: {
-            position: 'absolute',
-            top: -5,
-            right: -5,
-            width: 24,
-            height: 24,
-            borderRadius: 12,
-            backgroundColor: '#FFBC1F',
-            color: 'white',
-            borderColor: 'black',
-            borderWidth: 2,
-            textAlign: 'center',
-            textAlignVertical: 'center',
-        },
     };
 });
 
@@ -88,12 +72,6 @@ const VoiceAvatar = (props: Props) => {
                             name={props.muted ? 'microphone-off' : 'microphone'}
                             size={16}
                             style={style.mute}
-                        />}
-                    {props.handRaised === true &&
-                        <FontAwesome5Icon
-                            name={'hand-paper'}
-                            size={14}
-                            style={style.handRaised}
                         />}
                 </View>
             </View>
