@@ -16,12 +16,10 @@ import {updateMe} from '@actions/remote/user';
 import StatusBar from '@components/status_bar/index';
 import {MM_TABLES, SYSTEM_IDENTIFIERS} from '@constants/database';
 import {withServerUrl} from '@context/server_url';
+import {withTheme} from '@context/theme';
 import {t} from '@i18n';
 import {VALID_MIME_TYPES} from '@screens/edit_profile/constants';
 import {dismissModal, popTopScreen, setButtons} from '@screens/navigation';
-import {WithDatabaseArgs} from '@typings/database/database';
-import SystemModel from '@typings/database/models/servers/system';
-import UserModel from '@typings/database/models/servers/user';
 import {preventDoubleTap} from '@utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
@@ -29,6 +27,10 @@ import CommonFieldSettings from './components/common_field_settings';
 import DisplayError from './components/display_error';
 import EmailSettings from './components/email_settings';
 import ProfileUpdating from './components/profile_updating';
+
+import type {WithDatabaseArgs} from '@typings/database/database';
+import type SystemModel from '@typings/database/models/servers/system';
+import type UserModel from '@typings/database/models/servers/user';
 
 type EditProfileProps = {
     commandType: string;
@@ -54,6 +56,8 @@ type UploadedFile = {
     uri: string;
     width: number;
 }
+
+const {SERVER: {USER, SYSTEM}} = MM_TABLES;
 
 class EditProfile extends PureComponent<EditProfileProps, EditProfileState> {
     private firstNameDisabled: boolean | undefined;
@@ -339,9 +343,8 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     };
 });
 
+const EnhancedProfile = injectIntl(withServerUrl(withTheme(EditProfile)));
 export default withDatabase(withObservables([], ({database}: WithDatabaseArgs) => ({
-    currentUser: database.get(MM_TABLES.SERVER.SYSTEM).findAndObserve(SYSTEM_IDENTIFIERS.CURRENT_USER_ID).pipe(
-        switchMap((userId: SystemModel) => database.get(MM_TABLES.SERVER.USER).findAndObserve(userId.id)),
-    ),
+    currentUser: database.get(SYSTEM).findAndObserve(SYSTEM_IDENTIFIERS.CURRENT_USER_ID).pipe(switchMap((id: SystemModel) => database.get(USER).findAndObserve(id.value))),
     config: database.get(MM_TABLES.SERVER.SYSTEM).findAndObserve(SYSTEM_IDENTIFIERS.CONFIG),
-}))(injectIntl(withServerUrl(EditProfile))));
+}))(EnhancedProfile));

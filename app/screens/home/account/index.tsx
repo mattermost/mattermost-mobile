@@ -181,7 +181,7 @@ const AccountScreen = ({config, currentUser, database}: AccountScreenProps) => {
 
     const goToEditProfileScreen = () => {
         const commandType = 'ShowModal';
-        showModal(Screens.EDIT_PROFILE, intl.formatMessage({id: 'mobile.routes.edit_profile', defaultMessage: 'Edit Profile'}), {currentUser, commandType});
+        showModal(Screens.EDIT_PROFILE, intl.formatMessage({id: 'mobile.routes.edit_profile', defaultMessage: 'Edit Profile'}), {commandType});
     };
 
     return (
