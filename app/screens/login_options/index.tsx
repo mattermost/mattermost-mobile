@@ -41,7 +41,7 @@ const getStyles = makeStyleSheetFromTheme((theme: Theme) => ({
         marginTop: 15,
         marginBottom: 15,
         fontSize: 32,
-        fontWeight: '600',
+        fontFamily: 'OpenSans-Semibold',
     },
     subheader: {
         textAlign: 'center',

@@ -64,7 +64,8 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme: Theme) => {
             backgroundColor: theme.newMessageSeparator,
         },
         text: {
-            fontSize: 14,
+            lineHeight: 16,
+            fontSize: 12,
             color: theme.newMessageSeparator,
         },
     };
