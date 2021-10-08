@@ -34,7 +34,7 @@ type SearchProps = {
     keyboardType: KeyboardTypeOptions | undefined;
     leftComponent: JSX.Element;
     onBlur: () => void;
-    onCancelButtonPress: (text: string) => void;
+    onCancelButtonPress: (text?: string) => void;
     onChangeText: (text: string) => void;
     onFocus: () => void;
     onSearchButtonPress: (value: string) => void;
@@ -136,7 +136,7 @@ export default class Search extends PureComponent<SearchProps, SearchState> {
         onSearchButtonPress(value);
     };
 
-    onChangeText = (text: any) => {
+    onChangeText = (text: string) => {
         const {onChangeText} = this.props;
         if (onChangeText) {
             onChangeText(text);
@@ -266,6 +266,8 @@ export default class Search extends PureComponent<SearchProps, SearchState> {
                                 />
                             )
                         }
+
+                        // @ts-expect-error: The clearIcon can also accept a ReactElement
                         clearIcon={
                             <ClearIcon
                                 deleteIconSizeAndroid={deleteIconSize}
@@ -287,14 +289,18 @@ export default class Search extends PureComponent<SearchProps, SearchState> {
                         leftIconContainerStyle={styles.leftIcon}
                         placeholder={placeholder || intl.formatMessage({id: 'search_bar.search', defaultMessage: 'Search'})}
                         placeholderTextColor={placeholderTextColor}
-                        platform={Platform.OS}
+                        platform={Platform.OS as 'ios' | 'android'}
                         onBlur={this.onBlur}
                         onCancel={this.onCancel}
+
+                        // @ts-expect-error: The TS definition for this SearchBar is messed up
                         onChangeText={this.onChangeText}
                         onClear={this.onClear}
                         onFocus={this.onFocus}
                         onSelectionChange={this.onSelectionChange}
                         onSubmitEditing={this.onSearch}
+
+                        // @ts-expect-error: The searchIcon can also accept a ReactElement
                         searchIcon={
                             <SearchIcon
                                 searchIconColor={tintColorSearch || placeholderTextColor}
