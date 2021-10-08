@@ -8,7 +8,6 @@ import Avatars from '@components/avatars';
 import CompassIcon from '@components/compass_icon';
 import FormattedRelativeTime from '@components/formatted_relative_time';
 import FormattedText from '@components/formatted_text';
-import {GenericAction} from '@mm-redux/types/actions';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 import type {Theme} from '@mm-redux/types/theme';
@@ -16,7 +15,7 @@ import type {Call} from '@mm-redux/types/voiceCalls';
 
 type Props = {
     actions: {
-        joinCall: (channelId: string) => GenericAction;
+        joinCall: (channelId: string) => any;
     };
     theme: Theme;
     call: Call;

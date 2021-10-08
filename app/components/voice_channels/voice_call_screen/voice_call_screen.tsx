@@ -3,6 +3,7 @@
 
 import React, {useEffect, useCallback} from 'react';
 import {Keyboard, View, Text, Platform, Pressable, SafeAreaView, ScrollView} from 'react-native';
+import {RTCView} from 'react-native-webrtc';
 
 import {showModalOverCurrentContext, mergeNavigationOptions, popTopScreen} from '@actions/navigation';
 import CompassIcon from '@components/compass_icon';
@@ -25,10 +26,11 @@ type Props = {
         leaveCall: () => GenericAction;
     };
     theme: Theme;
-    call: Call;
+    call: Call|null;
     users: IDMappedObjects<UserProfile>;
     currentParticipant: CallParticipant;
     teammateNameDisplay: string;
+    screenShareURL: string;
 }
 
 const getStyleSheet = makeStyleSheetFromTheme((props: Props) => {
@@ -133,6 +135,12 @@ const getStyleSheet = makeStyleSheetFromTheme((props: Props) => {
         hangUpIcon: {
             backgroundColor: '#D24B4E',
         },
+        screenShare: {
+            flex: 3,
+            width: '100%',
+            height: '100%',
+            backgroundColor: 'white',
+        },
     };
 });
 
@@ -166,12 +174,24 @@ const VoiceCallScreen = (props: Props) => {
     };
 
     const muteUnmuteHandler = useCallback(() => {
-        if (props.currentParticipant?.muted) {
-            props.actions.unmuteMyself(props.call.channelId);
-        } else {
-            props.actions.muteMyself(props.call.channelId);
+        if (props.call) {
+            if (props.currentParticipant?.muted) {
+                props.actions.unmuteMyself(props.call.channelId);
+            } else {
+                props.actions.muteMyself(props.call.channelId);
+            }
         }
     }, [props.call.channelId, props.currentParticipant]);
+
+    let screenShareView = null;
+    if (props.screenShareURL) {
+        screenShareView = (
+            <RTCView
+                streamURL={props.screenShareURL}
+                style={style.screenShare}
+            />
+        );
+    }
 
     return (
         <SafeAreaView style={style.wrapper}>
@@ -212,6 +232,7 @@ const VoiceCallScreen = (props: Props) => {
                         })}
                     </View>
                 </ScrollView>
+                {screenShareView}
                 <View style={style.buttons}>
                     <Pressable
                         style={style.mute}

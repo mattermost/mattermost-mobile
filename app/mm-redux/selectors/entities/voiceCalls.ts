@@ -19,3 +19,7 @@ export function getCurrentCall(state: GlobalState) {
 export function isVoiceEnabled(state: GlobalState) {
     return Boolean(state.entities.voiceCalls.enabled[getCurrentChannelId(state)]);
 }
+
+export function getScreenShareURL(state: GlobalState) {
+    return state.entities.voiceCalls.screenShareURL;
+}

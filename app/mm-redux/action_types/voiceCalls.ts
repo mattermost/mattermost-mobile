@@ -19,4 +19,5 @@ export default keyMirror({
     RECEIVED_VOICE_OFF_USER_VOICE_CALL: null,
     RECEIVED_RAISE_HAND_VOICE_CALL: null,
     RECEIVED_UNRAISE_HAND_VOICE_CALL: null,
+    SET_SCREENSHARE_URL: null,
 });

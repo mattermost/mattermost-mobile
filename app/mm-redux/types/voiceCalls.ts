@@ -7,6 +7,7 @@ export type VoiceCallsState = {
     calls: Dictionary<Call>;
     enabled: Dictionary<boolean>;
     joined: string;
+    screenShareURL: string;
 }
 
 export type Call = {

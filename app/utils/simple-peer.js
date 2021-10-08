@@ -6,10 +6,12 @@
  * <https://feross.org/opensource> */
 
 const {Buffer} = require('buffer');
+const {generateId} = require('./file');
 
 const errCode = require('err-code');
 const queueMicrotask = require('queue-microtask'); // TODO: remove when Node 10 is not supported
 const stream = require('readable-stream');
+
 
 const MAX_BUFFERED_AMOUNT = 64 * 1024;
 const ICECOMPLETE_TIMEOUT = 5 * 1000;
@@ -33,13 +35,8 @@ class Peer extends stream.Duplex {
     constructor(opts) {
         super({allowHalfOpen: false, ...opts});
 
-        // TODO: Convert this to a random id
-        this._id = 'fabada';
-
-        // TODO: Convert this to a random id
-        this.channelName = opts.initiator ?
-            opts.channelName || 'anothername' :
-            null;
+        this._id = generateId();
+        this.channelName = opts.initiator ? opts.channelName || generateId() : null;
 
         this.initiator = opts.initiator || false;
         this.channelConfig = opts.channelConfig || Peer.channelConfig;
@@ -167,6 +164,10 @@ class Peer extends stream.Duplex {
         }
         this._pc.ontrack = (event) => {
             this._onTrack(event);
+        };
+
+        this._pc.onaddstream = (event) => {
+            this._onStream(event);
         };
 
         this._needsNegotiation();
@@ -1245,6 +1246,42 @@ class Peer extends stream.Duplex {
             return;
         }
         this.destroy();
+    }
+
+    _onStream(event) {
+        if (this.destroyed) {
+            return;
+        }
+        console.log(JSON.stringify(event));
+
+        event.target._remoteStreams.forEach((eventStream) => {
+            eventStream._tracks.forEach((eventTrack) => {
+                if (
+                    this._remoteTracks.some((remoteTrack) => {
+                        return remoteTrack.id === eventTrack.id;
+                    })
+                ) {
+                    return;
+                } // Only fire one 'stream' event, even though there may be multiple tracks per stream
+
+                this._remoteTracks.push({track: event.track, stream: eventStream});
+                this.emit('track', eventTrack, eventStream);
+            });
+
+
+            if (
+                this._remoteStreams.some((remoteStream) => {
+                    return remoteStream.id === eventStream.id;
+                })
+            ) {
+                return;
+            } // Only fire one 'stream' event, even though there may be multiple tracks per stream
+
+            this._remoteStreams.push(eventStream);
+            queueMicrotask(() => {
+                this.emit('stream', eventStream); // ensure all tracks have been added
+            });
+        });
     }
 
     _onTrack(event) {

@@ -51,13 +51,22 @@ export function disableChannelCalls(channelId: string): ActionFunc {
     };
 }
 
-export function joinCall(channelId: string): GenericAction {
-    newClient(channelId, () => null).then((c) => {
-        ws = c;
-    });
-    return {
-        type: VoiceCallsTypes.RECEIVED_MYSELF_JOINED_VOICE_CALL,
-        data: channelId,
+export function joinCall(channelId: string): ActionFunc {
+    return async (dispatch: DispatchFunc) => {
+        const setScreenShareURL = (url: string) => {
+            dispatch({
+                type: VoiceCallsTypes.SET_SCREENSHARE_URL,
+                data: url,
+            });
+        };
+        newClient(channelId, () => null, setScreenShareURL).then((c) => {
+            ws = c;
+        });
+        dispatch({
+            type: VoiceCallsTypes.RECEIVED_MYSELF_JOINED_VOICE_CALL,
+            data: channelId,
+        });
+        return {data: channelId};
     };
 }
 

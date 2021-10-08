@@ -160,8 +160,25 @@ function enabled(state: Dictionary<boolean> = {}, action: GenericAction) {
     }
 }
 
+function screenShareURL(state = '', action: GenericAction) {
+    switch (action.type) {
+    case VoiceCallsTypes.RECEIVED_MYSELF_JOINED_VOICE_CALL: {
+        return '';
+    }
+    case VoiceCallsTypes.RECEIVED_MYSELF_LEFT_VOICE_CALL: {
+        return '';
+    }
+    case VoiceCallsTypes.SET_SCREENSHARE_URL: {
+        return action.data;
+    }
+    default:
+        return state;
+    }
+}
+
 export default combineReducers({
     calls,
     enabled,
     joined,
+    screenShareURL,
 });

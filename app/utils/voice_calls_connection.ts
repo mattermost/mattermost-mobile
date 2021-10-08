@@ -27,7 +27,7 @@ function getWSConnectionURL(channelID: string): string {
 }
 
 // TODO: Maybe convert this to a component
-export async function newClient(channelID: string, closeCb: () => void) {
+export async function newClient(channelID: string, closeCb: () => void, setScreenShareURL: (url: string) => void) {
     let peer: any = null;
     const streams: MediaStream[] = [];
 
@@ -148,13 +148,22 @@ export async function newClient(channelID: string, closeCb: () => void) {
             }
         });
 
-        // peer.on('error', (err: any) => console.log(err));
         peer.on('stream', (remoteStream: MediaStream) => {
             streams.push(remoteStream);
+            if (remoteStream.getVideoTracks().length > 0) {
+                setScreenShareURL(remoteStream.toURL());
+            }
+        });
+
+        // peer.on('error', (err: any) => console.log(err));
+        peer.on('track', (track: MediaStreamTrack, remoteStream: MediaStream) => {
+            streams.push(remoteStream);
+            if (remoteStream.getVideoTracks().length > 0) {
+                setScreenShareURL(remoteStream.toURL());
+            }
         });
 
         ws.onmessage = ({data}) => {
-            // console.log('ws', data);
             const msg = JSON.parse(data);
             if (msg.type === 'answer' || msg.type === 'offer') {
                 peer.signal(data);
