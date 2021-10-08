@@ -97,6 +97,7 @@ const UserStatus = ({currentUser, database, serverUrl, styles, theme}: Props) =>
 
     const updateStatus = useCallback(async (status: string) => {
         await database.write(async () => {
+            // eslint-disable-next-line max-nested-callbacks
             await currentUser.update((user: UserModel) => {
                 user.status = status as unknown as string;
             });
