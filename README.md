@@ -2,7 +2,7 @@
 [![Mattermost](https://user-images.githubusercontent.com/7205829/136108314-75cd2e1f-4147-4cfa-a16c-9b3b0313ea25.png)](https://mattermost.com)
 
 - **Minimum Server versions:** Current ESR version (5.37.0)
-- **Supported iOS versions:** 11+
+- **Supported iOS versions:** 12.1+
 - **Supported Android versions:** 7.0+
 
 
