@@ -213,7 +213,7 @@ export default class List extends PureComponent {
         const moreChannelsText = formatMessage({id: 'more_channels.title', defaultMessage: 'Browse for a Channel'});
         const newChannelText = formatMessage({id: 'mobile.create_channel', defaultMessage: 'Create a new Channel'});
         const newDirectChannelText = formatMessage({id: 'mobile.more_dms.title', defaultMessage: 'Add a Conversation'});
-        const cancelText = formatMessage({id: 'mobile.post.cancel', defaultMessage: 'Cancel'});
+
         const options = [];
         const actions = [];
 
@@ -229,20 +229,14 @@ export default class List extends PureComponent {
 
         actions.push(this.goToDirectMessages);
         options.push({text: newDirectChannelText, icon: 'account-plus-outline'});
-        options.push(cancelText);
-
-        const cancelButtonIndex = options.length - 1;
 
         BottomSheet.showBottomSheetWithOptions({
             anchor: this.combinedActionsRef?.current ? findNodeHandle(this.combinedActionsRef.current) : null,
             options,
             title: 'Add Channels',
             subtitle: `To the ${category.display_name} category`,
-            cancelButtonIndex,
         }, (value) => {
-            if (value !== cancelButtonIndex) {
-                actions[value]();
-            }
+            actions[value]();
         });
     };
 
