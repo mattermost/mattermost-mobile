@@ -42,9 +42,8 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
         },
         message: {
             color: theme.centerChannelColor,
-            fontFamily: 'OpenSans',
-            fontSize: 16,
-            lineHeight: 24,
+            fontSize: 15,
+            lineHeight: 20,
         },
         pendingPost: {
             opacity: 0.5,

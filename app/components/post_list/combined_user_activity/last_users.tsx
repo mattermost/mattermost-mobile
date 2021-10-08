@@ -25,14 +25,12 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
         baseText: {
             color: theme.centerChannelColor,
             opacity: 0.6,
-            fontSize: 16,
-            lineHeight: 20,
+            fontSize: 15,
         },
         linkText: {
             color: theme.linkColor,
             opacity: 0.8,
-            fontSize: 16,
-            lineHeight: 20,
+            fontSize: 15,
         },
     };
 });

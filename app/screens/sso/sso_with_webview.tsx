@@ -253,6 +253,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
         errorText: {
             color: changeOpacity(theme.centerChannelColor, 0.4),
             fontSize: 16,
+            fontWeight: '400',
             lineHeight: 23,
             paddingHorizontal: 30,
         },

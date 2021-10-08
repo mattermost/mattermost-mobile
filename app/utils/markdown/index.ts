@@ -14,61 +14,60 @@ export const getMarkdownTextStyles = makeStyleSheetFromTheme((theme: Theme) => {
 
     return {
         emph: {
-            fontFamily: 'OpenSans-Italic',
+            fontStyle: 'italic',
         },
         strong: {
-            fontFamily: 'OpenSans-Semibold',
+            fontWeight: 'bold',
         },
         del: {
             textDecorationLine: 'line-through',
         },
         link: {
             color: theme.linkColor,
-            fontFamily: 'OpenSans',
         },
         heading1: {
-            fontFamily: 'OpenSans-Bold',
-            fontSize: 24,
+            fontSize: 22,
+            fontWeight: '700',
             lineHeight: 25,
         },
         heading1Text: {
             paddingBottom: 8,
         },
         heading2: {
-            fontFamily: 'OpenSans-Bold',
-            fontSize: 22,
+            fontSize: 20,
+            fontWeight: '700',
             lineHeight: 25,
         },
         heading2Text: {
             paddingBottom: 8,
         },
         heading3: {
-            fontFamily: 'OpenSans-Bold',
-            fontSize: 21,
+            fontSize: 19,
+            fontWeight: '700',
             lineHeight: 25,
         },
         heading3Text: {
             paddingBottom: 8,
         },
         heading4: {
-            fontFamily: 'OpenSans-Bold',
-            fontSize: 20,
+            fontSize: 18,
+            fontWeight: '700',
             lineHeight: 25,
         },
         heading4Text: {
             paddingBottom: 8,
         },
         heading5: {
-            fontFamily: 'OpenSans-Bold',
-            fontSize: 19,
+            fontSize: 17,
+            fontWeight: '700',
             lineHeight: 25,
         },
         heading5Text: {
             paddingBottom: 8,
         },
         heading6: {
-            fontFamily: 'OpenSans-Bold',
-            fontSize: 18,
+            fontSize: 16,
+            fontWeight: '700',
             lineHeight: 25,
         },
         heading6Text: {
@@ -83,18 +82,15 @@ export const getMarkdownTextStyles = makeStyleSheetFromTheme((theme: Theme) => {
             fontFamily: codeFont,
         },
         mention: {
-            fontFamily: 'OpenSans',
             color: theme.linkColor,
         },
         error: {
-            fontFamily: 'OpenSans',
             color: theme.errorTextColor,
         },
         table_header_row: {
-            fontFamily: 'OpenSans-Bold',
+            fontWeight: '700',
         },
         mention_highlight: {
-            fontFamily: 'OpenSans',
             backgroundColor: theme.mentionHighlightBg,
             color: theme.mentionHighlightLink,
         },

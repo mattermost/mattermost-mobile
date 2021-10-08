@@ -50,7 +50,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
         text: {
             color: STATUS_COLORS.default,
             fontSize: 15,
-            fontFamily: 'OpenSans-Semibold',
+            fontWeight: '600',
             lineHeight: 17,
         },
     };

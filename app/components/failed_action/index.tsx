@@ -32,7 +32,7 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme: Theme) => {
         title: {
             color: changeOpacity(theme.centerChannelColor, 0.8),
             fontSize: 20,
-            fontFamily: 'OpenSans-Semibold',
+            fontWeight: '600',
             marginBottom: 15,
             marginTop: 10,
         },

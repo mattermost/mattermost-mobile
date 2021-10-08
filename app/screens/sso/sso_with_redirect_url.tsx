@@ -146,6 +146,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
         errorText: {
             color: changeOpacity(theme.centerChannelColor, 0.6),
             fontSize: 16,
+            fontWeight: '400',
             lineHeight: 23,
             textAlign: 'center',
         },
@@ -158,6 +159,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
         infoText: {
             color: changeOpacity(theme.centerChannelColor, 0.6),
             fontSize: 16,
+            fontWeight: '400',
             lineHeight: 23,
             marginBottom: 6,
         },

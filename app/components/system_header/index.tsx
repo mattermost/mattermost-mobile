@@ -40,7 +40,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
         displayName: {
             color: theme.centerChannelColor,
             fontSize: 15,
-            fontFamily: 'OpenSans-Semibold',
+            fontWeight: '600',
             flexGrow: 1,
             paddingVertical: 2,
         },

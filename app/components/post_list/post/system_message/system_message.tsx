@@ -46,7 +46,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     return {
         systemMessage: {
             color: changeOpacity(theme.centerChannelColor, 0.6),
-            fontSize: 16,
+            fontSize: 15,
             lineHeight: 20,
         },
     };

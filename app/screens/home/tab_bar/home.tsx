@@ -43,7 +43,8 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     },
     mentions: {
         fontSize: 10,
-        fontFamily: 'OpenSans-Semibold',
+        fontWeight: 'bold',
+        fontFamily: 'OpenSans',
         lineHeight: Platform.select({android: 15, ios: 12.6}),
         borderColor: theme.centerChannelBg,
         borderWidth: 2,

@@ -46,7 +46,7 @@ const getStyle = makeStyleSheetFromTheme((theme) => {
         text: {
             color: theme.sidebarHeaderTextColor,
             fontSize: 18,
-            fontFamily: 'OpenSans-Semibold',
+            fontWeight: 'bold',
             textAlign: 'center',
             flex: 0,
             flexShrink: 1,
