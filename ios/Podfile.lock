@@ -269,8 +269,8 @@ PODS:
     - react-native-video/Video (= 5.1.1)
   - react-native-video/Video (5.1.1):
     - React-Core
-  - react-native-webrtc (1.92.2):
-    - React-Core
+  - react-native-webrtc2 (1.84.5):
+    - React
   - react-native-webview (11.13.0):
     - React-Core
   - React-perflogger (0.65.1)
@@ -484,7 +484,7 @@ DEPENDENCIES:
   - react-native-safe-area-context (from `../node_modules/react-native-safe-area-context`)
   - react-native-startup-time (from `../node_modules/react-native-startup-time`)
   - react-native-video (from `../node_modules/react-native-video`)
-  - react-native-webrtc (from `../node_modules/react-native-webrtc`)
+  - react-native-webrtc2 (from `../node_modules/react-native-webrtc2`)
   - react-native-webview (from `../node_modules/react-native-webview`)
   - React-perflogger (from `../node_modules/react-native/ReactCommon/reactperflogger`)
   - React-RCTActionSheet (from `../node_modules/react-native/Libraries/ActionSheetIOS`)
@@ -618,8 +618,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native-startup-time"
   react-native-video:
     :path: "../node_modules/react-native-video"
-  react-native-webrtc:
-    :path: "../node_modules/react-native-webrtc"
+  react-native-webrtc2:
+    :path: "../node_modules/react-native-webrtc2"
   react-native-webview:
     :path: "../node_modules/react-native-webview"
   React-perflogger:
@@ -751,7 +751,7 @@ SPEC CHECKSUMS:
   react-native-safe-area-context: 584dc04881deb49474363f3be89e4ca0e854c057
   react-native-startup-time: 1a068b744ce5097a85ebe0fbff691b05961c324d
   react-native-video: 0bb76b6d6b77da3009611586c7dbf817b947f30e
-  react-native-webrtc: 41526e4060dac373c18676f866962d4180ee47b9
+  react-native-webrtc2: b3f1d5504c8bbd3aa4ce9b6c3ce0fbc47c7e146a
   react-native-webview: 133a6a5149f963259646e710b4545c67ef35d7c9
   React-perflogger: fd28ee1f2b5b150b00043f0301d96bd417fdc339
   React-RCTActionSheet: 7f3fa0855c346aa5d7c60f9ced16e067db6d29fa

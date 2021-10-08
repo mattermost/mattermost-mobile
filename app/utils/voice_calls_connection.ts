@@ -8,7 +8,7 @@ import {
     MediaStream,
     MediaStreamTrack,
     mediaDevices,
-} from 'react-native-webrtc';
+} from 'react-native-webrtc2';
 
 import {Client4} from '@client/rest';
 
@@ -121,7 +121,7 @@ export async function newClient(channelID: string, closeCb: () => void, setScree
         }
     };
 
-    // ws.onerror = (err) => console.log(err);
+    ws.onerror = (err) => console.log('WS ERROR', err); // eslint-disable-line no-console
 
     ws.onopen = async () => {
         peer = new Peer({
@@ -155,13 +155,7 @@ export async function newClient(channelID: string, closeCb: () => void, setScree
             }
         });
 
-        // peer.on('error', (err: any) => console.log(err));
-        peer.on('track', (track: MediaStreamTrack, remoteStream: MediaStream) => {
-            streams.push(remoteStream);
-            if (remoteStream.getVideoTracks().length > 0) {
-                setScreenShareURL(remoteStream.toURL());
-            }
-        });
+        peer.on('error', (err: any) => console.log('PEER ERROR', err)); // eslint-disable-line no-console
 
         ws.onmessage = ({data}) => {
             const msg = JSON.parse(data);

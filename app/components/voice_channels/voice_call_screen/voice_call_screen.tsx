@@ -3,7 +3,7 @@
 
 import React, {useEffect, useCallback} from 'react';
 import {Keyboard, View, Text, Platform, Pressable, SafeAreaView, ScrollView} from 'react-native';
-import {RTCView} from 'react-native-webrtc';
+import {RTCView} from 'react-native-webrtc2';
 
 import {showModalOverCurrentContext, mergeNavigationOptions, popTopScreen} from '@actions/navigation';
 import CompassIcon from '@components/compass_icon';
@@ -136,7 +136,7 @@ const getStyleSheet = makeStyleSheetFromTheme((props: Props) => {
             backgroundColor: '#D24B4E',
         },
         screenShare: {
-            flex: 3,
+            flex: 7,
             width: '100%',
             height: '100%',
             backgroundColor: 'white',
@@ -224,7 +224,7 @@ const VoiceCallScreen = (props: Props) => {
                                         userId={user.id}
                                         volume={user.isTalking ? 1 : 0}
                                         muted={user.muted}
-                                        size='l'
+                                        size={props.screenShareURL ? 'l' : 'm'}
                                     />
                                     <Text style={style.username}>{displayUsername(props.users[user.id], props.teammateNameDisplay)}</Text>
                                 </View>

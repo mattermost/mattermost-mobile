@@ -6,12 +6,30 @@
  * <https://feross.org/opensource> */
 
 const {Buffer} = require('buffer');
-const {generateId} = require('./file');
 
 const errCode = require('err-code');
 const queueMicrotask = require('queue-microtask'); // TODO: remove when Node 10 is not supported
 const stream = require('readable-stream');
 
+function generateId() {
+    // Implementation taken from http://stackoverflow.com/a/2117523
+    let id = 'xxxxxxxxxxxxxxxxxxxx';
+
+    id = id.replace(/[xy]/g, (c) => {
+        const r = Math.floor(Math.random() * 16);
+
+        let v;
+        if (c === 'x') {
+            v = r;
+        } else {
+            v = (r & 0x3) | 0x8;
+        }
+
+        return v.toString(16);
+    });
+
+    return id;
+}
 
 const MAX_BUFFERED_AMOUNT = 64 * 1024;
 const ICECOMPLETE_TIMEOUT = 5 * 1000;
@@ -35,7 +53,7 @@ class Peer extends stream.Duplex {
     constructor(opts) {
         super({allowHalfOpen: false, ...opts});
 
-        this._id = generateId();
+        this._id = generateId().slice(0, 7);
         this.channelName = opts.initiator ? opts.channelName || generateId() : null;
 
         this.initiator = opts.initiator || false;
@@ -162,9 +180,7 @@ class Peer extends stream.Duplex {
                 this.addStream(stream);
             });
         }
-        this._pc.ontrack = (event) => {
-            this._onTrack(event);
-        };
+        this._pc.ontrack = () => {};
 
         this._pc.onaddstream = (event) => {
             this._onStream(event);
@@ -347,7 +363,6 @@ class Peer extends stream.Duplex {
             );
         }
 
-        this._pc.addStream(stream);
         stream.getTracks().forEach((track) => {
             this.addTrack(track, stream);
         });
@@ -1252,7 +1267,6 @@ class Peer extends stream.Duplex {
         if (this.destroyed) {
             return;
         }
-        console.log(JSON.stringify(event));
 
         event.target._remoteStreams.forEach((eventStream) => {
             eventStream._tracks.forEach((eventTrack) => {
@@ -1268,34 +1282,6 @@ class Peer extends stream.Duplex {
                 this.emit('track', eventTrack, eventStream);
             });
 
-
-            if (
-                this._remoteStreams.some((remoteStream) => {
-                    return remoteStream.id === eventStream.id;
-                })
-            ) {
-                return;
-            } // Only fire one 'stream' event, even though there may be multiple tracks per stream
-
-            this._remoteStreams.push(eventStream);
-            queueMicrotask(() => {
-                this.emit('stream', eventStream); // ensure all tracks have been added
-            });
-        });
-    }
-
-    _onTrack(event) {
-        if (this.destroyed) {
-            return;
-        }
-
-        event.streams.forEach((eventStream) => {
-            this.emit('track', event.track, eventStream);
-
-            this._remoteTracks.push({
-                track: event.track,
-                stream: eventStream,
-            });
 
             if (
                 this._remoteStreams.some((remoteStream) => {
@@ -1329,6 +1315,7 @@ Peer.config = {
             ],
         },
     ],
+    sdpSemantics: 'unified-plan'
 };
 
 Peer.channelConfig = {};
