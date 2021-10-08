@@ -3,7 +3,9 @@
 exports[`DrawerItem should match snapshot 1`] = `
 <View
   accessible={true}
+  collapsable={false}
   focusable={true}
+  nativeID="animatedComponent"
   onClick={[Function]}
   onResponderGrant={[Function]}
   onResponderMove={[Function]}
@@ -108,7 +110,9 @@ exports[`DrawerItem should match snapshot 1`] = `
 exports[`DrawerItem should match snapshot without separator and centered false 1`] = `
 <View
   accessible={true}
+  collapsable={false}
   focusable={true}
+  nativeID="animatedComponent"
   onClick={[Function]}
   onResponderGrant={[Function]}
   onResponderMove={[Function]}

@@ -383,7 +383,6 @@ class EmojiPicker extends PureComponent<ConnectedEmojiPickerProps, EmojiPickerSt
                 emojis={renderableEmojis}
                 filteredEmojis={filteredEmojis}
                 missingPages={missingPages}
-                onAnimationComplete={this.setRebuiltEmojis}
                 onCancelSearch={this.cancelSearch}
                 onChangeSearchTerm={this.changeSearchTerm}
                 onEmojiPress={onEmojiPress}
