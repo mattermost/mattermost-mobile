@@ -4,6 +4,7 @@
 import {StyleSheet} from 'react-native';
 import tinyColor from 'tinycolor2';
 
+import {Preferences, Screens} from '@constants';
 import {mergeNavigationOptions} from '@screens/navigation';
 import EphemeralStore from '@store/ephemeral_store';
 
@@ -119,7 +120,9 @@ export function setNavigatorStyles(componentId: string, theme: Theme) {
 
 export function setNavigationStackStyles(theme: Theme) {
     EphemeralStore.allNavigationComponentIds.forEach((componentId) => {
-        setNavigatorStyles(componentId, theme);
+        if (componentId !== Screens.BOTTOM_SHEET) {
+            setNavigatorStyles(componentId, theme);
+        }
     });
 }
 
@@ -205,4 +208,57 @@ export function blendColors(background: string, foreground: string, opacity: num
     }
 
     return `rgba(${red},${green},${blue},${alpha})`;
+}
+
+const themeTypeMap: ThemeTypeMap = {
+    Mattermost: 'denim',
+    Organization: 'sapphire',
+    'Mattermost Dark': 'indigo',
+    'Windows Dark': 'onyx',
+    Denim: 'denim',
+    Sapphire: 'sapphire',
+    Quartz: 'quartz',
+    Indigo: 'indigo',
+    Onyx: 'onyx',
+    custom: 'custom',
+};
+
+// setThemeDefaults will set defaults on the theme for any unset properties.
+export function setThemeDefaults(theme: Theme): Theme {
+    const themes = Preferences.THEMES as Record<ThemeKey, Theme>;
+    const defaultTheme = themes.denim;
+
+    const processedTheme = {...theme};
+
+    // If this is a system theme, return the source theme object matching the theme preference type
+    if (theme.type && theme.type !== 'custom' && Object.keys(themeTypeMap).includes(theme.type)) {
+        return Preferences.THEMES[themeTypeMap[theme.type]];
+    }
+
+    for (const key of Object.keys(defaultTheme)) {
+        if (theme[key]) {
+            // Fix a case where upper case theme colours are rendered as black
+            processedTheme[key] = theme[key]?.toLowerCase();
+        }
+    }
+
+    for (const property in defaultTheme) {
+        if (property === 'type' || (property === 'sidebarTeamBarBg' && theme.sidebarHeaderBg)) {
+            continue;
+        }
+        if (theme[property] == null) {
+            processedTheme[property] = defaultTheme[property];
+        }
+
+        // Backwards compatability with old name
+        if (!theme.mentionBg && theme.mentionBj) {
+            processedTheme.mentionBg = theme.mentionBj;
+        }
+    }
+
+    if (!theme.sidebarTeamBarBg && theme.sidebarHeaderBg) {
+        processedTheme.sidebarTeamBarBg = blendColors(theme.sidebarHeaderBg, '#000000', 0.2, true);
+    }
+
+    return processedTheme as Theme;
 }
