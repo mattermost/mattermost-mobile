@@ -13,6 +13,7 @@ import {switchMap} from 'rxjs/operators';
 
 import {updateUserProfile} from '@actions/local/user';
 import {updateMe} from '@actions/remote/user';
+import ProfilePicture from '@components/profile_picture';
 import StatusBar from '@components/status_bar/index';
 import {MM_TABLES, SYSTEM_IDENTIFIERS} from '@constants/database';
 import {withServerUrl} from '@context/server_url';
@@ -266,6 +267,15 @@ class EditProfile extends PureComponent<EditProfileProps, EditProfileState> {
                     {error && <DisplayError error={error}/>}
                     <View style={[style.scrollViewRef]}>
                         {/* todo: To be implemented {this.renderProfilePicture()} */}
+                        <View style={style.top}>
+                            <ProfilePicture
+                                author={currentUser}
+                                size={153}
+                                iconSize={104}
+                                statusSize={36}
+                                testID='edit_profile.profile_picture'
+                            />
+                        </View>
                         <CommonFieldSettings
                             id={'firstName'}
                             isDisabled={Boolean(this.firstNameDisabled)}

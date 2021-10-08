@@ -75,7 +75,6 @@ export const updateUserProfile = async (serverUrl: string, user: UserModel, user
                 u.username = username;
             });
         });
-        console.log('>>>  updatedUser', {updatedUser});
         return {data: true};
     } catch (error) {
         return {error};
