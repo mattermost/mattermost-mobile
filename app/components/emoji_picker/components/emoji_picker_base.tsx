@@ -59,6 +59,8 @@ const EmojiPicker = ({currentSectionIndex, deviceWidth, emojis, filteredEmojis, 
                 style={styles.searchBar}
                 testID={testID}
             >
+                {/*
+                // @ts-expect-error: Some default values are inherited from TextInput */}
                 <SearchBar
                     autoCapitalize='none'
                     backgroundColor='transparent'

@@ -3,7 +3,19 @@
 
 import React, {PureComponent} from 'react';
 import {IntlShape} from 'react-intl';
-import {Animated, InteractionManager, Keyboard, StyleSheet, View, Platform, ViewStyle, ReturnKeyTypeOptions, KeyboardTypeOptions, NativeSyntheticEvent, TextInputSelectionChangeEventData} from 'react-native';
+import {
+    Animated,
+    InteractionManager,
+    Keyboard,
+    StyleSheet,
+    View,
+    Platform,
+    ViewStyle,
+    ReturnKeyTypeOptions,
+    KeyboardTypeOptions,
+    NativeSyntheticEvent,
+    TextInputSelectionChangeEventData,
+} from 'react-native';
 import {SearchBar} from 'react-native-elements';
 
 import CompassIcon from '@components/compass_icon';
@@ -17,41 +29,41 @@ const LEFT_COMPONENT_INITIAL_POSITION = Platform.OS === 'ios' ? 7 : 0;
 type SearchProps = {
     autoCapitalize: 'none' | 'sentences' | 'words' | 'characters' | undefined;
     autoFocus: boolean;
-    backArrowSize: number;
+    backArrowSize?: number;
     backgroundColor: string;
-    blurOnSubmit: boolean;
+    blurOnSubmit?: boolean;
     cancelButtonStyle: ViewStyle;
     cancelTitle: string;
-    containerHeight: number;
+    containerHeight?: number;
     containerStyle: ViewStyle;
-    deleteIconSize: number;
-    editable: boolean;
+    deleteIconSize?: number;
+    editable?: boolean;
     inputHeight: number;
     inputStyle: ViewStyle;
     intl: IntlShape;
     keyboardAppearance: 'default' | 'light' | 'dark' | undefined;
-    keyboardShouldPersist: boolean;
-    keyboardType: KeyboardTypeOptions | undefined;
+    keyboardShouldPersist?: boolean;
+    keyboardType?: KeyboardTypeOptions | undefined;
     leftComponent: JSX.Element;
-    onBlur: () => void;
+    onBlur?: () => void;
     onCancelButtonPress: (text?: string) => void;
     onChangeText: (text: string) => void;
     onFocus: () => void;
     onSearchButtonPress: (value: string) => void;
-    onSelectionChange: (e: NativeSyntheticEvent<TextInputSelectionChangeEventData>) => void;
+    onSelectionChange?: (e: NativeSyntheticEvent<TextInputSelectionChangeEventData>) => void;
     placeholder: string;
-    placeholderTextColor: string;
-    returnKeyType: ReturnKeyTypeOptions | undefined;
-    searchBarRightMargin: number;
-    searchIconSize: number;
+    placeholderTextColor?: string;
+    returnKeyType?: ReturnKeyTypeOptions | undefined;
+    searchBarRightMargin?: number;
+    searchIconSize?: number;
     selectionColor: string;
-    showArrow: boolean;
-    showCancel: boolean;
+    showArrow?: boolean;
+    showCancel?: boolean;
     testID: string;
     tintColorDelete: string;
     tintColorSearch: string;
     titleCancelColor: string;
-    value: string;
+    value?: string;
 };
 
 type SearchState = {
@@ -60,22 +72,22 @@ type SearchState = {
 
 export default class Search extends PureComponent<SearchProps, SearchState> {
     static defaultProps = {
-        onSelectionChange: () => true,
-        onBlur: () => true,
-        editable: true,
+        backArrowSize: 24,
         blurOnSubmit: false,
+        containerHeight: 40,
+        deleteIconSize: 20,
+        editable: true,
         keyboardShouldPersist: false,
+        keyboardType: 'default',
+        onBlur: () => true,
+        onSelectionChange: () => true,
         placeholderTextColor: 'grey',
-        value: '',
+        returnKeyType: 'search',
+        searchBarRightMargin: 0,
+        searchIconSize: 24,
         showArrow: false,
         showCancel: true,
-        searchIconSize: 24,
-        backArrowSize: 24,
-        deleteIconSize: 20,
-        searchBarRightMargin: 0,
-        returnKeyType: 'search',
-        keyboardType: 'default',
-        containerHeight: 40,
+        value: '',
     };
 
     private readonly leftComponentAnimated: Animated.Value;
@@ -95,7 +107,7 @@ export default class Search extends PureComponent<SearchProps, SearchState> {
 
         const {backgroundColor, cancelButtonStyle, containerHeight, inputHeight, inputStyle, placeholderTextColor, searchBarRightMargin, tintColorDelete, tintColorSearch, titleCancelColor} = props;
 
-        this.searchStyle = getSearchStyles(backgroundColor, cancelButtonStyle, containerHeight, inputHeight, inputStyle, placeholderTextColor, searchBarRightMargin, tintColorDelete, tintColorSearch, titleCancelColor);
+        this.searchStyle = getSearchStyles(backgroundColor, cancelButtonStyle, containerHeight!, inputHeight, inputStyle, placeholderTextColor!, searchBarRightMargin!, tintColorDelete, tintColorSearch, titleCancelColor);
     }
 
     setSearchContainerRef = (ref: any) => {
@@ -115,7 +127,7 @@ export default class Search extends PureComponent<SearchProps, SearchState> {
     };
 
     onBlur = async () => {
-        this.props.onBlur();
+        this.props?.onBlur?.();
 
         if (this.props.leftComponent) {
             await this.collapseAnimation();
@@ -133,7 +145,9 @@ export default class Search extends PureComponent<SearchProps, SearchState> {
             await Keyboard.dismiss();
         }
 
-        onSearchButtonPress(value);
+        if (value) {
+            onSearchButtonPress(value);
+        }
     };
 
     onChangeText = (text: string) => {
@@ -167,11 +181,9 @@ export default class Search extends PureComponent<SearchProps, SearchState> {
         });
     };
 
-    onSelectionChange = (
-        event: NativeSyntheticEvent<TextInputSelectionChangeEventData>,
-    ) => {
+    onSelectionChange = (event: NativeSyntheticEvent<TextInputSelectionChangeEventData>) => {
         const {onSelectionChange} = this.props;
-        onSelectionChange(event);
+        onSelectionChange?.(event);
     };
 
     expandAnimation = () => {
@@ -193,31 +205,7 @@ export default class Search extends PureComponent<SearchProps, SearchState> {
     };
 
     render() {
-        const {
-            autoCapitalize,
-            autoFocus,
-            blurOnSubmit,
-            cancelTitle,
-            editable,
-            placeholderTextColor,
-            intl,
-            keyboardAppearance,
-            keyboardType,
-            leftComponent,
-            placeholder,
-            returnKeyType,
-            selectionColor,
-            showArrow,
-            searchIconSize,
-            showCancel,
-            testID,
-            tintColorDelete,
-            tintColorSearch,
-            titleCancelColor,
-            value,
-            deleteIconSize,
-            backArrowSize,
-        } = this.props;
+        const {autoCapitalize, autoFocus, backArrowSize, blurOnSubmit, cancelTitle, deleteIconSize, editable, intl, keyboardAppearance, keyboardType, leftComponent, placeholder, placeholderTextColor, returnKeyType, searchIconSize, selectionColor, showArrow, showCancel, testID, tintColorDelete, tintColorSearch, titleCancelColor, value} = this.props;
 
         const searchClearButtonTestID = `${testID}.search.clear.button`;
         const searchCancelButtonTestID = `${testID}.search.cancel.button`;
@@ -270,9 +258,9 @@ export default class Search extends PureComponent<SearchProps, SearchState> {
                         // @ts-expect-error: The clearIcon can also accept a ReactElement
                         clearIcon={
                             <ClearIcon
-                                deleteIconSizeAndroid={deleteIconSize}
+                                deleteIconSizeAndroid={deleteIconSize!}
                                 onClear={this.onClear}
-                                placeholderTextColor={placeholderTextColor}
+                                placeholderTextColor={placeholderTextColor!}
                                 searchClearButtonTestID={searchClearButtonTestID}
                                 tintColorDelete={tintColorDelete}
                                 titleCancelColor={titleCancelColor}
@@ -303,22 +291,22 @@ export default class Search extends PureComponent<SearchProps, SearchState> {
                         // @ts-expect-error: The searchIcon can also accept a ReactElement
                         searchIcon={
                             <SearchIcon
-                                searchIconColor={tintColorSearch || placeholderTextColor}
-                                searchIconSize={searchIconSize}
-                                clearIconColorAndroid={titleCancelColor || placeholderTextColor}
-                                backArrowSize={backArrowSize}
+                                searchIconColor={tintColorSearch || placeholderTextColor!}
+                                searchIconSize={searchIconSize!}
+                                clearIconColorAndroid={titleCancelColor || placeholderTextColor!}
+                                backArrowSize={backArrowSize!}
                                 searchCancelButtonTestID={searchCancelButtonTestID}
                                 onCancel={this.onCancel}
-                                showArrow={showArrow}
+                                showArrow={showArrow!}
                                 iOSStyle={StyleSheet.flatten([styles.fullWidth, searchBarStyle.searchIcon])}
                             />
                         }
                         selectionColor={selectionColor}
-                        showCancel={showCancel}
+                        showCancel={showCancel!}
                         ref={this.setInputKeywordRef}
                         returnKeyType={returnKeyType}
                         underlineColorAndroid='transparent'
-                        value={value}
+                        value={value!}
                     />
                 </Animated.View>
             </View>
