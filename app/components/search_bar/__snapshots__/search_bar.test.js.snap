@@ -1,0 +1,247 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`SearchBar should match snapshot 1`] = `
+<View
+  style={
+    Array [
+      Object {
+        "alignItems": "center",
+        "flexDirection": "row",
+        "height": 20,
+        "justifyContent": "flex-start",
+        "overflow": "hidden",
+      },
+      Object {},
+    ]
+  }
+  testID="search_bar"
+>
+  <View
+    collapsable={false}
+    nativeID="animatedComponent"
+    style={
+      Object {
+        "flex": 1,
+        "height": 10,
+        "marginLeft": 0,
+        "marginRight": 5,
+      }
+    }
+  >
+    <View
+      style={
+        Object {
+          "alignItems": "center",
+          "backgroundColor": "#ffffff",
+          "flex": 1,
+          "flexDirection": "row",
+          "paddingBottom": 0,
+          "paddingTop": 0,
+        }
+      }
+    >
+      <View
+        style={
+          Object {
+            "paddingHorizontal": 0,
+            "width": "100%",
+          }
+        }
+      >
+        <View
+          collapsable={false}
+          nativeID="animatedComponent"
+          style={
+            Object {
+              "alignItems": "center",
+              "backgroundColor": undefined,
+              "borderBottomWidth": 0,
+              "borderColor": "#86939e",
+              "borderRadius": 2,
+              "flexDirection": "row",
+              "height": 10,
+              "marginLeft": 8,
+              "marginRight": 8,
+              "minHeight": 30,
+              "transform": Array [
+                Object {
+                  "translateX": 0,
+                },
+              ],
+            }
+          }
+        >
+          <View
+            style={
+              Object {
+                "alignItems": "center",
+                "height": 40,
+                "justifyContent": "center",
+                "marginLeft": 4,
+                "marginVertical": 4,
+                "paddingRight": 4,
+                "width": 30,
+              }
+            }
+          >
+            <Icon
+              name="magnify"
+              size={24}
+              style={
+                Object {
+                  "color": "#bbbbbb",
+                  "flex": 1,
+                  "top": 8,
+                }
+              }
+            />
+          </View>
+          <TextInput
+            autoCapitalize="auto-capitalize"
+            autoCorrect={false}
+            autoFocus={true}
+            blurOnSubmit={true}
+            cancelIcon={false}
+            disableFullscreenUI={true}
+            editable={true}
+            enablesReturnKeyAutomatically={true}
+            keyboardAppearance="keyboard-appearance"
+            keyboardType="keyboard-type"
+            onBlur={[Function]}
+            onCancel={[Function]}
+            onChangeText={[Function]}
+            onFocus={[Function]}
+            onSelectionChange={[Function]}
+            onSubmitEditing={[Function]}
+            placeholder="placeholder"
+            placeholderTextColor="#000000"
+            platform="ios"
+            returnKeyType="return-key-type"
+            selectionColor="#dddddd"
+            style={
+              Object {
+                "backgroundColor": "transparent",
+                "color": "#fff",
+                "flex": 1,
+                "fontSize": 14,
+                "height": 10,
+                "marginLeft": 4,
+                "marginTop": 0,
+                "minHeight": 40,
+                "overflow": "hidden",
+                "paddingTop": 0,
+              }
+            }
+            testID="search_bar.search.input"
+            underlineColorAndroid="transparent"
+            value="value"
+          />
+          <View
+            style={
+              Object {
+                "alignItems": "center",
+                "height": 40,
+                "justifyContent": "center",
+                "marginRight": 8,
+                "marginVertical": 4,
+                "paddingRight": 4,
+              }
+            }
+          >
+            <View
+              style={
+                Object {
+                  "flexDirection": "row",
+                }
+              }
+            >
+              <Icon
+                name="close-circle"
+                onPress={[Function]}
+                size={18}
+                style={
+                  Object {
+                    "color": "#cccccc",
+                  }
+                }
+                testID="search_bar.search.clear.button"
+              />
+            </View>
+          </View>
+        </View>
+        <Text
+          style={
+            Object {
+              "color": "#ff190c",
+              "fontSize": 12,
+              "height": 0,
+              "margin": 0,
+              "padding": 0,
+            }
+          }
+        />
+      </View>
+      <View
+        onLayout={[Function]}
+        style={
+          Object {
+            "opacity": 0,
+            "position": "absolute",
+            "right": null,
+          }
+        }
+      >
+        <View
+          accessibilityRole="button"
+          accessible={true}
+          collapsable={false}
+          focusable={true}
+          nativeID="animatedComponent"
+          onClick={[Function]}
+          onResponderGrant={[Function]}
+          onResponderMove={[Function]}
+          onResponderRelease={[Function]}
+          onResponderTerminate={[Function]}
+          onResponderTerminationRequest={[Function]}
+          onStartShouldSetResponder={[Function]}
+          style={
+            Object {
+              "opacity": 1,
+            }
+          }
+        >
+          <View
+            style={
+              Array [
+                undefined,
+                undefined,
+              ]
+            }
+          >
+            <Text
+              style={
+                Array [
+                  Object {
+                    "color": "#007aff",
+                    "fontSize": 18,
+                    "padding": 8,
+                    "textAlign": "center",
+                  },
+                  undefined,
+                  Object {
+                    "color": "#aaaaaa",
+                    "fontSize": 14,
+                  },
+                  undefined,
+                ]
+              }
+            >
+              cancel title
+            </Text>
+          </View>
+        </View>
+      </View>
+    </View>
+  </View>
+</View>
+`;
