@@ -146,7 +146,7 @@ const getStyleSheet = makeStyleSheetFromTheme((props: Props) => {
         screenShareText: {
             color: 'white',
             margin: 3,
-        }
+        },
     };
 });
 

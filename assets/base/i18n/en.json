@@ -783,6 +783,7 @@
   "voice_call.leave": "Leave",
   "voice_call.more": "More",
   "voice_call.mute": "Mute",
+  "voice_call.screen_share_user": "You are seing {userDisplayName} screen",
   "voice_call.settings": "Settings",
   "voice_call.unmute": "Unmute",
   "voice_calls.join_call.participants_list_header": "CALL PARTICIPANTS",
