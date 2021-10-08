@@ -3,9 +3,13 @@
 
 import {Database, Model, Q, Query, Relation} from '@nozbe/watermelondb';
 
+import {General, Permissions} from '@constants';
 import {MM_TABLES} from '@constants/database';
+import {hasPermission} from '@utils/role';
 
 import {prepareDeletePost} from './post';
+import {queryRoles} from './role';
+import {queryCurrentChannelId} from './system';
 
 import type ServerDataOperator from '@database/operator/server_data_operator';
 import type ChannelModel from '@typings/database/models/servers/channel';
@@ -124,4 +128,47 @@ export const queryChannelsById = async (database: Database, channelIds: string[]
     } catch {
         return undefined;
     }
+};
+
+export const queryDefaultChannelForTeam = async (database: Database, teamId: string) => {
+    let channel: ChannelModel|undefined;
+    let canIJoinPublicChannelsInTeam = false;
+    const roles = await queryRoles(database);
+
+    if (roles.length) {
+        canIJoinPublicChannelsInTeam = hasPermission(roles, Permissions.JOIN_PUBLIC_CHANNELS, true);
+    }
+
+    const myChannels = await database.get<ChannelModel>(CHANNEL).query(
+        Q.on(MY_CHANNEL, 'id', Q.notEq('')),
+        Q.and(
+            Q.where('team_id', teamId),
+            Q.where('delete_at', 0),
+            Q.where('type', General.OPEN_CHANNEL),
+        ),
+        Q.experimentalSortBy('display_name', Q.asc),
+    ).fetch();
+
+    const defaultChannel = myChannels.find((c) => c.name === General.DEFAULT_CHANNEL);
+    const myFirstTeamChannel = myChannels[0];
+
+    if (defaultChannel || canIJoinPublicChannelsInTeam) {
+        channel = defaultChannel;
+    } else {
+        channel = myFirstTeamChannel || defaultChannel;
+    }
+
+    return channel;
+};
+
+export const queryCurrentChannel = async (database: Database) => {
+    const currentChannelId = await queryCurrentChannelId(database);
+    if (currentChannelId) {
+        const channels = await queryChannelsById(database, [currentChannelId]);
+        if (channels?.length) {
+            return channels[0];
+        }
+    }
+
+    return undefined;
 };

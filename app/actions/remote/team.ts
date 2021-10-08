@@ -7,7 +7,7 @@ import {localRemoveUserFromTeam} from '@actions/local/team';
 import DatabaseManager from '@database/manager';
 import NetworkManager from '@init/network_manager';
 import {queryWebSocketLastDisconnected} from '@queries/servers/system';
-import {prepareMyTeams} from '@queries/servers/team';
+import {prepareMyTeams, syncTeamTable} from '@queries/servers/team';
 
 import {fetchMyChannelsForTeam} from './channel';
 import {fetchPostsForUnreadChannels} from './post';
@@ -96,6 +96,31 @@ export const fetchMyTeams = async (serverUrl: string, fetchOnly = false): Promis
         }
 
         return {teams, memberships};
+    } catch (error) {
+        forceLogoutIfNecessary(serverUrl, error as ClientError);
+        return {error};
+    }
+};
+
+export const fetchAllTeams = async (serverUrl: string, fetchOnly = false): Promise<MyTeamsRequest> => {
+    let client;
+    try {
+        client = NetworkManager.getClient(serverUrl);
+    } catch (error) {
+        return {error};
+    }
+
+    try {
+        const teams = await client.getTeams() as Team[];
+
+        if (!fetchOnly) {
+            const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
+            if (operator) {
+                syncTeamTable(operator, teams);
+            }
+        }
+
+        return {teams};
     } catch (error) {
         forceLogoutIfNecessary(serverUrl, error as ClientError);
         return {error};

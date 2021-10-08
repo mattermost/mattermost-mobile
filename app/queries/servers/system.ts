@@ -14,6 +14,7 @@ type PrepareCommonSystemValuesArgs = {
     currentTeamId?: string;
     currentUserId?: string;
     license?: ClientLicense;
+    teamHistory?: string;
 }
 
 const {SERVER: {SYSTEM}} = MM_TABLES;
@@ -52,6 +53,7 @@ export const queryCommonSystemValues = async (serverDatabase: Database) => {
     let currentChannelId = '';
     let currentTeamId = '';
     let currentUserId = '';
+    let teamHistory = '';
     systemRecords.forEach((systemRecord) => {
         switch (systemRecord.id) {
             case SYSTEM_IDENTIFIERS.CONFIG:
@@ -69,6 +71,9 @@ export const queryCommonSystemValues = async (serverDatabase: Database) => {
             case SYSTEM_IDENTIFIERS.LICENSE:
                 license = systemRecord.value as ClientLicense;
                 break;
+            case SYSTEM_IDENTIFIERS.TEAM_HISTORY:
+                teamHistory = systemRecord.value;
+                break;
         }
     });
 
@@ -78,6 +83,7 @@ export const queryCommonSystemValues = async (serverDatabase: Database) => {
         currentUserId,
         config: (config as ClientConfig),
         license: (license as ClientLicense),
+        teamHistory,
     };
 };
 
@@ -108,10 +114,19 @@ export const queryWebSocketLastDisconnected = async (serverDatabase: Database) =
     }
 };
 
+export const queryTeamHistory = async (serverDatabase: Database) => {
+    try {
+        const teamHistory = await serverDatabase.get<SystemModel>(SYSTEM).find(SYSTEM_IDENTIFIERS.TEAM_HISTORY);
+        return (teamHistory.value) as string;
+    } catch {
+        return '';
+    }
+};
+
 export const prepareCommonSystemValues = (
     operator: ServerDataOperator, values: PrepareCommonSystemValuesArgs) => {
     try {
-        const {config, currentChannelId, currentTeamId, currentUserId, license} = values;
+        const {config, currentChannelId, currentTeamId, currentUserId, license, teamHistory} = values;
         const systems: IdValue[] = [];
         if (config !== undefined) {
             systems.push({
@@ -145,6 +160,13 @@ export const prepareCommonSystemValues = (
             systems.push({
                 id: SYSTEM_IDENTIFIERS.CURRENT_CHANNEL_ID,
                 value: currentChannelId,
+            });
+        }
+
+        if (teamHistory !== undefined) {
+            systems.push({
+                id: SYSTEM_IDENTIFIERS.TEAM_HISTORY,
+                value: teamHistory,
             });
         }
 

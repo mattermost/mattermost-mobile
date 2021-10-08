@@ -4,9 +4,9 @@
 import {DeviceEventEmitter} from 'react-native';
 
 import {autoUpdateTimezone, getDeviceTimezone, isTimezoneEnabled} from '@actions/local/timezone';
-import {getServerCredentials} from '@app/init/credentials';
 import {General, Database} from '@constants';
 import DatabaseManager from '@database/manager';
+import {getServerCredentials} from '@init/credentials';
 import NetworkManager from '@init/network_manager';
 import WebsocketManager from '@init/websocket_manager';
 import {queryDeviceToken} from '@queries/app/global';
@@ -48,11 +48,7 @@ export const completeLogin = async (serverUrl: string, user: UserProfile) => {
     // Start websocket
     const credentials = await getServerCredentials(serverUrl);
     if (credentials?.token) {
-        try {
-            WebsocketManager.createClient(serverUrl, credentials.token);
-        } catch {
-            // TODO: Anything to do if we cannot create the client at this point?
-        }
+        WebsocketManager.createClient(serverUrl, credentials.token);
     }
     return null;
 };

@@ -6,10 +6,11 @@ import {Database, Model, Q, Query, Relation} from '@nozbe/watermelondb';
 import {Database as DatabaseConstants, Preferences} from '@constants';
 import {getPreferenceValue} from '@helpers/api/preference';
 import {selectDefaultTeam} from '@helpers/api/team';
+import {DEFAULT_LOCALE} from '@i18n';
 
-import {prepareDeleteChannel} from './channel';
+import {prepareDeleteChannel, queryDefaultChannelForTeam} from './channel';
 import {queryPreferencesByCategoryAndName} from './preference';
-import {queryConfig} from './system';
+import {prepareCommonSystemValues, queryConfig, queryTeamHistory} from './system';
 import {queryCurrentUser} from './user';
 
 import type ServerDataOperator from '@database/operator/server_data_operator';
@@ -18,12 +19,16 @@ import type MyTeamModel from '@typings/database/models/servers/my_team';
 import type TeamModel from '@typings/database/models/servers/team';
 import type TeamChannelHistoryModel from '@typings/database/models/servers/team_channel_history';
 
-const {MY_TEAM, TEAM, TEAM_CHANNEL_HISTORY} = DatabaseConstants.MM_TABLES.SERVER;
+const {MY_TEAM, TEAM, TEAM_CHANNEL_HISTORY, MY_CHANNEL, TEAM_MEMBERSHIP} = DatabaseConstants.MM_TABLES.SERVER;
 
 export const addChannelToTeamHistory = async (operator: ServerDataOperator, teamId: string, channelId: string, prepareRecordsOnly = false) => {
     let tch: TeamChannelHistory|undefined;
 
     try {
+        const myChannel = (await operator.database.get(MY_CHANNEL).find(channelId));
+        if (!myChannel) {
+            return [];
+        }
         const teamChannelHistory = (await operator.database.get(TEAM_CHANNEL_HISTORY).find(teamId)) as TeamChannelHistoryModel;
         const channelIdSet = new Set(teamChannelHistory.channelIds);
         if (channelIdSet.has(channelId)) {
@@ -44,6 +49,110 @@ export const addChannelToTeamHistory = async (operator: ServerDataOperator, team
     }
 
     return operator.handleTeamChannelHistory({teamChannelHistories: [tch], prepareRecordsOnly});
+};
+
+export const queryLastChannelFromTeam = async (database: Database, teamId: string) => {
+    let channelId = '';
+
+    try {
+        const teamChannelHistory = await database.get<TeamChannelHistoryModel>(TEAM_CHANNEL_HISTORY).find(teamId);
+        if (teamChannelHistory.channelIds.length) {
+            channelId = teamChannelHistory.channelIds[0];
+        }
+    } catch {
+        // No channel history for the team
+        const channel = await queryDefaultChannelForTeam(database, teamId);
+        if (channel) {
+            channelId = channel.id;
+        }
+    }
+
+    return channelId;
+};
+
+export const removeChannelFromTeamHistory = async (operator: ServerDataOperator, teamId: string, channelId: string, prepareRecordsOnly = false) => {
+    let tch: TeamChannelHistory|undefined;
+
+    try {
+        const teamChannelHistory = (await operator.database.get(TEAM_CHANNEL_HISTORY).find(teamId)) as TeamChannelHistoryModel;
+        const channelIdSet = new Set(teamChannelHistory.channelIds);
+        if (channelIdSet.has(channelId)) {
+            channelIdSet.delete(channelId);
+        } else {
+            return [];
+        }
+
+        const channelIds = Array.from(channelIdSet);
+        tch = {
+            id: teamId,
+            channel_ids: channelIds,
+        };
+    } catch {
+        return [];
+    }
+
+    return operator.handleTeamChannelHistory({teamChannelHistories: [tch], prepareRecordsOnly});
+};
+
+export const addTeamToTeamHistory = async (operator: ServerDataOperator, teamId: string) => {
+    const teamHistory = (await queryTeamHistory(operator.database)).split(' ');
+    const teamHistorySet = new Set(teamHistory);
+    if (teamHistorySet.has(teamId)) {
+        teamHistorySet.delete(teamId);
+    }
+
+    const teamIds = Array.from(teamHistorySet);
+    teamIds.unshift(teamId);
+    return prepareCommonSystemValues(operator, {teamHistory: teamIds.join(' ')});
+};
+
+export const removeTeamFromTeamHistory = async (operator: ServerDataOperator, teamId: string) => {
+    const teamHistory = (await queryTeamHistory(operator.database)).split(' ');
+    const teamHistorySet = new Set(teamHistory);
+    if (!teamHistorySet.has(teamId)) {
+        return undefined;
+    }
+
+    teamHistorySet.delete(teamId);
+    const teamIds = Array.from(teamHistorySet).slice(0, 5);
+
+    return prepareCommonSystemValues(operator, {teamHistory: teamIds.join(' ')});
+};
+
+export const queryLastTeam = async (database: Database) => {
+    const teamHistory = (await queryTeamHistory(database)).split(' ');
+    if (teamHistory.length > 0) {
+        return teamHistory[0];
+    }
+
+    return queryDefaultTeam(database);
+};
+
+export const syncTeamTable = async (operator: ServerDataOperator, teams: Team[]) => {
+    const notAvailable = await operator.database.get<TeamModel>(TEAM).query(Q.where('id', Q.notIn(teams.map((t) => t.id)))).fetch();
+    const models = [];
+    const deletions = await Promise.all(notAvailable.map((t) => prepareDeleteTeam(t)));
+    for (const d of deletions) {
+        models.push(...d);
+    }
+    await operator.batchRecords(models);
+    await operator.handleTeam({teams, prepareRecordsOnly: false});
+};
+
+export const queryDefaultTeam = async (database: Database) => {
+    const user = await queryCurrentUser(database);
+    const config = await queryConfig(database);
+    const teamOrderPreferences = await queryPreferencesByCategoryAndName(database, Preferences.TEAMS_ORDER, '');
+    let teamOrderPreference = '';
+    if (teamOrderPreferences.length) {
+        teamOrderPreference = teamOrderPreferences[0].value;
+    }
+
+    const teamModels = await database.get<TeamModel>(TEAM).query(Q.on(TEAM_MEMBERSHIP, Q.where('delete_at', Q.eq(0)))).fetch();
+    const teams = teamModels.map((t) => ({id: t.id, display_name: t.displayName, name: t.name} as Team));
+
+    const defaultTeam = selectDefaultTeam(teams, user?.locale || DEFAULT_LOCALE, teamOrderPreference, config.ExperimentalPrimaryTeam);
+    return defaultTeam?.id;
 };
 
 export const prepareMyTeams = (operator: ServerDataOperator, teams: Team[], memberships: TeamMembership[]) => {

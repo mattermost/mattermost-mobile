@@ -5,12 +5,17 @@ import {DeviceEventEmitter} from 'react-native';
 
 import {fetchMyChannelsForTeam} from '@actions/remote/channel';
 import {fetchPostsSince} from '@actions/remote/post';
-import {loadMe, updateAllUsersSinceLastDisconnect} from '@actions/remote/user';
-import {General, WebsocketEvents} from '@app/constants';
-import {SYSTEM_IDENTIFIERS} from '@app/constants/database';
-import {queryCommonSystemValues, queryConfig, queryWebSocketLastDisconnected} from '@app/queries/servers/system';
+import {fetchMyPreferences} from '@actions/remote/preference';
+import {fetchRoles} from '@actions/remote/role';
+import {fetchConfigAndLicense} from '@actions/remote/systems';
+import {fetchAllTeams, fetchMyTeams} from '@actions/remote/team';
+import {fetchMe, updateAllUsersSinceLastDisconnect} from '@actions/remote/user';
+import {WebsocketEvents} from '@constants';
+import {SYSTEM_IDENTIFIERS} from '@constants/database';
 import DatabaseManager from '@database/manager';
+import {queryCommonSystemValues, queryConfig, queryWebSocketLastDisconnected} from '@queries/servers/system';
 
+import {handleChannelDeletedEvent, handleUserRemovedEvent} from './channel';
 import {handleLeaveTeamEvent} from './teams';
 
 export async function handleFirstConnect(serverUrl: string) {
@@ -58,39 +63,51 @@ async function doReconnect(serverUrl: string) {
         return;
     }
 
-    const {teamMemberships, config, error} = await loadMe(serverUrl, {});
-    if (error) {
-        //TODO handle error
-        return;
-    }
-
     const {currentUserId, currentTeamId, currentChannelId} = await queryCommonSystemValues(database.database);
     const lastDisconnectedAt = await queryWebSocketLastDisconnected(database.database);
+
+    fetchMe(serverUrl);
+    fetchMyPreferences(serverUrl);
+    const {config} = await fetchConfigAndLicense(serverUrl);
+    const {memberships: teamMemberships} = await fetchMyTeams(serverUrl);
+    fetchAllTeams(serverUrl);
+
     const currentTeamMembership = teamMemberships?.find((tm) => tm.team_id === currentTeamId && tm.delete_at === 0);
 
+    let channelMemberships: ChannelMembership[] | undefined;
     if (currentTeamMembership) {
-        const channelsRequest = await fetchMyChannelsForTeam(serverUrl, currentTeamMembership.team_id, false, lastDisconnectedAt);
-        if (channelsRequest.error) {
-            // TODO handle error.
-            return; //?
+        const {memberships, channels, error} = await fetchMyChannelsForTeam(serverUrl, currentTeamMembership.team_id, false, lastDisconnectedAt);
+        if (error) {
+            DeviceEventEmitter.emit('team_load_error', serverUrl, error);
+            return;
+        }
+        channelMemberships = memberships;
+
+        if (currentChannelId) {
+            const stillMemberOfCurrentChannel = memberships?.find((cm) => cm.channel_id === currentChannelId);
+            const channelStillExist = channels?.find((c) => c.id === currentChannelId);
+            const viewArchivedChannels = config?.ExperimentalViewArchivedChannels === 'true';
+
+            if (!stillMemberOfCurrentChannel) {
+                handleUserRemovedEvent(serverUrl, {data: {user_id: currentUserId, channel_id: currentChannelId}});
+            } else if (!channelStillExist ||
+                (!viewArchivedChannels && channelStillExist.delete_at !== 0)
+            ) {
+                handleChannelDeletedEvent(serverUrl, {data: {user_id: currentUserId, channel_id: currentChannelId}});
+            } else {
+                // TODO Differentiate between post and thread, to fetch the thread posts
+                fetchPostsSince(serverUrl, currentChannelId, lastDisconnectedAt);
+            }
         }
 
-        const stillMemberOfCurrentChannel = channelsRequest.memberships?.find((cm) => cm.channel_id === currentChannelId);
-        const channelStillExist = channelsRequest.channels?.find((c) => c.id === currentChannelId);
-        const viewArchivedChannels = config?.ExperimentalViewArchivedChannels === 'true';
-
-        if (
-            !stillMemberOfCurrentChannel ||
-            !channelStillExist ||
-            (!viewArchivedChannels && channelStillExist.delete_at !== 0)
-        ) {
-            DeviceEventEmitter.emit(General.SWITCH_TO_DEFAULT_CHANNEL, currentTeamId);
-        } else {
-            fetchPostsSince(serverUrl, currentChannelId, lastDisconnectedAt);
-        }
+        // TODO Consider global thread screen to update global threads
     } else {
         handleLeaveTeamEvent(serverUrl, {data: {user_id: currentUserId, team_id: currentTeamId}});
     }
+
+    fetchRoles(serverUrl, teamMemberships, channelMemberships);
+
+    // TODO Fetch App bindings?
 
     await updateAllUsersSinceLastDisconnect(serverUrl);
 }
@@ -130,9 +147,8 @@ export async function handleEvent(serverUrl: string, msg: any) {
 
         // return dispatch(handleUserAddedEvent(msg));
         case WebsocketEvents.USER_REMOVED:
+            handleUserRemovedEvent(serverUrl, msg);
             break;
-
-        // return dispatch(handleUserRemovedEvent(msg));
         case WebsocketEvents.USER_UPDATED:
             break;
 
@@ -162,9 +178,8 @@ export async function handleEvent(serverUrl: string, msg: any) {
 
         // return dispatch(handleChannelCreatedEvent(msg));
         case WebsocketEvents.CHANNEL_DELETED:
+            handleChannelDeletedEvent(serverUrl, msg);
             break;
-
-        // return dispatch(handleChannelDeletedEvent(msg));
         case WebsocketEvents.CHANNEL_UNARCHIVED:
             break;
 

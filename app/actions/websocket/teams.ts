@@ -3,12 +3,15 @@
 
 import {DeviceEventEmitter} from 'react-native';
 
-import {localRemoveUserFromTeam} from '@actions/local/team';
+import {handleTeamChange, localRemoveUserFromTeam} from '@actions/local/team';
 import {updateUsersNoLongerVisible} from '@actions/remote/user';
-import {queryCurrentTeamId} from '@app/queries/servers/system';
-import {queryCurrentUser} from '@app/queries/servers/user';
-import {isGuest} from '@app/utils/user';
 import DatabaseManager from '@database/manager';
+import {queryActiveServer} from '@queries/app/servers';
+import {queryCurrentTeamId} from '@queries/servers/system';
+import {queryLastTeam} from '@queries/servers/team';
+import {queryCurrentUser} from '@queries/servers/user';
+import {dismissAllModals, popToRoot} from '@screens/navigation';
+import {isGuest} from '@utils/user';
 
 export async function handleLeaveTeamEvent(serverUrl: string, msg: any) {
     const database = DatabaseManager.serverDatabases[serverUrl];
@@ -25,13 +28,23 @@ export async function handleLeaveTeamEvent(serverUrl: string, msg: any) {
     if (user.id === msg.data.user_id) {
         localRemoveUserFromTeam(serverUrl, msg.data.team_id);
 
-        // TODO originally it also removed channel categories and threads in teams. Apparently none of those features are yet implemented.
-        // TODO consider whether localRemove should also remove team channel history and team search history.
         if (isGuest(user.roles)) {
             updateUsersNoLongerVisible(serverUrl);
         }
+
         if (currentTeamId === msg.data.team_id) {
-            DeviceEventEmitter.emit('leave_team');
+            const currentServer = await queryActiveServer(DatabaseManager.appDatabase!.database);
+
+            if (currentServer?.url === serverUrl) {
+                DeviceEventEmitter.emit('leave_team');
+                await dismissAllModals();
+                await popToRoot();
+            }
+
+            const teamToJumpTo = await queryLastTeam(database.database);
+            if (teamToJumpTo) {
+                handleTeamChange(serverUrl, teamToJumpTo);
+            } // TODO else jump to "join a team" screen
         }
     }
 }
