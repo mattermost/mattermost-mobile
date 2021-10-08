@@ -22,7 +22,6 @@ type Props = {
     emojis: RenderableEmojis[];
     filteredEmojis: string[];
     missingPages: boolean;
-    onAnimationComplete: (searchBarAnimationComplete: boolean) => void;
     onCancelSearch: (term: string) => void;
     onChangeSearchTerm: (term: string) => void;
     onEmojiPress: (emoji: string) => void;
@@ -38,7 +37,7 @@ type Props = {
     theme: Theme;
 };
 
-const EmojiPicker = ({currentSectionIndex, deviceWidth, emojis, filteredEmojis, missingPages, onAnimationComplete, onCancelSearch, onChangeSearchTerm, onEmojiPress, onHandleScrollToSectionFailed, onHandleSectionIconPress, onLoadMoreCustomEmojis, onMomentumScrollEnd, onScroll, onSetSearchBarRef, onSetSectionListRef, searchTerm, testID, theme}: Props) => {
+const EmojiPicker = ({currentSectionIndex, deviceWidth, emojis, filteredEmojis, missingPages, onCancelSearch, onChangeSearchTerm, onEmojiPress, onHandleScrollToSectionFailed, onHandleSectionIconPress, onLoadMoreCustomEmojis, onMomentumScrollEnd, onScroll, onSetSearchBarRef, onSetSectionListRef, searchTerm, testID, theme}: Props) => {
     const {formatMessage} = useIntl();
     const {height, width} = useWindowDimensions();
 
@@ -67,7 +66,6 @@ const EmojiPicker = ({currentSectionIndex, deviceWidth, emojis, filteredEmojis, 
                     inputHeight={33}
                     inputStyle={searchBarInput}
                     keyboardAppearance={getKeyboardAppearanceFromTheme(theme)}
-                    onAnimationComplete={onAnimationComplete}
                     onCancelButtonPress={onCancelSearch}
                     onChangeText={onChangeSearchTerm}
                     placeholder={formatMessage({id: 'search_bar.search', defaultMessage: 'Search'})}
