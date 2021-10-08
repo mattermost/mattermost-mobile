@@ -15,7 +15,7 @@ type CustomStatusTextProps = {
 };
 
 const CustomStatusText = ({isStatusSet, customStatus, theme}: CustomStatusTextProps) => {
-    let text: any;
+    let text: React.ReactNode | string;
 
     text = (
         <FormattedText

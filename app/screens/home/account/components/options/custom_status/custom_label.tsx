@@ -8,7 +8,6 @@ import {View} from 'react-native';
 import ClearButton from '@components/custom_status/clear_button';
 import CustomStatusExpiry from '@components/custom_status/custom_status_expiry';
 import FormattedText from '@components/formatted_text';
-import {t} from '@i18n';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 import CustomStatusText from './custom_status_text';
@@ -24,6 +23,28 @@ type CustomLabelProps = {
     currentUser: UserModel;
     onClearCustomStatus: () => void;
 };
+
+const getStyleSheet = makeStyleSheetFromTheme((theme) => {
+    return {
+        clearButton: {
+            position: 'absolute',
+            top: 4,
+            right: 14,
+        },
+        customStatusTextContainer: {
+            width: '70%',
+        },
+        customStatusExpiryText: {
+            paddingTop: 3,
+            fontSize: 15,
+            color: changeOpacity(theme.centerChannelColor, 0.35),
+        },
+        retryMessage: {
+            color: theme.errorTextColor,
+            paddingBottom: 25,
+        },
+    };
+});
 
 const CustomLabel = ({currentUser, customStatus, isCustomStatusExpirySupported, isStatusSet, onClearCustomStatus, showRetryMessage, theme}: CustomLabelProps) => {
     const style = getStyleSheet(theme);
@@ -50,7 +71,7 @@ const CustomLabel = ({currentUser, customStatus, isCustomStatusExpirySupported, 
             </View>
             {showRetryMessage && (
                 <FormattedText
-                    id={t('custom_status.failure_message')}
+                    id={'custom_status.failure_message'}
                     defaultMessage='Failed to update status. Try again'
                     style={style.retryMessage}
                 />
@@ -67,27 +88,5 @@ const CustomLabel = ({currentUser, customStatus, isCustomStatusExpirySupported, 
         </>
     );
 };
-
-const getStyleSheet = makeStyleSheetFromTheme((theme) => {
-    return {
-        clearButton: {
-            position: 'absolute',
-            top: 4,
-            right: 14,
-        },
-        customStatusTextContainer: {
-            width: '70%',
-        },
-        customStatusExpiryText: {
-            paddingTop: 3,
-            fontSize: 15,
-            color: changeOpacity(theme.centerChannelColor, 0.35),
-        },
-        retryMessage: {
-            color: theme.errorTextColor,
-            paddingBottom: 25,
-        },
-    };
-});
 
 export default CustomLabel;

@@ -14,6 +14,7 @@
   "account.logout_from": "Log out of {serverName}",
   "account.saved_messages": "Saved Messages",
   "account.settings": "Settings",
+  "account.user_status.title": "User Presence",
   "account.your_profile": "Your Profile",
   "api.channel.add_guest.added": "{addedUsername} added to the channel as a guest by {username}.",
   "api.channel.add_member.added": "{addedUsername} added to the channel by {username}.",
@@ -76,7 +77,7 @@
   "custom_status.expiry_time.tomorrow": "Tomorrow",
   "custom_status.expiry.at": "at",
   "custom_status.expiry.until": "Until",
-    "custom_status.failure_message": "Failed to update status. Try again",
+  "custom_status.failure_message": "Failed to update status. Try again",
   "custom_status.set_status": "Set a Status",
   "custom_status.suggestions.in_a_meeting": "In a meeting",
   "custom_status.suggestions.on_a_vacation": "On a vacation",
@@ -286,6 +287,5 @@
   "status_dropdown.set_offline": "Offline",
   "status_dropdown.set_online": "Online",
   "status_dropdown.set_ooo": "Out Of Office",
-  "undefined": "",
   "web.root.signup_info": "All team communication in one place, searchable and accessible anywhere"
 }

@@ -14,6 +14,14 @@ type CustomStatusEmojiProps = {
     theme: Theme;
 }
 
+const getStyleSheet = makeStyleSheetFromTheme((theme) => {
+    return {
+        customStatusIcon: {
+            color: changeOpacity(theme.centerChannelColor, 0.64),
+        },
+    };
+});
+
 const CustomStatusEmoji = ({emoji, isStatusSet, theme}: CustomStatusEmojiProps) => {
     const styles = getStyleSheet(theme);
 
@@ -36,13 +44,5 @@ const CustomStatusEmoji = ({emoji, isStatusSet, theme}: CustomStatusEmojiProps) 
         </View>
     );
 };
-
-const getStyleSheet = makeStyleSheetFromTheme((theme) => {
-    return {
-        customStatusIcon: {
-            color: changeOpacity(theme.centerChannelColor, 0.64),
-        },
-    };
-});
 
 export default CustomStatusEmoji;
