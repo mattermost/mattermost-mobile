@@ -2,7 +2,6 @@
 // See LICENSE.txt for license information.
 
 /* eslint-disable max-lines */
-import {isEqual} from 'lodash';
 
 import {Client4} from '@client/rest';
 import {getUser} from '@components/autocomplete/slash_suggestion/app_command_parser/app_command_parser_dependencies';
@@ -16,7 +15,7 @@ import {ActionFunc, batchActions, DispatchFunc, GetStateFunc} from '@mm-redux/ty
 import {CategorySorting, ChannelCategory, OrderedChannelCategories} from '@mm-redux/types/channel_categories';
 import {Channel} from '@mm-redux/types/channels';
 import {UserProfile} from '@mm-redux/types/users';
-import {$ID, IDMappedObjects, RelationOneToMany} from '@mm-redux/types/utilities';
+import {$ID, RelationOneToMany} from '@mm-redux/types/utilities';
 import {insertMultipleWithoutDuplicates, insertWithoutDuplicates, removeItem} from '@mm-redux/utils/array_utils';
 import {getUserIdFromChannelName} from '@mm-redux/utils/channel_utils';
 
@@ -32,10 +31,23 @@ export function collapseCategory(categoryId: string) {
     return setCategoryCollapsed(categoryId, true);
 }
 
-export function setCategoryCollapsed(categoryId: string, collapsed: boolean) {
-    return patchCategory(categoryId, {
-        collapsed,
-    });
+export function setCategoryCollapsed(categoryId: string, collapsed: boolean): ActionFunc {
+    return async (dispatch: DispatchFunc, getState: GetStateFunc) => {
+        const state = getState();
+
+        const category = getCategory(state, categoryId);
+        const patchedCategory = {
+            ...category,
+            collapsed,
+        };
+
+        dispatch({
+            type: ChannelCategoryTypes.RECEIVED_CATEGORY,
+            data: patchedCategory,
+        });
+
+        return {data: patchedCategory};
+    };
 }
 
 export function setCategorySorting(categoryId: string, sorting: CategorySorting) {
@@ -142,20 +154,11 @@ export function fetchMyCategories(teamId: string) {
             return {error};
         }
 
-        /*
-         * Make sure that we don't dispatch an unnecessary update after fetching
-         */
-        const categoriesInState = getState().entities.channelCategories.byId;
-        const mappedCats = data.order.reduce((prev, categoryId) => {
-            return {
-                ...prev,
-                [categoryId]: data.categories.find((category) => category.id === categoryId),
-            };
-        }, {} as IDMappedObjects<ChannelCategory>);
-
-        if (isEqual(mappedCats, categoriesInState)) {
-            return {data: false};
-        }
+        // Remove collapse state from server data
+        data.categories = data.categories.map((cat) => {
+            delete cat.collapsed;
+            return cat;
+        });
 
         return dispatch(batchActions([
             {
@@ -199,7 +202,7 @@ export function addChannelToInitialCategory(channel: Channel, setOnServer = fals
                 // Get the user ids in the channel
                 const allUsersInChannels: RelationOneToMany<Channel, UserProfile> = getUserIdsInChannels(state);
                 const allUsersInGMChannel = Array.from(allUsersInChannels[channel.id] || []);
-                const usersInGMChannel: Array<string> = allUsersInGMChannel.filter((u: string) => u !== currentUserId);
+                const usersInGMChannel: string[] = allUsersInGMChannel.filter((u: string) => u !== currentUserId);
 
                 // Filter and see if there are any missing in our state
                 const missingUsers = usersInGMChannel.filter((id) => {
