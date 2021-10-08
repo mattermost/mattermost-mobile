@@ -113,7 +113,6 @@ export default class AtMention extends React.PureComponent {
 
             BottomSheet.showBottomSheetWithOptions({
                 options: [actionText, cancelText],
-                cancelButtonIndex: 1,
             }, (value) => {
                 if (value !== 1) {
                     this.handleCopyMention();
