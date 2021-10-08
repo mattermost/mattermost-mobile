@@ -36,7 +36,8 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     return {
         baseText: {
             color: changeOpacity(theme.centerChannelColor, 0.6),
-            fontSize: 15,
+            fontSize: 16,
+            lineHeight: 20,
         },
         body: {
             flex: 1,

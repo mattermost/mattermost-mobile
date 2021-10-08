@@ -1,8 +1,20 @@
+diff --git a/node_modules/react-native-keychain/RNKeychainManager/RNKeychainManager.h b/node_modules/react-native-keychain/RNKeychainManager/RNKeychainManager.h
+index 4a1234f..f3e2308 100644
+--- a/node_modules/react-native-keychain/RNKeychainManager/RNKeychainManager.h
++++ b/node_modules/react-native-keychain/RNKeychainManager/RNKeychainManager.h
+@@ -10,5 +10,6 @@
+ #import <React/RCTLog.h>
+ 
+ @interface RNKeychainManager : NSObject <RCTBridgeModule>
+-
++-(OSStatus)deleteCredentialsForServer:(NSString *)server;
++-(NSArray<NSString*>*)getAllServersForInternetPasswords;
+ @end
 diff --git a/node_modules/react-native-keychain/RNKeychainManager/RNKeychainManager.m b/node_modules/react-native-keychain/RNKeychainManager/RNKeychainManager.m
-index 38ccdf3..bf0dae3 100644
+index 1e7021c..6990ae4 100644
 --- a/node_modules/react-native-keychain/RNKeychainManager/RNKeychainManager.m
 +++ b/node_modules/react-native-keychain/RNKeychainManager/RNKeychainManager.m
-@@ -272,6 +272,36 @@ SecAccessControlCreateFlags accessControlValue(NSDictionary *options)
+@@ -271,6 +271,36 @@ SecAccessControlCreateFlags accessControlValue(NSDictionary *options)
    return SecItemDelete((__bridge CFDictionaryRef) query);
  }
  
@@ -39,7 +51,7 @@ index 38ccdf3..bf0dae3 100644
  -(NSArray<NSString*>*)getAllServicesForSecurityClasses:(NSArray *)secItemClasses
  {
    NSMutableDictionary *query = [NSMutableDictionary dictionaryWithObjectsAndKeys:
-@@ -592,4 +622,14 @@ RCT_EXPORT_METHOD(getAllGenericPasswordServices:(RCTPromiseResolveBlock)resolve
+@@ -598,4 +628,14 @@ RCT_EXPORT_METHOD(getAllGenericPasswordServices:(RCTPromiseResolveBlock)resolve
    }
  }
  
@@ -55,7 +67,7 @@ index 38ccdf3..bf0dae3 100644
 +
  @end
 diff --git a/node_modules/react-native-keychain/android/src/main/java/com/oblador/keychain/KeychainModule.java b/node_modules/react-native-keychain/android/src/main/java/com/oblador/keychain/KeychainModule.java
-index 3da433f..731b991 100644
+index 6ca68cb..dacb1ed 100644
 --- a/node_modules/react-native-keychain/android/src/main/java/com/oblador/keychain/KeychainModule.java
 +++ b/node_modules/react-native-keychain/android/src/main/java/com/oblador/keychain/KeychainModule.java
 @@ -1,6 +1,7 @@
@@ -74,25 +86,21 @@ index 3da433f..731b991 100644
    /** Shared preferences storage. */
    private final PrefsStorage prefsStorage;
    //endregion
-@@ -140,13 +142,13 @@ public class KeychainModule extends ReactContextBaseJavaModule {
+@@ -140,13 +142,7 @@ public class KeychainModule extends ReactContextBaseJavaModule {
      super(reactContext);
      prefsStorage = new PrefsStorage(reactContext);
  
 -    addCipherStorageToMap(new CipherStorageFacebookConceal(reactContext));
-+    //addCipherStorageToMap(new CipherStorageFacebookConceal(reactContext));
      addCipherStorageToMap(new CipherStorageKeystoreAesCbc());
- 
-     // we have a references to newer api that will fail load of app classes in old androids OS
+-
+-    // we have a references to newer api that will fail load of app classes in old androids OS
 -    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
 -      addCipherStorageToMap(new CipherStorageKeystoreRsaEcb());
 -    }
-+    // if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-+    //   addCipherStorageToMap(new CipherStorageKeystoreRsaEcb());
-+    // }
    }
  
    /** Allow initialization in chain. */
-@@ -278,6 +280,12 @@ public class KeychainModule extends ReactContextBaseJavaModule {
+@@ -278,6 +274,11 @@ public class KeychainModule extends ReactContextBaseJavaModule {
                                      @Nullable final ReadableMap options,
                                      @NonNull final Promise promise) {
      try {
@@ -101,19 +109,18 @@ index 3da433f..731b991 100644
 +        promise.resolve(Arguments.fromBundle(cached));
 +        return;
 +      }
-+
        final ResultSet resultSet = prefsStorage.getEncryptedEntry(alias);
  
        if (resultSet == null) {
-@@ -300,6 +308,7 @@ public class KeychainModule extends ReactContextBaseJavaModule {
+@@ -310,6 +311,7 @@ public class KeychainModule extends ReactContextBaseJavaModule {
        credentials.putString(Maps.USERNAME, decryptionResult.username);
        credentials.putString(Maps.PASSWORD, decryptionResult.password);
-       credentials.putString(Maps.STORAGE, current.getCipherStorageName());
+       credentials.putString(Maps.STORAGE, cipher.getCipherStorageName());
 +      cachedCredentialsMap.put(alias, Arguments.toBundle(credentials));
  
        promise.resolve(credentials);
      } catch (KeyStoreAccessException e) {
-@@ -372,6 +381,7 @@ public class KeychainModule extends ReactContextBaseJavaModule {
+@@ -382,6 +384,7 @@ public class KeychainModule extends ReactContextBaseJavaModule {
        }
        // And then we remove the entry in the shared preferences
        prefsStorage.removeEntry(alias);
@@ -122,18 +129,18 @@ index 3da433f..731b991 100644
        promise.resolve(true);
      } catch (KeyStoreAccessException e) {
 diff --git a/node_modules/react-native-keychain/index.js b/node_modules/react-native-keychain/index.js
-index b73cfb2..a754505 100644
+index 75c0d5c..e6c44d8 100644
 --- a/node_modules/react-native-keychain/index.js
 +++ b/node_modules/react-native-keychain/index.js
-@@ -348,6 +348,21 @@ export function canImplyAuthentication(options?: Options): Promise<boolean> {
+@@ -352,6 +352,21 @@ export function canImplyAuthentication(options?: Options): Promise<boolean> {
    return RNKeychainManager.canCheckAuthentication(options);
  }
  
 +/**
-+ * Gets all `kSecAttrServer` values used in internet credentials for iOS.
-+ * @return {Promise} Resolves to an array of strings
-+ */
-+ export async function getAllInternetPasswordServers(): Promise<string[]> {
+++ * Gets all `kSecAttrServer` values used in internet credentials for iOS.
+++ * @return {Promise} Resolves to an array of strings
+++ */
++export async function getAllInternetPasswordServers(): Promise<string[]> {
 +  if (Platform.OS !== 'ios') {
 +    return Promise.reject(
 +      new Error(
