@@ -67,3 +67,17 @@ export function handleVoiceCallChannelDisabled(msg: WebSocketMessage): GenericAc
         data: msg.broadcast.channel_id,
     };
 }
+
+export function handleVoiceCallScreenOn(msg: WebSocketMessage): GenericAction {
+    return {
+        type: VoiceCallsTypes.RECEIVED_CHANNEL_VOICE_CALL_SCREEN_ON,
+        data: {channelId: msg.broadcast.channel_id, userId: msg.data.userID},
+    };
+}
+
+export function handleVoiceCallScreenOff(msg: WebSocketMessage): GenericAction {
+    return {
+        type: VoiceCallsTypes.RECEIVED_CHANNEL_VOICE_CALL_SCREEN_OFF,
+        data: {channelId: msg.broadcast.channel_id, userId: msg.data.userID},
+    };
+}

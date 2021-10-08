@@ -15,6 +15,7 @@ export type Call = {
     channelId: string;
     startTime: number;
     speakers: string[];
+    screenOn: string;
 }
 
 export type CallParticipant = {

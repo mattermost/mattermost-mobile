@@ -60,5 +60,7 @@ const WebsocketEvents = {
     VOICE_CALLS_USER_VOICE_ON: 'custom_com.mattermost.calls_user_voice_on',
     VOICE_CALLS_USER_VOICE_OFF: 'custom_com.mattermost.calls_user_voice_off',
     VOICE_CALLS_CALL_START: 'custom_com.mattermost.calls_call_start',
+    VOICE_CALLS_SCREEN_ON: 'custom_com.mattermost.calls_user_screen_on',
+    VOICE_CALLS_SCREEN_OFF: 'custom_com.mattermost.calls_user_screen_off',
 };
 export default WebsocketEvents;

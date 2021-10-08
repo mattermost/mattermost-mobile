@@ -61,6 +61,8 @@ import {
     handleVoiceCallUserVoiceOff,
     handleVoiceCallChannelEnabled,
     handleVoiceCallChannelDisabled,
+    handleVoiceCallScreenOn,
+    handleVoiceCallScreenOff,
 } from './voiceCalls';
 
 export function init(additionalOptions: any = {}) {
@@ -451,6 +453,10 @@ function handleEvent(msg: WebSocketMessage) {
             return dispatch(handleVoiceCallUserVoiceOff(msg));
         case WebsocketEvents.VOICE_CALLS_CALL_START:
             return dispatch(handleVoiceCallStarted(msg));
+        case WebsocketEvents.VOICE_CALLS_SCREEN_ON:
+            return dispatch(handleVoiceCallScreenOn(msg));
+        case WebsocketEvents.VOICE_CALLS_SCREEN_OFF:
+            return dispatch(handleVoiceCallScreenOff(msg));
         }
 
         return {data: true};

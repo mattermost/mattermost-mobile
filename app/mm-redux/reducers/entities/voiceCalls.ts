@@ -122,6 +122,26 @@ function calls(state: Dictionary<Call> = {}, action: GenericAction) {
         nextState[channelId] = channelUpdate;
         return nextState;
     }
+    case VoiceCallsTypes.RECEIVED_CHANNEL_VOICE_CALL_SCREEN_ON: {
+        const {channelId, userId} = action.data;
+        if (!state[channelId]) {
+            return state;
+        }
+        const channelUpdate = {...state[channelId], screenOn: userId};
+        const nextState = {...state};
+        nextState[channelId] = channelUpdate;
+        return nextState;
+    }
+    case VoiceCallsTypes.RECEIVED_CHANNEL_VOICE_CALL_SCREEN_OFF: {
+        const {channelId} = action.data;
+        if (!state[channelId]) {
+            return state;
+        }
+        const channelUpdate = {...state[channelId], screenOn: ''};
+        const nextState = {...state};
+        nextState[channelId] = channelUpdate;
+        return nextState;
+    }
     default:
         return state;
     }

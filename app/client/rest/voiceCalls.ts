@@ -29,6 +29,7 @@ const ClientVoiceCalls = (superclass: any) => class extends superclass {
                     channelId: channel.channel_id,
                     startTime: channel.call.start_at,
                     speakers: [],
+                    screenOn: channel.call.screen_sharing_id,
                 };
             }
             enabledChannels[channel.channel_id] = channel.enabled;

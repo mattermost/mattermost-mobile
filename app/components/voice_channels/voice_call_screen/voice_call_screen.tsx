@@ -76,7 +76,10 @@ const getStyleSheet = makeStyleSheetFromTheme((props: Props) => {
             flexGrow: 1,
             flexDirection: 'column',
             alignItems: 'center',
-            margin: 10,
+            marginTop: props.call?.screenOn ? 0 : 10,
+            marginBottom: props.call?.screenOn ? 0 : 10,
+            marginLeft: 10,
+            marginRight: 10,
         },
         username: {
             color: props.theme.sidebarText,
@@ -135,12 +138,15 @@ const getStyleSheet = makeStyleSheetFromTheme((props: Props) => {
         hangUpIcon: {
             backgroundColor: '#D24B4E',
         },
-        screenShare: {
+        screenShareImage: {
             flex: 7,
             width: '100%',
             height: '100%',
-            backgroundColor: 'white',
         },
+        screenShareText: {
+            color: 'white',
+            margin: 3,
+        }
     };
 });
 
@@ -184,12 +190,20 @@ const VoiceCallScreen = (props: Props) => {
     }, [props.call.channelId, props.currentParticipant]);
 
     let screenShareView = null;
-    if (props.screenShareURL) {
+    if (props.screenShareURL && props.call.screenOn) {
         screenShareView = (
-            <RTCView
-                streamURL={props.screenShareURL}
-                style={style.screenShare}
-            />
+            <>
+                <RTCView
+                    streamURL={props.screenShareURL}
+                    style={style.screenShareImage}
+                />
+                <FormattedText
+                    id='voice_call.screen_share_user'
+                    defaultMessage='You are seing {userDisplayName} screen'
+                    values={{userDisplayName: displayUsername(props.users[props.call.screenOn], props.teammateNameDisplay)}}
+                    style={style.screenShareText}
+                />
+            </>
         );
     }
 
@@ -212,7 +226,10 @@ const VoiceCallScreen = (props: Props) => {
                         />
                     </Pressable>
                 </View>
-                <ScrollView alwaysBounceVertical={false}>
+                <ScrollView
+                    alwaysBounceVertical={false}
+                    horizontal={props.call?.screenOn !== ''}
+                >
                     <View style={style.users}>
                         {Object.values(props.call.participants).map((user) => {
                             return (
@@ -224,7 +241,7 @@ const VoiceCallScreen = (props: Props) => {
                                         userId={user.id}
                                         volume={user.isTalking ? 1 : 0}
                                         muted={user.muted}
-                                        size={props.screenShareURL ? 'l' : 'm'}
+                                        size={props.call?.screenOn ? 'm' : 'l'}
                                     />
                                     <Text style={style.username}>{displayUsername(props.users[user.id], props.teammateNameDisplay)}</Text>
                                 </View>
