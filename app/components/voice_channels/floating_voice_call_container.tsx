@@ -4,12 +4,10 @@
 import React from 'react';
 import {View, Platform} from 'react-native';
 
-import {DeviceTypes, ViewTypes} from '@constants';
+import {ViewTypes} from '@constants';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 
 const {
-    ANDROID_TOP_LANDSCAPE,
-    ANDROID_TOP_PORTRAIT,
     IOS_TOP_PORTRAIT,
     STATUS_BAR_HEIGHT,
 } = ViewTypes;
@@ -19,14 +17,10 @@ const getStyleSheet = makeStyleSheetFromTheme(() => {
 
     switch (Platform.OS) {
     case 'android':
-        topBarHeight = ANDROID_TOP_PORTRAIT;
-        if (DeviceTypes.IS_TABLET) {
-            topBarHeight = ANDROID_TOP_LANDSCAPE;
-        }
+        topBarHeight = 9;
         break;
     case 'ios':
         topBarHeight = IOS_TOP_PORTRAIT - STATUS_BAR_HEIGHT;
-
         break;
     }
 

@@ -38,7 +38,7 @@ function calls(state: Dictionary<Call> = {}, action: GenericAction) {
         const channelUpdate = {...state[channelId], participants: {...state[channelId].participants}};
         channelUpdate.participants[userId] = {
             id: userId,
-            muted: false,
+            muted: true,
             isTalking: false,
         };
         const nextState = {...state};

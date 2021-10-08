@@ -22,7 +22,8 @@ const ClientVoiceCalls = (superclass: any) => class extends superclass {
             if (channel.call) {
                 callsResults[channel.channel_id] = {
                     participants: channel.call.users.reduce((prev: Dictionary<CallParticipant>, cur: string) => {
-                        prev[cur] = {id: cur, muted: false, isTalking: false};
+                        // TODO: Get the right value for muted
+                        prev[cur] = {id: cur, muted: true, isTalking: false};
                         return prev;
                     }, {}),
                     channelId: channel.channel_id,

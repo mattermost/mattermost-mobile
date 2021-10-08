@@ -47,8 +47,8 @@ export async function newClient(channelID: string, closeCb: () => void) {
         };
     }
 
-    // const audioTrack = stream.getAudioTracks()[0];
-    // audioTrack.enabled = true;
+    const audioTrack = stream.getAudioTracks()[0];
+    audioTrack.enabled = false;
     streams.push(stream);
 
     // alert(JSON.stringify(mediaDevices.enumerateDevices()))
@@ -100,7 +100,7 @@ export async function newClient(channelID: string, closeCb: () => void) {
         //     voiceDetector.stop();
         // }
 
-        // audioTrack.enabled = true;
+        audioTrack.enabled = false;
         if (ws) {
             ws.send(JSON.stringify({
                 type: 'mute',
@@ -113,7 +113,7 @@ export async function newClient(channelID: string, closeCb: () => void) {
         //     voiceDetector.start();
         // }
 
-        // audioTrack.enabled = true;
+        audioTrack.enabled = true;
         if (ws) {
             ws.send(JSON.stringify({
                 type: 'unmute',
