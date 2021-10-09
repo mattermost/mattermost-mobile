@@ -226,9 +226,6 @@ Navigation.setLazyComponentRegistrator((screenName) => {
     // case 'UserProfile':
     //     screen = require('@screens/user_profile').default;
     //     break;
-        case Screens.OPTIONS_MODAL:
-            screen = require('@screens/options_modal').default;
-            break;
     }
 
     if (screen) {
