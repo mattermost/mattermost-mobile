@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useEffect, useCallback} from 'react';
+import React, {useEffect, useCallback, useState} from 'react';
 import {Keyboard, View, Text, Platform, Pressable, SafeAreaView, ScrollView} from 'react-native';
 import {RTCView} from 'react-native-webrtc2';
 
@@ -31,9 +31,39 @@ type Props = {
     currentParticipant: CallParticipant;
     teammateNameDisplay: string;
     screenShareURL: string;
+    isLandscape: boolean;
 }
 
-const getStyleSheet = makeStyleSheetFromTheme((props: Props) => {
+const getStyleSheet = makeStyleSheetFromTheme((props: any) => {
+    const showControls = !props.isLandscape || props.showControlsInLandscape;
+    const buttons: any = {
+        flexDirection: 'column',
+        backgroundColor: 'rgba(255,255,255,0.16)',
+        width: '100%',
+        paddingBottom: 10,
+    };
+    if (props.isLandscape) {
+        buttons.height = 128;
+        buttons.position = 'absolute';
+        buttons.bottom = 0;
+        if (!showControls) {
+            buttons.bottom = 1000;
+        }
+    }
+    const header: any = {
+        flexDirection: 'row',
+        width: '100%',
+        padding: 14,
+    };
+    if (props.isLandscape) {
+        header.position = 'absolute';
+        header.top = 0;
+        header.backgroundColor = 'rgba(255,255,255,0.16)';
+        header.height = 96;
+        if (!showControls) {
+            header.top = -1000;
+        }
+    }
     return {
         wrapper: {
             flex: 1,
@@ -54,11 +84,7 @@ const getStyleSheet = makeStyleSheetFromTheme((props: Props) => {
             borderRadius: 5,
             alignItems: 'center',
         },
-        header: {
-            flexDirection: 'row',
-            width: '100%',
-            padding: 14,
-        },
+        header,
         time: {
             flex: 1,
             color: props.theme.sidebarText,
@@ -70,6 +96,7 @@ const getStyleSheet = makeStyleSheetFromTheme((props: Props) => {
             flexDirection: 'row',
             flexWrap: 'wrap',
             width: '100%',
+            height: '100%',
             alignContent: 'flex-start',
         },
         user: {
@@ -84,12 +111,7 @@ const getStyleSheet = makeStyleSheetFromTheme((props: Props) => {
         username: {
             color: props.theme.sidebarText,
         },
-        buttons: {
-            flexDirection: 'column',
-            backgroundColor: 'rgba(255,255,255,0.16)',
-            width: '100%',
-            paddingBottom: 10,
-        },
+        buttons,
         button: {
             flexDirection: 'column',
             alignItems: 'center',
@@ -135,6 +157,9 @@ const getStyleSheet = makeStyleSheetFromTheme((props: Props) => {
             margin: 10,
             overflow: 'hidden',
         },
+        muteIconLandscape: {
+            backgroundColor: props.currentParticipant?.muted ? 'rgba(255,255,255,0.16)' : '#3DB887',
+        },
         hangUpIcon: {
             backgroundColor: '#D24B4E',
         },
@@ -155,7 +180,9 @@ const VoiceCallScreen = (props: Props) => {
         return null;
     }
 
-    const style = getStyleSheet(props);
+    const [showControlsInLandscape, setShowControlsInLandscape] = useState(false);
+
+    const style = getStyleSheet({...props, showControlsInLandscape});
     useEffect(() => {
         mergeNavigationOptions('VoiceCall', {
             layout: {
@@ -193,10 +220,14 @@ const VoiceCallScreen = (props: Props) => {
     if (props.screenShareURL && props.call.screenOn) {
         screenShareView = (
             <>
-                <RTCView
-                    streamURL={props.screenShareURL}
+                <Pressable
                     style={style.screenShareImage}
-                />
+                    onPress={() => setShowControlsInLandscape(!showControlsInLandscape)}
+                >
+                    <RTCView
+                        streamURL={props.screenShareURL}
+                    />
+                </Pressable>
                 <FormattedText
                     id='voice_call.screen_share_user'
                     defaultMessage='You are seing {userDisplayName} screen'
@@ -230,7 +261,10 @@ const VoiceCallScreen = (props: Props) => {
                     alwaysBounceVertical={false}
                     horizontal={props.call?.screenOn !== ''}
                 >
-                    <View style={style.users}>
+                    <Pressable
+                        onPress={() => setShowControlsInLandscape(!showControlsInLandscape)}
+                        style={style.users}
+                    >
                         {Object.values(props.call.participants).map((user) => {
                             return (
                                 <View
@@ -247,32 +281,33 @@ const VoiceCallScreen = (props: Props) => {
                                 </View>
                             );
                         })}
-                    </View>
+                    </Pressable>
                 </ScrollView>
                 {screenShareView}
                 <View style={style.buttons}>
-                    <Pressable
-                        style={style.mute}
-                        onPress={muteUnmuteHandler}
-                    >
-                        <CompassIcon
-                            name={props.currentParticipant?.muted ? 'microphone-off' : 'microphone'}
-                            size={24}
-                            style={style.muteIcon}
-                        />
-                        {props.currentParticipant?.muted &&
-                            <FormattedText
-                                style={style.buttonText}
-                                id='voice_call.unmute'
-                                defaultMessage='Unmute'
-                            />}
-                        {!props.currentParticipant?.muted &&
-                            <FormattedText
-                                style={style.buttonText}
-                                id='voice_call.mute'
-                                defaultMessage='Mute'
-                            />}
-                    </Pressable>
+                    {!props.isLandscape &&
+                        <Pressable
+                            style={style.mute}
+                            onPress={muteUnmuteHandler}
+                        >
+                            <CompassIcon
+                                name={props.currentParticipant?.muted ? 'microphone-off' : 'microphone'}
+                                size={24}
+                                style={style.muteIcon}
+                            />
+                            {props.currentParticipant?.muted &&
+                                <FormattedText
+                                    style={style.buttonText}
+                                    id='voice_call.unmute'
+                                    defaultMessage='Unmute'
+                                />}
+                            {!props.currentParticipant?.muted &&
+                                <FormattedText
+                                    style={style.buttonText}
+                                    id='voice_call.mute'
+                                    defaultMessage='Mute'
+                                />}
+                        </Pressable>}
                     <View style={style.otherButtons}>
                         <Pressable
                             style={style.button}
@@ -335,6 +370,29 @@ const VoiceCallScreen = (props: Props) => {
                                 defaultMessage='More'
                             />
                         </Pressable>
+                        {props.isLandscape &&
+                            <Pressable
+                                style={style.button}
+                                onPress={muteUnmuteHandler}
+                            >
+                                <CompassIcon
+                                    name={props.currentParticipant?.muted ? 'microphone-off' : 'microphone'}
+                                    size={24}
+                                    style={{...style.buttonIcon, ...style.muteIconLandscape}}
+                                />
+                                {props.currentParticipant?.muted &&
+                                    <FormattedText
+                                        style={style.buttonText}
+                                        id='voice_call.unmute'
+                                        defaultMessage='Unmute'
+                                    />}
+                                {!props.currentParticipant?.muted &&
+                                    <FormattedText
+                                        style={style.buttonText}
+                                        id='voice_call.mute'
+                                        defaultMessage='Mute'
+                                    />}
+                            </Pressable>}
                     </View>
                 </View>
             </View>

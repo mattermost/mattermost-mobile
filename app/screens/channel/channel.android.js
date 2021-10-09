@@ -4,7 +4,7 @@
 import React from 'react';
 import {StyleSheet, View, BackHandler, ToastAndroid} from 'react-native';
 
-import {goToScreen, openMainSideMenu, openSettingsSideMenu} from '@actions/navigation';
+import {openMainSideMenu, openSettingsSideMenu} from '@actions/navigation';
 import AnnouncementBanner from '@components/announcement_banner';
 import GlobalThreadsList from '@components/global_threads';
 import InteractiveDialogController from '@components/interactive_dialog_controller';
@@ -107,9 +107,7 @@ export default class ChannelAndroid extends ChannelBase {
                 <AnnouncementBanner/>
                 <FloatingVoiceCallContainer>
                     <JoinVoiceCall/>
-                    <CurrentVoiceCall
-                        onExpand={() => goToScreen('VoiceCall', 'Voice Call')}
-                    />
+                    <CurrentVoiceCall/>
                 </FloatingVoiceCallContainer>
             </>
         );

@@ -5,7 +5,6 @@ import React from 'react';
 import {View} from 'react-native';
 import {SafeAreaView} from 'react-native-safe-area-context';
 
-import {goToScreen} from '@actions/navigation';
 import AnnouncementBanner from '@components/announcement_banner';
 import Autocomplete from '@components/autocomplete';
 import GlobalThreadsList from '@components/global_threads';
@@ -88,9 +87,7 @@ export default class ChannelIOS extends ChannelBase {
                 <NetworkIndicator/>
                 <FloatingVoiceCallContainer>
                     <JoinVoiceCall/>
-                    <CurrentVoiceCall
-                        onExpand={() => goToScreen('VoiceCall', 'Voice Call')}
-                    />
+                    <CurrentVoiceCall/>
                 </FloatingVoiceCallContainer>
             </>
         );

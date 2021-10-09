@@ -2,8 +2,10 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback} from 'react';
-import {View, Text, TouchableOpacity, Pressable} from 'react-native';
+import {View, Text, TouchableOpacity, Pressable, Platform} from 'react-native';
+import {Options} from 'react-native-navigation';
 
+import {goToScreen} from '@actions/navigation';
 import CompassIcon from '@components/compass_icon';
 import FormattedText from '@components/formatted_text';
 import VoiceAvatar from '@components/voice_channels/voice_avatar';
@@ -30,7 +32,6 @@ type Props = {
     call: Call;
     currentParticipant: CallParticipant;
     teammateNameDisplay: string;
-    onExpand: () => void;
 }
 
 const getStyleSheet = makeStyleSheetFromTheme((props: Props) => {
@@ -113,7 +114,22 @@ const CurrentVoiceCall = (props: Props) => {
                     </Text>
                 </View>
                 <Pressable
-                    onPressIn={props.onExpand}
+                    onPressIn={() => {
+                        const options: Options = {
+                            layout: {
+                                backgroundColor: '#000',
+                                componentBackgroundColor: '#000',
+                                orientation: ['portrait', 'landscape'],
+                            },
+                            topBar: {
+                                background: {
+                                    color: '#000',
+                                },
+                                visible: Platform.OS === 'android',
+                            },
+                        };
+                        goToScreen('VoiceCall', 'Voice Call', {}, options);
+                    }}
                     style={style.pressable}
                 >
                     <CompassIcon
