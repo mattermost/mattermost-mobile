@@ -152,6 +152,9 @@ function joined(state = '', action: GenericAction) {
     case VoiceCallsTypes.RECEIVED_MYSELF_JOINED_VOICE_CALL: {
         return action.data;
     }
+    case VoiceCallsTypes.RECEIVED_VOICE_CALLS: {
+        return '';
+    }
     case VoiceCallsTypes.RECEIVED_MYSELF_LEFT_VOICE_CALL: {
         return '';
     }

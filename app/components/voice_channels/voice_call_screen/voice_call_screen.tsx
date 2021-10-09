@@ -53,6 +53,7 @@ const getStyleSheet = makeStyleSheetFromTheme((props: any) => {
     if (props.isLandscape) {
         buttons.height = 128;
         buttons.position = 'absolute';
+        buttons.backgroundColor = 'rgba(0,0,0,0.64)';
         buttons.bottom = 0;
         if (!showControls) {
             buttons.bottom = 1000;
@@ -74,12 +75,26 @@ const getStyleSheet = makeStyleSheetFromTheme((props: any) => {
     if (props.isLandscape) {
         header.position = 'absolute';
         header.top = 0;
-        header.backgroundColor = 'rgba(0,0,0,0.16)';
+        header.backgroundColor = 'rgba(0,0,0,0.64)';
         header.height = 64;
         header.padding = 0;
         if (!showControls) {
             header.top = -1000;
         }
+    }
+    const usersScroll: any = {}
+    const users: any = {
+        flex: 1,
+        flexDirection: 'row',
+        flexWrap: 'wrap',
+        width: '100%',
+        height: '100%',
+        alignContent: 'center',
+        alignItems: 'center',
+    };
+
+    if (props.isLandscape && props.call?.screenOn) {
+        usersScroll.position = 'absolute';
     }
     return {
         wrapper: {
@@ -108,15 +123,8 @@ const getStyleSheet = makeStyleSheetFromTheme((props: any) => {
             margin: 10,
             padding: 10,
         },
-        users: {
-            flex: 1,
-            flexDirection: 'row',
-            flexWrap: 'wrap',
-            width: '100%',
-            height: '100%',
-            alignContent: 'center',
-            alignItems: 'center',
-        },
+        users,
+        usersScroll,
         user: {
             flexGrow: 1,
             flexDirection: 'column',
@@ -185,6 +193,7 @@ const getStyleSheet = makeStyleSheetFromTheme((props: any) => {
             flex: 7,
             width: '100%',
             height: '100%',
+            alignItems: 'center',
         },
         screenShareText: {
             color: 'white',
@@ -237,22 +246,21 @@ const VoiceCallScreen = (props: Props) => {
     let screenShareView = null;
     if (props.screenShareURL && props.call.screenOn) {
         screenShareView = (
-            <>
-                <Pressable
+            <Pressable
+                style={style.screenShareImage}
+                onPress={() => setShowControlsInLandscape(!showControlsInLandscape)}
+            >
+                <RTCView
+                    streamURL={props.screenShareURL}
                     style={style.screenShareImage}
-                    onPress={() => setShowControlsInLandscape(!showControlsInLandscape)}
-                >
-                    <RTCView
-                        streamURL={props.screenShareURL}
-                    />
-                </Pressable>
+                />
                 <FormattedText
                     id='voice_call.screen_share_user'
                     defaultMessage='You are seing {userDisplayName} screen'
                     values={{userDisplayName: displayUsername(props.users[props.call.screenOn], props.teammateNameDisplay)}}
                     style={style.screenShareText}
                 />
-            </>
+            </Pressable>
         );
     }
 
@@ -278,6 +286,7 @@ const VoiceCallScreen = (props: Props) => {
                 <ScrollView
                     alwaysBounceVertical={false}
                     horizontal={props.call?.screenOn !== ''}
+                    contentContainerStyle={style.usersScroll}
                 >
                     <Pressable
                         onPress={() => setShowControlsInLandscape(!showControlsInLandscape)}
