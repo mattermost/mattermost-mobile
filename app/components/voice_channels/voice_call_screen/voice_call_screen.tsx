@@ -41,6 +41,14 @@ const getStyleSheet = makeStyleSheetFromTheme((props: any) => {
         backgroundColor: 'rgba(255,255,255,0.16)',
         width: '100%',
         paddingBottom: 10,
+        ...Platform.select({
+            android: {
+                elevation: 4,
+            },
+            ios: {
+                zIndex: 4,
+            },
+        }),
     };
     if (props.isLandscape) {
         buttons.height = 128;
@@ -54,12 +62,21 @@ const getStyleSheet = makeStyleSheetFromTheme((props: any) => {
         flexDirection: 'row',
         width: '100%',
         padding: 14,
+        ...Platform.select({
+            android: {
+                elevation: 4,
+            },
+            ios: {
+                zIndex: 4,
+            },
+        }),
     };
     if (props.isLandscape) {
         header.position = 'absolute';
         header.top = 0;
-        header.backgroundColor = 'rgba(255,255,255,0.16)';
-        header.height = 96;
+        header.backgroundColor = 'rgba(0,0,0,0.16)';
+        header.height = 64;
+        header.padding = 0;
         if (!showControls) {
             header.top = -1000;
         }
@@ -97,7 +114,8 @@ const getStyleSheet = makeStyleSheetFromTheme((props: any) => {
             flexWrap: 'wrap',
             width: '100%',
             height: '100%',
-            alignContent: 'flex-start',
+            alignContent: 'center',
+            alignItems: 'center',
         },
         user: {
             flexGrow: 1,
