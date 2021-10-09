@@ -3,39 +3,81 @@
 
 import {SYSTEM_IDENTIFIERS} from '@constants/database';
 import DatabaseManager from '@database/manager';
+import {queryRecentCustomStatuses} from '@queries/servers/system';
+import {queryUserById} from '@queries/servers/user';
 
 import type Model from '@nozbe/watermelondb/Model';
 import type UserModel from '@typings/database/models/servers/user';
 
-type UpdateUserCustomStatusArgs = {
-    recentStatuses?: UserCustomStatus[];
-    serverUrl: string;
-    status?: UserCustomStatus;
-    user: UserModel;
-}
-export const updateLocalCustomStatus = async ({recentStatuses, serverUrl, status, user}: UpdateUserCustomStatusArgs) => {
+export const updateLocalCustomStatus = async (serverUrl: string, user: UserModel, customStatus?: UserCustomStatus) => {
     const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
-
-    try {
-        let models: Model[] = [];
-
-        const currentProps = {...user.props, customStatus: status ? {...status} : {}};
-        const userModel = user.prepareUpdate((u: UserModel) => {
-            u.props = currentProps;
-        });
-
-        models.push(userModel);
-
-        if (status && recentStatuses) {
-            recentStatuses.unshift(status);
-
-            const systemModels: Model[] = await operator?.handleSystem({prepareRecordsOnly: true, systems: [{id: SYSTEM_IDENTIFIERS.RECENT_CUSTOM_STATUS, value: JSON.stringify(recentStatuses)}]});
-            if (systemModels.length) {
-                models = models.concat(systemModels);
-            }
-        }
-        await operator?.batchRecords(models);
-    } catch (e) {
-        //does nothing - if we get to this point, that means that the Custom Status has been updated on the server and the status in the app will be refreshed via another medium (e.g. WebSocket)
+    if (!operator) {
+        return {error: `${serverUrl} database not found`};
     }
+
+    const models: Model[] = [];
+    const currentProps = {...user.props, customStatus: customStatus || {}};
+    const userModel = user.prepareUpdate((u: UserModel) => {
+        u.props = currentProps;
+    });
+
+    models.push(userModel);
+    if (customStatus) {
+        const recent = await updateRecentCustomStatuses(serverUrl, customStatus, true);
+        if (Array.isArray(recent)) {
+            models.push(...recent);
+        }
+    }
+
+    await operator.batchRecords(models);
+    return {};
 };
+
+export const updateRecentCustomStatuses = async (serverUrl: string, customStatus: UserCustomStatus, prepareRecordsOnly = false, remove = false) => {
+    const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
+    if (!operator) {
+        return {error: `${serverUrl} database not found`};
+    }
+
+    const recent = await queryRecentCustomStatuses(operator.database);
+    const recentStatuses = (recent ? recent.value : []) as UserCustomStatus[];
+    const index = recentStatuses.findIndex((cs) => (
+        cs.emoji === customStatus.emoji &&
+        cs.text === customStatus.text &&
+        cs.duration === customStatus.duration
+    ));
+
+    if (index !== -1) {
+        recentStatuses.splice(index, 1);
+    }
+
+    if (!remove) {
+        recentStatuses.unshift(customStatus);
+    }
+
+    return operator.handleSystem({
+        systems: [{
+            id: SYSTEM_IDENTIFIERS.RECENT_CUSTOM_STATUS,
+            value: JSON.stringify(recentStatuses),
+        }],
+        prepareRecordsOnly,
+    });
+};
+
+export const updateUserPresence = async (serverUrl: string, userStatus: UserStatus) => {
+    const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
+    if (!operator) {
+        return {error: `${serverUrl} database not found`};
+    }
+
+    const user = await queryUserById(operator.database, userStatus.user_id);
+    if (user) {
+        user.prepareUpdate((record) => {
+            record.status = userStatus.status;
+        });
+        await operator.batchRecords([user]);
+    }
+
+    return {};
+};
+

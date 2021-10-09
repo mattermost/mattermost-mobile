@@ -31,6 +31,42 @@ type Props = {
 
 };
 
+const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
+    return {
+        container: {
+            backgroundColor: theme.centerChannelBg,
+            display: 'flex',
+            flexDirection: 'row',
+            padding: 10,
+        },
+        textContainer: {
+            marginLeft: 5,
+            marginBottom: 2,
+            alignItems: 'center',
+            width: '70%',
+            flex: 1,
+            flexDirection: 'row',
+            position: 'relative',
+        },
+        rightPosition: {
+            position: 'absolute',
+            right: 14,
+        },
+        divider: {
+            backgroundColor: changeOpacity(theme.centerChannelColor, 0.2),
+            height: 1,
+            marginHorizontal: 16,
+        },
+        button: {
+            borderRadius: 1000,
+            color: theme.buttonBg,
+        },
+        customStatusExpiry: {
+            color: theme.linkColor,
+        },
+    };
+});
+
 const ClearAfterMenuItem = ({currentUser, duration, expiryTime = '', handleItemClick, isSelected, separator, showDateTimePicker = false, showExpiryTime = false}: Props) => {
     const theme = useTheme();
     const intl = useIntl();
@@ -102,41 +138,5 @@ const ClearAfterMenuItem = ({currentUser, duration, expiryTime = '', handleItemC
         </View>
     );
 };
-
-const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
-    return {
-        container: {
-            backgroundColor: theme.centerChannelBg,
-            display: 'flex',
-            flexDirection: 'row',
-            padding: 10,
-        },
-        textContainer: {
-            marginLeft: 5,
-            marginBottom: 2,
-            alignItems: 'center',
-            width: '70%',
-            flex: 1,
-            flexDirection: 'row',
-            position: 'relative',
-        },
-        rightPosition: {
-            position: 'absolute',
-            right: 14,
-        },
-        divider: {
-            backgroundColor: changeOpacity(theme.centerChannelColor, 0.2),
-            height: 1,
-            marginHorizontal: 16,
-        },
-        button: {
-            borderRadius: 1000,
-            color: theme.buttonBg,
-        },
-        customStatusExpiry: {
-            color: theme.linkColor,
-        },
-    };
-});
 
 export default ClearAfterMenuItem;

@@ -269,7 +269,10 @@ export function showModal(name: string, title: string, passProps = {}, options =
                 component: {
                     id: name,
                     name,
-                    passProps,
+                    passProps: {
+                        ...passProps,
+                        isModal: true,
+                    },
                     options: merge(defaultOptions, options),
                 },
             }],
@@ -362,13 +365,14 @@ export async function dismissModal(options = {}) {
     }
 
     const componentId = EphemeralStore.getNavigationTopModalId();
-
-    try {
-        await Navigation.dismissModal(componentId, options);
-        EphemeralStore.removeNavigationModal(componentId);
-    } catch (error) {
-        // RNN returns a promise rejection if there is no modal to
-        // dismiss. We'll do nothing in this case.
+    if (componentId) {
+        try {
+            await Navigation.dismissModal(componentId, options);
+            EphemeralStore.removeNavigationModal(componentId);
+        } catch (error) {
+            // RNN returns a promise rejection if there is no modal to
+            // dismiss. We'll do nothing in this case.
+        }
     }
 }
 

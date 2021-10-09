@@ -1,19 +1,19 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useEffect, useState} from 'react';
+import React, {useCallback, useEffect, useState} from 'react';
 import {useIntl} from 'react-intl';
 import {DeviceEventEmitter} from 'react-native';
 
 import {updateLocalCustomStatus} from '@actions/local/user';
 import {unsetCustomStatus} from '@actions/remote/user';
 import DrawerItem from '@components/drawer_item';
-import {Screens} from '@constants';
+import {Events, Screens} from '@constants';
 import {SET_CUSTOM_STATUS_FAILURE} from '@constants/custom_status';
 import {useServerUrl} from '@context/server_url';
 import {useTheme} from '@context/theme';
 import {showModal} from '@screens/navigation';
-import {safeParseJSON} from '@utils/helpers';
+import {preventDoubleTap} from '@utils/tap';
 import {getUserCustomStatus, isCustomStatusExpired as checkCustomStatusIsExpired} from '@utils/user';
 
 import CustomLabel from './custom_label';
@@ -32,8 +32,9 @@ const CustomStatus = ({isCustomStatusExpirySupported, isTablet, currentUser}: Cu
     const intl = useIntl();
     const serverUrl = useServerUrl();
     const [showRetryMessage, setShowRetryMessage] = useState<boolean>(false);
-    const customStatus = safeParseJSON(getUserCustomStatus(currentUser) as string) as UserCustomStatus;
+    const customStatus = getUserCustomStatus(currentUser);
     const isCustomStatusExpired = checkCustomStatusIsExpired(currentUser);
+    const isStatusSet = !isCustomStatusExpired && (customStatus?.text || customStatus?.emoji);
 
     useEffect(() => {
         const onSetCustomStatusError = () => {
@@ -45,9 +46,7 @@ const CustomStatus = ({isCustomStatusExpirySupported, isTablet, currentUser}: Cu
         return () => listener.remove();
     }, []);
 
-    const isStatusSet = !isCustomStatusExpired && (customStatus?.text || customStatus?.emoji);
-
-    const clearCustomStatus = async () => {
+    const clearCustomStatus = useCallback(preventDoubleTap(async () => {
         setShowRetryMessage(false);
 
         const {error} = await unsetCustomStatus(serverUrl);
@@ -56,21 +55,17 @@ const CustomStatus = ({isCustomStatusExpirySupported, isTablet, currentUser}: Cu
             return;
         }
 
-        await updateLocalCustomStatus({
-            serverUrl,
-            status: undefined,
-            user: currentUser,
-        });
-    };
+        updateLocalCustomStatus(serverUrl, currentUser, undefined);
+    }), []);
 
-    const goToCustomStatusScreen = () => {
+    const goToCustomStatusScreen = useCallback(preventDoubleTap(() => {
         if (isTablet) {
-            // Emit event
+            DeviceEventEmitter.emit(Events.ACCOUNT_SELECT_TABLET_VIEW, Screens.CUSTOM_STATUS);
         } else {
             showModal(Screens.CUSTOM_STATUS, intl.formatMessage({id: 'mobile.routes.custom_status', defaultMessage: 'Set a Status'}));
         }
         setShowRetryMessage(false);
-    };
+    }), []);
 
     return (
         <DrawerItem

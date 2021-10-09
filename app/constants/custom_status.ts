@@ -58,3 +58,4 @@ export const CUSTOM_STATUS_TEXT_CHARACTER_LIMIT = 100;
 
 export const SET_CUSTOM_STATUS_FAILURE = 'set_custom_status_failure';
 
+export const CUSTOM_STATUS_TIME_PICKER_INTERVALS_IN_MINUTES = 30;

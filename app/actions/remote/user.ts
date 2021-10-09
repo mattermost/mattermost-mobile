@@ -3,6 +3,7 @@
 
 import {Q} from '@nozbe/watermelondb';
 
+import {updateRecentCustomStatuses, updateUserPresence} from '@actions/local/user';
 import {fetchRolesIfNeeded} from '@actions/remote/role';
 import {Database, General} from '@constants';
 import DatabaseManager from '@database/manager';
@@ -455,6 +456,8 @@ export const setStatus = async (serverUrl: string, status: UserStatus) => {
 
     try {
         const data = await client.updateStatus(status);
+        updateUserPresence(serverUrl, status);
+
         return {
             data,
         };
@@ -472,18 +475,10 @@ export const updateCustomStatus = async (serverUrl: string, user: UserModel, cus
         return {error};
     }
 
-    if (!user.props) {
-        user.props = {};
-    }
-
-    const oldCustomStatus = user.props.customStatus;
-    user.props.customStatus = JSON.stringify(customStatus);
-
     try {
         await client.updateCustomStatus(customStatus);
         return {data: true};
     } catch (error) {
-        user.props.customStatus = oldCustomStatus;
         return {error};
     }
 };
@@ -495,6 +490,13 @@ export const removeRecentCustomStatus = async (serverUrl: string, customStatus: 
     } catch (error) {
         return {error};
     }
+
+    const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
+    if (!operator) {
+        return {error: `${serverUrl} database not found`};
+    }
+
+    updateRecentCustomStatuses(serverUrl, customStatus, false, true);
 
     try {
         await client.removeRecentCustomStatus(customStatus);

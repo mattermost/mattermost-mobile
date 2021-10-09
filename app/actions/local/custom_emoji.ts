@@ -6,7 +6,7 @@ import {Q} from '@nozbe/watermelondb';
 import {Preferences} from '@constants';
 import {MM_TABLES, SYSTEM_IDENTIFIERS} from '@constants/database';
 import DatabaseManager from '@database/manager';
-import {queryAllCustomEmojis} from '@queries/servers/custom_status';
+import {queryAllCustomEmojis} from '@queries/servers/custom_emoji';
 import {queryPreferencesByCategoryAndName} from '@queries/servers/preference';
 import {queryConfig} from '@queries/servers/system';
 import SystemModel from '@typings/database/models/servers/system';

@@ -5,8 +5,7 @@ import React from 'react';
 
 import CustomText from '@components/custom_status/custom_status_text';
 import FormattedText from '@components/formatted_text';
-import {t} from '@i18n';
-import {changeOpacity} from '@utils/theme';
+import {makeStyleSheetFromTheme} from '@utils/theme';
 
 type CustomStatusTextProps = {
     customStatus?: UserCustomStatus;
@@ -14,12 +13,18 @@ type CustomStatusTextProps = {
     theme: Theme;
 };
 
+const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
+    text: {
+        color: theme.centerChannelColor,
+    },
+}));
+
 const CustomStatusText = ({isStatusSet, customStatus, theme}: CustomStatusTextProps) => {
     let text: React.ReactNode | string;
 
     text = (
         <FormattedText
-            id={t('mobile.routes.custom_status')}
+            id='mobile.routes.custom_status'
             defaultMessage='Set a Status'
         />
     );
@@ -28,14 +33,14 @@ const CustomStatusText = ({isStatusSet, customStatus, theme}: CustomStatusTextPr
         text = customStatus.text;
     }
 
+    const styles = getStyleSheet(theme);
     return (
         <CustomText
             text={text}
             theme={theme}
-            textStyle={{
-                color: changeOpacity(theme.centerChannelColor, 1.0),
-            }}
-        />);
+            textStyle={styles.text}
+        />
+    );
 };
 
 export default CustomStatusText;

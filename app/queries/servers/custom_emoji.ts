@@ -9,9 +9,8 @@ import type CustomEmojiModel from '@typings/database/models/servers/custom_emoji
 
 export const queryAllCustomEmojis = async (database: Database): Promise<CustomEmojiModel[]> => {
     try {
-        const customEmojiRecords = (await database.get(MM_TABLES.SERVER.CUSTOM_EMOJI).query().fetch()) as CustomEmojiModel[];
-        return customEmojiRecords;
+        return database.get<CustomEmojiModel>(MM_TABLES.SERVER.CUSTOM_EMOJI).query().fetch();
     } catch {
-        return Promise.resolve([] as CustomEmojiModel[]);
+        return [];
     }
 };

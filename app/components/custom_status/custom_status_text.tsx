@@ -4,11 +4,10 @@
 import React from 'react';
 import {Text, TextStyle} from 'react-native';
 
-import FormattedText from '@components/formatted_text';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 interface ComponentProps {
-    text: string | typeof FormattedText;
+    text: string | React.ReactNode;
     theme: Theme;
     textStyle?: TextStyle;
     ellipsizeMode?: 'head' | 'middle' | 'tail' | 'clip';

@@ -8,11 +8,10 @@ import {General, Preferences} from '@constants';
 import {CustomStatusDuration} from '@constants/custom_status';
 import {UserModel} from '@database/models/server';
 import {DEFAULT_LOCALE, getLocalizedMessage, t} from '@i18n';
-import {safeParseJSON, toTitleCase} from '@utils/helpers';
+import {toTitleCase} from '@utils/helpers';
 
 import type GroupModel from '@typings/database/models/servers/group';
 import type GroupMembershipModel from '@typings/database/models/servers/group_membership';
-import type SystemModel from '@typings/database/models/servers/system';
 import type {UserMentionKey} from '@typings/global/markdown';
 import type {IntlShape} from 'react-intl';
 
@@ -171,12 +170,16 @@ export const getTimezone = (timezone: UserTimezone | null) => {
     return timezone.manualTimezone;
 };
 
-export const getUserCustomStatus = (user: UserModel) => {
-    if (user.props?.customStatus) {
-        return user.props.customStatus as UserCustomStatus;
-    }
+export const getUserCustomStatus = (user: UserModel): UserCustomStatus | undefined => {
+    try {
+        if (typeof user.props?.customStatus === 'string') {
+            return JSON.parse(user.props.customStatus) as UserCustomStatus;
+        }
 
-    return undefined;
+        return user.props?.customStatus;
+    } catch {
+        return undefined;
+    }
 };
 
 export function isCustomStatusExpired(user: UserModel) {
@@ -186,7 +189,7 @@ export function isCustomStatusExpired(user: UserModel) {
         return true;
     }
 
-    if (customStatus?.duration === CustomStatusDuration.DONT_CLEAR || !customStatus.duration) {
+    if (customStatus.duration === CustomStatusDuration.DONT_CLEAR || !customStatus.duration) {
         return false;
     }
 
@@ -198,13 +201,11 @@ export function isCustomStatusExpired(user: UserModel) {
 
 export function confirmOutOfOfficeDisabled(intl: IntlShape, status: string, updateStatus: (status: string) => void) {
     const userStatusId = 'modal.manual_status.auto_responder.message_' + status;
-
-    //fixme: what do the below lines do ?
-    // t('modal.manual_status.auto_responder.message_');
-    // t('modal.manual_status.auto_responder.message_away');
-    // t('modal.manual_status.auto_responder.message_dnd');
-    // t('modal.manual_status.auto_responder.message_offline');
-    // t('modal.manual_status.auto_responder.message_online');
+    t('modal.manual_status.auto_responder.message_');
+    t('modal.manual_status.auto_responder.message_away');
+    t('modal.manual_status.auto_responder.message_dnd');
+    t('modal.manual_status.auto_responder.message_offline');
+    t('modal.manual_status.auto_responder.message_online');
 
     let translatedStatus;
     if (status === 'dnd') {
@@ -237,15 +238,3 @@ export function confirmOutOfOfficeDisabled(intl: IntlShape, status: string, upda
         }],
     );
 }
-
-export const getRecentCustomStatus = (recentStatuses?: SystemModel) => {
-    if (!recentStatuses) {
-        return [];
-    }
-
-    const rcs = safeParseJSON(recentStatuses?.value);
-    if (typeof rcs === 'string') {
-        return [];
-    }
-    return rcs as unknown as UserCustomStatus[];
-};

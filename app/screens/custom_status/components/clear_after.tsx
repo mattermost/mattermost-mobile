@@ -2,6 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React from 'react';
+import {useIntl} from 'react-intl';
 import {Text, TouchableOpacity, View} from 'react-native';
 
 import CompassIcon from '@components/compass_icon';
@@ -12,19 +13,48 @@ import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 import type UserModel from '@typings/database/models/servers/user';
 import type {Moment} from 'moment-timezone';
-import type {IntlShape} from 'react-intl';
 
 type Props = {
     currentUser: UserModel;
     duration: CustomStatusDuration;
-    intl: IntlShape;
     onOpenClearAfterModal: () => void;
     theme: Theme;
     expiresAt: Moment;
 }
 
-const ClearAfter = ({currentUser, duration, intl, expiresAt, onOpenClearAfterModal, theme}: Props) => {
+const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
+    return {
+        rightIcon: {
+            position: 'absolute',
+            right: 18,
+            color: changeOpacity(theme.centerChannelColor, 0.5),
+        },
+        expiryTimeLabel: {
+            fontSize: 17,
+            paddingLeft: 16,
+            textAlignVertical: 'center',
+            color: theme.centerChannelColor,
+        },
+        inputContainer: {
+            justifyContent: 'center',
+            height: 48,
+            backgroundColor: theme.centerChannelBg,
+        },
+        expiryTime: {
+            position: 'absolute',
+            right: 42,
+            color: changeOpacity(theme.centerChannelColor, 0.5),
+        },
+        customStatusExpiry: {
+            color: changeOpacity(theme.centerChannelColor, 0.5),
+        },
+    };
+});
+
+const ClearAfter = ({currentUser, duration, expiresAt, onOpenClearAfterModal, theme}: Props) => {
+    const intl = useIntl();
     const style = getStyleSheet(theme);
+
     const renderClearAfterTime = () => {
         if (duration && duration === CustomStatusDuration.DATE_AND_TIME) {
             return (
@@ -68,34 +98,5 @@ const ClearAfter = ({currentUser, duration, intl, expiresAt, onOpenClearAfterMod
         </TouchableOpacity>
     );
 };
-
-const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
-    return {
-        rightIcon: {
-            position: 'absolute',
-            right: 18,
-            color: changeOpacity(theme.centerChannelColor, 0.5),
-        },
-        expiryTimeLabel: {
-            fontSize: 17,
-            paddingLeft: 16,
-            textAlignVertical: 'center',
-            color: theme.centerChannelColor,
-        },
-        inputContainer: {
-            justifyContent: 'center',
-            height: 48,
-            backgroundColor: theme.centerChannelBg,
-        },
-        expiryTime: {
-            position: 'absolute',
-            right: 42,
-            color: changeOpacity(theme.centerChannelColor, 0.5),
-        },
-        customStatusExpiry: {
-            color: changeOpacity(theme.centerChannelColor, 0.5),
-        },
-    };
-});
 
 export default ClearAfter;

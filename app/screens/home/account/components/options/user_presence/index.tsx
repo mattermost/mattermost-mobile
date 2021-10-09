@@ -5,7 +5,6 @@ import React, {useCallback} from 'react';
 import {useIntl} from 'react-intl';
 import {DeviceEventEmitter, TextStyle} from 'react-native';
 
-import {updateUserPresence} from '@actions/local/user';
 import {setStatus} from '@actions/remote/user';
 import {useServerUrl} from '@app/context/server_url';
 import DrawerItem from '@components/drawer_item';
@@ -14,7 +13,6 @@ import StatusLabel from '@components/status_label';
 import UserStatusIndicator from '@components/user_status';
 import {Navigation} from '@constants';
 import General from '@constants/general';
-import {t} from '@i18n';
 import {bottomSheet, dismissModal} from '@screens/navigation';
 import {preventDoubleTap} from '@utils/tap';
 import {changeOpacity} from '@utils/theme';
@@ -44,7 +42,7 @@ const UserStatus = ({currentUser, style, theme}: Props) => {
                         onPress={() => setUserStatus(ONLINE)}
                         testID='user_status.bottom_sheet.online'
                         text={intl.formatMessage({
-                            id: t('mobile.set_status.online'),
+                            id: 'mobile.set_status.online',
                             defaultMessage: 'Online',
                         })}
                         textStyles={style}
@@ -55,7 +53,7 @@ const UserStatus = ({currentUser, style, theme}: Props) => {
                         onPress={() => setUserStatus(AWAY)}
                         testID='user_status.bottom_sheet.away'
                         text={intl.formatMessage({
-                            id: t('mobile.set_status.away'),
+                            id: 'mobile.set_status.away',
                             defaultMessage: 'Away',
                         })}
                         textStyles={style}
@@ -66,7 +64,7 @@ const UserStatus = ({currentUser, style, theme}: Props) => {
                         onPress={() => setUserStatus(DND)}
                         testID='user_status.bottom_sheet.dnd'
                         text={intl.formatMessage({
-                            id: t('mobile.set_status.dnd'),
+                            id: 'mobile.set_status.dnd',
                             defaultMessage: 'Do Not Disturb',
                         })}
                         textStyles={style}
@@ -77,7 +75,7 @@ const UserStatus = ({currentUser, style, theme}: Props) => {
                         onPress={() => setUserStatus(OFFLINE)}
                         testID='user_status.bottom_sheet.offline'
                         text={intl.formatMessage({
-                            id: t('mobile.set_status.offline'),
+                            id: 'mobile.set_status.offline',
                             defaultMessage: 'Offline',
                         })}
                         textStyles={style}
@@ -93,10 +91,9 @@ const UserStatus = ({currentUser, style, theme}: Props) => {
             title: intl.formatMessage({id: 'account.user_status.title', defaultMessage: 'User Presence'}),
             theme,
         });
-    }),
-    [theme]);
+    }), [theme]);
 
-    const updateStatus = useCallback(async (status: string) => {
+    const updateStatus = useCallback((status: string) => {
         const userStatus = {
             user_id: currentUser.id,
             status,
@@ -104,7 +101,6 @@ const UserStatus = ({currentUser, style, theme}: Props) => {
             last_activity_at: Date.now(),
         };
 
-        updateUserPresence(serverUrl, userStatus);
         setStatus(serverUrl, userStatus);
     }, []);
 

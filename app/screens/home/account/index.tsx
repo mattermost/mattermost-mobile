@@ -16,10 +16,11 @@ import {Device, View as ViewConstants} from '@constants';
 import {MM_TABLES, SYSTEM_IDENTIFIERS} from '@constants/database';
 import {useTheme} from '@context/theme';
 import {useSplitView} from '@hooks/device';
-import {isMinimumServerVersion} from '@utils/helpers';
+import {isCustomStatusExpirySupported, isMinimumServerVersion} from '@utils/helpers';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 import AccountOptions from './components/options';
+import AccountTabletView from './components/tablet_view';
 import AccountUserInfo from './components/user_info';
 
 import type {WithDatabaseArgs} from '@typings/database/database';
@@ -28,8 +29,8 @@ import type UserModel from '@typings/database/models/servers/user';
 
 type AccountScreenProps = {
     currentUser: UserModel;
+    customStatusExpirySupported: boolean;
     enableCustomUserStatuses: boolean;
-    isCustomStatusExpirySupported: boolean;
     showFullName: boolean;
 };
 
@@ -65,7 +66,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     };
 });
 
-const AccountScreen = ({currentUser, enableCustomUserStatuses, isCustomStatusExpirySupported, showFullName}: AccountScreenProps) => {
+const AccountScreen = ({currentUser, enableCustomUserStatuses, customStatusExpirySupported, showFullName}: AccountScreenProps) => {
     const theme = useTheme();
     const [start, setStart] = useState(false);
     const route = useRoute();
@@ -131,14 +132,16 @@ const AccountScreen = ({currentUser, enableCustomUserStatuses, isCustomStatusExp
                     />
                     <AccountOptions
                         enableCustomUserStatuses={enableCustomUserStatuses}
-                        isCustomStatusExpirySupported={isCustomStatusExpirySupported}
+                        isCustomStatusExpirySupported={customStatusExpirySupported}
                         isTablet={isTablet}
                         user={currentUser}
                         theme={theme}
                     />
                 </ScrollView>
                 {isTablet &&
-                <View style={[styles.tabletContainer, styles.tabletDivider]}/>
+                <View style={[styles.tabletContainer, styles.tabletDivider]}>
+                    <AccountTabletView/>
+                </View>
                 }
             </Animated.View>
         </SafeAreaView>
@@ -154,8 +157,12 @@ const withUserConfig = withObservables([], ({database}: WithDatabaseArgs) => {
         const ClientConfig = cfg.value as ClientConfig;
         return of$(ClientConfig.EnableCustomUserStatuses === 'true' && isMinimumServerVersion(ClientConfig.Version, 5, 36));
     })));
-    const version = config.pipe((switchMap((cfg) => of$((cfg.value as ClientConfig).Version))));
-    const isCustomStatusExpirySupported = config.pipe((switchMap((cfg) => of$(isMinimumServerVersion((cfg.value as ClientConfig).Version, 5, 37)))));
+    const version = config.pipe(
+        switchMap((cfg) => of$((cfg.value as ClientConfig).Version)),
+    );
+    const customStatusExpirySupported = config.pipe(
+        switchMap((cfg) => of$(isCustomStatusExpirySupported((cfg.value as ClientConfig).Version))),
+    );
 
     return {
         currentUser: database.
@@ -167,7 +174,7 @@ const withUserConfig = withObservables([], ({database}: WithDatabaseArgs) => {
                 ),
             ),
         enableCustomUserStatuses,
-        isCustomStatusExpirySupported,
+        customStatusExpirySupported,
         showFullName,
         version,
     };
