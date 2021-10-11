@@ -1,6 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import InCallManager from 'react-native-incall-manager';
 import {
     RTCPeerConnection,
     RTCIceCandidate,
@@ -89,6 +90,7 @@ export async function newClient(channelID: string, closeCb: () => void, setScree
         if (peer) {
             peer.destroy();
         }
+        InCallManager.stop();
 
         if (closeCb) {
             closeCb();
@@ -124,6 +126,7 @@ export async function newClient(channelID: string, closeCb: () => void, setScree
     ws.onerror = (err) => console.log('WS ERROR', err); // eslint-disable-line no-console
 
     ws.onopen = async () => {
+        InCallManager.start({media: 'audio'});
         peer = new Peer({
             initiator: true,
             stream,
