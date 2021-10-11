@@ -494,6 +494,8 @@
   "mobile.post_textbox.entire_channel.message": "@allや@channelを利用すると {totalMembers, number} {totalMembers, plural, one {人} other {人}} へ通知を送信することになります。本当にこの操作を行いますか？",
   "mobile.post_textbox.entire_channel.message.with_timezones": "@allや@channelを利用すると {timezones, number} {timezones, plural, one {タイムゾーン} other {タイムゾーン}} の {totalMembers, number} {totalMembers, plural, one {人} other {人}}へ通知を送信することになります。本当にこの操作を行いますか？",
   "mobile.post_textbox.entire_channel.title": "チャンネル全体へ通知を行う",
+  "mobile.post_textbox.entire_channel_here.message": "@hereを利用すると {totalMembers, number} {totalMembers, plural, one {人} other {人}} へ通知を送信することになります。本当にこの操作を行いますか？",
+  "mobile.post_textbox.entire_channel_here.message.with_timezones": "@hereを利用すると {timezones, number} {timezones, plural, one {タイムゾーン} other {タイムゾーン}} の {totalMembers, number} {totalMembers, plural, one {人} other {人}}へ通知を送信することになります。本当にこの操作を行いますか？",
   "mobile.post_textbox.groups.title": "グループへ通知を送信する",
   "mobile.post_textbox.multi_group.message.with_timezones": "{mentions} や {finalMention} を利用すると {timezones, number} {timezones, plural, one {タイムゾーン} other {タイムゾーン}} の {totalMembers} 人へ通知を送信することになります。本当にこの操作を行いますか？",
   "mobile.post_textbox.multi_group.message.without_timezones": "{mentions} や {finalMention} を利用すると {totalMembers} 人へ通知を送信することになります。本当にこの操作を行いますか？",
