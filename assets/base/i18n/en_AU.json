@@ -494,6 +494,8 @@
   "mobile.post_textbox.entire_channel.message": "By using @all or @channel you are about to send notifications to {totalMembers, number} {totalMembers, plural, one {person} other {people}}. Are you sure you want to do this?",
   "mobile.post_textbox.entire_channel.message.with_timezones": "By using @all or @channel you are about to send notifications to {totalMembers, number} {totalMembers, plural, one {person} other {people}} in {timezones, number} {timezones, plural, one {timezone} other {timezones}}. Are you sure you want to do this?",
   "mobile.post_textbox.entire_channel.title": "Confirm sending notifications to entire channel",
+  "mobile.post_textbox.entire_channel_here.message": "By using @here you are about to send notifications to up to {totalMembers, number} {totalMembers, plural, one {person} other {people}}. Are you sure you want to do this?",
+  "mobile.post_textbox.entire_channel_here.message.with_timezones": "By using @here you are about to send notifications up to {totalMembers, number} {totalMembers, plural, one {person} other {people}} in {timezones, number} {timezones, plural, one {timezone} other {timezones}}. Are you sure you want to do this?",
   "mobile.post_textbox.groups.title": "Confirm sending notifications to groups",
   "mobile.post_textbox.multi_group.message.with_timezones": "By using {mentions} and {finalMention} you are about to send notifications to at least {totalMembers} people in {timezones, number} {timezones, plural, one {timezone} other {timezones}}. Are you sure you want to do this?",
   "mobile.post_textbox.multi_group.message.without_timezones": "By using {mentions} and {finalMention} you are about to send notifications to at least {totalMembers} people. Are you sure you want to do this?",
