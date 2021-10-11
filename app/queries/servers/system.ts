@@ -112,16 +112,16 @@ export const queryWebSocketLastDisconnected = async (serverDatabase: Database) =
 export const queryTeamHistory = async (serverDatabase: Database) => {
     try {
         const teamHistory = await serverDatabase.get<SystemModel>(SYSTEM).find(SYSTEM_IDENTIFIERS.TEAM_HISTORY);
-        return (teamHistory.value) as string;
+        return (teamHistory.value) as string[];
     } catch {
-        return '';
+        return [];
     }
 };
 
-export const patchTeamHistory = async (operator: ServerDataOperator, value: string, prepareRecordsOnly = false) => {
+export const patchTeamHistory = async (operator: ServerDataOperator, value: string[], prepareRecordsOnly = false) => {
     return operator.handleSystem({systems: [{
         id: SYSTEM_IDENTIFIERS.TEAM_HISTORY,
-        value,
+        value: JSON.stringify(value),
     }],
     prepareRecordsOnly});
 };

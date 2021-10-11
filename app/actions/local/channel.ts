@@ -11,7 +11,7 @@ import {General} from '@constants';
 import DatabaseManager from '@database/manager';
 import {privateChannelJoinPrompt} from '@helpers/api/channel';
 import {prepareDeleteChannel, prepareMyChannelsForTeam, queryMyChannel} from '@queries/servers/channel';
-import {queryCommonSystemValues, setCurrentChannelId, setCurrentTeamAndChannelId} from '@queries/servers/system';
+import {queryCommonSystemValues, queryCurrentTeamId, setCurrentChannelId, setCurrentTeamAndChannelId} from '@queries/servers/system';
 import {addChannelToTeamHistory, prepareMyTeams, queryMyTeamById, queryTeamById, queryTeamByName, removeChannelFromTeamHistory} from '@queries/servers/team';
 import {PERMALINK_GENERIC_TEAM_NAME_REDIRECT} from '@utils/url';
 
@@ -234,7 +234,11 @@ export const localRemoveUserFromChannel = async (serverUrl: string, channelId: s
     if (myChannel) {
         const channel = await myChannel.channel.fetch() as ChannelModel;
         const models = await prepareDeleteChannel(channel);
-        const system = await removeChannelFromTeamHistory(operator, channel.id, channel.teamId);
+        let teamId = channel.teamId;
+        if (teamId) {
+            teamId = await queryCurrentTeamId(database);
+        }
+        const system = await removeChannelFromTeamHistory(operator, teamId, channel.id, true);
         if (system) {
             models.push(...system);
         }

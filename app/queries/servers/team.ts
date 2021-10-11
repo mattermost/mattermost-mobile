@@ -19,7 +19,7 @@ import type MyTeamModel from '@typings/database/models/servers/my_team';
 import type TeamModel from '@typings/database/models/servers/team';
 import type TeamChannelHistoryModel from '@typings/database/models/servers/team_channel_history';
 
-const {MY_TEAM, TEAM, TEAM_CHANNEL_HISTORY, MY_CHANNEL, TEAM_MEMBERSHIP} = DatabaseConstants.MM_TABLES.SERVER;
+const {MY_TEAM, TEAM, TEAM_CHANNEL_HISTORY, MY_CHANNEL} = DatabaseConstants.MM_TABLES.SERVER;
 
 export const addChannelToTeamHistory = async (operator: ServerDataOperator, teamId: string, channelId: string, prepareRecordsOnly = false) => {
     let tch: TeamChannelHistory|undefined;
@@ -70,38 +70,32 @@ export const queryLastChannelFromTeam = async (database: Database, teamId: strin
     return channelId;
 };
 
-export const removeChannelFromTeamHistory = async (operator: ServerDataOperator, channelId: string, teamId?: string, prepareRecordsOnly = false) => {
-    const tch: TeamChannelHistory[] = [];
+export const removeChannelFromTeamHistory = async (operator: ServerDataOperator, teamId: string, channelId: string, prepareRecordsOnly = false) => {
+    let tch: TeamChannelHistory;
 
     try {
-        const condition = [];
-        if (teamId) {
-            condition.push(Q.where('id', Q.eq(teamId)));
+        const teamChannelHistory = (await operator.database.get(TEAM_CHANNEL_HISTORY).find(teamId)) as TeamChannelHistoryModel;
+        const channelIdSet = new Set(teamChannelHistory.channelIds);
+        if (channelIdSet.has(channelId)) {
+            channelIdSet.delete(channelId);
+        } else {
+            return [];
         }
-        const teamChannelHistorys = await operator.database.get<TeamChannelHistoryModel>(TEAM_CHANNEL_HISTORY).query(...condition).fetch();
-        for (const teamChannelHistory of teamChannelHistorys) {
-            const channelIdSet = new Set(teamChannelHistory.channelIds);
-            if (channelIdSet.has(channelId)) {
-                channelIdSet.delete(channelId);
-            } else {
-                continue;
-            }
 
-            const channelIds = Array.from(channelIdSet);
-            tch.push({
-                id: teamChannelHistory.id,
-                channel_ids: channelIds,
-            });
-        }
+        const channelIds = Array.from(channelIdSet);
+        tch = {
+            id: teamId,
+            channel_ids: channelIds,
+        };
     } catch {
         return [];
     }
 
-    return operator.handleTeamChannelHistory({teamChannelHistories: tch, prepareRecordsOnly});
+    return operator.handleTeamChannelHistory({teamChannelHistories: [tch], prepareRecordsOnly});
 };
 
 export const addTeamToTeamHistory = async (operator: ServerDataOperator, teamId: string, prepareRecordsOnly = false) => {
-    const teamHistory = (await queryTeamHistory(operator.database)).split(' ');
+    const teamHistory = (await queryTeamHistory(operator.database));
     const teamHistorySet = new Set(teamHistory);
     if (teamHistorySet.has(teamId)) {
         teamHistorySet.delete(teamId);
@@ -109,11 +103,11 @@ export const addTeamToTeamHistory = async (operator: ServerDataOperator, teamId:
 
     const teamIds = Array.from(teamHistorySet);
     teamIds.unshift(teamId);
-    return patchTeamHistory(operator, teamIds.join(' '), prepareRecordsOnly);
+    return patchTeamHistory(operator, teamIds, prepareRecordsOnly);
 };
 
 export const removeTeamFromTeamHistory = async (operator: ServerDataOperator, teamId: string, prepareRecordsOnly = false) => {
-    const teamHistory = (await queryTeamHistory(operator.database)).split(' ');
+    const teamHistory = (await queryTeamHistory(operator.database));
     const teamHistorySet = new Set(teamHistory);
     if (!teamHistorySet.has(teamId)) {
         return undefined;
@@ -122,11 +116,11 @@ export const removeTeamFromTeamHistory = async (operator: ServerDataOperator, te
     teamHistorySet.delete(teamId);
     const teamIds = Array.from(teamHistorySet).slice(0, 5);
 
-    return patchTeamHistory(operator, teamIds.join(' '), prepareRecordsOnly);
+    return patchTeamHistory(operator, teamIds, prepareRecordsOnly);
 };
 
 export const queryLastTeam = async (database: Database) => {
-    const teamHistory = (await queryTeamHistory(database)).split(' ');
+    const teamHistory = (await queryTeamHistory(database));
     if (teamHistory.length > 0) {
         return teamHistory[0];
     }
@@ -154,7 +148,7 @@ export const queryDefaultTeam = async (database: Database) => {
         teamOrderPreference = teamOrderPreferences[0].value;
     }
 
-    const teamModels = await database.get<TeamModel>(TEAM).query(Q.on(TEAM_MEMBERSHIP, Q.where('delete_at', Q.eq(0)))).fetch();
+    const teamModels = await database.get<TeamModel>(TEAM).query(Q.on(MY_TEAM, Q.where('id', Q.notEq('')))).fetch();
     const teams = teamModels.map((t) => ({id: t.id, display_name: t.displayName, name: t.name} as Team));
 
     const defaultTeam = selectDefaultTeam(teams, user?.locale || DEFAULT_LOCALE, teamOrderPreference, config.ExperimentalPrimaryTeam);

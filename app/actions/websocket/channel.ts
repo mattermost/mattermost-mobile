@@ -9,7 +9,7 @@ import Events from '@constants/events';
 import DatabaseManager from '@database/manager';
 import {queryActiveServer} from '@queries/app/servers';
 import {deleteChannelMembership, queryCurrentChannel} from '@queries/servers/channel';
-import {queryConfig} from '@queries/servers/system';
+import {queryConfig, setCurrentChannelId} from '@queries/servers/system';
 import {queryLastChannelFromTeam} from '@queries/servers/team';
 import {queryCurrentUser} from '@queries/servers/user';
 import {dismissAllModals, popToRoot} from '@screens/navigation';
@@ -48,6 +48,8 @@ export async function handleUserRemovedEvent(serverUrl: string, msg: any) {
                     if (channelToJumpTo) {
                         switchToChannel(serverUrl, channelToJumpTo);
                     } // TODO else jump to "join a channel" screen
+                } else {
+                    setCurrentChannelId(database.operator, '');
                 }
             }
         }
@@ -90,6 +92,8 @@ export async function handleChannelDeletedEvent(serverUrl: string, msg: any) {
                     if (channelToJumpTo) {
                         switchToChannel(serverUrl, channelToJumpTo);
                     } // TODO else jump to "join a channel" screen
+                } else {
+                    setCurrentChannelId(database.operator, '');
                 }
             }
         }
