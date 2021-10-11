@@ -17,7 +17,7 @@ import type ChannelInfoModel from '@typings/database/models/servers/channel_info
 import type MyChannelModel from '@typings/database/models/servers/my_channel';
 import type PostModel from '@typings/database/models/servers/post';
 
-const {SERVER: {CHANNEL, MY_CHANNEL}} = MM_TABLES;
+const {SERVER: {CHANNEL, MY_CHANNEL, CHANNEL_MEMBERSHIP}} = MM_TABLES;
 
 export const prepareMyChannelsForTeam = async (operator: ServerDataOperator, teamId: string, channels: Channel[], channelMembers: ChannelMembership[]) => {
     const allChannelsForTeam = await queryAllChannelsForTeam(operator.database, teamId);
@@ -171,4 +171,13 @@ export const queryCurrentChannel = async (database: Database) => {
     }
 
     return undefined;
+};
+
+export const deleteChannelMembership = async (operator: ServerDataOperator, userId: string, channelId: string) => {
+    const channelMembership = await operator.database.get(CHANNEL_MEMBERSHIP).query(Q.where('user_id', Q.eq(userId)), Q.where('channel_id', Q.eq(channelId))).fetch();
+    const models: Model[] = [];
+    for (const membership of channelMembership) {
+        models.push(membership.prepareDestroyPermanently());
+    }
+    operator.batchRecords(models);
 };

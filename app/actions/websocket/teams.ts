@@ -5,6 +5,7 @@ import {DeviceEventEmitter} from 'react-native';
 
 import {handleTeamChange, localRemoveUserFromTeam} from '@actions/local/team';
 import {updateUsersNoLongerVisible} from '@actions/remote/user';
+import Events from '@constants/events';
 import DatabaseManager from '@database/manager';
 import {queryActiveServer} from '@queries/app/servers';
 import {queryCurrentTeamId} from '@queries/servers/system';
@@ -36,7 +37,7 @@ export async function handleLeaveTeamEvent(serverUrl: string, msg: any) {
             const currentServer = await queryActiveServer(DatabaseManager.appDatabase!.database);
 
             if (currentServer?.url === serverUrl) {
-                DeviceEventEmitter.emit('leave_team');
+                DeviceEventEmitter.emit(Events.LEAVE_TEAM);
                 await dismissAllModals();
                 await popToRoot();
             }

@@ -10,6 +10,7 @@ import {fetchRoles} from '@actions/remote/role';
 import {fetchConfigAndLicense} from '@actions/remote/systems';
 import {fetchAllTeams, fetchMyTeams} from '@actions/remote/team';
 import {fetchMe, updateAllUsersSinceLastDisconnect} from '@actions/remote/user';
+import Events from '@app/constants/events';
 import {WebsocketEvents} from '@constants';
 import {SYSTEM_IDENTIFIERS} from '@constants/database';
 import DatabaseManager from '@database/manager';
@@ -33,7 +34,7 @@ export async function handleFirstConnect(serverUrl: string) {
     doFirstConnect(serverUrl);
 }
 
-export async function handleReconnect(serverUrl: string) {
+export function handleReconnect(serverUrl: string) {
     doReconnect(serverUrl);
 }
 
@@ -53,8 +54,8 @@ export async function handleClose(serverUrl: string, lastDisconnect: number) {
     });
 }
 
-async function doFirstConnect(serverUrl: string) {
-    await updateAllUsersSinceLastDisconnect(serverUrl);
+function doFirstConnect(serverUrl: string) {
+    updateAllUsersSinceLastDisconnect(serverUrl);
 }
 
 async function doReconnect(serverUrl: string) {
@@ -66,11 +67,11 @@ async function doReconnect(serverUrl: string) {
     const {currentUserId, currentTeamId, currentChannelId} = await queryCommonSystemValues(database.database);
     const lastDisconnectedAt = await queryWebSocketLastDisconnected(database.database);
 
+    // TODO consider fetch only and batch all the results.
     fetchMe(serverUrl);
     fetchMyPreferences(serverUrl);
     const {config} = await fetchConfigAndLicense(serverUrl);
-    const {memberships: teamMemberships} = await fetchMyTeams(serverUrl);
-    fetchAllTeams(serverUrl);
+    const {memberships: teamMemberships, error: teamMembershipsError} = await fetchMyTeams(serverUrl);
 
     const currentTeamMembership = teamMemberships?.find((tm) => tm.team_id === currentTeamId && tm.delete_at === 0);
 
@@ -78,7 +79,7 @@ async function doReconnect(serverUrl: string) {
     if (currentTeamMembership) {
         const {memberships, channels, error} = await fetchMyChannelsForTeam(serverUrl, currentTeamMembership.team_id, false, lastDisconnectedAt);
         if (error) {
-            DeviceEventEmitter.emit('team_load_error', serverUrl, error);
+            DeviceEventEmitter.emit(Events.TEAM_LOAD_ERROR, serverUrl, error);
             return;
         }
         channelMemberships = memberships;
@@ -101,15 +102,16 @@ async function doReconnect(serverUrl: string) {
         }
 
         // TODO Consider global thread screen to update global threads
-    } else {
+    } else if (!teamMembershipsError) {
         handleLeaveTeamEvent(serverUrl, {data: {user_id: currentUserId, team_id: currentTeamId}});
     }
 
     fetchRoles(serverUrl, teamMemberships, channelMemberships);
+    fetchAllTeams(serverUrl);
 
     // TODO Fetch App bindings?
 
-    await updateAllUsersSinceLastDisconnect(serverUrl);
+    updateAllUsersSinceLastDisconnect(serverUrl);
 }
 
 export async function handleEvent(serverUrl: string, msg: any) {

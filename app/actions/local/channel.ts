@@ -234,7 +234,7 @@ export const localRemoveUserFromChannel = async (serverUrl: string, channelId: s
     if (myChannel) {
         const channel = await myChannel.channel.fetch() as ChannelModel;
         const models = await prepareDeleteChannel(channel);
-        const system = await removeChannelFromTeamHistory(operator, channel.teamId, channel.id);
+        const system = await removeChannelFromTeamHistory(operator, channel.id, channel.teamId);
         if (system) {
             models.push(...system);
         }

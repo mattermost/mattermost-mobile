@@ -10,7 +10,7 @@ import {DEFAULT_LOCALE} from '@i18n';
 
 import {prepareDeleteChannel, queryDefaultChannelForTeam} from './channel';
 import {queryPreferencesByCategoryAndName} from './preference';
-import {prepareCommonSystemValues, queryConfig, queryTeamHistory} from './system';
+import {patchTeamHistory, queryConfig, queryTeamHistory} from './system';
 import {queryCurrentUser} from './user';
 
 import type ServerDataOperator from '@database/operator/server_data_operator';
@@ -70,31 +70,37 @@ export const queryLastChannelFromTeam = async (database: Database, teamId: strin
     return channelId;
 };
 
-export const removeChannelFromTeamHistory = async (operator: ServerDataOperator, teamId: string, channelId: string, prepareRecordsOnly = false) => {
-    let tch: TeamChannelHistory|undefined;
+export const removeChannelFromTeamHistory = async (operator: ServerDataOperator, channelId: string, teamId?: string, prepareRecordsOnly = false) => {
+    const tch: TeamChannelHistory[] = [];
 
     try {
-        const teamChannelHistory = (await operator.database.get(TEAM_CHANNEL_HISTORY).find(teamId)) as TeamChannelHistoryModel;
-        const channelIdSet = new Set(teamChannelHistory.channelIds);
-        if (channelIdSet.has(channelId)) {
-            channelIdSet.delete(channelId);
-        } else {
-            return [];
+        const condition = [];
+        if (teamId) {
+            condition.push(Q.where('id', Q.eq(teamId)));
         }
+        const teamChannelHistorys = await operator.database.get<TeamChannelHistoryModel>(TEAM_CHANNEL_HISTORY).query(...condition).fetch();
+        for (const teamChannelHistory of teamChannelHistorys) {
+            const channelIdSet = new Set(teamChannelHistory.channelIds);
+            if (channelIdSet.has(channelId)) {
+                channelIdSet.delete(channelId);
+            } else {
+                continue;
+            }
 
-        const channelIds = Array.from(channelIdSet);
-        tch = {
-            id: teamId,
-            channel_ids: channelIds,
-        };
+            const channelIds = Array.from(channelIdSet);
+            tch.push({
+                id: teamChannelHistory.id,
+                channel_ids: channelIds,
+            });
+        }
     } catch {
         return [];
     }
 
-    return operator.handleTeamChannelHistory({teamChannelHistories: [tch], prepareRecordsOnly});
+    return operator.handleTeamChannelHistory({teamChannelHistories: tch, prepareRecordsOnly});
 };
 
-export const addTeamToTeamHistory = async (operator: ServerDataOperator, teamId: string) => {
+export const addTeamToTeamHistory = async (operator: ServerDataOperator, teamId: string, prepareRecordsOnly = false) => {
     const teamHistory = (await queryTeamHistory(operator.database)).split(' ');
     const teamHistorySet = new Set(teamHistory);
     if (teamHistorySet.has(teamId)) {
@@ -103,10 +109,10 @@ export const addTeamToTeamHistory = async (operator: ServerDataOperator, teamId:
 
     const teamIds = Array.from(teamHistorySet);
     teamIds.unshift(teamId);
-    return prepareCommonSystemValues(operator, {teamHistory: teamIds.join(' ')});
+    return patchTeamHistory(operator, teamIds.join(' '), prepareRecordsOnly);
 };
 
-export const removeTeamFromTeamHistory = async (operator: ServerDataOperator, teamId: string) => {
+export const removeTeamFromTeamHistory = async (operator: ServerDataOperator, teamId: string, prepareRecordsOnly = false) => {
     const teamHistory = (await queryTeamHistory(operator.database)).split(' ');
     const teamHistorySet = new Set(teamHistory);
     if (!teamHistorySet.has(teamId)) {
@@ -116,7 +122,7 @@ export const removeTeamFromTeamHistory = async (operator: ServerDataOperator, te
     teamHistorySet.delete(teamId);
     const teamIds = Array.from(teamHistorySet).slice(0, 5);
 
-    return prepareCommonSystemValues(operator, {teamHistory: teamIds.join(' ')});
+    return patchTeamHistory(operator, teamIds.join(' '), prepareRecordsOnly);
 };
 
 export const queryLastTeam = async (database: Database) => {
@@ -135,8 +141,8 @@ export const syncTeamTable = async (operator: ServerDataOperator, teams: Team[])
     for (const d of deletions) {
         models.push(...d);
     }
+    models.push(...await operator.handleTeam({teams, prepareRecordsOnly: true}));
     await operator.batchRecords(models);
-    await operator.handleTeam({teams, prepareRecordsOnly: false});
 };
 
 export const queryDefaultTeam = async (database: Database) => {

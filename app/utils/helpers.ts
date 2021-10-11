@@ -1,6 +1,13 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {NativeModules} from 'react-native';
+
+import {Device} from '@constants';
+
+const {MattermostManaged} = NativeModules;
+const isRunningInSplitView = MattermostManaged.isRunningInSplitView;
+
 // isMinimumServerVersion will return true if currentVersion is equal to higher or than
 // the provided minimum version. A non-equal major version will ignore minor and dot
 // versions, and a non-equal minor version will ignore dot version.
@@ -85,4 +92,13 @@ export function safeParseJSON(rawJson: string | Record<string, unknown>) {
     }
 
     return data;
+}
+
+export async function isTablet() {
+    if (Device.IS_TABLET) {
+        const {isSplitView} = await isRunningInSplitView();
+        return !isSplitView;
+    }
+
+    return false;
 }
