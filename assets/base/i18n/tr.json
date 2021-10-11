@@ -494,6 +494,8 @@
   "mobile.post_textbox.entire_channel.message": "@all ya da @channel kullanıldığında bildirimler {totalMembers, number} {totalMembers, plural, one {kişiye} other {kişiye}} gönderilir. Bunu yapmak istediğinize emin misiniz?",
   "mobile.post_textbox.entire_channel.message.with_timezones": "@all ya da @channel kullanıldığında bildirimler {totalMembers, number} {totalMembers, plural, one {person} other {people}} kişiye ve {timezones, number} {timezones, plural, one {saat dilimine} other {saat dilimine}} gönderilir. Bunu yapmak istediğinize emin misiniz?",
   "mobile.post_textbox.entire_channel.title": "Bildirimlerin tüm kanala gönderilmesini onayla",
+  "mobile.post_textbox.entire_channel_here.message": "@here kullanıldığında bildirimler {totalMembers, number} {totalMembers, plural, one {kişiye} other {kişiye}} gönderilir. Bunu yapmak istediğinize emin misiniz?",
+  "mobile.post_textbox.entire_channel_here.message.with_timezones": "@here kullanıldığında bildirimler {totalMembers, number} {totalMembers, plural, one {person} other {people}} kişiye ve {timezones, number} {timezones, plural, one {saat dilimine} other {saat dilimine}} gönderilir. Bunu yapmak istediğinize emin misiniz?",
   "mobile.post_textbox.groups.title": "Gruplara bildirim gönderilmesini onaylayın",
   "mobile.post_textbox.multi_group.message.with_timezones": "{mentions} ve {finalMention} kullanarak, en az {timezones, number} {timezones, plural, one {saat dilimi} other {saat dilimi}} üzerindeki {totalMembers} kişiye bildirim göndereceksiniz. Bunu yapmak istediğinize emin misiniz?",
   "mobile.post_textbox.multi_group.message.without_timezones": "{mentions} ve {finalMention} kullanarak, en az {totalMembers} kişiye bildirim göndereceksiniz. Bunu yapmak istediğinize emin misiniz?",
