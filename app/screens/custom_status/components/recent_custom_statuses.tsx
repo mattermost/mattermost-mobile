@@ -36,7 +36,7 @@ const RecentCustomStatuses = ({isExpirySupported, onHandleClear, onHandleSuggest
                 <View style={style.block}>
                     {recentCustomStatuses.map((status: UserCustomStatus, index: number) => (
                         <CustomStatusSuggestion
-                            key={`${status.text}-${index}`}
+                            key={`${status.text}-${index.toString()}`}
                             handleSuggestionClick={onHandleSuggestionClick}
                             handleClear={onHandleClear}
                             emoji={status?.emoji}

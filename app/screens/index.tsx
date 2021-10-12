@@ -54,14 +54,11 @@ Navigation.setLazyComponentRegistrator((screenName) => {
         case Screens.ABOUT:
         screen =  withServerDatabase(require('@screens/about').default);
         break;
-    case Screens.ADD_REACTION:
-        screen = withServerDatabase(require('@screens/add_reaction').default);
-        break;
     // case 'AdvancedSettings':
     //     screen = require('@screens/settings/advanced_settings').default;
     //     break;
         case Screens.BOTTOM_SHEET:
-        screen = require('@screens/bottom_sheet').default;
+        screen = withServerDatabase(require('@screens/bottom_sheet').default);
         break;
         case Screens.CHANNEL:
         screen = withServerDatabase(require('@screens/channel').default);
@@ -69,8 +66,11 @@ Navigation.setLazyComponentRegistrator((screenName) => {
         case Screens.CUSTOM_STATUS:
         screen = withServerDatabase(require('@screens/custom_status').default);
         break;
-        case Screens.CLEAR_AFTER:
+        case Screens.CUSTOM_STATUS_CLEAR_AFTER:
         screen = withServerDatabase(require('@screens/custom_status_clear_after').default);
+        break;
+        case Screens.EMOJI_PICKER:
+        screen = withServerDatabase(require('@screens/emoji_picker').default);
         break;
     // case 'ChannelAddMembers':
     //     screen = require('@screens/channel_add_members').default;
@@ -226,9 +226,6 @@ Navigation.setLazyComponentRegistrator((screenName) => {
     // case 'UserProfile':
     //     screen = require('@screens/user_profile').default;
     //     break;
-        case Screens.OPTIONS_MODAL:
-            screen = require('@screens/options_modal').default;
-            break;
     }
 
     if (screen) {

@@ -15,6 +15,7 @@ import {
     KeyboardTypeOptions,
     NativeSyntheticEvent,
     TextInputSelectionChangeEventData,
+    TextStyle,
 } from 'react-native';
 import {SearchBar} from 'react-native-elements';
 
@@ -27,36 +28,36 @@ import {getSearchStyles} from './styles';
 const LEFT_COMPONENT_INITIAL_POSITION = Platform.OS === 'ios' ? 7 : 0;
 
 type SearchProps = {
-    autoCapitalize: 'none' | 'sentences' | 'words' | 'characters' | undefined;
-    autoFocus: boolean;
+    autoCapitalize?: 'none' | 'sentences' | 'words' | 'characters' | undefined;
+    autoFocus?: boolean;
     backArrowSize?: number;
     backgroundColor: string;
     blurOnSubmit?: boolean;
-    cancelButtonStyle: ViewStyle;
-    cancelTitle: string;
+    cancelButtonStyle?: ViewStyle;
+    cancelTitle?: string;
     containerHeight?: number;
-    containerStyle: ViewStyle;
+    containerStyle?: ViewStyle;
     deleteIconSize?: number;
     editable?: boolean;
     inputHeight: number;
-    inputStyle: ViewStyle;
-    intl: IntlShape;
-    keyboardAppearance: 'default' | 'light' | 'dark' | undefined;
+    inputStyle?: TextStyle;
+    intl?: IntlShape;
+    keyboardAppearance?: 'default' | 'light' | 'dark' | undefined;
     keyboardShouldPersist?: boolean;
     keyboardType?: KeyboardTypeOptions | undefined;
-    leftComponent: JSX.Element;
+    leftComponent?: JSX.Element;
     onBlur?: () => void;
     onCancelButtonPress: (text?: string) => void;
     onChangeText: (text: string) => void;
-    onFocus: () => void;
-    onSearchButtonPress: (value: string) => void;
+    onFocus?: () => void;
+    onSearchButtonPress?: (value: string) => void;
     onSelectionChange?: (e: NativeSyntheticEvent<TextInputSelectionChangeEventData>) => void;
-    placeholder: string;
+    placeholder?: string;
     placeholderTextColor?: string;
     returnKeyType?: ReturnKeyTypeOptions | undefined;
     searchBarRightMargin?: number;
     searchIconSize?: number;
-    selectionColor: string;
+    selectionColor?: string;
     showArrow?: boolean;
     showCancel?: boolean;
     testID: string;
@@ -146,7 +147,7 @@ export default class Search extends PureComponent<SearchProps, SearchState> {
         }
 
         if (value) {
-            onSearchButtonPress(value);
+            onSearchButtonPress?.(value);
         }
     };
 
@@ -240,7 +241,7 @@ export default class Search extends PureComponent<SearchProps, SearchState> {
                         autoFocus={autoFocus}
                         blurOnSubmit={blurOnSubmit}
                         cancelButtonProps={cancelButtonPropStyle}
-                        cancelButtonTitle={cancelTitle || intl.formatMessage({id: 'mobile.post.cancel', defaultMessage: 'Cancel'})}
+                        cancelButtonTitle={cancelTitle || intl?.formatMessage({id: 'mobile.post.cancel', defaultMessage: 'Cancel'}) || ''}
                         cancelIcon={
 
                             // Making sure the icon won't change depending on whether the input is in focus on Android devices
@@ -275,7 +276,7 @@ export default class Search extends PureComponent<SearchProps, SearchState> {
                         keyboardAppearance={keyboardAppearance}
                         keyboardType={keyboardType}
                         leftIconContainerStyle={styles.leftIcon}
-                        placeholder={placeholder || intl.formatMessage({id: 'search_bar.search', defaultMessage: 'Search'})}
+                        placeholder={placeholder || intl?.formatMessage({id: 'search_bar.search', defaultMessage: 'Search'}) || ''}
                         placeholderTextColor={placeholderTextColor}
                         platform={Platform.OS as 'ios' | 'android'}
                         onBlur={this.onBlur}
@@ -313,4 +314,3 @@ export default class Search extends PureComponent<SearchProps, SearchState> {
         );
     }
 }
-

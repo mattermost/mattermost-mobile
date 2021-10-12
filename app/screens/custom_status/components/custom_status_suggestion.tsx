@@ -24,6 +24,51 @@ type Props = {
     theme: Theme;
 };
 
+const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
+    return {
+        container: {
+            backgroundColor: theme.centerChannelBg,
+            flexDirection: 'row',
+            minHeight: 50,
+        },
+        iconContainer: {
+            width: 45,
+            height: 46,
+            left: 14,
+            top: 12,
+            marginRight: 6,
+            color: theme.centerChannelColor,
+        },
+        wrapper: {
+            flex: 1,
+        },
+        textContainer: {
+            paddingTop: 14,
+            paddingBottom: 14,
+            justifyContent: 'center',
+            width: '70%',
+            flex: 1,
+        },
+        clearButtonContainer: {
+            position: 'absolute',
+            top: 4,
+            right: 13,
+        },
+        divider: {
+            backgroundColor: changeOpacity(theme.centerChannelColor, 0.2),
+            height: 1,
+            marginRight: 16,
+        },
+        customStatusDuration: {
+            color: changeOpacity(theme.centerChannelColor, 0.6),
+            fontSize: 15,
+        },
+        customStatusText: {
+            color: theme.centerChannelColor,
+        },
+    };
+});
+
 const CustomStatusSuggestion = ({duration, emoji, expires_at, handleClear, handleSuggestionClick, isExpirySupported, separator, text, theme}: Props) => {
     const style = getStyleSheet(theme);
     const intl = useIntl();
@@ -69,7 +114,7 @@ const CustomStatusSuggestion = ({duration, emoji, expires_at, handleClear, handl
                 )}
                 <View style={style.wrapper}>
                     <View style={style.textContainer}>
-                        {text && (
+                        {Boolean(text) && (
                             <View>
                                 <CustomStatusText
                                     text={text}
@@ -97,48 +142,3 @@ const CustomStatusSuggestion = ({duration, emoji, expires_at, handleClear, handl
 };
 
 export default CustomStatusSuggestion;
-
-const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
-    return {
-        container: {
-            backgroundColor: theme.centerChannelBg,
-            flexDirection: 'row',
-            minHeight: 50,
-        },
-        iconContainer: {
-            width: 45,
-            height: 46,
-            left: 14,
-            top: 12,
-            marginRight: 6,
-            color: theme.centerChannelColor,
-        },
-        wrapper: {
-            flex: 1,
-        },
-        textContainer: {
-            paddingTop: 14,
-            paddingBottom: 14,
-            justifyContent: 'center',
-            width: '70%',
-            flex: 1,
-        },
-        clearButtonContainer: {
-            position: 'absolute',
-            top: 4,
-            right: 13,
-        },
-        divider: {
-            backgroundColor: changeOpacity(theme.centerChannelColor, 0.2),
-            height: 1,
-            marginRight: 16,
-        },
-        customStatusDuration: {
-            color: changeOpacity(theme.centerChannelColor, 0.6),
-            fontSize: 15,
-        },
-        customStatusText: {
-            color: theme.centerChannelColor,
-        },
-    };
-});

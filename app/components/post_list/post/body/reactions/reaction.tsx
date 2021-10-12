@@ -59,7 +59,7 @@ const Reaction = ({count, emojiName, highlight, onPress, onLongPress, theme}: Re
             <Emoji
                 emojiName={emojiName}
                 size={20}
-                textStyle={{color: 'black', fontWeight: 'bold'}}
+                textStyle={{color: '#000'}}
                 customEmojiStyle={styles.customEmojiStyle}
                 testID={`reaction.emoji.${emojiName}`}
             />

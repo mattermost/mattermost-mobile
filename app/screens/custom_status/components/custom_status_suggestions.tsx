@@ -27,6 +27,26 @@ type DefaultUserCustomStatus = {
     durationDefault: string;
 };
 
+const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
+    return {
+        separator: {
+            marginTop: 32,
+        },
+        title: {
+            fontSize: 17,
+            marginBottom: 12,
+            color: changeOpacity(theme.centerChannelColor, 0.5),
+            marginLeft: 16,
+        },
+        block: {
+            borderBottomColor: changeOpacity(theme.centerChannelColor, 0.1),
+            borderBottomWidth: 1,
+            borderTopColor: changeOpacity(theme.centerChannelColor, 0.1),
+            borderTopWidth: 1,
+        },
+    };
+});
+
 const defaultCustomStatusSuggestions: DefaultUserCustomStatus[] = [
     {emoji: 'calendar', message: t('custom_status.suggestions.in_a_meeting'), messageDefault: 'In a meeting', durationDefault: CustomStatusDuration.ONE_HOUR},
     {emoji: 'hamburger', message: t('custom_status.suggestions.out_for_lunch'), messageDefault: 'Out for lunch', durationDefault: CustomStatusDuration.THIRTY_MINUTES},
@@ -83,25 +103,5 @@ const CustomStatusSuggestions = ({
         </>
     );
 };
-
-const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
-    return {
-        separator: {
-            marginTop: 32,
-        },
-        title: {
-            fontSize: 17,
-            marginBottom: 12,
-            color: changeOpacity(theme.centerChannelColor, 0.5),
-            marginLeft: 16,
-        },
-        block: {
-            borderBottomColor: changeOpacity(theme.centerChannelColor, 0.1),
-            borderBottomWidth: 1,
-            borderTopColor: changeOpacity(theme.centerChannelColor, 0.1),
-            borderTopWidth: 1,
-        },
-    };
-});
 
 export default CustomStatusSuggestions;

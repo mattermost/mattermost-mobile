@@ -4,7 +4,6 @@
 import {Database} from '@nozbe/watermelondb';
 import DatabaseProvider from '@nozbe/watermelondb/DatabaseProvider';
 import React, {ComponentType, useEffect, useState} from 'react';
-import {Provider as PaperProvider} from 'react-native-paper';
 
 import {MM_TABLES} from '@constants/database';
 import ServerUrlProvider from '@context/server_url';
@@ -59,9 +58,7 @@ export function withServerDatabase<T>(Component: ComponentType<T>): ComponentTyp
             <DatabaseProvider database={state.database}>
                 <ServerUrlProvider url={state.serverUrl}>
                     <ThemeProvider database={state.database}>
-                        <PaperProvider>
-                            <Component {...props}/>
-                        </PaperProvider>
+                        <Component {...props}/>
                     </ThemeProvider>
                 </ServerUrlProvider>
             </DatabaseProvider>

@@ -5,7 +5,7 @@ import {withDatabase} from '@nozbe/watermelondb/DatabaseProvider';
 import withObservables from '@nozbe/with-observables';
 import React from 'react';
 import {injectIntl, IntlShape} from 'react-intl';
-import {SafeAreaView, StatusBar, View} from 'react-native';
+import {BackHandler, NativeEventSubscription, SafeAreaView, StatusBar, View} from 'react-native';
 import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
 import {
     Navigation,
@@ -18,7 +18,7 @@ import {switchMap} from 'rxjs/operators';
 
 import {CustomStatusDuration} from '@constants/custom_status';
 import {MM_TABLES, SYSTEM_IDENTIFIERS} from '@constants/database';
-import {mergeNavigationOptions, popTopScreen} from '@screens/navigation';
+import {dismissModal, mergeNavigationOptions, popTopScreen} from '@screens/navigation';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 import ClearAfterMenuItem from './components/clear_after_menu_item';
@@ -27,14 +27,12 @@ import type {WithDatabaseArgs} from '@typings/database/database';
 import type SystemModel from '@typings/database/models/servers/system';
 import type UserModel from '@typings/database/models/servers/user';
 
-const {SERVER: {SYSTEM, USER}} = MM_TABLES;
-const CLEAR_AFTER = 'update-custom-status-clear-after';
-
 interface Props extends NavigationComponentProps {
     currentUser: UserModel;
     handleClearAfterClick: (duration: CustomStatusDuration, expiresAt: string) => void;
     initialDuration: CustomStatusDuration;
     intl: IntlShape;
+    isModal?: boolean;
     theme: Theme;
 }
 
@@ -44,17 +42,31 @@ type State = {
     showExpiryTime: boolean;
 }
 
-class ClearAfterModal extends NavigationComponent<Props, State> {
-    static options(): Options {
-        return {
-            topBar: {
-                title: {
-                    alignment: 'center',
-                },
-            },
-        };
-    }
+const {SERVER: {SYSTEM, USER}} = MM_TABLES;
+const CLEAR_AFTER = 'update-custom-status-clear-after';
 
+const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
+    return {
+        container: {
+            flex: 1,
+            backgroundColor: changeOpacity(theme.centerChannelColor, 0.03),
+        },
+        scrollView: {
+            flex: 1,
+            paddingTop: 32,
+            paddingBottom: 32,
+        },
+        block: {
+            borderBottomColor: changeOpacity(theme.centerChannelColor, 0.1),
+            borderBottomWidth: 1,
+            borderTopColor: changeOpacity(theme.centerChannelColor, 0.1),
+            borderTopWidth: 1,
+        },
+    };
+});
+
+class ClearAfterModal extends NavigationComponent<Props, State> {
+    private backListener: NativeEventSubscription | undefined;
     constructor(props: Props) {
         super(props);
 
@@ -85,6 +97,11 @@ class ClearAfterModal extends NavigationComponent<Props, State> {
 
     componentDidMount() {
         Navigation.events().bindComponent(this);
+        this.backListener = BackHandler.addEventListener('hardwareBackPress', this.onBackPress);
+    }
+
+    componentWillUnmount() {
+        this.backListener?.remove();
     }
 
     navigationButtonPressed({buttonId}: NavigationButtonPressedEvent) {
@@ -95,8 +112,24 @@ class ClearAfterModal extends NavigationComponent<Props, State> {
         }
     }
 
+    onBackPress = () => {
+        if (this.props.isModal) {
+            dismissModal();
+        } else {
+            popTopScreen();
+        }
+
+        return true;
+    }
+
     onDone = () => {
-        this.props.handleClearAfterClick(this.state.duration, this.state.expiresAt);
+        const {handleClearAfterClick, isModal} = this.props;
+        handleClearAfterClick(this.state.duration, this.state.expiresAt);
+        if (isModal) {
+            dismissModal();
+            return;
+        }
+
         popTopScreen();
     };
 
@@ -175,28 +208,12 @@ class ClearAfterModal extends NavigationComponent<Props, State> {
     }
 }
 
-const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
-    return {
-        container: {
-            flex: 1,
-            backgroundColor: changeOpacity(theme.centerChannelColor, 0.03),
-        },
-        scrollView: {
-            flex: 1,
-            paddingTop: 32,
-            paddingBottom: 32,
-        },
-        block: {
-            borderBottomColor: changeOpacity(theme.centerChannelColor, 0.1),
-            borderBottomWidth: 1,
-            borderTopColor: changeOpacity(theme.centerChannelColor, 0.1),
-            borderTopWidth: 1,
-        },
-    };
-});
-
 const enhancedCAM = withObservables([], ({database}: WithDatabaseArgs) => ({
-    currentUser: database.get(SYSTEM).findAndObserve(SYSTEM_IDENTIFIERS.CURRENT_USER_ID).pipe(switchMap((id: SystemModel) => database.get(USER).findAndObserve(id.value))),
+    currentUser: database.get<SystemModel>(SYSTEM).
+        findAndObserve(SYSTEM_IDENTIFIERS.CURRENT_USER_ID).
+        pipe(
+            switchMap((id) => database.get<UserModel>(USER).findAndObserve(id.value)),
+        ),
 }));
 
 export default withDatabase(enhancedCAM(injectIntl(ClearAfterModal)));

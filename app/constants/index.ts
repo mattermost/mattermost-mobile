@@ -9,6 +9,7 @@ import Database from './database';
 import DeepLink from './deep_linking';
 import Device from './device';
 import Emoji from './emoji';
+import Events from './events';
 import Files from './files';
 import General from './general';
 import List from './list';
@@ -31,6 +32,7 @@ export {
     DeepLink,
     Device,
     Emoji,
+    Events,
     Files,
     General,
     List,

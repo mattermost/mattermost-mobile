@@ -15,6 +15,22 @@ type Props = {
     theme: Theme;
 }
 
+const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
+    return {
+        iconContainer: {
+            position: 'absolute',
+            left: 14,
+            top: 10,
+        },
+        icon: {
+            color: changeOpacity(theme.centerChannelColor, 0.64),
+        },
+        emoji: {
+            color: theme.centerChannelColor,
+        },
+    };
+});
+
 const CustomStatusEmoji = ({emoji, isStatusSet, onPress, theme}: Props) => {
     const style = getStyleSheet(theme);
     return (
@@ -40,21 +56,5 @@ const CustomStatusEmoji = ({emoji, isStatusSet, onPress, theme}: Props) => {
         </TouchableOpacity>
     );
 };
-
-const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
-    return {
-        iconContainer: {
-            position: 'absolute',
-            left: 14,
-            top: 10,
-        },
-        icon: {
-            color: changeOpacity(theme.centerChannelColor, 0.64),
-        },
-        emoji: {
-            color: theme.centerChannelColor,
-        },
-    };
-});
 
 export default CustomStatusEmoji;

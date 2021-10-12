@@ -30,10 +30,6 @@ target 'Mattermost' do
 
   # TODO: Remove this once upstream PR https://github.com/daltoniam/Starscream/pull/871 is merged
   pod 'Starscream', :git => 'https://github.com/mattermost/Starscream.git', :commit => '1b4b93708fb63d2665625a11e57461772a65364a'
-  
-  # NOTE: This is required as of v0.23
-  pod 'simdjson', path: '../node_modules/@nozbe/simdjson'
-  
 end
 
 # Enables Flipper.
@@ -44,6 +40,7 @@ end
 
   post_install do |installer|
     react_native_post_install(installer)
+    __apply_Xcode_12_5_M1_post_install_workaround(installer)
     puts 'Patching XCDYouTube so it can playback videos'
     %x(patch Pods/XCDYouTubeKit/XCDYouTubeKit/XCDYouTubeVideoOperation.m < patches/XCDYouTubeVideoOperation.patch)
     installer.pods_project.targets.each do |target|

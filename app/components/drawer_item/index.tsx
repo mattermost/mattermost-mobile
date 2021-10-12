@@ -2,10 +2,11 @@
 // See LICENSE.txt for license information.
 
 import React, {ReactNode} from 'react';
-import {TouchableOpacity, View} from 'react-native';
+import {Platform, View} from 'react-native';
 
 import CompassIcon from '@components/compass_icon';
 import FormattedText from '@components/formatted_text';
+import TouchableWithFeedback from '@components/touchable_with_feedback';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 type DrawerItemProps = {
@@ -79,9 +80,10 @@ const DrawerItem = (props: DrawerItemProps) => {
     }
 
     return (
-        <TouchableOpacity
+        <TouchableWithFeedback
             testID={testID}
             onPress={onPress}
+            underlayColor={changeOpacity(theme.centerChannelColor, Platform.select({android: 0.1, ios: 0.3}) || 0.3)}
         >
             <View style={style.container}>
                 {icon && (
@@ -96,7 +98,7 @@ const DrawerItem = (props: DrawerItemProps) => {
                     {divider}
                 </View>
             </View>
-        </TouchableOpacity>
+        </TouchableWithFeedback>
     );
 };
 

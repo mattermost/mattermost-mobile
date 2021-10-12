@@ -81,5 +81,9 @@ function componentDidAppearListener({componentId}: ComponentDidAppearEvent) {
 function componentDidDisappearListener({componentId}: ComponentDidDisappearEvent) {
     if (componentId !== Screens.HOME) {
         EphemeralStore.removeNavigationComponentId(componentId);
+
+        if (EphemeralStore.getNavigationTopComponentId() === Screens.HOME) {
+            DeviceEventEmitter.emit('tabBarVisible', true);
+        }
     }
 }

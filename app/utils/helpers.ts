@@ -1,7 +1,9 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import moment from 'moment-timezone';
+import moment, {Moment} from 'moment-timezone';
+
+import {CUSTOM_STATUS_TIME_PICKER_INTERVALS_IN_MINUTES} from '@constants/custom_status';
 
 // isMinimumServerVersion will return true if currentVersion is equal to higher or than
 // the provided minimum version. A non-equal major version will ignore minor and dot
@@ -75,7 +77,7 @@ export function isEmail(email: string): boolean {
     return (/^[^ ,@]+@[^ ,@]+$/).test(email);
 }
 
-export function safeParseJSON(rawJson: string | Record<string, unknown>) {
+export function safeParseJSON(rawJson: string | Record<string, unknown> | unknown[]) {
     let data = rawJson;
     try {
         if (typeof rawJson == 'string') {
@@ -96,8 +98,8 @@ export function getUtcOffsetForTimeZone(timezone: string) {
     return moment.tz(timezone).utcOffset();
 }
 
-export function isCustomStatusExpirySupported(config: ClientConfig) {
-    return isMinimumServerVersion(config.Version, 5, 37);
+export function isCustomStatusExpirySupported(version: string) {
+    return isMinimumServerVersion(version, 5, 37);
 }
 
 export function toTitleCase(str: string) {
@@ -105,4 +107,15 @@ export function toTitleCase(str: string) {
         return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();
     }
     return str.replace(/\w\S*/g, doTitleCase);
+}
+
+export function getRoundedTime(value: Moment) {
+    const roundedTo = CUSTOM_STATUS_TIME_PICKER_INTERVALS_IN_MINUTES;
+    const start = moment(value);
+    const diff = start.minute() % roundedTo;
+    if (diff === 0) {
+        return value;
+    }
+    const remainder = roundedTo - diff;
+    return start.add(remainder, 'm').seconds(0).milliseconds(0);
 }

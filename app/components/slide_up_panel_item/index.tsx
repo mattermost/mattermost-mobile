@@ -34,14 +34,13 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             color: '#D0021B',
         },
         row: {
-            flex: 1,
+            width: '100%',
             flexDirection: 'row',
         },
         iconContainer: {
-            alignItems: 'center',
             height: 50,
             justifyContent: 'center',
-            width: 60,
+            marginRight: 10,
         },
         noIconContainer: {
             height: 50,
@@ -62,11 +61,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             lineHeight: 19,
             opacity: 0.9,
             letterSpacing: -0.45,
-        },
-        footer: {
-            marginHorizontal: 17,
-            borderBottomWidth: 0.5,
-            borderBottomColor: changeOpacity(theme.centerChannelColor, 0.2),
         },
     };
 });
@@ -107,27 +101,22 @@ const SlideUpPanelItem = ({destructive, icon, imageStyles, onPress, testID, text
     }
 
     return (
-        <View
-            testID={testID}
+        <TouchableWithFeedback
+            onPress={handleOnPress}
             style={style.container}
+            testID={testID}
+            type='native'
+            underlayColor={changeOpacity(theme.centerChannelColor, 0.5)}
         >
-            <TouchableWithFeedback
-                onPress={handleOnPress}
-                style={style.row}
-                type='native'
-                underlayColor={changeOpacity(theme.centerChannelColor, 0.5)}
-            >
-                <View style={style.row}>
-                    {Boolean(image) &&
-                        <View style={iconStyle}>{image}</View>
-                    }
-                    <View style={style.textContainer}>
-                        <Text style={[style.text, destructive ? style.destructive : null, textStyles]}>{text}</Text>
-                    </View>
+            <View style={style.row}>
+                {Boolean(image) &&
+                    <View style={iconStyle}>{image}</View>
+                }
+                <View style={style.textContainer}>
+                    <Text style={[style.text, destructive ? style.destructive : null, textStyles]}>{text}</Text>
                 </View>
-            </TouchableWithFeedback>
-            <View style={style.footer}/>
-        </View>
+            </View>
+        </TouchableWithFeedback>
     );
 };
 
