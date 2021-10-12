@@ -2,14 +2,13 @@
 // See LICENSE.txt for license information.
 
 import React, {memo} from 'react';
-import {PanResponder, TouchableHighlight, TouchableOpacity, TouchableWithoutFeedback, View} from 'react-native';
+import {PanResponder, Touchable, TouchableHighlight, TouchableOpacity, TouchableWithoutFeedback, View} from 'react-native';
 
-type TouchableProps = {
+type TouchableProps = Touchable & {
     cancelTouchOnPanning: boolean;
     children: React.ReactNode | React.ReactNode[];
     testID: string;
     type: 'native' | 'opacity' | 'none';
-    [x: string]: any;
 }
 
 const TouchableWithFeedbackIOS = ({testID, children, type = 'native', cancelTouchOnPanning, ...props}: TouchableProps) => {

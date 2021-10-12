@@ -1,13 +1,17 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-type ThemeKey = 'denim' | 'sapphire' | 'quartz' | 'indigo' | 'onyx';
+type LegacyThemeKey = 'default' | 'organization' | 'mattermostDark' | 'windows10';
+
+type LegacyThemeType = 'Mattermost' | 'Organization' | 'Mattermost Dark' | 'Windows Dark';
+
+type ThemeKey = 'denim' | 'sapphire' | 'quartz' | 'indigo' | 'onyx' | 'custom';
 
 type ThemeType = 'Denim' | 'Sapphire' | 'Quartz' | 'Indigo' | 'Onyx' | 'custom';
 
 type Theme = {
     [key: string]: string | undefined;
-    type?: string;
+    type?: ThemeType | LegacyThemeType;
     sidebarBg: string;
     sidebarText: string;
     sidebarUnreadText: string;
@@ -16,6 +20,7 @@ type Theme = {
     sidebarTextActiveColor: string;
     sidebarHeaderBg: string;
     sidebarHeaderTextColor: string;
+    sidebarTeamBarBg: string;
     onlineIndicator: string;
     awayIndicator: string;
     dndIndicator: string;
@@ -32,3 +37,5 @@ type Theme = {
     mentionHighlightLink: string;
     codeTheme: string;
 };
+
+type ThemeTypeMap = Record<ThemeType | LegacyThemeType, ThemeKey>;

@@ -3,6 +3,8 @@
 
 import emojiRegex from 'emoji-regex';
 
+import SystemModel from '@database/models/server/system';
+
 import {Emojis, EmojiIndicesByAlias} from './';
 
 const RE_NAMED_EMOJI = /(:([a-zA-Z0-9_+-]+):)/g;
@@ -111,9 +113,9 @@ const defaultComparisonRule = (aName: string, bName: string) => {
     return aName.localeCompare(bName);
 };
 
-const thumbsDownComparisonRule = (other: string) => (other === 'thumbsup' || other === '+1' ? 1 : 0);
+const thumbsDownComparisonRule = (other: string) => (other.startsWith('thumbsup') || other.startsWith('+1') ? 1 : 0);
 
-const thumbsUpComparisonRule = (other: string) => (other === 'thumbsdown' || other === '-1' ? -1 : 0);
+const thumbsUpComparisonRule = (other: string) => (other.startsWith('thumbsdown') || other.startsWith('-1') ? -1 : 0);
 
 type Comparators = Record<string, ((other: string) => number)>;
 
@@ -125,8 +127,9 @@ const customComparisonRules: Comparators = {
 };
 
 function doDefaultComparison(aName: string, bName: string) {
-    if (customComparisonRules[aName]) {
-        return customComparisonRules[aName](bName) || defaultComparisonRule(aName, bName);
+    const rule = aName.split('_')[0];
+    if (customComparisonRules[rule]) {
+        return customComparisonRules[rule](bName) || defaultComparisonRule(aName, bName);
     }
 
     return defaultComparisonRule(aName, bName);
@@ -187,4 +190,30 @@ export function compareEmojis(emojiA: string | Partial<EmojiType>, emojiB: strin
     }
 
     return doDefaultComparison(aName!, bName!);
+}
+
+export const isCustomEmojiEnabled = (config: ClientConfig | SystemModel) => {
+    if (config instanceof SystemModel) {
+        return config?.value?.EnableCustomEmoji === 'true';
+    }
+
+    return config?.EnableCustomEmoji === 'true';
+};
+
+export function fillEmoji(index: number) {
+    const emoji = Emojis[index];
+    return {
+        name: 'short_name' in emoji ? emoji.short_name : emoji.name,
+        aliases: 'short_names' in emoji ? emoji.short_names : [],
+    };
+}
+
+export function getSkin(emoji: any) {
+    if ('skin_variations' in emoji) {
+        return 'default';
+    }
+    if ('skins' in emoji) {
+        return emoji.skins && emoji.skins[0];
+    }
+    return null;
 }

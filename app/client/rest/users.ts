@@ -41,6 +41,9 @@ export interface ClientUsersMix {
     getStatusesByIds: (userIds: string[]) => Promise<UserStatus[]>;
     getStatus: (userId: string) => Promise<UserStatus>;
     updateStatus: (status: UserStatus) => Promise<UserStatus>;
+    updateCustomStatus: (customStatus: UserCustomStatus) => Promise<{status: string}>;
+    unsetCustomStatus: () => Promise<{status: string}>;
+    removeRecentCustomStatus: (customStatus: UserCustomStatus) => Promise<{status: string}>;
 }
 
 const ClientUsers = (superclass: any) => class extends superclass {
@@ -378,6 +381,27 @@ const ClientUsers = (superclass: any) => class extends superclass {
         return this.doFetch(
             `${this.getUserRoute(status.user_id)}/status`,
             {method: 'put', body: status},
+        );
+    };
+
+    updateCustomStatus = async (customStatus: UserCustomStatus) => {
+        return this.doFetch(
+            `${this.getUserRoute('me')}/status/custom`,
+            {method: 'put', body: customStatus},
+        );
+    };
+
+    unsetCustomStatus = async () => {
+        return this.doFetch(
+            `${this.getUserRoute('me')}/status/custom`,
+            {method: 'delete'},
+        );
+    };
+
+    removeRecentCustomStatus = async (customStatus: UserCustomStatus) => {
+        return this.doFetch(
+            `${this.getUserRoute('me')}/status/custom/recent/delete`,
+            {method: 'post', body: customStatus},
         );
     };
 };

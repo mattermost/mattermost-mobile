@@ -5,6 +5,7 @@ import Database from '@nozbe/watermelondb/Database';
 import React from 'react';
 
 import CustomStatusEmoji from '@components/custom_status/custom_status_emoji';
+import {CustomStatusDuration} from '@constants';
 import {renderWithEverything} from '@test/intl-test-helper';
 import TestHelper from '@test/test_helper';
 

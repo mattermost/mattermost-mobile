@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback} from 'react';
-import {StyleProp, Text, View, ViewStyle} from 'react-native';
+import {StyleProp, Text, TextStyle, View, ViewStyle} from 'react-native';
 import FastImage, {ImageStyle, Source} from 'react-native-fast-image';
 
 import CompassIcon from '@components/compass_icon';
@@ -15,7 +15,9 @@ import {isValidUrl} from '@utils/url';
 type SlideUpPanelProps = {
     destructive?: boolean;
     icon?: string | Source;
+    imageStyles?: StyleProp<TextStyle>;
     onPress: () => void;
+    textStyles?: TextStyle;
     testID?: string;
     text: string;
 }
@@ -32,14 +34,13 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             color: '#D0021B',
         },
         row: {
-            flex: 1,
+            width: '100%',
             flexDirection: 'row',
         },
         iconContainer: {
-            alignItems: 'center',
             height: 50,
             justifyContent: 'center',
-            width: 60,
+            marginRight: 10,
         },
         noIconContainer: {
             height: 50,
@@ -61,15 +62,10 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             opacity: 0.9,
             letterSpacing: -0.45,
         },
-        footer: {
-            marginHorizontal: 17,
-            borderBottomWidth: 0.5,
-            borderBottomColor: changeOpacity(theme.centerChannelColor, 0.2),
-        },
     };
 });
 
-const SlideUpPanelItem = ({destructive, icon, onPress, testID, text}: SlideUpPanelProps) => {
+const SlideUpPanelItem = ({destructive, icon, imageStyles, onPress, testID, text, textStyles}: SlideUpPanelProps) => {
     const theme = useTheme();
     const handleOnPress = useCallback(preventDoubleTap(onPress, 500), []);
     const style = getStyleSheet(theme);
@@ -77,7 +73,7 @@ const SlideUpPanelItem = ({destructive, icon, onPress, testID, text}: SlideUpPan
     let image;
     let iconStyle: StyleProp<ViewStyle> = [style.iconContainer];
     if (icon) {
-        const imageStyle: StyleProp<ImageStyle> = [style.icon];
+        const imageStyle: StyleProp<ImageStyle> = [style.icon, imageStyles];
         if (destructive) {
             imageStyle.push(style.destructive);
         }
@@ -105,27 +101,22 @@ const SlideUpPanelItem = ({destructive, icon, onPress, testID, text}: SlideUpPan
     }
 
     return (
-        <View
-            testID={testID}
+        <TouchableWithFeedback
+            onPress={handleOnPress}
             style={style.container}
+            testID={testID}
+            type='native'
+            underlayColor={changeOpacity(theme.centerChannelColor, 0.5)}
         >
-            <TouchableWithFeedback
-                onPress={handleOnPress}
-                style={style.row}
-                type='native'
-                underlayColor={changeOpacity(theme.centerChannelColor, 0.5)}
-            >
-                <View style={style.row}>
-                    {Boolean(image) &&
-                        <View style={iconStyle}>{image}</View>
-                    }
-                    <View style={style.textContainer}>
-                        <Text style={[style.text, destructive ? style.destructive : null]}>{text}</Text>
-                    </View>
+            <View style={style.row}>
+                {Boolean(image) &&
+                    <View style={iconStyle}>{image}</View>
+                }
+                <View style={style.textContainer}>
+                    <Text style={[style.text, destructive ? style.destructive : null, textStyles]}>{text}</Text>
                 </View>
-            </TouchableWithFeedback>
-            <View style={style.footer}/>
-        </View>
+            </View>
+        </TouchableWithFeedback>
     );
 };
 

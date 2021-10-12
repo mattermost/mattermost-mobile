@@ -103,7 +103,7 @@ const Header = (props: HeaderProps) => {
                         theme={theme}
                         userId={post.userId}
                     />
-                    {showCustomStatusEmoji && customStatusExpired && Boolean(customStatus?.emoji) && (
+                    {showCustomStatusEmoji && !customStatusExpired && Boolean(customStatus?.emoji) && (
                         <CustomStatusEmoji
                             customStatus={customStatus!}
                             style={style.customStatusEmoji}
