@@ -101,7 +101,7 @@ describe('ChannelNotificationPreference', () => {
         );
     });
 
-    test('should show push_threads switch, when CRT on and notifyLevel is mention', () => {
+    test('should show push_threads switch, when CRT is on and notifyLevel is mention', () => {
         const props = makeProps('all', undefined, true);
         const wrapper = shallowWithIntlMessages(
             <ChannelNotificationPreference {...props}/>,
@@ -114,5 +114,13 @@ describe('ChannelNotificationPreference', () => {
         });
 
         expect(wrapper.find(SectionItem)).toHaveLength(5);
+    });
+
+    test('should show push_threads switch, when CRT is off and notifyLevel is mention', () => {
+        const props = makeProps('mention', undefined, false);
+        const wrapper = shallowWithIntlMessages(
+            <ChannelNotificationPreference {...props}/>,
+        );
+        expect(wrapper.find(SectionItem)).toHaveLength(4);
     });
 });
