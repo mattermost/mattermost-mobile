@@ -257,7 +257,7 @@ export const loadMe = async (serverUrl: string, {deviceToken, user}: LoadMeArgs)
     return {currentUser, error: undefined};
 };
 
-export const updateMe = async (serverUrl: string, user: UserModel) => {
+export const updateMe = async (serverUrl: string, user: Partial<UserProfile>) => {
     const database = DatabaseManager.serverDatabases[serverUrl]?.database;
     const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
     if (!database) {
@@ -273,7 +273,7 @@ export const updateMe = async (serverUrl: string, user: UserModel) => {
 
     let data: UserProfile;
     try {
-        data = await client.patchMe(user._raw);
+        data = await client.patchMe(user);
     } catch (e) {
         forceLogoutIfNecessary(serverUrl, e as ClientError);
         return {error: e};
