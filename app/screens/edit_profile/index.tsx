@@ -11,7 +11,6 @@ import {EventSubscription, Navigation} from 'react-native-navigation';
 import {SafeAreaView} from 'react-native-safe-area-context';
 import {switchMap} from 'rxjs/operators';
 
-import {updateUserProfile} from '@actions/local/user';
 import {updateMe} from '@actions/remote/user';
 import ProfilePicture from '@components/profile_picture';
 import StatusBar from '@components/status_bar/index';
@@ -19,8 +18,8 @@ import {MM_TABLES, SYSTEM_IDENTIFIERS} from '@constants/database';
 import {withServerUrl} from '@context/server_url';
 import {withTheme} from '@context/theme';
 import {t} from '@i18n';
-import {VALID_MIME_TYPES} from '@screens/edit_profile/constants';
 import {dismissModal, popTopScreen, setButtons} from '@screens/navigation';
+import {UploadedFile, UserInfo} from '@typings/screens/edit_profile';
 import {preventDoubleTap} from '@utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
@@ -29,6 +28,7 @@ import DisplayError from './components/display_error';
 import EmailSettings from './components/email_settings';
 import ProfileUpdating from './components/profile_updating';
 
+import type Database from '@nozbe/watermelondb/Database';
 import type {WithDatabaseArgs} from '@typings/database/database';
 import type SystemModel from '@typings/database/models/servers/system';
 import type UserModel from '@typings/database/models/servers/user';
@@ -38,6 +38,7 @@ type EditProfileProps = {
     componentId: string;
     config: SystemModel;
     currentUser: UserModel;
+    database: Database;
     intl: IntlShape;
     serverUrl: string;
     theme: Theme;
@@ -49,14 +50,6 @@ type EditProfileState = UserInfo & {
     profileImage: UploadedFile | undefined;
     isProfileImageRemoved: boolean;
 };
-type UploadedFile = {
-    fileName: string;
-    fileSize: number;
-    height: number;
-    type: typeof VALID_MIME_TYPES[number];
-    uri: string;
-    width: number;
-}
 
 const {SERVER: {USER, SYSTEM}} = MM_TABLES;
 
@@ -73,12 +66,11 @@ class EditProfile extends PureComponent<EditProfileProps, EditProfileState> {
         super(props);
         const {componentId, currentUser} = props;
         const {email, firstName, lastName, nickname, position, username} = currentUser;
+        this.scrollViewRef = React.createRef<KeyboardAwareScrollView>();
 
-        const buttons = {
+        setButtons(componentId, {
             rightButtons: [this.getRightButton()],
-        };
-
-        setButtons(componentId, buttons);
+        });
 
         this.state = {
             email,
@@ -94,8 +86,6 @@ class EditProfile extends PureComponent<EditProfileProps, EditProfileState> {
         };
 
         this.setUp();
-
-        this.scrollViewRef = React.createRef<KeyboardAwareScrollView>();
     }
 
     setUp = () => {
@@ -134,10 +124,10 @@ class EditProfile extends PureComponent<EditProfileProps, EditProfileState> {
         this.navigationEventListener = Navigation.events().bindComponent(this);
     }
 
-    async navigationButtonPressed({buttonId}: {buttonId: string}) {
+    navigationButtonPressed({buttonId}: {buttonId: string}) {
         switch (buttonId) {
             case 'update-profile':
-                await this.submitUser();
+                this.submitUser();
                 break;
             case 'close-settings':
                 this.close();
@@ -175,7 +165,7 @@ class EditProfile extends PureComponent<EditProfileProps, EditProfileState> {
     canUpdate = (updatedField?: Partial<UserInfo>) => {
         const {currentUser} = this.props;
         const keys = Object.keys(this.state);
-        const newState = {...this.state, ...(updatedField || {})};
+        const newState: UserInfo = {...this.state, ...(updatedField || {})};
         Reflect.deleteProperty(newState, 'error');
         Reflect.deleteProperty(newState, 'updating');
 
@@ -194,8 +184,7 @@ class EditProfile extends PureComponent<EditProfileProps, EditProfileState> {
                     break;
             }
 
-            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-            // @ts-ignore
+            // @ts-expect-error Here, we are comparing the current user value against the updated ones
             if (currentUser[userKey] !== newState[key]) {
                 return true;
             }
@@ -205,12 +194,11 @@ class EditProfile extends PureComponent<EditProfileProps, EditProfileState> {
     };
 
     submitUser = preventDoubleTap(async () => {
+        const {currentUser, database, serverUrl} = this.props;
+        const {email, firstName, lastName, nickname, position, username} = this.state;
+
         this.emitCanUpdateAccount(false);
         this.setState({error: null, updating: true});
-
-        const {currentUser, serverUrl} = this.props;
-        const {email, firstName, lastName, nickname, position, username} = this.state;
-        const userInfo = {email, firstName, lastName, nickname, position, username};
 
         //todo: To be handled in next PRs
         // if (profileImage) {actions.setProfileImageUri(profileImage.uri);/* this.uploadProfileImage().catch(this.handleUploadError);*/}
@@ -219,13 +207,24 @@ class EditProfile extends PureComponent<EditProfileProps, EditProfileState> {
         // if (isProfileImageRemoved) {actions.removeProfileImage(currentUser.id);}
 
         if (this.canUpdate()) {
-            const {data} = await updateUserProfile(serverUrl, currentUser, userInfo);
-            if (data) {
-                const {error} = await updateMe(serverUrl, currentUser);
-                if (error) {
-                    this.handleRequestError(error as Error);
-                    return;
-                }
+            try {
+                await database.write(async () => {
+                    // eslint-disable-next-line max-nested-callbacks
+                    await currentUser.update(() => {
+                        currentUser.email = email;
+                        currentUser.firstName = firstName;
+                        currentUser.lastName = lastName;
+                        currentUser.nickname = nickname;
+                        currentUser.position = position;
+                        currentUser.username = username;
+                    });
+                });
+
+                //fixme: the updateMe call is still returning an error of 400
+                updateMe(serverUrl, currentUser);
+            } catch (error) {
+                this.handleRequestError(error as Error);
+                return;
             }
         }
 
