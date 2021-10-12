@@ -359,12 +359,12 @@ export function showSearchModal(initialValue = '') {
     showModal(name, title, passProps, options);
 }
 
-export async function dismissModal(options = {}) {
+export async function dismissModal(options: any = {}) {
     if (!EphemeralStore.hasModalsOpened()) {
         return;
     }
 
-    const componentId = EphemeralStore.getNavigationTopModalId();
+    const componentId = options.componentId || EphemeralStore.getNavigationTopModalId();
     if (componentId) {
         try {
             await Navigation.dismissModal(componentId, options);
