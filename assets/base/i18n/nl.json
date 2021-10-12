@@ -199,7 +199,6 @@
   "global_threads.markAllRead.markRead": "Als gelezen markeren",
   "global_threads.markAllRead.message": "Dit zal alle ongelezen status verwijderen voor al je threads die hier getoond worden",
   "global_threads.markAllRead.title": "Weet je zeker dat je alle onderwerpen als gelezen wilt markeren?",
-  "global_threads.options.unfollow": "",
   "global_threads.unreads": "Ongelezen",
   "integrations.add": "Toevoegen",
   "intro_messages.anyMember": " Ieder lid kan dit kanaal lezen en volgen.",

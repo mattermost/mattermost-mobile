@@ -199,7 +199,6 @@
   "global_threads.markAllRead.markRead": "标为已读",
   "global_threads.markAllRead.message": "这将清除此处显示的所有主题的任何未读状态",
   "global_threads.markAllRead.title": "您确定要将所有主题都标记为已读吗？",
-  "global_threads.options.unfollow": "",
   "global_threads.unreads": "未读",
   "integrations.add": "添加",
   "intro_messages.anyMember": " 任何成员可以加入与查看该频道。",
