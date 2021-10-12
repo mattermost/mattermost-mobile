@@ -67,7 +67,6 @@ export const switchToChannelByName = async (serverUrl: string, channelName: stri
         let myChannel: MyChannelModel | ChannelMembership | undefined;
         let team: TeamModel | Team | undefined;
         let myTeam: MyTeamModel | TeamMembership | undefined;
-        let unreads: TeamUnread | undefined;
         let name = teamName;
         const roles: string [] = [];
         const system = await queryCommonSystemValues(database);
@@ -99,7 +98,6 @@ export const switchToChannelByName = async (serverUrl: string, channelName: stri
             }
             myTeam = added.member!;
             roles.push(...myTeam.roles.split(' '));
-            unreads = added.unreads!;
             joinedNewTeam = true;
         }
 
@@ -163,7 +161,7 @@ export const switchToChannelByName = async (serverUrl: string, channelName: stri
         const modelPromises: Array<Promise<Model[]>> = [];
         const {operator} = DatabaseManager.serverDatabases[serverUrl];
         if (!(team instanceof Model)) {
-            const prepT = prepareMyTeams(operator, [team], [(myTeam as TeamMembership)], [unreads!]);
+            const prepT = prepareMyTeams(operator, [team], [(myTeam as TeamMembership)]);
             if (prepT) {
                 modelPromises.push(...prepT);
             }
@@ -171,8 +169,6 @@ export const switchToChannelByName = async (serverUrl: string, channelName: stri
             const mt: MyTeam[] = [{
                 id: myTeam.team_id,
                 roles: myTeam.roles,
-                is_unread: unreads!.msg_count > 0,
-                mentions_count: unreads!.mention_count,
             }];
             modelPromises.push(
                 operator.handleMyTeam({myTeams: mt, prepareRecordsOnly: true}),

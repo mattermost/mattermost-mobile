@@ -8,7 +8,7 @@ import {Notifications} from 'react-native-notifications';
 import {appEntry, upgradeEntry} from '@actions/remote/entry';
 import {Screens} from '@constants';
 import DatabaseManager from '@database/manager';
-import {getActiveServerUrl, getServerCredentials} from '@init/credentials';
+import {getActiveServerUrl, getServerCredentials, removeServerCredentials} from '@init/credentials';
 import {queryThemeForCurrentTeam} from '@queries/servers/preference';
 import {queryCurrentUserId} from '@queries/servers/system';
 import {goToScreen, resetToHome, resetToSelectServer} from '@screens/navigation';
@@ -43,7 +43,7 @@ const launchAppFromNotification = (notification: NotificationWithData) => {
 };
 
 const launchApp = async (props: LaunchProps, resetNavigation = true) => {
-    let serverUrl;
+    let serverUrl: string | undefined;
     switch (props?.launchType) {
         case LaunchType.DeepLink:
             if (props.extra?.type !== DeepLinkType.Invalid) {
@@ -85,7 +85,11 @@ const launchApp = async (props: LaunchProps, resetNavigation = true) => {
                         `An error ocurred while upgrading the app to the new version.\n\nDetails: ${result.error}\n\nThe app will now quit.`,
                         [{
                             text: 'OK',
-                            onPress: () => Emm.exitApp(),
+                            onPress: async () => {
+                                await DatabaseManager.destroyServerDatabase(serverUrl!);
+                                await removeServerCredentials(serverUrl!);
+                                Emm.exitApp();
+                            },
                         }],
                     );
                     return;

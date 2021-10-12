@@ -322,13 +322,9 @@ describe('*** Test schema for SERVER database ***', () => {
                 [MY_TEAM]: {
                     name: MY_TEAM,
                     columns: {
-                        is_unread: {name: 'is_unread', type: 'boolean'},
-                        mentions_count: {name: 'mentions_count', type: 'number'},
                         roles: {name: 'roles', type: 'string'},
                     },
                     columnArray: [
-                        {name: 'is_unread', type: 'boolean'},
-                        {name: 'mentions_count', type: 'number'},
                         {name: 'roles', type: 'string'},
                     ],
                 },

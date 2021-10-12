@@ -28,15 +28,14 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     return {
         displayName: {
             color: theme.centerChannelColor,
-            fontSize: 15,
-            fontWeight: '600',
+            fontFamily: 'OpenSans-Semibold',
+            fontSize: 16,
+            lineHeight: 24,
             flexGrow: 1,
-            paddingVertical: 2,
         },
         displayNameContainer: {
             maxWidth: '60%',
             marginRight: 5,
-            marginBottom: 3,
         },
         displayNameContainerBotReplyWidth: {
             maxWidth: '50%',

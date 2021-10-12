@@ -190,8 +190,6 @@ export const transformMyTeamRecord = ({action, database, value}: TransformerArgs
     const fieldsMapper = (myTeam: MyTeamModel) => {
         myTeam._raw.id = isCreateAction ? (raw.id || myTeam.id) : record.id;
         myTeam.roles = raw.roles;
-        myTeam.isUnread = raw.is_unread;
-        myTeam.mentionsCount = raw.mentions_count;
     };
 
     return prepareBaseRecord({

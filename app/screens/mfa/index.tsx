@@ -209,12 +209,11 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         marginTop: 15,
         marginBottom: 15,
         fontSize: 32,
-        fontWeight: '600',
+        fontFamily: 'OpenSans-Semibold',
     },
     label: {
         color: changeOpacity(theme.centerChannelColor, 0.6),
         fontSize: 20,
-        fontWeight: '400',
     },
     container: {
         flex: 1,

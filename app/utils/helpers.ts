@@ -1,12 +1,15 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import moment, {Moment} from 'moment-timezone';
+
+import {CUSTOM_STATUS_TIME_PICKER_INTERVALS_IN_MINUTES} from '@constants/custom_status';
+
 // isMinimumServerVersion will return true if currentVersion is equal to higher or than
 // the provided minimum version. A non-equal major version will ignore minor and dot
 // versions, and a non-equal minor version will ignore dot version.
 // currentVersion is a string, e.g '4.6.0'
 // minMajorVersion, minMinorVersion, minDotVersion are integers
-
 export const isMinimumServerVersion = (currentVersion: string, minMajorVersion = 0, minMinorVersion = 0, minDotVersion = 0): boolean => {
     if (!currentVersion || typeof currentVersion !== 'string') {
         return false;
@@ -74,7 +77,7 @@ export function isEmail(email: string): boolean {
     return (/^[^ ,@]+@[^ ,@]+$/).test(email);
 }
 
-export function safeParseJSON(rawJson: string | Record<string, unknown>) {
+export function safeParseJSON(rawJson: string | Record<string, unknown> | unknown[]) {
     let data = rawJson;
     try {
         if (typeof rawJson == 'string') {
@@ -85,4 +88,34 @@ export function safeParseJSON(rawJson: string | Record<string, unknown>) {
     }
 
     return data;
+}
+
+export function getCurrentMomentForTimezone(timezone: string) {
+    return timezone ? moment.tz(timezone) : moment();
+}
+
+export function getUtcOffsetForTimeZone(timezone: string) {
+    return moment.tz(timezone).utcOffset();
+}
+
+export function isCustomStatusExpirySupported(version: string) {
+    return isMinimumServerVersion(version, 5, 37);
+}
+
+export function toTitleCase(str: string) {
+    function doTitleCase(txt: string) {
+        return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();
+    }
+    return str.replace(/\w\S*/g, doTitleCase);
+}
+
+export function getRoundedTime(value: Moment) {
+    const roundedTo = CUSTOM_STATUS_TIME_PICKER_INTERVALS_IN_MINUTES;
+    const start = moment(value);
+    const diff = start.minute() % roundedTo;
+    if (diff === 0) {
+        return value;
+    }
+    const remainder = roundedTo - diff;
+    return start.add(remainder, 'm').seconds(0).milliseconds(0);
 }

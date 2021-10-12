@@ -130,7 +130,7 @@ export const loginEntry = async ({serverUrl, user, deviceToken}: AfterLoginArgs)
         let initialChannel: Channel|undefined;
         let myTeams: Team[]|undefined;
 
-        // Fetch in parallel server config & license / user preferences / teams / team membership / team unreads
+        // Fetch in parallel server config & license / user preferences / teams / team membership
         const promises: [Promise<ConfigAndLicenseRequest>, Promise<MyPreferencesRequest>, Promise<MyTeamsRequest>] = [
             fetchConfigAndLicense(serverUrl, true),
             fetchMyPreferences(serverUrl, true),
@@ -212,7 +212,9 @@ export const loginEntry = async ({serverUrl, user, deviceToken}: AfterLoginArgs)
             await operator.batchRecords(models.flat() as Model[]);
         }
 
-        deferredLoginActions(serverUrl, user, prefData, clData, teamData, chData, initialTeam, initialChannel);
+        const config = clData.config || {} as ClientConfig;
+        const license = clData.license || {} as ClientLicense;
+        deferredAppEntryActions(serverUrl, user.id, user.locale, prefData.preferences, config, license, teamData, chData, initialTeam?.id, initialChannel?.id);
 
         const error = clData.error || prefData.error || teamData.error || chData?.error;
         return {error, time: Date.now() - dt, hasTeams: Boolean((myTeams?.length || 0) > 0 && !teamData.error)};
@@ -269,7 +271,7 @@ const fetchAppEntryData = async (serverUrl: string, initialTeamId: string): Prom
     const includeDeletedChannels = true;
     const fetchOnly = true;
 
-    // Fetch in parallel teams / team membership / team unreads / channels for current team / user preferences / user
+    // Fetch in parallel teams / team membership / channels for current team / user preferences / user
     const promises: [Promise<MyTeamsRequest>, Promise<MyChannelsRequest | undefined>, Promise<MyPreferencesRequest>, Promise<MyUserRequest>] = [
         fetchMyTeams(serverUrl, fetchOnly),
         initialTeamId ? fetchMyChannelsForTeam(serverUrl, initialTeamId, includeDeletedChannels, lastDisconnected, fetchOnly) : Promise.resolve(undefined),
@@ -373,7 +375,12 @@ const fetchAlternateTeamData = async (serverUrl: string, availableTeamIds: strin
 
 const deferredAppEntryActions = async (
     serverUrl: string, currentUserId: string, currentUserLocale: string, preferences: PreferenceType[] | undefined, config: ClientConfig, license: ClientLicense, teamData: MyTeamsRequest,
-    chData: MyChannelsRequest | undefined, initialTeamId: string) => {
+    chData: MyChannelsRequest | undefined, initialTeamId?: string, initialChannelId?: string) => {
+    // defer fetching posts for initial channel
+    if (initialChannelId) {
+        fetchPostsForChannel(serverUrl, initialChannelId);
+    }
+
     // defer sidebar DM & GM profiles
     if (chData?.channels?.length && chData.memberships?.length) {
         const directChannels = chData.channels.filter((c) => c.type === General.DM_CHANNEL || c.type === General.GM_CHANNEL);
@@ -384,7 +391,7 @@ const deferredAppEntryActions = async (
         }
 
         // defer fetching posts for unread channels on initial team
-        fetchPostsForUnreadChannels(serverUrl, chData.channels, chData.memberships);
+        fetchPostsForUnreadChannels(serverUrl, chData.channels, chData.memberships, initialChannelId);
     }
 
     // defer groups for team
@@ -395,37 +402,5 @@ const deferredAppEntryActions = async (
     // defer fetch channels and unread posts for other teams
     if (teamData.teams?.length && teamData.memberships?.length) {
         fetchTeamsChannelsAndUnreadPosts(serverUrl, teamData.teams, teamData.memberships, initialTeamId);
-    }
-};
-
-const deferredLoginActions = async (
-    serverUrl: string, user: UserProfile, prefData: MyPreferencesRequest, clData: ConfigAndLicenseRequest, teamData: MyTeamsRequest,
-    chData?: MyChannelsRequest, initialTeam?: Team, initialChannel?: Channel) => {
-    // defer fetching posts for initial channel
-    if (initialChannel) {
-        fetchPostsForChannel(serverUrl, initialChannel.id);
-    }
-
-    // defer sidebar DM & GM profiles
-    if (chData?.channels?.length && chData.memberships?.length) {
-        const directChannels = chData.channels.filter((c) => c.type === General.DM_CHANNEL || c.type === General.GM_CHANNEL);
-        const channelsToFetchProfiles = new Set<Channel>(directChannels);
-        if (channelsToFetchProfiles.size) {
-            const teammateDisplayNameSetting = getTeammateNameDisplaySetting(prefData.preferences || [], clData.config, clData.license);
-            await fetchMissingSidebarInfo(serverUrl, Array.from(channelsToFetchProfiles), user.locale, teammateDisplayNameSetting, user.id);
-        }
-
-        // defer fetching posts for unread channels on initial team
-        fetchPostsForUnreadChannels(serverUrl, chData.channels, chData.memberships, initialChannel?.id);
-    }
-
-    // defer groups for team
-    if (initialTeam) {
-        await fetchGroupsForTeam(serverUrl, initialTeam.id);
-    }
-
-    // defer fetch channels and unread posts for other teams
-    if (teamData.teams?.length && teamData.memberships?.length) {
-        fetchTeamsChannelsAndUnreadPosts(serverUrl, teamData.teams, teamData.memberships, initialTeam?.id);
     }
 };

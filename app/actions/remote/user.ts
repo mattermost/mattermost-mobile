@@ -3,6 +3,7 @@
 
 import {Q} from '@nozbe/watermelondb';
 
+import {updateRecentCustomStatuses, updateUserPresence} from '@actions/local/user';
 import {fetchRolesIfNeeded} from '@actions/remote/role';
 import {Database, General} from '@constants';
 import DatabaseManager from '@database/manager';
@@ -163,7 +164,6 @@ export const loadMe = async (serverUrl: string, {deviceToken, user}: LoadMeArgs)
 
         // Goes into myTeam table
         const teamMembersRequest = client.getMyTeamMembers();
-        const teamUnreadRequest = client.getMyTeamUnreads();
 
         const preferencesRequest = client.getMyPreferences();
         const configRequest = client.getClientConfigOld();
@@ -172,14 +172,12 @@ export const loadMe = async (serverUrl: string, {deviceToken, user}: LoadMeArgs)
         const [
             teams,
             teamMemberships,
-            teamUnreads,
             preferences,
             config,
             license,
         ] = await Promise.all([
             teamsRequest,
             teamMembersRequest,
-            teamUnreadRequest,
             preferencesRequest,
             configRequest,
             licenseRequest,
@@ -189,9 +187,8 @@ export const loadMe = async (serverUrl: string, {deviceToken, user}: LoadMeArgs)
         const teamRecords = operator.handleTeam({prepareRecordsOnly: true, teams});
         const teamMembershipRecords = operator.handleTeamMemberships({prepareRecordsOnly: true, teamMemberships});
 
-        const myTeams = teamUnreads.map((unread) => {
-            const matchingTeam = teamMemberships.find((team) => team.team_id === unread.team_id);
-            return {id: unread.team_id, roles: matchingTeam?.roles ?? '', is_unread: unread.msg_count > 0, mentions_count: unread.mention_count};
+        const myTeams = teamMemberships.map((tm) => {
+            return {id: tm.team_id, roles: tm.roles ?? ''};
         });
 
         const myTeamRecords = operator.handleMyTeam({
@@ -326,7 +323,7 @@ export const fetchStatusByIds = async (serverUrl: string, userIds: string[], fet
                 const users = await database.get(Database.MM_TABLES.SERVER.USER).query(Q.where('id', Q.oneOf(userIds))).fetch() as UserModel[];
                 for (const user of users) {
                     const status = statuses.find((s) => s.user_id === user.id);
-                    user.prepareSatus(status?.status || General.OFFLINE);
+                    user.prepareStatus(status?.status || General.OFFLINE);
                 }
 
                 await operator.batchRecords(users);
@@ -361,7 +358,6 @@ export const fetchUsersByIds = async (serverUrl: string, userIds: string[], fetc
         const exisingUsers = await queryUsersById(operator.database, userIds);
         const usersToLoad = userIds.filter((id) => (id !== currentUserId && !exisingUsers.find((u) => u.id === id)));
         const users = await client.getProfilesByIds([...new Set(usersToLoad)]);
-
         if (!fetchOnly) {
             await operator.handleUsers({
                 users,
@@ -412,7 +408,7 @@ export const fetchUsersByUsernames = async (serverUrl: string, usernames: string
     }
 };
 
-export const fetchMissinProfilesByIds = async (serverUrl: string, userIds: string[]) => {
+export const fetchMissingProfilesByIds = async (serverUrl: string, userIds: string[]) => {
     const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
     if (!operator) {
         return {error: `${serverUrl} database not found`};
@@ -431,7 +427,7 @@ export const fetchMissinProfilesByIds = async (serverUrl: string, userIds: strin
     }
 };
 
-export const fetchMissinProfilesByUsernames = async (serverUrl: string, usernames: string[]) => {
+export const fetchMissingProfilesByUsernames = async (serverUrl: string, usernames: string[]) => {
     const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
     if (!operator) {
         return {error: `${serverUrl} database not found`};
@@ -448,4 +444,83 @@ export const fetchMissinProfilesByUsernames = async (serverUrl: string, username
         forceLogoutIfNecessary(serverUrl, error as ClientError);
         return {error};
     }
+};
+
+export const setStatus = async (serverUrl: string, status: UserStatus) => {
+    let client: Client;
+    try {
+        client = NetworkManager.getClient(serverUrl);
+    } catch (error) {
+        return {error};
+    }
+
+    try {
+        const data = await client.updateStatus(status);
+        updateUserPresence(serverUrl, status);
+
+        return {
+            data,
+        };
+    } catch (error: any) {
+        forceLogoutIfNecessary(serverUrl, error);
+        return {error};
+    }
+};
+
+export const updateCustomStatus = async (serverUrl: string, user: UserModel, customStatus: UserCustomStatus) => {
+    let client: Client;
+    try {
+        client = NetworkManager.getClient(serverUrl);
+    } catch (error) {
+        return {error};
+    }
+
+    try {
+        await client.updateCustomStatus(customStatus);
+        return {data: true};
+    } catch (error) {
+        return {error};
+    }
+};
+
+export const removeRecentCustomStatus = async (serverUrl: string, customStatus: UserCustomStatus) => {
+    let client: Client;
+    try {
+        client = NetworkManager.getClient(serverUrl);
+    } catch (error) {
+        return {error};
+    }
+
+    const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
+    if (!operator) {
+        return {error: `${serverUrl} database not found`};
+    }
+
+    updateRecentCustomStatuses(serverUrl, customStatus, false, true);
+
+    try {
+        await client.removeRecentCustomStatus(customStatus);
+    } catch (error) {
+        return {error};
+    }
+
+    return {data: true};
+};
+
+export const unsetCustomStatus = async (serverUrl: string) => {
+    let client: Client;
+
+    try {
+        client = NetworkManager.getClient(serverUrl);
+    } catch (error) {
+        return {error};
+    }
+
+    try {
+        await client.unsetCustomStatus();
+    } catch (error) {
+        return {error};
+    }
+
+    return {data: true};
 };

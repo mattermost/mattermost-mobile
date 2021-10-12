@@ -34,8 +34,9 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
         },
         date: {
             color: theme.centerChannelColor,
-            fontSize: 14,
-            fontWeight: '600',
+            fontFamily: 'OpenSans-Semibold',
+            fontSize: 12,
+            lineHeight: 16,
         },
     };
 });

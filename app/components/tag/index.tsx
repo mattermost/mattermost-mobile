@@ -32,8 +32,8 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme: Theme) => {
         },
         text: {
             color: theme.centerChannelColor,
+            fontFamily: 'OpenSans-Semibold',
             fontSize: 10,
-            fontWeight: '600',
         },
         title: {
             backgroundColor: changeOpacity(theme.sidebarHeaderTextColor, 0.15),
