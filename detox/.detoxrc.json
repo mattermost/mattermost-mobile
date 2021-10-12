@@ -6,7 +6,7 @@
       "binaryPath": "../ios/Build/Products/Debug-iphonesimulator/Mattermost.app",
       "type": "ios.simulator",
       "device": {
-        "type": "iPhone 12"
+        "type": "iPhone 13"
       }
     },
     "ios.sim.release": {
@@ -14,7 +14,7 @@
       "binaryPath": "../ios/Build/Products/Release-iphonesimulator/Mattermost.app",
       "build": "cd ../fastlane && NODE_ENV=production bundle exec fastlane ios simulator && cd ../detox",
       "device": {
-        "type": "iPhone 12"
+        "type": "iPhone 13"
       }
     },
     "android.emu.debug": {
