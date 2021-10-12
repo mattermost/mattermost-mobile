@@ -77,7 +77,7 @@ export function isEmail(email: string): boolean {
     return (/^[^ ,@]+@[^ ,@]+$/).test(email);
 }
 
-export function safeParseJSON(rawJson: string | Record<string, unknown>) {
+export function safeParseJSON(rawJson: string | Record<string, unknown> | unknown[]) {
     let data = rawJson;
     try {
         if (typeof rawJson == 'string') {

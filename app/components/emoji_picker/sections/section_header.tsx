@@ -4,12 +4,32 @@
 import React, {memo} from 'react';
 import {View} from 'react-native';
 
-import {SECTION_HEADER_HEIGHT} from '@components/emoji_picker';
 import FormattedText from '@components/formatted_text';
 import {useTheme} from '@context/theme';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
-const SectionHeader = ({section}: {section: RenderableEmojis}) => {
+type Props = {
+    section: EmojiSection;
+}
+
+export const SECTION_HEADER_HEIGHT = 28;
+
+const getStyleSheetFromTheme = makeStyleSheetFromTheme((theme: Theme) => {
+    return {
+        sectionTitleContainer: {
+            height: SECTION_HEADER_HEIGHT,
+            justifyContent: 'center',
+            backgroundColor: theme.centerChannelBg,
+        },
+        sectionTitle: {
+            color: changeOpacity(theme.centerChannelColor, 0.2),
+            fontSize: 15,
+            fontWeight: '700',
+        },
+    };
+});
+
+const SectionHeader = ({section}: Props) => {
     const theme = useTheme();
     const styles = getStyleSheetFromTheme(theme);
 
@@ -26,20 +46,5 @@ const SectionHeader = ({section}: {section: RenderableEmojis}) => {
         </View>
     );
 };
-
-const getStyleSheetFromTheme = makeStyleSheetFromTheme((theme: Theme) => {
-    return {
-        sectionTitleContainer: {
-            height: SECTION_HEADER_HEIGHT,
-            justifyContent: 'center',
-            backgroundColor: theme.centerChannelBg,
-        },
-        sectionTitle: {
-            color: changeOpacity(theme.centerChannelColor, 0.2),
-            fontSize: 15,
-            fontWeight: '700',
-        },
-    };
-});
 
 export default memo(SectionHeader);

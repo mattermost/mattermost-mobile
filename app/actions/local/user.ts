@@ -6,6 +6,8 @@ import DatabaseManager from '@database/manager';
 import {queryRecentCustomStatuses} from '@queries/servers/system';
 import {queryUserById} from '@queries/servers/user';
 
+import {addRecentReaction} from './reactions';
+
 import type Model from '@nozbe/watermelondb/Model';
 import type UserModel from '@typings/database/models/servers/user';
 
@@ -26,6 +28,13 @@ export const updateLocalCustomStatus = async (serverUrl: string, user: UserModel
         const recent = await updateRecentCustomStatuses(serverUrl, customStatus, true);
         if (Array.isArray(recent)) {
             models.push(...recent);
+        }
+
+        if (customStatus.emoji) {
+            const recentEmojis = await addRecentReaction(serverUrl, customStatus.emoji, true);
+            if (Array.isArray(recentEmojis)) {
+                models.push(...recentEmojis);
+            }
         }
     }
 

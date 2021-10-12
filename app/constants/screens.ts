@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 export const ABOUT = 'About';
-export const ADD_REACTION = 'AddReaction';
+export const EMOJI_PICKER = 'AddReaction';
 export const APP_FORM = 'AppForm';
 export const BOTTOM_SHEET = 'BottomSheet';
 export const CHANNEL = 'Channel';
@@ -24,7 +24,7 @@ export const THREAD = 'Thread';
 
 export default {
     ABOUT,
-    ADD_REACTION,
+    EMOJI_PICKER,
     APP_FORM,
     BOTTOM_SHEET,
     CHANNEL,

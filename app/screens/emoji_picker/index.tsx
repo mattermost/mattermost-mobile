@@ -2,34 +2,19 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback, useEffect} from 'react';
-import {useIntl} from 'react-intl';
-import {Keyboard, StyleSheet, useWindowDimensions, View} from 'react-native';
+import {Keyboard} from 'react-native';
 import {Navigation} from 'react-native-navigation';
 
-import EmojiPicker from '@components/emoji_picker';
-import {useServerUrl} from '@context/server_url';
-import {useTheme} from '@context/theme';
+import EmojiPicker from '@app/components/emoji_picker';
 import {dismissModal, setButtons} from '@screens/navigation';
 
-const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-    },
-});
-
-type AddReactionProps = {
+type Props = {
     componentId: string;
     onEmojiPress: (emoji: string) => void;
     closeButton: never;
 };
 
-const AddReaction = ({closeButton, componentId, onEmojiPress}: AddReactionProps) => {
-    const {height, width} = useWindowDimensions();
-
-    const theme = useTheme();
-    const intl = useIntl();
-    const serverUrl = useServerUrl();
-
+const EmojiPickerScreen = ({closeButton, componentId, onEmojiPress}: Props) => {
     useEffect(() => {
         setButtons(componentId, {
             leftButtons: [
@@ -65,22 +50,7 @@ const AddReaction = ({closeButton, componentId, onEmojiPress}: AddReactionProps)
         close();
     }, []);
 
-    return (
-        <View
-            testID='add_reaction.screen'
-            style={styles.container}
-        >
-            <EmojiPicker
-                isLandscape={width > height}
-                deviceWidth={width}
-                intl={intl}
-                onEmojiPress={handleEmojiPress}
-                serverUrl={serverUrl}
-                testID='add_reaction.emoji_picker'
-                theme={theme}
-            />
-        </View>
-    );
+    return <EmojiPicker onEmojiPress={handleEmojiPress}/>;
 };
 
-export default AddReaction;
+export default EmojiPickerScreen;

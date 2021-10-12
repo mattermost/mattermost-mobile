@@ -4,6 +4,7 @@
 export const ALL_EMOJIS = 'all_emojis';
 export const MAX_ALLOWED_REACTIONS = 40;
 export const SORT_BY_NAME = 'name';
+export const EMOJIS_PER_PAGE = 200;
 
 // reEmoji matches an emoji (eg. :taco:) at the start of a string.
 export const reEmoji = /^:([a-z0-9_\-+]+):\B/i;

@@ -6,7 +6,7 @@ import withObservables from '@nozbe/with-observables';
 import moment, {Moment} from 'moment-timezone';
 import React from 'react';
 import {injectIntl, IntlShape} from 'react-intl';
-import {BackHandler, DeviceEventEmitter, Keyboard, KeyboardAvoidingView, NativeModules, Platform, ScrollView, View} from 'react-native';
+import {BackHandler, DeviceEventEmitter, Keyboard, KeyboardAvoidingView, Platform, ScrollView, View} from 'react-native';
 import {EventSubscription, Navigation, NavigationButtonPressedEvent, NavigationComponent, NavigationComponentProps} from 'react-native-navigation';
 import {Edge, SafeAreaView} from 'react-native-safe-area-context';
 import {of as of$} from 'rxjs';
@@ -17,7 +17,7 @@ import {removeRecentCustomStatus, updateCustomStatus, unsetCustomStatus} from '@
 import CompassIcon from '@components/compass_icon';
 import StatusBar from '@components/status_bar';
 import TabletTitle from '@components/tablet_title';
-import {CustomStatusDuration, Device, Events, Screens} from '@constants';
+import {CustomStatusDuration, Events, Screens} from '@constants';
 import {SET_CUSTOM_STATUS_FAILURE} from '@constants/custom_status';
 import {MM_TABLES, SYSTEM_IDENTIFIERS} from '@constants/database';
 import {withServerUrl} from '@context/server_url';
@@ -63,8 +63,6 @@ const {SERVER: {SYSTEM, USER}} = MM_TABLES;
 const {DONT_CLEAR, THIRTY_MINUTES, ONE_HOUR, FOUR_HOURS, TODAY, THIS_WEEK, DATE_AND_TIME} = CustomStatusDuration;
 const DEFAULT_DURATION: CustomStatusDuration = TODAY;
 const BTN_UPDATE_STATUS = 'update-custom-status';
-const {MattermostManaged} = NativeModules;
-const isRunningInSplitView = MattermostManaged.isRunningInSplitView;
 const edges: Edge[] = ['bottom', 'left', 'right'];
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
@@ -278,7 +276,7 @@ class CustomStatusModal extends NavigationComponent<Props, State> {
     openEmojiPicker = preventDoubleTap(() => {
         const {theme, intl} = this.props;
         CompassIcon.getImageSource('close', 24, theme.sidebarHeaderTextColor).then((source) => {
-            const screen = Screens.ADD_REACTION;
+            const screen = Screens.EMOJI_PICKER;
             const title = intl.formatMessage({id: 'mobile.custom_status.choose_emoji', defaultMessage: 'Choose an emoji'});
             const passProps = {closeButton: source, onEmojiPress: this.handleEmojiClick};
 
@@ -306,10 +304,8 @@ class CustomStatusModal extends NavigationComponent<Props, State> {
             intl,
             theme,
         };
-        const {isSplitView} = await isRunningInSplitView();
-        const isTablet = Device.IS_TABLET && !isSplitView;
 
-        if (isTablet) {
+        if (this.props.isTablet) {
             showModal(screen, title, passProps);
         } else {
             goToScreen(screen, title, passProps);

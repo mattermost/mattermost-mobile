@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {memo} from 'react';
+import React from 'react';
 import {useIntl} from 'react-intl';
 import {Text, View} from 'react-native';
 
@@ -9,11 +9,44 @@ import CompassIcon from '@components/compass_icon';
 import {useTheme} from '@context/theme';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
-type EmptyListProps = {
+type Props = {
     searchTerm: string;
 }
 
-const EmptyList = ({searchTerm}: EmptyListProps) => {
+const getStyleSheetFromTheme = makeStyleSheetFromTheme((theme) => {
+    return {
+        flex: {
+            flex: 1,
+        },
+        flexCenter: {
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center',
+        },
+        notFoundIcon: {
+            backgroundColor: changeOpacity(theme.centerChannelColor, 0.04),
+            width: 120,
+            height: 120,
+            borderRadius: 60,
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+        },
+        notFoundText: {
+            color: theme.centerChannelColor,
+            marginTop: 16,
+        },
+        notFoundText20: {
+            fontSize: 20,
+            fontWeight: '600',
+        },
+        notFoundText15: {
+            fontSize: 15,
+        },
+    };
+});
+
+const NoResults = ({searchTerm}: Props) => {
     const theme = useTheme();
     const intl = useIntl();
 
@@ -54,37 +87,4 @@ const EmptyList = ({searchTerm}: EmptyListProps) => {
     );
 };
 
-const getStyleSheetFromTheme = makeStyleSheetFromTheme((theme) => {
-    return {
-        flex: {
-            flex: 1,
-        },
-        flexCenter: {
-            flexDirection: 'column',
-            alignItems: 'center',
-            justifyContent: 'center',
-        },
-        notFoundIcon: {
-            backgroundColor: changeOpacity(theme.centerChannelColor, 0.04),
-            width: 120,
-            height: 120,
-            borderRadius: 60,
-            display: 'flex',
-            justifyContent: 'center',
-            alignItems: 'center',
-        },
-        notFoundText: {
-            color: theme.centerChannelColor,
-            marginTop: 16,
-        },
-        notFoundText20: {
-            fontSize: 20,
-            fontWeight: '600',
-        },
-        notFoundText15: {
-            fontSize: 15,
-        },
-    };
-});
-
-export default memo(EmptyList);
+export default NoResults;

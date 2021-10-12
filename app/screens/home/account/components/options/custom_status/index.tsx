@@ -65,7 +65,7 @@ const CustomStatus = ({isCustomStatusExpirySupported, isTablet, currentUser}: Cu
             showModal(Screens.CUSTOM_STATUS, intl.formatMessage({id: 'mobile.routes.custom_status', defaultMessage: 'Set a Status'}));
         }
         setShowRetryMessage(false);
-    }), []);
+    }), [isTablet]);
 
     return (
         <DrawerItem

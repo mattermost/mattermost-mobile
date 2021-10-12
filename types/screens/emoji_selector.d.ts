@@ -8,21 +8,15 @@ type EmojiAlias = {
 }
 
 type EmojiSection = {
-    data: EmojiAlias[];
+    data: EmojiAlias[][];
     defaultMessage?: string;
     icon: string;
     id: string;
     key: string;
 }
 
-type EmojisData = {
-    key: string;
-    items: EmojiAlias[];
-}
-
-type RenderableEmojis = {
+type CategoryTranslation = {
     id: string;
+    defaultMessage: string;
     icon: string;
-    key: string;
-    data: EmojisData[];
 }

@@ -9,8 +9,8 @@ import {makeStyleSheetFromTheme} from '@utils/theme';
 
 const Footer = () => {
     const theme = useTheme();
-
     const styles = getStyleSheetFromTheme(theme);
+
     return (
         <View style={styles.loading}>
             <ActivityIndicator color={theme.centerChannelColor}/>

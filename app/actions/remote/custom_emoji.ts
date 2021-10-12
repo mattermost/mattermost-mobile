@@ -1,23 +1,14 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {logError} from '@actions/remote/error';
 import {forceLogoutIfNecessary} from '@actions/remote/session';
-import {fetchUsersByIds} from '@actions/remote/user';
 import {Client} from '@client/rest';
 import {Emoji, General} from '@constants';
+import DatabaseManager from '@database/manager';
 import NetworkManager from '@init/network_manager';
+import {queryCustomEmojisByName} from '@queries/servers/custom_emoji';
 
-type GetCustomEmojisArgs = {
-    serverUrl: string;
-    page?: number;
-    perPage?: number ;
-    sort?: string;
-    loadUsers?: boolean;
-}
-
-export const getCustomEmojis = async ({serverUrl, page = 0, perPage = General.PAGE_SIZE_DEFAULT, sort = Emoji.SORT_BY_NAME, loadUsers = false}: GetCustomEmojisArgs) => {
-    let data;
+export const fetchCustomEmojis = async (serverUrl: string, page = 0, perPage = General.PAGE_SIZE_DEFAULT, sort = Emoji.SORT_BY_NAME) => {
     let client: Client;
     try {
         client = NetworkManager.getClient(serverUrl);
@@ -25,19 +16,56 @@ export const getCustomEmojis = async ({serverUrl, page = 0, perPage = General.PA
         return {error};
     }
 
-    try {
-        data = await client.getCustomEmojis(page, perPage, sort);
-        const userIds = data.map((customEmoji) => customEmoji.creator_id);
+    const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
+    if (!operator) {
+        return {error: `${serverUrl} database not found`};
+    }
 
-        if (loadUsers) {
-            fetchUsersByIds(serverUrl, userIds);
+    try {
+        const data = await client.getCustomEmojis(page, perPage, sort);
+        if (data.length) {
+            await operator.handleCustomEmojis({
+                emojis: data,
+                prepareRecordsOnly: false,
+            });
         }
+
+        return {data};
     } catch (error) {
         forceLogoutIfNecessary(serverUrl, error as ClientErrorProps);
-        logError(error);
+        return {error};
+    }
+};
+
+export const searchCustomEmojis = async (serverUrl: string, term: string) => {
+    let client: Client;
+    try {
+        client = NetworkManager.getClient(serverUrl);
+    } catch (error) {
         return {error};
     }
 
-    return {data};
-};
+    const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
+    if (!operator) {
+        return {error: `${serverUrl} database not found`};
+    }
 
+    try {
+        const data = await client.searchCustomEmoji(term);
+        if (data.length) {
+            const names = data.map((c) => c.name);
+            const exist = await queryCustomEmojisByName(operator.database, names);
+            const emojis = data.filter((d) => exist.findIndex((c) => c.name === d.name));
+            if (emojis.length) {
+                await operator.handleCustomEmojis({
+                    emojis,
+                    prepareRecordsOnly: false,
+                });
+            }
+        }
+        return {data};
+    } catch (error) {
+        forceLogoutIfNecessary(serverUrl, error as ClientErrorProps);
+        return {error};
+    }
+};

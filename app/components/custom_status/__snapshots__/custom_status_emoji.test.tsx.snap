@@ -4,8 +4,18 @@ exports[`components/custom_status/custom_status_emoji should match snapshot 1`] 
 <Text
   testID="custom_status_emoji.calendar"
 >
-  <Text>
-    
+  <Text
+    style={
+      Array [
+        undefined,
+        Object {
+          "color": "#000",
+          "fontSize": 16,
+        },
+      ]
+    }
+  >
+    📆
   </Text>
 </Text>
 `;
@@ -14,8 +24,18 @@ exports[`components/custom_status/custom_status_emoji should match snapshot with
 <Text
   testID="custom_status_emoji.calendar"
 >
-  <Text>
-    
+  <Text
+    style={
+      Array [
+        undefined,
+        Object {
+          "color": "#000",
+          "fontSize": 34,
+        },
+      ]
+    }
+  >
+    📆
   </Text>
 </Text>
 `;

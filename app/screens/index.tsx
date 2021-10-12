@@ -54,9 +54,6 @@ Navigation.setLazyComponentRegistrator((screenName) => {
         case Screens.ABOUT:
         screen =  withServerDatabase(require('@screens/about').default);
         break;
-    case Screens.ADD_REACTION:
-        screen = withServerDatabase(require('@screens/add_reaction').default);
-        break;
     // case 'AdvancedSettings':
     //     screen = require('@screens/settings/advanced_settings').default;
     //     break;
@@ -71,6 +68,9 @@ Navigation.setLazyComponentRegistrator((screenName) => {
         break;
         case Screens.CUSTOM_STATUS_CLEAR_AFTER:
         screen = withServerDatabase(require('@screens/custom_status_clear_after').default);
+        break;
+        case Screens.EMOJI_PICKER:
+        screen = withServerDatabase(require('@screens/emoji_picker').default);
         break;
     // case 'ChannelAddMembers':
     //     screen = require('@screens/channel_add_members').default;

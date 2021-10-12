@@ -3,7 +3,7 @@
 
 import {Platform, StyleSheet, TextStyle, ViewStyle} from 'react-native';
 
-export const getSearchBarStyle = (backgroundColor: string, cancelButtonStyle: ViewStyle, containerHeight: number, inputHeight: number, inputStyle: TextStyle, placeholderTextColor: string, searchBarRightMargin: number, tintColorDelete: string, tintColorSearch: string, titleCancelColor: string) => ({
+export const getSearchBarStyle = (backgroundColor: string, cancelButtonStyle: ViewStyle | undefined, containerHeight: number, inputHeight: number, inputStyle: TextStyle | undefined, placeholderTextColor: string, searchBarRightMargin: number, tintColorDelete: string, tintColorSearch: string, titleCancelColor: string) => ({
     cancelButtonText: {
         ...cancelButtonStyle,
         color: titleCancelColor,
@@ -23,7 +23,7 @@ export const getSearchBarStyle = (backgroundColor: string, cancelButtonStyle: Vi
         height: inputHeight,
     },
     inputContainer: {
-        backgroundColor: inputStyle.backgroundColor,
+        backgroundColor: inputStyle?.backgroundColor,
         height: inputHeight,
     },
     searchBarWrapper: {
@@ -85,7 +85,7 @@ export const getStyles = () => StyleSheet.create({
     },
 });
 
-export const getSearchStyles = (backgroundColor: string, cancelButtonStyle: ViewStyle, containerHeight: number, inputHeight: number, inputStyle: TextStyle, placeholderTextColor: string, searchBarRightMargin: number, tintColorDelete: string, tintColorSearch: string, titleCancelColor: string) => {
+export const getSearchStyles = (backgroundColor: string, cancelButtonStyle: ViewStyle | undefined, containerHeight: number, inputHeight: number, inputStyle: TextStyle | undefined, placeholderTextColor: string, searchBarRightMargin: number, tintColorDelete: string, tintColorSearch: string, titleCancelColor: string) => {
     const searchBarStyle = getSearchBarStyle(backgroundColor, cancelButtonStyle, containerHeight, inputHeight, inputStyle, placeholderTextColor, searchBarRightMargin, tintColorDelete, tintColorSearch, titleCancelColor);
 
     const styles = getStyles();
