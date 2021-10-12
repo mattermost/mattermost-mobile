@@ -215,7 +215,7 @@
 			files = (
 				49AE370526D5CD7800EF4E52 /* Gekidou in Frameworks */,
 				49B4C050230C981C006E919E /* libUploadAttachments.a in Frameworks */,
-				237E75568411E277F319F5BF /* libPods-Mattermost.a in Frameworks */,
+				6C9B1EFD6561083917AF06CF /* libPods-Mattermost.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
