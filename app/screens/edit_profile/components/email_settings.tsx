@@ -6,6 +6,7 @@ import {useIntl} from 'react-intl';
 import {View} from 'react-native';
 
 import TextSetting from '@components/widgets/text_settings';
+import {t} from '@i18n';
 import {HOLDERS} from '@screens/edit_profile/constants';
 
 import type UserModel from '@typings/database/models/servers/user';
@@ -26,27 +27,27 @@ const EmailSettings = ({currentUser, email, onChange}: EmailSettingsProps) => {
     switch (currentUser.authService) {
         case 'gitlab':
             service = 'GitLab';
-            id = 'user.settings.general.emailGitlabCantUpdate';
+            id = t('user.settings.general.emailGitlabCantUpdate');
             break;
         case 'google':
             service = 'Google Apps';
-            id = 'user.settings.general.emailGoogleCantUpdate';
+            id = t('user.settings.general.emailGoogleCantUpdate');
             break;
         case 'office365':
             service = 'Office 365';
-            id = 'user.settings.general.emailOffice365CantUpdate';
+            id = t('user.settings.general.emailOffice365CantUpdate');
             break;
         case 'ldap':
             service = 'AD/LDAP';
-            id = 'user.settings.general.emailLdapCantUpdate';
+            id = t('user.settings.general.emailLdapCantUpdate');
             break;
         case 'saml':
             service = 'SAML';
-            id = 'user.settings.general.emailSamlCantUpdate';
+            id = t('user.settings.general.emailSamlCantUpdate');
             break;
 
         case '':
-            id = 'user.settings.general.emailCantUpdate';
+            id = t('user.settings.general.emailCantUpdate');
             service = '';
             break;
     }

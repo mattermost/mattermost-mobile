@@ -5,6 +5,7 @@ import React, {useCallback} from 'react';
 import {useIntl} from 'react-intl';
 import {DeviceEventEmitter, TextStyle} from 'react-native';
 
+import CompassIcon from '@components/compass_icon';
 import DrawerItem from '@components/drawer_item';
 import FormattedText from '@components/formatted_text';
 import {Events, Screens} from '@constants';
@@ -23,7 +24,20 @@ const YourProfile = ({isTablet, style, theme}: Props) => {
         if (isTablet) {
             DeviceEventEmitter.emit(Events.ACCOUNT_SELECT_TABLET_VIEW, Screens.EDIT_PROFILE);
         } else {
-            showModal(Screens.EDIT_PROFILE, intl.formatMessage({id: 'mobile.routes.edit_profile', defaultMessage: 'Edit Profile'}), {commandType: 'ShowModal'});
+            const closeButton = CompassIcon.getImageSourceSync('close', 24, theme.centerChannelColor);
+            const closeButtonId = 'close-edit-profile';
+            showModal(
+                Screens.EDIT_PROFILE,
+                intl.formatMessage({id: 'mobile.screen.your_profile', defaultMessage: 'Your Profile'}),
+                {closeButtonId}, {
+                    topBar: {
+                        leftButtons: [{
+                            id: closeButtonId,
+                            icon: closeButton,
+                            testID: closeButtonId,
+                        }],
+                    },
+                });
         }
     }), [isTablet]);
 
