@@ -199,7 +199,6 @@
   "global_threads.markAllRead.markRead": "Marquer comme lu",
   "global_threads.markAllRead.message": "Ceci va marquer comme lu tous les fils présents ici",
   "global_threads.markAllRead.title": "Êtes-vous sûr de vouloir marquer tous les fils comme lus ?",
-  "global_threads.options.open_in_channel": "",
   "global_threads.options.unfollow": "",
   "global_threads.unreads": "Non lus",
   "integrations.add": "Ajouter",
