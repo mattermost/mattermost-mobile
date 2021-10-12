@@ -494,6 +494,8 @@
   "mobile.post_textbox.entire_channel.message": "När du använder @all eller @channel kommer du skicka notifiering till {totalMembers, number} {totalMembers, plural, one {person} other {personer}}. Är du säker på att du vill göra det?",
   "mobile.post_textbox.entire_channel.message.with_timezones": "När du använder @all eller @channel kommer du skicka notifiering till {totalMembers, number} {totalMembers, plural, one {person} other {personer}} i {timezones, number} {timezones, plural, one {tidzon} other {tidzoner}}. Är du säker på att du vill göra det?",
   "mobile.post_textbox.entire_channel.title": "Bekräfta att skicka notifiering till alla i kanalen",
+  "mobile.post_textbox.entire_channel_here.message": "Genom att använda @here kommer du skicka notifieringar till {totalMembers, number} {totalMembers, plural, one {person} other {personer}}. Vill du göra det?",
+  "mobile.post_textbox.entire_channel_here.message.with_timezones": "Genom att använda @here kommer du skicka notifieringar till {totalMembers, number} {totalMembers, plural, one {person} other {personer}} i {timezones, number} {timezones, plural, one {tidszon} other {tidszoner}}. Vill du göra det?",
   "mobile.post_textbox.groups.title": "Bekräfta att skicka notifiering till grupper",
   "mobile.post_textbox.multi_group.message.with_timezones": "Genom att använda {mentions} och {finalMention} kommer du skicka notifieringar till minst {totalMembers} människor i {timezones, number} {timezones, plural, one {tidzon} other {tidzoner}}. Är du säker på att du vill göra det?",
   "mobile.post_textbox.multi_group.message.without_timezones": "Genom att använda {mentions} och {finalMention} kommer du skicka notifieringar till minst {totalMembers} människor. Är du säker på att du vill göra det?",
