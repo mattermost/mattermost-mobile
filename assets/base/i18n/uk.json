@@ -12,7 +12,6 @@
   "about.title": "Про {appTitle}",
   "announcment_banner.dont_show_again": "Не показувати знову",
   "api.channel.add_member.added": "{addedUsername} додано до каналу за {username}.",
-  "apps.error.responses.navigate.no_url": "",
   "archivedChannelMessage": "Ви переглядаєте **архівований канал**. Нові повідомлення не можуть бути опубліковані.",
   "center_panel.archived.closeChannel": "Закрити канал",
   "channel.channelHasGuests": "У цому каналі є гості",

@@ -19,7 +19,6 @@
   "apps.error.command.unknown_user": "Utente sconosciuto per il campo `{fieldName}`: `{option}`.",
   "apps.error.form.no_call": "`call` non è definito",
   "apps.error.form.no_form": "`form` non è definito.",
-  "apps.suggestion.no_dynamic": "",
   "archivedChannelMessage": "Stai visualizzato un **canale archiviato**. Non si possono pubblicare nuovi messaggi.",
   "center_panel.archived.closeChannel": "Chiudi Canale",
   "channel.channelHasGuests": "Questo canale ha degli ospiti",

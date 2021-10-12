@@ -12,7 +12,6 @@
   "about.title": "關於 {appTitle}",
   "announcment_banner.dont_show_again": "不要再顯示",
   "api.channel.add_member.added": "{username} 已將 {addedUsername} 加入頻道",
-  "apps.error.responses.navigate.no_url": "",
   "archivedChannelMessage": "正在觀看**被封存的頻道**。不能發布新訊息。",
   "center_panel.archived.closeChannel": "關閉頻道",
   "channel.channelHasGuests": "此頻道有訪客",
