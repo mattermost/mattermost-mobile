@@ -5,7 +5,6 @@ import React from 'react';
 import {useIntl} from 'react-intl';
 
 import TextSetting from '@components/widgets/text_settings';
-import {t} from '@i18n';
 import {HOLDERS} from '@screens/edit_profile/constants';
 
 type CommonFieldSettingsProps = {
@@ -26,7 +25,7 @@ const CommonFieldSettings = ({isDisabled, id, value, onChange, optional, maxLeng
             id={id}
             label={HOLDERS[id]}
             disabledText={intl.formatMessage({
-                id: t('user.settings.general.field_handled_externally'),
+                id: 'user.settings.general.field_handled_externally',
                 defaultMessage: 'This field is handled through your login provider. If you want to change it, you need to do so through your login provider.',
             })}
             onChange={onChange}

@@ -90,12 +90,3 @@ type UserCustomStatus = {
     expires_at?: string;
     duration?: CustomStatusDuration;
 };
-
-type UserInfo = {
-    email: string;
-    firstName: string;
-    lastName: string;
-    nickname: string;
-    position: string;
-    username: string;
-}

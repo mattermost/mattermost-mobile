@@ -2,10 +2,13 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback} from 'react';
-import {TextStyle} from 'react-native';
+import {useIntl} from 'react-intl';
+import {DeviceEventEmitter, TextStyle} from 'react-native';
 
 import DrawerItem from '@components/drawer_item';
 import FormattedText from '@components/formatted_text';
+import {Events, Screens} from '@constants';
+import {showModal} from '@screens/navigation';
 import {preventDoubleTap} from '@utils/tap';
 
 type Props = {
@@ -15,8 +18,13 @@ type Props = {
 }
 
 const YourProfile = ({isTablet, style, theme}: Props) => {
+    const intl = useIntl();
     const openProfile = useCallback(preventDoubleTap(() => {
-        // TODO: Open Profile screen in either a screen or in line for tablets
+        if (isTablet) {
+            DeviceEventEmitter.emit(Events.ACCOUNT_SELECT_TABLET_VIEW, Screens.EDIT_PROFILE);
+        } else {
+            showModal(Screens.EDIT_PROFILE, intl.formatMessage({id: 'mobile.routes.edit_profile', defaultMessage: 'Edit Profile'}), {commandType: 'ShowModal'});
+        }
     }), [isTablet]);
 
     return (

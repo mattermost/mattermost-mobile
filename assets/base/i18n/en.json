@@ -294,5 +294,18 @@
   "status_dropdown.set_offline": "Offline",
   "status_dropdown.set_online": "Online",
   "status_dropdown.set_ooo": "Out Of Office",
+  "user.settings.general.email": "Email",
+  "user.settings.general.emailCantUpdate": "Email must be updated using a web client or desktop application.",
+  "user.settings.general.emailGitlabCantUpdate": "Login occurs through GitLab. Email cannot be updated. Email address used for notifications is {email}.",
+  "user.settings.general.emailGoogleCantUpdate": "Login occurs through Google Apps. Email cannot be updated. Email address used for notifications is {email}.",
+  "user.settings.general.emailLdapCantUpdate": "Login occurs through AD/LDAP. Email cannot be updated. Email address used for notifications is {email}.",
+  "user.settings.general.emailOffice365CantUpdate": "Login occurs through Office 365. Email cannot be updated. Email address used for notifications is {email}.",
+  "user.settings.general.emailSamlCantUpdate": "Login occurs through SAML. Email cannot be updated. Email address used for notifications is {email}.",
+  "user.settings.general.field_handled_externally": "This field is handled through your login provider. If you want to change it, you need to do so through your login provider.",
+  "user.settings.general.firstName": "First Name",
+  "user.settings.general.lastName": "Last Name",
+  "user.settings.general.nickname": "Nickname",
+  "user.settings.general.position": "Position",
+  "user.settings.general.username": "Username",
   "web.root.signup_info": "All team communication in one place, searchable and accessible anywhere"
 }
