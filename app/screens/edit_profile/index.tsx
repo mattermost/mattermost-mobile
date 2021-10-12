@@ -3,23 +3,29 @@
 
 import {withDatabase} from '@nozbe/watermelondb/DatabaseProvider';
 import withObservables from '@nozbe/with-observables';
-import React, {PureComponent} from 'react';
-import {injectIntl, IntlShape} from 'react-intl';
-import {ScrollView, View} from 'react-native';
+import React, {useCallback, useEffect, useRef, useState} from 'react';
+import {useIntl} from 'react-intl';
+import {BackHandler, DeviceEventEmitter, View} from 'react-native';
 import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
-import {EventSubscription, Navigation} from 'react-native-navigation';
-import {SafeAreaView} from 'react-native-safe-area-context';
+import {Navigation} from 'react-native-navigation';
+import {Edge, SafeAreaView} from 'react-native-safe-area-context';
+import {of as of$} from 'rxjs';
 import {switchMap} from 'rxjs/operators';
 
 import {updateMe} from '@actions/remote/user';
 import ProfilePicture from '@components/profile_picture';
-import StatusBar from '@components/status_bar/index';
+import StatusBar from '@components/status_bar';
+import TabletTitle from '@components/tablet_title';
+import {Events} from '@constants';
 import {MM_TABLES, SYSTEM_IDENTIFIERS} from '@constants/database';
-import {withServerUrl} from '@context/server_url';
-import {withTheme} from '@context/theme';
+import {useServerUrl} from '@context/server_url';
+import {useTheme} from '@context/theme';
 import {t} from '@i18n';
 import {dismissModal, popTopScreen, setButtons} from '@screens/navigation';
-import {UploadedFile, UserInfo} from '@typings/screens/edit_profile';
+import {
+
+    // UploadedFile,
+    UserInfo} from '@typings/screens/edit_profile';
 import {preventDoubleTap} from '@utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
@@ -28,306 +34,27 @@ import DisplayError from './components/display_error';
 import EmailSettings from './components/email_settings';
 import ProfileUpdating from './components/profile_updating';
 
-import type Database from '@nozbe/watermelondb/Database';
 import type {WithDatabaseArgs} from '@typings/database/database';
 import type SystemModel from '@typings/database/models/servers/system';
 import type UserModel from '@typings/database/models/servers/user';
 
 type EditProfileProps = {
-    commandType: string;
+    closeButtonId?: string;
     componentId: string;
-    config: SystemModel;
     currentUser: UserModel;
-    database: Database;
-    intl: IntlShape;
-    serverUrl: string;
-    theme: Theme;
-};
-
-type EditProfileState = UserInfo & {
-    error: Error | null;
-    updating: boolean;
-    profileImage: UploadedFile | undefined;
-    isProfileImageRemoved: boolean;
+    isModal?: boolean;
+    isTablet?: boolean;
+    lockedFirstName: boolean;
+    lockedLastName: boolean;
+    lockedNickname: boolean;
+    lockedPosition: boolean;
+    lockedPicture: boolean;
 };
 
 const {SERVER: {USER, SYSTEM}} = MM_TABLES;
+const edges: Edge[] = ['bottom', 'left', 'right'];
 
-class EditProfile extends PureComponent<EditProfileProps, EditProfileState> {
-    private firstNameDisabled: boolean | undefined;
-    private lastNameDisabled: boolean | undefined;
-    private navigationEventListener: EventSubscription | undefined;
-    private nicknameDisabled: boolean | undefined;
-    private positionDisabled: boolean | undefined;
-    private profilePictureDisabled: boolean | undefined;
-    private readonly scrollViewRef: React.RefObject<KeyboardAwareScrollView>;
-
-    constructor(props: EditProfileProps) {
-        super(props);
-        const {componentId, currentUser} = props;
-        const {email, firstName, lastName, nickname, position, username} = currentUser;
-        this.scrollViewRef = React.createRef<KeyboardAwareScrollView>();
-
-        setButtons(componentId, {
-            rightButtons: [this.getRightButton()],
-        });
-
-        this.state = {
-            email,
-            error: null,
-            firstName,
-            lastName,
-            nickname,
-            position,
-            profileImage: undefined,
-            isProfileImageRemoved: false,
-            updating: false,
-            username,
-        };
-
-        this.setUp();
-    }
-
-    setUp = () => {
-        const {currentUser: {authService: service}, config: {value: configValue}} = this.props;
-
-        this.firstNameDisabled = (service === 'ldap' && configValue.LdapFirstNameAttributeSet === 'true') ||
-            (service === 'saml' && configValue.SamlFirstNameAttributeSet === 'true') ||
-            (['gitlab', 'google', 'office365'].includes(service));
-
-        this.lastNameDisabled = (service === 'ldap' && configValue.LdapLastNameAttributeSet === 'true') ||
-            (service === 'saml' && configValue.SamlLastNameAttributeSet === 'true') ||
-            (['gitlab', 'google', 'office365'].includes(service));
-
-        this.nicknameDisabled = (service === 'ldap' && configValue.LdapNicknameAttributeSet === 'true') ||
-            (service === 'saml' && configValue.SamlNicknameAttributeSet === 'true');
-
-        this.positionDisabled = (service === 'ldap' && configValue.LdapPositionAttributeSet === 'true') ||
-            (service === 'saml' && configValue.SamlPositionAttributeSet === 'true');
-
-        this.profilePictureDisabled = (service === 'ldap' || service === 'saml') && configValue.LdapPictureAttributeSet === 'true';
-    }
-
-    getRightButton = () => {
-        const {intl, theme} = this.props;
-        return {
-            id: 'update-profile',
-            enabled: false,
-            showAsAction: 'always',
-            testID: 'edit_profile.save.button',
-            color: theme.sidebarHeaderTextColor,
-            text: intl.formatMessage({id: t('mobile.account.settings.save'), defaultMessage: 'Save'}),
-        };
-    }
-
-    componentDidMount() {
-        this.navigationEventListener = Navigation.events().bindComponent(this);
-    }
-
-    navigationButtonPressed({buttonId}: {buttonId: string}) {
-        switch (buttonId) {
-            case 'update-profile':
-                this.submitUser();
-                break;
-            case 'close-settings':
-                this.close();
-                break;
-        }
-    }
-
-    close = () => {
-        const {commandType, componentId} = this.props;
-        if (commandType === 'Push') {
-            popTopScreen(componentId);
-        } else {
-            dismissModal({componentId});
-        }
-    };
-
-    emitCanUpdateAccount = (enabled: boolean) => {
-        const {componentId} = this.props;
-        const buttons = {
-            rightButtons: [{...this.getRightButton(), enabled}],
-        };
-
-        setButtons(componentId, buttons);
-    };
-
-    handleRequestError = (error: Error) => {
-        this.setState({error, updating: false});
-        this.emitCanUpdateAccount(true);
-        if (this.scrollViewRef?.current) {
-            const scrollView = this.scrollViewRef?.current as unknown as ScrollView;
-            scrollView.scrollTo({x: 0, y: 0});
-        }
-    };
-
-    canUpdate = (updatedField?: Partial<UserInfo>) => {
-        const {currentUser} = this.props;
-        const keys = Object.keys(this.state);
-        const newState: UserInfo = {...this.state, ...(updatedField || {})};
-        Reflect.deleteProperty(newState, 'error');
-        Reflect.deleteProperty(newState, 'updating');
-
-        for (let i = 0; i < keys.length; i++) {
-            const key = keys[i];
-            let userKey;
-            switch (key) {
-                case 'firstName':
-                    userKey = 'firstName';
-                    break;
-                case 'lastName':
-                    userKey = 'lastName';
-                    break;
-                default:
-                    userKey = key;
-                    break;
-            }
-
-            // @ts-expect-error Here, we are comparing the current user value against the updated ones
-            if (currentUser[userKey] !== newState[key]) {
-                return true;
-            }
-        }
-
-        return false;
-    };
-
-    submitUser = preventDoubleTap(async () => {
-        const {currentUser, database, serverUrl} = this.props;
-        const {email, firstName, lastName, nickname, position, username} = this.state;
-
-        this.emitCanUpdateAccount(false);
-        this.setState({error: null, updating: true});
-
-        //todo: To be handled in next PRs
-        // if (profileImage) {actions.setProfileImageUri(profileImage.uri);/* this.uploadProfileImage().catch(this.handleUploadError);*/}
-
-        //todo: To be handled in next PRs
-        // if (isProfileImageRemoved) {actions.removeProfileImage(currentUser.id);}
-
-        if (this.canUpdate()) {
-            try {
-                await database.write(async () => {
-                    // eslint-disable-next-line max-nested-callbacks
-                    await currentUser.update(() => {
-                        currentUser.email = email;
-                        currentUser.firstName = firstName;
-                        currentUser.lastName = lastName;
-                        currentUser.nickname = nickname;
-                        currentUser.position = position;
-                        currentUser.username = username;
-                    });
-                });
-
-                //fixme: the updateMe call is still returning an error of 400
-                updateMe(serverUrl, currentUser);
-            } catch (error) {
-                this.handleRequestError(error as Error);
-                return;
-            }
-        }
-
-        this.close();
-    });
-
-    updateField = (id: string, name: string) => {
-        const field: Partial<UserInfo> = {[id]: name};
-        this.setState(field as EditProfileState, () => {
-            this.emitCanUpdateAccount(this.canUpdate(field));
-        });
-    };
-
-    setScrollViewRef = () => {
-        return this.scrollViewRef;
-    };
-
-    render() {
-        const {currentUser, theme} = this.props;
-        const {email, error, firstName, lastName, nickname, position, updating, username} = this.state;
-
-        const style = getStyleSheet(theme);
-
-        if (updating) {
-            return <ProfileUpdating/>;
-        }
-
-        return (
-            <SafeAreaView
-                testID='edit_profile.screen'
-                style={style.flex}
-            >
-                <StatusBar theme={theme}/>
-                <KeyboardAwareScrollView
-                    bounces={false}
-                    innerRef={this.setScrollViewRef}
-                    testID='edit_profile.scroll_view'
-                >
-                    {error && <DisplayError error={error}/>}
-                    <View style={[style.scrollViewRef]}>
-                        {/* todo: To be implemented {this.renderProfilePicture()} */}
-                        <View style={style.top}>
-                            <ProfilePicture
-                                author={currentUser}
-                                size={153}
-                                iconSize={104}
-                                statusSize={36}
-                                testID='edit_profile.profile_picture'
-                            />
-                        </View>
-                        <CommonFieldSettings
-                            id={'firstName'}
-                            isDisabled={Boolean(this.firstNameDisabled)}
-                            onChange={this.updateField}
-                            value={firstName}
-                        />
-                        <View style={style.separator}/>
-                        <CommonFieldSettings
-                            id={'lastName'}
-                            isDisabled={Boolean(this.lastNameDisabled)}
-                            onChange={this.updateField}
-                            value={lastName}
-                        />
-                        <View style={style.separator}/>
-                        <CommonFieldSettings
-                            id={'username'}
-                            isDisabled={currentUser.authService !== ''}
-                            onChange={this.updateField}
-                            value={username}
-                            maxLength={22}
-                        />
-                        <View style={style.separator}/>
-                        <EmailSettings
-                            email={email}
-                            currentUser={currentUser}
-                            onChange={this.updateField}
-                        />
-                        <View style={style.separator}/>
-                        <CommonFieldSettings
-                            id={'nickname'}
-                            isDisabled={Boolean(this.nicknameDisabled)}
-                            onChange={this.updateField}
-                            value={nickname}
-                            maxLength={22}
-                        />
-                        <View style={style.separator}/>
-                        <CommonFieldSettings
-                            id={'position'}
-                            isDisabled={Boolean(this.positionDisabled)}
-                            onChange={this.updateField}
-                            value={position}
-                            maxLength={128}
-                            optional={true}
-                        />
-                        <View style={style.footer}/>
-                    </View>
-                </KeyboardAwareScrollView>
-            </SafeAreaView>
-        );
-    }
-}
-
-const getStyleSheet = makeStyleSheetFromTheme((theme) => {
+const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     return {
         flex: {
             flex: 1,
@@ -352,8 +79,265 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     };
 });
 
-const EnhancedProfile = injectIntl(withServerUrl(withTheme(EditProfile)));
-export default withDatabase(withObservables([], ({database}: WithDatabaseArgs) => ({
-    currentUser: database.get(SYSTEM).findAndObserve(SYSTEM_IDENTIFIERS.CURRENT_USER_ID).pipe(switchMap((id: SystemModel) => database.get(USER).findAndObserve(id.value))),
-    config: database.get(MM_TABLES.SERVER.SYSTEM).findAndObserve(SYSTEM_IDENTIFIERS.CONFIG),
-}))(EnhancedProfile));
+const EditProfile = ({
+    closeButtonId, componentId, currentUser, isModal, isTablet,
+    lockedFirstName, lockedLastName, lockedNickname, lockedPosition,
+
+    // lockedPicture
+}: EditProfileProps) => {
+    const intl = useIntl();
+    const serverUrl = useServerUrl();
+    const theme = useTheme();
+    const style = getStyleSheet(theme);
+    const [userInfo, setUserInfo] = useState<UserInfo>({
+        email: currentUser.email,
+        firstName: currentUser.firstName,
+        lastName: currentUser.lastName,
+        nickname: currentUser.nickname,
+        position: currentUser.position,
+        username: currentUser.username,
+    });
+    const [canSave, setCanSave] = useState(false);
+    const [error, setError] = useState<string | undefined>();
+
+    // const [profileImageUri, setProfileImageUri] = useState<string | undefined>();
+    // const [isProfileImageRemoved, setIsProfileImageRemoved] = useState(false);
+
+    const [updating, setUpdating] = useState(false);
+    const scrollViewRef = useRef<KeyboardAwareScrollView>();
+    const service = currentUser.authService;
+
+    const rightButton = {
+        id: 'update-profile',
+        enabled: false,
+        showAsAction: 'always',
+        testID: 'edit_profile.save.button',
+        color: theme.sidebarHeaderTextColor,
+        text: intl.formatMessage({id: t('mobile.account.settings.save'), defaultMessage: 'Save'}),
+    };
+
+    const close = () => {
+        if (isModal) {
+            dismissModal({componentId});
+        } else if (isTablet) {
+            DeviceEventEmitter.emit(Events.ACCOUNT_SELECT_TABLET_VIEW, '');
+        } else {
+            popTopScreen(componentId);
+        }
+
+        return true;
+    };
+
+    const enableSaveButton = (value: boolean) => {
+        if (isTablet) {
+            setCanSave(value);
+        } else {
+            const buttons = {
+                rightButtons: [{...rightButton, enabled: value}],
+            };
+
+            setButtons(componentId, buttons);
+        }
+    };
+
+    const submitUser = useCallback(preventDoubleTap(async () => {
+        enableSaveButton(false);
+        setError(undefined);
+        setUpdating(true);
+
+        //todo: To be handled in next PRs
+        // if (profileImage) {actions.setProfileImageUri(profileImage.uri);/* this.uploadProfileImage().catch(this.handleUploadError);*/}
+
+        //todo: To be handled in next PRs
+        // if (isProfileImageRemoved) {actions.removeProfileImage(currentUser.id);}
+
+        const partialUser: Partial<UserProfile> = {
+            email: userInfo.email,
+            first_name: userInfo.firstName,
+            last_name: userInfo.lastName,
+            nickname: userInfo.nickname,
+            position: userInfo.position,
+            username: userInfo.username,
+        };
+
+        const {error: reqError} = await updateMe(serverUrl, partialUser);
+
+        if (reqError) {
+            setError(error);
+            setUpdating(false);
+            enableSaveButton(true);
+            scrollViewRef.current?.scrollToPosition(0, 0, true);
+            return;
+        }
+
+        close();
+    }), [userInfo]);
+
+    useEffect(() => {
+        const unsubscribe = Navigation.events().registerComponentListener({
+            navigationButtonPressed: ({buttonId}: { buttonId: string }) => {
+                switch (buttonId) {
+                    case 'update-profile':
+                        submitUser();
+                        break;
+                    case closeButtonId:
+                        close();
+                        break;
+                }
+            },
+        }, componentId);
+
+        const backHandler = BackHandler.addEventListener('hardwareBackPress', close);
+
+        return () => {
+            unsubscribe.remove();
+            backHandler.remove();
+        };
+    }, [userInfo, isTablet]);
+
+    useEffect(() => {
+        if (!isTablet) {
+            setButtons(componentId, {rightButtons: [rightButton]});
+        }
+    }, [isTablet]);
+
+    const updateField = useCallback((id: string, name: string) => {
+        const update = {...userInfo};
+        update[id] = name;
+        setUserInfo(update);
+
+        // @ts-expect-error access object property by string key
+        const currentValue = currentUser[id];
+        const didChange = currentValue !== name;
+        enableSaveButton(didChange);
+    }, [userInfo]);
+
+    const setScrollViewRef = useCallback((ref) => {
+        scrollViewRef.current = ref;
+    }, []);
+
+    if (updating) {
+        return <ProfileUpdating/>;
+    }
+
+    return (
+        <>
+            {isTablet &&
+                <TabletTitle
+                    action={rightButton.text}
+                    enabled={canSave}
+                    onPress={submitUser}
+                    testID='custom_status.done.button'
+                    title={intl.formatMessage({id: 'mobile.screen.your_profile', defaultMessage: 'Your Profile'})}
+                />
+            }
+            <SafeAreaView
+                edges={edges}
+                style={style.flex}
+                testID='edit_profile.screen'
+            >
+                <StatusBar theme={theme}/>
+                <KeyboardAwareScrollView
+                    bounces={false}
+                    innerRef={setScrollViewRef}
+                    testID='edit_profile.scroll_view'
+                >
+                    {error && <DisplayError error={error}/>}
+                    <View style={[style.scrollViewRef]}>
+                        {/* todo: To be implemented {this.renderProfilePicture()} */}
+                        <View style={style.top}>
+                            <ProfilePicture
+                                author={currentUser}
+                                size={153}
+                                iconSize={104}
+                                statusSize={36}
+                                testID='edit_profile.profile_picture'
+                            />
+                        </View>
+                        {/* todo the fields should match the design */}
+                        <CommonFieldSettings
+                            id={'firstName'}
+                            isDisabled={(['ldap', 'saml'].includes(service) && lockedFirstName) || ['gitlab', 'google', 'office365'].includes(service)}
+                            onChange={updateField}
+                            value={userInfo.firstName}
+                        />
+                        <View style={style.separator}/>
+                        <CommonFieldSettings
+                            id={'lastName'}
+                            isDisabled={(['ldap', 'saml'].includes(service) && lockedLastName) || ['gitlab', 'google', 'office365'].includes(service)}
+                            onChange={updateField}
+                            value={userInfo.lastName}
+                        />
+                        <View style={style.separator}/>
+                        <CommonFieldSettings
+                            id={'username'}
+                            isDisabled={service !== ''}
+                            onChange={updateField}
+                            value={userInfo.username}
+                            maxLength={22}
+                        />
+                        <View style={style.separator}/>
+                        <EmailSettings
+                            email={userInfo.email}
+                            currentUser={currentUser}
+                            onChange={updateField}
+                        />
+                        <View style={style.separator}/>
+                        <CommonFieldSettings
+                            id={'nickname'}
+                            isDisabled={['ldap', 'saml'].includes(service) && lockedNickname}
+                            onChange={updateField}
+                            value={userInfo.nickname}
+                            maxLength={22}
+                        />
+                        <View style={style.separator}/>
+                        <CommonFieldSettings
+                            id={'position'}
+                            isDisabled={['ldap', 'saml'].includes(service) && lockedPosition}
+                            onChange={updateField}
+                            value={userInfo.position}
+                            maxLength={128}
+                            optional={true}
+                        />
+                        <View style={style.footer}/>
+                    </View>
+                </KeyboardAwareScrollView>
+            </SafeAreaView>
+        </>
+    );
+};
+
+const enhanced = withObservables([], ({database}: WithDatabaseArgs) => {
+    const config = database.get<SystemModel>(MM_TABLES.SERVER.SYSTEM).findAndObserve(SYSTEM_IDENTIFIERS.CONFIG);
+
+    return {
+        currentUser: database.get<SystemModel>(SYSTEM).findAndObserve(SYSTEM_IDENTIFIERS.CURRENT_USER_ID).pipe(switchMap((id) => database.get<UserModel>(USER).findAndObserve(id.value))),
+        lockedFirstName: config.pipe(
+            switchMap(
+                ({value}: {value: ClientConfig}) => of$(value.LdapFirstNameAttributeSet === 'true' || value.SamlFirstNameAttributeSet === 'true'),
+            ),
+        ),
+        lockedLastName: config.pipe(
+            switchMap(
+                ({value}: {value: ClientConfig}) => of$(value.LdapLastNameAttributeSet === 'true' || value.SamlLastNameAttributeSet === 'true'),
+            ),
+        ),
+        lockedNickname: config.pipe(
+            switchMap(
+                ({value}: {value: ClientConfig}) => of$(value.LdapNicknameAttributeSet === 'true' || value.SamlNicknameAttributeSet === 'true'),
+            ),
+        ),
+        lockedPosition: config.pipe(
+            switchMap(
+                ({value}: {value: ClientConfig}) => of$(value.LdapPositionAttributeSet === 'true' || value.SamlPositionAttributeSet === 'true'),
+            ),
+        ),
+        lockedPicture: config.pipe(
+            switchMap(
+                ({value}: {value: ClientConfig}) => of$(value.LdapPictureAttributeSet === 'true'),
+            ),
+        ),
+    };
+});
+
+export default withDatabase(enhanced(EditProfile));
