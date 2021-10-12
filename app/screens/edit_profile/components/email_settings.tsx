@@ -19,33 +19,49 @@ type EmailSettingsProps = {
 const EmailSettings = ({currentUser, email, onChange}: EmailSettingsProps) => {
     const intl = useIntl();
 
-    let helpText;
+    let defaultMessage: string;
+    let service = '';
+    let id = '';
 
     switch (currentUser.authService) {
         case 'gitlab':
-            helpText = intl.formatMessage({id: 'user.settings.general.emailGitlabCantUpdate', defaultMessage: 'Login occurs through GitLab. Email cannot be updated. Email address used for notifications is {email}.'}, {email});
+            service = 'GitLab';
+            id = 'user.settings.general.emailGitlabCantUpdate';
             break;
         case 'google':
-            helpText = intl.formatMessage({id: 'user.settings.general.emailGoogleCantUpdate', defaultMessage: 'Login occurs through Google Apps. Email cannot be updated. Email address used for notifications is {email}.'}, {email});
+            service = 'Google Apps';
+            id = 'user.settings.general.emailGoogleCantUpdate';
             break;
         case 'office365':
-            helpText = intl.formatMessage({id: 'user.settings.general.emailOffice365CantUpdate', defaultMessage: 'Login occurs through Office 365. Email cannot be updated. Email address used for notifications is {email}.'}, {email});
+            service = 'Office 365';
+            id = 'user.settings.general.emailOffice365CantUpdate';
             break;
         case 'ldap':
-            helpText = intl.formatMessage({id: 'user.settings.general.emailLdapCantUpdate', defaultMessage: 'Login occurs through AD/LDAP. Email cannot be updated. Email address used for notifications is {email}.'}, {email});
+            service = 'AD/LDAP';
+            id = 'user.settings.general.emailLdapCantUpdate';
             break;
         case 'saml':
-            helpText = intl.formatMessage({id: 'user.settings.general.emailSamlCantUpdate', defaultMessage: 'Login occurs through SAML. Email cannot be updated. Email address used for notifications is {email}.'}, {email});
+            service = 'SAML';
+            id = 'user.settings.general.emailSamlCantUpdate';
             break;
 
         case '':
-            helpText = intl.formatMessage({id: 'user.settings.general.emailCantUpdate', defaultMessage: 'Email must be updated using a web client or desktop application.'});
+            id = 'user.settings.general.emailCantUpdate';
+            service = '';
             break;
     }
 
-    if (!helpText) {
+    if (id === 'user.settings.general.emailCantUpdate') {
+        defaultMessage = 'Email must be updated using a web client or desktop application.';
+    } else {
+        defaultMessage = `Login occurs through ${service}. Email cannot be updated. Email address used for notifications is {email}.`;
+    }
+
+    if (!id) {
         return null;
     }
+
+    const helpText = intl.formatMessage({id, defaultMessage}, {email});
 
     return (
         <View>
