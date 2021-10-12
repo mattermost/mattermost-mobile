@@ -189,9 +189,6 @@
 		7FABDFC12211A39000D0F595 /* Section.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Section.swift; sourceTree = "<group>"; };
 		7FABE0092212650600D0F595 /* ChannelsViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChannelsViewController.swift; sourceTree = "<group>"; };
 		7FABE04022137F2900D0F595 /* UploadAttachments.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = UploadAttachments.xcodeproj; path = UploadAttachments/UploadAttachments.xcodeproj; sourceTree = "<group>"; };
-		7FB4224426DEDA1D0063B0EE /* Metropolis-Regular.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; name = "Metropolis-Regular.ttf"; path = "../assets/fonts/Metropolis-Regular.ttf"; sourceTree = "<group>"; };
-		7FB4224526DEDA1D0063B0EE /* Metropolis-SemiBold.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; name = "Metropolis-SemiBold.ttf"; path = "../assets/fonts/Metropolis-SemiBold.ttf"; sourceTree = "<group>"; };
-		7FB4224626DEDA1D0063B0EE /* Metropolis-Light.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; name = "Metropolis-Light.ttf"; path = "../assets/fonts/Metropolis-Light.ttf"; sourceTree = "<group>"; };
 		7FCEFB9126B7934F006DC1DE /* SDWebImageDownloaderOperation+Swizzle.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = "SDWebImageDownloaderOperation+Swizzle.h"; path = "Mattermost/SDWebImageDownloaderOperation+Swizzle.h"; sourceTree = "<group>"; };
 		7FCEFB9226B7934F006DC1DE /* SDWebImageDownloaderOperation+Swizzle.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; name = "SDWebImageDownloaderOperation+Swizzle.m"; path = "Mattermost/SDWebImageDownloaderOperation+Swizzle.m"; sourceTree = "<group>"; };
 		7FEB10991F61019C0039A015 /* MattermostManaged.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = MattermostManaged.h; path = Mattermost/MattermostManaged.h; sourceTree = "<group>"; };
@@ -269,9 +266,9 @@
 		0156F464626F49C2977D7982 /* Resources */ = {
 			isa = PBXGroup;
 			children = (
-				7FB4224626DEDA1D0063B0EE /* Metropolis-Light.ttf */,
-				7FB4224426DEDA1D0063B0EE /* Metropolis-Regular.ttf */,
-				7FB4224526DEDA1D0063B0EE /* Metropolis-SemiBold.ttf */,
+				7F25B626270F666D00F32373 /* Metropolis-Light.ttf */,
+				7F25B628270F666D00F32373 /* Metropolis-Regular.ttf */,
+				7F25B631270F824E00F32373 /* Metropolis-Semibold.ttf */,
 				D4B1B363C2414DA19C1AC521 /* OpenSans-Bold.ttf */,
 				32AC3D4EA79E44738A6E9766 /* OpenSans-BoldItalic.ttf */,
 				3647DF63D6764CF093375861 /* OpenSans-ExtraBold.ttf */,
@@ -312,8 +309,12 @@
 		33E107B4DC21A5C48B09F800 /* Pods */ = {
 			isa = PBXGroup;
 			children = (
-				104D7105491F19449851E9B6 /* Pods-Mattermost.debug.xcconfig */,
-				3B1AE9E91EB900F675D399BC /* Pods-Mattermost.release.xcconfig */,
+        EB4F0DF36537B0B21BE962FB /* Pods-Mattermost.debug.xcconfig */,
+				25BF2BACE89201DE6E585B7E /* Pods-Mattermost.release.xcconfig */,
+				57CB4735B7E57B50D0B50E16 /* Pods-MattermostTests.debug.xcconfig */,
+				297AAFCCF0BD99FC109DA2BC /* Pods-MattermostTests.release.xcconfig */,
+				7F325D6DAAF1047EB948EFF7 /* Pods-Mattermost-MattermostTests.debug.xcconfig */,
+				182D203F539AF68F1647EFAF /* Pods-Mattermost-MattermostTests.release.xcconfig */,
 			);
 			path = Pods;
 			sourceTree = "<group>";
@@ -662,7 +663,7 @@
 			shellPath = /bin/sh;
 			shellScript = "./bundleReactNative.sh\n";
 		};
-		4AE15A7F730DFB0D87FCBCD7 /* [CP] Check Pods Manifest.lock */ = {
+		484322B86D8320281D95970F /* [CP] Check Pods Manifest.lock */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -698,7 +699,7 @@
 			shellPath = /bin/sh;
 			shellScript = "./uploadDebugSymbols.sh\n";
 		};
-		AEC28D331014976B1AD3BF85 /* [CP] Copy Pods Resources */ = {
+		ED4C644925C525E30315E09E /* [CP] Copy Pods Resources */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -833,7 +834,7 @@
 /* Begin XCBuildConfiguration section */
 		13B07F941A680F5B00A75B9A /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 104D7105491F19449851E9B6 /* Pods-Mattermost.debug.xcconfig */;
+			baseConfigurationReference = EB4F0DF36537B0B21BE962FB /* Pods-Mattermost.debug.xcconfig */;
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = "$(inherited)";
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
@@ -878,7 +879,7 @@
 		};
 		13B07F951A680F5B00A75B9A /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 3B1AE9E91EB900F675D399BC /* Pods-Mattermost.release.xcconfig */;
+			baseConfigurationReference = 25BF2BACE89201DE6E585B7E /* Pods-Mattermost.release.xcconfig */;
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = "$(inherited)";
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
