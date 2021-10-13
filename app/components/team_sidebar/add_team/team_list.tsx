@@ -56,6 +56,8 @@ const renderTeam = ({item: t}: ListRenderItemInfo<TeamModel>) => {
     );
 };
 
+const keyExtractor = (item: TeamModel) => item.id;
+
 export default function TeamList({teams}: Props) {
     const theme = useTheme();
     const styles = getStyleSheet(theme);
@@ -66,7 +68,7 @@ export default function TeamList({teams}: Props) {
                 <FlatList
                     data={teams}
                     renderItem={renderTeam}
-                    keyExtractor={(item) => item.id}
+                    keyExtractor={keyExtractor}
                     contentContainerStyle={styles.contentContainer}
                 />
             </View>

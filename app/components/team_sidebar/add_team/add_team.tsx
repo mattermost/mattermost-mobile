@@ -22,6 +22,7 @@ import type TeamModel from '@typings/database/models/servers/team';
 const ITEM_HEIGHT = 72;
 const CREATE_HEIGHT = 97;
 const HEADER_HEIGHT = 66;
+const CONTAINER_HEIGHT = 392;
 
 type Props = {
     canCreateTeams: boolean;
@@ -42,12 +43,15 @@ export default function AddTeam({canCreateTeams, otherTeams}: Props) {
                 <AddTeamSlideUp
                     otherTeams={otherTeams}
                     canCreateTeams={canCreateTeams}
-                    showTitle={!isTablet}
+                    showTitle={!isTablet && Boolean(otherTeams.length)}
                 />
             );
         };
 
-        const height = Math.min(maxHeight, HEADER_HEIGHT + (otherTeams.length * ITEM_HEIGHT) + (canCreateTeams ? CREATE_HEIGHT : 0));
+        let height = CONTAINER_HEIGHT;
+        if (otherTeams.length) {
+            height = Math.min(maxHeight, HEADER_HEIGHT + (otherTeams.length * ITEM_HEIGHT) + (canCreateTeams ? CREATE_HEIGHT : 0));
+        }
 
         if (isTablet) {
             const closeButton = CompassIcon.getImageSourceSync('close', 24, theme.centerChannelColor);
