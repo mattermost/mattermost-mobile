@@ -5,7 +5,7 @@ import {withDatabase} from '@nozbe/watermelondb/DatabaseProvider';
 import withObservables from '@nozbe/with-observables';
 import React from 'react';
 import {TouchableOpacity, View} from 'react-native';
-import {of as of$} from 'rxjs';
+import {of as of$, Observable} from 'rxjs';
 import {map, switchMap} from 'rxjs/operators';
 
 import ChannelIcon from '@components/channel_icon';
@@ -178,7 +178,7 @@ const enhanced = withObservables(['channel'], ({channel, database}: WithChannelA
     const currentUserId = database.collections.get<SystemModel>(SYSTEM).findAndObserve(SYSTEM_IDENTIFIERS.CURRENT_USER_ID).pipe(
         map(({value}: {value: string}) => value),
     );
-    let teammate;
+    let teammate: Observable<UserModel | undefined> = of$(undefined);
     if (channel.type === General.DM_CHANNEL && channel.displayName) {
         teammate = currentUserId.pipe(
             switchMap((id) => {
