@@ -7,6 +7,7 @@ import React, {useMemo} from 'react';
 import {useIntl} from 'react-intl';
 import {Text, View} from 'react-native';
 import {SafeAreaView} from 'react-native-safe-area-context';
+import {map} from 'rxjs/operators';
 
 import {logout} from '@actions/remote/session';
 import PostList from '@components/post_list';
@@ -26,9 +27,9 @@ import type {WithDatabaseArgs} from '@typings/database/database';
 import type SystemModel from '@typings/database/models/servers/system';
 import type {LaunchProps} from '@typings/launch';
 
-type ChannelProps = WithDatabaseArgs & LaunchProps & {
-    currentChannelId: SystemModel;
-    currentTeamId: SystemModel;
+type ChannelProps = LaunchProps & {
+    currentChannelId: string;
+    currentTeamId: string;
     time?: number;
 };
 
@@ -81,22 +82,22 @@ const Channel = ({currentChannelId, currentTeamId, time}: ChannelProps) => {
     };
 
     const renderComponent = useMemo(() => {
-        if (!currentTeamId.value) {
+        if (!currentTeamId) {
             return <FailedTeams/>;
         }
 
-        if (!currentChannelId.value) {
-            return <FailedChannels teamId={currentTeamId.value}/>;
+        if (!currentChannelId) {
+            return <FailedChannels teamId={currentTeamId}/>;
         }
 
         return (
             <>
                 <ChannelNavBar
-                    channelId={currentChannelId?.value}
+                    channelId={currentChannelId}
                     onPress={() => null}
                 />
                 <PostList
-                    channelId={currentChannelId?.value}
+                    channelId={currentChannelId}
                     testID='channel.post_list'
                 />
                 <View style={styles.sectionContainer}>
@@ -117,7 +118,7 @@ const Channel = ({currentChannelId, currentTeamId, time}: ChannelProps) => {
                 </View>
             </>
         );
-    }, [currentTeamId.value, currentChannelId.value, theme]);
+    }, [currentTeamId, currentChannelId, theme]);
 
     return (
         <SafeAreaView
@@ -132,9 +133,13 @@ const Channel = ({currentChannelId, currentTeamId, time}: ChannelProps) => {
     );
 };
 
-const withSystemIds = withObservables([], ({database}: WithDatabaseArgs) => ({
-    currentChannelId: database.collections.get(SYSTEM).findAndObserve(SYSTEM_IDENTIFIERS.CURRENT_CHANNEL_ID),
-    currentTeamId: database.collections.get(SYSTEM).findAndObserve(SYSTEM_IDENTIFIERS.CURRENT_TEAM_ID),
+const enhanced = withObservables([], ({database}: WithDatabaseArgs) => ({
+    currentChannelId: database.collections.get<SystemModel>(SYSTEM).findAndObserve(SYSTEM_IDENTIFIERS.CURRENT_CHANNEL_ID).pipe(
+        map(({value}: {value: string}) => value),
+    ),
+    currentTeamId: database.collections.get<SystemModel>(SYSTEM).findAndObserve(SYSTEM_IDENTIFIERS.CURRENT_TEAM_ID).pipe(
+        map(({value}: {value: string}) => value),
+    ),
 }));
 
-export default withDatabase(withSystemIds(Channel));
+export default withDatabase(enhanced(Channel));
