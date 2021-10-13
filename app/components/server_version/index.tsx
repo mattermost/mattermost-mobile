@@ -5,6 +5,8 @@ import {withDatabase} from '@nozbe/watermelondb/DatabaseProvider';
 import withObservables from '@nozbe/with-observables';
 import {useEffect} from 'react';
 import {useIntl} from 'react-intl';
+import {of as of$} from 'rxjs';
+import {map, switchMap} from 'rxjs/operators';
 
 import {View} from '@constants';
 import {MM_TABLES, SYSTEM_IDENTIFIERS} from '@constants/database';
@@ -16,22 +18,18 @@ import type {WithDatabaseArgs} from '@typings/database/database';
 import type SystemModel from '@typings/database/models/servers/system';
 import type UserModel from '@typings/database/models/servers/user';
 
-type WithUserArgs = WithDatabaseArgs & {
-    currentUserId: SystemModel;
-}
-
 type ServerVersionProps = WithDatabaseArgs & {
-    config: SystemModel;
-    user: UserModel;
+    version?: string;
+    roles: string;
 };
 
 const {SERVER: {SYSTEM, USER}} = MM_TABLES;
 
-const ServerVersion = ({config, user}: ServerVersionProps) => {
+const ServerVersion = ({version, roles}: ServerVersionProps) => {
     const intl = useIntl();
 
     useEffect(() => {
-        const serverVersion = (config.value?.Version) || '';
+        const serverVersion = version || '';
 
         if (serverVersion) {
             const {RequiredServer: {MAJOR_VERSION, MIN_VERSION, PATCH_VERSION}} = View;
@@ -39,21 +37,26 @@ const ServerVersion = ({config, user}: ServerVersionProps) => {
 
             if (!isSupportedServer) {
                 // Only display the Alert if the TOS does not need to show first
-                unsupportedServer(isSystemAdmin(user.roles), intl);
+                unsupportedServer(isSystemAdmin(roles), intl);
             }
         }
-    }, [config.value?.Version, user.roles]);
+    }, [version, roles]);
 
     return null;
 };
 
-const withSystem = withObservables([], ({database}: WithDatabaseArgs) => ({
-    currentUserId: database.collections.get(SYSTEM).findAndObserve(SYSTEM_IDENTIFIERS.CURRENT_USER_ID),
-    config: database.collections.get(SYSTEM).findAndObserve(SYSTEM_IDENTIFIERS.CONFIG),
+const enahanced = withObservables([], ({database}: WithDatabaseArgs) => ({
+    varsion: database.get<SystemModel>(SYSTEM).findAndObserve(SYSTEM_IDENTIFIERS.CONFIG).pipe(
+        switchMap(({value}: {value: ClientConfig}) => of$(value.Version)),
+    ),
+    roles: database.get<SystemModel>(SYSTEM).findAndObserve(SYSTEM_IDENTIFIERS.CURRENT_USER_ID).pipe(
+        switchMap(
+            ({value}) => database.get<UserModel>(USER).findAndObserve(value).pipe(
+                // eslint-disable-next-line max-nested-callbacks
+                map((user) => user.roles),
+            ),
+        ),
+    ),
 }));
 
-const withUser = withObservables(['currentUserId'], ({currentUserId, database}: WithUserArgs) => ({
-    user: database.collections.get(USER).findAndObserve(currentUserId.value),
-}));
-
-export default withDatabase(withSystem(withUser(ServerVersion)));
+export default withDatabase(enahanced(ServerVersion));

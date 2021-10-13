@@ -9,7 +9,8 @@ import Clipboard from '@react-native-community/clipboard';
 import React, {useCallback, useMemo} from 'react';
 import {useIntl} from 'react-intl';
 import {DeviceEventEmitter, GestureResponderEvent, StyleProp, StyleSheet, Text, TextStyle, View} from 'react-native';
-import {of as of$} from 'rxjs';
+import {combineLatest, of as of$} from 'rxjs';
+import {map, switchMap} from 'rxjs/operators';
 
 import CompassIcon from '@components/compass_icon';
 import SlideUpPanelItem, {ITEM_HEIGHT} from '@components/slide_up_panel_item';
@@ -42,14 +43,6 @@ type AtMentionProps = {
     teammateNameDisplay: string;
     textStyle?: StyleProp<TextStyle>;
     users: UserModelType[];
-}
-
-type AtMentionArgs = {
-    currentUserId: SystemModel;
-    config: SystemModel;
-    license: SystemModel;
-    preferences: PreferenceModel[];
-    mentionName: string;
 }
 
 const {SERVER: {GROUP, GROUP_MEMBERSHIP, PREFERENCE, SYSTEM, USER}} = MM_TABLES;
@@ -260,34 +253,35 @@ const AtMention = ({
     );
 };
 
-const withPreferences = withObservables([], ({database}: WithDatabaseArgs) => ({
-    config: database.get(SYSTEM).findAndObserve(SYSTEM_IDENTIFIERS.CONFIG),
-    currentUserId: database.get(SYSTEM).findAndObserve(SYSTEM_IDENTIFIERS.CURRENT_USER_ID),
-    license: database.get(SYSTEM).findAndObserve(SYSTEM_IDENTIFIERS.LICENSE),
-    preferences: database.get(PREFERENCE).query(Q.where('category', Preferences.CATEGORY_DISPLAY_SETTINGS)).observe(),
-}));
+const withAtMention = withObservables(['mentionName'], ({database, mentionName}: {mentionName: string} & WithDatabaseArgs) => {
+    const config = database.get<SystemModel>(SYSTEM).findAndObserve(SYSTEM_IDENTIFIERS.CONFIG);
+    const license = database.get<SystemModel>(SYSTEM).findAndObserve(SYSTEM_IDENTIFIERS.LICENSE);
+    const preferences = database.get<PreferenceModel>(PREFERENCE).query(Q.where('category', Preferences.CATEGORY_DISPLAY_SETTINGS)).observe();
+    const currentUserId = database.get<SystemModel>(SYSTEM).findAndObserve(SYSTEM_IDENTIFIERS.CURRENT_USER_ID).pipe(
+        switchMap(({value}) => of$(value)),
+    );
+    const teammateNameDisplay = combineLatest([config, license, preferences]).pipe(
+        map(
+            ([{value: cfg}, {value: lcs}, prefs]) => getTeammateNameDisplaySetting(prefs, cfg, lcs),
+        ),
+    );
 
-const withAtMention = withObservables(
-    ['currentUserId', 'mentionName', 'preferences', 'config', 'license'],
-    ({currentUserId, database, mentionName, preferences, config, license}: WithDatabaseArgs & AtMentionArgs) => {
-        let mn = mentionName.toLowerCase();
-        if ((/[._-]$/).test(mn)) {
-            mn = mn.substring(0, mn.length - 1);
-        }
+    let mn = mentionName.toLowerCase();
+    if ((/[._-]$/).test(mn)) {
+        mn = mn.substring(0, mn.length - 1);
+    }
 
-        const teammateNameDisplay = of$(getTeammateNameDisplaySetting(preferences, config.value, license.value));
+    return {
+        currentUserId,
+        groups: database.get(GROUP).query(Q.where('delete_at', Q.eq(0))).observe(),
+        myGroups: database.get(GROUP_MEMBERSHIP).query().observe(),
+        teammateNameDisplay,
+        users: database.get(USER).query(
+            Q.where('username', Q.like(
+                `%${Q.sanitizeLikeString(mn)}%`,
+            )),
+        ).observeWithColumns(['username']),
+    };
+});
 
-        return {
-            currentUserId: of$(currentUserId.value),
-            groups: database.get(GROUP).query(Q.where('delete_at', Q.eq(0))).observe(),
-            myGroups: database.get(GROUP_MEMBERSHIP).query().observe(),
-            teammateNameDisplay,
-            users: database.get(USER).query(
-                Q.where('username', Q.like(
-                    `%${Q.sanitizeLikeString(mn)}%`,
-                )),
-            ).observeWithColumns(['username']),
-        };
-    });
-
-export default withDatabase(withPreferences(withAtMention(React.memo(AtMention))));
+export default withDatabase(withAtMention(React.memo(AtMention)));

@@ -7,8 +7,8 @@ import withObservables from '@nozbe/with-observables';
 import React, {ReactNode, useCallback, useState} from 'react';
 import {useIntl} from 'react-intl';
 import {Text, View} from 'react-native';
-import {of as of$} from 'rxjs';
-import {switchMap} from 'rxjs/operators';
+import {combineLatest} from 'rxjs';
+import {map} from 'rxjs/operators';
 
 import CompasIcon from '@components/compass_icon';
 import FormattedText from '@components/formatted_text';
@@ -25,12 +25,6 @@ import {displayUsername} from '@utils/user';
 import type {WithDatabaseArgs} from '@typings/database/database';
 import type PreferenceModel from '@typings/database/models/servers/preference';
 import type SystemModel from '@typings/database/models/servers/system';
-
-type AutoCompleteSelectorArgs = {
-    config: SystemModel;
-    license: SystemModel;
-    preferences: PreferenceModel[];
-}
 
 type AutoCompleteSelectorProps = {
     dataSource?: string;
@@ -245,14 +239,18 @@ const AutoCompleteSelector = ({
     );
 };
 
-const withPreferences = withObservables([], ({database}: WithDatabaseArgs) => ({
-    config: database.get(SYSTEM).findAndObserve(SYSTEM_IDENTIFIERS.CONFIG).pipe(switchMap((cfg: SystemModel) => cfg.value)),
-    license: database.get(SYSTEM).findAndObserve(SYSTEM_IDENTIFIERS.LICENSE),
-    preferences: database.get(PREFERENCE).query(Q.where('category', Preferences.CATEGORY_DISPLAY_SETTINGS)).observe(),
-}));
+const withTeammateNameDisplay = withObservables([], ({database}: WithDatabaseArgs) => {
+    const config = database.get<SystemModel>(SYSTEM).findAndObserve(SYSTEM_IDENTIFIERS.CONFIG);
+    const license = database.get<SystemModel>(SYSTEM).findAndObserve(SYSTEM_IDENTIFIERS.LICENSE);
+    const preferences = database.get<PreferenceModel>(PREFERENCE).query(Q.where('category', Preferences.CATEGORY_DISPLAY_SETTINGS)).observe();
+    const teammateNameDisplay = combineLatest([config, license, preferences]).pipe(
+        map(
+            ([{value: cfg}, {value: lcs}, prefs]) => getTeammateNameDisplaySetting(prefs, cfg, lcs),
+        ),
+    );
+    return {
+        teammateNameDisplay,
+    };
+});
 
-const withTeammateNameDisplay = withObservables(['preferences', 'config', 'license'], ({config, license, preferences}: AutoCompleteSelectorArgs) => ({
-    teammateNameDisplay: of$(getTeammateNameDisplaySetting(preferences, config.value, license.value)),
-}));
-
-export default withDatabase(withPreferences(withTeammateNameDisplay(AutoCompleteSelector)));
+export default withDatabase(withTeammateNameDisplay(AutoCompleteSelector));

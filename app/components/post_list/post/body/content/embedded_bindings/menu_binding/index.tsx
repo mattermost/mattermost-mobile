@@ -4,8 +4,7 @@
 import withObservables from '@nozbe/with-observables';
 import React, {useCallback, useState} from 'react';
 import {useIntl} from 'react-intl';
-import {of as of$} from 'rxjs';
-import {switchMap} from 'rxjs/operators';
+import {map} from 'rxjs/operators';
 
 import {doAppCall, postEphemeralCallResponseForPost} from '@actions/remote/apps';
 import AutocompleteSelector from '@components/autocomplete_selector';
@@ -109,9 +108,9 @@ const MenuBinding = ({binding, currentTeamId, post, teamID, theme}: Props) => {
 };
 
 const withTeamId = withObservables(['post'], ({post}: {post: PostModel}) => ({
-    teamID: post.channel.observe().pipe(switchMap((channel: ChannelModel) => of$(channel.teamId))),
-    currentTeamId: post.collections.get(SYSTEM).findAndObserve(SYSTEM_IDENTIFIERS.CURRENT_TEAM_ID).pipe(
-        switchMap((currentTeamId: SystemModel) => of$(currentTeamId.value)),
+    teamID: post.channel.observe().pipe(map((channel: ChannelModel) => channel.teamId)),
+    currentTeamId: post.collections.get<SystemModel>(SYSTEM).findAndObserve(SYSTEM_IDENTIFIERS.CURRENT_TEAM_ID).pipe(
+        map(({value}) => value),
     ),
 }));
 

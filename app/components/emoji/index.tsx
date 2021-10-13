@@ -155,7 +155,7 @@ const withCustomEmojis = withObservables(['emojiName'], ({database, emojiName}: 
 
     return {
         displayTextOnly,
-        customEmojis: hasEmojiBuiltIn ? of$([]) : database.get(MM_TABLES.SERVER.CUSTOM_EMOJI).query(Q.where('name', emojiName)).observe(),
+        customEmojis: hasEmojiBuiltIn ? of$([]) : database.get<CustomEmojiModel>(MM_TABLES.SERVER.CUSTOM_EMOJI).query(Q.where('name', emojiName)).observe(),
     };
 });
 

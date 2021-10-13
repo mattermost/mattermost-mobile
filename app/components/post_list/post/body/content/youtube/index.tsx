@@ -185,10 +185,9 @@ const YouTube = ({googleDeveloperKey, isReplyPost, metadata}: YouTubeProps) => {
 };
 
 const withGoogleKey = withObservables([], ({database}: WithDatabaseArgs) => ({
-    googleDeveloperKey: database.get(MM_TABLES.SERVER.SYSTEM).findAndObserve(SYSTEM_IDENTIFIERS.CONFIG).pipe(
-        switchMap((config: SystemModel) => {
-            const cfg: ClientConfig = config.value;
-            return of$(cfg.GoogleDeveloperKey);
+    googleDeveloperKey: database.get<SystemModel>(MM_TABLES.SERVER.SYSTEM).findAndObserve(SYSTEM_IDENTIFIERS.CONFIG).pipe(
+        switchMap(({value}: {value: ClientConfig}) => {
+            return of$(value.GoogleDeveloperKey);
         }),
     ),
 }));

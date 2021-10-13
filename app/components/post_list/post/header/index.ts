@@ -4,8 +4,8 @@
 import {Q} from '@nozbe/watermelondb';
 import {withDatabase} from '@nozbe/watermelondb/DatabaseProvider';
 import withObservables from '@nozbe/with-observables';
-import {of as of$} from 'rxjs';
-import {switchMap} from 'rxjs/operators';
+import {combineLatest, of as of$} from 'rxjs';
+import {map, switchMap} from 'rxjs/operators';
 
 import {Preferences} from '@constants';
 import {MM_TABLES, SYSTEM_IDENTIFIERS} from '@constants/database';
@@ -20,29 +20,27 @@ import type PreferenceModel from '@typings/database/models/servers/preference';
 import type SystemModel from '@typings/database/models/servers/system';
 
 type HeaderInputProps = {
-    config: ClientConfig;
     differentThreadSequence: boolean;
-    license: ClientLicense;
-    preferences: PreferenceModel[];
     post: PostModel;
 };
 
-const withBaseHeaderProps = withObservables([], ({database}: WithDatabaseArgs & {post: PostModel}) => ({
-    config: database.get(MM_TABLES.SERVER.SYSTEM).findAndObserve(SYSTEM_IDENTIFIERS.CONFIG).pipe(switchMap((cfg: SystemModel) => of$(cfg.value))),
-    license: database.get(MM_TABLES.SERVER.SYSTEM).findAndObserve(SYSTEM_IDENTIFIERS.LICENSE).pipe(switchMap((lcs: SystemModel) => of$(lcs.value))),
-    preferences: database.get(MM_TABLES.SERVER.PREFERENCE).query(Q.where('category', Preferences.CATEGORY_DISPLAY_SETTINGS)).observe(),
-}));
+const {SERVER: {POST, PREFERENCE, SYSTEM}} = MM_TABLES;
 
 const withHeaderProps = withObservables(
-    ['preferences', 'post', 'differentThreadSequence'],
-    ({config, post, license, database, preferences, differentThreadSequence}: WithDatabaseArgs & HeaderInputProps) => {
+    ['post', 'differentThreadSequence'],
+    ({post, database, differentThreadSequence}: WithDatabaseArgs & HeaderInputProps) => {
+        const config = database.get<SystemModel>(SYSTEM).findAndObserve(SYSTEM_IDENTIFIERS.CONFIG).pipe(switchMap(({value}) => of$(value as ClientConfig)));
+        const license = database.get<SystemModel>(SYSTEM).findAndObserve(SYSTEM_IDENTIFIERS.LICENSE).pipe(switchMap(({value}) => of$(value as ClientLicense)));
+        const preferences = database.get<PreferenceModel>(PREFERENCE).query(Q.where('category', Preferences.CATEGORY_DISPLAY_SETTINGS)).observe();
         const author = post.author.observe();
-        const enablePostUsernameOverride = of$(config.EnablePostUsernameOverride === 'true');
-        const isTimezoneEnabled = of$(config.ExperimentalTimezone === 'true');
-        const isMilitaryTime = of$(getPreferenceAsBool(preferences, Preferences.CATEGORY_DISPLAY_SETTINGS, 'use_military_time', false));
-        const teammateNameDisplay = of$(getTeammateNameDisplaySetting(preferences, config, license));
-        const isCustomStatusEnabled = of$(config.EnableCustomUserStatuses === 'true' && isMinimumServerVersion(config.Version, 5, 36));
-        const commentCount = database.get(MM_TABLES.SERVER.POST).query(
+        const enablePostUsernameOverride = config.pipe(map((cfg) => cfg.EnablePostUsernameOverride === 'true'));
+        const isTimezoneEnabled = config.pipe(map((cfg) => cfg.ExperimentalTimezone === 'true'));
+        const isMilitaryTime = preferences.pipe(map((prefs) => getPreferenceAsBool(prefs, Preferences.CATEGORY_DISPLAY_SETTINGS, 'use_military_time', false)));
+        const isCustomStatusEnabled = config.pipe(map((cfg) => cfg.EnableCustomUserStatuses === 'true' && isMinimumServerVersion(cfg.Version, 5, 36)));
+        const teammateNameDisplay = combineLatest([preferences, config, license]).pipe(
+            map(([prefs, cfg, lcs]) => getTeammateNameDisplaySetting(prefs, cfg, lcs)),
+        );
+        const commentCount = database.get(POST).query(
             Q.and(
                 Q.where('root_id', (post.rootId || post.id)),
                 Q.where('delete_at', Q.eq(0)),
@@ -68,4 +66,4 @@ const withHeaderProps = withObservables(
         };
     });
 
-export default withDatabase(withBaseHeaderProps(withHeaderProps(Header)));
+export default withDatabase(withHeaderProps(Header));
