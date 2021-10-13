@@ -7,7 +7,7 @@
 
 const {Buffer} = require('buffer');
 
-queueMicrotask = (callback) => {
+const queueMicrotask = (callback) => {
     Promise.resolve().then(callback).catch(e => setTiemout(() => { throw e; }))
 }
 
