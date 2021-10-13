@@ -4,36 +4,32 @@
 import * as FileSystem from 'expo-file-system';
 import React, {PureComponent} from 'react';
 import {injectIntl, IntlShape} from 'react-intl';
-import {
-    Alert,
-    NativeModules,
-    Platform,
-    StyleSheet,
-    StatusBar, DeviceEventEmitter, TextStyle,
-} from 'react-native';
+import {Alert, NativeModules, Platform, StyleSheet, StatusBar, DeviceEventEmitter, TextStyle} from 'react-native';
 import AndroidOpenSettings from 'react-native-android-open-settings';
 import DocumentPicker from 'react-native-document-picker';
 import {launchImageLibrary, launchCamera, ImageLibraryOptions, CameraOptions} from 'react-native-image-picker';
 import {MediaType} from 'react-native-image-picker/src/types';
 import Permissions from 'react-native-permissions';
 
-import {getPermissionMessages} from '@components/attachment_button/constant';
+import {Client} from '@client/rest';
 import CompassIcon from '@components/compass_icon';
+import {getPermissionMessages} from '@components/profile_picture_button/constant';
 import SlideUpPanelItem, {ITEM_HEIGHT} from '@components/slide_up_panel_item';
 import TouchableWithFeedback from '@components/touchable_with_feedback';
 import {Navigation, Files, Screens} from '@constants';
 import {t} from '@i18n';
 import {showModalOverCurrentContext} from '@screens/navigation';
+import UserModel from '@typings/database/models/servers/user';
 import {lookupMimeType} from '@utils/file';
 import {changeOpacity} from '@utils/theme';
 
 const ShareExtension = NativeModules.MattermostShare;
 
-type FileResponse= {
+type FileResponse = {
     assets?: File[];
     didCancel?: boolean;
     error?: Error;
-}
+};
 
 type File = {
     fileName?: string;
@@ -43,7 +39,7 @@ type File = {
     type: string;
     uri: string;
     width?: number;
-}
+};
 
 type ExtraOptions = {
     action: () => void;
@@ -54,15 +50,16 @@ type ExtraOptions = {
     textStyle: TextStyle;
     icon: string;
     iconStyle: TextStyle;
-}
+};
 
-type AttachmentButtonProps = {
+type ProfileImageButtonProps = {
     browseFileTypes: string; // 'public.item' | '*/*' | 'public.image' | 'images/*';
     canBrowseFiles?: boolean;
     canBrowsePhotoLibrary?: boolean;
     canBrowseVideoLibrary?: boolean;
     canTakePhoto?: boolean;
     canTakeVideo?: boolean;
+    currentUser: UserModel;
     children: React.ReactNode;
     extraOptions?: ExtraOptions[];
     fileCount: number;
@@ -72,10 +69,11 @@ type AttachmentButtonProps = {
     onShowFileMaxWarning: () => void;
     onShowFileSizeWarning: (fileName: string) => void;
     onShowUnsupportedMimeTypeWarning: () => void;
+    removeProfileImage: () => void;
     theme: Theme;
     uploadFiles: (files: File[]) => void;
     wrapper: boolean;
-}
+};
 
 const style = StyleSheet.create({
     attachIcon: {
@@ -95,9 +93,9 @@ const style = StyleSheet.create({
     },
 });
 
-class AttachmentButton extends PureComponent<AttachmentButtonProps> {
+class ProfileImageButton extends PureComponent<ProfileImageButtonProps> {
     static defaultProps = {
-        browseFileTypes: Platform.OS === 'ios' ? 'public.item' : '*/*', // DocumentPicker.types.images
+        browseFileTypes: Platform.OS === 'ios' ? 'public.item' : '*/*',
         canBrowseFiles: true,
         canBrowsePhotoLibrary: true,
         canBrowseVideoLibrary: true,
@@ -129,7 +127,7 @@ class AttachmentButton extends PureComponent<AttachmentButtonProps> {
                 return getPermissionMessages(intl).denied.ios;
             }
         }
-    }
+    };
 
     attachPhotoFromCamera = () => {
         return this.attachFileFromCamera('camera', 'photo');
@@ -263,7 +261,7 @@ class AttachmentButton extends PureComponent<AttachmentButtonProps> {
         }
 
         return files;
-    }
+    };
 
     hasPhotoPermission = async (source: string, mediaType = '') => {
         if (Platform.OS === 'ios') {
@@ -281,25 +279,24 @@ class AttachmentButton extends PureComponent<AttachmentButtonProps> {
                     break;
                 case Permissions.RESULTS.BLOCKED: {
                     const grantOption = {
-                        text: formatMessage({id: 'mobile.permission_denied_retry', defaultMessage: 'Settings'}),
+                        text: formatMessage({
+                            id: 'mobile.permission_denied_retry',
+                            defaultMessage: 'Settings',
+                        }),
                         onPress: () => Permissions.openSettings(),
                     };
 
                     const {title, text} = this.getPermissionDeniedMessage(source, mediaType);
 
-                    Alert.alert(
-                        title,
-                        text,
-                        [
-                            grantOption,
-                            {
-                                text: formatMessage({
-                                    id: 'mobile.permission_denied_dismiss',
-                                    defaultMessage: 'Don\'t Allow',
-                                }),
-                            },
-                        ],
-                    );
+                    Alert.alert(title, text, [
+                        grantOption,
+                        {
+                            text: formatMessage({
+                                id: 'mobile.permission_denied_dismiss',
+                                defaultMessage: "Don't Allow",
+                            }),
+                        },
+                    ]);
                     return false;
                 }
             }
@@ -317,33 +314,32 @@ class AttachmentButton extends PureComponent<AttachmentButtonProps> {
 
             switch (hasPermissionToStorage) {
                 case Permissions.RESULTS.DENIED:
-                    permissionRequest = await Permissions.request(storagePermission);
+                    permissionRequest = await Permissions.request(
+                        storagePermission,
+                    );
                     if (permissionRequest !== Permissions.RESULTS.GRANTED) {
                         return false;
                     }
                     break;
                 case Permissions.RESULTS.BLOCKED: {
-                    const {title, text} = this.getPermissionDeniedMessage(storagePermission);
+                    const {title, text} =
+                        this.getPermissionDeniedMessage(storagePermission);
 
-                    Alert.alert(
-                        title,
-                        text,
-                        [
-                            {
-                                text: formatMessage({
-                                    id: 'mobile.permission_denied_dismiss',
-                                    defaultMessage: 'Don\'t Allow',
-                                }),
-                            },
-                            {
-                                text: formatMessage({
-                                    id: 'mobile.permission_denied_retry',
-                                    defaultMessage: 'Settings',
-                                }),
-                                onPress: () => AndroidOpenSettings.appDetailsSettings(),
-                            },
-                        ],
-                    );
+                    Alert.alert(title, text, [
+                        {
+                            text: formatMessage({
+                                id: 'mobile.permission_denied_dismiss',
+                                defaultMessage: "Don't Allow",
+                            }),
+                        },
+                        {
+                            text: formatMessage({
+                                id: 'mobile.permission_denied_retry',
+                                defaultMessage: 'Settings',
+                            }),
+                            onPress: () => AndroidOpenSettings.appDetailsSettings(),
+                        },
+                    ]);
                     return false;
                 }
             }
@@ -381,20 +377,36 @@ class AttachmentButton extends PureComponent<AttachmentButtonProps> {
         }
     };
 
+    getRemoveProfileImageOption = () => {
+        const {currentUser, removeProfileImage} = this.props;
+        const {id, lastPictureUpdate} = currentUser;
+
+        const profileImageUrl = Client.getProfilePictureUrl(id, lastPictureUpdate);
+
+        // Check if image url includes query string for timestamp. If so, it means the image has been updated from the default, i.e. '.../image?_=1544159746868'
+        if (profileImageUrl.includes('?')) {
+            return {
+                ...(removeProfileImage && {action: removeProfileImage}),
+                text: {
+                    id: t('mobile.edit_profile.remove_profile_photo'),
+                    defaultMessage: 'Remove Photo',
+                },
+                textStyle: {
+                    color: '#CC3239',
+                },
+                icon: 'trash-can-outline',
+                iconStyle: {
+                    color: '#CC3239',
+                },
+            };
+        }
+
+        return null;
+    };
+
     //todo: To test fully all use cases
     showFileAttachmentOptions = () => {
-        const {
-            canBrowseFiles,
-            canBrowsePhotoLibrary,
-            canBrowseVideoLibrary,
-            canTakePhoto,
-            canTakeVideo,
-            extraOptions,
-            fileCount,
-            maxFileCount,
-            intl,
-            onShowFileMaxWarning,
-        } = this.props;
+        const {canBrowseFiles, canBrowsePhotoLibrary, canBrowseVideoLibrary, canTakePhoto, canTakeVideo, fileCount, intl, maxFileCount, onShowFileMaxWarning} = this.props;
 
         if (fileCount === maxFileCount) {
             onShowFileMaxWarning();
@@ -402,6 +414,8 @@ class AttachmentButton extends PureComponent<AttachmentButtonProps> {
         }
 
         DeviceEventEmitter.emit(Navigation.BLUR_POST_DRAFT);
+
+        const removeImageOption = this.getRemoveProfileImageOption();
 
         const renderContent = () => {
             return (
@@ -412,7 +426,7 @@ class AttachmentButton extends PureComponent<AttachmentButtonProps> {
                             onPress={this.attachPhotoFromCamera}
                             testID='attachment.canTakePhoto'
                             text={intl.formatMessage({
-                                id: t('mobile.file_upload.camera_photo'),
+                                id: 'mobile.file_upload.camera_photo',
                                 defaultMessage: 'Take Photo',
                             })}
                         />
@@ -424,7 +438,7 @@ class AttachmentButton extends PureComponent<AttachmentButtonProps> {
                             onPress={this.attachVideoFromCamera}
                             testID='attachment.canTakeVideo'
                             text={intl.formatMessage({
-                                id: t('mobile.file_upload.camera_video'),
+                                id: 'mobile.file_upload.camera_video',
                                 defaultMessage: 'Take Video',
                             })}
                         />
@@ -436,7 +450,7 @@ class AttachmentButton extends PureComponent<AttachmentButtonProps> {
                             onPress={this.attachFileFromLibrary}
                             testID='attachment.canBrowsePhotoLibrary'
                             text={intl.formatMessage({
-                                id: t('mobile.file_upload.library'),
+                                id: 'mobile.file_upload.library',
                                 defaultMessage: 'Photo Library',
                             })}
                         />
@@ -448,7 +462,7 @@ class AttachmentButton extends PureComponent<AttachmentButtonProps> {
                             onPress={this.attachVideoFromLibraryAndroid}
                             testID='attachment.canBrowseVideoLibrary.android'
                             text={intl.formatMessage({
-                                id: t('mobile.file_upload.video'),
+                                id: 'mobile.file_upload.video',
                                 defaultMessage: 'Video Library',
                             })}
                         />
@@ -460,23 +474,23 @@ class AttachmentButton extends PureComponent<AttachmentButtonProps> {
                             onPress={this.attachFileFromFiles}
                             testID='attachment.canBrowseFiles'
                             text={intl.formatMessage({
-                                id: t('mobile.file_upload.browse'),
+                                id: 'mobile.file_upload.browse',
                                 defaultMessage: 'Browse Files',
                             })}
                         />
                     )}
 
-                    {
-                        extraOptions?.forEach((option) => {
-                            return option ? (
-                                <SlideUpPanelItem
-                                    icon={option.icon}
-                                    onPress={option.action}
-                                    testID='attachment.canTakePhoto'
-                                    text={intl.formatMessage(option.text)}
-                                />) : null;
-                        })
-                    }
+                    {removeImageOption && (
+                        <SlideUpPanelItem
+                            icon={removeImageOption.icon}
+                            onPress={removeImageOption.action}
+                            testID='attachment.removeImage'
+                            text={intl.formatMessage({
+                                id: removeImageOption.text.id,
+                                defaultMessage: removeImageOption.text.defaultMessage,
+                            })}
+                        />
+                    )}
                 </>
             );
         };
@@ -518,4 +532,4 @@ class AttachmentButton extends PureComponent<AttachmentButtonProps> {
     }
 }
 
-export default injectIntl(AttachmentButton);
+export default injectIntl(ProfileImageButton);
