@@ -43,11 +43,6 @@ const MAX_BUFFERED_AMOUNT = 64 * 1024;
 const ICECOMPLETE_TIMEOUT = 5 * 1000;
 const CHANNEL_CLOSING_TIMEOUT = 5 * 1000;
 
-// HACK: Filter trickle lines when trickle is disabled #354
-function filterTrickle(sdp) {
-    return sdp.replace(/a=ice-options:trickle\s\n/g, '');
-}
-
 function warn(message) {
     console.warn(message);
 }
@@ -71,7 +66,6 @@ export default class Peer extends stream.Duplex {
         this.answerOptions = opts.answerOptions || {};
         this.sdpTransform = opts.sdpTransform || ((sdp) => sdp);
         this.streams = opts.streams || (opts.stream ? [opts.stream] : []); // support old "stream" option
-        this.trickle = opts.trickle === undefined ? true : opts.trickle;
         this.allowHalfTrickle =
             opts.allowHalfTrickle === undefined ? false : opts.allowHalfTrickle;
         this.iceCompleteTimeout =
@@ -728,9 +722,6 @@ export default class Peer extends stream.Duplex {
                 if (this.destroyed) {
                     return;
                 }
-                if (!this.trickle && !this.allowHalfTrickle) {
-                    offer.sdp = filterTrickle(offer.sdp);
-                }
                 offer.sdp = this.sdpTransform(offer.sdp);
 
                 const sendOffer = () => {
@@ -748,11 +739,7 @@ export default class Peer extends stream.Duplex {
                     if (this.destroyed) {
                         return;
                     }
-                    if (this.trickle || this._iceComplete) {
-                        sendOffer();
-                    } else {
-                        this.once('_iceComplete', sendOffer);
-                    } // wait for candidates
+                    sendOffer();
                 };
 
                 const onError = (err) => {
@@ -795,9 +782,6 @@ export default class Peer extends stream.Duplex {
                 if (this.destroyed) {
                     return;
                 }
-                if (!this.trickle && !this.allowHalfTrickle) {
-                    answer.sdp = filterTrickle(answer.sdp);
-                }
                 answer.sdp = this.sdpTransform(answer.sdp);
 
                 const sendAnswer = () => {
@@ -815,11 +799,7 @@ export default class Peer extends stream.Duplex {
                     if (this.destroyed) {
                         return;
                     }
-                    if (this.trickle || this._iceComplete) {
-                        sendAnswer();
-                    } else {
-                        this.once('_iceComplete', sendAnswer);
-                    }
+                    sendAnswer();
                 };
 
                 const onError = (err) => {
@@ -1166,7 +1146,7 @@ export default class Peer extends stream.Duplex {
         if (this.destroyed) {
             return;
         }
-        if (event.candidate && this.trickle) {
+        if (event.candidate) {
             this.emit('signal', {
                 type: 'candidate',
                 candidate: {
