@@ -342,6 +342,8 @@ PODS:
     - React-perflogger (= 0.65.1)
   - ReactNativeExceptionHandler (2.10.10):
     - React-Core
+  - ReactNativeIncallManager (3.3.0):
+    - React
   - ReactNativeKeyboardTrackingView (5.7.0):
     - React
   - ReactNativeNavigation (7.21.0):
@@ -425,8 +427,6 @@ PODS:
     - Sentry (= 7.3.0)
   - RNShare (7.1.1):
     - React-Core
-  - RNSoundPlayer (0.11.1):
-    - React
   - RNSVG (12.1.1):
     - React
   - RNVectorIcons (8.1.0):
@@ -503,6 +503,7 @@ DEPENDENCIES:
   - React-runtimeexecutor (from `../node_modules/react-native/ReactCommon/runtimeexecutor`)
   - ReactCommon/turbomodule/core (from `../node_modules/react-native/ReactCommon`)
   - ReactNativeExceptionHandler (from `../node_modules/react-native-exception-handler`)
+  - ReactNativeIncallManager (from `../node_modules/react-native-incall-manager`)
   - ReactNativeKeyboardTrackingView (from `../node_modules/react-native-keyboard-tracking-view`)
   - ReactNativeNavigation (from `../node_modules/react-native-navigation`)
   - rn-fetch-blob (from `../node_modules/rn-fetch-blob`)
@@ -524,7 +525,6 @@ DEPENDENCIES:
   - RNScreens (from `../node_modules/react-native-screens`)
   - "RNSentry (from `../node_modules/@sentry/react-native`)"
   - RNShare (from `../node_modules/react-native-share`)
-  - RNSoundPlayer (from `../node_modules/react-native-sound-player`)
   - RNSVG (from `../node_modules/react-native-svg`)
   - RNVectorIcons (from `../node_modules/react-native-vector-icons`)
   - Swime (= 3.0.6)
@@ -654,6 +654,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native/ReactCommon"
   ReactNativeExceptionHandler:
     :path: "../node_modules/react-native-exception-handler"
+  ReactNativeIncallManager:
+    :path: "../node_modules/react-native-incall-manager"
   ReactNativeKeyboardTrackingView:
     :path: "../node_modules/react-native-keyboard-tracking-view"
   ReactNativeNavigation:
@@ -696,8 +698,6 @@ EXTERNAL SOURCES:
     :path: "../node_modules/@sentry/react-native"
   RNShare:
     :path: "../node_modules/react-native-share"
-  RNSoundPlayer:
-    :path: "../node_modules/react-native-sound-player"
   RNSVG:
     :path: "../node_modules/react-native-svg"
   RNVectorIcons:
@@ -774,6 +774,7 @@ SPEC CHECKSUMS:
   React-runtimeexecutor: 85187f19dd9c47a7c102f9994f9d14e4dc2110de
   ReactCommon: eafed38eec7b591c31751bfa7494801618460459
   ReactNativeExceptionHandler: b11ff67c78802b2f62eed0e10e75cb1ef7947c60
+  ReactNativeIncallManager: a840ef75640518065742a893e6c6ff98ee820039
   ReactNativeKeyboardTrackingView: 02137fac3b2ebd330d74fa54ead48b14750a2306
   ReactNativeNavigation: d6f27d4ba71887a161534a13e8ef3873b26c68b5
   rn-fetch-blob: 17961aec08caae68bb8fc0e5b40f93b3acfa6932
@@ -795,7 +796,6 @@ SPEC CHECKSUMS:
   RNScreens: 6e1ea5787989f92b0671049b808aef64fa1ef98c
   RNSentry: 49abc89b0190b4c8afe0fa5d065f98e36cb53233
   RNShare: a22398d8d02336133e28bf8b6e0b47b31abade41
-  RNSoundPlayer: 1a8fb785d9c41ec0cb14283a5ba87ff30c2a50b6
   RNSVG: 551acb6562324b1d52a4e0758f7ca0ec234e278f
   RNVectorIcons: 31cebfcf94e8cf8686eb5303ae0357da64d7a5a4
   Rudder: 7fbbef54490e237945a6f3434a44cacaf27eed11

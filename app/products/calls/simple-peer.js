@@ -7,8 +7,11 @@
 
 const {Buffer} = require('buffer');
 
+queueMicrotask = (callback) => {
+    Promise.resolve().then(callback).catch(e => setTiemout(() => { throw e; }))
+}
+
 const errCode = require('err-code');
-const queueMicrotask = require('queue-microtask'); // TODO: remove when Node 10 is not supported
 const stream = require('readable-stream');
 
 function generateId() {
