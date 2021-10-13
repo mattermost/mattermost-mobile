@@ -62,7 +62,7 @@ const BottomSheetContent = ({buttonText, buttonIcon, children, onPress, showButt
             <>
                 {children}
             </>
-            {!showButton && (
+            {showButton && (
                 <>
                     <View style={[styles.separator, {width: separatorWidth, marginBottom: (isTablet ? 20 : 12)}]}/>
                     <Button
