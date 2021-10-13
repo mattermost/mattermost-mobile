@@ -13,6 +13,8 @@ import {SafeAreaView} from 'react-native-safe-area-context';
 
 import {dismissModal} from '@actions/navigation';
 import StatusBar from '@components/status_bar';
+import StartCall from '@mmproducts/calls/components/enable_disable_calls';
+import EnableDisableCalls from '@mmproducts/calls/components/start_call';
 import {alertErrorWithFallback} from '@utils/general';
 import {t} from '@utils/i18n';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
@@ -23,7 +25,6 @@ import Bindings from './bindings';
 import ChannelInfoHeader from './channel_info_header';
 import ConvertPrivate from './convert_private';
 import EditChannel from './edit_channel';
-import EnableDisableCalls from './enable_disable_calls';
 import Favorite from './favorite';
 import IgnoreMentions from './ignore_mentions';
 import Leave from './leave';
@@ -32,7 +33,6 @@ import Mute from './mute';
 import NotificationPreference from './notification_preference';
 import Pinned from './pinned';
 import Separator from './separator';
-import StartCall from './start_call';
 
 export default class ChannelInfo extends PureComponent {
     static propTypes = {

@@ -82,7 +82,7 @@ const getStyleSheet = makeStyleSheetFromTheme((props: any) => {
             header.top = -1000;
         }
     }
-    const usersScroll: any = {}
+    const usersScroll: any = {};
     const users: any = {
         flex: 1,
         flexDirection: 'row',
