@@ -74,30 +74,30 @@ export default class Peer extends stream.Duplex {
         this.localFamily = undefined;
         this.localPort = undefined;
 
-        this._pcReady = false;
-        this._channelReady = false;
-        this._iceComplete = false; // ice candidate trickle done (got null candidate)
-        this._iceCompleteTimer = null; // send an offer/answer anyway after some timeout
-        this._channel = null;
-        this._pendingCandidates = [];
+        this.pcReady = false;
+        this.channelReady = false;
+        this.iceComplete = false; // ice candidate trickle done (got null candidate)
+        this.iceCompleteTimer = null; // send an offer/answer anyway after some timeout
+        this.channel = null;
+        this.pendingCandidates = [];
 
-        this._isNegotiating = false; // is this peer waiting for negotiation to complete?
-        this._firstNegotiation = true;
-        this._batchedNegotiation = false; // batch synchronous negotiations
-        this._queuedNegotiation = false; // is there a queued negotiation request?
-        this._sendersAwaitingStable = [];
-        this._senderMap = new Map();
-        this._closingInterval = null;
+        this.isNegotiating = false; // is this peer waiting for negotiation to complete?
+        this.firstNegotiation = true;
+        this.batchedNegotiation = false; // batch synchronous negotiations
+        this.queuedNegotiation = false; // is there a queued negotiation request?
+        this.sendersAwaitingStable = [];
+        this.senderMap = new Map();
+        this.closingInterval = null;
 
-        this._remoteTracks = [];
-        this._remoteStreams = [];
+        this.remoteTracks = [];
+        this.remoteStreams = [];
 
-        this._chunk = null;
-        this._cb = null;
-        this._interval = null;
+        this.chunk = null;
+        this.cb = null;
+        this.interval = null;
 
         try {
-            this._pc = new RTCPeerConnection(Peer.config);
+            this.pc = new RTCPeerConnection(Peer.config);
         } catch (err) {
             this.destroy(errCode(err, 'ERR_PC_CONSTRUCTOR'));
             return;
@@ -106,27 +106,27 @@ export default class Peer extends stream.Duplex {
         // We prefer feature detection whenever possible, but sometimes that's not
         // possible for certain implementations.
         this._isReactNativeWebrtc =
-            typeof this._pc._peerConnectionId === 'number';
+            typeof this.pc._peerConnectionId === 'number';
 
-        this._pc.oniceconnectionstatechange = () => {
+        this.pc.oniceconnectionstatechange = () => {
             this._onIceStateChange();
         };
-        this._pc.onicegatheringstatechange = () => {
+        this.pc.onicegatheringstatechange = () => {
             this._onIceStateChange();
         };
-        this._pc.onconnectionstatechange = () => {
+        this.pc.onconnectionstatechange = () => {
             this._onConnectionStateChange();
         };
-        this._pc.onsignalingstatechange = () => {
+        this.pc.onsignalingstatechange = () => {
             this._onSignalingStateChange();
         };
-        this._pc.onicecandidate = (event) => {
+        this.pc.onicecandidate = (event) => {
             this._onIceCandidate(event);
         };
 
         // HACK: Fix for odd Firefox behavior, see: https://github.com/feross/simple-peer/pull/783
-        if (typeof this._pc.peerIdentity === 'object') {
-            this._pc.peerIdentity.catch((err) => {
+        if (typeof this.pc.peerIdentity === 'object') {
+            this.pc.peerIdentity.catch((err) => {
                 this.destroy(errCode(err, 'ERR_PC_PEER_IDENTITY'));
             });
         }
@@ -138,7 +138,7 @@ export default class Peer extends stream.Duplex {
         // - onnegotiationneeded
 
         this._setupData({
-            channel: this._pc.createDataChannel(
+            channel: this.pc.createDataChannel(
                 this.channelName,
                 this.channelConfig,
             ),
@@ -149,9 +149,9 @@ export default class Peer extends stream.Duplex {
                 this.addStream(stream);
             });
         }
-        this._pc.ontrack = () => {};
+        this.pc.ontrack = () => {};
 
-        this._pc.onaddstream = (event) => {
+        this.pc.onaddstream = (event) => {
             this._onStream(event);
         };
 
@@ -164,13 +164,13 @@ export default class Peer extends stream.Duplex {
     }
 
     get bufferSize() {
-        return (this._channel && this._channel.bufferedAmount) || 0;
+        return (this.channel && this.channel.bufferedAmount) || 0;
     }
 
     // HACK: it's possible channel.readyState is "closing" before peer.destroy() fires
     // https://bugs.chromium.org/p/chromium/issues/detail?id=882743
     get connected() {
-        return this._connected && this._channel.readyState === 'open';
+        return this._connected && this.channel.readyState === 'open';
     }
 
     addres() {
@@ -209,14 +209,14 @@ export default class Peer extends stream.Duplex {
             );
         }
         if (data.candidate) {
-            if (this._pc.remoteDescription && this._pc.remoteDescription.type) {
+            if (this.pc.remoteDescription && this.pc.remoteDescription.type) {
                 this._addIceCandidate(data.candidate);
             } else {
-                this._pendingCandidates.push(data.candidate);
+                this.pendingCandidates.push(data.candidate);
             }
         }
         if (data.sdp) {
-            this._pc.
+            this.pc.
                 setRemoteDescription(
                     new RTCSessionDescription(data),
                 ).
@@ -225,12 +225,12 @@ export default class Peer extends stream.Duplex {
                         return;
                     }
 
-                    this._pendingCandidates.forEach((candidate) => {
+                    this.pendingCandidates.forEach((candidate) => {
                         this._addIceCandidate(candidate);
                     });
-                    this._pendingCandidates = [];
+                    this.pendingCandidates = [];
 
-                    if (this._pc.remoteDescription.type === 'offer') {
+                    if (this.pc.remoteDescription.type === 'offer') {
                         this._createAnswer();
                     }
                 }).
@@ -255,7 +255,7 @@ export default class Peer extends stream.Duplex {
 
     _addIceCandidate(candidate) {
         const iceCandidateObj = new RTCIceCandidate(candidate);
-        this._pc.addIceCandidate(iceCandidateObj).catch((err) => {
+        this.pc.addIceCandidate(iceCandidateObj).catch((err) => {
             if (
                 !iceCandidateObj.address ||
                 iceCandidateObj.address.endsWith('.local')
@@ -281,7 +281,7 @@ export default class Peer extends stream.Duplex {
                 'ERR_DESTROYED',
             );
         }
-        this._channel.send(chunk);
+        this.channel.send(chunk);
     }
 
     /**
@@ -301,7 +301,7 @@ export default class Peer extends stream.Duplex {
         }
 
         try {
-            this._pc.addTransceiver(kind, init);
+            this.pc.addTransceiver(kind, init);
             this._needsNegotiation();
         } catch (err) {
             this.destroy(errCode(err, 'ERR_ADD_TRANSCEIVER'));
@@ -344,12 +344,12 @@ export default class Peer extends stream.Duplex {
             );
         }
 
-        const submap = this._senderMap.get(track) || new Map(); // nested Maps map [track, stream] to sender
+        const submap = this.senderMap.get(track) || new Map(); // nested Maps map [track, stream] to sender
         let sender = submap.get(stream);
         if (!sender) {
             sender = stream.addTrack(track);
             submap.set(stream, sender);
-            this._senderMap.set(track, submap);
+            this.senderMap.set(track, submap);
             this._needsNegotiation();
         } else if (sender.removed) {
             throw errCode(
@@ -383,7 +383,7 @@ export default class Peer extends stream.Duplex {
             );
         }
 
-        const submap = this._senderMap.get(oldTrack);
+        const submap = this.senderMap.get(oldTrack);
         const sender = submap ? submap.get(stream) : null;
         if (!sender) {
             throw errCode(
@@ -392,7 +392,7 @@ export default class Peer extends stream.Duplex {
             );
         }
         if (newTrack) {
-            this._senderMap.set(newTrack, submap);
+            this.senderMap.set(newTrack, submap);
         }
 
         if (sender.replaceTrack != null) {
@@ -423,7 +423,7 @@ export default class Peer extends stream.Duplex {
             );
         }
 
-        const submap = this._senderMap.get(track);
+        const submap = this.senderMap.get(track);
         const sender = submap ? submap.get(stream) : null;
         if (!sender) {
             throw errCode(
@@ -433,10 +433,10 @@ export default class Peer extends stream.Duplex {
         }
         try {
             sender.removed = true;
-            this._pc.removeTrack(sender);
+            this.pc.removeTrack(sender);
         } catch (err) {
             if (err.name === 'NS_ERROR_UNEXPECTED') {
-                this._sendersAwaitingStable.push(sender); // HACK: Firefox must wait until (signalingState === stable) https://bugzilla.mozilla.org/show_bug.cgi?id=1133874
+                this.sendersAwaitingStable.push(sender); // HACK: Firefox must wait until (signalingState === stable) https://bugzilla.mozilla.org/show_bug.cgi?id=1133874
             } else {
                 this.destroy(errCode(err, 'ERR_REMOVE_TRACK'));
             }
@@ -465,14 +465,14 @@ export default class Peer extends stream.Duplex {
     }
 
     _needsNegotiation() {
-        if (this._batchedNegotiation) {
+        if (this.batchedNegotiation) {
             return;
         } // batch synchronous renegotiations
-        this._batchedNegotiation = true;
+        this.batchedNegotiation = true;
         queueMicrotask(() => {
-            this._batchedNegotiation = false;
+            this.batchedNegotiation = false;
             this.negotiate();
-            this._firstNegotiation = false;
+            this.firstNegotiation = false;
         });
     }
 
@@ -487,15 +487,15 @@ export default class Peer extends stream.Duplex {
             );
         }
 
-        if (this._isNegotiating) {
-            this._queuedNegotiation = true;
+        if (this.isNegotiating) {
+            this.queuedNegotiation = true;
         } else {
             setTimeout(() => {
                 // HACK: Chrome crashes if we immediately call createOffer
                 this._createOffer();
             }, 0);
         }
-        this._isNegotiating = true;
+        this.isNegotiating = true;
     }
 
     // TODO: Delete this method once readable-stream is updated to contain a default
@@ -522,51 +522,51 @@ export default class Peer extends stream.Duplex {
             // if (!this._writableState?.finished) this.end();
 
             this._connected = false;
-            this._pcReady = false;
-            this._channelReady = false;
-            this._remoteTracks = null;
-            this._remoteStreams = null;
-            this._senderMap = null;
+            this.pcReady = false;
+            this.channelReady = false;
+            this.remoteTracks = null;
+            this.remoteStreams = null;
+            this.senderMap = null;
 
-            clearInterval(this._closingInterval);
-            this._closingInterval = null;
+            clearInterval(this.closingInterval);
+            this.closingInterval = null;
 
-            clearInterval(this._interval);
-            this._interval = null;
-            this._chunk = null;
-            this._cb = null;
+            clearInterval(this.interval);
+            this.interval = null;
+            this.chunk = null;
+            this.cb = null;
 
             if (this._onFinishBound) {
                 this.removeListener('finish', this._onFinishBound);
             }
             this._onFinishBound = null;
 
-            if (this._channel) {
+            if (this.channel) {
                 try {
-                    this._channel.close();
+                    this.channel.close();
                 } catch (err) {}
 
                 // allow events concurrent with destruction to be handled
-                this._channel.onmessage = null;
-                this._channel.onopen = null;
-                this._channel.onclose = null;
-                this._channel.onerror = null;
+                this.channel.onmessage = null;
+                this.channel.onopen = null;
+                this.channel.onclose = null;
+                this.channel.onerror = null;
             }
-            if (this._pc) {
+            if (this.pc) {
                 try {
-                    this._pc.close();
+                    this.pc.close();
                 } catch (err) {}
 
                 // allow events concurrent with destruction to be handled
-                this._pc.oniceconnectionstatechange = null;
-                this._pc.onicegatheringstatechange = null;
-                this._pc.onsignalingstatechange = null;
-                this._pc.onicecandidate = null;
-                this._pc.ontrack = null;
-                this._pc.ondatachannel = null;
+                this.pc.oniceconnectionstatechange = null;
+                this.pc.onicegatheringstatechange = null;
+                this.pc.onsignalingstatechange = null;
+                this.pc.onicecandidate = null;
+                this.pc.ontrack = null;
+                this.pc.ondatachannel = null;
             }
-            this._pc = null;
-            this._channel = null;
+            this.pc = null;
+            this.channel = null;
 
             if (err) {
                 this.emit('error', err);
@@ -591,28 +591,28 @@ export default class Peer extends stream.Duplex {
             );
         }
 
-        this._channel = event.channel;
-        this._channel.binaryType = 'arraybuffer';
+        this.channel = event.channel;
+        this.channel.binaryType = 'arraybuffer';
 
-        if (typeof this._channel.bufferedAmountLowThreshold === 'number') {
-            this._channel.bufferedAmountLowThreshold = MAX_BUFFERED_AMOUNT;
+        if (typeof this.channel.bufferedAmountLowThreshold === 'number') {
+            this.channel.bufferedAmountLowThreshold = MAX_BUFFERED_AMOUNT;
         }
 
-        this.channelName = this._channel.label;
+        this.channelName = this.channel.label;
 
-        this._channel.onmessage = (event) => {
+        this.channel.onmessage = (event) => {
             this._onChannelMessage(event);
         };
-        this._channel.onbufferedamountlow = () => {
+        this.channel.onbufferedamountlow = () => {
             this._onChannelBufferedAmountLow();
         };
-        this._channel.onopen = () => {
+        this.channel.onopen = () => {
             this._onChannelOpen();
         };
-        this._channel.onclose = () => {
+        this.channel.onclose = () => {
             this._onChannelClose();
         };
-        this._channel.onerror = (event) => {
+        this.channel.onerror = (event) => {
             const err =
                 event.error instanceof Error ?
                     event.error :
@@ -625,9 +625,9 @@ export default class Peer extends stream.Duplex {
         // HACK: Chrome will sometimes get stuck in readyState "closing", let's check for this condition
         // https://bugs.chromium.org/p/chromium/issues/detail?id=882743
         let isClosing = false;
-        this._closingInterval = setInterval(() => {
+        this.closingInterval = setInterval(() => {
             // No "onclosing" event
-            if (this._channel && this._channel.readyState === 'closing') {
+            if (this.channel && this.channel.readyState === 'closing') {
                 if (isClosing) {
                     this._onChannelClose();
                 } // closing timed out: equivalent to onclose firing
@@ -656,14 +656,14 @@ export default class Peer extends stream.Duplex {
             } catch (err) {
                 return this.destroy(errCode(err, 'ERR_DATA_CHANNEL'));
             }
-            if (this._channel.bufferedAmount > MAX_BUFFERED_AMOUNT) {
-                this._cb = cb;
+            if (this.channel.bufferedAmount > MAX_BUFFERED_AMOUNT) {
+                this.cb = cb;
             } else {
                 cb(null);
             }
         } else {
-            this._chunk = chunk;
-            this._cb = cb;
+            this.chunk = chunk;
+            this.cb = cb;
         }
     }
 
@@ -691,14 +691,14 @@ export default class Peer extends stream.Duplex {
         if (this.destroyed) {
             return;
         }
-        if (this._iceCompleteTimer) {
+        if (this.iceCompleteTimer) {
             return;
         }
-        this._iceCompleteTimer = setTimeout(() => {
-            if (!this._iceComplete) {
-                this._iceComplete = true;
+        this.iceCompleteTimer = setTimeout(() => {
+            if (!this.iceComplete) {
+                this.iceComplete = true;
                 this.emit('iceTimeout');
-                this.emit('_iceComplete');
+                this.emit('iceComplete');
             }
         }, ICECOMPLETE_TIMEOUT);
     }
@@ -708,7 +708,7 @@ export default class Peer extends stream.Duplex {
             return;
         }
 
-        this._pc.
+        this.pc.
             createOffer({}).
             then((offer) => {
                 if (this.destroyed) {
@@ -719,7 +719,7 @@ export default class Peer extends stream.Duplex {
                     if (this.destroyed) {
                         return;
                     }
-                    const signal = this._pc.localDescription || offer;
+                    const signal = this.pc.localDescription || offer;
                     this.emit('signal', {
                         type: signal.type,
                         sdp: signal.sdp,
@@ -737,7 +737,7 @@ export default class Peer extends stream.Duplex {
                     this.destroy(errCode(err, 'ERR_SET_LOCAL_DESCRIPTION'));
                 };
 
-                this._pc.
+                this.pc.
                     setLocalDescription(offer).
                     then(onSuccess).
                     catch(onError);
@@ -748,8 +748,8 @@ export default class Peer extends stream.Duplex {
     }
 
     _requestMissingTransceivers() {
-        if (this._pc.getTransceivers) {
-            this._pc.getTransceivers().forEach((transceiver) => {
+        if (this.pc.getTransceivers) {
+            this.pc.getTransceivers().forEach((transceiver) => {
                 if (
                     !transceiver.mid &&
                     transceiver.sender.track &&
@@ -767,7 +767,7 @@ export default class Peer extends stream.Duplex {
             return;
         }
 
-        this._pc.
+        this.pc.
             createAnswer({}).
             then((answer) => {
                 if (this.destroyed) {
@@ -778,7 +778,7 @@ export default class Peer extends stream.Duplex {
                     if (this.destroyed) {
                         return;
                     }
-                    const signal = this._pc.localDescription || answer;
+                    const signal = this.pc.localDescription || answer;
                     this.emit('signal', {
                         type: signal.type,
                         sdp: signal.sdp,
@@ -796,7 +796,7 @@ export default class Peer extends stream.Duplex {
                     this.destroy(errCode(err, 'ERR_SET_LOCAL_DESCRIPTION'));
                 };
 
-                this._pc.
+                this.pc.
                     setLocalDescription(answer).
                     then(onSuccess).
                     catch(onError);
@@ -810,7 +810,7 @@ export default class Peer extends stream.Duplex {
         if (this.destroyed) {
             return;
         }
-        if (this._pc.connectionState === 'failed') {
+        if (this.pc.connectionState === 'failed') {
             this.destroy(
                 errCode(
                     new Error('Connection failed.'),
@@ -824,8 +824,8 @@ export default class Peer extends stream.Duplex {
         if (this.destroyed) {
             return;
         }
-        const iceConnectionState = this._pc.iceConnectionState;
-        const iceGatheringState = this._pc.iceGatheringState;
+        const iceConnectionState = this.pc.iceConnectionState;
+        const iceGatheringState = this.pc.iceGatheringState;
 
         this.emit('iceStateChange', iceConnectionState, iceGatheringState);
 
@@ -833,7 +833,7 @@ export default class Peer extends stream.Duplex {
             iceConnectionState === 'connected' ||
             iceConnectionState === 'completed'
         ) {
-            this._pcReady = true;
+            this.pcReady = true;
             this._maybeReady();
         }
         if (iceConnectionState === 'failed') {
@@ -869,8 +869,8 @@ export default class Peer extends stream.Duplex {
         };
 
         // Promise-based getStats() (standard)
-        if (this._pc.getStats.length === 0 || this._isReactNativeWebrtc) {
-            this._pc.getStats().then(
+        if (this.pc.getStats.length === 0 || this._isReactNativeWebrtc) {
+            this.pc.getStats().then(
                 (res) => {
                     const reports = [];
                     res.forEach((report) => {
@@ -882,8 +882,8 @@ export default class Peer extends stream.Duplex {
             );
 
             // Single-parameter callback-based getStats() (non-standard)
-        } else if (this._pc.getStats.length > 0) {
-            this._pc.getStats(
+        } else if (this.pc.getStats.length > 0) {
+            this.pc.getStats(
                 (res) => {
                     // If we destroy connection in `connect` callback this code might happen to run when actual connection is already closed
                     if (this.destroyed) {
@@ -917,8 +917,8 @@ export default class Peer extends stream.Duplex {
         if (
             this._connected ||
             this._connecting ||
-            !this._pcReady ||
-            !this._channelReady
+            !this.pcReady ||
+            !this.channelReady
         ) {
             return;
         }
@@ -1065,27 +1065,27 @@ export default class Peer extends stream.Duplex {
                 this._connecting = false;
                 this._connected = true;
 
-                if (this._chunk) {
+                if (this.chunk) {
                     try {
-                        this.send(this._chunk);
+                        this.send(this.chunk);
                     } catch (err) {
                         return this.destroy(errCode(err, 'ERR_DATA_CHANNEL'));
                     }
-                    this._chunk = null;
+                    this.chunk = null;
 
-                    const cb = this._cb;
-                    this._cb = null;
+                    const cb = this.cb;
+                    this.cb = null;
                     cb(null);
                 }
 
                 // If `bufferedAmountLowThreshold` and 'onbufferedamountlow' are unsupported,
                 // fallback to using setInterval to implement backpressure.
                 if (
-                    typeof this._channel.bufferedAmountLowThreshold !== 'number'
+                    typeof this.channel.bufferedAmountLowThreshold !== 'number'
                 ) {
-                    this._interval = setInterval(() => this._onInterval(), 150);
-                    if (this._interval.unref) {
-                        this._interval.unref();
+                    this.interval = setInterval(() => this._onInterval(), 150);
+                    if (this.interval.unref) {
+                        this.interval.unref();
                     }
                 }
 
@@ -1097,9 +1097,9 @@ export default class Peer extends stream.Duplex {
 
     _onInterval() {
         if (
-            !this._cb ||
-            !this._channel ||
-            this._channel.bufferedAmount > MAX_BUFFERED_AMOUNT
+            !this.cb ||
+            !this.channel ||
+            this.channel.bufferedAmount > MAX_BUFFERED_AMOUNT
         ) {
             return;
         }
@@ -1111,25 +1111,25 @@ export default class Peer extends stream.Duplex {
             return;
         }
 
-        if (this._pc.signalingState === 'stable') {
-            this._isNegotiating = false;
+        if (this.pc.signalingState === 'stable') {
+            this.isNegotiating = false;
 
             // HACK: Firefox doesn't yet support removing tracks when signalingState !== 'stable'
-            this._sendersAwaitingStable.forEach((sender) => {
-                this._pc.removeTrack(sender);
-                this._queuedNegotiation = true;
+            this.sendersAwaitingStable.forEach((sender) => {
+                this.pc.removeTrack(sender);
+                this.queuedNegotiation = true;
             });
-            this._sendersAwaitingStable = [];
+            this.sendersAwaitingStable = [];
 
-            if (this._queuedNegotiation) {
-                this._queuedNegotiation = false;
+            if (this.queuedNegotiation) {
+                this.queuedNegotiation = false;
                 this._needsNegotiation(); // negotiate again
             } else {
                 this.emit('negotiated');
             }
         }
 
-        this.emit('signalingStateChange', this._pc.signalingState);
+        this.emit('signalingStateChange', this.pc.signalingState);
     }
 
     _onIceCandidate(event) {
@@ -1145,9 +1145,9 @@ export default class Peer extends stream.Duplex {
                     sdpMid: event.candidate.sdpMid,
                 },
             });
-        } else if (!event.candidate && !this._iceComplete) {
-            this._iceComplete = true;
-            this.emit('_iceComplete');
+        } else if (!event.candidate && !this.iceComplete) {
+            this.iceComplete = true;
+            this.emit('iceComplete');
         }
 
         // as soon as we've received one valid candidate start timeout
@@ -1168,11 +1168,11 @@ export default class Peer extends stream.Duplex {
     }
 
     _onChannelBufferedAmountLow() {
-        if (this.destroyed || !this._cb) {
+        if (this.destroyed || !this.cb) {
             return;
         }
-        const cb = this._cb;
-        this._cb = null;
+        const cb = this.cb;
+        this.cb = null;
         cb(null);
     }
 
@@ -1180,7 +1180,7 @@ export default class Peer extends stream.Duplex {
         if (this._connected || this.destroyed) {
             return;
         }
-        this._channelReady = true;
+        this.channelReady = true;
         this._maybeReady();
     }
 
@@ -1196,30 +1196,30 @@ export default class Peer extends stream.Duplex {
             return;
         }
 
-        event.target._remoteStreams.forEach((eventStream) => {
+        event.target.remoteStreams.forEach((eventStream) => {
             eventStream._tracks.forEach((eventTrack) => {
                 if (
-                    this._remoteTracks.some((remoteTrack) => {
+                    this.remoteTracks.some((remoteTrack) => {
                         return remoteTrack.id === eventTrack.id;
                     })
                 ) {
                     return;
                 } // Only fire one 'stream' event, even though there may be multiple tracks per stream
 
-                this._remoteTracks.push({track: event.track, stream: eventStream});
+                this.remoteTracks.push({track: event.track, stream: eventStream});
                 this.emit('track', eventTrack, eventStream);
             });
 
 
             if (
-                this._remoteStreams.some((remoteStream) => {
+                this.remoteStreams.some((remoteStream) => {
                     return remoteStream.id === eventStream.id;
                 })
             ) {
                 return;
             } // Only fire one 'stream' event, even though there may be multiple tracks per stream
 
-            this._remoteStreams.push(eventStream);
+            this.remoteStreams.push(eventStream);
             queueMicrotask(() => {
                 this.emit('stream', eventStream); // ensure all tracks have been added
             });
