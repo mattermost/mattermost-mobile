@@ -106,7 +106,7 @@ export default class Peer extends stream.Duplex {
                         ],
                     },
                 ],
-                sdpSemantics: 'unified-plan'
+                sdpSemantics: 'unified-plan',
             });
         } catch (err) {
             this.destroy(errCode(err, 'ERR_PC_CONSTRUCTOR'));
@@ -153,7 +153,7 @@ export default class Peer extends stream.Duplex {
                 this.addStream(s);
             });
         }
-        this.pc.ontrack = () => {};
+        this.pc.ontrack = () => null;
 
         this.pc.onaddstream = (event) => {
             this.onStream(event);
@@ -308,9 +308,9 @@ export default class Peer extends stream.Duplex {
 
     /**
      * Add a MediaStream to the connection.
-     * @param {MediaStream} stream
+     * @param {MediaStream} s
      */
-    addStream(stream) {
+    addStream(s) {
         if (this.destroying) {
             return;
         }
@@ -321,17 +321,17 @@ export default class Peer extends stream.Duplex {
             );
         }
 
-        stream.getTracks().forEach((track) => {
-            this.addTrack(track, stream);
+        s.getTracks().forEach((track) => {
+            this.addTrack(track, s);
         });
     }
 
     /**
      * Add a MediaStreamTrack to the connection.
      * @param {MediaStreamTrack} track
-     * @param {MediaStream} stream
+     * @param {MediaStream} s
      */
-    addTrack(track, stream) {
+    addTrack(track, s) {
         if (this.destroying) {
             return;
         }
@@ -343,10 +343,10 @@ export default class Peer extends stream.Duplex {
         }
 
         const submap = this.senderMap.get(track) || new Map(); // nested Maps map [track, stream] to sender
-        let sender = submap.get(stream);
+        let sender = submap.get(s);
         if (!sender) {
-            sender = stream.addTrack(track);
-            submap.set(stream, sender);
+            sender = s.addTrack(track);
+            submap.set(s, sender);
             this.senderMap.set(track, submap);
             this.needsNegotiation();
         } else if (sender.removed) {
@@ -416,7 +416,8 @@ export default class Peer extends stream.Duplex {
             this.destroyed = true;
             this.destroying = false;
 
-            this.readable = this.writable = false;
+            this.readable = false;
+            this.writable = false;
 
             // if (!this._readableState?.ended) this.push(null);
             // if (!this._writableState?.finished) this.end();
@@ -481,7 +482,7 @@ export default class Peer extends stream.Duplex {
             // In some situations `pc.createDataChannel()` returns `undefined` (in wrtc),
             // which is invalid behavior. Handle it gracefully.
             // See: https://github.com/feross/simple-peer/issues/163
-            return this.destroy(
+            this.destroy(
                 errCode(
                     new Error(
                         'Data channel event is missing `channel` property',
@@ -489,6 +490,7 @@ export default class Peer extends stream.Duplex {
                     'ERR_DATA_CHANNEL',
                 ),
             );
+            return;
         }
 
         this.channel = event.channel;
@@ -500,8 +502,8 @@ export default class Peer extends stream.Duplex {
 
         this.channelName = this.channel.label;
 
-        this.channel.onmessage = (event) => {
-            this.onChannelMessage(event);
+        this.channel.onmessage = (e) => {
+            this.onChannelMessage(e);
         };
         this.channel.onbufferedamountlow = () => {
             this.onChannelBufferedAmountLow();
@@ -512,12 +514,12 @@ export default class Peer extends stream.Duplex {
         this.channel.onclose = () => {
             this.onChannelClose();
         };
-        this.channel.onerror = (event) => {
+        this.channel.onerror = (e) => {
             const err =
-                event.error instanceof Error ?
-                    event.error :
+                e.error instanceof Error ?
+                    e.error :
                     new Error(
-                        `Datachannel error: ${event.message} ${event.filename}:${event.lineno}:${event.colno}`,
+                        `Datachannel error: ${e.message} ${e.filename}:${e.lineno}:${e.colno}`,
                     );
             this.destroy(errCode(err, 'ERR_DATA_CHANNEL'));
         };
@@ -538,7 +540,9 @@ export default class Peer extends stream.Duplex {
         }, CHANNEL_CLOSING_TIMEOUT);
     }
 
-    _read() {}
+    _read() {
+        return null;
+    }
 
     _write(chunk, encoding, cb) {
         if (this.destroyed) {
@@ -768,14 +772,14 @@ export default class Peer extends stream.Duplex {
     maybeReady() {
         if (
             this.isConnected ||
-            this._connecting ||
+            this.connecting ||
             !this.pcReady ||
             !this.channelReady
         ) {
             return;
         }
 
-        this._connecting = true;
+        this.connecting = true;
 
         // HACK: We can't rely on order here, for details see https://github.com/js-platform/node-webrtc/issues/339
         const findCandidatePair = () => {
@@ -914,14 +918,15 @@ export default class Peer extends stream.Duplex {
                     setTimeout(findCandidatePair, 100);
                     return;
                 }
-                this._connecting = false;
+                this.connecting = false;
                 this.isConnected = true;
 
                 if (this.chunk) {
                     try {
                         this.send(this.chunk);
-                    } catch (err) {
-                        return this.destroy(errCode(err, 'ERR_DATA_CHANNEL'));
+                    } catch (err2) {
+                        this.destroy(errCode(err2, 'ERR_DATA_CHANNEL'));
+                        return;
                     }
                     this.chunk = null;
 
@@ -1061,7 +1066,6 @@ export default class Peer extends stream.Duplex {
                 this.remoteTracks.push({track: event.track, stream: eventStream});
                 this.emit('track', eventTrack, eventStream);
             });
-
 
             if (
                 this.remoteStreams.some((remoteStream) => {
