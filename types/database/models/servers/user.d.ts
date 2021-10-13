@@ -91,6 +91,6 @@ export default class UserModel extends Model {
     /** teams : All the team that this user is part of  */
     teams: Query<TeamMembershipModel>;
 
-    /**  prepareSatus: Prepare the model to update the user status in a batch operation */
-    prepareSatus: (status: string) => void;
+    /**  prepareStatus: Prepare the model to update the user status in a batch operation */
+    prepareStatus: (status: string) => void;
 }

@@ -58,6 +58,7 @@ export const SYSTEM_IDENTIFIERS = {
     LICENSE: 'license',
     WEBSOCKET: 'WebSocket',
     TEAM_HISTORY: 'teamHistory',
+    RECENT_CUSTOM_STATUS: 'recentCustomStatus',
 };
 
 export const GLOBAL_IDENTIFIERS = {

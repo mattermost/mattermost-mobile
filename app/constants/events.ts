@@ -1,11 +1,12 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-const Events = {
-    LEAVE_CHANNEL: 'leave_channel',
-    LEAVE_TEAM: 'leave_team',
-    TEAM_LOAD_ERROR: 'team_load_error',
-    CHANNEL_DELETED: 'channel_deleted',
-};
+import keyMirror from '@utils/key_mirror';
 
-export default Events;
+export default keyMirror({
+    ACCOUNT_SELECT_TABLET_VIEW: null,
+    LEAVE_CHANNEL: null,
+    LEAVE_TEAM: null,
+    TEAM_LOAD_ERROR: null,
+    CHANNEL_DELETED: null,
+});

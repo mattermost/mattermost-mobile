@@ -2,20 +2,28 @@
 // See LICENSE.txt for license information.
 
 import merge from 'deepmerge';
-import {Appearance, DeviceEventEmitter, Keyboard, Platform} from 'react-native';
+import {Appearance, DeviceEventEmitter, NativeModules, Platform} from 'react-native';
 import {Navigation, Options, OptionsModalPresentationStyle} from 'react-native-navigation';
 
+import CompassIcon from '@components/compass_icon';
 import {Device, Preferences, Screens} from '@constants';
 import NavigationConstants from '@constants/navigation';
 import EphemeralStore from '@store/ephemeral_store';
+import {changeOpacity} from '@utils/theme';
 
 import type {LaunchProps} from '@typings/launch';
+
+const {MattermostManaged} = NativeModules;
+const isRunningInSplitView = MattermostManaged.isRunningInSplitView;
 
 Navigation.setDefaultOptions({
     layout: {
 
         //@ts-expect-error all not defined in type definition
         orientation: [Device.IS_TABLET ? 'all' : 'portrait'],
+    },
+    statusBar: {
+        backgroundColor: 'rgba(20, 33, 62, 0.42)',
     },
 });
 
@@ -261,7 +269,10 @@ export function showModal(name: string, title: string, passProps = {}, options =
                 component: {
                     id: name,
                     name,
-                    passProps,
+                    passProps: {
+                        ...passProps,
+                        isModal: true,
+                    },
                     options: merge(defaultOptions, options),
                 },
             }],
@@ -353,14 +364,15 @@ export async function dismissModal(options = {}) {
         return;
     }
 
-    const componentId = EphemeralStore.getNavigationTopComponentId();
-
-    try {
-        await Navigation.dismissModal(componentId, options);
-        EphemeralStore.removeNavigationModal(componentId);
-    } catch (error) {
-        // RNN returns a promise rejection if there is no modal to
-        // dismiss. We'll do nothing in this case.
+    const componentId = EphemeralStore.getNavigationTopModalId();
+    if (componentId) {
+        try {
+            await Navigation.dismissModal(componentId, options);
+            EphemeralStore.removeNavigationModal(componentId);
+        } catch (error) {
+            // RNN returns a promise rejection if there is no modal to
+            // dismiss. We'll do nothing in this case.
+        }
     }
 }
 
@@ -421,68 +433,46 @@ export async function dismissOverlay(componentId: string) {
     }
 }
 
-export function openMainSideMenu() {
-    if (Platform.OS === 'ios') {
-        return;
-    }
-
-    const componentId = EphemeralStore.getNavigationTopComponentId();
-
-    Keyboard.dismiss();
-    Navigation.mergeOptions(componentId, {
-        sideMenu: {
-            left: {visible: true},
-        },
-    });
+type BottomSheetArgs = {
+    closeButtonId: string;
+    renderContent: () => JSX.Element;
+    snapPoints: number[];
+    theme: Theme;
+    title: string;
 }
 
-export function closeMainSideMenu() {
-    if (Platform.OS === 'ios') {
-        return;
+export async function bottomSheet({title, renderContent, snapPoints, theme, closeButtonId}: BottomSheetArgs) {
+    const {isSplitView} = await isRunningInSplitView();
+    const isTablet = Device.IS_TABLET && !isSplitView;
+
+    if (isTablet) {
+        const closeButton = CompassIcon.getImageSourceSync('close', 24, theme.centerChannelColor);
+        showModal(Screens.BOTTOM_SHEET, title, {
+            closeButtonId,
+            renderContent,
+            snapPoints,
+        }, {
+            modalPresentationStyle: OptionsModalPresentationStyle.formSheet,
+            swipeToDismiss: true,
+            topBar: {
+                leftButtons: [{
+                    id: closeButtonId,
+                    icon: closeButton,
+                    testID: closeButtonId,
+                }],
+                leftButtonColor: changeOpacity(theme.centerChannelColor, 0.56),
+                background: {
+                    color: theme.centerChannelBg,
+                },
+                title: {
+                    color: theme.centerChannelColor,
+                },
+            },
+        });
+    } else {
+        showModalOverCurrentContext(Screens.BOTTOM_SHEET, {
+            renderContent,
+            snapPoints,
+        }, {swipeToDismiss: true});
     }
-
-    Keyboard.dismiss();
-    Navigation.mergeOptions(Screens.CHANNEL, {
-        sideMenu: {
-            left: {visible: false},
-        },
-    });
-}
-
-export function enableMainSideMenu(enabled: boolean, visible = true) {
-    if (Platform.OS === 'ios') {
-        return;
-    }
-
-    Navigation.mergeOptions(Screens.CHANNEL, {
-        sideMenu: {
-            left: {enabled, visible},
-        },
-    });
-}
-
-export function openSettingsSideMenu() {
-    if (Platform.OS === 'ios') {
-        return;
-    }
-
-    Keyboard.dismiss();
-    Navigation.mergeOptions(Screens.CHANNEL, {
-        sideMenu: {
-            right: {visible: true},
-        },
-    });
-}
-
-export function closeSettingsSideMenu() {
-    if (Platform.OS === 'ios') {
-        return;
-    }
-
-    Keyboard.dismiss();
-    Navigation.mergeOptions(Screens.CHANNEL, {
-        sideMenu: {
-            right: {visible: false},
-        },
-    });
 }

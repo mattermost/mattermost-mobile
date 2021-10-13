@@ -14,7 +14,7 @@ import ManagedApp from './app/init/managed_app';
 import NetworkManager from './app/init/network_manager';
 import PushNotifications from './app/init/push_notifications';
 import WebsocketManager from './app/init/websocket_manager';
-import {registerScreens} from './app/screens/index';
+import {registerScreens} from './app/screens';
 import EphemeralStore from './app/store/ephemeral_store';
 import setFontFamily from './app/utils/font_family';
 
@@ -83,5 +83,9 @@ function componentDidAppearListener({componentId}: ComponentDidAppearEvent) {
 function componentDidDisappearListener({componentId}: ComponentDidDisappearEvent) {
     if (componentId !== Screens.HOME) {
         EphemeralStore.removeNavigationComponentId(componentId);
+
+        if (EphemeralStore.getNavigationTopComponentId() === Screens.HOME) {
+            DeviceEventEmitter.emit('tabBarVisible', true);
+        }
     }
 }
