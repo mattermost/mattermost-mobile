@@ -91,14 +91,13 @@ const BottomSheet = ({closeButtonId, initialSnapIndex = 0, renderContent, snapPo
         );
     };
 
-    const renderContainer = () => (
+    const renderContainerContent = () => (
         <View
             style={{
                 backgroundColor: theme.centerChannelBg,
                 opacity: 1,
-                paddingHorizontal: 16,
-                paddingBottom: isTablet ? 20 : 16,
-                paddingTop: isTablet ? 0 : 16,
+                paddingHorizontal: 20,
+                paddingTop: isTablet ? 0 : 20,
                 height: '100%',
                 width: isTablet ? '100%' : Math.min(dimensions.width, 450),
                 alignSelf: 'center',
@@ -113,7 +112,7 @@ const BottomSheet = ({closeButtonId, initialSnapIndex = 0, renderContent, snapPo
         return (
             <>
                 <View style={styles.separator}/>
-                {renderContainer()}
+                {renderContainerContent()}
             </>
         );
     }
@@ -125,7 +124,7 @@ const BottomSheet = ({closeButtonId, initialSnapIndex = 0, renderContent, snapPo
                 snapPoints={snapPoints}
                 borderRadius={10}
                 initialSnap={initialSnapIndex}
-                renderContent={renderContainer}
+                renderContent={renderContainerContent}
                 onCloseEnd={() => dismissModal()}
                 enabledBottomInitialAnimation={true}
                 renderHeader={Indicator}

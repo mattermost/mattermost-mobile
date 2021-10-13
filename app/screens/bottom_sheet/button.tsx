@@ -10,11 +10,11 @@ import {useTheme} from '@context/theme';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 
 type Props = {
-    onPress: (e: GestureResponderEvent) => void;
+    onPress?: (e: GestureResponderEvent) => void;
     icon?: string;
     text?: string;
 }
-export default function Button({onPress, icon, text}: Props) {
+export default function BottomSheetButton({onPress, icon, text}: Props) {
     const theme = useTheme();
     const styles = getStyleSheet(theme);
 
@@ -46,7 +46,6 @@ export default function Button({onPress, icon, text}: Props) {
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     return {
         button: {
-            marginHorizontal: 20,
             backgroundColor: theme.buttonBg,
             display: 'flex',
             flexDirection: 'row',

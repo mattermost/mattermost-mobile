@@ -56,7 +56,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     return {
         container: {
             height: 64,
-            marginVertical: 4,
+            marginVertical: 2,
         },
         touchable: {
             display: 'flex',

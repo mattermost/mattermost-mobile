@@ -3,13 +3,11 @@
 
 import React, {useCallback} from 'react';
 import {useIntl} from 'react-intl';
-import {DeviceEventEmitter, Text, useWindowDimensions, View} from 'react-native';
+import {DeviceEventEmitter} from 'react-native';
 
 import {Navigation} from '@constants';
-import {useTheme} from '@context/theme';
-import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
+import BottomSheetContent from '@screens/bottom_sheet/content';
 
-import Button from './button';
 import TeamList from './team_list';
 
 import type TeamModel from '@typings/database/models/servers/team';
@@ -21,11 +19,7 @@ type Props = {
 }
 
 export default function AddTeamSlideUp({otherTeams, canCreateTeams, showTitle = true}: Props) {
-    const theme = useTheme();
-    const styles = getStyleSheet(theme);
     const intl = useIntl();
-    const dimensions = useWindowDimensions();
-    const separatorWidth = Math.max(dimensions.width + 16, 450);
 
     const onPressCreate = useCallback(() => {
         //TODO Create team screen
@@ -33,44 +27,15 @@ export default function AddTeamSlideUp({otherTeams, canCreateTeams, showTitle = 
     }, []);
 
     return (
-        <View style={styles.container}>
-            {showTitle &&
-                <View>
-                    <Text style={styles.headerText}>{intl.formatMessage({id: 'mobile.add_team.join_team', defaultMessage: 'Join Another Team'})}</Text>
-                </View>
-            }
+        <BottomSheetContent
+            buttonIcon='plus'
+            buttonText={intl.formatMessage({id: 'mobile.add_team.create_team', defaultMessage: 'Create a New Team'})}
+            onPress={onPressCreate}
+            showButton={canCreateTeams}
+            showTitle={showTitle}
+            title={intl.formatMessage({id: 'mobile.add_team.join_team', defaultMessage: 'Join Another Team'})}
+        >
             <TeamList teams={otherTeams}/>
-            {canCreateTeams && (
-                <>
-                    <View style={[styles.separator, {width: separatorWidth}]}/>
-                    <Button
-                        onPress={onPressCreate}
-                        icon={'plus'}
-                        text={intl.formatMessage({id: 'mobile.add_team.create_team', defaultMessage: 'Create a New Team'})}
-                    />
-                </>
-            )}
-        </View>
+        </BottomSheetContent>
     );
 }
-
-const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
-    return {
-        container: {
-            flex: 1,
-        },
-        headerText: {
-            color: theme.centerChannelColor,
-            lineHeight: 30,
-            fontSize: 25,
-            fontWeight: 'bold',
-        },
-        separator: {
-            height: 1,
-            right: 16,
-            borderTopWidth: 1,
-            borderColor: changeOpacity(theme.centerChannelColor, 0.08),
-            marginBottom: 20,
-        },
-    };
-});
