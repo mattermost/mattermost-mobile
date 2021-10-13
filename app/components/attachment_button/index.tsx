@@ -1,7 +1,6 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {lookupMimeType} from '@mm-redux/utils/file_utils';
 import * as FileSystem from 'expo-file-system';
 import React, {PureComponent} from 'react';
 import {injectIntl, IntlShape} from 'react-intl';
@@ -14,7 +13,8 @@ import {
 } from 'react-native';
 import AndroidOpenSettings from 'react-native-android-open-settings';
 import DocumentPicker from 'react-native-document-picker';
-import {launchImageLibrary, launchCamera} from 'react-native-image-picker';
+import {launchImageLibrary, launchCamera, ImageLibraryOptions, CameraOptions} from 'react-native-image-picker';
+import {MediaType} from 'react-native-image-picker/src/types';
 import Permissions from 'react-native-permissions';
 
 import {getPermissionMessages} from '@components/attachment_button/constant';
@@ -23,6 +23,7 @@ import TouchableWithFeedback from '@components/touchable_with_feedback';
 import {Navigation, Files} from '@constants';
 import {t} from '@i18n';
 import {showModalOverCurrentContext} from '@screens/navigation';
+import {lookupMimeType} from '@utils/file';
 import {changeOpacity} from '@utils/theme';
 
 const ShareExtension = NativeModules.MattermostShare;
@@ -122,11 +123,10 @@ class AttachmentButton extends PureComponent<AttachmentButtonProps> {
         return this.attachFileFromCamera('camera', 'photo');
     };
 
-    attachFileFromCamera = async (source: string, mediaType: string | undefined) => {
-        const options = {
+    attachFileFromCamera = async (source: string, mediaType: MediaType) => {
+        const options: CameraOptions = {
             quality: 0.8,
             videoQuality: 'high',
-            noData: true,
             mediaType,
             saveToPhotos: true,
         };
@@ -149,7 +149,7 @@ class AttachmentButton extends PureComponent<AttachmentButtonProps> {
     };
 
     attachFileFromLibrary = async () => {
-        const options = {
+        const options: ImageLibraryOptions = {
             quality: 1,
             mediaType: 'mixed',
             includeBase64: false,
@@ -181,10 +181,9 @@ class AttachmentButton extends PureComponent<AttachmentButtonProps> {
     };
 
     attachVideoFromLibraryAndroid = () => {
-        const options = {
+        const options: ImageLibraryOptions = {
             videoQuality: 'high',
             mediaType: 'video',
-            noData: true,
         };
 
         launchImageLibrary(options, async (response: FileResponse) => {
@@ -351,9 +350,10 @@ class AttachmentButton extends PureComponent<AttachmentButtonProps> {
 
         if (!file.fileSize || !file.fileName) {
             const path = (file?.path || file.uri).replace('file://', '');
-            const fileInfo = await RNFetchBlob.fs.stat(path);
+            const fileInfo = await FileSystem.getInfoAsync(path);
+            const uri = fileInfo.uri;
             file.fileSize = fileInfo.size;
-            file.fileName = fileInfo.filename;
+            file.fileName = uri.substr(uri.lastIndexOf('/') + 1);
         }
 
         if (!file.type) {
