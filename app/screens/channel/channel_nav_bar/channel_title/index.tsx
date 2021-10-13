@@ -56,7 +56,7 @@ const ChannelTitle = ({
     const channelType = channel.type;
     const isArchived = channel.deleteAt !== 0;
     const isChannelMuted = channelSettings.notifyProps?.mark_unread === 'mention';
-    const isChannelShared = false; // todo: Read this value from ChannelModel when implemented
+    const isChannelShared = channel.shared;
     const hasGuests = channelInfo.guestCount > 0;
     const teammateRoles = teammate?.roles ?? '';
     const isGuest = channelType === General.DM_CHANNEL && isTeammateGuest(teammateRoles);
