@@ -177,14 +177,6 @@ export default class Peer extends stream.Duplex {
         return this.isConnected && this.channel.readyState === 'open';
     }
 
-    addres() {
-        return {
-            port: this.localPort,
-            family: this.localFamily,
-            address: this.localAddress,
-        };
-    }
-
     signal(dataIn) {
         if (this.destroying) {
             return;
@@ -370,104 +362,6 @@ export default class Peer extends stream.Duplex {
                 'ERR_SENDER_ALREADY_ADDED',
             );
         }
-    }
-
-    /**
-     * Replace a MediaStreamTrack by another in the connection.
-     * @param {MediaStreamTrack} oldTrack
-     * @param {MediaStreamTrack} newTrack
-     * @param {MediaStream} stream
-     */
-    replaceTrack(oldTrack, newTrack, stream) {
-        if (this.destroying) {
-            return;
-        }
-        if (this.destroyed) {
-            throw errCode(
-                new Error('cannot replaceTrack after peer is destroyed'),
-                'ERR_DESTROYED',
-            );
-        }
-
-        const submap = this.senderMap.get(oldTrack);
-        const sender = submap ? submap.get(stream) : null;
-        if (!sender) {
-            throw errCode(
-                new Error('Cannot replace track that was never added.'),
-                'ERR_TRACK_NOT_ADDED',
-            );
-        }
-        if (newTrack) {
-            this.senderMap.set(newTrack, submap);
-        }
-
-        if (sender.replaceTrack != null) {
-            sender.replaceTrack(newTrack);
-        } else {
-            this.destroy(
-                errCode(
-                    new Error('replaceTrack is not supported in this browser'),
-                    'ERR_UNSUPPORTED_REPLACETRACK',
-                ),
-            );
-        }
-    }
-
-    /**
-     * Remove a MediaStreamTrack from the connection.
-     * @param {MediaStreamTrack} track
-     * @param {MediaStream} stream
-     */
-    removeTrack(track, stream) {
-        if (this.destroying) {
-            return;
-        }
-        if (this.destroyed) {
-            throw errCode(
-                new Error('cannot removeTrack after peer is destroyed'),
-                'ERR_DESTROYED',
-            );
-        }
-
-        const submap = this.senderMap.get(track);
-        const sender = submap ? submap.get(stream) : null;
-        if (!sender) {
-            throw errCode(
-                new Error('Cannot remove track that was never added.'),
-                'ERR_TRACK_NOT_ADDED',
-            );
-        }
-        try {
-            sender.removed = true;
-            this.pc.removeTrack(sender);
-        } catch (err) {
-            if (err.name === 'NS_ERROR_UNEXPECTED') {
-                this.sendersAwaitingStable.push(sender); // HACK: Firefox must wait until (signalingState === stable) https://bugzilla.mozilla.org/show_bug.cgi?id=1133874
-            } else {
-                this.destroy(errCode(err, 'ERR_REMOVE_TRACK'));
-            }
-        }
-        this.needsNegotiation();
-    }
-
-    /**
-     * Remove a MediaStream from the connection.
-     * @param {MediaStream} stream
-     */
-    removeStream(stream) {
-        if (this.destroying) {
-            return;
-        }
-        if (this.destroyed) {
-            throw errCode(
-                new Error('cannot removeStream after peer is destroyed'),
-                'ERR_DESTROYED',
-            );
-        }
-
-        stream.getTracks().forEach((track) => {
-            this.removeTrack(track, stream);
-        });
     }
 
     needsNegotiation() {
