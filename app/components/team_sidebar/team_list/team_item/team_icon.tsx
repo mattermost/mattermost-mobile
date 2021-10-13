@@ -90,7 +90,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             fontSize: 15,
         },
         image: {
-            borderRadius: 2,
+            borderRadius: 6,
             position: 'absolute',
             top: 0,
             bottom: 0,
