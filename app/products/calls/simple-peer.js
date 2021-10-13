@@ -61,8 +61,6 @@ export default class Peer extends stream.Duplex {
         this.id = generateId().slice(0, 7);
         this.channelName = generateId();
 
-        this.channelConfig = Peer.channelConfig;
-        this.channelNegotiated = this.channelConfig.negotiated;
         this.streams = [localStream];
 
         this.destroyed = false;
@@ -99,7 +97,17 @@ export default class Peer extends stream.Duplex {
         this.interval = null;
 
         try {
-            this.pc = new RTCPeerConnection(Peer.config);
+            this.pc = new RTCPeerConnection({
+                iceServers: [
+                    {
+                        urls: [
+                            'stun:stun.l.google.com:19302',
+                            'stun:global.stun.twilio.com:3478',
+                        ],
+                    },
+                ],
+                sdpSemantics: 'unified-plan'
+            });
         } catch (err) {
             this.destroy(errCode(err, 'ERR_PC_CONSTRUCTOR'));
             return;
@@ -137,10 +145,7 @@ export default class Peer extends stream.Duplex {
         // - onnegotiationneeded
 
         this.setupData({
-            channel: this.pc.createDataChannel(
-                this.channelName,
-                this.channelConfig,
-            ),
+            channel: this.pc.createDataChannel(this.channelName, {}),
         });
 
         if (this.streams) {
@@ -820,7 +825,7 @@ export default class Peer extends stream.Duplex {
             iceConnectionState === 'completed'
         ) {
             this.pcReady = true;
-            this._maybeReady();
+            this.maybeReady();
         }
         if (iceConnectionState === 'failed') {
             this.destroy(
@@ -866,7 +871,7 @@ export default class Peer extends stream.Duplex {
         );
     }
 
-    _maybeReady() {
+    maybeReady() {
         if (
             this.isConnected ||
             this._connecting ||
@@ -1036,7 +1041,7 @@ export default class Peer extends stream.Duplex {
                 if (
                     typeof this.channel.bufferedAmountLowThreshold !== 'number'
                 ) {
-                    this.interval = setInterval(() => this._onInterval(), 150);
+                    this.interval = setInterval(() => this.onInterval(), 150);
                     if (this.interval.unref) {
                         this.interval.unref();
                     }
@@ -1048,7 +1053,7 @@ export default class Peer extends stream.Duplex {
         findCandidatePair();
     }
 
-    _onInterval() {
+    onInterval() {
         if (
             !this.cb ||
             !this.channel ||
@@ -1134,7 +1139,7 @@ export default class Peer extends stream.Duplex {
             return;
         }
         this.channelReady = true;
-        this._maybeReady();
+        this.maybeReady();
     }
 
     onChannelClose() {
@@ -1181,22 +1186,3 @@ export default class Peer extends stream.Duplex {
 }
 
 Peer.WEBRTC_SUPPORT = true;
-
-/**
- * Expose peer and data channel config for overriding all Peer
- * instances. Otherwise, just set opts.config or opts.channelConfig
- * when constructing a Peer.
- */
-Peer.config = {
-    iceServers: [
-        {
-            urls: [
-                'stun:stun.l.google.com:19302',
-                'stun:global.stun.twilio.com:3478',
-            ],
-        },
-    ],
-    sdpSemantics: 'unified-plan'
-};
-
-Peer.channelConfig = {};
