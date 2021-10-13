@@ -22,6 +22,7 @@ module.exports = {
                 '@init': './app/init',
                 '@mattermost-managed': './app/mattermost_managed/index',
                 '@mm-redux': './app/mm-redux',
+                '@products': './app/products',
                 '@share': './share_extension',
                 '@screens': './app/screens',
                 '@selectors': './app/selectors',
