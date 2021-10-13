@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import CallsTypes from '@products/calls/store/action_types/calls';
+import CallsTypes from '../../products/calls/store/action_types/calls';
 
 import AppsTypes from './apps';
 import BotTypes from './bots';

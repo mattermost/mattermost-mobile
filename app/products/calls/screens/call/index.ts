@@ -5,9 +5,10 @@ import {bindActionCreators, Dispatch} from 'redux';
 
 import {getTheme, getTeammateNameDisplaySetting} from '@mm-redux/selectors/entities/preferences';
 import {getCurrentUserId} from '@mm-redux/selectors/entities/users';
-import {muteMyself, unmuteMyself, leaveCall} from '@products/calls//store/actions/calls';
-import {getCurrentCall, getScreenShareURL} from '@products/calls/store/selectors/calls';
 import {isLandscape} from '@selectors/device';
+
+import {muteMyself, unmuteMyself, leaveCall} from '../../store/actions/calls';
+import {getCurrentCall, getScreenShareURL} from '../../store/selectors/calls';
 
 import CallScreen from './call_screen';
 

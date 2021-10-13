@@ -3,7 +3,7 @@
 
 import {combineReducers} from 'redux';
 
-import calls from '@products/calls/store/reducers/calls';
+import calls from '../../../products/calls/store/reducers/calls';
 
 import apps from './apps';
 import bots from './bots';

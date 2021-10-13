@@ -1,8 +1,9 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import ClientCalls, {ClientCallsMix} from '@products/calls/client/rest';
 import mix from '@utils/mix';
+
+import ClientCalls, {ClientCallsMix} from '../../products/calls/client/rest';
 
 import ClientApps, {ClientAppsMix} from './apps';
 import ClientBase from './base';

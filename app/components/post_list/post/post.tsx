@@ -16,9 +16,10 @@ import {UserThread} from '@mm-redux/types/threads';
 import {UserProfile} from '@mm-redux/types/users';
 import EventEmitter from '@mm-redux/utils/event_emitter';
 import {fromAutoResponder, isPostEphemeral, isPostPendingOrFailed, isSystemMessage} from '@mm-redux/utils/post_utils';
-import CallMessage from '@products/calls/components/call_message';
 import {preventDoubleTap} from '@utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
+
+import CallMessage from '../../../products/calls/components/call_message';
 
 import Avatar from './avatar';
 import Body from './body';

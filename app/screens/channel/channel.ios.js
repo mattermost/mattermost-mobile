@@ -16,10 +16,11 @@ import SettingsSidebar from '@components/sidebars/settings';
 import StatusBar from '@components/status_bar';
 import DEVICE from '@constants/device';
 import {ACCESSORIES_CONTAINER_NATIVE_ID, CHANNEL_POST_TEXTBOX_CURSOR_CHANGE, CHANNEL_POST_TEXTBOX_VALUE_CHANGE} from '@constants/post_draft';
-import CurrentCall from '@products/calls/components/current_call';
-import FloatingCallContainer from '@products/calls/components/floating_call_container';
-import JoinCall from '@products/calls/components/join_call';
 import {makeStyleSheetFromTheme} from '@utils/theme';
+
+import CurrentCall from '../../products/calls/components/current_call';
+import FloatingCallContainer from '../../products/calls/components/floating_call_container';
+import JoinCall from '../../products/calls/components/join_call';
 
 import ChannelBase from './channel_base';
 import ChannelNavBar from './channel_nav_bar';

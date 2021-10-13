@@ -6,8 +6,9 @@ import {bindActionCreators, Dispatch} from 'redux';
 import {getChannel} from '@mm-redux/selectors/entities/channels';
 import {getTheme, getTeammateNameDisplaySetting} from '@mm-redux/selectors/entities/preferences';
 import {getCurrentUserId} from '@mm-redux/selectors/entities/users';
-import {muteMyself, unmuteMyself} from '@products/calls/store/actions/calls';
-import {getCurrentCall} from '@products/calls/store/selectors/calls';
+
+import {muteMyself, unmuteMyself} from '../../store/actions/calls';
+import {getCurrentCall} from '../../store/selectors/calls';
 
 import CurrentCall from './current_call';
 

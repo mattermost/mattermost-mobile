@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import * as calls from '@products/calls/store/types/calls';
+import * as calls from '../../products/calls/store/types/calls';
 
 import * as actions from './actions';
 import * as bots from './bots';
