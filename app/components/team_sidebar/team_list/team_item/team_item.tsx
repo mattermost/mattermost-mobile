@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React from 'react';
-import {Platform, View} from 'react-native';
+import {View} from 'react-native';
 
 import {handleTeamChange} from '@actions/local/team';
 import Badge from '@components/badge';
@@ -29,9 +29,8 @@ export default function TeamItem({team, hasUnreads, mentionCount, currentTeamId}
     const selected = team.id === currentTeamId;
 
     const hasBadge = Boolean(mentionCount || hasUnreads);
-
     let mentionText = mentionCount ? mentionCount.toString() : '';
-    let left = 32;
+    let left = 35;
     switch (true) {
         case mentionCount > 99:
             mentionText = '99+';
@@ -96,15 +95,17 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             width: 12,
         },
         mentions: {
-            top: 3,
+            top: 1,
             fontSize: 12,
             fontWeight: 'bold',
-            fontFamily: 'Open Sans',
-            lineHeight: Platform.select({android: 15, ios: 12.6}),
+            fontFamily: 'OpenSans',
+            lineHeight: 15,
             borderColor: theme.sidebarTeamBarBg,
+            alignItems: 'center',
             borderWidth: 2,
-            minWidth: 18,
-            height: 16,
+            minWidth: 22,
+            height: 18,
+            borderRadius: 9,
             backgroundColor: theme.mentionBg,
             color: theme.mentionColor,
         },
