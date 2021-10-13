@@ -17,9 +17,8 @@ import {getCurrentTeam} from '@mm-redux/selectors/entities/teams';
 import {getCurrentUserId, getCurrentUserRoles, shouldShowTermsOfService} from '@mm-redux/selectors/entities/users';
 import {isMinimumServerVersion} from '@mm-redux/utils/helpers';
 import {isSystemAdmin as checkIsSystemAdmin} from '@mm-redux/utils/user_utils';
+import {loadCalls} from '@mmproducts/calls/store/actions/calls';
 import {getViewingGlobalThreads} from '@selectors/threads';
-
-import {loadCalls} from '../../products/calls/store/actions/calls';
 
 import Channel from './channel';
 

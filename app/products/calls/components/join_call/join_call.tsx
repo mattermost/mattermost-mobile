@@ -10,8 +10,8 @@ import FormattedRelativeTime from '@components/formatted_relative_time';
 import FormattedText from '@components/formatted_text';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
-import type {Call} from '../../store/types/calls';
 import type {Theme} from '@mm-redux/types/theme';
+import type {Call} from '@mmproducts/calls/store/types/calls';
 
 type Props = {
     actions: {

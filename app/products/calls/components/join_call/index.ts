@@ -5,9 +5,8 @@ import {bindActionCreators, Dispatch} from 'redux';
 
 import {getCurrentChannelId} from '@mm-redux/selectors/entities/channels';
 import {getTheme} from '@mm-redux/selectors/entities/preferences';
-
-import {joinCall} from '../../store/actions/calls';
-import {getCalls, getCurrentCall} from '../../store/selectors/calls';
+import {joinCall} from '@mmproducts/calls/store/actions/calls';
+import {getCalls, getCurrentCall} from '@mmproducts/calls/store/selectors/calls';
 
 import JoinCall from './join_call';
 

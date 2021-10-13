@@ -121,7 +121,7 @@ Navigation.setLazyComponentRegistrator((screenName) => {
         screen = require('app/components/sidebars/main').default;
         break;
     case 'Call':
-        screen = require('../products/calls/screens/call').default;
+        screen = require('@mmproducts/calls/screens/call').default;
         break;
     case 'MFA':
         screen = require('@screens/mfa').default;
@@ -173,7 +173,7 @@ Navigation.setLazyComponentRegistrator((screenName) => {
         screen = require('@screens/post_options').default;
         break;
     case 'CallOtherActions':
-        screen = require('../products/calls/screens/call_other_actions').default;
+        screen = require('@mmproducts/calls/screens/call_other_actions').default;
         break;
     case 'ReactionList':
         screen = require('@screens/reaction_list').default;

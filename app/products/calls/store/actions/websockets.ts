@@ -3,8 +3,7 @@
 
 import {GenericAction} from '@mm-redux/types/actions';
 import {WebSocketMessage} from '@mm-redux/types/websocket';
-
-import CallsTypes from '../action_types/calls';
+import CallsTypes from '@mmproducts/calls/store/action_types/calls';
 
 export function handleCallUserDisconnected(msg: WebSocketMessage): GenericAction {
     return {

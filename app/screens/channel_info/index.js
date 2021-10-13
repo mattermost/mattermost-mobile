@@ -13,11 +13,10 @@ import {getTeammateNameDisplaySetting, getTheme} from '@mm-redux/selectors/entit
 import {getCurrentUserId, getUser} from '@mm-redux/selectors/entities/users';
 import {getUserIdFromChannelName} from '@mm-redux/utils/channel_utils';
 import {displayUsername} from '@mm-redux/utils/user_utils';
+import {joinCall, enableChannelCalls, disableChannelCalls} from '@mmproducts/calls/store/actions/calls';
+import {isCallsEnabled} from '@mmproducts/calls/store/selectors/calls';
 import {makeGetCustomStatus, isCustomStatusEnabled, isCustomStatusExpired, isCustomStatusExpirySupported} from '@selectors/custom_status';
 import {isGuest} from '@utils/users';
-
-import {joinCall, enableChannelCalls, disableChannelCalls} from '../../products/calls/store/actions/calls';
-import {isCallsEnabled} from '../../products/calls/store/selectors/calls';
 
 import ChannelInfo from './channel_info';
 

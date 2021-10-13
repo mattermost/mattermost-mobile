@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {CallsState} from '../../products/calls/store/types/calls';
+import {CallsState} from '@mmproducts/calls/store/types/calls';
 
 import {AppsState} from './apps';
 import {Bot} from './bots';

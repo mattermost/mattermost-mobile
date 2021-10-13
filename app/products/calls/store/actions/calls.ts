@@ -5,9 +5,8 @@ import {Client4} from '@client/rest';
 import {logError} from '@mm-redux/actions/errors';
 import {bindClientFunc, forceLogoutIfNecessary} from '@mm-redux/actions/helpers';
 import {GenericAction, ActionFunc, DispatchFunc, GetStateFunc} from '@mm-redux/types/actions';
-
-import {newClient} from '../../connection';
-import CallsTypes from '../action_types/calls';
+import {newClient} from '@mmproducts/calls/connection';
+import CallsTypes from '@mmproducts/calls/store/action_types/calls';
 
 let ws: any = null;
 

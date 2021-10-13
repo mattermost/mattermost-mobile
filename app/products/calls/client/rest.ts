@@ -3,7 +3,7 @@
 
 import {Dictionary} from '@mm-redux/types/utilities';
 
-import type {Call, CallParticipant} from '../store/types/calls';
+import type {Call, CallParticipant} from '@mmproducts/Calls/store/types/calls';
 
 export interface ClientCallsMix {
     getCalls: () => Promise<Dictionary<Call>>;

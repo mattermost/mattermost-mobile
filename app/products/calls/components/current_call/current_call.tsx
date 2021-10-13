@@ -10,14 +10,13 @@ import CompassIcon from '@components/compass_icon';
 import FormattedText from '@components/formatted_text';
 import {GenericAction} from '@mm-redux/types/actions';
 import {displayUsername} from '@mm-redux/utils/user_utils';
+import CallAvatar from '@mmproducts/calls/components/call_avatar';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 
-import CallAvatar from '../call_avatar';
-
-import type {Call, CallParticipant} from '../../store/types/calls';
 import type {Channel} from '@mm-redux/types/channels';
 import type {Theme} from '@mm-redux/types/theme';
 import type {UserProfile} from '@mm-redux/types/users';
+import type {Call, CallParticipant} from '@mmproducts/calls/store/types/calls';
 
 type Props = {
     actions: {

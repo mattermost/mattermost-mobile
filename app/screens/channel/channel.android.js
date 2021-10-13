@@ -14,11 +14,10 @@ import PostDraft from '@components/post_draft';
 import {NavigationTypes} from '@constants';
 import {CHANNEL_POST_TEXTBOX_CURSOR_CHANGE, CHANNEL_POST_TEXTBOX_VALUE_CHANGE} from '@constants/post_draft';
 import EventEmitter from '@mm-redux/utils/event_emitter';
+import CurrentCall from '@mmproducts/calls/components/current_call';
+import FloatingCallContainer from '@mmproducts/calls/components/floating_call_container';
+import JoinCall from '@mmproducts/calls/components/join_call';
 import EphemeralStore from '@store/ephemeral_store';
-
-import CurrentCall from '../../products/calls/components/current_call';
-import FloatingCallContainer from '../../products/calls/components/floating_call_container';
-import JoinCall from '../../products/calls/components/join_call';
 
 import ChannelBase from './channel_base';
 import ChannelNavBar from './channel_nav_bar';

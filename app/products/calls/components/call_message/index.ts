@@ -6,9 +6,8 @@ import {bindActionCreators, Dispatch} from 'redux';
 
 import {getTeammateNameDisplaySetting} from '@mm-redux/selectors/entities/preferences';
 import {getUser} from '@mm-redux/selectors/entities/users';
-
-import {joinCall} from '../../store/actions/calls';
-import {getCalls, getCurrentCall} from '../../store/selectors/calls';
+import {joinCall} from '@mmproducts/calls/store/actions/calls';
+import {getCalls, getCurrentCall} from '@mmproducts/calls/store/selectors/calls';
 
 import CallMessage from './call_message';
 

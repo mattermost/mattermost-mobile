@@ -23,10 +23,7 @@ import {TeamMembership} from '@mm-redux/types/teams';
 import {WebSocketMessage} from '@mm-redux/types/websocket';
 import EventEmitter from '@mm-redux/utils/event_emitter';
 import {removeUserFromList} from '@mm-redux/utils/user_utils';
-import {getChannelSinceValue} from '@utils/channels';
-import websocketClient from '@websocket';
-
-import {loadCalls} from '../../products/calls/store/actions/calls';
+import {loadCalls} from '@mmproducts/calls/store/actions/calls';
 import {
     handleCallStarted,
     handleCallUserConnected,
@@ -39,7 +36,9 @@ import {
     handleCallChannelDisabled,
     handleCallScreenOn,
     handleCallScreenOff,
-} from '../../products/calls/store/actions/websockets';
+} from '@mmproducts/calls/store/actions/websockets';
+import {getChannelSinceValue} from '@utils/channels';
+import websocketClient from '@websocket';
 
 import {handleRefreshAppsBindings} from './apps';
 import {handleSidebarCategoryCreated, handleSidebarCategoryDeleted, handleSidebarCategoryOrderUpdated, handleSidebarCategoryUpdated} from './categories';

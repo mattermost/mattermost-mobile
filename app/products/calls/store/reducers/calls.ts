@@ -4,9 +4,8 @@ import {combineReducers} from 'redux';
 
 import {GenericAction} from '@mm-redux/types/actions';
 import {Dictionary} from '@mm-redux/types/utilities';
-
-import CallsTypes from '../action_types/calls';
-import {Call} from '../types/calls';
+import {Call} from '@mmproducts/calls/store/types/calls';
+import CallsTypes from '@mmproducts/calls/store/action_types/calls';
 
 function calls(state: Dictionary<Call> = {}, action: GenericAction) {
     switch (action.type) {
