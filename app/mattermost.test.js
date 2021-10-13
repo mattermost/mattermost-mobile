@@ -52,6 +52,12 @@ describe('componentDidAppearListener', () => {
         expect(EventEmitter.emit).toHaveBeenCalledTimes(1);
         expect(EventEmitter.emit).toHaveBeenCalledWith(NavigationTypes.BLUR_POST_DRAFT);
     });
+
+    it('should not add componentIds starting with "!screen" to the store as they are not screens', () => {
+        const componentId = '!screen';
+        componentDidAppearListener({componentId});
+        expect(EphemeralStore.addNavigationComponentId).not.toHaveBeenCalledWith(componentId);
+    });
 });
 
 describe('componentDidDisappearListener', () => {

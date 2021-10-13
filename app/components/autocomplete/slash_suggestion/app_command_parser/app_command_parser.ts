@@ -4,6 +4,7 @@
 /* eslint-disable max-lines */
 
 import {
+    AppsTypes,
     AppCallRequest,
     AppBinding,
     AppField,
@@ -32,7 +33,6 @@ import {
     EXECUTE_CURRENT_COMMAND_ITEM_ID,
     COMMAND_SUGGESTION_ERROR,
     getExecuteSuggestion,
-    displayError,
     createCallRequest,
     selectUserByUsername,
     getUserByUsername,
@@ -45,10 +45,13 @@ import {
     filterEmptyOptions,
     autocompleteUsersInChannel,
     autocompleteChannels,
-    ExtendedAutocompleteSuggestion,
     getChannelSuggestions,
     getUserSuggestions,
     inTextMentionSuggestions,
+    ExtendedAutocompleteSuggestion,
+    getAppCommandForm,
+    getAppRHSCommandForm,
+    makeRHSAppBindingSelector,
 } from './app_command_parser_dependencies';
 
 export interface Store {
@@ -74,6 +77,7 @@ export enum ParseState {
     EndQuotedValue = 'EndQuotedValue',
     EndTickedValue = 'EndTickedValue',
     Error = 'Error',
+    Rest = 'Rest',
 }
 
 interface FormsCache {
@@ -85,6 +89,7 @@ interface Intl {
 }
 
 const getCommandBindings = makeAppBindingsSelector(AppBindingLocations.COMMAND);
+const getRHSCommandBindings = makeRHSAppBindingSelector(AppBindingLocations.COMMAND);
 
 export class ParsedCommand {
     state = ParseState.Start;
@@ -299,18 +304,48 @@ export class ParsedCommand {
                     // Positional parameter.
                     this.position++;
                     // eslint-disable-next-line no-loop-func
-                    const field = fields.find((f: AppField) => f.position === this.position);
+                    let field = fields.find((f: AppField) => f.position === this.position);
                     if (!field) {
-                        return this.asError(this.intl.formatMessage({
-                            id: 'apps.error.parser.no_argument_pos_x',
-                            defaultMessage: 'Unable to identify argument.',
-                        }));
+                        field = fields.find((f) => f.position === -1 && f.type === AppFieldTypes.TEXT);
+                        if (!field || this.values[field.name]) {
+                            return this.asError(this.intl.formatMessage({
+                                id: 'apps.error.parser.no_argument_pos_x',
+                                defaultMessage: 'Unable to identify argument.',
+                            }));
+                        }
+                        this.incompleteStart = this.i;
+                        this.incomplete = '';
+                        this.field = field;
+                        this.state = ParseState.Rest;
+                        break;
                     }
                     this.field = field;
                     this.state = ParseState.StartValue;
                     break;
                 }
                 }
+                break;
+            }
+
+            case ParseState.Rest: {
+                if (!this.field) {
+                    return this.asError(this.intl.formatMessage({
+                        id: 'apps.error.parser.missing_field_value',
+                        defaultMessage: 'Field value is missing.',
+                    }));
+                }
+
+                if (autocompleteMode && c === '') {
+                    return this;
+                }
+
+                if (c === '') {
+                    this.values[this.field.name] = this.incomplete;
+                    return this;
+                }
+
+                this.i++;
+                this.incomplete += c;
                 break;
             }
 
@@ -470,7 +505,7 @@ export class ParsedCommand {
                     if (this.incompleteStart === this.i - 1) {
                         return this.asError(this.intl.formatMessage({
                             id: 'apps.error.parser.empty_value',
-                            defaultMessage: 'empty values are not allowed',
+                            defaultMessage: 'Empty values are not allowed.',
                         }));
                     }
                     this.i++;
@@ -510,7 +545,7 @@ export class ParsedCommand {
                     if (this.incompleteStart === this.i - 1) {
                         return this.asError(this.intl.formatMessage({
                             id: 'apps.error.parser.empty_value',
-                            defaultMessage: 'empty values are not allowed',
+                            defaultMessage: 'Empty values are not allowed.',
                         }));
                     }
                     this.i++;
@@ -544,13 +579,13 @@ export class ParsedCommand {
                     (!autocompleteMode && this.incomplete !== 'true' && this.incomplete !== 'false'))) {
                     // reset back where the value started, and treat as a new parameter
                     this.i = this.incompleteStart;
-                    this.values![this.field.name] = 'true';
+                    this.values[this.field.name] = 'true';
                     this.state = ParseState.StartParameter;
                 } else {
                     if (autocompleteMode && c === '') {
                         return this;
                     }
-                    this.values![this.field.name] = this.incomplete;
+                    this.values[this.field.name] = this.incomplete;
                     this.incomplete = '';
                     this.incompleteStart = this.i;
                     if (c === '') {
@@ -571,8 +606,6 @@ export class AppCommandParser {
     private teamID: string;
     private rootPostID?: string;
     private intl: Intl;
-
-    forms: {[location: string]: AppForm} = {};
 
     constructor(store: Store|null, intl: Intl, channelID: string, teamID = '', rootPostID = '') {
         this.store = store || getStore() as Store;
@@ -619,57 +652,59 @@ export class AppCommandParser {
     }
 
     private async addDefaultAndReadOnlyValues(parsed: ParsedCommand) {
-        await Promise.all(parsed.form?.fields?.map(async (f) => {
+        if (!parsed.form?.fields) {
+            return;
+        }
+
+        await Promise.all(parsed.form.fields.map(async (f) => {
             if (!f.value) {
                 return;
             }
 
-            if (!f.readonly || f.name in parsed.values) {
-                return;
-            }
-
-            switch (f.type) {
-            case AppFieldTypes.TEXT:
-                parsed.values[f.name] = f.value as string;
-                break;
-            case AppFieldTypes.BOOL:
-                parsed.values[f.name] = 'true';
-                break;
-            case AppFieldTypes.USER: {
-                const userID = (f.value as AppSelectOption).value;
-                let user = selectUser(this.store.getState(), userID);
-                if (!user) {
-                    const dispatchResult = await this.store.dispatch(getUser(userID));
-                    if ('error' in dispatchResult) {
-                        // Silently fail on default value
-                        break;
+            if (f.readonly || !(f.name in parsed.values)) {
+                switch (f.type) {
+                case AppFieldTypes.TEXT:
+                    parsed.values[f.name] = f.value as string;
+                    break;
+                case AppFieldTypes.BOOL:
+                    parsed.values[f.name] = 'true';
+                    break;
+                case AppFieldTypes.USER: {
+                    const userID = (f.value as AppSelectOption).value;
+                    let user = selectUser(this.store.getState(), userID);
+                    if (!user) {
+                        const dispatchResult = await this.store.dispatch(getUser(userID));
+                        if ('error' in dispatchResult) {
+                            // Silently fail on default value
+                            break;
+                        }
+                        user = dispatchResult.data;
                     }
-                    user = dispatchResult.data;
+                    parsed.values[f.name] = user.username;
+                    break;
                 }
-                parsed.values[f.name] = user.username;
-                break;
-            }
-            case AppFieldTypes.CHANNEL: {
-                const channelID = (f.value as AppSelectOption).label;
-                let channel = selectChannel(this.store.getState(), channelID);
-                if (!channel) {
-                    const dispatchResult = await this.store.dispatch(getChannel(channelID));
-                    if ('error' in dispatchResult) {
-                        // Silently fail on default value
-                        break;
+                case AppFieldTypes.CHANNEL: {
+                    const channelID = (f.value as AppSelectOption).label;
+                    let channel = selectChannel(this.store.getState(), channelID);
+                    if (!channel) {
+                        const dispatchResult = await this.store.dispatch(getChannel(channelID));
+                        if ('error' in dispatchResult) {
+                            // Silently fail on default value
+                            break;
+                        }
+                        channel = dispatchResult.data;
                     }
-                    channel = dispatchResult.data;
+                    parsed.values[f.name] = channel.name;
+                    break;
                 }
-                parsed.values[f.name] = channel.name;
-                break;
-            }
-            case AppFieldTypes.STATIC_SELECT:
-            case AppFieldTypes.DYNAMIC_SELECT:
-                parsed.values[f.name] = (f.value as AppSelectOption).value;
-                break;
-            case AppFieldTypes.MARKDOWN:
+                case AppFieldTypes.STATIC_SELECT:
+                case AppFieldTypes.DYNAMIC_SELECT:
+                    parsed.values[f.name] = (f.value as AppSelectOption).value;
+                    break;
+                case AppFieldTypes.MARKDOWN:
 
-                // Do nothing
+                    // Do nothing
+                }
             }
         }) || []);
     }
@@ -926,8 +961,11 @@ export class AppCommandParser {
     // getCommandBindings returns the commands in the redux store.
     // They are grouped by app id since each app has one base command
     private getCommandBindings = (): AppBinding[] => {
-        const bindings = getCommandBindings(this.store.getState());
-        return bindings;
+        const state = this.store.getState();
+        if (this.rootPostID) {
+            return getRHSCommandBindings(state);
+        }
+        return getCommandBindings(state);
     }
 
     // getChannel gets the channel in which the user is typing the command
@@ -937,9 +975,6 @@ export class AppCommandParser {
     }
 
     public setChannelContext = (channelID: string, teamID = '', rootPostID?: string) => {
-        if (this.channelID !== channelID || this.rootPostID !== rootPostID || this.teamID !== teamID) {
-            this.forms = {};
-        }
         this.channelID = channelID;
         this.rootPostID = rootPostID;
         this.teamID = teamID;
@@ -981,7 +1016,7 @@ export class AppCommandParser {
         }
 
         context.channel_id = channel.id;
-        context.team_id = this.teamID || channel.team_id || getCurrentTeamId(this.store.getState());
+        context.team_id = channel.team_id || getCurrentTeamId(this.store.getState());
 
         return context;
     }
@@ -989,7 +1024,10 @@ export class AppCommandParser {
     // fetchForm unconditionaly retrieves the form for the given binding (subcommand)
     private fetchForm = async (binding: AppBinding): Promise<{form?: AppForm; error?: string} | undefined> => {
         if (!binding.call) {
-            return undefined;
+            return {error: this.intl.formatMessage({
+                id: 'apps.error.parser.missing_call',
+                defaultMessage: 'Missing binding call.',
+            })};
         }
 
         const payload = createCallRequest(
@@ -1033,26 +1071,23 @@ export class AppCommandParser {
     public getForm = async (location: string, binding: AppBinding): Promise<{form?: AppForm; error?: string} | undefined> => {
         const rootID = this.rootPostID || '';
         const key = `${this.channelID}-${rootID}-${location}`;
-        const form = this.forms[key];
+        const form = this.rootPostID ? getAppRHSCommandForm(this.store.getState(), key) : getAppCommandForm(this.store.getState(), key);
         if (form) {
             return {form};
         }
 
-        this.forms = {};
         const fetched = await this.fetchForm(binding);
         if (fetched?.form) {
-            this.forms[key] = fetched.form;
+            let actionType: string = AppsTypes.RECEIVED_APP_COMMAND_FORM;
+            if (this.rootPostID) {
+                actionType = AppsTypes.RECEIVED_APP_RHS_COMMAND_FORM;
+            }
+            this.store.dispatch({
+                data: {form: fetched.form, location: key},
+                type: actionType,
+            });
         }
         return fetched;
-    }
-
-    // displayError shows an error that was caught by the parser
-    private displayError = (err: any): void => {
-        let errStr = err as string;
-        if (err.message) {
-            errStr = err.message;
-        }
-        displayError(this.intl, errStr);
     }
 
     // getSuggestionsForSubCommands returns suggestions for a subcommand's name
@@ -1104,6 +1139,14 @@ export class AppCommandParser {
         case ParseState.EndTickedValue:
         case ParseState.TickValue:
             return this.getValueSuggestions(parsed, '`');
+        case ParseState.Rest: {
+            const execute = getExecuteSuggestion(parsed);
+            const value = await this.getValueSuggestions(parsed);
+            if (execute) {
+                return [execute, ...value];
+            }
+            return value;
+        }
         }
         return [];
     }
@@ -1332,11 +1375,11 @@ export class AppCommandParser {
         });
         return [{
             Complete: '',
-            Suggestion: this.intl.formatMessage({
+            Suggestion: '',
+            Hint: this.intl.formatMessage({
                 id: 'apps.suggestion.dynamic.error',
                 defaultMessage: 'Dynamic select error',
             }),
-            Hint: '',
             IconData: COMMAND_SUGGESTION_ERROR,
             Description: errMsg,
         }];

@@ -329,12 +329,13 @@ export default class DraftInput extends PureComponent {
         const notificationsToChannel = enableConfirmNotificationsToChannel && useChannelMentions;
         const notificationsToGroups = enableConfirmNotificationsToChannel && useGroupMentions;
         const toAllOrChannel = DraftUtils.textContainsAtAllAtChannel(value);
-        const groupMentions = (!toAllOrChannel && notificationsToGroups) ? DraftUtils.groupsMentionedInText(groupsWithAllowReference, value) : [];
+        const toHere = DraftUtils.textContainsAtHere(value);
+        const groupMentions = (!toAllOrChannel && !toHere && notificationsToGroups) ? DraftUtils.groupsMentionedInText(groupsWithAllowReference, value) : [];
 
         if (value.indexOf('/') === 0) {
             this.sendCommand(value);
-        } else if (notificationsToChannel && membersCount > NOTIFY_ALL_MEMBERS && toAllOrChannel) {
-            this.showSendToAllOrChannelAlert(membersCount, value);
+        } else if (notificationsToChannel && membersCount > NOTIFY_ALL_MEMBERS && (toAllOrChannel || toHere)) {
+            this.showSendToAllOrChannelOrHereAlert(membersCount, value, toHere && !toAllOrChannel);
         } else if (groupMentions.length > 0) {
             const {groupMentionsSet, memberNotifyCount, channelTimezoneCount} = DraftUtils.mapGroupMentions(channelMemberCountsByGroup, groupMentions);
             if (memberNotifyCount > 0) {
@@ -364,11 +365,11 @@ export default class DraftInput extends PureComponent {
         }
     }
 
-    showSendToAllOrChannelAlert = (membersCount, msg) => {
+    showSendToAllOrChannelOrHereAlert = (membersCount, msg, atHere) => {
         const {formatMessage} = this.context.intl;
         const {channelTimezoneCount} = this.state;
         const {isTimezoneEnabled} = this.props;
-        const notifyAllMessage = DraftUtils.buildChannelWideMentionMessage(formatMessage, membersCount, isTimezoneEnabled, channelTimezoneCount);
+        const notifyAllMessage = DraftUtils.buildChannelWideMentionMessage(formatMessage, membersCount, isTimezoneEnabled, channelTimezoneCount, atHere);
         const cancel = () => {
             this.setInputValue(msg);
             this.setState({sendingMessage: false});

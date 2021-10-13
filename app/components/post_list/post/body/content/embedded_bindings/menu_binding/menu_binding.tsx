@@ -42,7 +42,9 @@ const MenuBinding = ({binding, doAppCall, intl, post, postEphemeralCallResponseF
             return;
         }
 
-        if (!bind.call) {
+        const call = bind.form?.call || bind.call;
+
+        if (!call) {
             return;
         }
 
@@ -54,13 +56,18 @@ const MenuBinding = ({binding, doAppCall, intl, post, postEphemeralCallResponseF
             post.id,
         );
 
-        const call = createCallRequest(
-            bind.call,
+        const callRequest = createCallRequest(
+            call,
             context,
             {post: AppExpandLevels.EXPAND_ALL},
         );
 
-        const res = await doAppCall(call, AppCallTypes.SUBMIT, intl);
+        if (bind.form) {
+            showAppForm(bind.form, callRequest);
+            return;
+        }
+
+        const res = await doAppCall(callRequest, AppCallTypes.SUBMIT, intl);
         if (res.error) {
             const errorResponse = res.error;
             const errorMessage = errorResponse.error || intl.formatMessage({
