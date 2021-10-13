@@ -83,6 +83,12 @@
 	<string>Upload Photos and Videos from your device to your Mattermost instance</string>
 	<key>NSSpeechRecognitionUsageDescription</key>
 	<string>Send voice messages to your Mattermost instance</string>
+    <key>NSPhotoLibraryUsageDescription</key>
+    <string>Upload Photos and Videos from your device to your Mattermost instance</string>
+    <key>NSCameraUsageDescription</key>
+    <string>Take a Photo or Video and upload it to your Mattermost instance</string>
+    <key>NSMicrophoneUsageDescription</key>
+    <string>Capture audio when recording a video to share to your Mattermost instance</string>
 	<key>UIAppFonts</key>
 	<array>
 		<string>OpenSans-Bold.ttf</string>

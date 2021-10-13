@@ -255,6 +255,8 @@ PODS:
     - React-Core
   - react-native-hw-keyboard-event (0.0.4):
     - React
+  - react-native-image-picker (4.1.1):
+    - React-Core
   - react-native-netinfo (6.0.2):
     - React-Core
   - react-native-network-client (0.1.0):
@@ -492,6 +494,7 @@ DEPENDENCIES:
   - react-native-document-picker (from `../node_modules/react-native-document-picker`)
   - "react-native-emm (from `../node_modules/@mattermost/react-native-emm`)"
   - react-native-hw-keyboard-event (from `../node_modules/react-native-hw-keyboard-event`)
+  - react-native-image-picker (from `../node_modules/react-native-image-picker`)
   - "react-native-netinfo (from `../node_modules/@react-native-community/netinfo`)"
   - "react-native-network-client (from `../node_modules/@mattermost/react-native-network-client`)"
   - react-native-notifications (from `../node_modules/react-native-notifications`)
@@ -621,6 +624,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/@mattermost/react-native-emm"
   react-native-hw-keyboard-event:
     :path: "../node_modules/react-native-hw-keyboard-event"
+  react-native-image-picker:
+    :path: "../node_modules/react-native-image-picker"
   react-native-netinfo:
     :path: "../node_modules/@react-native-community/netinfo"
   react-native-network-client:
@@ -764,6 +769,7 @@ SPEC CHECKSUMS:
   react-native-document-picker: 68eb4eb6ce9e4577444f62ac88b9ab5dc3c04348
   react-native-emm: 7b22d6d2f7f68d218e5e2a6149084f0e6bbc4f5e
   react-native-hw-keyboard-event: b517cefb8d5c659a38049c582de85ff43337dc53
+  react-native-image-picker: 92f51a85a62c2d829dcbd0dda5af99e6f988a113
   react-native-netinfo: 92e6e4476eb8bf6fc2d7c0a6ca0a1406f663d73a
   react-native-network-client: 30ab97e7e6c8d6f2d2b10cc1ebad0cbf9c894c6e
   react-native-notifications: 97c14bf84c64bd6a6eb7bdcdb916036d93d33428
@@ -826,4 +832,4 @@ SPEC CHECKSUMS:
 
 PODFILE CHECKSUM: d62332bb35b296f3ba5b63691519bc5b4dd1c289
 
-COCOAPODS: 1.10.2
+COCOAPODS: 1.11.2
