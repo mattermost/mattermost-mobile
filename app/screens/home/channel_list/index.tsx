@@ -8,7 +8,6 @@ import Animated, {useAnimatedStyle, withTiming} from 'react-native-reanimated';
 import {SafeAreaView, useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import TeamSidebar from '@components/team_sidebar';
-import {TEAM_SIDEBAR_WIDTH} from '@components/team_sidebar/team_sidebar';
 import {Device, View as ViewConstants} from '@constants';
 import {useTheme} from '@context/theme';
 import {useSplitView} from '@hooks/device';
@@ -53,7 +52,7 @@ const ChannelListScreen = (props: ChannelProps) => {
 
     let tabletSidebarStyle;
     if (showTabletLayout) {
-        const {TABLET} = ViewConstants;
+        const {TABLET, TEAM_SIDEBAR_WIDTH} = ViewConstants;
         tabletSidebarStyle = {maxWidth: (TABLET.SIDEBAR_WIDTH - TEAM_SIDEBAR_WIDTH)};
     }
 

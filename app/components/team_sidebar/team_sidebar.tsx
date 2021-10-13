@@ -5,6 +5,7 @@ import React, {useEffect} from 'react';
 import {View} from 'react-native';
 
 import {fetchAllTeams} from '@actions/remote/team';
+import {TEAM_SIDEBAR_WIDTH} from '@constants/view';
 import {useServerUrl} from '@context/server_url';
 import {useTheme} from '@context/theme';
 import {makeStyleSheetFromTheme} from '@utils/theme';
@@ -19,8 +20,6 @@ type Props = {
     canCreateTeams: boolean;
     otherTeams: TeamModel[];
 }
-
-export const TEAM_SIDEBAR_WIDTH = 72;
 
 export default function TeamSidebar({canCreateTeams, otherTeams}: Props) {
     const theme = useTheme();

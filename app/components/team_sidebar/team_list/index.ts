@@ -27,12 +27,13 @@ const withTeams = withObservables([], ({database}: WithDatabaseArgs) => {
     );
     const myTeams = combineLatest([teams, order]).pipe(
         map(([ts, o]) => {
-            if (o.length) {
-                // eslint-disable-next-line max-nested-callbacks
-                return o.map((id) => ts.find((t) => t.id === id)).filter((v) => v);
-            }
-
-            return ts;
+            const indexes: {[x: string]: number} = {};
+            // eslint-disable-next-line max-nested-callbacks
+            o.forEach((v, i) => {
+                indexes[v] = i;
+            });
+            // eslint-disable-next-line max-nested-callbacks
+            return ts.sort((a, b) => indexes[a.id] - indexes[b.id]);
         }),
     );
     return {

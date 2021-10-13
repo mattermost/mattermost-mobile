@@ -27,6 +27,7 @@ export default function TeamIcon({id, lastIconUpdate, displayName, selected}: Pr
     const client = NetworkManager.getClient(serverUrl);
 
     useEffect(() => {
+        mounted.current = true;
         return () => {
             mounted.current = false;
         };
@@ -37,7 +38,7 @@ export default function TeamIcon({id, lastIconUpdate, displayName, selected}: Pr
     , [id, lastIconUpdate]);
 
     const handleImageError = useCallback(() => {
-        if (mounted) {
+        if (mounted.current) {
             setImageError(true);
         }
     }, []);

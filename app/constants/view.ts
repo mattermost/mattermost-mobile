@@ -42,6 +42,7 @@ export const SMALL_BADGE_MAX_WIDTH = 26;
 export const MAX_BADGE_RIGHT_POSITION = -13;
 export const LARGE_BADGE_RIGHT_POSITION = -11;
 export const SMALL_BADGE_RIGHT_POSITION = -9;
+export const TEAM_SIDEBAR_WIDTH = 72;
 
 export const TABLET = {
     SIDEBAR_WIDTH: 320,
@@ -137,4 +138,5 @@ export default {
     IOS_HORIZONTAL_LANDSCAPE: 44,
     INDICATOR_BAR_HEIGHT,
     TABLET,
+    TEAM_SIDEBAR_WIDTH,
 };
