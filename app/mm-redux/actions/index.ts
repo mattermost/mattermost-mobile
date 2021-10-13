@@ -1,6 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import * as calls from '@products/calls/store/actions/calls';
+
 import * as bots from './bots';
 import * as channels from './channels';
 import * as emojis from './emojis';
@@ -37,5 +39,6 @@ export {
     timezone,
     users,
     remoteCluster,
+    calls,
 };
 

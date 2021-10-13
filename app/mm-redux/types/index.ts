@@ -1,6 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import * as calls from '@products/calls/store/types/calls';
+
 import * as actions from './actions';
 import * as bots from './bots';
 import * as channels from './channels';
@@ -25,7 +27,6 @@ import * as threads from './threads';
 import * as typing from './typing';
 import * as users from './users';
 import * as utilities from './utilities';
-import * as voiceCalls from './voiceCalls';
 
 export {
     config,
@@ -33,7 +34,7 @@ export {
     bots,
     plugins,
     store,
-    voiceCalls,
+    calls,
     channels,
     errors,
     emojis,

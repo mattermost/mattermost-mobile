@@ -57,7 +57,7 @@ export default class ChannelInfo extends PureComponent {
         isCustomStatusEnabled: PropTypes.bool.isRequired,
         isCustomStatusExpired: PropTypes.bool.isRequired,
         isCustomStatusExpirySupported: PropTypes.bool.isRequired,
-        isVoiceEnabled: PropTypes.bool.isRequired,
+        isCallsEnabled: PropTypes.bool.isRequired,
     };
 
     static defaultProps = {
@@ -101,7 +101,7 @@ export default class ChannelInfo extends PureComponent {
     };
 
     actionsRows = (channelIsArchived) => {
-        const {currentChannel, currentUserId, isDirectMessage, theme, isVoiceEnabled} = this.props;
+        const {currentChannel, currentUserId, isDirectMessage, theme, isCallsEnabled} = this.props;
 
         if (channelIsArchived) {
             return (
@@ -170,7 +170,7 @@ export default class ChannelInfo extends PureComponent {
                         this.props.actions.joinCall(channelId);
                         this.close();
                     }}
-                    canStartCall={isVoiceEnabled/* TODO: also check permissions */}
+                    canStartCall={isCallsEnabled/* TODO: also check permissions */}
                 />
                 <EnableDisableCalls
                     testID='channel_info.start_call.action'
@@ -179,7 +179,7 @@ export default class ChannelInfo extends PureComponent {
                     enableCalls={this.props.actions.enableChannelCalls}
                     disableCalls={this.props.actions.disableChannelCalls}
                     canEnableDisableCalls={true}
-                    enabled={isVoiceEnabled}
+                    enabled={isCallsEnabled}
                 />
                 <Bindings
                     theme={theme}

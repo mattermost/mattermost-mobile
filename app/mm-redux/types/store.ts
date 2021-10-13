@@ -1,6 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {CallsState} from '@products/calls/store/types/calls';
+
 import {AppsState} from './apps';
 import {Bot} from './bots';
 import {ChannelCategoriesState} from './channel_categories';
@@ -21,7 +23,6 @@ import {ThreadsState} from './threads';
 import {Typing} from './typing';
 import {UsersState} from './users';
 import {Dictionary} from './utilities';
-import {VoiceCallsState} from './voiceCalls';
 
 export type GlobalState = {
     entities: {
@@ -59,7 +60,7 @@ export type GlobalState = {
             };
         };
         apps: AppsState;
-        voiceCalls: VoiceCallsState;
+        calls: CallsState;
     };
     errors: Array<any>;
     requests: {

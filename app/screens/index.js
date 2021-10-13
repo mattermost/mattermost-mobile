@@ -120,8 +120,8 @@ Navigation.setLazyComponentRegistrator((screenName) => {
     case 'MainSidebar':
         screen = require('app/components/sidebars/main').default;
         break;
-    case 'VoiceCall':
-        screen = require('@components/voice_channels/voice_call_screen').default;
+    case 'Call':
+        screen = require('@products/calls/screens/call').default;
         break;
     case 'MFA':
         screen = require('@screens/mfa').default;
@@ -172,8 +172,8 @@ Navigation.setLazyComponentRegistrator((screenName) => {
     case 'PostOptions':
         screen = require('@screens/post_options').default;
         break;
-    case 'VoiceCallOtherActions':
-        screen = require('@screens/voice_call_other_actions').default;
+    case 'CallOtherActions':
+        screen = require('@products/calls/screens/call_other_actions').default;
         break;
     case 'ReactionList':
         screen = require('@screens/reaction_list').default;

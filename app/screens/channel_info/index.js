@@ -7,14 +7,14 @@ import {bindActionCreators} from 'redux';
 import {setChannelDisplayName} from '@actions/views/channel';
 import {getChannelStats} from '@mm-redux/actions/channels';
 import {getCustomEmojisInText} from '@mm-redux/actions/emojis';
-import {joinCall, enableChannelCalls, disableChannelCalls} from '@mm-redux/actions/voiceCalls';
 import {General} from '@mm-redux/constants';
 import {getCurrentChannel, getCurrentChannelStats} from '@mm-redux/selectors/entities/channels';
 import {getTeammateNameDisplaySetting, getTheme} from '@mm-redux/selectors/entities/preferences';
 import {getCurrentUserId, getUser} from '@mm-redux/selectors/entities/users';
-import {isVoiceEnabled} from '@mm-redux/selectors/entities/voiceCalls';
 import {getUserIdFromChannelName} from '@mm-redux/utils/channel_utils';
 import {displayUsername} from '@mm-redux/utils/user_utils';
+import {joinCall, enableChannelCalls, disableChannelCalls} from '@products/calls/store/actions/calls';
+import {isCallsEnabled} from '@products/calls/store/selectors/calls';
 import {makeGetCustomStatus, isCustomStatusEnabled, isCustomStatusExpired, isCustomStatusExpirySupported} from '@selectors/custom_status';
 import {isGuest} from '@utils/users';
 
@@ -71,7 +71,7 @@ function makeMapStateToProps() {
             isCustomStatusEnabled: customStatusEnabled,
             isCustomStatusExpired: customStatusExpired,
             isCustomStatusExpirySupported: customStatusExpirySupported,
-            isVoiceEnabled: isVoiceEnabled(state),
+            isCallsEnabled: isCallsEnabled(state),
         };
     };
 }

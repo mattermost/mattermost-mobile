@@ -13,9 +13,9 @@ import {
 } from '@mm-redux/selectors/entities/channels';
 import {getTheme, getTeammateNameDisplaySetting, isCollapsedThreadsEnabled} from '@mm-redux/selectors/entities/preferences';
 import {getCurrentUserId, getUser} from '@mm-redux/selectors/entities/users';
-import {getVoiceCalls} from '@mm-redux/selectors/entities/voiceCalls';
 import {getMsgCountInChannel, getUserIdFromChannelName, isChannelMuted} from '@mm-redux/utils/channel_utils';
 import {displayUsername} from '@mm-redux/utils/user_utils';
+import {getCalls} from '@products/calls/store/selectors/calls';
 import {isCustomStatusEnabled} from '@selectors/custom_status';
 import {getViewingGlobalThreads} from '@selectors/threads';
 import {getDraftForChannel} from '@selectors/views';
@@ -32,7 +32,7 @@ function makeMapStateToProps() {
         const currentUserId = getCurrentUserId(state);
         const channelDraft = getDraftForChannel(state, channel.id);
         const collapsedThreadsEnabled = isCollapsedThreadsEnabled(state);
-        const channelHasCall = Boolean(getVoiceCalls(state)[ownProps.channelId]);
+        const channelHasCall = Boolean(getCalls(state)[ownProps.channelId]);
 
         let displayName = channel.display_name;
         let isGuest = false;

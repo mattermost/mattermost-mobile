@@ -1,6 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import ClientCalls, {ClientCallsMix} from '@products/calls/client/rest';
 import mix from '@utils/mix';
 
 import ClientApps, {ClientAppsMix} from './apps';
@@ -19,7 +20,6 @@ import ClientSharedChannels, {ClientSharedChannelsMix} from './shared_channels';
 import ClientTeams, {ClientTeamsMix} from './teams';
 import ClientTos, {ClientTosMix} from './tos';
 import ClientUsers, {ClientUsersMix} from './users';
-import ClientVoiceCalls, {ClientVoiceCallsMix} from './voiceCalls';
 
 interface Client extends ClientBase,
     ClientAppsMix,
@@ -36,7 +36,7 @@ interface Client extends ClientBase,
     ClientTeamsMix,
     ClientTosMix,
     ClientUsersMix,
-    ClientVoiceCallsMix
+    ClientCallsMix
 {}
 
 class Client extends mix(ClientBase).with(
@@ -54,7 +54,7 @@ class Client extends mix(ClientBase).with(
     ClientTeams,
     ClientTos,
     ClientUsers,
-    ClientVoiceCalls,
+    ClientCalls,
 ) {}
 
 const Client4 = new Client();

@@ -44,6 +44,7 @@
             "@init/*": ["app/init/*"],
             "@mattermost-managed": ["app/mattermost_managed/index"],
             "@mm-redux/*": ["app/mm-redux/*"],
+            "@products/*": ["app/products/*"],
             "@screens/*": ["app/screens/*"],
             "@selectors/*": ["app/selectors/*"],
             "@share/*": ["share_extension/*"],

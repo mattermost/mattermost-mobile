@@ -9,7 +9,6 @@ import {selectDefaultTeam} from '@actions/views/select_team';
 import {Client4} from '@client/rest';
 import {ViewTypes} from '@constants';
 import {getChannelStats} from '@mm-redux/actions/channels';
-import {loadVoiceCalls} from '@mm-redux/actions/voiceCalls';
 import {getCurrentChannelId} from '@mm-redux/selectors/entities/channels';
 import {getServerVersion} from '@mm-redux/selectors/entities/general';
 import {getSelectedPost} from '@mm-redux/selectors/entities/posts';
@@ -18,6 +17,7 @@ import {getCurrentTeam} from '@mm-redux/selectors/entities/teams';
 import {getCurrentUserId, getCurrentUserRoles, shouldShowTermsOfService} from '@mm-redux/selectors/entities/users';
 import {isMinimumServerVersion} from '@mm-redux/utils/helpers';
 import {isSystemAdmin as checkIsSystemAdmin} from '@mm-redux/utils/user_utils';
+import {loadCalls} from '@products/calls/store/actions/calls';
 import {getViewingGlobalThreads} from '@selectors/threads';
 
 import Channel from './channel';
@@ -65,7 +65,7 @@ function mapDispatchToProps(dispatch) {
             loadChannelsForTeam,
             selectDefaultTeam,
             selectInitialChannel,
-            loadVoiceCalls,
+            loadCalls,
         }, dispatch),
     };
 }

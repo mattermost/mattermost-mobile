@@ -1,6 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import CallsTypes from '@products/calls/store/action_types/calls';
+
 import AppsTypes from './apps';
 import BotTypes from './bots';
 import ChannelCategoryTypes from './channel_categories';
@@ -21,7 +23,6 @@ import SearchTypes from './search';
 import TeamTypes from './teams';
 import ThreadTypes from './threads';
 import UserTypes from './users';
-import VoiceCallsTypes from './voiceCalls';
 
 export {
     ErrorTypes,
@@ -44,5 +45,5 @@ export {
     ThreadTypes,
     RemoteClusterTypes,
     AppsTypes,
-    VoiceCallsTypes,
+    CallsTypes,
 };

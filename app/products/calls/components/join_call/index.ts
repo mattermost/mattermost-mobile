@@ -1,0 +1,34 @@
+// Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
+// See LICENSE.txt for license information.
+import {connect} from 'react-redux';
+import {bindActionCreators, Dispatch} from 'redux';
+
+import {getCurrentChannelId} from '@mm-redux/selectors/entities/channels';
+import {getTheme} from '@mm-redux/selectors/entities/preferences';
+import {joinCall} from '@products/calls/store/actions/calls';
+import {getCalls, getCurrentCall} from '@products/calls/store/selectors/calls';
+
+import JoinCall from './join_call';
+
+import type {GlobalState} from '@mm-redux/types/store';
+
+function mapStateToProps(state: GlobalState) {
+    const currentChannelId = getCurrentChannelId(state);
+    const call = getCalls(state)[currentChannelId];
+    const currentCall = getCurrentCall(state);
+    return {
+        theme: getTheme(state),
+        call: call === currentCall ? null : call,
+        confirmToJoin: Boolean(currentCall && call),
+    };
+}
+
+function mapDispatchToProps(dispatch: Dispatch) {
+    return {
+        actions: bindActionCreators({
+            joinCall,
+        }, dispatch),
+    };
+}
+
+export default connect(mapStateToProps, mapDispatchToProps)(JoinCall);

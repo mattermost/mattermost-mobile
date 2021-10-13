@@ -3,6 +3,8 @@
 
 import {combineReducers} from 'redux';
 
+import calls from '@products/calls/store/reducers/calls';
+
 import apps from './apps';
 import bots from './bots';
 import channelCategories from './channel_categories';
@@ -22,7 +24,6 @@ import teams from './teams';
 import threads from './threads';
 import typing from './typing';
 import users from './users';
-import voiceCalls from './voiceCalls';
 
 export default combineReducers({
     general,
@@ -44,5 +45,5 @@ export default combineReducers({
     threads,
     remoteCluster,
     apps,
-    voiceCalls,
+    calls,
 });

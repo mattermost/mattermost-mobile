@@ -16,6 +16,7 @@ import {UserThread} from '@mm-redux/types/threads';
 import {UserProfile} from '@mm-redux/types/users';
 import EventEmitter from '@mm-redux/utils/event_emitter';
 import {fromAutoResponder, isPostEphemeral, isPostPendingOrFailed, isSystemMessage} from '@mm-redux/utils/post_utils';
+import CallMessage from '@products/calls/components/call_message';
 import {preventDoubleTap} from '@utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
@@ -24,7 +25,6 @@ import Body from './body';
 import Header from './header';
 import PreHeader from './pre_header';
 import SystemMessage from './system_message';
-import VoiceCallMessage from './voice_call_message';
 
 import type {Post as PostType} from '@mm-redux/types/posts';
 import type {Theme} from '@mm-redux/types/theme';
@@ -242,7 +242,7 @@ const Post = ({
         );
     } else if (post.type === 'custom_calls') {
         body = (
-            <VoiceCallMessage
+            <CallMessage
                 post={post}
                 theme={theme}
             />

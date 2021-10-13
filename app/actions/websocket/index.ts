@@ -9,7 +9,6 @@ import {WebsocketEvents} from '@constants';
 import {ChannelTypes, GeneralTypes, PreferenceTypes, TeamTypes, UserTypes, RoleTypes} from '@mm-redux/action_types';
 import {getThreads} from '@mm-redux/actions/threads';
 import {getProfilesByIds, getStatusesByIds} from '@mm-redux/actions/users';
-import {loadVoiceCalls} from '@mm-redux/actions/voiceCalls';
 import {General} from '@mm-redux/constants';
 import {getCurrentChannelId, getCurrentChannelStats} from '@mm-redux/selectors/entities/channels';
 import {getConfig} from '@mm-redux/selectors/entities/general';
@@ -24,6 +23,20 @@ import {TeamMembership} from '@mm-redux/types/teams';
 import {WebSocketMessage} from '@mm-redux/types/websocket';
 import EventEmitter from '@mm-redux/utils/event_emitter';
 import {removeUserFromList} from '@mm-redux/utils/user_utils';
+import {loadCalls} from '@products/calls/store/actions/calls';
+import {
+    handleCallStarted,
+    handleCallUserConnected,
+    handleCallUserDisconnected,
+    handleCallUserMuted,
+    handleCallUserUnmuted,
+    handleCallUserVoiceOn,
+    handleCallUserVoiceOff,
+    handleCallChannelEnabled,
+    handleCallChannelDisabled,
+    handleCallScreenOn,
+    handleCallScreenOff,
+} from '@products/calls/store/actions/websockets';
 import {getChannelSinceValue} from '@utils/channels';
 import websocketClient from '@websocket';
 
@@ -51,19 +64,6 @@ import {handleRoleAddedEvent, handleRoleRemovedEvent, handleRoleUpdatedEvent} fr
 import {handleLeaveTeamEvent, handleUpdateTeamEvent, handleTeamAddedEvent} from './teams';
 import {handleThreadUpdated, handleThreadReadChanged, handleThreadFollowChanged} from './threads';
 import {handleStatusChangedEvent, handleUserAddedEvent, handleUserRemovedEvent, handleUserRoleUpdated, handleUserUpdatedEvent} from './users';
-import {
-    handleVoiceCallStarted,
-    handleVoiceCallUserConnected,
-    handleVoiceCallUserDisconnected,
-    handleVoiceCallUserMuted,
-    handleVoiceCallUserUnmuted,
-    handleVoiceCallUserVoiceOn,
-    handleVoiceCallUserVoiceOff,
-    handleVoiceCallChannelEnabled,
-    handleVoiceCallChannelDisabled,
-    handleVoiceCallScreenOn,
-    handleVoiceCallScreenOff,
-} from './voiceCalls';
 
 export function init(additionalOptions: any = {}) {
     return async (dispatch: DispatchFunc, getState: GetStateFunc) => {
@@ -161,7 +161,7 @@ export function doReconnect(now: number) {
             const {data: me}: any = await dispatch(loadMe(null, null, true));
 
             if (!me.error) {
-                dispatch(loadVoiceCalls());
+                dispatch(loadCalls());
 
                 const roles = [];
 
@@ -435,28 +435,28 @@ function handleEvent(msg: WebSocketMessage) {
             return dispatch(handleSidebarCategoryDeleted(msg));
         case WebsocketEvents.SIDEBAR_CATEGORY_ORDER_UPDATED:
             return dispatch(handleSidebarCategoryOrderUpdated(msg));
-        case WebsocketEvents.VOICE_CALLS_CHANNEL_ENABLED:
-            return dispatch(handleVoiceCallChannelEnabled(msg));
-        case WebsocketEvents.VOICE_CALLS_CHANNEL_DISABLED:
-            return dispatch(handleVoiceCallChannelDisabled(msg));
-        case WebsocketEvents.VOICE_CALLS_USER_CONNECTED:
-            return dispatch(handleVoiceCallUserConnected(msg));
-        case WebsocketEvents.VOICE_CALLS_USER_DISCONNECTED:
-            return dispatch(handleVoiceCallUserDisconnected(msg));
-        case WebsocketEvents.VOICE_CALLS_USER_MUTED:
-            return dispatch(handleVoiceCallUserMuted(msg));
-        case WebsocketEvents.VOICE_CALLS_USER_UNMUTED:
-            return dispatch(handleVoiceCallUserUnmuted(msg));
-        case WebsocketEvents.VOICE_CALLS_USER_VOICE_ON:
-            return dispatch(handleVoiceCallUserVoiceOn(msg));
-        case WebsocketEvents.VOICE_CALLS_USER_VOICE_OFF:
-            return dispatch(handleVoiceCallUserVoiceOff(msg));
-        case WebsocketEvents.VOICE_CALLS_CALL_START:
-            return dispatch(handleVoiceCallStarted(msg));
-        case WebsocketEvents.VOICE_CALLS_SCREEN_ON:
-            return dispatch(handleVoiceCallScreenOn(msg));
-        case WebsocketEvents.VOICE_CALLS_SCREEN_OFF:
-            return dispatch(handleVoiceCallScreenOff(msg));
+        case WebsocketEvents.CALLS_CHANNEL_ENABLED:
+            return dispatch(handleCallChannelEnabled(msg));
+        case WebsocketEvents.CALLS_CHANNEL_DISABLED:
+            return dispatch(handleCallChannelDisabled(msg));
+        case WebsocketEvents.CALLS_USER_CONNECTED:
+            return dispatch(handleCallUserConnected(msg));
+        case WebsocketEvents.CALLS_USER_DISCONNECTED:
+            return dispatch(handleCallUserDisconnected(msg));
+        case WebsocketEvents.CALLS_USER_MUTED:
+            return dispatch(handleCallUserMuted(msg));
+        case WebsocketEvents.CALLS_USER_UNMUTED:
+            return dispatch(handleCallUserUnmuted(msg));
+        case WebsocketEvents.CALLS_USER_VOICE_ON:
+            return dispatch(handleCallUserVoiceOn(msg));
+        case WebsocketEvents.CALLS_USER_VOICE_OFF:
+            return dispatch(handleCallUserVoiceOff(msg));
+        case WebsocketEvents.CALLS_CALL_START:
+            return dispatch(handleCallStarted(msg));
+        case WebsocketEvents.CALLS_SCREEN_ON:
+            return dispatch(handleCallScreenOn(msg));
+        case WebsocketEvents.CALLS_SCREEN_OFF:
+            return dispatch(handleCallScreenOff(msg));
         }
 
         return {data: true};

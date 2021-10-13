@@ -14,11 +14,11 @@ import PostDraft from '@components/post_draft';
 import MainSidebar from '@components/sidebars/main';
 import SettingsSidebar from '@components/sidebars/settings';
 import StatusBar from '@components/status_bar';
-import CurrentVoiceCall from '@components/voice_channels/current_voice_call';
-import FloatingVoiceCallContainer from '@components/voice_channels/floating_voice_call_container';
-import JoinVoiceCall from '@components/voice_channels/join_voice_call';
 import DEVICE from '@constants/device';
 import {ACCESSORIES_CONTAINER_NATIVE_ID, CHANNEL_POST_TEXTBOX_CURSOR_CHANGE, CHANNEL_POST_TEXTBOX_VALUE_CHANGE} from '@constants/post_draft';
+import CurrentCall from '@products/calls/components/current_call';
+import FloatingCallContainer from '@products/calls/components/floating_call_container';
+import JoinCall from '@products/calls/components/join_call';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 
 import ChannelBase from './channel_base';
@@ -85,10 +85,10 @@ export default class ChannelIOS extends ChannelBase {
             <>
                 <AnnouncementBanner/>
                 <NetworkIndicator/>
-                <FloatingVoiceCallContainer>
-                    <JoinVoiceCall/>
-                    <CurrentVoiceCall/>
-                </FloatingVoiceCallContainer>
+                <FloatingCallContainer>
+                    <JoinCall/>
+                    <CurrentCall/>
+                </FloatingCallContainer>
             </>
         );
         const header = (
