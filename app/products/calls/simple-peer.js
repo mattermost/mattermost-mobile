@@ -53,23 +53,15 @@ function warn(message) {
  * @param {Object} opts
  */
 export default class Peer extends stream.Duplex {
-    constructor(opts) {
-        super({allowHalfOpen: false, ...opts});
+    constructor(localStream) {
+        super({allowHalfOpen: false});
 
         this._id = generateId().slice(0, 7);
         this.channelName = generateId();
 
-        this.channelConfig = opts.channelConfig || Peer.channelConfig;
+        this.channelConfig = Peer.channelConfig;
         this.channelNegotiated = this.channelConfig.negotiated;
-        this.config = Object.assign({}, Peer.config, opts.config);
-        this.offerOptions = opts.offerOptions || {};
-        this.answerOptions = opts.answerOptions || {};
-        this.sdpTransform = opts.sdpTransform || ((sdp) => sdp);
-        this.streams = opts.streams || (opts.stream ? [opts.stream] : []); // support old "stream" option
-        this.allowHalfTrickle =
-            opts.allowHalfTrickle === undefined ? false : opts.allowHalfTrickle;
-        this.iceCompleteTimeout =
-            opts.iceCompleteTimeout || ICECOMPLETE_TIMEOUT;
+        this.streams = [localStream];
 
         this.destroyed = false;
         this.destroying = false;
@@ -105,7 +97,7 @@ export default class Peer extends stream.Duplex {
         this._interval = null;
 
         try {
-            this._pc = new RTCPeerConnection(this.config);
+            this._pc = new RTCPeerConnection(Peer.config);
         } catch (err) {
             this.destroy(errCode(err, 'ERR_PC_CONSTRUCTOR'));
             return;
@@ -708,7 +700,7 @@ export default class Peer extends stream.Duplex {
                 this.emit('iceTimeout');
                 this.emit('_iceComplete');
             }
-        }, this.iceCompleteTimeout);
+        }, ICECOMPLETE_TIMEOUT);
     }
 
     _createOffer() {
@@ -717,12 +709,11 @@ export default class Peer extends stream.Duplex {
         }
 
         this._pc.
-            createOffer(this.offerOptions).
+            createOffer({}).
             then((offer) => {
                 if (this.destroyed) {
                     return;
                 }
-                offer.sdp = this.sdpTransform(offer.sdp);
 
                 const sendOffer = () => {
                     if (this.destroyed) {
@@ -777,12 +768,11 @@ export default class Peer extends stream.Duplex {
         }
 
         this._pc.
-            createAnswer(this.answerOptions).
+            createAnswer({}).
             then((answer) => {
                 if (this.destroyed) {
                     return;
                 }
-                answer.sdp = this.sdpTransform(answer.sdp);
 
                 const sendAnswer = () => {
                     if (this.destroyed) {

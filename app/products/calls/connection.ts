@@ -124,7 +124,7 @@ export async function newClient(channelID: string, closeCb: () => void, setScree
 
     ws.onopen = async () => {
         InCallManager.start({media: 'audio'});
-        peer = new Peer({stream});
+        peer = new Peer(stream);
         peer.on('signal', (data: any) => {
             if (data.type === 'offer' || data.type === 'answer') {
                 ws.send(JSON.stringify({
