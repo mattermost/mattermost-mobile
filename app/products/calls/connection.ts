@@ -3,9 +3,6 @@
 
 import InCallManager from 'react-native-incall-manager';
 import {
-    RTCPeerConnection,
-    RTCIceCandidate,
-    RTCSessionDescription,
     MediaStream,
     MediaStreamTrack,
     mediaDevices,
@@ -131,11 +128,6 @@ export async function newClient(channelID: string, closeCb: () => void, setScree
             initiator: true,
             stream,
             trickle: true,
-            wrtc: {
-                RTCPeerConnection,
-                RTCIceCandidate,
-                RTCSessionDescription,
-            },
         });
         peer.on('signal', (data: any) => {
             if (data.type === 'offer' || data.type === 'answer') {

@@ -5,14 +5,19 @@
 /*! based on simple-peer. MIT License. Feross Aboukhadijeh
  * <https://feross.org/opensource> */
 
-const {Buffer} = require('buffer');
+import {Buffer} from 'buffer';
+import errCode from 'err-code';
+import stream from 'readable-stream';
+
+import {
+    RTCPeerConnection,
+    RTCIceCandidate,
+    RTCSessionDescription,
+} from 'react-native-webrtc2';
 
 const queueMicrotask = (callback) => {
     Promise.resolve().then(callback).catch(e => setTiemout(() => { throw e; }))
 }
-
-const errCode = require('err-code');
-const stream = require('readable-stream');
 
 function generateId() {
     // Implementation taken from http://stackoverflow.com/a/2117523
@@ -52,7 +57,7 @@ function warn(message) {
  * Duplex stream.
  * @param {Object} opts
  */
-class Peer extends stream.Duplex {
+export default class Peer extends stream.Duplex {
     constructor(opts) {
         super({allowHalfOpen: false, ...opts});
 
@@ -84,24 +89,6 @@ class Peer extends stream.Duplex {
         this.localFamily = undefined;
         this.localPort = undefined;
 
-        this._wrtc = opts.wrtc;
-
-        if (!this._wrtc) {
-            if (typeof window === 'undefined') {
-                throw errCode(
-                    new Error(
-                        'No WebRTC support: Specify `opts.wrtc` option in this environment',
-                    ),
-                    'ERR_WEBRTC_SUPPORT',
-                );
-            } else {
-                throw errCode(
-                    new Error('No WebRTC support: Not a supported browser'),
-                    'ERR_WEBRTC_SUPPORT',
-                );
-            }
-        }
-
         this._pcReady = false;
         this._channelReady = false;
         this._iceComplete = false; // ice candidate trickle done (got null candidate)
@@ -125,7 +112,7 @@ class Peer extends stream.Duplex {
         this._interval = null;
 
         try {
-            this._pc = new this._wrtc.RTCPeerConnection(this.config);
+            this._pc = new RTCPeerConnection(this.config);
         } catch (err) {
             this.destroy(errCode(err, 'ERR_PC_CONSTRUCTOR'));
             return;
@@ -252,7 +239,7 @@ class Peer extends stream.Duplex {
         if (data.sdp) {
             this._pc.
                 setRemoteDescription(
-                    new this._wrtc.RTCSessionDescription(data),
+                    new RTCSessionDescription(data),
                 ).
                 then(() => {
                     if (this.destroyed) {
@@ -288,7 +275,7 @@ class Peer extends stream.Duplex {
     }
 
     _addIceCandidate(candidate) {
-        const iceCandidateObj = new this._wrtc.RTCIceCandidate(candidate);
+        const iceCandidateObj = new RTCIceCandidate(candidate);
         this._pc.addIceCandidate(iceCandidateObj).catch((err) => {
             if (
                 !iceCandidateObj.address ||
@@ -1322,5 +1309,3 @@ Peer.config = {
 };
 
 Peer.channelConfig = {};
-
-module.exports = Peer;
