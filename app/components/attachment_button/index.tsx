@@ -9,7 +9,7 @@ import {
     NativeModules,
     Platform,
     StyleSheet,
-    StatusBar, DeviceEventEmitter,
+    StatusBar, DeviceEventEmitter, TextStyle,
 } from 'react-native';
 import AndroidOpenSettings from 'react-native-android-open-settings';
 import DocumentPicker from 'react-native-document-picker';
@@ -19,8 +19,9 @@ import Permissions from 'react-native-permissions';
 
 import {getPermissionMessages} from '@components/attachment_button/constant';
 import CompassIcon from '@components/compass_icon';
+import SlideUpPanelItem, {ITEM_HEIGHT} from '@components/slide_up_panel_item';
 import TouchableWithFeedback from '@components/touchable_with_feedback';
-import {Navigation, Files} from '@constants';
+import {Navigation, Files, Screens} from '@constants';
 import {t} from '@i18n';
 import {showModalOverCurrentContext} from '@screens/navigation';
 import {lookupMimeType} from '@utils/file';
@@ -44,6 +45,17 @@ type File = {
     width?: number;
 }
 
+type ExtraOptions = {
+    action: () => void;
+    text: {
+        id: string;
+        defaultMessage: string;
+    };
+    textStyle: TextStyle;
+    icon: string;
+    iconStyle: TextStyle;
+}
+
 type AttachmentButtonProps = {
     browseFileTypes: string; // 'public.item' | '*/*' | 'public.image' | 'images/*';
     canBrowseFiles?: boolean;
@@ -52,7 +64,7 @@ type AttachmentButtonProps = {
     canTakePhoto?: boolean;
     canTakeVideo?: boolean;
     children: React.ReactNode;
-    extraOptions: null | any[];
+    extraOptions?: ExtraOptions[];
     fileCount: number;
     intl: IntlShape;
     maxFileCount?: number;
@@ -92,7 +104,7 @@ class AttachmentButton extends PureComponent<AttachmentButtonProps> {
         canTakePhoto: true,
         canTakeVideo: true,
         maxFileCount: 5,
-        extraOptions: null,
+        extraOptions: [],
     };
 
     getPermissionDeniedMessage = (source: string, mediaType = '') => {
@@ -380,6 +392,7 @@ class AttachmentButton extends PureComponent<AttachmentButtonProps> {
             extraOptions,
             fileCount,
             maxFileCount,
+            intl,
             onShowFileMaxWarning,
         } = this.props;
 
@@ -389,73 +402,89 @@ class AttachmentButton extends PureComponent<AttachmentButtonProps> {
         }
 
         DeviceEventEmitter.emit(Navigation.BLUR_POST_DRAFT);
-        const items = [];
 
-        if (canTakePhoto) {
-            items.push({
-                action: this.attachPhotoFromCamera,
-                text: {
-                    id: t('mobile.file_upload.camera_photo'),
-                    defaultMessage: 'Take Photo',
-                },
-                icon: 'camera-outline',
-            });
-        }
+        const renderContent = () => {
+            return (
+                <>
+                    {canTakePhoto && (
+                        <SlideUpPanelItem
+                            icon='camera-outline'
+                            onPress={this.attachPhotoFromCamera}
+                            testID='attachment.canTakePhoto'
+                            text={intl.formatMessage({
+                                id: t('mobile.file_upload.camera_photo'),
+                                defaultMessage: 'Take Photo',
+                            })}
+                        />
+                    )}
 
-        if (canTakeVideo) {
-            items.push({
-                action: this.attachVideoFromCamera,
-                text: {
-                    id: t('mobile.file_upload.camera_video'),
-                    defaultMessage: 'Take Video',
-                },
-                icon: 'video-outline',
-            });
-        }
+                    {canTakeVideo && (
+                        <SlideUpPanelItem
+                            icon='video-outline'
+                            onPress={this.attachVideoFromCamera}
+                            testID='attachment.canTakeVideo'
+                            text={intl.formatMessage({
+                                id: t('mobile.file_upload.camera_video'),
+                                defaultMessage: 'Take Video',
+                            })}
+                        />
+                    )}
 
-        if (canBrowsePhotoLibrary) {
-            items.push({
-                action: this.attachFileFromLibrary,
-                text: {
-                    id: t('mobile.file_upload.library'),
-                    defaultMessage: 'Photo Library',
-                },
-                icon: 'file-image-outline',
-            });
-        }
+                    {canBrowsePhotoLibrary && (
+                        <SlideUpPanelItem
+                            icon='file-image-outline'
+                            onPress={this.attachFileFromLibrary}
+                            testID='attachment.canBrowsePhotoLibrary'
+                            text={intl.formatMessage({
+                                id: t('mobile.file_upload.library'),
+                                defaultMessage: 'Photo Library',
+                            })}
+                        />
+                    )}
 
-        if (canBrowseVideoLibrary && Platform.OS === 'android') {
-            items.push({
-                action: this.attachVideoFromLibraryAndroid,
-                text: {
-                    id: t('mobile.file_upload.video'),
-                    defaultMessage: 'Video Library',
-                },
-                icon: 'file-video-outline',
-            });
-        }
+                    {canBrowseVideoLibrary && Platform.OS === 'android' && (
+                        <SlideUpPanelItem
+                            icon='file-video-outline'
+                            onPress={this.attachVideoFromLibraryAndroid}
+                            testID='attachment.canBrowseVideoLibrary.android'
+                            text={intl.formatMessage({
+                                id: t('mobile.file_upload.video'),
+                                defaultMessage: 'Video Library',
+                            })}
+                        />
+                    )}
 
-        if (canBrowseFiles) {
-            items.push({
-                action: this.attachFileFromFiles,
-                text: {
-                    id: t('mobile.file_upload.browse'),
-                    defaultMessage: 'Browse Files',
-                },
-                icon: 'file-outline',
-            });
-        }
+                    {canBrowseFiles && (
+                        <SlideUpPanelItem
+                            icon='file-outline'
+                            onPress={this.attachFileFromFiles}
+                            testID='attachment.canBrowseFiles'
+                            text={intl.formatMessage({
+                                id: t('mobile.file_upload.browse'),
+                                defaultMessage: 'Browse Files',
+                            })}
+                        />
+                    )}
 
-        if (extraOptions) {
-            extraOptions.forEach((option) => {
-                if (option !== null) {
-                    items.push(option);
-                }
-            });
-        }
+                    {
+                        extraOptions?.forEach((option) => {
+                            return option ? (
+                                <SlideUpPanelItem
+                                    icon={option.icon}
+                                    onPress={option.action}
+                                    testID='attachment.canTakePhoto'
+                                    text={intl.formatMessage(option.text)}
+                                />) : null;
+                        })
+                    }
+                </>
+            );
+        };
 
-        //fixme: perhaps you should use BottomSheet
-        showModalOverCurrentContext('OptionsModal', {items});
+        showModalOverCurrentContext(Screens.BOTTOM_SHEET, {
+            renderContent,
+            snapPoints: [3 * ITEM_HEIGHT, 10],
+        });
     };
 
     render() {
