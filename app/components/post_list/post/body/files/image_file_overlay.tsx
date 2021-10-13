@@ -24,7 +24,7 @@ const getStyleSheet = (scale: number, th: Theme) => {
             moreImagesText: {
                 color: theme.sidebarHeaderTextColor,
                 fontSize: Math.round(PixelRatio.roundToNearestPixel(24 * scale)),
-                fontFamily: 'Open Sans',
+                fontFamily: 'OpenSans',
                 textAlign: 'center',
             },
         };

@@ -5,7 +5,7 @@ import React, {useEffect} from 'react';
 import {useIntl} from 'react-intl';
 import {Keyboard, StyleProp, View, ViewStyle} from 'react-native';
 
-import {fetchMissinProfilesByIds, fetchMissinProfilesByUsernames} from '@actions/remote/user';
+import {fetchMissingProfilesByIds, fetchMissingProfilesByUsernames} from '@actions/remote/user';
 import Markdown from '@components/markdown';
 import SystemAvatar from '@components/system_avatar';
 import SystemHeader from '@components/system_header';
@@ -36,7 +36,8 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     return {
         baseText: {
             color: changeOpacity(theme.centerChannelColor, 0.6),
-            fontSize: 15,
+            fontSize: 16,
+            lineHeight: 20,
         },
         body: {
             flex: 1,
@@ -69,11 +70,11 @@ const CombinedUserActivity = ({
 
     const loadUserProfiles = () => {
         if (allUserIds.length) {
-            fetchMissinProfilesByIds(serverUrl, allUserIds);
+            fetchMissingProfilesByIds(serverUrl, allUserIds);
         }
 
         if (allUsernames.length) {
-            fetchMissinProfilesByUsernames(serverUrl, allUsernames);
+            fetchMissingProfilesByUsernames(serverUrl, allUsernames);
         }
     };
 

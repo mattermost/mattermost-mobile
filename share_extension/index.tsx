@@ -86,7 +86,7 @@ const styles = StyleSheet.create({
     },
     sectionTitle: {
         fontSize: 24,
-        fontWeight: '600',
+        fontFamily: 'OpenSans-Semibold',
         color: Colors.black,
     },
     sectionDescription: {
@@ -96,7 +96,7 @@ const styles = StyleSheet.create({
         color: Colors.dark,
     },
     highlight: {
-        fontWeight: '700',
+        fontFamily: 'OpenSans-Bold',
     },
     footer: {
         color: Colors.dark,

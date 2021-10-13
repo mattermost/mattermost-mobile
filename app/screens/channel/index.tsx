@@ -45,7 +45,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     },
     sectionTitle: {
         fontSize: 16,
-        fontWeight: '600',
+        fontFamily: 'OpenSans-Semibold',
         color: theme.centerChannelColor,
     },
 }));

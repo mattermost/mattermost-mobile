@@ -391,7 +391,7 @@ const deferredAppEntryActions = async (
         }
 
         // defer fetching posts for unread channels on initial team
-        fetchPostsForUnreadChannels(serverUrl, chData.channels, chData.memberships);
+        fetchPostsForUnreadChannels(serverUrl, chData.channels, chData.memberships, initialChannelId);
     }
 
     // defer groups for team

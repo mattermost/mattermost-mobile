@@ -76,7 +76,7 @@ function TabBar({state, descriptors, navigation, theme}: BottomTabBarProps & {th
         return {
             transform: [{translateX}],
         };
-    }, [state.index]);
+    }, [state.index, tabWidth]);
 
     const animatedStyle = useAnimatedStyle(() => {
         if (visible === undefined) {

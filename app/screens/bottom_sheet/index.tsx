@@ -46,7 +46,11 @@ const BottomSheet = ({closeButtonId, initialSnapIndex = 0, renderContent, snapPo
 
     useEffect(() => {
         const listener = BackHandler.addEventListener('hardwareBackPress', () => {
-            sheetRef.current?.snapTo(1);
+            if (sheetRef.current) {
+                sheetRef.current.snapTo(1);
+            } else {
+                dismissModal();
+            }
             return true;
         });
 

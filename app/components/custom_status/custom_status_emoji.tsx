@@ -13,7 +13,7 @@ interface ComponentProps {
     testID?: string;
 }
 
-const CustomStatusEmoji = ({customStatus, emojiSize, style, testID}: ComponentProps) => {
+const CustomStatusEmoji = ({customStatus, emojiSize = 16, style, testID}: ComponentProps) => {
     const testIdPrefix = testID ? `${testID}.` : '';
     return (
         <Text
@@ -26,10 +26,6 @@ const CustomStatusEmoji = ({customStatus, emojiSize, style, testID}: ComponentPr
             />
         </Text>
     );
-};
-
-CustomStatusEmoji.defaultProps = {
-    emojiSize: 16,
 };
 
 export default CustomStatusEmoji;
