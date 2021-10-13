@@ -208,7 +208,7 @@ class ClearAfterModal extends NavigationComponent<Props, State> {
     }
 }
 
-const enhancedCAM = withObservables([], ({database}: WithDatabaseArgs) => ({
+const enhanced = withObservables([], ({database}: WithDatabaseArgs) => ({
     currentUser: database.get<SystemModel>(SYSTEM).
         findAndObserve(SYSTEM_IDENTIFIERS.CURRENT_USER_ID).
         pipe(
@@ -216,4 +216,4 @@ const enhancedCAM = withObservables([], ({database}: WithDatabaseArgs) => ({
         ),
 }));
 
-export default withDatabase(enhancedCAM(injectIntl(ClearAfterModal)));
+export default withDatabase(enhanced(injectIntl(ClearAfterModal)));

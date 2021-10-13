@@ -5,8 +5,8 @@ import {withDatabase} from '@nozbe/watermelondb/DatabaseProvider';
 import withObservables from '@nozbe/with-observables';
 import React, {useEffect, useMemo, useRef, useState} from 'react';
 import {DeviceEventEmitter, StyleProp, StyleSheet, View, ViewStyle} from 'react-native';
-import {of as of$} from 'rxjs';
-import {switchMap} from 'rxjs/operators';
+import {combineLatest, of as of$} from 'rxjs';
+import {map, switchMap} from 'rxjs/operators';
 
 import {Device} from '@constants';
 import {MM_TABLES, SYSTEM_IDENTIFIERS} from '@constants/database';
@@ -188,23 +188,23 @@ const Files = ({authorId, canDownloadFiles, failed, files, isReplyPost, postId, 
     );
 };
 
-const withConfigAndLicense = withObservables([], ({database}: WithDatabaseArgs) => ({
-    enableMobileFileDownload: database.get(MM_TABLES.SERVER.SYSTEM).findAndObserve(SYSTEM_IDENTIFIERS.CONFIG).pipe(
-        switchMap((cfg: SystemModel) => of$(cfg.value.EnableMobileFileDownload !== 'false')),
-    ),
-    complianceDisabled: database.get(MM_TABLES.SERVER.SYSTEM).findAndObserve(SYSTEM_IDENTIFIERS.LICENSE).pipe(
-        switchMap((lc: SystemModel) => of$(lc.value.IsLicensed === 'false' || lc.value.Compliance === 'false')),
-    ),
-}));
+const withCanDownload = withObservables(['post'], ({database, post}: {post: PostModel} & WithDatabaseArgs) => {
+    const enableMobileFileDownload = database.get<SystemModel>(MM_TABLES.SERVER.SYSTEM).findAndObserve(SYSTEM_IDENTIFIERS.CONFIG).pipe(
+        switchMap(({value}: {value: ClientConfig}) => of$(value.EnableMobileFileDownload !== 'false')),
+    );
+    const complianceDisabled = database.get<SystemModel>(MM_TABLES.SERVER.SYSTEM).findAndObserve(SYSTEM_IDENTIFIERS.LICENSE).pipe(
+        switchMap(({value}: {value: ClientLicense}) => of$(value.IsLicensed === 'false' || value.Compliance === 'false')),
+    );
 
-const withCanDownload = withObservables(
-    ['enableMobileFileDownload', 'complianceDisabled', 'post'],
-    ({enableMobileFileDownload, complianceDisabled, post}: {enableMobileFileDownload: boolean; complianceDisabled: boolean; post: PostModel}) => {
-        return {
-            authorId: of$(post.userId),
-            canDownloadFiles: of$(complianceDisabled || enableMobileFileDownload),
-            postId: of$(post.id),
-        };
-    });
+    const canDownloadFiles = combineLatest([enableMobileFileDownload, complianceDisabled]).pipe(
+        map(([download, compliance]) => compliance || download),
+    );
 
-export default withDatabase(withConfigAndLicense(withCanDownload(React.memo(Files))));
+    return {
+        authorId: of$(post.userId),
+        canDownloadFiles,
+        postId: of$(post.id),
+    };
+});
+
+export default withDatabase(withCanDownload(React.memo(Files)));

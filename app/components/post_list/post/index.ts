@@ -71,9 +71,11 @@ async function shouldHighlightReplyBar(currentUser: UserModel, post: PostModel, 
     return false;
 }
 const withSystem = withObservables([], ({database}: WithDatabaseArgs) => ({
-    featureFlagAppsEnabled: database.get(SYSTEM).findAndObserve(SYSTEM_IDENTIFIERS.CONFIG).pipe(switchMap((cfg: SystemModel) => of$(cfg.value.FeatureFlagAppsEnabled))),
-    currentUser: database.get(SYSTEM).findAndObserve(SYSTEM_IDENTIFIERS.CURRENT_USER_ID).pipe(
-        switchMap((currentUserId: SystemModel) => database.get(USER).findAndObserve(currentUserId.value)),
+    featureFlagAppsEnabled: database.get<SystemModel>(SYSTEM).findAndObserve(SYSTEM_IDENTIFIERS.CONFIG).pipe(
+        switchMap((cfg) => of$(cfg.value.FeatureFlagAppsEnabled)),
+    ),
+    currentUser: database.get<SystemModel>(SYSTEM).findAndObserve(SYSTEM_IDENTIFIERS.CURRENT_USER_ID).pipe(
+        switchMap((currentUserId) => database.get<UserModel>(USER).findAndObserve(currentUserId.value)),
     ),
 }));
 
@@ -92,10 +94,10 @@ const withPost = withObservables(
             },
         ));
         const isEphemeral = of$(isPostEphemeral(post));
-        const isFlagged = database.get(PREFERENCE).query(
+        const isFlagged = database.get<PreferenceModel>(PREFERENCE).query(
             Q.where('category', Preferences.CATEGORY_FLAGGED_POST),
             Q.where('name', post.id),
-        ).observe().pipe(switchMap((pref: PreferenceModel[]) => of$(Boolean(pref.length))));
+        ).observe().pipe(switchMap((pref) => of$(Boolean(pref.length))));
 
         if (post.props?.add_channel_member && isPostEphemeral(post)) {
             isPostAddChannelMember = from$(canManageChannelMembers(post, currentUser));
@@ -120,7 +122,8 @@ const withPost = withObservables(
             isJumboEmoji = post.collections.get(CUSTOM_EMOJI).query().observe().pipe(
                 // eslint-disable-next-line max-nested-callbacks
                 switchMap((customEmojis: CustomEmojiModel[]) => of$(hasJumboEmojiOnly(post.message, customEmojis.map((c) => c.name))),
-                ));
+                ),
+            );
         }
 
         const partialConfig: Partial<ClientConfig> = {

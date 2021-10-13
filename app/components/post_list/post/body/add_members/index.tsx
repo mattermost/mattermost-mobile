@@ -224,8 +224,8 @@ const AddMembers = ({channelType, currentUser, post, theme}: AddMembersProps) =>
 };
 
 const withChannelType = withObservables(['post'], ({database, post}: WithDatabaseArgs & {post: PostModel}) => ({
-    currentUser: database.get(SYSTEM).findAndObserve(SYSTEM_IDENTIFIERS.CURRENT_USER_ID).pipe(
-        switchMap((currentUserId: SystemModel) => database.get(USER).findAndObserve(currentUserId.value)),
+    currentUser: database.get<SystemModel>(SYSTEM).findAndObserve(SYSTEM_IDENTIFIERS.CURRENT_USER_ID).pipe(
+        switchMap(({value}) => database.get(USER).findAndObserve(value)),
     ),
     channelType: post.channel.observe().pipe(
         switchMap(

@@ -5,6 +5,8 @@ import {withDatabase} from '@nozbe/watermelondb/DatabaseProvider';
 import withObservables from '@nozbe/with-observables';
 import React from 'react';
 import {TouchableOpacity, View} from 'react-native';
+import {of as of$} from 'rxjs';
+import {map, switchMap} from 'rxjs/operators';
 
 import ChannelIcon from '@components/channel_icon';
 import CompassIcon from '@components/compass_icon';
@@ -24,21 +26,19 @@ import type MyChannelSettingsModel from '@typings/database/models/servers/my_cha
 import type SystemModel from '@typings/database/models/servers/system';
 import type UserModel from '@typings/database/models/servers/user';
 
+const {SERVER: {SYSTEM, USER}} = MM_TABLES;
+
 type WithChannelArgs = WithDatabaseArgs & {
-    currentUserId: SystemModel;
     channel: ChannelModel;
 }
 
-type ChannelTitleInputProps = {
+type ChannelTitleProps = {
     canHaveSubtitle: boolean;
     channel: ChannelModel;
     currentUserId: string;
-    onPress: () => void;
-};
-
-type ChannelTitleProps = ChannelTitleInputProps & {
     channelInfo: ChannelInfoModel;
     channelSettings: MyChannelSettingsModel;
+    onPress: () => void;
     teammate?: UserModel;
 };
 
@@ -52,7 +52,6 @@ const ChannelTitle = ({
     teammate,
 }: ChannelTitleProps) => {
     const theme = useTheme();
-
     const style = getStyle(theme);
     const channelType = channel.type;
     const isArchived = channel.deleteAt !== 0;
@@ -175,21 +174,29 @@ const getStyle = makeStyleSheetFromTheme((theme) => {
     };
 });
 
-const withSystemIds = withObservables([], ({database}: WithDatabaseArgs) => ({
-    currentUserId: database.collections.get(MM_TABLES.SERVER.SYSTEM).findAndObserve(SYSTEM_IDENTIFIERS.CURRENT_USER_ID),
-}));
-
-const enhancedChannelTitle = withObservables(['channel', 'currentUserId'], ({channel, currentUserId, database}: WithChannelArgs) => {
-    let teammateId;
+const enhanced = withObservables(['channel'], ({channel, database}: WithChannelArgs) => {
+    const currentUserId = database.collections.get<SystemModel>(SYSTEM).findAndObserve(SYSTEM_IDENTIFIERS.CURRENT_USER_ID).pipe(
+        map(({value}: {value: string}) => value),
+    );
+    let teammate;
     if (channel.type === General.DM_CHANNEL && channel.displayName) {
-        teammateId = getUserIdFromChannelName(currentUserId.value, channel.name);
+        teammate = currentUserId.pipe(
+            switchMap((id) => {
+                const teammateId = getUserIdFromChannelName(id, channel.name);
+                if (teammateId) {
+                    return database.get<UserModel>(USER).findAndObserve(teammateId);
+                }
+                return of$(undefined);
+            }),
+        );
     }
 
     return {
         channelInfo: channel.info.observe(),
         channelSettings: channel.settings.observe(),
-        ...(teammateId && {teammate: database.collections.get(MM_TABLES.SERVER.USER).findAndObserve(teammateId)}),
+        currentUserId,
+        teammate,
     };
 });
 
-export default withDatabase(withSystemIds(enhancedChannelTitle(ChannelTitle)));
+export default withDatabase(enhanced(ChannelTitle));

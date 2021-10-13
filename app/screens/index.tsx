@@ -118,7 +118,7 @@ Navigation.setLazyComponentRegistrator((screenName) => {
     //     screen = require('@screens/flagged_posts').default;
     //     break;
     case Screens.FORGOT_PASSWORD:
-        screen = require('@screens/forgot_password').default;
+        screen = withIntl(require('@screens/forgot_password').default);
         break;
     // case 'Gallery':
     //     screen = require('@screens/gallery').default;
@@ -127,10 +127,10 @@ Navigation.setLazyComponentRegistrator((screenName) => {
     //     screen = require('@screens/interactive_dialog').default;
     //     break;
     case Screens.LOGIN:
-        screen = require('@screens/login').default;
+        screen = withIntl(require('@screens/login').default);
         break;
     case Screens.LOGIN_OPTIONS:
-        screen = require('@screens/login_options').default;
+        screen = withIntl(require('@screens/login_options').default);
         break;
     // case 'LongPost':
     //     screen = require('@screens/long_post').default;
@@ -139,7 +139,7 @@ Navigation.setLazyComponentRegistrator((screenName) => {
     //     screen = require('app/components/sidebars/main').default;
     //     break;
     case Screens.MFA:
-        screen = require('@screens/mfa').default;
+        screen = withIntl(require('@screens/mfa').default);
         break;
     // case 'MoreChannels':
     //     screen = require('@screens/more_channels').default;
@@ -206,7 +206,7 @@ Navigation.setLazyComponentRegistrator((screenName) => {
     //     screen = require('@screens/settings/sidebar').default;
     //     break;
         case Screens.SSO:
-            screen = require('@screens/sso').default;
+            screen = withIntl(require('@screens/sso').default);
             break;
     // case 'Table':
     //     screen = require('@screens/table').default;
@@ -229,13 +229,13 @@ Navigation.setLazyComponentRegistrator((screenName) => {
     }
 
     if (screen) {
-        Navigation.registerComponent(screenName, () => withSafeAreaInsets(withGestures(withIntl(withManagedConfig(screen)), extraStyles)));
+        Navigation.registerComponent(screenName, () => withGestures(withSafeAreaInsets(withManagedConfig(screen)), extraStyles));
     }
 });
 
 export function registerScreens() {
     const homeScreen = require('@screens/home').default;
     const serverScreen = require('@screens/server').default;
-    Navigation.registerComponent(Screens.SERVER, () => withIntl(withManagedConfig(serverScreen)));
-    Navigation.registerComponent(Screens.HOME, () => withSafeAreaInsets(withGestures(withIntl(withServerDatabase(withManagedConfig(homeScreen))), undefined)));
+    Navigation.registerComponent(Screens.SERVER, () => withGestures(withIntl(withManagedConfig(serverScreen)), undefined));
+    Navigation.registerComponent(Screens.HOME, () => withGestures(withSafeAreaInsets(withServerDatabase(withManagedConfig(homeScreen))), undefined));
 }

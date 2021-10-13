@@ -148,7 +148,7 @@ const AccountScreen = ({currentUser, enableCustomUserStatuses, customStatusExpir
     );
 };
 
-const withUserConfig = withObservables([], ({database}: WithDatabaseArgs) => {
+const enhanced = withObservables([], ({database}: WithDatabaseArgs) => {
     const config = database.
         get<SystemModel>(SYSTEM).
         findAndObserve(SYSTEM_IDENTIFIERS.CONFIG);
@@ -180,4 +180,4 @@ const withUserConfig = withObservables([], ({database}: WithDatabaseArgs) => {
     };
 });
 
-export default withDatabase(withUserConfig(AccountScreen));
+export default withDatabase(enhanced(AccountScreen));

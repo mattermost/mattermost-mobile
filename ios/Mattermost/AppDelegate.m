@@ -169,15 +169,29 @@ MattermostBucket* bucket = nil;
 */
 RNHWKeyboardEvent *hwKeyEvent = nil;
 - (NSMutableArray<UIKeyCommand *> *)keyCommands {
-  NSMutableArray *keys = [NSMutableArray new];
   if (hwKeyEvent == nil) {
     hwKeyEvent = [[RNHWKeyboardEvent alloc] init];
   }
+  
+  NSMutableArray *commands = [NSMutableArray new];
+  
   if ([hwKeyEvent isListening]) {
-    [keys addObject: [UIKeyCommand keyCommandWithInput:@"\r" modifierFlags:0 action:@selector(sendEnter:)]];
-    [keys addObject: [UIKeyCommand keyCommandWithInput:@"\r" modifierFlags:UIKeyModifierShift action:@selector(sendShiftEnter:)]];
+    UIKeyCommand *enter = [UIKeyCommand keyCommandWithInput:@"\r" modifierFlags:0 action:@selector(sendEnter:)];
+    UIKeyCommand *shiftEnter = [UIKeyCommand keyCommandWithInput:@"\r" modifierFlags:UIKeyModifierShift action:@selector(sendShiftEnter:)];
+    if (@available(iOS 13.0, *)) {
+      [enter setTitle:@"Send message"];
+      [shiftEnter setTitle:@"Add new line"];
+    }
+    if (@available(iOS 15.0, *)) {
+      [enter setWantsPriorityOverSystemBehavior:YES];
+      [shiftEnter setWantsPriorityOverSystemBehavior:YES];
+    }
+    
+    [commands addObject: enter];
+    [commands addObject: shiftEnter];
   }
-  return keys;
+  
+  return commands;
 }
 
 - (void)sendEnter:(UIKeyCommand *)sender {

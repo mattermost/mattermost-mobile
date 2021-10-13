@@ -6,12 +6,12 @@ import React from 'react';
 import {Text, TextProps} from 'react-native';
 
 type FormattedDateProps = TextProps & {
-    format: string;
+    format?: string;
     timezone?: string | UserTimezone | null;
     value: number | string | Date;
 }
 
-const FormattedDate = ({format, timezone, value, ...props}: FormattedDateProps) => {
+const FormattedDate = ({format = 'ddd, MMM DD, YYYY', timezone, value, ...props}: FormattedDateProps) => {
     let formattedDate = moment(value).format(format);
     if (timezone) {
         let zone = timezone as string;
@@ -22,10 +22,6 @@ const FormattedDate = ({format, timezone, value, ...props}: FormattedDateProps) 
     }
 
     return <Text {...props}>{formattedDate}</Text>;
-};
-
-FormattedDate.defaultProps = {
-    format: 'ddd, MMM DD, YYYY',
 };
 
 export default FormattedDate;
