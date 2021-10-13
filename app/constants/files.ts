@@ -13,6 +13,7 @@ const Files: Record<string, string[]> = {
     VIDEO_TYPES: ['mp4', 'avi', 'webm', 'mkv', 'wmv', 'mpg', 'mov', 'flv'],
     WORD_TYPES: ['doc', 'docx'],
     ZIP_TYPES: ['zip'],
+    VALID_MIME_TYPES: ['application/bmp', 'application/jpg', 'application/png', 'application/x-bmp', 'application/x-jpg', 'application/x-png', 'application/x-win-bitmap', 'image/bmp', 'image/jp_', 'image/jpeg', 'image/jpeg', 'image/jpg', 'image/ms-bmp', 'image/pipeg', 'image/pjpeg', 'image/png', 'image/vnd.swiftview-jpeg', 'image/x-bitmap', 'image/x-bmp', 'image/x-ms-bmp', 'image/x-win-bitmap', 'image/x-windows-bmp', 'image/x-xbitmap', 'image/x-xbitmap'],
 };
 
 export default Files;
