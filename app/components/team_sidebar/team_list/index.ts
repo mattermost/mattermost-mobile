@@ -27,13 +27,27 @@ const withTeams = withObservables([], ({database}: WithDatabaseArgs) => {
     );
     const myTeams = combineLatest([teams, order]).pipe(
         map(([ts, o]) => {
+            if (!o.length) {
+                return ts;
+            }
+
             const indexes: {[x: string]: number} = {};
+            const originalIndexes: {[x: string]: number} = {};
             // eslint-disable-next-line max-nested-callbacks
             o.forEach((v, i) => {
                 indexes[v] = i;
             });
             // eslint-disable-next-line max-nested-callbacks
-            return ts.sort((a, b) => indexes[a.id] - indexes[b.id]);
+            ts.forEach((t, i) => {
+                originalIndexes[t.id] = i;
+            });
+            // eslint-disable-next-line max-nested-callbacks
+            return ts.sort((a, b) => {
+                if ((indexes[a.id] != null) || (indexes[b.id] != null)) {
+                    return (indexes[a.id] ?? -1) - (indexes[b.id] ?? -1);
+                }
+                return (originalIndexes[a.id] - originalIndexes[b.id]);
+            });
         }),
     );
     return {

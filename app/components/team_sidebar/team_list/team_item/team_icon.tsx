@@ -19,26 +19,19 @@ type Props = {
 
 export default function TeamIcon({id, lastIconUpdate, displayName, selected}: Props) {
     const [imageError, setImageError] = useState(false);
-    const mounted = useRef(false);
+    const ref = useRef<View>(null);
     const theme = useTheme();
     const styles = getStyleSheet(theme);
 
     const serverUrl = useServerUrl();
     const client = NetworkManager.getClient(serverUrl);
 
-    useEffect(() => {
-        mounted.current = true;
-        return () => {
-            mounted.current = false;
-        };
-    });
-
     useEffect(() =>
         setImageError(false)
     , [id, lastIconUpdate]);
 
     const handleImageError = useCallback(() => {
-        if (mounted.current) {
+        if (ref.current) {
             setImageError(true);
         }
     }, []);
@@ -65,6 +58,7 @@ export default function TeamIcon({id, lastIconUpdate, displayName, selected}: Pr
     return (
         <View
             style={selected ? styles.containerSelected : styles.container}
+            ref={ref}
         >
             {teamIconContent}
         </View>
