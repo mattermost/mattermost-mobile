@@ -62,9 +62,8 @@ export default class Peer extends stream.Duplex {
         super({allowHalfOpen: false, ...opts});
 
         this._id = generateId().slice(0, 7);
-        this.channelName = opts.initiator ? opts.channelName || generateId() : null;
+        this.channelName = generateId();
 
-        this.initiator = opts.initiator || false;
         this.channelConfig = opts.channelConfig || Peer.channelConfig;
         this.channelNegotiated = this.channelConfig.negotiated;
         this.config = Object.assign({}, Peer.config, opts.config);
@@ -152,18 +151,12 @@ export default class Peer extends stream.Duplex {
         // - onfingerprintfailure
         // - onnegotiationneeded
 
-        if (this.initiator || this.channelNegotiated) {
-            this._setupData({
-                channel: this._pc.createDataChannel(
-                    this.channelName,
-                    this.channelConfig,
-                ),
-            });
-        } else {
-            this._pc.ondatachannel = (event) => {
-                this._setupData(event);
-            };
-        }
+        this._setupData({
+            channel: this._pc.createDataChannel(
+                this.channelName,
+                this.channelConfig,
+            ),
+        });
 
         if (this.streams) {
             this.streams.forEach((stream) => {
@@ -220,10 +213,10 @@ export default class Peer extends stream.Duplex {
             }
         }
 
-        if (data.renegotiate && this.initiator) {
+        if (data.renegotiate) {
             this._needsNegotiation();
         }
-        if (data.transceiverRequest && this.initiator) {
+        if (data.transceiverRequest) {
             this.addTransceiver(
                 data.transceiverRequest.kind,
                 data.transceiverRequest.init,
@@ -321,20 +314,11 @@ export default class Peer extends stream.Duplex {
             );
         }
 
-        if (this.initiator) {
-            try {
-                this._pc.addTransceiver(kind, init);
-                this._needsNegotiation();
-            } catch (err) {
-                this.destroy(errCode(err, 'ERR_ADD_TRANSCEIVER'));
-            }
-        } else {
-            this.emit('signal', {
-
-                // request initiator to renegotiate
-                type: 'transceiverRequest',
-                transceiverRequest: {kind, init},
-            });
+        try {
+            this._pc.addTransceiver(kind, init);
+            this._needsNegotiation();
+        } catch (err) {
+            this.destroy(errCode(err, 'ERR_ADD_TRANSCEIVER'));
         }
     }
 
@@ -501,9 +485,7 @@ export default class Peer extends stream.Duplex {
         this._batchedNegotiation = true;
         queueMicrotask(() => {
             this._batchedNegotiation = false;
-            if (this.initiator || !this._firstNegotiation) {
-                this.negotiate();
-            }
+            this.negotiate();
             this._firstNegotiation = false;
         });
     }
@@ -519,24 +501,13 @@ export default class Peer extends stream.Duplex {
             );
         }
 
-        if (this.initiator) {
-            if (this._isNegotiating) {
-                this._queuedNegotiation = true;
-            } else {
-                setTimeout(() => {
-                    // HACK: Chrome crashes if we immediately call createOffer
-                    this._createOffer();
-                }, 0);
-            }
-        } else if (this._isNegotiating) {
+        if (this._isNegotiating) {
             this._queuedNegotiation = true;
         } else {
-            this.emit('signal', {
-
-                // request initiator to renegotiate
-                type: 'renegotiate',
-                renegotiate: true,
-            });
+            setTimeout(() => {
+                // HACK: Chrome crashes if we immediately call createOffer
+                this._createOffer();
+            }, 0);
         }
         this._isNegotiating = true;
     }
@@ -838,9 +809,6 @@ export default class Peer extends stream.Duplex {
                         type: signal.type,
                         sdp: signal.sdp,
                     });
-                    if (!this.initiator) {
-                        this._requestMissingTransceivers();
-                    }
                 };
 
                 const onSuccess = () => {

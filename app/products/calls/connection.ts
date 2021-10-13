@@ -125,7 +125,6 @@ export async function newClient(channelID: string, closeCb: () => void, setScree
     ws.onopen = async () => {
         InCallManager.start({media: 'audio'});
         peer = new Peer({
-            initiator: true,
             stream,
             trickle: true,
         });
