@@ -286,6 +286,7 @@ exports[`PostDraft Should render the DraftInput 1`] = `
       <View>
         <PasteInput
           accessible={true}
+          allowFontScaling={true}
           autoCapitalize="sentences"
           autoCompleteType="off"
           blurOnSubmit={false}
