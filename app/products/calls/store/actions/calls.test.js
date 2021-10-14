@@ -59,22 +59,4 @@ describe('Actions.Calls', () => {
         result = store.getState().entities.calls.joined;
         assert.equal('', result);
     });
-
-    it('muteUser', async () => {
-        await store.dispatch(addFakeCall('channel-id'));
-        let result = store.getState().entities.calls.calls['channel-id'].participants.xohi8cki9787fgiryne716u84o.muted;
-        assert.equal(false, result);
-        await store.dispatch(CallsActions.muteUser('channel-id', 'xohi8cki9787fgiryne716u84o'));
-        result = store.getState().entities.calls.calls['channel-id'].participants.xohi8cki9787fgiryne716u84o.muted;
-        assert.equal(true, result);
-    });
-
-    it('unmuteUser', async () => {
-        await store.dispatch(addFakeCall('channel-id'));
-        let result = store.getState().entities.calls.calls['channel-id'].participants.xohi8cki9787fgiryne716u841.muted;
-        assert.equal(true, result);
-        await store.dispatch(CallsActions.unmuteUser('channel-id', 'xohi8cki9787fgiryne716u841'));
-        result = store.getState().entities.calls.calls['channel-id'].participants.xohi8cki9787fgiryne716u841.muted;
-        assert.equal(false, result);
-    });
 });
