@@ -479,7 +479,7 @@ class ProfilePictureButton extends PureComponent<ProfileImageButtonProps> {
 
                     {canBrowseFiles && (
                         <SlideUpPanelItem
-                            icon='file-outline'
+                            icon='file-multiple-outline'
                             onPress={this.attachFileFromFiles}
                             testID='attachment.canBrowseFiles'
                             text={intl.formatMessage({
