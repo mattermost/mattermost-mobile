@@ -39,6 +39,7 @@ export const transformChannelRecord = ({action, database, value}: TransformerArg
         channel.displayName = raw.display_name;
         channel.isGroupConstrained = Boolean(raw.group_constrained);
         channel.name = raw.name;
+        channel.shared = Boolean(raw.shared);
         channel.teamId = raw.team_id;
         channel.type = raw.type;
     };

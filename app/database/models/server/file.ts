@@ -12,7 +12,7 @@ import type PostModel from '@typings/database/models/servers/post';
 const {FILE, POST} = MM_TABLES.SERVER;
 
 /**
- * The File model works in pair with the Post model.  It hosts information about the files shared in a Post
+ * The File model works in pair with the Post model.  It hosts information about the files attached to a Post
  */
 export default class FileModel extends Model {
     /** table (name) : File */

@@ -46,8 +46,8 @@ const Account = ({currentUser, isFocused, theme}: Props) => {
 };
 
 const withCurrentUser = withObservables([], ({database}: WithDatabaseArgs) => ({
-    currentUser: database.get(SYSTEM).findAndObserve(SYSTEM_IDENTIFIERS.CURRENT_USER_ID).pipe(
-        switchMap((id: SystemModel) => database.get(USER).findAndObserve(id.value)),
+    currentUser: database.get<SystemModel>(SYSTEM).findAndObserve(SYSTEM_IDENTIFIERS.CURRENT_USER_ID).pipe(
+        switchMap((id) => database.get(USER).findAndObserve(id.value)),
     ),
 }));
 

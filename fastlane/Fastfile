@@ -312,7 +312,7 @@ platform :ios do
   end
 
   desc 'Get iOS match profiles'
-  lane :match do
+  lane :certs do
     if !ENV['MATCH_PASSWORD'].nil? && !ENV['MATCH_PASSWORD'].empty?
       api_key = get_apple_api_key()
       match(

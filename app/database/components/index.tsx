@@ -8,6 +8,7 @@ import React, {ComponentType, useEffect, useState} from 'react';
 import {MM_TABLES} from '@constants/database';
 import ServerUrlProvider from '@context/server_url';
 import ThemeProvider from '@context/theme';
+import UserLocaleProvider from '@context/user_locale';
 import DatabaseManager from '@database/manager';
 
 import type ServersModel from '@typings/database/models/app/servers';
@@ -56,11 +57,13 @@ export function withServerDatabase<T>(Component: ComponentType<T>): ComponentTyp
 
         return (
             <DatabaseProvider database={state.database}>
-                <ServerUrlProvider url={state.serverUrl}>
-                    <ThemeProvider database={state.database}>
-                        <Component {...props}/>
-                    </ThemeProvider>
-                </ServerUrlProvider>
+                <UserLocaleProvider database={state.database}>
+                    <ServerUrlProvider url={state.serverUrl}>
+                        <ThemeProvider database={state.database}>
+                            <Component {...props}/>
+                        </ThemeProvider>
+                    </ServerUrlProvider>
+                </UserLocaleProvider>
             </DatabaseProvider>
         );
     };

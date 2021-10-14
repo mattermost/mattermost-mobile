@@ -39,7 +39,7 @@ describe('*** CHANNEL Prepare Records Test ***', () => {
                     creator_id: '',
                     scheme_id: null,
                     group_constrained: null,
-                    shared: null,
+                    shared: false,
                 },
             },
         });
