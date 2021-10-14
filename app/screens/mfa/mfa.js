@@ -162,6 +162,7 @@ export default class Mfa extends PureComponent {
                                 error={this.state.error}
                             />
                             <TextInputWithLocalizedPlaceholder
+                                allowFontScaling={true}
                                 ref={this.inputRef}
                                 value={this.state.token}
                                 onChangeText={this.handleInput}
