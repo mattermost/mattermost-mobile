@@ -11,6 +11,7 @@ import {
     makeGetChannel,
     shouldHideDefaultChannel,
 } from '@mm-redux/selectors/entities/channels';
+import {getFeatureFlagValue} from '@mm-redux/selectors/entities/general';
 import {getTheme, getTeammateNameDisplaySetting, isCollapsedThreadsEnabled} from '@mm-redux/selectors/entities/preferences';
 import {getCurrentUserId, getUser} from '@mm-redux/selectors/entities/users';
 import {getMsgCountInChannel, getUserIdFromChannelName, isChannelMuted} from '@mm-redux/utils/channel_utils';
@@ -74,6 +75,7 @@ function makeMapStateToProps() {
         if (member && member.notify_props) {
             showUnreadForMsgs = member.notify_props.mark_unread !== General.MENTION;
         }
+        const callsFeatureEnabled = getFeatureFlagValue(state, 'CallsMobile') === 'true';
 
         const viewingGlobalThreads = getViewingGlobalThreads(state);
         return {
@@ -95,6 +97,7 @@ function makeMapStateToProps() {
             viewingGlobalThreads,
             customStatusEnabled: isCustomStatusEnabled(state),
             channelHasCall,
+            callsFeatureEnabled,
         };
     };
 }

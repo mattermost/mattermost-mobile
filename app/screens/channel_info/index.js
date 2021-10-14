@@ -9,6 +9,7 @@ import {getChannelStats} from '@mm-redux/actions/channels';
 import {getCustomEmojisInText} from '@mm-redux/actions/emojis';
 import {General} from '@mm-redux/constants';
 import {getCurrentChannel, getCurrentChannelStats} from '@mm-redux/selectors/entities/channels';
+import {getFeatureFlagValue} from '@mm-redux/selectors/entities/general';
 import {getTeammateNameDisplaySetting, getTheme} from '@mm-redux/selectors/entities/preferences';
 import {getCurrentUserId, getUser} from '@mm-redux/selectors/entities/users';
 import {getUserIdFromChannelName} from '@mm-redux/utils/channel_utils';
@@ -57,6 +58,8 @@ function makeMapStateToProps() {
             currentChannelMemberCount = currentChannel.display_name.split(',').length;
         }
 
+        const callsFeatureEnabled = getFeatureFlagValue(state, 'CallsMobile') === 'true';
+
         return {
             currentChannel,
             currentChannelCreatorName,
@@ -72,6 +75,7 @@ function makeMapStateToProps() {
             isCustomStatusExpired: customStatusExpired,
             isCustomStatusExpirySupported: customStatusExpirySupported,
             isCallsEnabled: isCallsEnabled(state),
+            callsFeatureEnabled,
         };
     };
 }

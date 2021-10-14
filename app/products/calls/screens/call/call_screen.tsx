@@ -6,9 +6,9 @@ import {Keyboard, View, Text, Platform, Pressable, SafeAreaView, ScrollView} fro
 import {RTCView} from 'react-native-webrtc2';
 
 import {showModalOverCurrentContext, mergeNavigationOptions, popTopScreen, goToScreen} from '@actions/navigation';
-import {THREAD} from '@constants/screen';
 import CompassIcon from '@components/compass_icon';
 import FormattedText from '@components/formatted_text';
+import {THREAD} from '@constants/screen';
 import {GenericAction} from '@mm-redux/types/actions';
 import {displayUsername} from '@mm-redux/utils/user_utils';
 import CallAvatar from '@mmproducts/calls/components/call_avatar';

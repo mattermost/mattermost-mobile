@@ -10,7 +10,7 @@ import {Client4} from '@client/rest';
 import {ViewTypes} from '@constants';
 import {getChannelStats} from '@mm-redux/actions/channels';
 import {getCurrentChannelId} from '@mm-redux/selectors/entities/channels';
-import {getServerVersion} from '@mm-redux/selectors/entities/general';
+import {getServerVersion, getFeatureFlagValue} from '@mm-redux/selectors/entities/general';
 import {getSelectedPost} from '@mm-redux/selectors/entities/posts';
 import {getTheme, isCollapsedThreadsEnabled} from '@mm-redux/selectors/entities/preferences';
 import {getCurrentTeam} from '@mm-redux/selectors/entities/teams';
@@ -42,6 +42,7 @@ function mapStateToProps(state) {
     const currentTeamId = currentTeam?.delete_at === 0 ? currentTeam?.id : '';
     const currentChannelId = currentTeam?.delete_at === 0 ? getCurrentChannelId(state) : '';
     const collapsedThreadsEnabled = isCollapsedThreadsEnabled(state);
+    const callsFeatureEnabled = getFeatureFlagValue(state, 'CallsMobile') === 'true';
 
     return {
         currentChannelId,
@@ -55,6 +56,7 @@ function mapStateToProps(state) {
         teamName: currentTeam?.display_name,
         theme: getTheme(state),
         viewingGlobalThreads: collapsedThreadsEnabled && getViewingGlobalThreads(state),
+        callsFeatureEnabled,
     };
 }
 

@@ -57,7 +57,7 @@ export default class ChannelIOS extends ChannelBase {
     };
 
     render() {
-        const {currentChannelId, theme, viewingGlobalThreads} = this.props;
+        const {currentChannelId, theme, viewingGlobalThreads, callsFeatureEnabled} = this.props;
 
         let component;
         let renderDraftArea = false;
@@ -85,10 +85,11 @@ export default class ChannelIOS extends ChannelBase {
             <>
                 <AnnouncementBanner/>
                 <NetworkIndicator/>
-                <FloatingCallContainer>
-                    <JoinCall/>
-                    <CurrentCall/>
-                </FloatingCallContainer>
+                {callsFeatureEnabled &&
+                    <FloatingCallContainer>
+                        <JoinCall/>
+                        <CurrentCall/>
+                    </FloatingCallContainer>}
             </>
         );
         const header = (

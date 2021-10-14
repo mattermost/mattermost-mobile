@@ -64,7 +64,7 @@ export default class ChannelAndroid extends ChannelBase {
     }
 
     render() {
-        const {theme, viewingGlobalThreads} = this.props;
+        const {theme, viewingGlobalThreads, callsFeatureEnabled} = this.props;
         let component;
 
         if (viewingGlobalThreads) {
@@ -105,10 +105,11 @@ export default class ChannelAndroid extends ChannelBase {
                 {component}
                 <NetworkIndicator/>
                 <AnnouncementBanner/>
-                <FloatingCallContainer>
-                    <JoinCall/>
-                    <CurrentCall/>
-                </FloatingCallContainer>
+                {callsFeatureEnabled &&
+                    <FloatingCallContainer>
+                        <JoinCall/>
+                        <CurrentCall/>
+                    </FloatingCallContainer>}
             </>
         );
 

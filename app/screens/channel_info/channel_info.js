@@ -58,6 +58,7 @@ export default class ChannelInfo extends PureComponent {
         isCustomStatusExpired: PropTypes.bool.isRequired,
         isCustomStatusExpirySupported: PropTypes.bool.isRequired,
         isCallsEnabled: PropTypes.bool.isRequired,
+        callsFeatureEnabled: PropTypes.bool.isRequired,
     };
 
     static defaultProps = {
@@ -101,7 +102,7 @@ export default class ChannelInfo extends PureComponent {
     };
 
     actionsRows = (channelIsArchived) => {
-        const {currentChannel, currentUserId, isDirectMessage, theme, isCallsEnabled} = this.props;
+        const {currentChannel, currentUserId, isDirectMessage, theme, isCallsEnabled, callsFeatureEnabled} = this.props;
 
         if (channelIsArchived) {
             return (
@@ -162,25 +163,28 @@ export default class ChannelInfo extends PureComponent {
                     testID='channel_info.edit_channel.action'
                     theme={theme}
                 />
-                <StartCall
-                    testID='channel_info.start_call.action'
-                    theme={theme}
-                    currentChannelId={currentChannel.id}
-                    joinCall={(channelId) => {
-                        this.props.actions.joinCall(channelId);
-                        this.close();
-                    }}
-                    canStartCall={isCallsEnabled/* TODO: also check permissions */}
-                />
-                <EnableDisableCalls
-                    testID='channel_info.start_call.action'
-                    theme={theme}
-                    currentChannelId={currentChannel.id}
-                    enableCalls={this.props.actions.enableChannelCalls}
-                    disableCalls={this.props.actions.disableChannelCalls}
-                    canEnableDisableCalls={true}
-                    enabled={isCallsEnabled}
-                />
+                {callsFeatureEnabled &&
+                    <>
+                        <StartCall
+                            testID='channel_info.start_call.action'
+                            theme={theme}
+                            currentChannelId={currentChannel.id}
+                            joinCall={(channelId) => {
+                                this.props.actions.joinCall(channelId);
+                                this.close();
+                            }}
+                            canStartCall={isCallsEnabled/* TODO: also check permissions */}
+                        />
+                        <EnableDisableCalls
+                            testID='channel_info.start_call.action'
+                            theme={theme}
+                            currentChannelId={currentChannel.id}
+                            enableCalls={this.props.actions.enableChannelCalls}
+                            disableCalls={this.props.actions.disableChannelCalls}
+                            canEnableDisableCalls={true}
+                            enabled={isCallsEnabled}
+                        />
+                    </>}
                 <Bindings
                     theme={theme}
                 />
