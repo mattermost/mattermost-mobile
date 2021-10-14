@@ -26,14 +26,14 @@ export default class LatexCodeBlock extends MarkdownCodeBlock {
     };
 
     handlePress = preventDoubleTap(() => {
-        const {language, content} = this.props;
+        const {content} = this.props;
         const {intl} = this.context;
         const screen = 'Latex';
         const passProps = {
             content,
         };
 
-        const languageDisplayName = getDisplayNameForLanguage(language);
+        const languageDisplayName = getDisplayNameForLanguage('latex');
         let title;
         if (languageDisplayName) {
             title = intl.formatMessage(
