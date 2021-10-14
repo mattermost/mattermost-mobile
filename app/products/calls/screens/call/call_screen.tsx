@@ -95,6 +95,7 @@ const getStyleSheet = makeStyleSheetFromTheme((props: any) => {
 
     if (props.isLandscape && props.call?.screenOn) {
         usersScroll.position = 'absolute';
+        usersScroll.height = 0;
     }
     return {
         wrapper: {
@@ -263,6 +264,38 @@ const CallScreen = (props: Props) => {
             </Pressable>
         );
     }
+    let usersList = null;
+    if (!props.call.screenOn || !props.isLandscape) {
+        usersList = (
+            <ScrollView
+                alwaysBounceVertical={false}
+                horizontal={props.call?.screenOn !== ''}
+                contentContainerStyle={style.usersScroll}
+            >
+                <Pressable
+                    onPress={() => setShowControlsInLandscape(!showControlsInLandscape)}
+                    style={style.users}
+                >
+                    {Object.values(props.call.participants).map((user) => {
+                        return (
+                            <View
+                                style={style.user}
+                                key={user.id}
+                            >
+                                <CallAvatar
+                                    userId={user.id}
+                                    volume={user.isTalking ? 1 : 0}
+                                    muted={user.muted}
+                                    size={props.call?.screenOn ? 'm' : 'l'}
+                                />
+                                <Text style={style.username}>{displayUsername(props.users[user.id], props.teammateNameDisplay)}</Text>
+                            </View>
+                        );
+                    })}
+                </Pressable>
+            </ScrollView>
+        );
+    }
 
     return (
         <SafeAreaView style={style.wrapper}>
@@ -283,33 +316,7 @@ const CallScreen = (props: Props) => {
                         />
                     </Pressable>
                 </View>
-                <ScrollView
-                    alwaysBounceVertical={false}
-                    horizontal={props.call?.screenOn !== ''}
-                    contentContainerStyle={style.usersScroll}
-                >
-                    <Pressable
-                        onPress={() => setShowControlsInLandscape(!showControlsInLandscape)}
-                        style={style.users}
-                    >
-                        {Object.values(props.call.participants).map((user) => {
-                            return (
-                                <View
-                                    style={style.user}
-                                    key={user.id}
-                                >
-                                    <CallAvatar
-                                        userId={user.id}
-                                        volume={user.isTalking ? 1 : 0}
-                                        muted={user.muted}
-                                        size={props.call?.screenOn ? 'm' : 'l'}
-                                    />
-                                    <Text style={style.username}>{displayUsername(props.users[user.id], props.teammateNameDisplay)}</Text>
-                                </View>
-                            );
-                        })}
-                    </Pressable>
-                </ScrollView>
+                {usersList}
                 {screenShareView}
                 <View style={style.buttons}>
                     {!props.isLandscape &&
