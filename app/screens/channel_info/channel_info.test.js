@@ -57,7 +57,12 @@ describe('channelInfo', () => {
             getCustomEmojisInText: jest.fn(),
             showPermalink: jest.fn(),
             setChannelDisplayName: jest.fn(),
+            joinCall: jest.fn(),
+            enableChannelCalls: jest.fn(),
+            disableChannelCalls: jest.fn(),
         },
+        isCallsEnabled: false,
+        callsFeatureEnabled: false,
     };
 
     test('should match snapshot', async () => {
