@@ -17,7 +17,9 @@ import {getPermissionMessages} from '@components/profile_picture_button/constant
 import SlideUpPanelItem, {ITEM_HEIGHT} from '@components/slide_up_panel_item';
 import TouchableWithFeedback from '@components/touchable_with_feedback';
 import {Navigation, Files, Screens} from '@constants';
+import {withServerUrl} from '@context/server_url';
 import {t} from '@i18n';
+import NetworkManager from '@init/network_manager';
 import {showModalOverCurrentContext} from '@screens/navigation';
 import UserModel from '@typings/database/models/servers/user';
 import {lookupMimeType} from '@utils/file';
@@ -70,6 +72,7 @@ type ProfileImageButtonProps = {
     onShowFileSizeWarning: (fileName: string) => void;
     onShowUnsupportedMimeTypeWarning: () => void;
     removeProfileImage: () => void;
+    serverUrl: string;
     theme: Theme;
     uploadFiles: (files: File[]) => void;
     wrapper: boolean;
@@ -93,7 +96,7 @@ const style = StyleSheet.create({
     },
 });
 
-class ProfileImageButton extends PureComponent<ProfileImageButtonProps> {
+class ProfilePictureButton extends PureComponent<ProfileImageButtonProps> {
     static defaultProps = {
         browseFileTypes: Platform.OS === 'ios' ? 'public.item' : '*/*',
         canBrowseFiles: true,
@@ -378,13 +381,19 @@ class ProfileImageButton extends PureComponent<ProfileImageButtonProps> {
     };
 
     getRemoveProfileImageOption = () => {
-        const {currentUser, removeProfileImage} = this.props;
+        const {currentUser, removeProfileImage, serverUrl} = this.props;
         const {id, lastPictureUpdate} = currentUser;
-
-        const profileImageUrl = Client.getProfilePictureUrl(id, lastPictureUpdate);
+        let client: Client | undefined;
+        let profileImageUrl: string | undefined;
+        try {
+            client = NetworkManager.getClient(serverUrl);
+            profileImageUrl = client.getProfilePictureUrl(id, lastPictureUpdate);
+        } catch {
+            // handle below that the client is not set
+        }
 
         // Check if image url includes query string for timestamp. If so, it means the image has been updated from the default, i.e. '.../image?_=1544159746868'
-        if (profileImageUrl.includes('?')) {
+        if (profileImageUrl?.includes('?')) {
             return {
                 ...(removeProfileImage && {action: removeProfileImage}),
                 text: {
@@ -532,4 +541,4 @@ class ProfileImageButton extends PureComponent<ProfileImageButtonProps> {
     }
 }
 
-export default injectIntl(ProfileImageButton);
+export default injectIntl(withServerUrl(ProfilePictureButton));
