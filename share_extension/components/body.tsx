@@ -58,6 +58,7 @@ const Body = forwardRef<BodyRef, BodyProps>(({canPost, files, initialValue, plac
                 style={styles.flex}
             >
                 <TextInput
+                    allowFontScaling={true}
                     ref={inputRef}
                     autoCapitalize='sentences'
                     autoCompleteType='off'
