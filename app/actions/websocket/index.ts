@@ -162,7 +162,6 @@ export function doReconnect(now: number) {
 
             if (!me.error) {
                 dispatch(loadCalls());
-
                 const roles = [];
 
                 if (me.roles?.length) {

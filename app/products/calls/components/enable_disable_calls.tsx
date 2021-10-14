@@ -42,18 +42,20 @@ const EnableDisableCalls = (props: Props) => {
                     testID={testID}
                     action={handleEnableDisableCalls}
                     defaultMessage='Disable Calls'
-                    icon='phone'
+                    icon='phone-outline'
                     textId={t('mobile.channel_info.disable_calls')}
                     theme={theme}
+                    rightArrow={false}
                 />}
             {!enabled &&
                 <ChannelInfoRow
                     testID={testID}
                     action={handleEnableDisableCalls}
                     defaultMessage='Enable Calls'
-                    icon='phone'
+                    icon='phone-outline'
                     textId={t('mobile.channel_info.enable_calls')}
                     theme={theme}
+                    rightArrow={false}
                 />}
         </>
     );

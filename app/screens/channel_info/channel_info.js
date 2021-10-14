@@ -13,8 +13,8 @@ import {SafeAreaView} from 'react-native-safe-area-context';
 
 import {dismissModal} from '@actions/navigation';
 import StatusBar from '@components/status_bar';
-import StartCall from '@mmproducts/calls/components/enable_disable_calls';
-import EnableDisableCalls from '@mmproducts/calls/components/start_call';
+import EnableDisableCalls from '@mmproducts/calls/components/enable_disable_calls';
+import StartCall from '@mmproducts/calls/components/start_call';
 import {alertErrorWithFallback} from '@utils/general';
 import {t} from '@utils/i18n';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';

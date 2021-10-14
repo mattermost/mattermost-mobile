@@ -7,7 +7,7 @@ import {showPermalink} from '@actions/views/permalink';
 import {THREAD} from '@constants/screen';
 import {removePost} from '@mm-redux/actions/posts';
 import {getChannel} from '@mm-redux/selectors/entities/channels';
-import {getConfig} from '@mm-redux/selectors/entities/general';
+import {getConfig, getFeatureFlagValue} from '@mm-redux/selectors/entities/general';
 import {getPost, isRootPost} from '@mm-redux/selectors/entities/posts';
 import {getMyPreferences, getTeammateNameDisplaySetting, isCollapsedThreadsEnabled} from '@mm-redux/selectors/entities/preferences';
 import {getCurrentTeamId} from '@mm-redux/selectors/entities/teams';
@@ -49,6 +49,7 @@ function mapSateToProps(state: GlobalState, ownProps: OwnProps) {
     const teammateNameDisplay = getTeammateNameDisplaySetting(state);
     const enablePostUsernameOverride = config.EnablePostUsernameOverride === 'true';
     const isConsecutivePost = post && previousPost && !author?.is_bot && !isRootPost(state, post.id) && areConsecutivePosts(post, previousPost);
+    const callsFeatureEnabled = getFeatureFlagValue(state, 'CallsMobile') === 'true';
     let isFirstReply = true;
     let isLastReply = true;
     let canDelete = false;
@@ -97,6 +98,7 @@ function mapSateToProps(state: GlobalState, ownProps: OwnProps) {
         teammateNameDisplay,
         thread,
         threadStarter: getUser(state, post.user_id),
+        callsFeatureEnabled,
     };
 }
 

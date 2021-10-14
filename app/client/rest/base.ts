@@ -290,7 +290,7 @@ export default class ClientBase {
         return `${this.url}/plugins/com.mattermost.apps`;
     }
 
-    getVoiceCallsRoute() {
+    getCallsRoute() {
         return `${this.url}/plugins/com.mattermost.calls`;
     }
 

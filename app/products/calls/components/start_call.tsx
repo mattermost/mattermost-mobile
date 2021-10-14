@@ -35,9 +35,10 @@ const StartCall = (props: Props) => {
                 testID={testID}
                 action={handleStartCall}
                 defaultMessage='Start Call'
-                icon='phone'
+                icon='phone-in-talk'
                 textId={t('mobile.channel_info.start_call')}
                 theme={theme}
+                rightArrow={false}
             />
         </>
     );

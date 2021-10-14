@@ -50,7 +50,7 @@ export function handleCallUserVoiceOff(msg: WebSocketMessage): GenericAction {
 export function handleCallStarted(msg: WebSocketMessage): GenericAction {
     return {
         type: CallsTypes.RECEIVED_CALL_STARTED,
-        data: {channelId: msg.data.channelID, startTime: msg.data.start_at, participants: {}},
+        data: {channelId: msg.data.channelID, startTime: msg.data.start_at, threadId: msg.data.thread_id, participants: {}},
     };
 }
 

@@ -5,7 +5,8 @@ import React, {useEffect, useCallback, useState} from 'react';
 import {Keyboard, View, Text, Platform, Pressable, SafeAreaView, ScrollView} from 'react-native';
 import {RTCView} from 'react-native-webrtc2';
 
-import {showModalOverCurrentContext, mergeNavigationOptions, popTopScreen} from '@actions/navigation';
+import {showModalOverCurrentContext, mergeNavigationOptions, popTopScreen, goToScreen} from '@actions/navigation';
+import {THREAD} from '@constants/screen';
 import CompassIcon from '@components/compass_icon';
 import FormattedText from '@components/formatted_text';
 import {GenericAction} from '@mm-redux/types/actions';
@@ -363,6 +364,13 @@ const CallScreen = (props: Props) => {
                         </Pressable>
                         <Pressable
                             style={style.button}
+                            onPress={useCallback(() => {
+                                const passProps = {
+                                    channelId: props.call?.channelId,
+                                    rootId: props.call?.threadId,
+                                };
+                                goToScreen(THREAD, '', passProps);
+                            }, [props.call])}
                         >
                             <CompassIcon
                                 name='message-text-outline'

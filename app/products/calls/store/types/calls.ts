@@ -16,6 +16,7 @@ export type Call = {
     startTime: number;
     speakers: string[];
     screenOn: string;
+    threadId: string;
 }
 
 export type CallParticipant = {
