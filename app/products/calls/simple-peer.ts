@@ -56,10 +56,6 @@ const MAX_BUFFERED_AMOUNT = 64 * 1024;
 const ICECOMPLETE_TIMEOUT = 5 * 1000;
 const CHANNEL_CLOSING_TIMEOUT = 5 * 1000;
 
-function warn(message: string) {
-    console.warn(message); // eslint-disable-line
-}
-
 /**
  * WebRTC peer connection. Same API as node core `net.Socket`, plus a few extra methods.
  * Duplex stream.
@@ -252,14 +248,7 @@ export default class Peer extends stream.Duplex {
     addIceCandidate(candidate: RTCIceCandidateType) {
         const iceCandidateObj = new RTCIceCandidate(candidate);
         this.pc?.addIceCandidate(iceCandidateObj).catch((err: Error) => {
-            if (
-                !iceCandidateObj.address ||
-                iceCandidateObj.address.endsWith('.local')
-            ) {
-                warn('Ignoring unsupported ICE candidate.');
-            } else {
-                this.destroy(errCode(err, 'ERR_ADD_ICE_CANDIDATE'));
-            }
+            this.destroy(errCode(err, 'ERR_ADD_ICE_CANDIDATE'));
         });
     }
 
@@ -781,10 +770,12 @@ export default class Peer extends stream.Duplex {
                 return;
             }
 
-            this.getStats((err, items) => {
+            this.getStats((err, itemsParam) => {
                 if (this.destroyed) {
                     return;
                 }
+
+                let items = itemsParam;
 
                 // Treat getStats error as non-fatal. It's not essential.
                 if (err) {

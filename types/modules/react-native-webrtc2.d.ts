@@ -8,45 +8,28 @@
 // Definitions: https://github.com/DefinitelyTyped/DefinitelyTyped
 // TypeScript Version: 2.8
 
-// import {Component} from 'react';
-// import {ViewStyle} from 'react-native';
-
 declare module 'react-native-webrtc2' {
     export const RTCView: any;
-    export const RTCIceCandidate: any;
-    export const RTCSessionDescription: any;
-    export const mediaDevices: any;
+    export type RTCSignalingState =
+        | 'stable'
+        | 'have-local-offer'
+        | 'have-remote-offer'
+        | 'have-local-pranswer'
+        | 'have-remote-pranswer'
+        | 'closed';
 
-    // export type RTCSignalingState =
-    //     | 'stable'
-    //     | 'have-local-offer'
-    //     | 'have-remote-offer'
-    //     | 'have-local-pranswer'
-    //     | 'have-remote-pranswer'
-    //     | 'closed';
+    export type RTCIceGatheringState = 'new' | 'gathering' | 'complete';
 
-//     export type RTCIceGatheringState = 'new' | 'gathering' | 'complete';
+    export type RTCIceConnectionState =
+        | 'new'
+        | 'checking'
+        | 'connected'
+        | 'completed'
+        | 'failed'
+        | 'disconnected'
+        | 'closed';
 
-//     export type MediaStreamTrackState = 'live' | 'ended';
-
-//     export interface SourceInfo {
-//         id: string;
-//         label: string;
-//         facing: string;
-//         kind: string;
-//         deviceId: string;
-//     }
-
-//     export type RTCIceConnectionState =
-//         | 'new'
-//         | 'checking'
-//         | 'connected'
-//         | 'completed'
-//         | 'failed'
-//         | 'disconnected'
-//         | 'closed';
-
-//     export type RTCPeerConnectionState = 'new' | 'connecting' | 'connected' | 'disconnected' | 'failed' | 'closed';
+    export type RTCPeerConnectionState = 'new' | 'connecting' | 'connected' | 'disconnected' | 'failed' | 'closed';
 
     export class MediaStreamTrack {
         private _enabled: boolean;
@@ -136,36 +119,9 @@ declare module 'react-native-webrtc2' {
         constructor(type: any, eventInitDict: any)
     }
 
-//     export interface ConfigurationParam {
-//         username?: string | undefined;
-//         credential?: string | undefined;
-//     }
-
-//     export interface ConfigurationParamWithUrls extends ConfigurationParam {
-//         urls: string[];
-//     }
-
-//     export interface ConfigurationParamWithUrl extends ConfigurationParam {
-//         url: string;
-//     }
-
-//     export interface RTCPeerConnectionConfiguration {
-//         iceServers: ConfigurationParamWithUrls[] | ConfigurationParamWithUrl[];
-//         iceTransportPolicy?: 'all' | 'relay' | 'nohost' | 'none' | undefined;
-//         bundlePolicy?: 'balanced' | 'max-compat' | 'max-bundle' | undefined;
-//         rtcpMuxPolicy?: 'negotiate' | 'require' | undefined;
-//         iceCandidatePoolSize?: number | undefined;
-//     }
-
     export interface EventOnCandidate {
         candidate: RTCIceCandidateType;
     }
-
-//     export interface EventOnConnectionStateChange {
-//         target: {
-//             iceConnectionState: RTCIceConnectionState;
-//         };
-//     }
 
     export interface EventOnAddStream {
         stream: MediaStream;
@@ -247,71 +203,27 @@ declare module 'react-native-webrtc2' {
         sdpMid: string;
     }
 
-//     export class RTCIceCandidate extends RTCIceCandidateType {
-//         constructor(info: RTCIceCandidateType);
+    export class RTCIceCandidate extends RTCIceCandidateType {
+        constructor(info: RTCIceCandidateType);
 
-//         toJSON(): RTCIceCandidateType;
-//     }
+        toJSON(): RTCIceCandidateType;
+    }
 
     export class RTCSessionDescriptionType {
         sdp: string;
         type: string;
     }
 
-//     export class RTCSessionDescription extends RTCSessionDescriptionType {
-//         constructor(info: RTCSessionDescriptionType);
-//         toJSON(): RTCSessionDescriptionType;
-//     }
+    export class RTCSessionDescription extends RTCSessionDescriptionType {
+        constructor(info: RTCSessionDescriptionType);
+        toJSON(): RTCSessionDescriptionType;
+    }
 
-//     export interface MandatoryMedia {
-//         minWidth: number;
-//         minHeight: number;
-//         minFrameRate: number;
-//     }
+    export class mediaDevices {
+        ondevicechange: () => void | undefined;
 
-//     export interface MediaSources {
-//         sourceId: string;
-//     }
+        static enumerateDevices(): Promise<any>;
 
-//     export interface MediaTrackConstraints {
-//         mandatory: MandatoryMedia;
-//         facingMode: 'user' | 'environment';
-//         optional: MediaSources[];
-//     }
-
-//     export interface MediaStreamConstraints {
-//         video?: boolean | MediaTrackConstraints | undefined;
-//         audio?: boolean | undefined;
-//     }
-
-//     export class mediaDevices {
-//         ondevicechange: () => void | undefined;
-
-//         static enumerateDevices(): Promise<any>;
-
-//         static getUserMedia(constraints: MediaStreamConstraints): Promise<MediaStream | boolean>;
-//     }
-
-//     export function registerGlobals(): void;
-
-//     export interface RTCViewProps {
-//         streamURL: string;
-//         mirror?: boolean | undefined;
-//         zOrder?: number | undefined;
-//         objectFit?: 'contain' | 'cover' | undefined;
-//         style?: ViewStyle | undefined;
-//     }
-
-//     export class RTCView extends Component<RTCViewProps, any> {}
-
-//     export interface RTCOfferOptions {
-//         iceRestart?: boolean | undefined;
-//         offerToReceiveAudio?: boolean | undefined;
-//         offerToReceiveVideo?: boolean | undefined;
-//         voiceActivityDetection?: boolean | undefined;
-//     }
-
-//     export interface RTCAnswerOptions {
-//         voiceActivityDetection?: boolean | undefined;
-//     }
+        static getUserMedia(constraints: MediaStreamConstraints): Promise<MediaStream | boolean>;
+    }
 }
