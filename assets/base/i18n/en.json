@@ -148,6 +148,8 @@
   "mobile.about.serverVersion": "Server Version: {version} (Build {number})",
   "mobile.about.serverVersionNoBuild": "Server Version: {version}",
   "mobile.action_menu.select": "Select an option",
+  "mobile.add_team.create_team": "Create a New Team",
+  "mobile.add_team.join_team": "Join Another Team",
   "mobile.components.select_server_view.connect": "Connect",
   "mobile.components.select_server_view.connecting": "Connecting...",
   "mobile.components.select_server_view.enterServerUrl": "Enter Server URL",
@@ -292,5 +294,7 @@
   "status_dropdown.set_offline": "Offline",
   "status_dropdown.set_online": "Online",
   "status_dropdown.set_ooo": "Out Of Office",
+  "team_list.no_other_teams.description": "To join another team, ask a Team Admin for an invitation, or create your own team.",
+  "team_list.no_other_teams.title": "No additional teams to join",
   "web.root.signup_info": "All team communication in one place, searchable and accessible anywhere"
 }

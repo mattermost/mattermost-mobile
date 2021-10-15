@@ -227,30 +227,30 @@ const PostList = ({currentTimezone, currentUsername, isTimezoneEnabled, lastView
 };
 
 const withPosts = withObservables(['channelId'], ({database, channelId}: {channelId: string} & WithDatabaseArgs) => {
-    const currentUser = database.get(SYSTEM).findAndObserve(SYSTEM_IDENTIFIERS.CURRENT_USER_ID).pipe(
-        switchMap((currentUserId: SystemModel) => database.get(USER).findAndObserve(currentUserId.value)),
+    const currentUser = database.get<SystemModel>(SYSTEM).findAndObserve(SYSTEM_IDENTIFIERS.CURRENT_USER_ID).pipe(
+        switchMap((currentUserId) => database.get<UserModel>(USER).findAndObserve(currentUserId.value)),
     );
 
     return {
-        currentTimezone: currentUser.pipe((switchMap((user: UserModel) => of$(user.timezone)))),
-        currentUsername: currentUser.pipe((switchMap((user: UserModel) => of$(user.username)))),
-        isTimezoneEnabled: database.get(SYSTEM).findAndObserve(SYSTEM_IDENTIFIERS.CONFIG).pipe(
-            switchMap((config: SystemModel) => of$(config.value.ExperimentalTimezone === 'true')),
+        currentTimezone: currentUser.pipe((switchMap((user) => of$(user.timezone)))),
+        currentUsername: currentUser.pipe((switchMap((user) => of$(user.username)))),
+        isTimezoneEnabled: database.get<SystemModel>(SYSTEM).findAndObserve(SYSTEM_IDENTIFIERS.CONFIG).pipe(
+            switchMap((config) => of$(config.value.ExperimentalTimezone === 'true')),
         ),
-        lastViewedAt: database.get(MY_CHANNEL).findAndObserve(channelId).pipe(
-            switchMap((myChannel: MyChannelModel) => of$(myChannel.lastViewedAt)),
+        lastViewedAt: database.get<MyChannelModel>(MY_CHANNEL).findAndObserve(channelId).pipe(
+            switchMap((myChannel) => of$(myChannel.lastViewedAt)),
         ),
-        posts: database.get(POSTS_IN_CHANNEL).query(
+        posts: database.get<PostsInChannelModel>(POSTS_IN_CHANNEL).query(
             Q.where('channel_id', channelId),
             Q.experimentalSortBy('latest', Q.desc),
         ).observe().pipe(
-            switchMap((postsInChannel: PostsInChannelModel[]) => {
+            switchMap((postsInChannel) => {
                 if (!postsInChannel.length) {
                     return of$([]);
                 }
 
                 const {earliest, latest} = postsInChannel[0];
-                return database.get(POST).query(
+                return database.get<PostModel>(POST).query(
                     Q.and(
                         Q.where('delete_at', 0),
                         Q.where('channel_id', channelId),
@@ -260,11 +260,11 @@ const withPosts = withObservables(['channelId'], ({database, channelId}: {channe
                 ).observe();
             }),
         ),
-        shouldShowJoinLeaveMessages: database.get(PREFERENCE).query(
+        shouldShowJoinLeaveMessages: database.get<PreferenceModel>(PREFERENCE).query(
             Q.where('category', Preferences.CATEGORY_ADVANCED_SETTINGS),
             Q.where('name', Preferences.ADVANCED_FILTER_JOIN_LEAVE),
         ).observe().pipe(
-            switchMap((preferences: PreferenceModel[]) => of$(getPreferenceAsBool(preferences, Preferences.CATEGORY_ADVANCED_SETTINGS, Preferences.ADVANCED_FILTER_JOIN_LEAVE, true))),
+            switchMap((preferences) => of$(getPreferenceAsBool(preferences, Preferences.CATEGORY_ADVANCED_SETTINGS, Preferences.ADVANCED_FILTER_JOIN_LEAVE, true))),
         ),
     };
 });

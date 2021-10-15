@@ -35,6 +35,9 @@ export default class ChannelModel extends Model {
     /** name : The name of the channel (e.g town-square) */
     name: string;
 
+    /** shared: determines if it is a shared channel with another organization */
+    shared: boolean;
+
     /** team_id : The team to which this channel belongs.  It can be empty for direct/group message. */
     teamId: string;
 

@@ -48,7 +48,7 @@ export default function Badge({
 
         Animated.timing(opacity, {
             toValue: visible ? 1 : 0,
-            duration: 150,
+            duration: 200,
             useNativeDriver: true,
         }).start(({finished}) => {
             if (finished && !visible) {

@@ -33,6 +33,91 @@ import type SystemModel from '@typings/database/models/servers/system';
 
 const MATTERMOST_BUNDLE_IDS = ['com.mattermost.rnbeta', 'com.mattermost.rn'];
 
+const getStyleSheet = makeStyleSheetFromTheme((theme) => {
+    return {
+        container: {
+            flex: 1,
+        },
+        scrollView: {
+            flex: 1,
+            backgroundColor: changeOpacity(theme.centerChannelColor, 0.06),
+        },
+        scrollViewContent: {
+            paddingBottom: 30,
+        },
+        logoContainer: {
+            alignItems: 'center',
+            flex: 1,
+            height: 200,
+            paddingVertical: 40,
+        },
+        infoContainer: {
+            flex: 1,
+            flexDirection: 'column',
+            paddingHorizontal: 20,
+        },
+        titleContainer: {
+            flex: 1,
+            marginBottom: 20,
+        },
+        title: {
+            fontSize: 22,
+            color: theme.centerChannelColor,
+        },
+        subtitle: {
+            color: changeOpacity(theme.centerChannelColor, 0.5),
+            fontSize: 19,
+            marginBottom: 15,
+        },
+        info: {
+            color: theme.centerChannelColor,
+            fontSize: 16,
+            lineHeight: 19,
+        },
+        licenseContainer: {
+            flex: 1,
+            flexDirection: 'row',
+            marginTop: 20,
+        },
+        noticeContainer: {
+            flex: 1,
+            flexDirection: 'column',
+        },
+        noticeLink: {
+            color: theme.linkColor,
+            fontSize: 11,
+            lineHeight: 13,
+        },
+        hashContainer: {
+            flex: 1,
+            flexDirection: 'column',
+        },
+        footerGroup: {
+            flex: 1,
+        },
+        footerTitleText: {
+            color: changeOpacity(theme.centerChannelColor, 0.5),
+            fontSize: 11,
+            fontFamily: 'OpenSans-Semibold',
+            lineHeight: 13,
+        },
+        footerText: {
+            color: changeOpacity(theme.centerChannelColor, 0.5),
+            fontSize: 11,
+            lineHeight: 13,
+            marginBottom: 10,
+        },
+        copyrightText: {
+            marginBottom: 0,
+        },
+        tosPrivacyContainer: {
+            flex: 1,
+            flexDirection: 'row',
+            marginBottom: 10,
+        },
+    };
+});
+
 type ConnectedAboutProps = {
     config: SystemModel;
     license: SystemModel;
@@ -255,93 +340,9 @@ const ConnectedAbout = ({config, license}: ConnectedAboutProps) => {
     );
 };
 
-const getStyleSheet = makeStyleSheetFromTheme((theme) => {
-    return {
-        container: {
-            flex: 1,
-        },
-        scrollView: {
-            flex: 1,
-            backgroundColor: changeOpacity(theme.centerChannelColor, 0.06),
-        },
-        scrollViewContent: {
-            paddingBottom: 30,
-        },
-        logoContainer: {
-            alignItems: 'center',
-            flex: 1,
-            height: 200,
-            paddingVertical: 40,
-        },
-        infoContainer: {
-            flex: 1,
-            flexDirection: 'column',
-            paddingHorizontal: 20,
-        },
-        titleContainer: {
-            flex: 1,
-            marginBottom: 20,
-        },
-        title: {
-            fontSize: 22,
-            color: theme.centerChannelColor,
-        },
-        subtitle: {
-            color: changeOpacity(theme.centerChannelColor, 0.5),
-            fontSize: 19,
-            marginBottom: 15,
-        },
-        info: {
-            color: theme.centerChannelColor,
-            fontSize: 16,
-            lineHeight: 19,
-        },
-        licenseContainer: {
-            flex: 1,
-            flexDirection: 'row',
-            marginTop: 20,
-        },
-        noticeContainer: {
-            flex: 1,
-            flexDirection: 'column',
-        },
-        noticeLink: {
-            color: theme.linkColor,
-            fontSize: 11,
-            lineHeight: 13,
-        },
-        hashContainer: {
-            flex: 1,
-            flexDirection: 'column',
-        },
-        footerGroup: {
-            flex: 1,
-        },
-        footerTitleText: {
-            color: changeOpacity(theme.centerChannelColor, 0.5),
-            fontSize: 11,
-            fontFamily: 'OpenSans-Semibold',
-            lineHeight: 13,
-        },
-        footerText: {
-            color: changeOpacity(theme.centerChannelColor, 0.5),
-            fontSize: 11,
-            lineHeight: 13,
-            marginBottom: 10,
-        },
-        copyrightText: {
-            marginBottom: 0,
-        },
-        tosPrivacyContainer: {
-            flex: 1,
-            flexDirection: 'row',
-            marginBottom: 10,
-        },
-    };
-});
-
-export default withDatabase(withObservables([], ({database}: WithDatabaseArgs) => ({
+const enhanced = withObservables([], ({database}: WithDatabaseArgs) => ({
     config: database.collections.get(MM_TABLES.SERVER.SYSTEM).findAndObserve(SYSTEM_IDENTIFIERS.CONFIG),
     license: database.collections.get(MM_TABLES.SERVER.SYSTEM).findAndObserve(SYSTEM_IDENTIFIERS.LICENSE),
-}))(ConnectedAbout));
+}));
 
+export default withDatabase(enhanced(ConnectedAbout));

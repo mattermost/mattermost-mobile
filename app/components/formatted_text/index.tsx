@@ -7,7 +7,7 @@ import {StyleProp, Text, TextProps, TextStyle, ViewStyle} from 'react-native';
 
 type FormattedTextProps = TextProps & {
     id: string;
-    defaultMessage: string;
+    defaultMessage?: string;
     values?: Record<string, any>;
     testID?: string;
     style?: StyleProp<ViewStyle> | StyleProp<TextStyle>;
@@ -16,7 +16,7 @@ type FormattedTextProps = TextProps & {
 const FormattedText = (props: FormattedTextProps) => {
     const intl = useIntl();
     const {formatMessage} = intl;
-    const {id, defaultMessage, values, ...otherProps} = props;
+    const {id, defaultMessage = '', values, ...otherProps} = props;
     const tokenizedValues: Record<string, any> = {};
     const elements: Record<string, any> = {};
     let tokenDelimiter = '';
@@ -79,10 +79,6 @@ const FormattedText = (props: FormattedTextProps) => {
     }
 
     return createElement(Text, otherProps, ...nodes);
-};
-
-FormattedText.defaultProps = {
-    defaultMessage: '',
 };
 
 export default FormattedText;

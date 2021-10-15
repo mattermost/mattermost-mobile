@@ -4,8 +4,8 @@
 import {Q} from '@nozbe/watermelondb';
 import {withDatabase} from '@nozbe/watermelondb/DatabaseProvider';
 import withObservables from '@nozbe/with-observables';
-import {from as from$, of as of$} from 'rxjs';
-import {switchMap} from 'rxjs/operators';
+import {combineLatest, from as from$, of as of$} from 'rxjs';
+import {map, switchMap} from 'rxjs/operators';
 
 import {Permissions} from '@constants';
 import {MM_TABLES, SYSTEM_IDENTIFIERS} from '@constants/database';
@@ -19,51 +19,51 @@ import type PostModel from '@typings/database/models/servers/post';
 import type SystemModel from '@typings/database/models/servers/system';
 import type UserModel from '@typings/database/models/servers/user';
 
-type CombinedPostsInput = WithDatabaseArgs & {
-    currentUser: UserModel;
-    postId: string;
-    posts: PostModel[];
-}
-
 const {SERVER: {POST, SYSTEM, USER}} = MM_TABLES;
 
-const withPostId = withObservables(['postId'], ({database, postId}: WithDatabaseArgs & {postId: string}) => {
+const withCombinedPosts = withObservables(['postId'], ({database, postId}: WithDatabaseArgs & {postId: string}) => {
+    const currentUserId = database.get<SystemModel>(SYSTEM).findAndObserve(SYSTEM_IDENTIFIERS.CURRENT_USER_ID).pipe(
+        map(({value}: {value: string}) => value),
+    );
+    const currentUser = currentUserId.pipe(
+        switchMap((value) => database.get<UserModel>(USER).findAndObserve(value)),
+    );
+
     const postIds = getPostIdsForCombinedUserActivityPost(postId);
+    const posts = database.get<PostModel>(POST).query(
+        Q.where('id', Q.oneOf(postIds)),
+    ).observe();
+    const post = posts.pipe(map((ps) => generateCombinedPost(postId, ps)));
+    const canDelete = combineLatest([posts, currentUser]).pipe(
+        switchMap(([ps, u]) => from$(hasPermissionForPost(ps[0], u, Permissions.DELETE_OTHERS_POSTS, false))),
+    );
 
-    return {
-        currentUser: database.get(SYSTEM).findAndObserve(SYSTEM_IDENTIFIERS.CURRENT_USER_ID).pipe(
-            switchMap((currentUserId: SystemModel) => database.get(USER).findAndObserve(currentUserId.value)),
+    const usernamesById = post.pipe(
+        switchMap(
+            (p) => database.get<UserModel>(USER).query(
+                Q.or(
+                    Q.where('id', Q.oneOf(p.props.user_activity.allUserIds)),
+                    Q.where('username', Q.oneOf(p.props.user_activity.allUsernames)),
+                )).observe().
+                pipe(
+                    // eslint-disable-next-line max-nested-callbacks
+                    switchMap((users) => {
+                        // eslint-disable-next-line max-nested-callbacks
+                        return of$(users.reduce((acc, user) => {
+                            acc[user.id] = user.username;
+                            return acc;
+                        }, {} as Record<string, string>));
+                    }),
+                ),
         ),
-        posts: database.get(POST).query(
-            Q.where('id', Q.oneOf(postIds)),
-        ).observe(),
-    };
-});
-
-const withCombinedPosts = withObservables(['currentUser', 'postId', 'posts'], ({currentUser, database, postId, posts}: CombinedPostsInput) => {
-    const post = generateCombinedPost(postId, posts);
-    const canDelete = from$(hasPermissionForPost(posts[0], currentUser, Permissions.DELETE_OTHERS_POSTS, false));
-    const usernamesById = database.get(USER).query(
-        Q.or(
-            Q.where('id', Q.oneOf(post.props.user_activity.allUserIds)),
-            Q.where('username', Q.oneOf(post.props.user_activity.allUsernames)),
-        ),
-    ).observe().pipe(
-        switchMap((users: UserModel[]) => {
-            // eslint-disable-next-line max-nested-callbacks
-            return of$(users.reduce((acc, user) => {
-                acc[user.id] = user.username;
-                return acc;
-            }, {} as Record<string, string>));
-        }),
     );
 
     return {
         canDelete,
-        currentUserId: of$(currentUser.id),
-        post: of$(post),
+        currentUserId,
+        post,
         usernamesById,
     };
 });
 
-export default withDatabase(withPostId(withCombinedPosts(CombinedUserActivity)));
+export default withDatabase(withCombinedPosts(CombinedUserActivity));

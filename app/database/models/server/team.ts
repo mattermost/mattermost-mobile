@@ -42,6 +42,9 @@ export default class TeamModel extends Model {
         /** A TEAM has a 1:N relationship with GROUPS_TEAM. A TEAM can possess multiple groups */
         [GROUPS_TEAM]: {type: 'has_many', foreignKey: 'team_id'},
 
+        /** A TEAM can be associated to one MY_TEAM (relationship is 1:1) */
+        [MY_TEAM]: {type: 'has_many', foreignKey: 'id'},
+
         /** A TEAM has a 1:N relationship with SLASH_COMMAND. A TEAM can possess multiple slash commands */
         [SLASH_COMMAND]: {type: 'has_many', foreignKey: 'team_id'},
 

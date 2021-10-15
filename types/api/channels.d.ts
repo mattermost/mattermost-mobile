@@ -34,7 +34,7 @@ type Channel = {
     status?: string;
     fake?: boolean;
     group_constrained: boolean|null;
-    shared: boolean|null;
+    shared: boolean;
 };
 type ChannelWithTeamData = Channel & {
     team_display_name: string;

@@ -6,11 +6,13 @@ import {Model} from '@nozbe/watermelondb';
 import {localRemoveUserFromTeam} from '@actions/local/team';
 import DatabaseManager from '@database/manager';
 import NetworkManager from '@init/network_manager';
+import {prepareMyChannelsForTeam, queryDefaultChannelForTeam} from '@queries/servers/channel';
 import {queryWebSocketLastDisconnected} from '@queries/servers/system';
 import {prepareMyTeams, syncTeamTable} from '@queries/servers/team';
+import {isTablet} from '@utils/helpers';
 
 import {fetchMyChannelsForTeam} from './channel';
-import {fetchPostsForUnreadChannels} from './post';
+import {fetchPostsForChannel, fetchPostsForUnreadChannels} from './post';
 import {fetchRolesIfNeeded} from './role';
 import {forceLogoutIfNecessary} from './session';
 
@@ -35,6 +37,7 @@ export const addUserToTeam = async (serverUrl: string, teamId: string, userId: s
 
         if (!fetchOnly) {
             fetchRolesIfNeeded(serverUrl, member.roles.split(' '));
+            const {channels, memberships: channelMembers} = await fetchMyChannelsForTeam(serverUrl, teamId, false, 0, true);
             const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
             if (operator) {
                 const myTeams: MyTeam[] = [{
@@ -45,12 +48,20 @@ export const addUserToTeam = async (serverUrl: string, teamId: string, userId: s
                 const models = await Promise.all([
                     operator.handleMyTeam({myTeams, prepareRecordsOnly: true}),
                     operator.handleTeamMemberships({teamMemberships: [member], prepareRecordsOnly: true}),
+                    prepareMyChannelsForTeam(operator, teamId, channels || [], channelMembers || []),
                 ]);
 
                 if (models.length) {
                     const flattenedModels = models.flat() as Model[];
                     if (flattenedModels?.length > 0) {
                         await operator.batchRecords(flattenedModels);
+                    }
+                }
+
+                if (await isTablet()) {
+                    const channel = await queryDefaultChannelForTeam(operator.database, teamId);
+                    if (channel) {
+                        fetchPostsForChannel(serverUrl, channel.id);
                     }
                 }
             }

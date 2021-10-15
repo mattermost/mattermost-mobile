@@ -5,8 +5,7 @@ import withObservables from '@nozbe/with-observables';
 import React, {useCallback, useRef} from 'react';
 import {useIntl} from 'react-intl';
 import Button from 'react-native-button';
-import {of as of$} from 'rxjs';
-import {switchMap} from 'rxjs/operators';
+import {map} from 'rxjs/operators';
 
 import {doAppCall, postEphemeralCallResponseForPost} from '@actions/remote/apps';
 import {AppExpandLevels, AppBindingLocations, AppCallTypes, AppCallResponseTypes} from '@constants/apps';
@@ -136,9 +135,9 @@ const ButtonBinding = ({currentTeamId, binding, post, teamID, theme}: Props) => 
 };
 
 const withTeamId = withObservables(['post'], ({post}: {post: PostModel}) => ({
-    teamID: post.channel.observe().pipe(switchMap((channel: ChannelModel) => of$(channel.teamId))),
-    currentTeamId: post.collections.get(SYSTEM).findAndObserve(SYSTEM_IDENTIFIERS.CURRENT_TEAM_ID).pipe(
-        switchMap((currentTeamId: SystemModel) => of$(currentTeamId.value)),
+    teamID: post.channel.observe().pipe(map((channel: ChannelModel) => channel.teamId)),
+    currentTeamId: post.collections.get<SystemModel>(SYSTEM).findAndObserve(SYSTEM_IDENTIFIERS.CURRENT_TEAM_ID).pipe(
+        map(({value}) => value),
     ),
 }));
 

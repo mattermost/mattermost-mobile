@@ -89,7 +89,7 @@ const ChannelNavBar = ({channel, onPress}: ChannelNavBar) => {
 const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
     return {
         header: {
-            backgroundColor: theme.sidebarHeaderBg,
+            backgroundColor: theme.sidebarBg,
             flexDirection: 'row',
             justifyContent: 'flex-start',
             width: '100%',

@@ -145,6 +145,7 @@
     "react-native-dev-menu": "4.0.2",
     "react-native-dotenv": "3.2.0",
     "react-native-storybook-loader": "2.0.4",
+    "react-native-svg-transformer": "0.14.3",
     "react-test-renderer": "17.0.2",
     "ts-jest": "27.0.5",
     "typescript": "4.4.3",
