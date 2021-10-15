@@ -6,11 +6,11 @@ import React, {useCallback, useEffect, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
 import {
     EventSubscription, Keyboard, KeyboardAvoidingView,
-    Platform, StatusBar, StatusBarStyle, StyleSheet, TextInput, TouchableWithoutFeedback, View,
+    Platform, StatusBar, StatusBarStyle, TextInput, TouchableWithoutFeedback, View,
 } from 'react-native';
 import Button from 'react-native-button';
 import {Navigation, NavigationFunctionComponent} from 'react-native-navigation';
-import {ActivityIndicator, HelperText, TextInput as PaperTextInput} from 'react-native-paper';
+import {ActivityIndicator, HelperText} from 'react-native-paper';
 import {SafeAreaView} from 'react-native-safe-area-context';
 import {Colors} from 'react-native/Libraries/NewAppScreen';
 import tinyColor from 'tinycolor2';
@@ -19,9 +19,9 @@ import {doPing} from '@actions/remote/general';
 import {fetchConfigAndLicense} from '@actions/remote/systems';
 import LocalConfig from '@assets/config.json';
 import AppVersion from '@components/app_version';
-import CompassIcon from '@components/compass_icon';
 import ErrorText from '@components/error_text';
 import FormattedText from '@components/formatted_text';
+import TextInputFormatted from '@components/text_input_formatted';
 import {Screens} from '@constants';
 import NetworkManager from '@init/network_manager';
 import {goToScreen} from '@screens/navigation';
@@ -206,7 +206,7 @@ const Server: NavigationFunctionComponent = ({componentId, extra, launchType, la
         setButtonDisabled(true);
     }, [url, displayName]);
 
-    const handleUrlTextChanged = useCallback((text: string) => {
+    const handleUrlTextChanged = useCallback((text: string): void => {
         setUrlError('');
         setUrl(text);
     }, []);
@@ -313,11 +313,6 @@ const Server: NavigationFunctionComponent = ({componentId, extra, launchType, la
         barStyle = 'dark-content';
     }
 
-    const inputStyle = [styles.inputBox];
-    if (inputDisabled) {
-        inputStyle.push(styles.disabledInput);
-    }
-
     const inputTheme = (type: string) => {
         let primary: string;
         let placeholder: string;
@@ -358,73 +353,53 @@ const Server: NavigationFunctionComponent = ({componentId, extra, launchType, la
                     accessible={false}
                 >
                     <View style={styles.formContainer}>
-                        <FormattedText
-                            style={styles.welcomeText}
-                            id='mobile.components.select_server_view.msg_welcome'
-                            defaultMessage='Welcome'
-                        />
-                        <FormattedText
-                            style={styles.connectText}
-                            id='mobile.components.select_server_view.msg_connect'
-                            defaultMessage='Let’s Connect to a Server'
-                        />
-                        <FormattedText
-                            style={styles.descriptionText}
-                            id='mobile.components.select_server_view.msg_description'
-                            defaultMessage="A Server is your team's communication hub which is accessed through a unique URL"
-                        />
-                        <PaperTextInput
-                            mode='outlined'
-                            testID='select_server.server_url.input'
-                            ref={input}
-                            value={url}
+                        {/* <View style={styles.textContainer}> */}
+                        <View>
+                            <FormattedText
+                                style={styles.welcomeText}
+                                id='mobile.components.select_server_view.msg_welcome'
+                                defaultMessage='Welcome'
+                            />
+                            <FormattedText
+                                style={styles.connectText}
+                                id='mobile.components.select_server_view.msg_connect'
+                                defaultMessage='Let’s Connect to a Server'
+                            />
+                            <FormattedText
+                                style={styles.descriptionText}
+                                id='mobile.components.select_server_view.msg_description'
+                                defaultMessage="A Server is your team's communication hub which is accessed through a unique URL"
+                            />
+                        </View>
+                        <TextInputFormatted
                             editable={!inputDisabled}
-                            onChangeText={handleUrlTextChanged}
-                            onSubmitEditing={handleConnect}
-                            style={StyleSheet.flatten([inputStyle, styles.inputBoxServerUrl])}
-                            autoCapitalize='none'
-                            autoCorrect={false}
+
+                            //  error={urlError}
                             keyboardType='url'
                             label={serverLabelText}
+                            onChangeText={handleUrlTextChanged}
+                            onSubmitEditing={handleConnect}
+                            testID='select_server.server_url.input'
                             theme={inputTheme('url')}
-                            returnKeyType='go'
-                            underlineColorAndroid='transparent'
-                            disableFullscreenUI={true}
+                            value={url}
                         />
-                        {Boolean(urlError) &&
-                            <HelperText
-                                type='error'
-                                style={styles.urlHelper}
-                            >
-                                <CompassIcon
-                                    name='alert-outline'
-                                />
-                                {' ' + urlError}
-                            </HelperText>
-                        }
-                        <PaperTextInput
-                            mode='outlined'
-                            testID='select_server.server_display_name.input'
-                            ref={input}
-                            value={displayName}
+                        <TextInputFormatted
                             editable={!inputDisabled}
                             onChangeText={handleDisplayNameTextChanged}
                             onSubmitEditing={handleConnect}
-                            style={StyleSheet.flatten([inputStyle, styles.inputBoxDisplayName])}
-                            autoCapitalize='none'
-                            autoCorrect={false}
                             label={displayNameLabelText}
+                            testID='select_server.server_display_name.input'
                             theme={inputTheme('displayName')}
-                            returnKeyType='go'
-                            underlineColorAndroid='transparent'
-                            disableFullscreenUI={true}
+                            value={displayName}
                         />
-                        <HelperText
-                            type='info'
-                            style={styles.displayNameHelper}
-                        >
-                            {displayNameHelperText}
-                        </HelperText>
+                        <View>
+                            <HelperText
+                                type='info'
+                                style={styles.displayNameHelper}
+                            >
+                                {displayNameHelperText}
+                            </HelperText>
+                        </View>
                         <Button
                             disabled={buttonDisabled}
                             testID='select_server.connect.button'
@@ -469,8 +444,11 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         justifyContent: 'center',
         alignItems: 'center',
         alignSelf: 'stretch',
-        paddingRight: 24,
-        paddingLeft: 24,
+        marginLeft: 24,
+        marginRight: 24,
+
+        // paddingRight: 24,
+        // paddingLeft: 24,
     },
     disabledInput: {
         backgroundColor: changeOpacity(theme.centerChannelColor, 0.1),
@@ -490,20 +468,18 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     connectingIndicator: {
         marginRight: 10,
     },
-    inputBox: {
-        fontSize: 16,
-        height: 48,
+    textContainer: {
+        width: 374,
+        height: 28,
+        fontSize: 20,
+        lineHeight: 28,
+        alignItems: 'center',
         flex: 0,
         alignSelf: 'stretch',
-        backgroundColor: Colors.white,
-    },
-    inputBoxDisplayName: {
-        marginTop: 20,
+        marginTop: 12,
         marginBottom: 0,
-    },
-    inputBoxServerUrl: {
-        marginTop: 20,
-        marginBottom: 0,
+        fontFamily: 'Metropolis-Semibold',
+        color: changeOpacity(theme.centerChannelColor, 0.64),
     },
     welcomeText: {
         width: 374,
@@ -515,14 +491,13 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         alignSelf: 'stretch',
         marginTop: 12,
         marginBottom: 0,
-        fontWeight: '600',
-        fontFamily: 'Metropolis',
+        marginLeft: 20,
+        fontFamily: 'Metropolis-SemiBold',
         color: changeOpacity(theme.centerChannelColor, 0.64),
     },
     connectText: {
         width: 270,
         height: 96,
-        fontFamily: 'Metropolis',
         fontSize: 40,
         lineHeight: 48,
         alignItems: 'center',
@@ -533,10 +508,10 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         marginTop: 12,
         marginBottom: 0,
         marginRight: 20,
-        marginLeft: 0,
+        marginLeft: 20,
         paddingLeft: 0,
         flexGrow: 0,
-        fontWeight: '600',
+        fontFamily: 'Metropolis-SemiBold',
         display: 'flex',
     },
     descriptionText: {
@@ -545,6 +520,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         fontFamily: 'Open Sans',
         fontStyle: 'normal',
         fontWeight: 'normal',
+        marginLeft: 20,
         fontSize: 16,
         lineHeight: 24,
         alignItems: 'center',
@@ -558,6 +534,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     displayNameHelper: {
         width: 374,
         marginTop: 4,
+        marginLeft: 20,
         marginBottom: 0,
         paddingLeft: 0,
         flex: 0,
@@ -568,19 +545,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         alignItems: 'center',
         alignSelf: 'stretch',
         color: changeOpacity(theme.centerChannelColor, 0.64),
-    },
-    urlHelper: {
-        width: 374,
-        marginTop: 4,
-        marginBottom: 0,
-        padding: 0,
-        flex: 0,
-        fontFamily: 'Open Sans',
-        fontStyle: 'normal',
-        fontWeight: 'normal',
-        fontSize: 12,
-        alignItems: 'center',
-        alignSelf: 'stretch',
     },
     connectButtonText: {
         textAlign: 'center',
