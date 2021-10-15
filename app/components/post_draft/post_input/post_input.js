@@ -298,6 +298,7 @@ export default class PostInput extends PureComponent {
 
         return (
             <PasteableTextInput
+                allowFontScaling={true}
                 testID={testID}
                 ref={this.input}
                 disableCopyPaste={this.state.disableCopyAndPaste}
