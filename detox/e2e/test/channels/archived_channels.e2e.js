@@ -62,7 +62,7 @@ describe('Archived Channels', () => {
 
         // * Verify favorites section and favorited archived channel are not displayed
         await openMainSidebar();
-        await expect(element(by.text('FAVORITE CHANNELS'))).not.toBeVisible();
+        await expect(element(by.text('FAVORITES'))).not.toBeVisible();
         await expect(element(by.text(favoritedChannel.display_name))).not.toBeVisible();
 
         // # Close main sidebar

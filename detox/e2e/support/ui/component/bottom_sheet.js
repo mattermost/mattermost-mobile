@@ -14,7 +14,10 @@ class BottomSheet {
     copyHeaderOption = isAndroid() ? element(by.text('Copy Header')) : element(by.label('Copy Header')).atIndex(0);
     copyPurposeOption = isAndroid() ? element(by.text('Copy Purpose')) : element(by.label('Copy Purpose')).atIndex(0);
     copyUrlOption = isAndroid() ? element(by.text('Copy URL')) : element(by.label('Copy URL')).atIndex(0);
+    createOption = isAndroid() ? element(by.text('Create')) : element(by.label('Create')).atIndex(0);
     doNotDisturbOption = isAndroid() ? element(by.text('Do Not Disturb')) : element(by.label('Do No Disturb')).atIndex(0);
+    moreChannelsOption = isAndroid() ? element(by.text('More Channels')) : element(by.label('More Channels')).atIndex(0);
+    newConversationOption = isAndroid() ? element(by.text('New Conversation')) : element(by.label('New Conversation')).atIndex(0);
     offlineOption = isAndroid() ? element(by.text('Offline')) : element(by.label('Offline')).atIndex(0);
     onlineOption = isAndroid() ? element(by.text('Online')) : element(by.label('Online')).atIndex(0);
     publicChannelsOption = isAndroid() ? element(by.text('Public Channels')) : element(by.label('Public Channels')).atIndex(0);
