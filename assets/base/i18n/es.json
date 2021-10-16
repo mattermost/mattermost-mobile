@@ -199,6 +199,7 @@
   "global_threads.markAllRead.markRead": "Marcar como leído",
   "global_threads.markAllRead.message": "Esto limpiará el estado de no leído de todos tus hilos mostrados aquí",
   "global_threads.markAllRead.title": "¿Estás seguro de que quieres marcar todos los hilos como leídos?",
+  "global_threads.options.mark_as_read": "Marcar como Leído",
   "global_threads.options.open_in_channel": "Abrir en canal",
   "global_threads.options.title": "ACCIONES DEL HILO",
   "global_threads.options.unfollow": "Dejar de seguir conversación",
