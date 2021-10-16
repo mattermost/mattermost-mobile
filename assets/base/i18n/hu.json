@@ -206,7 +206,7 @@
   "global_threads.unreads": "Olvasatlanok",
   "integrations.add": "Hozzáadás",
   "intro_messages.anyMember": " Bármely tag csatlakozhat és elolvashatja ezt a beszélgetést.",
-  "intro_messages.beginning": "{name} itt kezdődik",
+  "intro_messages.beginning": "{name} beszélgetés itt kezdődik",
   "intro_messages.creator": "Itt kezdődik a {name} beszélgetés, amelyet {creator} hozott létre {date} napon.",
   "intro_messages.creatorPrivate": "Itt kezdődik a {name} privát beszélgetés, amelyet {creator} hozott létre {date} napon.",
   "intro_messages.group_message": "Itt kezdődik az alábbi tagokkal folytatott csoportos beszélgetése. Az itt megosztott üzenetek és fájlok nem lesznek láthatóak ezen a területen kívüli személyeknek.",
