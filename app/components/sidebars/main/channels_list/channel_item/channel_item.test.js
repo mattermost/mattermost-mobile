@@ -40,6 +40,8 @@ describe('ChannelItem', () => {
         isSearchResult: false,
         isBot: false,
         customStatusEnabled: true,
+        channelHasCall: false,
+        callsFeatureEnabled: false,
     };
 
     test('should match snapshot', () => {

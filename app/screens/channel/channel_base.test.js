@@ -23,10 +23,12 @@ describe('ChannelBase', () => {
             markChannelViewedAndRead: jest.fn(),
             selectDefaultTeam: jest.fn(),
             selectInitialChannel: jest.fn(),
+            loadCalls: jest.fn(),
         },
         componentId: channelBaseComponentId,
         theme: Preferences.THEMES.denim,
         collapsedThreadsEnabled: false,
+        callsFeatureEnabled: false,
     };
     const optionsForTheme = (theme) => {
         return {
