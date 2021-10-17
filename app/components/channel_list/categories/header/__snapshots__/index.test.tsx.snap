@@ -1,0 +1,30 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Threads Component should match snapshot 1`] = `
+<View
+  style={
+    Object {
+      "marginTop": 12,
+      "paddingVertical": 8,
+    }
+  }
+>
+  <Text
+    style={
+      Array [
+        Object {
+          "fontFamily": "OpenSans",
+          "fontSize": 12,
+          "fontWeight": "600",
+          "lineHeight": 16,
+        },
+        Object {
+          "color": "rgba(255,255,255,0.64)",
+        },
+      ]
+    }
+  >
+    CAT HEADING
+  </Text>
+</View>
+`;
