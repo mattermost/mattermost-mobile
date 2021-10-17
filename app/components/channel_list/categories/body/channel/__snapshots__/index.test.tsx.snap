@@ -1,0 +1,42 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Category Channel List Item Component should match snapshot 1`] = `
+<View
+  style={
+    Object {
+      "display": "flex",
+      "flexDirection": "row",
+      "paddingVertical": 4,
+    }
+  }
+>
+  <Icon
+    name="globe"
+    style={
+      Object {
+        "color": "#ffffff",
+        "fontSize": 24,
+        "lineHeight": 28,
+      }
+    }
+  />
+  <Text
+    style={
+      Array [
+        Object {
+          "fontFamily": "OpenSans",
+          "fontSize": 16,
+          "fontWeight": "600",
+          "lineHeight": 24,
+        },
+        Object {
+          "color": "#ffffff",
+          "paddingLeft": 12,
+        },
+      ]
+    }
+  >
+    Channel Name
+  </Text>
+</View>
+`;

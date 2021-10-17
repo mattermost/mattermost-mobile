@@ -1,0 +1,246 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Threads Component should match snapshot 1`] = `
+<RCTScrollView
+  style={
+    Object {
+      "backgroundColor": "#1e325c",
+      "flex": 1,
+      "paddingHorizontal": 20,
+      "paddingVertical": 10,
+    }
+  }
+>
+  <View>
+    <View>
+      <Text
+        style={
+          Array [
+            Object {
+              "fontFamily": "Metropolis",
+              "fontSize": 28,
+              "fontWeight": "600",
+              "lineHeight": 36,
+            },
+            Object {
+              "color": "#ffffff",
+            },
+          ]
+        }
+      >
+        Contributors
+      </Text>
+      <Text
+        style={
+          Array [
+            Object {
+              "fontFamily": "OpenSans",
+              "fontSize": 11,
+              "fontWeight": "600",
+              "lineHeight": 16,
+            },
+            Object {
+              "color": "rgba(255,255,255,0.64)",
+            },
+          ]
+        }
+      >
+        Community
+      </Text>
+    </View>
+    <View
+      style={
+        Object {
+          "alignItems": "center",
+          "backgroundColor": "rgba(255,255,255,0.12)",
+          "borderRadius": 8,
+          "flex": 1,
+          "flexDirection": "row",
+          "height": 40,
+          "justifyContent": "flex-start",
+          "marginVertical": 20,
+          "padding": 8,
+          "width": "100%",
+        }
+      }
+    >
+      <Icon
+        name="magnify"
+        style={
+          Object {
+            "color": "rgba(255,255,255,0.72)",
+            "fontSize": 24,
+            "width": 24,
+          }
+        }
+      />
+      <TextInput
+        collapsable={false}
+        onGestureHandlerEvent={[Function]}
+        onGestureHandlerStateChange={[Function]}
+        placeholder="Find Channels"
+        placeholderTextColor="rgba(255,255,255,0.72)"
+        style={
+          Array [
+            Object {
+              "fontFamily": "OpenSans",
+              "fontSize": 16,
+              "fontWeight": "400",
+              "lineHeight": 24,
+            },
+            Object {
+              "alignContent": "center",
+              "alignItems": "center",
+              "color": "#ffffff",
+              "flex": 1,
+              "height": 40,
+            },
+            Object {
+              "textAlignVertical": "center",
+            },
+          ]
+        }
+      />
+    </View>
+    <View
+      style={
+        Object {
+          "display": "flex",
+          "flexDirection": "row",
+        }
+      }
+    >
+      <Icon
+        name="message-text-outline"
+        style={
+          Object {
+            "color": "#ffffff",
+            "fontSize": 24,
+            "lineHeight": 28,
+          }
+        }
+      />
+      <Text
+        style={
+          Array [
+            Object {
+              "fontFamily": "OpenSans",
+              "fontSize": 16,
+              "fontWeight": "600",
+              "lineHeight": 24,
+            },
+            Object {
+              "color": "#ffffff",
+              "paddingLeft": 12,
+            },
+          ]
+        }
+      >
+        Threads
+      </Text>
+    </View>
+    <View
+      style={
+        Object {
+          "marginTop": 12,
+          "paddingVertical": 8,
+        }
+      }
+    >
+      <Text
+        style={
+          Array [
+            Object {
+              "fontFamily": "OpenSans",
+              "fontSize": 12,
+              "fontWeight": "600",
+              "lineHeight": 16,
+            },
+            Object {
+              "color": "rgba(255,255,255,0.64)",
+            },
+          ]
+        }
+      >
+        CATEGORY HEADING
+      </Text>
+    </View>
+    <View
+      style={
+        Object {
+          "display": "flex",
+          "flexDirection": "row",
+          "paddingVertical": 4,
+        }
+      }
+    >
+      <Icon
+        name="globe"
+        style={
+          Object {
+            "color": "#ffffff",
+            "fontSize": 24,
+            "lineHeight": 28,
+          }
+        }
+      />
+      <Text
+        style={
+          Array [
+            Object {
+              "fontFamily": "OpenSans",
+              "fontSize": 16,
+              "fontWeight": "600",
+              "lineHeight": 24,
+            },
+            Object {
+              "color": "#ffffff",
+              "paddingLeft": 12,
+            },
+          ]
+        }
+      >
+        Just a Channel
+      </Text>
+    </View>
+    <View
+      style={
+        Object {
+          "display": "flex",
+          "flexDirection": "row",
+          "paddingVertical": 4,
+        }
+      }
+    >
+      <Icon
+        name="globe"
+        style={
+          Object {
+            "color": "#ffffff",
+            "fontSize": 24,
+            "lineHeight": 28,
+          }
+        }
+      />
+      <Text
+        style={
+          Array [
+            Object {
+              "fontFamily": "OpenSans",
+              "fontSize": 16,
+              "fontWeight": "600",
+              "lineHeight": 24,
+            },
+            Object {
+              "color": "#ffffff",
+              "paddingLeft": 12,
+            },
+          ]
+        }
+      >
+        And another Channel
+      </Text>
+    </View>
+  </View>
+</RCTScrollView>
+`;

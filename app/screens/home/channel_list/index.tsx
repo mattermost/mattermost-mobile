@@ -3,16 +3,16 @@
 
 import {useIsFocused, useRoute} from '@react-navigation/native';
 import React from 'react';
-import {Text, View} from 'react-native';
+import {View} from 'react-native';
 import Animated, {useAnimatedStyle, withTiming} from 'react-native-reanimated';
 import {SafeAreaView, useSafeAreaInsets} from 'react-native-safe-area-context';
 
+import ChannelListComponent from '@app/components/channel_list';
 import TeamSidebar from '@components/team_sidebar';
-import {Device, View as ViewConstants} from '@constants';
+import {Device /*View as ViewConstants*/} from '@constants';
 import {useTheme} from '@context/theme';
 import {useSplitView} from '@hooks/device';
 import Channel from '@screens/channel';
-import {goToScreen} from '@screens/navigation';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 
 import type {LaunchProps} from '@typings/launch';
@@ -50,11 +50,12 @@ const ChannelListScreen = (props: ChannelProps) => {
     const insets = useSafeAreaInsets();
     const params = route.params as {direction: string};
 
-    let tabletSidebarStyle;
-    if (showTabletLayout) {
-        const {TABLET, TEAM_SIDEBAR_WIDTH} = ViewConstants;
-        tabletSidebarStyle = {maxWidth: (TABLET.SIDEBAR_WIDTH - TEAM_SIDEBAR_WIDTH)};
-    }
+    // @to-do: Tablet Styles!
+    // let tabletSidebarStyle;
+    // if (showTabletLayout) {
+    //     const {TABLET, TEAM_SIDEBAR_WIDTH} = ViewConstants;
+    //     tabletSidebarStyle = {maxWidth: (TABLET.SIDEBAR_WIDTH - TEAM_SIDEBAR_WIDTH)};
+    // }
 
     const animated = useAnimatedStyle(() => {
         if (!isFocused) {
@@ -84,14 +85,7 @@ const ChannelListScreen = (props: ChannelProps) => {
                     style={[styles.content, animated]}
                 >
                     <TeamSidebar/>
-                    <View style={[styles.flex, {alignItems: 'center', justifyContent: 'center'}, tabletSidebarStyle]}>
-                        <Text
-                            onPress={() => goToScreen('Channel', '', undefined, {topBar: {visible: false}})}
-                            style={{fontSize: 20, color: theme.centerChannelColor}}
-                        >
-                            {'Channel List'}
-                        </Text>
-                    </View>
+                    <ChannelListComponent/>
                     {showTabletLayout &&
                         <Channel {...props}/>
                     }
