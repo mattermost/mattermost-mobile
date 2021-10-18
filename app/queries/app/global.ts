@@ -17,12 +17,3 @@ export const queryDeviceToken = async (appDatabase: Database) => {
         return '';
     }
 };
-
-export const queryMentionCount = async (appDatabase: Database) => {
-    try {
-        const mentions = await appDatabase.get(GLOBAL).find(GLOBAL_IDENTIFIERS.MENTION_COUNT) as Global;
-        return mentions?.value || '';
-    } catch {
-        return '';
-    }
-};

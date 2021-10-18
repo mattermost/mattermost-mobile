@@ -11,7 +11,6 @@ import {sortByNewest} from '@utils/general';
 
 export const scheduleExpiredNotification = async (serverUrl: string, config: Partial<ClientConfig>, userId: string, locale = DEFAULT_LOCALE) => {
     if (config.ExtendSessionLengthWithActivity === 'true') {
-        PushNotifications.cancelAllLocalNotifications();
         return null;
     }
 

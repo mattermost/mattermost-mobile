@@ -9,6 +9,7 @@ import android.content.pm.PackageManager;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.service.notification.StatusBarNotification;
+import android.text.TextUtils;
 import android.util.Log;
 
 import androidx.annotation.Nullable;
@@ -149,6 +150,7 @@ public class CustomPushNotification extends PushNotification {
         }
 
         String serverUrl = addServerUrlToBundle(initialData);
+        boolean isReactInit = mAppLifecycleFacade.isReactInitialized();
 
         if (ackId != null && serverUrl != null) {
             notificationReceiptDelivery(ackId, serverUrl, postId, type, isIdLoaded, new ResolvePromise() {
@@ -157,7 +159,8 @@ public class CustomPushNotification extends PushNotification {
                     if (isIdLoaded) {
                         Bundle response = (Bundle) value;
                         if (value != null) {
-                            addServerUrlToBundle(response);
+                            response.putString("server_url", serverUrl);
+                            mNotificationProps = createProps(response);
                         }
                     }
                 }
@@ -202,8 +205,6 @@ public class CustomPushNotification extends PushNotification {
                     }
 
                     buildNotification(notificationId, createSummary);
-                } else {
-                    notifyReceivedToJS();
                 }
                 break;
             case PUSH_TYPE_CLEAR:
@@ -211,7 +212,7 @@ public class CustomPushNotification extends PushNotification {
                 break;
         }
 
-        if (mAppLifecycleFacade.isReactInitialized()) {
+        if (isReactInit) {
             notifyReceivedToJS();
         }
     }
@@ -268,9 +269,15 @@ public class CustomPushNotification extends PushNotification {
     }
 
     private String addServerUrlToBundle(Bundle bundle) {
-        String serverUrl = bundle.getString("server_url");
-        if (serverUrl == null) {
+        String serverId = bundle.getString("server_id");
+        String serverUrl;
+        if (serverId == null) {
             serverUrl = Objects.requireNonNull(DatabaseHelper.Companion.getInstance()).getOnlyServerUrl();
+        } else {
+            serverUrl = Objects.requireNonNull(DatabaseHelper.Companion.getInstance()).getServerUrlForIdentifier(serverId);
+        }
+
+        if (!TextUtils.isEmpty(serverUrl)) {
             bundle.putString("server_url", serverUrl);
             mNotificationProps = createProps(bundle);
         }

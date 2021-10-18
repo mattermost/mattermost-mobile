@@ -10,6 +10,7 @@ import com.facebook.react.bridge.ReadableMap
 import com.nozbe.watermelondb.Database
 import com.nozbe.watermelondb.mapCursor
 import org.json.JSONArray
+import org.json.JSONException
 import org.json.JSONObject
 import java.lang.Exception
 import java.util.*
@@ -20,7 +21,7 @@ class DatabaseHelper {
 
     val onlyServerUrl: String?
         get() {
-            val query = "SELECT url FROM Servers WHERE last_active_at != 0"
+            val query = "SELECT url FROM Servers WHERE last_active_at != 0 AND identifier != ''"
             val cursor = defaultDatabase!!.rawQuery(query)
             if (cursor.count == 1) {
                 cursor.moveToFirst()
@@ -35,6 +36,19 @@ class DatabaseHelper {
         if (defaultDatabase == null) {
             setDefaultDatabase(context)
         }
+    }
+
+    fun getServerUrlForIdentifier(identifier: String): String? {
+        val args: Array<Any?> = arrayOf(identifier)
+        val query = "SELECT url FROM Servers WHERE identifier=?"
+        val cursor = defaultDatabase!!.rawQuery(query, args)
+        if (cursor.count == 1) {
+            cursor.moveToFirst()
+            val url = cursor.getString(0)
+            cursor.close()
+            return url
+        }
+        return null
     }
 
     fun find(db: Database, tableName: String, id: String?): ReadableMap? {
@@ -363,19 +377,22 @@ class DatabaseHelper {
     private fun insertFiles(db: Database, files: JSONArray) {
         for (i in 0 until files.length()) {
             val file = files.getJSONObject(i)
+            val miniPreview = try { file.getString("mini_preview") } catch (e: JSONException) { "" };
+            val height = try { file.getInt("height") } catch (e: JSONException) { 0 };
+            val width = try { file.getInt("width") } catch (e: JSONException) { 0 };
             db.execute(
                     "insert into File (id, extension, height, image_thumbnail, local_path, mime_type, name, post_id, size, width, _status) " +
                             "values (?, ?, ?, ?, '', ?, ?, ?, ?, ?, 'created')",
                     arrayOf(
                             file.getString("id"),
                             file.getString("extension"),
-                            file.getInt("height"),
-                            file.getString("mini_preview"),
+                            height,
+                            miniPreview,
                             file.getString("mime_type"),
                             file.getString("name"),
                             file.getString("post_id"),
                             file.getDouble("size"),
-                            file.getInt("width")
+                            width
                     )
             )
         }

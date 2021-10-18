@@ -214,12 +214,11 @@ const PostList = ({currentTimezone, currentUsername, isTimezoneEnabled, lastView
                 keyExtractor={(item) => (typeof item === 'string' ? item : item.id)}
                 style={{flex: 1}}
                 contentContainerStyle={{paddingTop: 5}}
-                initialNumToRender={25}
-                maxToRenderPerBatch={25}
+                initialNumToRender={10}
+                maxToRenderPerBatch={10}
                 removeClippedSubviews={true}
                 onViewableItemsChanged={onViewableItemsChanged}
                 viewabilityConfig={VIEWABILITY_CONFIG}
-                windowSize={30}
                 scrollEventThrottle={60}
             />
         </PostListRefreshControl>

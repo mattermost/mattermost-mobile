@@ -22,16 +22,15 @@ public struct AckNotification: Codable {
         case type = "type"
         case id = "ack_id"
         case postId = "post_id"
-        case serverUrl = "server_url"
+        case server_id = "server_id"
         case isIdLoaded = "id_loaded"
         case platform = "platform"
     }
     
     public enum AckNotificationRequestKeys: String, CodingKey {
         case type = "type"
-        case id = "ack_id"
+        case id = "id"
         case postId = "post_id"
-        case serverUrl = "server_url"
         case isIdLoaded = "is_id_loaded"
         case receivedAt = "received_at"
         case platform = "platform"
@@ -42,11 +41,15 @@ public struct AckNotification: Codable {
         id = try container.decode(String.self, forKey: .id)
         type = try container.decode(String.self, forKey: .type)
         postId = try? container.decode(String.self, forKey: .postId)
-        isIdLoaded = (try? container.decode(Bool.self, forKey: .isIdLoaded)) == true
+        if container.contains(.isIdLoaded) {
+            isIdLoaded = (try? container.decode(Bool.self, forKey: .isIdLoaded)) == true
+        } else {
+            isIdLoaded = false
+        }
         receivedAt = Date().millisecondsSince1970
         
-        if let decodedServerUrl = try? container.decode(String.self, forKey: .serverUrl) {
-            serverUrl = decodedServerUrl
+        if let decodedIdentifier = try? container.decode(String.self, forKey: .server_id) {
+            serverUrl = try Database.default.getServerUrlForServer(decodedIdentifier)
         } else {
             serverUrl = try Database.default.getOnlyServerUrl()
         }
@@ -112,8 +115,8 @@ extension Network {
             
             let channelId = notification.userInfo["channel_id"] as! String
             let serverUrl =  notification.userInfo["server_url"] as! String
-            let currentUserId = try! Database.default.queryCurrentUserId(serverUrl)
             let currentUser = try! Database.default.queryCurrentUser(serverUrl)
+            let currentUserId = currentUser?[Expression<String>("id")]
             let currentUsername = currentUser?[Expression<String>("username")]
             
             var postData: PostData? = nil
@@ -122,7 +125,7 @@ extension Network {
             var users: Set<User> = Set()
 
             group.enter()
-            let since = try! Database.default.queryPostsSinceForChannel(withId: channelId, withServerUrl: serverUrl)
+            let since = try? Database.default.queryPostsSinceForChannel(withId: channelId, withServerUrl: serverUrl)
             self.fetchPostsForChannel(withId: channelId, withSince: since, withServerUrl: serverUrl) { data, response, error in
                 if self.responseOK(response), let data = data {
                    postData = try! JSONDecoder().decode(PostData.self, from: data)
@@ -130,7 +133,7 @@ extension Network {
                         var authorIds: Set<String> = Set()
                         var usernames: Set<String> = Set()
                         postData!.posts.forEach{post in
-                            if (post.user_id != currentUserId) {
+                            if (currentUserId != nil && post.user_id != currentUserId) {
                                 authorIds.insert(post.user_id)
                             }
                             self.matchUsername(in: post.message).forEach{
@@ -141,32 +144,34 @@ extension Network {
                         }
                     
                         if (authorIds.count > 0) {
-                            let existingIds = try! Database.default.queryUsers(byIds: authorIds, withServerUrl: serverUrl)
-                            userIdsToLoad = authorIds.filter { !existingIds.contains($0) }
-                            if (userIdsToLoad.count > 0) {
-                                group.enter()
-                                self.fetchUsers(byIds: Array(userIdsToLoad), withServerUrl: serverUrl) { data, response, error in
-                                    if self.responseOK(response), let data = data {
-                                        let usersData = try! JSONDecoder().decode([User].self, from: data)
-                                        usersData.forEach { users.insert($0) }
+                            if let existingIds = try? Database.default.queryUsers(byIds: authorIds, withServerUrl: serverUrl) {
+                                userIdsToLoad = authorIds.filter { !existingIds.contains($0) }
+                                if (userIdsToLoad.count > 0) {
+                                    group.enter()
+                                    self.fetchUsers(byIds: Array(userIdsToLoad), withServerUrl: serverUrl) { data, response, error in
+                                        if self.responseOK(response), let data = data {
+                                            let usersData = try! JSONDecoder().decode([User].self, from: data)
+                                            usersData.forEach { users.insert($0) }
+                                        }
+                                        group.leave()
                                     }
-                                    group.leave()
                                 }
                             }
                         }
                     
                         if (usernames.count > 0) {
-                            let existingUsernames = try! Database.default.queryUsers(byUsernames: usernames, withServerUrl: serverUrl)
-                            usernamesToLoad = usernames.filter{ !existingUsernames.contains($0)}
-                            if (usernamesToLoad.count > 0) {
-                                group.enter()
+                            if let existingUsernames = try? Database.default.queryUsers(byUsernames: usernames, withServerUrl: serverUrl) {
+                                usernamesToLoad = usernames.filter{ !existingUsernames.contains($0)}
+                                if (usernamesToLoad.count > 0) {
+                                    group.enter()
 
-                                self.fetchUsers(byUsernames: Array(usernamesToLoad), withServerUrl: serverUrl) { data, response, error in
-                                    if self.responseOK(response), let data = data {
-                                        let usersData = try! JSONDecoder().decode([User].self, from: data)
-                                        usersData.forEach { users.insert($0) }
+                                    self.fetchUsers(byUsernames: Array(usernamesToLoad), withServerUrl: serverUrl) { data, response, error in
+                                        if self.responseOK(response), let data = data {
+                                            let usersData = try! JSONDecoder().decode([User].self, from: data)
+                                            usersData.forEach { users.insert($0) }
+                                        }
+                                        group.leave()
                                     }
-                                    group.leave()
                                 }
                             }
                         }
@@ -179,12 +184,13 @@ extension Network {
             group.wait()
             
             group.enter()
-            if (postData != nil) {
-                let db = try! Database.default.getDatabaseForServer(serverUrl)
-                try! db.transaction {
-                    try! Database.default.handlePostData(db, postData!, channelId, since != nil)
-                    if (users.count > 0) {
-                        try! Database.default.insertUsers(db, users)
+            if (postData != nil && postData?.posts != nil && postData!.posts.count > 0) {
+                if let db = try? Database.default.getDatabaseForServer(serverUrl) {
+                    try? db.transaction {
+                        try? Database.default.handlePostData(db, postData!, channelId, since != nil)
+                        if (users.count > 0) {
+                            try? Database.default.insertUsers(db, users)
+                        }
                     }
                 }
             }

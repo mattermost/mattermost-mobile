@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {Database} from '@nozbe/watermelondb';
+import {Database, Q} from '@nozbe/watermelondb';
 import DatabaseProvider from '@nozbe/watermelondb/DatabaseProvider';
 import React, {ComponentType, useEffect, useState} from 'react';
 
@@ -26,23 +26,27 @@ export function withServerDatabase<T>(Component: ComponentType<T>): ComponentTyp
         const db = DatabaseManager.appDatabase?.database;
 
         const observer = (servers: ServersModel[]) => {
-            const server = servers.reduce((a, b) =>
+            const server = servers?.length ? servers.reduce((a, b) =>
                 (b.lastActiveAt > a.lastActiveAt ? b : a),
-            );
+            ) : undefined;
 
-            const serverDatabase =
-                DatabaseManager.serverDatabases[server?.url]?.database;
+            if (server) {
+                const serverDatabase =
+                    DatabaseManager.serverDatabases[server?.url]?.database;
 
-            setState({
-                database: serverDatabase,
-                serverUrl: server?.url,
-            });
+                setState({
+                    database: serverDatabase,
+                    serverUrl: server?.url,
+                });
+            } else {
+                setState(undefined);
+            }
         };
 
         useEffect(() => {
             const subscription = db?.collections.
                 get(SERVERS).
-                query().
+                query(Q.where('identifier', Q.notEq(''))).
                 observeWithColumns(['last_active_at']).
                 subscribe(observer);
 

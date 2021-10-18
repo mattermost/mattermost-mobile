@@ -159,7 +159,7 @@ const Server: NavigationFunctionComponent = ({componentId, extra, launchType, la
             return;
         }
 
-        const data = await fetchConfigAndLicense(serverUrl);
+        const data = await fetchConfigAndLicense(serverUrl, true);
         if (data.error) {
             setError(data.error as ClientError);
             setConnecting(false);

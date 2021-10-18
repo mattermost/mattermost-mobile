@@ -18,11 +18,10 @@ import {Device, General, Navigation} from '@constants';
 import {GLOBAL_IDENTIFIERS} from '@constants/database';
 import DatabaseManager from '@database/manager';
 import {DEFAULT_LOCALE, getLocalizedMessage, t} from '@i18n';
-import {getLaunchPropsFromNotification, relaunchApp} from '@init/launch';
 import NativeNotifications from '@notifications';
-import {queryMentionCount} from '@queries/app/global';
 import {queryCurrentChannelId} from '@queries/servers/system';
 import {showOverlay} from '@screens/navigation';
+import {convertToNotificationData} from '@utils/notification';
 
 const CATEGORY = 'CAN_REPLY';
 const REPLY_ACTION = 'REPLY_ACTION';
@@ -33,203 +32,206 @@ const NOTIFICATION_TYPE = {
 };
 
 class PushNotifications {
-  configured = false;
+    configured = false;
 
-  init() {
-      Notifications.registerRemoteNotifications();
-      Notifications.events().registerNotificationOpened(this.onNotificationOpened);
-      Notifications.events().registerRemoteNotificationsRegistered(this.onRemoteNotificationsRegistered);
-      Notifications.events().registerNotificationReceivedBackground(this.onNotificationReceivedBackground);
-      Notifications.events().registerNotificationReceivedForeground(this.onNotificationReceivedForeground);
-  }
+    init() {
+        Notifications.registerRemoteNotifications();
+        Notifications.events().registerNotificationOpened(this.onNotificationOpened);
+        Notifications.events().registerRemoteNotificationsRegistered(this.onRemoteNotificationsRegistered);
+        Notifications.events().registerNotificationReceivedBackground(this.onNotificationReceivedBackground);
+        Notifications.events().registerNotificationReceivedForeground(this.onNotificationReceivedForeground);
+    }
 
-  cancelAllLocalNotifications = () => {
-      Notifications.cancelAllLocalNotifications();
-  };
+    cancelAllLocalNotifications = () => {
+        Notifications.cancelAllLocalNotifications();
+    };
 
-  clearNotifications = (serverUrl: string) => {
-      // TODO Notifications: Only cancel the local notifications that belong to this server
+    clearNotifications = async (channelIds: string[]) => {
+        const notifications = await NativeNotifications.getDeliveredNotifications();
+        for (const channelId of channelIds) {
+            this.clearNotificationsForChannel(notifications, channelId);
+        }
+    };
 
-      // eslint-disable-next-line no-console
-      console.log('Clear notifications for server', serverUrl);
-      this.cancelAllLocalNotifications();
+    clearNotificationsForChannel = (notifications: NotificationWithChannel[], channelId: string) => {
+        if (Platform.OS === 'android') {
+            NativeNotifications.removeDeliveredNotifications(channelId);
+        } else {
+            const ids: string[] = [];
+            let badgeCount = notifications.length;
 
-      if (Platform.OS === 'ios') {
-          // TODO Notifications: Set the badge number to the total amount of mentions on other servers
-          Notifications.ios.setBadgeCount(0);
-      }
-  };
+            for (const notification of notifications) {
+                if (notification.channel_id === channelId) {
+                    ids.push(notification.identifier);
+                    badgeCount--;
+                }
+            }
 
-  clearChannelNotifications = async (channelId: string) => {
-      const notifications = await NativeNotifications.getDeliveredNotifications();
-      if (Platform.OS === 'android') {
-          const notificationForChannel = notifications.find(
-              (n: NotificationWithChannel) => n.channel_id === channelId,
-          );
-          if (notificationForChannel) {
-              NativeNotifications.removeDeliveredNotifications(
-                  notificationForChannel.identifier,
-                  channelId,
-              );
-          }
-      } else {
-          const ids: string[] = [];
-          let badgeCount = notifications.length;
+            // TODO: Set the badgeCount with default database mention count aggregate
 
-          for (const notification of notifications) {
-              if (notification.channel_id === channelId) {
-                  ids.push(notification.identifier);
-                  badgeCount--;
-              }
-          }
+            if (ids.length) {
+                NativeNotifications.removeDeliveredNotifications(ids);
+            }
 
-          // Set the badgeCount with default database mention count aggregate
-          const appDatabase = DatabaseManager.appDatabase?.database;
-          if (appDatabase) {
-              const mentions = await queryMentionCount(appDatabase);
-              if (mentions) {
-                  badgeCount = parseInt(mentions, 10);
-              }
-          }
+            if (Platform.OS === 'ios') {
+                badgeCount = badgeCount <= 0 ? 0 : badgeCount;
+                Notifications.ios.setBadgeCount(badgeCount);
+            }
+        }
+    }
 
-          if (ids.length) {
-              NativeNotifications.removeDeliveredNotifications(ids);
-          }
+    clearChannelNotifications = async (channelId: string) => {
+        const notifications = await NativeNotifications.getDeliveredNotifications();
+        this.clearNotificationsForChannel(notifications, channelId);
+    };
 
-          if (Platform.OS === 'ios') {
-              badgeCount = badgeCount <= 0 ? 0 : badgeCount;
-              Notifications.ios.setBadgeCount(badgeCount);
-          }
-      }
-  };
+    createReplyCategory = () => {
+        const replyTitle = getLocalizedMessage(DEFAULT_LOCALE, t('mobile.push_notification_reply.title'));
+        const replyButton = getLocalizedMessage(DEFAULT_LOCALE, t('mobile.push_notification_reply.button'));
+        const replyPlaceholder = getLocalizedMessage(DEFAULT_LOCALE, t('mobile.push_notification_reply.placeholder'));
+        const replyTextInput: NotificationTextInput = {buttonTitle: replyButton, placeholder: replyPlaceholder};
+        const replyAction = new NotificationAction(REPLY_ACTION, 'background', replyTitle, true, replyTextInput);
+        return new NotificationCategory(CATEGORY, [replyAction]);
+    };
 
-  createReplyCategory = () => {
-      const replyTitle = getLocalizedMessage(DEFAULT_LOCALE, t('mobile.push_notification_reply.title'));
-      const replyButton = getLocalizedMessage(DEFAULT_LOCALE, t('mobile.push_notification_reply.button'));
-      const replyPlaceholder = getLocalizedMessage(DEFAULT_LOCALE, t('mobile.push_notification_reply.placeholder'));
-      const replyTextInput: NotificationTextInput = {buttonTitle: replyButton, placeholder: replyPlaceholder};
-      const replyAction = new NotificationAction(REPLY_ACTION, 'background', replyTitle, true, replyTextInput);
-      return new NotificationCategory(CATEGORY, [replyAction]);
-  };
+    handleNotification = async (notification: NotificationWithData) => {
+        const {payload, foreground, userInteraction} = notification;
 
-  handleNotification = async (notification: NotificationWithData) => {
-      const {payload, foreground, userInteraction} = notification;
+        if (payload) {
+            switch (payload.type) {
+                case NOTIFICATION_TYPE.CLEAR:
+                    // TODO Notifications: Mark the channel as read
+                    break;
+                case NOTIFICATION_TYPE.MESSAGE:
+                    // TODO Notifications: fetch the posts for the channel
 
-      if (payload) {
-          switch (payload.type) {
-              case NOTIFICATION_TYPE.CLEAR:
-                  // TODO Notifications: Mark the channel as read
-                  break;
-              case NOTIFICATION_TYPE.MESSAGE:
-                  // TODO Notifications: fetch the posts for the channel
+                    if (foreground) {
+                        this.handleInAppNotification(notification);
+                    } else if (userInteraction && !payload.userInfo?.local) {
+                        // Handle notification tapped
+                    }
+                    break;
+                case NOTIFICATION_TYPE.SESSION:
+                    // eslint-disable-next-line no-console
+                    console.log('Session expired notification');
 
-                  if (foreground) {
-                      this.handleInAppNotification(notification);
-                  } else if (userInteraction && !payload.userInfo?.local) {
-                      const props = getLaunchPropsFromNotification(notification);
-                      relaunchApp(props, true);
-                  }
-                  break;
-              case NOTIFICATION_TYPE.SESSION:
-                  // eslint-disable-next-line no-console
-                  console.log('Session expired notification');
+                    if (payload.server_url) {
+                        DeviceEventEmitter.emit(General.SERVER_LOGOUT, payload.server_url);
+                    }
+                    break;
+            }
+        }
+    };
 
-                  if (payload.server_url) {
-                      DeviceEventEmitter.emit(General.SERVER_LOGOUT, payload.server_url);
-                  }
-                  break;
-          }
-      }
-  };
+    handleInAppNotification = async (notification: NotificationWithData) => {
+        const {payload} = notification;
 
-  handleInAppNotification = async (notification: NotificationWithData) => {
-      const {payload} = notification;
+        if (payload?.server_url) {
+            const database = DatabaseManager.serverDatabases[payload.server_url]?.database;
+            const channelId = await queryCurrentChannelId(database);
 
-      if (payload?.server_url) {
-          const database = DatabaseManager.serverDatabases[payload.server_url]?.database;
-          const channelId = await queryCurrentChannelId(database);
+            if (channelId && payload.channel_id !== channelId) {
+                const screen = 'Notification';
+                const passProps = {
+                    notification,
+                };
 
-          if (channelId && payload.channel_id !== channelId) {
-              const screen = 'Notification';
-              const passProps = {
-                  notification,
-              };
+                DeviceEventEmitter.emit(Navigation.NAVIGATION_SHOW_OVERLAY);
+                showOverlay(screen, passProps);
+            }
+        }
+    };
 
-              DeviceEventEmitter.emit(Navigation.NAVIGATION_SHOW_OVERLAY);
-              showOverlay(screen, passProps);
-          }
-      }
-  };
+    localNotification = (notification: Notification) => {
+        Notifications.postLocalNotification(notification);
+    };
 
-  localNotification = (notification: Notification) => {
-      Notifications.postLocalNotification(notification);
-  };
+    // This triggers when a notification is tapped and the app was in the background (iOS)
+    onNotificationOpened = (incoming: Notification, completion: () => void) => {
+        const notification = convertToNotificationData(incoming, false);
+        notification.userInteraction = true;
 
-  onNotificationOpened = (notification: NotificationWithData, completion: () => void) => {
-      notification.userInteraction = true;
-      this.handleNotification(notification);
-      completion();
-  };
+        // eslint-disable-next-line no-console
+        console.warn('onNotificationOpened ===============', notification);
 
-  onNotificationReceivedBackground = (notification: NotificationWithData, completion: (response: NotificationBackgroundFetchResult) => void) => {
-      this.handleNotification(notification);
-      completion(NotificationBackgroundFetchResult.NO_DATA);
-  };
+        //   this.handleNotification(notification);
+        completion();
+    };
 
-  onNotificationReceivedForeground = (notification: NotificationWithData, completion: (response: NotificationCompletion) => void) => {
-      notification.foreground = AppState.currentState === 'active';
-      completion({alert: false, sound: true, badge: true});
-      this.handleNotification(notification);
-  };
+    // This triggers when the app was in the background (iOS)
+    onNotificationReceivedBackground = (incoming: Notification, completion: (response: NotificationBackgroundFetchResult) => void) => {
+        const notification = convertToNotificationData(incoming, false);
 
-  onRemoteNotificationsRegistered = async (event: Registered) => {
-      if (!this.configured) {
-          this.configured = true;
-          const {deviceToken} = event;
-          let prefix;
+        // eslint-disable-next-line no-console
+        console.log('onNotificationReceivedBackground ===============');
+        if (notification.payload?.type === 'message') {
+            //   this.handleNotification(notification);
+        }
 
-          if (Platform.OS === 'ios') {
-              prefix = Device.PUSH_NOTIFY_APPLE_REACT_NATIVE;
-              if (DeviceInfo.getBundleId().includes('rnbeta')) {
-                  prefix = `${prefix}beta`;
-              }
-          } else {
-              prefix = Device.PUSH_NOTIFY_ANDROID_REACT_NATIVE;
-          }
+        completion(NotificationBackgroundFetchResult.NEW_DATA);
+    };
 
-          const operator = DatabaseManager.appDatabase?.operator;
+    // This triggers when the app was in the foreground (Android and iOS)
+    // Also triggers when the app was in the background (Android)
+    onNotificationReceivedForeground = (incoming: Notification, completion: (response: NotificationCompletion) => void) => {
+        const notification = convertToNotificationData(incoming, false);
 
-          if (!operator) {
-              return {error: 'No App database found'};
-          }
+        // eslint-disable-next-line no-console
+        console.log('onNotificationReceivedForeground ===============', notification);
+        notification.foreground = AppState.currentState === 'active';
 
-          operator.handleGlobal({
-              global: [{id: GLOBAL_IDENTIFIERS.DEVICE_TOKEN, value: `${prefix}:${deviceToken}`}],
-              prepareRecordsOnly: false,
-          });
+        //   this.handleNotification(notification);
+        completion({alert: false, sound: true, badge: true});
+    };
 
-          // Store the device token in the default database
-          this.requestNotificationReplyPermissions();
-      }
-      return null;
-  };
+    onRemoteNotificationsRegistered = async (event: Registered) => {
+        if (!this.configured) {
+            this.configured = true;
+            const {deviceToken} = event;
+            let prefix;
 
-  requestNotificationReplyPermissions = () => {
-      if (Platform.OS === 'ios') {
-          const replyCategory = this.createReplyCategory();
-          Notifications.setCategories([replyCategory]);
-      }
-  };
+            if (Platform.OS === 'ios') {
+                prefix = Device.PUSH_NOTIFY_APPLE_REACT_NATIVE;
+                if (DeviceInfo.getBundleId().includes('rnbeta')) {
+                    prefix = `${prefix}beta`;
+                }
+            } else {
+                prefix = Device.PUSH_NOTIFY_ANDROID_REACT_NATIVE;
+            }
 
-  scheduleNotification = (notification: Notification) => {
-      if (notification.fireDate) {
-          if (Platform.OS === 'ios') {
-              notification.fireDate = new Date(notification.fireDate).toISOString();
-          }
+            const operator = DatabaseManager.appDatabase?.operator;
 
-          Notifications.postLocalNotification(notification);
-      }
-  };
+            if (!operator) {
+                return {error: 'No App database found'};
+            }
+
+            operator.handleGlobal({
+                global: [{id: GLOBAL_IDENTIFIERS.DEVICE_TOKEN, value: `${prefix}:${deviceToken}`}],
+                prepareRecordsOnly: false,
+            });
+
+            // Store the device token in the default database
+            this.requestNotificationReplyPermissions();
+        }
+        return null;
+    };
+
+    requestNotificationReplyPermissions = () => {
+        if (Platform.OS === 'ios') {
+            const replyCategory = this.createReplyCategory();
+            Notifications.setCategories([replyCategory]);
+        }
+    };
+
+    scheduleNotification = (notification: Notification) => {
+        if (notification.fireDate) {
+            if (Platform.OS === 'ios') {
+                notification.fireDate = new Date(notification.fireDate).toISOString();
+            }
+
+            Notifications.postLocalNotification(notification);
+        }
+    };
 }
 
 export default new PushNotifications();

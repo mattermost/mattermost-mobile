@@ -10,7 +10,7 @@ import {addUserToTeam, fetchTeamByName, removeUserFromTeam} from '@actions/remot
 import {General} from '@constants';
 import DatabaseManager from '@database/manager';
 import {privateChannelJoinPrompt} from '@helpers/api/channel';
-import {prepareDeleteChannel, prepareMyChannelsForTeam, queryChannelsById, queryMyChannel} from '@queries/servers/channel';
+import {prepareDeleteChannel, prepareMyChannelsForTeam, queryAllMyChannelIds, queryChannelsById, queryMyChannel} from '@queries/servers/channel';
 import {queryCommonSystemValues, queryCurrentTeamId, setCurrentChannelId, setCurrentTeamAndChannelId} from '@queries/servers/system';
 import {addChannelToTeamHistory, prepareMyTeams, queryMyTeamById, queryTeamById, queryTeamByName, removeChannelFromTeamHistory} from '@queries/servers/team';
 import {PERMALINK_GENERIC_TEAM_NAME_REDIRECT} from '@utils/url';
@@ -277,4 +277,13 @@ export const localSetChannelDeleteAt = async (serverUrl: string, channelId: stri
         // eslint-disable-next-line no-console
         console.log('FAILED TO BATCH CHANGES FOR CHANNEL DELETE AT');
     }
+};
+
+export const selectAllMyChannelIds = async (serverUrl: string) => {
+    const database = DatabaseManager.serverDatabases[serverUrl]?.database;
+    if (!database) {
+        return [];
+    }
+
+    return queryAllMyChannelIds(database);
 };

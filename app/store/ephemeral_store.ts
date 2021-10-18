@@ -65,6 +65,23 @@ class EphemeralStore {
             this.navigationModalStack.splice(index, 1);
         }
     }
+
+    /**
+     * Waits until a screen has been mounted and is part of the stack.
+     * Use this function only if you know what you are doing
+     * this function will run until the screen appears in the stack
+     * and can easily run forever if the screen is never prevesented.
+     * @param componentId string
+     */
+    waitUntilScreenHasLoaded = async (componentId: string) => {
+        let found = false;
+        while (!found) {
+            // eslint-disable-next-line no-await-in-loop
+            await (new Promise((r) => requestAnimationFrame(r)));
+
+            found = this.navigationComponentIdStack.includes(componentId);
+        }
+    }
 }
 
 export default new EphemeralStore();

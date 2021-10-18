@@ -96,21 +96,19 @@ MattermostBucket* bucket = nil;
   UIApplicationState state = [UIApplication sharedApplication].applicationState;
   NSString* action = [userInfo objectForKey:@"type"];
   NSString* channelId = [userInfo objectForKey:@"channel_id"];
+  BOOL isClearAction = (action && [action isEqualToString: NOTIFICATION_CLEAR_ACTION]);
 
-
-  RuntimeUtils *utils = [[RuntimeUtils alloc] init];
-
-  if ((action && [action isEqualToString: NOTIFICATION_CLEAR_ACTION]) || (state == UIApplicationStateInactive)) {
+  if (isClearAction) {
     // If received a notification that a channel was read, remove all notifications from that channel (only with app in foreground/background)
     [self cleanNotificationsFromChannel:channelId];
+    [[Network default] postNotificationReceipt:userInfo];
   }
-
-  [[Network default] postNotificationReceipt:userInfo];
-
-  [utils delayWithSeconds:0.2 closure:^(void) {
-    // This is to notify the NotificationCenter that something has changed.
+  
+  if (state != UIApplicationStateActive || isClearAction) {
+    [RNNotifications didReceiveBackgroundNotification:userInfo withCompletionHandler:completionHandler];
+  } else {
     completionHandler(UIBackgroundFetchResultNewData);
-  }];
+  }
 }
 
 -(void)cleanNotificationsFromChannel:(NSString *)channelId {

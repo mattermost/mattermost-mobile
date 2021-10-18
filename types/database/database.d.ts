@@ -12,8 +12,6 @@ import {DatabaseType} from './enums';
 
 import type AppDataOperator from '@database/operator/app_data_operator';
 import type ServerDataOperator from '@database/operator/server_data_operator';
-import type {Config} from '@typings/database/models/servers/config';
-import type {License} from '@typings/database/models/servers/license';
 import type System from '@typings/database/models/servers/system';
 
 export type WithDatabaseArgs = { database: Database }
@@ -23,12 +21,14 @@ export type CreateServerDatabaseConfig = {
   dbType?: DatabaseType.DEFAULT | DatabaseType.SERVER;
   displayName?: string;
   serverUrl?: string;
+  identifier?: string;
 };
 
 export type RegisterServerDatabaseArgs = {
   databaseFilePath: string;
   displayName: string;
   serverUrl: string;
+  identifier?: string;
 };
 
 export type AppDatabase = {
@@ -246,9 +246,9 @@ export type HandleDraftArgs = PrepareOnly & {
 };
 
 export type LoginArgs = {
-  config: Partial<Config>;
+  config: Partial<ClientConfig>;
   ldapOnly?: boolean;
-  license: Partial<License>;
+  license: Partial<ClientLicense>;
   loginId: string;
   mfaToken?: string;
   password: string;

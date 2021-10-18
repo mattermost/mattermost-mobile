@@ -22,18 +22,12 @@ export default class ServersModel extends Model {
     /** display_name : The server display name */
     @field('display_name') displayName!: string;
 
-    /** mention_count : The number of mention on this server */
-    @field('mention_count') mentionCount!: number;
-
-    /** unread_count : The number of unread messages on this server */
-    @field('unread_count') unreadCount!: number;
-
     /** url : The online address for the Mattermost server */
     @field('url') url!: string;
 
     /** last_active_at: The last time this server was active */
     @field('last_active_at') lastActiveAt!: number;
 
-    /** is_secured: Determines if the protocol used for this server url is HTTP or HTTPS */
-    @field('is_secured') isSecured!: boolean;
+    /** identifier: Determines the installation identifier of a server */
+    @field('identifier') identifier!: string;
 }

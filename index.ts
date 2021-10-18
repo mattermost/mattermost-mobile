@@ -47,19 +47,24 @@ if (Platform.OS === 'android') {
     AppRegistry.registerComponent('MattermostShare', () => ShareExtension);
 }
 
+let alreadyInitialized = false;
 Navigation.events().registerAppLaunchedListener(async () => {
-    GlobalEventHandler.init();
-    ManagedApp.init();
-    registerNavigationListeners();
-    registerScreens();
+    // See caution in the library doc https://wix.github.io/react-native-navigation/docs/app-launch#android
+    if (!alreadyInitialized) {
+        alreadyInitialized = true;
+        GlobalEventHandler.init();
+        ManagedApp.init();
+        registerNavigationListeners();
+        registerScreens();
 
-    const serverCredentials = await getAllServerCredentials();
-    const serverUrls = serverCredentials.map((credential) => credential.serverUrl);
+        const serverCredentials = await getAllServerCredentials();
+        const serverUrls = serverCredentials.map((credential) => credential.serverUrl);
 
-    await DatabaseManager.init(serverUrls);
-    await NetworkManager.init(serverCredentials);
-    await WebsocketManager.init(serverCredentials);
-    PushNotifications.init();
+        await DatabaseManager.init(serverUrls);
+        await NetworkManager.init(serverCredentials);
+        await WebsocketManager.init(serverCredentials);
+        PushNotifications.init();
+    }
 
     initialLaunch();
 });
