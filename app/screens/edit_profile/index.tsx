@@ -14,7 +14,7 @@ import {of as of$} from 'rxjs';
 import {switchMap} from 'rxjs/operators';
 
 import {updateMe} from '@actions/remote/user';
-import ProfilePicture from '@components/profile_picture/original';
+import ProfilePicture from '@components/profile_picture';
 import ProfilePictureButton from '@components/profile_picture_button';
 import StatusBar from '@components/status_bar';
 import TabletTitle from '@components/tablet_title';
