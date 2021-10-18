@@ -4,7 +4,7 @@
 import React from 'react';
 import {Text, View} from 'react-native';
 
-import ProfilePicture from '@components/profile_picture';
+import ProfilePicture from '@components/your_picture';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 
 import type UserModel from '@typings/database/models/servers/user';

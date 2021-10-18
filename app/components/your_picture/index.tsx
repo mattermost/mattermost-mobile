@@ -58,8 +58,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     };
 });
 
-//fixme: to port again
-const ProfilePicture = ({author, iconSize, showStatus = true, size = 64, statusSize = 14, statusStyle, testID}: ProfilePictureProps) => {
+const YourPicture = ({author, iconSize, showStatus = true, size = 64, statusSize = 14, statusStyle, testID}: ProfilePictureProps) => {
     const theme = useTheme();
     const serverUrl = useServerUrl();
     const style = getStyleSheet(theme);
@@ -98,6 +97,7 @@ const ProfilePicture = ({author, iconSize, showStatus = true, size = 64, statusS
     let image;
     if (author && client) {
         const pictureUrl = client.getProfilePictureUrl(author.id, author.lastPictureUpdate);
+
         image = (
             <FastImage
                 key={pictureUrl}
@@ -131,4 +131,4 @@ const ProfilePicture = ({author, iconSize, showStatus = true, size = 64, statusS
     );
 };
 
-export default ProfilePicture;
+export default YourPicture;

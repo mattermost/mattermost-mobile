@@ -7,7 +7,7 @@ import React from 'react';
 import {View} from 'react-native';
 import {switchMap} from 'rxjs/operators';
 
-import ProfilePicture from '@components/profile_picture';
+import ProfilePicture from '@components/your_picture';
 import {MM_TABLES, SYSTEM_IDENTIFIERS} from '@constants/database';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 

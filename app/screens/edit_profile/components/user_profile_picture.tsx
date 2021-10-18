@@ -5,8 +5,8 @@ import React from 'react';
 import {View} from 'react-native';
 import DocumentPicker from 'react-native-document-picker';
 
-import ProfilePicture from '@components/profile_picture';
 import ProfilePictureButton from '@components/profile_picture_button';
+import ProfilePicture from '@components/your_picture';
 import {useTheme} from '@context/theme';
 import {MAX_SIZE, VALID_MIME_TYPES} from '@screens/edit_profile/constants';
 import UserModel from '@typings/database/models/servers/user';
