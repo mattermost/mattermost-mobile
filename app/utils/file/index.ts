@@ -7,6 +7,7 @@ import {Platform} from 'react-native';
 import {FileSystem} from 'react-native-unimodules';
 
 import {Files} from '@constants';
+import {VALID_MIME_TYPES} from '@screens/edit_profile/constants';
 import {deleteEntititesFile, getIOSAppGroupDetails} from '@utils/mattermost_managed';
 import {hashCode} from '@utils/security';
 import {removeProtocol} from '@utils/url';

@@ -20,6 +20,7 @@ import {Navigation, Files} from '@constants';
 import {withServerUrl} from '@context/server_url';
 import {t} from '@i18n';
 import NetworkManager from '@init/network_manager';
+import {VALID_MIME_TYPES} from '@screens/edit_profile/constants';
 import {bottomSheet} from '@screens/navigation';
 import UserModel from '@typings/database/models/servers/user';
 import {lookupMimeType} from '@utils/file';
@@ -190,7 +191,7 @@ class ProfilePictureButton extends PureComponent<ProfileImageButtonProps> {
 
         if (hasPermission) {
             try {
-                const res = await DocumentPicker.pickSingle({type: [browseFileTypes]});
+                const res = await DocumentPicker.pickSingle({type: [browseFileTypes]}) as unknown as File;
 
                 // emmProvider.inBackgroundSince = null;
                 if (Platform.OS === 'android') {
@@ -341,7 +342,7 @@ class ProfilePictureButton extends PureComponent<ProfileImageButtonProps> {
         }
 
         if (!file.type) {
-            file.type = lookupMimeType(file.fileName);
+            file.type = lookupMimeType(file.fileName) as typeof VALID_MIME_TYPES[number];
         }
 
         if (!Files.VALID_MIME_TYPES.includes(file.type)) {
@@ -349,7 +350,6 @@ class ProfilePictureButton extends PureComponent<ProfileImageButtonProps> {
         } else if (file!.fileSize! > maxFileSize) {
             onShowFileSizeWarning(file.fileName!);
         } else {
-            //todo: do you have to save this profile picture locally or call updateMe ?
             DeviceEventEmitter.emit(Navigation.NAVIGATION_CLOSE_MODAL);
             uploadFiles(files);
         }
@@ -430,7 +430,7 @@ class ProfilePictureButton extends PureComponent<ProfileImageButtonProps> {
 
                     {canBrowsePhotoLibrary && (
                         <SlideUpPanelItem
-                            icon=''
+                            icon='file-generic-outline'
                             onPress={this.attachFileFromLibrary}
                             testID='attachment.canBrowsePhotoLibrary'
                             text={intl.formatMessage({

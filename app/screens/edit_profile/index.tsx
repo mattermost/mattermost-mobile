@@ -28,7 +28,6 @@ import {MAX_SIZE} from '@screens/edit_profile/constants';
 import {dismissModal, popTopScreen, setButtons} from '@screens/navigation';
 import {File, UserInfo} from '@typings/screens/edit_profile';
 import {getFormattedFileSize} from '@utils/file';
-import {preventDoubleTap} from '@utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 import CommonFieldSettings from './components/common_field_settings';
