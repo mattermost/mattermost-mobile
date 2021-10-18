@@ -1,7 +1,6 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {MultipartUploadConfig} from '@mattermost/react-native-network-client/src/types/APIClient';
 import {withDatabase} from '@nozbe/watermelondb/DatabaseProvider';
 import withObservables from '@nozbe/with-observables';
 import React, {useCallback, useEffect, useRef, useState} from 'react';
@@ -28,7 +27,7 @@ import NetworkManager from '@init/network_manager';
 import {MAX_SIZE} from '@screens/edit_profile/constants';
 import {dismissModal, popTopScreen, setButtons} from '@screens/navigation';
 import {File, UserInfo} from '@typings/screens/edit_profile';
-import {buildFileUploadData, getFormattedFileSize} from '@utils/file';
+import {getFormattedFileSize} from '@utils/file';
 import {preventDoubleTap} from '@utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
@@ -172,16 +171,16 @@ const EditProfile = ({closeButtonId, componentId, currentUser, isModal, isTablet
             const client = NetworkManager.getClient(serverUrl);
 
             const endpoint = `${client.getUserRoute(currentUser.id)}/image`;
-            const res = await client.apiClient.upload(endpoint, profileImage!.uri, {
+
+            await client.apiClient.upload(endpoint, profileImage!.uri, {
                 skipBytes: 0,
                 method: 'POST',
                 multipart: {
                     fileKey: 'image',
                 },
             });
-            console.log('>>>  res', {res});
-        } catch (error) {
-            console.log('>>>  error', {error});
+        } catch (e) {
+            handleUploadError(e as Error);
         }
     };
 
@@ -197,9 +196,9 @@ const EditProfile = ({closeButtonId, componentId, currentUser, isModal, isTablet
         enableSaveButton(false);
         setError(undefined);
         setUpdating(true);
-        console.log('>>>  before allocating profileImage', {profileImage});
+
         if (profileImage) {
-            uploadProfileImage().catch(handleUploadError);
+            await uploadProfileImage();
         }
 
         //todo: To be handled in next PRs
@@ -273,7 +272,6 @@ const EditProfile = ({closeButtonId, componentId, currentUser, isModal, isTablet
     };
 
     const renderProfilePicture = () => {
-        console.log('>>>  renderProfilePicture >>> ', {profileImage});
         const profilePicture = (
             <ProfilePicture
                 author={currentUser}
