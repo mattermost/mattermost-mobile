@@ -246,7 +246,7 @@ export async function dismissAllModalsAndPopToRoot() {
     EventEmmiter.emit(NavigationTypes.NAVIGATION_DISMISS_AND_POP_TO_ROOT);
 }
 
-export function showModal(name, title, passProps = {}, options = {}) {
+export function showModal(name, title, passProps = {}, options = {}, componentId) {
     const theme = getThemeFromState();
     const defaultOptions = {
         modalPresentationStyle: Platform.select({ios: 'pageSheet', android: 'none'}),
@@ -276,12 +276,14 @@ export function showModal(name, title, passProps = {}, options = {}) {
         },
     };
 
-    EphemeralStore.addNavigationModal(name);
+    const id = componentId || name;
+
+    EphemeralStore.addNavigationModal(id);
     Navigation.showModal({
         stack: {
             children: [{
                 component: {
-                    id: name,
+                    id,
                     name,
                     passProps,
                     options: merge(defaultOptions, options),
@@ -291,7 +293,7 @@ export function showModal(name, title, passProps = {}, options = {}) {
     });
 }
 
-export function showModalOverCurrentContext(name, passProps = {}, options = {}) {
+export function showModalOverCurrentContext(name, passProps = {}, options = {}, componentId) {
     const title = passProps.title || '';
 
     let animations;
@@ -351,7 +353,7 @@ export function showModalOverCurrentContext(name, passProps = {}, options = {}) 
     };
     const mergeOptions = merge(defaultOptions, options);
 
-    showModal(name, title, passProps, mergeOptions);
+    showModal(name, title, passProps, mergeOptions, componentId);
 }
 
 export function showSearchModal(initialValue = '') {

@@ -6,9 +6,11 @@ import {Keyboard} from 'react-native';
 
 import {dismissAllModals, showModalOverCurrentContext} from '@actions/navigation';
 import {loadChannelsByTeamName} from '@actions/views/channel';
-import {selectFocusedPostId} from '@mm-redux/actions/posts';
+import {getPost as fetchPost, selectFocusedPostId} from '@mm-redux/actions/posts';
+import {getPost} from '@mm-redux/selectors/entities/posts';
+import {isCollapsedThreadsEnabled} from '@mm-redux/selectors/entities/preferences';
 import {getCurrentTeam} from '@mm-redux/selectors/entities/teams';
-import {permalinkBadTeam} from '@utils/general';
+import {getRandomComponentId, permalinkBadTeam} from '@utils/general';
 import {changeOpacity} from '@utils/theme';
 
 import type {DispatchFunc, GetStateFunc} from '@mm-redux/types/actions';
@@ -17,12 +19,32 @@ let showingPermalink = false;
 
 export function showPermalink(intl: typeof intlShape, teamName: string, postId: string, openAsPermalink = true) {
     return async (dispatch: DispatchFunc, getState: GetStateFunc) => {
+        const state = getState();
+
         let name = teamName;
         if (!name) {
-            name = getCurrentTeam(getState()).name;
+            name = getCurrentTeam(state).name;
         }
 
         const loadTeam = await dispatch(loadChannelsByTeamName(name, permalinkBadTeam.bind(null, intl)));
+
+        let isThreadPost;
+
+        const collapsedThreadsEnabled = isCollapsedThreadsEnabled(state);
+        if (collapsedThreadsEnabled) {
+            let post = getPost(state, postId);
+            if (!post) {
+                const {data} = await dispatch(fetchPost(postId));
+                if (data) {
+                    post = data;
+                }
+            }
+            if (post) {
+                isThreadPost = Boolean(post.root_id);
+            } else {
+                return {};
+            }
+        }
 
         if (!loadTeam.error) {
             Keyboard.dismiss();
@@ -34,6 +56,7 @@ export function showPermalink(intl: typeof intlShape, teamName: string, postId: 
             const screen = 'Permalink';
             const passProps = {
                 isPermalink: openAsPermalink,
+                isThreadPost,
                 teamName,
             };
 
@@ -44,7 +67,7 @@ export function showPermalink(intl: typeof intlShape, teamName: string, postId: 
             };
 
             showingPermalink = true;
-            showModalOverCurrentContext(screen, passProps, options);
+            showModalOverCurrentContext(screen, passProps, options, getRandomComponentId());
         }
 
         return {};

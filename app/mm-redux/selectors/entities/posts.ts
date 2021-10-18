@@ -82,7 +82,10 @@ export function makeGetPostIdsForThread(): (b: GlobalState, a: $ID<Post>) => Arr
     return createIdsSelector(
         getAllPosts,
         (state: GlobalState, rootId: string) => state.entities.posts.posts[rootId],
-        (posts, rootPost) => {
+        (state: GlobalState, rootId: string, options) => options && options.focusedPostId,
+        (state: GlobalState, rootId: string, options) => options && options.postsBeforeCount,
+        (state: GlobalState, rootId: string, options) => options && options.postsAfterCount,
+        (posts, rootPost, focusedPostId, postsBeforeCount = Posts.POST_CHUNK_SIZE / 2, postsAfterCount = Posts.POST_CHUNK_SIZE / 2) => {
             const thread: Post[] = [];
 
             if (rootPost) {
@@ -96,7 +99,18 @@ export function makeGetPostIdsForThread(): (b: GlobalState, a: $ID<Post>) => Arr
                 thread.sort(comparePosts);
             }
 
-            return thread.map((post) => post.id);
+            const postIds = thread.map((post) => post.id);
+
+            if (focusedPostId) {
+                const index = postIds.indexOf(focusedPostId);
+                if (index > -1) {
+                    const minPostIndex = Math.max(index - postsAfterCount, 0);
+                    const maxPostIndex = Math.min(index + postsBeforeCount + 1, postIds.length);
+                    return postIds.slice(minPostIndex, maxPostIndex);
+                }
+            }
+
+            return postIds;
         },
     );
 }

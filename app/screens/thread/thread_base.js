@@ -13,6 +13,7 @@ import Loading from '@components/loading';
 import {TYPING_HEIGHT, TYPING_VISIBLE} from '@constants/post_draft';
 import {General, RequestStatus} from '@mm-redux/constants';
 import EventEmitter from '@mm-redux/utils/event_emitter';
+import {getRandomComponentId} from '@utils/general';
 
 export default class ThreadBase extends PureComponent {
     static propTypes = {
@@ -60,7 +61,7 @@ export default class ThreadBase extends PureComponent {
         if (props.collapsedThreadsEnabled) {
             // Without unique id, it breaks navigation from permalink view.
             // Adding prefix "!screen" to exclude it from being added to stack
-            this.threadFollowId = '!screen-' + Math.floor(Math.random() * 0x10000000000).toString(16);
+            this.threadFollowId = '!screen-' + getRandomComponentId();
 
             let titleText;
             if (channelType === General.DM_CHANNEL) {
