@@ -6,8 +6,8 @@ import {Text, View} from 'react-native';
 
 import {useTheme} from '@app/context/theme';
 import {typography} from '@app/utils/typography';
-import CompassIcon from '@components/compass_icon';
-import {makeStyleSheetFromTheme} from '@utils/theme';
+import CompassIcon, {COMPASS_ICONS} from '@components/compass_icon';
+import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     container: {
@@ -18,11 +18,14 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     icon: {
         fontSize: 24,
         lineHeight: 28,
-        color: theme.sidebarText,
+        color: changeOpacity(theme.sidebarText, 0.72),
     },
     text: {
-        color: theme.sidebarText,
+        color: changeOpacity(theme.sidebarText, 0.72),
         paddingLeft: 12,
+    },
+    highlight: {
+        color: theme.sidebarText,
     },
 }));
 
@@ -32,21 +35,37 @@ type Props = {
     archived?: boolean;
     muted?: boolean;
     name: string;
+    leftIcon: COMPASS_ICONS;
 }
 
 const ChannelListItemComponent = (props: Props) => {
     const theme = useTheme();
     const styles = getStyleSheet(theme);
 
+    const {unreadCount, highlight, name, leftIcon} = props;
+
+    // Make it brighter if it's highlighted, or has unreads
+    const bright = highlight || (unreadCount && unreadCount > 0);
+
     return (
         <View style={styles.container}>
-            <CompassIcon
-                name='globe'
-                style={styles.icon}
-            />
-            <Text style={[typography('Body', 200, 'SemiBold'), styles.text]}>
-                {props.name}
+            {leftIcon && (
+                <CompassIcon
+                    name={leftIcon}
+                    style={styles.icon}
+                />
+            )}
+            <Text
+                style={[
+                    typography('Body', 200, bright ? 'SemiBold' : 'Regular'),
+                    styles.text,
+
+                    bright && styles.highlight,
+                ]}
+            >
+                {name}
             </Text>
+
         </View>
     );
 };

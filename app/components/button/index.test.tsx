@@ -5,11 +5,11 @@ import React from 'react';
 
 import {renderWithIntlAndTheme} from '@test/intl-test-helper';
 
-import ErrorComponent from './index';
+import ButtonComponent from './index';
 
-test('Error Component should match snapshot', () => {
+test('Button Component should match snapshot', () => {
     const {toJSON} = renderWithIntlAndTheme(
-        <ErrorComponent/>,
+        <ButtonComponent text='A Button!'/>,
     );
 
     expect(toJSON()).toMatchSnapshot();
