@@ -16,12 +16,21 @@ type Props = {
 const ChannelListHeader = (props: Props) => {
     const theme = useTheme();
 
+    const headingStyles = [
+        typography('Heading', 700),
+        {color: theme.sidebarText},
+    ];
+    const subHeadingStyles = [
+        typography('Heading', 50),
+        {color: changeOpacity(theme.sidebarText, 0.64)},
+    ];
+
     return (
         <View>
-            <Text style={[typography('Heading', 700), {color: theme.sidebarText}]}>
+            <Text style={headingStyles}>
                 {props.heading}
             </Text>
-            <Text style={[typography('Heading', 50), {color: changeOpacity(theme.sidebarText, 0.64)}]}>
+            <Text style={subHeadingStyles}>
                 {props.subheading}
             </Text>
         </View>

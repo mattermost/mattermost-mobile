@@ -41,6 +41,12 @@ const SearchField = () => {
     const theme = useTheme();
     const styles = getStyleSheet(theme);
 
+    const textStyles = [
+        typography('Body', 200),
+        styles.input,
+        {textAlignVertical: 'center'},
+    ];
+
     return (
         <View
             style={styles.container}
@@ -50,7 +56,7 @@ const SearchField = () => {
                 style={styles.icon}
             />
             <TextInput
-                style={[typography('Body', 200), styles.input, {textAlignVertical: 'center'}]}
+                style={textStyles}
                 placeholder='Find Channels'
                 placeholderTextColor={changeOpacity(theme.sidebarText, 0.72)}
             />
