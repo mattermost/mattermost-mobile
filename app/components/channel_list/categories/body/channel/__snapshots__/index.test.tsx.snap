@@ -14,7 +14,7 @@ exports[`Category Channel List Item Component should match snapshot 1`] = `
     name="globe"
     style={
       Object {
-        "color": "#ffffff",
+        "color": "rgba(255,255,255,0.72)",
         "fontSize": 24,
         "lineHeight": 28,
       }
@@ -26,13 +26,14 @@ exports[`Category Channel List Item Component should match snapshot 1`] = `
         Object {
           "fontFamily": "OpenSans",
           "fontSize": 16,
-          "fontWeight": "600",
+          "fontWeight": "400",
           "lineHeight": 24,
         },
         Object {
-          "color": "#ffffff",
+          "color": "rgba(255,255,255,0.72)",
           "paddingLeft": 12,
         },
+        undefined,
       ]
     }
   >

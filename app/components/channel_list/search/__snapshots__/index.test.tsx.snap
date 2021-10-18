@@ -1,6 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`Header Component should match snapshot 1`] = `
+exports[`Search Component should match snapshot 1`] = `
 <View
   style={
     Object {

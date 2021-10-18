@@ -7,9 +7,13 @@ import {ScrollView} from 'react-native';
 import {useTheme} from '@context/theme';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 
+import {COMPASS_ICONS} from '../compass_icon';
+
 import ChannelListItemComponent from './categories/body/channel';
 import CategoriesHeader from './categories/header';
+import ErrorComponent from './error';
 import ChannelListHeader from './header';
+import LoadingSpinner from './loading';
 import SearchField from './search';
 import ThreadsComponent from './threads';
 
@@ -34,10 +38,18 @@ const ChannelListComponent = () => {
             />
             <SearchField/>
             <ThreadsComponent/>
-
             <CategoriesHeader heading='Category Heading'/>
-            <ChannelListItemComponent name='Just a Channel'/>
-            <ChannelListItemComponent name='And another Channel'/>
+            <ChannelListItemComponent
+                name='Just a Channel'
+                leftIcon={COMPASS_ICONS.globe}
+            />
+            <ChannelListItemComponent
+                name='And another Channel'
+                unreadCount={5}
+                leftIcon={COMPASS_ICONS.globe}
+            />
+            <LoadingSpinner/>
+            <ErrorComponent/>
         </ScrollView>
     );
 };
