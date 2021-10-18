@@ -41,6 +41,7 @@ export default class PostDraft extends PureComponent {
 
     componentWillUnmount() {
         EventEmitter.off(UPDATE_NATIVE_SCROLLVIEW, this.updateNativeScrollView);
+        cancelAnimationFrame(this.resetScrollView);
     }
 
     handleInputQuickAction = (value) => {
@@ -51,9 +52,9 @@ export default class PostDraft extends PureComponent {
 
     updateNativeScrollView = (scrollViewNativeID) => {
         if (this.keyboardTracker?.current && this.props.scrollViewNativeID === scrollViewNativeID) {
-            const resetScrollView = requestAnimationFrame(() => {
+            this.resetScrollView = requestAnimationFrame(() => {
                 this.keyboardTracker.current.resetScrollView(scrollViewNativeID);
-                cancelAnimationFrame(resetScrollView);
+                cancelAnimationFrame(this.resetScrollView);
             });
         }
     };
