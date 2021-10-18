@@ -175,10 +175,13 @@ const ProfilePicture = ({
     let source = null;
     let image;
     if (pictureUrl) {
-        let prefix = serverUrl;
-        if (Platform.OS === 'android' && !pictureUrl.startsWith('content://') &&
-            !pictureUrl.startsWith('http://') && !pictureUrl.startsWith('https://')) {
+        let prefix = '';
+        if (Platform.OS === 'android' && !pictureUrl.startsWith('content://') && !pictureUrl.startsWith('http://') && !pictureUrl.startsWith('https://')) {
             prefix = 'file://';
+        }
+
+        if (pictureUrl.includes('api')) {
+            prefix = serverUrl;
         }
 
         source = {

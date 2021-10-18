@@ -1,11 +1,13 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {MultipartUploadConfig} from '@mattermost/react-native-network-client/src/types/APIClient';
 import {withDatabase} from '@nozbe/watermelondb/DatabaseProvider';
 import withObservables from '@nozbe/with-observables';
 import React, {useCallback, useEffect, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
-import {BackHandler, DeviceEventEmitter, View} from 'react-native';
+import {Alert, BackHandler, DeviceEventEmitter, View} from 'react-native';
+import DocumentPicker from 'react-native-document-picker';
 import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
 import {Navigation} from 'react-native-navigation';
 import {Edge, SafeAreaView} from 'react-native-safe-area-context';
@@ -13,7 +15,8 @@ import {of as of$} from 'rxjs';
 import {switchMap} from 'rxjs/operators';
 
 import {updateMe} from '@actions/remote/user';
-import ProfilePicture from '@components/profile_picture';
+import ProfilePicture from '@components/profile_picture/original';
+import ProfilePictureButton from '@components/profile_picture_button';
 import StatusBar from '@components/status_bar';
 import TabletTitle from '@components/tablet_title';
 import {Events} from '@constants';
@@ -21,11 +24,11 @@ import {MM_TABLES, SYSTEM_IDENTIFIERS} from '@constants/database';
 import {useServerUrl} from '@context/server_url';
 import {useTheme} from '@context/theme';
 import {t} from '@i18n';
+import NetworkManager from '@init/network_manager';
+import {MAX_SIZE} from '@screens/edit_profile/constants';
 import {dismissModal, popTopScreen, setButtons} from '@screens/navigation';
-import {
-
-    // UploadedFile,
-    UserInfo} from '@typings/screens/edit_profile';
+import {File, UserInfo} from '@typings/screens/edit_profile';
+import {buildFileUploadData, getFormattedFileSize} from '@utils/file';
 import {preventDoubleTap} from '@utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
@@ -79,12 +82,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     };
 });
 
-const EditProfile = ({
-    closeButtonId, componentId, currentUser, isModal, isTablet,
-    lockedFirstName, lockedLastName, lockedNickname, lockedPosition,
-
-    // lockedPicture
-}: EditProfileProps) => {
+const EditProfile = ({closeButtonId, componentId, currentUser, isModal, isTablet, lockedFirstName, lockedLastName, lockedNickname, lockedPosition, lockedPicture}: EditProfileProps) => {
     const intl = useIntl();
     const serverUrl = useServerUrl();
     const theme = useTheme();
@@ -100,11 +98,40 @@ const EditProfile = ({
     const [canSave, setCanSave] = useState(false);
     const [error, setError] = useState<string | undefined>();
 
-    // const [profileImageUri, setProfileImageUri] = useState<string | undefined>();
-    // const [isProfileImageRemoved, setIsProfileImageRemoved] = useState(false);
+    const [profileImage, setProfileImage] = useState<File | undefined>();
+    const [isProfileImageRemoved, setIsProfileImageRemoved] = useState(false);
 
     const [updating, setUpdating] = useState(false);
     const scrollViewRef = useRef<KeyboardAwareScrollView>();
+
+    useEffect(() => {
+        const unsubscribe = Navigation.events().registerComponentListener({
+            navigationButtonPressed: ({buttonId}: { buttonId: string }) => {
+                switch (buttonId) {
+                    case 'update-profile':
+                        submitUser();
+                        break;
+                    case closeButtonId:
+                        close();
+                        break;
+                }
+            },
+        }, componentId);
+
+        const backHandler = BackHandler.addEventListener('hardwareBackPress', close);
+
+        return () => {
+            unsubscribe.remove();
+            backHandler.remove();
+        };
+    }, [userInfo, isTablet, profileImage]);
+
+    useEffect(() => {
+        if (!isTablet) {
+            setButtons(componentId, {rightButtons: [rightButton]});
+        }
+    }, [isTablet]);
+
     const service = currentUser.authService;
 
     const rightButton = {
@@ -140,13 +167,40 @@ const EditProfile = ({
         }
     };
 
-    const submitUser = useCallback(preventDoubleTap(async () => {
+    const uploadProfileImage = async () => {
+        try {
+            const client = NetworkManager.getClient(serverUrl);
+
+            const endpoint = `${client.getUserRoute(currentUser.id)}/image`;
+            const res = await client.apiClient.upload(endpoint, profileImage!.uri, {
+                skipBytes: 0,
+                method: 'POST',
+                multipart: {
+                    fileKey: 'image',
+                },
+            });
+            console.log('>>>  res', {res});
+        } catch (error) {
+            console.log('>>>  error', {error});
+        }
+    };
+
+    const handleUploadError = (error: Error) => {
+        // const {channelId, file, rootId, uploadFailed} = this.props;
+        // if (!this.canceled) {
+        //     uploadFailed([file.clientId], channelId, rootId, error);
+        // }
+        // this.uploadPromise = null;
+    };
+
+    const submitUser = async () => {
         enableSaveButton(false);
         setError(undefined);
         setUpdating(true);
-
-        //todo: To be handled in next PRs
-        // if (profileImage) {actions.setProfileImageUri(profileImage.uri);/* this.uploadProfileImage().catch(this.handleUploadError);*/}
+        console.log('>>>  before allocating profileImage', {profileImage});
+        if (profileImage) {
+            uploadProfileImage().catch(handleUploadError);
+        }
 
         //todo: To be handled in next PRs
         // if (isProfileImageRemoved) {actions.removeProfileImage(currentUser.id);}
@@ -171,35 +225,7 @@ const EditProfile = ({
         }
 
         close();
-    }), [userInfo]);
-
-    useEffect(() => {
-        const unsubscribe = Navigation.events().registerComponentListener({
-            navigationButtonPressed: ({buttonId}: { buttonId: string }) => {
-                switch (buttonId) {
-                    case 'update-profile':
-                        submitUser();
-                        break;
-                    case closeButtonId:
-                        close();
-                        break;
-                }
-            },
-        }, componentId);
-
-        const backHandler = BackHandler.addEventListener('hardwareBackPress', close);
-
-        return () => {
-            unsubscribe.remove();
-            backHandler.remove();
-        };
-    }, [userInfo, isTablet]);
-
-    useEffect(() => {
-        if (!isTablet) {
-            setButtons(componentId, {rightButtons: [rightButton]});
-        }
-    }, [isTablet]);
+    };
 
     const updateField = useCallback((id: string, name: string) => {
         const update = {...userInfo};
@@ -215,6 +241,84 @@ const EditProfile = ({
     const setScrollViewRef = useCallback((ref) => {
         scrollViewRef.current = ref;
     }, []);
+
+    const handleUploadProfileImage = (images: File[]) => {
+        setProfileImage(images?.[0]);
+        enableSaveButton(true);
+    };
+
+    const handleRemoveProfileImage = () => {
+        setIsProfileImageRemoved(true);
+        enableSaveButton(true);
+    };
+
+    const onShowFileSizeWarning = () => {
+        const fileSizeWarning = intl.formatMessage({
+            id: 'file_upload.fileAbove',
+            defaultMessage: 'Files must be less than {max}',
+        }, {
+            max: getFormattedFileSize({size: MAX_SIZE} as FileInfo),
+        });
+
+        Alert.alert(fileSizeWarning);
+    };
+
+    const onShowUnsupportedMimeTypeWarning = () => {
+        const fileTypeWarning = intl.formatMessage({
+            id: 'mobile.file_upload.unsupportedMimeType',
+            defaultMessage: 'Only BMP, JPG or PNG images may be used for profile pictures.',
+        });
+
+        Alert.alert('', fileTypeWarning);
+    };
+
+    const renderProfilePicture = () => {
+        console.log('>>>  renderProfilePicture >>> ', {profileImage});
+        const profilePicture = (
+            <ProfilePicture
+                author={currentUser}
+                size={153}
+                showStatus={false}
+                iconSize={104}
+                statusSize={36}
+                edit={!lockedPicture}
+                imageUri={profileImage?.uri}
+                profileImageRemove={isProfileImageRemoved}
+                testID='edit_profile.profile_picture'
+            />
+        );
+
+        if (lockedPicture) {
+            return (
+                <View style={style.top}>
+                    {profilePicture}
+                </View>
+            );
+        }
+
+        return (
+            <View style={style.top}>
+                <ProfilePictureButton
+                    currentUser={currentUser}
+                    theme={theme}
+                    browseFileTypes={DocumentPicker.types.images}
+                    canTakeVideo={false}
+                    canBrowseVideoLibrary={false}
+                    maxFileSize={MAX_SIZE}
+                    wrapper={true}
+                    uploadFiles={handleUploadProfileImage}
+                    removeProfileImage={handleRemoveProfileImage}
+                    onShowFileSizeWarning={onShowFileSizeWarning}
+                    onShowUnsupportedMimeTypeWarning={onShowUnsupportedMimeTypeWarning}
+
+                    // fileCount={undefined}
+                    // onShowFileMaxWarning={undefined}
+                >
+                    {profilePicture}
+                </ProfilePictureButton>
+            </View>
+        );
+    };
 
     if (updating) {
         return <ProfileUpdating/>;
@@ -244,16 +348,7 @@ const EditProfile = ({
                 >
                     {error && <DisplayError error={error}/>}
                     <View style={[style.scrollViewRef]}>
-                        {/* todo: To be implemented {this.renderProfilePicture()} */}
-                        <View style={style.top}>
-                            <ProfilePicture
-                                author={currentUser}
-                                size={153}
-                                iconSize={104}
-                                statusSize={36}
-                                testID='edit_profile.profile_picture'
-                            />
-                        </View>
+                        {renderProfilePicture()}
                         {/* todo the fields should match the design */}
                         <CommonFieldSettings
                             id={'firstName'}
@@ -311,7 +406,11 @@ const enhanced = withObservables([], ({database}: WithDatabaseArgs) => {
     const config = database.get<SystemModel>(MM_TABLES.SERVER.SYSTEM).findAndObserve(SYSTEM_IDENTIFIERS.CONFIG);
 
     return {
-        currentUser: database.get<SystemModel>(SYSTEM).findAndObserve(SYSTEM_IDENTIFIERS.CURRENT_USER_ID).pipe(switchMap((id) => database.get<UserModel>(USER).findAndObserve(id.value))),
+        currentUser: database.get<SystemModel>(SYSTEM).findAndObserve(SYSTEM_IDENTIFIERS.CURRENT_USER_ID).pipe(
+            switchMap(
+                (id) => database.get<UserModel>(USER).findAndObserve(id.value),
+            ),
+        ),
         lockedFirstName: config.pipe(
             switchMap(
                 ({value}: {value: ClientConfig}) => of$(value.LdapFirstNameAttributeSet === 'true' || value.SamlFirstNameAttributeSet === 'true'),

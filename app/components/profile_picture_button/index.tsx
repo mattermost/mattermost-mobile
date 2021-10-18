@@ -4,7 +4,7 @@
 import * as FileSystem from 'expo-file-system';
 import React, {PureComponent} from 'react';
 import {injectIntl, IntlShape} from 'react-intl';
-import {Alert, NativeModules, Platform, StyleSheet, StatusBar, DeviceEventEmitter, TextStyle} from 'react-native';
+import {Alert, NativeModules, Platform, StyleSheet, StatusBar, DeviceEventEmitter} from 'react-native';
 import AndroidOpenSettings from 'react-native-android-open-settings';
 import DocumentPicker from 'react-native-document-picker';
 import {launchImageLibrary, launchCamera, ImageLibraryOptions, CameraOptions} from 'react-native-image-picker';
@@ -16,43 +16,18 @@ import CompassIcon from '@components/compass_icon';
 import {getPermissionMessages} from '@components/profile_picture_button/constant';
 import SlideUpPanelItem, {ITEM_HEIGHT} from '@components/slide_up_panel_item';
 import TouchableWithFeedback from '@components/touchable_with_feedback';
-import {Navigation, Files, Screens} from '@constants';
+import {Navigation, Files} from '@constants';
 import {withServerUrl} from '@context/server_url';
 import {t} from '@i18n';
 import NetworkManager from '@init/network_manager';
-import {showModalOverCurrentContext} from '@screens/navigation';
+import {bottomSheet} from '@screens/navigation';
 import UserModel from '@typings/database/models/servers/user';
 import {lookupMimeType} from '@utils/file';
 import {changeOpacity} from '@utils/theme';
 
+import type {ExtraOptions, File, FileResponse} from '@typings/screens/edit_profile';
+
 const ShareExtension = NativeModules.MattermostShare;
-
-type FileResponse = {
-    assets?: File[];
-    didCancel?: boolean;
-    error?: Error;
-};
-
-type File = {
-    fileName?: string;
-    fileSize?: number;
-    height?: number;
-    path?: string;
-    type: string;
-    uri: string;
-    width?: number;
-};
-
-type ExtraOptions = {
-    action: () => void;
-    text: {
-        id: string;
-        defaultMessage: string;
-    };
-    textStyle: TextStyle;
-    icon: string;
-    iconStyle: TextStyle;
-};
 
 type ProfileImageButtonProps = {
     browseFileTypes: string; // 'public.item' | '*/*' | 'public.image' | 'images/*';
@@ -62,7 +37,6 @@ type ProfileImageButtonProps = {
     canTakePhoto?: boolean;
     canTakeVideo?: boolean;
     currentUser: UserModel;
-    children: React.ReactNode;
     extraOptions?: ExtraOptions[];
     fileCount: number;
     intl: IntlShape;
@@ -156,7 +130,7 @@ class ProfilePictureButton extends PureComponent<ProfileImageButtonProps> {
                 }
 
                 const files = await this.getFilesFromResponse(response);
-                this.uploadFiles(files);
+                await this.uploadFiles(files);
             });
         }
     };
@@ -184,7 +158,7 @@ class ProfilePictureButton extends PureComponent<ProfileImageButtonProps> {
                 }
 
                 const files = await this.getFilesFromResponse(response);
-                this.uploadFiles(files);
+                await this.uploadFiles(files);
             });
         }
     };
@@ -262,7 +236,6 @@ class ProfilePictureButton extends PureComponent<ProfileImageButtonProps> {
         } else {
             files.push(file);
         }
-
         return files;
     };
 
@@ -376,6 +349,8 @@ class ProfilePictureButton extends PureComponent<ProfileImageButtonProps> {
         } else if (file!.fileSize! > maxFileSize) {
             onShowFileSizeWarning(file.fileName!);
         } else {
+            //todo: do you have to save this profile picture locally or call updateMe ?
+            DeviceEventEmitter.emit(Navigation.NAVIGATION_CLOSE_MODAL);
             uploadFiles(files);
         }
     };
@@ -415,7 +390,7 @@ class ProfilePictureButton extends PureComponent<ProfileImageButtonProps> {
 
     //todo: To test fully all use cases
     showFileAttachmentOptions = () => {
-        const {canBrowseFiles, canBrowsePhotoLibrary, canBrowseVideoLibrary, canTakePhoto, canTakeVideo, fileCount, intl, maxFileCount, onShowFileMaxWarning} = this.props;
+        const {canBrowseFiles, canBrowsePhotoLibrary, canBrowseVideoLibrary, canTakePhoto, canTakeVideo, fileCount, intl, maxFileCount, onShowFileMaxWarning, theme} = this.props;
 
         if (fileCount === maxFileCount) {
             onShowFileMaxWarning();
@@ -455,7 +430,7 @@ class ProfilePictureButton extends PureComponent<ProfileImageButtonProps> {
 
                     {canBrowsePhotoLibrary && (
                         <SlideUpPanelItem
-                            icon='file-image-outline'
+                            icon=''
                             onPress={this.attachFileFromLibrary}
                             testID='attachment.canBrowsePhotoLibrary'
                             text={intl.formatMessage({
@@ -504,9 +479,12 @@ class ProfilePictureButton extends PureComponent<ProfileImageButtonProps> {
             );
         };
 
-        showModalOverCurrentContext(Screens.BOTTOM_SHEET, {
+        bottomSheet({
+            closeButtonId: 'close-edit-profile',
             renderContent,
-            snapPoints: [3 * ITEM_HEIGHT, 10],
+            snapPoints: [(5 * ITEM_HEIGHT) + 10, 10],
+            title: '',
+            theme,
         });
     };
 
