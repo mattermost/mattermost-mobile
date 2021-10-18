@@ -1,0 +1,67 @@
+// Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
+// See LICENSE.txt for license information.
+
+import {shallow} from 'enzyme';
+import React from 'react';
+import {Alert, Pressable} from 'react-native';
+
+import Preferences from '@mm-redux/constants/preferences';
+
+import CallMessage from './call_message';
+
+describe('CallMessage', () => {
+    const baseProps = {
+        actions: {
+            joinCall: jest.fn(),
+        },
+        theme: Preferences.THEMES.denim,
+        post: {
+            props: {
+                start_at: 100,
+            },
+            type: 'custom_calls',
+        },
+        user: {
+            id: 'user-1-id',
+            username: 'user-1-username',
+            nickname: 'User 1',
+        },
+        teammateNameDisplay: Preferences.DISPLAY_PREFER_NICKNAME,
+        confirmToJoin: false,
+        isMilitaryTime: false,
+        userTimezone: 'utc',
+    };
+
+    test('should match snapshot', () => {
+        const wrapper = shallow(<CallMessage {...baseProps}/>);
+
+        expect(wrapper.getElement()).toMatchSnapshot();
+    });
+
+    test('should match snapshot for ended call', () => {
+        const props = {...baseProps, post: {...baseProps.post, props: {start_at: 100, end_at: 200}}};
+        const wrapper = shallow(<CallMessage {...props}/>);
+
+        expect(wrapper.getElement()).toMatchSnapshot();
+    });
+
+    test('should join on click join button', () => {
+        const joinCall = jest.fn();
+        const props = {...baseProps, actions: {joinCall}};
+        const wrapper = shallow(<CallMessage {...props}/>);
+
+        wrapper.find(Pressable).simulate('press');
+        expect(Alert.alert).not.toHaveBeenCalled();
+        expect(props.actions.joinCall).toHaveBeenCalled();
+    });
+
+    test('should ask for confirmation on click join button', () => {
+        const joinCall = jest.fn();
+        const props = {...baseProps, confirmToJoin: true, actions: {joinCall}};
+        const wrapper = shallow(<CallMessage {...props}/>);
+
+        wrapper.find(Pressable).simulate('press');
+        expect(Alert.alert).toHaveBeenCalled();
+        expect(props.actions.joinCall).not.toHaveBeenCalled();
+    });
+});
