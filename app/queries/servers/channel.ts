@@ -180,7 +180,7 @@ export const deleteChannelMembership = async (operator: ServerDataOperator, user
         for (const membership of channelMembership) {
             models.push(membership.prepareDestroyPermanently());
         }
-        operator.batchRecords(models);
+        await operator.batchRecords(models);
         return {};
     } catch (error) {
         return {error};
