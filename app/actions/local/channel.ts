@@ -254,7 +254,7 @@ export const localSetChannelDeleteAt = async (serverUrl: string, channelId: stri
         return;
     }
 
-    const {database} = serverDatabase;
+    const {operator, database} = serverDatabase;
 
     const channels = await queryChannelsById(database, [channelId]);
     if (!channels?.length) {
@@ -262,7 +262,9 @@ export const localSetChannelDeleteAt = async (serverUrl: string, channelId: stri
     }
 
     const channel = channels[0];
-    channel.update((c) => {
+    const model = channel.prepareUpdate((c) => {
         c.deleteAt = deleteAt;
     });
+
+    await operator.batchRecords([model]);
 };

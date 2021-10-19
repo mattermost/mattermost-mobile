@@ -72,7 +72,7 @@ export async function handleChannelDeletedEvent(serverUrl: string, msg: any) {
 
     const config = await queryConfig(database.database);
 
-    localSetChannelDeleteAt(serverUrl, msg.data.channel_id, msg.data.delete_at);
+    await localSetChannelDeleteAt(serverUrl, msg.data.channel_id, msg.data.delete_at);
 
     if (isGuest(user.roles)) {
         updateUsersNoLongerVisible(serverUrl);
