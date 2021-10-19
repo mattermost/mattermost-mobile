@@ -524,3 +524,21 @@ export const unsetCustomStatus = async (serverUrl: string) => {
 
     return {data: true};
 };
+
+export const setDefaultProfileImage = async (serverUrl: string, userId: string) => {
+    let client: Client;
+
+    try {
+        client = NetworkManager.getClient(serverUrl);
+    } catch (error) {
+        return {error};
+    }
+
+    try {
+        await client.setDefaultProfileImage(userId);
+    } catch (error) {
+        return {error};
+    }
+
+    return {data: true};
+};

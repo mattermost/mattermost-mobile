@@ -13,7 +13,7 @@ import {Edge, SafeAreaView} from 'react-native-safe-area-context';
 import {of as of$} from 'rxjs';
 import {switchMap} from 'rxjs/operators';
 
-import {updateMe} from '@actions/remote/user';
+import {setDefaultProfileImage, updateMe} from '@actions/remote/user';
 import ProfilePicture from '@components/profile_picture';
 import ProfilePictureButton from '@components/profile_picture_button';
 import StatusBar from '@components/status_bar';
@@ -122,7 +122,7 @@ const EditProfile = ({closeButtonId, componentId, currentUser, isModal, isTablet
             unsubscribe.remove();
             backHandler.remove();
         };
-    }, [userInfo, isTablet, profileImage]);
+    }, [userInfo, isTablet, profileImage, isProfileImageRemoved]);
 
     useEffect(() => {
         if (!isTablet) {
@@ -179,50 +179,47 @@ const EditProfile = ({closeButtonId, componentId, currentUser, isModal, isTablet
                 },
             });
         } catch (e) {
-            handleUploadError(e as Error);
+            // handleUploadError(e as Error);
         }
-    };
-
-    const handleUploadError = (error: Error) => {
-        // const {channelId, file, rootId, uploadFailed} = this.props;
-        // if (!this.canceled) {
-        //     uploadFailed([file.clientId], channelId, rootId, error);
-        // }
-        // this.uploadPromise = null;
     };
 
     const submitUser = async () => {
         enableSaveButton(false);
         setError(undefined);
         setUpdating(true);
+        try {
+            if (profileImage) {
+                await uploadProfileImage();
+            }
 
-        if (profileImage) {
-            await uploadProfileImage();
+            if (isProfileImageRemoved) {
+                await setDefaultProfileImage(serverUrl, currentUser.id);
+            }
+
+            const partialUser: Partial<UserProfile> = {
+                email: userInfo.email,
+                first_name: userInfo.firstName,
+                last_name: userInfo.lastName,
+                nickname: userInfo.nickname,
+                position: userInfo.position,
+                username: userInfo.username,
+            };
+
+            //todo: verify that the last_update_at value is being updated correctly for new image and remove image
+            const {error: reqError} = await updateMe(serverUrl, partialUser);
+
+            if (reqError) {
+                setError(error);
+                setUpdating(false);
+                enableSaveButton(true);
+                scrollViewRef.current?.scrollToPosition(0, 0, true);
+                return;
+            }
+
+            close();
+        } catch (e) {
+            // console.error(e);
         }
-
-        //todo: To be handled in next PRs
-        // if (isProfileImageRemoved) {actions.removeProfileImage(currentUser.id);}
-
-        const partialUser: Partial<UserProfile> = {
-            email: userInfo.email,
-            first_name: userInfo.firstName,
-            last_name: userInfo.lastName,
-            nickname: userInfo.nickname,
-            position: userInfo.position,
-            username: userInfo.username,
-        };
-
-        const {error: reqError} = await updateMe(serverUrl, partialUser);
-
-        if (reqError) {
-            setError(error);
-            setUpdating(false);
-            enableSaveButton(true);
-            scrollViewRef.current?.scrollToPosition(0, 0, true);
-            return;
-        }
-
-        close();
     };
 
     const updateField = useCallback((id: string, name: string) => {

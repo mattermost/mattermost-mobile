@@ -358,8 +358,10 @@ class ProfilePictureButton extends PureComponent<ProfileImageButtonProps> {
     getRemoveProfileImageOption = () => {
         const {currentUser, removeProfileImage, serverUrl} = this.props;
         const {id, lastPictureUpdate} = currentUser;
+
         let client: Client | undefined;
         let profileImageUrl: string | undefined;
+
         try {
             client = NetworkManager.getClient(serverUrl);
             profileImageUrl = client.getProfilePictureUrl(id, lastPictureUpdate);
@@ -370,7 +372,11 @@ class ProfilePictureButton extends PureComponent<ProfileImageButtonProps> {
         // Check if image url includes query string for timestamp. If so, it means the image has been updated from the default, i.e. '.../image?_=1544159746868'
         if (profileImageUrl?.includes('?')) {
             return {
-                ...(removeProfileImage && {action: removeProfileImage}),
+                ...(removeProfileImage && {
+                    action: () => {
+                        DeviceEventEmitter.emit(Navigation.NAVIGATION_CLOSE_MODAL);
+                        return removeProfileImage();
+                    }}),
                 text: {
                     id: t('mobile.edit_profile.remove_profile_photo'),
                     defaultMessage: 'Remove Photo',
@@ -466,6 +472,7 @@ class ProfilePictureButton extends PureComponent<ProfileImageButtonProps> {
 
                     {removeImageOption && (
                         <SlideUpPanelItem
+                            destructive={true}
                             icon={removeImageOption.icon}
                             onPress={removeImageOption.action}
                             testID='attachment.removeImage'
