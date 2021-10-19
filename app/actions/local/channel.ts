@@ -10,7 +10,7 @@ import {addUserToTeam, fetchTeamByName, removeUserFromTeam} from '@actions/remot
 import {General} from '@constants';
 import DatabaseManager from '@database/manager';
 import {privateChannelJoinPrompt} from '@helpers/api/channel';
-import {prepareDeleteChannel, prepareMyChannelsForTeam, queryMyChannel} from '@queries/servers/channel';
+import {prepareDeleteChannel, prepareMyChannelsForTeam, queryChannelsById, queryMyChannel} from '@queries/servers/channel';
 import {queryCommonSystemValues, queryCurrentTeamId, setCurrentChannelId, setCurrentTeamAndChannelId} from '@queries/servers/system';
 import {addChannelToTeamHistory, prepareMyTeams, queryMyTeamById, queryTeamById, queryTeamByName, removeChannelFromTeamHistory} from '@queries/servers/team';
 import {PERMALINK_GENERIC_TEAM_NAME_REDIRECT} from '@utils/url';
@@ -246,4 +246,23 @@ export const localRemoveUserFromChannel = async (serverUrl: string, channelId: s
             await operator.batchRecords(models);
         }
     }
+};
+
+export const localSetChannelDeleteAt = async (serverUrl: string, channelId: string, deleteAt: number) => {
+    const serverDatabase = DatabaseManager.serverDatabases[serverUrl];
+    if (!serverDatabase) {
+        return;
+    }
+
+    const {database} = serverDatabase;
+
+    const channels = await queryChannelsById(database, [channelId]);
+    if (!channels?.length) {
+        return;
+    }
+
+    const channel = channels[0];
+    channel.update((c) => {
+        c.deleteAt = deleteAt;
+    });
 };

@@ -3,7 +3,7 @@
 
 import {DeviceEventEmitter} from 'react-native';
 
-import {localRemoveUserFromChannel, switchToChannel} from '@actions/local/channel';
+import {localRemoveUserFromChannel, localSetChannelDeleteAt, switchToChannel} from '@actions/local/channel';
 import {updateUsersNoLongerVisible} from '@actions/remote/user';
 import Events from '@constants/events';
 import DatabaseManager from '@database/manager';
@@ -71,6 +71,8 @@ export async function handleChannelDeletedEvent(serverUrl: string, msg: any) {
     }
 
     const config = await queryConfig(database.database);
+
+    localSetChannelDeleteAt(serverUrl, msg.data.channel_id, msg.data.delete_at);
 
     if (isGuest(user.roles)) {
         updateUsersNoLongerVisible(serverUrl);

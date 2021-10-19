@@ -122,7 +122,7 @@ export const fetchAllTeams = async (serverUrl: string, fetchOnly = false): Promi
     }
 
     try {
-        const teams = await client.getTeams() as Team[];
+        const teams = await client.getTeams();
 
         if (!fetchOnly) {
             const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
