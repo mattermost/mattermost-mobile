@@ -95,19 +95,15 @@ class ProfilePictureButton extends PureComponent<ProfileImageButtonProps> {
         }
     };
 
-    attachPhotoFromCamera = () => {
-        return this.attachFileFromCamera('camera', 'photo');
-    };
-
-    attachFileFromCamera = async (source: string, mediaType: MediaType) => {
+    attachFileFromCamera = async () => {
         const options: CameraOptions = {
             quality: 0.8,
             videoQuality: 'high',
-            mediaType,
+            mediaType: 'photo',
             saveToPhotos: true,
         };
 
-        const hasCameraPermission = await this.hasPhotoPermission(source);
+        const hasCameraPermission = await this.hasPhotoPermission('camera');
 
         if (hasCameraPermission) {
             launchCamera(options, async (response: FileResponse) => {
@@ -374,7 +370,7 @@ class ProfilePictureButton extends PureComponent<ProfileImageButtonProps> {
                     {canTakePhoto && (
                         <SlideUpPanelItem
                             icon='camera-outline'
-                            onPress={this.attachPhotoFromCamera}
+                            onPress={this.attachFileFromCamera}
                             testID='attachment.canTakePhoto'
                             text={intl.formatMessage({
                                 id: 'mobile.file_upload.camera_photo',
