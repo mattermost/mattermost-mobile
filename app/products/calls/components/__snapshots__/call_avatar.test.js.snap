@@ -1,0 +1,196 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`CallAvatar should match snapshot muted 1`] = `
+<View
+  style={
+    Object {
+      "backgroundColor": "rgba(255,255,255,0.16)",
+      "borderRadius": 28,
+      "height": 56,
+      "marginRight": 4,
+      "padding": 4,
+      "width": 56,
+    }
+  }
+>
+  <View
+    style={
+      Object {
+        "backgroundColor": "rgba(255,255,255,0.24)",
+        "borderRadius": 24,
+        "height": 48,
+        "padding": 4,
+        "width": 48,
+      }
+    }
+  >
+    <View
+      style={
+        Object {
+          "borderRadius": 20,
+          "height": 40,
+          "width": 40,
+        }
+      }
+    >
+      <Connect(ProfilePicture)
+        showStatus={false}
+        size={40}
+        userId="user-id"
+      />
+      <CompassIcon
+        name="microphone-off"
+        size={16}
+        style={
+          Object {
+            "backgroundColor": "black",
+            "borderColor": "black",
+            "borderRadius": 12,
+            "borderWidth": 2,
+            "bottom": -5,
+            "color": "white",
+            "height": 24,
+            "overflow": "hidden",
+            "padding": 2,
+            "position": "absolute",
+            "right": -5,
+            "textAlign": "center",
+            "textAlignVertical": "center",
+            "width": 24,
+          }
+        }
+      />
+    </View>
+  </View>
+</View>
+`;
+
+exports[`CallAvatar should match snapshot size large 1`] = `
+<View
+  style={
+    Object {
+      "backgroundColor": "rgba(255,255,255,0.16)",
+      "borderRadius": 44,
+      "height": 88,
+      "marginRight": 4,
+      "padding": 4,
+      "width": 88,
+    }
+  }
+>
+  <View
+    style={
+      Object {
+        "backgroundColor": "rgba(255,255,255,0.24)",
+        "borderRadius": 40,
+        "height": 80,
+        "padding": 4,
+        "width": 80,
+      }
+    }
+  >
+    <View
+      style={
+        Object {
+          "borderRadius": 36,
+          "height": 72,
+          "width": 72,
+        }
+      }
+    >
+      <Connect(ProfilePicture)
+        showStatus={false}
+        size={72}
+        userId="user-id"
+      />
+      <CompassIcon
+        name="microphone"
+        size={16}
+        style={
+          Object {
+            "backgroundColor": "#3DB887",
+            "borderColor": "black",
+            "borderRadius": 12,
+            "borderWidth": 2,
+            "bottom": -5,
+            "color": "white",
+            "height": 24,
+            "overflow": "hidden",
+            "padding": 2,
+            "position": "absolute",
+            "right": -5,
+            "textAlign": "center",
+            "textAlignVertical": "center",
+            "width": 24,
+          }
+        }
+      />
+    </View>
+  </View>
+</View>
+`;
+
+exports[`CallAvatar should match snapshot unmuted 1`] = `
+<View
+  style={
+    Object {
+      "backgroundColor": "rgba(255,255,255,0.16)",
+      "borderRadius": 28,
+      "height": 56,
+      "marginRight": 4,
+      "padding": 4,
+      "width": 56,
+    }
+  }
+>
+  <View
+    style={
+      Object {
+        "backgroundColor": "rgba(255,255,255,0.24)",
+        "borderRadius": 24,
+        "height": 48,
+        "padding": 4,
+        "width": 48,
+      }
+    }
+  >
+    <View
+      style={
+        Object {
+          "borderRadius": 20,
+          "height": 40,
+          "width": 40,
+        }
+      }
+    >
+      <Connect(ProfilePicture)
+        showStatus={false}
+        size={40}
+        userId="user-id"
+      />
+      <CompassIcon
+        name="microphone"
+        size={16}
+        style={
+          Object {
+            "backgroundColor": "#3DB887",
+            "borderColor": "black",
+            "borderRadius": 12,
+            "borderWidth": 2,
+            "bottom": -5,
+            "color": "white",
+            "height": 24,
+            "overflow": "hidden",
+            "padding": 2,
+            "position": "absolute",
+            "right": -5,
+            "textAlign": "center",
+            "textAlignVertical": "center",
+            "width": 24,
+          }
+        }
+      />
+    </View>
+  </View>
+</View>
+`;
