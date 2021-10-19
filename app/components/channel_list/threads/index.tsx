@@ -25,7 +25,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     },
 }));
 
-const ThreadsComponent = () => {
+const ThreadsButton = () => {
     const theme = useTheme();
     const styles = getStyleSheet(theme);
 
@@ -40,4 +40,4 @@ const ThreadsComponent = () => {
     );
 };
 
-export default ThreadsComponent;
+export default ThreadsButton;

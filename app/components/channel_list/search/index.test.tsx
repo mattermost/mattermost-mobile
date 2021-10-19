@@ -7,7 +7,7 @@ import {renderWithIntlAndTheme} from '@test/intl-test-helper';
 
 import Search from './index';
 
-test('Search Component should match snapshot', () => {
+test('Search Field should match snapshot', () => {
     const {toJSON} = renderWithIntlAndTheme(
         <Search/>,
     );

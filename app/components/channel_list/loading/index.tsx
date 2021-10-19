@@ -5,7 +5,7 @@ import LottieView from 'lottie-react-native';
 import React from 'react';
 import {StyleSheet, View} from 'react-native';
 
-const LoadingComponent = () => (
+const Loading = () => (
     <View style={styles.container}>
         <LottieView
             source={require('./spinner.json')}
@@ -27,4 +27,4 @@ const styles = StyleSheet.create({
     },
 });
 
-export default LoadingComponent;
+export default Loading;

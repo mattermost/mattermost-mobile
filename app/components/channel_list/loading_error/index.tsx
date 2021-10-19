@@ -39,7 +39,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     },
 }));
 
-const ErrorComponent = () => {
+const LoadingError = () => {
     const theme = useTheme();
     const styles = getStyleSheet(theme);
 
@@ -58,8 +58,9 @@ const ErrorComponent = () => {
                 {'There was a problem loading the content for this team.'}
             </Text>
             <ButtonComponent
-                size='lg'
                 text={'Retry'}
+                size='lg'
+                emphasis='primary'
                 type='inverted'
                 styles={{button: {marginTop: 20}}}
             />
@@ -67,4 +68,4 @@ const ErrorComponent = () => {
     );
 };
 
-export default ErrorComponent;
+export default LoadingError;

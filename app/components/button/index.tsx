@@ -2,44 +2,12 @@
 // See LICENSE.txt for license information.
 import React from 'react';
 import {Platform, Pressable, StyleProp, StyleSheet, Text, TextStyle, View, ViewStyle} from 'react-native';
-
-// import LinearGradient from 'react-native-linear-gradient';
+import LinearGradient from 'react-native-linear-gradient';
 
 import CompassIcon from '@app/components/compass_icon';
 import {useTheme} from '@app/context/theme';
-import {changeOpacity} from '@utils/theme';
 
-type ButtonSize = 'xs' | 's' | 'm' | 'lg'
-type ButtonEmphasis = 'primary' | 'secondary' | 'tertiary' | 'link'
-type ButtonType = 'default' | 'destructive' | 'inverted' | 'disabled'
-type ButtonState = 'default' | 'hover' | 'active' | 'focus'
-
-/**
- * Returns the appropriate text color for the button.
- *
- * Handles the emphasis & types, button state does not change text color.
- *
- * @param theme
- * @param emphasis
- * @param type
- * @returns
- */
-const textColor = (theme: Theme, emphasis: ButtonEmphasis, type: ButtonType) => {
-    if (type === 'disabled') {
-        return changeOpacity(theme.centerChannelColor, 0.32);
-    }
-
-    if ((type === 'inverted' && emphasis === 'primary') ||
-        (type !== 'inverted' && emphasis !== 'primary')) {
-        return theme.buttonBg;
-    }
-
-    if ((type === 'destructive' && emphasis !== 'primary')) {
-        return theme.errorTextColor;
-    }
-
-    return theme.buttonColor;
-};
+import {backgroundStyle, textColor} from './helper';
 
 type BackgroundProps = {
     theme: Theme;
@@ -54,68 +22,26 @@ type BackgroundProps = {
  * The Button Background component; returning a <View /> or <LinearGradient />
  * with the child <Text /> element.
  *
- * Notes:
- * - Emphasis: Primary & Link Work (Secondary / Tertiary to do)
- * - Type: Destructive, Inverted
- * - State: Only default (Hover, Active, Focus to-do)
- *
  * @param props
  * @returns
  */
 const Background = (props: BackgroundProps) => {
     const {theme, emphasis, type, state, children, styles} = props;
 
-    let bg = theme.buttonBg;
-    if (type === 'inverted') {
-        bg = theme.buttonColor;
+    if (['active', 'hover'].includes(state) && Array.isArray(backgroundStyle(theme)[emphasis][type][state])) {
+        return (<LinearGradient colors={backgroundStyle(theme)[emphasis][type][state] as string[]}>
+            {children}
+        </LinearGradient>);
     }
-
-    // @to-do: Does this need a white background?
-    if (type === 'disabled') {
-        bg = changeOpacity(theme.centerChannelColor, 0.08);
-    }
-    if (type === 'destructive') {
-        bg = theme.errorTextColor;
-    }
-    if (emphasis === 'link') {
-        bg = 'transparent';
-    }
-
-    // @to-do: This border pushes outwards; not quite border-box
-    const border = state === 'focus' ? {
-        borderColor: 'rgba(255, 255, 255, 0.32)',
-        borderWidth: 2,
-    } : {};
-
-    // @to-do: Handle various button emphasis and associated states / types
-    /*
-    if (emphasis === 'primary' && state !== 'default' && state !== 'focus') {
-        let bg1 = bg;
-        let bg2 = state === 'hover' ? 'rgba(0, 0, 0, 0.08)' : 'rgba(0, 0, 0, 0.16)';
-
-        if (type === 'inverted') {
-            bg1 = theme.buttonBg;
-            bg2 = state === 'hover' ? 'rgba(255, 255, 255, .08)' : 'rgba(255, 255, 255, 0.16)';
-        }
-
-        return (
-            <LinearGradient
-                style={[style, {backgroundColor: bg}, border]}
-                colors={[bg2, bg1]}
-            >
-                {children}
-            </LinearGradient>
-        );
-    }
-    */
 
     return (
-        <View style={[{backgroundColor: bg}, border, styles]}>
+        <View style={[backgroundStyle(theme)[emphasis][type][state], styles]}>
             {children}
         </View>
     );
 };
 
+// Various Text Styles (Size, fonts / weights, decoration)
 const textStyleCollection = StyleSheet.create({
     default: {
         fontFamily: Platform.OS === 'android' ? 'OpenSans-SemiBold' : 'OpenSans',
@@ -143,6 +69,7 @@ const textStyleCollection = StyleSheet.create({
     },
 });
 
+// Various button styles; sizes and defaults
 const buttonStyleCollection = StyleSheet.create({
     default: {
         flex: 0,
@@ -192,7 +119,15 @@ type ButtonProps = {
     };
 }
 
-const ButtonComponent = (props: ButtonProps) => {
+/**
+ * This component adheres to the Mattermost Button Component UI library
+ *
+ * https://www.figma.com/file/2uYWxjnMJ9IQDOba9b9bfV/Components---Buttons?node-id=1%3A184
+ *
+ * @param props
+ * @returns
+ */
+const Button = (props: ButtonProps) => {
     // Get our props
     const {
         size,
@@ -254,4 +189,4 @@ const ButtonComponent = (props: ButtonProps) => {
     );
 };
 
-export default ButtonComponent;
+export default Button;

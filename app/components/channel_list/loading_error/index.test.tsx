@@ -7,7 +7,7 @@ import {renderWithIntlAndTheme} from '@test/intl-test-helper';
 
 import ErrorComponent from './index';
 
-test('Error Component should match snapshot', () => {
+test('Loading Error should match snapshot', () => {
     const {toJSON} = renderWithIntlAndTheme(
         <ErrorComponent/>,
     );

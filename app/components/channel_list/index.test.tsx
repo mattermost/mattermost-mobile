@@ -7,7 +7,7 @@ import {renderWithIntlAndTheme} from '@test/intl-test-helper';
 
 import ChannelsList from './index';
 
-test('Threads Component should match snapshot', () => {
+test('Channels List should match snapshot', () => {
     const {toJSON} = renderWithIntlAndTheme(
         <ChannelsList/>,
     );

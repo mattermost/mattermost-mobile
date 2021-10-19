@@ -9,13 +9,13 @@ import {makeStyleSheetFromTheme} from '@utils/theme';
 
 import {COMPASS_ICONS} from '../compass_icon';
 
-import ChannelListItemComponent from './categories/body/channel';
+import ChannelListItem from './categories/body/channel';
 import CategoriesHeader from './categories/header';
-import ErrorComponent from './error';
 import ChannelListHeader from './header';
-import LoadingSpinner from './loading';
+import Loading from './loading';
+import LoadingError from './loading_error';
 import SearchField from './search';
-import ThreadsComponent from './threads';
+import ThreadsButton from './threads';
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     container: {
@@ -26,7 +26,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     },
 }));
 
-const ChannelListComponent = () => {
+const ChannelList = () => {
     const theme = useTheme();
     const styles = getStyleSheet(theme);
 
@@ -37,21 +37,21 @@ const ChannelListComponent = () => {
                 subheading='Community'
             />
             <SearchField/>
-            <ThreadsComponent/>
+            <ThreadsButton/>
             <CategoriesHeader heading='Category Heading'/>
-            <ChannelListItemComponent
+            <ChannelListItem
                 name='Just a Channel'
                 leftIcon={COMPASS_ICONS.globe}
             />
-            <ChannelListItemComponent
+            <ChannelListItem
                 name='And another Channel'
                 unreadCount={5}
                 leftIcon={COMPASS_ICONS.globe}
             />
-            <LoadingSpinner/>
-            <ErrorComponent/>
+            <Loading/>
+            <LoadingError/>
         </ScrollView>
     );
 };
 
-export default ChannelListComponent;
+export default ChannelList;

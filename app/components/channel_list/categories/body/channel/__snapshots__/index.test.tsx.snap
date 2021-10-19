@@ -41,3 +41,45 @@ exports[`Category Channel List Item Component should match snapshot 1`] = `
   </Text>
 </View>
 `;
+
+exports[`Category Channel List Item should match snapshot 1`] = `
+<View
+  style={
+    Object {
+      "display": "flex",
+      "flexDirection": "row",
+      "paddingVertical": 4,
+    }
+  }
+>
+  <Icon
+    name="globe"
+    style={
+      Object {
+        "color": "rgba(255,255,255,0.72)",
+        "fontSize": 24,
+        "lineHeight": 28,
+      }
+    }
+  />
+  <Text
+    style={
+      Array [
+        Object {
+          "fontFamily": "OpenSans",
+          "fontSize": 16,
+          "fontWeight": "400",
+          "lineHeight": 24,
+        },
+        Object {
+          "color": "rgba(255,255,255,0.72)",
+          "paddingLeft": 12,
+        },
+        undefined,
+      ]
+    }
+  >
+    Channel Name
+  </Text>
+</View>
+`;

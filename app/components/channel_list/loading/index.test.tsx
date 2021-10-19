@@ -5,11 +5,11 @@ import React from 'react';
 
 import {renderWithIntlAndTheme} from '@test/intl-test-helper';
 
-import LoadingComponent from './index';
+import Loading from './index';
 
-test('Loading Component should match snapshot', () => {
+test('Loading  should match snapshot', () => {
     const {toJSON} = renderWithIntlAndTheme(
-        <LoadingComponent/>,
+        <Loading/>,
     );
 
     expect(toJSON()).toMatchSnapshot();
