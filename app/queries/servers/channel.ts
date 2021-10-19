@@ -9,6 +9,7 @@ import {hasPermission} from '@utils/role';
 
 import {prepareDeletePost} from './post';
 import {queryRoles} from './role';
+import {queryCurrentChannelId} from './system';
 
 import type ServerDataOperator from '@database/operator/server_data_operator';
 import type ChannelModel from '@typings/database/models/servers/channel';
@@ -16,7 +17,7 @@ import type ChannelInfoModel from '@typings/database/models/servers/channel_info
 import type MyChannelModel from '@typings/database/models/servers/my_channel';
 import type PostModel from '@typings/database/models/servers/post';
 
-const {SERVER: {CHANNEL, MY_CHANNEL}} = MM_TABLES;
+const {SERVER: {CHANNEL, MY_CHANNEL, CHANNEL_MEMBERSHIP}} = MM_TABLES;
 
 export const prepareMyChannelsForTeam = async (operator: ServerDataOperator, teamId: string, channels: Channel[], channelMembers: ChannelMembership[]) => {
     const allChannelsForTeam = await queryAllChannelsForTeam(operator.database, teamId);
@@ -158,4 +159,30 @@ export const queryDefaultChannelForTeam = async (database: Database, teamId: str
     }
 
     return channel;
+};
+
+export const queryCurrentChannel = async (database: Database) => {
+    const currentChannelId = await queryCurrentChannelId(database);
+    if (currentChannelId) {
+        const channels = await queryChannelsById(database, [currentChannelId]);
+        if (channels?.length) {
+            return channels[0];
+        }
+    }
+
+    return undefined;
+};
+
+export const deleteChannelMembership = async (operator: ServerDataOperator, userId: string, channelId: string) => {
+    try {
+        const channelMembership = await operator.database.get(CHANNEL_MEMBERSHIP).query(Q.where('user_id', Q.eq(userId)), Q.where('channel_id', Q.eq(channelId))).fetch();
+        const models: Model[] = [];
+        for (const membership of channelMembership) {
+            models.push(membership.prepareDestroyPermanently());
+        }
+        await operator.batchRecords(models);
+        return {};
+    } catch (error) {
+        return {error};
+    }
 };

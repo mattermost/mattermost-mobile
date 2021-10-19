@@ -6,10 +6,11 @@ import {Database, Model, Q, Query, Relation} from '@nozbe/watermelondb';
 import {Database as DatabaseConstants, Preferences} from '@constants';
 import {getPreferenceValue} from '@helpers/api/preference';
 import {selectDefaultTeam} from '@helpers/api/team';
+import {DEFAULT_LOCALE} from '@i18n';
 
 import {prepareDeleteChannel, queryDefaultChannelForTeam} from './channel';
 import {queryPreferencesByCategoryAndName} from './preference';
-import {queryConfig} from './system';
+import {patchTeamHistory, queryConfig, queryTeamHistory} from './system';
 import {queryCurrentUser} from './user';
 
 import type ServerDataOperator from '@database/operator/server_data_operator';
@@ -18,12 +19,16 @@ import type MyTeamModel from '@typings/database/models/servers/my_team';
 import type TeamModel from '@typings/database/models/servers/team';
 import type TeamChannelHistoryModel from '@typings/database/models/servers/team_channel_history';
 
-const {MY_TEAM, TEAM, TEAM_CHANNEL_HISTORY} = DatabaseConstants.MM_TABLES.SERVER;
+const {MY_TEAM, TEAM, TEAM_CHANNEL_HISTORY, MY_CHANNEL} = DatabaseConstants.MM_TABLES.SERVER;
 
 export const addChannelToTeamHistory = async (operator: ServerDataOperator, teamId: string, channelId: string, prepareRecordsOnly = false) => {
     let tch: TeamChannelHistory|undefined;
 
     try {
+        const myChannel = (await operator.database.get(MY_CHANNEL).find(channelId));
+        if (!myChannel) {
+            return [];
+        }
         const teamChannelHistory = (await operator.database.get(TEAM_CHANNEL_HISTORY).find(teamId)) as TeamChannelHistoryModel;
         const channelIdSet = new Set(teamChannelHistory.channelIds);
         if (channelIdSet.has(channelId)) {
@@ -65,6 +70,96 @@ export const queryLastChannelFromTeam = async (database: Database, teamId: strin
     return channelId;
 };
 
+export const removeChannelFromTeamHistory = async (operator: ServerDataOperator, teamId: string, channelId: string, prepareRecordsOnly = false) => {
+    let tch: TeamChannelHistory;
+
+    try {
+        const teamChannelHistory = (await operator.database.get(TEAM_CHANNEL_HISTORY).find(teamId)) as TeamChannelHistoryModel;
+        const channelIdSet = new Set(teamChannelHistory.channelIds);
+        if (channelIdSet.has(channelId)) {
+            channelIdSet.delete(channelId);
+        } else {
+            return [];
+        }
+
+        const channelIds = Array.from(channelIdSet);
+        tch = {
+            id: teamId,
+            channel_ids: channelIds,
+        };
+    } catch {
+        return [];
+    }
+
+    return operator.handleTeamChannelHistory({teamChannelHistories: [tch], prepareRecordsOnly});
+};
+
+export const addTeamToTeamHistory = async (operator: ServerDataOperator, teamId: string, prepareRecordsOnly = false) => {
+    const teamHistory = (await queryTeamHistory(operator.database));
+    const teamHistorySet = new Set(teamHistory);
+    if (teamHistorySet.has(teamId)) {
+        teamHistorySet.delete(teamId);
+    }
+
+    const teamIds = Array.from(teamHistorySet);
+    teamIds.unshift(teamId);
+    return patchTeamHistory(operator, teamIds, prepareRecordsOnly);
+};
+
+export const removeTeamFromTeamHistory = async (operator: ServerDataOperator, teamId: string, prepareRecordsOnly = false) => {
+    const teamHistory = (await queryTeamHistory(operator.database));
+    const teamHistorySet = new Set(teamHistory);
+    if (!teamHistorySet.has(teamId)) {
+        return undefined;
+    }
+
+    teamHistorySet.delete(teamId);
+    const teamIds = Array.from(teamHistorySet).slice(0, 5);
+
+    return patchTeamHistory(operator, teamIds, prepareRecordsOnly);
+};
+
+export const queryLastTeam = async (database: Database) => {
+    const teamHistory = (await queryTeamHistory(database));
+    if (teamHistory.length > 0) {
+        return teamHistory[0];
+    }
+
+    return queryDefaultTeam(database);
+};
+
+export const syncTeamTable = async (operator: ServerDataOperator, teams: Team[]) => {
+    try {
+        const notAvailable = await operator.database.get<TeamModel>(TEAM).query(Q.where('id', Q.notIn(teams.map((t) => t.id)))).fetch();
+        const models = [];
+        const deletions = await Promise.all(notAvailable.map((t) => prepareDeleteTeam(t)));
+        for (const d of deletions) {
+            models.push(...d);
+        }
+        models.push(...await operator.handleTeam({teams, prepareRecordsOnly: true}));
+        await operator.batchRecords(models);
+        return {};
+    } catch (error) {
+        return {error};
+    }
+};
+
+export const queryDefaultTeam = async (database: Database) => {
+    const user = await queryCurrentUser(database);
+    const config = await queryConfig(database);
+    const teamOrderPreferences = await queryPreferencesByCategoryAndName(database, Preferences.TEAMS_ORDER, '');
+    let teamOrderPreference = '';
+    if (teamOrderPreferences.length) {
+        teamOrderPreference = teamOrderPreferences[0].value;
+    }
+
+    const teamModels = await database.get<TeamModel>(TEAM).query(Q.on(MY_TEAM, Q.where('id', Q.notEq('')))).fetch();
+    const teams = teamModels.map((t) => ({id: t.id, display_name: t.displayName, name: t.name} as Team));
+
+    const defaultTeam = selectDefaultTeam(teams, user?.locale || DEFAULT_LOCALE, teamOrderPreference, config.ExperimentalPrimaryTeam);
+    return defaultTeam?.id;
+};
+
 export const prepareMyTeams = (operator: ServerDataOperator, teams: Team[], memberships: TeamMembership[]) => {
     try {
         const teamRecords = operator.handleTeam({prepareRecordsOnly: true, teams});
@@ -85,13 +180,18 @@ export const prepareMyTeams = (operator: ServerDataOperator, teams: Team[], memb
 };
 
 export const deleteMyTeams = async (operator: ServerDataOperator, teams: TeamModel[]) => {
-    const preparedModels: Model[] = [];
-    for await (const team of teams) {
-        const myTeam = await team.myTeam.fetch() as MyTeamModel;
-        preparedModels.push(myTeam.prepareDestroyPermanently());
-    }
+    try {
+        const preparedModels: Model[] = [];
+        for await (const team of teams) {
+            const myTeam = await team.myTeam.fetch() as MyTeamModel;
+            preparedModels.push(myTeam.prepareDestroyPermanently());
+        }
 
-    await operator.batchRecords(preparedModels);
+        await operator.batchRecords(preparedModels);
+        return {};
+    } catch (error) {
+        return {error};
+    }
 };
 
 export const prepareDeleteTeam = async (team: TeamModel): Promise<Model[]> => {

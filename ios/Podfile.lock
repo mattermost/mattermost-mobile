@@ -536,7 +536,7 @@ DEPENDENCIES:
   - RNSVG (from `../node_modules/react-native-svg`)
   - RNVectorIcons (from `../node_modules/react-native-vector-icons`)
   - "simdjson (from `../node_modules/@nozbe/simdjson`)"
-  - Starscream (from `https://github.com/mattermost/Starscream.git`, commit `1b4b93708fb63d2665625a11e57461772a65364a`)
+  - Starscream (from `https://github.com/mattermost/Starscream.git`, commit `cb83dd247339ff6c155f0e749d6fe2cc145f5283`)
   - Swime (= 3.0.6)
   - UMAppLoader (from `../node_modules/unimodules-app-loader/ios`)
   - "UMCore (from `../node_modules/@unimodules/core/ios`)"
@@ -710,7 +710,7 @@ EXTERNAL SOURCES:
   simdjson:
     :path: "../node_modules/@nozbe/simdjson"
   Starscream:
-    :commit: 1b4b93708fb63d2665625a11e57461772a65364a
+    :commit: cb83dd247339ff6c155f0e749d6fe2cc145f5283
     :git: https://github.com/mattermost/Starscream.git
   UMAppLoader:
     :path: "../node_modules/unimodules-app-loader/ios"
@@ -727,7 +727,7 @@ EXTERNAL SOURCES:
 
 CHECKOUT OPTIONS:
   Starscream:
-    :commit: 1b4b93708fb63d2665625a11e57461772a65364a
+    :commit: cb83dd247339ff6c155f0e749d6fe2cc145f5283
     :git: https://github.com/mattermost/Starscream.git
 
 SPEC CHECKSUMS:
@@ -824,6 +824,6 @@ SPEC CHECKSUMS:
   Yoga: c11abbf5809216c91fcd62f5571078b83d9b6720
   YoutubePlayer-in-WKWebView: cfbf46da51d7370662a695a8f351e5fa1d3e1008
 
-PODFILE CHECKSUM: d62332bb35b296f3ba5b63691519bc5b4dd1c289
+PODFILE CHECKSUM: b7ae70eab69dbc195f8f145338e347c9afbeb102
 
 COCOAPODS: 1.10.2

@@ -70,7 +70,7 @@ type ReactionsPerPost = {
 
 type IdValue = {
     id: string;
-    value: string;
+    value: unknown;
 };
 
 type TeamChannelHistory = {
