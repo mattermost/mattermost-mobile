@@ -11,9 +11,6 @@ require('react-native-reanimated/lib/reanimated2/jestUtils').setUpTests();
 
 require('isomorphic-fetch');
 
-// @ts-expect-error no window exist in global
-global.window = {};
-
 /* eslint-disable no-console */
 jest.mock('@react-native-community/async-storage', () => new MockAsyncStorage());
 jest.mock('@database/manager');
