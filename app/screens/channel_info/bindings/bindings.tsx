@@ -20,7 +20,7 @@ import ChannelInfoRow from '../channel_info_row';
 type Props = {
     bindings: AppBinding[];
     theme: Theme;
-    currentChannel: Channel;
+    currentChannel?: Channel;
     appsEnabled: boolean;
     intl: typeof intlShape;
     currentTeamId: string;
@@ -32,11 +32,15 @@ type Props = {
 }
 
 const Bindings: React.FC<Props> = injectIntl((props: Props) => {
-    if (!props.appsEnabled) {
+    const {bindings, currentChannel, appsEnabled, ...optionProps} = props;
+    if (!appsEnabled) {
         return null;
     }
 
-    const {bindings, ...optionProps} = props;
+    if (!currentChannel) {
+        return null;
+    }
+
     if (bindings.length === 0) {
         return null;
     }
@@ -45,6 +49,7 @@ const Bindings: React.FC<Props> = injectIntl((props: Props) => {
         <Option
             key={b.app_id + b.location}
             binding={b}
+            currentChannel={currentChannel}
             {...optionProps}
         />
     ));
@@ -88,7 +93,9 @@ class Option extends React.PureComponent<OptionProps, OptionState> {
             return;
         }
 
-        if (!binding.call) {
+        const call = binding.form?.call || binding.call;
+
+        if (!call) {
             return;
         }
 
@@ -98,14 +105,20 @@ class Option extends React.PureComponent<OptionProps, OptionState> {
             currentChannel.id,
             currentChannel.team_id || currentTeamId,
         );
-        const call = createCallRequest(
-            binding.call,
+        const callRequest = createCallRequest(
+            call,
             context,
         );
 
+        if (binding.form) {
+            await dismissModal();
+            showAppForm(binding.form, callRequest, theme);
+            return;
+        }
+
         this.setState({submitting: true});
 
-        const res = await doAppCall(call, AppCallTypes.SUBMIT, intl);
+        const res = await doAppCall(callRequest, AppCallTypes.SUBMIT, intl);
 
         this.setState({submitting: false});
 

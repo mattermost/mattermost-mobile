@@ -20,7 +20,10 @@ export default class ThreadBase extends PureComponent {
         actions: PropTypes.shape({
             selectPost: PropTypes.func.isRequired,
             setThreadFollow: PropTypes.func.isRequired,
+            updateThreadLastViewedAt: PropTypes.func,
             updateThreadRead: PropTypes.func,
+            fetchThreadAppBindings: PropTypes.func.isRequired,
+            clearThreadAppBindings: PropTypes.func.isRequired,
         }).isRequired,
         componentId: PropTypes.string,
         channelId: PropTypes.string,
@@ -28,6 +31,7 @@ export default class ThreadBase extends PureComponent {
         collapsedThreadsEnabled: PropTypes.bool,
         currentUserId: PropTypes.string,
         displayName: PropTypes.string,
+        lastViewedAt: PropTypes.number,
         myMember: PropTypes.object.isRequired,
         postIds: PropTypes.array.isRequired,
         rootId: PropTypes.string.isRequired,
@@ -35,6 +39,7 @@ export default class ThreadBase extends PureComponent {
         channelIsArchived: PropTypes.bool,
         thread: PropTypes.object,
         threadLoadingStatus: PropTypes.object,
+        shouldFetchBindings: PropTypes.bool,
     };
 
     static defaultProps = {
@@ -55,7 +60,8 @@ export default class ThreadBase extends PureComponent {
 
         if (props.collapsedThreadsEnabled) {
             // Without unique id, it breaks navigation from permalink view.
-            this.threadFollowId = Math.floor(Math.random() * 0x10000000000).toString(16);
+            // Adding prefix "!screen" to exclude it from being added to stack
+            this.threadFollowId = '!screen-' + Math.floor(Math.random() * 0x10000000000).toString(16);
 
             let titleText;
             if (channelType === General.DM_CHANNEL) {
@@ -106,7 +112,7 @@ export default class ThreadBase extends PureComponent {
         this.postDraft = React.createRef();
 
         this.state = {
-            lastViewedAt: props.myMember && props.myMember.last_viewed_at,
+            lastViewedAt: props.lastViewedAt,
         };
 
         this.bottomPadding = new Animated.Value(0);
@@ -117,6 +123,9 @@ export default class ThreadBase extends PureComponent {
         this.markThreadRead();
         this.removeTypingAnimation = this.registerTypingAnimation(this.bottomPaddingAnimation);
         EventEmitter.on(TYPING_VISIBLE, this.runTypingAnimations);
+        if (this.props.shouldFetchBindings) {
+            this.props.actions.fetchThreadAppBindings(this.props.currentUserId, this.props.channelId);
+        }
     }
 
     componentWillReceiveProps(nextProps) {
@@ -125,8 +134,13 @@ export default class ThreadBase extends PureComponent {
             return;
         }
 
-        if (!this.state.lastViewedAt) {
-            this.setState({lastViewedAt: nextProps.myMember && nextProps.myMember.last_viewed_at});
+        if (
+            (!this.props.collapsedThreadsEnabled && !this.state.lastViewedAt) ||
+            (this.props.collapsedThreadsEnabled && this.props.lastViewedAt !== nextProps.lastViewedAt)
+        ) {
+            this.setState({
+                lastViewedAt: nextProps.lastViewedAt,
+            });
         }
 
         if (this.props.postIds.length < nextProps.postIds.length) {
@@ -142,6 +156,9 @@ export default class ThreadBase extends PureComponent {
         this.props.actions.selectPost('');
         this.removeTypingAnimation();
         EventEmitter.off(TYPING_VISIBLE, this.runTypingAnimations);
+        if (this.props.shouldFetchBindings) {
+            this.props.actions.clearThreadAppBindings();
+        }
     }
 
     handleThreadFollow() {
@@ -149,23 +166,33 @@ export default class ThreadBase extends PureComponent {
         this.props.actions.setThreadFollow(currentUserId, rootId, !thread?.is_following);
     }
 
+    hasUnreadPost() {
+        return Boolean(
+            this.props.thread.last_viewed_at < this.props.thread.last_reply_at ||
+            this.props.thread.unread_mentions ||
+            this.props.thread.unread_replies,
+        );
+    }
+
     markThreadRead(hasNewPost = false) {
         const {thread} = this.props;
-        if (
-            this.props.collapsedThreadsEnabled && thread && thread.is_following &&
-            (
-                hasNewPost ||
-                thread.last_viewed_at < thread.last_reply_at ||
-                thread.unread_mentions ||
-                thread.unread_replies
-            )
-        ) {
-            PushNotifications.clearChannelNotifications(this.props.channelId, thread.id);
-            this.props.actions.updateThreadRead(
-                this.props.currentUserId,
-                this.props.rootId,
-                Date.now(),
-            );
+        if (this.props.collapsedThreadsEnabled && thread?.is_following) {
+            // Update lastViewedAt on marking thread as read on openining the screen.
+            if (!hasNewPost) {
+                this.props.actions.updateThreadLastViewedAt(
+                    thread.id,
+                    thread.last_viewed_at,
+                );
+            }
+
+            if (hasNewPost || this.hasUnreadPost()) {
+                PushNotifications.clearChannelNotifications(this.props.channelId, thread.id);
+                this.props.actions.updateThreadRead(
+                    this.props.currentUserId,
+                    this.props.rootId,
+                    Date.now(),
+                );
+            }
         }
     }
 
@@ -211,9 +238,7 @@ export default class ThreadBase extends PureComponent {
     }
 
     bottomPaddingAnimation = (visible) => {
-        const [padding, duration] = visible ?
-            [TYPING_HEIGHT, 200] :
-            [0, 400];
+        const [padding, duration] = visible ? [TYPING_HEIGHT, 200] : [0, 400];
 
         return Animated.timing(this.bottomPadding, {
             toValue: padding,

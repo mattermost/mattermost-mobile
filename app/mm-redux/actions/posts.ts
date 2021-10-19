@@ -2,9 +2,10 @@
 // See LICENSE.txt for license information.
 /* eslint-disable max-lines */
 
+import {updateThreadLastViewedAt} from '@actions/views/threads';
 import {Client4} from '@client/rest';
 import {WebsocketEvents} from '@constants';
-import {THREAD} from '@constants/screen';
+import {GLOBAL_THREADS, THREAD} from '@constants/screen';
 import {analytics} from '@init/analytics';
 import {PostTypes, ChannelTypes, FileTypes, IntegrationTypes} from '@mm-redux/action_types';
 import {handleFollowChanged, updateThreadRead} from '@mm-redux/actions/threads';
@@ -443,11 +444,14 @@ export function setUnreadPost(userId: string, postId: string, location: string) 
                 return {};
             }
             const collapsedThreadsEnabled = isCollapsedThreadsEnabled(state);
-            const isUnreadFromThreadScreen = collapsedThreadsEnabled && location === THREAD;
-            if (isUnreadFromThreadScreen) {
+            const isUnreadFromThread = collapsedThreadsEnabled && (location === THREAD || location === GLOBAL_THREADS);
+            if (isUnreadFromThread) {
                 const currentTeamId = getThreadTeamId(state, postId);
                 const threadId = post.root_id || post.id;
-                dispatch(handleFollowChanged(threadId, currentTeamId, true));
+                const actions: GenericAction[] = [];
+                actions.push(handleFollowChanged(threadId, currentTeamId, true));
+                actions.push(updateThreadLastViewedAt(threadId, post.create_at));
+                dispatch(batchActions(actions));
                 await dispatch(updateThreadRead(userId, threadId, post.create_at));
                 return {data: true};
             }

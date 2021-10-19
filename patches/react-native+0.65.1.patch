@@ -19,19 +19,6 @@ index 8eca425..f0df04f 100644
            <NativeDirectionalScrollView
              {...props}
              style={StyleSheet.compose(baseStyle, inner)}
-diff --git a/node_modules/react-native/Libraries/Components/TextInput/AndroidTextInputNativeComponent.js b/node_modules/react-native/Libraries/Components/TextInput/AndroidTextInputNativeComponent.js
-index b8d559a..cb84238 100644
---- a/node_modules/react-native/Libraries/Components/TextInput/AndroidTextInputNativeComponent.js
-+++ b/node_modules/react-native/Libraries/Components/TextInput/AndroidTextInputNativeComponent.js
-@@ -547,7 +547,7 @@ export const Commands: NativeCommands = codegenNativeCommands<NativeCommands>({
- });
- 
- let AndroidTextInputNativeComponent = NativeComponentRegistry.get<NativeProps>(
--  'AndroidTextInput',
-+  'PasteableTextInputAndroid',
-   () => AndroidTextInputViewConfig,
- );
- 
 diff --git a/node_modules/react-native/Libraries/Lists/VirtualizedList.js b/node_modules/react-native/Libraries/Lists/VirtualizedList.js
 index a7c1567..1531a45 100644
 --- a/node_modules/react-native/Libraries/Lists/VirtualizedList.js
