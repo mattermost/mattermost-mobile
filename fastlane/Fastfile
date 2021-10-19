@@ -146,6 +146,12 @@ lane :set_app_build_number do
   end
 end
 
+desc 'Increments version and build number for both Android and iOS'
+lane :set_app_version_build do
+  set_app_version
+  set_app_build_number
+end
+
 desc 'Configure the app before building'
 lane :configure do
   json = load_config_json('../dist/assets/config.json')
