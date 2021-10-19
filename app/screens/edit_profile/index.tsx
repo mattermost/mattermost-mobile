@@ -15,7 +15,7 @@ import {switchMap} from 'rxjs/operators';
 
 import {setDefaultProfileImage, updateMe} from '@actions/remote/user';
 import ProfilePicture from '@components/profile_picture';
-import ProfilePictureButton from '@components/profile_picture_button';
+import ProfilePictureButton from '@components/profile_picture_picker';
 import StatusBar from '@components/status_bar';
 import TabletTitle from '@components/tablet_title';
 import {Events} from '@constants';
