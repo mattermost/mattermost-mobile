@@ -129,14 +129,19 @@ export const queryLastTeam = async (database: Database) => {
 };
 
 export const syncTeamTable = async (operator: ServerDataOperator, teams: Team[]) => {
-    const notAvailable = await operator.database.get<TeamModel>(TEAM).query(Q.where('id', Q.notIn(teams.map((t) => t.id)))).fetch();
-    const models = [];
-    const deletions = await Promise.all(notAvailable.map((t) => prepareDeleteTeam(t)));
-    for (const d of deletions) {
-        models.push(...d);
+    try {
+        const notAvailable = await operator.database.get<TeamModel>(TEAM).query(Q.where('id', Q.notIn(teams.map((t) => t.id)))).fetch();
+        const models = [];
+        const deletions = await Promise.all(notAvailable.map((t) => prepareDeleteTeam(t)));
+        for (const d of deletions) {
+            models.push(...d);
+        }
+        models.push(...await operator.handleTeam({teams, prepareRecordsOnly: true}));
+        await operator.batchRecords(models);
+        return {};
+    } catch (error) {
+        return {error};
     }
-    models.push(...await operator.handleTeam({teams, prepareRecordsOnly: true}));
-    await operator.batchRecords(models);
 };
 
 export const queryDefaultTeam = async (database: Database) => {
@@ -175,13 +180,18 @@ export const prepareMyTeams = (operator: ServerDataOperator, teams: Team[], memb
 };
 
 export const deleteMyTeams = async (operator: ServerDataOperator, teams: TeamModel[]) => {
-    const preparedModels: Model[] = [];
-    for await (const team of teams) {
-        const myTeam = await team.myTeam.fetch() as MyTeamModel;
-        preparedModels.push(myTeam.prepareDestroyPermanently());
-    }
+    try {
+        const preparedModels: Model[] = [];
+        for await (const team of teams) {
+            const myTeam = await team.myTeam.fetch() as MyTeamModel;
+            preparedModels.push(myTeam.prepareDestroyPermanently());
+        }
 
-    await operator.batchRecords(preparedModels);
+        await operator.batchRecords(preparedModels);
+        return {};
+    } catch (error) {
+        return {error};
+    }
 };
 
 export const prepareDeleteTeam = async (team: TeamModel): Promise<Model[]> => {

@@ -59,7 +59,12 @@ export const localRemoveUserFromTeam = async (serverUrl: string, teamId: string)
             models.push(...system);
         }
         if (models.length) {
-            await operator.batchRecords(models);
+            try {
+                await operator.batchRecords(models);
+            } catch {
+                // eslint-disable-next-line no-console
+                console.log('FAILED TO BATCH CHANGES FOR REMOVE USER FROM TEAM');
+            }
         }
 
         fetchAllTeams(serverUrl);

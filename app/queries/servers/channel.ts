@@ -174,10 +174,15 @@ export const queryCurrentChannel = async (database: Database) => {
 };
 
 export const deleteChannelMembership = async (operator: ServerDataOperator, userId: string, channelId: string) => {
-    const channelMembership = await operator.database.get(CHANNEL_MEMBERSHIP).query(Q.where('user_id', Q.eq(userId)), Q.where('channel_id', Q.eq(channelId))).fetch();
-    const models: Model[] = [];
-    for (const membership of channelMembership) {
-        models.push(membership.prepareDestroyPermanently());
+    try {
+        const channelMembership = await operator.database.get(CHANNEL_MEMBERSHIP).query(Q.where('user_id', Q.eq(userId)), Q.where('channel_id', Q.eq(channelId))).fetch();
+        const models: Model[] = [];
+        for (const membership of channelMembership) {
+            models.push(membership.prepareDestroyPermanently());
+        }
+        operator.batchRecords(models);
+        return {};
+    } catch (error) {
+        return {error};
     }
-    operator.batchRecords(models);
 };

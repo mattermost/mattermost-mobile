@@ -26,7 +26,13 @@ export const setCurrentUserStatusOffline = async (serverUrl: string) => {
     }
 
     user.prepareStatus(General.OFFLINE);
-    await operator.batchRecords([user]);
+
+    try {
+        await operator.batchRecords([user]);
+    } catch {
+        // eslint-disable-next-line no-console
+        console.log('FAILED TO BATCH CHANGES FOR SET CURRENT USER STATUS OFFLINE');
+    }
 
     return null;
 };
@@ -58,7 +64,13 @@ export const updateLocalCustomStatus = async (serverUrl: string, user: UserModel
         }
     }
 
-    await operator.batchRecords(models);
+    try {
+        await operator.batchRecords(models);
+    } catch {
+        // eslint-disable-next-line no-console
+        console.log('FAILED TO BATCH CHANGES FOR UPDATING CUSTOM STATUS');
+    }
+
     return {};
 };
 
@@ -104,7 +116,12 @@ export const updateUserPresence = async (serverUrl: string, userStatus: UserStat
         user.prepareUpdate((record) => {
             record.status = userStatus.status;
         });
-        await operator.batchRecords([user]);
+        try {
+            await operator.batchRecords([user]);
+        } catch {
+            // eslint-disable-next-line no-console
+            console.log('FAILED TO BATCH CHANGES FOR UPDATE USER PRESENCE');
+        }
     }
 
     return {};

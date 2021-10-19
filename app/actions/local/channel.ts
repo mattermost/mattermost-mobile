@@ -243,7 +243,12 @@ export const localRemoveUserFromChannel = async (serverUrl: string, channelId: s
             models.push(...system);
         }
         if (models.length) {
-            await operator.batchRecords(models);
+            try {
+                await operator.batchRecords(models);
+            } catch {
+                // eslint-disable-next-line no-console
+                console.log('FAILED TO BATCH CHANGES FOR REMOVE USER FROM CHANNEL');
+            }
         }
     }
 };
@@ -266,5 +271,10 @@ export const localSetChannelDeleteAt = async (serverUrl: string, channelId: stri
         c.deleteAt = deleteAt;
     });
 
-    await operator.batchRecords([model]);
+    try {
+        await operator.batchRecords([model]);
+    } catch {
+        // eslint-disable-next-line no-console
+        console.log('FAILED TO BATCH CHANGES FOR CHANNEL DELETE AT');
+    }
 };
