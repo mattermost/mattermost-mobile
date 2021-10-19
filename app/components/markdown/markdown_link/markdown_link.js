@@ -137,7 +137,6 @@ export default class MarkdownLink extends PureComponent {
             const actionText = formatMessage({id: 'mobile.markdown.link.copy_url', defaultMessage: 'Copy URL'});
             BottomSheet.showBottomSheetWithOptions({
                 options: [actionText, cancelText],
-                cancelButtonIndex: 1,
             }, (value) => {
                 if (value !== 1) {
                     this.handleLinkCopy();

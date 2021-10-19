@@ -490,6 +490,7 @@ export default class SelectServer extends PureComponent {
                                 />
                             </View>
                             <TextInput
+                                allowFontScaling={true}
                                 testID='select_server.server_url.input'
                                 ref={this.inputRef}
                                 value={url}

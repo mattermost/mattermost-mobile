@@ -25,7 +25,7 @@ export type ChannelCategory = {
     sorting: CategorySorting;
     channel_ids: Array<$ID<Channel>>;
     muted: boolean;
-    collapsed: boolean;
+    collapsed?: boolean;
 };
 
 export type OrderedChannelCategories = {
