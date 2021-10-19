@@ -30,19 +30,14 @@ import type {ExtraOptions, File, FileResponse} from '@typings/screens/edit_profi
 const ShareExtension = NativeModules.MattermostShare;
 
 type ProfileImageButtonProps = {
-    browseFileTypes: string; // 'public.item' | '*/*' | 'public.image' | 'images/*';
+    browseFileTypes: string;
     canBrowseFiles?: boolean;
     canBrowsePhotoLibrary?: boolean;
-    canBrowseVideoLibrary?: boolean;
     canTakePhoto?: boolean;
-    canTakeVideo?: boolean;
     currentUser: UserModel;
     extraOptions?: ExtraOptions[];
-    fileCount?: number;
     intl: IntlShape;
-    maxFileCount?: number;
     maxFileSize: number;
-    onShowFileMaxWarning?: () => void;
     onShowFileSizeWarning: (fileName: string) => void;
     onShowUnsupportedMimeTypeWarning: () => void;
     removeProfileImage: () => void;
@@ -75,27 +70,20 @@ class ProfilePictureButton extends PureComponent<ProfileImageButtonProps> {
         browseFileTypes: Platform.OS === 'ios' ? 'public.item' : '*/*',
         canBrowseFiles: true,
         canBrowsePhotoLibrary: true,
-        canBrowseVideoLibrary: true,
         canTakePhoto: true,
-        canTakeVideo: true,
         maxFileCount: 1,
         fileCount: 1,
         extraOptions: [],
     };
 
-    getPermissionDeniedMessage = (source: string, mediaType = '') => {
+    getPermissionDeniedMessage = (source: string) => {
         const {intl} = this.props;
         switch (source) {
             case 'camera': {
-                if (mediaType === 'video') {
-                    return getPermissionMessages(intl).camera.video;
-                }
                 return getPermissionMessages(intl).camera.photo;
             }
             case 'storage':
                 return getPermissionMessages(intl).storage;
-            case 'video':
-                return getPermissionMessages(intl).video;
             case 'photo':
             default: {
                 if (Platform.OS === 'android') {
@@ -119,7 +107,7 @@ class ProfilePictureButton extends PureComponent<ProfileImageButtonProps> {
             saveToPhotos: true,
         };
 
-        const hasCameraPermission = await this.hasPhotoPermission(source, mediaType);
+        const hasCameraPermission = await this.hasPhotoPermission(source);
 
         if (hasCameraPermission) {
             launchCamera(options, async (response: FileResponse) => {
@@ -147,7 +135,7 @@ class ProfilePictureButton extends PureComponent<ProfileImageButtonProps> {
             options.mediaType = 'mixed';
         }
 
-        const hasPhotoPermission = await this.hasPhotoPermission('photo', 'photo');
+        const hasPhotoPermission = await this.hasPhotoPermission('photo');
 
         if (hasPhotoPermission) {
             launchImageLibrary(options, async (response: FileResponse) => {
@@ -162,27 +150,6 @@ class ProfilePictureButton extends PureComponent<ProfileImageButtonProps> {
                 await this.uploadFiles(files);
             });
         }
-    };
-
-    attachVideoFromCamera = () => {
-        return this.attachFileFromCamera('camera', 'video');
-    };
-
-    attachVideoFromLibraryAndroid = () => {
-        const options: ImageLibraryOptions = {
-            videoQuality: 'high',
-            mediaType: 'video',
-        };
-
-        launchImageLibrary(options, async (response: FileResponse) => {
-            // emmProvider.inBackgroundSince = null;
-            if (response.error || response.didCancel) {
-                return;
-            }
-
-            const files = await this.getFilesFromResponse(response);
-            this.uploadFiles(files);
-        });
     };
 
     attachFileFromFiles = async () => {
@@ -240,7 +207,7 @@ class ProfilePictureButton extends PureComponent<ProfileImageButtonProps> {
         return files;
     };
 
-    hasPhotoPermission = async (source: string, mediaType = '') => {
+    hasPhotoPermission = async (source: string) => {
         if (Platform.OS === 'ios') {
             const {intl: {formatMessage}} = this.props;
             let permissionRequest;
@@ -263,7 +230,7 @@ class ProfilePictureButton extends PureComponent<ProfileImageButtonProps> {
                         onPress: () => Permissions.openSettings(),
                     };
 
-                    const {title, text} = this.getPermissionDeniedMessage(source, mediaType);
+                    const {title, text} = this.getPermissionDeniedMessage(source);
 
                     Alert.alert(title, text, [
                         grantOption,
@@ -394,14 +361,8 @@ class ProfilePictureButton extends PureComponent<ProfileImageButtonProps> {
         return null;
     };
 
-    //todo: To test fully all use cases
     showFileAttachmentOptions = () => {
-        const {canBrowseFiles, canBrowsePhotoLibrary, canBrowseVideoLibrary, canTakePhoto, canTakeVideo, fileCount, intl, maxFileCount, onShowFileMaxWarning, theme} = this.props;
-
-        if (fileCount === maxFileCount) {
-            onShowFileMaxWarning?.();
-            return;
-        }
+        const {canBrowseFiles, canBrowsePhotoLibrary, canTakePhoto, intl, theme} = this.props;
 
         DeviceEventEmitter.emit(Navigation.BLUR_POST_DRAFT);
 
@@ -422,18 +383,6 @@ class ProfilePictureButton extends PureComponent<ProfileImageButtonProps> {
                         />
                     )}
 
-                    {canTakeVideo && (
-                        <SlideUpPanelItem
-                            icon='video-outline'
-                            onPress={this.attachVideoFromCamera}
-                            testID='attachment.canTakeVideo'
-                            text={intl.formatMessage({
-                                id: 'mobile.file_upload.camera_video',
-                                defaultMessage: 'Take Video',
-                            })}
-                        />
-                    )}
-
                     {canBrowsePhotoLibrary && (
                         <SlideUpPanelItem
                             icon='file-generic-outline'
@@ -442,18 +391,6 @@ class ProfilePictureButton extends PureComponent<ProfileImageButtonProps> {
                             text={intl.formatMessage({
                                 id: 'mobile.file_upload.library',
                                 defaultMessage: 'Photo Library',
-                            })}
-                        />
-                    )}
-
-                    {canBrowseVideoLibrary && Platform.OS === 'android' && (
-                        <SlideUpPanelItem
-                            icon='file-video-outline'
-                            onPress={this.attachVideoFromLibraryAndroid}
-                            testID='attachment.canBrowseVideoLibrary.android'
-                            text={intl.formatMessage({
-                                id: 'mobile.file_upload.video',
-                                defaultMessage: 'Video Library',
                             })}
                         />
                     )}
