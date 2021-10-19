@@ -7,7 +7,7 @@ import {View} from 'react-native';
 import Animated, {useAnimatedStyle, withTiming} from 'react-native-reanimated';
 import {SafeAreaView, useSafeAreaInsets} from 'react-native-safe-area-context';
 
-import ChannelListComponent from '@app/components/channel_list';
+import ChannelList from '@app/components/channel_list';
 import TeamSidebar from '@components/team_sidebar';
 import {Device /*View as ViewConstants*/} from '@constants';
 import {useTheme} from '@context/theme';
@@ -85,7 +85,7 @@ const ChannelListScreen = (props: ChannelProps) => {
                     style={[styles.content, animated]}
                 >
                     <TeamSidebar/>
-                    <ChannelListComponent/>
+                    <ChannelList/>
                     {showTabletLayout &&
                         <Channel {...props}/>
                     }

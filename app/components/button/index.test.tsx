@@ -7,10 +7,13 @@ import {renderWithIntlAndTheme} from '@test/intl-test-helper';
 
 import ButtonComponent from './index';
 
-test('Button Component should match snapshot', () => {
-    const {toJSON} = renderWithIntlAndTheme(
-        <ButtonComponent text='A Button!'/>,
-    );
+describe('Button Component; Size / Emphasis / Type / State', () => {
+    test('DEFAULTS: Size [M] / Emphasis [Primary] / Type [default] / State [default]', () => {
+        const {toJSON} = renderWithIntlAndTheme(
+            <ButtonComponent text='A Button!'/>,
+        );
 
-    expect(toJSON()).toMatchSnapshot();
+        expect(toJSON()).toMatchSnapshot();
+    });
 });
+

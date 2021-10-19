@@ -1,5 +1,42 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
+exports[`Channel List Header Component should match snapshot 1`] = `
+<View>
+  <Text
+    style={
+      Array [
+        Object {
+          "fontFamily": "Metropolis",
+          "fontSize": 28,
+          "fontWeight": "600",
+          "lineHeight": 36,
+        },
+        Object {
+          "color": "#ffffff",
+        },
+      ]
+    }
+  >
+    Hello World!
+  </Text>
+  <Text
+    style={
+      Array [
+        Object {
+          "fontFamily": "OpenSans",
+          "fontSize": 11,
+          "fontWeight": "600",
+          "lineHeight": 16,
+        },
+        Object {
+          "color": "rgba(255,255,255,0.64)",
+        },
+      ]
+    }
+  />
+</View>
+`;
+
 exports[`Header Component should match snapshot 1`] = `
 <View>
   <Text

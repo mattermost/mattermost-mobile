@@ -38,7 +38,7 @@ type Props = {
     leftIcon: COMPASS_ICONS;
 }
 
-const ChannelListItemComponent = (props: Props) => {
+const ChannelListItem = (props: Props) => {
     const theme = useTheme();
     const styles = getStyleSheet(theme);
 
@@ -70,4 +70,4 @@ const ChannelListItemComponent = (props: Props) => {
     );
 };
 
-export default ChannelListItemComponent;
+export default ChannelListItem;
