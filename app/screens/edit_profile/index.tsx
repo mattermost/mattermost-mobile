@@ -205,7 +205,6 @@ const EditProfile = ({closeButtonId, componentId, currentUser, isModal, isTablet
                 username: userInfo.username,
             };
 
-            //todo: verify that the last_update_at value is being updated correctly for new image and remove image
             const {error: reqError} = await updateMe(serverUrl, partialUser);
 
             if (reqError) {
@@ -293,6 +292,7 @@ const EditProfile = ({closeButtonId, componentId, currentUser, isModal, isTablet
         return (
             <View style={style.top}>
                 <ProfilePictureButton
+                    serverUrl={serverUrl}
                     currentUser={currentUser}
                     theme={theme}
                     browseFileTypes={DocumentPicker.types.images}
@@ -304,9 +304,6 @@ const EditProfile = ({closeButtonId, componentId, currentUser, isModal, isTablet
                     removeProfileImage={handleRemoveProfileImage}
                     onShowFileSizeWarning={onShowFileSizeWarning}
                     onShowUnsupportedMimeTypeWarning={onShowUnsupportedMimeTypeWarning}
-
-                    // fileCount={undefined}
-                    // onShowFileMaxWarning={undefined}
                 >
                     {profilePicture}
                 </ProfilePictureButton>

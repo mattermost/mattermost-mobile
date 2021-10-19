@@ -17,7 +17,6 @@ import {getPermissionMessages} from '@components/profile_picture_button/constant
 import SlideUpPanelItem, {ITEM_HEIGHT} from '@components/slide_up_panel_item';
 import TouchableWithFeedback from '@components/touchable_with_feedback';
 import {Navigation, Files} from '@constants';
-import {withServerUrl} from '@context/server_url';
 import {t} from '@i18n';
 import NetworkManager from '@init/network_manager';
 import {VALID_MIME_TYPES} from '@screens/edit_profile/constants';
@@ -39,11 +38,11 @@ type ProfileImageButtonProps = {
     canTakeVideo?: boolean;
     currentUser: UserModel;
     extraOptions?: ExtraOptions[];
-    fileCount: number;
+    fileCount?: number;
     intl: IntlShape;
     maxFileCount?: number;
     maxFileSize: number;
-    onShowFileMaxWarning: () => void;
+    onShowFileMaxWarning?: () => void;
     onShowFileSizeWarning: (fileName: string) => void;
     onShowUnsupportedMimeTypeWarning: () => void;
     removeProfileImage: () => void;
@@ -79,7 +78,8 @@ class ProfilePictureButton extends PureComponent<ProfileImageButtonProps> {
         canBrowseVideoLibrary: true,
         canTakePhoto: true,
         canTakeVideo: true,
-        maxFileCount: 5,
+        maxFileCount: 1,
+        fileCount: 1,
         extraOptions: [],
     };
 
@@ -399,7 +399,7 @@ class ProfilePictureButton extends PureComponent<ProfileImageButtonProps> {
         const {canBrowseFiles, canBrowsePhotoLibrary, canBrowseVideoLibrary, canTakePhoto, canTakeVideo, fileCount, intl, maxFileCount, onShowFileMaxWarning, theme} = this.props;
 
         if (fileCount === maxFileCount) {
-            onShowFileMaxWarning();
+            onShowFileMaxWarning?.();
             return;
         }
 
@@ -526,4 +526,4 @@ class ProfilePictureButton extends PureComponent<ProfileImageButtonProps> {
     }
 }
 
-export default injectIntl(withServerUrl(ProfilePictureButton));
+export default injectIntl(ProfilePictureButton);
