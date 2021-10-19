@@ -8,7 +8,6 @@ import {Alert, NativeModules, Platform, StyleSheet, StatusBar, DeviceEventEmitte
 import AndroidOpenSettings from 'react-native-android-open-settings';
 import DocumentPicker from 'react-native-document-picker';
 import {launchImageLibrary, launchCamera, ImageLibraryOptions, CameraOptions} from 'react-native-image-picker';
-import {MediaType} from 'react-native-image-picker/src/types';
 import Permissions from 'react-native-permissions';
 
 import {Client} from '@client/rest';
@@ -297,7 +296,7 @@ class ProfilePictureButton extends PureComponent<ProfileImageButtonProps> {
         }
 
         if (!file.fileSize || !file.fileName) {
-            const path = (file?.path || file.uri).replace('file://', '');
+            const path = Platform.OS === 'ios' ? (file?.path || file.uri).replace('file://', '') : (file?.path || file.uri);
             const fileInfo = await FileSystem.getInfoAsync(path);
             const uri = fileInfo.uri;
             file.fileSize = fileInfo.size;
