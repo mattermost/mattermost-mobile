@@ -26,25 +26,28 @@ describe('CallDuration', () => {
     });
 
     test('should match snapshot more in the past', () => {
-        const props = {...baseProps, value: moment.now() - 36000500};
+        const props = {...baseProps, value: moment.now() - ((10 * 60 * 60 * 1000) + (30 * 60 * 1000) + (25 * 1000) + 500)};
         const wrapper = shallow(<CallDuration {...props}/>);
 
-        expect(wrapper.getElement()).toMatchSnapshot();
+        expect(wrapper.getElement().props.children).toBe('10:30:25');
     });
 
     test('should match snapshot more in the future', () => {
         const props = {...baseProps, value: moment.now() + 15500};
         const wrapper = shallow(<CallDuration {...props}/>);
 
-        expect(wrapper.getElement()).toMatchSnapshot();
+        expect(wrapper.getElement().props.children).toBe('00:00');
     });
 
     test('should re-render after updateIntervalInSeconds', () => {
         jest.useFakeTimers();
         const props = {...baseProps, value: moment.now(), updateIntervalInSeconds: 10};
         const wrapper = shallow(<CallDuration {...props}/>);
-        jest.advanceTimersByTime(10000);
-        expect(wrapper.getElement()).toMatchSnapshot();
+        expect(wrapper.getElement().props.children).toBe('00:00');
+        jest.advanceTimersByTime(5000);
+        expect(wrapper.getElement().props.children).toBe('00:00');
+        jest.advanceTimersByTime(5000);
+        expect(wrapper.getElement().props.children).toBe('00:10');
         jest.useRealTimers();
     });
 });

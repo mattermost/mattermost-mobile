@@ -16,7 +16,7 @@ const CallDuration = ({value, style, updateIntervalInSeconds}: CallDurationProps
         const now = moment();
         const startTime = moment(value);
         if (now < startTime) {
-            return '';
+            return '00:00';
         }
 
         const totalSeconds = now.diff(startTime, 'seconds');
