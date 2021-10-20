@@ -39,6 +39,7 @@ exports[`CallMessage should match snapshot 1`] = `
       id="call_message.started_a_call"
       style={
         Object {
+          "color": "#3f4350",
           "fontWeight": "bold",
         }
       }
@@ -49,6 +50,11 @@ exports[`CallMessage should match snapshot 1`] = `
       }
     />
     <FormattedRelativeTime
+      style={
+        Object {
+          "color": "#3f4350",
+        }
+      }
       updateIntervalInSeconds={1}
       value={100}
     />
@@ -128,6 +134,7 @@ exports[`CallMessage should match snapshot for ended call 1`] = `
       id="call_message.call_ended"
       style={
         Object {
+          "color": "#3f4350",
           "fontWeight": "bold",
         }
       }
@@ -144,6 +151,11 @@ exports[`CallMessage should match snapshot for ended call 1`] = `
       <InjectIntl(FormattedText)
         defaultMessage="Ended at {time}"
         id="call_message.call_ended_at"
+        style={
+          Object {
+            "color": "#3f4350",
+          }
+        }
         values={
           Object {
             "time": <FormattedTime
@@ -157,6 +169,7 @@ exports[`CallMessage should match snapshot for ended call 1`] = `
       <Text
         style={
           Object {
+            "color": "#3f4350",
             "marginLeft": 5,
             "marginRight": 5,
           }
@@ -167,6 +180,11 @@ exports[`CallMessage should match snapshot for ended call 1`] = `
       <InjectIntl(FormattedText)
         defaultMessage="Lasted {duration}"
         id="call_message.call_lasted"
+        style={
+          Object {
+            "color": "#3f4350",
+          }
+        }
         values={
           Object {
             "duration": "a few seconds",
