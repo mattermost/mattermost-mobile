@@ -249,6 +249,7 @@ const CallScreen = (props: Props) => {
     if (props.screenShareURL && props.call.screenOn) {
         screenShareView = (
             <Pressable
+                testID='screen-share-container'
                 style={style.screenShareImage}
                 onPress={() => setShowControlsInLandscape(!showControlsInLandscape)}
             >
@@ -274,6 +275,7 @@ const CallScreen = (props: Props) => {
                 contentContainerStyle={style.usersScroll}
             >
                 <Pressable
+                    testID='users-list'
                     onPress={() => setShowControlsInLandscape(!showControlsInLandscape)}
                     style={style.users}
                 >
@@ -322,6 +324,7 @@ const CallScreen = (props: Props) => {
                 <View style={style.buttons}>
                     {!props.isLandscape &&
                         <Pressable
+                            testID='mute-unmute'
                             style={style.mute}
                             onPress={muteUnmuteHandler}
                         >
@@ -345,6 +348,7 @@ const CallScreen = (props: Props) => {
                         </Pressable>}
                     <View style={style.otherButtons}>
                         <Pressable
+                            testID='leave'
                             style={style.button}
                             onPress={() => {
                                 popTopScreen();
@@ -414,6 +418,7 @@ const CallScreen = (props: Props) => {
                         </Pressable>
                         {props.isLandscape &&
                             <Pressable
+                                testID='mute-unmute'
                                 style={style.button}
                                 onPress={muteUnmuteHandler}
                             >
