@@ -1,0 +1,33 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`CallDuration should match snapshot 1`] = `
+<Text
+  style={Object {}}
+>
+  00:15
+</Text>
+`;
+
+exports[`CallDuration should match snapshot more in the future 1`] = `
+<Text
+  style={Object {}}
+>
+  
+</Text>
+`;
+
+exports[`CallDuration should match snapshot more in the past 1`] = `
+<Text
+  style={Object {}}
+>
+  10:00:00
+</Text>
+`;
+
+exports[`CallDuration should re-render after updateIntervalInSeconds 1`] = `
+<Text
+  style={Object {}}
+>
+  00:10
+</Text>
+`;

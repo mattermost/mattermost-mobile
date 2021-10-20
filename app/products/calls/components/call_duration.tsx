@@ -3,17 +3,22 @@
 
 import moment from 'moment-timezone';
 import React, {useEffect, useState} from 'react';
-import {Text, TextProps} from 'react-native';
+import {Text, TextProps, StyleProp, TextStyle} from 'react-native';
 
 type CallDurationProps = TextProps & {
+    style: StyleProp<TextStyle>;
     value: number;
     updateIntervalInSeconds: number;
 }
 
-const CallDuration = ({value, ...props}: CallDurationProps) => {
+const CallDuration = ({value, style, updateIntervalInSeconds}: CallDurationProps) => {
     const getCallDuration = () => {
         const now = moment();
         const startTime = moment(value);
+        if (now < startTime) {
+            return '';
+        }
+
         const totalSeconds = now.diff(startTime, 'seconds');
         const seconds = totalSeconds % 60;
         const totalMinutes = Math.floor(totalSeconds / 60);
@@ -28,14 +33,14 @@ const CallDuration = ({value, ...props}: CallDurationProps) => {
 
     const [formattedTime, setFormattedTime] = useState(getCallDuration());
     useEffect(() => {
-        const interval = setInterval(() => setFormattedTime(getCallDuration()), props.updateIntervalInSeconds);
+        const interval = setInterval(() => setFormattedTime(getCallDuration()), updateIntervalInSeconds * 1000);
         return () => {
             clearInterval(interval);
         };
     }, []);
 
     return (
-        <Text {...props}>
+        <Text style={style}>
             {formattedTime}
         </Text>
     );

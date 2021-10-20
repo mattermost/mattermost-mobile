@@ -25,7 +25,7 @@ const FormattedRelativeTime = ({timezone, value, ...props}: FormattedRelativeTim
 
     const [formattedTime, setFormattedTime] = useState(getFormattedRelativeTime());
     useEffect(() => {
-        const interval = setInterval(() => setFormattedTime(getFormattedRelativeTime()), props.updateIntervalInSeconds);
+        const interval = setInterval(() => setFormattedTime(getFormattedRelativeTime()), props.updateIntervalInSeconds * 1000);
         return () => {
             clearInterval(interval);
         };
