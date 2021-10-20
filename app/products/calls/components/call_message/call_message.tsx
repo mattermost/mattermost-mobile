@@ -66,6 +66,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             marginRight: 5,
         },
         startedText: {
+            color: theme.centerChannelColor,
             fontWeight: 'bold',
         },
         joinCallButton: {
@@ -76,12 +77,16 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             alignItems: 'center',
             alignContent: 'center',
         },
+        timeText: {
+            color: theme.centerChannelColor,
+        },
         endCallInfo: {
             flexDirection: 'row',
             alignItems: 'center',
             alignContent: 'center',
         },
         separator: {
+            color: theme.centerChannelColor,
             marginLeft: 5,
             marginRight: 5,
         },
@@ -132,6 +137,7 @@ const CallMessage = ({post, user, teammateNameDisplay, confirmToJoin, theme, act
                         <FormattedText
                             id='call_message.call_ended_at'
                             defaultMessage='Ended at {time}'
+                            style={style.timeText}
                             values={{
                                 time: (
                                     <FormattedTime
@@ -144,6 +150,7 @@ const CallMessage = ({post, user, teammateNameDisplay, confirmToJoin, theme, act
                         />
                         <Text style={style.separator}>{'•'}</Text>
                         <FormattedText
+                            style={style.timeText}
                             id='call_message.call_lasted'
                             defaultMessage='Lasted {duration}'
                             values={{
@@ -173,6 +180,7 @@ const CallMessage = ({post, user, teammateNameDisplay, confirmToJoin, theme, act
                 <FormattedRelativeTime
                     value={post.props.start_at}
                     updateIntervalInSeconds={1}
+                    style={style.timeText}
                 />
             </View>
             <Pressable
