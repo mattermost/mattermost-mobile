@@ -54,6 +54,7 @@ const Action = (props: Props) => {
             style={style.container}
         >
             <Touchable
+                testID='action'
                 onPress={handleOnPress}
                 {...touchableProps}
                 style={style.row}
