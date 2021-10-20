@@ -35,7 +35,6 @@ const DisableContent = ({blockStyles, disabledText, textStyles}: DisabledContent
 const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     return {
         helpTextContainer: {
-            marginHorizontal: 15,
             marginTop: 10,
         },
         helpText: {

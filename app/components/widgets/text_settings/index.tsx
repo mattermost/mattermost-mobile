@@ -4,7 +4,6 @@
 import React, {memo, useCallback} from 'react';
 import {useIntl} from 'react-intl';
 import {View, Platform} from 'react-native';
-import {backgroundColor} from 'react-native-calendars/src/style';
 import FloatingTextInput from 'react-native-reanimated-text-input';
 
 import {useTheme} from '@context/theme';
@@ -36,13 +35,13 @@ type TextSettingProps = {
     secureTextEntry?: boolean;
     testID: string;
     value: string;
+    isTablet?: boolean;
 };
 
 const TextSetting = (props: TextSettingProps) => {
     const theme = useTheme();
     const intl = useIntl();
-    const {disabled, disabledText, errorText, helpText, id, keyboardType, label, maxLength, multiline, onChange, optional, placeholder, secureTextEntry, testID, value} = props;
-
+    const {disabled, disabledText, errorText, helpText, id, isTablet, keyboardType, label, maxLength, multiline, onChange, optional, placeholder, secureTextEntry, testID, value} = props;
     const onChangeText = useCallback((text: string) => {
         return onChange(id, text);
     }, []);
@@ -61,55 +60,61 @@ const TextSetting = (props: TextSettingProps) => {
     return (
         <View
             testID={testID}
-            style={style.viewContainer}
+            style={[style.viewContainer,
+                {
+                    alignItems: 'center',
+                },
+            ]}
         >
-            <FloatingTextInput
-                activeColor={changeOpacity(theme.centerChannelColor, 0.64)}
-                activeLabelColor={changeOpacity(theme.centerChannelColor, 0.64)}
-                textInputColorStyles={{
-                    borderColor: changeOpacity(theme.centerChannelColor, 0.16),
-                }}
-                autoCapitalize='none'
-                autoCorrect={false}
+            <View style={{width: '84%'}} >
+                <FloatingTextInput
+                    activeColor={changeOpacity(theme.centerChannelColor, 0.64)}
+                    activeLabelColor={changeOpacity(theme.centerChannelColor, 0.64)}
+                    textInputColorStyles={{
+                        borderColor: changeOpacity(theme.centerChannelColor, 0.16),
+                    }}
+                    autoCapitalize='none'
+                    autoCorrect={false}
 
-                containerStyle={{width: '84%', marginLeft: 14}}
-                disableFullscreenUI={true}
-                editable={!disabled}
-                keyboardAppearance={getKeyboardAppearanceFromTheme(theme)}
-                keyboardType={keyboard}
-                label={formattedLabel}
-                maxLength={maxLength}
-                multiline={multiline}
-                onChangeText={onChangeText}
-                placeholder={placeholder}
-                placeholderTextColor={changeOpacity(theme.centerChannelColor, 0.5)}
-                secureTextEntry={secureTextEntry}
-                testID={`${testID}.input`}
-                underlineColorAndroid='transparent'
-                value={value}
-            />
-            <View style={{width: '90%'}}>
-                {disabled && disabledText && (
-                    <DisableContent
-                        blockStyles={blockStyles}
-                        disabledText={disabledText}
-                        textStyles={textStyles}
-                    />
-                )}
-                {helpText && (
-                    <HelpContent
-                        blockStyles={blockStyles}
-                        helpText={helpText}
-                        textStyles={textStyles}
-                    />
-                )}
-                {errorText && (
-                    <ErrorContent
-                        blockStyles={blockStyles}
-                        errorText={errorText}
-                        textStyles={textStyles}
-                    />
-                )}
+                    // containerStyle={{width: '84%', marginLeft: 14}}
+                    disableFullscreenUI={true}
+                    editable={!disabled}
+                    keyboardAppearance={getKeyboardAppearanceFromTheme(theme)}
+                    keyboardType={keyboard}
+                    label={formattedLabel}
+                    maxLength={maxLength}
+                    multiline={multiline}
+                    onChangeText={onChangeText}
+                    placeholder={placeholder}
+                    placeholderTextColor={changeOpacity(theme.centerChannelColor, 0.5)}
+                    secureTextEntry={secureTextEntry}
+                    testID={`${testID}.input`}
+                    underlineColorAndroid='transparent'
+                    value={value}
+                />
+                <View>
+                    {disabled && disabledText && (
+                        <DisableContent
+                            blockStyles={blockStyles}
+                            disabledText={disabledText}
+                            textStyles={textStyles}
+                        />
+                    )}
+                    {helpText && (
+                        <HelpContent
+                            blockStyles={blockStyles}
+                            helpText={helpText}
+                            textStyles={textStyles}
+                        />
+                    )}
+                    {errorText && (
+                        <ErrorContent
+                            blockStyles={blockStyles}
+                            errorText={errorText}
+                            textStyles={textStyles}
+                        />
+                    )}
+                </View>
             </View>
 
         </View>
