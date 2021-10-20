@@ -58,9 +58,13 @@ export function joinCall(channelId: string): ActionFunc {
                 data: url,
             });
         };
-        newClient(channelId, () => null, setScreenShareURL).then((c) => {
-            ws = c;
-        });
+
+        if (ws) {
+            ws.disconnect();
+            ws = null;
+        }
+
+        ws = await newClient(channelId, () => null, setScreenShareURL);
         dispatch({
             type: CallsTypes.RECEIVED_MYSELF_JOINED_CALL,
             data: channelId,
@@ -72,6 +76,7 @@ export function joinCall(channelId: string): ActionFunc {
 export function leaveCall(): GenericAction {
     if (ws) {
         ws.disconnect();
+        ws = null;
     }
     return {
         type: CallsTypes.RECEIVED_MYSELF_LEFT_CALL,
