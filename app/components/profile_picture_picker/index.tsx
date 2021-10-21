@@ -2,8 +2,8 @@
 // See LICENSE.txt for license information.
 
 import * as FileSystem from 'expo-file-system';
-import React, {PureComponent} from 'react';
-import {injectIntl, IntlShape} from 'react-intl';
+import React from 'react';
+import {useIntl} from 'react-intl';
 import {Alert, NativeModules, Platform, StyleSheet, StatusBar, DeviceEventEmitter} from 'react-native';
 import AndroidOpenSettings from 'react-native-android-open-settings';
 import DocumentPicker from 'react-native-document-picker';
@@ -16,6 +16,8 @@ import {getPermissionMessages} from '@components/profile_picture_picker/constant
 import SlideUpPanelItem, {ITEM_HEIGHT} from '@components/slide_up_panel_item';
 import TouchableWithFeedback from '@components/touchable_with_feedback';
 import {Navigation, Files} from '@constants';
+import {useServerUrl} from '@context/server_url';
+import {useTheme} from '@context/theme';
 import {t} from '@i18n';
 import NetworkManager from '@init/network_manager';
 import {VALID_MIME_TYPES} from '@screens/edit_profile/constants';
@@ -24,24 +26,21 @@ import UserModel from '@typings/database/models/servers/user';
 import {lookupMimeType} from '@utils/file';
 import {changeOpacity} from '@utils/theme';
 
-import type {ExtraOptions, File, FileResponse} from '@typings/screens/edit_profile';
+import type {File, FileResponse} from '@typings/screens/edit_profile';
 
 const ShareExtension = NativeModules.MattermostShare;
 
-type ProfileImageButtonProps = {
+type ProfilePictureButtonProps = {
     browseFileTypes: string;
     canBrowseFiles?: boolean;
     canBrowsePhotoLibrary?: boolean;
     canTakePhoto?: boolean;
+    children: React.ReactChildren;
     currentUser: UserModel;
-    extraOptions?: ExtraOptions[];
-    intl: IntlShape;
     maxFileSize: number;
     onShowFileSizeWarning: (fileName: string) => void;
     onShowUnsupportedMimeTypeWarning: () => void;
     removeProfileImage: () => void;
-    serverUrl: string;
-    theme: Theme;
     uploadFiles: (files: File[]) => void;
     wrapper: boolean;
 };
@@ -64,19 +63,24 @@ const style = StyleSheet.create({
     },
 });
 
-class ProfilePictureButton extends PureComponent<ProfileImageButtonProps> {
-    static defaultProps = {
-        browseFileTypes: Platform.OS === 'ios' ? 'public.item' : '*/*',
-        canBrowseFiles: true,
-        canBrowsePhotoLibrary: true,
-        canTakePhoto: true,
-        maxFileCount: 1,
-        fileCount: 1,
-        extraOptions: [],
-    };
-
-    getPermissionDeniedMessage = (source: string) => {
-        const {intl} = this.props;
+const ProfilePictureButton = ({
+    browseFileTypes = Platform.OS === 'ios' ? 'public.item' : '*/*',
+    canBrowseFiles = true,
+    canBrowsePhotoLibrary = true,
+    canTakePhoto = true,
+    children,
+    currentUser,
+    maxFileSize,
+    onShowFileSizeWarning,
+    onShowUnsupportedMimeTypeWarning,
+    removeProfileImage,
+    uploadFiles,
+    wrapper,
+}: ProfilePictureButtonProps) => {
+    const intl = useIntl();
+    const theme = useTheme();
+    const serverUrl = useServerUrl();
+    const getPermissionDeniedMessage = (source: string) => {
         switch (source) {
             case 'camera': {
                 return getPermissionMessages(intl).camera;
@@ -94,7 +98,7 @@ class ProfilePictureButton extends PureComponent<ProfileImageButtonProps> {
         }
     };
 
-    attachFileFromCamera = async () => {
+    const attachFileFromCamera = async () => {
         const options: CameraOptions = {
             quality: 0.8,
             videoQuality: 'high',
@@ -102,7 +106,7 @@ class ProfilePictureButton extends PureComponent<ProfileImageButtonProps> {
             saveToPhotos: true,
         };
 
-        const hasCameraPermission = await this.hasPhotoPermission('camera');
+        const hasCameraPermission = await hasPhotoPermission('camera');
 
         if (hasCameraPermission) {
             launchCamera(options, async (response: FileResponse) => {
@@ -113,13 +117,13 @@ class ProfilePictureButton extends PureComponent<ProfileImageButtonProps> {
                     return;
                 }
 
-                const files = await this.getFilesFromResponse(response);
-                await this.uploadFiles(files);
+                const files = await getFilesFromResponse(response);
+                await prepareFileUpload(files);
             });
         }
     };
 
-    attachFileFromLibrary = async () => {
+    const attachFileFromLibrary = async () => {
         const options: ImageLibraryOptions = {
             quality: 1,
             mediaType: 'mixed',
@@ -130,9 +134,9 @@ class ProfilePictureButton extends PureComponent<ProfileImageButtonProps> {
             options.mediaType = 'mixed';
         }
 
-        const hasPhotoPermission = await this.hasPhotoPermission('photo');
+        const hasPermission = await hasPhotoPermission('photo');
 
-        if (hasPhotoPermission) {
+        if (hasPermission) {
             launchImageLibrary(options, async (response: FileResponse) => {
                 StatusBar.setHidden(false);
 
@@ -141,15 +145,14 @@ class ProfilePictureButton extends PureComponent<ProfileImageButtonProps> {
                     return;
                 }
 
-                const files = await this.getFilesFromResponse(response);
-                await this.uploadFiles(files);
+                const files = await getFilesFromResponse(response);
+                await prepareFileUpload(files);
             });
         }
     };
 
-    attachFileFromFiles = async () => {
-        const {browseFileTypes} = this.props;
-        const hasPermission = await this.hasStoragePermission();
+    const attachFileFromFiles = async () => {
+        const hasPermission = await hasStoragePermission();
 
         if (hasPermission) {
             try {
@@ -169,14 +172,14 @@ class ProfilePictureButton extends PureComponent<ProfileImageButtonProps> {
                 // Decode file uri to get the actual path
                 res.uri = decodeURIComponent(res.uri);
 
-                this.uploadFiles([res]);
+                prepareFileUpload([res]);
             } catch (error) {
                 // Do nothing
             }
         }
     };
 
-    getFilesFromResponse = async (response: FileResponse): Promise<File[]> => {
+    const getFilesFromResponse = async (response: FileResponse): Promise<File[]> => {
         const files = [];
         const file = response?.assets?.[0];
 
@@ -202,9 +205,8 @@ class ProfilePictureButton extends PureComponent<ProfileImageButtonProps> {
         return files;
     };
 
-    hasPhotoPermission = async (source: string) => {
+    const hasPhotoPermission = async (source: string) => {
         if (Platform.OS === 'ios') {
-            const {intl: {formatMessage}} = this.props;
             let permissionRequest;
             const targetSource = source === 'camera' ? Permissions.PERMISSIONS.IOS.CAMERA : Permissions.PERMISSIONS.IOS.PHOTO_LIBRARY;
             const hasPermissionToStorage = await Permissions.check(targetSource);
@@ -218,19 +220,19 @@ class ProfilePictureButton extends PureComponent<ProfileImageButtonProps> {
                     break;
                 case Permissions.RESULTS.BLOCKED: {
                     const grantOption = {
-                        text: formatMessage({
+                        text: intl.formatMessage({
                             id: 'mobile.permission_denied_retry',
                             defaultMessage: 'Settings',
                         }),
                         onPress: () => Permissions.openSettings(),
                     };
 
-                    const {title, text} = this.getPermissionDeniedMessage(source);
+                    const {title, text} = getPermissionDeniedMessage(source);
 
                     Alert.alert(title, text, [
                         grantOption,
                         {
-                            text: formatMessage({
+                            text: intl.formatMessage({
                                 id: 'mobile.permission_denied_dismiss',
                                 defaultMessage: "Don't Allow",
                             }),
@@ -244,9 +246,9 @@ class ProfilePictureButton extends PureComponent<ProfileImageButtonProps> {
         return true;
     };
 
-    hasStoragePermission = async () => {
+    const hasStoragePermission = async () => {
         if (Platform.OS === 'android') {
-            const {intl: {formatMessage}} = this.props;
+            const {formatMessage} = intl;
             const storagePermission = Permissions.PERMISSIONS.ANDROID.READ_EXTERNAL_STORAGE;
             let permissionRequest;
             const hasPermissionToStorage = await Permissions.check(storagePermission);
@@ -261,8 +263,7 @@ class ProfilePictureButton extends PureComponent<ProfileImageButtonProps> {
                     }
                     break;
                 case Permissions.RESULTS.BLOCKED: {
-                    const {title, text} =
-                        this.getPermissionDeniedMessage(storagePermission);
+                    const {title, text} = getPermissionDeniedMessage(storagePermission);
 
                     Alert.alert(title, text, [
                         {
@@ -287,8 +288,7 @@ class ProfilePictureButton extends PureComponent<ProfileImageButtonProps> {
         return true;
     };
 
-    uploadFiles = async (files: File[]) => {
-        const {maxFileSize, onShowFileSizeWarning, onShowUnsupportedMimeTypeWarning, uploadFiles} = this.props;
+    const prepareFileUpload = async (files: File[]) => {
         const file = files?.[0];
 
         if (!file) {
@@ -317,8 +317,7 @@ class ProfilePictureButton extends PureComponent<ProfileImageButtonProps> {
         }
     };
 
-    getRemoveProfileImageOption = () => {
-        const {currentUser, removeProfileImage, serverUrl} = this.props;
+    const getRemoveProfileImageOption = () => {
         const {id, lastPictureUpdate} = currentUser;
 
         let client: Client | undefined;
@@ -356,12 +355,10 @@ class ProfilePictureButton extends PureComponent<ProfileImageButtonProps> {
         return null;
     };
 
-    showFileAttachmentOptions = () => {
-        const {canBrowseFiles, canBrowsePhotoLibrary, canTakePhoto, intl, theme} = this.props;
-
+    const showFileAttachmentOptions = () => {
         DeviceEventEmitter.emit(Navigation.BLUR_POST_DRAFT);
 
-        const removeImageOption = this.getRemoveProfileImageOption();
+        const removeImageOption = getRemoveProfileImageOption();
 
         const renderContent = () => {
             return (
@@ -369,7 +366,7 @@ class ProfilePictureButton extends PureComponent<ProfileImageButtonProps> {
                     {canTakePhoto && (
                         <SlideUpPanelItem
                             icon='camera-outline'
-                            onPress={this.attachFileFromCamera}
+                            onPress={attachFileFromCamera}
                             testID='attachment.canTakePhoto'
                             text={intl.formatMessage({
                                 id: 'mobile.file_upload.camera_photo',
@@ -381,7 +378,7 @@ class ProfilePictureButton extends PureComponent<ProfileImageButtonProps> {
                     {canBrowsePhotoLibrary && (
                         <SlideUpPanelItem
                             icon='file-generic-outline'
-                            onPress={this.attachFileFromLibrary}
+                            onPress={attachFileFromLibrary}
                             testID='attachment.canBrowsePhotoLibrary'
                             text={intl.formatMessage({
                                 id: 'mobile.file_upload.library',
@@ -393,7 +390,7 @@ class ProfilePictureButton extends PureComponent<ProfileImageButtonProps> {
                     {canBrowseFiles && (
                         <SlideUpPanelItem
                             icon='file-multiple-outline'
-                            onPress={this.attachFileFromFiles}
+                            onPress={attachFileFromFiles}
                             testID='attachment.canBrowseFiles'
                             text={intl.formatMessage({
                                 id: 'mobile.file_upload.browse',
@@ -427,35 +424,31 @@ class ProfilePictureButton extends PureComponent<ProfileImageButtonProps> {
         });
     };
 
-    render() {
-        const {theme, wrapper, children} = this.props;
-
-        if (wrapper) {
-            return (
-                <TouchableWithFeedback
-                    onPress={this.showFileAttachmentOptions}
-                    type={'opacity'}
-                >
-                    {children}
-                </TouchableWithFeedback>
-            );
-        }
-
+    if (wrapper) {
         return (
             <TouchableWithFeedback
-                onPress={this.showFileAttachmentOptions}
-                style={style.buttonContainer}
+                onPress={showFileAttachmentOptions}
                 type={'opacity'}
             >
-                <CompassIcon
-                    size={30}
-                    style={style.attachIcon}
-                    color={changeOpacity(theme.centerChannelColor, 0.9)}
-                    name='plus'
-                />
+                {children}
             </TouchableWithFeedback>
         );
     }
-}
 
-export default injectIntl(ProfilePictureButton);
+    return (
+        <TouchableWithFeedback
+            onPress={showFileAttachmentOptions}
+            style={style.buttonContainer}
+            type={'opacity'}
+        >
+            <CompassIcon
+                size={30}
+                style={style.attachIcon}
+                color={changeOpacity(theme.centerChannelColor, 0.9)}
+                name='plus'
+            />
+        </TouchableWithFeedback>
+    );
+};
+
+export default ProfilePictureButton;
