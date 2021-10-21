@@ -17,7 +17,6 @@ import ChannelLink from '@components/channel_link';
 import Emoji from '@components/emoji';
 import FormattedText from '@components/formatted_text';
 import Hashtag from '@components/markdown/hashtag';
-import {escapeLatexInputPreParser, unEscapeLatexCodeInText} from '@utils/latex';
 import {blendColors, concatStyles, makeStyleSheetFromTheme} from '@utils/theme';
 import {getScheme} from '@utils/url';
 
@@ -118,6 +117,7 @@ export default class Markdown extends PureComponent {
                 channelLink: this.renderChannelLink,
                 emoji: this.renderEmoji,
                 hashtag: this.renderHashtag,
+                latexInline: this.renderLatexInline,
 
                 paragraph: this.renderParagraph,
                 heading: this.renderHeading,
@@ -171,44 +171,6 @@ export default class Markdown extends PureComponent {
         this.setState({inlineLatexHeight: mathLineHeight});
     }
 
-    /**
-     * Renders inline latex blocks if found.
-     * If no inline latex is found returns null
-     */
-    renderInlineLatexText = (literal, context) => {
-        // eslint-disable-next-line no-useless-escape
-        const inlineLatexRegEx = /\$([^\$\n]+)\$(?!\w)/;
-
-        //Search for match
-        const match = inlineLatexRegEx.exec(literal);
-
-        if (match && !(/\w/).exec(literal[match.index - 1])) { //Extra check to see if there is no word character in front of the matched latex code
-            const firstPart = literal.slice(0, match.index);
-            let latexCode = match[1];
-            const lastPart = literal.slice(match.index + match[0].length);
-
-            latexCode = unEscapeLatexCodeInText(latexCode); //Unescape code
-
-            latexCode = latexCode.replace('&', '\\&'); //For some reason the slash before an & character is missing when you type it.
-
-            return (
-                <Text
-                    style={{lineHeight: this.state.inlineLatexHeight}}
-                >
-                    {this.renderText({context, literal: firstPart})}
-                    <LatexInline
-                        content={latexCode}
-                        onLayout={this.onInlineLatexLayout}
-                        maxMathWidth={Dimensions.get('window').width * 0.75}
-                    />
-                    {this.renderText({context, literal: lastPart})}
-                </Text>
-            );
-        }
-
-        return null;
-    }
-
     renderText = ({context, literal}) => {
         if (context.indexOf('image') !== -1) {
             // If this text is displayed, it will be styled by the image component
@@ -221,13 +183,6 @@ export default class Markdown extends PureComponent {
 
         // Construct the text style based off of the parents of this node since RN's inheritance is limited
         const style = this.computeTextStyle(this.props.baseTextStyle, context);
-
-        if (this.props.enableLatex && this.props.enableInlineLatex) {
-            const inlineLatexRender = this.renderInlineLatexText(literal, context);
-            if (inlineLatexRender != null) {
-                return inlineLatexRender;
-            }
-        }
 
         return (
             <Text
@@ -333,6 +288,24 @@ export default class Markdown extends PureComponent {
                 hashtag={hashtag}
                 linkStyle={this.props.textStyles.link}
             />
+        );
+    };
+
+    renderLatexInline = ({context, latexCode}) => {
+        if (!this.props.enableInlineLatex) {
+            return this.renderText({context, literal: `$${latexCode}$`});
+        }
+
+        return (
+            <Text
+                style={{lineHeight: this.state.inlineLatexHeight}}
+            >
+                <LatexInline
+                    content={latexCode}
+                    onLayout={this.onInlineLatexLayout}
+                    maxMathWidth={Dimensions.get('window').width * 0.75}
+                />
+            </Text>
         );
     };
 
@@ -516,14 +489,7 @@ export default class Markdown extends PureComponent {
     };
 
     render() {
-        let ast;
-
-        if (this.props.enableLatex && this.props.enableInlineLatex) {
-            const escapedContent = escapeLatexInputPreParser(this.props.value.toString());
-            ast = this.parser.parse(escapedContent);
-        } else {
-            ast = this.parser.parse(this.props.value.toString());
-        }
+        let ast = this.parser.parse(this.props.value.toString());
 
         ast = combineTextNodes(ast);
         ast = addListItemIndices(ast);
