@@ -215,8 +215,10 @@ public class CustomPushNotification extends PushNotification {
         if (channelId != null) {
             Map<String, List<Integer>> notificationsInChannel = loadNotificationsMap(mContext);
             List<Integer> notifications = notificationsInChannel.get(channelId);
-            notifications.remove(notificationId);
-            saveNotificationsMap(mContext, notificationsInChannel);
+            if (notifications != null) {
+                notifications.remove(notificationId);
+                saveNotificationsMap(mContext, notificationsInChannel);
+            }
             clearChannelNotifications(mContext, channelId);
         }
     }
