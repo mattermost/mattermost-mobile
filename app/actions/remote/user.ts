@@ -120,7 +120,7 @@ export const fetchProfilesPerChannels = async (serverUrl: string, channelIds: st
     }
 };
 
-export const updateMe = async (serverUrl: string, user: UserModel) => {
+export const updateMe = async (serverUrl: string, user: Partial<UserProfile>) => {
     const database = DatabaseManager.serverDatabases[serverUrl]?.database;
     const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
     if (!database) {
