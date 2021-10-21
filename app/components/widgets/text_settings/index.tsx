@@ -37,10 +37,10 @@ type TextSettingProps = {
     value: string;
 };
 
-const TextSetting = (props: TextSettingProps) => {
+const TextSetting = ({disabled, disabledText, errorText, helpText, id, keyboardType, label, maxLength, multiline, onChange, optional, placeholder, secureTextEntry, testID, value}: TextSettingProps) => {
     const theme = useTheme();
     const intl = useIntl();
-    const {disabled, disabledText, errorText, helpText, id, keyboardType, label, maxLength, multiline, onChange, optional, placeholder, secureTextEntry, testID, value} = props;
+
     const onChangeText = useCallback((text: string) => {
         return onChange(id, text);
     }, []);
@@ -59,13 +59,9 @@ const TextSetting = (props: TextSettingProps) => {
     return (
         <View
             testID={testID}
-            style={[style.viewContainer,
-                {
-                    alignItems: 'center',
-                },
-            ]}
+            style={style.viewContainer}
         >
-            <View style={{width: '84%'}} >
+            <View style={style.subContainer} >
                 <FloatingTextInput
                     activeColor={changeOpacity(theme.centerChannelColor, 0.64)}
                     activeLabelColor={changeOpacity(theme.centerChannelColor, 0.64)}
@@ -74,8 +70,6 @@ const TextSetting = (props: TextSettingProps) => {
                     }}
                     autoCapitalize='none'
                     autoCorrect={false}
-
-                    // containerStyle={{width: '84%', marginLeft: 14}}
                     disableFullscreenUI={true}
                     editable={!disabled}
                     keyboardAppearance={getKeyboardAppearanceFromTheme(theme)}
@@ -115,7 +109,6 @@ const TextSetting = (props: TextSettingProps) => {
                     )}
                 </View>
             </View>
-
         </View>
     );
 };
@@ -124,6 +117,10 @@ const getStyleSheet = makeStyleSheetFromTheme(() => {
     return {
         viewContainer: {
             marginVertical: 7,
+            alignItems: 'center',
+        },
+        subContainer: {
+            width: '84%',
         },
     };
 });

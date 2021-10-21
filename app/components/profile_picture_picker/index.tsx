@@ -35,7 +35,7 @@ type ProfilePictureButtonProps = {
     canBrowseFiles?: boolean;
     canBrowsePhotoLibrary?: boolean;
     canTakePhoto?: boolean;
-    children: React.ReactChildren;
+    children?: React.ReactNode;
     currentUser: UserModel;
     maxFileSize: number;
     onShowFileSizeWarning: (fileName: string) => void;

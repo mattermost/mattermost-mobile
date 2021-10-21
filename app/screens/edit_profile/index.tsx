@@ -292,16 +292,14 @@ const EditProfile = ({closeButtonId, componentId, currentUser, isModal, isTablet
         return (
             <View style={style.top}>
                 <ProfilePictureButton
-                    serverUrl={serverUrl}
-                    currentUser={currentUser}
-                    theme={theme}
                     browseFileTypes={DocumentPicker.types.images}
+                    currentUser={currentUser}
                     maxFileSize={MAX_SIZE}
-                    wrapper={true}
-                    uploadFiles={handleUploadProfileImage}
-                    removeProfileImage={handleRemoveProfileImage}
                     onShowFileSizeWarning={onShowFileSizeWarning}
                     onShowUnsupportedMimeTypeWarning={onShowUnsupportedMimeTypeWarning}
+                    removeProfileImage={handleRemoveProfileImage}
+                    uploadFiles={handleUploadProfileImage}
+                    wrapper={true}
                 >
                     {profilePicture}
                 </ProfilePictureButton>
