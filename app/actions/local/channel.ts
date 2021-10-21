@@ -10,9 +10,9 @@ import {addUserToTeam, fetchTeamByName, removeUserFromTeam} from '@actions/remot
 import {General} from '@constants';
 import DatabaseManager from '@database/manager';
 import {privateChannelJoinPrompt} from '@helpers/api/channel';
-import {prepareMyChannelsForTeam, queryMyChannel} from '@queries/servers/channel';
-import {queryCommonSystemValues, setCurrentChannelId, setCurrentTeamAndChannelId} from '@queries/servers/system';
-import {addChannelToTeamHistory, prepareMyTeams, queryMyTeamById, queryTeamById, queryTeamByName} from '@queries/servers/team';
+import {prepareDeleteChannel, prepareMyChannelsForTeam, queryChannelsById, queryMyChannel} from '@queries/servers/channel';
+import {queryCommonSystemValues, queryCurrentTeamId, setCurrentChannelId, setCurrentTeamAndChannelId} from '@queries/servers/system';
+import {addChannelToTeamHistory, prepareMyTeams, queryMyTeamById, queryTeamById, queryTeamByName, removeChannelFromTeamHistory} from '@queries/servers/team';
 import {PERMALINK_GENERIC_TEAM_NAME_REDIRECT} from '@utils/url';
 
 import type ChannelModel from '@typings/database/models/servers/channel';
@@ -219,5 +219,62 @@ export const switchToChannelByName = async (serverUrl: string, channelName: stri
     } catch (error) {
         errorHandler(intl);
         return {error};
+    }
+};
+
+export const localRemoveUserFromChannel = async (serverUrl: string, channelId: string) => {
+    const serverDatabase = DatabaseManager.serverDatabases[serverUrl];
+    if (!serverDatabase) {
+        return;
+    }
+
+    const {operator, database} = serverDatabase;
+
+    const myChannel = await queryMyChannel(database, channelId);
+    if (myChannel) {
+        const channel = await myChannel.channel.fetch() as ChannelModel;
+        const models = await prepareDeleteChannel(channel);
+        let teamId = channel.teamId;
+        if (teamId) {
+            teamId = await queryCurrentTeamId(database);
+        }
+        const system = await removeChannelFromTeamHistory(operator, teamId, channel.id, true);
+        if (system) {
+            models.push(...system);
+        }
+        if (models.length) {
+            try {
+                await operator.batchRecords(models);
+            } catch {
+                // eslint-disable-next-line no-console
+                console.log('FAILED TO BATCH CHANGES FOR REMOVE USER FROM CHANNEL');
+            }
+        }
+    }
+};
+
+export const localSetChannelDeleteAt = async (serverUrl: string, channelId: string, deleteAt: number) => {
+    const serverDatabase = DatabaseManager.serverDatabases[serverUrl];
+    if (!serverDatabase) {
+        return;
+    }
+
+    const {operator, database} = serverDatabase;
+
+    const channels = await queryChannelsById(database, [channelId]);
+    if (!channels?.length) {
+        return;
+    }
+
+    const channel = channels[0];
+    const model = channel.prepareUpdate((c) => {
+        c.deleteAt = deleteAt;
+    });
+
+    try {
+        await operator.batchRecords([model]);
+    } catch {
+        // eslint-disable-next-line no-console
+        console.log('FAILED TO BATCH CHANGES FOR CHANNEL DELETE AT');
     }
 };

@@ -5,4 +5,8 @@ import keyMirror from '@utils/key_mirror';
 
 export default keyMirror({
     ACCOUNT_SELECT_TABLET_VIEW: null,
+    LEAVE_CHANNEL: null,
+    LEAVE_TEAM: null,
+    TEAM_LOAD_ERROR: null,
+    CHANNEL_DELETED: null,
 });

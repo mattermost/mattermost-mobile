@@ -14,6 +14,7 @@ type PrepareCommonSystemValuesArgs = {
     currentTeamId?: string;
     currentUserId?: string;
     license?: ClientLicense;
+    teamHistory?: string;
 }
 
 const {SERVER: {SYSTEM}} = MM_TABLES;
@@ -115,6 +116,23 @@ export const queryWebSocketLastDisconnected = async (serverDatabase: Database) =
     } catch {
         return 0;
     }
+};
+
+export const queryTeamHistory = async (serverDatabase: Database) => {
+    try {
+        const teamHistory = await serverDatabase.get<SystemModel>(SYSTEM).find(SYSTEM_IDENTIFIERS.TEAM_HISTORY);
+        return (teamHistory.value) as string[];
+    } catch {
+        return [];
+    }
+};
+
+export const patchTeamHistory = async (operator: ServerDataOperator, value: string[], prepareRecordsOnly = false) => {
+    return operator.handleSystem({systems: [{
+        id: SYSTEM_IDENTIFIERS.TEAM_HISTORY,
+        value: JSON.stringify(value),
+    }],
+    prepareRecordsOnly});
 };
 
 export const prepareCommonSystemValues = (

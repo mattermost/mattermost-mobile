@@ -57,8 +57,8 @@ export default class ChannelModel extends Model {
         /** A CHANNEL can contain multiple POST (relationship is 1:N) */
         [POST]: {type: 'has_many', foreignKey: 'channel_id'},
 
-        /** A CHANNEL can contain multiple POST (relationship is 1:N) */
-        [MY_CHANNEL]: {type: 'has_many', foreignKey: 'channel_id'},
+        /** A CHANNEL can be associated to one MY_CHANNEL (relationship is 1:1) */
+        [MY_CHANNEL]: {type: 'has_many', foreignKey: 'id'},
 
         /** A TEAM can be associated to CHANNEL (relationship is 1:N) */
         [TEAM]: {type: 'belongs_to', key: 'team_id'},

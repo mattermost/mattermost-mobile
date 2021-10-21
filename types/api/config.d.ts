@@ -76,6 +76,7 @@ interface ClientConfig {
     EnablePreviewFeatures: string;
     EnablePreviewModeBanner: string;
     EnablePublicLink: string;
+    EnableReliableWebSockets: string;
     EnableSVGs: string;
     EnableSaml: string;
     EnableSignInWithEmail: string;

@@ -57,6 +57,7 @@ export const SYSTEM_IDENTIFIERS = {
     INTEGRATION_TRIGGER_ID: 'IntegreationTriggerId',
     LICENSE: 'license',
     WEBSOCKET: 'WebSocket',
+    TEAM_HISTORY: 'teamHistory',
     RECENT_CUSTOM_STATUS: 'recentCustomStatus',
 };
 
