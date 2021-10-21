@@ -262,14 +262,14 @@ class DatabaseManager {
         return null;
     }
 
-    public getServerUrlFromIdentifier = async (identifier: string): Promise<string|null|undefined> => {
+    public getServerUrlFromIdentifier = async (identifier: string): Promise<string|undefined> => {
         const database = this.appDatabase?.database;
         if (database) {
             const server = await queryServerByIdentifier(database, identifier);
             return server?.url;
         }
 
-        return null;
+        return undefined;
     }
 
     /**

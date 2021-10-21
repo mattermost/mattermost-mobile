@@ -117,6 +117,7 @@ describe('*** Test schema for SERVER database ***', () => {
                         mentions_count: {name: 'mentions_count', type: 'number'},
                         message_count: {name: 'message_count', type: 'number'},
                         roles: {name: 'roles', type: 'string'},
+                        viewed_at: {name: 'viewed_at', type: 'number'},
                     },
                     columnArray: [
                         {name: 'last_post_at', type: 'number'},
@@ -125,6 +126,7 @@ describe('*** Test schema for SERVER database ***', () => {
                         {name: 'mentions_count', type: 'number'},
                         {name: 'message_count', type: 'number'},
                         {name: 'roles', type: 'string'},
+                        {name: 'viewed_at', type: 'number'},
                     ],
                 },
                 [MY_CHANNEL_SETTINGS]: {
