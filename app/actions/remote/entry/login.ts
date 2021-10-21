@@ -3,10 +3,10 @@
 
 import {Model} from '@nozbe/watermelondb';
 
-import {scheduleExpiredNotification} from '@actions/local/push_notification';
 import {fetchMyChannelsForTeam, MyChannelsRequest} from '@actions/remote/channel';
 import {MyPreferencesRequest, fetchMyPreferences} from '@actions/remote/preference';
 import {fetchRolesIfNeeded} from '@actions/remote/role';
+import {getSessions} from '@actions/remote/session';
 import {ConfigAndLicenseRequest, fetchConfigAndLicense} from '@actions/remote/systems';
 import {fetchMyTeams, MyTeamsRequest} from '@actions/remote/team';
 import {Preferences} from '@constants';
@@ -18,6 +18,7 @@ import {prepareModels} from '@queries/servers/entry';
 import {prepareCommonSystemValues} from '@queries/servers/system';
 import {addChannelToTeamHistory} from '@queries/servers/team';
 import {selectDefaultChannelForTeam} from '@utils/channel';
+import {scheduleExpiredNotification} from '@utils/notification';
 
 import {deferredAppEntryActions} from './common';
 
@@ -68,7 +69,24 @@ export const loginEntry = async ({serverUrl, user, deviceToken}: AfterLoginArgs)
 
         // schedule local push notification if needed
         if (clData.config) {
-            scheduleExpiredNotification(serverUrl, clData.config, user.id, user.locale);
+            if (clData.config.ExtendSessionLengthWithActivity !== 'true') {
+                const timeOut = setTimeout(async () => {
+                    clearTimeout(timeOut);
+                    let sessions: Session[]|undefined;
+
+                    try {
+                        sessions = await getSessions(serverUrl, 'me');
+                    } catch (e) {
+                        // eslint-disable-next-line no-console
+                        console.warn('Failed to get user sessions', e);
+                        return;
+                    }
+
+                    if (sessions && Array.isArray(sessions)) {
+                        scheduleExpiredNotification(sessions, clData.config?.SiteName || serverUrl, user.locale);
+                    }
+                }, 500);
+            }
         }
 
         // select initial team

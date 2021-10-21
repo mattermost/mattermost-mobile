@@ -1,11 +1,15 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {IntlShape} from 'react-intl';
+import moment from 'moment-timezone';
+import {createIntl, IntlShape} from 'react-intl';
 import {Alert, DeviceEventEmitter} from 'react-native';
 
 import {Events} from '@constants';
+import {DEFAULT_LOCALE, getTranslations} from '@i18n';
+import PushNotifications from '@init/push_notifications';
 import {popToRoot} from '@screens/navigation';
+import {sortByNewest} from '@utils/general';
 
 export const convertToNotificationData = (notification: Notification, tapped = true) => {
     if (!notification.payload) {
@@ -69,4 +73,28 @@ export const emitNotificationError = (type: 'Team' | 'Channel') => {
         DeviceEventEmitter.emit(Events.NOTIFICATION_ERROR, type);
         clearTimeout(req);
     }, 500);
+};
+
+export const scheduleExpiredNotification = async (sessions: Session[], siteName: string, locale = DEFAULT_LOCALE) => {
+    const session = sessions.sort(sortByNewest)[0];
+    const expiresAt = session?.expires_at || 0;
+    const expiresInDays = Math.ceil(Math.abs(moment.duration(moment().diff(moment(expiresAt))).asDays()));
+    const intl = createIntl({locale, messages: getTranslations(locale)});
+    const body = intl.formatMessage({
+        id: 'mobile.session_expired',
+        defaultMessage: 'Session Expired: Please log in to continue receiving notifications. Sessions for {siteName} are configured to expire every {daysCount, number} {daysCount, plural, one {day} other {days}}.',
+    }, {siteName, daysCount: expiresInDays});
+
+    if (expiresAt && body) {
+        //@ts-expect-error: Does not need to set all Notification properties
+        PushNotifications.scheduleNotification({
+            fireDate: expiresAt,
+            body,
+            payload: {
+                userInfo: {
+                    local: true,
+                },
+            },
+        });
+    }
 };
