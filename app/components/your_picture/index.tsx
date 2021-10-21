@@ -68,7 +68,7 @@ const YourPicture = ({author, iconSize, showStatus = true, size = 64, statusSize
     try {
         client = NetworkManager.getClient(serverUrl);
     } catch {
-        // handle below that the client is not set
+        // does nothing
     }
 
     useEffect(() => {

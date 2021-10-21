@@ -10,31 +10,14 @@ export const getPermissionMessages = (intl: IntlShape) => {
 
     return {
         camera: {
-            video: {
-                title: formatMessage(
-                    {
-                        id: 'mobile.camera_video_permission_denied_title',
-                        defaultMessage:
-                            '{applicationName} would like to access your camera',
-                    },
-                    {applicationName},
-                ),
-                text: formatMessage({
-                    id: 'mobile.camera_video_permission_denied_description',
-                    defaultMessage:
-                        'Take videos and upload them to your Mattermost instance or save them to your device. Open Settings to grant Mattermost Read and Write access to your camera.',
-                }),
-            },
-            photo: {
-                title: formatMessage({
-                    id: 'mobile.camera_photo_permission_denied_title',
-                    defaultMessage: '{applicationName} would like to access your camera',
-                }, {applicationName}),
-                text: formatMessage({
-                    id: 'mobile.camera_photo_permission_denied_description',
-                    defaultMessage: 'Take photos and upload them to your Mattermost instance or save them to your device. Open Settings to grant Mattermost Read and Write access to your camera.',
-                }),
-            },
+            title: formatMessage({
+                id: 'mobile.camera_photo_permission_denied_title',
+                defaultMessage: '{applicationName} would like to access your camera',
+            }, {applicationName}),
+            text: formatMessage({
+                id: 'mobile.camera_photo_permission_denied_description',
+                defaultMessage: 'Take photos and upload them to your Mattermost instance or save them to your device. Open Settings to grant Mattermost Read and Write access to your camera.',
+            }),
         },
         storage: {
             title: formatMessage({
@@ -44,16 +27,6 @@ export const getPermissionMessages = (intl: IntlShape) => {
             text: formatMessage({
                 id: 'mobile.storage_permission_denied_description',
                 defaultMessage: 'Upload files to your Mattermost instance. Open Settings to grant Mattermost Read and Write access to files on this device.',
-            }),
-        },
-        video: {
-            title: formatMessage({
-                id: 'mobile.android.videos_permission_denied_title',
-                defaultMessage: '{applicationName} would like to access your videos',
-            }, {applicationName}),
-            text: formatMessage({
-                id: 'mobile.android.videos_permission_denied_description',
-                defaultMessage: 'Upload videos to your Mattermost instance or save them to your device. Open Settings to grant Mattermost Read and Write access to your video library.',
             }),
         },
         denied: {

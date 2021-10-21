@@ -79,7 +79,7 @@ class ProfilePictureButton extends PureComponent<ProfileImageButtonProps> {
         const {intl} = this.props;
         switch (source) {
             case 'camera': {
-                return getPermissionMessages(intl).camera.photo;
+                return getPermissionMessages(intl).camera;
             }
             case 'storage':
                 return getPermissionMessages(intl).storage;
@@ -328,7 +328,7 @@ class ProfilePictureButton extends PureComponent<ProfileImageButtonProps> {
             client = NetworkManager.getClient(serverUrl);
             profileImageUrl = client.getProfilePictureUrl(id, lastPictureUpdate);
         } catch {
-            // handle below that the client is not set
+            // does nothing
         }
 
         // Check if image url includes query string for timestamp. If so, it means the image has been updated from the default, i.e. '.../image?_=1544159746868'

@@ -35,13 +35,12 @@ type TextSettingProps = {
     secureTextEntry?: boolean;
     testID: string;
     value: string;
-    isTablet?: boolean;
 };
 
 const TextSetting = (props: TextSettingProps) => {
     const theme = useTheme();
     const intl = useIntl();
-    const {disabled, disabledText, errorText, helpText, id, isTablet, keyboardType, label, maxLength, multiline, onChange, optional, placeholder, secureTextEntry, testID, value} = props;
+    const {disabled, disabledText, errorText, helpText, id, keyboardType, label, maxLength, multiline, onChange, optional, placeholder, secureTextEntry, testID, value} = props;
     const onChangeText = useCallback((text: string) => {
         return onChange(id, text);
     }, []);

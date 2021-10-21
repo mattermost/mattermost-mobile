@@ -338,7 +338,6 @@ const EditProfile = ({closeButtonId, componentId, currentUser, isModal, isTablet
                     {error && <DisplayError error={error}/>}
                     <View style={[style.scrollViewRef]}>
                         {renderProfilePicture()}
-                        {/* todo the fields should match the design */}
                         <CommonFieldSettings
                             id={'firstName'}
                             isDisabled={(['ldap', 'saml'].includes(service) && lockedFirstName) || ['gitlab', 'google', 'office365'].includes(service)}

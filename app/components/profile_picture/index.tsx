@@ -22,7 +22,6 @@ const STATUS_BUFFER = Platform.select({
     android: 2,
 });
 
-// todo: setProfileImageUri: (imageUri?: string) => void;
 type ProfilePictureProps = {
     edit: boolean;
     iconSize?: number;
@@ -65,20 +64,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     };
 });
 
-const ProfilePicture = ({
-    author,
-    showStatus = true,
-    edit = false,
-    iconSize,
-    imageUri,
-    profileImageRemove,
-    profileImageUri,
-    size = 128,
-    status,
-    statusSize = 14,
-    statusStyle: defaultStatusStyle,
-    testID,
-}: ProfilePictureProps) => {
+const ProfilePicture = ({author, showStatus = true, edit = false, iconSize, imageUri, profileImageRemove, profileImageUri, size = 128, status, statusSize = 14, statusStyle: defaultStatusStyle, testID}: ProfilePictureProps) => {
     const [pictureUrl, setPictureUrl] = useState<string|undefined>();
     const theme = useTheme();
     const serverUrl = useServerUrl();
@@ -91,7 +77,7 @@ const ProfilePicture = ({
     try {
         client = NetworkManager.getClient(serverUrl);
     } catch {
-        // handle below that the client is not set
+        // does nothing
     }
 
     useEffect(() => {
@@ -99,12 +85,6 @@ const ProfilePicture = ({
             fetchStatusInBatch(serverUrl, author.id);
         }
     }, []);
-
-    // const clearProfileImageUri = () => {
-    //     if (isCurrentUser && props.profileImageUri !== '') {
-    //         props.actions.setProfileImageUri('');
-    //     }
-    // };
 
     useEffect(() => {
         if (profileImageUri) {
@@ -114,8 +94,6 @@ const ProfilePicture = ({
         } else if (author && client) {
             const uri = client.getProfilePictureUrl(author.id, author.lastPictureUpdate);
             setPictureUrl(uri);
-
-            // clearProfileImageUri();
         }
     }, []);
 
