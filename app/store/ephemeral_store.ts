@@ -15,6 +15,10 @@ class EphemeralStore {
         return this.navigationModalStack[0];
     }
 
+    getNavigationComponents = () => {
+        return this.navigationComponentIdStack;
+    }
+
     clearNavigationComponents = () => {
         this.navigationComponentIdStack = [];
         this.navigationModalStack = [];
@@ -80,6 +84,23 @@ class EphemeralStore {
             await (new Promise((r) => requestAnimationFrame(r)));
 
             found = this.navigationComponentIdStack.includes(componentId);
+        }
+    }
+
+    /**
+     * Waits until a screen has been removed as part of the stack.
+     * Use this function only if you know what you are doing
+     * this function will run until the screen disappears from the stack
+     * and can easily run forever if the screen is never removed.
+     * @param componentId string
+     */
+    waitUntilScreensIsRemoved = async (componentId: string) => {
+        let found = false;
+        while (!found) {
+            // eslint-disable-next-line no-await-in-loop
+            await (new Promise((r) => requestAnimationFrame(r)));
+
+            found = !this.navigationComponentIdStack.includes(componentId);
         }
     }
 }
