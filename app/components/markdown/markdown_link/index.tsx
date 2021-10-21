@@ -12,8 +12,8 @@ import {of as of$} from 'rxjs';
 import {switchMap} from 'rxjs/operators';
 import urlParse from 'url-parse';
 
-import {switchToChannelByName} from '@actions/local/channel';
 import {showPermalink} from '@actions/local/permalink';
+import {switchToChannelByName} from '@actions/remote/channel';
 import SlideUpPanelItem, {ITEM_HEIGHT} from '@components/slide_up_panel_item';
 import {Navigation} from '@constants';
 import {MM_TABLES, SYSTEM_IDENTIFIERS} from '@constants/database';

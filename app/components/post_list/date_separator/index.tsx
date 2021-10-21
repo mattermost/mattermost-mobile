@@ -12,7 +12,7 @@ type DateSeparatorProps = {
     date: number | Date;
     style?: StyleProp<ViewStyle>;
     theme: Theme;
-    timezone?: UserTimezone | null;
+    timezone?: string | null;
 };
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
