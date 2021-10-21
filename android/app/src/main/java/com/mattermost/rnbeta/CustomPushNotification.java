@@ -179,7 +179,12 @@ public class CustomPushNotification extends PushNotification {
                 if (!mAppLifecycleFacade.isAppVisible()) {
                     if (type.equals(PUSH_TYPE_MESSAGE)) {
                         if (channelId != null) {
-                            if (serverUrl != null) {
+                            if (serverUrl != null && !isReactInit) {
+                                // We will only fetch the data related to the notification on the native side
+                                // as updating the data directly to the db removes the wal & shm files needed
+                                // by watermelonDB, if the DB is updated while WDB is running it causes WDB to
+                                // detect the database as malformed, thus the app stop working and a restart is required.
+                                // Data will be fetch from within the JS context instead.
                                 dataHelper.fetchAndStoreDataForPushNotification(mNotificationProps.asBundle());
                             }
 
