@@ -26,50 +26,20 @@ export async function newClient(channelID: string, closeCb: () => void, setScree
     const streams: MediaStream[] = [];
 
     let stream: MediaStream;
+    let audioTrack: any;
     try {
         stream = await mediaDevices.getUserMedia({
             video: false,
             audio: true,
         }) as MediaStream;
+        audioTrack = stream.getAudioTracks()[0];
+        audioTrack.enabled = false;
+        streams.push(stream);
     } catch (err) {
-        // TODO: handle the error
-        // console.log(err);
-        return {
-            disconnect: () => null,
-            mute: () => null,
-            unmute: () => null,
-        };
+        console.log('Unable to get media device:', err); // eslint-disable-line no-console
     }
 
-    const audioTrack = stream.getAudioTracks()[0];
-    audioTrack.enabled = false;
-    streams.push(stream);
-
-    // alert(JSON.stringify(mediaDevices.enumerateDevices()))
-
-    // const AudioContext = window.AudioContext || window.webkitAudioContext;
-    // if (!AudioContext) {
-    //     throw new Error('AudioCtx unsupported');
-    // }
-    // const audioCtx = new AudioContext();
-    // const voiceDetector = new VoiceActivityDetector(audioCtx, stream);
-
     const ws = new WebSocket(getWSConnectionURL(channelID));
-
-    // voiceDetector.on('start', () => {
-    //     if (ws) {
-    //         ws.send(JSON.stringify({
-    //             type: 'voice_on',
-    //         }));
-    //     }
-    // });
-    // voiceDetector.on('stop', () => {
-    //     if (ws) {
-    //         ws.send(JSON.stringify({
-    //             type: 'voice_off',
-    //         }));
-    //     }
-    // });
 
     const disconnect = () => {
         ws.close();
@@ -91,11 +61,9 @@ export async function newClient(channelID: string, closeCb: () => void, setScree
     };
 
     const mute = () => {
-        // if (voiceDetector) {
-        //     voiceDetector.stop();
-        // }
-
-        audioTrack.enabled = false;
+        if (audioTrack) {
+            audioTrack.enabled = false;
+        }
         if (ws) {
             ws.send(JSON.stringify({
                 type: 'mute',
@@ -104,11 +72,9 @@ export async function newClient(channelID: string, closeCb: () => void, setScree
     };
 
     const unmute = () => {
-        // if (voiceDetector) {
-        //     voiceDetector.start();
-        // }
-
-        audioTrack.enabled = true;
+        if (audioTrack) {
+            audioTrack.enabled = true;
+        }
         if (ws) {
             ws.send(JSON.stringify({
                 type: 'unmute',

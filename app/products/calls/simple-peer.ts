@@ -97,7 +97,7 @@ export default class Peer extends stream.Duplex {
     constructor(localStream: MediaStream) {
         super({allowHalfOpen: false});
 
-        this.streams = [localStream];
+        this.streams = localStream ? [localStream] : [];
 
         this.onFinishBound = () => {
             this.onFinish();

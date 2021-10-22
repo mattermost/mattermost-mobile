@@ -51,7 +51,7 @@ export function disableChannelCalls(channelId: string): ActionFunc {
 }
 
 export function joinCall(channelId: string): ActionFunc {
-    return async (dispatch: DispatchFunc) => {
+    return async (dispatch: DispatchFunc, getState: GetStateFunc) => {
         const setScreenShareURL = (url: string) => {
             dispatch({
                 type: CallsTypes.SET_SCREENSHARE_URL,
@@ -64,7 +64,13 @@ export function joinCall(channelId: string): ActionFunc {
             ws = null;
         }
 
-        ws = await newClient(channelId, () => null, setScreenShareURL);
+        try {
+            ws = await newClient(channelId, () => null, setScreenShareURL);
+        } catch (error) {
+            forceLogoutIfNecessary(error, dispatch, getState);
+            dispatch(logError(error));
+            return {error};
+        }
         dispatch({
             type: CallsTypes.RECEIVED_MYSELF_JOINED_CALL,
             data: channelId,
