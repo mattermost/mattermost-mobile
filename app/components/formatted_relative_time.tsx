@@ -13,7 +13,7 @@ type FormattedRelativeTimeProps = TextProps & {
     updateIntervalInSeconds: number;
 }
 
-const FormattedRelativeTime = ({timezone, value, ...props}: FormattedRelativeTimeProps) => {
+const FormattedRelativeTime = ({timezone, value, updateIntervalInSeconds, ...props}: FormattedRelativeTimeProps) => {
     const getFormattedRelativeTime = () => {
         let zone = timezone;
         if (typeof timezone === 'object') {
@@ -25,7 +25,7 @@ const FormattedRelativeTime = ({timezone, value, ...props}: FormattedRelativeTim
 
     const [formattedTime, setFormattedTime] = useState(getFormattedRelativeTime());
     useEffect(() => {
-        const interval = setInterval(() => setFormattedTime(getFormattedRelativeTime()), props.updateIntervalInSeconds * 1000);
+        const interval = setInterval(() => setFormattedTime(getFormattedRelativeTime()), updateIntervalInSeconds * 1000);
         return () => {
             clearInterval(interval);
         };
