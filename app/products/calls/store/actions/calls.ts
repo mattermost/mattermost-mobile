@@ -8,7 +8,7 @@ import {GenericAction, ActionFunc, DispatchFunc, GetStateFunc} from '@mm-redux/t
 import {newClient} from '@mmproducts/calls/connection';
 import CallsTypes from '@mmproducts/calls/store/action_types/calls';
 
-let ws: any = null;
+export let ws: any = null;
 
 export function loadCalls(): ActionFunc {
     return bindClientFunc({

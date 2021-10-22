@@ -4,12 +4,43 @@
 import assert from 'assert';
 
 import {Client4} from '@client/rest';
-import TestHelper from '@test/test_helper';
 import configureStore from '@test/test_store';
 
 import CallsTypes from '../action_types/calls';
 
 import * as CallsActions from './calls';
+
+jest.mock('@client/rest', () => ({
+    Client4: {
+        setUrl: jest.fn(),
+        getCalls: jest.fn(() => ({
+            calls: {
+                'channel-1': {
+                    participants: {
+                        'user-1': {id: 'user-1', muted: false, isTalking: false},
+                        'user-2': {id: 'user-2', muted: true, isTalking: true},
+                    },
+                    channelId: 'channel-1',
+                    startTime: 123,
+                    speakers: ['user-2'],
+                    screenOn: '',
+                    threadId: 'thread-1',
+                },
+            },
+            enabled: {'channel-1': true},
+        })),
+        enableChannelCalls: jest.fn(() => null),
+        disableChannelCalls: jest.fn(() => null),
+    },
+}));
+
+jest.mock('@mmproducts/calls/connection', () => ({
+    newClient: jest.fn(() => Promise.resolve({
+        disconnect: jest.fn(),
+        mute: jest.fn(),
+        unmute: jest.fn(),
+    })),
+}));
 
 export function addFakeCall(channelId) {
     return {
@@ -31,32 +62,82 @@ export function addFakeCall(channelId) {
 
 describe('Actions.Calls', () => {
     let store;
-    beforeAll(async () => {
-        await TestHelper.initBasic(Client4);
-    });
+    const {newClient} = require('@mmproducts/calls/connection');
 
     beforeEach(async () => {
+        newClient.mockClear();
+        Client4.setUrl.mockClear();
+        Client4.getCalls.mockClear();
+        Client4.enableChannelCalls.mockClear();
+        Client4.disableChannelCalls.mockClear();
         store = await configureStore();
-    });
-
-    afterAll(async () => {
-        await TestHelper.tearDown();
     });
 
     it('joinCall', async () => {
         await store.dispatch(addFakeCall('channel-id'));
-        await store.dispatch(CallsActions.joinCall('channel-id'));
+        const response = await store.dispatch(CallsActions.joinCall('channel-id'));
         const result = store.getState().entities.calls.joined;
         assert.equal('channel-id', result);
+        assert.equal(response.data, 'channel-id');
+        expect(newClient).toBeCalled();
+        expect(newClient.mock.calls[0][0]).toBe('channel-id');
+        await store.dispatch(CallsActions.leaveCall());
     });
 
     it('leaveCall', async () => {
         await store.dispatch(addFakeCall('channel-id'));
+        expect(CallsActions.ws).toBe(null);
+
         await store.dispatch(CallsActions.joinCall('channel-id'));
         let result = store.getState().entities.calls.joined;
         assert.equal('channel-id', result);
+
+        expect(CallsActions.ws.disconnect).not.toBeCalled();
+        const disconnectMock = CallsActions.ws.disconnect;
         await store.dispatch(CallsActions.leaveCall());
+        expect(disconnectMock).toBeCalled();
+        expect(CallsActions.ws).toBe(null);
+
         result = store.getState().entities.calls.joined;
         assert.equal('', result);
+    });
+
+    it('muteMyself', async () => {
+        await store.dispatch(addFakeCall('channel-id'));
+        await store.dispatch(CallsActions.joinCall('channel-id'));
+        await store.dispatch(CallsActions.muteMyself());
+        expect(CallsActions.ws.mute).toBeCalled();
+        await store.dispatch(CallsActions.leaveCall());
+    });
+
+    it('unmuteMyself', async () => {
+        await store.dispatch(addFakeCall('channel-id'));
+        await store.dispatch(CallsActions.joinCall('channel-id'));
+        await store.dispatch(CallsActions.unmuteMyself());
+        expect(CallsActions.ws.unmute).toBeCalled();
+        await store.dispatch(CallsActions.leaveCall());
+    });
+
+    it('loadCalls', async () => {
+        await store.dispatch(CallsActions.loadCalls());
+        expect(Client4.getCalls).toBeCalledWith();
+        assert.equal(store.getState().entities.calls.calls['channel-1'].channelId, 'channel-1');
+        assert.equal(store.getState().entities.calls.enabled['channel-1'], true);
+    });
+
+    it('enableChannelCalls', async () => {
+        assert.equal(store.getState().entities.calls.enabled['channel-1'], undefined);
+        await store.dispatch(CallsActions.enableChannelCalls('channel-1'));
+        expect(Client4.enableChannelCalls).toBeCalledWith('channel-1');
+    });
+
+    it('disableChannelCalls', async () => {
+        assert.equal(store.getState().entities.calls.enabled['channel-1'], undefined);
+        await store.dispatch(CallsActions.enableChannelCalls('channel-1'));
+        assert.equal(store.getState().entities.calls.enabled['channel-1'], true);
+        expect(Client4.disableChannelCalls).not.toBeCalledWith('channel-1');
+        await store.dispatch(CallsActions.disableChannelCalls('channel-1'));
+        expect(Client4.disableChannelCalls).toBeCalledWith('channel-1');
+        assert.equal(store.getState().entities.calls.enabled['channel-1'], false);
     });
 });
