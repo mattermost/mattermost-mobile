@@ -75,6 +75,28 @@ describe('channelInfo', () => {
         expect(wrapper.getElement()).toMatchSnapshot();
     });
 
+    test('should match snapshot on calls features enabled and calls disabled for channel', async () => {
+        const props = {...baseProps, isCallsEnabled: false, callsFeatureEnabled: true};
+        const wrapper = shallow(
+            <ChannelInfo
+                {...props}
+            />,
+            {context: {intl: intlMock}},
+        );
+        expect(wrapper.getElement()).toMatchSnapshot();
+    });
+
+    test('should match snapshot on calls features enabled and calls enabled for channel', async () => {
+        const props = {...baseProps, isCallsEnabled: true, callsFeatureEnabled: true};
+        const wrapper = shallow(
+            <ChannelInfo
+                {...props}
+            />,
+            {context: {intl: intlMock}},
+        );
+        expect(wrapper.getElement()).toMatchSnapshot();
+    });
+
     test('should dismiss modal on close', () => {
         const dismissModal = jest.spyOn(NavigationActions, 'dismissModal');
         const wrapper = shallow(
