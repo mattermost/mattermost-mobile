@@ -1990,6 +1990,694 @@ exports[`channelInfo should match snapshot on calls features enabled and calls e
 </RNCSafeAreaView>
 `;
 
+exports[`channelInfo should match snapshot on calls features enabled, user is not admin and calls disabled for channel 1`] = `
+<RNCSafeAreaView
+  edges={
+    Array [
+      "bottom",
+      "left",
+      "right",
+    ]
+  }
+  style={
+    Object {
+      "flex": 1,
+    }
+  }
+  testID="channel_info.screen"
+>
+  <Connect(StatusBar) />
+  <ScrollView
+    style={
+      Object {
+        "backgroundColor": undefined,
+        "flex": 1,
+      }
+    }
+    testID="channel_info.scroll_view"
+  >
+    <ChannelInfoHeader
+      createAt={123}
+      creator="Creator"
+      displayName="Channel Name"
+      hasGuests={false}
+      header=""
+      isArchived={false}
+      isCustomStatusEnabled={false}
+      isCustomStatusExpired={false}
+      isCustomStatusExpirySupported={false}
+      isGroupConstrained={false}
+      isTeammateGuest={false}
+      memberCount={2}
+      purpose="Purpose"
+      testID="channel_info.header"
+      theme={
+        Object {
+          "awayIndicator": "#ffbc1f",
+          "buttonBg": "#1c58d9",
+          "buttonColor": "#ffffff",
+          "centerChannelBg": "#ffffff",
+          "centerChannelColor": "#3f4350",
+          "codeTheme": "github",
+          "dndIndicator": "#d24b4e",
+          "errorTextColor": "#d24b4e",
+          "linkColor": "#386fe5",
+          "mentionBg": "#ffffff",
+          "mentionColor": "#1e325c",
+          "mentionHighlightBg": "#ffd470",
+          "mentionHighlightLink": "#1b1d22",
+          "newMessageSeparator": "#cc8f00",
+          "onlineIndicator": "#3db887",
+          "sidebarBg": "#1e325c",
+          "sidebarHeaderBg": "#192a4d",
+          "sidebarHeaderTextColor": "#ffffff",
+          "sidebarTeamBarBg": "#14213e",
+          "sidebarText": "#ffffff",
+          "sidebarTextActiveBorder": "#5d89ea",
+          "sidebarTextActiveColor": "#ffffff",
+          "sidebarTextHoverBg": "#28427b",
+          "sidebarUnreadText": "#ffffff",
+          "type": "Denim",
+        }
+      }
+      type="O"
+    />
+    <View
+      style={
+        Object {
+          "backgroundColor": "#ffffff",
+          "borderBottomColor": undefined,
+          "borderBottomWidth": 1,
+          "borderTopColor": undefined,
+          "borderTopWidth": 1,
+        }
+      }
+    >
+      <React.Fragment>
+        <Connect(Favorite)
+          channelId="1234"
+          testID="channel_info.favorite.action"
+          theme={
+            Object {
+              "awayIndicator": "#ffbc1f",
+              "buttonBg": "#1c58d9",
+              "buttonColor": "#ffffff",
+              "centerChannelBg": "#ffffff",
+              "centerChannelColor": "#3f4350",
+              "codeTheme": "github",
+              "dndIndicator": "#d24b4e",
+              "errorTextColor": "#d24b4e",
+              "linkColor": "#386fe5",
+              "mentionBg": "#ffffff",
+              "mentionColor": "#1e325c",
+              "mentionHighlightBg": "#ffd470",
+              "mentionHighlightLink": "#1b1d22",
+              "newMessageSeparator": "#cc8f00",
+              "onlineIndicator": "#3db887",
+              "sidebarBg": "#1e325c",
+              "sidebarHeaderBg": "#192a4d",
+              "sidebarHeaderTextColor": "#ffffff",
+              "sidebarTeamBarBg": "#14213e",
+              "sidebarText": "#ffffff",
+              "sidebarTextActiveBorder": "#5d89ea",
+              "sidebarTextActiveColor": "#ffffff",
+              "sidebarTextHoverBg": "#28427b",
+              "sidebarUnreadText": "#ffffff",
+              "type": "Denim",
+            }
+          }
+        />
+        <Separator
+          theme={
+            Object {
+              "awayIndicator": "#ffbc1f",
+              "buttonBg": "#1c58d9",
+              "buttonColor": "#ffffff",
+              "centerChannelBg": "#ffffff",
+              "centerChannelColor": "#3f4350",
+              "codeTheme": "github",
+              "dndIndicator": "#d24b4e",
+              "errorTextColor": "#d24b4e",
+              "linkColor": "#386fe5",
+              "mentionBg": "#ffffff",
+              "mentionColor": "#1e325c",
+              "mentionHighlightBg": "#ffd470",
+              "mentionHighlightLink": "#1b1d22",
+              "newMessageSeparator": "#cc8f00",
+              "onlineIndicator": "#3db887",
+              "sidebarBg": "#1e325c",
+              "sidebarHeaderBg": "#192a4d",
+              "sidebarHeaderTextColor": "#ffffff",
+              "sidebarTeamBarBg": "#14213e",
+              "sidebarText": "#ffffff",
+              "sidebarTextActiveBorder": "#5d89ea",
+              "sidebarTextActiveColor": "#ffffff",
+              "sidebarTextHoverBg": "#28427b",
+              "sidebarUnreadText": "#ffffff",
+              "type": "Denim",
+            }
+          }
+        />
+        <Connect(Mute)
+          channelId="1234"
+          testID="channel_info.mute.action"
+          theme={
+            Object {
+              "awayIndicator": "#ffbc1f",
+              "buttonBg": "#1c58d9",
+              "buttonColor": "#ffffff",
+              "centerChannelBg": "#ffffff",
+              "centerChannelColor": "#3f4350",
+              "codeTheme": "github",
+              "dndIndicator": "#d24b4e",
+              "errorTextColor": "#d24b4e",
+              "linkColor": "#386fe5",
+              "mentionBg": "#ffffff",
+              "mentionColor": "#1e325c",
+              "mentionHighlightBg": "#ffd470",
+              "mentionHighlightLink": "#1b1d22",
+              "newMessageSeparator": "#cc8f00",
+              "onlineIndicator": "#3db887",
+              "sidebarBg": "#1e325c",
+              "sidebarHeaderBg": "#192a4d",
+              "sidebarHeaderTextColor": "#ffffff",
+              "sidebarTeamBarBg": "#14213e",
+              "sidebarText": "#ffffff",
+              "sidebarTextActiveBorder": "#5d89ea",
+              "sidebarTextActiveColor": "#ffffff",
+              "sidebarTextHoverBg": "#28427b",
+              "sidebarUnreadText": "#ffffff",
+              "type": "Denim",
+            }
+          }
+          userId="1234"
+        />
+        <Separator
+          theme={
+            Object {
+              "awayIndicator": "#ffbc1f",
+              "buttonBg": "#1c58d9",
+              "buttonColor": "#ffffff",
+              "centerChannelBg": "#ffffff",
+              "centerChannelColor": "#3f4350",
+              "codeTheme": "github",
+              "dndIndicator": "#d24b4e",
+              "errorTextColor": "#d24b4e",
+              "linkColor": "#386fe5",
+              "mentionBg": "#ffffff",
+              "mentionColor": "#1e325c",
+              "mentionHighlightBg": "#ffd470",
+              "mentionHighlightLink": "#1b1d22",
+              "newMessageSeparator": "#cc8f00",
+              "onlineIndicator": "#3db887",
+              "sidebarBg": "#1e325c",
+              "sidebarHeaderBg": "#192a4d",
+              "sidebarHeaderTextColor": "#ffffff",
+              "sidebarTeamBarBg": "#14213e",
+              "sidebarText": "#ffffff",
+              "sidebarTextActiveBorder": "#5d89ea",
+              "sidebarTextActiveColor": "#ffffff",
+              "sidebarTextHoverBg": "#28427b",
+              "sidebarUnreadText": "#ffffff",
+              "type": "Denim",
+            }
+          }
+        />
+        <Connect(IgnoreMentions)
+          channelId="1234"
+          testID="channel_info.ignore_mentions.action"
+          theme={
+            Object {
+              "awayIndicator": "#ffbc1f",
+              "buttonBg": "#1c58d9",
+              "buttonColor": "#ffffff",
+              "centerChannelBg": "#ffffff",
+              "centerChannelColor": "#3f4350",
+              "codeTheme": "github",
+              "dndIndicator": "#d24b4e",
+              "errorTextColor": "#d24b4e",
+              "linkColor": "#386fe5",
+              "mentionBg": "#ffffff",
+              "mentionColor": "#1e325c",
+              "mentionHighlightBg": "#ffd470",
+              "mentionHighlightLink": "#1b1d22",
+              "newMessageSeparator": "#cc8f00",
+              "onlineIndicator": "#3db887",
+              "sidebarBg": "#1e325c",
+              "sidebarHeaderBg": "#192a4d",
+              "sidebarHeaderTextColor": "#ffffff",
+              "sidebarTeamBarBg": "#14213e",
+              "sidebarText": "#ffffff",
+              "sidebarTextActiveBorder": "#5d89ea",
+              "sidebarTextActiveColor": "#ffffff",
+              "sidebarTextHoverBg": "#28427b",
+              "sidebarUnreadText": "#ffffff",
+              "type": "Denim",
+            }
+          }
+        />
+        <Separator
+          theme={
+            Object {
+              "awayIndicator": "#ffbc1f",
+              "buttonBg": "#1c58d9",
+              "buttonColor": "#ffffff",
+              "centerChannelBg": "#ffffff",
+              "centerChannelColor": "#3f4350",
+              "codeTheme": "github",
+              "dndIndicator": "#d24b4e",
+              "errorTextColor": "#d24b4e",
+              "linkColor": "#386fe5",
+              "mentionBg": "#ffffff",
+              "mentionColor": "#1e325c",
+              "mentionHighlightBg": "#ffd470",
+              "mentionHighlightLink": "#1b1d22",
+              "newMessageSeparator": "#cc8f00",
+              "onlineIndicator": "#3db887",
+              "sidebarBg": "#1e325c",
+              "sidebarHeaderBg": "#192a4d",
+              "sidebarHeaderTextColor": "#ffffff",
+              "sidebarTeamBarBg": "#14213e",
+              "sidebarText": "#ffffff",
+              "sidebarTextActiveBorder": "#5d89ea",
+              "sidebarTextActiveColor": "#ffffff",
+              "sidebarTextHoverBg": "#28427b",
+              "sidebarUnreadText": "#ffffff",
+              "type": "Denim",
+            }
+          }
+        />
+        <React.Fragment>
+          <Connect(NotificationPreference)
+            testID="channel_info.notification_preference.action"
+            theme={
+              Object {
+                "awayIndicator": "#ffbc1f",
+                "buttonBg": "#1c58d9",
+                "buttonColor": "#ffffff",
+                "centerChannelBg": "#ffffff",
+                "centerChannelColor": "#3f4350",
+                "codeTheme": "github",
+                "dndIndicator": "#d24b4e",
+                "errorTextColor": "#d24b4e",
+                "linkColor": "#386fe5",
+                "mentionBg": "#ffffff",
+                "mentionColor": "#1e325c",
+                "mentionHighlightBg": "#ffd470",
+                "mentionHighlightLink": "#1b1d22",
+                "newMessageSeparator": "#cc8f00",
+                "onlineIndicator": "#3db887",
+                "sidebarBg": "#1e325c",
+                "sidebarHeaderBg": "#192a4d",
+                "sidebarHeaderTextColor": "#ffffff",
+                "sidebarTeamBarBg": "#14213e",
+                "sidebarText": "#ffffff",
+                "sidebarTextActiveBorder": "#5d89ea",
+                "sidebarTextActiveColor": "#ffffff",
+                "sidebarTextHoverBg": "#28427b",
+                "sidebarUnreadText": "#ffffff",
+                "type": "Denim",
+              }
+            }
+          />
+          <Separator
+            theme={
+              Object {
+                "awayIndicator": "#ffbc1f",
+                "buttonBg": "#1c58d9",
+                "buttonColor": "#ffffff",
+                "centerChannelBg": "#ffffff",
+                "centerChannelColor": "#3f4350",
+                "codeTheme": "github",
+                "dndIndicator": "#d24b4e",
+                "errorTextColor": "#d24b4e",
+                "linkColor": "#386fe5",
+                "mentionBg": "#ffffff",
+                "mentionColor": "#1e325c",
+                "mentionHighlightBg": "#ffd470",
+                "mentionHighlightLink": "#1b1d22",
+                "newMessageSeparator": "#cc8f00",
+                "onlineIndicator": "#3db887",
+                "sidebarBg": "#1e325c",
+                "sidebarHeaderBg": "#192a4d",
+                "sidebarHeaderTextColor": "#ffffff",
+                "sidebarTeamBarBg": "#14213e",
+                "sidebarText": "#ffffff",
+                "sidebarTextActiveBorder": "#5d89ea",
+                "sidebarTextActiveColor": "#ffffff",
+                "sidebarTextHoverBg": "#28427b",
+                "sidebarUnreadText": "#ffffff",
+                "type": "Denim",
+              }
+            }
+          />
+        </React.Fragment>
+        <Connect(Pinned)
+          channelId="1234"
+          testID="channel_info.pinned_messages.action"
+          theme={
+            Object {
+              "awayIndicator": "#ffbc1f",
+              "buttonBg": "#1c58d9",
+              "buttonColor": "#ffffff",
+              "centerChannelBg": "#ffffff",
+              "centerChannelColor": "#3f4350",
+              "codeTheme": "github",
+              "dndIndicator": "#d24b4e",
+              "errorTextColor": "#d24b4e",
+              "linkColor": "#386fe5",
+              "mentionBg": "#ffffff",
+              "mentionColor": "#1e325c",
+              "mentionHighlightBg": "#ffd470",
+              "mentionHighlightLink": "#1b1d22",
+              "newMessageSeparator": "#cc8f00",
+              "onlineIndicator": "#3db887",
+              "sidebarBg": "#1e325c",
+              "sidebarHeaderBg": "#192a4d",
+              "sidebarHeaderTextColor": "#ffffff",
+              "sidebarTeamBarBg": "#14213e",
+              "sidebarText": "#ffffff",
+              "sidebarTextActiveBorder": "#5d89ea",
+              "sidebarTextActiveColor": "#ffffff",
+              "sidebarTextHoverBg": "#28427b",
+              "sidebarUnreadText": "#ffffff",
+              "type": "Denim",
+            }
+          }
+        />
+        <Connect(ManageMembers)
+          testID="channel_info.manage_members.action"
+          theme={
+            Object {
+              "awayIndicator": "#ffbc1f",
+              "buttonBg": "#1c58d9",
+              "buttonColor": "#ffffff",
+              "centerChannelBg": "#ffffff",
+              "centerChannelColor": "#3f4350",
+              "codeTheme": "github",
+              "dndIndicator": "#d24b4e",
+              "errorTextColor": "#d24b4e",
+              "linkColor": "#386fe5",
+              "mentionBg": "#ffffff",
+              "mentionColor": "#1e325c",
+              "mentionHighlightBg": "#ffd470",
+              "mentionHighlightLink": "#1b1d22",
+              "newMessageSeparator": "#cc8f00",
+              "onlineIndicator": "#3db887",
+              "sidebarBg": "#1e325c",
+              "sidebarHeaderBg": "#192a4d",
+              "sidebarHeaderTextColor": "#ffffff",
+              "sidebarTeamBarBg": "#14213e",
+              "sidebarText": "#ffffff",
+              "sidebarTextActiveBorder": "#5d89ea",
+              "sidebarTextActiveColor": "#ffffff",
+              "sidebarTextHoverBg": "#28427b",
+              "sidebarUnreadText": "#ffffff",
+              "type": "Denim",
+            }
+          }
+        />
+        <Connect(AddMembers)
+          testID="channel_info.add_members.action"
+          theme={
+            Object {
+              "awayIndicator": "#ffbc1f",
+              "buttonBg": "#1c58d9",
+              "buttonColor": "#ffffff",
+              "centerChannelBg": "#ffffff",
+              "centerChannelColor": "#3f4350",
+              "codeTheme": "github",
+              "dndIndicator": "#d24b4e",
+              "errorTextColor": "#d24b4e",
+              "linkColor": "#386fe5",
+              "mentionBg": "#ffffff",
+              "mentionColor": "#1e325c",
+              "mentionHighlightBg": "#ffd470",
+              "mentionHighlightLink": "#1b1d22",
+              "newMessageSeparator": "#cc8f00",
+              "onlineIndicator": "#3db887",
+              "sidebarBg": "#1e325c",
+              "sidebarHeaderBg": "#192a4d",
+              "sidebarHeaderTextColor": "#ffffff",
+              "sidebarTeamBarBg": "#14213e",
+              "sidebarText": "#ffffff",
+              "sidebarTextActiveBorder": "#5d89ea",
+              "sidebarTextActiveColor": "#ffffff",
+              "sidebarTextHoverBg": "#28427b",
+              "sidebarUnreadText": "#ffffff",
+              "type": "Denim",
+            }
+          }
+        />
+        <Connect(ConvertPrivate)
+          testID="channel_info.convert_private.action"
+          theme={
+            Object {
+              "awayIndicator": "#ffbc1f",
+              "buttonBg": "#1c58d9",
+              "buttonColor": "#ffffff",
+              "centerChannelBg": "#ffffff",
+              "centerChannelColor": "#3f4350",
+              "codeTheme": "github",
+              "dndIndicator": "#d24b4e",
+              "errorTextColor": "#d24b4e",
+              "linkColor": "#386fe5",
+              "mentionBg": "#ffffff",
+              "mentionColor": "#1e325c",
+              "mentionHighlightBg": "#ffd470",
+              "mentionHighlightLink": "#1b1d22",
+              "newMessageSeparator": "#cc8f00",
+              "onlineIndicator": "#3db887",
+              "sidebarBg": "#1e325c",
+              "sidebarHeaderBg": "#192a4d",
+              "sidebarHeaderTextColor": "#ffffff",
+              "sidebarTeamBarBg": "#14213e",
+              "sidebarText": "#ffffff",
+              "sidebarTextActiveBorder": "#5d89ea",
+              "sidebarTextActiveColor": "#ffffff",
+              "sidebarTextHoverBg": "#28427b",
+              "sidebarUnreadText": "#ffffff",
+              "type": "Denim",
+            }
+          }
+        />
+        <Connect(EditChannel)
+          testID="channel_info.edit_channel.action"
+          theme={
+            Object {
+              "awayIndicator": "#ffbc1f",
+              "buttonBg": "#1c58d9",
+              "buttonColor": "#ffffff",
+              "centerChannelBg": "#ffffff",
+              "centerChannelColor": "#3f4350",
+              "codeTheme": "github",
+              "dndIndicator": "#d24b4e",
+              "errorTextColor": "#d24b4e",
+              "linkColor": "#386fe5",
+              "mentionBg": "#ffffff",
+              "mentionColor": "#1e325c",
+              "mentionHighlightBg": "#ffd470",
+              "mentionHighlightLink": "#1b1d22",
+              "newMessageSeparator": "#cc8f00",
+              "onlineIndicator": "#3db887",
+              "sidebarBg": "#1e325c",
+              "sidebarHeaderBg": "#192a4d",
+              "sidebarHeaderTextColor": "#ffffff",
+              "sidebarTeamBarBg": "#14213e",
+              "sidebarText": "#ffffff",
+              "sidebarTextActiveBorder": "#5d89ea",
+              "sidebarTextActiveColor": "#ffffff",
+              "sidebarTextHoverBg": "#28427b",
+              "sidebarUnreadText": "#ffffff",
+              "type": "Denim",
+            }
+          }
+        />
+        <React.Fragment>
+          <StartCall
+            canStartCall={false}
+            currentChannelId="1234"
+            joinCall={[Function]}
+            testID="channel_info.start_call.action"
+            theme={
+              Object {
+                "awayIndicator": "#ffbc1f",
+                "buttonBg": "#1c58d9",
+                "buttonColor": "#ffffff",
+                "centerChannelBg": "#ffffff",
+                "centerChannelColor": "#3f4350",
+                "codeTheme": "github",
+                "dndIndicator": "#d24b4e",
+                "errorTextColor": "#d24b4e",
+                "linkColor": "#386fe5",
+                "mentionBg": "#ffffff",
+                "mentionColor": "#1e325c",
+                "mentionHighlightBg": "#ffd470",
+                "mentionHighlightLink": "#1b1d22",
+                "newMessageSeparator": "#cc8f00",
+                "onlineIndicator": "#3db887",
+                "sidebarBg": "#1e325c",
+                "sidebarHeaderBg": "#192a4d",
+                "sidebarHeaderTextColor": "#ffffff",
+                "sidebarTeamBarBg": "#14213e",
+                "sidebarText": "#ffffff",
+                "sidebarTextActiveBorder": "#5d89ea",
+                "sidebarTextActiveColor": "#ffffff",
+                "sidebarTextHoverBg": "#28427b",
+                "sidebarUnreadText": "#ffffff",
+                "type": "Denim",
+              }
+            }
+          />
+          <EnableDisableCalls
+            canEnableDisableCalls={false}
+            currentChannelId="1234"
+            disableCalls={[MockFunction]}
+            enableCalls={[MockFunction]}
+            enabled={false}
+            testID="channel_info.start_call.action"
+            theme={
+              Object {
+                "awayIndicator": "#ffbc1f",
+                "buttonBg": "#1c58d9",
+                "buttonColor": "#ffffff",
+                "centerChannelBg": "#ffffff",
+                "centerChannelColor": "#3f4350",
+                "codeTheme": "github",
+                "dndIndicator": "#d24b4e",
+                "errorTextColor": "#d24b4e",
+                "linkColor": "#386fe5",
+                "mentionBg": "#ffffff",
+                "mentionColor": "#1e325c",
+                "mentionHighlightBg": "#ffd470",
+                "mentionHighlightLink": "#1b1d22",
+                "newMessageSeparator": "#cc8f00",
+                "onlineIndicator": "#3db887",
+                "sidebarBg": "#1e325c",
+                "sidebarHeaderBg": "#192a4d",
+                "sidebarHeaderTextColor": "#ffffff",
+                "sidebarTeamBarBg": "#14213e",
+                "sidebarText": "#ffffff",
+                "sidebarTextActiveBorder": "#5d89ea",
+                "sidebarTextActiveColor": "#ffffff",
+                "sidebarTextHoverBg": "#28427b",
+                "sidebarUnreadText": "#ffffff",
+                "type": "Denim",
+              }
+            }
+          />
+        </React.Fragment>
+        <Connect(InjectIntl(Component))
+          theme={
+            Object {
+              "awayIndicator": "#ffbc1f",
+              "buttonBg": "#1c58d9",
+              "buttonColor": "#ffffff",
+              "centerChannelBg": "#ffffff",
+              "centerChannelColor": "#3f4350",
+              "codeTheme": "github",
+              "dndIndicator": "#d24b4e",
+              "errorTextColor": "#d24b4e",
+              "linkColor": "#386fe5",
+              "mentionBg": "#ffffff",
+              "mentionColor": "#1e325c",
+              "mentionHighlightBg": "#ffd470",
+              "mentionHighlightLink": "#1b1d22",
+              "newMessageSeparator": "#cc8f00",
+              "onlineIndicator": "#3db887",
+              "sidebarBg": "#1e325c",
+              "sidebarHeaderBg": "#192a4d",
+              "sidebarHeaderTextColor": "#ffffff",
+              "sidebarTeamBarBg": "#14213e",
+              "sidebarText": "#ffffff",
+              "sidebarTextActiveBorder": "#5d89ea",
+              "sidebarTextActiveColor": "#ffffff",
+              "sidebarTextHoverBg": "#28427b",
+              "sidebarUnreadText": "#ffffff",
+              "type": "Denim",
+            }
+          }
+        />
+      </React.Fragment>
+    </View>
+    <View
+      style={
+        Object {
+          "marginTop": 40,
+        }
+      }
+    >
+      <Connect(Leave)
+        close={[Function]}
+        testID="channel_info.leave.action"
+        theme={
+          Object {
+            "awayIndicator": "#ffbc1f",
+            "buttonBg": "#1c58d9",
+            "buttonColor": "#ffffff",
+            "centerChannelBg": "#ffffff",
+            "centerChannelColor": "#3f4350",
+            "codeTheme": "github",
+            "dndIndicator": "#d24b4e",
+            "errorTextColor": "#d24b4e",
+            "linkColor": "#386fe5",
+            "mentionBg": "#ffffff",
+            "mentionColor": "#1e325c",
+            "mentionHighlightBg": "#ffd470",
+            "mentionHighlightLink": "#1b1d22",
+            "newMessageSeparator": "#cc8f00",
+            "onlineIndicator": "#3db887",
+            "sidebarBg": "#1e325c",
+            "sidebarHeaderBg": "#192a4d",
+            "sidebarHeaderTextColor": "#ffffff",
+            "sidebarTeamBarBg": "#14213e",
+            "sidebarText": "#ffffff",
+            "sidebarTextActiveBorder": "#5d89ea",
+            "sidebarTextActiveColor": "#ffffff",
+            "sidebarTextHoverBg": "#28427b",
+            "sidebarUnreadText": "#ffffff",
+            "type": "Denim",
+          }
+        }
+      />
+      <Connect(Archive)
+        close={[Function]}
+        testID="channel_info.archive.action"
+        theme={
+          Object {
+            "awayIndicator": "#ffbc1f",
+            "buttonBg": "#1c58d9",
+            "buttonColor": "#ffffff",
+            "centerChannelBg": "#ffffff",
+            "centerChannelColor": "#3f4350",
+            "codeTheme": "github",
+            "dndIndicator": "#d24b4e",
+            "errorTextColor": "#d24b4e",
+            "linkColor": "#386fe5",
+            "mentionBg": "#ffffff",
+            "mentionColor": "#1e325c",
+            "mentionHighlightBg": "#ffd470",
+            "mentionHighlightLink": "#1b1d22",
+            "newMessageSeparator": "#cc8f00",
+            "onlineIndicator": "#3db887",
+            "sidebarBg": "#1e325c",
+            "sidebarHeaderBg": "#192a4d",
+            "sidebarHeaderTextColor": "#ffffff",
+            "sidebarTeamBarBg": "#14213e",
+            "sidebarText": "#ffffff",
+            "sidebarTextActiveBorder": "#5d89ea",
+            "sidebarTextActiveColor": "#ffffff",
+            "sidebarTextHoverBg": "#28427b",
+            "sidebarUnreadText": "#ffffff",
+            "type": "Denim",
+          }
+        }
+      />
+    </View>
+  </ScrollView>
+</RNCSafeAreaView>
+`;
+
 exports[`channelInfo should not include NotificationPreference for direct message 1`] = `
 <React.Fragment>
   <Connect(Favorite)

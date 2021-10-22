@@ -63,6 +63,7 @@ describe('channelInfo', () => {
         },
         isCallsEnabled: false,
         callsFeatureEnabled: false,
+        isChannelAdmin: false,
     };
 
     test('should match snapshot', async () => {
@@ -75,8 +76,19 @@ describe('channelInfo', () => {
         expect(wrapper.getElement()).toMatchSnapshot();
     });
 
+    test('should match snapshot on calls features enabled, user is not admin and calls disabled for channel', async () => {
+        const props = {...baseProps, isCallsEnabled: false, callsFeatureEnabled: true, isChannelAdmin: false};
+        const wrapper = shallow(
+            <ChannelInfo
+                {...props}
+            />,
+            {context: {intl: intlMock}},
+        );
+        expect(wrapper.getElement()).toMatchSnapshot();
+    });
+
     test('should match snapshot on calls features enabled and calls disabled for channel', async () => {
-        const props = {...baseProps, isCallsEnabled: false, callsFeatureEnabled: true};
+        const props = {...baseProps, isCallsEnabled: false, callsFeatureEnabled: true, isChannelAdmin: true};
         const wrapper = shallow(
             <ChannelInfo
                 {...props}
@@ -87,7 +99,7 @@ describe('channelInfo', () => {
     });
 
     test('should match snapshot on calls features enabled and calls enabled for channel', async () => {
-        const props = {...baseProps, isCallsEnabled: true, callsFeatureEnabled: true};
+        const props = {...baseProps, isCallsEnabled: true, callsFeatureEnabled: true, isChannelAdmin: true};
         const wrapper = shallow(
             <ChannelInfo
                 {...props}
