@@ -94,34 +94,3 @@ function testLatexLineBreak(latexCode: string): boolean {
 
     return true;
 }
-
-export function escapeLatexInputPreParser(inputRaw: string): string {
-    // eslint-disable-next-line no-useless-escape
-    const inlineLatexRegEx = /\$([^\$\n]+)\$(?!\w)/;
-
-    //Search for match
-    let match = inlineLatexRegEx.exec(inputRaw);
-    let output = '';
-    let restInput = inputRaw.slice();
-
-    while (match) {
-        output += restInput.slice(0, match.index); //add non matched part in output
-        restInput = restInput.slice(match.index + match[0].length);
-
-        //Add a double sign to not let markup library trigger inside of latex blocks.
-        let escapedMatch = match[0].replace(/_/g, '\\_'); //This is a character not supported by latex
-        escapedMatch = escapedMatch.replace(/\*\*/g, '\\*\\*');
-        escapedMatch = escapedMatch.replace(/~~/g, '\\~\\~');
-        escapedMatch = escapedMatch.replace(/`/g, '\\`');
-
-        output += escapedMatch;
-
-        match = inlineLatexRegEx.exec(restInput);
-    }
-
-    return output + restInput;
-}
-
-export function unEscapeLatexCodeInText(inputEscaped: string): string {
-    return inputEscaped.replace(/\\_/g, '_').replace(/\\\*\\\*/g, '**').replace(/\\~\\~/g, '~~').replace(/\\`/g, '`');
-}

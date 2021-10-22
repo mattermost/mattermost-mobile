@@ -3,7 +3,7 @@
 
 /* eslint-disable no-useless-escape */
 
-import {escapeLatexInputPreParser, splitLatexCodeInLines, unEscapeLatexCodeInText} from './latex';
+import {splitLatexCodeInLines} from './latex';
 
 describe('LatexUtilTest', () => {
     test('Simple lines test', () => {
@@ -62,29 +62,5 @@ x(n - 1), & \\text{for } 0 \\leq n \\leq 1
         expect(result[0]).toEqual('test =');
         expect(result[1]).toEqual('begin');
         expect(result[2]).toEqual('line = 2');
-    });
-
-    test('Escaping Function no escape', () => {
-        const content = 'this is some text and then there is $latex code here$ and then there is more text';
-
-        const result = escapeLatexInputPreParser(content);
-
-        expect(result).toEqual(content);
-    });
-
-    test('Escaping Function', () => {
-        const content = 'this is some text and then there is $latex _code_ here with symbols **bold** ~~strike~~ `Inline code` $ and then there is more text';
-
-        const result = escapeLatexInputPreParser(content);
-
-        expect(result).toEqual('this is some text and then there is $latex \\_code\\_ here with symbols \\*\\*bold\\*\\* \\~\\~strike\\~\\~ \\`Inline code\\` $ and then there is more text');
-
-        expect(unEscapeLatexCodeInText(result)).toEqual(content);
-    });
-
-    test('Escaping multiple latex sections', () => {
-        const content = 'this is some text and then there is $latex _code_ here with symbols **bold** ~~~strike~~ `Inline code` $ and then there is more text and more latex: $\\frac{1}{2} = 2_{2 + 3} - 2_{2**2 + 4} $ and some more thingy $\\ldots ** \\cdots$';
-
-        expect(unEscapeLatexCodeInText(escapeLatexInputPreParser(content))).toEqual(content);
     });
 });
