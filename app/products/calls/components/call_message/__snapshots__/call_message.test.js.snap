@@ -59,7 +59,7 @@ exports[`CallMessage should match snapshot 1`] = `
       value={100}
     />
   </View>
-  <Pressable
+  <TouchableOpacity
     onPress={[Function]}
     style={
       Object {
@@ -91,7 +91,7 @@ exports[`CallMessage should match snapshot 1`] = `
         }
       }
     />
-  </Pressable>
+  </TouchableOpacity>
 </View>
 `;
 

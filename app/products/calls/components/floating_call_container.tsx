@@ -29,7 +29,6 @@ const getStyleSheet = makeStyleSheetFromTheme(() => {
             position: 'absolute',
             top: topBarHeight + ViewTypes.STATUS_BAR_HEIGHT + 27,
             width: '100%',
-            height: '100%',
             ...Platform.select({
                 android: {
                     elevation: 9,

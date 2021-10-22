@@ -4,7 +4,7 @@
 import moment from 'moment-timezone';
 import React, {useCallback} from 'react';
 import {injectIntl, IntlShape} from 'react-intl';
-import {View, Alert, Pressable, Text} from 'react-native';
+import {View, Alert, TouchableOpacity, Text} from 'react-native';
 
 import CompassIcon from '@components/compass_icon';
 import FormattedRelativeTime from '@components/formatted_relative_time';
@@ -189,7 +189,7 @@ const CallMessage = ({post, user, teammateNameDisplay, confirmToJoin, theme, act
                     style={style.timeText}
                 />
             </View>
-            <Pressable
+            <TouchableOpacity
                 style={style.joinCallButton}
                 onPress={joinHandler}
             >
@@ -203,7 +203,7 @@ const CallMessage = ({post, user, teammateNameDisplay, confirmToJoin, theme, act
                     defaultMessage='Join Call'
                     style={style.joinCallButtonText}
                 />
-            </Pressable>
+            </TouchableOpacity>
         </View>
     );
 };

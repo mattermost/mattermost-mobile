@@ -4,7 +4,6 @@ exports[`FloatingCallContainer should match snapshot 1`] = `
 <View
   style={
     Object {
-      "height": "100%",
       "position": "absolute",
       "top": 91,
       "width": "100%",

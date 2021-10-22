@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React from 'react';
-import {Alert, Pressable} from 'react-native';
+import {Alert, TouchableOpacity} from 'react-native';
 
 import Preferences from '@mm-redux/constants/preferences';
 import {shallowWithIntl} from '@test/intl-test-helper';
@@ -52,7 +52,7 @@ describe('CallMessage', () => {
         const props = {...baseProps, actions: {joinCall}};
         const wrapper = shallowWithIntl(<CallMessage {...props}/>).dive();
 
-        wrapper.find(Pressable).simulate('press');
+        wrapper.find(TouchableOpacity).simulate('press');
         expect(Alert.alert).not.toHaveBeenCalled();
         expect(props.actions.joinCall).toHaveBeenCalled();
     });
@@ -62,7 +62,7 @@ describe('CallMessage', () => {
         const props = {...baseProps, confirmToJoin: true, actions: {joinCall}};
         const wrapper = shallowWithIntl(<CallMessage {...props}/>).dive();
 
-        wrapper.find(Pressable).simulate('press');
+        wrapper.find(TouchableOpacity).simulate('press');
         expect(Alert.alert).toHaveBeenCalled();
         expect(props.actions.joinCall).not.toHaveBeenCalled();
     });
