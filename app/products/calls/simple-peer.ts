@@ -562,7 +562,6 @@ export default class Peer extends stream.Duplex {
         }
 
         // Wait a bit before destroying so the socket flushes.
-        // TODO: is there a more reliable way to accomplish this?
         const destroySoon = () => {
             setTimeout(() => this.destroy(), 1000);
         };
@@ -788,8 +787,6 @@ export default class Peer extends stream.Duplex {
                 let foundSelectedCandidatePair = false;
 
                 items.forEach((item: any) => {
-                    // TODO: Once all browsers support the hyphenated stats report types, remove
-                    // the non-hypenated ones
                     if (
                         item.type === 'remotecandidate' ||
                         item.type === 'remote-candidate'

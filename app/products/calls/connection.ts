@@ -12,9 +12,6 @@ import {Client4} from '@client/rest';
 
 import Peer from './simple-peer';
 
-// TODO: Enable voice detector
-// import VoiceActivityDetector from './voice_calls_activity_detector';
-
 export let client: any = null;
 
 function getWSConnectionURL(channelID: string): string {
@@ -24,7 +21,6 @@ function getWSConnectionURL(channelID: string): string {
     return url;
 }
 
-// TODO: Maybe convert this to a component
 export async function newClient(channelID: string, closeCb: () => void, setScreenShareURL: (url: string) => void) {
     let peer: any = null;
     const streams: MediaStream[] = [];

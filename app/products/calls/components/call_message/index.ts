@@ -5,6 +5,7 @@ import {connect} from 'react-redux';
 import {bindActionCreators, Dispatch} from 'redux';
 
 import {Preferences} from '@mm-redux/constants';
+import {getChannel} from '@mm-redux/selectors/entities/channels';
 import {getBool, getTeammateNameDisplaySetting} from '@mm-redux/selectors/entities/preferences';
 import {isTimezoneEnabled} from '@mm-redux/selectors/entities/timezone';
 import {getUser, getCurrentUser} from '@mm-redux/selectors/entities/users';
@@ -37,6 +38,8 @@ function mapStateToProps(state: GlobalState, ownProps: OwnProps) {
         confirmToJoin: Boolean(currentCall && call),
         isMilitaryTime: getBool(state, Preferences.CATEGORY_DISPLAY_SETTINGS, 'use_military_time'),
         userTimezone: enableTimezone ? getUserCurrentTimezone(currentUser.timezone) : undefined,
+        currentChannelName: getChannel(state, post.channel_id).display_name,
+        callChannelName: currentCall ? getChannel(state, currentCall.channelId).display_name : '',
     };
 }
 

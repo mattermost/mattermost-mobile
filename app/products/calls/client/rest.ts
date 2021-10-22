@@ -22,8 +22,8 @@ const ClientCalls = (superclass: any) => class extends superclass {
             if (channel.call) {
                 callsResults[channel.channel_id] = {
                     participants: channel.call.users.reduce((prev: Dictionary<CallParticipant>, cur: string) => {
-                        // TODO: Get the right value for muted
-                        prev[cur] = {id: cur, muted: true, isTalking: false};
+                        const muted = channel.call.states[cur] ? !channel.call.states[cur].unmuted : true;
+                        prev[cur] = {id: cur, muted, isTalking: false};
                         return prev;
                     }, {}),
                     channelId: channel.channel_id,

@@ -3,6 +3,7 @@
 
 import moment from 'moment-timezone';
 import React, {useCallback} from 'react';
+import {injectIntl, IntlShape} from 'react-intl';
 import {View, Alert, Pressable, Text} from 'react-native';
 
 import CompassIcon from '@components/compass_icon';
@@ -27,6 +28,9 @@ type CallMessageProps = {
     confirmToJoin: boolean;
     isMilitaryTime: boolean;
     userTimezone: string;
+    currentChannelName: string;
+    callChannelName: string;
+    intl: typeof IntlShape;
 }
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
@@ -93,20 +97,22 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     };
 });
 
-const CallMessage = ({post, user, teammateNameDisplay, confirmToJoin, theme, actions, userTimezone, isMilitaryTime}: CallMessageProps) => {
+const CallMessage = ({post, user, teammateNameDisplay, confirmToJoin, theme, actions, userTimezone, isMilitaryTime, currentChannelName, callChannelName, intl}: CallMessageProps) => {
     const style = getStyleSheet(theme);
     const joinHandler = useCallback(() => {
         if (confirmToJoin) {
-            // TODO: Translate it and add the channel names to the text
             Alert.alert(
-                'Are you sure you want to switch to a different call?',
-                'You are already on a channel call in ~TODO. Do you want to leave your current call and join the call in ~TODO',
+                intl.formatMessage({id: 'calls.confirm-to-join-title', defaultMessage: 'Are you sure you want to switch to a different call?'}),
+                intl.formatMessage({
+                    id: 'calls.confirm-to-join-description',
+                    defaultMessage: 'You are already on a channel call in ~{callChannelName}. Do you want to leave your current call and join the call in ~{currentChannelName}?',
+                }, {callChannelName, currentChannelName}),
                 [
                     {
-                        text: 'Cancel',
+                        text: intl.formatMessage({id: 'calls.confirm-to-join-cancel', defaultMessage: 'Cancel'}),
                     },
                     {
-                        text: 'Leave & Join',
+                        text: intl.formatMessage({id: 'calls.confirm-to-join-leave-and-join', defaultMessage: 'Leave & Join'}),
                         onPress: () => actions.joinCall(post.channel_id),
                         style: 'cancel',
                     },
@@ -202,4 +208,4 @@ const CallMessage = ({post, user, teammateNameDisplay, confirmToJoin, theme, act
     );
 };
 
-export default CallMessage;
+export default injectIntl(CallMessage);

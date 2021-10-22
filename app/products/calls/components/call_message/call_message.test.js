@@ -1,11 +1,11 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {shallow} from 'enzyme';
 import React from 'react';
 import {Alert, Pressable} from 'react-native';
 
 import Preferences from '@mm-redux/constants/preferences';
+import {shallowWithIntl} from '@test/intl-test-helper';
 
 import CallMessage from './call_message';
 
@@ -30,17 +30,19 @@ describe('CallMessage', () => {
         confirmToJoin: false,
         isMilitaryTime: false,
         userTimezone: 'utc',
+        currentChannelName: 'Current Channel',
+        callChannelName: 'Call Channel',
     };
 
     test('should match snapshot', () => {
-        const wrapper = shallow(<CallMessage {...baseProps}/>);
+        const wrapper = shallowWithIntl(<CallMessage {...baseProps}/>).dive();
 
         expect(wrapper.getElement()).toMatchSnapshot();
     });
 
     test('should match snapshot for ended call', () => {
         const props = {...baseProps, post: {...baseProps.post, props: {start_at: 100, end_at: 200}}};
-        const wrapper = shallow(<CallMessage {...props}/>);
+        const wrapper = shallowWithIntl(<CallMessage {...props}/>).dive();
 
         expect(wrapper.getElement()).toMatchSnapshot();
     });
@@ -48,7 +50,7 @@ describe('CallMessage', () => {
     test('should join on click join button', () => {
         const joinCall = jest.fn();
         const props = {...baseProps, actions: {joinCall}};
-        const wrapper = shallow(<CallMessage {...props}/>);
+        const wrapper = shallowWithIntl(<CallMessage {...props}/>).dive();
 
         wrapper.find(Pressable).simulate('press');
         expect(Alert.alert).not.toHaveBeenCalled();
@@ -58,7 +60,7 @@ describe('CallMessage', () => {
     test('should ask for confirmation on click join button', () => {
         const joinCall = jest.fn();
         const props = {...baseProps, confirmToJoin: true, actions: {joinCall}};
-        const wrapper = shallow(<CallMessage {...props}/>);
+        const wrapper = shallowWithIntl(<CallMessage {...props}/>).dive();
 
         wrapper.find(Pressable).simulate('press');
         expect(Alert.alert).toHaveBeenCalled();

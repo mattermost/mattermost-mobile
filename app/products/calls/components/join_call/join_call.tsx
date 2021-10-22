@@ -2,6 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback} from 'react';
+import {injectIntl, IntlShape} from 'react-intl';
 import {View, Text, Pressable, Alert} from 'react-native';
 
 import Avatars from '@components/avatars';
@@ -20,6 +21,9 @@ type Props = {
     theme: Theme;
     call: Call;
     confirmToJoin: boolean;
+    currentChannelName: string;
+    callChannelName: string;
+    intl: typeof IntlShape;
 }
 
 const getStyleSheet = makeStyleSheetFromTheme((props: Props) => {
@@ -69,16 +73,18 @@ const JoinCall = (props: Props) => {
     const style = getStyleSheet(props);
     const joinHandler = useCallback(() => {
         if (props.confirmToJoin) {
-            // TODO: Translate it and add the channel names to the text
             Alert.alert(
-                'Are you sure you want to switch to a different call?',
-                'You are already on a channel call in ~TODO. Do you want to leave your current call and join the call in ~TODO',
+                props.intl.formatMessage({id: 'calls.confirm-to-join-title', defaultMessage: 'Are you sure you want to switch to a different call?'}),
+                props.intl.formatMessage({
+                    id: 'calls.confirm-to-join-description',
+                    defaultMessage: 'You are already on a channel call in ~{callChannelName}. Do you want to leave your current call and join the call in ~{currentChannelName}?',
+                }, {callChannelName: props.callChannelName, currentChannelName: props.currentChannelName}),
                 [
                     {
-                        text: 'Cancel',
+                        text: props.intl.formatMessage({id: 'calls.confirm-to-join-cancel', defaultMessage: 'Cancel'}),
                     },
                     {
-                        text: 'Leave & Join',
+                        text: props.intl.formatMessage({id: 'calls.confirm-to-join-leave-and-join', defaultMessage: 'Leave & Join'}),
                         onPress: () => props.actions.joinCall(props.call.channelId),
                         style: 'cancel',
                     },
@@ -121,4 +127,4 @@ const JoinCall = (props: Props) => {
         </Pressable>
     );
 };
-export default JoinCall;
+export default injectIntl(JoinCall);

@@ -3,7 +3,7 @@
 import {connect} from 'react-redux';
 import {bindActionCreators, Dispatch} from 'redux';
 
-import {getCurrentChannelId} from '@mm-redux/selectors/entities/channels';
+import {getChannel, getCurrentChannelId} from '@mm-redux/selectors/entities/channels';
 import {getTheme} from '@mm-redux/selectors/entities/preferences';
 import {joinCall} from '@mmproducts/calls/store/actions/calls';
 import {getCalls, getCurrentCall} from '@mmproducts/calls/store/selectors/calls';
@@ -20,6 +20,8 @@ function mapStateToProps(state: GlobalState) {
         theme: getTheme(state),
         call: call === currentCall ? null : call,
         confirmToJoin: Boolean(currentCall && call),
+        currentChannelName: getChannel(state, currentChannelId).display_name,
+        callChannelName: currentCall ? getChannel(state, currentCall.channelId).display_name : '',
     };
 }
 

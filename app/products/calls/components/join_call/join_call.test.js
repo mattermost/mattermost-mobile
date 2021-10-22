@@ -1,11 +1,11 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {shallow} from 'enzyme';
 import React from 'react';
 import {Alert} from 'react-native';
 
 import Preferences from '@mm-redux/constants/preferences';
+import {shallowWithIntl} from '@test/intl-test-helper';
 
 import JoinCall from './join_call';
 
@@ -35,10 +35,12 @@ describe('JoinCall', () => {
             threadId: false,
         },
         confirmToJoin: false,
+        currentChannelName: 'Current Channel',
+        callChannelName: 'Call Channel',
     };
 
     test('should match snapshot', () => {
-        const wrapper = shallow(<JoinCall {...baseProps}/>);
+        const wrapper = shallowWithIntl(<JoinCall {...baseProps}/>).dive();
 
         expect(wrapper.getElement()).toMatchSnapshot();
     });
@@ -46,7 +48,7 @@ describe('JoinCall', () => {
     test('should join on click', () => {
         const joinCall = jest.fn();
         const props = {...baseProps, actions: {joinCall}};
-        const wrapper = shallow(<JoinCall {...props}/>);
+        const wrapper = shallowWithIntl(<JoinCall {...props}/>).dive();
 
         wrapper.simulate('press');
         expect(Alert.alert).not.toHaveBeenCalled();
@@ -56,7 +58,7 @@ describe('JoinCall', () => {
     test('should ask for confirmation on click', () => {
         const joinCall = jest.fn();
         const props = {...baseProps, confirmToJoin: true, actions: {joinCall}};
-        const wrapper = shallow(<JoinCall {...props}/>);
+        const wrapper = shallowWithIntl(<JoinCall {...props}/>).dive();
 
         wrapper.simulate('press');
         expect(Alert.alert).toHaveBeenCalled();
