@@ -81,8 +81,10 @@ function componentWillAppear({componentId}: ComponentDidAppearEvent) {
     }
 }
 
-function componentDidAppearListener({componentId}: ComponentDidAppearEvent) {
-    EphemeralStore.addNavigationComponentId(componentId);
+function componentDidAppearListener({componentId, passProps}: ComponentDidAppearEvent) {
+    if (!(passProps as any)?.overlay) {
+        EphemeralStore.addNavigationComponentId(componentId);
+    }
 }
 
 function componentDidDisappearListener({componentId}: ComponentDidDisappearEvent) {

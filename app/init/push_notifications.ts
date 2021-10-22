@@ -16,14 +16,18 @@ import {
 
 import {markChannelAsViewed} from '@actions/local/channel';
 import {backgroundNotification, openNotification} from '@actions/remote/notifications';
-import {Device, General, Navigation} from '@constants';
+import EphemeralStore from '@app/store/ephemeral_store';
+import {Device, General, Navigation, Screens} from '@constants';
 import {GLOBAL_IDENTIFIERS} from '@constants/database';
 import DatabaseManager from '@database/manager';
 import {DEFAULT_LOCALE, getLocalizedMessage, t} from '@i18n';
 import NativeNotifications from '@notifications';
+import {queryServerName} from '@queries/app/servers';
 import {queryCurrentChannelId} from '@queries/servers/system';
 import {showOverlay} from '@screens/navigation';
 import {convertToNotificationData} from '@utils/notification';
+
+import {getActiveServerUrl} from './credentials';
 
 const CATEGORY = 'CAN_REPLY';
 const REPLY_ACTION = 'REPLY_ACTION';
@@ -121,20 +125,30 @@ class PushNotifications {
         }
     }
 
-    handleInAppNotification = async (notification: NotificationWithData) => {
+    handleInAppNotification = async (serverUrl: string, notification: NotificationWithData) => {
         const {payload} = notification;
 
-        if (payload?.server_url) {
-            const database = DatabaseManager.serverDatabases[payload.server_url]?.database;
+        const database = DatabaseManager.serverDatabases[serverUrl]?.database;
+        if (database) {
+            const activeServerUrl = await getActiveServerUrl();
+            const displayName = await queryServerName(DatabaseManager.appDatabase!.database, serverUrl);
             const channelId = await queryCurrentChannelId(database);
+            let serverName;
+            if (serverUrl !== activeServerUrl && Object.keys(DatabaseManager.serverDatabases).length > 1) {
+                serverName = displayName;
+            }
 
-            if (channelId && payload.channel_id !== channelId) {
-                const screen = 'Notification';
+            if (payload?.channel_id !== channelId || EphemeralStore.getNavigationTopComponentId() !== Screens.CHANNEL) {
+                DeviceEventEmitter.emit(Navigation.NAVIGATION_SHOW_OVERLAY);
+
+                const screen = Screens.IN_APP_NOTIFICATION;
                 const passProps = {
                     notification,
+                    overlay: true,
+                    serverName,
+                    serverUrl,
                 };
 
-                DeviceEventEmitter.emit(Navigation.NAVIGATION_SHOW_OVERLAY);
                 showOverlay(screen, passProps);
             }
         }
@@ -147,7 +161,7 @@ class PushNotifications {
         if (serverUrl) {
             if (foreground) {
                 // Move this to a local action
-                // this.handleInAppNotification(notification);
+                this.handleInAppNotification(serverUrl, notification);
             } else if (userInteraction && !payload?.userInfo?.local) {
                 // Handle notification tapped
                 openNotification(serverUrl, notification);
