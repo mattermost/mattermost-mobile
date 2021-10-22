@@ -29,7 +29,7 @@ target 'Mattermost' do
   pod 'Swime', '3.0.6'
 
   # TODO: Remove this once upstream PR https://github.com/daltoniam/Starscream/pull/871 is merged
-  pod 'Starscream', :git => 'https://github.com/mattermost/Starscream.git', :commit => '1b4b93708fb63d2665625a11e57461772a65364a'
+  pod 'Starscream', :git => 'https://github.com/mattermost/Starscream.git', :commit => 'cb83dd247339ff6c155f0e749d6fe2cc145f5283'
 end
 
 # Enables Flipper.

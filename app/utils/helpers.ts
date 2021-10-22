@@ -2,8 +2,13 @@
 // See LICENSE.txt for license information.
 
 import moment, {Moment} from 'moment-timezone';
+import {NativeModules} from 'react-native';
 
+import {Device} from '@constants';
 import {CUSTOM_STATUS_TIME_PICKER_INTERVALS_IN_MINUTES} from '@constants/custom_status';
+
+const {MattermostManaged} = NativeModules;
+const isRunningInSplitView = MattermostManaged.isRunningInSplitView;
 
 // isMinimumServerVersion will return true if currentVersion is equal to higher or than
 // the provided minimum version. A non-equal major version will ignore minor and dot
@@ -118,4 +123,13 @@ export function getRoundedTime(value: Moment) {
     }
     const remainder = roundedTo - diff;
     return start.add(remainder, 'm').seconds(0).milliseconds(0);
+}
+
+export async function isTablet() {
+    if (Device.IS_TABLET) {
+        const {isSplitView} = await isRunningInSplitView();
+        return !isSplitView;
+    }
+
+    return false;
 }

@@ -6,7 +6,7 @@ import {withDatabase} from '@nozbe/watermelondb/DatabaseProvider';
 import withObservables from '@nozbe/with-observables';
 import React from 'react';
 import {View} from 'react-native';
-import {of as of$} from 'rxjs';
+import {map, switchMap} from 'rxjs/operators';
 
 import FormattedText from '@components/formatted_text';
 import FormattedTime from '@components/formatted_time';
@@ -21,12 +21,6 @@ import type PreferenceModel from '@typings/database/models/servers/preference';
 import type SystemModel from '@typings/database/models/servers/system';
 import type UserModel from '@typings/database/models/servers/user';
 
-type withUserInputProps = {
-    config: SystemModel;
-    currentUserId: SystemModel;
-    preferences: PreferenceModel[];
-}
-
 type Props = {
     createAt: number | string | Date;
     isMilitaryTime: boolean;
@@ -34,6 +28,8 @@ type Props = {
     theme: Theme;
     user: UserModel;
 }
+
+const {SERVER: {PREFERENCE, SYSTEM, USER}} = MM_TABLES;
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     return {
@@ -89,24 +85,24 @@ const SystemHeader = ({isMilitaryTime, isTimezoneEnabled, createAt, theme, user}
     );
 };
 
-const withSystemIds = withObservables([], ({database}: WithDatabaseArgs) => ({
-    config: database.get(MM_TABLES.SERVER.SYSTEM).findAndObserve(SYSTEM_IDENTIFIERS.CONFIG),
-    currentUserId: database.get(MM_TABLES.SERVER.SYSTEM).findAndObserve(SYSTEM_IDENTIFIERS.CURRENT_USER_ID),
-    preferences: database.get(MM_TABLES.SERVER.PREFERENCE).query(
+const enhanced = withObservables([], ({database}: WithDatabaseArgs) => {
+    const config = database.get<SystemModel>(SYSTEM).findAndObserve(SYSTEM_IDENTIFIERS.CONFIG);
+    const preferences = database.get<PreferenceModel>(PREFERENCE).query(
         Q.where('category', Preferences.CATEGORY_DISPLAY_SETTINGS), Q.where('name', 'use_military_time'),
-    ).observe(),
-}));
-
-const withUser = withObservables(['currentUserId'], ({config, currentUserId, database, preferences}: WithDatabaseArgs & withUserInputProps) => {
-    const cfg: ClientConfig = config.value;
-    const isTimezoneEnabled = of$(cfg.ExperimentalTimezone === 'true');
-    const isMilitaryTime = of$(getPreferenceAsBool(preferences, Preferences.CATEGORY_DISPLAY_SETTINGS, 'use_military_time', false));
+    ).observe();
+    const isTimezoneEnabled = config.pipe(map(({value}: {value: ClientConfig}) => value.ExperimentalTimezone === 'true'));
+    const isMilitaryTime = preferences.pipe(
+        map((prefs) => getPreferenceAsBool(prefs, Preferences.CATEGORY_DISPLAY_SETTINGS, 'use_military_time', false)),
+    );
+    const user = database.get<SystemModel>(SYSTEM).findAndObserve(SYSTEM_IDENTIFIERS.CURRENT_USER_ID).pipe(
+        switchMap(({value}) => database.get(USER).findAndObserve(value)),
+    );
 
     return {
         isMilitaryTime,
         isTimezoneEnabled,
-        user: database.get(MM_TABLES.SERVER.USER).findAndObserve(currentUserId.value),
+        user,
     };
 });
 
-export default withDatabase(withSystemIds(withUser(React.memo(SystemHeader))));
+export default withDatabase(enhanced(React.memo(SystemHeader)));

@@ -7,6 +7,7 @@ import withObservables from '@nozbe/with-observables';
 import React, {useCallback} from 'react';
 import {useIntl} from 'react-intl';
 import {StyleProp, Text, TextStyle} from 'react-native';
+import {map, switchMap} from 'rxjs/operators';
 
 import {switchToChannel} from '@actions/local/channel';
 import {joinChannel} from '@actions/remote/channel';
@@ -18,24 +19,24 @@ import {alertErrorWithFallback} from '@utils/draft';
 import {preventDoubleTap} from '@utils/tap';
 
 import type {WithDatabaseArgs} from '@typings/database/database';
-import type ChannelModelType from '@typings/database/models/servers/channel';
+import type ChannelModel from '@typings/database/models/servers/channel';
 import type SystemModel from '@typings/database/models/servers/system';
-import type TeamModelType from '@typings/database/models/servers/team';
+import type TeamModel from '@typings/database/models/servers/team';
 
 export type ChannelMentions = Record<string, {id?: string; display_name: string; name?: string; team_name: string}>;
 
 type ChannelMentionProps = {
     channelMentions?: ChannelMentions;
     channelName: string;
-    channels: ChannelModelType[];
-    currentTeamId: SystemModel;
-    currentUserId: SystemModel;
+    channels: ChannelModel[];
+    currentTeamId: string;
+    currentUserId: string;
     linkStyle: StyleProp<TextStyle>;
-    team: TeamModelType;
+    team: TeamModel;
     textStyle: StyleProp<TextStyle>;
 }
 
-function getChannelFromChannelName(name: string, channels: ChannelModelType[], channelMentions: ChannelMentions = {}, teamName: string) {
+function getChannelFromChannelName(name: string, channels: ChannelModel[], channelMentions: ChannelMentions = {}, teamName: string) {
     const channelsByName = channelMentions;
     let channelName = name;
 
@@ -64,6 +65,8 @@ function getChannelFromChannelName(name: string, channels: ChannelModelType[], c
     return null;
 }
 
+const {SERVER: {CHANNEL, SYSTEM, TEAM}} = MM_TABLES;
+
 const ChannelMention = ({
     channelMentions, channelName, channels, currentTeamId, currentUserId,
     linkStyle, team, textStyle,
@@ -76,7 +79,7 @@ const ChannelMention = ({
         let c = channel;
 
         if (!c?.id && c?.display_name) {
-            const result = await joinChannel(serverUrl, currentUserId.value, currentTeamId.value, undefined, channelName);
+            const result = await joinChannel(serverUrl, currentUserId, currentTeamId, undefined, channelName);
             if (result.error || !result.channel) {
                 const joinFailedMessage = {
                     id: t('mobile.join_channel.error'),
@@ -121,14 +124,22 @@ const ChannelMention = ({
     );
 };
 
-const withSystemIds = withObservables([], ({database}: WithDatabaseArgs) => ({
-    currentTeamId: database.get(MM_TABLES.SERVER.SYSTEM).findAndObserve(SYSTEM_IDENTIFIERS.CURRENT_TEAM_ID),
-    currentUserId: database.get(MM_TABLES.SERVER.SYSTEM).findAndObserve(SYSTEM_IDENTIFIERS.CURRENT_USER_ID),
-}));
+const withChannelsForTeam = withObservables([], ({database}: WithDatabaseArgs) => {
+    const currentTeamId = database.get<SystemModel>(SYSTEM).findAndObserve(SYSTEM_IDENTIFIERS.CURRENT_TEAM_ID);
+    const currentUserId = database.get<SystemModel>(SYSTEM).findAndObserve(SYSTEM_IDENTIFIERS.CURRENT_USER_ID);
+    const channels = currentTeamId.pipe(
+        switchMap(({value}) => database.get<ChannelModel>(CHANNEL).query(Q.where('team_id', value)).observeWithColumns(['display_name'])),
+    );
+    const team = currentTeamId.pipe(
+        switchMap(({value}) => database.get<TeamModel>(TEAM).findAndObserve(value)),
+    );
 
-const withChannelsForTeam = withObservables(['currentTeamId'], ({database, currentTeamId}: WithDatabaseArgs & {currentTeamId: SystemModel}) => ({
-    channels: database.get(MM_TABLES.SERVER.CHANNEL).query(Q.where('team_id', currentTeamId.value)).observeWithColumns(['display_name']),
-    team: database.get(MM_TABLES.SERVER.TEAM).findAndObserve(currentTeamId.value),
-}));
+    return {
+        channels,
+        currentTeamId: currentTeamId.pipe(map((ct) => ct.value)),
+        currentUserId: currentUserId.pipe(map((cu) => cu.value)),
+        team,
+    };
+});
 
-export default withDatabase(withSystemIds(withChannelsForTeam(ChannelMention)));
+export default withDatabase(withChannelsForTeam(ChannelMention));

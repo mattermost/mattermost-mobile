@@ -10,7 +10,7 @@ export interface ClientTeamsMix {
     deleteTeam: (teamId: string) => Promise<any>;
     updateTeam: (team: Team) => Promise<Team>;
     patchTeam: (team: Partial<Team> & {id: string}) => Promise<Team>;
-    getTeams: (page?: number, perPage?: number, includeTotalCount?: boolean) => Promise<any>;
+    getTeams: (page?: number, perPage?: number, includeTotalCount?: boolean) => Promise<Team[]>;
     getTeam: (teamId: string) => Promise<Team>;
     getTeamByName: (teamName: string) => Promise<Team>;
     getMyTeams: () => Promise<Team[]>;

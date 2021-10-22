@@ -3,7 +3,7 @@
 
 import {Relation} from '@nozbe/watermelondb';
 import {field, relation} from '@nozbe/watermelondb/decorators';
-import Model from '@nozbe/watermelondb/Model';
+import Model, {Associations} from '@nozbe/watermelondb/Model';
 
 import {MM_TABLES} from '@constants/database';
 
@@ -17,6 +17,10 @@ const {TEAM, MY_TEAM} = MM_TABLES.SERVER;
 export default class MyTeamModel extends Model {
     /** table (name) : MyTeam */
     static table = MY_TEAM;
+
+    static associations: Associations = {
+        [TEAM]: {type: 'belongs_to', key: 'id'},
+    };
 
     /** roles : The different permissions that this user has in the team, concatenated together with comma to form a single string. */
     @field('roles') roles!: string;

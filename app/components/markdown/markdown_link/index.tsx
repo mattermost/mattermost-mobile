@@ -9,6 +9,7 @@ import React, {Children, ReactElement, useCallback} from 'react';
 import {useIntl} from 'react-intl';
 import {Alert, DeviceEventEmitter, StyleSheet, Text, View} from 'react-native';
 import {of as of$} from 'rxjs';
+import {switchMap} from 'rxjs/operators';
 import urlParse from 'url-parse';
 
 import {switchToChannelByName} from '@actions/local/channel';
@@ -168,17 +169,23 @@ const MarkdownLink = ({children, experimentalNormalizeMarkdownLinks, href, siteU
     );
 };
 
-const withSystemIds = withObservables([], ({database}: WithDatabaseArgs) => ({
-    config: database.get(MM_TABLES.SERVER.SYSTEM).findAndObserve(SYSTEM_IDENTIFIERS.CONFIG),
-}));
+type ConfigValue = {
+    value: ClientConfig;
+}
 
-const withConfigValues = withObservables(['config'], ({config}: {config: SystemModel}) => {
-    const cfg: ClientConfig = config.value;
+const withConfigValues = withObservables([], ({database}: WithDatabaseArgs) => {
+    const config = database.get<SystemModel>(MM_TABLES.SERVER.SYSTEM).findAndObserve(SYSTEM_IDENTIFIERS.CONFIG);
+    const experimentalNormalizeMarkdownLinks = config.pipe(
+        switchMap(({value}: ConfigValue) => of$(value.ExperimentalNormalizeMarkdownLinks)),
+    );
+    const siteURL = config.pipe(
+        switchMap(({value}: ConfigValue) => of$(value.SiteURL)),
+    );
 
     return {
-        experimentalNormalizeMarkdownLinks: of$(cfg.ExperimentalNormalizeMarkdownLinks),
-        siteURL: of$(cfg.SiteURL),
+        experimentalNormalizeMarkdownLinks,
+        siteURL,
     };
 });
 
-export default withDatabase(withSystemIds(withConfigValues(MarkdownLink)));
+export default withDatabase(withConfigValues(MarkdownLink));

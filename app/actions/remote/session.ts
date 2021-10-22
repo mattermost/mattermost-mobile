@@ -6,7 +6,9 @@ import {DeviceEventEmitter} from 'react-native';
 import {autoUpdateTimezone, getDeviceTimezone, isTimezoneEnabled} from '@actions/local/timezone';
 import {General, Database} from '@constants';
 import DatabaseManager from '@database/manager';
+import {getServerCredentials} from '@init/credentials';
 import NetworkManager from '@init/network_manager';
+import WebsocketManager from '@init/websocket_manager';
 import {queryDeviceToken} from '@queries/app/global';
 import {queryCurrentUserId, queryCommonSystemValues} from '@queries/servers/system';
 import {getCSRFFromCookie} from '@utils/security';
@@ -43,6 +45,11 @@ export const completeLogin = async (serverUrl: string, user: UserProfile) => {
         fetchDataRetentionPolicy(serverUrl);
     }
 
+    // Start websocket
+    const credentials = await getServerCredentials(serverUrl);
+    if (credentials?.token) {
+        WebsocketManager.createClient(serverUrl, credentials.token);
+    }
     return null;
 };
 

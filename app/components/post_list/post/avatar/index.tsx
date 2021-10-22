@@ -165,17 +165,15 @@ const Avatar = ({author, enablePostIconOverride, isAutoReponse, isSystemPost, pe
     );
 };
 
-const withSystemIds = withObservables([], ({database}: WithDatabaseArgs) => ({
-    enablePostIconOverride: database.get(MM_TABLES.SERVER.SYSTEM).findAndObserve(SYSTEM_IDENTIFIERS.CONFIG).pipe(
-        switchMap((cfg: SystemModel) => of$(cfg.value.EnablePostIconOverride === 'true')),
-    ),
-}));
+const withPost = withObservables(['post'], ({database, post}: {post: PostModel} & WithDatabaseArgs) => {
+    const enablePostIconOverride = database.get<SystemModel>(MM_TABLES.SERVER.SYSTEM).findAndObserve(SYSTEM_IDENTIFIERS.CONFIG).pipe(
+        switchMap((cfg) => of$(cfg.value.EnablePostIconOverride === 'true')),
+    );
 
-const withPost = withObservables(['post', 'enablePostIconOverride'], ({post, enablePostIconOverride}: {post: PostModel; enablePostIconOverride: boolean}) => {
     return {
         author: post.author.observe(),
-        enablePostIconOverride: of$(enablePostIconOverride),
+        enablePostIconOverride,
     };
 });
 
-export default withDatabase(withSystemIds(withPost(React.memo(Avatar))));
+export default withDatabase(withPost(React.memo(Avatar)));

@@ -1,24 +1,21 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {Q} from '@nozbe/watermelondb';
+import {Model, Q} from '@nozbe/watermelondb';
 
 import {updateRecentCustomStatuses, updateUserPresence} from '@actions/local/user';
 import {fetchRolesIfNeeded} from '@actions/remote/role';
 import {Database, General} from '@constants';
 import DatabaseManager from '@database/manager';
 import {debounce} from '@helpers/api/general';
-import analytics from '@init/analytics';
 import NetworkManager from '@init/network_manager';
-import {queryCurrentUserId} from '@queries/servers/system';
-import {prepareUsers, queryCurrentUser, queryUsersById, queryUsersByUsername} from '@queries/servers/user';
+import {queryCurrentUserId, queryWebSocketLastDisconnected} from '@queries/servers/system';
+import {prepareUsers, queryAllUsers, queryCurrentUser, queryUsersById, queryUsersByUsername} from '@queries/servers/user';
 
 import {forceLogoutIfNecessary} from './session';
 
 import type {Client} from '@client/rest';
 import type ClientError from '@client/rest/error';
-import type {LoadMeArgs} from '@typings/database/database';
-import type RoleModel from '@typings/database/models/servers/role';
 import type UserModel from '@typings/database/models/servers/user';
 
 export type MyUserRequest = {
@@ -121,140 +118,6 @@ export const fetchProfilesPerChannels = async (serverUrl: string, channelIds: st
     } catch (error) {
         return {error};
     }
-};
-
-export const loadMe = async (serverUrl: string, {deviceToken, user}: LoadMeArgs) => {
-    let currentUser = user;
-
-    const database = DatabaseManager.serverDatabases[serverUrl]?.database;
-    if (!database) {
-        return {error: `${serverUrl} database not found`};
-    }
-
-    let client;
-    try {
-        client = NetworkManager.getClient(serverUrl);
-    } catch (error) {
-        return {error};
-    }
-
-    try {
-        if (deviceToken) {
-            await client.attachDevice(deviceToken);
-        }
-
-        if (!currentUser) {
-            currentUser = await client.getMe();
-        }
-    } catch (e) {
-        await forceLogoutIfNecessary(serverUrl, e as ClientError);
-        return {
-            error: e,
-            currentUser: undefined,
-        };
-    }
-
-    try {
-        const analyticsClient = analytics.create(serverUrl);
-        analyticsClient.setUserId(currentUser.id);
-        analyticsClient.setUserRoles(currentUser.roles);
-
-        //todo: Ask for a unified endpoint that will serve all those values in one go.( while ensuring backward-compatibility through fallbacks to previous code-path)
-        const teamsRequest = client.getMyTeams();
-
-        // Goes into myTeam table
-        const teamMembersRequest = client.getMyTeamMembers();
-
-        const preferencesRequest = client.getMyPreferences();
-        const configRequest = client.getClientConfigOld();
-        const licenseRequest = client.getClientLicenseOld();
-
-        const [
-            teams,
-            teamMemberships,
-            preferences,
-            config,
-            license,
-        ] = await Promise.all([
-            teamsRequest,
-            teamMembersRequest,
-            preferencesRequest,
-            configRequest,
-            licenseRequest,
-        ]);
-
-        const operator = DatabaseManager.serverDatabases[serverUrl].operator;
-        const teamRecords = operator.handleTeam({prepareRecordsOnly: true, teams});
-        const teamMembershipRecords = operator.handleTeamMemberships({prepareRecordsOnly: true, teamMemberships});
-
-        const myTeams = teamMemberships.map((tm) => {
-            return {id: tm.team_id, roles: tm.roles ?? ''};
-        });
-
-        const myTeamRecords = operator.handleMyTeam({
-            prepareRecordsOnly: true,
-            myTeams,
-        });
-
-        const systemRecords = operator.handleSystem({
-            systems: [
-                {
-                    id: Database.SYSTEM_IDENTIFIERS.CONFIG,
-                    value: JSON.stringify(config),
-                },
-                {
-                    id: Database.SYSTEM_IDENTIFIERS.LICENSE,
-                    value: JSON.stringify(license),
-                },
-                {
-                    id: Database.SYSTEM_IDENTIFIERS.CURRENT_USER_ID,
-                    value: currentUser.id,
-                },
-            ],
-            prepareRecordsOnly: true,
-        });
-
-        const userRecords = operator.handleUsers({
-            users: [currentUser],
-            prepareRecordsOnly: true,
-        });
-
-        const preferenceRecords = operator.handlePreferences({
-            prepareRecordsOnly: true,
-            preferences,
-        });
-
-        let roles: string[] = [];
-        for (const role of currentUser.roles.split(' ')) {
-            roles = roles.concat(role);
-        }
-
-        for (const teamMember of teamMemberships) {
-            roles = roles.concat(teamMember.roles.split(' '));
-        }
-
-        const rolesToLoad = new Set<string>(roles);
-
-        let rolesRecords: RoleModel[] = [];
-        if (rolesToLoad.size > 0) {
-            const rolesByName = await client.getRolesByNames(Array.from(rolesToLoad));
-
-            if (rolesByName?.length) {
-                rolesRecords = await operator.handleRole({prepareRecordsOnly: true, roles: rolesByName});
-            }
-        }
-
-        const models = await Promise.all([teamRecords, teamMembershipRecords, myTeamRecords, systemRecords, preferenceRecords, rolesRecords, userRecords]);
-
-        const flattenedModels = models.flat();
-        if (flattenedModels?.length > 0) {
-            await operator.batchRecords(flattenedModels);
-        }
-    } catch (e) {
-        return {error: e, currentUser: undefined};
-    }
-
-    return {currentUser, error: undefined};
 };
 
 export const updateMe = async (serverUrl: string, user: UserModel) => {
@@ -446,6 +309,70 @@ export const fetchMissingProfilesByUsernames = async (serverUrl: string, usernam
     }
 };
 
+export const updateAllUsersSinceLastDisconnect = async (serverUrl: string) => {
+    const database = DatabaseManager.serverDatabases[serverUrl];
+    if (!database) {
+        return {error: `${serverUrl} database not found`};
+    }
+
+    const lastDisconnectedAt = await queryWebSocketLastDisconnected(database.database);
+
+    if (!lastDisconnectedAt) {
+        return {users: []};
+    }
+    const currentUserId = await queryCurrentUserId(database.database);
+    const users = await queryAllUsers(database.database);
+    const userIds = users.map((u) => u.id).filter((id) => id !== currentUserId);
+    let userUpdates: UserProfile[] = [];
+    try {
+        userUpdates = await NetworkManager.getClient(serverUrl).getProfilesByIds(userIds, {since: lastDisconnectedAt});
+    } catch {
+        // Do nothing
+    }
+
+    if (userUpdates.length) {
+        database.operator.handleUsers({users: userUpdates, prepareRecordsOnly: false});
+    }
+
+    return {users: userUpdates};
+};
+
+export const updateUsersNoLongerVisible = async (serverUrl: string): Promise<{error?: unknown}> => {
+    let client: Client;
+    try {
+        client = NetworkManager.getClient(serverUrl);
+    } catch (error) {
+        return {error};
+    }
+
+    const serverDatabase = DatabaseManager.serverDatabases[serverUrl];
+    if (!serverDatabase) {
+        return {error: `${serverUrl} database not found`};
+    }
+
+    try {
+        const knownUsers = new Set(await client.getKnownUsers());
+        const currentUserId = await queryCurrentUserId(serverDatabase.database);
+        knownUsers.add(currentUserId);
+
+        const models: Model[] = [];
+        const allUsers = await queryAllUsers(serverDatabase.database);
+        for (const user of allUsers) {
+            if (!knownUsers.has(user.id)) {
+                user.prepareDestroyPermanently();
+                models.push(user);
+            }
+        }
+        if (models.length) {
+            serverDatabase.operator.batchRecords(models);
+        }
+    } catch (error) {
+        forceLogoutIfNecessary(serverUrl, error as ClientError);
+        return {error};
+    }
+
+    return {};
+};
 export const setStatus = async (serverUrl: string, status: UserStatus) => {
     let client: Client;
     try {

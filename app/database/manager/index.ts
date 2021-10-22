@@ -241,7 +241,7 @@ class DatabaseManager {
        if (database) {
            const server = await queryActiveServer(database);
            if (server?.url) {
-               return this.serverDatabases[server.url].database;
+               return this.serverDatabases[server.url]?.database;
            }
        }
 

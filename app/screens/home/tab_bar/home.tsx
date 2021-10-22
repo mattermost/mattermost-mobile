@@ -90,18 +90,17 @@ const Home = ({isFocused, theme}: Props) => {
             if (server.lastActiveAt) {
                 const sdb = DatabaseManager.serverDatabases[serverUrl];
                 if (sdb?.database) {
-                    const subscription = sdb.database.
-                        get(MY_CHANNEL).
-                        query(Q.on(CHANNEL, Q.where('delete_at', Q.eq(0)))).
-                        observeWithColumns(['mentions_count', 'message_count']).
-                        subscribe(unreadsSubscription.bind(undefined, serverUrl));
                     if (!subscriptions.has(serverUrl)) {
                         const unreads: UnreadSubscription = {
                             mentions: 0,
                             messages: 0,
-                            subscription,
                         };
                         subscriptions.set(serverUrl, unreads);
+                        unreads.subscription = sdb.database.
+                            get(MY_CHANNEL).
+                            query(Q.on(CHANNEL, Q.where('delete_at', Q.eq(0)))).
+                            observeWithColumns(['mentions_count', 'message_count']).
+                            subscribe(unreadsSubscription.bind(undefined, serverUrl));
                     }
                 }
 

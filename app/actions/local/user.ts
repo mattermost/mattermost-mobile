@@ -2,14 +2,40 @@
 // See LICENSE.txt for license information.
 
 import {SYSTEM_IDENTIFIERS} from '@constants/database';
+import General from '@constants/general';
 import DatabaseManager from '@database/manager';
 import {queryRecentCustomStatuses} from '@queries/servers/system';
-import {queryUserById} from '@queries/servers/user';
+import {queryCurrentUser, queryUserById} from '@queries/servers/user';
 
 import {addRecentReaction} from './reactions';
 
 import type Model from '@nozbe/watermelondb/Model';
 import type UserModel from '@typings/database/models/servers/user';
+
+export const setCurrentUserStatusOffline = async (serverUrl: string) => {
+    const serverDatabase = DatabaseManager.serverDatabases[serverUrl];
+    if (!serverDatabase) {
+        return {error: `No database present for ${serverUrl}`};
+    }
+
+    const {database, operator} = serverDatabase;
+
+    const user = await queryCurrentUser(database);
+    if (!user) {
+        return {error: `No current user for ${serverUrl}`};
+    }
+
+    user.prepareStatus(General.OFFLINE);
+
+    try {
+        await operator.batchRecords([user]);
+    } catch {
+        // eslint-disable-next-line no-console
+        console.log('FAILED TO BATCH CHANGES FOR SET CURRENT USER STATUS OFFLINE');
+    }
+
+    return null;
+};
 
 export const updateLocalCustomStatus = async (serverUrl: string, user: UserModel, customStatus?: UserCustomStatus) => {
     const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
@@ -38,7 +64,13 @@ export const updateLocalCustomStatus = async (serverUrl: string, user: UserModel
         }
     }
 
-    await operator.batchRecords(models);
+    try {
+        await operator.batchRecords(models);
+    } catch {
+        // eslint-disable-next-line no-console
+        console.log('FAILED TO BATCH CHANGES FOR UPDATING CUSTOM STATUS');
+    }
+
     return {};
 };
 
@@ -84,7 +116,12 @@ export const updateUserPresence = async (serverUrl: string, userStatus: UserStat
         user.prepareUpdate((record) => {
             record.status = userStatus.status;
         });
-        await operator.batchRecords([user]);
+        try {
+            await operator.batchRecords([user]);
+        } catch {
+            // eslint-disable-next-line no-console
+            console.log('FAILED TO BATCH CHANGES FOR UPDATE USER PRESENCE');
+        }
     }
 
     return {};
