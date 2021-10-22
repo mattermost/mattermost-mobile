@@ -98,7 +98,7 @@ function calls(state: Dictionary<Call> = {}, action: GenericAction) {
         const userUpdate = {...state[channelId].participants[userId], isTalking: true};
         const channelUpdate = {...state[channelId], participants: {...state[channelId].participants}};
         channelUpdate.participants[userId] = userUpdate;
-        channelUpdate.speakers = [userId, ...(channelUpdate.speakers, [])];
+        channelUpdate.speakers = [userId, ...(channelUpdate.speakers || [])];
         const nextState = {...state};
         nextState[channelId] = channelUpdate;
         return nextState;
@@ -115,8 +115,8 @@ function calls(state: Dictionary<Call> = {}, action: GenericAction) {
         const channelUpdate = {...state[channelId], participants: {...state[channelId].participants}};
         channelUpdate.participants[userId] = userUpdate;
         channelUpdate.speakers = channelUpdate.speakers?.filter((id) => id !== userId);
-        if (!channelUpdate.speakers || channelUpdate.speakers.length === 0) {
-            channelUpdate.speakers = [userId];
+        if (!channelUpdate.speakers) {
+            channelUpdate.speakers = [];
         }
         const nextState = {...state};
         nextState[channelId] = channelUpdate;
@@ -125,6 +125,9 @@ function calls(state: Dictionary<Call> = {}, action: GenericAction) {
     case CallsTypes.RECEIVED_CHANNEL_CALL_SCREEN_ON: {
         const {channelId, userId} = action.data;
         if (!state[channelId]) {
+            return state;
+        }
+        if (!state[channelId].participants[userId]) {
             return state;
         }
         const channelUpdate = {...state[channelId], screenOn: userId};
