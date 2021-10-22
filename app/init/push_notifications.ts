@@ -14,6 +14,8 @@ import {
     Registered,
 } from 'react-native-notifications';
 
+import {markChannelAsViewed} from '@actions/local/channel';
+import {backgroundNotification, openNotification} from '@actions/remote/notifications';
 import {Device, General, Navigation} from '@constants';
 import {GLOBAL_IDENTIFIERS} from '@constants/database';
 import DatabaseManager from '@database/manager';
@@ -46,14 +48,19 @@ class PushNotifications {
         Notifications.cancelAllLocalNotifications();
     };
 
-    clearNotifications = async (channelIds: string[]) => {
+    cancelChannelNotifications = async (channelId: string) => {
+        const notifications = await NativeNotifications.getDeliveredNotifications();
+        this.cancelNotificationsForChannel(notifications, channelId);
+    };
+
+    cancelChannelsNotifications = async (channelIds: string[]) => {
         const notifications = await NativeNotifications.getDeliveredNotifications();
         for (const channelId of channelIds) {
-            this.clearNotificationsForChannel(notifications, channelId);
+            this.cancelNotificationsForChannel(notifications, channelId);
         }
     };
 
-    clearNotificationsForChannel = (notifications: NotificationWithChannel[], channelId: string) => {
+    cancelNotificationsForChannel = (notifications: NotificationWithChannel[], channelId: string) => {
         if (Platform.OS === 'android') {
             NativeNotifications.removeDeliveredNotifications(channelId);
         } else {
@@ -67,7 +74,8 @@ class PushNotifications {
                 }
             }
 
-            // TODO: Set the badgeCount with default database mention count aggregate
+            // TODO: Set the badgeCount with databases mention count aggregate ??
+            // or should we use the badge count from the icon?
 
             if (ids.length) {
                 NativeNotifications.removeDeliveredNotifications(ids);
@@ -80,11 +88,6 @@ class PushNotifications {
         }
     }
 
-    clearChannelNotifications = async (channelId: string) => {
-        const notifications = await NativeNotifications.getDeliveredNotifications();
-        this.clearNotificationsForChannel(notifications, channelId);
-    };
-
     createReplyCategory = () => {
         const replyTitle = getLocalizedMessage(DEFAULT_LOCALE, t('mobile.push_notification_reply.title'));
         const replyButton = getLocalizedMessage(DEFAULT_LOCALE, t('mobile.push_notification_reply.button'));
@@ -94,34 +97,29 @@ class PushNotifications {
         return new NotificationCategory(CATEGORY, [replyAction]);
     };
 
-    handleNotification = async (notification: NotificationWithData) => {
-        const {payload, foreground, userInteraction} = notification;
+    getServerUrlFromNotification = async (notification: NotificationWithData) => {
+        const {payload} = notification;
 
-        if (payload) {
-            switch (payload.type) {
-                case NOTIFICATION_TYPE.CLEAR:
-                    // TODO Notifications: Mark the channel as read
-                    break;
-                case NOTIFICATION_TYPE.MESSAGE:
-                    // TODO Notifications: fetch the posts for the channel
-
-                    if (foreground) {
-                        this.handleInAppNotification(notification);
-                    } else if (userInteraction && !payload.userInfo?.local) {
-                        // Handle notification tapped
-                    }
-                    break;
-                case NOTIFICATION_TYPE.SESSION:
-                    // eslint-disable-next-line no-console
-                    console.log('Session expired notification');
-
-                    if (payload.server_url) {
-                        DeviceEventEmitter.emit(General.SERVER_LOGOUT, payload.server_url);
-                    }
-                    break;
-            }
+        if (!payload?.channel_id && (!payload?.server_url || !payload.server_id)) {
+            return undefined;
         }
-    };
+
+        let serverUrl = payload.server_url;
+        if (!serverUrl && payload.server_id) {
+            serverUrl = await DatabaseManager.getServerUrlFromIdentifier(payload.server_id);
+        }
+
+        return serverUrl;
+    }
+
+    handleClearNotification = async (notification: NotificationWithData) => {
+        const {payload} = notification;
+        const serverUrl = await this.getServerUrlFromNotification(notification);
+
+        if (serverUrl && payload?.channel_id) {
+            markChannelAsViewed(serverUrl, payload?.channel_id, false);
+        }
+    }
 
     handleInAppNotification = async (notification: NotificationWithData) => {
         const {payload} = notification;
@@ -142,6 +140,53 @@ class PushNotifications {
         }
     };
 
+    handleMessageNotification = async (notification: NotificationWithData) => {
+        const {payload, foreground, userInteraction} = notification;
+        const serverUrl = await this.getServerUrlFromNotification(notification);
+
+        if (serverUrl) {
+            if (foreground) {
+                // Move this to a local action
+                // this.handleInAppNotification(notification);
+            } else if (userInteraction && !payload?.userInfo?.local) {
+                // Handle notification tapped
+                openNotification(serverUrl, notification);
+                this.cancelChannelNotifications(notification.payload!.channel_id);
+            } else {
+                backgroundNotification(serverUrl, notification);
+            }
+        }
+    }
+
+    handleSessionNotification = async (notification: NotificationWithData) => {
+        // eslint-disable-next-line no-console
+        console.log('Session expired notification');
+
+        const serverUrl = await this.getServerUrlFromNotification(notification);
+
+        if (serverUrl) {
+            DeviceEventEmitter.emit(General.SERVER_LOGOUT, serverUrl);
+        }
+    }
+
+    processNotification = async (notification: NotificationWithData) => {
+        const {payload} = notification;
+
+        if (payload) {
+            switch (payload.type) {
+                case NOTIFICATION_TYPE.CLEAR:
+                    this.handleClearNotification(notification);
+                    break;
+                case NOTIFICATION_TYPE.MESSAGE:
+                    this.handleMessageNotification(notification);
+                    break;
+                case NOTIFICATION_TYPE.SESSION:
+                    this.handleSessionNotification(notification);
+                    break;
+            }
+        }
+    };
+
     localNotification = (notification: Notification) => {
         Notifications.postLocalNotification(notification);
     };
@@ -151,22 +196,14 @@ class PushNotifications {
         const notification = convertToNotificationData(incoming, false);
         notification.userInteraction = true;
 
-        // eslint-disable-next-line no-console
-        console.warn('onNotificationOpened ===============', notification);
-
-        //   this.handleNotification(notification);
+        this.processNotification(notification);
         completion();
     };
 
     // This triggers when the app was in the background (iOS)
-    onNotificationReceivedBackground = (incoming: Notification, completion: (response: NotificationBackgroundFetchResult) => void) => {
+    onNotificationReceivedBackground = async (incoming: Notification, completion: (response: NotificationBackgroundFetchResult) => void) => {
         const notification = convertToNotificationData(incoming, false);
-
-        // eslint-disable-next-line no-console
-        console.log('onNotificationReceivedBackground ===============');
-        if (notification.payload?.type === 'message') {
-            //   this.handleNotification(notification);
-        }
+        this.processNotification(notification);
 
         completion(NotificationBackgroundFetchResult.NEW_DATA);
     };
@@ -175,12 +212,11 @@ class PushNotifications {
     // Also triggers when the app was in the background (Android)
     onNotificationReceivedForeground = (incoming: Notification, completion: (response: NotificationCompletion) => void) => {
         const notification = convertToNotificationData(incoming, false);
+        if (AppState.currentState !== 'inactive') {
+            notification.foreground = AppState.currentState === 'active';
 
-        // eslint-disable-next-line no-console
-        console.log('onNotificationReceivedForeground ===============', notification);
-        notification.foreground = AppState.currentState === 'active';
-
-        //   this.handleNotification(notification);
+            this.processNotification(notification);
+        }
         completion({alert: false, sound: true, badge: true});
     };
 

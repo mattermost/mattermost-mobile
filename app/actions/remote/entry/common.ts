@@ -149,9 +149,9 @@ export const fetchAlternateTeamData = async (
 export const deferredAppEntryActions = async (
     serverUrl: string, currentUserId: string, currentUserLocale: string, preferences: PreferenceType[] | undefined,
     config: ClientConfig, license: ClientLicense, teamData: MyTeamsRequest, chData: MyChannelsRequest | undefined,
-    initialTeamId?: string, initialChannelId?: string, skipInitialPosts = false) => {
+    initialTeamId?: string, initialChannelId?: string) => {
     // defer fetching posts for initial channel
-    if (initialChannelId && !skipInitialPosts) {
+    if (initialChannelId) {
         fetchPostsForChannel(serverUrl, initialChannelId);
     }
 

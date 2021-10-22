@@ -86,7 +86,7 @@ class GlobalEventHandler {
     onLogout = async (serverUrl: string) => {
         await removeServerCredentials(serverUrl);
         const channelIds = await selectAllMyChannelIds(serverUrl);
-        PushNotifications.clearNotifications(channelIds);
+        PushNotifications.cancelChannelsNotifications(channelIds);
 
         NetworkManager.invalidateClient(serverUrl);
         WebsocketManager.invalidateClient(serverUrl);

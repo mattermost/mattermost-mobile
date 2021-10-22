@@ -3,37 +3,21 @@
 
 import {Model} from '@nozbe/watermelondb';
 
+import {switchToChannel} from '@actions/local/channel';
+import {markChannelAsRead} from '@actions/remote/channel';
 import {fetchRoles} from '@actions/remote/role';
 import {Screens} from '@constants';
 import DatabaseManager from '@database/manager';
 import {queryChannelsById, queryDefaultChannelForTeam, queryMyChannel} from '@queries/servers/channel';
 import {prepareModels} from '@queries/servers/entry';
-import {prepareCommonSystemValues, queryCommonSystemValues, queryCurrentTeamId} from '@queries/servers/system';
-import {addChannelToTeamHistory, deleteMyTeams, queryMyTeamById, queryTeamsById} from '@queries/servers/team';
+import {queryCommonSystemValues, queryCurrentTeamId, setCurrentTeamAndChannelId} from '@queries/servers/system';
+import {deleteMyTeams, queryMyTeamById, queryTeamsById} from '@queries/servers/team';
 import {queryCurrentUser} from '@queries/servers/user';
-import {goToScreen} from '@screens/navigation';
 import EphemeralStore from '@store/ephemeral_store';
 import {isTablet} from '@utils/helpers';
 import {emitNotificationError} from '@utils/notification';
 
 import {AppEntryData, AppEntryError, deferredAppEntryActions, fetchAppEntryData} from './common';
-
-import type ServerDataOperator from '@database/operator/server_data_operator';
-
-async function selectTeamAndChannel(operator: ServerDataOperator, teamId: string, channelId: string) {
-    try {
-        const models = [];
-        const common = await prepareCommonSystemValues(operator, {currentTeamId: teamId, currentChannelId: channelId});
-        if (common) {
-            models.push(...common);
-        }
-        const history = await addChannelToTeamHistory(operator, teamId, channelId, true);
-        models.push(...history);
-        await operator.batchRecords(models);
-    } catch {
-        // do nothing
-    }
-}
 
 export const pushNotificationEntry = async (serverUrl: string, notification: NotificationWithData) => {
     const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
@@ -48,7 +32,6 @@ export const pushNotificationEntry = async (serverUrl: string, notification: Not
     const currentTeamId = await queryCurrentTeamId(database);
     const currentServerUrl = await DatabaseManager.getActiveServerUrl();
     let isDirectChannel = false;
-    let skipInitialPosts = false;
 
     let teamId = notification.payload?.team_id;
     if (!teamId) {
@@ -67,12 +50,9 @@ export const pushNotificationEntry = async (serverUrl: string, notification: Not
     let switchedToTeamAndChanel = false;
     if (myChannel && myTeam) {
         switchedToTeamAndChanel = true;
-        skipInitialPosts = true;
-        selectTeamAndChannel(operator, teamId, channelId);
         await EphemeralStore.waitUntilScreenHasLoaded(Screens.HOME);
-        if (!isTabletDevice) {
-            goToScreen(Screens.CHANNEL, '', undefined, {topBar: {visible: false}});
-        }
+        markChannelAsRead(serverUrl, channelId);
+        await switchToChannel(serverUrl, channelId, teamId);
     }
 
     const fetchedData = await fetchAppEntryData(serverUrl, teamId);
@@ -121,15 +101,15 @@ export const pushNotificationEntry = async (serverUrl: string, notification: Not
     // If in the end the selected team or channel is different than the one from the notification
     // we switch again
     if (selectedTeamId !== teamId || selectedChannelId !== channelId) {
-        selectTeamAndChannel(operator, teamId, channelId);
+        setCurrentTeamAndChannelId(operator, selectedTeamId, selectedChannelId);
     }
 
     if (selectedTeamId !== teamId) {
         emitNotificationError('Team');
     } else if (selectedChannelId === channelId) {
-        skipInitialPosts = true;
-        if (!isTabletDevice && !switchedToTeamAndChanel) {
-            goToScreen(Screens.CHANNEL, '', undefined, {topBar: {visible: false}});
+        if (!switchedToTeamAndChanel) {
+            markChannelAsRead(serverUrl, channelId);
+            switchToChannel(serverUrl, channelId, teamId);
         }
     } else {
         emitNotificationError('Channel');
@@ -158,7 +138,7 @@ export const pushNotificationEntry = async (serverUrl: string, notification: Not
     const {id: currentUserId, locale: currentUserLocale} = meData.user || (await queryCurrentUser(operator.database))!;
     const {config, license} = await queryCommonSystemValues(operator.database);
 
-    deferredAppEntryActions(serverUrl, currentUserId, currentUserLocale, prefData.preferences, config, license, teamData, chData, selectedTeamId, selectedChannelId, skipInitialPosts);
+    deferredAppEntryActions(serverUrl, currentUserId, currentUserLocale, prefData.preferences, config, license, teamData, chData, selectedTeamId, selectedChannelId);
     const error = teamData.error || chData?.error || prefData.error || meData.error;
     return {error, userId: meData?.user?.id};
 };
