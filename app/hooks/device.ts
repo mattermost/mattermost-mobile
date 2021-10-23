@@ -37,3 +37,8 @@ export function useAppState() {
 
     return appState;
 }
+
+export function useIsTablet() {
+    const isSplitView = useSplitView();
+    return Device.IS_TABLET && !isSplitView;
+}
