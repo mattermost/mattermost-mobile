@@ -25,6 +25,7 @@ import NativeNotifications from '@notifications';
 import {queryServerName} from '@queries/app/servers';
 import {queryCurrentChannelId} from '@queries/servers/system';
 import {showOverlay} from '@screens/navigation';
+import {isTablet} from '@utils/helpers';
 import {convertToNotificationData} from '@utils/notification';
 
 import {getActiveServerUrl} from './credentials';
@@ -130,6 +131,7 @@ class PushNotifications {
 
         const database = DatabaseManager.serverDatabases[serverUrl]?.database;
         if (database) {
+            const isTabletDevice = await isTablet();
             const activeServerUrl = await getActiveServerUrl();
             const displayName = await queryServerName(DatabaseManager.appDatabase!.database, serverUrl);
             const channelId = await queryCurrentChannelId(database);
@@ -138,7 +140,13 @@ class PushNotifications {
                 serverName = displayName;
             }
 
-            if (payload?.channel_id !== channelId || EphemeralStore.getNavigationTopComponentId() !== Screens.CHANNEL) {
+            const isDifferentChannel = payload?.channel_id !== channelId;
+            let isChannelScreenVisible = EphemeralStore.getNavigationTopComponentId() === Screens.CHANNEL;
+            if (isTabletDevice) {
+                isChannelScreenVisible = EphemeralStore.getVisibleTab() === Screens.HOME;
+            }
+
+            if (isDifferentChannel || !isChannelScreenVisible) {
                 DeviceEventEmitter.emit(Navigation.NAVIGATION_SHOW_OVERLAY);
 
                 const screen = Screens.IN_APP_NOTIFICATION;

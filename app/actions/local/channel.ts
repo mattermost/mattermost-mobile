@@ -2,8 +2,9 @@
 // See LICENSE.txt for license information.
 
 import {Model} from '@nozbe/watermelondb';
+import {DeviceEventEmitter} from 'react-native';
 
-import {Screens} from '@constants';
+import {Navigation as NavigationConstants, Screens} from '@constants';
 import DatabaseManager from '@database/manager';
 import {prepareDeleteChannel, queryAllMyChannelIds, queryChannelsById, queryMyChannel} from '@queries/servers/channel';
 import {prepareCommonSystemValues, PrepareCommonSystemValuesArgs, queryCommonSystemValues, queryCurrentTeamId} from '@queries/servers/system';
@@ -58,6 +59,7 @@ export const switchToChannel = async (serverUrl: string, channelId: string, team
 
             if (isTabletDevice) {
                 dismissAllModalsAndPopToRoot();
+                DeviceEventEmitter.emit(NavigationConstants.NAVIGATION_HOME);
             } else {
                 dismissAllModalsAndPopToScreen(Screens.CHANNEL, '', undefined, {topBar: {visible: false}});
             }

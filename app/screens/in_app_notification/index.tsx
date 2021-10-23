@@ -11,6 +11,7 @@ import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import {openNotification} from '@actions/remote/notifications';
 import {Navigation as NavigationTypes} from '@constants';
 import DatabaseManager from '@database/manager';
+import {useIsTablet} from '@hooks/device';
 import {dismissOverlay} from '@screens/navigation';
 import {preventDoubleTap} from '@utils/tap';
 import {changeOpacity} from '@utils/theme';
@@ -37,6 +38,9 @@ const styles = StyleSheet.create({
         padding: 10,
         width: '95%',
     },
+    tablet: {
+        width: 500,
+    },
     flex: {
         width: '100%',
     },
@@ -62,6 +66,7 @@ const InAppNotification = ({componentId, serverName, serverUrl, notification}: I
     const [animate, setAnimate] = useState(false);
     const dismissTimerRef = useRef<NodeJS.Timeout | null>(null);
     const initial = useSharedValue(-130);
+    const isTablet = useIsTablet();
     let insets = {top: 0};
     if (Platform.OS === 'ios') {
         // on Android we disable the safe area provider as it conflicts with the gesture system
@@ -142,7 +147,7 @@ const InAppNotification = ({componentId, serverName, serverUrl, notification}: I
             minOffsetY={-20}
         >
             <Animated.View
-                style={[styles.container, animatedStyle]}
+                style={[styles.container, isTablet ? styles.tablet : undefined, animatedStyle]}
                 testID='in_app_notification.screen'
             >
                 <View style={styles.flex}>
