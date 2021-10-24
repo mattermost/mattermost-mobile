@@ -63,13 +63,13 @@ export default class Login extends PureComponent {
     }
 
     componentDidMount() {
-        Dimensions.addEventListener('change', this.orientationDidChange);
+        this.dimensionsListener = Dimensions.addEventListener('change', this.orientationDidChange);
 
         this.setEmmUsernameIfAvailable();
     }
 
     componentWillUnmount() {
-        Dimensions.removeEventListener('change', this.orientationDidChange);
+        this.dimensionsListener?.remove();
     }
 
     goToChannel = () => {
@@ -395,6 +395,7 @@ export default class Login extends PureComponent {
                             error={this.state.error}
                         />
                         <TextInput
+                            allowFontScaling={true}
                             testID='login.username.input'
                             autoCapitalize='none'
                             autoCorrect={false}
@@ -411,6 +412,7 @@ export default class Login extends PureComponent {
                             underlineColorAndroid='transparent'
                         />
                         <TextInput
+                            allowFontScaling={true}
                             testID='login.password.input'
                             autoCapitalize='none'
                             autoCorrect={false}

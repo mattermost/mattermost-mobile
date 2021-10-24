@@ -33,6 +33,7 @@ exports[`SearchBar should match snapshot 1`] = `
     }
   >
     <ForwardRef(Themed.SearchBar)
+      allowFontScaling={true}
       autoCapitalize="auto-capitalize"
       autoCorrect={false}
       autoFocus={true}

@@ -99,7 +99,8 @@ function selectOrderedPostIds(posts: types.posts.Post[], lastViewedAt: number, i
             lastViewedAt &&
             post.create_at > lastViewedAt &&
             !addedNewMessagesIndicator &&
-            indicateNewMessages
+            indicateNewMessages &&
+            currentUser.id !== post.user_id
         ) {
             out.push(START_OF_NEW_MESSAGES);
             addedNewMessagesIndicator = true;

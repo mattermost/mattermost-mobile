@@ -20,7 +20,7 @@ target 'Mattermost' do
   pod 'Permission-PhotoLibrary', :path => "#{permissions_path}/PhotoLibrary"
   pod 'Permission-PhotoLibraryAddOnly', :path => "#{permissions_path}/PhotoLibraryAddOnly"
 
-  pod 'XCDYouTubeKit', :git => 'https://github.com/hinge-agency/XCDYouTubeKit.git', :branch => 'fix/issue-534-XCDYouTubeVideoErrorDomain-error-code-3'
+  pod 'XCDYouTubeKit', :git => 'https://github.com/KODIKAS-NL/XCDYouTubeKit.git', :branch => 'master', :commit => '7c5ea8fe159d096a8f2cdc88c29bb6e4ac79dcde'
   pod 'Swime', '3.0.6'
 
 # Enables Flipper.
@@ -31,11 +31,11 @@ target 'Mattermost' do
 
   post_install do |installer|
     react_native_post_install(installer)
-    puts 'Patching XCDYouTube so it can playback videos'
-    %x(patch Pods/XCDYouTubeKit/XCDYouTubeKit/XCDYouTubeVideoOperation.m < patches/XCDYouTubeVideoOperation.patch)
     installer.pods_project.targets.each do |target|
-      target.build_configurations.each do |config|
-        config.build_settings.delete 'IPHONEOS_DEPLOYMENT_TARGET'
+      if target.name != "RCT-Folly"
+        target.build_configurations.each do |config|
+          config.build_settings.delete 'IPHONEOS_DEPLOYMENT_TARGET'
+        end
       end
     end
   end

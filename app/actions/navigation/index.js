@@ -292,7 +292,7 @@ export function showModal(name, title, passProps = {}, options = {}) {
 }
 
 export function showModalOverCurrentContext(name, passProps = {}, options = {}) {
-    const title = '';
+    const title = passProps.title || '';
 
     let animations;
     switch (Platform.OS) {
@@ -457,6 +457,13 @@ export function showOverlay(name, passProps, options = {}) {
         overlay: {
             interceptTouchOutside: false,
         },
+        ...Platform.select({
+            android: {
+                statusBar: {
+                    drawBehind: true,
+                },
+            },
+        }),
     };
 
     Navigation.showOverlay({

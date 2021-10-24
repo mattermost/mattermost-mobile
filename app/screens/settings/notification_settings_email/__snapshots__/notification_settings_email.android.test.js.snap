@@ -111,7 +111,7 @@ exports[`NotificationSettingsEmailAndroid should match snapshot 2`] = `
         <View
           style={Object {}}
         >
-          <ForwardRef
+          <TouchableOpacity
             onPress={[Function]}
             style={Object {}}
             testID="notification_settings_email.send_modal_cancel.button"
@@ -121,7 +121,7 @@ exports[`NotificationSettingsEmailAndroid should match snapshot 2`] = `
               id="mobile.notification_settings.modal_cancel"
               style={Object {}}
             />
-          </ForwardRef>
+          </TouchableOpacity>
           <View>
             <View
               style={
@@ -130,7 +130,7 @@ exports[`NotificationSettingsEmailAndroid should match snapshot 2`] = `
                 }
               }
             />
-            <ForwardRef
+            <TouchableOpacity
               onPress={[Function]}
               style={Object {}}
               testID="notification_settings_email.send_modal_save.button"
@@ -140,7 +140,7 @@ exports[`NotificationSettingsEmailAndroid should match snapshot 2`] = `
                 id="mobile.notification_settings.modal_save"
                 style={Object {}}
               />
-            </ForwardRef>
+            </TouchableOpacity>
           </View>
         </View>
       </View>

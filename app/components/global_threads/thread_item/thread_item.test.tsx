@@ -5,13 +5,12 @@ import {shallow} from 'enzyme';
 import React from 'react';
 import {Text} from 'react-native';
 
-import * as navigationActions from '@actions/navigation';
-import {THREAD} from '@constants/screen';
 import {Preferences} from '@mm-redux/constants';
 import {Channel} from '@mm-redux/types/channels';
 import {Post} from '@mm-redux/types/posts';
 import {UserThread} from '@mm-redux/types/threads';
 import {UserProfile} from '@mm-redux/types/users';
+import EventEmitter from '@mm-redux/utils/event_emitter';
 import {intl} from '@test/intl-test-helper';
 
 import {ThreadItem} from './thread_item';
@@ -99,7 +98,7 @@ describe('Global Thread Item', () => {
     });
 
     test('Should goto threads when pressed on thread item', () => {
-        const goToScreen = jest.spyOn(navigationActions, 'goToScreen');
+        EventEmitter.emit = jest.fn();
         const wrapper = shallow(
             <ThreadItem
                 {...baseProps}
@@ -108,6 +107,6 @@ describe('Global Thread Item', () => {
         const threadItem = wrapper.find({testID: `${testIDPrefix}.item`});
         expect(threadItem.exists()).toBeTruthy();
         threadItem.simulate('press');
-        expect(goToScreen).toHaveBeenCalledWith(THREAD, expect.anything(), expect.anything());
+        expect(EventEmitter.emit).toHaveBeenCalledWith('goToThread', expect.anything());
     });
 });

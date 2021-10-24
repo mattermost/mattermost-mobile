@@ -91,7 +91,7 @@ exports[`channel_info_header should match snapshot 1`] = `
       }
     }
   >
-    <ForwardRef
+    <TouchableHighlight
       onLongPress={[Function]}
     >
       <View
@@ -126,7 +126,7 @@ exports[`channel_info_header should match snapshot 1`] = `
           Purpose string
         </Text>
       </View>
-    </ForwardRef>
+    </TouchableHighlight>
   </View>
   <View
     style={
@@ -135,7 +135,7 @@ exports[`channel_info_header should match snapshot 1`] = `
       }
     }
   >
-    <ForwardRef
+    <TouchableHighlight
       onLongPress={[Function]}
     >
       <View
@@ -272,7 +272,7 @@ exports[`channel_info_header should match snapshot 1`] = `
           value="Header string"
         />
       </View>
-    </ForwardRef>
+    </TouchableHighlight>
   </View>
   <Text
     style={
@@ -426,7 +426,7 @@ exports[`channel_info_header should match snapshot when DM and hasGuests and is 
       }
     }
   >
-    <ForwardRef
+    <TouchableHighlight
       onLongPress={[Function]}
     >
       <View
@@ -461,7 +461,7 @@ exports[`channel_info_header should match snapshot when DM and hasGuests and is 
           Purpose string
         </Text>
       </View>
-    </ForwardRef>
+    </TouchableHighlight>
   </View>
   <View
     style={
@@ -470,7 +470,7 @@ exports[`channel_info_header should match snapshot when DM and hasGuests and is 
       }
     }
   >
-    <ForwardRef
+    <TouchableHighlight
       onLongPress={[Function]}
     >
       <View
@@ -607,7 +607,7 @@ exports[`channel_info_header should match snapshot when DM and hasGuests and is 
           value="Header string"
         />
       </View>
-    </ForwardRef>
+    </TouchableHighlight>
   </View>
   <Text
     style={
@@ -733,7 +733,7 @@ exports[`channel_info_header should match snapshot when DM and hasGuests but its
       }
     }
   >
-    <ForwardRef
+    <TouchableHighlight
       onLongPress={[Function]}
     >
       <View
@@ -768,7 +768,7 @@ exports[`channel_info_header should match snapshot when DM and hasGuests but its
           Purpose string
         </Text>
       </View>
-    </ForwardRef>
+    </TouchableHighlight>
   </View>
   <View
     style={
@@ -777,7 +777,7 @@ exports[`channel_info_header should match snapshot when DM and hasGuests but its
       }
     }
   >
-    <ForwardRef
+    <TouchableHighlight
       onLongPress={[Function]}
     >
       <View
@@ -914,7 +914,7 @@ exports[`channel_info_header should match snapshot when DM and hasGuests but its
           value="Header string"
         />
       </View>
-    </ForwardRef>
+    </TouchableHighlight>
   </View>
   <Text
     style={
@@ -1068,7 +1068,7 @@ exports[`channel_info_header should match snapshot when GM and hasGuests 1`] = `
       }
     }
   >
-    <ForwardRef
+    <TouchableHighlight
       onLongPress={[Function]}
     >
       <View
@@ -1103,7 +1103,7 @@ exports[`channel_info_header should match snapshot when GM and hasGuests 1`] = `
           Purpose string
         </Text>
       </View>
-    </ForwardRef>
+    </TouchableHighlight>
   </View>
   <View
     style={
@@ -1112,7 +1112,7 @@ exports[`channel_info_header should match snapshot when GM and hasGuests 1`] = `
       }
     }
   >
-    <ForwardRef
+    <TouchableHighlight
       onLongPress={[Function]}
     >
       <View
@@ -1249,7 +1249,7 @@ exports[`channel_info_header should match snapshot when GM and hasGuests 1`] = `
           value="Header string"
         />
       </View>
-    </ForwardRef>
+    </TouchableHighlight>
   </View>
   <Text
     style={
@@ -1375,7 +1375,7 @@ exports[`channel_info_header should match snapshot when is group constrained 1`]
       }
     }
   >
-    <ForwardRef
+    <TouchableHighlight
       onLongPress={[Function]}
     >
       <View
@@ -1410,7 +1410,7 @@ exports[`channel_info_header should match snapshot when is group constrained 1`]
           Purpose string
         </Text>
       </View>
-    </ForwardRef>
+    </TouchableHighlight>
   </View>
   <View
     style={
@@ -1419,7 +1419,7 @@ exports[`channel_info_header should match snapshot when is group constrained 1`]
       }
     }
   >
-    <ForwardRef
+    <TouchableHighlight
       onLongPress={[Function]}
     >
       <View
@@ -1556,7 +1556,7 @@ exports[`channel_info_header should match snapshot when is group constrained 1`]
           value="Header string"
         />
       </View>
-    </ForwardRef>
+    </TouchableHighlight>
   </View>
   <Text
     style={
@@ -1731,7 +1731,7 @@ exports[`channel_info_header should match snapshot when public channel and hasGu
       }
     }
   >
-    <ForwardRef
+    <TouchableHighlight
       onLongPress={[Function]}
     >
       <View
@@ -1766,7 +1766,7 @@ exports[`channel_info_header should match snapshot when public channel and hasGu
           Purpose string
         </Text>
       </View>
-    </ForwardRef>
+    </TouchableHighlight>
   </View>
   <View
     style={
@@ -1775,7 +1775,7 @@ exports[`channel_info_header should match snapshot when public channel and hasGu
       }
     }
   >
-    <ForwardRef
+    <TouchableHighlight
       onLongPress={[Function]}
     >
       <View
@@ -1912,7 +1912,7 @@ exports[`channel_info_header should match snapshot when public channel and hasGu
           value="Header string"
         />
       </View>
-    </ForwardRef>
+    </TouchableHighlight>
   </View>
   <Text
     style={
@@ -2121,7 +2121,7 @@ exports[`channel_info_header should match snapshot with custom status enabled 1`
       }
     }
   >
-    <ForwardRef
+    <TouchableHighlight
       onLongPress={[Function]}
     >
       <View
@@ -2156,7 +2156,7 @@ exports[`channel_info_header should match snapshot with custom status enabled 1`
           Purpose string
         </Text>
       </View>
-    </ForwardRef>
+    </TouchableHighlight>
   </View>
   <View
     style={
@@ -2165,7 +2165,7 @@ exports[`channel_info_header should match snapshot with custom status enabled 1`
       }
     }
   >
-    <ForwardRef
+    <TouchableHighlight
       onLongPress={[Function]}
     >
       <View
@@ -2302,7 +2302,7 @@ exports[`channel_info_header should match snapshot with custom status enabled 1`
           value="Header string"
         />
       </View>
-    </ForwardRef>
+    </TouchableHighlight>
   </View>
   <Text
     style={
@@ -2551,7 +2551,7 @@ exports[`channel_info_header should match snapshot with custom status expiry 1`]
       }
     }
   >
-    <ForwardRef
+    <TouchableHighlight
       onLongPress={[Function]}
     >
       <View
@@ -2586,7 +2586,7 @@ exports[`channel_info_header should match snapshot with custom status expiry 1`]
           Purpose string
         </Text>
       </View>
-    </ForwardRef>
+    </TouchableHighlight>
   </View>
   <View
     style={
@@ -2595,7 +2595,7 @@ exports[`channel_info_header should match snapshot with custom status expiry 1`]
       }
     }
   >
-    <ForwardRef
+    <TouchableHighlight
       onLongPress={[Function]}
     >
       <View
@@ -2732,7 +2732,7 @@ exports[`channel_info_header should match snapshot with custom status expiry 1`]
           value="Header string"
         />
       </View>
-    </ForwardRef>
+    </TouchableHighlight>
   </View>
   <Text
     style={

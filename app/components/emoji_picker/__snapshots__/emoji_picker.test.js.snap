@@ -87,15 +87,10 @@ exports[`components/emoji_picker/emoji_picker.ios should match snapshot 1`] = `
     >
       <SectionList
         ListFooterComponent={[Function]}
-        data={Array []}
-        disableVirtualization={false}
         getItemLayout={[Function]}
-        horizontal={false}
         initialNumToRender={50}
-        keyExtractor={[Function]}
         keyboardDismissMode="interactive"
         keyboardShouldPersistTaps="always"
-        maxToRenderPerBatch={10}
         nativeID="emojiPicker"
         onEndReached={[Function]}
         onEndReachedThreshold={0}
@@ -106,7 +101,6 @@ exports[`components/emoji_picker/emoji_picker.ios should match snapshot 1`] = `
         removeClippedSubviews={true}
         renderItem={[Function]}
         renderSectionHeader={[Function]}
-        scrollEventThrottle={50}
         sections={
           Array [
             Object {
@@ -12888,7 +12882,6 @@ exports[`components/emoji_picker/emoji_picker.ios should match snapshot 1`] = `
           ]
         }
         showsVerticalScrollIndicator={false}
-        stickySectionHeadersEnabled={true}
         style={
           Array [
             Object {},
@@ -12897,8 +12890,6 @@ exports[`components/emoji_picker/emoji_picker.ios should match snapshot 1`] = `
             },
           ]
         }
-        updateCellsBatchingPeriod={50}
-        windowSize={21}
       />
       <KeyboardTrackingView
         normalList={true}
@@ -12926,7 +12917,7 @@ exports[`components/emoji_picker/emoji_picker.ios should match snapshot 1`] = `
               }
             }
           >
-            <ForwardRef
+            <TouchableOpacity
               onPress={[Function]}
               style={
                 Object {
@@ -12951,8 +12942,8 @@ exports[`components/emoji_picker/emoji_picker.ios should match snapshot 1`] = `
                   ]
                 }
               />
-            </ForwardRef>
-            <ForwardRef
+            </TouchableOpacity>
+            <TouchableOpacity
               onPress={[Function]}
               style={
                 Object {
@@ -12975,8 +12966,8 @@ exports[`components/emoji_picker/emoji_picker.ios should match snapshot 1`] = `
                   ]
                 }
               />
-            </ForwardRef>
-            <ForwardRef
+            </TouchableOpacity>
+            <TouchableOpacity
               onPress={[Function]}
               style={
                 Object {
@@ -12999,8 +12990,8 @@ exports[`components/emoji_picker/emoji_picker.ios should match snapshot 1`] = `
                   ]
                 }
               />
-            </ForwardRef>
-            <ForwardRef
+            </TouchableOpacity>
+            <TouchableOpacity
               onPress={[Function]}
               style={
                 Object {
@@ -13023,8 +13014,8 @@ exports[`components/emoji_picker/emoji_picker.ios should match snapshot 1`] = `
                   ]
                 }
               />
-            </ForwardRef>
-            <ForwardRef
+            </TouchableOpacity>
+            <TouchableOpacity
               onPress={[Function]}
               style={
                 Object {
@@ -13047,8 +13038,8 @@ exports[`components/emoji_picker/emoji_picker.ios should match snapshot 1`] = `
                   ]
                 }
               />
-            </ForwardRef>
-            <ForwardRef
+            </TouchableOpacity>
+            <TouchableOpacity
               onPress={[Function]}
               style={
                 Object {
@@ -13071,8 +13062,8 @@ exports[`components/emoji_picker/emoji_picker.ios should match snapshot 1`] = `
                   ]
                 }
               />
-            </ForwardRef>
-            <ForwardRef
+            </TouchableOpacity>
+            <TouchableOpacity
               onPress={[Function]}
               style={
                 Object {
@@ -13095,8 +13086,8 @@ exports[`components/emoji_picker/emoji_picker.ios should match snapshot 1`] = `
                   ]
                 }
               />
-            </ForwardRef>
-            <ForwardRef
+            </TouchableOpacity>
+            <TouchableOpacity
               onPress={[Function]}
               style={
                 Object {
@@ -13119,8 +13110,8 @@ exports[`components/emoji_picker/emoji_picker.ios should match snapshot 1`] = `
                   ]
                 }
               />
-            </ForwardRef>
-            <ForwardRef
+            </TouchableOpacity>
+            <TouchableOpacity
               onPress={[Function]}
               style={
                 Object {
@@ -13143,8 +13134,8 @@ exports[`components/emoji_picker/emoji_picker.ios should match snapshot 1`] = `
                   ]
                 }
               />
-            </ForwardRef>
-            <ForwardRef
+            </TouchableOpacity>
+            <TouchableOpacity
               onPress={[Function]}
               style={
                 Object {
@@ -13167,7 +13158,7 @@ exports[`components/emoji_picker/emoji_picker.ios should match snapshot 1`] = `
                   ]
                 }
               />
-            </ForwardRef>
+            </TouchableOpacity>
           </View>
         </View>
       </KeyboardTrackingView>

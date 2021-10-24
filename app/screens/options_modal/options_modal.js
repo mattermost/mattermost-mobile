@@ -31,6 +31,7 @@ export default class OptionsModal extends PureComponent {
             PropTypes.string,
             PropTypes.object,
         ]),
+        subtitle: PropTypes.string,
     };
 
     static defaultProps = {
@@ -85,17 +86,19 @@ export default class OptionsModal extends PureComponent {
         const {
             items,
             title,
+            subtitle,
         } = this.props;
 
         return (
             <TouchableWithoutFeedback onPress={this.handleCancel}>
                 <View style={style.wrapper}>
-                    <AnimatedView style={{height: this.props.deviceHeight, left: 0, top: this.state.top, width: this.props.deviceWidth}}>
+                    <AnimatedView style={{top: this.state.top}}>
                         <OptionsModalList
                             items={items}
                             onCancelPress={this.handleCancel}
                             onItemPress={this.onItemPress}
                             title={title}
+                            subtitle={subtitle}
                         />
                     </AnimatedView>
                 </View>

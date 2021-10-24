@@ -4,7 +4,9 @@
 import {connect} from 'react-redux';
 import {bindActionCreators, Dispatch} from 'redux';
 
+import {getPostThread} from '@actions/views/post';
 import {handleViewingGlobalThreadsAll, handleViewingGlobalThreadsUnreads} from '@actions/views/threads';
+import {selectPost} from '@mm-redux/actions/posts';
 import {getThreads, markAllThreadsInTeamRead} from '@mm-redux/actions/threads';
 import {getCurrentUserId} from '@mm-redux/selectors/entities/common';
 import {getTheme} from '@mm-redux/selectors/entities/preferences';
@@ -32,10 +34,12 @@ function mapStateToProps(state: GlobalState) {
 function mapDispatchToProps(dispatch: Dispatch) {
     return {
         actions: bindActionCreators({
+            getPostThread,
             getThreads,
             handleViewingGlobalThreadsAll,
             handleViewingGlobalThreadsUnreads,
             markAllThreadsInTeamRead,
+            selectPost,
         }, dispatch),
     };
 }

@@ -33,6 +33,7 @@ const Preferences: Dictionary<any> = {
     NAME_CUSTOM_STATUS_TUTORIAL_STATE: 'custom_status_tutorial_state',
     NAME_RECENT_CUSTOM_STATUSES: 'recent_custom_statuses',
     CUSTOM_STATUS_MODAL_VIEWED: 'custom_status_modal_viewed',
+    LIMIT_VISIBLE_DMS_GMS: 'limit_visible_dms_gms',
 
     // "immediate" is a 30 second interval
     INTERVAL_NEVER: 0,

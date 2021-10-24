@@ -18,7 +18,7 @@ exports[`UploadItem downloadAndUploadFile should match, full snapshot 1`] = `
       }
     }
   >
-    <ForwardRef
+    <TouchableOpacity
       onPress={[Function]}
     >
       <View
@@ -69,7 +69,7 @@ exports[`UploadItem downloadAndUploadFile should match, full snapshot 1`] = `
           }
         />
       </View>
-    </ForwardRef>
+    </TouchableOpacity>
   </View>
   <UploadRemove
     channelId="channel-id"

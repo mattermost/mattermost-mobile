@@ -18,6 +18,7 @@ import {AppCallRequest, AppField, AppForm, AppFormValue, AppFormValues, AppLooku
 import {DialogElement} from '@mm-redux/types/integrations';
 import {Theme} from '@mm-redux/types/theme';
 import {checkDialogElementForError, checkIfErrorsMatchElements} from '@mm-redux/utils/integration_utils';
+import {filterEmptyOptions} from '@utils/apps';
 import {getMarkdownBlockStyles, getMarkdownTextStyles} from '@utils/markdown';
 import {preventDoubleTap} from '@utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
@@ -167,6 +168,8 @@ export default class AppsFormComponent extends PureComponent<Props, State> {
         const callResponse = res.data!;
         switch (callResponse.type) {
         case AppCallResponseTypes.OK:
+            await this.handleHide();
+            return;
         case AppCallResponseTypes.NAVIGATE:
             await this.handleHide();
             this.props.actions.handleGotoLocation(callResponse.navigate_to_url!, this.context.intl);
@@ -245,8 +248,11 @@ export default class AppsFormComponent extends PureComponent<Props, State> {
 
         const callResp = res.data!;
         switch (callResp.type) {
-        case AppCallResponseTypes.OK:
-            return callResp.data?.items || [];
+        case AppCallResponseTypes.OK: {
+            let items = callResp.data?.items || [];
+            items = items.filter(filterEmptyOptions);
+            return items;
+        }
         case AppCallResponseTypes.FORM:
         case AppCallResponseTypes.NAVIGATE: {
             const errMsg = intl.formatMessage({

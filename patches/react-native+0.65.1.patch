@@ -1,8 +1,8 @@
 diff --git a/node_modules/react-native/Libraries/Components/ScrollView/ScrollView.js b/node_modules/react-native/Libraries/Components/ScrollView/ScrollView.js
-index a069a24..a21fa38 100644
+index 8eca425..f0df04f 100644
 --- a/node_modules/react-native/Libraries/Components/ScrollView/ScrollView.js
 +++ b/node_modules/react-native/Libraries/Components/ScrollView/ScrollView.js
-@@ -1222,9 +1222,15 @@ class ScrollView extends React.Component<Props, State> {
+@@ -1768,9 +1768,15 @@ class ScrollView extends React.Component<Props, State> {
          // Note: we should split props.style on the inner and outer props
          // however, the ScrollView still needs the baseStyle to be scrollable
          const {outer, inner} = splitLayoutProps(flattenStyle(props.style));
@@ -14,29 +14,16 @@ index a069a24..a21fa38 100644
 +
          return React.cloneElement(
            refreshControl,
--          {style: [baseStyle, outer]},
+-          {style: StyleSheet.compose(baseStyle, outer)},
 +          {style: [baseStyle, outer, inverted]},
-           <ScrollViewClass
+           <NativeDirectionalScrollView
              {...props}
-             style={[baseStyle, inner]}
-diff --git a/node_modules/react-native/Libraries/Components/TextInput/AndroidTextInputNativeComponent.js b/node_modules/react-native/Libraries/Components/TextInput/AndroidTextInputNativeComponent.js
-index dffccc4..dc426c2 100644
---- a/node_modules/react-native/Libraries/Components/TextInput/AndroidTextInputNativeComponent.js
-+++ b/node_modules/react-native/Libraries/Components/TextInput/AndroidTextInputNativeComponent.js
-@@ -553,7 +553,7 @@ if (global.RN$Bridgeless) {
-   AndroidTextInputNativeComponent = 'AndroidTextInput';
- } else {
-   AndroidTextInputNativeComponent = requireNativeComponent<NativeProps>(
--    'AndroidTextInput',
-+    'PasteableTextInputAndroid',
-   );
- }
- 
+             style={StyleSheet.compose(baseStyle, inner)}
 diff --git a/node_modules/react-native/Libraries/Lists/VirtualizedList.js b/node_modules/react-native/Libraries/Lists/VirtualizedList.js
-index 2249d54..cc303b3 100644
+index a7c1567..1531a45 100644
 --- a/node_modules/react-native/Libraries/Lists/VirtualizedList.js
 +++ b/node_modules/react-native/Libraries/Lists/VirtualizedList.js
-@@ -18,6 +18,7 @@ const ScrollView = require('../Components/ScrollView/ScrollView');
+@@ -16,6 +16,7 @@ const ScrollView = require('../Components/ScrollView/ScrollView');
  const StyleSheet = require('../StyleSheet/StyleSheet');
  const View = require('../Components/View/View');
  const ViewabilityHelper = require('./ViewabilityHelper');
@@ -44,7 +31,7 @@ index 2249d54..cc303b3 100644
  
  const flattenStyle = require('../StyleSheet/flattenStyle');
  const infoLog = require('../Utilities/infoLog');
-@@ -2061,7 +2062,14 @@ function describeNestedLists(childList: {
+@@ -2122,7 +2123,14 @@ function describeNestedLists(childList: {
  
  const styles = StyleSheet.create({
    verticallyInverted: {
@@ -61,7 +48,7 @@ index 2249d54..cc303b3 100644
    horizontallyInverted: {
      transform: [{scaleX: -1}],
 diff --git a/node_modules/react-native/react.gradle b/node_modules/react-native/react.gradle
-index dd34c98..4d74938 100644
+index 84b1f60..0ffc592 100644
 --- a/node_modules/react-native/react.gradle
 +++ b/node_modules/react-native/react.gradle
 @@ -151,7 +151,7 @@ afterEvaluate {
@@ -71,9 +58,9 @@ index dd34c98..4d74938 100644
 -                || targetName.toLowerCase().contains("release"))
 +                || targetName.toLowerCase().contains("release") || targetName.toLowerCase().contains("unsigned"))
  
-             def extraArgs = config.extraPackagerArgs ?: [];
+             def extraArgs = []
  
-@@ -171,7 +171,7 @@ afterEvaluate {
+@@ -180,7 +180,7 @@ afterEvaluate {
                      def hermesFlags;
                      def hbcTempFile = file("${jsBundleFile}.hbc")
                      exec {
@@ -82,7 +69,7 @@ index dd34c98..4d74938 100644
                              // Can't use ?: since that will also substitute valid empty lists
                              hermesFlags = config.hermesFlagsRelease
                              if (hermesFlags == null) hermesFlags = ["-O", "-output-source-map"]
-@@ -215,7 +215,7 @@ afterEvaluate {
+@@ -224,7 +224,7 @@ afterEvaluate {
                  ? config."bundleIn${targetName}"
                  : config."bundleIn${variant.buildType.name.capitalize()}" != null
                      ? config."bundleIn${variant.buildType.name.capitalize()}"
@@ -91,8 +78,8 @@ index dd34c98..4d74938 100644
          }
  
          // Expose a minimal interface on the application variant and the task itself:
-@@ -312,7 +312,7 @@ afterEvaluate {
-         // This should really be done by packaging all Hermes releated libs into
+@@ -321,7 +321,7 @@ afterEvaluate {
+         // This should really be done by packaging all Hermes related libs into
          // two separate HermesDebug and HermesRelease AARs, but until then we'll
          // kludge it by deleting the .so files out of the /transforms/ directory.
 -        def isRelease = targetName.toLowerCase().contains("release")

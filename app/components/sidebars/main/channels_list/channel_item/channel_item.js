@@ -181,14 +181,13 @@ export default class ChannelItem extends PureComponent {
         const itemTestID = `${testID}.${channelId}`;
         const displayNameTestID = `${testID}.display_name`;
 
-        const customStatus = this.props.teammateId && this.props.customStatusEnabled ?
-            (
-                <CustomStatusEmoji
-                    userID={this.props.teammateId}
-                    style={[style.emoji, extraTextStyle]}
-                    testID={displayName}
-                />
-            ) : null;
+        const customStatus = this.props.teammateId && this.props.customStatusEnabled ? (
+            <CustomStatusEmoji
+                userID={this.props.teammateId}
+                style={[style.emoji, extraTextStyle]}
+                testID={displayName}
+            />
+        ) : null;
 
         return (
             <TouchableHighlight

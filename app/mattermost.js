@@ -108,7 +108,9 @@ Navigation.events().registerAppLaunchedListener(() => {
 });
 
 export function componentDidAppearListener({componentId}) {
-    EphemeralStore.addNavigationComponentId(componentId);
+    if (componentId.indexOf('!screen') !== 0) {
+        EphemeralStore.addNavigationComponentId(componentId);
+    }
 
     switch (componentId) {
     case 'MainSidebar':

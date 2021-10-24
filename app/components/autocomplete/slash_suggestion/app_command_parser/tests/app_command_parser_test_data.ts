@@ -181,6 +181,37 @@ export const createCommand: AppBinding = {
     } as AppForm,
 };
 
+export const restCommand: AppBinding = {
+    app_id: 'jira',
+    label: 'rest',
+    location: 'rest',
+    description: 'rest description',
+    icon: 'rest icon',
+    hint: 'rest hint',
+    form: {
+        call: {
+            path: '/create-issue',
+        },
+        fields: [
+            {
+                name: 'summary',
+                label: 'summary',
+                description: 'The Jira issue summary',
+                type: AppFieldTypes.TEXT,
+                hint: 'The thing is working great!',
+                position: -1,
+            },
+            {
+                name: 'verbose',
+                label: 'verbose',
+                description: 'display details',
+                type: AppFieldTypes.BOOL,
+                hint: 'yes or no!',
+            },
+        ],
+    } as AppForm,
+};
+
 export const testBindings: AppBinding[] = [
     {
         app_id: '',
@@ -204,6 +235,7 @@ export const testBindings: AppBinding[] = [
                     bindings: [
                         viewCommand,
                         createCommand,
+                        restCommand,
                     ],
                 }],
             },

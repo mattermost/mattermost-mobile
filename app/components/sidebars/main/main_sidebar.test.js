@@ -17,6 +17,7 @@ describe('MainSidebar', () => {
             setChannelDisplayName: jest.fn(),
             setChannelLoading: jest.fn(),
             joinChannel: jest.fn(),
+            setCategoryCollapsed: jest.fn(),
         },
         blurPostTextBox: jest.fn(),
         currentTeamId: 'current-team-id',

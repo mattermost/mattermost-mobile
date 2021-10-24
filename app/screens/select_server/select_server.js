@@ -103,7 +103,7 @@ export default class SelectServer extends PureComponent {
         }
 
         if (Platform.OS === 'android') {
-            Keyboard.addListener('keyboardDidHide', this.handleAndroidKeyboard);
+            this.keyboardListener = Keyboard.addListener('keyboardDidHide', this.handleAndroidKeyboard);
         }
 
         this.certificateListener = DeviceEventEmitter.addListener('RNFetchBlobCertificate', this.selectCertificate);
@@ -118,7 +118,7 @@ export default class SelectServer extends PureComponent {
 
     componentWillUnmount() {
         if (Platform.OS === 'android') {
-            Keyboard.removeListener('keyboardDidHide', this.handleAndroidKeyboard);
+            this.keyboardListener?.remove();
         }
 
         this.certificateListener.remove();
@@ -490,6 +490,7 @@ export default class SelectServer extends PureComponent {
                                 />
                             </View>
                             <TextInput
+                                allowFontScaling={true}
                                 testID='select_server.server_url.input'
                                 ref={this.inputRef}
                                 value={url}

@@ -67,6 +67,7 @@ export default class Code extends React.PureComponent {
         if (Platform.OS === 'ios') {
             textComponent = (
                 <TextInput
+                    allowFontScaling={true}
                     editable={false}
                     multiline={true}
                     value={this.props.content}

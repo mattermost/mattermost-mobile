@@ -23,7 +23,10 @@ describe('Reducers.channel', () => {
 
         const nextState = channelReducer(
             initialState,
-            {},
+            {
+                type: '',
+                data: {},
+            },
         );
 
         expect(nextState).toEqual(initialState);
