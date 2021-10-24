@@ -55,7 +55,6 @@ function ThreadItem({actions, channel, intl, post, threadId, testID, theme, thre
 
     const postItem = post || thread.post;
 
-    // eslint-disable-next-line react-hooks/rules-of-hooks
     React.useEffect(() => {
         // Get the latest post
         if (!post) {
