@@ -9,7 +9,7 @@ import {getAllowCustomThemes, getOsColorScheme} from '@mm-redux/selectors/entiti
 import {
     getDarkTheme,
     getDefaultLightTheme,
-    getEnableThemeSync,
+    isThemeSyncEnabled,
     getLightTheme,
     getTheme,
     isThemeSyncWithOsAvailable,
@@ -30,7 +30,7 @@ const mapStateToProps = (state: GlobalState) => ({
     darkTheme: getDarkTheme(state),
     userId: getCurrentUserId(state),
     isThemeSyncWithOsAvailable: isThemeSyncWithOsAvailable(state),
-    enableThemeSync: getEnableThemeSync(state),
+    isThemeSyncEnabled: isThemeSyncEnabled(state),
     teamId: getCurrentTeamId(state),
     isLandscape: isLandscape(state),
     isTablet: isTablet(state),

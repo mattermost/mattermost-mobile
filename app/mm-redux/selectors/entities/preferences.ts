@@ -107,12 +107,10 @@ export const getTeammateNameDisplaySetting = reselect.createSelector(
     },
 );
 
-export const isThemeSyncWithOsAvailable = (state: GlobalState) => {
-    const version = state.entities.general.serverVersion;
-    return isMinimumServerVersion(version, 6, 0) || version.indexOf('dev') !== -1;
-};
+export const isThemeSyncWithOsAvailable = (state: GlobalState) =>
+    isMinimumServerVersion(state.entities.general.serverVersion, 6, 0);
 
-export const getEnableThemeSync = reselect.createSelector(
+export const isThemeSyncEnabled = reselect.createSelector(
     isThemeSyncWithOsAvailable,
     getCurrentTeamId,
     getMyPreferences,
@@ -177,12 +175,12 @@ export const getDarkTheme = createShallowSelector(
 export const getTheme = createShallowSelector(
     getLightThemePreference,
     getDarkThemePreference,
-    getEnableThemeSync,
+    isThemeSyncEnabled,
     getOsColorScheme,
     getDefaultDarkTheme,
     getDefaultLightTheme,
-    (lightThemePreference, darkThemePreference, enableThemeSync, osColorScheme, defaultDarkTheme, defaultLightTheme) => {
-        const isDarkActive = enableThemeSync && osColorScheme === 'dark';
+    (lightThemePreference, darkThemePreference, isSyncEnabled, osColorScheme, defaultDarkTheme, defaultLightTheme) => {
+        const isDarkActive = isSyncEnabled && osColorScheme === 'dark';
         const themePreference = isDarkActive ? darkThemePreference : lightThemePreference;
         const defaultTheme = isDarkActive ? defaultDarkTheme : defaultLightTheme;
         return normalizeTheme(themePreference ? themePreference.value : defaultTheme, defaultTheme);

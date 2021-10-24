@@ -25,7 +25,7 @@ const Theme: FC<Props> = ({
     darkTheme,
     userId,
     isThemeSyncWithOsAvailable,
-    enableThemeSync,
+    isThemeSyncEnabled,
     teamId,
     isLandscape,
     isTablet,
@@ -46,10 +46,10 @@ const Theme: FC<Props> = ({
     }, [lightTheme, darkTheme]);
 
     useEffect(() => {
-        if (!enableThemeSync && tinycolor(lightTheme.centerChannelBg).isLight()) {
+        if (!isThemeSyncEnabled && tinycolor(lightTheme.centerChannelBg).isLight()) {
             setSavedLightTheme(lightTheme);
         }
-    }, [lightTheme, enableThemeSync]);
+    }, [lightTheme, isThemeSyncEnabled]);
 
     const handleOsSyncToggle = (syncWithOs: boolean) => {
         if (!syncWithOs) {
@@ -121,13 +121,13 @@ const Theme: FC<Props> = ({
             >
                 {isThemeSyncWithOsAvailable && (
                     <OsSyncSection
-                        selected={enableThemeSync}
+                        selected={isThemeSyncEnabled}
                         theme={theme}
                         onToggle={handleOsSyncToggle}
                         osColorScheme={osColorScheme}
                     />
                 )}
-                {enableThemeSync ? (
+                {isThemeSyncEnabled ? (
                     <>
                         <ThemeSection
                             testID='light_themes'
@@ -186,7 +186,7 @@ type Props = {
     darkTheme: ThemePreference;
     userId: string;
     isThemeSyncWithOsAvailable: boolean;
-    enableThemeSync: boolean;
+    isThemeSyncEnabled: boolean;
     teamId: string;
     isLandscape: boolean;
     isTablet: boolean;

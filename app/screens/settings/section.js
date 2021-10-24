@@ -34,7 +34,7 @@ function section(props) {
                     id={headerId}
                     defaultMessage={headerDefaultMessage}
                     values={headerValues}
-                    style={{...style.header, ...headerStyle}}
+                    style={[style.header, headerStyle]}
                 />
             }
             <View style={style.items}>

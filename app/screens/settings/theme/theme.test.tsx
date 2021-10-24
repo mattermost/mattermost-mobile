@@ -43,7 +43,7 @@ describe('Theme', () => {
         darkTheme: Preferences.THEMES.indigo,
         userId,
         isThemeSyncWithOsAvailable: true,
-        enableThemeSync: true,
+        isThemeSyncEnabled: true,
         teamId,
         isLandscape: false,
         isTablet: false,
@@ -115,7 +115,7 @@ describe('Theme', () => {
                         {...baseProps}
                         lightTheme={initialThemes[0]}
                         darkTheme={initialThemes[1]}
-                        enableThemeSync={false}
+                        isThemeSyncEnabled={false}
                     />
                 </ReduxIntlProvider>,
             );
@@ -125,7 +125,7 @@ describe('Theme', () => {
                         {...baseProps}
                         lightTheme={toSet}
                         darkTheme={initialThemes[1]}
-                        enableThemeSync={false}
+                        isThemeSyncEnabled={false}
                     />
                 </ReduxIntlProvider>,
             );
@@ -151,7 +151,7 @@ describe('Theme', () => {
         const wrapper = shallowWithIntl(
             <Theme
                 {...baseProps}
-                enableThemeSync={false}
+                isThemeSyncEnabled={false}
             />,
         );
         expect(wrapper.getElement()).toMatchSnapshot();
