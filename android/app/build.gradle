@@ -127,7 +127,7 @@ android {
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         missingDimensionStrategy "RNNotifications.reactNativeVersion", "reactNative60"
-        versionCode 375
+        versionCode 376
         versionName "1.47.2"
         multiDexEnabled = true
         testBuildType System.getProperty('testBuildType', 'debug')
