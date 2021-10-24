@@ -99,6 +99,7 @@ exports[`Global Thread List Should render threads with functional tabs & mark al
         "centerChannelBg": "#ffffff",
         "centerChannelColor": "#3f4350",
         "codeTheme": "github",
+        "colorScheme": "light",
         "dndIndicator": "#d24b4e",
         "errorTextColor": "#d24b4e",
         "linkColor": "#386fe5",
