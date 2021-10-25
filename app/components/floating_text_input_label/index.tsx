@@ -5,60 +5,68 @@
 
 import {debounce} from 'lodash';
 import React, {useState, useEffect, useRef} from 'react';
-import {StyleSheet, View, TextInput, TouchableWithoutFeedback, Text, Platform, TextStyle, NativeSyntheticEvent, TextInputFocusEventData, TextInputProps, GestureResponderEvent, TargetedEvent} from 'react-native';
+import {View, TextInput, TouchableWithoutFeedback, Text, Platform, TextStyle, NativeSyntheticEvent, TextInputFocusEventData, TextInputProps, GestureResponderEvent, TargetedEvent} from 'react-native';
 import Animated, {useCode, interpolateNode, EasingNode, Value, set, Clock} from 'react-native-reanimated';
+
+import CompassIcon from '@components/compass_icon';
+import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 import {timingAnimation} from './animation_utils';
 
-export const DEFAULT_COLORS = {
-    TEXT_INPUT_ACTIVE_COLOR: '#066acf',
-    TEXT_INPUT_ACTIVE_LABEL_COLOR: '#0b78e6',
-    PRIMARY_BACKGROUND_COLOR: '#fff',
-    SECONDARY_TEXT_COLOR: '#8a8a8a',
-    TEXT_INPUT_TEXT_COLOR: '#2b2b2b',
-    TEXT_INPUT_DEFAULT_COLOR: '#8a8a8a',
-    TEXT_INPUT_ERROR_COLOR: '#eb452f',
-    TEXT_INPUT_BORDER_RADIUS: 4,
-    TEXT_INPUT_BORDER_DEFAULT_WIDTH: 1,
-};
+const BORDER_DEFAULT_WIDTH = 1;
+const BORDER_FOCUSED_WIDTH = 2;
 
-const WIDTH = '50%';
-
-const styles = StyleSheet.create({
+const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     container: {
-        justifyContent: 'center',
-        marginVertical: 5,
+        height: 48,
     },
-    textInput: {
-        fontSize: 16,
-        paddingTop: 10,
-        paddingBottom: 10,
-        paddingHorizontal: 15,
-        color: DEFAULT_COLORS.TEXT_INPUT_TEXT_COLOR,
-        borderColor: DEFAULT_COLORS.TEXT_INPUT_DEFAULT_COLOR,
-        borderRadius: DEFAULT_COLORS.TEXT_INPUT_BORDER_RADIUS,
-        borderWidth: DEFAULT_COLORS.TEXT_INPUT_BORDER_DEFAULT_WIDTH,
-        width: '50%',
+    errorContainer: {
+        flexDirection: 'row',
+    },
+    errorIcon: {
+        color: theme.errorTextColor,
+        fontSize: 14,
+        marginRight: 7,
+        top: 5,
+    },
+    errorText: {
+        color: theme.errorTextColor,
+        fontFamily: 'OpenSans',
+        fontSize: 12,
+        lineHeight: 16,
+        paddingVertical: 5,
     },
     label: {
         position: 'absolute',
-        left: 15,
+        color: changeOpacity(theme.centerChannelColor, 0.64),
+        left: 16,
+        fontFamily: 'OpenSans',
         fontSize: 16,
         zIndex: 1,
     },
-    errorText: {
-        fontSize: 13,
-        paddingHorizontal: 15,
-        paddingVertical: 5,
+    smallLabel: {
+        fontSize: 10,
     },
-});
+    textInput: {
+        fontFamily: 'OpenSans',
+        fontSize: 16,
+        lineHeight: 24,
+        paddingTop: 12,
+        paddingBottom: 12,
+        paddingHorizontal: 16,
+        color: theme.centerChannelColor,
+        borderColor: changeOpacity(theme.centerChannelColor, 0.16),
+        borderRadius: 4,
+        borderWidth: BORDER_DEFAULT_WIDTH,
+    },
+}));
 
 const onExecution = (
     e: NativeSyntheticEvent<TextInputFocusEventData>,
-    innerFunc?: any,
-    outerFunc?: any,
+    innerFunc?: () => void,
+    outerFunc?: ((event: NativeSyntheticEvent<TargetedEvent>) => void),
 ) => {
-    innerFunc?.(e);
+    innerFunc?.();
     outerFunc?.(e);
 };
 
@@ -73,63 +81,62 @@ const getAndroidExtraPadding = (_textInputFontSize: number) => {
     return 0;
 };
 
-const getLabelPositions = (style: TextStyle, labelStyle: TextStyle) => {
+const getLabelPositions = (style: TextStyle, labelStyle: TextStyle, smallLabelStyle: TextStyle) => {
     const top: number = style?.paddingTop as number || 0;
     const bottom: number = style?.paddingBottom as number || 0;
 
     const height: number = (style?.height as number || (top + bottom) || style?.padding as number) || 0;
     const textInputFontSize = style?.fontSize || 13;
-    const labelFontSize = labelStyle?.fontSize || 13;
+    const labelFontSize = labelStyle?.fontSize || 16;
+    const smallLabelFontSize = smallLabelStyle?.fontSize || 10;
     const fontSizeDiff = textInputFontSize - labelFontSize;
-
     const unfocused = (height * 0.5) + (fontSizeDiff * (Platform.OS === 'android' ? 0.5 : 0.6)) + getAndroidExtraPadding(textInputFontSize);
-    const focused = -labelFontSize * 0.5;
+    const focused = -(labelFontSize + smallLabelFontSize) * 0.25;
     return [unfocused, focused];
 };
 
 type FloatingTextInputProps = TextInputProps & {
-    error: string;
-    errorColor: string;
-    errorTextStyle: TextStyle;
-    textInputStyle: TextStyle;
-    labelTextStyle: TextStyle;
     containerStyle: TextStyle;
-    isKeyboardInput: boolean;
     editable: boolean;
-    value: string;
+    error: string;
+    errorIcon?: string;
+    isKeyboardInput: boolean;
     label: string;
-    labelTextColor: string;
-    activeColor: string;
-    activeLabelColor: string;
+    onBlur?: (event: NativeSyntheticEvent<TargetedEvent>) => void;
+    onFocus?: (e: NativeSyntheticEvent<TargetedEvent>) => void;
     onPress?: (e: GestureResponderEvent) => void;
-    onBlur?: null | ((event: NativeSyntheticEvent<TargetedEvent>) => void) | undefined;
-    onFocus?: ((e: NativeSyntheticEvent<TargetedEvent>) => void) | undefined;
+    showErrorIcon?: boolean;
+    theme: Theme;
+    value: string;
 }
 
 const FloatingTextInput = ({
     error,
-    errorColor = DEFAULT_COLORS.TEXT_INPUT_ERROR_COLOR,
-    errorTextStyle,
-    textInputStyle,
-    labelTextStyle,
     containerStyle,
     isKeyboardInput = true,
     editable = true,
-    value = '',
+    errorIcon = 'BRKN-alert-outline',
     label = '',
-    labelTextColor = '',
-    activeColor = DEFAULT_COLORS.TEXT_INPUT_ACTIVE_COLOR,
-    activeLabelColor = DEFAULT_COLORS.TEXT_INPUT_ACTIVE_LABEL_COLOR,
     onPress = undefined,
     onFocus,
     onBlur,
+    showErrorIcon = true,
+    theme,
+    value = '',
     ...props
 }: FloatingTextInputProps) => {
-    const [focusedLabel, setIsFocusLabel] = useState(Boolean(value));
+    const [focusedLabel, setIsFocusLabel] = useState<boolean | undefined>();
     const [focused, setIsFocused] = useState(Boolean(value));
     const inputRef = useRef<TextInput>(null);
     const [animation] = useState(new Value(focusedLabel ? 1 : 0));
     const debouncedOnFocusTextInput = debounce(setIsFocusLabel, 500, {leading: true, trailing: false});
+    const styles = getStyleSheet(theme);
+    let from = 0;
+    let to = 0;
+    if (focusedLabel !== undefined) {
+        from = focusedLabel ? 0 : 1;
+        to = focusedLabel ? 1 : 0;
+    }
 
     useCode(
         () => set(
@@ -137,8 +144,8 @@ const FloatingTextInput = ({
             timingAnimation({
                 animation,
                 duration: 150,
-                from: focusedLabel ? 0 : 1,
-                to: focusedLabel ? 1 : 0,
+                from,
+                to,
                 easing: EasingNode.linear,
                 clock: new Clock(),
             }),
@@ -151,9 +158,6 @@ const FloatingTextInput = ({
             if (!focusedLabel && value) {
                 debouncedOnFocusTextInput(true);
             }
-            if (focusedLabel && !value) {
-                debouncedOnFocusTextInput(false);
-            }
         },
         [value],
     );
@@ -161,16 +165,16 @@ const FloatingTextInput = ({
     const focusStyle = {
         top: interpolateNode(animation, {
             inputRange: [0, 1],
-            outputRange: [...getLabelPositions((textInputStyle || styles.textInput), (labelTextStyle || styles.label))],
+            outputRange: [...getLabelPositions(styles.textInput, styles.label, styles.smallLabel)],
         }),
         fontSize: interpolateNode(animation, {
             inputRange: [0, 1],
-            outputRange: [16, 13],
+            outputRange: [styles.textInput.fontSize, styles.smallLabel.fontSize],
         }),
         backgroundColor: (
-            focusedLabel ? DEFAULT_COLORS.PRIMARY_BACKGROUND_COLOR : 'transparent'
+            focusedLabel ? theme.centerChannelBg : 'transparent'
         ),
-        color: labelTextColor || DEFAULT_COLORS.SECONDARY_TEXT_COLOR,
+        color: styles.label.color,
     };
 
     const onTextInputBlur = (e: NativeSyntheticEvent<TextInputFocusEventData>) => onExecution(e,
@@ -193,40 +197,42 @@ const FloatingTextInput = ({
         return focused ? null : inputRef?.current?.focus();
     };
 
-    const shouldShowError = (!focused && error && errorColor);
-    const activeOpacity = !isKeyboardInput && editable ? 0.2 : 1;
+    const shouldShowError = (!focused && error);
     const onPressAction = !isKeyboardInput && editable && onPress ? onPress : undefined;
 
     let textInputColorStyles;
     let labelColorStyles;
 
     if (focused) {
-        textInputColorStyles = {borderColor: activeColor};
-        labelColorStyles = {color: activeLabelColor};
+        textInputColorStyles = {borderColor: theme.buttonBg};
+        labelColorStyles = {color: theme.buttonBg};
     } else if (shouldShowError) {
-        textInputColorStyles = {borderColor: errorColor};
+        textInputColorStyles = {borderColor: theme.errorTextColor};
     }
 
-    const combinedTextInputStyle = [styles.textInput, textInputStyle, textInputColorStyles];
-    const textAnimatedTextStyle = [styles.label, focusStyle, labelTextStyle, labelColorStyles];
-    const errorStyle = [styles.errorText, {color: errorColor}, errorTextStyle];
+    const textInputBorder = {borderWidth: focusedLabel ? BORDER_FOCUSED_WIDTH : BORDER_DEFAULT_WIDTH};
+    const combinedTextInputStyle = [styles.textInput, textInputBorder, textInputColorStyles];
+    const textAnimatedTextStyle = [styles.label, focusStyle, labelColorStyles];
+
+    if (error && !focused) {
+        textAnimatedTextStyle.push({color: theme.errorTextColor});
+    }
 
     return (
         <TouchableWithoutFeedback
-            style={[styles.container, containerStyle]}
             onPress={onPressAction}
         >
-            <View>
+            <View style={[styles.container, containerStyle]}>
                 {
                     <Animated.Text
-                        style={textAnimatedTextStyle}
                         onPress={onAnimatedTextPress}
+                        style={textAnimatedTextStyle}
+                        suppressHighlighting={true}
                     >
                         {label}
                     </Animated.Text>
                 }
                 <TextInput
-                    underlineColorAndroid={'rgba(0,0,0,0)'}
                     {...props}
                     editable={isKeyboardInput && editable}
                     style={combinedTextInputStyle}
@@ -237,8 +243,19 @@ const FloatingTextInput = ({
                     onFocus={onTextInputFocus}
                     onBlur={onTextInputBlur}
                     ref={inputRef}
+                    underlineColorAndroid='transparent'
                 />
-                {!focused && error && (<Text style={errorStyle}>{error}</Text>)}
+                {!focused && error && (
+                    <View style={styles.errorContainer}>
+                        {showErrorIcon && errorIcon &&
+                        <CompassIcon
+                            name={errorIcon}
+                            style={styles.errorIcon}
+                        />
+                        }
+                        <Text style={styles.errorText}>{error}</Text>
+                    </View>
+                )}
             </View>
         </TouchableWithoutFeedback>
     );

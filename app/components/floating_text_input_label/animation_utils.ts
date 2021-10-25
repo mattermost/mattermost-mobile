@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import Animated, {Clock, EasingNode, Value, block, clockRunning, cond, not, set, startClock, stopClock, timing as retiming} from 'react-native-reanimated';
+import Animated, {EasingNode, Value, block, clockRunning, cond, not, set, startClock, stopClock, timing as retiming} from 'react-native-reanimated';
 
 type AnimationState = {
     finished: Value<number>;
