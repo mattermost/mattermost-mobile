@@ -17,7 +17,7 @@ type AnimationConfig = Animated.TimingConfig &{
 };
 
 type AnimationTiming = {
-    clock?: Animated.Clock;
+    clock: Animated.Clock;
     animation: Value<number>;
     duration?: number;
     from?: number;
@@ -35,7 +35,6 @@ type AnimateArgs = {
 
 export const timingAnimation = (params: AnimationTiming) => {
     const {clock, easing, duration, from, to} = {
-        clock: new Clock(),
         duration: 250,
         easing: EasingNode.linear,
         from: 0,

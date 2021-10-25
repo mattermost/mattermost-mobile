@@ -5,11 +5,53 @@
 
 import {debounce} from 'lodash';
 import React, {useState, useEffect, useRef} from 'react';
-import {StyleSheet, TextInput, TouchableOpacity, Text, Platform, TextStyle, NativeSyntheticEvent, TextInputFocusEventData, TextInputProps, GestureResponderEvent, TargetedEvent} from 'react-native';
-import Animated, {useCode, interpolateNode, EasingNode, Value, set} from 'react-native-reanimated';
+import {StyleSheet, View, TextInput, TouchableWithoutFeedback, Text, Platform, TextStyle, NativeSyntheticEvent, TextInputFocusEventData, TextInputProps, GestureResponderEvent, TargetedEvent} from 'react-native';
+import Animated, {useCode, interpolateNode, EasingNode, Value, set, Clock} from 'react-native-reanimated';
 
 import {timingAnimation} from './animation_utils';
-import {theme} from './styles';
+
+export const DEFAULT_COLORS = {
+    TEXT_INPUT_ACTIVE_COLOR: '#066acf',
+    TEXT_INPUT_ACTIVE_LABEL_COLOR: '#0b78e6',
+    PRIMARY_BACKGROUND_COLOR: '#fff',
+    SECONDARY_TEXT_COLOR: '#8a8a8a',
+    TEXT_INPUT_TEXT_COLOR: '#2b2b2b',
+    TEXT_INPUT_DEFAULT_COLOR: '#8a8a8a',
+    TEXT_INPUT_ERROR_COLOR: '#eb452f',
+    TEXT_INPUT_BORDER_RADIUS: 4,
+    TEXT_INPUT_BORDER_DEFAULT_WIDTH: 1,
+};
+
+const WIDTH = '50%';
+
+const styles = StyleSheet.create({
+    container: {
+        justifyContent: 'center',
+        marginVertical: 5,
+    },
+    textInput: {
+        fontSize: 16,
+        paddingTop: 10,
+        paddingBottom: 10,
+        paddingHorizontal: 15,
+        color: DEFAULT_COLORS.TEXT_INPUT_TEXT_COLOR,
+        borderColor: DEFAULT_COLORS.TEXT_INPUT_DEFAULT_COLOR,
+        borderRadius: DEFAULT_COLORS.TEXT_INPUT_BORDER_RADIUS,
+        borderWidth: DEFAULT_COLORS.TEXT_INPUT_BORDER_DEFAULT_WIDTH,
+        width: '50%',
+    },
+    label: {
+        position: 'absolute',
+        left: 15,
+        fontSize: 16,
+        zIndex: 1,
+    },
+    errorText: {
+        fontSize: 13,
+        paddingHorizontal: 15,
+        paddingVertical: 5,
+    },
+});
 
 const onExecution = (
     e: NativeSyntheticEvent<TextInputFocusEventData>,
@@ -66,7 +108,7 @@ type FloatingTextInputProps = TextInputProps & {
 
 const FloatingTextInput = ({
     error,
-    errorColor = theme.TEXT_INPUT_ERROR_COLOR,
+    errorColor = DEFAULT_COLORS.TEXT_INPUT_ERROR_COLOR,
     errorTextStyle,
     textInputStyle,
     labelTextStyle,
@@ -76,8 +118,8 @@ const FloatingTextInput = ({
     value = '',
     label = '',
     labelTextColor = '',
-    activeColor = theme.TEXT_INPUT_ACTIVE_COLOR,
-    activeLabelColor = theme.TEXT_INPUT_ACTIVE_LABEL_COLOR,
+    activeColor = DEFAULT_COLORS.TEXT_INPUT_ACTIVE_COLOR,
+    activeLabelColor = DEFAULT_COLORS.TEXT_INPUT_ACTIVE_LABEL_COLOR,
     onPress = undefined,
     onFocus,
     onBlur,
@@ -98,6 +140,7 @@ const FloatingTextInput = ({
                 from: focusedLabel ? 0 : 1,
                 to: focusedLabel ? 1 : 0,
                 easing: EasingNode.linear,
+                clock: new Clock(),
             }),
         ),
         [focusedLabel],
@@ -125,9 +168,9 @@ const FloatingTextInput = ({
             outputRange: [16, 13],
         }),
         backgroundColor: (
-            focusedLabel ? theme.PRIMARY_BACKGROUND_COLOR : 'transparent'
+            focusedLabel ? DEFAULT_COLORS.PRIMARY_BACKGROUND_COLOR : 'transparent'
         ),
-        color: labelTextColor || theme.SECONDARY_TEXT_COLOR,
+        color: labelTextColor || DEFAULT_COLORS.SECONDARY_TEXT_COLOR,
     };
 
     const onTextInputBlur = (e: NativeSyntheticEvent<TextInputFocusEventData>) => onExecution(e,
@@ -169,12 +212,11 @@ const FloatingTextInput = ({
     const errorStyle = [styles.errorText, {color: errorColor}, errorTextStyle];
 
     return (
-        <>
-            <TouchableOpacity
-                style={[styles.container, containerStyle]}
-                onPress={onPressAction}
-                activeOpacity={activeOpacity}
-            >
+        <TouchableWithoutFeedback
+            style={[styles.container, containerStyle]}
+            onPress={onPressAction}
+        >
+            <View>
                 {
                     <Animated.Text
                         style={textAnimatedTextStyle}
@@ -197,39 +239,10 @@ const FloatingTextInput = ({
                     ref={inputRef}
                 />
                 {!focused && error && (<Text style={errorStyle}>{error}</Text>)}
-            </TouchableOpacity>
-
-        </>
+            </View>
+        </TouchableWithoutFeedback>
     );
 };
-
-const styles = StyleSheet.create({
-    container: {
-        justifyContent: 'center',
-        marginVertical: 5,
-    },
-    textInput: {
-        fontSize: 16,
-        paddingTop: 10,
-        paddingBottom: 10,
-        paddingHorizontal: 15,
-        color: theme.TEXT_INPUT_TEXT_COLOR,
-        borderColor: theme.TEXT_INPUT_DEFAULT_COLOR,
-        borderRadius: theme.TEXT_INPUT_BORDER_RADIUS,
-        borderWidth: theme.TEXT_INPUT_BORDER_DEFAULT_WIDTH,
-    },
-    label: {
-        position: 'absolute',
-        left: 15,
-        fontSize: 16,
-        zIndex: 1,
-    },
-    errorText: {
-        fontSize: 13,
-        paddingHorizontal: 15,
-        paddingVertical: 5,
-    },
-});
 
 export default FloatingTextInput;
 
