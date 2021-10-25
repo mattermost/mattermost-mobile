@@ -3,9 +3,10 @@
 import React from 'react';
 import {Text, View} from 'react-native';
 
-import ButtonComponent from '@app/components/button';
 import CompassIcon from '@app/components/compass_icon';
+import TouchableWithFeedback from '@app/components/touchable_with_feedback';
 import {useTheme} from '@app/context/theme';
+import {buttonBackgroundStyle, buttonTextStyle} from '@app/utils/buttonStyles';
 import {typography} from '@app/utils/typography';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
@@ -57,13 +58,9 @@ const LoadingError = () => {
             <Text style={[typography('Body', 200), styles.body]}>
                 {'There was a problem loading the content for this team.'}
             </Text>
-            <ButtonComponent
-                text={'Retry'}
-                size='lg'
-                emphasis='primary'
-                type='inverted'
-                styles={{button: {marginTop: 20}}}
-            />
+            <TouchableWithFeedback style={[{marginTop: 20}, buttonBackgroundStyle(theme, 'lg', 'primary', 'inverted')]}>
+                <Text style={buttonTextStyle(theme, 'lg', 'primary', 'inverted')}>{'Retry'}</Text>
+            </TouchableWithFeedback>
         </View>
     );
 };
