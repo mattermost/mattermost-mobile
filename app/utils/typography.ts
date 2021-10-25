@@ -117,7 +117,7 @@ export const typography = (
             typeStyle.fontFamily = `${typeStyle.fontFamily}-${style}`;
             break;
         case '400':
-            typeStyle.fontFamily = `${typeStyle.fontFamily}-${style}`;
+            typeStyle.fontFamily = `${typeStyle.fontFamily}`;
             break;
         case '600':
             typeStyle.fontFamily = `${typeStyle.fontFamily}-${style}`;

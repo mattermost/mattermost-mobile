@@ -34,7 +34,7 @@ const ChannelList = () => {
         <ScrollView style={styles.container} >
             <ChannelListHeader
                 heading='Contributors'
-                subheading='Community'
+                subheading='Community TEST'
             />
             <SearchField/>
             <ThreadsButton/>

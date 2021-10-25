@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {StyleProp, StyleSheet, ViewStyle} from 'react-native';
+import {StyleProp, StyleSheet, TextStyle, ViewStyle} from 'react-native';
 
 import {blendColors, changeOpacity} from '@utils/theme';
 
@@ -26,6 +26,10 @@ type BackgroundStyles = {
  *
  *
  * @param theme
+ * @param size
+ * @param emphasis
+ * @param type
+ * @param state
  * @returns
  */
 export const buttonBackgroundStyle = (
@@ -361,29 +365,67 @@ export const buttonBackgroundStyle = (
 };
 
 /**
- * Returns the appropriate text color for the button.
+ * Returns the appropriate TextStyle for the <Text style={} ...> object inside the button.
  *
- * Handles the emphasis & types, button state does not change text color.
  *
  * @param theme
+ * @param size
  * @param emphasis
  * @param type
  * @returns
  */
-export const buttonTextColor = (theme: Theme, emphasis: ButtonEmphasis, type: ButtonType): string => {
+export const buttonTextStyle = (
+    theme: Theme,
+    size: ButtonSize = 'm',
+    emphasis: ButtonEmphasis = 'primary',
+    type: ButtonType = 'default',
+): StyleProp<TextStyle> => {
+    // Color
+    let color: string = theme.buttonColor;
+
     if (type === 'disabled') {
-        return changeOpacity(theme.centerChannelColor, 0.32);
+        color = changeOpacity(theme.centerChannelColor, 0.32);
     }
 
     if ((type === 'destructive' && emphasis !== 'primary')) {
-        return theme.errorTextColor;
+        color = theme.errorTextColor;
     }
 
     if ((type === 'inverted' && emphasis === 'primary') ||
         (type !== 'inverted' && emphasis !== 'primary')) {
-        return theme.buttonBg;
+        color = theme.buttonBg;
     }
 
-    return theme.buttonColor;
+    const styles = StyleSheet.create({
+        main: {
+            fontFamily: 'OpenSans-SemiBold',
+            fontWeight: '600',
+        },
+        underline: {
+            textDecorationLine: 'underline',
+        },
+    });
+
+    const sizes = StyleSheet.create({
+        xs: {
+            fontSize: 11,
+            lineHeight: 10,
+            letterSpacing: 0.02,
+        },
+        s: {
+            fontSize: 12,
+            lineHeight: 11,
+        },
+        m: {
+            fontSize: 14,
+            lineHeight: 14,
+        },
+        lg: {
+            fontSize: 16,
+            lineHeight: 18,
+        },
+    });
+
+    return StyleSheet.create([styles.main, sizes[size], {color}]);
 };
 
