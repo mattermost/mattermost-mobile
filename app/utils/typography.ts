@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {Platform, StyleSheet, TextStyle} from 'react-native';
+import {StyleSheet, TextStyle} from 'react-native';
 
 // type FontFamilies = 'OpenSans' | 'Metropolis';
 type FontTypes = 'Heading' | 'Body';
@@ -108,18 +108,20 @@ export const typography = (
         ...fontStyle[style],
     };
 
-    if (Platform.OS === 'android') {
-        switch (typeStyle.fontWeight) {
-            case '300':
-                typeStyle.fontFamily = `${typeStyle.fontFamily}-${style}`;
-                break;
-            case '400':
-                typeStyle.fontFamily = `${typeStyle.fontFamily}-${style}`;
-                break;
-            case '600':
-                typeStyle.fontFamily = `${typeStyle.fontFamily}-${style}`;
-                break;
-        }
+    /*
+     * Use the appropriate font-file (i.e. OpenSans-SemiBold)
+     * This switch statement can be removed when Android supports font-weight strings
+     */
+    switch (typeStyle.fontWeight) {
+        case '300':
+            typeStyle.fontFamily = `${typeStyle.fontFamily}-${style}`;
+            break;
+        case '400':
+            typeStyle.fontFamily = `${typeStyle.fontFamily}-${style}`;
+            break;
+        case '600':
+            typeStyle.fontFamily = `${typeStyle.fontFamily}-${style}`;
+            break;
     }
 
     return typeStyle;
