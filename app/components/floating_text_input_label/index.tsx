@@ -3,10 +3,10 @@
 
 // Note: This file has been adapted from the library https://github.com/csath/react-native-reanimated-text-input
 
-import debounce from 'lodash/debounce';
+import {debounce} from 'lodash';
 import React, {useState, useEffect, useRef} from 'react';
 import {StyleSheet, TextInput, TouchableOpacity, Text, Platform, TextStyle, NativeSyntheticEvent, TextInputFocusEventData, TextInputProps, GestureResponderEvent, TargetedEvent} from 'react-native';
-import Animated, {Clock, useCode, interpolateNode, EasingNode, Value, set} from 'react-native-reanimated';
+import Animated, {useCode, interpolateNode, EasingNode, Value, set} from 'react-native-reanimated';
 
 import {timingAnimation} from './animation_utils';
 import {theme} from './styles';
@@ -83,18 +83,16 @@ const FloatingTextInput = ({
     onBlur,
     ...props
 }: FloatingTextInputProps) => {
-    const [focusedLabel, _onFocusLabel] = useState(Boolean(value));
-    const [focused, _onFocusTextInput] = useState(Boolean(value));
+    const [focusedLabel, setIsFocusLabel] = useState(Boolean(value));
+    const [focused, setIsFocused] = useState(Boolean(value));
     const inputRef = useRef<TextInput>(null);
     const [animation] = useState(new Value(focusedLabel ? 1 : 0));
-    const clock = new Clock();
-    const debouncedOnFocusTextInput = debounce(_onFocusLabel, 500, {leading: true, trailing: false});
+    const debouncedOnFocusTextInput = debounce(setIsFocusLabel, 500, {leading: true, trailing: false});
 
     useCode(
         () => set(
             animation,
             timingAnimation({
-                clock,
                 animation,
                 duration: 150,
                 from: focusedLabel ? 0 : 1,
@@ -132,7 +130,30 @@ const FloatingTextInput = ({
         color: labelTextColor || theme.SECONDARY_TEXT_COLOR,
     };
 
+    const onTextInputBlur = (e: NativeSyntheticEvent<TextInputFocusEventData>) => onExecution(e,
+        () => {
+            setIsFocusLabel(Boolean(value));
+            setIsFocused(false);
+        },
+        onBlur,
+    );
+
+    const onTextInputFocus = (e: NativeSyntheticEvent<TextInputFocusEventData>) => onExecution(e,
+        () => {
+            setIsFocusLabel(true);
+            setIsFocused(true);
+        },
+        onFocus,
+    );
+
+    const onAnimatedTextPress = () => {
+        return focused ? null : inputRef?.current?.focus();
+    };
+
     const shouldShowError = (!focused && error && errorColor);
+    const activeOpacity = !isKeyboardInput && editable ? 0.2 : 1;
+    const onPressAction = !isKeyboardInput && editable && onPress ? onPress : undefined;
+
     let textInputColorStyles;
     let labelColorStyles;
 
@@ -143,19 +164,21 @@ const FloatingTextInput = ({
         textInputColorStyles = {borderColor: errorColor};
     }
 
+    const combinedTextInputStyle = [styles.textInput, textInputStyle, textInputColorStyles];
+    const textAnimatedTextStyle = [styles.label, focusStyle, labelTextStyle, labelColorStyles];
+    const errorStyle = [styles.errorText, {color: errorColor}, errorTextStyle];
+
     return (
         <>
             <TouchableOpacity
                 style={[styles.container, containerStyle]}
-                onPress={!isKeyboardInput && editable && onPress ? onPress : undefined}
-                activeOpacity={!isKeyboardInput && editable ? 0.2 : 1}
+                onPress={onPressAction}
+                activeOpacity={activeOpacity}
             >
                 {
                     <Animated.Text
-                        style={[styles.label, focusStyle, labelTextStyle, labelColorStyles]}
-                        onPress={() => {
-                            return focused ? null : inputRef?.current?.focus();
-                        }}
+                        style={textAnimatedTextStyle}
+                        onPress={onAnimatedTextPress}
                     >
                         {label}
                     </Animated.Text>
@@ -164,28 +187,16 @@ const FloatingTextInput = ({
                     underlineColorAndroid={'rgba(0,0,0,0)'}
                     {...props}
                     editable={isKeyboardInput && editable}
-                    style={[styles.textInput, textInputStyle, textInputColorStyles]}
+                    style={combinedTextInputStyle}
                     placeholder=''
                     placeholderTextColor='transparent'
                     value={value}
                     pointerEvents={isKeyboardInput ? 'auto' : 'none'}
-                    onFocus={(e) => onExecution(e,
-                        () => {
-                            _onFocusLabel(true);
-                            _onFocusTextInput(true);
-                        },
-                        onFocus,
-                    )}
-                    onBlur={(e) => onExecution(e,
-                        () => {
-                            _onFocusLabel(Boolean(value));
-                            _onFocusTextInput(false);
-                        },
-                        onBlur,
-                    )}
+                    onFocus={onTextInputFocus}
+                    onBlur={onTextInputBlur}
                     ref={inputRef}
                 />
-                {!focused && error ? <Text style={[styles.errorText, {color: errorColor}, errorTextStyle]}>{error}</Text> : null}
+                {!focused && error && (<Text style={errorStyle}>{error}</Text>)}
             </TouchableOpacity>
 
         </>
