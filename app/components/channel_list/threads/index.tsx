@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React from 'react';
-import {Text, View} from 'react-native';
+import {StyleSheet, Text, View} from 'react-native';
 
 import {useTheme} from '@app/context/theme';
 import {makeStyleSheetFromTheme} from '@app/utils/theme';
@@ -25,6 +25,8 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     },
 }));
 
+const textStyle = StyleSheet.create([typography('Body', 200, 'SemiBold')]);
+
 const ThreadsButton = () => {
     const theme = useTheme();
     const styles = getStyleSheet(theme);
@@ -35,7 +37,7 @@ const ThreadsButton = () => {
                 name='message-text-outline'
                 style={styles.icon}
             />
-            <Text style={[typography('Body', 200, 'SemiBold'), styles.text]}>{'Threads'}</Text>
+            <Text style={[textStyle, styles.text]}>{'Threads'}</Text>
         </View>
     );
 };

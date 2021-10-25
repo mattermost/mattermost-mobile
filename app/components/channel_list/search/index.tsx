@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React from 'react';
-import {View} from 'react-native';
+import {StyleSheet, View, ViewStyle} from 'react-native';
 import {TextInput} from 'react-native-gesture-handler';
 
 import {useTheme} from '@app/context/theme';
@@ -37,15 +37,14 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     },
 }));
 
+const textStyles = StyleSheet.create([
+    typography('Body', 200),
+    {textAlignVertical: 'center'},
+]);
+
 const SearchField = () => {
     const theme = useTheme();
     const styles = getStyleSheet(theme);
-
-    const textStyles = [
-        typography('Body', 200),
-        styles.input,
-        {textAlignVertical: 'center'},
-    ];
 
     return (
         <View
@@ -56,7 +55,7 @@ const SearchField = () => {
                 style={styles.icon}
             />
             <TextInput
-                style={textStyles}
+                style={[textStyles, styles.input]}
                 placeholder='Find Channels'
                 placeholderTextColor={changeOpacity(theme.sidebarText, 0.72)}
             />

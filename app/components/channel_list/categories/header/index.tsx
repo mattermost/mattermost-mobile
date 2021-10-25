@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React from 'react';
-import {Text, View} from 'react-native';
+import {StyleSheet, Text, View} from 'react-native';
 
 import {useTheme} from '@app/context/theme';
 import {typography} from '@app/utils/typography';
@@ -18,6 +18,8 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     },
 }));
 
+const textStyle = StyleSheet.create([typography('Heading', 75)]);
+
 type Props = {
     heading: string;
 }
@@ -28,7 +30,7 @@ const CategoriesHeader = (props: Props) => {
 
     return (
         <View style={styles.container}>
-            <Text style={[typography('Heading', 75), styles.heading]}>
+            <Text style={[textStyle, styles.heading]}>
                 {props.heading.toUpperCase()}
             </Text>
         </View>
