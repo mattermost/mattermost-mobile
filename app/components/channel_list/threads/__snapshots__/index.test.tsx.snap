@@ -22,12 +22,14 @@ exports[`Threads Component should match snapshot 1`] = `
   <Text
     style={
       Array [
-        Object {
-          "fontFamily": "OpenSans",
-          "fontSize": 16,
-          "fontWeight": "600",
-          "lineHeight": 24,
-        },
+        Array [
+          Object {
+            "fontFamily": "OpenSans-SemiBold",
+            "fontSize": 16,
+            "fontWeight": "600",
+            "lineHeight": 24,
+          },
+        ],
         Object {
           "color": "#ffffff",
           "paddingLeft": 12,

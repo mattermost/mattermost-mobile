@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React from 'react';
-import {StyleSheet, View, ViewStyle} from 'react-native';
+import {StyleSheet, View} from 'react-native';
 import {TextInput} from 'react-native-gesture-handler';
 
 import {useTheme} from '@app/context/theme';
