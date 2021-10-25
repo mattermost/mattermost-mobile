@@ -8,7 +8,7 @@ import React, {useState, useEffect, useRef} from 'react';
 import {StyleSheet, TextInput, TouchableOpacity, Text, Platform, TextStyle, NativeSyntheticEvent, TextInputFocusEventData, TextInputProps, GestureResponderEvent, TargetedEvent} from 'react-native';
 import Animated, {Clock, useCode, interpolateNode, EasingNode, Value, set} from 'react-native-reanimated';
 
-import {timingAnimation} from './animationUtils';
+import {timingAnimation} from './animation_utils';
 import {theme} from './styles';
 
 const onExecution = (
