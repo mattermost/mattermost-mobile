@@ -12,12 +12,14 @@ exports[`Category Header Component should match snapshot 1`] = `
   <Text
     style={
       Array [
-        Object {
-          "fontFamily": "OpenSans",
-          "fontSize": 12,
-          "fontWeight": "600",
-          "lineHeight": 16,
-        },
+        Array [
+          Object {
+            "fontFamily": "OpenSans-SemiBold",
+            "fontSize": 12,
+            "fontWeight": "600",
+            "lineHeight": 16,
+          },
+        ],
         Object {
           "color": "rgba(255,255,255,0.64)",
         },

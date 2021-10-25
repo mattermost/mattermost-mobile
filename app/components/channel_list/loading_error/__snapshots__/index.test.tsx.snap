@@ -1,146 +1,5 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`Error Component should match snapshot 1`] = `
-<View
-  style={
-    Object {
-      "alignItems": "center",
-      "flex": 1,
-      "padding": 20,
-    }
-  }
->
-  <View
-    style={
-      Object {
-        "alignItems": "center",
-        "backgroundColor": "rgba(255,255,255,0.08)",
-        "borderRadius": 60,
-        "height": 120,
-        "justifyContent": "center",
-        "width": 120,
-      }
-    }
-  >
-    <Icon
-      name="alert-circle-outline"
-      style={
-        Object {
-          "color": "rgba(255,255,255,0.48)",
-          "fontSize": 72,
-          "lineHeight": 72,
-        }
-      }
-    />
-  </View>
-  <Text
-    style={
-      Array [
-        Object {
-          "fontFamily": "Metropolis",
-          "fontSize": 20,
-          "fontWeight": "600",
-          "lineHeight": 28,
-        },
-        Object {
-          "color": "#ffffff",
-          "marginTop": 20,
-          "textAlign": "center",
-        },
-      ]
-    }
-  >
-    Couldn't load Staff
-  </Text>
-  <Text
-    style={
-      Array [
-        Object {
-          "fontFamily": "OpenSans",
-          "fontSize": 16,
-          "fontWeight": "400",
-          "lineHeight": 24,
-        },
-        Object {
-          "color": "#ffffff",
-          "textAlign": "center",
-        },
-      ]
-    }
-  >
-    There was a problem loading the content for this team.
-  </Text>
-  <View
-    accessibilityState={
-      Object {
-        "disabled": false,
-      }
-    }
-    accessible={true}
-    collapsable={false}
-    focusable={true}
-    onBlur={[Function]}
-    onClick={[Function]}
-    onFocus={[Function]}
-    onResponderGrant={[Function]}
-    onResponderMove={[Function]}
-    onResponderRelease={[Function]}
-    onResponderTerminate={[Function]}
-    onResponderTerminationRequest={[Function]}
-    onStartShouldSetResponder={[Function]}
-  >
-    <View
-      style={
-        Array [
-          Object {
-            "backgroundColor": "#ffffff",
-          },
-          Object {},
-          Array [
-            Object {
-              "alignItems": "center",
-              "borderRadius": 4,
-              "flex": 0,
-              "justifyContent": "center",
-            },
-            Object {
-              "height": 48,
-              "paddingHorizontal": 24,
-              "paddingVertical": 14,
-            },
-            undefined,
-            Object {
-              "marginTop": 20,
-            },
-          ],
-        ]
-      }
-    >
-      <Text
-        style={
-          Array [
-            Object {
-              "fontFamily": "OpenSans",
-              "fontWeight": "600",
-            },
-            Object {
-              "fontSize": 16,
-              "lineHeight": 18,
-            },
-            Object {
-              "color": "#1c58d9",
-            },
-            undefined,
-          ]
-        }
-      >
-        Retry
-      </Text>
-    </View>
-  </View>
-</View>
-`;
-
 exports[`Loading Error should match snapshot 1`] = `
 <View
   style={
@@ -178,7 +37,7 @@ exports[`Loading Error should match snapshot 1`] = `
     style={
       Array [
         Object {
-          "fontFamily": "Metropolis",
+          "fontFamily": "Metropolis-SemiBold",
           "fontSize": 20,
           "fontWeight": "600",
           "lineHeight": 28,
@@ -212,29 +71,33 @@ exports[`Loading Error should match snapshot 1`] = `
     There was a problem loading the content for this team.
   </Text>
   <View
-    accessibilityState={
-      Object {
-        "disabled": false,
-      }
-    }
-    accessible={true}
-    collapsable={false}
-    focusable={true}
-    onBlur={[Function]}
-    onClick={[Function]}
-    onFocus={[Function]}
+    onMoveShouldSetResponder={[Function]}
+    onMoveShouldSetResponderCapture={[Function]}
+    onResponderEnd={[Function]}
     onResponderGrant={[Function]}
     onResponderMove={[Function]}
+    onResponderReject={[Function]}
     onResponderRelease={[Function]}
+    onResponderStart={[Function]}
     onResponderTerminate={[Function]}
     onResponderTerminationRequest={[Function]}
     onStartShouldSetResponder={[Function]}
+    onStartShouldSetResponderCapture={[Function]}
   >
     <View
+      accessible={true}
+      focusable={false}
+      onClick={[Function]}
+      onResponderGrant={[Function]}
+      onResponderMove={[Function]}
+      onResponderRelease={[Function]}
+      onResponderTerminate={[Function]}
+      onResponderTerminationRequest={[Function]}
+      onStartShouldSetResponder={[Function]}
       style={
         Array [
           Object {
-            "backgroundColor": "#ffffff",
+            "marginTop": 20,
           },
           Array [
             Object {
@@ -248,9 +111,8 @@ exports[`Loading Error should match snapshot 1`] = `
               "paddingHorizontal": 24,
               "paddingVertical": 14,
             },
-            undefined,
             Object {
-              "marginTop": 20,
+              "backgroundColor": "#ffffff",
             },
           ],
         ]
@@ -260,7 +122,7 @@ exports[`Loading Error should match snapshot 1`] = `
         style={
           Array [
             Object {
-              "fontFamily": "OpenSans",
+              "fontFamily": "OpenSans-SemiBold",
               "fontWeight": "600",
             },
             Object {
@@ -270,7 +132,6 @@ exports[`Loading Error should match snapshot 1`] = `
             Object {
               "color": "#1c58d9",
             },
-            undefined,
           ]
         }
       >

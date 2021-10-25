@@ -15,37 +15,29 @@ exports[`Channels List should match snapshot 1`] = `
     <View>
       <Text
         style={
-          Array [
-            Object {
-              "fontFamily": "Metropolis",
-              "fontSize": 28,
-              "fontWeight": "600",
-              "lineHeight": 36,
-            },
-            Object {
-              "color": "#ffffff",
-            },
-          ]
+          Object {
+            "color": "#ffffff",
+            "fontFamily": "Metropolis-SemiBold",
+            "fontSize": 28,
+            "fontWeight": "600",
+            "lineHeight": 36,
+          }
         }
       >
         Contributors
       </Text>
       <Text
         style={
-          Array [
-            Object {
-              "fontFamily": "OpenSans",
-              "fontSize": 11,
-              "fontWeight": "600",
-              "lineHeight": 16,
-            },
-            Object {
-              "color": "rgba(255,255,255,0.64)",
-            },
-          ]
+          Object {
+            "color": "rgba(255,255,255,0.64)",
+            "fontFamily": "OpenSans-SemiBold",
+            "fontSize": 11,
+            "fontWeight": "600",
+            "lineHeight": 16,
+          }
         }
       >
-        Community
+        Community TEST
       </Text>
     </View>
     <View
@@ -82,21 +74,23 @@ exports[`Channels List should match snapshot 1`] = `
         placeholderTextColor="rgba(255,255,255,0.72)"
         style={
           Array [
-            Object {
-              "fontFamily": "OpenSans",
-              "fontSize": 16,
-              "fontWeight": "400",
-              "lineHeight": 24,
-            },
+            Array [
+              Object {
+                "fontFamily": "OpenSans",
+                "fontSize": 16,
+                "fontWeight": "400",
+                "lineHeight": 24,
+              },
+              Object {
+                "textAlignVertical": "center",
+              },
+            ],
             Object {
               "alignContent": "center",
               "alignItems": "center",
               "color": "#ffffff",
               "flex": 1,
               "height": 40,
-            },
-            Object {
-              "textAlignVertical": "center",
             },
           ]
         }
@@ -123,12 +117,14 @@ exports[`Channels List should match snapshot 1`] = `
       <Text
         style={
           Array [
-            Object {
-              "fontFamily": "OpenSans",
-              "fontSize": 16,
-              "fontWeight": "600",
-              "lineHeight": 24,
-            },
+            Array [
+              Object {
+                "fontFamily": "OpenSans-SemiBold",
+                "fontSize": 16,
+                "fontWeight": "600",
+                "lineHeight": 24,
+              },
+            ],
             Object {
               "color": "#ffffff",
               "paddingLeft": 12,
@@ -150,12 +146,14 @@ exports[`Channels List should match snapshot 1`] = `
       <Text
         style={
           Array [
-            Object {
-              "fontFamily": "OpenSans",
-              "fontSize": 12,
-              "fontWeight": "600",
-              "lineHeight": 16,
-            },
+            Array [
+              Object {
+                "fontFamily": "OpenSans-SemiBold",
+                "fontSize": 12,
+                "fontWeight": "600",
+                "lineHeight": 16,
+              },
+            ],
             Object {
               "color": "rgba(255,255,255,0.64)",
             },
@@ -227,7 +225,7 @@ exports[`Channels List should match snapshot 1`] = `
         style={
           Array [
             Object {
-              "fontFamily": "OpenSans",
+              "fontFamily": "OpenSans-SemiBold",
               "fontSize": 16,
               "fontWeight": "600",
               "lineHeight": 24,
@@ -334,7 +332,7 @@ exports[`Channels List should match snapshot 1`] = `
         style={
           Array [
             Object {
-              "fontFamily": "Metropolis",
+              "fontFamily": "Metropolis-SemiBold",
               "fontSize": 20,
               "fontWeight": "600",
               "lineHeight": 28,
@@ -368,29 +366,33 @@ exports[`Channels List should match snapshot 1`] = `
         There was a problem loading the content for this team.
       </Text>
       <View
-        accessibilityState={
-          Object {
-            "disabled": false,
-          }
-        }
-        accessible={true}
-        collapsable={false}
-        focusable={true}
-        onBlur={[Function]}
-        onClick={[Function]}
-        onFocus={[Function]}
+        onMoveShouldSetResponder={[Function]}
+        onMoveShouldSetResponderCapture={[Function]}
+        onResponderEnd={[Function]}
         onResponderGrant={[Function]}
         onResponderMove={[Function]}
+        onResponderReject={[Function]}
         onResponderRelease={[Function]}
+        onResponderStart={[Function]}
         onResponderTerminate={[Function]}
         onResponderTerminationRequest={[Function]}
         onStartShouldSetResponder={[Function]}
+        onStartShouldSetResponderCapture={[Function]}
       >
         <View
+          accessible={true}
+          focusable={false}
+          onClick={[Function]}
+          onResponderGrant={[Function]}
+          onResponderMove={[Function]}
+          onResponderRelease={[Function]}
+          onResponderTerminate={[Function]}
+          onResponderTerminationRequest={[Function]}
+          onStartShouldSetResponder={[Function]}
           style={
             Array [
               Object {
-                "backgroundColor": "#ffffff",
+                "marginTop": 20,
               },
               Array [
                 Object {
@@ -404,9 +406,8 @@ exports[`Channels List should match snapshot 1`] = `
                   "paddingHorizontal": 24,
                   "paddingVertical": 14,
                 },
-                undefined,
                 Object {
-                  "marginTop": 20,
+                  "backgroundColor": "#ffffff",
                 },
               ],
             ]
@@ -416,7 +417,7 @@ exports[`Channels List should match snapshot 1`] = `
             style={
               Array [
                 Object {
-                  "fontFamily": "OpenSans",
+                  "fontFamily": "OpenSans-SemiBold",
                   "fontWeight": "600",
                 },
                 Object {
@@ -426,447 +427,6 @@ exports[`Channels List should match snapshot 1`] = `
                 Object {
                   "color": "#1c58d9",
                 },
-                undefined,
-              ]
-            }
-          >
-            Retry
-          </Text>
-        </View>
-      </View>
-    </View>
-  </View>
-</RCTScrollView>
-`;
-
-exports[`Threads Component should match snapshot 1`] = `
-<RCTScrollView
-  style={
-    Object {
-      "backgroundColor": "#1e325c",
-      "flex": 1,
-      "paddingHorizontal": 20,
-      "paddingVertical": 10,
-    }
-  }
->
-  <View>
-    <View>
-      <Text
-        style={
-          Array [
-            Object {
-              "fontFamily": "Metropolis",
-              "fontSize": 28,
-              "fontWeight": "600",
-              "lineHeight": 36,
-            },
-            Object {
-              "color": "#ffffff",
-            },
-          ]
-        }
-      >
-        Contributors
-      </Text>
-      <Text
-        style={
-          Array [
-            Object {
-              "fontFamily": "OpenSans",
-              "fontSize": 11,
-              "fontWeight": "600",
-              "lineHeight": 16,
-            },
-            Object {
-              "color": "rgba(255,255,255,0.64)",
-            },
-          ]
-        }
-      >
-        Community
-      </Text>
-    </View>
-    <View
-      style={
-        Object {
-          "alignItems": "center",
-          "backgroundColor": "rgba(255,255,255,0.12)",
-          "borderRadius": 8,
-          "flex": 1,
-          "flexDirection": "row",
-          "height": 40,
-          "justifyContent": "flex-start",
-          "marginVertical": 20,
-          "padding": 8,
-          "width": "100%",
-        }
-      }
-    >
-      <Icon
-        name="magnify"
-        style={
-          Object {
-            "color": "rgba(255,255,255,0.72)",
-            "fontSize": 24,
-            "width": 24,
-          }
-        }
-      />
-      <TextInput
-        collapsable={false}
-        onGestureHandlerEvent={[Function]}
-        onGestureHandlerStateChange={[Function]}
-        placeholder="Find Channels"
-        placeholderTextColor="rgba(255,255,255,0.72)"
-        style={
-          Array [
-            Object {
-              "fontFamily": "OpenSans",
-              "fontSize": 16,
-              "fontWeight": "400",
-              "lineHeight": 24,
-            },
-            Object {
-              "alignContent": "center",
-              "alignItems": "center",
-              "color": "#ffffff",
-              "flex": 1,
-              "height": 40,
-            },
-            Object {
-              "textAlignVertical": "center",
-            },
-          ]
-        }
-      />
-    </View>
-    <View
-      style={
-        Object {
-          "display": "flex",
-          "flexDirection": "row",
-        }
-      }
-    >
-      <Icon
-        name="message-text-outline"
-        style={
-          Object {
-            "color": "#ffffff",
-            "fontSize": 24,
-            "lineHeight": 28,
-          }
-        }
-      />
-      <Text
-        style={
-          Array [
-            Object {
-              "fontFamily": "OpenSans",
-              "fontSize": 16,
-              "fontWeight": "600",
-              "lineHeight": 24,
-            },
-            Object {
-              "color": "#ffffff",
-              "paddingLeft": 12,
-            },
-          ]
-        }
-      >
-        Threads
-      </Text>
-    </View>
-    <View
-      style={
-        Object {
-          "marginTop": 12,
-          "paddingVertical": 8,
-        }
-      }
-    >
-      <Text
-        style={
-          Array [
-            Object {
-              "fontFamily": "OpenSans",
-              "fontSize": 12,
-              "fontWeight": "600",
-              "lineHeight": 16,
-            },
-            Object {
-              "color": "rgba(255,255,255,0.64)",
-            },
-          ]
-        }
-      >
-        CATEGORY HEADING
-      </Text>
-    </View>
-    <View
-      style={
-        Object {
-          "display": "flex",
-          "flexDirection": "row",
-          "paddingVertical": 4,
-        }
-      }
-    >
-      <Icon
-        name="globe"
-        style={
-          Object {
-            "color": "rgba(255,255,255,0.72)",
-            "fontSize": 24,
-            "lineHeight": 28,
-          }
-        }
-      />
-      <Text
-        style={
-          Array [
-            Object {
-              "fontFamily": "OpenSans",
-              "fontSize": 16,
-              "fontWeight": "400",
-              "lineHeight": 24,
-            },
-            Object {
-              "color": "rgba(255,255,255,0.72)",
-              "paddingLeft": 12,
-            },
-            undefined,
-          ]
-        }
-      >
-        Just a Channel
-      </Text>
-    </View>
-    <View
-      style={
-        Object {
-          "display": "flex",
-          "flexDirection": "row",
-          "paddingVertical": 4,
-        }
-      }
-    >
-      <Icon
-        name="globe"
-        style={
-          Object {
-            "color": "rgba(255,255,255,0.72)",
-            "fontSize": 24,
-            "lineHeight": 28,
-          }
-        }
-      />
-      <Text
-        style={
-          Array [
-            Object {
-              "fontFamily": "OpenSans",
-              "fontSize": 16,
-              "fontWeight": "600",
-              "lineHeight": 24,
-            },
-            Object {
-              "color": "rgba(255,255,255,0.72)",
-              "paddingLeft": 12,
-            },
-            Object {
-              "color": "#ffffff",
-            },
-          ]
-        }
-      >
-        And another Channel
-      </Text>
-    </View>
-    <View
-      style={
-        Object {
-          "flex": 1,
-          "justifyContent": "center",
-          "padding": 20,
-        }
-      }
-    >
-      <View
-        style={
-          Array [
-            Object {
-              "aspectRatio": 1,
-            },
-            Object {
-              "bottom": 0,
-              "left": 0,
-              "position": "absolute",
-              "right": 0,
-              "top": 0,
-            },
-            undefined,
-          ]
-        }
-      >
-        <View
-          autoPlay={true}
-          cacheComposition={true}
-          collapsable={false}
-          enableMergePathsAndroidForKitKatAndAbove={false}
-          forwardedRef={[Function]}
-          loop={true}
-          nativeID="animatedComponent"
-          onAnimationFinish={[Function]}
-          onLayout={[Function]}
-          progress={0}
-          resizeMode="contain"
-          sourceJson="{\\"v\\":\\"5.5.7\\",\\"meta\\":{\\"g\\":\\"LottieFiles AE 0.1.20\\",\\"a\\":\\"\\",\\"k\\":\\"\\",\\"d\\":\\"\\",\\"tc\\":\\"\\"},\\"fr\\":60,\\"ip\\":0,\\"op\\":40,\\"w\\":32,\\"h\\":32,\\"nm\\":\\"Spinner - white\\",\\"ddd\\":0,\\"assets\\":[],\\"layers\\":[{\\"ddd\\":0,\\"ind\\":1,\\"ty\\":4,\\"nm\\":\\"Shape Layer 2\\",\\"sr\\":1,\\"ks\\":{\\"o\\":{\\"a\\":0,\\"k\\":100,\\"ix\\":11},\\"r\\":{\\"a\\":1,\\"k\\":[{\\"i\\":{\\"x\\":[0.833],\\"y\\":[0.833]},\\"o\\":{\\"x\\":[0.167],\\"y\\":[0.167]},\\"t\\":0,\\"s\\":[0]},{\\"t\\":40,\\"s\\":[360]}],\\"ix\\":10},\\"p\\":{\\"a\\":0,\\"k\\":[16,16,0],\\"ix\\":2},\\"a\\":{\\"a\\":0,\\"k\\":[0,0,0],\\"ix\\":1},\\"s\\":{\\"a\\":0,\\"k\\":[100,100,100],\\"ix\\":6}},\\"ao\\":0,\\"shapes\\":[{\\"ty\\":\\"gr\\",\\"it\\":[{\\"d\\":1,\\"ty\\":\\"el\\",\\"s\\":{\\"a\\":0,\\"k\\":[27,27],\\"ix\\":2},\\"p\\":{\\"a\\":0,\\"k\\":[0,0],\\"ix\\":3},\\"nm\\":\\"Ellipse Path 1\\",\\"mn\\":\\"ADBE Vector Shape - Ellipse\\",\\"hd\\":false},{\\"ty\\":\\"gs\\",\\"o\\":{\\"a\\":0,\\"k\\":100,\\"ix\\":9},\\"w\\":{\\"a\\":0,\\"k\\":3,\\"ix\\":10},\\"g\\":{\\"p\\":3,\\"k\\":{\\"a\\":0,\\"k\\":[0.001,1,1,1,0.5,1,1,1,1,1,1,1,0,1,0.5,0.5,1,0],\\"ix\\":8}},\\"s\\":{\\"a\\":0,\\"k\\":[2.423,11.896],\\"ix\\":4},\\"e\\":{\\"a\\":0,\\"k\\":[1.431,-12.387],\\"ix\\":5},\\"t\\":1,\\"lc\\":1,\\"lj\\":1,\\"ml\\":4,\\"ml2\\":{\\"a\\":0,\\"k\\":4,\\"ix\\":13},\\"bm\\":0,\\"nm\\":\\"Gradient Stroke 1\\",\\"mn\\":\\"ADBE Vector Graphic - G-Stroke\\",\\"hd\\":false},{\\"ty\\":\\"tr\\",\\"p\\":{\\"a\\":0,\\"k\\":[0.05,0],\\"ix\\":2},\\"a\\":{\\"a\\":0,\\"k\\":[0,0],\\"ix\\":1},\\"s\\":{\\"a\\":0,\\"k\\":[100,100],\\"ix\\":3},\\"r\\":{\\"a\\":0,\\"k\\":0,\\"ix\\":6},\\"o\\":{\\"a\\":0,\\"k\\":100,\\"ix\\":7},\\"sk\\":{\\"a\\":0,\\"k\\":0,\\"ix\\":4},\\"sa\\":{\\"a\\":0,\\"k\\":0,\\"ix\\":5},\\"nm\\":\\"Transform\\"}],\\"nm\\":\\"Ellipse 1\\",\\"np\\":3,\\"cix\\":2,\\"bm\\":0,\\"ix\\":1,\\"mn\\":\\"ADBE Vector Group\\",\\"hd\\":false}],\\"ip\\":0,\\"op\\":1800,\\"st\\":0,\\"bm\\":0},{\\"ddd\\":0,\\"ind\\":2,\\"ty\\":4,\\"nm\\":\\"Shape Layer 1\\",\\"parent\\":1,\\"sr\\":1,\\"ks\\":{\\"o\\":{\\"a\\":0,\\"k\\":100,\\"ix\\":11},\\"r\\":{\\"a\\":0,\\"k\\":0,\\"ix\\":10},\\"p\\":{\\"a\\":0,\\"k\\":[0,0,0],\\"ix\\":2},\\"a\\":{\\"a\\":0,\\"k\\":[0,0,0],\\"ix\\":1},\\"s\\":{\\"a\\":0,\\"k\\":[100,100,100],\\"ix\\":6}},\\"ao\\":0,\\"hasMask\\":true,\\"masksProperties\\":[{\\"inv\\":false,\\"mode\\":\\"a\\",\\"pt\\":{\\"a\\":0,\\"k\\":{\\"i\\":[[0,0],[0,0],[0,0],[0,0]],\\"o\\":[[0,0],[0,0],[0,0],[0,0]],\\"v\\":[[-15.95,-15.938],[-15.963,16],[-0.025,16],[-0.013,-15.938]],\\"c\\":true},\\"ix\\":1},\\"o\\":{\\"a\\":0,\\"k\\":100,\\"ix\\":3},\\"x\\":{\\"a\\":0,\\"k\\":0,\\"ix\\":4},\\"nm\\":\\"Mask 1\\"}],\\"shapes\\":[{\\"ty\\":\\"gr\\",\\"it\\":[{\\"d\\":1,\\"ty\\":\\"el\\",\\"s\\":{\\"a\\":0,\\"k\\":[27,27],\\"ix\\":2},\\"p\\":{\\"a\\":0,\\"k\\":[0,0],\\"ix\\":3},\\"nm\\":\\"Ellipse Path 1\\",\\"mn\\":\\"ADBE Vector Shape - Ellipse\\",\\"hd\\":false},{\\"ty\\":\\"st\\",\\"c\\":{\\"a\\":0,\\"k\\":[1,1,1,1],\\"ix\\":3},\\"o\\":{\\"a\\":0,\\"k\\":100,\\"ix\\":4},\\"w\\":{\\"a\\":0,\\"k\\":3,\\"ix\\":5},\\"lc\\":1,\\"lj\\":1,\\"ml\\":4,\\"bm\\":0,\\"nm\\":\\"Stroke 1\\",\\"mn\\":\\"ADBE Vector Graphic - Stroke\\",\\"hd\\":false},{\\"ty\\":\\"tr\\",\\"p\\":{\\"a\\":0,\\"k\\":[0.05,0],\\"ix\\":2},\\"a\\":{\\"a\\":0,\\"k\\":[0,0],\\"ix\\":1},\\"s\\":{\\"a\\":0,\\"k\\":[100,100],\\"ix\\":3},\\"r\\":{\\"a\\":0,\\"k\\":0,\\"ix\\":6},\\"o\\":{\\"a\\":0,\\"k\\":100,\\"ix\\":7},\\"sk\\":{\\"a\\":0,\\"k\\":0,\\"ix\\":4},\\"sa\\":{\\"a\\":0,\\"k\\":0,\\"ix\\":5},\\"nm\\":\\"Transform\\"}],\\"nm\\":\\"Ellipse 1\\",\\"np\\":3,\\"cix\\":2,\\"bm\\":0,\\"ix\\":1,\\"mn\\":\\"ADBE Vector Group\\",\\"hd\\":false}],\\"ip\\":0,\\"op\\":1800,\\"st\\":0,\\"bm\\":0}],\\"markers\\":[]}"
-          speed={1}
-          style={
-            Object {
-              "aspectRatio": 1,
-              "bottom": 0,
-              "left": 0,
-              "position": "absolute",
-              "right": 0,
-              "top": 0,
-            }
-          }
-        />
-      </View>
-    </View>
-    <View
-      style={
-        Object {
-          "alignItems": "center",
-          "flex": 1,
-          "padding": 20,
-        }
-      }
-    >
-      <View
-        style={
-          Object {
-            "alignItems": "center",
-            "backgroundColor": "rgba(255,255,255,0.08)",
-            "borderRadius": 60,
-            "height": 120,
-            "justifyContent": "center",
-            "width": 120,
-          }
-        }
-      >
-        <Icon
-          name="alert-circle-outline"
-          style={
-            Object {
-              "color": "rgba(255,255,255,0.48)",
-              "fontSize": 72,
-              "lineHeight": 72,
-            }
-          }
-        />
-      </View>
-      <Text
-        style={
-          Array [
-            Object {
-              "fontFamily": "Metropolis",
-              "fontSize": 20,
-              "fontWeight": "600",
-              "lineHeight": 28,
-            },
-            Object {
-              "color": "#ffffff",
-              "marginTop": 20,
-              "textAlign": "center",
-            },
-          ]
-        }
-      >
-        Couldn't load Staff
-      </Text>
-      <Text
-        style={
-          Array [
-            Object {
-              "fontFamily": "OpenSans",
-              "fontSize": 16,
-              "fontWeight": "400",
-              "lineHeight": 24,
-            },
-            Object {
-              "color": "#ffffff",
-              "textAlign": "center",
-            },
-          ]
-        }
-      >
-        There was a problem loading the content for this team.
-      </Text>
-      <View
-        accessibilityState={
-          Object {
-            "disabled": false,
-          }
-        }
-        accessible={true}
-        collapsable={false}
-        focusable={true}
-        onBlur={[Function]}
-        onClick={[Function]}
-        onFocus={[Function]}
-        onResponderGrant={[Function]}
-        onResponderMove={[Function]}
-        onResponderRelease={[Function]}
-        onResponderTerminate={[Function]}
-        onResponderTerminationRequest={[Function]}
-        onStartShouldSetResponder={[Function]}
-      >
-        <View
-          style={
-            Array [
-              Object {
-                "backgroundColor": "#ffffff",
-              },
-              Object {},
-              Array [
-                Object {
-                  "alignItems": "center",
-                  "borderRadius": 4,
-                  "flex": 0,
-                  "justifyContent": "center",
-                },
-                Object {
-                  "height": 48,
-                  "paddingHorizontal": 24,
-                  "paddingVertical": 14,
-                },
-                undefined,
-                Object {
-                  "marginTop": 20,
-                },
-              ],
-            ]
-          }
-        >
-          <Text
-            style={
-              Array [
-                Object {
-                  "fontFamily": "OpenSans",
-                  "fontWeight": "600",
-                },
-                Object {
-                  "fontSize": 16,
-                  "lineHeight": 18,
-                },
-                Object {
-                  "color": "#1c58d9",
-                },
-                undefined,
               ]
             }
           >
