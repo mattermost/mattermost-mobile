@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React from 'react';
-import {Text, View} from 'react-native';
+import {StyleSheet, Text, View} from 'react-native';
 
 import {useTheme} from '@app/context/theme';
 import {typography} from '@app/utils/typography';
@@ -28,6 +28,11 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         color: theme.sidebarText,
     },
 }));
+
+const textStyle = StyleSheet.create({
+    bright: typography('Body', 200, 'SemiBold'),
+    regular: typography('Body', 200, 'Regular'),
+});
 
 type Props = {
     unreadCount?: number;
@@ -57,9 +62,8 @@ const ChannelListItem = (props: Props) => {
             )}
             <Text
                 style={[
-                    typography('Body', 200, bright ? 'SemiBold' : 'Regular'),
+                    bright ? textStyle.bright : textStyle.regular,
                     styles.text,
-
                     bright && styles.highlight,
                 ]}
             >
