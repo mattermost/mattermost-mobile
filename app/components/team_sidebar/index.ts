@@ -5,7 +5,7 @@ import {Q} from '@nozbe/watermelondb';
 import {withDatabase} from '@nozbe/watermelondb/DatabaseProvider';
 import withObservables from '@nozbe/with-observables';
 import {of as of$} from 'rxjs';
-import {switchMap} from 'rxjs/operators';
+import {switchMap, map} from 'rxjs/operators';
 
 import {Permissions} from '@app/constants';
 import {hasPermission} from '@app/utils/role';
@@ -35,6 +35,7 @@ const withTeams = withObservables([], ({currentUser, database}: PropsInput) => {
     const rolesArray = [...currentUser.roles.split(' ')];
     const roles = database.get<RoleModel>(ROLE).query(Q.where('name', Q.oneOf(rolesArray))).observe();
     const canCreateTeams = roles.pipe(switchMap((r) => of$(hasPermission(r, Permissions.CREATE_TEAM, false))));
+    const myTeamsCount = database.get<MyTeam>(MY_TEAM).query().observeCount();
 
     const otherTeams = database.get<MyTeam>(MY_TEAM).query().observe().pipe(
         switchMap((mm) => {
@@ -47,6 +48,7 @@ const withTeams = withObservables([], ({currentUser, database}: PropsInput) => {
     return {
         canCreateTeams,
         otherTeams,
+        myTeamsCount,
     };
 });
 

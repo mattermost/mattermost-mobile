@@ -19,9 +19,10 @@ import type TeamModel from '@typings/database/models/servers/team';
 type Props = {
     canCreateTeams: boolean;
     otherTeams: TeamModel[];
+    myTeamsCount: number;
 }
 
-export default function TeamSidebar({canCreateTeams, otherTeams}: Props) {
+export default function TeamSidebar({canCreateTeams, otherTeams, myTeamsCount}: Props) {
     const theme = useTheme();
     const styles = getStyleSheet(theme);
     const serverUrl = useServerUrl();
@@ -35,15 +36,16 @@ export default function TeamSidebar({canCreateTeams, otherTeams}: Props) {
     return (
         <View style={styles.container}>
             <ServerIcon/>
-            <View style={styles.listContainer}>
-                <TeamList/>
-                {showAddTeam && (
-                    <AddTeam
-                        canCreateTeams={canCreateTeams}
-                        otherTeams={otherTeams}
-                    />
-                )}
-            </View>
+            {myTeamsCount > 1 &&
+                <View style={styles.listContainer}>
+                    <TeamList/>
+                    {showAddTeam && (
+                        <AddTeam
+                            canCreateTeams={canCreateTeams}
+                            otherTeams={otherTeams}
+                        />
+                    )}
+                </View>}
         </View>
     );
 }
