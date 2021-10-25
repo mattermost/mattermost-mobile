@@ -52,35 +52,52 @@ describe('Channels', () => {
     let nonDmOtherUser;
 
     beforeAll(async () => {
-        const {user, channel, team} = await Setup.apiInit({channelOptions: {prefix: `channel-${searchTerm}`}});
+        const {user, channel, team} = await Setup.apiInit({channelOptions: {prefix: `5-unread-${searchTerm}`}});
         unreadChannel = channel;
         testMessage = `Mention @${user.username}`;
         await Post.apiCreatePost({
             channelId: unreadChannel.id,
             message: testMessage,
+            createAt: Date.now(),
         });
 
         ({channel: favoriteChannel} = await Channel.apiCreateChannel({type: 'O', prefix: `4-favorite-${searchTerm}`, teamId: team.id}));
         await Channel.apiAddUserToChannel(user.id, favoriteChannel.id);
         await Preference.apiSaveFavoriteChannelPreference(user.id, favoriteChannel.id);
+        await Post.apiCreatePost({
+            channelId: favoriteChannel.id,
+            message: testMessage,
+            createAt: Date.now(),
+        });
 
         ({channel: publicChannel} = await Channel.apiCreateChannel({type: 'O', prefix: `3-public-${searchTerm}`, teamId: team.id}));
         await Channel.apiAddUserToChannel(user.id, publicChannel.id);
+        await Post.apiCreatePost({
+            channelId: publicChannel.id,
+            message: testMessage,
+            createAt: Date.now(),
+        });
 
         ({channel: privateChannel} = await Channel.apiCreateChannel({type: 'P', prefix: `2-private-${searchTerm}`, teamId: team.id}));
         await Channel.apiAddUserToChannel(user.id, privateChannel.id);
+        await Post.apiCreatePost({
+            channelId: privateChannel.id,
+            message: testMessage,
+            createAt: Date.now(),
+        });
 
-        ({channel: nonJoinedChannel} = await Channel.apiCreateChannel({type: 'O', prefix: `1-non-joined-${searchTerm}`, teamId: team.id}));
-
-        ({user: dmOtherUser} = await User.apiCreateUser({prefix: `user-${searchTerm}-1`}));
+        ({user: dmOtherUser} = await User.apiCreateUser({prefix: `1-dm-user-${searchTerm}`}));
         await Team.apiAddUserToTeam(dmOtherUser.id, team.id);
         ({channel: directMessageChannel} = await Channel.apiCreateDirectChannel([user.id, dmOtherUser.id]));
         await Post.apiCreatePost({
             channelId: directMessageChannel.id,
             message: testMessage,
+            createAt: Date.now(),
         });
 
-        ({user: nonDmOtherUser} = await User.apiCreateUser({prefix: `user-${searchTerm}-2`}));
+        ({channel: nonJoinedChannel} = await Channel.apiCreateChannel({type: 'O', prefix: `non-joined-${searchTerm}`, teamId: team.id}));
+
+        ({user: nonDmOtherUser} = await User.apiCreateUser({prefix: `non-dm-user-${searchTerm}`}));
         await Team.apiAddUserToTeam(nonDmOtherUser.id, team.id);
 
         // # Open channel screen
@@ -95,12 +112,12 @@ describe('Channels', () => {
         // # Open main sidebar
         await openMainSidebar();
 
-        // * Verify order when all channels are unread
-        await hasChannelDisplayNameAtIndex(0, privateChannel.display_name);
-        await hasChannelDisplayNameAtIndex(1, publicChannel.display_name);
-        await hasChannelDisplayNameAtIndex(2, favoriteChannel.display_name);
-        await hasChannelDisplayNameAtIndex(3, unreadChannel.display_name);
-        await hasChannelDisplayNameAtIndex(4, dmOtherUser.username);
+        // * Verify order is post date descending when all channels are unread
+        await hasChannelDisplayNameAtIndex(0, dmOtherUser.username);
+        await hasChannelDisplayNameAtIndex(1, privateChannel.display_name);
+        await hasChannelDisplayNameAtIndex(2, publicChannel.display_name);
+        await hasChannelDisplayNameAtIndex(3, favoriteChannel.display_name);
+        await hasChannelDisplayNameAtIndex(4, unreadChannel.display_name);
         await hasChannelDisplayNameAtIndex(5, 'Off-Topic');
         await hasChannelDisplayNameAtIndex(6, 'Town Square');
         await expect(element(by.id(nonJoinedChannel.display_name))).not.toBeVisible();
@@ -123,10 +140,10 @@ describe('Channels', () => {
         await openMainSidebar();
         await hasChannelDisplayNameAtIndex(0, unreadChannel.display_name);
         await hasChannelDisplayNameAtIndex(1, favoriteChannel.display_name);
-        await hasChannelDisplayNameAtIndex(2, publicChannel.display_name);
-        await hasChannelDisplayNameAtIndex(3, 'Off-Topic');
-        await hasChannelDisplayNameAtIndex(4, 'Town Square');
-        await hasChannelDisplayNameAtIndex(5, privateChannel.display_name);
+        await hasChannelDisplayNameAtIndex(2, privateChannel.display_name);
+        await hasChannelDisplayNameAtIndex(3, publicChannel.display_name);
+        await hasChannelDisplayNameAtIndex(4, 'Off-Topic');
+        await hasChannelDisplayNameAtIndex(5, 'Town Square');
         await hasChannelDisplayNameAtIndex(6, dmOtherUser.username);
         await expect(element(by.id(nonJoinedChannel.display_name))).not.toBeVisible();
         await expect(element(by.id(nonDmOtherUser.username))).not.toBeVisible();
