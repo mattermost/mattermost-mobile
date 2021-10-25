@@ -19,6 +19,7 @@ const BORDER_FOCUSED_WIDTH = 2;
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     container: {
         height: 48,
+        width: '100%',
     },
     errorContainer: {
         flexDirection: 'row',
@@ -70,17 +71,6 @@ const onExecution = (
     outerFunc?.(e);
 };
 
-const getAndroidExtraPadding = (_textInputFontSize: number) => {
-    if (Platform.OS === 'android') {
-        let defaultPadding = 6;
-        if (_textInputFontSize < 14) {
-            defaultPadding += (14 - _textInputFontSize);
-        }
-        return defaultPadding;
-    }
-    return 0;
-};
-
 const getLabelPositions = (style: TextStyle, labelStyle: TextStyle, smallLabelStyle: TextStyle) => {
     const top: number = style?.paddingTop as number || 0;
     const bottom: number = style?.paddingBottom as number || 0;
@@ -90,17 +80,17 @@ const getLabelPositions = (style: TextStyle, labelStyle: TextStyle, smallLabelSt
     const labelFontSize = labelStyle?.fontSize || 16;
     const smallLabelFontSize = smallLabelStyle?.fontSize || 10;
     const fontSizeDiff = textInputFontSize - labelFontSize;
-    const unfocused = (height * 0.5) + (fontSizeDiff * (Platform.OS === 'android' ? 0.5 : 0.6)) + getAndroidExtraPadding(textInputFontSize);
+    const unfocused = (height * 0.5) + (fontSizeDiff * (Platform.OS === 'android' ? 0.5 : 0.6));
     const focused = -(labelFontSize + smallLabelFontSize) * 0.25;
     return [unfocused, focused];
 };
 
 type FloatingTextInputProps = TextInputProps & {
-    containerStyle: TextStyle;
-    editable: boolean;
-    error: string;
+    containerStyle?: TextStyle;
+    editable?: boolean;
+    error?: string;
     errorIcon?: string;
-    isKeyboardInput: boolean;
+    isKeyboardInput?: boolean;
     label: string;
     onBlur?: (event: NativeSyntheticEvent<TargetedEvent>) => void;
     onFocus?: (e: NativeSyntheticEvent<TargetedEvent>) => void;
