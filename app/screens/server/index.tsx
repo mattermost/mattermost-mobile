@@ -135,14 +135,12 @@ const Server: NavigationFunctionComponent = ({componentId, extra, launchType, la
 
         let serverUrl = typeof manualUrl === 'string' ? manualUrl : url;
         if (!serverUrl || serverUrl.trim() === '') {
-            console.log('defaultServerUrlMessage', defaultServerUrlMessage);
             setUrlError(defaultServerUrlMessage);
             return;
         }
 
         serverUrl = sanitizeUrl(serverUrl);
         if (!isValidUrl(serverUrl)) {
-            console.log('IN HERE');
             setUrlError(formatMessage({
                 id: 'mobile.server_url.invalid_format',
                 defaultMessage: 'URL must start with http:// or https://',
@@ -209,13 +207,11 @@ const Server: NavigationFunctionComponent = ({componentId, extra, launchType, la
     }, [url, displayName]);
 
     const handleUrlTextChanged = useCallback((id: string, text: string) => {
-        console.log('id', id);
         setUrlError('');
         setUrl(text);
     }, []);
 
     const handleDisplayNameTextChanged = useCallback((id: string, text: string) => {
-        console.log('id', id);
         setUrlError('');
         setDisplayName(text);
     }, []);
@@ -342,7 +338,6 @@ const Server: NavigationFunctionComponent = ({componentId, extra, launchType, la
     //     ;
     // };
 
-    console.log('urlError', urlError);
     return (
         <SafeAreaView
             testID='select_server.screen'
