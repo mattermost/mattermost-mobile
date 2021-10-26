@@ -6,11 +6,11 @@ import React, {useCallback, useEffect, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
 import {
     EventSubscription, Keyboard, KeyboardAvoidingView,
-    Platform, StatusBar, StatusBarStyle, StyleSheet, TextInput, TouchableWithoutFeedback, View,
+    Platform, StatusBar, StatusBarStyle, TextInput, TouchableWithoutFeedback, View,
 } from 'react-native';
 import Button from 'react-native-button';
 import {Navigation, NavigationFunctionComponent} from 'react-native-navigation';
-import {ActivityIndicator, HelperText, TextInput as PaperTextInput} from 'react-native-paper';
+import {ActivityIndicator} from 'react-native-paper';
 import {SafeAreaView} from 'react-native-safe-area-context';
 import {Colors} from 'react-native/Libraries/NewAppScreen';
 import tinyColor from 'tinycolor2';
@@ -19,10 +19,9 @@ import {doPing} from '@actions/remote/general';
 import {fetchConfigAndLicense} from '@actions/remote/systems';
 import LocalConfig from '@assets/config.json';
 import AppVersion from '@components/app_version';
-import CompassIcon from '@components/compass_icon';
 import ErrorText from '@components/error_text';
-import FloatingTextInput from '@components/floating_text_input_label';
 import FormattedText from '@components/formatted_text';
+import TextSetting from '@components/widgets/text_settings';
 import {Screens} from '@constants';
 import NetworkManager from '@init/network_manager';
 import {goToScreen} from '@screens/navigation';
@@ -60,7 +59,7 @@ const Server: NavigationFunctionComponent = ({componentId, extra, launchType, la
 
     const [url, setUrl] = useState<string>('');
     const [displayName, setDisplayName] = useState<string>('');
-    const [urlError, setUrlError] = useState<string | undefined>();
+    const [urlError, setUrlError] = useState<string>();
     const styles = getStyleSheet(theme);
     const {formatMessage} = intl;
 
@@ -123,10 +122,10 @@ const Server: NavigationFunctionComponent = ({componentId, extra, launchType, la
         defaultMessage: 'Display Name',
     });
 
-    const displayNameHelperText = formatMessage({
-        id: 'mobile.components.select_server_view.displayHelp',
-        defaultMessage: 'Choose a display name for the server in your sidebar',
-    });
+    // const displayNameHelperText = formatMessage({
+    //     id: 'mobile.components.select_server_view.displayHelp',
+    //     defaultMessage: 'Choose a display name for the server in your sidebar',
+    // });
 
     const handleConnect = preventDoubleTap((manualUrl?: string) => {
         if (connecting && cancelPing) {
@@ -136,12 +135,14 @@ const Server: NavigationFunctionComponent = ({componentId, extra, launchType, la
 
         let serverUrl = typeof manualUrl === 'string' ? manualUrl : url;
         if (!serverUrl || serverUrl.trim() === '') {
+            console.log('defaultServerUrlMessage', defaultServerUrlMessage);
             setUrlError(defaultServerUrlMessage);
             return;
         }
 
         serverUrl = sanitizeUrl(serverUrl);
         if (!isValidUrl(serverUrl)) {
+            console.log('IN HERE');
             setUrlError(formatMessage({
                 id: 'mobile.server_url.invalid_format',
                 defaultMessage: 'URL must start with http:// or https://',
@@ -207,12 +208,14 @@ const Server: NavigationFunctionComponent = ({componentId, extra, launchType, la
         setButtonDisabled(true);
     }, [url, displayName]);
 
-    const handleUrlTextChanged = useCallback((text: string) => {
+    const handleUrlTextChanged = useCallback((id: string, text: string) => {
+        console.log('id', id);
         setUrlError('');
         setUrl(text);
     }, []);
 
-    const handleDisplayNameTextChanged = useCallback((text: string) => {
+    const handleDisplayNameTextChanged = useCallback((id: string, text: string) => {
+        console.log('id', id);
         setUrlError('');
         setDisplayName(text);
     }, []);
@@ -319,26 +322,27 @@ const Server: NavigationFunctionComponent = ({componentId, extra, launchType, la
         inputStyle.push(styles.disabledInput);
     }
 
-    const inputTheme = (type: string) => {
-        let primary: string;
-        let placeholder: string;
-        if (type === 'url' && urlError) {
-            primary = theme.errorTextColor;
-            placeholder = theme.errorTextColor;
-        } else {
-            primary = theme.buttonBg;
-            placeholder = changeOpacity(theme.centerChannelColor, 0.64);
-        }
-        return {
-            colors:
-            {
-                primary,
-                placeholder,
-                text: theme.centerChannelColor,
-            }}
-        ;
-    };
+    // const inputTheme = (type: string) => {
+    //     let primary: string;
+    //     let placeholder: string;
+    //     if (type === 'url' && urlError) {
+    //         primary = theme.errorTextColor;
+    //         placeholder = theme.errorTextColor;
+    //     } else {
+    //         primary = theme.buttonBg;
+    //         placeholder = changeOpacity(theme.centerChannelColor, 0.64);
+    //     }
+    //     return {
+    //         colors:
+    //         {
+    //             primary,
+    //             placeholder,
+    //             text: theme.centerChannelColor,
+    //         }}
+    //     ;
+    // };
 
+    console.log('urlError', urlError);
     return (
         <SafeAreaView
             testID='select_server.screen'
@@ -374,52 +378,24 @@ const Server: NavigationFunctionComponent = ({componentId, extra, launchType, la
                             id='mobile.components.select_server_view.msg_description'
                             defaultMessage="A Server is your team's communication hub which is accessed through a unique URL"
                         />
-                        <FloatingTextInput
-                            value={url}
-                            editable={!inputDisabled}
+                        <TextSetting
+                            id='select_server.server_url.input'
+                            testID='select_server.server_url.input'
                             label={serverLabelText}
-                            theme={theme}
-
-                            onChangeText={handleUrlTextChanged}
-
-                            // errorIcon={'alert-outline'}
-                            // error={'jaosn'}
-                            //  error={(Boolean(urlError) && 'jason') || undefined}
+                            errorText={urlError}
+                            keyboardType='url'
+                            onChange={handleUrlTextChanged}
+                            value={url}
                         />
-                        {Boolean(urlError) &&
-                            <HelperText
-                                type='error'
-                                style={styles.urlHelper}
-                            >
-                                <CompassIcon
-                                    name='alert-outline'
-                                />
-                                {' ' + urlError}
-                            </HelperText>
-                        }
-                        <PaperTextInput
-                            mode='outlined'
+                        <TextSetting
+                            id='select_server.server_display_name.input'
                             testID='select_server.server_display_name.input'
-                            ref={input}
-                            value={displayName}
-                            editable={!inputDisabled}
-                            onChangeText={handleDisplayNameTextChanged}
-                            onSubmitEditing={handleConnect}
-                            style={StyleSheet.flatten([inputStyle, styles.inputBoxDisplayName])}
-                            autoCapitalize='none'
-                            autoCorrect={false}
-                            label={displayNameLabelText}
-                            theme={inputTheme('displayName')}
-                            returnKeyType='go'
-                            underlineColorAndroid='transparent'
-                            disableFullscreenUI={true}
+                            keyboardType='default'
+                            label={'jason'}
+                            errorText=''
+                            onChange={handleDisplayNameTextChanged}
+                            value={'jason'}
                         />
-                        <HelperText
-                            type='info'
-                            style={styles.displayNameHelper}
-                        >
-                            {displayNameHelperText}
-                        </HelperText>
                         <Button
                             disabled={buttonDisabled}
                             testID='select_server.connect.button'
@@ -446,7 +422,8 @@ const Server: NavigationFunctionComponent = ({componentId, extra, launchType, la
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     appInfo: {
-        color: theme.centerChannelColor,
+
+        //        color: theme.centerChannelColor,
     },
     container: {
         flex: 1,
@@ -459,13 +436,16 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         position: 'absolute',
     },
     formContainer: {
-        flex: 1,
-        flexDirection: 'column',
+
+        // width: 300,
+
+        // flexDirection: 'column',
         justifyContent: 'center',
         alignItems: 'center',
-        alignSelf: 'stretch',
-        paddingRight: 24,
-        paddingLeft: 24,
+
+        // alignSelf: 'stretch',
+        // paddingRight: 24,
+        // paddingLeft: 24,
     },
     disabledInput: {
         backgroundColor: changeOpacity(theme.centerChannelColor, 0.1),
