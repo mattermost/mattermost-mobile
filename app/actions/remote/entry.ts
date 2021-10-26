@@ -279,6 +279,7 @@ const fetchAppEntryData = async (serverUrl: string, initialTeamId: string): Prom
         fetchMe(serverUrl, fetchOnly),
     ];
 
+    const removeTeamIds: string[] = [];
     const resolution = await Promise.all(promises);
     const [teamData, , prefData, meData] = resolution;
     let [, chData] = resolution;
@@ -287,12 +288,17 @@ const fetchAppEntryData = async (serverUrl: string, initialTeamId: string): Prom
         // If no initial team was set in the database but got teams in the response
         const config = await queryConfig(database);
         const teamOrderPreference = getPreferenceValue(prefData.preferences || [], Preferences.TEAMS_ORDER, '', '') as string;
-        const teamMembers = teamData.memberships.map((m) => m.team_id);
+        const teamMembers = teamData.memberships.filter((m) => m.delete_at === 0).map((m) => m.team_id);
         const myTeams = teamData.teams!.filter((t) => teamMembers?.includes(t.id));
         const defaultTeam = selectDefaultTeam(myTeams, meData.user?.locale || DEFAULT_LOCALE, teamOrderPreference, config.ExperimentalPrimaryTeam);
         if (defaultTeam?.id) {
             chData = await fetchMyChannelsForTeam(serverUrl, defaultTeam.id, includeDeletedChannels, lastDisconnected, fetchOnly);
         }
+    }
+
+    const removedFromTeam = teamData.memberships?.filter((m) => m.delete_at > 0);
+    if (removedFromTeam?.length) {
+        removeTeamIds.push(...removedFromTeam.map((m) => m.team_id));
     }
 
     let data: AppEntryData = {
@@ -301,12 +307,13 @@ const fetchAppEntryData = async (serverUrl: string, initialTeamId: string): Prom
         chData,
         prefData,
         meData,
+        removeTeamIds,
     };
 
     if (teamData.teams?.length === 0) {
         // User is no longer a member of any team
         const myTeams = await queryMyTeams(database);
-        const removeTeamIds: string[] = myTeams?.map((myTeam) => myTeam.id) || [];
+        removeTeamIds.push(...(myTeams?.map((myTeam) => myTeam.id) || []));
 
         return {
             ...data,
@@ -319,7 +326,9 @@ const fetchAppEntryData = async (serverUrl: string, initialTeamId: string): Prom
     const chError = chData?.error as ClientError | undefined;
     if (!inTeam || chError?.status_code === 403) {
         // User is no longer a member of the current team
-        const removeTeamIds = [initialTeamId];
+        if (!removeTeamIds.includes(initialTeamId)) {
+            removeTeamIds.push(initialTeamId);
+        }
 
         const availableTeamIds = await queryAvailableTeamIds(database, initialTeamId, teamData.teams, prefData.preferences, meData.user?.locale);
         const alternateTeamData = await fetchAlternateTeamData(serverUrl, availableTeamIds, removeTeamIds, includeDeletedChannels, lastDisconnected, fetchOnly);
