@@ -22,6 +22,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         padding: 8,
         marginVertical: 20,
         height: 40,
+        maxHeight: 40,
     },
     icon: {
         width: 24,

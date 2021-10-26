@@ -24,7 +24,7 @@ type Props = {
     heading: string;
 }
 
-const CategoriesHeader = (props: Props) => {
+const CategoryHeader = (props: Props) => {
     const theme = useTheme();
     const styles = getStyleSheet(theme);
 
@@ -37,4 +37,4 @@ const CategoriesHeader = (props: Props) => {
     );
 };
 
-export default CategoriesHeader;
+export default CategoryHeader;
