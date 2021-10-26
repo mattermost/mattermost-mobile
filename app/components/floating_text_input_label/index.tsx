@@ -20,9 +20,11 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     container: {
         height: 48,
         width: '100%',
+        marginBottom: 45,
     },
     errorContainer: {
         flexDirection: 'row',
+        marginBottom: 20,
     },
     errorIcon: {
         color: theme.errorTextColor,
@@ -213,15 +215,13 @@ const FloatingTextInput = ({
             onPress={onPressAction}
         >
             <View style={[styles.container, containerStyle]}>
-                {
-                    <Animated.Text
-                        onPress={onAnimatedTextPress}
-                        style={textAnimatedTextStyle}
-                        suppressHighlighting={true}
-                    >
-                        {label}
-                    </Animated.Text>
-                }
+                <Animated.Text
+                    onPress={onAnimatedTextPress}
+                    style={textAnimatedTextStyle}
+                    suppressHighlighting={true}
+                >
+                    {label}
+                </Animated.Text>
                 <TextInput
                     {...props}
                     editable={isKeyboardInput && editable}

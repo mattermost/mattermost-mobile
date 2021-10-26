@@ -6,11 +6,11 @@ import React, {useCallback, useEffect, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
 import {
     EventSubscription, Keyboard, KeyboardAvoidingView,
-    Platform, StatusBar, StatusBarStyle, StyleSheet, TextInput, TouchableWithoutFeedback, View,
+    Platform, StatusBar, StatusBarStyle, TextInput, TouchableWithoutFeedback, View,
 } from 'react-native';
 import Button from 'react-native-button';
 import {Navigation, NavigationFunctionComponent} from 'react-native-navigation';
-import {ActivityIndicator, HelperText, TextInput as PaperTextInput} from 'react-native-paper';
+import {ActivityIndicator} from 'react-native-paper';
 import {SafeAreaView} from 'react-native-safe-area-context';
 import {Colors} from 'react-native/Libraries/NewAppScreen';
 import tinyColor from 'tinycolor2';
@@ -19,10 +19,10 @@ import {doPing} from '@actions/remote/general';
 import {fetchConfigAndLicense} from '@actions/remote/systems';
 import LocalConfig from '@assets/config.json';
 import AppVersion from '@components/app_version';
-import CompassIcon from '@components/compass_icon';
 import ErrorText from '@components/error_text';
 import FloatingTextInput from '@components/floating_text_input_label';
 import FormattedText from '@components/formatted_text';
+import TextSetting from '@components/widgets/text_settings';
 import {Screens} from '@constants';
 import NetworkManager from '@init/network_manager';
 import {goToScreen} from '@screens/navigation';
@@ -123,10 +123,10 @@ const Server: NavigationFunctionComponent = ({componentId, extra, launchType, la
         defaultMessage: 'Display Name',
     });
 
-    const displayNameHelperText = formatMessage({
-        id: 'mobile.components.select_server_view.displayHelp',
-        defaultMessage: 'Choose a display name for the server in your sidebar',
-    });
+    // const displayNameHelperText = formatMessage({
+    //     id: 'mobile.components.select_server_view.displayHelp',
+    //     defaultMessage: 'Choose a display name for the server in your sidebar',
+    // });
 
     const handleConnect = preventDoubleTap((manualUrl?: string) => {
         if (connecting && cancelPing) {
@@ -319,25 +319,25 @@ const Server: NavigationFunctionComponent = ({componentId, extra, launchType, la
         inputStyle.push(styles.disabledInput);
     }
 
-    const inputTheme = (type: string) => {
-        let primary: string;
-        let placeholder: string;
-        if (type === 'url' && urlError) {
-            primary = theme.errorTextColor;
-            placeholder = theme.errorTextColor;
-        } else {
-            primary = theme.buttonBg;
-            placeholder = changeOpacity(theme.centerChannelColor, 0.64);
-        }
-        return {
-            colors:
-            {
-                primary,
-                placeholder,
-                text: theme.centerChannelColor,
-            }}
-        ;
-    };
+    // const inputTheme = (type: string) => {
+    //     let primary: string;
+    //     let placeholder: string;
+    //     if (type === 'url' && urlError) {
+    //         primary = theme.errorTextColor;
+    //         placeholder = theme.errorTextColor;
+    //     } else {
+    //         primary = theme.buttonBg;
+    //         placeholder = changeOpacity(theme.centerChannelColor, 0.64);
+    //     }
+    //     return {
+    //         colors:
+    //         {
+    //             primary,
+    //             placeholder,
+    //             text: theme.centerChannelColor,
+    //         }}
+    //     ;
+    // };
 
     return (
         <SafeAreaView
@@ -374,52 +374,50 @@ const Server: NavigationFunctionComponent = ({componentId, extra, launchType, la
                             id='mobile.components.select_server_view.msg_description'
                             defaultMessage="A Server is your team's communication hub which is accessed through a unique URL"
                         />
-                        <FloatingTextInput
-                            value={url}
-                            editable={!inputDisabled}
-                            label={serverLabelText}
-                            theme={theme}
+                        <TextSetting
 
-                            onChangeText={handleUrlTextChanged}
+                            //  disabled={isDisabled}
+                            id={id}
+                            label={'jason'}
+                            disabledText={intl.formatMessage({
+                                id: 'mobile.server_url.empty',
+                                defaultMessage: 'Please enter a valid server URL',
+                            })}
+                            error={'this is error'}
 
-                            // errorIcon={'alert-outline'}
-                            // error={'jaosn'}
-                            //  error={(Boolean(urlError) && 'jason') || undefined}
+                            // onChange={onChange}
+                            value={'jason'}
+                            testID={`edit_profile.text_setting.${id}`}
+
+                            //  optional={optional}
+                            //  maxLength={maxLength}
                         />
-                        {Boolean(urlError) &&
-                            <HelperText
-                                type='error'
-                                style={styles.urlHelper}
-                            >
-                                <CompassIcon
-                                    name='alert-outline'
-                                />
-                                {' ' + urlError}
-                            </HelperText>
-                        }
-                        <PaperTextInput
-                            mode='outlined'
-                            testID='select_server.server_display_name.input'
-                            ref={input}
-                            value={displayName}
-                            editable={!inputDisabled}
-                            onChangeText={handleDisplayNameTextChanged}
-                            onSubmitEditing={handleConnect}
-                            style={StyleSheet.flatten([inputStyle, styles.inputBoxDisplayName])}
+                        <FloatingTextInput
                             autoCapitalize='none'
                             autoCorrect={false}
-                            label={displayNameLabelText}
-                            theme={inputTheme('displayName')}
-                            returnKeyType='go'
-                            underlineColorAndroid='transparent'
-                            disableFullscreenUI={true}
+                            editable={!inputDisabled}
+                            errorIcon={'alert-outline'}
+                            error={(Boolean(urlError) && urlError) || undefined}
+                            label={serverLabelText}
+                            onChangeText={handleUrlTextChanged}
+                            theme={theme}
+                            value={url}
                         />
-                        <HelperText
-                            type='info'
-                            style={styles.displayNameHelper}
-                        >
-                            {displayNameHelperText}
-                        </HelperText>
+                        <FloatingTextInput
+                            autoCapitalize='none'
+                            autoCorrect={false}
+                            disableFullscreenUI={true}
+                            editable={!inputDisabled}
+                            label={displayNameLabelText}
+                            onChangeText={handleDisplayNameTextChanged}
+                            onSubmitEditing={handleConnect}
+                            returnKeyType='go'
+                            testID='select_server.server_display_name.input'
+                            theme={theme}
+                            underlineColorAndroid='transparent'
+                            value={displayName}
+                        />
+
                         <Button
                             disabled={buttonDisabled}
                             testID='select_server.connect.button'
@@ -460,10 +458,12 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     },
     formContainer: {
         flex: 1,
-        flexDirection: 'column',
+
+        // flexDirection: 'column',
         justifyContent: 'center',
         alignItems: 'center',
-        alignSelf: 'stretch',
+
+        // alignSelf: 'stretch',
         paddingRight: 24,
         paddingLeft: 24,
     },
