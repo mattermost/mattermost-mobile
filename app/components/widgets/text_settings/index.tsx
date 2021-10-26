@@ -20,7 +20,7 @@ export interface IntlText {
 
 type TextSettingProps = {
     disabled?: boolean;
-    disabledText: string;
+    disabledText?: string;
     errorText?: string;
     helpText?: string | number;
     id: string;
@@ -29,6 +29,7 @@ type TextSettingProps = {
     maxLength?: number;
     multiline?: boolean;
     onChange: (id: string, value: string) => void;
+    onBlur?: (id: string) => void;
     optional?: boolean;
     secureTextEntry?: boolean;
     testID: string;
@@ -50,12 +51,17 @@ const TextSetting = ({
     secureTextEntry = false,
     testID,
     value,
+    onBlur,
 }: TextSettingProps) => {
     const theme = useTheme();
     const intl = useIntl();
 
     const onChangeText = useCallback((text: string) => {
         return onChange(id, text);
+    }, []);
+
+    const onBlurField = useCallback(() => {
+        return onBlur?.(id);
     }, []);
 
     const style = getStyleSheet(theme);
@@ -97,6 +103,7 @@ const TextSetting = ({
                     maxLength={maxLength}
                     multiline={multiline}
                     onChangeText={onChangeText}
+                    onBlur={onBlurField}
                     secureTextEntry={secureTextEntry}
                     testID={`${testID}.input`}
                     theme={theme}
@@ -128,6 +135,7 @@ const getStyleSheet = makeStyleSheetFromTheme(() => {
         viewContainer: {
             marginVertical: 7,
             alignItems: 'center',
+            width: '100%',
         },
         subContainer: {
             width: '84%',

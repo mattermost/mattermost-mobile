@@ -4,7 +4,7 @@
 import React from 'react';
 import {Text} from 'react-native';
 
-import FormattedText from '@app/components/formatted_text';
+import FormattedText from '@components/formatted_text';
 import {IntlText} from '@components/widgets/text_settings';
 import {useTheme} from '@context/theme';
 import {makeStyleSheetFromTheme} from '@utils/theme';
