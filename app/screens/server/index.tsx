@@ -2,12 +2,9 @@
 // See LICENSE.txt for license information.
 
 import {useManagedConfig, ManagedConfig} from '@mattermost/react-native-emm';
-import React, {useCallback, useEffect, useRef, useState} from 'react';
+import React, {useCallback, useEffect, useState} from 'react';
 import {useIntl} from 'react-intl';
-import {
-    EventSubscription, Keyboard, KeyboardAvoidingView,
-    Platform, StatusBar, StatusBarStyle, TextInput, TouchableWithoutFeedback, View,
-} from 'react-native';
+import {KeyboardAvoidingView, Platform, StatusBar, StatusBarStyle, View} from 'react-native';
 import Button from 'react-native-button';
 import {Navigation, NavigationFunctionComponent} from 'react-native-navigation';
 import {ActivityIndicator} from 'react-native-paper';
@@ -59,7 +56,7 @@ const Server: NavigationFunctionComponent = ({componentId, extra, launchType, la
 
     const [url, setUrl] = useState<string>('');
     const [displayName, setDisplayName] = useState<string>('');
-    const [urlError, setUrlError] = useState<string>();
+    const [urlError, setUrlError] = useState<string | undefined>(undefined);
 
     useEffect(() => {
         if (url && displayName) {
@@ -183,24 +180,31 @@ const Server: NavigationFunctionComponent = ({componentId, extra, launchType, la
             return;
         }
 
-        let serverUrl = typeof manualUrl === 'string' ? manualUrl : url;
+        const serverUrl = typeof manualUrl === 'string' ? manualUrl : url;
         if (!serverUrl || serverUrl.trim() === '') {
             setUrlError(defaultServerUrlMessage);
             return;
         }
 
-        serverUrl = sanitizeUrl(serverUrl);
-        if (!isValidUrl(serverUrl)) {
-            setUrlError(formatMessage({
-                id: 'mobile.server_url.invalid_format',
-                defaultMessage: 'URL must start with http:// or https://',
-            }));
-
+        const isValid = isServerUrlValid(serverUrl);
+        if (!isValid) {
             return;
         }
 
         pingServer(serverUrl);
     });
+
+    const isServerUrlValid = (serverUrl?: string) => {
+        const testUrl = sanitizeUrl(serverUrl ?? url);
+        if (!isValidUrl(testUrl)) {
+            setUrlError(intl.formatMessage({
+                id: 'mobile.server_url.invalid_format',
+                defaultMessage: 'URL must start with http:// or https://',
+            }));
+            return false;
+        }
+        return true;
+    };
 
     const pingServer = async (pingUrl: string, retryWithHttp = true) => {
         let canceled = false;
@@ -245,17 +249,16 @@ const Server: NavigationFunctionComponent = ({componentId, extra, launchType, la
     };
 
     const onBlurUrl = useCallback(() => {
-        setUrlError('');
-    }, []);
+        if (urlError) {
+            setUrlError(undefined);
+        }
+    }, [urlError]);
 
     const handleUrlTextChanged = useCallback((id: string, text: string) => {
-        console.log('>>>  urltext ', {text});
         setUrl(text);
     }, []);
 
     const handleDisplayNameTextChanged = useCallback((id: string, text: string) => {
-        console.log('>>>  displayText ', {text});
-
         setDisplayName(text);
     }, []);
 
@@ -308,26 +311,6 @@ const Server: NavigationFunctionComponent = ({componentId, extra, launchType, la
         inputStyle.push(styles.disabledInput);
     }
 
-    // const inputTheme = (type: string) => {
-    //     let primary: string;
-    //     let placeholder: string;
-    //     if (type === 'url' && urlError) {
-    //         primary = theme.errorTextColor;
-    //         placeholder = theme.errorTextColor;
-    //     } else {
-    //         primary = theme.buttonBg;
-    //         placeholder = changeOpacity(theme.centerChannelColor, 0.64);
-    //     }
-    //     return {
-    //         colors:
-    //         {
-    //             primary,
-    //             placeholder,
-    //             text: theme.centerChannelColor,
-    //         }}
-    //     ;
-    // };
-
     return (
         <SafeAreaView
             testID='select_server.screen'
@@ -366,11 +349,10 @@ const Server: NavigationFunctionComponent = ({componentId, extra, launchType, la
                             id: 'mobile.components.select_server_view.enterServerUrl',
                             defaultMessage: 'Enter Server URL',
                         })}
-                        errorText={urlError}
+                        errorText={((urlError !== undefined) || urlError !== '') ? urlError : undefined}
                         keyboardType='url'
                         onChange={handleUrlTextChanged}
-
-                        // onBlur={onBlurUrl}
+                        onBlur={onBlurUrl}
                         value={url}
                     />
                     <TextSetting
