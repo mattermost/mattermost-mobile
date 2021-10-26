@@ -169,11 +169,6 @@ const Server = ({componentId, extra, launchType, launchError}: ServerProps) => {
         defaultMessage: 'Please enter a valid server URL',
     }));
 
-    // const displayNameHelperText = formatMessage({
-    //     id: 'mobile.components.select_server_view.displayHelp',
-    //     defaultMessage: 'Choose a display name for the server in your sidebar',
-    // });
-
     const handleConnect = preventDoubleTap((manualUrl?: string) => {
         if (connecting && cancelPing) {
             cancelPing();
@@ -291,14 +286,6 @@ const Server = ({componentId, extra, launchType, launchError}: ServerProps) => {
         defaultMessage = 'Connect';
     }
 
-    const buttonText = (
-        <FormattedText
-            id={id}
-            defaultMessage={defaultMessage}
-            style={buttonTextStyle}
-        />
-    );
-
     const statusColor = tinyColor(theme.centerChannelBg);
     let barStyle: StatusBarStyle = 'light-content';
     if (Platform.OS === 'ios' && statusColor.isLight()) {
@@ -371,7 +358,11 @@ const Server = ({componentId, extra, launchType, launchError}: ServerProps) => {
                         containerStyle={buttonStyle}
                     >
                         {buttonIcon}
-                        {buttonText}
+                        <FormattedText
+                            id={id}
+                            defaultMessage={defaultMessage}
+                            style={buttonTextStyle}
+                        />
                     </Button>
                     {Boolean(error) &&
                     <ErrorText
@@ -394,7 +385,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     container: {
         flex: 1,
         backgroundColor: theme.centerChannelBg,
-        position: 'absolute',
+        zIndex: 1,
     },
     flex: {
         flex: 1,
@@ -405,6 +396,8 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     formContainer: {
         justifyContent: 'center',
         alignItems: 'center',
+        backgroundColor: 'red',
+        flex: 1,
     },
     buttonEnabled: {
         backgroundColor: theme.buttonBg,
