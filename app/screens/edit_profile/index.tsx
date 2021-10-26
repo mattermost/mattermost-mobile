@@ -28,7 +28,7 @@ import {MAX_SIZE} from '@screens/edit_profile/constants';
 import {dismissModal, popTopScreen, setButtons} from '@screens/navigation';
 import {File, UserInfo} from '@typings/screens/edit_profile';
 import {getFormattedFileSize} from '@utils/file';
-import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
+import {makeStyleSheetFromTheme} from '@utils/theme';
 
 import CommonFieldSettings from './components/common_field_settings';
 import DisplayError from './components/display_error';
@@ -55,15 +55,10 @@ type EditProfileProps = {
 const {SERVER: {USER, SYSTEM}} = MM_TABLES;
 const edges: Edge[] = ['bottom', 'left', 'right'];
 
-const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
+const getStyleSheet = makeStyleSheetFromTheme(() => {
     return {
         flex: {
             flex: 1,
-        },
-        scrollView: {
-            flex: 1,
-            backgroundColor: changeOpacity(theme.centerChannelColor, 0.03),
-            paddingTop: 10,
         },
         top: {
             padding: 25,
@@ -334,54 +329,52 @@ const EditProfile = ({closeButtonId, componentId, currentUser, isModal, isTablet
                     testID='edit_profile.scroll_view'
                 >
                     {error && <DisplayError error={error}/>}
-                    <View style={[style.scrollViewRef]}>
-                        {renderProfilePicture()}
-                        <CommonFieldSettings
-                            id={'firstName'}
-                            isDisabled={(['ldap', 'saml'].includes(service) && lockedFirstName) || ['gitlab', 'google', 'office365'].includes(service)}
-                            onChange={updateField}
-                            value={userInfo.firstName}
-                        />
-                        <View style={style.separator}/>
-                        <CommonFieldSettings
-                            id={'lastName'}
-                            isDisabled={(['ldap', 'saml'].includes(service) && lockedLastName) || ['gitlab', 'google', 'office365'].includes(service)}
-                            onChange={updateField}
-                            value={userInfo.lastName}
-                        />
-                        <View style={style.separator}/>
-                        <CommonFieldSettings
-                            id={'username'}
-                            isDisabled={service !== ''}
-                            onChange={updateField}
-                            value={userInfo.username}
-                            maxLength={22}
-                        />
-                        <View style={style.separator}/>
-                        <EmailSettings
-                            email={userInfo.email}
-                            currentUser={currentUser}
-                            onChange={updateField}
-                        />
-                        <View style={style.separator}/>
-                        <CommonFieldSettings
-                            id={'nickname'}
-                            isDisabled={['ldap', 'saml'].includes(service) && lockedNickname}
-                            onChange={updateField}
-                            value={userInfo.nickname}
-                            maxLength={22}
-                        />
-                        <View style={style.separator}/>
-                        <CommonFieldSettings
-                            id={'position'}
-                            isDisabled={['ldap', 'saml'].includes(service) && lockedPosition}
-                            onChange={updateField}
-                            value={userInfo.position}
-                            maxLength={128}
-                            optional={true}
-                        />
-                        <View style={style.footer}/>
-                    </View>
+                    {renderProfilePicture()}
+                    <CommonFieldSettings
+                        id={'firstName'}
+                        isDisabled={(['ldap', 'saml'].includes(service) && lockedFirstName) || ['gitlab', 'google', 'office365'].includes(service)}
+                        onChange={updateField}
+                        value={userInfo.firstName}
+                    />
+                    <View style={style.separator}/>
+                    <CommonFieldSettings
+                        id={'lastName'}
+                        isDisabled={(['ldap', 'saml'].includes(service) && lockedLastName) || ['gitlab', 'google', 'office365'].includes(service)}
+                        onChange={updateField}
+                        value={userInfo.lastName}
+                    />
+                    <View style={style.separator}/>
+                    <CommonFieldSettings
+                        id={'username'}
+                        isDisabled={service !== ''}
+                        onChange={updateField}
+                        value={userInfo.username}
+                        maxLength={22}
+                    />
+                    <View style={style.separator}/>
+                    <EmailSettings
+                        email={userInfo.email}
+                        currentUser={currentUser}
+                        onChange={updateField}
+                    />
+                    <View style={style.separator}/>
+                    <CommonFieldSettings
+                        id={'nickname'}
+                        isDisabled={['ldap', 'saml'].includes(service) && lockedNickname}
+                        onChange={updateField}
+                        value={userInfo.nickname}
+                        maxLength={22}
+                    />
+                    <View style={style.separator}/>
+                    <CommonFieldSettings
+                        id={'position'}
+                        isDisabled={['ldap', 'saml'].includes(service) && lockedPosition}
+                        onChange={updateField}
+                        value={userInfo.position}
+                        maxLength={128}
+                        optional={true}
+                    />
+                    <View style={style.footer}/>
                 </KeyboardAwareScrollView>
             </SafeAreaView>
         </>
