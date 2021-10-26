@@ -1,54 +1,26 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React from 'react';
-import {View} from 'react-native';
+import {withDatabase} from '@nozbe/watermelondb/DatabaseProvider';
+import withObservables from '@nozbe/with-observables';
+import {map} from 'rxjs/operators';
 
-import {useTheme} from '@context/theme';
-import {makeStyleSheetFromTheme} from '@utils/theme';
+import {Database} from '@constants';
 
-import Categories from './categories';
-import ChannelListHeader from './header';
-import SearchField from './search';
+import ChannelList from './list';
 
-// import Loading from './loading';
-// import LoadingError from './loading_error';
+import type {WithDatabaseArgs} from '@typings/database/database';
+import type SystemModel from '@typings/database/models/servers/system';
 
-const channels: TempoChannel[] = [
-    {id: '1', name: 'Just a channel'},
-    {id: '2', name: 'Highlighted!!!', highlight: true},
-];
+const {MM_TABLES, SYSTEM_IDENTIFIERS} = Database;
+const {SERVER: {SYSTEM}} = MM_TABLES;
 
-const categories: TempoCategory[] = [
-    {id: '1', title: 'My first Category', channels},
-    {id: '2', title: 'Another cat', channels},
-];
-
-const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
-    container: {
-        flex: 1,
-        backgroundColor: theme.sidebarBg,
-        paddingHorizontal: 20,
-        paddingVertical: 10,
-    },
+const enhanced = withObservables([], ({database}: WithDatabaseArgs) => ({
+    currentTeamId: database.collections.get<SystemModel>(SYSTEM).
+        findAndObserve(SYSTEM_IDENTIFIERS.CURRENT_TEAM_ID).
+        pipe(
+            map(({value}: {value: string}) => value),
+        ),
 }));
 
-const ChannelList = () => {
-    const theme = useTheme();
-    const styles = getStyleSheet(theme);
-
-    return (
-        <View style={styles.container} >
-            <ChannelListHeader
-                heading='Contributors'
-                subheading='Community TEST'
-            />
-            <SearchField/>
-            <Categories categories={categories}/>
-            {/* <Loading/> */}
-            {/* <LoadingError/> */}
-        </View>
-    );
-};
-
-export default ChannelList;
+export default withDatabase(enhanced(ChannelList));

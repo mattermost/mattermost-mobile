@@ -3,14 +3,12 @@
 
 import React from 'react';
 
-import {renderWithIntlAndTheme} from '@test/intl-test-helper';
+import {renderWithEverything} from '@test/intl-test-helper';
 
-import Header from './index';
+import ChannelListHeader from './header';
 
 test('Channel List Header Component should match snapshot', () => {
-    const {toJSON} = renderWithIntlAndTheme(
-        <Header heading='Hello World!'/>,
-    );
+    const {toJSON} = renderWithEverything(<ChannelListHeader teamName='Contributors'/>);
 
     expect(toJSON()).toMatchSnapshot();
 });

@@ -3,13 +3,13 @@
 
 import React from 'react';
 
-import {renderWithIntlAndTheme} from '@test/intl-test-helper';
+import {renderWithEverything} from '@test/intl-test-helper';
 
-import ChannelsList from './index';
+import ChannelsList from './list';
 
 test('Channels List should match snapshot', () => {
-    const {toJSON} = renderWithIntlAndTheme(
-        <ChannelsList/>,
+    const {toJSON} = renderWithEverything(
+        <ChannelsList currentTeamId='team-id'/>,
     );
 
     expect(toJSON()).toMatchSnapshot();

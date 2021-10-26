@@ -5,6 +5,7 @@ import {Database} from '@nozbe/watermelondb';
 import DatabaseProvider from '@nozbe/watermelondb/DatabaseProvider';
 import React, {ComponentType, useEffect, useState} from 'react';
 
+import ServerDisplayNameProvider from '@app/context/server_display_name';
 import {MM_TABLES} from '@constants/database';
 import ServerUrlProvider from '@context/server_url';
 import ThemeProvider from '@context/theme';
@@ -16,6 +17,7 @@ import type ServersModel from '@typings/database/models/app/servers';
 type State = {
     database: Database;
     serverUrl: string;
+    serverDisplayName: string;
 };
 
 const {SERVERS} = MM_TABLES.APP;
@@ -36,6 +38,7 @@ export function withServerDatabase<T>(Component: ComponentType<T>): ComponentTyp
             setState({
                 database: serverDatabase,
                 serverUrl: server?.url,
+                serverDisplayName: server?.displayName,
             });
         };
 
@@ -59,9 +62,11 @@ export function withServerDatabase<T>(Component: ComponentType<T>): ComponentTyp
             <DatabaseProvider database={state.database}>
                 <UserLocaleProvider database={state.database}>
                     <ServerUrlProvider url={state.serverUrl}>
-                        <ThemeProvider database={state.database}>
-                            <Component {...props}/>
-                        </ThemeProvider>
+                        <ServerDisplayNameProvider displayName={state.serverDisplayName}>
+                            <ThemeProvider database={state.database}>
+                                <Component {...props}/>
+                            </ThemeProvider>
+                        </ServerDisplayNameProvider>
                     </ServerUrlProvider>
                 </UserLocaleProvider>
             </DatabaseProvider>
