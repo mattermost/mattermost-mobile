@@ -3,6 +3,7 @@
 
 import React, {useEffect} from 'react';
 import {View} from 'react-native';
+import Animated, {useAnimatedStyle, withTiming} from 'react-native-reanimated';
 
 import {fetchAllTeams} from '@actions/remote/team';
 import {TEAM_SIDEBAR_WIDTH} from '@constants/view';
@@ -33,19 +34,30 @@ export default function TeamSidebar({canCreateTeams, otherTeams, myTeamsCount}: 
 
     const showAddTeam = canCreateTeams || otherTeams.length > 0;
 
+    const transform = useAnimatedStyle(() => {
+        const showTeams = canCreateTeams || myTeamsCount > 1;
+        if (showTeams) {
+            return {
+                transform: [{translateX: withTiming(0, {duration: 100})}],
+            };
+        }
+        return {
+            transform: [{translateX: withTiming(-TEAM_SIDEBAR_WIDTH, {duration: 100})}],
+        };
+    }, []);
+
     return (
         <View style={styles.container}>
             <ServerIcon/>
-            {myTeamsCount > 1 &&
-                <View style={styles.listContainer}>
-                    <TeamList/>
-                    {showAddTeam && (
-                        <AddTeam
-                            canCreateTeams={canCreateTeams}
-                            otherTeams={otherTeams}
-                        />
-                    )}
-                </View>}
+            <Animated.View style={[styles.listContainer, transform]}>
+                <TeamList/>
+                {showAddTeam && (
+                    <AddTeam
+                        canCreateTeams={canCreateTeams}
+                        otherTeams={otherTeams}
+                    />
+                )}
+            </Animated.View>
         </View>
     );
 }
