@@ -35,7 +35,22 @@ type TextSettingProps = {
     value: string;
 };
 
-const TextSetting = ({disabled, disabledText, errorText, helpText, id, keyboardType, label, maxLength, multiline, onChange, optional, secureTextEntry, testID, value}: TextSettingProps) => {
+const TextSetting = ({
+    disabled = false,
+    disabledText,
+    errorText,
+    helpText,
+    id,
+    keyboardType = 'default',
+    label,
+    maxLength,
+    multiline = false,
+    onChange,
+    optional = false,
+    secureTextEntry = false,
+    testID,
+    value,
+}: TextSettingProps) => {
     const theme = useTheme();
     const intl = useIntl();
 
@@ -119,14 +134,6 @@ const getStyleSheet = makeStyleSheetFromTheme(() => {
         },
     };
 });
-
-TextSetting.defaultProps = {
-    optional: false,
-    disabled: false,
-    multiline: false,
-    keyboardType: 'default',
-    secureTextEntry: false,
-};
 
 TextSetting.validTypes = [
     'input',
