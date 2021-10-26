@@ -3,7 +3,7 @@
 
 import React, {memo, useCallback} from 'react';
 import {useIntl} from 'react-intl';
-import {View, Platform} from 'react-native';
+import {View, Platform, NativeSyntheticEvent, TargetedEvent} from 'react-native';
 
 import FloatingTextInput from '@components/floating_text_input_label';
 import {useTheme} from '@context/theme';
@@ -29,17 +29,37 @@ type TextSettingProps = {
     maxLength?: number;
     multiline?: boolean;
     onChange: (id: string, value: string) => void;
+    onBlur?: (event: NativeSyntheticEvent<TargetedEvent>) => void;
     optional?: boolean;
     secureTextEntry?: boolean;
     testID: string;
     value: string;
 };
 
-const TextSetting = ({disabled, disabledText, errorText, helpText, id, keyboardType, label, maxLength, multiline, onChange, optional, secureTextEntry, testID, value}: TextSettingProps) => {
+const TextSetting = ({
+    disabled = false,
+    disabledText,
+    errorText,
+    helpText,
+    id,
+    keyboardType = 'default',
+    label,
+    maxLength,
+    multiline = false,
+    onChange,
+    optional = false,
+    secureTextEntry = false,
+    testID,
+    value,
+}: TextSettingProps) => {
     const theme = useTheme();
     const intl = useIntl();
 
     const onChangeText = useCallback((text: string) => {
+        return onChange(id, text);
+    }, []);
+
+    const onBlurField = useCallback((text: string) => {
         return onChange(id, text);
     }, []);
 
@@ -82,6 +102,7 @@ const TextSetting = ({disabled, disabledText, errorText, helpText, id, keyboardT
                     maxLength={maxLength}
                     multiline={multiline}
                     onChangeText={onChangeText}
+                    onBlur={onBlurField}
                     secureTextEntry={secureTextEntry}
                     testID={`${testID}.input`}
                     theme={theme}
@@ -112,7 +133,6 @@ const getStyleSheet = makeStyleSheetFromTheme(() => {
     return {
         viewContainer: {
             marginVertical: 7,
-            width: '100%',
             alignItems: 'center',
         },
         subContainer: {
@@ -120,14 +140,6 @@ const getStyleSheet = makeStyleSheetFromTheme(() => {
         },
     };
 });
-
-TextSetting.defaultProps = {
-    optional: false,
-    disabled: false,
-    multiline: false,
-    keyboardType: 'default',
-    secureTextEntry: false,
-};
 
 TextSetting.validTypes = [
     'input',

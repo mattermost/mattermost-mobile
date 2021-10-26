@@ -48,9 +48,9 @@ const Server: NavigationFunctionComponent = ({componentId, extra, launchType, la
 
     const intl = useIntl();
     const managedConfig = useManagedConfig<ManagedConfig>();
-    const input = useRef<TextInput>(null);
     const [connecting, setConnecting] = useState(false);
     const [buttonDisabled, setButtonDisabled] = useState(true);
+
     const initialError = launchError && launchType === LaunchType.Notification ? intl.formatMessage({
         id: 'mobile.launchError.notification',
         defaultMessage: 'Did not find a server for this notification',
@@ -60,6 +60,66 @@ const Server: NavigationFunctionComponent = ({componentId, extra, launchType, la
     const [url, setUrl] = useState<string>('');
     const [displayName, setDisplayName] = useState<string>('');
     const [urlError, setUrlError] = useState<string>();
+
+    useEffect(() => {
+        if (url && displayName) {
+            setButtonDisabled(false);
+        }
+    }, [url, displayName]);
+
+    // useEffect(() => {
+    //     let listener: EventSubscription;
+    //     if (Platform.OS === 'android') {
+    //         listener = Keyboard.addListener('keyboardDidHide', onBlurUrl);
+    //     }
+    //
+    //     return () => listener?.remove();
+    // }, []);
+
+    useEffect(() => {
+        let serverUrl = managedConfig?.serverUrl || LocalConfig.DefaultServerUrl;
+        let autoconnect = managedConfig?.allowOtherServers === 'false' || LocalConfig.AutoSelectServerUrl;
+
+        if (launchType === LaunchType.DeepLink) {
+            const deepLinkServerUrl = (extra as DeepLinkWithData).data?.serverUrl;
+            if (managedConfig) {
+                autoconnect = (managedConfig.allowOtherServers === 'false' && managedConfig.serverUrl === deepLinkServerUrl);
+                if (managedConfig.serverUrl !== deepLinkServerUrl || launchError) {
+                    setError(intl.formatMessage({
+                        id: 'mobile.server_url.deeplink.emm.denied',
+                        defaultMessage: 'This app is controlled by an EMM and the DeepLink server url does not match the EMM allowed server',
+                    }));
+                }
+            } else {
+                autoconnect = true;
+                serverUrl = deepLinkServerUrl;
+            }
+        }
+
+        if (serverUrl) {
+            // If a server Url is set by the managed or local configuration, use it.
+            setUrl(serverUrl);
+
+            if (autoconnect) {
+                // If no other servers are allowed or the local config for AutoSelectServerUrl is set, attempt to connect
+                handleConnect(managedConfig?.serverUrl || LocalConfig.DefaultServerUrl);
+            }
+        }
+    }, []);
+
+    useEffect(() => {
+        const listener = {
+            componentDidAppear: () => {
+                if (url) {
+                    NetworkManager.invalidateClient(url);
+                }
+            },
+        };
+        const unsubscribe = Navigation.events().registerComponentListener(listener, componentId);
+
+        return () => unsubscribe.remove();
+    }, [componentId, url]);
+
     const styles = getStyleSheet(theme);
     const {formatMessage} = intl;
 
@@ -111,16 +171,6 @@ const Server: NavigationFunctionComponent = ({componentId, extra, launchType, la
         id: 'mobile.server_url.empty',
         defaultMessage: 'Please enter a valid server URL',
     }));
-
-    const serverLabelText = formatMessage({
-        id: 'mobile.components.select_server_view.enterServerUrl',
-        defaultMessage: 'Enter Server URL',
-    });
-
-    const displayNameLabelText = formatMessage({
-        id: 'mobile.components.select_server_view.displayName',
-        defaultMessage: 'Display Name',
-    });
 
     // const displayNameHelperText = formatMessage({
     //     id: 'mobile.components.select_server_view.displayHelp',
@@ -194,80 +244,20 @@ const Server: NavigationFunctionComponent = ({componentId, extra, launchType, la
         displayLogin(serverUrl, data.config!, data.license!);
     };
 
-    const blur = useCallback(() => {
-        input.current?.blur();
+    const onBlurUrl = useCallback(() => {
+        setUrlError('');
     }, []);
 
-    useEffect(() => {
-        if (url && displayName) {
-            setButtonDisabled(false);
-            return;
-        }
-        setButtonDisabled(true);
-    }, [url, displayName]);
-
     const handleUrlTextChanged = useCallback((id: string, text: string) => {
-        setUrlError('');
+        console.log('>>>  urltext ', {text});
         setUrl(text);
     }, []);
 
     const handleDisplayNameTextChanged = useCallback((id: string, text: string) => {
-        setUrlError('');
+        console.log('>>>  displayText ', {text});
+
         setDisplayName(text);
     }, []);
-
-    useEffect(() => {
-        let listener: EventSubscription;
-        if (Platform.OS === 'android') {
-            listener = Keyboard.addListener('keyboardDidHide', blur);
-        }
-
-        return () => listener?.remove();
-    }, []);
-
-    useEffect(() => {
-        let serverUrl = managedConfig?.serverUrl || LocalConfig.DefaultServerUrl;
-        let autoconnect = managedConfig?.allowOtherServers === 'false' || LocalConfig.AutoSelectServerUrl;
-
-        if (launchType === LaunchType.DeepLink) {
-            const deepLinkServerUrl = (extra as DeepLinkWithData).data?.serverUrl;
-            if (managedConfig) {
-                autoconnect = (managedConfig.allowOtherServers === 'false' && managedConfig.serverUrl === deepLinkServerUrl);
-                if (managedConfig.serverUrl !== deepLinkServerUrl || launchError) {
-                    setError(intl.formatMessage({
-                        id: 'mobile.server_url.deeplink.emm.denied',
-                        defaultMessage: 'This app is controlled by an EMM and the DeepLink server url does not match the EMM allowed server',
-                    }));
-                }
-            } else {
-                autoconnect = true;
-                serverUrl = deepLinkServerUrl;
-            }
-        }
-
-        if (serverUrl) {
-            // If a server Url is set by the managed or local configuration, use it.
-            setUrl(serverUrl);
-
-            if (autoconnect) {
-                // If no other servers are allowed or the local config for AutoSelectServerUrl is set, attempt to connect
-                handleConnect(managedConfig?.serverUrl || LocalConfig.DefaultServerUrl);
-            }
-        }
-    }, []);
-
-    useEffect(() => {
-        const listener = {
-            componentDidAppear: () => {
-                if (url) {
-                    NetworkManager.invalidateClient(url);
-                }
-            },
-        };
-        const unsubscribe = Navigation.events().registerComponentListener(listener, componentId);
-
-        return () => unsubscribe.remove();
-    }, [componentId, url]);
 
     let buttonIcon;
     let id: string;
@@ -353,62 +343,64 @@ const Server: NavigationFunctionComponent = ({componentId, extra, launchType, la
                 enabled={Platform.OS === 'ios'}
             >
                 <StatusBar barStyle={barStyle}/>
-                <TouchableWithoutFeedback
-                    onPress={blur}
-                    accessible={false}
-                >
-                    <View style={styles.formContainer}>
-                        <FormattedText
-                            style={styles.welcomeText}
-                            id='mobile.components.select_server_view.msg_welcome'
-                            defaultMessage='Welcome'
-                        />
-                        <FormattedText
-                            style={styles.connectText}
-                            id='mobile.components.select_server_view.msg_connect'
-                            defaultMessage='Let’s Connect to a Server'
-                        />
-                        <FormattedText
-                            style={styles.descriptionText}
-                            id='mobile.components.select_server_view.msg_description'
-                            defaultMessage="A Server is your team's communication hub which is accessed through a unique URL"
-                        />
-                        <TextSetting
-                            id='select_server.server_url.input'
-                            testID='select_server.server_url.input'
-                            label={serverLabelText}
-                            errorText={urlError}
-                            keyboardType='url'
-                            onChange={handleUrlTextChanged}
-                            value={url}
-                        />
-                        <TextSetting
-                            id='select_server.server_display_name.input'
-                            testID='select_server.server_display_name.input'
-                            keyboardType='default'
-                            label={'jason'}
-                            errorText=''
-                            onChange={handleDisplayNameTextChanged}
-                            value={'jason'}
-                        />
-                        <Button
-                            disabled={buttonDisabled}
-                            testID='select_server.connect.button'
-                            onPress={handleConnect}
-                            containerStyle={buttonStyle}
-                        >
-                            {buttonIcon}
-                            {buttonText}
-                        </Button>
-                        {Boolean(error) &&
-                            <ErrorText
-                                testID='select_server.error.text'
-                                error={error!}
-                                theme={theme}
-                            />
-                        }
-                    </View>
-                </TouchableWithoutFeedback>
+                <View style={styles.formContainer}>
+                    <FormattedText
+                        style={styles.welcomeText}
+                        id='mobile.components.select_server_view.msg_welcome'
+                        defaultMessage='Welcome'
+                    />
+                    <FormattedText
+                        style={styles.connectText}
+                        id='mobile.components.select_server_view.msg_connect'
+                        defaultMessage='Let’s Connect to a Server'
+                    />
+                    <FormattedText
+                        style={styles.descriptionText}
+                        id='mobile.components.select_server_view.msg_description'
+                        defaultMessage="A Server is your team's communication hub which is accessed through a unique URL"
+                    />
+                    <TextSetting
+                        id='select_server.server_url.input'
+                        testID='select_server.server_url.input'
+                        label={formatMessage({
+                            id: 'mobile.components.select_server_view.enterServerUrl',
+                            defaultMessage: 'Enter Server URL',
+                        })}
+                        errorText={urlError}
+                        keyboardType='url'
+                        onChange={handleUrlTextChanged}
+
+                        // onBlur={onBlurUrl}
+                        value={url}
+                    />
+                    <TextSetting
+                        id='select_server.server_display_name.input'
+                        testID='select_server.server_display_name.input'
+                        keyboardType='default'
+                        label={formatMessage({
+                            id: 'mobile.components.select_server_view.displayName',
+                            defaultMessage: 'Display Name',
+                        })}
+                        onChange={handleDisplayNameTextChanged}
+                        value={displayName}
+                    />
+                    <Button
+                        disabled={buttonDisabled}
+                        testID='select_server.connect.button'
+                        onPress={handleConnect}
+                        containerStyle={buttonStyle}
+                    >
+                        {buttonIcon}
+                        {buttonText}
+                    </Button>
+                    {Boolean(error) &&
+                    <ErrorText
+                        testID='select_server.error.text'
+                        error={error!}
+                        theme={theme}
+                    />
+                    }
+                </View>
                 <AppVersion textStyle={styles.appInfo}/>
             </KeyboardAvoidingView>
         </SafeAreaView>
@@ -431,16 +423,8 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         position: 'absolute',
     },
     formContainer: {
-
-        // width: 300,
-
-        // flexDirection: 'column',
         justifyContent: 'center',
         alignItems: 'center',
-
-        // alignSelf: 'stretch',
-        // paddingRight: 24,
-        // paddingLeft: 24,
     },
     disabledInput: {
         backgroundColor: changeOpacity(theme.centerChannelColor, 0.1),

@@ -101,22 +101,22 @@ type FloatingTextInputProps = TextInputProps & {
 }
 
 const FloatingTextInput = ({
-    error,
     containerStyle,
-    isKeyboardInput = true,
     editable = true,
+    error,
     errorIcon = 'BRKN-alert-outline',
+    isKeyboardInput = true,
     label = '',
-    onPress = undefined,
-    onFocus,
     onBlur,
+    onFocus,
+    onPress = undefined,
     showErrorIcon = true,
     theme,
     value = '',
     ...props
 }: FloatingTextInputProps) => {
     const [focusedLabel, setIsFocusLabel] = useState<boolean | undefined>();
-    const [focused, setIsFocused] = useState(Boolean(value));
+    const [focused, setIsFocused] = useState(Boolean(value) && editable);
     const inputRef = useRef<TextInput>(null);
     const [animation] = useState(new Value(focusedLabel ? 1 : 0));
     const debouncedOnFocusTextInput = debounce(setIsFocusLabel, 500, {leading: true, trailing: false});
