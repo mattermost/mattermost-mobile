@@ -29,7 +29,7 @@ type TextSettingProps = {
     maxLength?: number;
     multiline?: boolean;
     onChange: (id: string, value: string) => void;
-    onBlur?: (event: NativeSyntheticEvent<TargetedEvent>) => void;
+    onBlur?: (id: string, value: string) => void;
     optional?: boolean;
     secureTextEntry?: boolean;
     testID: string;
@@ -51,6 +51,7 @@ const TextSetting = ({
     secureTextEntry = false,
     testID,
     value,
+    onBlur,
 }: TextSettingProps) => {
     const theme = useTheme();
     const intl = useIntl();
@@ -60,7 +61,7 @@ const TextSetting = ({
     }, []);
 
     const onBlurField = useCallback((text: string) => {
-        return onChange(id, text);
+        return onBlur?.(id, text);
     }, []);
 
     const style = getStyleSheet(theme);
