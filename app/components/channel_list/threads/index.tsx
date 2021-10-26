@@ -31,6 +31,12 @@ const ThreadsButton = () => {
     const theme = useTheme();
     const styles = getStyleSheet(theme);
 
+    /*
+     * @to-do:
+     * - Check if there are threads, else return null
+     * - Change to button, navigate to threads view
+     * - Add right-side number badge
+     */
     return (
         <View style={styles.container}>
             <CompassIcon

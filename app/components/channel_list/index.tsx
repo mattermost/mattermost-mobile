@@ -2,20 +2,27 @@
 // See LICENSE.txt for license information.
 
 import React from 'react';
-import {ScrollView} from 'react-native';
+import {View} from 'react-native';
 
 import {useTheme} from '@context/theme';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 
-import {COMPASS_ICONS} from '../compass_icon';
-
-import ChannelListItem from './categories/body/channel';
-import CategoriesHeader from './categories/header';
+import Categories from './categories';
 import ChannelListHeader from './header';
-import Loading from './loading';
-import LoadingError from './loading_error';
 import SearchField from './search';
-import ThreadsButton from './threads';
+
+// import Loading from './loading';
+// import LoadingError from './loading_error';
+
+const channels: TempoChannel[] = [
+    {id: '1', name: 'Just a channel'},
+    {id: '2', name: 'Highlighted!!!', highlight: true},
+];
+
+const categories: TempoCategory[] = [
+    {id: '1', title: 'My first Category', channels},
+    {id: '2', title: 'Another cat', channels},
+];
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     container: {
@@ -31,26 +38,16 @@ const ChannelList = () => {
     const styles = getStyleSheet(theme);
 
     return (
-        <ScrollView style={styles.container} >
+        <View style={styles.container} >
             <ChannelListHeader
                 heading='Contributors'
                 subheading='Community TEST'
             />
             <SearchField/>
-            <ThreadsButton/>
-            <CategoriesHeader heading='Category Heading'/>
-            <ChannelListItem
-                name='Just a Channel'
-                leftIcon={COMPASS_ICONS.globe}
-            />
-            <ChannelListItem
-                name='And another Channel'
-                unreadCount={5}
-                leftIcon={COMPASS_ICONS.globe}
-            />
-            <Loading/>
-            <LoadingError/>
-        </ScrollView>
+            <Categories categories={categories}/>
+            {/* <Loading/> */}
+            {/* <LoadingError/> */}
+        </View>
     );
 };
 

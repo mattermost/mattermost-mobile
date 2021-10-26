@@ -20,6 +20,7 @@ const styles = StyleSheet.create({
         flex: 1,
         justifyContent: 'center',
         padding: 20,
+        maxHeight: 40,
     },
     lottie: {
         height: 32,
