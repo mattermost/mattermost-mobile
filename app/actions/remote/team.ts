@@ -8,7 +8,7 @@ import DatabaseManager from '@database/manager';
 import NetworkManager from '@init/network_manager';
 import {prepareMyChannelsForTeam, queryDefaultChannelForTeam} from '@queries/servers/channel';
 import {queryWebSocketLastDisconnected} from '@queries/servers/system';
-import {prepareMyTeams, syncTeamTable} from '@queries/servers/team';
+import {prepareDeleteTeam, prepareMyTeams, queryTeamsById, syncTeamTable} from '@queries/servers/team';
 import {isTablet} from '@utils/helpers';
 
 import {fetchMyChannelsForTeam} from './channel';
@@ -92,10 +92,23 @@ export const fetchMyTeams = async (serverUrl: string, fetchOnly = false): Promis
             const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
             const modelPromises: Array<Promise<Model[]>> = [];
             if (operator) {
-                const prepare = prepareMyTeams(operator, teams, memberships);
+                const removeTeamIds = memberships.filter((m) => m.delete_at > 0).map((m) => m.team_id);
+                const remainingTeams = teams.filter((t) => !removeTeamIds.includes(t.id));
+                const prepare = prepareMyTeams(operator, remainingTeams, memberships);
                 if (prepare) {
                     modelPromises.push(...prepare);
                 }
+
+                if (removeTeamIds.length) {
+                    if (removeTeamIds?.length) {
+                        // Immediately delete myTeams so that the UI renders only teams the user is a member of.
+                        const removeTeams = await queryTeamsById(operator.database, removeTeamIds);
+                        removeTeams?.forEach((team) => {
+                            modelPromises.push(prepareDeleteTeam(team));
+                        });
+                    }
+                }
+
                 if (modelPromises.length) {
                     const models = await Promise.all(modelPromises);
                     const flattenedModels = models.flat() as Model[];
