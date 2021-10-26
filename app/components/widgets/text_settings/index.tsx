@@ -3,7 +3,7 @@
 
 import React, {memo, useCallback} from 'react';
 import {useIntl} from 'react-intl';
-import {View, Platform, NativeSyntheticEvent, TargetedEvent} from 'react-native';
+import {View, Platform} from 'react-native';
 
 import FloatingTextInput from '@components/floating_text_input_label';
 import {useTheme} from '@context/theme';
@@ -29,7 +29,7 @@ type TextSettingProps = {
     maxLength?: number;
     multiline?: boolean;
     onChange: (id: string, value: string) => void;
-    onBlur?: (id: string, value: string) => void;
+    onBlur?: (id: string) => void;
     optional?: boolean;
     secureTextEntry?: boolean;
     testID: string;
@@ -60,8 +60,8 @@ const TextSetting = ({
         return onChange(id, text);
     }, []);
 
-    const onBlurField = useCallback((text: string) => {
-        return onBlur?.(id, text);
+    const onBlurField = useCallback(() => {
+        return onBlur?.(id);
     }, []);
 
     const style = getStyleSheet(theme);
