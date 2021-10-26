@@ -4,14 +4,13 @@
 import React, {memo, useCallback} from 'react';
 import {useIntl} from 'react-intl';
 import {View, Platform} from 'react-native';
-import FloatingTextInput from 'react-native-reanimated-text-input';
 
+import FloatingTextInput from '@components/floating_text_input_label';
 import {useTheme} from '@context/theme';
 import {getMarkdownBlockStyles, getMarkdownTextStyles} from '@utils/markdown';
-import {changeOpacity, makeStyleSheetFromTheme, getKeyboardAppearanceFromTheme} from '@utils/theme';
+import {makeStyleSheetFromTheme, getKeyboardAppearanceFromTheme} from '@utils/theme';
 
 import DisableContent from './components/disabled_content';
-import ErrorContent from './components/error_content';
 import HelpContent from './components/help_content';
 
 export interface IntlText {
@@ -22,7 +21,7 @@ export interface IntlText {
 type TextSettingProps = {
     disabled?: boolean;
     disabledText: string;
-    errorText?: string | number;
+    errorText?: string;
     helpText?: string | number;
     id: string;
     keyboardType?: 'default' | 'number-pad' | 'decimal-pad' | 'numeric' | 'email-address' | 'phone-pad' | 'url';
@@ -31,13 +30,12 @@ type TextSettingProps = {
     multiline?: boolean;
     onChange: (id: string, value: string) => void;
     optional?: boolean;
-    placeholder?: string;
     secureTextEntry?: boolean;
     testID: string;
     value: string;
 };
 
-const TextSetting = ({disabled, disabledText, errorText, helpText, id, keyboardType, label, maxLength, multiline, onChange, optional, placeholder, secureTextEntry, testID, value}: TextSettingProps) => {
+const TextSetting = ({disabled, disabledText, errorText, helpText, id, keyboardType, label, maxLength, multiline, onChange, optional, secureTextEntry, testID, value}: TextSettingProps) => {
     const theme = useTheme();
     const intl = useIntl();
 
@@ -56,33 +54,37 @@ const TextSetting = ({disabled, disabledText, errorText, helpText, id, keyboardT
 
     const formattedLabel = labelText + optionalText;
 
+    const viewContainerStyle = [
+        style.viewContainer,
+    ];
+
+    if (errorText) {
+        viewContainerStyle.push({
+            marginBottom: 20,
+        });
+    }
+
     return (
         <View
             testID={testID}
-            style={style.viewContainer}
+            style={viewContainerStyle}
         >
             <View style={style.subContainer} >
                 <FloatingTextInput
-                    activeColor={changeOpacity(theme.centerChannelColor, 0.64)}
-                    activeLabelColor={changeOpacity(theme.centerChannelColor, 0.64)}
-                    textInputColorStyles={{
-                        borderColor: changeOpacity(theme.centerChannelColor, 0.16),
-                    }}
                     autoCapitalize='none'
                     autoCorrect={false}
                     disableFullscreenUI={true}
                     editable={!disabled}
+                    error={errorText}
                     keyboardAppearance={getKeyboardAppearanceFromTheme(theme)}
                     keyboardType={keyboard}
                     label={formattedLabel}
                     maxLength={maxLength}
                     multiline={multiline}
                     onChangeText={onChangeText}
-                    placeholder={placeholder}
-                    placeholderTextColor={changeOpacity(theme.centerChannelColor, 0.5)}
                     secureTextEntry={secureTextEntry}
                     testID={`${testID}.input`}
-                    underlineColorAndroid='transparent'
+                    theme={theme}
                     value={value}
                 />
                 <View>
@@ -97,13 +99,6 @@ const TextSetting = ({disabled, disabledText, errorText, helpText, id, keyboardT
                         <HelpContent
                             blockStyles={blockStyles}
                             helpText={helpText}
-                            textStyles={textStyles}
-                        />
-                    )}
-                    {errorText && (
-                        <ErrorContent
-                            blockStyles={blockStyles}
-                            errorText={errorText}
                             textStyles={textStyles}
                         />
                     )}

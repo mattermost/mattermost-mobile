@@ -101,15 +101,15 @@ type FloatingTextInputProps = TextInputProps & {
 }
 
 const FloatingTextInput = ({
-    error,
     containerStyle,
-    isKeyboardInput = true,
     editable = true,
+    error,
     errorIcon = 'BRKN-alert-outline',
+    isKeyboardInput = true,
     label = '',
-    onPress = undefined,
-    onFocus,
     onBlur,
+    onFocus,
+    onPress = undefined,
     showErrorIcon = true,
     theme,
     value = '',
