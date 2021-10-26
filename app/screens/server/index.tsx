@@ -396,7 +396,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     formContainer: {
         justifyContent: 'center',
         alignItems: 'center',
-        backgroundColor: 'red',
         flex: 1,
     },
     buttonEnabled: {

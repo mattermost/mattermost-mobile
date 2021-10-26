@@ -135,6 +135,7 @@ const getStyleSheet = makeStyleSheetFromTheme(() => {
         viewContainer: {
             marginVertical: 7,
             alignItems: 'center',
+            width: '100%',
         },
         subContainer: {
             width: '84%',
