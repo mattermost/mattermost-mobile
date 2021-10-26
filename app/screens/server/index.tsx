@@ -20,7 +20,6 @@ import {fetchConfigAndLicense} from '@actions/remote/systems';
 import LocalConfig from '@assets/config.json';
 import AppVersion from '@components/app_version';
 import ErrorText from '@components/error_text';
-import FloatingTextInput from '@components/floating_text_input_label';
 import FormattedText from '@components/formatted_text';
 import TextSetting from '@components/widgets/text_settings';
 import {Screens} from '@constants';
@@ -60,7 +59,7 @@ const Server: NavigationFunctionComponent = ({componentId, extra, launchType, la
 
     const [url, setUrl] = useState<string>('');
     const [displayName, setDisplayName] = useState<string>('');
-    const [urlError, setUrlError] = useState<string | undefined>();
+    const [urlError, setUrlError] = useState<string>();
     const styles = getStyleSheet(theme);
     const {formatMessage} = intl;
 
@@ -136,12 +135,14 @@ const Server: NavigationFunctionComponent = ({componentId, extra, launchType, la
 
         let serverUrl = typeof manualUrl === 'string' ? manualUrl : url;
         if (!serverUrl || serverUrl.trim() === '') {
+            console.log('defaultServerUrlMessage', defaultServerUrlMessage);
             setUrlError(defaultServerUrlMessage);
             return;
         }
 
         serverUrl = sanitizeUrl(serverUrl);
         if (!isValidUrl(serverUrl)) {
+            console.log('IN HERE');
             setUrlError(formatMessage({
                 id: 'mobile.server_url.invalid_format',
                 defaultMessage: 'URL must start with http:// or https://',
@@ -207,12 +208,14 @@ const Server: NavigationFunctionComponent = ({componentId, extra, launchType, la
         setButtonDisabled(true);
     }, [url, displayName]);
 
-    const handleUrlTextChanged = useCallback((text: string) => {
+    const handleUrlTextChanged = useCallback((id: string, text: string) => {
+        console.log('id', id);
         setUrlError('');
         setUrl(text);
     }, []);
 
-    const handleDisplayNameTextChanged = useCallback((text: string) => {
+    const handleDisplayNameTextChanged = useCallback((id: string, text: string) => {
+        console.log('id', id);
         setUrlError('');
         setDisplayName(text);
     }, []);
@@ -339,6 +342,7 @@ const Server: NavigationFunctionComponent = ({componentId, extra, launchType, la
     //     ;
     // };
 
+    console.log('urlError', urlError);
     return (
         <SafeAreaView
             testID='select_server.screen'
@@ -375,49 +379,23 @@ const Server: NavigationFunctionComponent = ({componentId, extra, launchType, la
                             defaultMessage="A Server is your team's communication hub which is accessed through a unique URL"
                         />
                         <TextSetting
-
-                            //  disabled={isDisabled}
-                            id={id}
-                            label={'jason'}
-                            disabledText={intl.formatMessage({
-                                id: 'mobile.server_url.empty',
-                                defaultMessage: 'Please enter a valid server URL',
-                            })}
-                            error={'this is error'}
-
-                            // onChange={onChange}
-                            value={'jason'}
-                            testID={`edit_profile.text_setting.${id}`}
-
-                            //  optional={optional}
-                            //  maxLength={maxLength}
-                        />
-                        <FloatingTextInput
-                            autoCapitalize='none'
-                            autoCorrect={false}
-                            editable={!inputDisabled}
-                            errorIcon={'alert-outline'}
-                            error={(Boolean(urlError) && urlError) || undefined}
+                            id='select_server.server_url.input'
+                            testID='select_server.server_url.input'
                             label={serverLabelText}
-                            onChangeText={handleUrlTextChanged}
-                            theme={theme}
+                            errorText={urlError}
+                            keyboardType='url'
+                            onChange={handleUrlTextChanged}
                             value={url}
                         />
-                        <FloatingTextInput
-                            autoCapitalize='none'
-                            autoCorrect={false}
-                            disableFullscreenUI={true}
-                            editable={!inputDisabled}
-                            label={displayNameLabelText}
-                            onChangeText={handleDisplayNameTextChanged}
-                            onSubmitEditing={handleConnect}
-                            returnKeyType='go'
+                        <TextSetting
+                            id='select_server.server_display_name.input'
                             testID='select_server.server_display_name.input'
-                            theme={theme}
-                            underlineColorAndroid='transparent'
-                            value={displayName}
+                            keyboardType='default'
+                            label={'jason'}
+                            errorText=''
+                            onChange={handleDisplayNameTextChanged}
+                            value={'jason'}
                         />
-
                         <Button
                             disabled={buttonDisabled}
                             testID='select_server.connect.button'
@@ -444,7 +422,8 @@ const Server: NavigationFunctionComponent = ({componentId, extra, launchType, la
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     appInfo: {
-        color: theme.centerChannelColor,
+
+        //        color: theme.centerChannelColor,
     },
     container: {
         flex: 1,
@@ -457,15 +436,16 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         position: 'absolute',
     },
     formContainer: {
-        flex: 1,
+
+        // width: 300,
 
         // flexDirection: 'column',
         justifyContent: 'center',
         alignItems: 'center',
 
         // alignSelf: 'stretch',
-        paddingRight: 24,
-        paddingLeft: 24,
+        // paddingRight: 24,
+        // paddingLeft: 24,
     },
     disabledInput: {
         backgroundColor: changeOpacity(theme.centerChannelColor, 0.1),

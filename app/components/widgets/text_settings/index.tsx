@@ -20,7 +20,7 @@ export interface IntlText {
 
 type TextSettingProps = {
     disabled?: boolean;
-    disabledText: string;
+    disabledText?: string;
     errorText?: string;
     helpText?: string | number;
     id: string;
@@ -112,6 +112,7 @@ const getStyleSheet = makeStyleSheetFromTheme(() => {
     return {
         viewContainer: {
             marginVertical: 7,
+            width: '100%',
             alignItems: 'center',
         },
         subContainer: {
