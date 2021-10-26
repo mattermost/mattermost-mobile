@@ -21,6 +21,7 @@ import LocalConfig from '@assets/config.json';
 import AppVersion from '@components/app_version';
 import CompassIcon from '@components/compass_icon';
 import ErrorText from '@components/error_text';
+import FloatingTextInput from '@components/floating_text_input_label';
 import FormattedText from '@components/formatted_text';
 import {Screens} from '@constants';
 import NetworkManager from '@init/network_manager';
@@ -59,7 +60,7 @@ const Server: NavigationFunctionComponent = ({componentId, extra, launchType, la
 
     const [url, setUrl] = useState<string>('');
     const [displayName, setDisplayName] = useState<string>('');
-    const [urlError, setUrlError] = useState<string>('');
+    const [urlError, setUrlError] = useState<string | undefined>();
     const styles = getStyleSheet(theme);
     const {formatMessage} = intl;
 
@@ -373,23 +374,17 @@ const Server: NavigationFunctionComponent = ({componentId, extra, launchType, la
                             id='mobile.components.select_server_view.msg_description'
                             defaultMessage="A Server is your team's communication hub which is accessed through a unique URL"
                         />
-                        <PaperTextInput
-                            mode='outlined'
-                            testID='select_server.server_url.input'
-                            ref={input}
+                        <FloatingTextInput
                             value={url}
                             editable={!inputDisabled}
-                            onChangeText={handleUrlTextChanged}
-                            onSubmitEditing={handleConnect}
-                            style={StyleSheet.flatten([inputStyle, styles.inputBoxServerUrl])}
-                            autoCapitalize='none'
-                            autoCorrect={false}
-                            keyboardType='url'
                             label={serverLabelText}
-                            theme={inputTheme('url')}
-                            returnKeyType='go'
-                            underlineColorAndroid='transparent'
-                            disableFullscreenUI={true}
+                            theme={theme}
+
+                            onChangeText={handleUrlTextChanged}
+
+                            // errorIcon={'alert-outline'}
+                            // error={'jaosn'}
+                            //  error={(Boolean(urlError) && 'jason') || undefined}
                         />
                         {Boolean(urlError) &&
                             <HelperText
