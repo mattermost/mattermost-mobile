@@ -6,7 +6,7 @@ import React, {useCallback, useEffect, useState} from 'react';
 import {useIntl} from 'react-intl';
 import {KeyboardAvoidingView, Platform, StatusBar, StatusBarStyle, View} from 'react-native';
 import Button from 'react-native-button';
-import {Navigation, NavigationFunctionComponent} from 'react-native-navigation';
+import {Navigation} from 'react-native-navigation';
 import {ActivityIndicator} from 'react-native-paper';
 import {SafeAreaView} from 'react-native-safe-area-context';
 import {Colors} from 'react-native/Libraries/NewAppScreen';
@@ -20,6 +20,7 @@ import ErrorText from '@components/error_text';
 import FormattedText from '@components/formatted_text';
 import TextSetting from '@components/widgets/text_settings';
 import {Screens} from '@constants';
+import {useTheme} from '@context/theme';
 import NetworkManager from '@init/network_manager';
 import {goToScreen} from '@screens/navigation';
 import {DeepLinkWithData, LaunchProps, LaunchType} from '@typings/launch';
@@ -34,15 +35,14 @@ import type ClientError from '@client/rest/error';
 
 interface ServerProps extends LaunchProps {
     componentId: string;
-    theme: Theme;
 }
 
 let cancelPing: undefined | (() => void);
 
-const Server: NavigationFunctionComponent = ({componentId, extra, launchType, launchError, theme}: ServerProps) => {
+const Server = ({componentId, extra, launchType, launchError}: ServerProps) => {
     // TODO: If we have LaunchProps, ensure they get passed along to subsequent screens
     // so that they are eventually accessible in the Channel screen.
-
+    const theme = useTheme();
     const intl = useIntl();
     const managedConfig = useManagedConfig<ManagedConfig>();
     const [connecting, setConnecting] = useState(false);
@@ -300,25 +300,23 @@ const Server: NavigationFunctionComponent = ({componentId, extra, launchType, la
     );
 
     const statusColor = tinyColor(theme.centerChannelBg);
-    const inputDisabled = managedConfig.allowOtherServers === 'false' || connecting;
     let barStyle: StatusBarStyle = 'light-content';
     if (Platform.OS === 'ios' && statusColor.isLight()) {
         barStyle = 'dark-content';
     }
 
-    const inputStyle = [styles.inputBox];
-    if (inputDisabled) {
-        inputStyle.push(styles.disabledInput);
-    }
-
-    return (
+    return [
+        <View
+            style={styles.serverSvg}
+            key={'server_svg'}
+        >
+            <ServerSvg/>
+        </View>,
         <SafeAreaView
             testID='select_server.screen'
             style={styles.container}
+            key={'server_content'}
         >
-            <View style={styles.serverSvg}>
-                <ServerSvg/>
-            </View>
             <KeyboardAvoidingView
                 behavior='padding'
                 style={styles.flex}
@@ -385,18 +383,18 @@ const Server: NavigationFunctionComponent = ({componentId, extra, launchType, la
                 </View>
                 <AppVersion textStyle={styles.appInfo}/>
             </KeyboardAvoidingView>
-        </SafeAreaView>
-    );
+        </SafeAreaView>,
+    ];
 };
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     appInfo: {
-
-        //        color: theme.centerChannelColor,
+        color: theme.centerChannelColor,
     },
     container: {
         flex: 1,
         backgroundColor: theme.centerChannelBg,
+        position: 'absolute',
     },
     flex: {
         flex: 1,
@@ -407,9 +405,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     formContainer: {
         justifyContent: 'center',
         alignItems: 'center',
-    },
-    disabledInput: {
-        backgroundColor: changeOpacity(theme.centerChannelColor, 0.1),
     },
     buttonEnabled: {
         backgroundColor: theme.buttonBg,
@@ -425,21 +420,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     },
     connectingIndicator: {
         marginRight: 10,
-    },
-    inputBox: {
-        fontSize: 16,
-        height: 48,
-        flex: 0,
-        alignSelf: 'stretch',
-        backgroundColor: Colors.white,
-    },
-    inputBoxDisplayName: {
-        marginTop: 20,
-        marginBottom: 0,
-    },
-    inputBoxServerUrl: {
-        marginTop: 20,
-        marginBottom: 0,
     },
     welcomeText: {
         width: 374,
@@ -490,33 +470,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         marginBottom: 0,
         marginRight: 20,
         color: changeOpacity(theme.centerChannelColor, 0.64),
-    },
-    displayNameHelper: {
-        width: 374,
-        marginTop: 4,
-        marginBottom: 0,
-        paddingLeft: 0,
-        flex: 0,
-        fontFamily: 'Open Sans',
-        fontStyle: 'normal',
-        fontWeight: 'normal',
-        fontSize: 12,
-        alignItems: 'center',
-        alignSelf: 'stretch',
-        color: changeOpacity(theme.centerChannelColor, 0.64),
-    },
-    urlHelper: {
-        width: 374,
-        marginTop: 4,
-        marginBottom: 0,
-        padding: 0,
-        flex: 0,
-        fontFamily: 'Open Sans',
-        fontStyle: 'normal',
-        fontWeight: 'normal',
-        fontSize: 12,
-        alignItems: 'center',
-        alignSelf: 'stretch',
     },
     connectButtonText: {
         textAlign: 'center',
