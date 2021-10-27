@@ -109,11 +109,19 @@ export function joinCall(channelId: string): ActionFunc {
             dispatch(logError(error));
             return {error};
         }
-        dispatch({
-            type: CallsTypes.RECEIVED_MYSELF_JOINED_CALL,
-            data: channelId,
-        });
-        return {data: channelId};
+
+        try {
+            await ws.waitForReady();
+            dispatch({
+                type: CallsTypes.RECEIVED_MYSELF_JOINED_CALL,
+                data: channelId,
+            });
+            return {data: channelId};
+        } catch (e) {
+            ws.disconnect();
+            ws = null;
+            return {error: 'unable to connect to the voice call'};
+        }
     };
 }
 

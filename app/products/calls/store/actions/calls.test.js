@@ -39,6 +39,7 @@ jest.mock('@mmproducts/calls/connection', () => ({
         disconnect: jest.fn(),
         mute: jest.fn(),
         unmute: jest.fn(),
+        waitForReady: jest.fn(() => Promise.resolve()),
     })),
 }));
 

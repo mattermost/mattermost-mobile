@@ -14,6 +14,8 @@ import Peer from './simple-peer';
 
 export let client: any = null;
 
+const websocketConnectTimeout = 3000;
+
 function getWSConnectionURL(channelID: string): string {
     let url = Client4.getAbsoluteUrl(`/plugins/com.mattermost.calls/${channelID}/ws`);
     url = url.replace(/^https:/, 'wss:');
@@ -118,10 +120,34 @@ export async function newClient(channelID: string, closeCb: () => void, setScree
         };
     };
 
+    const waitForReady = () => {
+        const waitForReadyImpl = (callback: () => void, fail: () => void, timeout: number) => {
+            if (timeout <= 0) {
+                fail();
+                return;
+            }
+            setTimeout(() => {
+                if (ws.readyState === WebSocket.OPEN) {
+                    callback();
+                } else {
+                    waitForReadyImpl(callback, fail, timeout - 10);
+                }
+            }, 10);
+        };
+
+        const promise = new Promise<void>((resolve, reject) => {
+            waitForReadyImpl(resolve, reject, websocketConnectTimeout);
+        });
+
+        return promise;
+    };
+
     client = {
         disconnect,
         mute,
         unmute,
+        waitForReady,
     };
+
     return client;
 }
