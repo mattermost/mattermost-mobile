@@ -181,8 +181,7 @@ const Server = ({componentId, extra, launchType, launchError}: ServerProps) => {
             return;
         }
 
-        const isValid = isServerUrlValid(serverUrl);
-        if (!isValid) {
+        if (!isServerUrlValid(serverUrl)) {
             return;
         }
 
