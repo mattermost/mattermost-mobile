@@ -13,9 +13,9 @@ import FormattedText from '@components/formatted_text';
 import ProgressiveImage from '@components/progressive_image';
 import SlideUpPanelItem, {ITEM_HEIGHT} from '@components/slide_up_panel_item';
 import TouchableWithFeedback from '@components/touchable_with_feedback';
-import {Device, Navigation} from '@constants';
+import {Navigation} from '@constants';
 import {useServerUrl} from '@context/server_url';
-import {useSplitView} from '@hooks/device';
+import {useIsTablet} from '@hooks/device';
 import {showModalOverCurrentContext} from '@screens/navigation';
 import {openGallerWithMockFile} from '@utils/gallery';
 import {generateId} from '@utils/general';
@@ -53,7 +53,7 @@ const MarkdownImage = ({
     linkDestination, postId, source,
 }: MarkdownImageProps) => {
     const intl = useIntl();
-    const isSplitView = useSplitView();
+    const isTablet = useIsTablet();
     const managedConfig = useManagedConfig();
     const genericFileId = useRef(generateId()).current;
     const metadata = imagesMetadata?.[source] || Object.values(imagesMetadata || {})[0];
@@ -86,7 +86,7 @@ const MarkdownImage = ({
         height: originalSize.height,
     };
 
-    const {height, width} = calculateDimensions(fileInfo.height, fileInfo.width, getViewPortWidth(isReplyPost, Device.IS_TABLET && !isSplitView));
+    const {height, width} = calculateDimensions(fileInfo.height, fileInfo.width, getViewPortWidth(isReplyPost, isTablet));
 
     const handleLinkPress = useCallback(() => {
         if (linkDestination) {

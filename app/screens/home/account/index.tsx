@@ -11,10 +11,10 @@ import {Edge, SafeAreaView, useSafeAreaInsets} from 'react-native-safe-area-cont
 import {of as of$} from 'rxjs';
 import {switchMap} from 'rxjs/operators';
 
-import {Device, View as ViewConstants} from '@constants';
+import {View as ViewConstants} from '@constants';
 import {MM_TABLES, SYSTEM_IDENTIFIERS} from '@constants/database';
 import {useTheme} from '@context/theme';
-import {useSplitView} from '@hooks/device';
+import {useIsTablet} from '@hooks/device';
 import {isCustomStatusExpirySupported, isMinimumServerVersion} from '@utils/helpers';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
@@ -69,9 +69,8 @@ const AccountScreen = ({currentUser, enableCustomUserStatuses, customStatusExpir
     const theme = useTheme();
     const [start, setStart] = useState(false);
     const route = useRoute();
-    const isSplitView = useSplitView();
     const insets = useSafeAreaInsets();
-    const isTablet = Device.IS_TABLET && !isSplitView;
+    const isTablet = useIsTablet();
     let tabletSidebarStyle;
     if (isTablet) {
         const {TABLET} = ViewConstants;

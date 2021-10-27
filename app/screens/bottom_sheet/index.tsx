@@ -9,9 +9,9 @@ import Animated from 'react-native-reanimated';
 import RNBottomSheet from 'reanimated-bottom-sheet';
 
 import {changeOpacity, makeStyleSheetFromTheme} from '@app/utils/theme';
-import {Device, Navigation} from '@constants';
+import {Navigation} from '@constants';
 import {useTheme} from '@context/theme';
-import {useSplitView} from '@hooks/device';
+import {useIsTablet} from '@hooks/device';
 import {dismissModal} from '@screens/navigation';
 import {hapticFeedback} from '@utils/general';
 
@@ -27,8 +27,7 @@ type SlideUpPanelProps = {
 const BottomSheet = ({closeButtonId, initialSnapIndex = 0, renderContent, snapPoints = ['90%', '50%', 50]}: SlideUpPanelProps) => {
     const sheetRef = useRef<RNBottomSheet>(null);
     const dimensions = useWindowDimensions();
-    const isSplitView = useSplitView();
-    const isTablet = Device.IS_TABLET && !isSplitView;
+    const isTablet = useIsTablet();
     const theme = useTheme();
     const lastSnap = snapPoints.length - 1;
 
