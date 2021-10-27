@@ -13,22 +13,22 @@ import * as CallsActions from './calls';
 jest.mock('@client/rest', () => ({
     Client4: {
         setUrl: jest.fn(),
-        getCalls: jest.fn(() => ({
-            calls: {
-                'channel-1': {
-                    participants: {
-                        'user-1': {id: 'user-1', muted: false, isTalking: false},
-                        'user-2': {id: 'user-2', muted: true, isTalking: true},
+        getCalls: jest.fn(() => [
+            {
+                call: {
+                    users: ['user-1', 'user-2'],
+                    states: {
+                        'user-1': {unmuted: true},
+                        'user-2': {unmuted: false},
                     },
-                    channelId: 'channel-1',
-                    startTime: 123,
-                    speakers: ['user-2'],
-                    screenOn: '',
-                    threadId: 'thread-1',
+                    start_at: 123,
+                    screen_sharing_id: '',
+                    thread_id: 'thread-1',
                 },
+                channel_id: 'channel-1',
+                enabled: true,
             },
-            enabled: {'channel-1': true},
-        })),
+        ]),
         enableChannelCalls: jest.fn(() => null),
         disableChannelCalls: jest.fn(() => null),
     },

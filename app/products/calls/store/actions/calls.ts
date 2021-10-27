@@ -3,19 +3,57 @@
 
 import {Client4} from '@client/rest';
 import {logError} from '@mm-redux/actions/errors';
-import {bindClientFunc, forceLogoutIfNecessary} from '@mm-redux/actions/helpers';
+import {forceLogoutIfNecessary} from '@mm-redux/actions/helpers';
 import {GenericAction, ActionFunc, DispatchFunc, GetStateFunc} from '@mm-redux/types/actions';
+import {Dictionary} from '@mm-redux/types/utilities';
 import {newClient} from '@mmproducts/calls/connection';
 import CallsTypes from '@mmproducts/calls/store/action_types/calls';
+
+import type {Call, CallParticipant} from '@mmproducts/calls/store/types/calls';
 
 export let ws: any = null;
 
 export function loadCalls(): ActionFunc {
-    return bindClientFunc({
-        clientFunc: Client4.getCalls,
-        onSuccess: CallsTypes.RECEIVED_CALLS,
-        params: [],
-    });
+    return async (dispatch: DispatchFunc, getState: GetStateFunc) => {
+        let resp = [];
+        try {
+            resp = await Client4.getCalls();
+        } catch (error) {
+            forceLogoutIfNecessary(error, dispatch, getState);
+            dispatch(logError(error));
+            return {error};
+        }
+
+        const callsResults: Dictionary<Call> = {};
+        const enabledChannels: Dictionary<boolean> = {};
+        for (let i = 0; i < resp.length; i++) {
+            const channel = resp[i];
+            if (channel.call) {
+                callsResults[channel.channel_id] = {
+                    participants: channel.call.users.reduce((prev: Dictionary<CallParticipant>, cur: string) => {
+                        const muted = channel.call.states[cur] ? !channel.call.states[cur].unmuted : true;
+                        prev[cur] = {id: cur, muted, isTalking: false};
+                        return prev;
+                    }, {}),
+                    channelId: channel.channel_id,
+                    startTime: channel.call.start_at,
+                    speakers: [],
+                    screenOn: channel.call.screen_sharing_id,
+                    threadId: channel.call.thread_id,
+                };
+            }
+            enabledChannels[channel.channel_id] = channel.enabled;
+        }
+
+        const data = {
+            calls: callsResults,
+            enabled: enabledChannels,
+        };
+
+        dispatch({type: CallsTypes.RECEIVED_CALLS, data});
+
+        return {data};
+    };
 }
 
 export function enableChannelCalls(channelId: string): ActionFunc {

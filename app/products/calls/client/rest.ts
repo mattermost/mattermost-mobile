@@ -1,59 +1,33 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {Dictionary} from '@mm-redux/types/utilities';
-
-import type {Call, CallParticipant} from '@mmproducts/calls/store/types/calls';
-
 export interface ClientCallsMix {
-    getCalls: () => Promise<Dictionary<Call>>;
+    getCalls: () => Promise<any>;
+    enableChannelCalls: (channelId: string) => Promise<any>;
+    disableChannelCalls: (channelId: string) => Promise<any>;
 }
 
 const ClientCalls = (superclass: any) => class extends superclass {
     getCalls = async () => {
-        const resp = await this.doFetch(
+        return this.doFetch(
             `${this.getCallsRoute()}/channels`,
             {method: 'get'},
         );
-        const callsResults: Dictionary<Call> = {};
-        const enabledChannels: Dictionary<boolean> = {};
-        for (let i = 0; i < resp.length; i++) {
-            const channel = resp[i];
-            if (channel.call) {
-                callsResults[channel.channel_id] = {
-                    participants: channel.call.users.reduce((prev: Dictionary<CallParticipant>, cur: string) => {
-                        const muted = channel.call.states[cur] ? !channel.call.states[cur].unmuted : true;
-                        prev[cur] = {id: cur, muted, isTalking: false};
-                        return prev;
-                    }, {}),
-                    channelId: channel.channel_id,
-                    startTime: channel.call.start_at,
-                    speakers: [],
-                    screenOn: channel.call.screen_sharing_id,
-                    threadId: channel.call.thread_id,
-                };
-            }
-            enabledChannels[channel.channel_id] = channel.enabled;
-        }
-        return {
-            calls: callsResults,
-            enabled: enabledChannels,
-        };
-    }
+    };
 
     enableChannelCalls = async (channelId: string) => {
         return this.doFetch(
             `${this.getCallsRoute()}/${channelId}`,
             {method: 'post', body: JSON.stringify({enabled: true})},
         );
-    }
+    };
 
     disableChannelCalls = async (channelId: string) => {
         return this.doFetch(
             `${this.getCallsRoute()}/${channelId}`,
             {method: 'post', body: JSON.stringify({enabled: false})},
         );
-    }
+    };
 };
 
 export default ClientCalls;
