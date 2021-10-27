@@ -236,6 +236,21 @@ const CallScreen = (props: Props) => {
         });
     };
 
+    const minimizeCallHandler = useCallback(() => popTopScreen(), []);
+
+    const leaveCallHandler = useCallback(() => {
+        popTopScreen();
+        props.actions.leaveCall();
+    }, [props.actions.leaveCall]);
+
+    const openThreadHandler = useCallback(() => {
+        const passProps = {
+            channelId: props.call?.channelId,
+            rootId: props.call?.threadId,
+        };
+        goToScreen(THREAD, '', passProps);
+    }, [props.call]);
+
     const muteUnmuteHandler = useCallback(() => {
         if (props.call) {
             if (props.currentParticipant?.muted) {
@@ -315,7 +330,7 @@ const CallScreen = (props: Props) => {
                         updateIntervalInSeconds={1}
                     />
                     <Pressable
-                        onPress={useCallback(() => popTopScreen(), [])}
+                        onPress={minimizeCallHandler}
                     >
                         <CompassIcon
                             name='arrow-collapse'
@@ -355,10 +370,7 @@ const CallScreen = (props: Props) => {
                         <Pressable
                             testID='leave'
                             style={style.button}
-                            onPress={useCallback(() => {
-                                popTopScreen();
-                                props.actions.leaveCall();
-                            }, [props.actions.leaveCall])}
+                            onPress={leaveCallHandler}
                         >
                             <CompassIcon
                                 name='phone-hangup'
@@ -373,13 +385,7 @@ const CallScreen = (props: Props) => {
                         </Pressable>
                         <Pressable
                             style={style.button}
-                            onPress={useCallback(() => {
-                                const passProps = {
-                                    channelId: props.call?.channelId,
-                                    rootId: props.call?.threadId,
-                                };
-                                goToScreen(THREAD, '', passProps);
-                            }, [props.call])}
+                            onPress={openThreadHandler}
                         >
                             <CompassIcon
                                 name='message-text-outline'
