@@ -12,9 +12,7 @@ describe('EnableDisableCalls', () => {
     const baseProps = {
         testID: 'test-id',
         theme: Preferences.THEMES.denim,
-        currentChannelId: 'channel-id',
-        enableCalls: jest.fn(),
-        disableCalls: jest.fn(),
+        onPress: jest.fn(),
         canEnableDisableCalls: true,
         enabled: false,
     };

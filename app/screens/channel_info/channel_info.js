@@ -92,6 +92,14 @@ export default class ChannelInfo extends PureComponent {
         dismissModal();
     };
 
+    toggleCalls = () => {
+        if (this.props.isCallsEnabled) {
+            this.props.actions.disableChannelCalls(this.props.currentChannel.id);
+        } else {
+            this.props.actions.enableChannelCalls(this.props.currentChannel.id);
+        }
+    }
+
     permalinkBadTeam = () => {
         const {intl} = this.context;
         const message = {
@@ -179,9 +187,7 @@ export default class ChannelInfo extends PureComponent {
                         <EnableDisableCalls
                             testID='channel_info.start_call.action'
                             theme={theme}
-                            currentChannelId={currentChannel.id}
-                            enableCalls={this.props.actions.enableChannelCalls}
-                            disableCalls={this.props.actions.disableChannelCalls}
+                            onPress={this.toggleCalls}
                             canEnableDisableCalls={isChannelAdmin}
                             enabled={isCallsEnabled}
                         />

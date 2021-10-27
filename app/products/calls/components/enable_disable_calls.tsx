@@ -12,23 +12,15 @@ import {preventDoubleTap} from '@utils/tap';
 type Props = {
     testID?: string;
     theme: Theme;
-    currentChannelId: string;
-    enableCalls: (channelId: string) => void;
-    disableCalls: (channelId: string) => void;
+    onPress: (channelId: string) => void;
     canEnableDisableCalls: boolean;
     enabled: boolean;
 }
 
 const EnableDisableCalls = (props: Props) => {
-    const {testID, canEnableDisableCalls, theme, enableCalls, disableCalls, enabled, currentChannelId} = props;
+    const {testID, canEnableDisableCalls, theme, onPress, enabled} = props;
 
-    const handleEnableDisableCalls = useCallback(preventDoubleTap(() => {
-        if (enabled) {
-            disableCalls(currentChannelId);
-        } else {
-            enableCalls(currentChannelId);
-        }
-    }), [enableCalls, disableCalls, enabled, currentChannelId]);
+    const handleEnableDisableCalls = useCallback(preventDoubleTap(onPress), [onPress]);
 
     if (!canEnableDisableCalls) {
         return null;
