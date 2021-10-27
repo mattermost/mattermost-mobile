@@ -27,7 +27,7 @@ type Props = {
     intl: typeof IntlShape;
 }
 
-const getStyleSheet = makeStyleSheetFromTheme((props: Props) => {
+const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     return {
         container: {
             flexDirection: 'row',
@@ -38,18 +38,18 @@ const getStyleSheet = makeStyleSheetFromTheme((props: Props) => {
             alignItems: 'center',
         },
         joinCallIcon: {
-            color: props.theme.sidebarText,
+            color: theme.sidebarText,
             marginLeft: 10,
             marginRight: 5,
         },
         joinCall: {
-            color: props.theme.sidebarText,
+            color: theme.sidebarText,
             fontWeight: 'bold',
             fontSize: 16,
         },
         started: {
             flex: 1,
-            color: props.theme.sidebarText,
+            color: theme.sidebarText,
             fontWeight: '400',
             marginLeft: 10,
         },
@@ -57,7 +57,7 @@ const getStyleSheet = makeStyleSheetFromTheme((props: Props) => {
             marginRight: 5,
         },
         headerText: {
-            color: changeOpacity(props.theme.centerChannelColor, 0.56),
+            color: changeOpacity(theme.centerChannelColor, 0.56),
             fontSize: 12,
             fontWeight: '600',
             paddingHorizontal: 16,
@@ -76,7 +76,7 @@ const JoinCall = (props: Props) => {
         return null;
     }
 
-    const style = getStyleSheet(props);
+    const style = getStyleSheet(props.theme);
     const joinHandler = useCallback(() => {
         if (props.confirmToJoin) {
             Alert.alert(

@@ -32,7 +32,7 @@ type Props = {
     teammateNameDisplay: string;
 }
 
-const getStyleSheet = makeStyleSheetFromTheme((props: Props) => {
+const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     return {
         wrapper: {
             padding: 10,
@@ -53,29 +53,32 @@ const getStyleSheet = makeStyleSheetFromTheme((props: Props) => {
             flex: 1,
         },
         speakingUser: {
-            color: props.theme.sidebarText,
+            color: theme.sidebarText,
             fontWeight: '600',
             fontSize: 16,
         },
         currentChannel: {
-            color: props.theme.sidebarText,
+            color: theme.sidebarText,
             opacity: 0.64,
         },
         micIcon: {
-            color: props.theme.sidebarText,
+            color: theme.sidebarText,
             width: 42,
             height: 42,
             textAlign: 'center',
             textAlignVertical: 'center',
             justifyContent: 'center',
-            backgroundColor: props.currentParticipant?.muted ? 'transparent' : '#3DB887',
+            backgroundColor: '#3DB887',
             borderRadius: 4,
             margin: 4,
             padding: 9,
             overflow: 'hidden',
         },
+        muted: {
+            background: 'transparent',
+        },
         expandIcon: {
-            color: props.theme.sidebarText,
+            color: theme.sidebarText,
             padding: 8,
             marginRight: 8,
         },
@@ -112,7 +115,7 @@ const CurrentCall = (props: Props) => {
         }
     }, [props.currentParticipant?.muted]);
 
-    const style = getStyleSheet(props);
+    const style = getStyleSheet(props.theme);
     return (
         <View style={style.wrapper}>
             <View style={style.container}>
@@ -153,7 +156,7 @@ const CurrentCall = (props: Props) => {
                     <CompassIcon
                         name={props.currentParticipant?.muted ? 'microphone-off' : 'microphone'}
                         size={24}
-                        style={style.micIcon}
+                        style={[style.micIcon, props.currentParticipant?.muted ? style.muted : undefined]}
                     />
                 </TouchableOpacity>
             </View>
