@@ -4,7 +4,7 @@
 import {useManagedConfig, ManagedConfig} from '@mattermost/react-native-emm';
 import React, {useCallback, useEffect, useState} from 'react';
 import {useIntl} from 'react-intl';
-import {KeyboardAvoidingView, Platform, StatusBar, StatusBarStyle, View} from 'react-native';
+import {KeyboardAvoidingView, Platform, StatusBar, StyleSheet, StatusBarStyle, Text, View} from 'react-native';
 import Button from 'react-native-button';
 import {Navigation} from 'react-native-navigation';
 import {ActivityIndicator} from 'react-native-paper';
@@ -17,16 +17,17 @@ import {fetchConfigAndLicense} from '@actions/remote/systems';
 import LocalConfig from '@assets/config.json';
 import AppVersion from '@components/app_version';
 import ErrorText from '@components/error_text';
-import FormattedText from '@components/formatted_text';
 import TextSetting from '@components/widgets/text_settings';
 import {Screens} from '@constants';
 import {useTheme} from '@context/theme';
 import NetworkManager from '@init/network_manager';
 import {goToScreen} from '@screens/navigation';
 import {DeepLinkWithData, LaunchProps, LaunchType} from '@typings/launch';
+import {buttonBackgroundStyle, buttonTextStyle} from '@utils/buttonStyles';
 import {isMinimumServerVersion} from '@utils/helpers';
 import {preventDoubleTap} from '@utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
+import {typography} from '@utils/typography';
 import {getServerUrlAfterRedirect, isValidUrl, sanitizeUrl} from '@utils/url';
 
 import ServerSvg from './background_svg';
@@ -257,33 +258,18 @@ const Server = ({componentId, extra, launchType, launchError}: ServerProps) => {
         setDisplayName(text);
     }, []);
 
-    let buttonIcon;
-    let id: string;
-    let defaultMessage: string;
-    let buttonTextStyle = styles.connectButtonText;
+    let styleButtonText = buttonTextStyle(theme, 'lg', 'primary', 'default');
+    let styleButtonBackground = buttonBackgroundStyle(theme, 'lg', 'primary');
 
-    const buttonStyle = [styles.connectButton];
+    let buttonID = 'mobile.components.select_server_view.connect';
+    let buttonText = 'Connect';
+
     if (connecting) {
-        buttonStyle.push(styles.buttonEnabled);
-        buttonIcon = (
-            <ActivityIndicator
-                animating={true}
-                size='small'
-                color={Colors.white}
-                style={styles.connectingIndicator}
-            />
-        );
-        id = 'mobile.components.select_server_view.connecting';
-        defaultMessage = 'Connecting';
-    } else {
-        if (buttonDisabled) {
-            buttonStyle.push(styles.buttonDisabled);
-            buttonTextStyle = styles.connectInvalidText;
-        } else {
-            buttonStyle.push(styles.buttonEnabled);
-        }
-        id = 'mobile.components.select_server_view.connect';
-        defaultMessage = 'Connect';
+        buttonID = 'mobile.components.select_server_view.connecting';
+        buttonText = 'Connecting';
+    } else if (buttonDisabled) {
+        styleButtonText = buttonTextStyle(theme, 'lg', 'primary', 'disabled');
+        styleButtonBackground = buttonBackgroundStyle(theme, 'lg', 'primary', 'disabled');
     }
 
     const statusColor = tinyColor(theme.centerChannelBg);
@@ -291,6 +277,19 @@ const Server = ({componentId, extra, launchType, launchError}: ServerProps) => {
     if (Platform.OS === 'ios' && statusColor.isLight()) {
         barStyle = 'dark-content';
     }
+
+    const buttonIcon = (
+        <ActivityIndicator
+            animating={true}
+            size='small'
+            color={Colors.white}
+            style={styles.connectingIndicator}
+        />
+    );
+
+    const textStyleWelcome = StyleSheet.create([typography('Heading', 400, 'SemiBold')]);
+    const textStyleConnect = StyleSheet.create([typography('Heading', 1000, 'SemiBold')]);
+    const textStyleDescription = StyleSheet.create([typography('Body', 200, 'SemiBold')]);
 
     return [
         <SafeAreaView
@@ -313,21 +312,26 @@ const Server = ({componentId, extra, launchType, launchError}: ServerProps) => {
                 <StatusBar barStyle={barStyle}/>
                 <View style={styles.formContainer}>
                     <View>
-                        <FormattedText
-                            style={styles.welcomeText}
-                            id='mobile.components.select_server_view.msg_welcome'
-                            defaultMessage='Welcome'
-                        />
-                        <FormattedText
-                            style={styles.connectText}
-                            id='mobile.components.select_server_view.msg_connect'
-                            defaultMessage='Let’s Connect to a Server'
-                        />
-                        <FormattedText
-                            style={styles.descriptionText}
-                            id='mobile.components.select_server_view.msg_description'
-                            defaultMessage="A Server is your team's communication hub which is accessed through a unique URL"
-                        />
+                        <Text style={[textStyleWelcome, styles.welcome]}>{
+                            formatMessage({
+                                id: 'mobile.components.select_server_view.msg_welcome',
+                                defaultMessage: 'Welcome',
+                            })}
+                        </Text>
+
+                        <Text style={[textStyleConnect, styles.connect]}>{
+                            formatMessage({
+                                id: 'mobile.components.select_server_view.msg_connect',
+                                defaultMessage: 'Let’s Connect to a Server',
+                            })}
+                        </Text>
+
+                        <Text style={[textStyleDescription, styles.description]}>{
+                            formatMessage({
+                                id: 'mobile.components.select_server_view.msg_description',
+                                defaultMessage: "A Server is your team's communication hub which is accessed through a unique URL",
+                            })}
+                        </Text>
                     </View>
                     <TextSetting
                         id='select_server.server_url.input'
@@ -357,18 +361,20 @@ const Server = ({componentId, extra, launchType, launchError}: ServerProps) => {
                         onChange={handleDisplayNameTextChanged}
                         value={displayName}
                     />
+
                     <Button
                         disabled={buttonDisabled}
                         testID='select_server.connect.button'
                         onPress={handleConnect}
-                        containerStyle={buttonStyle}
+                        containerStyle={[styles.connectButton, styleButtonBackground]}
                     >
-                        {buttonIcon}
-                        <FormattedText
-                            id={id}
-                            defaultMessage={defaultMessage}
-                            style={buttonTextStyle}
-                        />
+                        {connecting && buttonIcon}
+                        <Text style={styleButtonText}>{
+                            formatMessage({
+                                id: buttonID,
+                                defaultMessage: buttonText,
+                            })}
+                        </Text>
                     </Button>
                     <View>
                         {Boolean(error) &&
@@ -406,14 +412,8 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         alignItems: 'center',
         flex: 1,
     },
-    buttonEnabled: {
-        backgroundColor: theme.buttonBg,
-    },
     connectButton: {
         backgroundColor: changeOpacity(theme.centerChannelColor, 0.08),
-        flex: 0,
-        borderRadius: 4,
-        alignItems: 'center',
         alignSelf: 'stretch',
         marginTop: 32,
         marginLeft: 20,
@@ -423,61 +423,21 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     connectingIndicator: {
         marginRight: 10,
     },
-    welcomeText: {
-        width: 374,
-        height: 28,
-        fontSize: 20,
-        lineHeight: 28,
-        alignItems: 'center',
-        flex: 0,
-        alignSelf: 'stretch',
+    welcome: {
         marginTop: 12,
-        marginBottom: 0,
-        fontFamily: 'Metropolis-SemiBold',
         color: changeOpacity(theme.centerChannelColor, 0.64),
     },
-    connectText: {
+
+    connect: {
         width: 270,
-        height: 96,
-        fontFamily: 'Metropolis-SemiBold',
-        fontSize: 40,
-        lineHeight: 48,
-        alignItems: 'center',
         letterSpacing: -1,
-        flex: 0,
-        alignSelf: 'stretch',
         color: theme.buttonBg,
         marginTop: 12,
         marginBottom: 0,
-        marginRight: 20,
-        marginLeft: 0,
-        paddingLeft: 0,
-        flexGrow: 0,
-        display: 'flex',
     },
-    descriptionText: {
-        width: 374,
-        height: 48,
-        fontFamily: 'OpenSans',
-        fontSize: 16,
-        lineHeight: 24,
-        alignItems: 'center',
-        flex: 0,
-        alignSelf: 'stretch',
-        marginTop: 12,
-        marginBottom: 24,
-        marginRight: 20,
+
+    description: {
         color: changeOpacity(theme.centerChannelColor, 0.64),
-    },
-    connectButtonText: {
-        textAlign: 'center',
-        color: Colors.white,
-        fontSize: 17,
-    },
-    connectInvalidText: {
-        textAlign: 'center',
-        color: changeOpacity(theme.centerChannelColor, 0.32),
-        fontSize: 17,
     },
 }));
 
