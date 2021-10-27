@@ -32,7 +32,7 @@ export default function TeamSidebar({canCreateTeams, otherTeams, myTeamsCount}: 
         fetchAllTeams(serverUrl);
     }, [serverUrl]);
 
-    const showAddTeam = otherTeams.length > 0;
+    const showAddTeam = canCreateTeams || otherTeams.length > 0;
 
     const transform = useAnimatedStyle(() => {
         const showTeams = showAddTeam || myTeamsCount > 1;
