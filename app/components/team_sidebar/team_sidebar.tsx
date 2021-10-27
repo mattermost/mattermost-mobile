@@ -32,10 +32,10 @@ export default function TeamSidebar({canCreateTeams, otherTeams, myTeamsCount}: 
         fetchAllTeams(serverUrl);
     }, [serverUrl]);
 
-    const showAddTeam = canCreateTeams || otherTeams.length > 0;
+    const showAddTeam = otherTeams.length > 0;
 
     const transform = useAnimatedStyle(() => {
-        const showTeams = canCreateTeams || myTeamsCount > 1;
+        const showTeams = showAddTeam || myTeamsCount > 1;
         if (showTeams) {
             return {
                 transform: [{translateX: withTiming(0, {duration: 100})}],
@@ -44,7 +44,7 @@ export default function TeamSidebar({canCreateTeams, otherTeams, myTeamsCount}: 
         return {
             transform: [{translateX: withTiming(-TEAM_SIDEBAR_WIDTH, {duration: 100})}],
         };
-    }, []);
+    }, [showAddTeam || myTeamsCount > 1]);
 
     return (
         <View style={styles.container}>
