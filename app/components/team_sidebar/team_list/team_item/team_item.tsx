@@ -29,21 +29,27 @@ export default function TeamItem({team, hasUnreads, mentionCount, currentTeamId}
     const selected = team.id === currentTeamId;
 
     const hasBadge = Boolean(mentionCount || hasUnreads);
-    let mentionText = mentionCount ? mentionCount.toString() : '';
-    let left = 35;
+    let badgeStyle = styles.unread;
+    let value = mentionCount;
+    if (!mentionCount && hasUnreads) {
+        value = -1;
+    }
+
     switch (true) {
-        case mentionCount > 99:
-            mentionText = '99+';
-            left = 20;
+        case value > 99:
+            badgeStyle = styles.mentionsThreeDigits;
             break;
-        case mentionCount > 9:
-            left = 26;
+        case value > 9:
+            badgeStyle = styles.mentionsTwoDigits;
+            break;
+        case value > 0:
+            badgeStyle = styles.mentionsOneDigit;
             break;
     }
 
     return (
         <>
-            <View style={selected ? styles.containerSelected : styles.container}>
+            <View style={[styles.container, selected ? styles.containerSelected : undefined]}>
                 <TouchableWithFeedback
                     onPress={() => handleTeamChange(serverUrl, team.id)}
                     type='opacity'
@@ -57,12 +63,11 @@ export default function TeamItem({team, hasUnreads, mentionCount, currentTeamId}
                 </TouchableWithFeedback>
             </View>
             <Badge
-                visible={hasBadge && !selected}
-                style={mentionCount > 0 ? [styles.mentions, {left}] : styles.unread}
-                size={mentionCount > 0 ? 16 : 12}
-            >
-                {mentionText}
-            </Badge>
+                borderColor={theme.sidebarTeamBarBg}
+                visible={hasBadge}
+                style={badgeStyle}
+                value={value}
+            />
         </>
     );
 }
@@ -70,44 +75,33 @@ export default function TeamItem({team, hasUnreads, mentionCount, currentTeamId}
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     return {
         container: {
-            height: 48,
-            width: 48,
+            height: 54,
+            width: 54,
             flex: 0,
+            padding: 3,
             borderRadius: 10,
-            marginVertical: 6,
+            marginVertical: 3,
             overflow: 'hidden',
         },
         containerSelected: {
-            height: 48,
-            width: 48,
-            padding: 3,
             borderWidth: 3,
             borderColor: theme.sidebarTextActiveBorder,
-            borderRadius: 10,
-            marginVertical: 6,
         },
         unread: {
             left: 40,
             top: 3,
-            borderColor: theme.sidebarTeamBarBg,
-            borderWidth: 2,
-            backgroundColor: theme.mentionBg,
-            width: 12,
         },
-        mentions: {
+        mentionsOneDigit: {
             top: 1,
-            fontSize: 12,
-            fontWeight: 'bold',
-            fontFamily: 'OpenSans',
-            lineHeight: 15,
-            borderColor: theme.sidebarTeamBarBg,
-            alignItems: 'center',
-            borderWidth: 2,
-            minWidth: 22,
-            height: 18,
-            borderRadius: 9,
-            backgroundColor: theme.mentionBg,
-            color: theme.mentionColor,
+            left: 28,
+        },
+        mentionsTwoDigits: {
+            top: 1,
+            left: 26,
+        },
+        mentionsThreeDigits: {
+            top: 1,
+            left: 23,
         },
     };
 });

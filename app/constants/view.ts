@@ -43,6 +43,7 @@ export const MAX_BADGE_RIGHT_POSITION = -13;
 export const LARGE_BADGE_RIGHT_POSITION = -11;
 export const SMALL_BADGE_RIGHT_POSITION = -9;
 export const TEAM_SIDEBAR_WIDTH = 72;
+export const BOTTOM_TAB_ICON_SIZE = 31.2;
 
 export const TABLET = {
     SIDEBAR_WIDTH: 320,
@@ -118,6 +119,7 @@ const RequiredServer = {
 export default {
     ...ViewTypes,
     RequiredServer,
+    BOTTOM_TAB_ICON_SIZE,
     FEATURE_TOGGLE_PREFIX: 'feature_enabled_',
     EMBED_PREVIEW: 'embed_preview',
     LINK_PREVIEW_DISPLAY: 'link_previews',
