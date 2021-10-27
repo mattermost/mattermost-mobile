@@ -1,6 +1,6 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
-import React from 'react';
+import React, {useCallback} from 'react';
 import {injectIntl, intlShape} from 'react-intl';
 import {View} from 'react-native';
 
@@ -21,6 +21,15 @@ const CallOtherActions = ({theme, intl}: Props) => {
         dismissModal();
     };
 
+    // TODO: Implement this whenever we support participants invitation to calls
+    const addParticipants = useCallback(() => null, []);
+
+    // TODO: Implement this whenever we support calls links
+    const copyCallLink = useCallback(() => null, []);
+
+    // TODO: Implement this whenever we support give feedback
+    const giveFeedback = useCallback(() => null, []);
+
     return (
         <View style={{flex: 1}}>
             <SlideUpPanel
@@ -31,21 +40,21 @@ const CallOtherActions = ({theme, intl}: Props) => {
                 <Action
                     destructive={false}
                     icon='account-plus-outline'
-                    onPress={() => null}
+                    onPress={addParticipants}
                     text={intl.formatMessage({id: 'call.add_participants', defaultMessage: 'Add participants'})}
                     theme={theme}
                 />
                 <Action
                     destructive={false}
                     icon='link-variant'
-                    onPress={() => null}
+                    onPress={copyCallLink}
                     text={intl.formatMessage({id: 'call.copy_call_link', defaultMessage: 'Copy call link'})}
                     theme={theme}
                 />
                 <Action
                     destructive={false}
                     icon='send-outline'
-                    onPress={() => null}
+                    onPress={giveFeedback}
                     text={intl.formatMessage({id: 'call.give_feedback', defaultMessage: 'Give Feedback'})}
                     theme={theme}
                 />

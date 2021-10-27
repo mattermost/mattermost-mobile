@@ -245,13 +245,17 @@ const CallScreen = (props: Props) => {
         }
     }, [props.call.channelId, props.currentParticipant]);
 
+    const toggleControlsInLandscape = useCallback(() => {
+        setShowControlsInLandscape(!showControlsInLandscape);
+    }, [showControlsInLandscape]);
+
     let screenShareView = null;
     if (props.screenShareURL && props.call.screenOn) {
         screenShareView = (
             <Pressable
                 testID='screen-share-container'
                 style={style.screenShareImage}
-                onPress={() => setShowControlsInLandscape(!showControlsInLandscape)}
+                onPress={toggleControlsInLandscape}
             >
                 <RTCView
                     streamURL={props.screenShareURL}
@@ -276,7 +280,7 @@ const CallScreen = (props: Props) => {
             >
                 <Pressable
                     testID='users-list'
-                    onPress={() => setShowControlsInLandscape(!showControlsInLandscape)}
+                    onPress={toggleControlsInLandscape}
                     style={style.users}
                 >
                     {Object.values(props.call.participants).map((user) => {
@@ -310,7 +314,7 @@ const CallScreen = (props: Props) => {
                         updateIntervalInSeconds={1}
                     />
                     <Pressable
-                        onPress={() => popTopScreen()}
+                        onPress={useCallback(() => popTopScreen(), [])}
                     >
                         <CompassIcon
                             name='arrow-collapse'
@@ -350,10 +354,10 @@ const CallScreen = (props: Props) => {
                         <Pressable
                             testID='leave'
                             style={style.button}
-                            onPress={() => {
+                            onPress={useCallback(() => {
                                 popTopScreen();
                                 props.actions.leaveCall();
-                            }}
+                            }, [props.actions.leaveCall])}
                         >
                             <CompassIcon
                                 name='phone-hangup'

@@ -87,6 +87,31 @@ const CurrentCall = (props: Props) => {
         return null;
     }
 
+    const goToCallScreen = useCallback(() => {
+        const options: Options = {
+            layout: {
+                backgroundColor: '#000',
+                componentBackgroundColor: '#000',
+                orientation: ['portrait', 'landscape'],
+            },
+            topBar: {
+                background: {
+                    color: '#000',
+                },
+                visible: Platform.OS === 'android',
+            },
+        };
+        goToScreen('Call', 'Call', {}, options);
+    }, []);
+
+    const muteUnmute = useCallback(() => {
+        if (props.currentParticipant?.muted) {
+            props.actions.unmuteMyself(props.call.channelId);
+        } else {
+            props.actions.muteMyself(props.call.channelId);
+        }
+    }, [props.currentParticipant?.muted]);
+
     const style = getStyleSheet(props);
     return (
         <View style={style.wrapper}>
@@ -112,22 +137,7 @@ const CurrentCall = (props: Props) => {
                     </Text>
                 </View>
                 <Pressable
-                    onPressIn={() => {
-                        const options: Options = {
-                            layout: {
-                                backgroundColor: '#000',
-                                componentBackgroundColor: '#000',
-                                orientation: ['portrait', 'landscape'],
-                            },
-                            topBar: {
-                                background: {
-                                    color: '#000',
-                                },
-                                visible: Platform.OS === 'android',
-                            },
-                        };
-                        goToScreen('Call', 'Call', {}, options);
-                    }}
+                    onPressIn={goToCallScreen}
                     style={style.pressable}
                 >
                     <CompassIcon
@@ -137,13 +147,7 @@ const CurrentCall = (props: Props) => {
                     />
                 </Pressable>
                 <TouchableOpacity
-                    onPress={useCallback(() => {
-                        if (props.currentParticipant?.muted) {
-                            props.actions.unmuteMyself(props.call.channelId);
-                        } else {
-                            props.actions.muteMyself(props.call.channelId);
-                        }
-                    }, [props.currentParticipant?.muted])}
+                    onPress={muteUnmute}
                     style={style.pressable}
                 >
                     <CompassIcon
