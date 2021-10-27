@@ -79,6 +79,11 @@ const typingBlackListFilter = createBlacklistFilter(
     ['typing'],
 );
 
+const callsBlackListFilter = createBlacklistFilter(
+    'entities',
+    ['calls'],
+);
+
 const channelViewBlackList: any = {loading: true, refreshing: true, loadingPosts: true, retryFailed: true, loadMorePostsVisible: true};
 const channelViewBlackListFilter = createTransform(
     (inboundState: any) => {
@@ -175,6 +180,7 @@ export default function configureStore(storage: any, preloadedState: any = {}, o
             setTransformer,
             viewsBlackListFilter,
             typingBlackListFilter,
+            callsBlackListFilter,
             channelViewBlackListFilter,
             emojiBlackListFilter,
         ],
