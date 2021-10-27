@@ -249,8 +249,9 @@ const Server = ({componentId, extra, launchType, launchError}: ServerProps) => {
     }, [urlError]);
 
     const handleUrlTextChanged = useCallback((_: string, text: string) => {
+        setUrlError(undefined);
         setUrl(text);
-    }, []);
+    }, [url]);
 
     const handleDisplayNameTextChanged = useCallback((_: string, text: string) => {
         setDisplayName(text);
@@ -292,17 +293,17 @@ const Server = ({componentId, extra, launchType, launchError}: ServerProps) => {
     }
 
     return [
-        <View
-            style={styles.serverSvg}
-            key={'server_svg'}
-        >
-            <ServerSvg/>
-        </View>,
         <SafeAreaView
             testID='select_server.screen'
             style={styles.container}
             key={'server_content'}
         >
+            <View
+                style={styles.serverSvg}
+                key={'server_svg'}
+            >
+                <ServerSvg/>
+            </View>
             <KeyboardAvoidingView
                 behavior='padding'
                 style={styles.flex}
@@ -342,6 +343,10 @@ const Server = ({componentId, extra, launchType, launchError}: ServerProps) => {
                         value={url}
                     />
                     <TextSetting
+                        helpText={formatMessage({
+                            id: 'mobile.components.select_server_view.displayHelp',
+                            defaultMessage: 'Choose a display name for the server in your sidebar',
+                        })}
                         id='select_server.server_display_name.input'
                         testID='select_server.server_display_name.input'
                         keyboardType='default'
@@ -411,6 +416,8 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         alignItems: 'center',
         alignSelf: 'stretch',
         marginTop: 32,
+        marginLeft: 20,
+        marginRight: 20,
         padding: 15,
     },
     connectingIndicator: {
@@ -426,14 +433,13 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         alignSelf: 'stretch',
         marginTop: 12,
         marginBottom: 0,
-        fontWeight: '600',
-        fontFamily: 'Metropolis',
+        fontFamily: 'Metropolis-SemiBold',
         color: changeOpacity(theme.centerChannelColor, 0.64),
     },
     connectText: {
         width: 270,
         height: 96,
-        fontFamily: 'Metropolis',
+        fontFamily: 'Metropolis-SemiBold',
         fontSize: 40,
         lineHeight: 48,
         alignItems: 'center',
@@ -447,22 +453,19 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         marginLeft: 0,
         paddingLeft: 0,
         flexGrow: 0,
-        fontWeight: '600',
         display: 'flex',
     },
     descriptionText: {
         width: 374,
         height: 48,
-        fontFamily: 'Open Sans',
-        fontStyle: 'normal',
-        fontWeight: 'normal',
+        fontFamily: 'OpenSans',
         fontSize: 16,
         lineHeight: 24,
         alignItems: 'center',
         flex: 0,
         alignSelf: 'stretch',
         marginTop: 12,
-        marginBottom: 0,
+        marginBottom: 24,
         marginRight: 20,
         color: changeOpacity(theme.centerChannelColor, 0.64),
     },
