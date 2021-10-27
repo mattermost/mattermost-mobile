@@ -213,15 +213,13 @@ const FloatingTextInput = ({
             onPress={onPressAction}
         >
             <View style={[styles.container, containerStyle]}>
-                {
-                    <Animated.Text
-                        onPress={onAnimatedTextPress}
-                        style={textAnimatedTextStyle}
-                        suppressHighlighting={true}
-                    >
-                        {label}
-                    </Animated.Text>
-                }
+                <Animated.Text
+                    onPress={onAnimatedTextPress}
+                    style={textAnimatedTextStyle}
+                    suppressHighlighting={true}
+                >
+                    {label}
+                </Animated.Text>
                 <TextInput
                     {...props}
                     editable={isKeyboardInput && editable}
