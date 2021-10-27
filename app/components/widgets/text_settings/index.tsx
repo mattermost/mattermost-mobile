@@ -10,8 +10,7 @@ import {useTheme} from '@context/theme';
 import {getMarkdownBlockStyles, getMarkdownTextStyles} from '@utils/markdown';
 import {makeStyleSheetFromTheme, getKeyboardAppearanceFromTheme} from '@utils/theme';
 
-import DisableContent from './components/disabled_content';
-import HelpContent from './components/help_content';
+import MarkdownContent from './components/markdown_content';
 
 export interface IntlText {
     id: string;
@@ -111,16 +110,16 @@ const TextSetting = ({
                 />
                 <View>
                     {disabled && disabledText && (
-                        <DisableContent
+                        <MarkdownContent
                             blockStyles={blockStyles}
-                            disabledText={disabledText}
+                            text={disabledText}
                             textStyles={textStyles}
                         />
                     )}
                     {helpText && (
-                        <HelpContent
+                        <MarkdownContent
                             blockStyles={blockStyles}
-                            helpText={helpText}
+                            text={helpText}
                             textStyles={textStyles}
                         />
                     )}

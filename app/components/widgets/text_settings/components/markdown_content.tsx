@@ -9,24 +9,28 @@ import {useTheme} from '@context/theme';
 import {MarkdownBlockStyles, MarkdownTextStyles} from '@typings/global/markdown';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
-type DisabledContentProps = {
+type HelpContentProps = {
     blockStyles: MarkdownBlockStyles;
-    disabledText: string | number;
+    text: string | number;
     textStyles: MarkdownTextStyles;
-}
+};
 
-const DisableContent = ({blockStyles, disabledText, textStyles}: DisabledContentProps) => {
+const HelpContent = ({
+    blockStyles,
+    text,
+    textStyles,
+}: HelpContentProps) => {
     const theme = useTheme();
     const style = getStyleSheet(theme);
 
     return (
         <View style={style.helpTextContainer}>
             <Markdown
-                theme={theme}
                 baseTextStyle={style.helpText}
                 textStyles={textStyles}
                 blockStyles={blockStyles}
-                value={disabledText}
+                value={text}
+                theme={theme}
             />
         </View>
     );
@@ -44,4 +48,4 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     };
 });
 
-export default DisableContent;
+export default HelpContent;
