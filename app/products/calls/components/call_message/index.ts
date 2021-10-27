@@ -38,8 +38,8 @@ function mapStateToProps(state: GlobalState, ownProps: OwnProps) {
         confirmToJoin: Boolean(currentCall && call),
         isMilitaryTime: getBool(state, Preferences.CATEGORY_DISPLAY_SETTINGS, 'use_military_time'),
         userTimezone: enableTimezone ? getUserCurrentTimezone(currentUser.timezone) : undefined,
-        currentChannelName: getChannel(state, post.channel_id).display_name,
-        callChannelName: currentCall ? getChannel(state, currentCall.channelId).display_name : '',
+        currentChannelName: getChannel(state, post.channel_id)?.display_name,
+        callChannelName: currentCall ? getChannel(state, currentCall.channelId)?.display_name : '',
     };
 }
 
