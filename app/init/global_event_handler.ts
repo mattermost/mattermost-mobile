@@ -18,6 +18,7 @@ import NetworkManager from '@init/network_manager';
 import PushNotifications from '@init/push_notifications';
 import WebsocketManager from '@init/websocket_manager';
 import {queryCurrentUser} from '@queries/servers/user';
+import EphemeralStore from '@store/ephemeral_store';
 import {LaunchType} from '@typings/launch';
 import {deleteFileCache} from '@utils/file';
 
@@ -101,6 +102,11 @@ class GlobalEventHandler {
         this.resetLocale();
         this.clearCookiesForServer(serverUrl);
         deleteFileCache(serverUrl);
+
+        if (!Object.keys(DatabaseManager.serverDatabases).length) {
+            EphemeralStore.theme = undefined;
+        }
+
         relaunchApp({launchType: LaunchType.Normal}, true);
     };
 

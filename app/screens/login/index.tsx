@@ -9,7 +9,6 @@ import {
     InteractionManager,
     Keyboard,
     SafeAreaView,
-    StatusBar,
     StyleProp,
     Text,
     TextInput,
@@ -321,7 +320,6 @@ const Login: NavigationFunctionComponent = ({config, extra, launchError, launchT
 
     return (
         <SafeAreaView style={styles.container}>
-            <StatusBar/>
             <TouchableWithoutFeedback
                 onPress={onBlur}
                 accessible={false}
