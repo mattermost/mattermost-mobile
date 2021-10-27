@@ -101,15 +101,15 @@ type FloatingTextInputProps = TextInputProps & {
 }
 
 const FloatingTextInput = ({
-    containerStyle,
-    editable = true,
     error,
-    errorIcon = 'BRKN-alert-outline',
+    containerStyle,
     isKeyboardInput = true,
+    editable = true,
+    errorIcon = 'BRKN-alert-outline',
     label = '',
-    onBlur,
-    onFocus,
     onPress = undefined,
+    onFocus,
+    onBlur,
     showErrorIcon = true,
     theme,
     value = '',
@@ -235,7 +235,7 @@ const FloatingTextInput = ({
                     ref={inputRef}
                     underlineColorAndroid='transparent'
                 />
-                {!focused && error && (
+                {error && (
                     <View style={styles.errorContainer}>
                         {showErrorIcon && errorIcon &&
                         <CompassIcon
