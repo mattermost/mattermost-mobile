@@ -21,6 +21,7 @@ type Props = {
     theme: Theme;
     call: Call;
     confirmToJoin: boolean;
+    alreadyInTheCall: boolean;
     currentChannelName: string;
     callChannelName: string;
     intl: typeof IntlShape;
@@ -70,6 +71,11 @@ const JoinCall = (props: Props) => {
     if (!props.call) {
         return null;
     }
+
+    if (props.alreadyInTheCall) {
+        return null;
+    }
+
     const style = getStyleSheet(props);
     const joinHandler = useCallback(() => {
         if (props.confirmToJoin) {
@@ -94,6 +100,7 @@ const JoinCall = (props: Props) => {
             props.actions.joinCall(props.call.channelId);
         }
     }, [props.call, props.confirmToJoin]);
+
     return (
         <Pressable
             style={style.container}

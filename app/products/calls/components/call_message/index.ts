@@ -35,7 +35,8 @@ function mapStateToProps(state: GlobalState, ownProps: OwnProps) {
     return {
         user,
         teammateNameDisplay: getTeammateNameDisplaySetting(state),
-        confirmToJoin: Boolean(currentCall && call),
+        confirmToJoin: Boolean(currentCall && call && currentCall.channelId !== call.channelId),
+        alreadyInTheCall: Boolean(currentCall && call && currentCall.channelId === call.channelId),
         isMilitaryTime: getBool(state, Preferences.CATEGORY_DISPLAY_SETTINGS, 'use_military_time'),
         userTimezone: enableTimezone ? getUserCurrentTimezone(currentUser.timezone) : undefined,
         currentChannelName: getChannel(state, post.channel_id)?.display_name,

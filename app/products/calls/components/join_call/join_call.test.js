@@ -35,6 +35,7 @@ describe('JoinCall', () => {
             threadId: false,
         },
         confirmToJoin: false,
+        alreadyInTheCall: false,
         currentChannelName: 'Current Channel',
         callChannelName: 'Call Channel',
     };
@@ -43,6 +44,13 @@ describe('JoinCall', () => {
         const wrapper = shallowWithIntl(<JoinCall {...baseProps}/>).dive();
 
         expect(wrapper.getElement()).toMatchSnapshot();
+    });
+
+    test('should not show it when I am already in the call', () => {
+        const props = {...baseProps, alreadyInTheCall: true};
+        const wrapper = shallowWithIntl(<JoinCall {...props}/>).dive();
+
+        expect(wrapper.getElement()).toBeNull();
     });
 
     test('should join on click', () => {

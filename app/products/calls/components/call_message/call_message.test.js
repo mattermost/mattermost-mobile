@@ -40,6 +40,13 @@ describe('CallMessage', () => {
         expect(wrapper.getElement()).toMatchSnapshot();
     });
 
+    test('should match snapshot for the call already in the current channel', () => {
+        const props = {...baseProps, alreadyInTheCall: true};
+        const wrapper = shallowWithIntl(<CallMessage {...props}/>).dive();
+
+        expect(wrapper.getElement()).toMatchSnapshot();
+    });
+
     test('should match snapshot for ended call', () => {
         const props = {...baseProps, post: {...baseProps.post, props: {start_at: 100, end_at: 200}}};
         const wrapper = shallowWithIntl(<CallMessage {...props}/>).dive();
@@ -64,6 +71,16 @@ describe('CallMessage', () => {
 
         wrapper.find(TouchableOpacity).simulate('press');
         expect(Alert.alert).toHaveBeenCalled();
+        expect(props.actions.joinCall).not.toHaveBeenCalled();
+    });
+
+    test('should not ask or join on click current call button if I am in the current call', () => {
+        const joinCall = jest.fn();
+        const props = {...baseProps, actions: {joinCall}, alreadyInTheCall: true};
+        const wrapper = shallowWithIntl(<CallMessage {...props}/>).dive();
+
+        wrapper.find(TouchableOpacity).simulate('press');
+        expect(Alert.alert).not.toHaveBeenCalled();
         expect(props.actions.joinCall).not.toHaveBeenCalled();
     });
 });

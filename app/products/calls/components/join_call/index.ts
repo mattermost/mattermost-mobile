@@ -19,7 +19,8 @@ function mapStateToProps(state: GlobalState) {
     return {
         theme: getTheme(state),
         call: call === currentCall ? null : call,
-        confirmToJoin: Boolean(currentCall && call),
+        confirmToJoin: Boolean(currentCall && call && currentCall.channelId !== call.channelId),
+        alreadyInTheCall: Boolean(currentCall && call && currentCall.channelId === call.channelId),
         currentChannelName: getChannel(state, currentChannelId)?.display_name,
         callChannelName: currentCall ? getChannel(state, currentCall.channelId)?.display_name : '',
     };

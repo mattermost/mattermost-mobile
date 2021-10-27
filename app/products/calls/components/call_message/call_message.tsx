@@ -26,6 +26,7 @@ type CallMessageProps = {
     theme: Theme;
     teammateNameDisplay: string;
     confirmToJoin: boolean;
+    alreadyInTheCall: boolean;
     isMilitaryTime: boolean;
     userTimezone: string;
     currentChannelName: string;
@@ -97,9 +98,12 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     };
 });
 
-const CallMessage = ({post, user, teammateNameDisplay, confirmToJoin, theme, actions, userTimezone, isMilitaryTime, currentChannelName, callChannelName, intl}: CallMessageProps) => {
+const CallMessage = ({post, user, teammateNameDisplay, confirmToJoin, alreadyInTheCall, theme, actions, userTimezone, isMilitaryTime, currentChannelName, callChannelName, intl}: CallMessageProps) => {
     const style = getStyleSheet(theme);
     const joinHandler = useCallback(() => {
+        if (alreadyInTheCall) {
+            return;
+        }
         if (confirmToJoin) {
             Alert.alert(
                 intl.formatMessage({id: 'calls.confirm-to-join-title', defaultMessage: 'Are you sure you want to switch to a different call?'}),
@@ -121,7 +125,7 @@ const CallMessage = ({post, user, teammateNameDisplay, confirmToJoin, theme, act
         } else {
             actions.joinCall(post.channel_id);
         }
-    }, [post.channel_id, confirmToJoin]);
+    }, [post.channel_id, confirmToJoin, alreadyInTheCall]);
 
     if (post.props.end_at) {
         return (
@@ -189,6 +193,7 @@ const CallMessage = ({post, user, teammateNameDisplay, confirmToJoin, theme, act
                     style={style.timeText}
                 />
             </View>
+
             <TouchableOpacity
                 style={style.joinCallButton}
                 onPress={joinHandler}
@@ -198,11 +203,18 @@ const CallMessage = ({post, user, teammateNameDisplay, confirmToJoin, theme, act
                     size={16}
                     style={style.joinCallButtonIcon}
                 />
-                <FormattedText
-                    id='call_message.join_call'
-                    defaultMessage='Join Call'
-                    style={style.joinCallButtonText}
-                />
+                {alreadyInTheCall &&
+                    <FormattedText
+                        id='call_message.current_call'
+                        defaultMessage='Current Call'
+                        style={style.joinCallButtonText}
+                    />}
+                {!alreadyInTheCall &&
+                    <FormattedText
+                        id='call_message.join_call'
+                        defaultMessage='Join Call'
+                        style={style.joinCallButtonText}
+                    />}
             </TouchableOpacity>
         </View>
     );
