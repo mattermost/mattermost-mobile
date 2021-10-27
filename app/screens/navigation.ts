@@ -1,6 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+/* eslint-disable max-lines */
+
 import merge from 'deepmerge';
 import {Appearance, DeviceEventEmitter, NativeModules, Platform} from 'react-native';
 import {Navigation, Options, OptionsModalPresentationStyle} from 'react-native-navigation';
@@ -230,6 +232,37 @@ export async function dismissAllModalsAndPopToRoot() {
     await popToRoot();
 
     DeviceEventEmitter.emit(NavigationConstants.NAVIGATION_DISMISS_AND_POP_TO_ROOT);
+}
+
+/**
+ * Dismisses All modals in the stack and pops the stack to the desired screen
+ * (if the screen is not in the stack, it will push a new one)
+ * @param screenId Screen to pop or display
+ * @param title Title to be shown in the top bar
+ * @param passProps Props to pass to the screen (Only if the screen does not exist in the stack)
+ * @param options Navigation options
+ */
+export async function dismissAllModalsAndPopToScreen(screenId: string, title: string, passProps = {}, options = {}) {
+    await dismissAllModals();
+    if (EphemeralStore.getNavigationComponents().includes(screenId)) {
+        let mergeOptions = options;
+        if (title) {
+            mergeOptions = merge(mergeOptions, {
+                topBar: {
+                    title: {
+                        text: title,
+                    },
+                },
+            });
+        }
+        try {
+            await Navigation.popTo(screenId, mergeOptions);
+        } catch {
+            // catch in case there is nothing to pop
+        }
+    } else {
+        goToScreen(screenId, title, passProps, options);
+    }
 }
 
 export function showModal(name: string, title: string, passProps = {}, options = {}) {

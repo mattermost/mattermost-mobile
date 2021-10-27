@@ -5,6 +5,7 @@ import CookieManager, {Cookie} from '@react-native-cookies/cookies';
 import {Alert, DeviceEventEmitter, Linking, Platform} from 'react-native';
 import semver from 'semver';
 
+import {selectAllMyChannelIds} from '@actions/local/channel';
 import {fetchConfigAndLicense} from '@actions/remote/systems';
 import LocalConfig from '@assets/config.json';
 import {General, REDIRECT_URL_SCHEME, REDIRECT_URL_SCHEME_DEV} from '@constants';
@@ -84,6 +85,8 @@ class GlobalEventHandler {
 
     onLogout = async (serverUrl: string) => {
         await removeServerCredentials(serverUrl);
+        const channelIds = await selectAllMyChannelIds(serverUrl);
+        PushNotifications.cancelChannelsNotifications(channelIds);
 
         NetworkManager.invalidateClient(serverUrl);
         WebsocketManager.invalidateClient(serverUrl);
@@ -95,20 +98,14 @@ class GlobalEventHandler {
             analytics.invalidate(serverUrl);
         }
 
-        deleteFileCache(serverUrl);
-        PushNotifications.clearNotifications(serverUrl);
-
         this.resetLocale();
         this.clearCookiesForServer(serverUrl);
+        deleteFileCache(serverUrl);
         relaunchApp({launchType: LaunchType.Normal}, true);
     };
 
     onServerConfigChanged = ({serverUrl, config}: {serverUrl: string; config: ClientConfig}) => {
         this.configureAnalytics(serverUrl, config);
-
-        if (config.ExtendSessionLengthWithActivity === 'true') {
-            PushNotifications.cancelAllLocalNotifications();
-        }
     };
 
     onServerVersionChanged = async ({serverUrl, serverVersion}: {serverUrl: string; serverVersion?: string}) => {

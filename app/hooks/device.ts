@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {useEffect, useState} from 'react';
-import {NativeModules, useWindowDimensions} from 'react-native';
+import {AppState, NativeModules, useWindowDimensions} from 'react-native';
 
 import {Device} from '@constants';
 
@@ -22,4 +22,23 @@ export function useSplitView() {
     }, [dimensions]);
 
     return isSplitView;
+}
+
+export function useAppState() {
+    const [appState, setAppState] = useState(AppState.currentState);
+
+    useEffect(() => {
+        const listener = AppState.addEventListener('change', (nextState) => {
+            setAppState(nextState);
+        });
+
+        return () => listener.remove();
+    }, [appState]);
+
+    return appState;
+}
+
+export function useIsTablet() {
+    const isSplitView = useSplitView();
+    return Device.IS_TABLET && !isSplitView;
 }

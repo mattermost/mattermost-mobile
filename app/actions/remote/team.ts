@@ -126,6 +126,44 @@ export const fetchMyTeams = async (serverUrl: string, fetchOnly = false): Promis
     }
 };
 
+export const fetchMyTeam = async (serverUrl: string, teamId: string, fetchOnly = false): Promise<MyTeamsRequest> => {
+    let client;
+    try {
+        client = NetworkManager.getClient(serverUrl);
+    } catch (error) {
+        return {error};
+    }
+
+    try {
+        const [team, membership] = await Promise.all([
+            client.getTeam(teamId),
+            client.getTeamMember(teamId, 'me'),
+        ]);
+        if (!fetchOnly) {
+            const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
+            const modelPromises: Array<Promise<Model[]>> = [];
+            if (operator) {
+                const prepare = prepareMyTeams(operator, [team], [membership]);
+                if (prepare) {
+                    modelPromises.push(...prepare);
+                }
+                if (modelPromises.length) {
+                    const models = await Promise.all(modelPromises);
+                    const flattenedModels = models.flat() as Model[];
+                    if (flattenedModels?.length > 0) {
+                        await operator.batchRecords(flattenedModels);
+                    }
+                }
+            }
+        }
+
+        return {teams: [team], memberships: [membership]};
+    } catch (error) {
+        forceLogoutIfNecessary(serverUrl, error as ClientError);
+        return {error};
+    }
+};
+
 export const fetchAllTeams = async (serverUrl: string, fetchOnly = false): Promise<MyTeamsRequest> => {
     let client;
     try {

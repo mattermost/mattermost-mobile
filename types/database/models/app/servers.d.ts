@@ -17,18 +17,12 @@ export default class ServersModel extends Model {
     /** display_name : The server display name */
     displayName: string;
 
-    /** mention_count : The number of mention on this server */
-    mentionCount: number;
-
-    /** unread_count : The number of unread messages on this server */
-    unreadCount: number;
-
     /** url : The online address for the Mattermost server */
     url: string;
 
     /** last_active_at: The last time this server was active */
     lastActiveAt!: number;
 
-    /** is_secured: Determines if the protocol used for this server url is HTTP or HTTPS */
-    isSecured!: boolean;
+    /** diagnostic_id: Determines the installation identifier of a server */
+    identifier!: string;
 }

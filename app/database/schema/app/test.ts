@@ -7,8 +7,8 @@ import {schema} from './index';
 
 const {INFO, GLOBAL, SERVERS} = MM_TABLES.APP;
 
-describe('*** Test schema for DEFAULT database ***', () => {
-    it('=> The DEFAULT SCHEMA should strictly match', () => {
+describe('*** Test schema for APP database ***', () => {
+    it('=> The APP SCHEMA should strictly match', () => {
         expect(schema).toEqual({
             version: 1,
             tables: {
@@ -39,20 +39,16 @@ describe('*** Test schema for DEFAULT database ***', () => {
                     columns: {
                         db_path: {name: 'db_path', type: 'string'},
                         display_name: {name: 'display_name', type: 'string'},
-                        mention_count: {name: 'mention_count', type: 'number'},
-                        unread_count: {name: 'unread_count', type: 'number'},
                         url: {name: 'url', type: 'string', isIndexed: true},
                         last_active_at: {name: 'last_active_at', type: 'number', isIndexed: true},
-                        is_secured: {name: 'is_secured', type: 'boolean'},
+                        identifier: {name: 'identifier', type: 'string', isIndexed: true},
                     },
                     columnArray: [
                         {name: 'db_path', type: 'string'},
                         {name: 'display_name', type: 'string'},
-                        {name: 'mention_count', type: 'number'},
-                        {name: 'unread_count', type: 'number'},
                         {name: 'url', type: 'string', isIndexed: true},
                         {name: 'last_active_at', type: 'number', isIndexed: true},
-                        {name: 'is_secured', type: 'boolean'},
+                        {name: 'identifier', type: 'string', isIndexed: true},
                     ],
                 },
             },

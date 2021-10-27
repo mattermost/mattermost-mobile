@@ -96,12 +96,16 @@ export const prepareDeleteChannel = async (channel: ChannelModel): Promise<Model
 };
 
 export const queryAllChannelsForTeam = (database: Database, teamId: string) => {
-    return database.get(CHANNEL).query(Q.where('team_id', teamId)).fetch() as Promise<ChannelModel[]>;
+    return database.get<ChannelModel>(CHANNEL).query(Q.where('team_id', teamId)).fetch();
+};
+
+export const queryAllMyChannelIds = (database: Database) => {
+    return database.get<MyChannelModel>(MY_CHANNEL).query().fetchIds();
 };
 
 export const queryMyChannel = async (database: Database, channelId: string) => {
     try {
-        const member = await database.get(MY_CHANNEL).find(channelId) as MyChannelModel;
+        const member = await database.get<MyChannelModel>(MY_CHANNEL).find(channelId);
         return member;
     } catch {
         return undefined;

@@ -73,7 +73,7 @@ const SSO = ({config, extra, launchError, launchType, serverUrl, ssoType, theme}
     };
 
     const doSSOLogin = async (bearerToken: string, csrfToken: string) => {
-        const result: LoginActionResponse = await ssoLogin(serverUrl!, bearerToken, csrfToken);
+        const result: LoginActionResponse = await ssoLogin(serverUrl!, config.DiagnosticId!, bearerToken, csrfToken);
         if (result?.error && result.failed) {
             onLoadEndError(result.error);
             return;

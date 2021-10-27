@@ -79,13 +79,13 @@ public class Database: NSObject {
     }
     
     public func generateId() -> String {
-        let alphabet = "0123456789abcdefghijklmnopqrstuvwxyz"
+        let alphabet = Array("0123456789abcdefghijklmnopqrstuvwxyz")
         let alphabetLenght = alphabet.count
         let idLenght = 16
         var id = ""
-        
+
         for _ in 1...(idLenght / 2) {
-            let random = floor(drand48() * Double(alphabetLenght) * Double(alphabetLenght))
+            let random = floor(Double.random(in: 0..<1) * Double(alphabetLenght) * Double(alphabetLenght))
             let firstIndex = Int(floor(random / Double(alphabetLenght)))
             let lastIndex = Int(random) % alphabetLenght
             id += String(alphabet[firstIndex])
@@ -98,8 +98,9 @@ public class Database: NSObject {
     public func getOnlyServerUrl() throws -> String {
         let db = try Connection(DEFAULT_DB_PATH)
         let url = Expression<String>("url")
+        let identifier = Expression<String>("identifier")
         let lastActiveAt = Expression<Int64>("last_active_at")
-        let query = serversTable.select(url).filter(lastActiveAt > 0)
+        let query = serversTable.select(url).filter(lastActiveAt > 0 && identifier != "")
         
         var serverUrl: String?
         for result in try db.prepare(query) {
@@ -112,6 +113,22 @@ public class Database: NSObject {
         
         if (serverUrl != nil) {
             return serverUrl!
+        }
+    
+        throw DatabaseError.NoResults(query.asSQL())
+    }
+    
+    public func getServerUrlForServer(_ id: String) throws -> String {
+        let db = try Connection(DEFAULT_DB_PATH)
+        let url = Expression<String>("url")
+        let identifier = Expression<String>("identifier")
+        let query = serversTable.select(url).filter(identifier == id)
+        
+        if let server = try db.pluck(query) {
+            let serverUrl: String? = try server.get(url)
+            if (serverUrl != nil) {
+                return serverUrl!
+            }
         }
     
         throw DatabaseError.NoResults(query.asSQL())

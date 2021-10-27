@@ -6,7 +6,6 @@ import LokiJSAdapter from '@nozbe/watermelondb/adapters/lokijs';
 import logger from '@nozbe/watermelondb/utils/common/logger';
 import {DeviceEventEmitter, Platform} from 'react-native';
 import {FileSystem} from 'react-native-unimodules';
-import urlParse from 'url-parse';
 
 import {MIGRATION_EVENTS, MM_TABLES} from '@constants/database';
 import AppDatabaseMigrations from '@database/migration/app';
@@ -22,7 +21,7 @@ import AppDataOperator from '@database/operator/app_data_operator';
 import ServerDataOperator from '@database/operator/server_data_operator';
 import {schema as appSchema} from '@database/schema/app';
 import {serverSchema} from '@database/schema/server';
-import {queryActiveServer, queryServer} from '@queries/app/servers';
+import {queryActiveServer, queryServer, queryServerByIdentifier} from '@queries/app/servers';
 import {DatabaseType} from '@typings/database/enums';
 import {deleteIOSDatabase} from '@utils/mattermost_managed';
 import {hashCode} from '@utils/security';
@@ -96,7 +95,7 @@ class DatabaseManager {
     };
 
     public createServerDatabase = async ({config}: CreateServerDatabaseArgs): Promise<ServerDatabase|undefined> => {
-        const {dbName, displayName, serverUrl} = config;
+        const {dbName, displayName, identifier, serverUrl} = config;
 
         if (serverUrl) {
             try {
@@ -111,6 +110,7 @@ class DatabaseManager {
                 await this.addServerToAppDatabase({
                     databaseFilePath,
                     displayName: displayName || dbName,
+                    identifier,
                     serverUrl,
                 });
 
@@ -139,29 +139,55 @@ class DatabaseManager {
         });
     };
 
-    private addServerToAppDatabase = async ({databaseFilePath, displayName, serverUrl}: RegisterServerDatabaseArgs): Promise<void> => {
+    private addServerToAppDatabase = async ({databaseFilePath, displayName, identifier = '', serverUrl}: RegisterServerDatabaseArgs): Promise<void> => {
         try {
-            const isServerPresent = await this.isServerPresent(serverUrl);
+            const appDatabase = this.appDatabase?.database;
+            if (appDatabase) {
+                const isServerPresent = await this.isServerPresent(serverUrl);
 
-            if (this.appDatabase?.database && !isServerPresent) {
-                const appDatabase = this.appDatabase.database;
-                await appDatabase.write(async () => {
-                    const serversCollection = appDatabase.collections.get(SERVERS);
-                    await serversCollection.create((server: ServersModel) => {
-                        server.dbPath = databaseFilePath;
-                        server.displayName = displayName;
-                        server.mentionCount = 0;
-                        server.unreadCount = 0;
-                        server.url = serverUrl;
-                        server.isSecured = urlParse(serverUrl).protocol === 'https';
-                        server.lastActiveAt = 0;
+                if (!isServerPresent) {
+                    await appDatabase.write(async () => {
+                        const serversCollection = appDatabase.collections.get(SERVERS);
+                        await serversCollection.create((server: ServersModel) => {
+                            server.dbPath = databaseFilePath;
+                            server.displayName = displayName;
+                            server.url = serverUrl;
+                            server.identifier = identifier;
+                            server.lastActiveAt = 0;
+                        });
                     });
-                });
+                } else if (identifier) {
+                    await this.updateServerIdentifier(serverUrl, identifier);
+                }
             }
         } catch (e) {
             // do nothing
         }
     };
+
+    public updateServerIdentifier = async (serverUrl: string, identifier: string) => {
+        const appDatabase = this.appDatabase?.database;
+        if (appDatabase) {
+            const server = await queryServer(appDatabase, serverUrl);
+            await appDatabase.write(async () => {
+                await server.update((record) => {
+                    record.identifier = identifier;
+                });
+            });
+        }
+    }
+
+    public updateServerDisplayName = async (serverUrl: string, displayName: string) => {
+        const appDatabase = this.appDatabase?.database;
+        if (appDatabase) {
+            const server = await queryServer(appDatabase, serverUrl);
+            await appDatabase.write(async () => {
+                await server.update((record) => {
+                    record.displayName = displayName;
+                });
+            });
+        }
+    }
 
     private isServerPresent = async (serverUrl: string): Promise<boolean> => {
         if (this.appDatabase?.database) {
@@ -180,6 +206,16 @@ class DatabaseManager {
         }
 
         return null;
+    }
+
+    public getServerUrlFromIdentifier = async (identifier: string): Promise<string|undefined> => {
+        const database = this.appDatabase?.database;
+        if (database) {
+            const server = await queryServerByIdentifier(database, identifier);
+            return server?.url;
+        }
+
+        return undefined;
     }
 
     public getActiveServerDatabase = async (): Promise<Database|undefined> => {
@@ -216,6 +252,7 @@ class DatabaseManager {
                 database.write(async () => {
                     await server.update((record) => {
                         record.lastActiveAt = 0;
+                        record.identifier = '';
                     });
                 });
 
