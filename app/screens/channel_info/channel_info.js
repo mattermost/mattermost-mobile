@@ -92,6 +92,11 @@ export default class ChannelInfo extends PureComponent {
         dismissModal();
     };
 
+    startCallHandler = (channelId) => {
+        this.props.actions.joinCall(channelId);
+        this.close();
+    }
+
     toggleCalls = () => {
         if (this.props.isCallsEnabled) {
             this.props.actions.disableChannelCalls(this.props.currentChannel.id);
@@ -178,10 +183,7 @@ export default class ChannelInfo extends PureComponent {
                             testID='channel_info.start_call.action'
                             theme={theme}
                             currentChannelId={currentChannel.id}
-                            joinCall={(channelId) => {
-                                this.props.actions.joinCall(channelId);
-                                this.close();
-                            }}
+                            joinCall={this.startCallHandler}
                             canStartCall={isCallsEnabled}
                         />
                         <EnableDisableCalls
