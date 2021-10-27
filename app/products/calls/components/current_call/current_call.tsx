@@ -75,7 +75,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             overflow: 'hidden',
         },
         muted: {
-            background: 'transparent',
+            backgroundColor: 'transparent',
         },
         expandIcon: {
             color: theme.sidebarText,
