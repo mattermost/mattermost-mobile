@@ -54,18 +54,27 @@ describe('CallScreen', () => {
         },
         teammateNameDisplay: Preferences.DISPLAY_PREFER_NICKNAME,
         screenShareURL: '',
-        isLandscape: false,
     };
 
+    beforeEach(() => {
+        jest.doMock('react-native/Libraries/Utilities/useWindowDimensions', () => ({
+            default: jest.fn().mockReturnValue({width: 800, height: 400}),
+        }));
+    });
+
+    afterEach(() => {
+        jest.resetModules();
+    });
+
     test('should show controls in landscape view on click the users list', () => {
-        const props = {...baseProps, call: {...baseProps.call, screenOn: false}, isLandscape: true};
+        const props = {...baseProps, call: {...baseProps.call, screenOn: false}};
         const wrapper = shallow(<CallScreen {...props}/>);
         wrapper.find({testID: 'users-list'}).simulate('press');
         expect(wrapper.getElement()).toMatchSnapshot();
     });
 
     test('should show controls in landscape view on click the screen share', () => {
-        const props = {...baseProps, call: {...baseProps.call, screenOn: true}, screenShareURL: 'screen-share-url', isLandscape: true};
+        const props = {...baseProps, call: {...baseProps.call, screenOn: true}, screenShareURL: 'screen-share-url'};
         const wrapper = shallow(<CallScreen {...props}/>);
         wrapper.find({testID: 'screen-share-container'}).simulate('press');
         expect(wrapper.getElement()).toMatchSnapshot();
@@ -75,10 +84,18 @@ describe('CallScreen', () => {
         describe(orientation, () => {
             beforeEach(() => {
                 if (orientation === 'Landscape') {
-                    baseProps.isLandscape = true;
+                    jest.doMock('react-native/Libraries/Utilities/useWindowDimensions', () => ({
+                        default: jest.fn().mockReturnValue({width: 800, height: 400}),
+                    }));
                 } else {
-                    baseProps.isLandscape = false;
+                    jest.doMock('react-native/Libraries/Utilities/useWindowDimensions', () => ({
+                        default: jest.fn().mockReturnValue({width: 400, height: 800}),
+                    }));
                 }
+            });
+
+            afterEach(() => {
+                jest.resetModules();
             });
 
             test('should match snapshot', () => {

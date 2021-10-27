@@ -7,7 +7,6 @@ import {getTheme, getTeammateNameDisplaySetting} from '@mm-redux/selectors/entit
 import {getCurrentUserId} from '@mm-redux/selectors/entities/users';
 import {muteMyself, unmuteMyself, leaveCall} from '@mmproducts/calls//store/actions/calls';
 import {getCurrentCall, getScreenShareURL} from '@mmproducts/calls/store/selectors/calls';
-import {isLandscape} from '@selectors/device';
 
 import CallScreen from './call_screen';
 
@@ -23,7 +22,6 @@ function mapStateToProps(state: GlobalState) {
         users: state.entities.users.profiles,
         currentParticipant: currentCall && currentCall.participants[currentUserId],
         screenShareURL: getScreenShareURL(state),
-        isLandscape: isLandscape(state),
     };
 }
 

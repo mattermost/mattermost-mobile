@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React, {useEffect, useCallback, useState} from 'react';
-import {Keyboard, View, Text, Platform, Pressable, SafeAreaView, ScrollView} from 'react-native';
+import {Keyboard, View, Text, Platform, Pressable, SafeAreaView, ScrollView, useWindowDimensions} from 'react-native';
 import {RTCView} from 'react-native-webrtc2';
 
 import {showModalOverCurrentContext, mergeNavigationOptions, popTopScreen, goToScreen} from '@actions/navigation';
@@ -32,7 +32,6 @@ type Props = {
     currentParticipant: CallParticipant;
     teammateNameDisplay: string;
     screenShareURL: string;
-    isLandscape: boolean;
 }
 
 const getStyleSheet = makeStyleSheetFromTheme((props: any) => {
@@ -208,10 +207,12 @@ const CallScreen = (props: Props) => {
     if (!props.call) {
         return null;
     }
+    const {width, height} = useWindowDimensions();
+    const isLandscape = width > height;
 
     const [showControlsInLandscape, setShowControlsInLandscape] = useState(false);
 
-    const style = getStyleSheet({...props, showControlsInLandscape});
+    const style = getStyleSheet({...props, showControlsInLandscape, isLandscape});
     useEffect(() => {
         mergeNavigationOptions('Call', {
             layout: {
@@ -271,7 +272,7 @@ const CallScreen = (props: Props) => {
         );
     }
     let usersList = null;
-    if (!props.call.screenOn || !props.isLandscape) {
+    if (!props.call.screenOn || !isLandscape) {
         usersList = (
             <ScrollView
                 alwaysBounceVertical={false}
@@ -326,7 +327,7 @@ const CallScreen = (props: Props) => {
                 {usersList}
                 {screenShareView}
                 <View style={style.buttons}>
-                    {!props.isLandscape &&
+                    {!isLandscape &&
                         <Pressable
                             testID='mute-unmute'
                             style={style.mute}
@@ -420,7 +421,7 @@ const CallScreen = (props: Props) => {
                                 defaultMessage='More'
                             />
                         </Pressable>
-                        {props.isLandscape &&
+                        {isLandscape &&
                             <Pressable
                                 testID='mute-unmute'
                                 style={style.button}
