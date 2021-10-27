@@ -40,6 +40,9 @@ export default class MyChannelModel extends Model {
     /** roles : The user's privileges on this channel */
     @field('roles') roles!: string;
 
+    /** viewed_at : The timestamp showing when the user's last opened this channel (this is used for the new line message indicator) */
+    @field('viewed_at') viewedAt!: number;
+
     /** channel : The relation pointing to the CHANNEL table */
     @immutableRelation(CHANNEL, 'id') channel!: Relation<ChannelModel>;
 }

@@ -231,7 +231,7 @@ const Server = ({componentId, extra, launchType, launchError}: ServerProps) => {
             return;
         }
 
-        const data = await fetchConfigAndLicense(serverUrl);
+        const data = await fetchConfigAndLicense(serverUrl, true);
         if (data.error) {
             setUrlError(defaultServerUrlMessage);
             setButtonDisabled(true);

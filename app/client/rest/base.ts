@@ -44,6 +44,13 @@ export default class ClientBase {
         }
     }
 
+    getAbsoluteUrl(baseUrl?: string) {
+        if (typeof baseUrl !== 'string' || !baseUrl.startsWith('/')) {
+            return baseUrl;
+        }
+        return this.apiClient.baseUrl + baseUrl;
+    }
+
     getRequestHeaders(requestMethod: string) {
         const headers = {...this.requestHeaders};
 

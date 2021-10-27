@@ -13,6 +13,7 @@ import {CustomStatusDuration, CST} from '@constants/custom_status';
 import {useTheme} from '@context/theme';
 import {preventDoubleTap} from '@utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
+import {getTimezone} from '@utils/user';
 
 import DateTimePicker from './date_time_selector';
 
@@ -130,9 +131,9 @@ const ClearAfterMenuItem = ({currentUser, duration, expiryTime = '', handleItemC
             </TouchableOpacity>
             {showDateTimePicker && (
                 <DateTimePicker
-                    currentUser={currentUser}
-                    theme={theme}
                     handleChange={handleCustomExpiresAtChange}
+                    theme={theme}
+                    timezone={getTimezone(currentUser.timezone)}
                 />
             )}
         </View>

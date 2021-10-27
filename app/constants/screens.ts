@@ -11,6 +11,7 @@ export const CUSTOM_STATUS = 'CustomStatus';
 export const FORGOT_PASSWORD = 'ForgotPassword';
 export const HOME = 'Home';
 export const INTEGRATION_SELECTOR = 'IntegrationSelector';
+export const IN_APP_NOTIFICATION = 'InAppNotification';
 export const LOGIN = 'Login';
 export const LOGIN_OPTIONS = 'LoginOptions';
 export const MAIN_SIDEBAR = 'MainSidebar';
@@ -33,6 +34,7 @@ export default {
     FORGOT_PASSWORD,
     HOME,
     INTEGRATION_SELECTOR,
+    IN_APP_NOTIFICATION,
     LOGIN,
     LOGIN_OPTIONS,
     MAIN_SIDEBAR,

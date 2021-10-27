@@ -19,6 +19,8 @@ describe('*** Database Manager tests ***', () => {
     const serverUrls = ['https://appv1.mattermost.com', 'https://appv2.mattermost.com'];
     beforeAll(async () => {
         await DatabaseManager.init(serverUrls);
+        await DatabaseManager.updateServerIdentifier(serverUrls[0], 'appv1');
+        await DatabaseManager.updateServerIdentifier(serverUrls[1], 'appv2');
     });
 
     it('=> should return a default database', async () => {
@@ -37,8 +39,9 @@ describe('*** Database Manager tests ***', () => {
 
         const connection1 = await DatabaseManager!.createServerDatabase({
             config: {
-                dbName: 'community mattermost',
-                serverUrl: 'https://appv1.mattermost.com',
+                dbName: 'appv3 mattermost',
+                serverUrl: 'https://appv3.mattermost.com',
+                identifier: 'appv3',
             },
         });
 
@@ -83,5 +86,12 @@ describe('*** Database Manager tests ***', () => {
         // Removing database for appv1 connection
         const activeServerUrl = await DatabaseManager.getActiveServerUrl();
         expect(activeServerUrl).toEqual(serverUrls[1]);
+    });
+
+    it('=> should return appv3 server url from the servers table of App database', async () => {
+        expect.assertions(1);
+
+        const serverUrl = await DatabaseManager.getServerUrlFromIdentifier('appv3');
+        expect(serverUrl).toBe('https://appv3.mattermost.com');
     });
 });

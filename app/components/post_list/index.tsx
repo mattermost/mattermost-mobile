@@ -5,7 +5,7 @@ import {Q} from '@nozbe/watermelondb';
 import {withDatabase} from '@nozbe/watermelondb/DatabaseProvider';
 import withObservables from '@nozbe/with-observables';
 import React, {ReactElement, useCallback} from 'react';
-import {DeviceEventEmitter, FlatList, Platform, RefreshControl, StyleSheet, ViewToken} from 'react-native';
+import {AppStateStatus, DeviceEventEmitter, FlatList, Platform, RefreshControl, StyleSheet, ViewToken} from 'react-native';
 import {of as of$} from 'rxjs';
 import {switchMap} from 'rxjs/operators';
 
@@ -19,6 +19,7 @@ import {useTheme} from '@context/theme';
 import {getPreferenceAsBool} from '@helpers/api/preference';
 import {emptyFunction} from '@utils/general';
 import {getDateForDateLine, isCombinedUserActivityPost, isDateLine, isStartOfNewMessages, preparePostList} from '@utils/post_list';
+import {getTimezone} from '@utils/user';
 
 import type {WithDatabaseArgs} from '@typings/database/database';
 import type MyChannelModel from '@typings/database/models/servers/my_channel';
@@ -36,7 +37,7 @@ type RefreshProps = {
 }
 
 type Props = {
-    currentTimezone: UserTimezone | null;
+    currentTimezone: string | null;
     currentUsername: string;
     isTimezoneEnabled: boolean;
     lastViewedAt: number;
@@ -142,7 +143,7 @@ const PostList = ({currentTimezone, currentUsername, isTimezoneEnabled, lastView
                         date={getDateForDateLine(item)}
                         theme={theme}
                         style={style.scale}
-                        timezone={currentTimezone}
+                        timezone={isTimezoneEnabled ? currentTimezone : null}
                     />
                 );
             }
@@ -214,36 +215,35 @@ const PostList = ({currentTimezone, currentUsername, isTimezoneEnabled, lastView
                 keyExtractor={(item) => (typeof item === 'string' ? item : item.id)}
                 style={{flex: 1}}
                 contentContainerStyle={{paddingTop: 5}}
-                initialNumToRender={25}
-                maxToRenderPerBatch={25}
+                initialNumToRender={10}
+                maxToRenderPerBatch={10}
                 removeClippedSubviews={true}
                 onViewableItemsChanged={onViewableItemsChanged}
                 viewabilityConfig={VIEWABILITY_CONFIG}
-                windowSize={30}
                 scrollEventThrottle={60}
             />
         </PostListRefreshControl>
     );
 };
 
-const withPosts = withObservables(['channelId'], ({database, channelId}: {channelId: string} & WithDatabaseArgs) => {
+const withPosts = withObservables(['channelId', 'forceQueryAfterAppState'], ({database, channelId}: {channelId: string; forceQueryAfterAppState: AppStateStatus} & WithDatabaseArgs) => {
     const currentUser = database.get<SystemModel>(SYSTEM).findAndObserve(SYSTEM_IDENTIFIERS.CURRENT_USER_ID).pipe(
         switchMap((currentUserId) => database.get<UserModel>(USER).findAndObserve(currentUserId.value)),
     );
 
     return {
-        currentTimezone: currentUser.pipe((switchMap((user) => of$(user.timezone)))),
+        currentTimezone: currentUser.pipe((switchMap((user) => of$(getTimezone(user.timezone))))),
         currentUsername: currentUser.pipe((switchMap((user) => of$(user.username)))),
         isTimezoneEnabled: database.get<SystemModel>(SYSTEM).findAndObserve(SYSTEM_IDENTIFIERS.CONFIG).pipe(
             switchMap((config) => of$(config.value.ExperimentalTimezone === 'true')),
         ),
         lastViewedAt: database.get<MyChannelModel>(MY_CHANNEL).findAndObserve(channelId).pipe(
-            switchMap((myChannel) => of$(myChannel.lastViewedAt)),
+            switchMap((myChannel) => of$(myChannel.viewedAt)),
         ),
         posts: database.get<PostsInChannelModel>(POSTS_IN_CHANNEL).query(
             Q.where('channel_id', channelId),
             Q.experimentalSortBy('latest', Q.desc),
-        ).observe().pipe(
+        ).observeWithColumns(['earliest', 'latest']).pipe(
             switchMap((postsInChannel) => {
                 if (!postsInChannel.length) {
                     return of$([]);
@@ -269,4 +269,4 @@ const withPosts = withObservables(['channelId'], ({database, channelId}: {channe
     };
 });
 
-export default withDatabase(withPosts(React.memo(PostList)));
+export default withDatabase(withPosts(PostList));

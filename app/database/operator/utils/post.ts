@@ -50,7 +50,7 @@ export const createPostsChain = ({order, posts, previousPostId = ''}: ChainPosts
         }
 
         return result;
-    }, [] as Post[]);
+    }, [] as Post[]).reverse();
 };
 
 export const getPostListEdges = (posts: Post[]) => {

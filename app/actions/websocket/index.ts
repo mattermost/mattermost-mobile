@@ -3,7 +3,7 @@
 
 import {DeviceEventEmitter} from 'react-native';
 
-import {fetchMyChannelsForTeam} from '@actions/remote/channel';
+import {fetchMissingSidebarInfo, fetchMyChannelsForTeam} from '@actions/remote/channel';
 import {fetchPostsSince} from '@actions/remote/post';
 import {fetchMyPreferences} from '@actions/remote/preference';
 import {fetchRoles} from '@actions/remote/role';
@@ -11,13 +11,18 @@ import {fetchConfigAndLicense} from '@actions/remote/systems';
 import {fetchAllTeams, fetchMyTeams} from '@actions/remote/team';
 import {fetchMe, updateAllUsersSinceLastDisconnect} from '@actions/remote/user';
 import Events from '@app/constants/events';
-import {WebsocketEvents} from '@constants';
+import {General, WebsocketEvents} from '@constants';
 import {SYSTEM_IDENTIFIERS} from '@constants/database';
 import DatabaseManager from '@database/manager';
+import {getTeammateNameDisplaySetting} from '@helpers/api/preference';
+import {prepareMyChannelsForTeam} from '@queries/servers/channel';
 import {queryCommonSystemValues, queryConfig, queryWebSocketLastDisconnected} from '@queries/servers/system';
+import {queryCurrentUser} from '@queries/servers/user';
 
 import {handleChannelDeletedEvent, handleUserRemovedEvent} from './channel';
 import {handleLeaveTeamEvent} from './teams';
+
+import type {Model} from '@nozbe/watermelondb';
 
 export async function handleFirstConnect(serverUrl: string) {
     const database = DatabaseManager.serverDatabases[serverUrl]?.database;
@@ -64,7 +69,7 @@ async function doReconnect(serverUrl: string) {
         return;
     }
 
-    const {currentUserId, currentTeamId, currentChannelId} = await queryCommonSystemValues(database.database);
+    const system = await queryCommonSystemValues(database.database);
     const lastDisconnectedAt = await queryWebSocketLastDisconnected(database.database);
 
     // TODO consider fetch only and batch all the results.
@@ -72,16 +77,42 @@ async function doReconnect(serverUrl: string) {
     fetchMyPreferences(serverUrl);
     const {config} = await fetchConfigAndLicense(serverUrl);
     const {memberships: teamMemberships, error: teamMembershipsError} = await fetchMyTeams(serverUrl);
-
+    const {currentChannelId, currentUserId, currentTeamId, license} = system;
     const currentTeamMembership = teamMemberships?.find((tm) => tm.team_id === currentTeamId && tm.delete_at === 0);
 
     let channelMemberships: ChannelMembership[] | undefined;
     if (currentTeamMembership) {
-        const {memberships, channels, error} = await fetchMyChannelsForTeam(serverUrl, currentTeamMembership.team_id, false, lastDisconnectedAt);
+        const {memberships, channels, error} = await fetchMyChannelsForTeam(serverUrl, currentTeamMembership.team_id, true, lastDisconnectedAt, true);
         if (error) {
             DeviceEventEmitter.emit(Events.TEAM_LOAD_ERROR, serverUrl, error);
             return;
         }
+        const currentUser = await queryCurrentUser(database.database);
+        const preferences = currentUser ? (await currentUser.preferences.fetch()) : [];
+        const teammateDisplayNameSetting = getTeammateNameDisplaySetting(preferences || [], system.config, license);
+        const directChannels = channels?.filter((c) => c.type === General.DM_CHANNEL || c.type === General.GM_CHANNEL);
+        if (directChannels?.length) {
+            await fetchMissingSidebarInfo(serverUrl, directChannels, currentUser?.locale, teammateDisplayNameSetting, currentUserId, true);
+        }
+
+        const modelPromises: Array<Promise<Model[]>> = [];
+        const prepare = await prepareMyChannelsForTeam(database.operator, currentTeamMembership.team_id, channels!, memberships!);
+        if (prepare) {
+            modelPromises.push(...prepare);
+        }
+        if (modelPromises.length) {
+            const models = await Promise.all(modelPromises);
+            const flattenedModels = models.flat();
+            if (flattenedModels?.length > 0) {
+                try {
+                    await database.operator.batchRecords(flattenedModels);
+                } catch {
+                    // eslint-disable-next-line no-console
+                    console.log('FAILED TO BATCH CHANNELS');
+                }
+            }
+        }
+
         channelMemberships = memberships;
 
         if (currentChannelId) {

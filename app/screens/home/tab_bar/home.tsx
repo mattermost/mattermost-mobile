@@ -3,13 +3,14 @@
 
 import {Q} from '@nozbe/watermelondb';
 import React, {useEffect, useState} from 'react';
-import {Platform, View} from 'react-native';
+import {StyleSheet, View} from 'react-native';
 
 import Badge from '@components/badge';
 import CompassIcon from '@components/compass_icon';
 import {MM_TABLES} from '@constants/database';
+import {BOTTOM_TAB_ICON_SIZE} from '@constants/view';
 import DatabaseManager from '@database/manager';
-import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
+import {changeOpacity} from '@utils/theme';
 
 import type ServersModel from '@typings/database/models/app/servers';
 import type MyChannelModel from '@typings/database/models/servers/my_channel';
@@ -33,29 +34,25 @@ const {SERVERS} = MM_TABLES.APP;
 const {CHANNEL, MY_CHANNEL} = MM_TABLES.SERVER;
 const subscriptions: Map<string, UnreadSubscription> = new Map();
 
-const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
+const style = StyleSheet.create({
     unread: {
-        left: 16,
-        top: 1,
-        borderColor: theme.centerChannelBg,
-        borderWidth: 2,
-        paddingHorizontal: 0,
+        left: 19,
+        top: 4,
     },
-    mentions: {
-        fontSize: 10,
-        fontFamily: 'OpenSans-Semibold',
-        lineHeight: Platform.select({android: 15, ios: 12.6}),
-        borderColor: theme.centerChannelBg,
-        borderWidth: 2,
-        minWidth: 18,
-        height: 16,
+    mentionsOneDigit: {
+        left: 12,
     },
-}));
+    mentionsTwoDigits: {
+        left: 13,
+    },
+    mentionsThreeDigits: {
+        left: 10,
+    },
+});
 
 const Home = ({isFocused, theme}: Props) => {
     const db = DatabaseManager.appDatabase?.database;
     const [total, setTotal] = useState<UnreadMessages>({mentions: 0, messages: 0});
-    const style = getStyleSheet(theme);
 
     const updateTotal = () => {
         let messages = 0;
@@ -128,30 +125,33 @@ const Home = ({isFocused, theme}: Props) => {
     }, []);
 
     let unreadStyle;
-    let text: string | number = '';
-    let size = 16;
     if (total.mentions) {
-        text = total.mentions > 99 ? '99+' : total.mentions;
-        unreadStyle = style.mentions;
+        unreadStyle = style.mentionsOneDigit;
+        if (total.mentions > 9) {
+            unreadStyle = style.mentionsTwoDigits;
+        } else if (total.mentions > 99) {
+            unreadStyle = style.mentionsThreeDigits;
+        }
     } else if (total.messages) {
         unreadStyle = style.unread;
-        size = 12;
     }
 
     return (
         <View>
             <CompassIcon
-                size={28}
+                size={BOTTOM_TAB_ICON_SIZE}
                 name='home-variant-outline'
                 color={isFocused ? theme.buttonBg : changeOpacity(theme.centerChannelColor, 0.48)}
             />
             <Badge
-                style={[unreadStyle]}
+                backgroundColor={theme.buttonBg}
+                borderColor={theme.centerChannelBg}
+                color={theme.buttonColor}
+                style={unreadStyle}
                 visible={!isFocused && Boolean(unreadStyle)}
-                size={size}
-            >
-                {text}
-            </Badge>
+                type='Small'
+                value={total.mentions || (total.messages * -1)}
+            />
         </View>
     );
 };

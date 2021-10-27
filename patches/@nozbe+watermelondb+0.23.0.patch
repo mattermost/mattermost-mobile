@@ -11,10 +11,18 @@ index bb8f49a..1036aca 100644
      jsi?: boolean
    }
 diff --git a/node_modules/@nozbe/watermelondb/native/android/src/main/java/com/nozbe/watermelondb/Database.kt b/node_modules/@nozbe/watermelondb/native/android/src/main/java/com/nozbe/watermelondb/Database.kt
-index 802f137..640b08c 100644
+index 802f137..785239e 100644
 --- a/node_modules/@nozbe/watermelondb/native/android/src/main/java/com/nozbe/watermelondb/Database.kt
 +++ b/node_modules/@nozbe/watermelondb/native/android/src/main/java/com/nozbe/watermelondb/Database.kt
-@@ -18,6 +18,18 @@ class Database(private val name: String, private val context: Context) {
+@@ -11,17 +11,35 @@ import java.io.File
+ class Database(private val name: String, private val context: Context) {
+ 
+     private val db: SQLiteDatabase by lazy {
+-        SQLiteDatabase.openOrCreateDatabase(
++        SQLiteDatabase.openDatabase(
+                 // TODO: This SUCKS. Seems like Android doesn't like sqlite `?mode=memory&cache=shared` mode. To avoid random breakages, save the file to /tmp, but this is slow.
+                 // NOTE: This is because Android system SQLite is not compiled with SQLITE_USE_URI=1
+                 // issue `PRAGMA cache=shared` query after connection when needed
                  if (name == ":memory:" || name.contains("mode=memory")) {
                      context.cacheDir.delete()
                      File(context.cacheDir, name).path
@@ -26,10 +34,21 @@ index 802f137..640b08c 100644
 +                    val truePath = name.substringAfterLast("file://").substringBeforeLast("/")
 +
 +                    // Creates the directory
-+                    val fileObj = File(truePath, "databases")
-+                    fileObj.mkdir()
++                    if (!truePath.contains("databases")) {
++                        val fileObj = File(truePath, "databases")
++                        fileObj.mkdir()
 +
-+                    File("${truePath}/databases", dbName).path
++                        File("${truePath}/databases", dbName).path
++                    } else {
++                        File(truePath, dbName).path
++                    }
                  } else
                      // On some systems there is some kind of lock on `/databases` folder ¯\_(ツ)_/¯
                      context.getDatabasePath("$name.db").path.replace("/databases", ""),
+-                null)
++                null,
++                SQLiteDatabase.CREATE_IF_NECESSARY or SQLiteDatabase.ENABLE_WRITE_AHEAD_LOGGING,
++        )
+     }
+ 
+     var userVersion: Int
