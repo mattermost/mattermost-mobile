@@ -53,7 +53,6 @@ const Server = ({componentId, extra, launchType, launchError}: ServerProps) => {
         defaultMessage: 'Did not find a server for this notification',
     }) : undefined;
     const [error, setError] = useState<Partial<ClientErrorProps>|string|undefined>(initialError);
-
     const [url, setUrl] = useState<string>('');
     const [displayName, setDisplayName] = useState<string>('');
     const [urlError, setUrlError] = useState<string | undefined>(undefined);
@@ -249,11 +248,11 @@ const Server = ({componentId, extra, launchType, launchError}: ServerProps) => {
         }
     }, [urlError]);
 
-    const handleUrlTextChanged = useCallback((id: string, text: string) => {
+    const handleUrlTextChanged = useCallback((_: string, text: string) => {
         setUrl(text);
     }, []);
 
-    const handleDisplayNameTextChanged = useCallback((id: string, text: string) => {
+    const handleDisplayNameTextChanged = useCallback((_: string, text: string) => {
         setDisplayName(text);
     }, []);
 
@@ -312,21 +311,23 @@ const Server = ({componentId, extra, launchType, launchError}: ServerProps) => {
             >
                 <StatusBar barStyle={barStyle}/>
                 <View style={styles.formContainer}>
-                    <FormattedText
-                        style={styles.welcomeText}
-                        id='mobile.components.select_server_view.msg_welcome'
-                        defaultMessage='Welcome'
-                    />
-                    <FormattedText
-                        style={styles.connectText}
-                        id='mobile.components.select_server_view.msg_connect'
-                        defaultMessage='Let’s Connect to a Server'
-                    />
-                    <FormattedText
-                        style={styles.descriptionText}
-                        id='mobile.components.select_server_view.msg_description'
-                        defaultMessage="A Server is your team's communication hub which is accessed through a unique URL"
-                    />
+                    <View>
+                        <FormattedText
+                            style={styles.welcomeText}
+                            id='mobile.components.select_server_view.msg_welcome'
+                            defaultMessage='Welcome'
+                        />
+                        <FormattedText
+                            style={styles.connectText}
+                            id='mobile.components.select_server_view.msg_connect'
+                            defaultMessage='Let’s Connect to a Server'
+                        />
+                        <FormattedText
+                            style={styles.descriptionText}
+                            id='mobile.components.select_server_view.msg_description'
+                            defaultMessage="A Server is your team's communication hub which is accessed through a unique URL"
+                        />
+                    </View>
                     <TextSetting
                         id='select_server.server_url.input'
                         testID='select_server.server_url.input'
@@ -364,13 +365,15 @@ const Server = ({componentId, extra, launchType, launchError}: ServerProps) => {
                             style={buttonTextStyle}
                         />
                     </Button>
-                    {Boolean(error) &&
-                    <ErrorText
-                        testID='select_server.error.text'
-                        error={error!}
-                        theme={theme}
-                    />
-                    }
+                    <View>
+                        {Boolean(error) &&
+                        <ErrorText
+                            testID='select_server.error.text'
+                            error={error!}
+                            theme={theme}
+                        />
+                        }
+                    </View>
                 </View>
                 <AppVersion textStyle={styles.appInfo}/>
             </KeyboardAvoidingView>
