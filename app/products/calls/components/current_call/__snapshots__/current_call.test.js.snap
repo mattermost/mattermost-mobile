@@ -102,19 +102,24 @@ exports[`CurrentCall should match snapshot muted 1`] = `
         name="microphone-off"
         size={24}
         style={
-          Object {
-            "backgroundColor": "transparent",
-            "borderRadius": 4,
-            "color": "#ffffff",
-            "height": 42,
-            "justifyContent": "center",
-            "margin": 4,
-            "overflow": "hidden",
-            "padding": 9,
-            "textAlign": "center",
-            "textAlignVertical": "center",
-            "width": 42,
-          }
+          Array [
+            Object {
+              "backgroundColor": "#3DB887",
+              "borderRadius": 4,
+              "color": "#ffffff",
+              "height": 42,
+              "justifyContent": "center",
+              "margin": 4,
+              "overflow": "hidden",
+              "padding": 9,
+              "textAlign": "center",
+              "textAlignVertical": "center",
+              "width": 42,
+            },
+            Object {
+              "backgroundColor": "transparent",
+            },
+          ]
         }
       />
     </TouchableOpacity>
@@ -224,19 +229,22 @@ exports[`CurrentCall should match snapshot unmuted 1`] = `
         name="microphone"
         size={24}
         style={
-          Object {
-            "backgroundColor": "#3DB887",
-            "borderRadius": 4,
-            "color": "#ffffff",
-            "height": 42,
-            "justifyContent": "center",
-            "margin": 4,
-            "overflow": "hidden",
-            "padding": 9,
-            "textAlign": "center",
-            "textAlignVertical": "center",
-            "width": 42,
-          }
+          Array [
+            Object {
+              "backgroundColor": "#3DB887",
+              "borderRadius": 4,
+              "color": "#ffffff",
+              "height": 42,
+              "justifyContent": "center",
+              "margin": 4,
+              "overflow": "hidden",
+              "padding": 9,
+              "textAlign": "center",
+              "textAlignVertical": "center",
+              "width": 42,
+            },
+            undefined,
+          ]
         }
       />
     </TouchableOpacity>
