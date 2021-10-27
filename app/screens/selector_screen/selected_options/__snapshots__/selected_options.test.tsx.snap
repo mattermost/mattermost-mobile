@@ -1,0 +1,142 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`SelectedOptions should match snapshot 1`] = `
+<ScrollView
+  style={
+    Object {
+      "flexGrow": 0,
+      "marginBottom": 5,
+      "marginLeft": 5,
+      "maxHeight": 100,
+    }
+  }
+>
+  <View
+    style={
+      Object {
+        "alignItems": "flex-start",
+        "flexDirection": "row",
+        "flexWrap": "wrap",
+      }
+    }
+  >
+    <SelectedOption
+      dataSource=""
+      onRemove={[MockFunction]}
+      option={
+        Object {
+          "text": "text1",
+          "value": "value1",
+        }
+      }
+      theme={
+        Object {
+          "awayIndicator": "#ffbc1f",
+          "buttonBg": "#1c58d9",
+          "buttonColor": "#ffffff",
+          "centerChannelBg": "#ffffff",
+          "centerChannelColor": "#3f4350",
+          "codeTheme": "github",
+          "dndIndicator": "#d24b4e",
+          "errorTextColor": "#d24b4e",
+          "linkColor": "#386fe5",
+          "mentionBg": "#ffffff",
+          "mentionColor": "#1e325c",
+          "mentionHighlightBg": "#ffd470",
+          "mentionHighlightLink": "#1b1d22",
+          "newMessageSeparator": "#cc8f00",
+          "onlineIndicator": "#3db887",
+          "sidebarBg": "#1e325c",
+          "sidebarHeaderBg": "#192a4d",
+          "sidebarHeaderTextColor": "#ffffff",
+          "sidebarTeamBarBg": "#14213e",
+          "sidebarText": "#ffffff",
+          "sidebarTextActiveBorder": "#5d89ea",
+          "sidebarTextActiveColor": "#ffffff",
+          "sidebarTextHoverBg": "#28427b",
+          "sidebarUnreadText": "#ffffff",
+          "type": "Denim",
+        }
+      }
+    />
+    <SelectedOption
+      dataSource=""
+      onRemove={[MockFunction]}
+      option={
+        Object {
+          "text": "text2",
+          "value": "value2",
+        }
+      }
+      theme={
+        Object {
+          "awayIndicator": "#ffbc1f",
+          "buttonBg": "#1c58d9",
+          "buttonColor": "#ffffff",
+          "centerChannelBg": "#ffffff",
+          "centerChannelColor": "#3f4350",
+          "codeTheme": "github",
+          "dndIndicator": "#d24b4e",
+          "errorTextColor": "#d24b4e",
+          "linkColor": "#386fe5",
+          "mentionBg": "#ffffff",
+          "mentionColor": "#1e325c",
+          "mentionHighlightBg": "#ffd470",
+          "mentionHighlightLink": "#1b1d22",
+          "newMessageSeparator": "#cc8f00",
+          "onlineIndicator": "#3db887",
+          "sidebarBg": "#1e325c",
+          "sidebarHeaderBg": "#192a4d",
+          "sidebarHeaderTextColor": "#ffffff",
+          "sidebarTeamBarBg": "#14213e",
+          "sidebarText": "#ffffff",
+          "sidebarTextActiveBorder": "#5d89ea",
+          "sidebarTextActiveColor": "#ffffff",
+          "sidebarTextHoverBg": "#28427b",
+          "sidebarUnreadText": "#ffffff",
+          "type": "Denim",
+        }
+      }
+    />
+    <SelectedOption
+      dataSource=""
+      onRemove={[MockFunction]}
+      option={
+        Object {
+          "text": "text3",
+          "value": "value3",
+        }
+      }
+      theme={
+        Object {
+          "awayIndicator": "#ffbc1f",
+          "buttonBg": "#1c58d9",
+          "buttonColor": "#ffffff",
+          "centerChannelBg": "#ffffff",
+          "centerChannelColor": "#3f4350",
+          "codeTheme": "github",
+          "dndIndicator": "#d24b4e",
+          "errorTextColor": "#d24b4e",
+          "linkColor": "#386fe5",
+          "mentionBg": "#ffffff",
+          "mentionColor": "#1e325c",
+          "mentionHighlightBg": "#ffd470",
+          "mentionHighlightLink": "#1b1d22",
+          "newMessageSeparator": "#cc8f00",
+          "onlineIndicator": "#3db887",
+          "sidebarBg": "#1e325c",
+          "sidebarHeaderBg": "#192a4d",
+          "sidebarHeaderTextColor": "#ffffff",
+          "sidebarTeamBarBg": "#14213e",
+          "sidebarText": "#ffffff",
+          "sidebarTextActiveBorder": "#5d89ea",
+          "sidebarTextActiveColor": "#ffffff",
+          "sidebarTextHoverBg": "#28427b",
+          "sidebarUnreadText": "#ffffff",
+          "type": "Denim",
+        }
+      }
+    />
+  </View>
+</ScrollView>
+`;

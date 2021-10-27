@@ -52,33 +52,35 @@ export default class ChannelListRow extends React.PureComponent {
         }
 
         return (
-            <CustomListRow
-                id={this.props.id}
-                onPress={this.props.onPress ? this.onPress : null}
-                enabled={this.props.enabled}
-                selectable={this.props.selectable}
-                selected={this.props.selected}
-                testID={testID}
-            >
-                <View
-                    style={style.container}
-                    testID={itemTestID}
+            <View style={style.outerContainer}>
+                <CustomListRow
+                    id={this.props.id}
+                    onPress={this.props.onPress ? this.onPress : null}
+                    enabled={this.props.enabled}
+                    selectable={this.props.selectable}
+                    selected={this.props.selected}
+                    testID={testID}
                 >
-                    <View style={style.titleContainer}>
-                        <CompassIcon
-                            name={icon}
-                            style={style.icon}
-                        />
-                        <Text
-                            style={style.displayName}
-                            testID={channelDisplayNameTestID}
-                        >
-                            {this.props.channel.display_name}
-                        </Text>
+                    <View
+                        style={style.container}
+                        testID={itemTestID}
+                    >
+                        <View style={style.titleContainer}>
+                            <CompassIcon
+                                name={icon}
+                                style={style.icon}
+                            />
+                            <Text
+                                style={style.displayName}
+                                testID={channelDisplayNameTestID}
+                            >
+                                {this.props.channel.display_name}
+                            </Text>
+                        </View>
+                        {purpose}
                     </View>
-                    {purpose}
-                </View>
-            </CustomListRow>
+                </CustomListRow>
+            </View>
         );
     }
 }
@@ -101,7 +103,12 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
         container: {
             flex: 1,
             flexDirection: 'column',
+        },
+        outerContainer: {
+            flex: 1,
+            flexDirection: 'row',
             paddingHorizontal: 15,
+            overflow: 'hidden',
         },
         purpose: {
             marginTop: 7,
