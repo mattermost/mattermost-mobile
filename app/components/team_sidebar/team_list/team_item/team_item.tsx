@@ -85,6 +85,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
         },
         containerSelected: {
             borderWidth: 3,
+            borderRadius: 12,
             borderColor: theme.sidebarTextActiveBorder,
         },
         unread: {
