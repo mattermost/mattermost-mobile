@@ -498,7 +498,7 @@ exports[`PostDraft Should render the DraftInput 1`] = `
             >
               <Icon
                 color="rgba(63,67,80,0.64)"
-                name="file-document-outline"
+                name="file-text-outline"
                 size={24}
               />
             </View>
