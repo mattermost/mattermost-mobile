@@ -51,8 +51,8 @@ const ChannelListScreen = (props: ChannelProps) => {
 
     let tabletSidebarStyle;
     if (isTablet) {
-        const {TABLET, TEAM_SIDEBAR_WIDTH} = ViewConstants;
-        tabletSidebarStyle = {maxWidth: (TABLET.SIDEBAR_WIDTH - TEAM_SIDEBAR_WIDTH)};
+        const {TABLET_SIDEBAR_WIDTH, TEAM_SIDEBAR_WIDTH} = ViewConstants;
+        tabletSidebarStyle = {maxWidth: (TABLET_SIDEBAR_WIDTH - TEAM_SIDEBAR_WIDTH)};
     }
 
     const animated = useAnimatedStyle(() => {

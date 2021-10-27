@@ -7,13 +7,12 @@ import nock from 'nock';
 
 import Config from '@assets/config.json';
 import {Client} from '@client/rest';
-import GENERAL_CONSTANTS from '@constants/general';
 import DatabaseManager from '@database/manager';
 import {prepareCommonSystemValues} from '@queries/servers/system';
 import {generateId} from '@utils/general';
 
 const PASSWORD = 'password1';
-const DEFAULT_LOCALE = GENERAL_CONSTANTS.DEFAULT_LOCALE;
+const DEFAULT_LOCALE = 'en';
 
 class TestHelper {
     constructor() {

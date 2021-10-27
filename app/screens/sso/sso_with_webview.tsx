@@ -16,7 +16,7 @@ import {
 import urlParse from 'url-parse';
 
 import Loading from '@components/loading';
-import {SSO} from '@constants';
+import {Sso} from '@constants';
 import {popTopScreen} from '@screens/navigation';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
@@ -192,7 +192,7 @@ const SSOWithWebView = ({completeUrlPath, doSSOLogin, loginError, loginUrl, serv
         const parsed = urlParse(url);
 
         let isLastRedirect = url.includes(completeUrlPath);
-        if (ssoType === SSO.SAML) {
+        if (ssoType === Sso.SAML) {
             isLastRedirect = isLastRedirect && !parsed.query;
         }
 
@@ -203,7 +203,7 @@ const SSOWithWebView = ({completeUrlPath, doSSOLogin, loginError, loginUrl, serv
 
     const renderWebView = () => {
         if (shouldRenderWebView) {
-            const userAgent = ssoType === SSO.GOOGLE ? 'Mozilla/5.0 (Linux; Android 10; Android SDK built for x86 Build/LMY48X) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/81.0.4044.117 Mobile Safari/608.2.11' : undefined;
+            const userAgent = ssoType === Sso.GOOGLE ? 'Mozilla/5.0 (Linux; Android 10; Android SDK built for x86 Build/LMY48X) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/81.0.4044.117 Mobile Safari/608.2.11' : undefined;
             return (
                 <WebView
                     automaticallyAdjustContentInsets={false}

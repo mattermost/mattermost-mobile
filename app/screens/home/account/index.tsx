@@ -73,8 +73,8 @@ const AccountScreen = ({currentUser, enableCustomUserStatuses, customStatusExpir
     const isTablet = useIsTablet();
     let tabletSidebarStyle;
     if (isTablet) {
-        const {TABLET} = ViewConstants;
-        tabletSidebarStyle = {maxWidth: TABLET.SIDEBAR_WIDTH};
+        const {TABLET_SIDEBAR_WIDTH} = ViewConstants;
+        tabletSidebarStyle = {maxWidth: TABLET_SIDEBAR_WIDTH};
     }
 
     const params = route.params! as {direction: string};
