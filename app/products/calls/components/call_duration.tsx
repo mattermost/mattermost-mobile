@@ -3,9 +3,9 @@
 
 import moment from 'moment-timezone';
 import React, {useEffect, useState} from 'react';
-import {Text, TextProps, StyleProp, TextStyle} from 'react-native';
+import {Text, StyleProp, TextStyle} from 'react-native';
 
-type CallDurationProps = TextProps & {
+type CallDurationProps = {
     style: StyleProp<TextStyle>;
     value: number;
     updateIntervalInSeconds: number;
