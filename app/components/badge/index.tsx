@@ -2,37 +2,30 @@
 // See LICENSE.txt for license information.
 
 import * as React from 'react';
-import {Animated, StyleProp, StyleSheet, TextStyle} from 'react-native';
+import {Animated, Platform, StyleProp, StyleSheet, TextStyle} from 'react-native';
 
 import {useTheme} from '@context/theme';
 
 type Props = {
+    backgroundColor?: string;
+    borderColor: string;
+    color?: string;
+    style?: Animated.WithAnimatedValue<StyleProp<TextStyle>>;
+    type?: 'Normal' | 'Small';
 
-  /**
-   * Whether the badge is visible
-   */
-  visible: boolean;
-
-  /**
-   * Content of the `Badge`.
-   */
-  children?: string | number;
-
-  /**
-   * Size of the `Badge`.
-   */
-  size?: number;
-
-  /**
-   * Style object for the tab bar container.
-   */
-  style?: Animated.WithAnimatedValue<StyleProp<TextStyle>>;
+    /**
+     * Value of the `Badge` for unread dot use a negative value.
+     */
+    value: number;
+    visible: boolean;
 };
 
 export default function Badge({
+    borderColor,
+    color,
     visible = true,
-    size = 18,
-    children,
+    type = 'Normal',
+    value,
     style,
     ...rest
 }: Props) {
@@ -66,11 +59,33 @@ export default function Badge({
     }
 
     // @ts-expect-error: backgroundColor definitely exists
-    const {backgroundColor = theme.buttonBg, ...restStyle} =
+    const {backgroundColor = rest.backgroundColor || theme.mentionBg, ...restStyle} =
     StyleSheet.flatten(style) || {};
-    const textColor = theme.buttonColor;
+    const textColor = color || theme.mentionColor;
+    let lineHeight = Platform.select({android: 21, ios: 16.5});
+    let fontSize = 12;
+    let size = value < 0 ? 12 : 22;
+    let minWidth = value < 0 ? size : 26;
+    let additionalStyle;
+    if (type === 'Small') {
+        size = value < 0 ? 12 : 20;
+        lineHeight = Platform.select({android: 19, ios: 15});
+        fontSize = 11;
+        minWidth = value < 0 ? size : 24;
+    }
     const borderRadius = size / 2;
-    const fontSize = Math.floor((size * 3) / 4);
+
+    let badge: string = value?.toString();
+    if (value < 0) {
+        badge = '';
+        additionalStyle = {paddingHorizontal: 0};
+    } else if (value < 99) {
+        badge = value.toString();
+        additionalStyle = {paddingHorizontal: 5};
+    } else {
+        badge = '99+';
+        additionalStyle = {paddingLeft: 4, paddingRight: 3};
+    }
 
     return (
         <Animated.Text
@@ -86,20 +101,22 @@ export default function Badge({
                             }),
                         },
                     ],
+                    borderColor,
                     backgroundColor,
                     color: textColor,
                     fontSize,
-                    lineHeight: size - 1,
+                    lineHeight,
+                    minWidth,
                     height: size,
-                    minWidth: size,
                     borderRadius,
                 },
                 styles.container,
+                additionalStyle,
                 restStyle,
             ]}
             {...rest}
         >
-            {children}
+            {badge}
         </Animated.Text>
     );
 }
@@ -113,5 +130,7 @@ const styles = StyleSheet.create({
         textAlign: 'center',
         paddingHorizontal: 4,
         overflow: 'hidden',
+        borderWidth: 2,
+        fontFamily: 'OpenSans-Bold',
     },
 });
