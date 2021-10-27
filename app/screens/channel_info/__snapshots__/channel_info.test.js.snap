@@ -1155,10 +1155,8 @@ exports[`channelInfo should match snapshot on calls features enabled and calls d
           />
           <EnableDisableCalls
             canEnableDisableCalls={true}
-            currentChannelId="1234"
-            disableCalls={[MockFunction]}
-            enableCalls={[MockFunction]}
             enabled={false}
+            onPress={[Function]}
             testID="channel_info.start_call.action"
             theme={
               Object {
@@ -1843,10 +1841,8 @@ exports[`channelInfo should match snapshot on calls features enabled and calls e
           />
           <EnableDisableCalls
             canEnableDisableCalls={true}
-            currentChannelId="1234"
-            disableCalls={[MockFunction]}
-            enableCalls={[MockFunction]}
             enabled={true}
+            onPress={[Function]}
             testID="channel_info.start_call.action"
             theme={
               Object {
@@ -2531,10 +2527,8 @@ exports[`channelInfo should match snapshot on calls features enabled, user is no
           />
           <EnableDisableCalls
             canEnableDisableCalls={false}
-            currentChannelId="1234"
-            disableCalls={[MockFunction]}
-            enableCalls={[MockFunction]}
             enabled={false}
+            onPress={[Function]}
             testID="channel_info.start_call.action"
             theme={
               Object {
