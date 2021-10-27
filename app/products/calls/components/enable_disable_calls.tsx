@@ -37,26 +37,15 @@ const EnableDisableCalls = (props: Props) => {
     return (
         <>
             <Separator theme={theme}/>
-            {enabled &&
-                <ChannelInfoRow
-                    testID={testID}
-                    action={handleEnableDisableCalls}
-                    defaultMessage='Disable Calls'
-                    icon='phone-outline'
-                    textId={t('mobile.channel_info.disable_calls')}
-                    theme={theme}
-                    rightArrow={false}
-                />}
-            {!enabled &&
-                <ChannelInfoRow
-                    testID={testID}
-                    action={handleEnableDisableCalls}
-                    defaultMessage='Enable Calls'
-                    icon='phone-outline'
-                    textId={t('mobile.channel_info.enable_calls')}
-                    theme={theme}
-                    rightArrow={false}
-                />}
+            <ChannelInfoRow
+                testID={testID}
+                action={handleEnableDisableCalls}
+                defaultMessage={enabled ? 'Disable Calls' : 'Enable Calls'}
+                icon='phone-outline'
+                textId={enabled ? t('mobile.channel_info.disable_calls') : t('mobile.channel_info.enable_calls')}
+                theme={theme}
+                rightArrow={false}
+            />
         </>
     );
 };
