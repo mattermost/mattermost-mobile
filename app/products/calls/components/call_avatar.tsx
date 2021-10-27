@@ -2,11 +2,10 @@
 // See LICENSE.txt for license information.
 
 import React from 'react';
-import {View} from 'react-native';
+import {View, StyleSheet} from 'react-native';
 
 import CompassIcon from '@components/compass_icon';
 import ProfilePicture from '@components/profile_picture';
-import {makeStyleSheetFromTheme} from '@utils/theme';
 
 type Props = {
     userId: string;
@@ -15,10 +14,10 @@ type Props = {
     size?: 'm' | 'l';
 }
 
-const getStyleSheet = makeStyleSheetFromTheme((props: Props) => {
+const getStyleSheet = (props: Props) => {
     const baseSize = props.size === 'm' || !props.size ? 40 : 72;
 
-    return {
+    return StyleSheet.create({
         pictureHalo: {
             backgroundColor: 'rgba(255,255,255,' + (0.16 * props.volume) + ')',
             height: baseSize + 16,
@@ -55,8 +54,8 @@ const getStyleSheet = makeStyleSheetFromTheme((props: Props) => {
             textAlignVertical: 'center',
             overflow: 'hidden',
         },
-    };
-});
+    });
+};
 
 const CallAvatar = (props: Props) => {
     const style = getStyleSheet(props);
