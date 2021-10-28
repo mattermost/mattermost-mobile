@@ -5,7 +5,7 @@ import React from 'react';
 import {useIntl} from 'react-intl';
 import {View} from 'react-native';
 
-import TextSetting from '@components/widgets/text_settings';
+import TextSetting from '@components/field';
 import {t} from '@i18n';
 import {HOLDERS} from '@screens/edit_profile/constants';
 

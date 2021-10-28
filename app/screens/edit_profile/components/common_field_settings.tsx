@@ -4,7 +4,7 @@
 import React from 'react';
 import {useIntl} from 'react-intl';
 
-import TextSetting from '@components/widgets/text_settings';
+import TextSetting from '@components/field';
 import {HOLDERS} from '@screens/edit_profile/constants';
 
 type CommonFieldSettingsProps = {

@@ -3,7 +3,7 @@
 
 import React, {memo, useCallback} from 'react';
 import {useIntl} from 'react-intl';
-import {View, Platform} from 'react-native';
+import {View, Platform, ViewStyle} from 'react-native';
 
 import FloatingTextInput from '@components/floating_text_input_label';
 import {useTheme} from '@context/theme';
@@ -17,10 +17,11 @@ export interface IntlText {
     defaultMessage: string;
 }
 
-type TextSettingProps = {
+type FieldProps = {
+    containerStyle?: ViewStyle;
     disabled?: boolean;
     disabledText?: string;
-    errorText?: string;
+    error?: string;
     helpText?: string | number;
     id: string;
     keyboardType?: 'default' | 'number-pad' | 'decimal-pad' | 'numeric' | 'email-address' | 'phone-pad' | 'url';
@@ -31,27 +32,30 @@ type TextSettingProps = {
     onBlur?: (id: string) => void;
     optional?: boolean;
     secureTextEntry?: boolean;
+    subContainerStyle?: ViewStyle;
     testID: string;
     value: string;
 };
 
-const TextSetting = ({
+const Field = ({
+    containerStyle,
     disabled = false,
     disabledText,
-    errorText,
+    error,
     helpText,
     id,
     keyboardType = 'default',
     label,
     maxLength,
     multiline = false,
+    onBlur,
     onChange,
     optional = false,
     secureTextEntry = false,
+    subContainerStyle,
     testID,
     value,
-    onBlur,
-}: TextSettingProps) => {
+}: FieldProps) => {
     const theme = useTheme();
     const intl = useIntl();
 
@@ -78,7 +82,7 @@ const TextSetting = ({
         style.viewContainer,
     ];
 
-    if (errorText) {
+    if (error) {
         viewContainerStyle.push({
             marginBottom: 20,
         });
@@ -87,15 +91,15 @@ const TextSetting = ({
     return (
         <View
             testID={testID}
-            style={viewContainerStyle}
+            style={[viewContainerStyle, containerStyle]}
         >
-            <View style={style.subContainer} >
+            <View style={[style.subContainer, subContainerStyle]} >
                 <FloatingTextInput
                     autoCapitalize='none'
                     autoCorrect={false}
                     disableFullscreenUI={true}
                     editable={!disabled}
-                    error={errorText}
+                    error={error}
                     keyboardAppearance={getKeyboardAppearanceFromTheme(theme)}
                     keyboardType={keyboard}
                     label={formattedLabel}
@@ -141,15 +145,4 @@ const getStyleSheet = makeStyleSheetFromTheme(() => {
         },
     };
 });
-
-TextSetting.validTypes = [
-    'input',
-    'textarea',
-    'number',
-    'email',
-    'tel',
-    'url',
-    'password',
-];
-
-export default memo(TextSetting);
+export default memo(Field);
