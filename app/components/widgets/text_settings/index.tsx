@@ -6,7 +6,6 @@ import {useIntl} from 'react-intl';
 import {View, Platform, ViewStyle} from 'react-native';
 
 import FloatingTextInput from '@components/floating_text_input_label';
-import {useTheme} from '@context/theme';
 import {makeStyleSheetFromTheme, getKeyboardAppearanceFromTheme} from '@utils/theme';
 
 export interface IntlText {
@@ -29,6 +28,7 @@ type TextSettingProps = {
     optional?: boolean;
     secureTextEntry?: boolean;
     testID: string;
+    theme: Theme;
     value: string;
 };
 
@@ -46,10 +46,10 @@ const TextSetting = ({
     optional = false,
     secureTextEntry = false,
     testID,
+    theme,
     value,
     onBlur,
 }: TextSettingProps) => {
-    const theme = useTheme();
     const intl = useIntl();
 
     const onChangeText = useCallback((text: string) => {

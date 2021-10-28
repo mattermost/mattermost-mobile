@@ -4,19 +4,21 @@
 /* eslint-disable max-lines */
 
 import merge from 'deepmerge';
-import {Appearance, DeviceEventEmitter, NativeModules, Platform} from 'react-native';
+import {Appearance, DeviceEventEmitter, NativeModules, StatusBar, Platform} from 'react-native';
 import {Navigation, Options, OptionsModalPresentationStyle} from 'react-native-navigation';
+import tinyColor from 'tinycolor2';
 
 import CompassIcon from '@components/compass_icon';
 import {Device, Preferences, Screens} from '@constants';
 import NavigationConstants from '@constants/navigation';
 import EphemeralStore from '@store/ephemeral_store';
-import {changeOpacity} from '@utils/theme';
+import {changeOpacity, setNavigatorStyles} from '@utils/theme';
 
 import type {LaunchProps} from '@typings/launch';
 
 const {MattermostManaged} = NativeModules;
 const isRunningInSplitView = MattermostManaged.isRunningInSplitView;
+const appearanceControlledScreens = [Screens.SERVER, Screens.LOGIN, Screens.LOGIN_OPTIONS, Screens.FORGOT_PASSWORD, Screens.MFA];
 
 Navigation.setDefaultOptions({
     layout: {
@@ -24,9 +26,19 @@ Navigation.setDefaultOptions({
         //@ts-expect-error all not defined in type definition
         orientation: [Device.IS_TABLET ? 'all' : 'portrait'],
     },
-    statusBar: {
-        backgroundColor: 'rgba(20, 33, 62, 0.42)',
-    },
+});
+
+Appearance.addChangeListener(() => {
+    const theme = getThemeFromState();
+    const screens = EphemeralStore.getAllNavigationComponents();
+    if (screens.includes(Screens.SERVER)) {
+        for (const screen of screens) {
+            if (appearanceControlledScreens.includes(screen)) {
+                Navigation.updateProps(screen, {theme});
+                setNavigatorStyles(screen, theme);
+            }
+        }
+    }
 });
 
 function getThemeFromState() {
@@ -41,6 +53,8 @@ function getThemeFromState() {
 
 export function resetToHome(passProps = {}) {
     const theme = getThemeFromState();
+    const isDark = tinyColor(theme.sidebarBg).isDark();
+    StatusBar.setBarStyle(isDark ? 'light-content' : 'dark-content');
 
     EphemeralStore.clearNavigationComponents();
 
@@ -56,6 +70,7 @@ export function resetToHome(passProps = {}) {
                     },
                     statusBar: {
                         visible: true,
+                        backgroundColor: theme.sidebarBg,
                     },
                     topBar: {
                         visible: false,
@@ -80,6 +95,8 @@ export function resetToHome(passProps = {}) {
 
 export function resetToSelectServer(passProps: LaunchProps) {
     const theme = getThemeFromState();
+    const isDark = tinyColor(theme.sidebarBg).isDark();
+    StatusBar.setBarStyle(isDark ? 'light-content' : 'dark-content');
 
     EphemeralStore.clearNavigationComponents();
 
@@ -98,6 +115,7 @@ export function resetToSelectServer(passProps: LaunchProps) {
                 },
                 statusBar: {
                     visible: true,
+                    backgroundColor: theme.sidebarBg,
                 },
                 topBar: {
                     backButton: {
@@ -125,12 +143,16 @@ export function resetToSelectServer(passProps: LaunchProps) {
 
 export function resetToTeams(name: string, title: string, passProps = {}, options = {}) {
     const theme = getThemeFromState();
+    const isDark = tinyColor(theme.sidebarBg).isDark();
+    StatusBar.setBarStyle(isDark ? 'light-content' : 'dark-content');
+
     const defaultOptions = {
         layout: {
             componentBackgroundColor: theme.centerChannelBg,
         },
         statusBar: {
             visible: true,
+            backgroundColor: theme.sidebarBg,
         },
         topBar: {
             visible: true,

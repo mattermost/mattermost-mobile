@@ -9,7 +9,6 @@ import Button from 'react-native-button';
 import {Navigation} from 'react-native-navigation';
 import {ActivityIndicator} from 'react-native-paper';
 import {SafeAreaView} from 'react-native-safe-area-context';
-import {Colors} from 'react-native/Libraries/NewAppScreen';
 
 import {doPing} from '@actions/remote/general';
 import {fetchConfigAndLicense} from '@actions/remote/systems';
@@ -19,7 +18,6 @@ import AppVersion from '@components/app_version';
 import ErrorText from '@components/error_text';
 import TextSetting from '@components/widgets/text_settings';
 import {Screens} from '@constants';
-import {useTheme} from '@context/theme';
 import NetworkManager from '@init/network_manager';
 import {goToScreen} from '@screens/navigation';
 import {DeepLinkWithData, LaunchProps, LaunchType} from '@typings/launch';
@@ -34,14 +32,14 @@ import type ClientError from '@client/rest/error';
 
 interface ServerProps extends LaunchProps {
     componentId: string;
+    theme: Theme;
 }
 
 let cancelPing: undefined | (() => void);
 
-const Server = ({componentId, extra, launchType, launchError}: ServerProps) => {
+const Server = ({componentId, extra, launchType, launchError, theme}: ServerProps) => {
     // TODO: If we have LaunchProps, ensure they get passed along to subsequent screens
     // so that they are eventually accessible in the Channel screen.
-    const theme = useTheme();
     const intl = useIntl();
     const managedConfig = useManagedConfig<ManagedConfig>();
     const [connecting, setConnecting] = useState(false);
@@ -274,7 +272,7 @@ const Server = ({componentId, extra, launchType, launchError}: ServerProps) => {
         <ActivityIndicator
             animating={true}
             size='small'
-            color={Colors.white}
+            color={'white'}
             style={styles.connectingIndicator}
         />
     );
@@ -324,6 +322,7 @@ const Server = ({componentId, extra, launchType, launchError}: ServerProps) => {
                         keyboardType='url'
                         onChange={handleUrlTextChanged}
                         onBlur={onBlurUrl}
+                        theme={theme}
                         value={url}
                     />
                     <TextSetting
@@ -335,6 +334,7 @@ const Server = ({componentId, extra, launchType, launchError}: ServerProps) => {
                             defaultMessage: 'Display Name',
                         })}
                         onChange={handleDisplayNameTextChanged}
+                        theme={theme}
                         value={displayName}
                     />
                     <FormattedText
