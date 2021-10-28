@@ -13,7 +13,7 @@ import {shallowWithIntl} from '@test/intl-test-helper';
 import MoreMessagesButton, {
     MIN_INPUT,
     MAX_INPUT,
-    INDICATOR_BAR_FACTOR,
+    BARS_FACTOR,
     CANCEL_TIMER_DELAY,
 } from './more_messages_button';
 
@@ -296,17 +296,19 @@ describe('MoreMessagesButton', () => {
             expect(Animated.spring).not.toHaveBeenCalledTimes(1);
         });
 
-        it('should animate to MAX_INPUT - INDICATOR_BAR_FACTOR if visible and indicator bar hides', () => {
+        it('should animate to MAX_INPUT - BARS_FACTOR if visible and indicator bar hides', () => {
             instance.buttonVisible = true;
             instance.onIndicatorBarVisible(false);
             expect(Animated.spring).toHaveBeenCalledWith(instance.top, {
-                toValue: MAX_INPUT - INDICATOR_BAR_FACTOR,
+                toValue: MAX_INPUT - BARS_FACTOR,
                 useNativeDriver: true,
             });
         });
 
         it('should animate to MAX_INPUT if visible and indicator becomes visible', () => {
             instance.buttonVisible = true;
+            instance.joinCallBarVisible = true;
+            instance.currentCallBarVisible = true;
             instance.onIndicatorBarVisible(true);
             expect(Animated.spring).toHaveBeenCalledWith(instance.top, {
                 toValue: MAX_INPUT,
@@ -414,13 +416,15 @@ describe('MoreMessagesButton', () => {
             instance.show();
             expect(instance.buttonVisible).toBe(true);
             expect(Animated.spring).toHaveBeenCalledWith(instance.top, {
-                toValue: MAX_INPUT - INDICATOR_BAR_FACTOR,
+                toValue: MAX_INPUT - BARS_FACTOR,
                 useNativeDriver: true,
             });
         });
 
-        it('should account for the indicator bar height when the indicator is visible', () => {
+        it('should account for the indicator bar heights when the indicator is visible', () => {
             instance.indicatorBarVisible = true;
+            instance.joinCallBarVisible = true;
+            instance.currentCallBarVisible = true;
             instance.buttonVisible = false;
             wrapper.setState({moreText: '1 new message'});
             wrapper.setProps({deepLinkURL: null, unreadCount: 1});
@@ -457,13 +461,15 @@ describe('MoreMessagesButton', () => {
             instance.hide();
             expect(instance.buttonVisible).toBe(false);
             expect(Animated.spring).toHaveBeenCalledWith(instance.top, {
-                toValue: MIN_INPUT + INDICATOR_BAR_FACTOR,
+                toValue: MIN_INPUT + BARS_FACTOR,
                 useNativeDriver: true,
             });
         });
 
-        it('should account for the indicator bar height when the indicator is visible', () => {
+        it('should account for the indicator bars heights when the indicator is visible', () => {
             instance.indicatorBarVisible = true;
+            instance.joinCallBarVisible = true;
+            instance.currentCallBarVisible = true;
             instance.buttonVisible = true;
 
             instance.hide();
