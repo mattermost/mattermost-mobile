@@ -50,7 +50,7 @@ export const queryPostsInChannel = (database: Database, channelId: string): Prom
     try {
         return database.get(POSTS_IN_CHANNEL).query(
             Q.where('channel_id', channelId),
-            Q.experimentalSortBy('latest', Q.desc),
+            Q.sortBy('latest', Q.desc),
         ).fetch() as Promise<PostInChannelModel[]>;
     } catch {
         return Promise.resolve([] as PostInChannelModel[]);
@@ -65,7 +65,7 @@ export const queryPostsChunk = (database: Database, channelId: string, earliest:
                 Q.where('create_at', Q.between(earliest, latest)),
                 Q.where('delete_at', Q.eq(0)),
             ),
-            Q.experimentalSortBy('create_at', Q.desc),
+            Q.sortBy('create_at', Q.desc),
         ).fetch() as Promise<PostModel[]>;
     } catch {
         return Promise.resolve([] as PostModel[]);

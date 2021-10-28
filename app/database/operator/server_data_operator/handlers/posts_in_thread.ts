@@ -30,7 +30,7 @@ const PostsInThreadHandler = (superclass: any) => class extends superclass {
             const {firstPost, lastPost} = getPostListEdges(postsMap[rootId]);
             const chunks = (await this.database.get(POSTS_IN_THREAD).query(
                 Q.where('root_id', rootId),
-                Q.experimentalSortBy('latest', Q.desc),
+                Q.sortBy('latest', Q.desc),
             ).fetch()) as PostsInThreadModel[];
 
             if (chunks.length) {

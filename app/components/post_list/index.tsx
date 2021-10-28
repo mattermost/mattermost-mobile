@@ -242,7 +242,7 @@ const withPosts = withObservables(['channelId', 'forceQueryAfterAppState'], ({da
         ),
         posts: database.get<PostsInChannelModel>(POSTS_IN_CHANNEL).query(
             Q.where('channel_id', channelId),
-            Q.experimentalSortBy('latest', Q.desc),
+            Q.sortBy('latest', Q.desc),
         ).observeWithColumns(['earliest', 'latest']).pipe(
             switchMap((postsInChannel) => {
                 if (!postsInChannel.length) {
@@ -256,7 +256,7 @@ const withPosts = withObservables(['channelId', 'forceQueryAfterAppState'], ({da
                         Q.where('channel_id', channelId),
                         Q.where('create_at', Q.between(earliest, latest)),
                     ),
-                    Q.experimentalSortBy('create_at', Q.desc),
+                    Q.sortBy('create_at', Q.desc),
                 ).observe();
             }),
         ),
