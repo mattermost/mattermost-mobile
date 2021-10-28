@@ -3,12 +3,15 @@
 exports[`FloatingCallContainer should match snapshot 1`] = `
 <View
   style={
-    Object {
-      "position": "absolute",
-      "top": 91,
-      "width": "100%",
-      "zIndex": 3,
-    }
+    Array [
+      Object {
+        "position": "absolute",
+        "top": 91,
+        "width": "100%",
+        "zIndex": 9,
+      },
+      undefined,
+    ]
   }
 >
   <Text>
