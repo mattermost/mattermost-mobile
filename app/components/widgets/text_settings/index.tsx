@@ -3,15 +3,11 @@
 
 import React, {memo, useCallback} from 'react';
 import {useIntl} from 'react-intl';
-import {View, Platform} from 'react-native';
+import {View, Platform, ViewStyle} from 'react-native';
 
 import FloatingTextInput from '@components/floating_text_input_label';
 import {useTheme} from '@context/theme';
-import {getMarkdownBlockStyles, getMarkdownTextStyles} from '@utils/markdown';
 import {makeStyleSheetFromTheme, getKeyboardAppearanceFromTheme} from '@utils/theme';
-
-import DisableContent from './components/disabled_content';
-import HelpContent from './components/help_content';
 
 export interface IntlText {
     id: string;
@@ -19,10 +15,10 @@ export interface IntlText {
 }
 
 type TextSettingProps = {
+    containerStyle?: ViewStyle;
+    subContainerStyle?: ViewStyle;
     disabled?: boolean;
-    disabledText?: string;
     errorText?: string;
-    helpText?: string | number;
     id: string;
     keyboardType?: 'default' | 'number-pad' | 'decimal-pad' | 'numeric' | 'email-address' | 'phone-pad' | 'url';
     label: IntlText | string;
@@ -38,9 +34,9 @@ type TextSettingProps = {
 
 const TextSetting = ({
     disabled = false,
-    disabledText,
+    containerStyle,
+    subContainerStyle,
     errorText,
-    helpText,
     id,
     keyboardType = 'default',
     label,
@@ -65,9 +61,6 @@ const TextSetting = ({
     }, []);
 
     const style = getStyleSheet(theme);
-    const textStyles = getMarkdownTextStyles(theme);
-    const blockStyles = getMarkdownBlockStyles(theme);
-
     const keyboard = Platform.OS === 'android' && keyboardType === 'url' ? 'default' : keyboardType;
 
     const labelText = typeof label === 'string' ? label : intl.formatMessage(label);
@@ -88,9 +81,9 @@ const TextSetting = ({
     return (
         <View
             testID={testID}
-            style={viewContainerStyle}
+            style={[viewContainerStyle, containerStyle]}
         >
-            <View style={style.subContainer} >
+            <View style={[style.subContainer, subContainerStyle]} >
                 <FloatingTextInput
                     autoCapitalize='none'
                     autoCorrect={false}
@@ -109,22 +102,6 @@ const TextSetting = ({
                     theme={theme}
                     value={value}
                 />
-                <View>
-                    {disabled && disabledText && (
-                        <DisableContent
-                            blockStyles={blockStyles}
-                            disabledText={disabledText}
-                            textStyles={textStyles}
-                        />
-                    )}
-                    {helpText && (
-                        <HelpContent
-                            blockStyles={blockStyles}
-                            helpText={helpText}
-                            textStyles={textStyles}
-                        />
-                    )}
-                </View>
             </View>
         </View>
     );

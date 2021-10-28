@@ -1,4 +1,4 @@
-// Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
+
 // See LICENSE.txt for license information.
 
 const Preferences: Record<string, any> = {
@@ -176,6 +176,33 @@ const Preferences: Record<string, any> = {
             errorTextColor: '#da6c6e',
             mentionHighlightBg: '#0d6e6e',
             mentionHighlightLink: '#a4f4f4',
+            codeTheme: 'monokai',
+        },
+        midnight: {
+            type: 'Midnight',
+            sidebarBg: '#171717',
+            sidebarText: '#ffffff',
+            sidebarUnreadText: '#ffffff',
+            sidebarTextHoverBg: '#302e30',
+            sidebarTextActiveBorder: '#196caf',
+            sidebarTextActiveColor: '#ffffff',
+            sidebarHeaderBg: '#1f1f1f',
+            sidebarTeamBarBg: '#181818',
+            sidebarHeaderTextColor: '#ffffff',
+            onlineIndicator: '#399fff',
+            awayIndicator: '#c1b966',
+            dndIndicator: '#e81023',
+            mentionBg: '#0177e7',
+            mentionColor: '#ffffff',
+            centerChannelBg: '#1f1f1f',
+            centerChannelColor: '#dddddd',
+            newMessageSeparator: '#cc992d',
+            linkColor: '#0d93ff',
+            buttonBg: '#0177e7',
+            buttonColor: '#ffffff',
+            errorTextColor: '#ff6461',
+            mentionHighlightBg: '#784098',
+            mentionHighlightLink: '#a4ffeb',
             codeTheme: 'monokai',
         },
     } as Record<ThemeKey, Theme>,
