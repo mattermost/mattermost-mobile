@@ -5,7 +5,6 @@ import React from 'react';
 import {View} from 'react-native';
 
 import Markdown from '@components/markdown';
-import {useTheme} from '@context/theme';
 import {MarkdownBlockStyles, MarkdownTextStyles} from '@typings/global/markdown';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
@@ -13,10 +12,10 @@ type DisabledContentProps = {
     blockStyles: MarkdownBlockStyles;
     disabledText: string | number;
     textStyles: MarkdownTextStyles;
+    theme: Theme;
 }
 
-const DisableContent = ({blockStyles, disabledText, textStyles}: DisabledContentProps) => {
-    const theme = useTheme();
+const DisableContent = ({blockStyles, disabledText, textStyles, theme}: DisabledContentProps) => {
     const style = getStyleSheet(theme);
 
     return (

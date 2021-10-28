@@ -5,7 +5,6 @@ import React from 'react';
 import {View} from 'react-native';
 
 import Markdown from '@components/markdown';
-import {useTheme} from '@context/theme';
 import {MarkdownBlockStyles, MarkdownTextStyles} from '@typings/global/markdown';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 
@@ -13,10 +12,10 @@ type HelpContentProps = {
     blockStyles: MarkdownBlockStyles;
     helpText: string | number;
     textStyles: MarkdownTextStyles;
+    theme: Theme;
 };
 
-const HelpContent = ({blockStyles, helpText, textStyles}: HelpContentProps) => {
-    const theme = useTheme();
+const HelpContent = ({blockStyles, helpText, textStyles, theme}: HelpContentProps) => {
     const style = getStyleSheet(theme);
 
     return (

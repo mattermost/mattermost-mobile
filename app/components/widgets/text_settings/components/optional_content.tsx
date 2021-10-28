@@ -5,15 +5,14 @@ import React from 'react';
 import {Text} from 'react-native';
 
 import FormattedText from '@components/formatted_text';
-import {useTheme} from '@context/theme';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 type OptionalContentProps = {
     optional: boolean;
+    theme: Theme;
 }
 
-const OptionalContent = ({optional}: OptionalContentProps) => {
-    const theme = useTheme();
+const OptionalContent = ({optional, theme}: OptionalContentProps) => {
     const style = getStyleSheet(theme);
 
     if (optional) {

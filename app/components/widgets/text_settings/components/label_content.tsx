@@ -6,16 +6,15 @@ import {Text} from 'react-native';
 
 import FormattedText from '@app/components/formatted_text';
 import {IntlText} from '@components/widgets/text_settings';
-import {useTheme} from '@context/theme';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 
 type LabelContentProps = {
     label: IntlText | string;
     testID: string;
+    theme: Theme;
 };
 
-const LabelContent = ({label, testID}: LabelContentProps) => {
-    const theme = useTheme();
+const LabelContent = ({label, testID, theme}: LabelContentProps) => {
     const style = getStyleSheet(theme);
 
     if (typeof label === 'string') {

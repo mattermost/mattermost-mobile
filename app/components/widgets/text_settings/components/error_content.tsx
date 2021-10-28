@@ -5,7 +5,6 @@ import React from 'react';
 import {View} from 'react-native';
 
 import Markdown from '@components/markdown';
-import {useTheme} from '@context/theme';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 
 import type {MarkdownBlockStyles, MarkdownTextStyles} from '@typings/global/markdown';
@@ -14,10 +13,10 @@ type ErrorContentProps = {
     blockStyles: MarkdownBlockStyles;
     errorText: string | number;
     textStyles: MarkdownTextStyles;
+    theme: Theme;
 };
 
-const ErrorContent = ({blockStyles, errorText, textStyles}: ErrorContentProps) => {
-    const theme = useTheme();
+const ErrorContent = ({blockStyles, errorText, textStyles, theme}: ErrorContentProps) => {
     const style = getStyleSheet(theme);
 
     return (
