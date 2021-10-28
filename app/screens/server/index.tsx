@@ -250,6 +250,7 @@ const Server = ({componentId, extra, launchType, launchError}: ServerProps) => {
 
     const handleUrlTextChanged = useCallback((_: string, text: string) => {
         setUrlError(undefined);
+        setError(undefined);
         setUrl(text);
     }, [url]);
 
