@@ -5,7 +5,7 @@ import React from 'react';
 import {useIntl} from 'react-intl';
 import {View} from 'react-native';
 
-import TextSetting from '@components/field';
+import Field from '@components/field';
 import {t} from '@i18n';
 import {HOLDERS} from '@screens/edit_profile/constants';
 
@@ -66,7 +66,7 @@ const EmailSettings = ({currentUser, email, onChange}: EmailSettingsProps) => {
 
     return (
         <View>
-            <TextSetting
+            <Field
                 disabled={true}
                 id='email'
                 label={HOLDERS.email}

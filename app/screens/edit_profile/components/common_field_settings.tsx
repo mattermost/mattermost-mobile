@@ -4,7 +4,7 @@
 import React from 'react';
 import {useIntl} from 'react-intl';
 
-import TextSetting from '@components/field';
+import Field from '@components/field';
 import {HOLDERS} from '@screens/edit_profile/constants';
 
 type CommonFieldSettingsProps = {
@@ -20,7 +20,7 @@ const CommonFieldSettings = ({isDisabled, id, value, onChange, optional, maxLeng
     const intl = useIntl();
 
     return (
-        <TextSetting
+        <Field
             disabled={isDisabled}
             id={id}
             label={HOLDERS[id]}
