@@ -1,14 +1,16 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback} from 'react';
+import React, {useCallback, useEffect} from 'react';
 import {View, Text, TouchableOpacity, Pressable, Platform} from 'react-native';
 import {Options} from 'react-native-navigation';
 
 import {goToScreen} from '@actions/navigation';
 import CompassIcon from '@components/compass_icon';
 import FormattedText from '@components/formatted_text';
+import ViewTypes, {CURRENT_CALL_BAR_HEIGHT} from '@constants/view';
 import {GenericAction} from '@mm-redux/types/actions';
+import EventEmitter from '@mm-redux/utils/event_emitter';
 import {displayUsername} from '@mm-redux/utils/user_utils';
 import CallAvatar from '@mmproducts/calls/components/call_avatar';
 import {makeStyleSheetFromTheme} from '@utils/theme';
@@ -43,7 +45,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             width: '100%',
             borderRadius: 5,
             padding: 4,
-            height: 64,
+            height: CURRENT_CALL_BAR_HEIGHT - 10,
             alignItems: 'center',
         },
         pressable: {
@@ -86,9 +88,12 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
 });
 
 const CurrentCall = (props: Props) => {
-    if (!props.call) {
-        return null;
-    }
+    useEffect(() => {
+        EventEmitter.emit(ViewTypes.CURRENT_CALL_BAR_VISIBLE, Boolean(props.call));
+        return () => {
+            EventEmitter.emit(ViewTypes.CURRENT_CALL_BAR_VISIBLE, Boolean(false));
+        };
+    }, [props.call]);
 
     const goToCallScreen = useCallback(() => {
         const options: Options = {
@@ -114,6 +119,10 @@ const CurrentCall = (props: Props) => {
             props.actions.muteMyself(props.call.channelId);
         }
     }, [props.currentParticipant?.muted]);
+
+    if (!props.call) {
+        return null;
+    }
 
     const style = getStyleSheet(props.theme);
     return (

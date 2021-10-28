@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback} from 'react';
+import React, {useCallback, useEffect} from 'react';
 import {injectIntl, IntlShape} from 'react-intl';
 import {View, Text, Pressable, Alert} from 'react-native';
 
@@ -9,6 +9,8 @@ import Avatars from '@components/avatars';
 import CompassIcon from '@components/compass_icon';
 import FormattedRelativeTime from '@components/formatted_relative_time';
 import FormattedText from '@components/formatted_text';
+import ViewTypes, {JOIN_CALL_BAR_HEIGHT} from '@constants/view';
+import EventEmitter from '@mm-redux/utils/event_emitter';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 import type {Theme} from '@mm-redux/types/theme';
@@ -36,6 +38,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             padding: 5,
             justifyContent: 'center',
             alignItems: 'center',
+            height: JOIN_CALL_BAR_HEIGHT,
         },
         joinCallIcon: {
             color: theme.sidebarText,
@@ -68,15 +71,13 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
 });
 
 const JoinCall = (props: Props) => {
-    if (!props.call) {
-        return null;
-    }
+    useEffect(() => {
+        EventEmitter.emit(ViewTypes.JOIN_CALL_BAR_VISIBLE, Boolean(props.call && !props.alreadyInTheCall));
+        return () => {
+            EventEmitter.emit(ViewTypes.JOIN_CALL_BAR_VISIBLE, Boolean(false));
+        };
+    }, [props.call, props.alreadyInTheCall]);
 
-    if (props.alreadyInTheCall) {
-        return null;
-    }
-
-    const style = getStyleSheet(props.theme);
     const joinHandler = useCallback(() => {
         if (props.confirmToJoin) {
             Alert.alert(
@@ -100,6 +101,16 @@ const JoinCall = (props: Props) => {
             props.actions.joinCall(props.call.channelId);
         }
     }, [props.call, props.confirmToJoin]);
+
+    if (!props.call) {
+        return null;
+    }
+
+    if (props.alreadyInTheCall) {
+        return null;
+    }
+
+    const style = getStyleSheet(props.theme);
 
     return (
         <Pressable
