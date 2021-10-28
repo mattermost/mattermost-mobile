@@ -75,6 +75,7 @@ export default class NotificationSettingsMentionsKeywords extends PureComponent 
                 >
                     <View style={style.inputContainer}>
                         <TextInputWithLocalizedPlaceholder
+                            allowFontScaling={true}
                             ref={this.keywordsRef}
                             value={keywords}
                             blurOnSubmit={true}

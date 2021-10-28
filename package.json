@@ -1,6 +1,6 @@
 {
   "name": "mattermost-mobile",
-  "version": "1.47.0",
+  "version": "1.47.2",
   "description": "Mattermost Mobile with React Native",
   "repository": "git@github.com:mattermost/mattermost-mobile.git",
   "author": "Mattermost, Inc.",
@@ -8,7 +8,7 @@
   "private": true,
   "dependencies": {
     "@babel/runtime": "7.15.4",
-    "@mattermost/react-native-paste-input": "0.2.0",
+    "@mattermost/react-native-paste-input": "0.3.3",
     "@react-native-community/async-storage": "1.12.1",
     "@react-native-community/cameraroll": "4.0.4",
     "@react-native-community/clipboard": "1.5.1",
@@ -131,7 +131,7 @@
     "babel-plugin-module-resolver": "4.1.0",
     "babel-plugin-transform-remove-console": "6.9.4",
     "deep-freeze": "0.0.1",
-    "detox": "18.22.0",
+    "detox": "18.22.2",
     "enzyme": "3.11.0",
     "enzyme-adapter-react-16": "1.15.6",
     "enzyme-to-json": "3.6.2",

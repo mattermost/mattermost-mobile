@@ -4,7 +4,7 @@
 import PropTypes from 'prop-types';
 import React, {PureComponent} from 'react';
 import {intlShape} from 'react-intl';
-import {Alert, AppState, findNodeHandle, Keyboard, NativeModules, Platform} from 'react-native';
+import {Alert, AppState, DeviceEventEmitter, findNodeHandle, Keyboard, NativeModules, Platform} from 'react-native';
 
 import {NavigationTypes} from '@constants';
 import DEVICE from '@constants/device';
@@ -285,6 +285,18 @@ export default class PostInput extends PureComponent {
         }
     }
 
+    onPressIn = () => {
+        if (Platform.OS === 'ios') {
+            DeviceEventEmitter.emit(NavigationTypes.DRAWER, 'locked-closed');
+        }
+    };
+
+    onPressOut = () => {
+        if (Platform.OS === 'ios') {
+            DeviceEventEmitter.emit(NavigationTypes.DRAWER, 'unlocked');
+        }
+    };
+
     render() {
         const {formatMessage} = this.context.intl;
         const {testID, channelDisplayName, screenId, isLandscape, theme} = this.props;
@@ -298,6 +310,7 @@ export default class PostInput extends PureComponent {
 
         return (
             <PasteableTextInput
+                allowFontScaling={true}
                 testID={testID}
                 ref={this.input}
                 disableCopyPaste={this.state.disableCopyAndPaste}
@@ -317,6 +330,8 @@ export default class PostInput extends PureComponent {
                 autoCompleteType='off'
                 keyboardAppearance={getKeyboardAppearanceFromTheme(theme)}
                 screenId={screenId}
+                onPressIn={this.onPressIn}
+                onPressOut={this.onPressOut}
             />
         );
     }

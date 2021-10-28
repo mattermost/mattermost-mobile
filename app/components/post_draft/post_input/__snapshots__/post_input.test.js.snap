@@ -2,6 +2,7 @@
 
 exports[`PostInput should match, full snapshot 1`] = `
 <ForwardRef
+  allowFontScaling={true}
   autoCompleteType="off"
   blurOnSubmit={false}
   disableCopyPaste={false}
@@ -12,6 +13,8 @@ exports[`PostInput should match, full snapshot 1`] = `
   onChangeText={[Function]}
   onEndEditing={[Function]}
   onPaste={[Function]}
+  onPressIn={[Function]}
+  onPressOut={[Function]}
   onSelectionChange={[Function]}
   placeholder="Write to Test Channel"
   placeholderTextColor="rgba(63,67,80,0.5)"

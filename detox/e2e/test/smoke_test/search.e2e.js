@@ -179,7 +179,7 @@ describe('Search', () => {
             channelId: testChannel.id,
             message: firstMessage,
         });
-        [...Array(50).keys()].forEach(async () => {
+        [...Array(10).keys()].forEach(async () => {
             const message = `${Date.now().toString()} ${keyword}`;
             await Post.apiCreatePost({
                 channelId: testChannel.id,
@@ -195,7 +195,7 @@ describe('Search', () => {
 
         // * Verify user can scroll down multiple times until first matching post is seen
         const {searchResultPostItem} = await getSearchResultPostItem(firstPost.post.id, firstMessage);
-        await waitFor(searchResultPostItem).toBeVisible().whileElement(by.id(SearchScreen.testID.searchResultsList)).scroll(1000, 'down');
+        await waitFor(searchResultPostItem).toBeVisible().whileElement(by.id(SearchScreen.testID.searchResultsList)).scroll(500, 'down');
 
         // # Go back to channel
         await SearchScreen.cancel();

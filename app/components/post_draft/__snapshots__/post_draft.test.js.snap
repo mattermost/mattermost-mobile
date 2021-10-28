@@ -286,6 +286,7 @@ exports[`PostDraft Should render the DraftInput 1`] = `
       <View>
         <PasteInput
           accessible={true}
+          allowFontScaling={true}
           autoCapitalize="sentences"
           autoCompleteType="off"
           blurOnSubmit={false}
@@ -303,6 +304,8 @@ exports[`PostDraft Should render the DraftInput 1`] = `
           onEndEditing={[Function]}
           onFocus={[Function]}
           onPaste={[Function]}
+          onPressIn={[Function]}
+          onPressOut={[Function]}
           onResponderGrant={[Function]}
           onResponderMove={[Function]}
           onResponderRelease={[Function]}
