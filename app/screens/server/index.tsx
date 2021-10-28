@@ -6,12 +6,11 @@ import React, {useCallback, useEffect, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
 import {
     ActivityIndicator, EventSubscription, Image, Keyboard, KeyboardAvoidingView,
-    Platform, StatusBar, StatusBarStyle, StyleSheet, TextInput, TouchableWithoutFeedback, View,
+    Platform, StyleSheet, TextInput, TouchableWithoutFeedback, View,
 } from 'react-native';
 import Button from 'react-native-button';
 import {Navigation, NavigationFunctionComponent} from 'react-native-navigation';
 import {SafeAreaView} from 'react-native-safe-area-context';
-import tinyColor from 'tinycolor2';
 
 import {doPing} from '@actions/remote/general';
 import {fetchConfigAndLicense} from '@actions/remote/systems';
@@ -259,13 +258,7 @@ const Server: NavigationFunctionComponent = ({componentId, extra, launchType, la
         );
     }
 
-    const statusColor = tinyColor(theme.centerChannelBg);
     const inputDisabled = managedConfig.allowOtherServers === 'false' || connecting;
-    let barStyle: StatusBarStyle = 'light-content';
-    if (Platform.OS === 'ios' && statusColor.isLight()) {
-        barStyle = 'dark-content';
-    }
-
     const inputStyle = [styles.inputBox];
     if (inputDisabled) {
         inputStyle.push(styles.disabledInput);
@@ -282,7 +275,6 @@ const Server: NavigationFunctionComponent = ({componentId, extra, launchType, la
                 keyboardVerticalOffset={0}
                 enabled={Platform.OS === 'ios'}
             >
-                <StatusBar barStyle={barStyle}/>
                 <TouchableWithoutFeedback
                     onPress={blur}
                     accessible={false}

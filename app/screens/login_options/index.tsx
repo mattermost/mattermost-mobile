@@ -3,7 +3,7 @@
 
 import React from 'react';
 import {useIntl} from 'react-intl';
-import {Image, ScrollView, StatusBar, Text} from 'react-native';
+import {Image, ScrollView, Text} from 'react-native';
 import {NavigationFunctionComponent} from 'react-native-navigation';
 import {SafeAreaView} from 'react-native-safe-area-context';
 
@@ -83,7 +83,6 @@ const LoginOptions: NavigationFunctionComponent = ({config, extra, launchType, l
                 style={styles.container}
                 contentContainerStyle={styles.innerContainer}
             >
-                <StatusBar/>
                 <Image
                     source={require('@assets/images/logo.png')}
                     style={{height: 72, resizeMode: 'contain'}}

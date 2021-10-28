@@ -8,7 +8,7 @@ import {useIntl} from 'react-intl';
 import {of as of$} from 'rxjs';
 import {map, switchMap} from 'rxjs/operators';
 
-import {View} from '@constants';
+import {SupportedServer} from '@constants';
 import {MM_TABLES, SYSTEM_IDENTIFIERS} from '@constants/database';
 import {isMinimumServerVersion} from '@utils/helpers';
 import {unsupportedServer} from '@utils/supported_server';
@@ -32,7 +32,7 @@ const ServerVersion = ({version, roles}: ServerVersionProps) => {
         const serverVersion = version || '';
 
         if (serverVersion) {
-            const {RequiredServer: {MAJOR_VERSION, MIN_VERSION, PATCH_VERSION}} = View;
+            const {MAJOR_VERSION, MIN_VERSION, PATCH_VERSION} = SupportedServer;
             const isSupportedServer = isMinimumServerVersion(serverVersion, MAJOR_VERSION, MIN_VERSION, PATCH_VERSION);
 
             if (!isSupportedServer) {

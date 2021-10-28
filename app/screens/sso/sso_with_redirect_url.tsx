@@ -9,7 +9,7 @@ import urlParse from 'url-parse';
 
 import FormattedText from '@components/formatted_text';
 import Loading from '@components/loading';
-import {REDIRECT_URL_SCHEME, REDIRECT_URL_SCHEME_DEV} from '@constants';
+import {Sso} from '@constants';
 import NetworkManager from '@init/network_manager';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {tryOpenURL} from '@utils/url';
@@ -27,9 +27,9 @@ const SSOWithRedirectURL = ({doSSOLogin, loginError, loginUrl, serverUrl, setLog
     const [error, setError] = useState<string>('');
     const style = getStyleSheet(theme);
     const intl = useIntl();
-    let customUrlScheme = REDIRECT_URL_SCHEME;
+    let customUrlScheme = Sso.REDIRECT_URL_SCHEME;
     if (DeviceInfo.getBundleId && DeviceInfo.getBundleId().includes('rnbeta')) {
-        customUrlScheme = REDIRECT_URL_SCHEME_DEV;
+        customUrlScheme = Sso.REDIRECT_URL_SCHEME_DEV;
     }
 
     const redirectUrl = customUrlScheme + 'callback';

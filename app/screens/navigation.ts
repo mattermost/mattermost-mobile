@@ -4,8 +4,9 @@
 /* eslint-disable max-lines */
 
 import merge from 'deepmerge';
-import {Appearance, DeviceEventEmitter, NativeModules, Platform} from 'react-native';
+import {Appearance, DeviceEventEmitter, NativeModules, StatusBar, Platform} from 'react-native';
 import {Navigation, Options, OptionsModalPresentationStyle} from 'react-native-navigation';
+import tinyColor from 'tinycolor2';
 
 import CompassIcon from '@components/compass_icon';
 import {Device, Preferences, Screens} from '@constants';
@@ -24,9 +25,6 @@ Navigation.setDefaultOptions({
         //@ts-expect-error all not defined in type definition
         orientation: [Device.IS_TABLET ? 'all' : 'portrait'],
     },
-    statusBar: {
-        backgroundColor: 'rgba(20, 33, 62, 0.42)',
-    },
 });
 
 function getThemeFromState() {
@@ -41,6 +39,8 @@ function getThemeFromState() {
 
 export function resetToHome(passProps = {}) {
     const theme = getThemeFromState();
+    const isDark = tinyColor(theme.sidebarBg).isDark();
+    StatusBar.setBarStyle(isDark ? 'light-content' : 'dark-content');
 
     EphemeralStore.clearNavigationComponents();
 
@@ -56,6 +56,7 @@ export function resetToHome(passProps = {}) {
                     },
                     statusBar: {
                         visible: true,
+                        backgroundColor: theme.sidebarBg,
                     },
                     topBar: {
                         visible: false,
@@ -80,6 +81,8 @@ export function resetToHome(passProps = {}) {
 
 export function resetToSelectServer(passProps: LaunchProps) {
     const theme = getThemeFromState();
+    const isDark = tinyColor(theme.sidebarBg).isDark();
+    StatusBar.setBarStyle(isDark ? 'light-content' : 'dark-content');
 
     EphemeralStore.clearNavigationComponents();
 
@@ -98,6 +101,7 @@ export function resetToSelectServer(passProps: LaunchProps) {
                 },
                 statusBar: {
                     visible: true,
+                    backgroundColor: theme.sidebarBg,
                 },
                 topBar: {
                     backButton: {
@@ -125,12 +129,16 @@ export function resetToSelectServer(passProps: LaunchProps) {
 
 export function resetToTeams(name: string, title: string, passProps = {}, options = {}) {
     const theme = getThemeFromState();
+    const isDark = tinyColor(theme.sidebarBg).isDark();
+    StatusBar.setBarStyle(isDark ? 'light-content' : 'dark-content');
+
     const defaultOptions = {
         layout: {
             componentBackgroundColor: theme.centerChannelBg,
         },
         statusBar: {
             visible: true,
+            backgroundColor: theme.sidebarBg,
         },
         topBar: {
             visible: true,

@@ -4,7 +4,7 @@
 import {DeviceEventEmitter} from 'react-native';
 
 import {autoUpdateTimezone, getDeviceTimezone, isTimezoneEnabled} from '@actions/local/timezone';
-import {General, Database} from '@constants';
+import {Database, Events} from '@constants';
 import DatabaseManager from '@database/manager';
 import {getServerCredentials} from '@init/credentials';
 import NetworkManager from '@init/network_manager';
@@ -155,7 +155,7 @@ export const logout = async (serverUrl: string, skipServerLogout = false) => {
         }
     }
 
-    DeviceEventEmitter.emit(General.SERVER_LOGOUT, serverUrl);
+    DeviceEventEmitter.emit(Events.SERVER_LOGOUT, serverUrl);
 };
 
 export const sendPasswordResetEmail = async (serverUrl: string, email: string) => {

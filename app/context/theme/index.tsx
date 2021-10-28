@@ -56,7 +56,13 @@ const ThemeProvider = ({currentTeamId, children, themes}: Props) => {
             }
         }
 
-        return getDefaultThemeByAppearance();
+        const defaultTheme = getDefaultThemeByAppearance();
+        EphemeralStore.theme = defaultTheme;
+        requestAnimationFrame(() => {
+            setNavigationStackStyles(defaultTheme);
+        });
+
+        return defaultTheme;
     };
 
     useEffect(() => {
