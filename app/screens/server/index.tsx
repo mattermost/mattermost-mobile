@@ -4,7 +4,7 @@
 import {useManagedConfig, ManagedConfig} from '@mattermost/react-native-emm';
 import React, {useCallback, useEffect, useState} from 'react';
 import {useIntl} from 'react-intl';
-import {KeyboardAvoidingView, Platform, Text, View} from 'react-native';
+import {KeyboardAvoidingView, Platform, View} from 'react-native';
 import Button from 'react-native-button';
 import {Navigation} from 'react-native-navigation';
 import {ActivityIndicator} from 'react-native-paper';
@@ -29,8 +29,6 @@ import {preventDoubleTap} from '@utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 import {getServerUrlAfterRedirect, isValidUrl, sanitizeUrl} from '@utils/url';
-
-// import ServerSvg from './background_svg';
 
 import type ClientError from '@client/rest/error';
 
@@ -288,12 +286,6 @@ const Server = ({componentId, extra, launchType, launchError}: ServerProps) => {
             style={styles.container}
             key={'server_content'}
         >
-            {/* <View */}
-            {/*     style={styles.serverSvg} */}
-            {/*     key={'server_svg'} */}
-            {/* > */}
-            {/*     <ServerSvg/> */}
-            {/* </View> */}
             <KeyboardAvoidingView
                 behavior='padding'
                 style={styles.flex}
@@ -360,12 +352,11 @@ const Server = ({componentId, extra, launchType, launchError}: ServerProps) => {
                         containerStyle={[styles.connectButton, styleButtonBackground]}
                     >
                         {connecting && buttonIcon}
-                        <Text style={styleButtonText}>{
-                            formatMessage({
-                                id: buttonID,
-                                defaultMessage: buttonText,
-                            })}
-                        </Text>
+                        <FormattedText
+                            style={styleButtonText}
+                            id={buttonID}
+                            defaultMessage={buttonText}
+                        />
                     </Button>
                     <View>
                         {Boolean(error) &&
@@ -395,9 +386,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     flex: {
         flex: 1,
     },
-    serverSvg: {
-        position: 'absolute',
-    },
     formContainer: {
         justifyContent: 'center',
         alignItems: 'center',
@@ -405,7 +393,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     },
     textContainer: {
         width: '84%',
-        marginBottom: 40,
+        marginBottom: 32,
     },
     welcome: {
         marginTop: 12,
@@ -415,13 +403,13 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     connect: {
         width: 270,
         letterSpacing: -1,
-        color: theme.buttonBg,
+        color: theme.mentionColor,
         marginVertical: 12,
         ...typography('Heading', 1000, 'SemiBold'),
     },
     description: {
         color: changeOpacity(theme.centerChannelColor, 0.64),
-        ...typography('Body', 200, 'SemiBold'),
+        ...typography('Body', 200, 'Regular'),
     },
     enterServer: {
         marginBottom: 24,
@@ -430,7 +418,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         color: changeOpacity(theme.centerChannelColor, 0.64),
         marginTop: 8,
         width: '84%',
-        ...typography('Body', 200, 'SemiBold'),
+        ...typography('Body', 200, 'Regular'),
     },
     connectButton: {
         backgroundColor: changeOpacity(theme.centerChannelColor, 0.08),
