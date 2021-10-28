@@ -11,6 +11,7 @@ import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 type Props = {
     heading: string;
     subheading?: string;
+    iconPad?: boolean;
 }
 
 const getStyles = makeStyleSheetFromTheme((theme: Theme) => ({
@@ -22,6 +23,9 @@ const getStyles = makeStyleSheetFromTheme((theme: Theme) => ({
         color: changeOpacity(theme.sidebarText, 0.64),
         ...typography('Heading', 50),
     },
+    iconPad: {
+        marginLeft: 44,
+    },
 }));
 
 const ChannelListHeader = (props: Props) => {
@@ -29,7 +33,7 @@ const ChannelListHeader = (props: Props) => {
     const styles = getStyles(theme);
 
     return (
-        <View>
+        <View style={props.iconPad && styles.iconPad}>
             <Text style={styles.headingStyles}>
                 {props.heading}
             </Text>

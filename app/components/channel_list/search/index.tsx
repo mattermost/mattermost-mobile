@@ -35,6 +35,8 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         color: theme.sidebarText,
         alignItems: 'center',
         alignContent: 'center',
+        marginLeft: 5,
+        marginTop: -2,
     },
 }));
 

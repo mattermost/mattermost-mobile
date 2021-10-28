@@ -199,6 +199,7 @@ exports[`Category List Component should match snapshot 1`] = `
                     },
                     Object {
                       "color": "rgba(255,255,255,0.72)",
+                      "marginTop": 1,
                       "paddingLeft": 12,
                     },
                     undefined,
@@ -243,6 +244,7 @@ exports[`Category List Component should match snapshot 1`] = `
                     },
                     Object {
                       "color": "rgba(255,255,255,0.72)",
+                      "marginTop": 1,
                       "paddingLeft": 12,
                     },
                     Object {
@@ -355,6 +357,7 @@ exports[`Category List Component should match snapshot 1`] = `
                     },
                     Object {
                       "color": "rgba(255,255,255,0.72)",
+                      "marginTop": 1,
                       "paddingLeft": 12,
                     },
                     undefined,
@@ -399,6 +402,7 @@ exports[`Category List Component should match snapshot 1`] = `
                     },
                     Object {
                       "color": "rgba(255,255,255,0.72)",
+                      "marginTop": 1,
                       "paddingLeft": 12,
                     },
                     Object {

@@ -21,6 +21,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         color: changeOpacity(theme.sidebarText, 0.72),
     },
     text: {
+        marginTop: 1,
         color: changeOpacity(theme.sidebarText, 0.72),
         paddingLeft: 12,
     },

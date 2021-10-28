@@ -37,6 +37,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     body: {
         color: theme.sidebarText,
         textAlign: 'center',
+        marginTop: 4,
     },
 }));
 
@@ -53,12 +54,12 @@ const LoadingError = () => {
                 />
             </View>
             <Text style={[typography('Heading', 400), styles.header]}>
-                {'Couldn\'t load Staff'}
+                {'Couldn’t load Staff'}
             </Text>
             <Text style={[typography('Body', 200), styles.body]}>
                 {'There was a problem loading the content for this team.'}
             </Text>
-            <TouchableWithFeedback style={[{marginTop: 20}, buttonBackgroundStyle(theme, 'lg', 'primary', 'inverted')]}>
+            <TouchableWithFeedback style={[{marginTop: 24}, buttonBackgroundStyle(theme, 'lg', 'primary', 'inverted')]}>
                 <Text style={buttonTextStyle(theme, 'lg', 'primary', 'inverted')}>{'Retry'}</Text>
             </TouchableWithFeedback>
         </View>

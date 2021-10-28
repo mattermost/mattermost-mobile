@@ -3,12 +3,15 @@
 exports[`Channels List should match snapshot 1`] = `
 <View
   style={
-    Object {
-      "backgroundColor": "#1e325c",
-      "flex": 1,
-      "paddingHorizontal": 20,
-      "paddingVertical": 10,
-    }
+    Array [
+      Object {
+        "backgroundColor": "#1e325c",
+        "flex": 1,
+        "paddingHorizontal": 20,
+        "paddingVertical": 10,
+      },
+      false,
+    ]
   }
 >
   <View>
@@ -91,6 +94,8 @@ exports[`Channels List should match snapshot 1`] = `
             "color": "#ffffff",
             "flex": 1,
             "height": 40,
+            "marginLeft": 5,
+            "marginTop": -2,
           },
         ]
       }
@@ -109,7 +114,11 @@ exports[`Channels List should match snapshot 1`] = `
             Object {
               "highlight": true,
               "id": "2",
-              "name": "Highlighted!!!",
+              "name": "A Highlighted Channel!!!",
+            },
+            Object {
+              "id": "3",
+              "name": "And a longer channel name.",
             },
           ],
           "id": "1",
@@ -124,11 +133,15 @@ exports[`Channels List should match snapshot 1`] = `
             Object {
               "highlight": true,
               "id": "2",
-              "name": "Highlighted!!!",
+              "name": "A Highlighted Channel!!!",
+            },
+            Object {
+              "id": "3",
+              "name": "And a longer channel name.",
             },
           ],
           "id": "2",
-          "title": "Another cat",
+          "title": "Another Cat",
         },
       ]
     }
@@ -240,7 +253,11 @@ exports[`Channels List should match snapshot 1`] = `
                 Object {
                   "highlight": true,
                   "id": "2",
-                  "name": "Highlighted!!!",
+                  "name": "A Highlighted Channel!!!",
+                },
+                Object {
+                  "id": "3",
+                  "name": "And a longer channel name.",
                 },
               ]
             }
@@ -294,6 +311,7 @@ exports[`Channels List should match snapshot 1`] = `
                       },
                       Object {
                         "color": "rgba(255,255,255,0.72)",
+                        "marginTop": 1,
                         "paddingLeft": 12,
                       },
                       undefined,
@@ -338,6 +356,7 @@ exports[`Channels List should match snapshot 1`] = `
                       },
                       Object {
                         "color": "rgba(255,255,255,0.72)",
+                        "marginTop": 1,
                         "paddingLeft": 12,
                       },
                       Object {
@@ -346,7 +365,52 @@ exports[`Channels List should match snapshot 1`] = `
                     ]
                   }
                 >
-                  Highlighted!!!
+                  A Highlighted Channel!!!
+                </Text>
+              </View>
+            </View>
+            <View
+              onLayout={[Function]}
+              style={null}
+            >
+              <View
+                style={
+                  Object {
+                    "display": "flex",
+                    "flexDirection": "row",
+                    "paddingVertical": 4,
+                  }
+                }
+              >
+                <Icon
+                  name="globe"
+                  style={
+                    Object {
+                      "color": "rgba(255,255,255,0.72)",
+                      "fontSize": 24,
+                      "lineHeight": 28,
+                    }
+                  }
+                />
+                <Text
+                  style={
+                    Array [
+                      Object {
+                        "fontFamily": "OpenSans",
+                        "fontSize": 16,
+                        "fontWeight": "400",
+                        "lineHeight": 24,
+                      },
+                      Object {
+                        "color": "rgba(255,255,255,0.72)",
+                        "marginTop": 1,
+                        "paddingLeft": 12,
+                      },
+                      undefined,
+                    ]
+                  }
+                >
+                  And a longer channel name.
                 </Text>
               </View>
             </View>
@@ -396,7 +460,11 @@ exports[`Channels List should match snapshot 1`] = `
                 Object {
                   "highlight": true,
                   "id": "2",
-                  "name": "Highlighted!!!",
+                  "name": "A Highlighted Channel!!!",
+                },
+                Object {
+                  "id": "3",
+                  "name": "And a longer channel name.",
                 },
               ]
             }
@@ -450,6 +518,7 @@ exports[`Channels List should match snapshot 1`] = `
                       },
                       Object {
                         "color": "rgba(255,255,255,0.72)",
+                        "marginTop": 1,
                         "paddingLeft": 12,
                       },
                       undefined,
@@ -494,6 +563,7 @@ exports[`Channels List should match snapshot 1`] = `
                       },
                       Object {
                         "color": "rgba(255,255,255,0.72)",
+                        "marginTop": 1,
                         "paddingLeft": 12,
                       },
                       Object {
@@ -502,7 +572,52 @@ exports[`Channels List should match snapshot 1`] = `
                     ]
                   }
                 >
-                  Highlighted!!!
+                  A Highlighted Channel!!!
+                </Text>
+              </View>
+            </View>
+            <View
+              onLayout={[Function]}
+              style={null}
+            >
+              <View
+                style={
+                  Object {
+                    "display": "flex",
+                    "flexDirection": "row",
+                    "paddingVertical": 4,
+                  }
+                }
+              >
+                <Icon
+                  name="globe"
+                  style={
+                    Object {
+                      "color": "rgba(255,255,255,0.72)",
+                      "fontSize": 24,
+                      "lineHeight": 28,
+                    }
+                  }
+                />
+                <Text
+                  style={
+                    Array [
+                      Object {
+                        "fontFamily": "OpenSans",
+                        "fontSize": 16,
+                        "fontWeight": "400",
+                        "lineHeight": 24,
+                      },
+                      Object {
+                        "color": "rgba(255,255,255,0.72)",
+                        "marginTop": 1,
+                        "paddingLeft": 12,
+                      },
+                      undefined,
+                    ]
+                  }
+                >
+                  And a longer channel name.
                 </Text>
               </View>
             </View>

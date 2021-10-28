@@ -7,9 +7,10 @@ import {View} from 'react-native';
 import Animated, {useAnimatedStyle, withTiming} from 'react-native-reanimated';
 import {SafeAreaView, useSafeAreaInsets} from 'react-native-safe-area-context';
 
-import ChannelList from '@app/components/channel_list';
+import ChannelList from '@components/channel_list';
+import ServerIcon from '@components/server_icon/server_icon';
 import TeamSidebar from '@components/team_sidebar';
-import {Device /*View as ViewConstants*/} from '@constants';
+import {Device} from '@constants';
 import {useTheme} from '@context/theme';
 import {useSplitView} from '@hooks/device';
 import Channel from '@screens/channel';
@@ -43,19 +44,14 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
 const ChannelListScreen = (props: ChannelProps) => {
     const theme = useTheme();
     const styles = getStyleSheet(theme);
+
     const isSplitView = useSplitView();
     const showTabletLayout = Device.IS_TABLET && !isSplitView;
+
     const route = useRoute();
     const isFocused = useIsFocused();
     const insets = useSafeAreaInsets();
     const params = route.params as {direction: string};
-
-    // @to-do: Tablet Styles!
-    // let tabletSidebarStyle;
-    // if (showTabletLayout) {
-    //     const {TABLET, TEAM_SIDEBAR_WIDTH} = ViewConstants;
-    //     tabletSidebarStyle = {maxWidth: (TABLET.SIDEBAR_WIDTH - TEAM_SIDEBAR_WIDTH)};
-    // }
 
     const animated = useAnimatedStyle(() => {
         if (!isFocused) {
@@ -81,11 +77,12 @@ const ChannelListScreen = (props: ChannelProps) => {
                 style={styles.content}
                 edges={['bottom', 'left', 'right']}
             >
+                <ServerIcon/>
                 <Animated.View
                     style={[styles.content, animated]}
                 >
-                    <TeamSidebar/>
-                    <ChannelList/>
+                    <TeamSidebar iconPad={true}/>
+                    <ChannelList iconPad={false}/>
                     {showTabletLayout &&
                         <Channel {...props}/>
                     }

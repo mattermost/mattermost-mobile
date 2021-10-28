@@ -50,7 +50,7 @@ exports[`Loading Error should match snapshot 1`] = `
       ]
     }
   >
-    Couldn't load Staff
+    Couldn’t load Staff
   </Text>
   <Text
     style={
@@ -63,6 +63,7 @@ exports[`Loading Error should match snapshot 1`] = `
         },
         Object {
           "color": "#ffffff",
+          "marginTop": 4,
           "textAlign": "center",
         },
       ]
@@ -97,7 +98,7 @@ exports[`Loading Error should match snapshot 1`] = `
       style={
         Array [
           Object {
-            "marginTop": 20,
+            "marginTop": 24,
           },
           Array [
             Object {
@@ -105,6 +106,7 @@ exports[`Loading Error should match snapshot 1`] = `
               "borderRadius": 4,
               "flex": 0,
               "justifyContent": "center",
+              "textAlignVertical": "center",
             },
             Object {
               "height": 48,
@@ -122,12 +124,17 @@ exports[`Loading Error should match snapshot 1`] = `
         style={
           Array [
             Object {
+              "alignItems": "center",
               "fontFamily": "OpenSans-SemiBold",
               "fontWeight": "600",
+              "justifyContent": "center",
+              "padding": 1,
+              "textAlignVertical": "center",
             },
             Object {
               "fontSize": 16,
               "lineHeight": 18,
+              "marginTop": 2,
             },
             Object {
               "color": "#1c58d9",

@@ -53,6 +53,8 @@ exports[`Search Field should match snapshot 1`] = `
           "color": "#ffffff",
           "flex": 1,
           "height": 40,
+          "marginLeft": 5,
+          "marginTop": -2,
         },
       ]
     }
