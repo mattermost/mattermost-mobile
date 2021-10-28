@@ -279,7 +279,6 @@ const Server = ({componentId, extra, launchType, launchError}: ServerProps) => {
         />
     );
 
-
     return [
         <SafeAreaView
             testID='select_server.screen'
