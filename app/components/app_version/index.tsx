@@ -12,7 +12,7 @@ const style = StyleSheet.create({
     info: {
         alignItems: 'flex-end',
         justifyContent: 'flex-end',
-        paddingRight: 5,
+        paddingRight: 12,
     },
     version: {
         fontSize: 12,
