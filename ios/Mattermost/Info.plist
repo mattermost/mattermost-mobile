@@ -85,9 +85,6 @@
 	<string>Send voice messages to your Mattermost instance</string>
 	<key>UIAppFonts</key>
 	<array>
-		<string>Metropolis-Light.ttf</string>
-		<string>Metropolis-Regular.ttf</string>
-		<string>Metropolis-SemiBold.ttf</string>
 		<string>OpenSans-Bold.ttf</string>
 		<string>OpenSans-BoldItalic.ttf</string>
 		<string>OpenSans-ExtraBold.ttf</string>
