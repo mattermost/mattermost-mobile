@@ -718,7 +718,7 @@ const Server = ({componentId, extra, launchType, launchError, theme}: ServerProp
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     appInfo: {
-        color: theme.centerChannelColor,
+        color: changeOpacity(theme.centerChannelColor, 0.56),
     },
     container: {
         flex: 1,
