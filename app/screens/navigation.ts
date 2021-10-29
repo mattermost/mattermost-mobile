@@ -32,6 +32,9 @@ Appearance.addChangeListener(() => {
     const theme = getThemeFromState();
     const screens = EphemeralStore.getAllNavigationComponents();
     if (screens.includes(Screens.SERVER)) {
+        const isDark = tinyColor(theme.centerChannelBg).isDark();
+        StatusBar.setBarStyle(isDark ? 'light-content' : 'dark-content');
+
         for (const screen of screens) {
             if (appearanceControlledScreens.includes(screen)) {
                 Navigation.updateProps(screen, {theme});
@@ -95,7 +98,7 @@ export function resetToHome(passProps = {}) {
 
 export function resetToSelectServer(passProps: LaunchProps) {
     const theme = getThemeFromState();
-    const isDark = tinyColor(theme.sidebarBg).isDark();
+    const isDark = tinyColor(theme.centerChannelBg).isDark();
     StatusBar.setBarStyle(isDark ? 'light-content' : 'dark-content');
 
     EphemeralStore.clearNavigationComponents();
