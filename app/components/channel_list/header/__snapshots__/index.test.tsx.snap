@@ -2,19 +2,40 @@
 
 exports[`Channel List Header Component should match snapshot 1`] = `
 <View>
-  <Text
+  <View
     style={
       Object {
-        "color": "#ffffff",
-        "fontFamily": "Metropolis-SemiBold",
-        "fontSize": 28,
-        "fontWeight": "600",
-        "lineHeight": 36,
+        "alignItems": "center",
+        "flexDirection": "row",
+        "justifyContents": "center",
+        "textAlignVertical": "center",
       }
     }
   >
-    Hello World!
-  </Text>
+    <Text
+      style={
+        Object {
+          "color": "#ffffff",
+          "fontFamily": "Metropolis-SemiBold",
+          "fontSize": 28,
+          "fontWeight": "600",
+          "lineHeight": 36,
+        }
+      }
+    >
+      Hello World!
+    </Text>
+    <Icon
+      name="chevron-down"
+      style={
+        Object {
+          "color": "rgba(255,255,255,0.8)",
+          "fontSize": 24,
+          "marginLeft": 4,
+        }
+      }
+    />
+  </View>
   <Text
     style={
       Object {
