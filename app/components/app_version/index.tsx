@@ -13,6 +13,7 @@ const style = StyleSheet.create({
         position: 'absolute',
         bottom: 0,
         marginLeft: 20,
+        marginBottom: 12,
     },
     version: {
         fontSize: 12,
