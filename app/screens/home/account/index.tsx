@@ -5,17 +5,16 @@ import {withDatabase} from '@nozbe/watermelondb/DatabaseProvider';
 import withObservables from '@nozbe/with-observables';
 import {useRoute} from '@react-navigation/native';
 import React, {useCallback, useState} from 'react';
-import {ScrollView, StatusBar, View} from 'react-native';
+import {ScrollView, View} from 'react-native';
 import Animated, {useAnimatedStyle, withTiming} from 'react-native-reanimated';
 import {Edge, SafeAreaView, useSafeAreaInsets} from 'react-native-safe-area-context';
 import {of as of$} from 'rxjs';
 import {switchMap} from 'rxjs/operators';
-import tinycolor from 'tinycolor2';
 
-import {Device, View as ViewConstants} from '@constants';
+import {View as ViewConstants} from '@constants';
 import {MM_TABLES, SYSTEM_IDENTIFIERS} from '@constants/database';
 import {useTheme} from '@context/theme';
-import {useSplitView} from '@hooks/device';
+import {useIsTablet} from '@hooks/device';
 import {isCustomStatusExpirySupported, isMinimumServerVersion} from '@utils/helpers';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
@@ -70,14 +69,12 @@ const AccountScreen = ({currentUser, enableCustomUserStatuses, customStatusExpir
     const theme = useTheme();
     const [start, setStart] = useState(false);
     const route = useRoute();
-    const isSplitView = useSplitView();
     const insets = useSafeAreaInsets();
-    const isTablet = Device.IS_TABLET && !isSplitView;
-    const barStyle = tinycolor(theme.sidebarBg).isDark() ? 'light-content' : 'dark-content';
+    const isTablet = useIsTablet();
     let tabletSidebarStyle;
     if (isTablet) {
-        const {TABLET} = ViewConstants;
-        tabletSidebarStyle = {maxWidth: TABLET.SIDEBAR_WIDTH};
+        const {TABLET_SIDEBAR_WIDTH} = ViewConstants;
+        tabletSidebarStyle = {maxWidth: TABLET_SIDEBAR_WIDTH};
     }
 
     const params = route.params! as {direction: string};
@@ -112,10 +109,6 @@ const AccountScreen = ({currentUser, enableCustomUserStatuses, customStatusExpir
                 <View style={[styles.container, tabletSidebarStyle]}/>
                 {isTablet && <View style={styles.tabletContainer}/>}
             </View>
-            <StatusBar
-                barStyle={barStyle}
-                backgroundColor='rgba(20, 33, 62, 0.42)'
-            />
             <Animated.View
                 onLayout={onLayout}
                 style={[styles.flexRow, animated]}

@@ -4,9 +4,8 @@
 import React from 'react';
 import {GestureResponderEvent, Platform, Text, useWindowDimensions, View} from 'react-native';
 
-import {Device} from '@constants';
 import {useTheme} from '@context/theme';
-import {useSplitView} from '@hooks/device';
+import {useIsTablet} from '@hooks/device';
 import Button from '@screens/bottom_sheet/button';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
@@ -47,8 +46,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
 const BottomSheetContent = ({buttonText, buttonIcon, children, onPress, showButton, showTitle, title}: Props) => {
     const dimensions = useWindowDimensions();
     const theme = useTheme();
-    const isSplitView = useSplitView();
-    const isTablet = Device.IS_TABLET && !isSplitView;
+    const isTablet = useIsTablet();
     const styles = getStyleSheet(theme);
     const separatorWidth = Math.max(dimensions.width, 450);
 

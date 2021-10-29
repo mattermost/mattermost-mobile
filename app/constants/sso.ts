@@ -6,10 +6,16 @@ import keyMirror from '@utils/key_mirror';
 export const REDIRECT_URL_SCHEME = 'mmauth://';
 export const REDIRECT_URL_SCHEME_DEV = 'mmauthbeta://';
 
-export default keyMirror({
+const constants = keyMirror({
     GITLAB: null,
     GOOGLE: null,
     OFFICE365: null,
     OPENID: null,
     SAML: null,
 });
+
+export default {
+    ...constants,
+    REDIRECT_URL_SCHEME,
+    REDIRECT_URL_SCHEME_DEV,
+};

@@ -8,10 +8,9 @@ import {DeviceEventEmitter, StyleProp, StyleSheet, View, ViewStyle} from 'react-
 import {combineLatest, of as of$} from 'rxjs';
 import {map, switchMap} from 'rxjs/operators';
 
-import {Device} from '@constants';
 import {MM_TABLES, SYSTEM_IDENTIFIERS} from '@constants/database';
 import {useServerUrl} from '@context/server_url';
-import {useSplitView} from '@hooks/device';
+import {useIsTablet} from '@hooks/device';
 import NetworkManager from '@init/network_manager';
 import {isGif, isImage} from '@utils/file';
 import {openGalleryAtIndex} from '@utils/gallery';
@@ -57,7 +56,7 @@ const styles = StyleSheet.create({
 const Files = ({authorId, canDownloadFiles, failed, files, isReplyPost, postId, theme}: FilesProps) => {
     const [inViewPort, setInViewPort] = useState(false);
     const serverUrl = useServerUrl();
-    const isSplitView = useSplitView();
+    const isTablet = useIsTablet();
     const imageAttachments = useRef<FileInfo[]>([]).current;
     const nonImageAttachments = useRef<FileInfo[]>([]).current;
     const filesInfo: FileInfo[] = useMemo(() => files.map((f) => ({
@@ -141,7 +140,7 @@ const Files = ({authorId, canDownloadFiles, failed, files, isReplyPost, postId, 
                         theme={theme}
                         isSingleImage={singleImage}
                         nonVisibleImagesCount={nonVisibleImagesCount}
-                        wrapperWidth={getViewPortWidth(isReplyPost, (!isSplitView && Device.IS_TABLET))}
+                        wrapperWidth={getViewPortWidth(isReplyPost, isTablet)}
                         inViewPort={inViewPort}
                     />
                 </View>
@@ -155,8 +154,7 @@ const Files = ({authorId, canDownloadFiles, failed, files, isReplyPost, postId, 
         }
 
         const visibleImages = imageAttachments.slice(0, MAX_VISIBLE_ROW_IMAGES);
-        const tabletOffset = !isSplitView && Device.IS_TABLET;
-        const portraitPostWidth = getViewPortWidth(isReplyPost, tabletOffset);
+        const portraitPostWidth = getViewPortWidth(isReplyPost, isTablet);
 
         let nonVisibleImagesCount;
         if (imageAttachments.length > MAX_VISIBLE_ROW_IMAGES) {

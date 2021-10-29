@@ -6,7 +6,7 @@ import {Image, Text} from 'react-native';
 import Button from 'react-native-button';
 
 import LocalConfig from '@assets/config.json';
-import {SSO} from '@constants';
+import {Sso} from '@constants';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 
 const GitLabOption = ({config, onPress, theme}: LoginOptionWithConfigProps) => {
@@ -14,7 +14,7 @@ const GitLabOption = ({config, onPress, theme}: LoginOptionWithConfigProps) => {
     const forceHideFromLocal = LocalConfig.HideGitLabLoginExperimental;
 
     const handlePress = () => {
-        onPress(SSO.GITLAB);
+        onPress(Sso.GITLAB);
     };
 
     if (!forceHideFromLocal && config.EnableSignUpWithGitLab === 'true') {

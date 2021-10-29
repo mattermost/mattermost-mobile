@@ -8,9 +8,9 @@ import Animated, {useAnimatedStyle, withTiming} from 'react-native-reanimated';
 import {SafeAreaView, useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import TeamSidebar from '@components/team_sidebar';
-import {Device, View as ViewConstants} from '@constants';
+import {View as ViewConstants} from '@constants';
 import {useTheme} from '@context/theme';
-import {useSplitView} from '@hooks/device';
+import {useIsTablet} from '@hooks/device';
 import Channel from '@screens/channel';
 import {goToScreen} from '@screens/navigation';
 import {makeStyleSheetFromTheme} from '@utils/theme';
@@ -43,17 +43,16 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
 const ChannelListScreen = (props: ChannelProps) => {
     const theme = useTheme();
     const styles = getStyleSheet(theme);
-    const isSplitView = useSplitView();
-    const showTabletLayout = Device.IS_TABLET && !isSplitView;
+    const isTablet = useIsTablet();
     const route = useRoute();
     const isFocused = useIsFocused();
     const insets = useSafeAreaInsets();
     const params = route.params as {direction: string};
 
     let tabletSidebarStyle;
-    if (showTabletLayout) {
-        const {TABLET, TEAM_SIDEBAR_WIDTH} = ViewConstants;
-        tabletSidebarStyle = {maxWidth: (TABLET.SIDEBAR_WIDTH - TEAM_SIDEBAR_WIDTH)};
+    if (isTablet) {
+        const {TABLET_SIDEBAR_WIDTH, TEAM_SIDEBAR_WIDTH} = ViewConstants;
+        tabletSidebarStyle = {maxWidth: (TABLET_SIDEBAR_WIDTH - TEAM_SIDEBAR_WIDTH)};
     }
 
     const animated = useAnimatedStyle(() => {
@@ -92,7 +91,7 @@ const ChannelListScreen = (props: ChannelProps) => {
                             {'Channel List'}
                         </Text>
                     </View>
-                    {showTabletLayout &&
+                    {isTablet &&
                         <Channel {...props}/>
                     }
                 </Animated.View>
