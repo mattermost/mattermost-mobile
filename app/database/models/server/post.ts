@@ -99,8 +99,8 @@ export default class PostModel extends Model {
     /** postsInThread: The thread to which this post is associated */
     @lazy postsInThread = this.collections.get(POSTS_IN_THREAD).query(
         Q.where('root_id', this.rootId || this.id),
-        Q.experimentalSortBy('latest', Q.desc),
-        Q.experimentalTake(1),
+        Q.sortBy('latest', Q.desc),
+        Q.take(1),
     ) as Query<PostInThreadModel>;
 
     /** files: All the files associated with this Post */
