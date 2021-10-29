@@ -246,11 +246,11 @@ const Server = ({componentId, extra, launchType, launchError, theme}: ServerProp
     };
 
     return (
-        <View style={styles.backgroundContainer}>
+        <View style={styles.flex}>
             <Background theme={theme}/>
             <SafeAreaView
                 key={'server_content'}
-                style={styles.container}
+                style={styles.flex}
                 testID='select_server.screen'
             >
                 <AppVersion textStyle={styles.appInfo}/>
@@ -294,9 +294,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         paddingRight: 12,
         paddingTop: 12,
     },
-    container: {
-        flex: 1,
-    },
     flex: {
         flex: 1,
     },
@@ -305,11 +302,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         alignItems: 'center',
         flex: 1,
     },
-
-    backgroundContainer: {
-        flex: 1,
-        backgroundColor: theme.centerChannelBg,
-    }
 }));
 
 export default Server;
