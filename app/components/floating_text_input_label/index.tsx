@@ -13,12 +13,13 @@ import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 import {timingAnimation} from './animation_utils';
 
+const DEFAULT_INPUT_HEIGHT = 48;
 const BORDER_DEFAULT_WIDTH = 1;
 const BORDER_FOCUSED_WIDTH = 2;
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     container: {
-        height: 48,
+        height: DEFAULT_INPUT_HEIGHT + (2 * BORDER_DEFAULT_WIDTH),
         width: '100%',
     },
     errorContainer: {
@@ -43,7 +44,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         left: 16,
         fontFamily: 'OpenSans',
         fontSize: 16,
-        zIndex: 1,
+        zIndex: 10,
     },
     smallLabel: {
         fontSize: 10,
@@ -51,7 +52,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     textInput: {
         fontFamily: 'OpenSans',
         fontSize: 16,
-        lineHeight: 24,
         paddingTop: 12,
         paddingBottom: 12,
         paddingHorizontal: 16,
@@ -59,6 +59,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         borderColor: changeOpacity(theme.centerChannelColor, 0.16),
         borderRadius: 4,
         borderWidth: BORDER_DEFAULT_WIDTH,
+        backgroundColor: theme.centerChannelBg,
     },
 }));
 
@@ -174,6 +175,7 @@ const FloatingTextInput = forwardRef<FloatingTextInputRef, FloatingTextInputProp
         backgroundColor: (
             focusedLabel ? theme.centerChannelBg : 'transparent'
         ),
+        paddingHorizontal: focusedLabel ? 4 : 0,
         color: styles.label.color,
     };
 
@@ -210,7 +212,10 @@ const FloatingTextInput = forwardRef<FloatingTextInputRef, FloatingTextInputProp
         textInputColorStyles = {borderColor: theme.errorTextColor};
     }
 
-    const textInputBorder = {borderWidth: focusedLabel ? BORDER_FOCUSED_WIDTH : BORDER_DEFAULT_WIDTH};
+    const textInputBorder = {
+        borderWidth: focusedLabel ? BORDER_FOCUSED_WIDTH : BORDER_DEFAULT_WIDTH,
+        height: DEFAULT_INPUT_HEIGHT + ((focusedLabel ? BORDER_FOCUSED_WIDTH : BORDER_DEFAULT_WIDTH) * 2),
+    };
     const combinedTextInputStyle = [styles.textInput, textInputBorder, textInputColorStyles];
     const textAnimatedTextStyle = [styles.label, focusStyle, labelColorStyles];
 

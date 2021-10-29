@@ -104,23 +104,15 @@ export const buttonBackgroundStyle = (
             disabled: {
                 default: {
                     backgroundColor: changeOpacity(theme.centerChannelColor, 0.08),
-                    borderColor: changeOpacity(theme.centerChannelColor, 0.32),
-                    borderWidth: 1,
                 },
                 hover: {
                     backgroundColor: changeOpacity(theme.centerChannelColor, 0),
-                    borderColor: changeOpacity(theme.centerChannelColor, 0.32),
-                    borderWidth: 1,
                 },
                 active: {
                     backgroundColor: changeOpacity(theme.centerChannelColor, 0),
-                    borderColor: changeOpacity(theme.centerChannelColor, 0.32),
-                    borderWidth: 1,
                 },
                 focus: {
                     backgroundColor: changeOpacity(theme.centerChannelColor, 0),
-                    borderColor: changeOpacity(theme.centerChannelColor, 0.32),
-                    borderWidth: 1,
                 },
             },
         },

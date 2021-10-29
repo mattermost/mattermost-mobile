@@ -34,7 +34,8 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     formContainer: {
         alignItems: 'center',
         maxWidth: 600,
-        width: '84%',
+        width: '100%',
+        paddingHorizontal: 20,
     },
     enterServer: {
         marginBottom: 24,

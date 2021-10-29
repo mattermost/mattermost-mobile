@@ -17,7 +17,8 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     textContainer: {
         marginBottom: 32,
         maxWidth: 600,
-        width: '84%',
+        width: '100%',
+        paddingHorizontal: 20,
     },
     welcome: {
         marginTop: 12,
