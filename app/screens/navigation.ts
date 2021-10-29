@@ -12,12 +12,13 @@ import CompassIcon from '@components/compass_icon';
 import {Device, Preferences, Screens} from '@constants';
 import NavigationConstants from '@constants/navigation';
 import EphemeralStore from '@store/ephemeral_store';
-import {changeOpacity} from '@utils/theme';
+import {changeOpacity, setNavigatorStyles} from '@utils/theme';
 
 import type {LaunchProps} from '@typings/launch';
 
 const {MattermostManaged} = NativeModules;
 const isRunningInSplitView = MattermostManaged.isRunningInSplitView;
+const appearanceControlledScreens = [Screens.SERVER, Screens.LOGIN, Screens.LOGIN_OPTIONS, Screens.FORGOT_PASSWORD, Screens.MFA];
 
 Navigation.setDefaultOptions({
     layout: {
@@ -25,6 +26,19 @@ Navigation.setDefaultOptions({
         //@ts-expect-error all not defined in type definition
         orientation: [Device.IS_TABLET ? 'all' : 'portrait'],
     },
+});
+
+Appearance.addChangeListener(() => {
+    const theme = getThemeFromState();
+    const screens = EphemeralStore.getAllNavigationComponents();
+    if (screens.includes(Screens.SERVER)) {
+        for (const screen of screens) {
+            if (appearanceControlledScreens.includes(screen)) {
+                Navigation.updateProps(screen, {theme});
+                setNavigatorStyles(screen, theme);
+            }
+        }
+    }
 });
 
 function getThemeFromState() {

@@ -86,7 +86,7 @@ export const getSessions = async (serverUrl: string, currentUserId: string) => {
     return undefined;
 };
 
-export const login = async (serverUrl: string, {ldapOnly = false, loginId, mfaToken, password, config}: LoginArgs): Promise<LoginActionResponse> => {
+export const login = async (serverUrl: string, {ldapOnly = false, loginId, mfaToken, password, config, serverDisplayName}: LoginArgs): Promise<LoginActionResponse> => {
     let deviceToken;
     let user: UserProfile;
 
@@ -117,6 +117,7 @@ export const login = async (serverUrl: string, {ldapOnly = false, loginId, mfaTo
                 dbName: serverUrl,
                 serverUrl,
                 identifier: config.DiagnosticId,
+                displayName: serverDisplayName,
             },
         });
         await DatabaseManager.setActiveServerDatabase(serverUrl);
@@ -180,7 +181,7 @@ export const sendPasswordResetEmail = async (serverUrl: string, email: string) =
     };
 };
 
-export const ssoLogin = async (serverUrl: string, serverIdentifier: string, bearerToken: string, csrfToken: string): Promise<LoginActionResponse> => {
+export const ssoLogin = async (serverUrl: string, serverDisplayName: string, serverIdentifier: string, bearerToken: string, csrfToken: string): Promise<LoginActionResponse> => {
     let deviceToken;
     let user;
 
@@ -206,6 +207,7 @@ export const ssoLogin = async (serverUrl: string, serverIdentifier: string, bear
                 dbName: serverUrl,
                 serverUrl,
                 identifier: serverIdentifier,
+                displayName: serverDisplayName,
             },
         });
         await DatabaseManager.setActiveServerDatabase(serverUrl);

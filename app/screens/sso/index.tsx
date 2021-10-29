@@ -19,10 +19,11 @@ interface SSOProps extends LaunchProps {
   config: Partial<ClientConfig>;
   license: Partial<ClientLicense>;
   ssoType: string;
+  serverDisplayName: string;
   theme: Partial<Theme>;
 }
 
-const SSO = ({config, extra, launchError, launchType, serverUrl, ssoType, theme}: SSOProps) => {
+const SSO = ({config, extra, launchError, launchType, serverDisplayName, serverUrl, ssoType, theme}: SSOProps) => {
     const managedConfig = useManagedConfig();
 
     const [loginError, setLoginError] = useState<string>('');
@@ -73,7 +74,7 @@ const SSO = ({config, extra, launchError, launchType, serverUrl, ssoType, theme}
     };
 
     const doSSOLogin = async (bearerToken: string, csrfToken: string) => {
-        const result: LoginActionResponse = await ssoLogin(serverUrl!, config.DiagnosticId!, bearerToken, csrfToken);
+        const result: LoginActionResponse = await ssoLogin(serverUrl!, serverDisplayName, config.DiagnosticId!, bearerToken, csrfToken);
         if (result?.error && result.failed) {
             onLoadEndError(result.error);
             return;

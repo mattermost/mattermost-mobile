@@ -35,13 +35,14 @@ import type {LaunchProps} from '@typings/launch';
 interface LoginProps extends LaunchProps {
     componentId: string;
     config: ClientConfig;
+    serverDisplayName: string;
     license: ClientLicense;
     theme: Theme;
 }
 
 export const MFA_EXPECTED_ERRORS = ['mfa.validate_token.authenticate.app_error', 'ent.mfa.validate_token.authenticate.app_error'];
 
-const Login: NavigationFunctionComponent = ({config, extra, launchError, launchType, license, serverUrl, theme}: LoginProps) => {
+const Login: NavigationFunctionComponent = ({config, serverDisplayName, extra, launchError, launchType, license, serverUrl, theme}: LoginProps) => {
     const styles = getStyleSheet(theme);
 
     const loginRef = useRef<TextInput>(null);
@@ -128,7 +129,7 @@ const Login: NavigationFunctionComponent = ({config, extra, launchError, launchT
     });
 
     const signIn = async () => {
-        const result: LoginActionResponse = await login(serverUrl!, {loginId: loginId.toLowerCase(), password, config, license});
+        const result: LoginActionResponse = await login(serverUrl!, {serverDisplayName, loginId: loginId.toLowerCase(), password, config, license});
         if (checkLoginResponse(result)) {
             if (!result.hasTeams && !result.error) {
                 // eslint-disable-next-line no-console
@@ -171,7 +172,7 @@ const Login: NavigationFunctionComponent = ({config, extra, launchError, launchT
     const goToMfa = () => {
         const screen = MFA;
         const title = intl.formatMessage({id: 'mobile.routes.mfa', defaultMessage: 'Multi-factor Authentication'});
-        goToScreen(screen, title, {goToHome, loginId, password, config, license, serverUrl, theme});
+        goToScreen(screen, title, {goToHome, loginId, password, config, serverDisplayName, license, serverUrl, theme});
     };
 
     const getLoginErrorMessage = (loginError: string | ClientErrorProps | Error) => {

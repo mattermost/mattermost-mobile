@@ -23,6 +23,7 @@ describe('*** MFA Screen ***', () => {
         password: 'passwd',
         license: {},
         serverUrl: 'https://locahost:8065',
+        serverDisplayName: 'Test Server',
         theme: Preferences.THEMES.denim,
     };
 

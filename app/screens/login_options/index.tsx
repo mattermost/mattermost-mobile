@@ -26,6 +26,7 @@ import type {LaunchProps} from '@typings/launch';
 interface LoginOptionsProps extends LaunchProps {
     componentId: string;
     serverUrl: string;
+    serverDisplayName: string;
     config: ClientConfig;
     license: ClientLicense;
     theme: Theme;
@@ -60,7 +61,7 @@ const getStyles = makeStyleSheetFromTheme((theme: Theme) => ({
     },
 }));
 
-const LoginOptions: NavigationFunctionComponent = ({config, extra, launchType, launchError, license, serverUrl, theme}: LoginOptionsProps) => {
+const LoginOptions: NavigationFunctionComponent = ({config, extra, launchType, launchError, license, serverDisplayName, serverUrl, theme}: LoginOptionsProps) => {
     const intl = useIntl();
     const styles = getStyles(theme);
 
@@ -68,13 +69,13 @@ const LoginOptions: NavigationFunctionComponent = ({config, extra, launchType, l
         const screen = LOGIN;
         const title = intl.formatMessage({id: 'mobile.routes.login', defaultMessage: 'Login'});
 
-        goToScreen(screen, title, {config, extra, launchError, launchType, license, serverUrl, theme});
+        goToScreen(screen, title, {config, extra, launchError, launchType, license, serverDisplayName, serverUrl, theme});
     });
 
     const displaySSO = preventDoubleTap((ssoType: string) => {
         const screen = SSO;
         const title = intl.formatMessage({id: 'mobile.routes.sso', defaultMessage: 'Single Sign-On'});
-        goToScreen(screen, title, {config, extra, launchError, launchType, license, theme, ssoType, serverUrl});
+        goToScreen(screen, title, {config, extra, launchError, launchType, license, theme, ssoType, serverDisplayName, serverUrl});
     });
 
     return (
