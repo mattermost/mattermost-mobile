@@ -19,6 +19,7 @@ import {t} from '@i18n';
 import NetworkManager from '@init/network_manager';
 import {goToScreen} from '@screens/navigation';
 import {DeepLinkWithData, LaunchProps, LaunchType} from '@typings/launch';
+import {getErrorMessage} from '@utils/client_error';
 import {isMinimumServerVersion} from '@utils/helpers';
 import {preventDoubleTap} from '@utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
@@ -219,11 +220,7 @@ const Server = ({componentId, extra, launchType, launchError, theme}: ServerProp
                 const nurl = serverUrl.replace('https:', 'http:');
                 pingServer(nurl, false);
             } else {
-                let error = result.error;
-                if (result.error instanceof ClientError) {
-                    error = result.error.intl ? intl.formatMessage(result.error.intl) : result.error.message;
-                }
-                setUrlError(error as string);
+                setUrlError(getErrorMessage(result.error as ClientError, intl));
                 setConnecting(false);
             }
             setButtonDisabled(true);
@@ -233,11 +230,7 @@ const Server = ({componentId, extra, launchType, launchError, theme}: ServerProp
         const data = await fetchConfigAndLicense(serverUrl, true);
         if (data.error) {
             setButtonDisabled(true);
-            let error = result.error;
-            if (data.error instanceof ClientError) {
-                error = data.error.intl ? intl.formatMessage(data.error.intl) : data.error.message;
-            }
-            setUrlError(error as string);
+            setUrlError(getErrorMessage(data.error as ClientError, intl));
             setConnecting(false);
             return;
         }
