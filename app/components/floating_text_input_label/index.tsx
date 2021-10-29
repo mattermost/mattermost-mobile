@@ -111,7 +111,7 @@ const FloatingTextInput = forwardRef<FloatingTextInputRef, FloatingTextInputProp
     containerStyle,
     isKeyboardInput = true,
     editable = true,
-    errorIcon = 'BRKN-alert-outline',
+    errorIcon = 'alert-outline',
     label = '',
     onPress = undefined,
     onFocus,

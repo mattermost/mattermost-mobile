@@ -8,7 +8,6 @@ import Button from 'react-native-button';
 import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
 
 import FormattedText from '@app/components/formatted_text';
-import ErrorText from '@components/error_text';
 import FloatingTextInput, {FloatingTextInputRef} from '@components/floating_text_input_label';
 import {useIsTablet} from '@hooks/device';
 import {t} from '@i18n';
@@ -20,7 +19,7 @@ type Props = {
     buttonDisabled: boolean;
     connecting: boolean;
     displayName?: string;
-    error?: Partial<ClientErrorProps> | string;
+    displayNameError?: string;
     handleConnect: () => void;
     handleDisplayNameTextChanged: (text: string) => void;
     handleUrlTextChanged: (text: string) => void;
@@ -39,6 +38,12 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     },
     enterServer: {
         marginBottom: 24,
+    },
+    fullWidth: {
+        width: '100%',
+    },
+    error: {
+        marginBottom: 18,
     },
     chooseText: {
         alignSelf: 'flex-start',
@@ -63,7 +68,7 @@ const ServerForm = ({
     buttonDisabled,
     connecting,
     displayName = '',
-    error = '',
+    displayNameError,
     handleConnect,
     handleDisplayNameTextChanged,
     handleUrlTextChanged,
@@ -142,45 +147,50 @@ const ServerForm = ({
 
     return (
         <View style={styles.formContainer}>
-            <FloatingTextInput
-                autoCorrect={false}
-                blurOnSubmit={false}
-                containerStyle={styles.enterServer}
-                enablesReturnKeyAutomatically={true}
-                error={urlError}
-                keyboardType='url'
-                label={formatMessage({
-                    id: 'mobile.components.select_server_view.enterServerUrl',
-                    defaultMessage: 'Enter Server URL',
-                })}
-                onBlur={onBlur}
-                onChangeText={handleUrlTextChanged}
-                onFocus={onFocus}
-                onSubmitEditing={onUrlSubmit}
-                ref={urlRef}
-                returnKeyType='next'
-                testID='select_server.server_url.input'
-                theme={theme}
-                value={url}
-            />
-            <FloatingTextInput
-                autoCorrect={false}
-                enablesReturnKeyAutomatically={true}
-                keyboardType='url'
-                label={formatMessage({
-                    id: 'mobile.components.select_server_view.displayName',
-                    defaultMessage: 'Display Name',
-                })}
-                onBlur={onBlur}
-                onChangeText={handleDisplayNameTextChanged}
-                onFocus={onFocus}
-                onSubmitEditing={handleConnect}
-                ref={displayNameRef}
-                returnKeyType='done'
-                testID='select_server.server_display_name.input'
-                theme={theme}
-                value={displayName}
-            />
+            <View style={[styles.fullWidth, urlError?.length ? styles.error : undefined]}>
+                <FloatingTextInput
+                    autoCorrect={false}
+                    blurOnSubmit={false}
+                    containerStyle={styles.enterServer}
+                    enablesReturnKeyAutomatically={true}
+                    error={urlError}
+                    keyboardType='url'
+                    label={formatMessage({
+                        id: 'mobile.components.select_server_view.enterServerUrl',
+                        defaultMessage: 'Enter Server URL',
+                    })}
+                    onBlur={onBlur}
+                    onChangeText={handleUrlTextChanged}
+                    onFocus={onFocus}
+                    onSubmitEditing={onUrlSubmit}
+                    ref={urlRef}
+                    returnKeyType='next'
+                    testID='select_server.server_url.input'
+                    theme={theme}
+                    value={url}
+                />
+            </View>
+            <View style={[styles.fullWidth, displayNameError?.length ? styles.error : undefined]}>
+                <FloatingTextInput
+                    autoCorrect={false}
+                    enablesReturnKeyAutomatically={true}
+                    error={displayNameError}
+                    keyboardType='url'
+                    label={formatMessage({
+                        id: 'mobile.components.select_server_view.displayName',
+                        defaultMessage: 'Display Name',
+                    })}
+                    onBlur={onBlur}
+                    onChangeText={handleDisplayNameTextChanged}
+                    onFocus={onFocus}
+                    onSubmitEditing={handleConnect}
+                    ref={displayNameRef}
+                    returnKeyType='done'
+                    testID='select_server.server_display_name.input'
+                    theme={theme}
+                    value={displayName}
+                />
+            </View>
             <FormattedText
                 defaultMessage={'Choose a display name for your server'}
                 id={'mobile.components.select_server_view.displayHelp'}
@@ -200,15 +210,6 @@ const ServerForm = ({
                     style={styleButtonText}
                 />
             </Button>
-            <View>
-                {Boolean(error) &&
-                <ErrorText
-                    error={error!}
-                    testID='select_server.error.text'
-                    theme={theme}
-                />
-                }
-            </View>
         </View>
     );
 };

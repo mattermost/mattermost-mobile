@@ -4,7 +4,7 @@
 import {useManagedConfig, ManagedConfig} from '@mattermost/react-native-emm';
 import React, {useCallback, useEffect, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
-import {Platform, View} from 'react-native';
+import {Alert, Platform, View} from 'react-native';
 import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
 import {Navigation} from 'react-native-navigation';
 import {SafeAreaView} from 'react-native-safe-area-context';
@@ -12,6 +12,7 @@ import {SafeAreaView} from 'react-native-safe-area-context';
 import {doPing} from '@actions/remote/general';
 import {fetchConfigAndLicense} from '@actions/remote/systems';
 import LocalConfig from '@assets/config.json';
+import ClientError from '@client/rest/error';
 import AppVersion from '@components/app_version';
 import {Screens} from '@constants';
 import {t} from '@i18n';
@@ -26,8 +27,6 @@ import {getServerUrlAfterRedirect, isValidUrl, sanitizeUrl} from '@utils/url';
 import Background from './background';
 import ServerForm from './form';
 import ServerHeader from './header';
-
-import type ClientError from '@client/rest/error';
 
 interface ServerProps extends LaunchProps {
     componentId: string;
@@ -50,11 +49,6 @@ const Server = ({componentId, extra, launchType, launchError, theme}: ServerProp
     const [buttonDisabled, setButtonDisabled] = useState(true);
     const [url, setUrl] = useState<string>('');
     const [urlError, setUrlError] = useState<string | undefined>(undefined);
-    const initialError = launchError && launchType === LaunchType.Notification ? intl.formatMessage({
-        id: 'mobile.launchError.notification',
-        defaultMessage: 'Did not find a server for this notification',
-    }) : undefined;
-    const [error, setError] = useState<Partial<ClientErrorProps> | string | undefined>(initialError);
     const styles = getStyleSheet(theme);
     const {formatMessage} = intl;
 
@@ -67,7 +61,7 @@ const Server = ({componentId, extra, launchType, launchError, theme}: ServerProp
             if (managedConfig) {
                 autoconnect = (managedConfig.allowOtherServers === 'false' && managedConfig.serverUrl === deepLinkServerUrl);
                 if (managedConfig.serverUrl !== deepLinkServerUrl || launchError) {
-                    setError(intl.formatMessage({
+                    Alert.alert('', intl.formatMessage({
                         id: 'mobile.server_url.deeplink.emm.denied',
                         defaultMessage: 'This app is controlled by an EMM and the DeepLink server url does not match the EMM allowed server',
                     }));
@@ -188,7 +182,6 @@ const Server = ({componentId, extra, launchType, launchError, theme}: ServerProp
 
     const handleUrlTextChanged = useCallback((text: string) => {
         setUrlError(undefined);
-        setError(undefined);
         setUrl(text);
     }, []);
 
@@ -226,7 +219,11 @@ const Server = ({componentId, extra, launchType, launchError, theme}: ServerProp
                 const nurl = serverUrl.replace('https:', 'http:');
                 pingServer(nurl, false);
             } else {
-                setError(result.error as ClientError);
+                let error = result.error;
+                if (result.error instanceof ClientError) {
+                    error = result.error.intl ? intl.formatMessage(result.error.intl) : result.error.message;
+                }
+                setUrlError(error as string);
                 setConnecting(false);
             }
             setButtonDisabled(true);
@@ -235,9 +232,12 @@ const Server = ({componentId, extra, launchType, launchError, theme}: ServerProp
 
         const data = await fetchConfigAndLicense(serverUrl, true);
         if (data.error) {
-            setUrlError(formatMessage(defaultServerUrlMessage));
             setButtonDisabled(true);
-            setError(data.error as ClientError);
+            let error = result.error;
+            if (data.error instanceof ClientError) {
+                error = data.error.intl ? intl.formatMessage(data.error.intl) : data.error.message;
+            }
+            setUrlError(error as string);
             setConnecting(false);
             return;
         }
@@ -253,7 +253,6 @@ const Server = ({componentId, extra, launchType, launchError, theme}: ServerProp
                 style={styles.flex}
                 testID='select_server.screen'
             >
-                <AppVersion textStyle={styles.appInfo}/>
                 <KeyboardAwareScrollView
                     bounces={false}
                     contentContainerStyle={styles.scrollContainer}
@@ -262,6 +261,7 @@ const Server = ({componentId, extra, launchType, launchError, theme}: ServerProp
                     enableResetScrollToCoords={true}
                     extraScrollHeight={20}
                     keyboardDismissMode='on-drag'
+                    keyboardShouldPersistTaps='handled'
 
                     // @ts-expect-error legacy ref
                     ref={keyboardAwareRef}
@@ -273,7 +273,6 @@ const Server = ({componentId, extra, launchType, launchError, theme}: ServerProp
                         buttonDisabled={buttonDisabled}
                         connecting={connecting}
                         displayName={displayName}
-                        error={error}
                         handleConnect={handleConnect}
                         handleDisplayNameTextChanged={handleDisplayNameTextChanged}
                         handleUrlTextChanged={handleUrlTextChanged}
@@ -283,6 +282,7 @@ const Server = ({componentId, extra, launchType, launchError, theme}: ServerProp
                         urlError={urlError}
                     />
                 </KeyboardAwareScrollView>
+                <AppVersion textStyle={styles.appInfo}/>
             </SafeAreaView>
         </View>
     );
@@ -291,8 +291,6 @@ const Server = ({componentId, extra, launchType, launchError, theme}: ServerProp
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     appInfo: {
         color: changeOpacity(theme.centerChannelColor, 0.56),
-        paddingRight: 12,
-        paddingTop: 12,
     },
     flex: {
         flex: 1,
