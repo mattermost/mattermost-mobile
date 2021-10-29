@@ -14,34 +14,54 @@ exports[`Channels List should match snapshot 1`] = `
     ]
   }
 >
-  <View>
-    <Text
+  <RNGestureHandlerButton
+    collapsable={false}
+    onGestureEvent={[Function]}
+    onGestureHandlerEvent={[Function]}
+    onGestureHandlerStateChange={[Function]}
+    onHandlerStateChange={[Function]}
+    rippleColor={0}
+  >
+    <View
+      accessible={true}
+      collapsable={false}
+      nativeID="animatedComponent"
       style={
         Object {
-          "color": "#ffffff",
-          "fontFamily": "Metropolis-SemiBold",
-          "fontSize": 28,
-          "fontWeight": "600",
-          "lineHeight": 36,
+          "opacity": 1,
         }
       }
     >
-      Contributors
-    </Text>
-    <Text
-      style={
-        Object {
-          "color": "rgba(255,255,255,0.64)",
-          "fontFamily": "OpenSans-SemiBold",
-          "fontSize": 11,
-          "fontWeight": "600",
-          "lineHeight": 16,
-        }
-      }
-    >
-      Community TEST
-    </Text>
-  </View>
+      <View>
+        <Text
+          style={
+            Object {
+              "color": "#ffffff",
+              "fontFamily": "Metropolis-SemiBold",
+              "fontSize": 28,
+              "fontWeight": "600",
+              "lineHeight": 36,
+            }
+          }
+        >
+          Contributors
+        </Text>
+        <Text
+          style={
+            Object {
+              "color": "rgba(255,255,255,0.64)",
+              "fontFamily": "OpenSans-SemiBold",
+              "fontSize": 11,
+              "fontWeight": "600",
+              "lineHeight": 16,
+            }
+          }
+        >
+          Community TEST
+        </Text>
+      </View>
+    </View>
+  </RNGestureHandlerButton>
   <View
     style={
       Object {
@@ -171,43 +191,70 @@ exports[`Channels List should match snapshot 1`] = `
         onLayout={[Function]}
       >
         <View
-          style={
-            Object {
-              "display": "flex",
-              "flexDirection": "row",
-            }
-          }
+          onMoveShouldSetResponder={[Function]}
+          onMoveShouldSetResponderCapture={[Function]}
+          onResponderEnd={[Function]}
+          onResponderGrant={[Function]}
+          onResponderMove={[Function]}
+          onResponderReject={[Function]}
+          onResponderRelease={[Function]}
+          onResponderStart={[Function]}
+          onResponderTerminate={[Function]}
+          onResponderTerminationRequest={[Function]}
+          onStartShouldSetResponder={[Function]}
+          onStartShouldSetResponderCapture={[Function]}
         >
-          <Icon
-            name="message-text-outline"
-            style={
-              Object {
-                "color": "#ffffff",
-                "fontSize": 24,
-                "lineHeight": 28,
-              }
-            }
-          />
-          <Text
-            style={
-              Array [
-                Array [
-                  Object {
-                    "fontFamily": "OpenSans-SemiBold",
-                    "fontSize": 16,
-                    "fontWeight": "600",
-                    "lineHeight": 24,
-                  },
-                ],
-                Object {
-                  "color": "#ffffff",
-                  "paddingLeft": 12,
-                },
-              ]
-            }
+          <View
+            accessible={true}
+            focusable={true}
+            onClick={[Function]}
+            onResponderGrant={[Function]}
+            onResponderMove={[Function]}
+            onResponderRelease={[Function]}
+            onResponderTerminate={[Function]}
+            onResponderTerminationRequest={[Function]}
+            onStartShouldSetResponder={[Function]}
           >
-            Threads
-          </Text>
+            <View
+              style={
+                Object {
+                  "display": "flex",
+                  "flexDirection": "row",
+                }
+              }
+            >
+              <Icon
+                name="message-text-outline"
+                style={
+                  Object {
+                    "color": "#ffffff",
+                    "fontSize": 24,
+                    "lineHeight": 28,
+                  }
+                }
+              />
+              <Text
+                style={
+                  Array [
+                    Array [
+                      Object {
+                        "fontFamily": "OpenSans-SemiBold",
+                        "fontSize": 16,
+                        "fontWeight": "600",
+                        "lineHeight": 24,
+                      },
+                    ],
+                    Object {
+                      "color": "#ffffff",
+                      "paddingLeft": 12,
+                    },
+                  ]
+                }
+              >
+                Threads
+              </Text>
+            </View>
+          </View>
         </View>
       </View>
       <View
