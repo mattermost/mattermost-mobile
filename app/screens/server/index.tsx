@@ -2,10 +2,11 @@
 // See LICENSE.txt for license information.
 
 import {useManagedConfig, ManagedConfig} from '@mattermost/react-native-emm';
-import React, {useCallback, useEffect, useState} from 'react';
+import React, {useCallback, useEffect, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
-import {KeyboardAvoidingView, Platform, View} from 'react-native';
+import {Platform, View} from 'react-native';
 import Button from 'react-native-button';
+import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
 import {Navigation} from 'react-native-navigation';
 import {ActivityIndicator} from 'react-native-paper';
 import {SafeAreaView} from 'react-native-safe-area-context';
@@ -16,7 +17,7 @@ import FormattedText from '@app/components/formatted_text';
 import LocalConfig from '@assets/config.json';
 import AppVersion from '@components/app_version';
 import ErrorText from '@components/error_text';
-import TextSetting from '@components/widgets/text_settings';
+import FloatingTextInput, {FloatingTextInputRef} from '@components/floating_text_input_label';
 import {Screens} from '@constants';
 import NetworkManager from '@init/network_manager';
 import {goToScreen} from '@screens/navigation';
@@ -37,37 +38,28 @@ interface ServerProps extends LaunchProps {
 
 let cancelPing: undefined | (() => void);
 
+const defaultServerUrlMessage = {
+    id: 'mobile.server_url.empty',
+    defaultMessage: 'Please enter a valid server URL',
+};
+
 const Server = ({componentId, extra, launchType, launchError, theme}: ServerProps) => {
-    // TODO: If we have LaunchProps, ensure they get passed along to subsequent screens
-    // so that they are eventually accessible in the Channel screen.
     const intl = useIntl();
     const managedConfig = useManagedConfig<ManagedConfig>();
+    const keyboardAwareRef = useRef<KeyboardAwareScrollView>();
+    const displayNameRef = useRef<FloatingTextInputRef>(null);
     const [connecting, setConnecting] = useState(false);
+    const [displayName, setDisplayName] = useState<string>('');
     const [buttonDisabled, setButtonDisabled] = useState(true);
-
+    const [url, setUrl] = useState<string>('');
+    const [urlError, setUrlError] = useState<string | undefined>(undefined);
     const initialError = launchError && launchType === LaunchType.Notification ? intl.formatMessage({
         id: 'mobile.launchError.notification',
         defaultMessage: 'Did not find a server for this notification',
     }) : undefined;
     const [error, setError] = useState<Partial<ClientErrorProps>|string|undefined>(initialError);
-    const [url, setUrl] = useState<string>('');
-    const [displayName, setDisplayName] = useState<string>('');
-    const [urlError, setUrlError] = useState<string | undefined>(undefined);
-
-    useEffect(() => {
-        if (url && displayName) {
-            setButtonDisabled(false);
-        }
-    }, [url, displayName]);
-
-    // useEffect(() => {
-    //     let listener: EventSubscription;
-    //     if (Platform.OS === 'android') {
-    //         listener = Keyboard.addListener('keyboardDidHide', onBlurUrl);
-    //     }
-    //
-    //     return () => listener?.remove();
-    // }, []);
+    const styles = getStyleSheet(theme);
+    const {formatMessage} = intl;
 
     useEffect(() => {
         let serverUrl = managedConfig?.serverUrl || LocalConfig.DefaultServerUrl;
@@ -101,6 +93,14 @@ const Server = ({componentId, extra, launchType, launchError, theme}: ServerProp
     }, []);
 
     useEffect(() => {
+        if (url && displayName) {
+            setButtonDisabled(false);
+        } else {
+            setButtonDisabled(true);
+        }
+    }, [url, displayName]);
+
+    useEffect(() => {
         const listener = {
             componentDidAppear: () => {
                 if (url) {
@@ -112,9 +112,6 @@ const Server = ({componentId, extra, launchType, launchError, theme}: ServerProp
 
         return () => unsubscribe.remove();
     }, [componentId, url]);
-
-    const styles = getStyleSheet(theme);
-    const {formatMessage} = intl;
 
     const displayLogin = (serverUrl: string, config: ClientConfig, license: ClientLicense) => {
         const samlEnabled = config.EnableSaml === 'true' && license.IsLicensed === 'true' && license.SAML === 'true';
@@ -139,6 +136,7 @@ const Server = ({componentId, extra, launchType, launchError, theme}: ServerProp
 
         const passProps = {
             config,
+            displayName,
             extra,
             launchError,
             launchType,
@@ -160,12 +158,11 @@ const Server = ({componentId, extra, launchType, launchError, theme}: ServerProp
         setUrl(serverUrl);
     };
 
-    const defaultServerUrlMessage = (intl.formatMessage({
-        id: 'mobile.server_url.empty',
-        defaultMessage: 'Please enter a valid server URL',
-    }));
+    const handleConnect = preventDoubleTap(async (manualUrl?: string) => {
+        if (buttonDisabled) {
+            return;
+        }
 
-    const handleConnect = preventDoubleTap((manualUrl?: string) => {
         if (connecting && cancelPing) {
             cancelPing();
             return;
@@ -173,7 +170,7 @@ const Server = ({componentId, extra, launchType, launchError, theme}: ServerProp
 
         const serverUrl = typeof manualUrl === 'string' ? manualUrl : url;
         if (!serverUrl || serverUrl.trim() === '') {
-            setUrlError(defaultServerUrlMessage);
+            setUrlError(formatMessage(defaultServerUrlMessage));
             return;
         }
 
@@ -181,8 +178,22 @@ const Server = ({componentId, extra, launchType, launchError, theme}: ServerProp
             return;
         }
 
+        // TODO: Query to see if there is a server with the same display name
+        // Set the error here and return
+        // Elias to add this change in a Later PR. as soon as this one goes in
+
         pingServer(serverUrl);
     });
+
+    const handleDisplayNameTextChanged = useCallback((text: string) => {
+        setDisplayName(text);
+    }, []);
+
+    const handleUrlTextChanged = useCallback((text: string) => {
+        setUrlError(undefined);
+        setError(undefined);
+        setUrl(text);
+    }, []);
 
     const isServerUrlValid = (serverUrl?: string) => {
         const testUrl = sanitizeUrl(serverUrl ?? url);
@@ -195,6 +206,16 @@ const Server = ({componentId, extra, launchType, launchError, theme}: ServerProp
         }
         return true;
     };
+
+    const onFocus = useCallback(() => {
+        if (Platform.OS === 'ios') {
+            keyboardAwareRef.current?.scrollToPosition(0, 160);
+        }
+    }, []);
+
+    const onUrlSubmit = useCallback(() => {
+        displayNameRef.current?.focus();
+    }, []);
 
     const pingServer = async (pingUrl: string, retryWithHttp = true) => {
         let canceled = false;
@@ -221,14 +242,13 @@ const Server = ({componentId, extra, launchType, launchError, theme}: ServerProp
                 setError(result.error as ClientError);
                 setConnecting(false);
             }
-            setUrlError(defaultServerUrlMessage);
             setButtonDisabled(true);
             return;
         }
 
         const data = await fetchConfigAndLicense(serverUrl, true);
         if (data.error) {
-            setUrlError(defaultServerUrlMessage);
+            setUrlError(formatMessage(defaultServerUrlMessage));
             setButtonDisabled(true);
             setError(data.error as ClientError);
             setConnecting(false);
@@ -238,102 +258,103 @@ const Server = ({componentId, extra, launchType, launchError, theme}: ServerProp
         displayLogin(serverUrl, data.config!, data.license!);
     };
 
-    const onBlurUrl = useCallback(() => {
-        if (urlError) {
-            setUrlError(undefined);
-        }
-    }, [urlError]);
-
-    const handleUrlTextChanged = useCallback((_: string, text: string) => {
-        setUrlError(undefined);
-        setError(undefined);
-        setUrl(text);
-    }, [url]);
-
-    const handleDisplayNameTextChanged = useCallback((_: string, text: string) => {
-        setDisplayName(text);
-    }, []);
-
     let styleButtonText = buttonTextStyle(theme, 'lg', 'primary', 'default');
     let styleButtonBackground = buttonBackgroundStyle(theme, 'lg', 'primary');
 
     let buttonID = 'mobile.components.select_server_view.connect';
     let buttonText = 'Connect';
+    let buttonIcon;
 
     if (connecting) {
         buttonID = 'mobile.components.select_server_view.connecting';
         buttonText = 'Connecting';
+        buttonIcon = (
+            <ActivityIndicator
+                animating={true}
+                size='small'
+                color={'white'}
+                style={styles.connectingIndicator}
+            />
+        );
     } else if (buttonDisabled) {
         styleButtonText = buttonTextStyle(theme, 'lg', 'primary', 'disabled');
         styleButtonBackground = buttonBackgroundStyle(theme, 'lg', 'primary', 'disabled');
     }
 
-    const buttonIcon = (
-        <ActivityIndicator
-            animating={true}
-            size='small'
-            color={'white'}
-            style={styles.connectingIndicator}
-        />
-    );
-
-    return [
+    return (
         <SafeAreaView
             testID='select_server.screen'
             style={styles.container}
             key={'server_content'}
         >
-            <KeyboardAvoidingView
-                behavior='padding'
+            <AppVersion textStyle={styles.appInfo}/>
+            <KeyboardAwareScrollView
+                contentContainerStyle={styles.formContainer}
                 style={styles.flex}
-                keyboardVerticalOffset={0}
-                enabled={Platform.OS === 'ios'}
+                enableOnAndroid={true}
+                enableAutomaticScroll={Platform.OS === 'android'}
+                extraScrollHeight={20}
+
+                // @ts-expect-error legacy ref
+                ref={keyboardAwareRef}
+                bounces={false}
+                scrollToOverflowEnabled={true}
+                keyboardDismissMode='on-drag'
             >
-                <View style={styles.formContainer}>
-                    <View style={styles.textContainer}>
-                        <FormattedText
-                            style={styles.welcome}
-                            id={'mobile.components.select_server_view.msg_welcome'}
-                            testID={'mobile.components.select_server_view.msg_welcome'}
-                            defaultMessage={'Welcome'}
-                        />
-                        <FormattedText
-                            style={styles.connect}
-                            id={'mobile.components.select_server_view.msg_connect'}
-                            testID={'mobile.components.select_server_view.msg_connect'}
-                            defaultMessage={'Let’s Connect to a Server'}
-                        />
-                        <FormattedText
-                            style={styles.description}
-                            id={'mobile.components.select_server_view.msg_description'}
-                            testID={'mobile.components.select_server_view.msg_description'}
-                            defaultMessage={"A Server is your team's communication hub which is accessed through a unique URL"}
-                        />
-                    </View>
-                    <TextSetting
+                <View style={styles.textContainer}>
+                    <FormattedText
+                        style={styles.welcome}
+                        id={'mobile.components.select_server_view.msg_welcome'}
+                        testID={'mobile.components.select_server_view.msg_welcome'}
+                        defaultMessage={'Welcome'}
+                    />
+                    <FormattedText
+                        style={styles.connect}
+                        id={'mobile.components.select_server_view.msg_connect'}
+                        testID={'mobile.components.select_server_view.msg_connect'}
+                        defaultMessage={'Let’s Connect to a Server'}
+                    />
+                    <FormattedText
+                        style={styles.description}
+                        id={'mobile.components.select_server_view.msg_description'}
+                        testID={'mobile.components.select_server_view.msg_description'}
+                        defaultMessage={"A Server is your team's communication hub which is accessed through a unique URL"}
+                    />
+                </View>
+                <View style={{width: '84%', alignItems: 'center'}}>
+                    <FloatingTextInput
                         containerStyle={styles.enterServer}
-                        id='select_server.server_url.input'
                         testID='select_server.server_url.input'
                         label={formatMessage({
                             id: 'mobile.components.select_server_view.enterServerUrl',
                             defaultMessage: 'Enter Server URL',
                         })}
-                        errorText={((urlError !== undefined) || urlError !== '') ? urlError : undefined}
+                        autoCorrect={false}
+                        error={((urlError !== undefined) || urlError !== '') ? urlError : undefined}
                         keyboardType='url'
-                        onChange={handleUrlTextChanged}
-                        onBlur={onBlurUrl}
+                        returnKeyType='next'
+                        enablesReturnKeyAutomatically={true}
+                        onChangeText={handleUrlTextChanged}
+                        blurOnSubmit={false}
+                        onSubmitEditing={onUrlSubmit}
+                        onFocus={onFocus}
                         theme={theme}
                         value={url}
                     />
-                    <TextSetting
-                        id='select_server.server_display_name.input'
+                    <FloatingTextInput
                         testID='select_server.server_display_name.input'
-                        keyboardType='default'
+                        keyboardType='url'
+                        returnKeyType='done'
                         label={formatMessage({
                             id: 'mobile.components.select_server_view.displayName',
                             defaultMessage: 'Display Name',
                         })}
-                        onChange={handleDisplayNameTextChanged}
+                        onChangeText={handleDisplayNameTextChanged}
+                        onFocus={onFocus}
+                        ref={displayNameRef}
+                        enablesReturnKeyAutomatically={true}
+                        onSubmitEditing={handleConnect}
+                        autoCorrect={false}
                         theme={theme}
                         value={displayName}
                     />
@@ -343,14 +364,13 @@ const Server = ({componentId, extra, launchType, launchError, theme}: ServerProp
                         testID={'mobile.components.select_server_view.displayHelp'}
                         defaultMessage={'Choose a display name for the server in your sidebar'}
                     />
-
                     <Button
                         disabled={buttonDisabled}
                         testID='select_server.connect.button'
                         onPress={handleConnect}
                         containerStyle={[styles.connectButton, styleButtonBackground]}
                     >
-                        {connecting && buttonIcon}
+                        {buttonIcon}
                         <FormattedText
                             style={styleButtonText}
                             id={buttonID}
@@ -367,10 +387,9 @@ const Server = ({componentId, extra, launchType, launchError, theme}: ServerProp
                         }
                     </View>
                 </View>
-                <AppVersion textStyle={styles.appInfo}/>
-            </KeyboardAvoidingView>
-        </SafeAreaView>,
-    ];
+            </KeyboardAwareScrollView>
+        </SafeAreaView>
+    );
 };
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
@@ -379,8 +398,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     },
     container: {
         flex: 1,
-        backgroundColor: theme.centerChannelBg,
-        zIndex: 1,
     },
     flex: {
         flex: 1,
@@ -416,12 +433,11 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     chooseText: {
         color: changeOpacity(theme.centerChannelColor, 0.64),
         marginTop: 8,
-        width: '84%',
-        ...typography('Body', 200, 'Regular'),
+        ...typography('Body', 75, 'Regular'),
     },
     connectButton: {
         backgroundColor: changeOpacity(theme.centerChannelColor, 0.08),
-        width: '84%',
+        width: '100%',
         marginTop: 32,
         marginLeft: 20,
         marginRight: 20,

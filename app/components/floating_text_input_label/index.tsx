@@ -4,7 +4,7 @@
 // Note: This file has been adapted from the library https://github.com/csath/react-native-reanimated-text-input
 
 import {debounce} from 'lodash';
-import React, {useState, useEffect, useRef} from 'react';
+import React, {useState, useEffect, useRef, useImperativeHandle, forwardRef} from 'react';
 import {View, TextInput, TouchableWithoutFeedback, Text, Platform, TextStyle, NativeSyntheticEvent, TextInputFocusEventData, TextInputProps, GestureResponderEvent, TargetedEvent} from 'react-native';
 import Animated, {useCode, interpolateNode, EasingNode, Value, set, Clock} from 'react-native-reanimated';
 
@@ -85,6 +85,10 @@ const getLabelPositions = (style: TextStyle, labelStyle: TextStyle, smallLabelSt
     return [unfocused, focused];
 };
 
+export type FloatingTextInputRef = {
+    focus: () => void;
+}
+
 type FloatingTextInputProps = TextInputProps & {
     containerStyle?: TextStyle;
     editable?: boolean;
@@ -100,7 +104,7 @@ type FloatingTextInputProps = TextInputProps & {
     value: string;
 }
 
-const FloatingTextInput = ({
+const FloatingTextInput = forwardRef<FloatingTextInputRef, FloatingTextInputProps>(({
     error,
     containerStyle,
     isKeyboardInput = true,
@@ -114,7 +118,7 @@ const FloatingTextInput = ({
     theme,
     value = '',
     ...props
-}: FloatingTextInputProps) => {
+}: FloatingTextInputProps, ref) => {
     const [focusedLabel, setIsFocusLabel] = useState<boolean | undefined>();
     const [focused, setIsFocused] = useState(Boolean(value) && editable);
     const inputRef = useRef<TextInput>(null);
@@ -127,6 +131,10 @@ const FloatingTextInput = ({
         from = focusedLabel ? 0 : 1;
         to = focusedLabel ? 1 : 0;
     }
+
+    useImperativeHandle(ref, () => ({
+        focus: () => inputRef.current?.focus(),
+    }), [inputRef]);
 
     useCode(
         () => set(
@@ -249,7 +257,7 @@ const FloatingTextInput = ({
             </View>
         </TouchableWithoutFeedback>
     );
-};
+});
 
 export default FloatingTextInput;
 
