@@ -87,6 +87,7 @@ const getLabelPositions = (style: TextStyle, labelStyle: TextStyle, smallLabelSt
 
 export type FloatingTextInputRef = {
     focus: () => void;
+    isFocused: () => boolean;
 }
 
 type FloatingTextInputProps = TextInputProps & {
@@ -134,6 +135,7 @@ const FloatingTextInput = forwardRef<FloatingTextInputRef, FloatingTextInputProp
 
     useImperativeHandle(ref, () => ({
         focus: () => inputRef.current?.focus(),
+        isFocused: () => inputRef.current?.isFocused() || false,
     }), [inputRef]);
 
     useCode(

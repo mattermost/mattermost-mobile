@@ -4,7 +4,7 @@
 import {useManagedConfig, ManagedConfig} from '@mattermost/react-native-emm';
 import React, {useCallback, useEffect, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
-import {Platform, View} from 'react-native';
+import {Platform, useWindowDimensions, View} from 'react-native';
 import Button from 'react-native-button';
 import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
 import {Navigation} from 'react-native-navigation';
@@ -19,6 +19,8 @@ import AppVersion from '@components/app_version';
 import ErrorText from '@components/error_text';
 import FloatingTextInput, {FloatingTextInputRef} from '@components/floating_text_input_label';
 import {Screens} from '@constants';
+import {useIsTablet} from '@hooks/device';
+import {t} from '@i18n';
 import NetworkManager from '@init/network_manager';
 import {goToScreen} from '@screens/navigation';
 import {DeepLinkWithData, LaunchProps, LaunchType} from '@typings/launch';
@@ -39,14 +41,17 @@ interface ServerProps extends LaunchProps {
 let cancelPing: undefined | (() => void);
 
 const defaultServerUrlMessage = {
-    id: 'mobile.server_url.empty',
+    id: t('mobile.server_url.empty'),
     defaultMessage: 'Please enter a valid server URL',
 };
 
 const Server = ({componentId, extra, launchType, launchError, theme}: ServerProps) => {
     const intl = useIntl();
+    const isTablet = useIsTablet();
+    const dimensions = useWindowDimensions();
     const managedConfig = useManagedConfig<ManagedConfig>();
     const keyboardAwareRef = useRef<KeyboardAwareScrollView>();
+    const urlRef = useRef<FloatingTextInputRef>(null);
     const displayNameRef = useRef<FloatingTextInputRef>(null);
     const [connecting, setConnecting] = useState(false);
     const [displayName, setDisplayName] = useState<string>('');
@@ -113,6 +118,16 @@ const Server = ({componentId, extra, launchType, launchError, theme}: ServerProp
         return () => unsubscribe.remove();
     }, [componentId, url]);
 
+    useEffect(() => {
+        if (Platform.OS === 'ios' && isTablet) {
+            if (urlRef.current?.isFocused() || displayNameRef.current?.isFocused()) {
+                focus();
+            } else {
+                keyboardAwareRef.current?.scrollToPosition(0, 0);
+            }
+        }
+    }, [dimensions, isTablet]);
+
     const displayLogin = (serverUrl: string, config: ClientConfig, license: ClientLicense) => {
         const samlEnabled = config.EnableSaml === 'true' && license.IsLicensed === 'true' && license.SAML === 'true';
         const gitlabEnabled = config.EnableSignUpWithGitLab === 'true';
@@ -156,6 +171,20 @@ const Server = ({componentId, extra, launchType, launchError, theme}: ServerProp
         goToScreen(screen, title, passProps, defaultOptions);
         setConnecting(false);
         setUrl(serverUrl);
+    };
+
+    const focus = () => {
+        if (Platform.OS === 'ios') {
+            let offsetY = 160;
+            if (isTablet) {
+                const {width, height} = dimensions;
+                const isLandscape = width > height;
+                offsetY = isLandscape ? 230 : 100;
+            }
+            requestAnimationFrame(() => {
+                keyboardAwareRef.current?.scrollToPosition(0, offsetY);
+            });
+        }
     };
 
     const handleConnect = preventDoubleTap(async (manualUrl?: string) => {
@@ -207,11 +236,15 @@ const Server = ({componentId, extra, launchType, launchError, theme}: ServerProp
         return true;
     };
 
-    const onFocus = useCallback(() => {
-        if (Platform.OS === 'ios') {
-            keyboardAwareRef.current?.scrollToPosition(0, 160);
+    const onBlur = useCallback(() => {
+        if (Platform.OS === 'ios' && isTablet && !urlRef.current?.isFocused() && !displayNameRef.current?.isFocused()) {
+            keyboardAwareRef.current?.scrollToPosition(0, 0);
         }
     }, []);
+
+    const onFocus = useCallback(() => {
+        focus();
+    }, [dimensions]);
 
     const onUrlSubmit = useCallback(() => {
         displayNameRef.current?.focus();
@@ -261,12 +294,12 @@ const Server = ({componentId, extra, launchType, launchError, theme}: ServerProp
     let styleButtonText = buttonTextStyle(theme, 'lg', 'primary', 'default');
     let styleButtonBackground = buttonBackgroundStyle(theme, 'lg', 'primary');
 
-    let buttonID = 'mobile.components.select_server_view.connect';
+    let buttonID = t('mobile.components.select_server_view.connect');
     let buttonText = 'Connect';
     let buttonIcon;
 
     if (connecting) {
-        buttonID = 'mobile.components.select_server_view.connecting';
+        buttonID = t('mobile.components.select_server_view.connecting');
         buttonText = 'Connecting';
         buttonIcon = (
             <ActivityIndicator
@@ -283,105 +316,109 @@ const Server = ({componentId, extra, launchType, launchError, theme}: ServerProp
 
     return (
         <SafeAreaView
-            testID='select_server.screen'
-            style={styles.container}
             key={'server_content'}
+            style={styles.container}
+            testID='select_server.screen'
         >
             <AppVersion textStyle={styles.appInfo}/>
             <KeyboardAwareScrollView
-                contentContainerStyle={styles.formContainer}
-                style={styles.flex}
-                enableOnAndroid={true}
+                bounces={false}
+                contentContainerStyle={styles.scrollContainer}
                 enableAutomaticScroll={Platform.OS === 'android'}
+                enableOnAndroid={true}
+                enableResetScrollToCoords={true}
                 extraScrollHeight={20}
+                keyboardDismissMode='on-drag'
 
                 // @ts-expect-error legacy ref
                 ref={keyboardAwareRef}
-                bounces={false}
                 scrollToOverflowEnabled={true}
-                keyboardDismissMode='on-drag'
+                style={styles.flex}
             >
                 <View style={styles.textContainer}>
                     <FormattedText
-                        style={styles.welcome}
+                        defaultMessage={'Welcome'}
                         id={'mobile.components.select_server_view.msg_welcome'}
                         testID={'mobile.components.select_server_view.msg_welcome'}
-                        defaultMessage={'Welcome'}
+                        style={styles.welcome}
                     />
                     <FormattedText
-                        style={styles.connect}
-                        id={'mobile.components.select_server_view.msg_connect'}
-                        testID={'mobile.components.select_server_view.msg_connect'}
                         defaultMessage={'Let’s Connect to a Server'}
+                        id={'mobile.components.select_server_view.msg_connect'}
+                        style={[styles.connect, isTablet ? styles.connectTablet : undefined]}
+                        testID={'mobile.components.select_server_view.msg_connect'}
                     />
                     <FormattedText
-                        style={styles.description}
-                        id={'mobile.components.select_server_view.msg_description'}
-                        testID={'mobile.components.select_server_view.msg_description'}
                         defaultMessage={"A Server is your team's communication hub which is accessed through a unique URL"}
+                        id={'mobile.components.select_server_view.msg_description'}
+                        style={styles.description}
+                        testID={'mobile.components.select_server_view.msg_description'}
                     />
                 </View>
-                <View style={{width: '84%', alignItems: 'center'}}>
+                <View style={styles.formContainer}>
                     <FloatingTextInput
+                        autoCorrect={false}
+                        blurOnSubmit={false}
                         containerStyle={styles.enterServer}
-                        testID='select_server.server_url.input'
+                        enablesReturnKeyAutomatically={true}
+                        error={urlError}
+                        keyboardType='url'
                         label={formatMessage({
                             id: 'mobile.components.select_server_view.enterServerUrl',
                             defaultMessage: 'Enter Server URL',
                         })}
-                        autoCorrect={false}
-                        error={((urlError !== undefined) || urlError !== '') ? urlError : undefined}
-                        keyboardType='url'
-                        returnKeyType='next'
-                        enablesReturnKeyAutomatically={true}
+                        onBlur={onBlur}
                         onChangeText={handleUrlTextChanged}
-                        blurOnSubmit={false}
-                        onSubmitEditing={onUrlSubmit}
                         onFocus={onFocus}
+                        onSubmitEditing={onUrlSubmit}
+                        ref={urlRef}
+                        returnKeyType='next'
+                        testID='select_server.server_url.input'
                         theme={theme}
                         value={url}
                     />
                     <FloatingTextInput
-                        testID='select_server.server_display_name.input'
+                        autoCorrect={false}
+                        enablesReturnKeyAutomatically={true}
                         keyboardType='url'
-                        returnKeyType='done'
                         label={formatMessage({
                             id: 'mobile.components.select_server_view.displayName',
                             defaultMessage: 'Display Name',
                         })}
+                        onBlur={onBlur}
                         onChangeText={handleDisplayNameTextChanged}
                         onFocus={onFocus}
-                        ref={displayNameRef}
-                        enablesReturnKeyAutomatically={true}
                         onSubmitEditing={handleConnect}
-                        autoCorrect={false}
+                        ref={displayNameRef}
+                        returnKeyType='done'
+                        testID='select_server.server_display_name.input'
                         theme={theme}
                         value={displayName}
                     />
                     <FormattedText
-                        style={styles.chooseText}
+                        defaultMessage={'Choose a display name for your server'}
                         id={'mobile.components.select_server_view.displayHelp'}
+                        style={styles.chooseText}
                         testID={'mobile.components.select_server_view.displayHelp'}
-                        defaultMessage={'Choose a display name for the server in your sidebar'}
                     />
                     <Button
-                        disabled={buttonDisabled}
-                        testID='select_server.connect.button'
-                        onPress={handleConnect}
                         containerStyle={[styles.connectButton, styleButtonBackground]}
+                        disabled={buttonDisabled}
+                        onPress={handleConnect}
+                        testID='select_server.connect.button'
                     >
                         {buttonIcon}
                         <FormattedText
-                            style={styleButtonText}
-                            id={buttonID}
                             defaultMessage={buttonText}
+                            id={buttonID}
+                            style={styleButtonText}
                         />
                     </Button>
                     <View>
                         {Boolean(error) &&
                         <ErrorText
-                            testID='select_server.error.text'
                             error={error!}
+                            testID='select_server.error.text'
                             theme={theme}
                         />
                         }
@@ -403,13 +440,19 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         flex: 1,
     },
     formContainer: {
+        alignItems: 'center',
+        maxWidth: 600,
+        width: '84%',
+    },
+    scrollContainer: {
         justifyContent: 'center',
         alignItems: 'center',
         flex: 1,
     },
     textContainer: {
-        width: '84%',
         marginBottom: 32,
+        maxWidth: 600,
+        width: '84%',
     },
     welcome: {
         marginTop: 12,
@@ -423,14 +466,18 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         marginVertical: 12,
         ...typography('Heading', 1000, 'SemiBold'),
     },
+    connectTablet: {
+        width: undefined,
+    },
     description: {
         color: changeOpacity(theme.centerChannelColor, 0.64),
-        ...typography('Body', 200, 'Regular'),
+        ...typography('Body', 100, 'Regular'),
     },
     enterServer: {
         marginBottom: 24,
     },
     chooseText: {
+        alignSelf: 'flex-start',
         color: changeOpacity(theme.centerChannelColor, 0.64),
         marginTop: 8,
         ...typography('Body', 75, 'Regular'),
