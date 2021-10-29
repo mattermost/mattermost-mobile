@@ -4,7 +4,10 @@
 import React from 'react';
 import {StyleSheet, Text, View} from 'react-native';
 
+import TouchableWithFeedback from '@app/components/touchable_with_feedback';
+import {Screens} from '@app/constants';
 import {useTheme} from '@app/context/theme';
+import {goToScreen} from '@app/screens/navigation';
 import {makeStyleSheetFromTheme} from '@app/utils/theme';
 import {typography} from '@app/utils/typography';
 import CompassIcon from '@components/compass_icon';
@@ -38,13 +41,15 @@ const ThreadsButton = () => {
      * - Add right-side number badge
      */
     return (
-        <View style={styles.container}>
-            <CompassIcon
-                name='message-text-outline'
-                style={styles.icon}
-            />
-            <Text style={[textStyle, styles.text]}>{'Threads'}</Text>
-        </View>
+        <TouchableWithFeedback onPress={() => goToScreen(Screens.CHANNEL, 'Channel', {}, {topBar: {visible: false}})} >
+            <View style={styles.container}>
+                <CompassIcon
+                    name='message-text-outline'
+                    style={styles.icon}
+                />
+                <Text style={[textStyle, styles.text]}>{'Threads'}</Text>
+            </View>
+        </TouchableWithFeedback>
     );
 };
 

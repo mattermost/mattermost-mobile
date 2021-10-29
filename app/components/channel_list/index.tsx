@@ -1,8 +1,9 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React from 'react';
+import React, {useState} from 'react';
 import {View} from 'react-native';
+import {TouchableOpacity} from 'react-native-gesture-handler';
 
 import {Device} from '@app/constants';
 import {TABLET} from '@app/constants/view';
@@ -12,9 +13,9 @@ import {makeStyleSheetFromTheme} from '@utils/theme';
 
 import Categories from './categories';
 import ChannelListHeader from './header';
+import LoadingError from './loading_error';
 import SearchField from './search';
 
-// import LoadingError from './loading_error';
 // import Loading from './loading';
 
 const channels: TempoChannel[] = [
@@ -49,20 +50,25 @@ const ChannelList = ({iconPad}: ChannelListProps) => {
     const theme = useTheme();
     const styles = getStyleSheet(theme);
 
+    // @to-do; remove after testing
+    const [showCats, setShowCats] = useState<boolean>(true);
+
     const isSplitView = useSplitView();
     const showTabletLayout = Device.IS_TABLET && !isSplitView;
 
     return (
-        <View style={[styles.container, showTabletLayout && styles.maxW]} >
-            <ChannelListHeader
-                heading='Contributors'
-                subheading='Community TEST'
-                iconPad={iconPad}
-            />
+        <View style={[styles.container, showTabletLayout && styles.maxW]}>
+            <TouchableOpacity onPress={() => setShowCats(!showCats)}>
+                <ChannelListHeader
+                    heading='Contributors'
+                    subheading='Community TEST'
+                    iconPad={iconPad}
+                />
+            </TouchableOpacity>
             <SearchField/>
-            <Categories categories={categories}/>
+            {showCats && (<Categories categories={categories}/>)}
             {/* <Loading/> */}
-            {/* <LoadingError/> */}
+            {!showCats && (<LoadingError/>)}
         </View>
     );
 };
