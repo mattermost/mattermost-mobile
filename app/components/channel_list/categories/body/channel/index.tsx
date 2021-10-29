@@ -38,26 +38,24 @@ const textStyle = StyleSheet.create({
 type Props = {
     unreadCount?: number;
     highlight?: boolean;
-    archived?: boolean;
-    muted?: boolean;
     name: string;
-    leftIcon: COMPASS_ICONS;
+    icon: COMPASS_ICONS;
 }
 
 const ChannelListItem = (props: Props) => {
     const theme = useTheme();
     const styles = getStyleSheet(theme);
 
-    const {unreadCount, highlight, name, leftIcon} = props;
+    const {unreadCount, highlight, name, icon} = props;
 
     // Make it brighter if it's highlighted, or has unreads
     const bright = highlight || (unreadCount && unreadCount > 0);
 
     return (
         <View style={styles.container}>
-            {leftIcon && (
+            {icon && (
                 <CompassIcon
-                    name={leftIcon}
+                    name={icon}
                     style={styles.icon}
                 />
             )}

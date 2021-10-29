@@ -11,7 +11,7 @@ import ChannelItem from './index';
 test('Category Channel List Item should match snapshot', () => {
     const {toJSON} = renderWithIntlAndTheme(
         <ChannelItem
-            leftIcon={COMPASS_ICONS.globe}
+            icon={COMPASS_ICONS.globe}
             name='Channel Name'
         />,
     );

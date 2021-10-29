@@ -11,7 +11,7 @@ import ChannelListItem from './channel';
 const renderChannelItem = (data: { item: TempoChannel }) => {
     return (
         <ChannelListItem
-            leftIcon={COMPASS_ICONS.globe}
+            icon={COMPASS_ICONS.globe}
             name={data.item.name}
             highlight={data.item.highlight}
         />
