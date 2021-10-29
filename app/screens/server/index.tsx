@@ -329,6 +329,7 @@ const Server = ({componentId, extra, launchType, launchError, theme}: ServerProp
                 enableResetScrollToCoords={true}
                 extraScrollHeight={20}
                 keyboardDismissMode='on-drag'
+                keyboardShouldPersistTaps='handled'
 
                 // @ts-expect-error legacy ref
                 ref={keyboardAwareRef}
