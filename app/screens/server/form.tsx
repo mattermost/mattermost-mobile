@@ -150,6 +150,7 @@ const ServerForm = ({
             <View style={[styles.fullWidth, urlError?.length ? styles.error : undefined]}>
                 <FloatingTextInput
                     autoCorrect={false}
+                    autoCapitalize={'none'}
                     blurOnSubmit={false}
                     containerStyle={styles.enterServer}
                     enablesReturnKeyAutomatically={true}
@@ -173,6 +174,7 @@ const ServerForm = ({
             <View style={[styles.fullWidth, displayNameError?.length ? styles.error : undefined]}>
                 <FloatingTextInput
                     autoCorrect={false}
+                    autoCapitalize={'none'}
                     enablesReturnKeyAutomatically={true}
                     error={displayNameError}
                     keyboardType='url'
