@@ -174,7 +174,8 @@ class DatabaseHelper {
 
                         if (lastId == key) {
                             earliest = post.get("create_at") as Double
-                        } else if (firstId == key) {
+                        }
+                        if (firstId == key) {
                             latest = post.get("create_at") as Double
                         }
 

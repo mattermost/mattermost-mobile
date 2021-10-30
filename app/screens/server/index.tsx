@@ -57,6 +57,7 @@ const Server = ({componentId, extra, launchType, launchError, theme}: ServerProp
     const {formatMessage} = intl;
 
     useEffect(() => {
+        const serverName = managedConfig?.serverName || LocalConfig.DefaultServerName;
         let serverUrl = managedConfig?.serverUrl || LocalConfig.DefaultServerUrl;
         let autoconnect = managedConfig?.allowOtherServers === 'false' || LocalConfig.AutoSelectServerUrl;
 
@@ -79,11 +80,15 @@ const Server = ({componentId, extra, launchType, launchError, theme}: ServerProp
         if (serverUrl) {
             // If a server Url is set by the managed or local configuration, use it.
             setUrl(serverUrl);
+        }
 
-            if (autoconnect) {
-                // If no other servers are allowed or the local config for AutoSelectServerUrl is set, attempt to connect
-                handleConnect(managedConfig?.serverUrl || LocalConfig.DefaultServerUrl);
-            }
+        if (serverName) {
+            setDisplayName(serverName);
+        }
+
+        if (serverUrl && serverName && autoconnect) {
+            // If no other servers are allowed or the local config for AutoSelectServerUrl is set, attempt to connect
+            handleConnect(managedConfig?.serverUrl || LocalConfig.DefaultServerUrl);
         }
     }, []);
 
@@ -154,7 +159,7 @@ const Server = ({componentId, extra, launchType, launchError, theme}: ServerProp
     };
 
     const handleConnect = preventDoubleTap(async (manualUrl?: string) => {
-        if (buttonDisabled) {
+        if (buttonDisabled && !manualUrl) {
             return;
         }
 
@@ -174,7 +179,7 @@ const Server = ({componentId, extra, launchType, launchError, theme}: ServerProp
         }
 
         const server = await queryServerByDisplayName(DatabaseManager.appDatabase!.database, displayName);
-        if (server) {
+        if (server && server.lastActiveAt > 0) {
             setButtonDisabled(true);
             setDisplayNameError(formatMessage({
                 id: 'mobile.server_name.exists',
@@ -247,7 +252,7 @@ const Server = ({componentId, extra, launchType, launchError, theme}: ServerProp
         }
 
         const server = await queryServerByIdentifier(DatabaseManager.appDatabase!.database, data.config!.DiagnosticId);
-        if (server) {
+        if (server && server.lastActiveAt > 0) {
             setButtonDisabled(true);
             setUrlError(formatMessage({
                 id: 'mobile.server_identifier.exists',
