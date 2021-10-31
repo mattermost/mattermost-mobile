@@ -279,6 +279,7 @@ export default class EditChannelInfo extends PureComponent {
                                             onPress={() => {
                                                 this.onTypeSelect(General.OPEN_CHANNEL);
                                             }}
+                                            testID='edit_channel_info.type.public.action'
                                         >
                                             <FormattedText
                                                 style={style.touchableText}
@@ -305,6 +306,7 @@ export default class EditChannelInfo extends PureComponent {
                                             onPress={() => {
                                                 this.onTypeSelect(General.PRIVATE_CHANNEL);
                                             }}
+                                            testID='edit_channel_info.type.private.action'
                                         >
                                             <FormattedText
                                                 style={style.touchableText}

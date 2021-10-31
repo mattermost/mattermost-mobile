@@ -20,6 +20,7 @@ export default class ChannelNotificationPreferenceBase extends PureComponent {
         notifyProps: PropTypes.object.isRequired,
         theme: PropTypes.object.isRequired,
         userId: PropTypes.string.isRequired,
+        isCollapsedThreadsEnabled: PropTypes.bool.isRequired,
     };
 
     static contextTypes = {
@@ -31,6 +32,7 @@ export default class ChannelNotificationPreferenceBase extends PureComponent {
 
         this.state = {
             notificationLevel: props.notifyProps?.push || ViewTypes.NotificationLevels.DEFAULT,
+            notificationThreadsLevel: props.notifyProps?.push_threads || ViewTypes.NotificationLevels.ALL,
         };
     }
 
@@ -67,9 +69,54 @@ export default class ChannelNotificationPreferenceBase extends PureComponent {
         }];
     }
 
+    handleSubmit = (push, push_threads) => {
+        const {actions, channelId, userId, isCollapsedThreadsEnabled} = this.props;
+
+        const props = {
+            push,
+        };
+
+        if (isCollapsedThreadsEnabled) {
+            props.push_threads = push_threads;
+        }
+
+        return actions.updateChannelNotifyProps(userId, channelId, props);
+    };
+
+    handleThreadsPress = preventDoubleTap(async (value) => {
+        const newNotificationLevel = value ? ViewTypes.NotificationLevels.ALL : ViewTypes.NotificationLevels.MENTION;
+        const {notificationThreadsLevel, notificationLevel} = this.state;
+
+        if (newNotificationLevel === notificationThreadsLevel) {
+            // tapped on current selection.
+            return;
+        }
+
+        this.setState({
+            notificationThreadsLevel: newNotificationLevel,
+        });
+
+        const {error} = await this.handleSubmit(notificationLevel, newNotificationLevel);
+        if (error) {
+            const {intl} = this.context;
+            alertErrorWithFallback(
+                intl,
+                error,
+                {
+                    id: t('channel_notifications.preference.save_error'),
+                    defaultMessage: "We couldn't save notification preference. Please check your connection and try again.",
+                },
+            );
+
+            // restore old value.
+            this.setState({
+                notificationThreadsLevel,
+            });
+        }
+    });
+
     handlePress = preventDoubleTap(async (newNotificationLevel) => {
-        const {actions, channelId, userId} = this.props;
-        const {notificationLevel} = this.state;
+        const {notificationLevel, notificationThreadsLevel} = this.state;
 
         if (newNotificationLevel === notificationLevel) {
             // tapped on current selection.
@@ -80,9 +127,7 @@ export default class ChannelNotificationPreferenceBase extends PureComponent {
             notificationLevel: newNotificationLevel,
         });
 
-        const props = {push: newNotificationLevel};
-
-        const {error} = await actions.updateChannelNotifyProps(userId, channelId, props);
+        const {error} = await this.handleSubmit(newNotificationLevel, notificationThreadsLevel);
         if (error) {
             const {intl} = this.context;
             alertErrorWithFallback(

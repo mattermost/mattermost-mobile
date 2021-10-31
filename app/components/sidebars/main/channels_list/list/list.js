@@ -420,6 +420,21 @@ export default class List extends PureComponent {
             }
         };
 
+        const categoryId = () => {
+            switch (type) {
+            case CategoryTypes.UNREADS:
+                return CategoryTypes.UNREADS.toLowerCase();
+            case CategoryTypes.FAVORITES:
+                return CategoryTypes.FAVORITES.toLowerCase();
+            case CategoryTypes.CHANNELS:
+                return CategoryTypes.CHANNELS.toLowerCase();
+            case CategoryTypes.DIRECT_MESSAGES:
+                return CategoryTypes.DIRECT_MESSAGES.toLowerCase();
+            default:
+                return name.replaceAll(' ', '_').toLowerCase();
+            }
+        };
+
         const header = (
             <View style={styles.titleContainer}>
                 {(type !== CategoryTypes.UNREADS && data.length > 0) &&
@@ -435,7 +450,7 @@ export default class List extends PureComponent {
                 <View style={styles.separatorContainer}>
                     <Text> </Text>
                 </View>
-                {action && this.renderSectionAction(styles, action, anchor, id)}
+                {action && this.renderSectionAction(styles, action, anchor, categoryId())}
             </View>
         );
 

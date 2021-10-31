@@ -1,10 +1,9 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import PropTypes from 'prop-types';
 import React, {PureComponent} from 'react';
 import {intlShape} from 'react-intl';
-import {Text, View} from 'react-native';
+import {Text, View, Platform} from 'react-native';
 
 import {goToScreen} from '@actions/navigation';
 import CompassIcon from '@components/compass_icon';
@@ -12,33 +11,46 @@ import FormattedText from '@components/formatted_text';
 import Markdown from '@components/markdown';
 import TouchableWithFeedback from '@components/touchable_with_feedback';
 import {ViewTypes} from '@constants';
+import {ActionResult} from '@mm-redux/types/actions';
+import {Channel} from '@mm-redux/types/channels';
+import {DialogOption} from '@mm-redux/types/integrations';
+import {Theme} from '@mm-redux/types/theme';
+import {UserProfile} from '@mm-redux/types/users';
 import {displayUsername} from '@mm-redux/utils/user_utils';
 import {getMarkdownBlockStyles, getMarkdownTextStyles} from '@utils/markdown';
 import {preventDoubleTap} from '@utils/tap';
 import {makeStyleSheetFromTheme, changeOpacity} from '@utils/theme';
 
-export default class AutocompleteSelector extends PureComponent {
-    static propTypes = {
-        actions: PropTypes.shape({
-            setAutocompleteSelector: PropTypes.func.isRequired,
-        }).isRequired,
-        getDynamicOptions: PropTypes.func,
-        label: PropTypes.string,
-        placeholder: PropTypes.string.isRequired,
-        dataSource: PropTypes.string,
-        options: PropTypes.arrayOf(PropTypes.object),
-        selected: PropTypes.object,
-        optional: PropTypes.bool,
-        showRequiredAsterisk: PropTypes.bool,
-        teammateNameDisplay: PropTypes.string,
-        theme: PropTypes.object.isRequired,
-        onSelected: PropTypes.func,
-        helpText: PropTypes.node,
-        errorText: PropTypes.node,
-        roundedBorders: PropTypes.bool,
-        disabled: PropTypes.bool,
-    };
+type Selection = DialogOption | Channel | UserProfile | DialogOption[] | Channel[] | UserProfile[];
 
+type Props = {
+    actions: {
+        setAutocompleteSelector: (dataSource: any, onSelect: any, options: any, getDynamicOptions: any) => Promise<ActionResult>;
+    };
+    getDynamicOptions?: (term: string) => Promise<ActionResult>;
+    label?: string;
+    placeholder?: string;
+    dataSource?: string;
+    options?: DialogOption[];
+    selected?: DialogOption | DialogOption[];
+    optional?: boolean;
+    showRequiredAsterisk?: boolean;
+    teammateNameDisplay?: string;
+    theme: Theme;
+    onSelected?: ((item: DialogOption) => void) | ((item: DialogOption[]) => void);
+    helpText?: string;
+    errorText?: string;
+    roundedBorders?: boolean;
+    disabled?: boolean;
+    isMultiselect?: boolean;
+}
+
+type State = {
+    selectedText: string;
+    selected?: DialogOption | DialogOption[];
+}
+
+export default class AutocompleteSelector extends PureComponent<Props, State> {
     static contextTypes = {
         intl: intlShape,
     };
@@ -49,26 +61,45 @@ export default class AutocompleteSelector extends PureComponent {
         roundedBorders: true,
     };
 
-    constructor(props) {
+    constructor(props: Props) {
         super(props);
 
         this.state = {
-            selectedText: null,
+            selectedText: '',
         };
     }
 
-    static getDerivedStateFromProps(props, state) {
-        if (props.selected && props.selected !== state.selected) {
+    static getDerivedStateFromProps(props: Props, state: State) {
+        if (!props.selected || props.selected === state.selected) {
+            return null;
+        }
+
+        if (!props.isMultiselect) {
             return {
-                selectedText: props.selected.text,
+                selectedText: (props.selected as DialogOption).text,
                 selected: props.selected,
             };
         }
 
-        return null;
+        const options = props.selected as DialogOption[];
+        let selectedText = '';
+        const selected: DialogOption[] = [];
+
+        options.forEach((option) => {
+            if (selectedText !== '') {
+                selectedText += ', ';
+            }
+            selectedText += option.text;
+            selected.push(option);
+        });
+
+        return {
+            selectedText,
+            selected,
+        };
     }
 
-    handleSelect = (selected) => {
+    handleSelect = (selected: Selection) => {
         if (!selected) {
             return;
         }
@@ -78,34 +109,113 @@ export default class AutocompleteSelector extends PureComponent {
             teammateNameDisplay,
         } = this.props;
 
-        let selectedText;
-        let selectedValue;
-        if (dataSource === ViewTypes.DATA_SOURCE_USERS) {
-            selectedText = displayUsername(selected, teammateNameDisplay);
-            selectedValue = selected.id;
-        } else if (dataSource === ViewTypes.DATA_SOURCE_CHANNELS) {
-            selectedText = selected.display_name;
-            selectedValue = selected.id;
-        } else {
-            selectedText = selected.text;
-            selectedValue = selected.value;
+        if (!this.props.isMultiselect) {
+            let selectedText: string;
+            let selectedValue: string;
+            switch (dataSource) {
+            case ViewTypes.DATA_SOURCE_USERS: {
+                const typedSelected = selected as UserProfile;
+                selectedText = displayUsername(typedSelected, teammateNameDisplay || '');
+                selectedValue = typedSelected.id;
+                break;
+            }
+            case ViewTypes.DATA_SOURCE_CHANNELS: {
+                const typedSelected = selected as Channel;
+                selectedText = typedSelected.display_name;
+                selectedValue = typedSelected.id;
+                break;
+            }
+            default: {
+                const typedSelected = selected as DialogOption;
+                selectedText = typedSelected.text;
+                selectedValue = typedSelected.value;
+            }
+            }
+
+            this.setState({selectedText});
+
+            if (this.props.onSelected) {
+                (this.props.onSelected as (opt: DialogOption) => void)({text: selectedText, value: selectedValue});
+            }
+            return;
+        }
+
+        let selectedText = '';
+        const selectedOptions: DialogOption[] = [];
+        switch (dataSource) {
+        case ViewTypes.DATA_SOURCE_USERS: {
+            const typedSelected = selected as UserProfile[];
+            typedSelected.forEach((option) => {
+                if (selectedText !== '') {
+                    selectedText += ', ';
+                }
+                const text = displayUsername(option, teammateNameDisplay || '');
+                selectedText += text;
+                selectedOptions.push({text, value: option.id});
+            });
+            break;
+        }
+        case ViewTypes.DATA_SOURCE_CHANNELS: {
+            const typedSelected = selected as Channel[];
+            typedSelected.forEach((option) => {
+                if (selectedText !== '') {
+                    selectedText += ', ';
+                }
+                const text = option.display_name;
+                selectedText += text;
+                selectedOptions.push({text, value: option.id});
+            });
+            break;
+        }
+        default: {
+            const typedSelected = selected as DialogOption[];
+            typedSelected.forEach((option) => {
+                if (selectedText !== '') {
+                    selectedText += ', ';
+                }
+                selectedText += option.text;
+                selectedOptions.push(option);
+            });
+            break;
+        }
         }
 
         this.setState({selectedText});
 
         if (this.props.onSelected) {
-            this.props.onSelected({text: selectedText, value: selectedValue});
+            (this.props.onSelected as (opt: DialogOption[]) => void)(selectedOptions);
         }
     };
 
-    goToSelectorScreen = preventDoubleTap(() => {
+    goToSelectorScreen = preventDoubleTap(async () => {
+        const closeButton = await CompassIcon.getImageSource(Platform.select({ios: 'arrow-back-ios', default: 'arrow-left'}), 24, this.props.theme.sidebarHeaderTextColor);
+
         const {formatMessage} = this.context.intl;
-        const {actions, dataSource, options, placeholder, getDynamicOptions} = this.props;
+        const {actions, dataSource, options, placeholder, getDynamicOptions, theme} = this.props;
         const screen = 'SelectorScreen';
         const title = placeholder || formatMessage({id: 'mobile.action_menu.select', defaultMessage: 'Select an option'});
+        const buttonName = formatMessage({id: 'mobile.forms.select.done', defaultMessage: 'Done'});
 
         actions.setAutocompleteSelector(dataSource, this.handleSelect, options, getDynamicOptions);
-        goToScreen(screen, title);
+        let screenOptions = {};
+        if (this.props.isMultiselect) {
+            screenOptions = {
+                topBar: {
+                    leftButtons: [{
+                        id: 'close-dialog',
+                        icon: closeButton,
+                    }],
+                    rightButtons: [{
+                        id: 'submit-form',
+                        showAsAction: 'always',
+                        text: buttonName,
+                    }],
+                    leftButtonColor: theme.sidebarHeaderTextColor,
+                    rightButtonColor: theme.sidebarHeaderTextColor,
+                },
+            };
+        }
+        goToScreen(screen, title, {isMultiselect: this.props.isMultiselect, selected: this.state.selected}, screenOptions);
     });
 
     render() {
@@ -125,6 +235,8 @@ export default class AutocompleteSelector extends PureComponent {
         const style = getStyleSheet(theme);
         const textStyles = getMarkdownTextStyles(theme);
         const blockStyles = getMarkdownBlockStyles(theme);
+
+        const chevron = Platform.select({ios: 'chevron-right', default: 'chevron-down'});
 
         let text = placeholder || intl.formatMessage({id: 'mobile.action_menu.select', defaultMessage: 'Select an option'});
         let selectedStyle = style.dropdownPlaceholder;
@@ -215,8 +327,8 @@ export default class AutocompleteSelector extends PureComponent {
                             {text}
                         </Text>
                         <CompassIcon
-                            name='chevron-down'
-                            color={changeOpacity(theme.centerChannelColor, 0.5)}
+                            name={chevron}
+                            color={changeOpacity(theme.centerChannelColor, 0.32)}
                             style={style.icon}
                         />
                     </View>
@@ -228,7 +340,7 @@ export default class AutocompleteSelector extends PureComponent {
     }
 }
 
-const getStyleSheet = makeStyleSheetFromTheme((theme) => {
+const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     const input = {
         borderWidth: 1,
         borderColor: changeOpacity(theme.centerChannelColor, 0.1),
@@ -263,8 +375,9 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         },
         icon: {
             position: 'absolute',
-            top: 13,
+            top: 6,
             right: 12,
+            fontSize: 28,
         },
         labelContainer: {
             flexDirection: 'row',
