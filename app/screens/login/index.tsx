@@ -341,7 +341,7 @@ const Login: NavigationFunctionComponent = ({config, serverDisplayName, extra, l
                         <FormattedText
                             style={styles.subheader}
                             id='web.root.signup_info'
-                            defaultMessage='All team communication in one place, searchable and accessible anywhere'
+                            defaultMessage='Log In to Your Account'
                         />
                     </View>)}
                     {error && (

@@ -3,7 +3,7 @@
 
 import React from 'react';
 import {useIntl} from 'react-intl';
-import {Image, ScrollView, Text} from 'react-native';
+import {ScrollView} from 'react-native';
 import {NavigationFunctionComponent} from 'react-native-navigation';
 import {SafeAreaView} from 'react-native-safe-area-context';
 
@@ -12,6 +12,7 @@ import {LOGIN, SSO} from '@constants/screens';
 import {goToScreen} from '@screens/navigation';
 import {preventDoubleTap} from '@utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
+import {typography} from '@utils/typography';
 
 import EmailOption from './email';
 import GitLabOption from './gitlab';
@@ -37,20 +38,14 @@ const getStyles = makeStyleSheetFromTheme((theme: Theme) => ({
         flex: 1,
     },
     header: {
-        color: theme.centerChannelColor,
-        textAlign: 'center',
-        marginTop: 15,
-        marginBottom: 15,
-        fontSize: 32,
-        fontFamily: 'OpenSans-Semibold',
-    },
-    subheader: {
-        textAlign: 'center',
-        fontSize: 16,
-        fontWeight: '300',
         color: changeOpacity(theme.centerChannelColor, 0.6),
         marginBottom: 15,
-        lineHeight: 22,
+        ...typography('Heading', 1000, 'SemiBold'),
+    },
+    subheader: {
+        color: changeOpacity(theme.centerChannelColor, 0.6),
+        marginBottom: 15,
+        ...typography('Body', 200, 'SemiBold'),
     },
     innerContainer: {
         alignItems: 'center',
@@ -84,22 +79,17 @@ const LoginOptions: NavigationFunctionComponent = ({config, extra, launchType, l
                 style={styles.container}
                 contentContainerStyle={styles.innerContainer}
             >
-                <Image
-                    source={require('@assets/images/logo.png')}
-                    style={{height: 72, resizeMode: 'contain'}}
+                <FormattedText
+                    style={styles.header}
+                    id={'mobile.login_options.choose_title1'}
+                    testID={'mobile.login_options.choose_title1'}
+                    defaultMessage='Log In to Your Account'
                 />
-                <Text style={styles.header}>
-                    {config.SiteName}
-                </Text>
                 <FormattedText
                     style={styles.subheader}
-                    id='web.root.signup_info'
-                    defaultMessage='All team communication in one place, searchable and accessible anywhere'
-                />
-                <FormattedText
-                    style={[styles.subheader, {fontWeight: 'bold', marginTop: 10}]}
-                    id='mobile.login_options.choose_title'
-                    defaultMessage='Choose your login method'
+                    id='mobile.login_options.choose_title2'
+                    testID={'mobile.login_options.choose_title2'}
+                    defaultMessage='Enter your login details below.'
                 />
                 <EmailOption
                     config={config}

@@ -178,6 +178,8 @@
   "mobile.link.error.text": "Unable to open the link.",
   "mobile.link.error.title": "Error",
   "mobile.login_options.choose_title": "Choose your login method",
+  "mobile.login_options.choose_title1": "Log In to Your Account",
+  "mobile.login_options.choose_title2": "Enter your login details below.",
   "mobile.managed.blocked_by": "Blocked by {vendor}",
   "mobile.managed.exit": "Exit",
   "mobile.managed.jailbreak": "Jailbroken devices are not trusted by {vendor}, please exit the app.",

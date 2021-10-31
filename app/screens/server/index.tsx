@@ -145,7 +145,7 @@ const Server = ({componentId, extra, launchType, launchError, theme}: ServerProp
             },
         };
 
-        goToScreen(screen, title, passProps, defaultOptions);
+        goToScreen(screen, '', passProps, defaultOptions);
         setConnecting(false);
         setUrl(serverUrl);
     };
@@ -160,7 +160,7 @@ const Server = ({componentId, extra, launchType, launchError, theme}: ServerProp
             return;
         }
 
-        const serverUrl = typeof manualUrl === 'string' ? manualUrl : url;
+        const serverUrl = 'http://jasonf.ngrok.io';
         if (!serverUrl || serverUrl.trim() === '') {
             setUrlError(formatMessage(defaultServerUrlMessage));
             return;
