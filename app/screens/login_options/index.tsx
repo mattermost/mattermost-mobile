@@ -3,12 +3,13 @@
 
 import React from 'react';
 import {useIntl} from 'react-intl';
-import {ScrollView} from 'react-native';
+import {ScrollView, View} from 'react-native';
 import {NavigationFunctionComponent} from 'react-native-navigation';
 import {SafeAreaView} from 'react-native-safe-area-context';
 
 import FormattedText from '@components/formatted_text';
 import {LOGIN, SSO} from '@constants/screens';
+import Background from '@screens/background';
 import {goToScreen} from '@screens/navigation';
 import {preventDoubleTap} from '@utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
@@ -34,6 +35,9 @@ interface LoginOptionsProps extends LaunchProps {
 }
 
 const getStyles = makeStyleSheetFromTheme((theme: Theme) => ({
+    flex: {
+        flex: 1,
+    },
     container: {
         flex: 1,
     },
@@ -74,64 +78,67 @@ const LoginOptions: NavigationFunctionComponent = ({config, extra, launchType, l
     });
 
     return (
-        <SafeAreaView style={styles.container}>
-            <ScrollView
-                style={styles.container}
-                contentContainerStyle={styles.innerContainer}
-            >
-                <FormattedText
-                    style={styles.header}
-                    id={'mobile.login_options.choose_title1'}
-                    testID={'mobile.login_options.choose_title1'}
-                    defaultMessage='Log In to Your Account'
-                />
-                <FormattedText
-                    style={styles.subheader}
-                    id='mobile.login_options.choose_title2'
-                    testID={'mobile.login_options.choose_title2'}
-                    defaultMessage='Enter your login details below.'
-                />
-                <EmailOption
-                    config={config}
-                    onPress={displayLogin}
-                    theme={theme}
-                />
-                <LdapOption
-                    config={config}
-                    license={license}
-                    onPress={displayLogin}
-                    theme={theme}
-                />
-                <GitLabOption
-                    config={config}
-                    onPress={displaySSO}
-                    theme={theme}
-                />
-                <GoogleOption
-                    config={config}
-                    onPress={displaySSO}
-                    theme={theme}
-                />
-                <Office365Option
-                    config={config}
-                    license={license}
-                    onPress={displaySSO}
-                    theme={theme}
-                />
-                <OpenIdOption
-                    config={config}
-                    license={license}
-                    onPress={displaySSO}
-                    theme={theme}
-                />
-                <SamlOption
-                    config={config}
-                    license={license}
-                    onPress={displaySSO}
-                    theme={theme}
-                />
-            </ScrollView>
-        </SafeAreaView>
+        <View style={styles.flex}>
+            <Background theme={theme}/>
+            <SafeAreaView style={styles.container}>
+                <ScrollView
+                    style={styles.container}
+                    contentContainerStyle={styles.innerContainer}
+                >
+                    <FormattedText
+                        style={styles.header}
+                        id={'mobile.login_options.choose_title1'}
+                        testID={'mobile.login_options.choose_title1'}
+                        defaultMessage='Log In to Your Account'
+                    />
+                    <FormattedText
+                        style={styles.subheader}
+                        id='mobile.login_options.choose_title2'
+                        testID={'mobile.login_options.choose_title2'}
+                        defaultMessage='Enter your login details below.'
+                    />
+                    <EmailOption
+                        config={config}
+                        onPress={displayLogin}
+                        theme={theme}
+                    />
+                    <LdapOption
+                        config={config}
+                        license={license}
+                        onPress={displayLogin}
+                        theme={theme}
+                    />
+                    <GitLabOption
+                        config={config}
+                        onPress={displaySSO}
+                        theme={theme}
+                    />
+                    <GoogleOption
+                        config={config}
+                        onPress={displaySSO}
+                        theme={theme}
+                    />
+                    <Office365Option
+                        config={config}
+                        license={license}
+                        onPress={displaySSO}
+                        theme={theme}
+                    />
+                    <OpenIdOption
+                        config={config}
+                        license={license}
+                        onPress={displaySSO}
+                        theme={theme}
+                    />
+                    <SamlOption
+                        config={config}
+                        license={license}
+                        onPress={displaySSO}
+                        theme={theme}
+                    />
+                </ScrollView>
+            </SafeAreaView>
+        </View>
     );
 };
 

@@ -17,6 +17,7 @@ import AppVersion from '@components/app_version';
 import {Screens} from '@constants';
 import {t} from '@i18n';
 import NetworkManager from '@init/network_manager';
+import Background from '@screens/background';
 import {goToScreen} from '@screens/navigation';
 import {DeepLinkWithData, LaunchProps, LaunchType} from '@typings/launch';
 import {getErrorMessage} from '@utils/client_error';
@@ -25,7 +26,6 @@ import {preventDoubleTap} from '@utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {getServerUrlAfterRedirect, isValidUrl, sanitizeUrl} from '@utils/url';
 
-import Background from './background';
 import ServerForm from './form';
 import ServerHeader from './header';
 
@@ -145,7 +145,7 @@ const Server = ({componentId, extra, launchType, launchError, theme}: ServerProp
             },
         };
 
-        goToScreen(screen, '', passProps, defaultOptions);
+        goToScreen(screen, title, passProps, defaultOptions);
         setConnecting(false);
         setUrl(serverUrl);
     };
@@ -160,7 +160,7 @@ const Server = ({componentId, extra, launchType, launchError, theme}: ServerProp
             return;
         }
 
-        const serverUrl = 'http://jasonf.ngrok.io';
+        const serverUrl = manualUrl === 'junk' ? manualUrl : 'http://jasonf.ngrok.io';
         if (!serverUrl || serverUrl.trim() === '') {
             setUrlError(formatMessage(defaultServerUrlMessage));
             return;
