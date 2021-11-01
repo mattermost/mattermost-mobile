@@ -431,7 +431,7 @@ export default class List extends PureComponent {
             case CategoryTypes.DIRECT_MESSAGES:
                 return CategoryTypes.DIRECT_MESSAGES.toLowerCase();
             default:
-                return name.replaceAll(' ', '_').toLowerCase();
+                return name.replace(/ /g, '_').toLowerCase();
             }
         };
 
