@@ -368,6 +368,7 @@
   "mobile.files_paste.error_title": "Beillesztés nem sikerült",
   "mobile.flagged_posts.empty_description": "A mentett üzeneteket csak Ön láthatja. Jelölje meg az üzeneteket nyomon követésre, vagy mentsen el valamit későbbre úgy, hogy hosszan megnyomja az üzenetet, és a menüből válassza a Mentés lehetőséget.",
   "mobile.flagged_posts.empty_title": "Még nincsenek mentett üzenetek",
+  "mobile.forms.select.done": "Kész",
   "mobile.gallery.title": "{index} / {total}",
   "mobile.general.error.title": "Hiba",
   "mobile.help.title": "Súgó",
