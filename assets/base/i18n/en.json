@@ -179,6 +179,7 @@
   "mobile.link.error.title": "Error",
   "mobile.login_options.description": "Enter your login details below.",
   "mobile.login_options.heading": "Log In to Your Account",
+  "mobile.login_options.separator_text": "or log in with",
   "mobile.managed.blocked_by": "Blocked by {vendor}",
   "mobile.managed.exit": "Exit",
   "mobile.managed.jailbreak": "Jailbroken devices are not trusted by {vendor}, please exit the app.",

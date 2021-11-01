@@ -402,7 +402,12 @@ const Login: NavigationFunctionComponent = ({config, serverDisplayName, extra, l
             {renderProceedButton()}
             <View style={styles.separatorContainer}>
                 <View style={styles.separatorLine}/>
-                <Text style={styles.separatorText}>{' or log in with '}</Text>
+                <FormattedText
+                    id='mobile.login_options.separator_text'
+                    defaultMessage='or log in with'
+                    style={styles.separatorText}
+                    testID='mobile.login_options.separator_text'
+                />
                 <View style={styles.separatorLine}/>
             </View>
         </>
@@ -427,10 +432,12 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     },
     separatorLine: {
         flex: 1,
-        height: 1,
+        height: 0.3,
         backgroundColor: changeOpacity(theme.centerChannelColor, 0.64),
     },
     separatorText: {
+        marginRight: 6,
+        marginLeft: 6,
         textAlign: 'center',
         ...typography('Body', 25, 'SemiBold'),
     },
