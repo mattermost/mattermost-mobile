@@ -14,13 +14,13 @@ import {
 } from 'react-native';
 import {SafeAreaView} from 'react-native-safe-area-context';
 
-import {getCodeFont} from 'app/utils/markdown';
+import {popTopScreen} from '@actions/navigation';
+import {getCodeFont} from '@utils/markdown';
 import {
     changeOpacity,
     makeStyleSheetFromTheme,
     getKeyboardAppearanceFromTheme,
-} from 'app/utils/theme';
-import {popTopScreen} from 'app/actions/navigation';
+} from '@utils/theme';
 
 export default class Code extends React.PureComponent {
     static propTypes = {
@@ -67,6 +67,7 @@ export default class Code extends React.PureComponent {
         if (Platform.OS === 'ios') {
             textComponent = (
                 <TextInput
+                    allowFontScaling={true}
                     editable={false}
                     multiline={true}
                     value={this.props.content}

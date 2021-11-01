@@ -1,0 +1,350 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`AppsForm should set match snapshot 1`] = `
+<RNCSafeAreaView
+  style={
+    Object {
+      "backgroundColor": "rgba(63,67,80,0.03)",
+      "height": "100%",
+    }
+  }
+  testID="interactive_dialog.screen"
+>
+  <ScrollView
+    style={
+      Object {
+        "marginBottom": 20,
+        "marginTop": 10,
+      }
+    }
+  >
+    <Connect(StatusBar) />
+    <DialogIntroductionText
+      theme={
+        Object {
+          "awayIndicator": "#ffbc1f",
+          "buttonBg": "#1c58d9",
+          "buttonColor": "#ffffff",
+          "centerChannelBg": "#ffffff",
+          "centerChannelColor": "#3f4350",
+          "codeTheme": "github",
+          "dndIndicator": "#d24b4e",
+          "errorTextColor": "#d24b4e",
+          "linkColor": "#386fe5",
+          "mentionBg": "#ffffff",
+          "mentionColor": "#1e325c",
+          "mentionHighlightBg": "#ffd470",
+          "mentionHighlightLink": "#1b1d22",
+          "newMessageSeparator": "#cc8f00",
+          "onlineIndicator": "#3db887",
+          "sidebarBg": "#1e325c",
+          "sidebarHeaderBg": "#192a4d",
+          "sidebarHeaderTextColor": "#ffffff",
+          "sidebarTeamBarBg": "#14213e",
+          "sidebarText": "#ffffff",
+          "sidebarTextActiveBorder": "#5d89ea",
+          "sidebarTextActiveColor": "#ffffff",
+          "sidebarTextHoverBg": "#28427b",
+          "sidebarUnreadText": "#ffffff",
+          "type": "Denim",
+        }
+      }
+      value="Header"
+    />
+    <AppsFormField
+      field={
+        Object {
+          "name": "bool1",
+          "type": "bool",
+        }
+      }
+      key="bool1"
+      name="bool1"
+      onChange={[Function]}
+      performLookup={[Function]}
+      theme={
+        Object {
+          "awayIndicator": "#ffbc1f",
+          "buttonBg": "#1c58d9",
+          "buttonColor": "#ffffff",
+          "centerChannelBg": "#ffffff",
+          "centerChannelColor": "#3f4350",
+          "codeTheme": "github",
+          "dndIndicator": "#d24b4e",
+          "errorTextColor": "#d24b4e",
+          "linkColor": "#386fe5",
+          "mentionBg": "#ffffff",
+          "mentionColor": "#1e325c",
+          "mentionHighlightBg": "#ffd470",
+          "mentionHighlightLink": "#1b1d22",
+          "newMessageSeparator": "#cc8f00",
+          "onlineIndicator": "#3db887",
+          "sidebarBg": "#1e325c",
+          "sidebarHeaderBg": "#192a4d",
+          "sidebarHeaderTextColor": "#ffffff",
+          "sidebarTeamBarBg": "#14213e",
+          "sidebarText": "#ffffff",
+          "sidebarTextActiveBorder": "#5d89ea",
+          "sidebarTextActiveColor": "#ffffff",
+          "sidebarTextHoverBg": "#28427b",
+          "sidebarUnreadText": "#ffffff",
+          "type": "Denim",
+        }
+      }
+      value={false}
+    />
+    <AppsFormField
+      field={
+        Object {
+          "name": "bool2",
+          "type": "bool",
+          "value": false,
+        }
+      }
+      key="bool2"
+      name="bool2"
+      onChange={[Function]}
+      performLookup={[Function]}
+      theme={
+        Object {
+          "awayIndicator": "#ffbc1f",
+          "buttonBg": "#1c58d9",
+          "buttonColor": "#ffffff",
+          "centerChannelBg": "#ffffff",
+          "centerChannelColor": "#3f4350",
+          "codeTheme": "github",
+          "dndIndicator": "#d24b4e",
+          "errorTextColor": "#d24b4e",
+          "linkColor": "#386fe5",
+          "mentionBg": "#ffffff",
+          "mentionColor": "#1e325c",
+          "mentionHighlightBg": "#ffd470",
+          "mentionHighlightLink": "#1b1d22",
+          "newMessageSeparator": "#cc8f00",
+          "onlineIndicator": "#3db887",
+          "sidebarBg": "#1e325c",
+          "sidebarHeaderBg": "#192a4d",
+          "sidebarHeaderTextColor": "#ffffff",
+          "sidebarTeamBarBg": "#14213e",
+          "sidebarText": "#ffffff",
+          "sidebarTextActiveBorder": "#5d89ea",
+          "sidebarTextActiveColor": "#ffffff",
+          "sidebarTextHoverBg": "#28427b",
+          "sidebarUnreadText": "#ffffff",
+          "type": "Denim",
+        }
+      }
+      value={false}
+    />
+    <AppsFormField
+      field={
+        Object {
+          "name": "bool3",
+          "type": "bool",
+          "value": true,
+        }
+      }
+      key="bool3"
+      name="bool3"
+      onChange={[Function]}
+      performLookup={[Function]}
+      theme={
+        Object {
+          "awayIndicator": "#ffbc1f",
+          "buttonBg": "#1c58d9",
+          "buttonColor": "#ffffff",
+          "centerChannelBg": "#ffffff",
+          "centerChannelColor": "#3f4350",
+          "codeTheme": "github",
+          "dndIndicator": "#d24b4e",
+          "errorTextColor": "#d24b4e",
+          "linkColor": "#386fe5",
+          "mentionBg": "#ffffff",
+          "mentionColor": "#1e325c",
+          "mentionHighlightBg": "#ffd470",
+          "mentionHighlightLink": "#1b1d22",
+          "newMessageSeparator": "#cc8f00",
+          "onlineIndicator": "#3db887",
+          "sidebarBg": "#1e325c",
+          "sidebarHeaderBg": "#192a4d",
+          "sidebarHeaderTextColor": "#ffffff",
+          "sidebarTeamBarBg": "#14213e",
+          "sidebarText": "#ffffff",
+          "sidebarTextActiveBorder": "#5d89ea",
+          "sidebarTextActiveColor": "#ffffff",
+          "sidebarTextHoverBg": "#28427b",
+          "sidebarUnreadText": "#ffffff",
+          "type": "Denim",
+        }
+      }
+      value={true}
+    />
+    <AppsFormField
+      field={
+        Object {
+          "name": "text1",
+          "type": "text",
+          "value": "initial text",
+        }
+      }
+      key="text1"
+      name="text1"
+      onChange={[Function]}
+      performLookup={[Function]}
+      theme={
+        Object {
+          "awayIndicator": "#ffbc1f",
+          "buttonBg": "#1c58d9",
+          "buttonColor": "#ffffff",
+          "centerChannelBg": "#ffffff",
+          "centerChannelColor": "#3f4350",
+          "codeTheme": "github",
+          "dndIndicator": "#d24b4e",
+          "errorTextColor": "#d24b4e",
+          "linkColor": "#386fe5",
+          "mentionBg": "#ffffff",
+          "mentionColor": "#1e325c",
+          "mentionHighlightBg": "#ffd470",
+          "mentionHighlightLink": "#1b1d22",
+          "newMessageSeparator": "#cc8f00",
+          "onlineIndicator": "#3db887",
+          "sidebarBg": "#1e325c",
+          "sidebarHeaderBg": "#192a4d",
+          "sidebarHeaderTextColor": "#ffffff",
+          "sidebarTeamBarBg": "#14213e",
+          "sidebarText": "#ffffff",
+          "sidebarTextActiveBorder": "#5d89ea",
+          "sidebarTextActiveColor": "#ffffff",
+          "sidebarTextHoverBg": "#28427b",
+          "sidebarUnreadText": "#ffffff",
+          "type": "Denim",
+        }
+      }
+      value="initial text"
+    />
+    <AppsFormField
+      field={
+        Object {
+          "name": "select1",
+          "options": Array [
+            Object {
+              "label": "Label1",
+              "value": "Value1",
+            },
+            Object {
+              "label": "Label2",
+              "value": "Value2",
+            },
+          ],
+          "type": "static_select",
+          "value": Object {
+            "label": "Label1",
+            "value": "Value1",
+          },
+        }
+      }
+      key="select1"
+      name="select1"
+      onChange={[Function]}
+      performLookup={[Function]}
+      theme={
+        Object {
+          "awayIndicator": "#ffbc1f",
+          "buttonBg": "#1c58d9",
+          "buttonColor": "#ffffff",
+          "centerChannelBg": "#ffffff",
+          "centerChannelColor": "#3f4350",
+          "codeTheme": "github",
+          "dndIndicator": "#d24b4e",
+          "errorTextColor": "#d24b4e",
+          "linkColor": "#386fe5",
+          "mentionBg": "#ffffff",
+          "mentionColor": "#1e325c",
+          "mentionHighlightBg": "#ffd470",
+          "mentionHighlightLink": "#1b1d22",
+          "newMessageSeparator": "#cc8f00",
+          "onlineIndicator": "#3db887",
+          "sidebarBg": "#1e325c",
+          "sidebarHeaderBg": "#192a4d",
+          "sidebarHeaderTextColor": "#ffffff",
+          "sidebarTeamBarBg": "#14213e",
+          "sidebarText": "#ffffff",
+          "sidebarTextActiveBorder": "#5d89ea",
+          "sidebarTextActiveColor": "#ffffff",
+          "sidebarTextHoverBg": "#28427b",
+          "sidebarUnreadText": "#ffffff",
+          "type": "Denim",
+        }
+      }
+      value={
+        Object {
+          "label": "Label1",
+          "value": "Value1",
+        }
+      }
+    />
+    <View
+      style={
+        Object {
+          "marginHorizontal": 5,
+        }
+      }
+    >
+      <Button
+        containerStyle={
+          Object {
+            "alignItems": "center",
+            "alignSelf": "stretch",
+            "borderColor": "#2389D7",
+            "borderRadius": 3,
+            "borderWidth": 1,
+            "marginTop": 10,
+            "padding": 15,
+          }
+        }
+        key="Value3"
+        onPress={[Function]}
+      >
+        <Text
+          style={
+            Object {
+              "color": "#2389D7",
+              "fontSize": 17,
+              "textAlign": "center",
+            }
+          }
+        >
+          Label3
+        </Text>
+      </Button>
+      <Button
+        containerStyle={
+          Object {
+            "alignItems": "center",
+            "alignSelf": "stretch",
+            "borderColor": "#2389D7",
+            "borderRadius": 3,
+            "borderWidth": 1,
+            "marginTop": 10,
+            "padding": 15,
+          }
+        }
+        key="Value4"
+        onPress={[Function]}
+      >
+        <Text
+          style={
+            Object {
+              "color": "#2389D7",
+              "fontSize": 17,
+              "textAlign": "center",
+            }
+          }
+        >
+          Label4
+        </Text>
+      </Button>
+    </View>
+  </ScrollView>
+</RNCSafeAreaView>
+`;

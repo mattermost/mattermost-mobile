@@ -8,16 +8,6 @@
 // *******************************************************************
 
 import {
-    Alert,
-    MainSidebar,
-    TeamsList,
-} from '@support/ui/component';
-import {
-    ChannelScreen,
-    CreateChannelScreen,
-    PermalinkScreen,
-} from '@support/ui/screen';
-import {
     Channel,
     Post,
     Setup,
@@ -27,6 +17,16 @@ import {
 import {
     serverUrl,
 } from '@support/test_config';
+import {
+    Alert,
+    MainSidebar,
+    TeamsList,
+} from '@support/ui/component';
+import {
+    ChannelScreen,
+    CreateChannelScreen,
+    PermalinkScreen,
+} from '@support/ui/screen';
 import {
     getAdminAccount,
     getRandomId,
@@ -164,17 +164,23 @@ describe('Messaging', () => {
 });
 
 async function createPrivateChannel(channelName) {
+    const {
+        createButton,
+        nameInput,
+        privateChannelTypeAction,
+    } = CreateChannelScreen;
+
     // # Open create private channel screen
     await ChannelScreen.openMainSidebar();
-    await MainSidebar.openCreatePrivateChannelButton.tap();
+    await CreateChannelScreen.open();
 
     // * Verify create channel screen is visible
-    await CreateChannelScreen.toBeVisible();
-    await expect(element(by.text('New Private Channel'))).toBeVisible();
+    await expect(element(by.text('Create')).atIndex(0)).toBeVisible();
 
     // # Fill the data and create a private channel
-    await CreateChannelScreen.nameInput.typeText(channelName);
-    await CreateChannelScreen.createButton.tap();
+    await privateChannelTypeAction.tap();
+    await nameInput.typeText(channelName);
+    await createButton.tap();
 
     // * Expect a redirection to the created channel
     await expect(ChannelScreen.channelIntro).toHaveText('Beginning of ' + channelName);

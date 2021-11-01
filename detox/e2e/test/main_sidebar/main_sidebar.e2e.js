@@ -7,12 +7,12 @@
 // - Use element testID when selecting an element. Create one if none.
 // *******************************************************************
 
-import {MainSidebar} from '@support/ui/component';
-import {ChannelScreen} from '@support/ui/screen';
 import {
     Setup,
     Team,
 } from '@support/server_api';
+import {MainSidebar} from '@support/ui/component';
+import {ChannelScreen} from '@support/ui/screen';
 
 describe('Main Sidebar', () => {
     const {
@@ -42,20 +42,6 @@ describe('Main Sidebar', () => {
         await ChannelScreen.logout();
     });
 
-    it('MM-T3412 should close the sidebar menu when selecting the same channel', async () => {
-        // # Go to unread channel
-        await goToChannel(testChannel.display_name);
-
-        // # Go to the same channel again
-        await goToChannel(testChannel.display_name);
-
-        // * Verify sidebar menu is not open
-        await expect(MainSidebar.mainSidebar).not.toBeVisible();
-
-        // * Selected channel should remain the same
-        await expect(channelNavBarTitle).toHaveText(testChannel.display_name);
-    });
-
     it('MM-T435 should not show switch teams button when jump to search is focused', async () => {
         // # Open main sidebar
         await openMainSidebar();
@@ -69,5 +55,19 @@ describe('Main Sidebar', () => {
 
         // # Go back to channel
         await closeMainSidebar();
+    });
+
+    it('MM-T3412 should close the sidebar menu when selecting the same channel', async () => {
+        // # Go to unread channel
+        await goToChannel(testChannel.display_name);
+
+        // # Go to the same channel again
+        await goToChannel(testChannel.display_name);
+
+        // * Verify sidebar menu is not open
+        await expect(MainSidebar.mainSidebar).not.toBeVisible();
+
+        // * Selected channel should remain the same
+        await expect(channelNavBarTitle).toHaveText(testChannel.display_name);
     });
 });

@@ -2,6 +2,7 @@
 // See LICENSE.txt for license information.
 
 import assert from 'assert';
+
 import {Node, Parser} from 'commonmark';
 
 import {
@@ -11,7 +12,7 @@ import {
     highlightMentions,
     highlightTextNode,
     pullOutImages,
-} from 'app/components/markdown/transform';
+} from '@components/markdown/transform';
 
 /* eslint-disable no-console, no-underscore-dangle */
 
@@ -2771,6 +2772,27 @@ describe('Components.Markdown.transform', () => {
                                 type: 'text',
                                 literal: '@channel.',
                             }],
+                        }],
+                    }],
+                }],
+            },
+        }, {
+            name: 'Do not mention partial keys',
+            input: 'This is a mention for @Gvn.',
+            mentionKeys: [{key: 'gv'}],
+            expected: {
+                type: 'document',
+                children: [{
+                    type: 'paragraph',
+                    children: [{
+                        type: 'text',
+                        literal: 'This is a mention for ',
+                    }, {
+                        type: 'at_mention',
+                        _mentionName: 'Gvn.',
+                        children: [{
+                            type: 'text',
+                            literal: '@Gvn.',
                         }],
                     }],
                 }],

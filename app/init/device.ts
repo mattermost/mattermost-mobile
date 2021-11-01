@@ -1,8 +1,9 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import AsyncStorage from '@react-native-community/async-storage';
-import {DeviceTypes} from 'app/constants';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
+import {DeviceTypes} from '@constants';
 
 export async function setupPermanentSidebar() {
     if (DeviceTypes.IS_TABLET) {

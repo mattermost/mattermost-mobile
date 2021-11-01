@@ -4,17 +4,15 @@
 import {connect} from 'react-redux';
 import {bindActionCreators} from 'redux';
 
+import {setProfileImageUri, removeProfileImage, updateUser} from '@actions/views/edit_profile';
 import {getConfig} from '@mm-redux/selectors/entities/general';
 import {getTheme} from '@mm-redux/selectors/entities/preferences';
-import {isMinimumServerVersion} from '@mm-redux/utils/helpers';
-import {isLandscape} from 'app/selectors/device';
-import {setProfileImageUri, removeProfileImage, updateUser} from 'app/actions/views/edit_profile';
+import {isLandscape} from '@selectors/device';
 
 import EditProfile from './edit_profile';
 
 function mapStateToProps(state, ownProps) {
     const config = getConfig(state);
-    const {serverVersion} = state.entities.general;
     const {auth_service: service} = ownProps.currentUser;
 
     const firstNameDisabled = (service === 'ldap' && config.LdapFirstNameAttributeSet === 'true') ||
@@ -31,10 +29,7 @@ function mapStateToProps(state, ownProps) {
     const positionDisabled = (service === 'ldap' && config.LdapPositionAttributeSet === 'true') ||
         (service === 'saml' && config.SamlPositionAttributeSet === 'true');
 
-    let profilePictureDisabled = false;
-    if (isMinimumServerVersion(serverVersion, 5, 24)) {
-        profilePictureDisabled = (service === 'ldap' || service === 'saml') && config.LdapPictureAttributeSet === 'true';
-    }
+    const profilePictureDisabled = (service === 'ldap' || service === 'saml') && config.LdapPictureAttributeSet === 'true';
 
     return {
         firstNameDisabled,

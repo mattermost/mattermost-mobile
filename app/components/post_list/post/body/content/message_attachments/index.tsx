@@ -6,15 +6,15 @@ import {StyleSheet, View} from 'react-native';
 
 import {MessageAttachment as MessageAttachmentType} from '@mm-redux/types/message_attachments';
 import {PostMetadata} from '@mm-redux/types/posts';
-import {Theme} from '@mm-redux/types/preferences';
+import {Theme} from '@mm-redux/types/theme';
 
 import MessageAttachment from './message_attachment';
 
 type Props = {
-    attachments: MessageAttachmentType[],
-    postId: string,
-    metadata?: PostMetadata,
-    theme: Theme,
+    attachments: MessageAttachmentType[];
+    postId: string;
+    metadata?: PostMetadata;
+    theme: Theme;
 }
 
 const styles = StyleSheet.create({

@@ -1,22 +1,20 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {intlShape} from 'react-intl';
 import React, {PureComponent} from 'react';
+import {intlShape} from 'react-intl';
 import {
     FlatList,
     Platform,
 } from 'react-native';
 
 import {analytics} from '@init/analytics';
-import {Client4} from '@client/rest';
-import {isMinimumServerVersion} from '@mm-redux/utils/helpers';
 import {Command, AutocompleteSuggestion, CommandArgs} from '@mm-redux/types/integrations';
-import {Theme} from '@mm-redux/types/preferences';
+import {Theme} from '@mm-redux/types/theme';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 
-import SlashSuggestionItem from './slash_suggestion_item';
 import {AppCommandParser} from './app_command_parser/app_command_parser';
+import SlashSuggestionItem from './slash_suggestion_item';
 
 const TIME_BEFORE_NEXT_COMMAND_REQUEST = 1000 * 60 * 5;
 
@@ -66,7 +64,7 @@ export default class SlashSuggestion extends PureComponent<Props, State> {
 
     constructor(props: Props, context: any) {
         super(props);
-        this.appCommandParser = new AppCommandParser(null, context.intl, props.channelId, props.rootId);
+        this.appCommandParser = new AppCommandParser(null, context.intl, props.channelId, props.currentTeamId, props.rootId);
     }
 
     setActive(active: boolean) {
@@ -109,37 +107,30 @@ export default class SlashSuggestion extends PureComponent<Props, State> {
                 this.setLastCommandRequest(Date.now());
             }
 
-            this.showBaseCommands(nextValue, nextCommands, prevProps.channelId, prevProps.rootId);
-        } else if (isMinimumServerVersion(Client4.getServerVersion(), 5, 24)) {
-            // If this is an app command, then hand it off to the app command parser.
-            if (this.props.appsEnabled && this.isAppCommand(nextValue, prevProps.channelId, prevProps.rootId)) {
-                this.fetchAndShowAppCommandSuggestions(nextValue, prevProps.channelId, prevProps.rootId);
-            } else if (nextSuggestions === prevProps.suggestions) {
-                const args = {
-                    channel_id: prevProps.channelId,
-                    team_id: prevProps.currentTeamId,
-                    ...(prevProps.rootId && {root_id: prevProps.rootId, parent_id: prevProps.rootId}),
-                };
-                this.props.actions.getCommandAutocompleteSuggestions(nextValue, nextTeamId, args);
-            } else {
-                const matches: AutocompleteSuggestion[] = [];
-                nextSuggestions.forEach((suggestion: AutocompleteSuggestion) => {
-                    if (!this.contains(matches, '/' + suggestion.Complete)) {
-                        matches.push(suggestion);
-                    }
-                });
-                this.updateSuggestions(matches);
-            }
+            this.showBaseCommands(nextValue, nextCommands, this.props.channelId, this.props.currentTeamId, this.props.rootId);
+        } else if (nextSuggestions === prevProps.suggestions) {
+            const args = {
+                channel_id: prevProps.channelId,
+                team_id: prevProps.currentTeamId,
+                ...(prevProps.rootId && {root_id: prevProps.rootId}),
+            };
+            this.props.actions.getCommandAutocompleteSuggestions(nextValue, nextTeamId, args);
         } else {
-            this.setActive(false);
+            const matches: AutocompleteSuggestion[] = [];
+            nextSuggestions.forEach((suggestion: AutocompleteSuggestion) => {
+                if (!this.contains(matches, '/' + suggestion.Complete)) {
+                    matches.push(suggestion);
+                }
+            });
+            this.updateSuggestions(matches);
         }
     }
 
-    showBaseCommands = (text: string, commands: Command[], channelID: string, rootID?: string) => {
+    showBaseCommands = (text: string, commands: Command[], channelID: string, teamID = '', rootID?: string) => {
         let matches: AutocompleteSuggestion[] = [];
 
         if (this.props.appsEnabled) {
-            const appCommands = this.getAppBaseCommandSuggestions(text, channelID, rootID);
+            const appCommands = this.getAppBaseCommandSuggestions(text, channelID, teamID, rootID);
             matches = matches.concat(appCommands);
         }
 
@@ -155,19 +146,8 @@ export default class SlashSuggestion extends PureComponent<Props, State> {
         this.updateSuggestions(matches);
     }
 
-    isAppCommand = (pretext: string, channelID: string, rootID?: string) => {
-        this.appCommandParser.setChannelContext(channelID, rootID);
-        return this.appCommandParser.isAppCommand(pretext);
-    }
-
-    fetchAndShowAppCommandSuggestions = async (pretext: string, channelID: string, rootID?: string) => {
-        this.appCommandParser.setChannelContext(channelID, rootID);
-        const suggestions = await this.appCommandParser.getSuggestions(pretext);
-        this.updateSuggestions(suggestions);
-    }
-
-    getAppBaseCommandSuggestions = (pretext: string, channelID: string, rootID?: string): AutocompleteSuggestion[] => {
-        this.appCommandParser.setChannelContext(channelID, rootID);
+    getAppBaseCommandSuggestions = (pretext: string, channelID: string, teamID = '', rootID?: string): AutocompleteSuggestion[] => {
+        this.appCommandParser.setChannelContext(channelID, teamID, rootID);
         const suggestions = this.appCommandParser.getSuggestionsBase(pretext);
         return suggestions;
     }
@@ -196,7 +176,7 @@ export default class SlashSuggestion extends PureComponent<Props, State> {
                 Suggestion: '/' + item.trigger,
                 Hint: item.auto_complete_hint,
                 Description: item.auto_complete_desc,
-                IconData: item.icon_url,
+                IconData: item.icon_url || item.autocomplete_icon_data || '',
             };
         });
     }
@@ -223,12 +203,6 @@ export default class SlashSuggestion extends PureComponent<Props, State> {
             // after the auto correct vanished
             setTimeout(() => {
                 onChangeText(completedDraft.replace(`//${command} `, `/${command} `));
-            });
-        }
-
-        if (!isMinimumServerVersion(Client4.getServerVersion(), 5, 24)) {
-            this.setState({
-                active: false,
             });
         }
     };

@@ -3,8 +3,9 @@
 
 import assert from 'assert';
 
-import {Preferences} from '../constants';
 import * as ThemeUtils from '@mm-redux/utils/theme_utils';
+
+import {Preferences} from '../constants';
 
 describe('ThemeUtils', () => {
     describe('getComponents', () => {
@@ -70,7 +71,7 @@ describe('ThemeUtils', () => {
     describe('setThemeDefaults', () => {
         it('blank theme', () => {
             const input = {};
-            const expected = {...Preferences.THEMES.default};
+            const expected = {...Preferences.THEMES.denim};
             delete expected.type;
 
             assert.deepEqual(ThemeUtils.setThemeDefaults(input), expected);

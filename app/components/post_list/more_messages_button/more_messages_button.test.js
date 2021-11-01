@@ -3,13 +3,12 @@
 
 import React from 'react';
 import {Animated, AppState} from 'react-native';
-import {shallowWithIntl} from 'test/intl-test-helper';
 
+import ViewTypes from '@constants/view';
 import Preferences from '@mm-redux/constants/preferences';
 import EventEmitter from '@mm-redux/utils/event_emitter';
 import * as PostListUtils from '@mm-redux/utils/post_list';
-
-import ViewTypes from '@constants/view';
+import {shallowWithIntl} from '@test/intl-test-helper';
 
 import MoreMessagesButton, {
     MIN_INPUT,
@@ -20,7 +19,7 @@ import MoreMessagesButton, {
 
 describe('MoreMessagesButton', () => {
     const baseProps = {
-        theme: Preferences.THEMES.default,
+        theme: Preferences.THEMES.denim,
         postIds: [],
         channelId: 'channel-id',
         unreadCount: 10,
@@ -56,7 +55,6 @@ describe('MoreMessagesButton', () => {
 
     describe('lifecycle methods', () => {
         AppState.addEventListener = jest.fn();
-        AppState.removeEventListener = jest.fn();
 
         test('componentDidMount should register app state listener, indicator visibility listener, viewable items listener, and scroll end index listener', () => {
             EventEmitter.on = jest.fn();
@@ -95,7 +93,6 @@ describe('MoreMessagesButton', () => {
             instance.removeScrollEndIndexListener = jest.fn();
 
             instance.componentWillUnmount();
-            expect(AppState.removeEventListener).toHaveBeenCalledWith('change', instance.onAppStateChange);
             expect(EventEmitter.off).toHaveBeenCalledWith(ViewTypes.INDICATOR_BAR_VISIBLE, instance.onIndicatorBarVisible);
             expect(instance.removeViewableItemsListener).toHaveBeenCalled();
             expect(instance.removeScrollEndIndexListener).toHaveBeenCalled();
@@ -324,6 +321,8 @@ describe('MoreMessagesButton', () => {
                 <MoreMessagesButton {...baseProps}/>,
             );
             const instance = wrapper.instance();
+            const clearTimeout = jest.spyOn(global, 'clearTimeout');
+
             wrapper.setProps({unreadCount: 10});
             instance.setState({moreText: '60+ new messages'});
             const autoCancelTimer = jest.fn();
@@ -518,6 +517,8 @@ describe('MoreMessagesButton', () => {
                 <MoreMessagesButton {...baseProps}/>,
             );
             const instance = wrapper.instance();
+            const setTimeout = jest.spyOn(global, 'setTimeout');
+
             instance.componentDidUpdate = jest.fn();
             instance.canceled = false;
             instance.hide = jest.fn();
@@ -540,6 +541,8 @@ describe('MoreMessagesButton', () => {
                 <MoreMessagesButton {...baseProps}/>,
             );
             const instance = wrapper.instance();
+            const setTimeout = jest.spyOn(global, 'setTimeout');
+
             instance.componentDidUpdate = jest.fn();
             instance.canceled = false;
             instance.hide = jest.fn();
@@ -565,7 +568,9 @@ describe('MoreMessagesButton', () => {
                 <MoreMessagesButton {...baseProps}/>,
             );
             const instance = wrapper.instance();
+            const clearTimeout = jest.spyOn(global, 'clearTimeout');
             const autoCancelTimer = jest.fn();
+
             instance.autoCancelTimer = autoCancelTimer;
             instance.canceled = true;
             instance.disableViewableItems = true;
@@ -622,6 +627,7 @@ describe('MoreMessagesButton', () => {
 
         it('should return early when newMessageLineIndex <= 0', () => {
             const viewableItems = [{index: 0}, {index: 1}];
+            const clearTimeout = jest.spyOn(global, 'clearTimeout');
 
             wrapper.setProps({newMessageLineIndex: 0});
             instance.onViewableItemsChanged(viewableItems);
@@ -634,8 +640,9 @@ describe('MoreMessagesButton', () => {
 
         it('should return early when viewableItems length is 0', () => {
             const viewableItems = [];
-            wrapper.setProps({newMessageLineIndex: 1, unreadCount: 10});
+            const clearTimeout = jest.spyOn(global, 'clearTimeout');
 
+            wrapper.setProps({newMessageLineIndex: 1, unreadCount: 10});
             instance.onViewableItemsChanged(viewableItems);
             expect(clearTimeout).not.toHaveBeenCalled();
         });
@@ -644,6 +651,7 @@ describe('MoreMessagesButton', () => {
             const viewableItems = [{index: 0}];
             wrapper.setProps({newMessageLineIndex: 1, unreadCount: 10});
             instance.disableViewableItems = true;
+            const clearTimeout = jest.spyOn(global, 'clearTimeout');
 
             instance.onViewableItemsChanged(viewableItems);
             expect(clearTimeout).not.toHaveBeenCalled();
@@ -686,6 +694,7 @@ describe('MoreMessagesButton', () => {
             instance.disableViewableItems = false;
             instance.autoCancelTimer = null;
             instance.cancel = jest.fn();
+            const setTimeout = jest.spyOn(global, 'setTimeout');
 
             instance.onViewableItemsChanged(viewableItems);
             jest.runOnlyPendingTimers();
@@ -702,6 +711,7 @@ describe('MoreMessagesButton', () => {
             instance.disableViewableItems = false;
             instance.autoCancelTimer = null;
             instance.cancel = jest.fn();
+            const setTimeout = jest.spyOn(global, 'setTimeout');
 
             instance.onViewableItemsChanged(viewableItems);
             jest.runOnlyPendingTimers();

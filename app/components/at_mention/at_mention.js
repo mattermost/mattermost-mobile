@@ -1,20 +1,22 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React from 'react';
-import PropTypes from 'prop-types';
-import {StyleSheet, Text} from 'react-native';
 import Clipboard from '@react-native-community/clipboard';
+
+import PropTypes from 'prop-types';
+import React from 'react';
 import {intlShape} from 'react-intl';
-import {displayUsername} from '@mm-redux/utils/user_utils';
+import {StyleSheet, Text} from 'react-native';
 
 import {showModal} from '@actions/navigation';
 import CompassIcon from '@components/compass_icon';
+import mattermostManaged from '@mattermost-managed';
+import {displayUsername} from '@mm-redux/utils/user_utils';
 import BottomSheet from '@utils/bottom_sheet';
-import mattermostManaged from 'app/mattermost_managed';
 
 export default class AtMention extends React.PureComponent {
     static propTypes = {
+        disableAtChannelMentionHighlight: PropTypes.bool,
         isSearchResult: PropTypes.bool,
         mentionKeys: PropTypes.array,
         mentionName: PropTypes.string.isRequired,
@@ -111,7 +113,6 @@ export default class AtMention extends React.PureComponent {
 
             BottomSheet.showBottomSheetWithOptions({
                 options: [actionText, cancelText],
-                cancelButtonIndex: 1,
             }, (value) => {
                 if (value !== 1) {
                     this.handleCopyMention();
@@ -176,7 +177,7 @@ export default class AtMention extends React.PureComponent {
                 const pattern = new RegExp(/\b(all|channel|here)(?:\.\B|_\b|\b)/, 'i');
                 const mentionMatch = pattern.exec(mentionName);
 
-                if (mentionMatch) {
+                if (mentionMatch && !this.props.disableAtChannelMentionHighlight) {
                     mention = mentionMatch.length > 1 ? mentionMatch[1] : mentionMatch[0];
                     suffix = mentionName.replace(mention, '');
                     isMention = true;

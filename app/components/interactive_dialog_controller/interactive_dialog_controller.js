@@ -1,10 +1,10 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {PureComponent} from 'react';
 import PropTypes from 'prop-types';
-import {Alert} from 'react-native';
+import {PureComponent} from 'react';
 import {intlShape} from 'react-intl';
+import {Alert} from 'react-native';
 
 import {showModal} from '@actions/navigation';
 import CompassIcon from '@components/compass_icon';
@@ -75,6 +75,8 @@ export default class InteractiveDialogController extends PureComponent {
     }
 
     showInteractiveDialogScreen = (dialog) => {
+        const {formatMessage} = this.context.intl;
+
         const options = {
             topBar: {
                 leftButtons: [{
@@ -84,7 +86,7 @@ export default class InteractiveDialogController extends PureComponent {
                 rightButtons: [{
                     id: 'submit-dialog',
                     showAsAction: 'always',
-                    text: dialog.submit_label,
+                    text: dialog.submit_label || formatMessage({id: 'mobile.interactive_dialog.defaultSubmit', defaultMessage: 'Submit'}),
                 }],
             },
         };

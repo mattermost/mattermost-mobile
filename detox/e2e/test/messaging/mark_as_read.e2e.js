@@ -9,13 +9,13 @@
 
 import jestExpect from 'expect';
 
-import {MainSidebar} from '@support/ui/component';
-import {ChannelScreen} from '@support/ui/screen';
 import {
     Channel,
     Post,
     Setup,
 } from '@support/server_api';
+import {MainSidebar} from '@support/ui/component';
+import {ChannelScreen} from '@support/ui/screen';
 
 describe('Mark As Read', () => {
     const {
@@ -59,7 +59,7 @@ describe('Mark As Read', () => {
         // * Verify message is read
         await openMainSidebar();
         await expect(element(by.text('UNREADS'))).not.toBeVisible();
-        await expect(element(by.text('PUBLIC CHANNELS'))).toBeVisible();
+        await expect(element(by.text('CHANNELS'))).toBeVisible();
         await hasChannelDisplayNameAtIndex(0, testChannel.display_name);
 
         // # Go back to channel

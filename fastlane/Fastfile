@@ -146,6 +146,12 @@ lane :set_app_build_number do
   end
 end
 
+desc 'Increments version and build number for both Android and iOS'
+lane :set_app_version_build do
+  set_app_version
+  set_app_build_number
+end
+
 desc 'Configure the app before building'
 lane :configure do
   json = load_config_json('../dist/assets/config.json')
@@ -506,7 +512,9 @@ platform :ios do
   lane :replace_assets do
     if ENV['REPLACE_ASSETS'] == 'true'
       sh 'cp -R ../dist/assets/release/icons/ios/* ../ios/Mattermost/Images.xcassets/AppIcon.appiconset/'
-      sh 'cp -R ../dist/assets/release/splash_screen/ios/* ../ios/SplashScreenResource/'
+      sh 'cp -R ../dist/assets/release/splash_screen/ios/LaunchScreen.storyboard ../ios/SplashScreenResource/LaunchScreen.storyboard'
+      sh 'cp -R ../dist/assets/release/splash_screen/ios/SplashBackground.imageset ../ios/Mattermost/Images.xcassets/'
+      sh 'cp -R ../dist/assets/release/splash_screen/ios/SplashIcon.imageset ../ios/Mattermost/Images.xcassets/'
     end
   end
 

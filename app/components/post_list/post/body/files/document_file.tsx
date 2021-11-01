@@ -15,10 +15,10 @@ import {getFileUrl} from '@mm-redux/utils/file_utils';
 import {alertDownloadDocumentDisabled, alertDownloadFailed, alertFailedToOpenDocument} from '@utils/document';
 import {getLocalFilePathFromFile} from '@utils/file';
 
-import type {FileInfo} from '@mm-redux/types/files';
-import type {Theme} from '@mm-redux/types/preferences';
-
 import FileIcon from './file_icon';
+
+import type {FileInfo} from '@mm-redux/types/files';
+import type {Theme} from '@mm-redux/types/theme';
 
 type DocumentFileRef = {
     handlePreviewPress: () => void;

@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
-import React from 'react';
 import {shallow} from 'enzyme';
+import React from 'react';
 import {ScrollView} from 'react-native';
 
 import Preferences from '@mm-redux/constants/preferences';
@@ -13,7 +13,7 @@ describe('ReactionHeader', () => {
         selected: 'smile',
         onSelectReaction: jest.fn(),
         reactions: [{name: 'smile', count: 2}, {name: '+1', count: 1}],
-        theme: Preferences.THEMES.default,
+        theme: Preferences.THEMES.denim,
     };
 
     test('should match snapshot', () => {

@@ -1,11 +1,11 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
-import React from 'react';
+
 import {shallow} from 'enzyme';
+import React from 'react';
 
 import Preferences from '@mm-redux/constants/preferences';
 
-import EphemeralStore from '@store/ephemeral_store';
 import Uploads from './uploads';
 
 describe('Uploads', () => {
@@ -17,12 +17,13 @@ describe('Uploads', () => {
         handleRemoveLastFile: jest.fn(),
         initUploadFiles: jest.fn(),
         maxFileSize: 100,
-        theme: Preferences.THEMES.default,
+        maxFileCount: 10,
+        screenId: 'Channel',
+        theme: Preferences.THEMES.denim,
     };
 
     test('handleUploadFiles should return early if screen is not the top screen', async () => {
         const topScreenId = 'top-screen';
-        EphemeralStore.getNavigationTopComponentId = jest.fn(() => (topScreenId));
 
         const props = {
             ...baseProps,
@@ -41,7 +42,6 @@ describe('Uploads', () => {
 
     test('handlePasteFiles should display an error if uploads are disabled', () => {
         const topScreenId = 'top-screen';
-        EphemeralStore.getNavigationTopComponentId = jest.fn(() => (topScreenId));
 
         const props = {
             ...baseProps,
@@ -55,7 +55,7 @@ describe('Uploads', () => {
         instance.showPasteFilesErrorDialog = jest.fn();
         instance.handleUploadDisabled = jest.fn();
 
-        instance.handlePasteFiles(undefined, []);
+        instance.handlePasteFiles(undefined, [], topScreenId);
         expect(instance.showPasteFilesErrorDialog).not.toHaveBeenCalled();
         expect(instance.handleUploadDisabled).toHaveBeenCalled();
     });

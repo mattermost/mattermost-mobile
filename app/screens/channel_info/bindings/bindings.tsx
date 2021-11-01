@@ -2,39 +2,45 @@
 // See LICENSE.txt for license information.
 
 import React from 'react';
-import {Alert} from 'react-native';
 import {intlShape, injectIntl} from 'react-intl';
+import {Alert} from 'react-native';
 
+import {dismissModal, showAppForm} from '@actions/navigation';
+import {AppCallResponseTypes, AppCallTypes} from '@mm-redux/constants/apps';
+import {ActionResult} from '@mm-redux/types/actions';
+import {AppBinding} from '@mm-redux/types/apps';
+import {Channel} from '@mm-redux/types/channels';
+import {Theme} from '@mm-redux/types/theme';
+import {DoAppCall, PostEphemeralCallResponseForChannel} from '@mm-types/actions/apps';
 import Separator from '@screens/channel_info/separator';
+import {createCallContext, createCallRequest} from '@utils/apps';
 
 import ChannelInfoRow from '../channel_info_row';
-import {AppBinding} from '@mm-redux/types/apps';
-import {Theme} from '@mm-redux/types/preferences';
-import {Channel} from '@mm-redux/types/channels';
-import {AppCallResponseTypes, AppCallTypes} from '@mm-redux/constants/apps';
-import {dismissModal} from '@actions/navigation';
-import {createCallContext, createCallRequest} from '@utils/apps';
-import {DoAppCall, PostEphemeralCallResponseForChannel} from 'types/actions/apps';
 
 type Props = {
     bindings: AppBinding[];
     theme: Theme;
-    currentChannel: Channel;
+    currentChannel?: Channel;
     appsEnabled: boolean;
     intl: typeof intlShape;
     currentTeamId: string;
     actions: {
         doAppCall: DoAppCall;
         postEphemeralCallResponseForChannel: PostEphemeralCallResponseForChannel;
-    }
+        handleGotoLocation: (href: string, intl: any) => Promise<ActionResult>;
+    };
 }
 
 const Bindings: React.FC<Props> = injectIntl((props: Props) => {
-    if (!props.appsEnabled) {
+    const {bindings, currentChannel, appsEnabled, ...optionProps} = props;
+    if (!appsEnabled) {
         return null;
     }
 
-    const {bindings, ...optionProps} = props;
+    if (!currentChannel) {
+        return null;
+    }
+
     if (bindings.length === 0) {
         return null;
     }
@@ -43,6 +49,7 @@ const Bindings: React.FC<Props> = injectIntl((props: Props) => {
         <Option
             key={b.app_id + b.location}
             binding={b}
+            currentChannel={currentChannel}
             {...optionProps}
         />
     ));
@@ -65,7 +72,8 @@ type OptionProps = {
     actions: {
         doAppCall: DoAppCall;
         postEphemeralCallResponseForChannel: PostEphemeralCallResponseForChannel;
-    },
+        handleGotoLocation: (href: string, intl: any) => Promise<ActionResult>;
+    };
 }
 
 type OptionState = {
@@ -78,14 +86,16 @@ class Option extends React.PureComponent<OptionProps, OptionState> {
     };
 
     onPress = async () => {
-        const {binding, currentChannel, currentTeamId, intl} = this.props;
+        const {binding, currentChannel, currentTeamId, intl, theme} = this.props;
         const {doAppCall, postEphemeralCallResponseForChannel} = this.props.actions;
 
         if (this.state.submitting) {
             return;
         }
 
-        if (!binding.call) {
+        const call = binding.form?.call || binding.call;
+
+        if (!call) {
             return;
         }
 
@@ -95,14 +105,20 @@ class Option extends React.PureComponent<OptionProps, OptionState> {
             currentChannel.id,
             currentChannel.team_id || currentTeamId,
         );
-        const call = createCallRequest(
-            binding.call,
+        const callRequest = createCallRequest(
+            call,
             context,
         );
 
+        if (binding.form) {
+            await dismissModal();
+            showAppForm(binding.form, callRequest, theme);
+            return;
+        }
+
         this.setState({submitting: true});
 
-        const res = await doAppCall(call, AppCallTypes.SUBMIT, intl);
+        const res = await doAppCall(callRequest, AppCallTypes.SUBMIT, intl);
 
         this.setState({submitting: false});
 
@@ -128,8 +144,13 @@ class Option extends React.PureComponent<OptionProps, OptionState> {
             }
             break;
         case AppCallResponseTypes.NAVIGATE:
+            await dismissModal();
+            this.props.actions.handleGotoLocation(callResp.navigate_to_url!, intl);
+            return;
         case AppCallResponseTypes.FORM:
-            break;
+            await dismissModal();
+            showAppForm(callResp.form, call, theme);
+            return;
         default: {
             const title = intl.formatMessage({
                 id: 'mobile.general.error.title',
@@ -161,7 +182,6 @@ class Option extends React.PureComponent<OptionProps, OptionState> {
                     action={this.onPress}
                     defaultMessage={binding.label}
                     theme={theme}
-                    textId={binding.app_id + binding.location}
                     image={binding.icon ? {uri: binding.icon} : null}
                 />
             </>

@@ -3,8 +3,8 @@
 
 /* eslint-disable no-underscore-dangle */
 
-import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
+import React, {PureComponent} from 'react';
 import {intlShape} from 'react-intl';
 import {
     DeviceEventEmitter,
@@ -14,17 +14,17 @@ import {
     Text,
     View,
 } from 'react-native';
-import {Navigation} from 'react-native-navigation';
 import HWKeyboardEvent from 'react-native-hw-keyboard-event';
+import {Navigation} from 'react-native-navigation';
 import {SafeAreaView} from 'react-native-safe-area-context';
 
 import {dismissModal} from '@actions/navigation';
 import Autocomplete from '@components/autocomplete';
 import CompassIcon from '@components/compass_icon';
-import KeyboardLayout from '@components/layout/keyboard_layout';
-import DateSeparator from '@components/post_list/date_separator';
 import FormattedText from '@components/formatted_text';
+import KeyboardLayout from '@components/layout/keyboard_layout';
 import Loading from '@components/loading';
+import DateSeparator from '@components/post_list/date_separator';
 import PostListRetry from '@components/post_list_retry';
 import PostSeparator from '@components/post_separator';
 import SearchBar from '@components/search_bar';
@@ -68,7 +68,6 @@ export default class Search extends PureComponent {
         recent: PropTypes.array.isRequired,
         isSearchGettingMore: PropTypes.bool.isRequired,
         theme: PropTypes.object.isRequired,
-        enableDateSuggestion: PropTypes.bool,
         timezoneOffsetInSeconds: PropTypes.number.isRequired,
         viewArchivedChannels: PropTypes.bool,
     };
@@ -116,7 +115,6 @@ export default class Search extends PureComponent {
     }
 
     componentDidUpdate(prevProps, prevState) {
-        const {enableDateSuggestion} = this.props;
         const {recent, didFail, isLoaded, status} = this.state;
         const {status: prevStatus} = prevState;
         const shouldScroll = prevStatus !== status &&
@@ -127,7 +125,7 @@ export default class Search extends PureComponent {
             setTimeout(() => {
                 const recentLabelsHeight = recent.length * RECENT_LABEL_HEIGHT;
                 const recentSeparatorsHeight = (recent.length - 1) * RECENT_SEPARATOR_HEIGHT;
-                const modifiersCount = enableDateSuggestion ? 5 : 2;
+                const modifiersCount = 5;
                 const modifiersHeight = modifiersCount * MODIFIER_LABEL_HEIGHT;
                 const modifiersSeparatorHeight = (modifiersCount - 1) * RECENT_SEPARATOR_HEIGHT;
                 const offset = modifiersHeight + modifiersSeparatorHeight + SECTION_HEIGHT + recentLabelsHeight + recentSeparatorsHeight;
@@ -539,36 +537,33 @@ export default class Search extends PureComponent {
             }),
         }];
 
-        // if search by date filters supported
-        if (this.props.enableDateSuggestion) {
-            sectionsData.push({
-                value: 'on:',
-                testID: 'search.on_section',
-                modifier: 'YYYY-MM-DD',
-                description: intl.formatMessage({
-                    id: 'mobile.search.on_modifier_description',
-                    defaultMessage: 'to find posts on a specific date',
-                }),
-            });
-            sectionsData.push({
-                value: 'after:',
-                testID: 'search.after_section',
-                modifier: 'YYYY-MM-DD',
-                description: intl.formatMessage({
-                    id: 'mobile.search.after_modifier_description',
-                    defaultMessage: 'to find posts after a specific date',
-                }),
-            });
-            sectionsData.push({
-                value: 'before:',
-                testID: 'search.before_section',
-                modifier: 'YYYY-MM-DD',
-                description: intl.formatMessage({
-                    id: 'mobile.search.before_modifier_description',
-                    defaultMessage: 'to find posts before a specific date',
-                }),
-            });
-        }
+        sectionsData.push({
+            value: 'on:',
+            testID: 'search.on_section',
+            modifier: 'YYYY-MM-DD',
+            description: intl.formatMessage({
+                id: 'mobile.search.on_modifier_description',
+                defaultMessage: 'to find posts on a specific date',
+            }),
+        });
+        sectionsData.push({
+            value: 'after:',
+            testID: 'search.after_section',
+            modifier: 'YYYY-MM-DD',
+            description: intl.formatMessage({
+                id: 'mobile.search.after_modifier_description',
+                defaultMessage: 'to find posts after a specific date',
+            }),
+        });
+        sectionsData.push({
+            value: 'before:',
+            testID: 'search.before_section',
+            modifier: 'YYYY-MM-DD',
+            description: intl.formatMessage({
+                id: 'mobile.search.before_modifier_description',
+                defaultMessage: 'to find posts before a specific date',
+            }),
+        });
 
         const sections = [{
             data: sectionsData,
@@ -714,7 +709,7 @@ export default class Search extends PureComponent {
                     onChangeText={this.handleTextChanged}
                     isSearch={true}
                     value={value}
-                    enableDateSuggestion={this.props.enableDateSuggestion}
+                    enableDateSuggestion={true}
                 />
             </KeyboardLayout>
         );

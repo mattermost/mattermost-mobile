@@ -5,7 +5,7 @@ import React from 'react';
 
 import {DeviceTypes} from '@constants';
 import Preferences from '@mm-redux/constants/preferences';
-import {shallowWithIntl} from 'test/intl-test-helper';
+import {shallowWithIntl} from '@test/intl-test-helper';
 
 import MainSidebar from './main_sidebar.ios';
 
@@ -17,6 +17,7 @@ describe('MainSidebar', () => {
             setChannelDisplayName: jest.fn(),
             setChannelLoading: jest.fn(),
             joinChannel: jest.fn(),
+            setCategoryCollapsed: jest.fn(),
         },
         blurPostTextBox: jest.fn(),
         currentTeamId: 'current-team-id',
@@ -24,7 +25,7 @@ describe('MainSidebar', () => {
         deviceWidth: 10,
         isLandscape: false,
         teamsCount: 2,
-        theme: Preferences.THEMES.default,
+        theme: Preferences.THEMES.denim,
     };
 
     const loadShallow = (props) => {
@@ -60,8 +61,8 @@ describe('MainSidebar', () => {
     });
 
     test('should re-render when the theme changes', () => {
-        const theme = Preferences.THEMES.default;
-        const newTheme = Preferences.THEMES.organization;
+        const theme = Preferences.THEMES.denim;
+        const newTheme = Preferences.THEMES.sapphire;
         const props = {
             ...baseProps,
             theme,

@@ -2,9 +2,9 @@
 // See LICENSE.txt for license information.
 
 import React from 'react';
-import {shallowWithIntl} from 'test/intl-test-helper';
 
 import Preferences from '@mm-redux/constants/preferences';
+import {shallowWithIntl} from '@test/intl-test-helper';
 
 import Permalink from './permalink.js';
 
@@ -37,7 +37,7 @@ describe('Permalink', () => {
         myChannelMemberships: {},
         onClose: jest.fn(),
         postIds: ['post_id_1', 'focused_post_id', 'post_id_3'],
-        theme: Preferences.THEMES.default,
+        theme: Preferences.THEMES.denim,
         componentId: 'component-id',
     };
 

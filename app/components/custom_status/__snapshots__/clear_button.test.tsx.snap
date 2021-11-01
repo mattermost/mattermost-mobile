@@ -1,7 +1,7 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`components/custom_status/clear_button should match snapshot 1`] = `
-<ForwardRef
+<TouchableOpacity
   onPress={[Function]}
   style={
     Array [
@@ -23,9 +23,9 @@ exports[`components/custom_status/clear_button should match snapshot 1`] = `
     style={
       Object {
         "borderRadius": 1000,
-        "color": "rgba(61,60,64,0.52)",
+        "color": "rgba(63,67,80,0.52)",
       }
     }
   />
-</ForwardRef>
+</TouchableOpacity>
 `;

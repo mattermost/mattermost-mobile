@@ -14,7 +14,7 @@ import TouchableWithFeedback from '@components/touchable_with_feedback';
 import {General} from '@mm-redux/constants';
 import {makeStyleSheetFromTheme, changeOpacity} from '@utils/theme';
 
-import type {Theme} from '@mm-redux/types/preferences';
+import type {Theme} from '@mm-redux/types/theme';
 
 interface AtMentionItemProps {
     firstName: string;
@@ -128,6 +128,7 @@ const AtMentionItem = ({firstName = '', isBot, isCurrentUser, isGuest, isShared,
                     />
                     <Text
                         numberOfLines={1}
+                        testID='at_mention_item.text'
                     >
                         {Boolean(name.length) && (
                             <Text

@@ -50,6 +50,11 @@ const state = {
             selectedPostId: '',
             currentFocusedPostId: '',
         },
+        threads: {
+            threads: {},
+            threadsInTeam: {},
+            counts: {},
+        },
         preferences: {
             myPreferences: {},
         },
@@ -146,6 +151,11 @@ const state = {
         },
         team: {
             lastTeamId: '',
+        },
+        threads: {
+            lastViewedAt: {},
+            viewingGlobalThreads: false,
+            viewingGlobalThreadsUnreads: false,
         },
         thread: {
             drafts: {},

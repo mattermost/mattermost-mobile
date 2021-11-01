@@ -1,8 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React from 'react';
 import {shallow} from 'enzyme';
+import React from 'react';
 
 import Preferences from '@mm-redux/constants/preferences';
 import {changeOpacity} from '@utils/theme';
@@ -12,7 +12,7 @@ import SendAction from './index';
 describe('SendAction', () => {
     const baseProps = {
         testID: 'post_draft.send_action',
-        theme: Preferences.THEMES.default,
+        theme: Preferences.THEMES.denim,
         handleSendMessage: jest.fn(),
         disabled: false,
     };

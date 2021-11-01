@@ -2,12 +2,13 @@
 // See LICENSE.txt for license information.
 
 import {fireEvent} from '@testing-library/react-native';
+
 import React from 'react';
 import {Alert, Platform} from 'react-native';
 import Permissions from 'react-native-permissions';
 
 import Preferences from '@mm-redux/constants/preferences';
-import {renderWithIntl} from 'test/testing_library';
+import {renderWithIntl} from '@test/testing_library';
 
 import FileQuickAction from './index';
 
@@ -17,7 +18,7 @@ describe('FileQuickAction', () => {
         testID: 'post_draft.quick_actions.file_action',
         fileCount: 0,
         maxFileCount: 5,
-        theme: Preferences.THEMES.default,
+        theme: Preferences.THEMES.denim,
         onUploadFiles: jest.fn(),
     };
 

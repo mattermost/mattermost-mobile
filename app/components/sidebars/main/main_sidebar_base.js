@@ -1,8 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {Component} from 'react';
 import PropTypes from 'prop-types';
+import React, {Component} from 'react';
 import {
     Dimensions,
     Platform,
@@ -28,6 +28,8 @@ export default class MainSidebarBase extends Component {
             joinChannel: PropTypes.func.isRequired,
             makeDirectChannel: PropTypes.func.isRequired,
             setChannelDisplayName: PropTypes.func.isRequired,
+            setCategoryCollapsed: PropTypes.func.isRequired,
+            handleNotViewingGlobalThreadsScreen: PropTypes.func,
         }).isRequired,
         children: PropTypes.node,
         currentTeamId: PropTypes.string.isRequired,
@@ -35,6 +37,11 @@ export default class MainSidebarBase extends Component {
         locale: PropTypes.string,
         teamsCount: PropTypes.number.isRequired,
         theme: PropTypes.object.isRequired,
+        viewingGlobalThreads: PropTypes.bool,
+    };
+
+    static defaultProps = {
+        viewingGlobalThreads: false,
     };
 
     constructor(props) {
@@ -49,13 +56,16 @@ export default class MainSidebarBase extends Component {
         this.props.actions.getTeams();
         EventEmitter.on(NavigationTypes.CLOSE_MAIN_SIDEBAR, this.closeMainSidebar);
         EventEmitter.on(WebsocketEvents.CHANNEL_UPDATED, this.handleUpdateTitle);
-        Dimensions.addEventListener('change', this.handleDimensions);
+        this.dimensionsListener = Dimensions.addEventListener('change', this.handleDimensions);
     }
 
     shouldComponentUpdate(nextProps, nextState) {
-        const {currentTeamId, teamsCount, theme} = this.props;
+        const {currentTeamId, teamsCount, theme, viewingGlobalThreads} = this.props;
         const {deviceWidth, openDrawerOffset, isSplitView, permanentSidebar, searching} = this.state;
 
+        if (viewingGlobalThreads !== nextProps.viewingGlobalThreads) {
+            return true;
+        }
         if (nextState.openDrawerOffset !== openDrawerOffset && Platform.OS === 'ios') {
             return true;
         }
@@ -81,7 +91,7 @@ export default class MainSidebarBase extends Component {
         this.mounted = false;
         EventEmitter.off(NavigationTypes.CLOSE_MAIN_SIDEBAR, this.closeMainSidebar);
         EventEmitter.off(WebsocketEvents.CHANNEL_UPDATED, this.handleUpdateTitle);
-        Dimensions.removeEventListener('change', this.handleDimensions);
+        this.dimensionsListener?.remove();
     }
 
     drawerSwiperRef = (ref) => {
@@ -231,6 +241,7 @@ export default class MainSidebarBase extends Component {
                     testID='main.sidebar.channels_list'
                     ref={this.channelListRef}
                     onSelectChannel={this.selectChannel}
+                    onCollapseCategory={this.collapseCategory}
                     onJoinChannel={this.joinChannel}
                     onShowTeams={multipleTeams ? this.showTeams : undefined}
                     onSearchStart={this.onSearchStart}
@@ -263,14 +274,21 @@ export default class MainSidebarBase extends Component {
         );
     };
 
+    collapseCategory = (categoryId, collapse) => {
+        const {setCategoryCollapsed} = this.props.actions;
+
+        setCategoryCollapsed(categoryId, collapse);
+    }
+
     selectChannel = (channel, currentChannelId, closeDrawer = true) => {
-        const {handleSelectChannel} = this.props.actions;
+        const {handleSelectChannel, handleNotViewingGlobalThreadsScreen} = this.props.actions;
 
         if (closeDrawer) {
             this.closeMainSidebar();
         }
 
         if (channel.id === currentChannelId) {
+            handleNotViewingGlobalThreadsScreen();
             return;
         }
 

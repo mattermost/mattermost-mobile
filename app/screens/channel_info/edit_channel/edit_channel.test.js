@@ -2,9 +2,9 @@
 // See LICENSE.txt for license information.
 
 import React from 'react';
-import {shallowWithIntl} from 'test/intl-test-helper';
 
 import Preferences from '@mm-redux/constants/preferences';
+import {shallowWithIntl} from '@test/intl-test-helper';
 
 import EditChannel from './edit_channel';
 
@@ -20,7 +20,7 @@ describe('ChannelInfo -> EditChannel', () => {
     const baseProps = {
         testID: 'test-id',
         canEdit: true,
-        theme: Preferences.THEMES.default,
+        theme: Preferences.THEMES.denim,
     };
 
     test('should match snapshot for Edit Channel', () => {

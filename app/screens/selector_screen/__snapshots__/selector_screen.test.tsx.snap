@@ -1,0 +1,627 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`SelectorScreen should match snapshot for channels 1`] = `
+<RNCSafeAreaView
+  style={
+    Object {
+      "flex": 1,
+    }
+  }
+>
+  <Connect(StatusBar) />
+  <View
+    style={
+      Object {
+        "height": 38,
+        "marginVertical": 5,
+        "paddingLeft": 8,
+      }
+    }
+    testID="selector.screen"
+  >
+    <Search
+      autoCapitalize="none"
+      backArrowSize={24}
+      backgroundColor="transparent"
+      blurOnSubmit={false}
+      cancelTitle="Cancel"
+      containerHeight={40}
+      deleteIconSize={20}
+      editable={true}
+      inputHeight={33}
+      inputStyle={
+        Object {
+          "backgroundColor": "rgba(63,67,80,0.2)",
+          "color": "#3f4350",
+          "fontSize": 15,
+        }
+      }
+      keyboardAppearance="light"
+      keyboardShouldPersist={false}
+      keyboardType="default"
+      onBlur={[Function]}
+      onCancelButtonPress={[Function]}
+      onChangeText={[Function]}
+      onSearchButtonPress={[Function]}
+      onSelectionChange={[Function]}
+      placeholder="Search"
+      placeholderTextColor="rgba(63,67,80,0.5)"
+      returnKeyType="search"
+      searchBarRightMargin={0}
+      searchIconSize={24}
+      showArrow={false}
+      showCancel={true}
+      testID="selector.search_bar"
+      tintColorDelete="rgba(63,67,80,0.5)"
+      tintColorSearch="rgba(63,67,80,0.5)"
+      titleCancelColor="#3f4350"
+      value=""
+    />
+  </View>
+  <CustomList
+    canRefresh={true}
+    data={Array []}
+    listType="flat"
+    loading={false}
+    loadingComponent={null}
+    noResults={null}
+    onLoadMore={[Function]}
+    onRowPress={[Function]}
+    renderItem={[Function]}
+    shouldRenderSeparator={true}
+    showNoResults={true}
+    theme={
+      Object {
+        "awayIndicator": "#ffbc1f",
+        "buttonBg": "#1c58d9",
+        "buttonColor": "#ffffff",
+        "centerChannelBg": "#ffffff",
+        "centerChannelColor": "#3f4350",
+        "codeTheme": "github",
+        "dndIndicator": "#d24b4e",
+        "errorTextColor": "#d24b4e",
+        "linkColor": "#386fe5",
+        "mentionBg": "#ffffff",
+        "mentionColor": "#1e325c",
+        "mentionHighlightBg": "#ffd470",
+        "mentionHighlightLink": "#1b1d22",
+        "newMessageSeparator": "#cc8f00",
+        "onlineIndicator": "#3db887",
+        "sidebarBg": "#1e325c",
+        "sidebarHeaderBg": "#192a4d",
+        "sidebarHeaderTextColor": "#ffffff",
+        "sidebarTeamBarBg": "#14213e",
+        "sidebarText": "#ffffff",
+        "sidebarTextActiveBorder": "#5d89ea",
+        "sidebarTextActiveColor": "#ffffff",
+        "sidebarTextHoverBg": "#28427b",
+        "sidebarUnreadText": "#ffffff",
+        "type": "Denim",
+      }
+    }
+  />
+</RNCSafeAreaView>
+`;
+
+exports[`SelectorScreen should match snapshot for channels 2`] = `
+<RNCSafeAreaView
+  style={
+    Object {
+      "flex": 1,
+    }
+  }
+>
+  <Connect(StatusBar) />
+  <View
+    style={
+      Object {
+        "height": 38,
+        "marginVertical": 5,
+        "paddingLeft": 8,
+      }
+    }
+    testID="selector.screen"
+  >
+    <Search
+      autoCapitalize="none"
+      backArrowSize={24}
+      backgroundColor="transparent"
+      blurOnSubmit={false}
+      cancelTitle="Cancel"
+      containerHeight={40}
+      deleteIconSize={20}
+      editable={true}
+      inputHeight={33}
+      inputStyle={
+        Object {
+          "backgroundColor": "rgba(63,67,80,0.2)",
+          "color": "#3f4350",
+          "fontSize": 15,
+        }
+      }
+      keyboardAppearance="light"
+      keyboardShouldPersist={false}
+      keyboardType="default"
+      onBlur={[Function]}
+      onCancelButtonPress={[Function]}
+      onChangeText={[Function]}
+      onSearchButtonPress={[Function]}
+      onSelectionChange={[Function]}
+      placeholder="Search"
+      placeholderTextColor="rgba(63,67,80,0.5)"
+      returnKeyType="search"
+      searchBarRightMargin={0}
+      searchIconSize={24}
+      showArrow={false}
+      showCancel={true}
+      testID="selector.search_bar"
+      tintColorDelete="rgba(63,67,80,0.5)"
+      tintColorSearch="rgba(63,67,80,0.5)"
+      titleCancelColor="#3f4350"
+      value=""
+    />
+  </View>
+  <CustomList
+    canRefresh={true}
+    data={Array []}
+    listType="flat"
+    loading={false}
+    loadingComponent={null}
+    noResults={null}
+    onLoadMore={[Function]}
+    onRowPress={[Function]}
+    renderItem={[Function]}
+    shouldRenderSeparator={true}
+    showNoResults={true}
+    theme={
+      Object {
+        "awayIndicator": "#ffbc1f",
+        "buttonBg": "#1c58d9",
+        "buttonColor": "#ffffff",
+        "centerChannelBg": "#ffffff",
+        "centerChannelColor": "#3f4350",
+        "codeTheme": "github",
+        "dndIndicator": "#d24b4e",
+        "errorTextColor": "#d24b4e",
+        "linkColor": "#386fe5",
+        "mentionBg": "#ffffff",
+        "mentionColor": "#1e325c",
+        "mentionHighlightBg": "#ffd470",
+        "mentionHighlightLink": "#1b1d22",
+        "newMessageSeparator": "#cc8f00",
+        "onlineIndicator": "#3db887",
+        "sidebarBg": "#1e325c",
+        "sidebarHeaderBg": "#192a4d",
+        "sidebarHeaderTextColor": "#ffffff",
+        "sidebarTeamBarBg": "#14213e",
+        "sidebarText": "#ffffff",
+        "sidebarTextActiveBorder": "#5d89ea",
+        "sidebarTextActiveColor": "#ffffff",
+        "sidebarTextHoverBg": "#28427b",
+        "sidebarUnreadText": "#ffffff",
+        "type": "Denim",
+      }
+    }
+  />
+</RNCSafeAreaView>
+`;
+
+exports[`SelectorScreen should match snapshot for explicit options 1`] = `
+<RNCSafeAreaView
+  style={
+    Object {
+      "flex": 1,
+    }
+  }
+>
+  <Connect(StatusBar) />
+  <View
+    style={
+      Object {
+        "height": 38,
+        "marginVertical": 5,
+        "paddingLeft": 8,
+      }
+    }
+    testID="selector.screen"
+  >
+    <Search
+      autoCapitalize="none"
+      backArrowSize={24}
+      backgroundColor="transparent"
+      blurOnSubmit={false}
+      cancelTitle="Cancel"
+      containerHeight={40}
+      deleteIconSize={20}
+      editable={true}
+      inputHeight={33}
+      inputStyle={
+        Object {
+          "backgroundColor": "rgba(63,67,80,0.2)",
+          "color": "#3f4350",
+          "fontSize": 15,
+        }
+      }
+      keyboardAppearance="light"
+      keyboardShouldPersist={false}
+      keyboardType="default"
+      onBlur={[Function]}
+      onCancelButtonPress={[Function]}
+      onChangeText={[Function]}
+      onSearchButtonPress={[Function]}
+      onSelectionChange={[Function]}
+      placeholder="Search"
+      placeholderTextColor="rgba(63,67,80,0.5)"
+      returnKeyType="search"
+      searchBarRightMargin={0}
+      searchIconSize={24}
+      showArrow={false}
+      showCancel={true}
+      testID="selector.search_bar"
+      tintColorDelete="rgba(63,67,80,0.5)"
+      tintColorSearch="rgba(63,67,80,0.5)"
+      titleCancelColor="#3f4350"
+      value=""
+    />
+  </View>
+  <CustomList
+    canRefresh={true}
+    data={
+      Array [
+        Object {
+          "id": "value",
+          "text": "text",
+          "value": "value",
+        },
+      ]
+    }
+    listType="flat"
+    loading={false}
+    loadingComponent={null}
+    noResults={null}
+    onLoadMore={[Function]}
+    onRowPress={[Function]}
+    renderItem={[Function]}
+    shouldRenderSeparator={true}
+    showNoResults={true}
+    theme={
+      Object {
+        "awayIndicator": "#ffbc1f",
+        "buttonBg": "#1c58d9",
+        "buttonColor": "#ffffff",
+        "centerChannelBg": "#ffffff",
+        "centerChannelColor": "#3f4350",
+        "codeTheme": "github",
+        "dndIndicator": "#d24b4e",
+        "errorTextColor": "#d24b4e",
+        "linkColor": "#386fe5",
+        "mentionBg": "#ffffff",
+        "mentionColor": "#1e325c",
+        "mentionHighlightBg": "#ffd470",
+        "mentionHighlightLink": "#1b1d22",
+        "newMessageSeparator": "#cc8f00",
+        "onlineIndicator": "#3db887",
+        "sidebarBg": "#1e325c",
+        "sidebarHeaderBg": "#192a4d",
+        "sidebarHeaderTextColor": "#ffffff",
+        "sidebarTeamBarBg": "#14213e",
+        "sidebarText": "#ffffff",
+        "sidebarTextActiveBorder": "#5d89ea",
+        "sidebarTextActiveColor": "#ffffff",
+        "sidebarTextHoverBg": "#28427b",
+        "sidebarUnreadText": "#ffffff",
+        "type": "Denim",
+      }
+    }
+  />
+</RNCSafeAreaView>
+`;
+
+exports[`SelectorScreen should match snapshot for searching 1`] = `
+<RNCSafeAreaView
+  style={
+    Object {
+      "flex": 1,
+    }
+  }
+>
+  <Connect(StatusBar) />
+  <View
+    style={
+      Object {
+        "height": 38,
+        "marginVertical": 5,
+        "paddingLeft": 8,
+      }
+    }
+    testID="selector.screen"
+  >
+    <Search
+      autoCapitalize="none"
+      backArrowSize={24}
+      backgroundColor="transparent"
+      blurOnSubmit={false}
+      cancelTitle="Cancel"
+      containerHeight={40}
+      deleteIconSize={20}
+      editable={true}
+      inputHeight={33}
+      inputStyle={
+        Object {
+          "backgroundColor": "rgba(63,67,80,0.2)",
+          "color": "#3f4350",
+          "fontSize": 15,
+        }
+      }
+      keyboardAppearance="light"
+      keyboardShouldPersist={false}
+      keyboardType="default"
+      onBlur={[Function]}
+      onCancelButtonPress={[Function]}
+      onChangeText={[Function]}
+      onSearchButtonPress={[Function]}
+      onSelectionChange={[Function]}
+      placeholder="Search"
+      placeholderTextColor="rgba(63,67,80,0.5)"
+      returnKeyType="search"
+      searchBarRightMargin={0}
+      searchIconSize={24}
+      showArrow={false}
+      showCancel={true}
+      testID="selector.search_bar"
+      tintColorDelete="rgba(63,67,80,0.5)"
+      tintColorSearch="rgba(63,67,80,0.5)"
+      titleCancelColor="#3f4350"
+      value="name2"
+    />
+  </View>
+  <CustomList
+    canRefresh={true}
+    data={Array []}
+    listType="flat"
+    loading={false}
+    loadingComponent={null}
+    noResults={null}
+    onLoadMore={[Function]}
+    onRowPress={[Function]}
+    renderItem={[Function]}
+    shouldRenderSeparator={true}
+    showNoResults={true}
+    theme={
+      Object {
+        "awayIndicator": "#ffbc1f",
+        "buttonBg": "#1c58d9",
+        "buttonColor": "#ffffff",
+        "centerChannelBg": "#ffffff",
+        "centerChannelColor": "#3f4350",
+        "codeTheme": "github",
+        "dndIndicator": "#d24b4e",
+        "errorTextColor": "#d24b4e",
+        "linkColor": "#386fe5",
+        "mentionBg": "#ffffff",
+        "mentionColor": "#1e325c",
+        "mentionHighlightBg": "#ffd470",
+        "mentionHighlightLink": "#1b1d22",
+        "newMessageSeparator": "#cc8f00",
+        "onlineIndicator": "#3db887",
+        "sidebarBg": "#1e325c",
+        "sidebarHeaderBg": "#192a4d",
+        "sidebarHeaderTextColor": "#ffffff",
+        "sidebarTeamBarBg": "#14213e",
+        "sidebarText": "#ffffff",
+        "sidebarTextActiveBorder": "#5d89ea",
+        "sidebarTextActiveColor": "#ffffff",
+        "sidebarTextHoverBg": "#28427b",
+        "sidebarUnreadText": "#ffffff",
+        "type": "Denim",
+      }
+    }
+  />
+</RNCSafeAreaView>
+`;
+
+exports[`SelectorScreen should match snapshot for users 1`] = `
+<RNCSafeAreaView
+  style={
+    Object {
+      "flex": 1,
+    }
+  }
+>
+  <Connect(StatusBar) />
+  <View
+    style={
+      Object {
+        "height": 38,
+        "marginVertical": 5,
+        "paddingLeft": 8,
+      }
+    }
+    testID="selector.screen"
+  >
+    <Search
+      autoCapitalize="none"
+      backArrowSize={24}
+      backgroundColor="transparent"
+      blurOnSubmit={false}
+      cancelTitle="Cancel"
+      containerHeight={40}
+      deleteIconSize={20}
+      editable={true}
+      inputHeight={33}
+      inputStyle={
+        Object {
+          "backgroundColor": "rgba(63,67,80,0.2)",
+          "color": "#3f4350",
+          "fontSize": 15,
+        }
+      }
+      keyboardAppearance="light"
+      keyboardShouldPersist={false}
+      keyboardType="default"
+      onBlur={[Function]}
+      onCancelButtonPress={[Function]}
+      onChangeText={[Function]}
+      onSearchButtonPress={[Function]}
+      onSelectionChange={[Function]}
+      placeholder="Search"
+      placeholderTextColor="rgba(63,67,80,0.5)"
+      returnKeyType="search"
+      searchBarRightMargin={0}
+      searchIconSize={24}
+      showArrow={false}
+      showCancel={true}
+      testID="selector.search_bar"
+      tintColorDelete="rgba(63,67,80,0.5)"
+      tintColorSearch="rgba(63,67,80,0.5)"
+      titleCancelColor="#3f4350"
+      value=""
+    />
+  </View>
+  <CustomList
+    canRefresh={true}
+    data={Array []}
+    listType="section"
+    loading={false}
+    loadingComponent={null}
+    noResults={null}
+    onLoadMore={[Function]}
+    onRowPress={[Function]}
+    renderItem={[Function]}
+    shouldRenderSeparator={true}
+    showNoResults={true}
+    theme={
+      Object {
+        "awayIndicator": "#ffbc1f",
+        "buttonBg": "#1c58d9",
+        "buttonColor": "#ffffff",
+        "centerChannelBg": "#ffffff",
+        "centerChannelColor": "#3f4350",
+        "codeTheme": "github",
+        "dndIndicator": "#d24b4e",
+        "errorTextColor": "#d24b4e",
+        "linkColor": "#386fe5",
+        "mentionBg": "#ffffff",
+        "mentionColor": "#1e325c",
+        "mentionHighlightBg": "#ffd470",
+        "mentionHighlightLink": "#1b1d22",
+        "newMessageSeparator": "#cc8f00",
+        "onlineIndicator": "#3db887",
+        "sidebarBg": "#1e325c",
+        "sidebarHeaderBg": "#192a4d",
+        "sidebarHeaderTextColor": "#ffffff",
+        "sidebarTeamBarBg": "#14213e",
+        "sidebarText": "#ffffff",
+        "sidebarTextActiveBorder": "#5d89ea",
+        "sidebarTextActiveColor": "#ffffff",
+        "sidebarTextHoverBg": "#28427b",
+        "sidebarUnreadText": "#ffffff",
+        "type": "Denim",
+      }
+    }
+  />
+</RNCSafeAreaView>
+`;
+
+exports[`SelectorScreen should match snapshot for users 2`] = `
+<RNCSafeAreaView
+  style={
+    Object {
+      "flex": 1,
+    }
+  }
+>
+  <Connect(StatusBar) />
+  <View
+    style={
+      Object {
+        "height": 38,
+        "marginVertical": 5,
+        "paddingLeft": 8,
+      }
+    }
+    testID="selector.screen"
+  >
+    <Search
+      autoCapitalize="none"
+      backArrowSize={24}
+      backgroundColor="transparent"
+      blurOnSubmit={false}
+      cancelTitle="Cancel"
+      containerHeight={40}
+      deleteIconSize={20}
+      editable={true}
+      inputHeight={33}
+      inputStyle={
+        Object {
+          "backgroundColor": "rgba(63,67,80,0.2)",
+          "color": "#3f4350",
+          "fontSize": 15,
+        }
+      }
+      keyboardAppearance="light"
+      keyboardShouldPersist={false}
+      keyboardType="default"
+      onBlur={[Function]}
+      onCancelButtonPress={[Function]}
+      onChangeText={[Function]}
+      onSearchButtonPress={[Function]}
+      onSelectionChange={[Function]}
+      placeholder="Search"
+      placeholderTextColor="rgba(63,67,80,0.5)"
+      returnKeyType="search"
+      searchBarRightMargin={0}
+      searchIconSize={24}
+      showArrow={false}
+      showCancel={true}
+      testID="selector.search_bar"
+      tintColorDelete="rgba(63,67,80,0.5)"
+      tintColorSearch="rgba(63,67,80,0.5)"
+      titleCancelColor="#3f4350"
+      value=""
+    />
+  </View>
+  <CustomList
+    canRefresh={true}
+    data={Array []}
+    listType="section"
+    loading={false}
+    loadingComponent={null}
+    noResults={null}
+    onLoadMore={[Function]}
+    onRowPress={[Function]}
+    renderItem={[Function]}
+    shouldRenderSeparator={true}
+    showNoResults={true}
+    theme={
+      Object {
+        "awayIndicator": "#ffbc1f",
+        "buttonBg": "#1c58d9",
+        "buttonColor": "#ffffff",
+        "centerChannelBg": "#ffffff",
+        "centerChannelColor": "#3f4350",
+        "codeTheme": "github",
+        "dndIndicator": "#d24b4e",
+        "errorTextColor": "#d24b4e",
+        "linkColor": "#386fe5",
+        "mentionBg": "#ffffff",
+        "mentionColor": "#1e325c",
+        "mentionHighlightBg": "#ffd470",
+        "mentionHighlightLink": "#1b1d22",
+        "newMessageSeparator": "#cc8f00",
+        "onlineIndicator": "#3db887",
+        "sidebarBg": "#1e325c",
+        "sidebarHeaderBg": "#192a4d",
+        "sidebarHeaderTextColor": "#ffffff",
+        "sidebarTeamBarBg": "#14213e",
+        "sidebarText": "#ffffff",
+        "sidebarTextActiveBorder": "#5d89ea",
+        "sidebarTextActiveColor": "#ffffff",
+        "sidebarTextHoverBg": "#28427b",
+        "sidebarUnreadText": "#ffffff",
+        "type": "Denim",
+      }
+    }
+  />
+</RNCSafeAreaView>
+`;

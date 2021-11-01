@@ -1,15 +1,16 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
-import {Alert, AppState, findNodeHandle, Keyboard, NativeModules, Platform} from 'react-native';
+import React, {PureComponent} from 'react';
 import {intlShape} from 'react-intl';
+import {Alert, AppState, DeviceEventEmitter, findNodeHandle, Keyboard, NativeModules, Platform} from 'react-native';
 
-import PasteableTextInput from '@components/pasteable_text_input';
 import {NavigationTypes} from '@constants';
 import DEVICE from '@constants/device';
-import {INSERT_TO_COMMENT, INSERT_TO_DRAFT} from '@constants/post_draft';
+import {INSERT_TO_COMMENT, INSERT_TO_DRAFT, PASTE_FILES} from '@constants/post_draft';
+import mattermostManaged from '@mattermost-managed';
+import PasteableTextInput from '@mattermost/react-native-paste-input';
 import {debounce} from '@mm-redux/actions/helpers';
 import EventEmitter from '@mm-redux/utils/event_emitter';
 import {t} from '@utils/i18n';
@@ -39,6 +40,7 @@ export default class PostInput extends PureComponent {
         isLandscape: PropTypes.bool,
         maxMessageLength: PropTypes.number,
         rootId: PropTypes.string,
+        screenId: PropTypes.string.isRequired,
         theme: PropTypes.object.isRequired,
         updateInitialValue: PropTypes.func.isRequired,
         userTyping: PropTypes.func.isRequired,
@@ -54,6 +56,7 @@ export default class PostInput extends PureComponent {
         this.state = {
             keyboardType: 'default',
             longMessageAlertShown: false,
+            disableCopyAndPaste: mattermostManaged.getCachedConfig()?.copyAndPasteProtection === 'true',
         };
     }
 
@@ -61,10 +64,11 @@ export default class PostInput extends PureComponent {
         const event = this.props.rootId ? INSERT_TO_COMMENT : INSERT_TO_DRAFT;
         EventEmitter.on(event, this.handleInsertTextToDraft);
         EventEmitter.on(NavigationTypes.BLUR_POST_DRAFT, this.blur);
-        AppState.addEventListener('change', this.handleAppStateChange);
+        this.appStateListener = AppState.addEventListener('change', this.handleAppStateChange);
+        this.managedListener = mattermostManaged.addEventListener('managedConfigDidChange', this.onManagedConfigurationChange);
 
         if (Platform.OS === 'android') {
-            Keyboard.addListener('keyboardDidHide', this.handleAndroidKeyboard);
+            this.keyboardListener = Keyboard.addListener('keyboardDidHide', this.handleAndroidKeyboard);
         }
     }
 
@@ -72,10 +76,11 @@ export default class PostInput extends PureComponent {
         const event = this.props.rootId ? INSERT_TO_COMMENT : INSERT_TO_DRAFT;
         EventEmitter.off(NavigationTypes.BLUR_POST_DRAFT, this.blur);
         EventEmitter.off(event, this.handleInsertTextToDraft);
-        AppState.removeEventListener('change', this.handleAppStateChange);
+        mattermostManaged.removeEventListener(this.managedListener);
+        this.appStateListener.remove();
 
         if (Platform.OS === 'android') {
-            Keyboard.removeListener('keyboardDidHide', this.handleAndroidKeyboard);
+            this.keyboardListener?.remove();
         }
 
         this.changeDraft(this.getValue());
@@ -248,10 +253,19 @@ export default class PostInput extends PureComponent {
         }
 
         this.value = completed;
+
         this.input.current.setNativeProps({
             text: completed,
         });
     };
+
+    onManagedConfigurationChange = (config) => {
+        this.setState({disableCopyAndPaste: config.copyAndPasteProtection === 'true'});
+    }
+
+    onPaste = (error, files) => {
+        EventEmitter.emit(PASTE_FILES, error, files, this.props.screenId);
+    }
 
     resetTextInput = () => {
         if (this.input.current) {
@@ -271,9 +285,21 @@ export default class PostInput extends PureComponent {
         }
     }
 
+    onPressIn = () => {
+        if (Platform.OS === 'ios') {
+            DeviceEventEmitter.emit(NavigationTypes.DRAWER, 'locked-closed');
+        }
+    };
+
+    onPressOut = () => {
+        if (Platform.OS === 'ios') {
+            DeviceEventEmitter.emit(NavigationTypes.DRAWER, 'unlocked');
+        }
+    };
+
     render() {
         const {formatMessage} = this.context.intl;
-        const {testID, channelDisplayName, isLandscape, theme} = this.props;
+        const {testID, channelDisplayName, screenId, isLandscape, theme} = this.props;
         const style = getStyleSheet(theme);
         const placeholder = this.getPlaceHolder();
         let maxHeight = DEVICE.POST_INPUT_MAX_HEIGHT;
@@ -284,8 +310,10 @@ export default class PostInput extends PureComponent {
 
         return (
             <PasteableTextInput
+                allowFontScaling={true}
                 testID={testID}
                 ref={this.input}
+                disableCopyPaste={this.state.disableCopyAndPaste}
                 style={{...style.input, maxHeight}}
                 onChangeText={this.handleTextChange}
                 onSelectionChange={this.handlePostDraftSelectionChanged}
@@ -296,10 +324,14 @@ export default class PostInput extends PureComponent {
                 underlineColorAndroid='transparent'
                 keyboardType={this.state.keyboardType}
                 onEndEditing={this.handleEndEditing}
+                onPaste={this.onPaste}
                 disableFullscreenUI={true}
                 textContentType='none'
                 autoCompleteType='off'
                 keyboardAppearance={getKeyboardAppearanceFromTheme(theme)}
+                screenId={screenId}
+                onPressIn={this.onPressIn}
+                onPressOut={this.onPressOut}
             />
         );
     }

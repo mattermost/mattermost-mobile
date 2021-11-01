@@ -5,16 +5,17 @@ import {combineReducers} from 'redux';
 
 import announcement from './announcement';
 import channel from './channel';
+import emoji from './emoji';
 import i18n from './i18n';
+import post from './post';
 import recentEmojis from './recent_emojis';
 import root from './root';
 import search from './search';
 import selectServer from './select_server';
 import team from './team';
 import thread from './thread';
+import threads from './threads';
 import user from './user';
-import emoji from './emoji';
-import post from './post';
 
 export default combineReducers({
     announcement,
@@ -29,4 +30,5 @@ export default combineReducers({
     user,
     emoji,
     post,
+    threads,
 });

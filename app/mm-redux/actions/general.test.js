@@ -2,16 +2,17 @@
 // See LICENSE.txt for license information.
 
 import assert from 'assert';
+
 import nock from 'nock';
 
-import {FormattedError} from './helpers.ts';
-import {GeneralTypes} from '@mm-redux/action_types';
-import * as Actions from '@mm-redux/actions/general';
 import {Client4} from '@client/rest';
 import {PER_PAGE_DEFAULT} from '@client/rest/constants';
+import {GeneralTypes} from '@mm-redux/action_types';
+import * as Actions from '@mm-redux/actions/general';
+import TestHelper from '@test/test_helper';
+import configureStore from '@test/test_store';
 
-import TestHelper from 'test/test_helper';
-import configureStore from 'test/test_store';
+import {FormattedError} from './helpers.ts';
 
 describe('Actions.General', () => {
     let store;
@@ -197,21 +198,6 @@ describe('Actions.General', () => {
     });
 
     describe('getRedirectLocation', () => {
-        it('old server', async () => {
-            store.dispatch({type: GeneralTypes.RECEIVED_SERVER_VERSION, data: '5.0.0'});
-
-            const mock = nock(Client4.getBaseRoute()).
-                get('/redirect_location').
-                reply(404);
-
-            // Should return the original link
-            const result = await store.dispatch(Actions.getRedirectLocation('http://examp.le'));
-            assert.deepEqual(result.data, {location: 'http://examp.le'});
-
-            // Should not call the API on an old server
-            assert.equal(mock.isDone(), false);
-        });
-
         it('should save the correct location', async () => {
             store.dispatch({type: GeneralTypes.RECEIVED_SERVER_VERSION, data: '5.3.0'});
 

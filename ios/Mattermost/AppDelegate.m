@@ -10,6 +10,9 @@
 #import <os/log.h>
 #import <RNHWKeyboardEvent.h>
 
+@interface AppDelegate () <RCTBridgeDelegate>
+@end
+
 @implementation AppDelegate
 
 NSString* const NOTIFICATION_MESSAGE_ACTION = @"message";
@@ -54,7 +57,8 @@ NSString* const NOTIFICATION_UPDATE_BADGE_ACTION = @"update_badge";
     [[NSUserDefaults standardUserDefaults] synchronize];
   }
 
-  [ReactNativeNavigation bootstrapWithDelegate:self launchOptions:launchOptions];
+  RCTBridge *bridge = [[RCTBridge alloc] initWithDelegate:self launchOptions:launchOptions];
+  [ReactNativeNavigation bootstrapWithBridge:bridge];
 
   [[AVAudioSession sharedInstance] setCategory:AVAudioSessionCategoryPlayback error: nil];
 
@@ -121,10 +125,9 @@ NSString* const NOTIFICATION_UPDATE_BADGE_ACTION = @"update_badge";
 // Required for deeplinking
 
 - (BOOL)application:(UIApplication *)application openURL:(NSURL *)url
-  sourceApplication:(NSString *)sourceApplication annotation:(id)annotation
+            options:(NSDictionary<UIApplicationOpenURLOptionsKey, id> *)options
 {
-  return [RCTLinkingManager application:application openURL:url
-                      sourceApplication:sourceApplication annotation:annotation];
+  return [RCTLinkingManager application:application openURL:url options:options];
 }
 
 // Only if your app is using [Universal Links](https://developer.apple.com/library/prerelease/ios/documentation/General/Conceptual/AppSearch/UniversalLinks.html).
@@ -143,23 +146,35 @@ NSString* const NOTIFICATION_UPDATE_BADGE_ACTION = @"update_badge";
 */
 RNHWKeyboardEvent *hwKeyEvent = nil;
 - (NSMutableArray<UIKeyCommand *> *)keyCommands {
-  NSMutableArray *keys = [NSMutableArray new];
   if (hwKeyEvent == nil) {
     hwKeyEvent = [[RNHWKeyboardEvent alloc] init];
   }
+  
+  NSMutableArray *commands = [NSMutableArray new];
+  
   if ([hwKeyEvent isListening]) {
-    [keys addObject: [UIKeyCommand keyCommandWithInput:@"\r" modifierFlags:0 action:@selector(sendEnter:)]];
-    [keys addObject: [UIKeyCommand keyCommandWithInput:@"\r" modifierFlags:UIKeyModifierShift action:@selector(sendShiftEnter:)]];
+    UIKeyCommand *enter = [UIKeyCommand keyCommandWithInput:@"\r" modifierFlags:0 action:@selector(sendEnter:)];
+    UIKeyCommand *shiftEnter = [UIKeyCommand keyCommandWithInput:@"\r" modifierFlags:UIKeyModifierShift action:@selector(sendShiftEnter:)];
+    if (@available(iOS 13.0, *)) {
+      [enter setTitle:@"Send message"];
+      [shiftEnter setTitle:@"Add new line"];
+    }
+    if (@available(iOS 15.0, *)) {
+      [enter setWantsPriorityOverSystemBehavior:YES];
+      [shiftEnter setWantsPriorityOverSystemBehavior:YES];
+    }
+    
+    [commands addObject: enter];
+    [commands addObject: shiftEnter];
   }
-  return keys;
+  
+  return commands;
 }
 
 - (void)sendEnter:(UIKeyCommand *)sender {
-  NSString *selected = sender.input;
   [hwKeyEvent sendHWKeyEvent:@"enter"];
 }
 - (void)sendShiftEnter:(UIKeyCommand *)sender {
-  NSString *selected = sender.input;
   [hwKeyEvent sendHWKeyEvent:@"shift-enter"];
 }
 @end

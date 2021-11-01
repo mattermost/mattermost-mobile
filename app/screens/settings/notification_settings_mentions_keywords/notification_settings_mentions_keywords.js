@@ -1,7 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
-import React, {PureComponent} from 'react';
+
 import PropTypes from 'prop-types';
+import React, {PureComponent} from 'react';
 import {ScrollView, View} from 'react-native';
 import {Navigation} from 'react-native-navigation';
 import {SafeAreaView} from 'react-native-safe-area-context';
@@ -74,6 +75,7 @@ export default class NotificationSettingsMentionsKeywords extends PureComponent 
                 >
                     <View style={style.inputContainer}>
                         <TextInputWithLocalizedPlaceholder
+                            allowFontScaling={true}
                             ref={this.keywordsRef}
                             value={keywords}
                             blurOnSubmit={true}

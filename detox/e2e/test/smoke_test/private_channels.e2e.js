@@ -7,6 +7,12 @@
 // - Use element testID when selecting an element. Create one if none.
 // *******************************************************************
 
+import {
+    Channel,
+    Setup,
+    Team,
+    User,
+} from '@support/server_api';
 import {MainSidebar} from '@support/ui/component';
 import {
     ChannelAddMembersScreen,
@@ -16,12 +22,6 @@ import {
     CreateChannelScreen,
     EditChannelScreen,
 } from '@support/ui/screen';
-import {
-    Channel,
-    Setup,
-    Team,
-    User,
-} from '@support/server_api';
 import {getRandomId} from '@support/utils';
 
 describe('Private Channels', () => {
@@ -67,15 +67,15 @@ describe('Private Channels', () => {
         const {
             createButton,
             nameInput,
+            privateChannelTypeAction,
         } = CreateChannelScreen;
-        const {openCreatePrivateChannelButton} = MainSidebar;
 
         // # Create a private channel
         const privateChannelName = `Channel-${getRandomId()}`;
         await openMainSidebar();
-        await openCreatePrivateChannelButton.tap();
-        await CreateChannelScreen.toBeVisible();
-        await expect(element(by.text('New Private Channel'))).toBeVisible();
+        await CreateChannelScreen.open();
+        await expect(element(by.text('Create')).atIndex(0)).toBeVisible();
+        await privateChannelTypeAction.tap();
         await nameInput.typeText(privateChannelName);
         await createButton.tap();
 

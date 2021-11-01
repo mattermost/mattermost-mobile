@@ -8,8 +8,8 @@ import semver from 'semver/preload';
 import * as I18n from '@i18n';
 import PushNotification from '@init/push_notifications';
 import EventEmitter from '@mm-redux/utils/event_emitter';
-import Store from '@store/store';
 import intitialState from '@store/initial_state';
+import Store from '@store/store';
 
 import mattermostBucket from 'app/mattermost_bucket';
 
@@ -143,7 +143,7 @@ describe('GlobalEventHandler', () => {
             jest.clearAllMocks();
         });
 
-        const minVersion = semver.parse('5.31.0');
+        const minVersion = semver.parse('5.37.0');
         const currentUserId = 'current-user-id';
         Store.redux.getState = jest.fn().mockReturnValue({
             entities: {

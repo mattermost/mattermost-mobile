@@ -1,8 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
+import React, {PureComponent} from 'react';
 import {
     View,
     Text,
@@ -185,6 +185,7 @@ export default class TextSetting extends PureComponent {
                 <View style={[style.inputContainer, noediting]}>
                     <View>
                         <TextInput
+                            allowFontScaling={true}
                             value={value}
                             placeholder={placeholder}
                             placeholderTextColor={changeOpacity(theme.centerChannelColor, 0.5)}

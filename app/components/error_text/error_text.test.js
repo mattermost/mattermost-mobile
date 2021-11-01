@@ -1,8 +1,9 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React from 'react';
 import {shallow} from 'enzyme';
+import React from 'react';
+
 import Preferences from '@mm-redux/constants/preferences';
 
 import ErrorText from './error_text.js';
@@ -14,7 +15,7 @@ describe('ErrorText', () => {
             fontSize: 14,
             marginHorizontal: 15,
         },
-        theme: Preferences.THEMES.default,
+        theme: Preferences.THEMES.denim,
         error: {
             message: 'Username must begin with a letter and contain between 3 and 22 characters including numbers, lowercase letters, and the symbols',
         },

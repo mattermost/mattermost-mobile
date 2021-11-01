@@ -10,7 +10,7 @@ import {
 
 import Badge from '@components/badge';
 import CompassIcon from '@components/compass_icon';
-import TeamIcon from 'app/components/team_icon';
+import TeamIcon from '@components/team_icon';
 import {preventDoubleTap} from '@utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
@@ -131,13 +131,13 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             fontWeight: 'bold',
         },
         switcherArrow: {
-            color: theme.sidebarHeaderBg,
+            color: theme.sidebarHeaderTextColor,
             top: 1,
             left: -2,
         },
         switcherContainer: {
             alignItems: 'center',
-            backgroundColor: theme.sidebarHeaderTextColor,
+            backgroundColor: changeOpacity(theme.sidebarHeaderTextColor, 0.24),
             borderRadius: 2,
             flexDirection: 'row',
             justifyContent: 'center',

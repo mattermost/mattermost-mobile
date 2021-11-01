@@ -9,9 +9,9 @@ import {goToScreen} from '@actions/navigation';
 import PostList from '@components/post_list';
 import RetryBarIndicator from '@components/retry_bar_indicator';
 import {TYPING_HEIGHT} from '@constants/post_draft';
+import {CHANNEL, THREAD} from '@constants/screen';
 import EventEmitter from '@mm-redux/utils/event_emitter';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
-import {CHANNEL} from '@constants/screen';
 
 let ChannelIntro = null;
 let LoadMorePosts = null;
@@ -87,7 +87,7 @@ export default class ChannelPostList extends PureComponent {
         actions.getPostThread(rootId);
         actions.selectPost(rootId);
 
-        const screen = 'Thread';
+        const screen = THREAD;
         const title = '';
         const passProps = {
             channelId: post.channel_id,
@@ -196,7 +196,10 @@ export default class ChannelPostList extends PureComponent {
         const style = getStyleSheet(theme);
 
         return (
-            <Animated.View style={[style.container, {paddingBottom: this.bottomPadding}]}>
+            <Animated.View
+                key={channelId}
+                style={[style.container, {paddingBottom: this.bottomPadding}]}
+            >
                 <View style={style.separator}/>
                 {component}
                 <RetryBarIndicator/>

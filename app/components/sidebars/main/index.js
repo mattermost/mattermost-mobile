@@ -1,17 +1,19 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {bindActionCreators} from 'redux';
 import {connect} from 'react-redux';
+import {bindActionCreators} from 'redux';
 
+import {setChannelDisplayName, handleSelectChannel} from '@actions/views/channel';
+import {makeDirectChannel} from '@actions/views/more_dms';
+import {handleNotViewingGlobalThreadsScreen} from '@actions/views/threads';
+import {setCategoryCollapsed} from '@mm-redux/actions/channel_categories';
 import {joinChannel} from '@mm-redux/actions/channels';
 import {getTeams} from '@mm-redux/actions/teams';
 import {getTheme} from '@mm-redux/selectors/entities/preferences';
 import {getCurrentTeamId, getMyTeamsCount} from '@mm-redux/selectors/entities/teams';
 import {getCurrentUser} from '@mm-redux/selectors/entities/users';
-
-import {setChannelDisplayName, handleSelectChannel} from 'app/actions/views/channel';
-import {makeDirectChannel} from 'app/actions/views/more_dms';
+import {getViewingGlobalThreads} from '@selectors/threads';
 
 import MainSidebar from './main_sidebar';
 
@@ -24,6 +26,7 @@ function mapStateToProps(state) {
         currentUserId: currentUser?.id,
         teamsCount: getMyTeamsCount(state),
         theme: getTheme(state),
+        viewingGlobalThreads: getViewingGlobalThreads(state),
     };
 }
 
@@ -35,6 +38,8 @@ function mapDispatchToProps(dispatch) {
             makeDirectChannel,
             setChannelDisplayName,
             handleSelectChannel,
+            setCategoryCollapsed,
+            handleNotViewingGlobalThreadsScreen,
         }, dispatch),
     };
 }

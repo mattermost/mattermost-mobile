@@ -2,9 +2,9 @@
 // See LICENSE.txt for license information.
 
 import React from 'react';
-import {shallowWithIntl} from 'test/intl-test-helper';
 
 import Preferences from '@mm-redux/constants/preferences';
+import {shallowWithIntl} from '@test/intl-test-helper';
 
 import RadioButtonGroup from './radio_button_group';
 
@@ -18,14 +18,14 @@ describe('RadioButtonGroup', () => {
         const options = [{
             testID: 'radio-1',
             label: 'label-1',
-            theme: Preferences.THEMES.default,
+            theme: Preferences.THEMES.denim,
             value: 'value',
             checked: true,
             disabled: false,
         }, {
             testID: 'radio-2',
             label: 'label-2',
-            theme: Preferences.THEMES.default,
+            theme: Preferences.THEMES.denim,
             value: 'value',
             checked: false,
             disabled: true,

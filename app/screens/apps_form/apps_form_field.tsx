@@ -4,17 +4,15 @@
 import React from 'react';
 import {View} from 'react-native';
 
-import {Theme} from '@mm-redux/types/preferences';
-import {AppField, AppFormValue, AppSelectOption} from '@mm-redux/types/apps';
-import {AppFieldTypes} from '@mm-redux/constants/apps';
-import {DialogOption} from '@mm-redux/types/integrations';
-
-import {ViewTypes} from '@constants/index';
-
-import BoolSetting from '@components/widgets/settings/bool_setting';
-import TextSetting from '@components/widgets/settings/text_setting';
 import AutocompleteSelector from '@components/autocomplete_selector';
 import Markdown from '@components/markdown/markdown';
+import BoolSetting from '@components/widgets/settings/bool_setting';
+import TextSetting from '@components/widgets/settings/text_setting';
+import {ViewTypes} from '@constants/index';
+import {AppFieldTypes} from '@mm-redux/constants/apps';
+import {AppField, AppFormValue, AppSelectOption} from '@mm-redux/types/apps';
+import {DialogOption} from '@mm-redux/types/integrations';
+import {Theme} from '@mm-redux/types/theme';
 import {getMarkdownBlockStyles, getMarkdownTextStyles} from '@utils/markdown';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 
@@ -33,7 +31,7 @@ export type Props = {
 }
 
 type State = {
-    selected: DialogOption | null;
+    selected?: DialogOption | DialogOption[];
 }
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
@@ -51,9 +49,11 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
 });
 
 export default class AppsFormField extends React.PureComponent<Props, State> {
-    state = {
-        selected: null,
-    };
+    constructor(props:Props) {
+        super(props);
+
+        this.state = {};
+    }
 
     handleAutocompleteSelect = (selected: DialogOption) => {
         if (!selected) {
@@ -76,9 +76,29 @@ export default class AppsFormField extends React.PureComponent<Props, State> {
     handleClear = () => {
         const {field, onChange} = this.props;
 
-        this.setState({selected: null});
+        this.setState({selected: undefined});
         onChange(field.name, null);
     };
+
+    handleMultioptionAutocompleteSelect = (selected: DialogOption[]) => {
+        if (!selected) {
+            return;
+        }
+        const {
+            field,
+        } = this.props;
+
+        this.setState({selected});
+
+        const selectedOptions = selected.map((opt) => {
+            return {
+                label: opt.text,
+                value: opt.value,
+            };
+        });
+
+        this.props.onChange(field.name, selectedOptions);
+    }
 
     getDynamicOptions = async (userInput = ''): Promise<{data: DialogOption[]}> => {
         const options = await this.props.performLookup(this.props.field.name, userInput);
@@ -193,13 +213,12 @@ export default class AppsFormField extends React.PureComponent<Props, State> {
 
             return (
                 <AutocompleteSelector
-                    id={name}
                     label={displayName}
                     dataSource={dataSource}
                     options={options}
                     optional={!field.is_required}
-                    onSelected={this.handleAutocompleteSelect}
                     onClear={this.handleClear}
+                    onSelected={field.multiselect ? this.handleMultioptionAutocompleteSelect : this.handleAutocompleteSelect}
                     getDynamicOptions={this.getDynamicOptions}
                     helpText={field.description}
                     errorText={errorText}
@@ -208,6 +227,7 @@ export default class AppsFormField extends React.PureComponent<Props, State> {
                     selected={this.state.selected}
                     roundedBorders={false}
                     disabled={field.readonly}
+                    isMultiselect={field.multiselect}
                 />
             );
         }

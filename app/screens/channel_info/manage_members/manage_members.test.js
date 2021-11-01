@@ -2,9 +2,9 @@
 // See LICENSE.txt for license information.
 
 import React from 'react';
-import {shallowWithIntl} from 'test/intl-test-helper';
 
 import Preferences from '@mm-redux/constants/preferences';
+import {shallowWithIntl} from '@test/intl-test-helper';
 
 import ManageMembers from './manage_members';
 
@@ -22,7 +22,7 @@ describe('ChannelInfo -> Manage Members', () => {
         isDirectMessage: false,
         membersCount: 10,
         separator: true,
-        theme: Preferences.THEMES.default,
+        theme: Preferences.THEMES.denim,
     };
 
     test('should match snapshot for Manage Members', () => {

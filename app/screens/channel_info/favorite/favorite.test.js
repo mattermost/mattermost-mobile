@@ -2,9 +2,9 @@
 // See LICENSE.txt for license information.
 
 import React from 'react';
-import {shallowWithIntl} from 'test/intl-test-helper';
 
 import Preferences from '@mm-redux/constants/preferences';
+import {shallowWithIntl} from '@test/intl-test-helper';
 
 import Favorite from './favorite';
 
@@ -22,7 +22,7 @@ describe('ChannelInfo -> Favorite', () => {
         favoriteChannel: jest.fn(),
         isFavorite: false,
         unfavoriteChannel: jest.fn(),
-        theme: Preferences.THEMES.default,
+        theme: Preferences.THEMES.denim,
     };
 
     test('should match snapshot for Favorite Channel', () => {

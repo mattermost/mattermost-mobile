@@ -7,12 +7,12 @@
 // - Use element testID when selecting an element. Create one if none.
 // *******************************************************************
 
+import {Setup} from '@support/server_api';
 import {MainSidebar} from '@support/ui/component';
 import {
     ChannelInfoScreen,
     ChannelScreen,
 } from '@support/ui/screen';
-import {Setup} from '@support/server_api';
 
 describe('Favorite Channels', () => {
     let testChannel;
@@ -59,7 +59,7 @@ describe('Favorite Channels', () => {
         // * Verify channel appears in favorite channels list
         await ChannelInfoScreen.close();
         await openMainSidebar();
-        await expect(element(by.text('FAVORITE CHANNELS'))).toBeVisible();
+        await expect(element(by.text('FAVORITES'))).toBeVisible();
         await hasChannelDisplayNameAtIndex(0, testChannel.display_name);
 
         // # Close main sidebar

@@ -1,20 +1,18 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 import {Client4} from '@client/rest';
-
 import {GeneralTypes} from '@mm-redux/action_types';
-
 import {getCurrentUserId} from '@mm-redux/selectors/entities/common';
 import {getServerVersion} from '@mm-redux/selectors/entities/general';
-import {isMinimumServerVersion} from '@mm-redux/utils/helpers';
+import {GetStateFunc, DispatchFunc, ActionFunc, batchActions} from '@mm-redux/types/actions';
+import {logLevel} from '@mm-redux/types/client4';
 import {TeamDataRetentionPolicy, ChannelDataRetentionPolicy} from '@mm-redux/types/data_retention';
 import {GeneralState} from '@mm-redux/types/general';
-import {logLevel} from '@mm-redux/types/client4';
-import {GetStateFunc, DispatchFunc, ActionFunc, batchActions} from '@mm-redux/types/actions';
+import {isMinimumServerVersion} from '@mm-redux/utils/helpers';
 
 import {logError} from './errors';
-import {loadRolesIfNeeded} from './roles';
 import {bindClientFunc, forceLogoutIfNecessary, FormattedError} from './helpers';
+import {loadRolesIfNeeded} from './roles';
 
 export function getPing(): ActionFunc {
     return async () => {
@@ -192,12 +190,7 @@ export function setUrl(url: string) {
 
 export function getRedirectLocation(url: string): ActionFunc {
     return async (dispatch: DispatchFunc, getState: GetStateFunc) => {
-        let pendingData: Promise<any>;
-        if (isMinimumServerVersion(getServerVersion(getState()), 5, 3)) {
-            pendingData = Client4.getRedirectLocation(url);
-        } else {
-            pendingData = Promise.resolve({location: url});
-        }
+        const pendingData = Client4.getRedirectLocation(url);
 
         let data;
         try {

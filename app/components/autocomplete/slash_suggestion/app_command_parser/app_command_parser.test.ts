@@ -4,29 +4,26 @@
 /* eslint-disable max-lines */
 
 import {
+    AppCommandParser,
+    ParseState,
+    ParsedCommand,
+} from './app_command_parser';
+import {
+    AppCallResponseTypes,
+    AppCallTypes,
+    AutocompleteSuggestion,
+} from './app_command_parser_dependencies';
+import {
+    reduxTestState,
+    testBindings,
+} from './tests/app_command_parser_test_data';
+import {
     thunk,
     configureStore,
     Client4,
     AppBinding,
     checkForExecuteSuggestion,
 } from './tests/app_command_parser_test_dependencies';
-
-import {
-    AppCallResponseTypes,
-    AppCallTypes,
-    AutocompleteSuggestion,
-} from './app_command_parser_dependencies';
-
-import {
-    AppCommandParser,
-    ParseState,
-    ParsedCommand,
-} from './app_command_parser';
-
-import {
-    reduxTestState,
-    testBindings,
-} from './tests/app_command_parser_test_data';
 
 const mockStore = configureStore([thunk]);
 
@@ -36,7 +33,11 @@ describe('AppCommandParser', () => {
             ...reduxTestState,
             entities: {
                 ...reduxTestState.entities,
-                apps: {bindings},
+                apps: {
+                    bindings,
+                    threadBindings: bindings,
+                    threadBindingsForms: {},
+                },
             },
         } as any;
         const testStore = await mockStore(initialState);
@@ -45,7 +46,7 @@ describe('AppCommandParser', () => {
     };
 
     const intl = {
-        formatMessage: (message: {id: string, defaultMessage: string}) => {
+        formatMessage: (message: {id: string; defaultMessage: string}) => {
             return message.defaultMessage;
         },
     };
@@ -53,7 +54,7 @@ describe('AppCommandParser', () => {
     let parser: AppCommandParser;
     beforeEach(async () => {
         const store = await makeStore(testBindings);
-        parser = new AppCommandParser(store as any, intl, 'current_channel_id', 'root_id');
+        parser = new AppCommandParser(store as any, intl, 'current_channel_id', 'team_id', 'root_id');
     });
 
     type Variant = {
@@ -144,25 +145,30 @@ describe('AppCommandParser', () => {
             {
                 title: 'incomplete top command',
                 command: '/jir',
-                autocomplete: {expectError: '`{command}`: No matching command found in this workspace.'},
+                autocomplete: {verify: (parsed: ParsedCommand): void => {
+                    expect(parsed.state).toBe(ParseState.Command);
+                    expect(parsed.incomplete).toBe('jir');
+                }},
                 submit: {expectError: '`{command}`: No matching command found in this workspace.'},
             },
             {
                 title: 'no space after the top command',
                 command: '/jira',
-                autocomplete: {expectError: '`{command}`: No matching command found in this workspace.'},
-                submit: {verify: (parsed: ParsedCommand): void => {
+                autocomplete: {verify: (parsed: ParsedCommand): void => {
                     expect(parsed.state).toBe(ParseState.Command);
-                    expect(parsed.binding?.label).toBe('jira');
+                    expect(parsed.incomplete).toBe('jira');
                 }},
+                submit: {expectError: 'You must select a subcommand.'},
             },
             {
                 title: 'space after the top command',
                 command: '/jira ',
-                submit: {verify: (parsed: ParsedCommand): void => {
+                autocomplete: {verify: (parsed: ParsedCommand): void => {
                     expect(parsed.state).toBe(ParseState.Command);
+                    expect(parsed.incomplete).toBe('');
                     expect(parsed.binding?.label).toBe('jira');
                 }},
+                submit: {expectError: 'You must select a subcommand.'},
             },
             {
                 title: 'middle of subcommand',
@@ -173,12 +179,7 @@ describe('AppCommandParser', () => {
                     expect(parsed.incomplete).toBe('iss');
                     expect(parsed.incompleteStart).toBe(9);
                 }},
-                submit: {verify: (parsed: ParsedCommand): void => {
-                    expect(parsed.state).toBe(ParseState.EndCommand);
-                    expect(parsed.binding?.label).toBe('jira');
-                    expect(parsed.incomplete).toBe('iss');
-                    expect(parsed.incompleteStart).toBe(9);
-                }},
+                submit: {expectError: 'You must select a subcommand.'},
             },
             {
                 title: 'second subcommand, no space',
@@ -189,11 +190,7 @@ describe('AppCommandParser', () => {
                     expect(parsed.incomplete).toBe('issue');
                     expect(parsed.incompleteStart).toBe(6);
                 }},
-                submit: {verify: (parsed: ParsedCommand): void => {
-                    expect(parsed.state).toBe(ParseState.Command);
-                    expect(parsed.binding?.label).toBe('issue');
-                    expect(parsed.location).toBe('/jira/issue');
-                }},
+                submit: {expectError: 'You must select a subcommand.'},
             },
             {
                 title: 'token after the end of bindings, no space',
@@ -307,7 +304,6 @@ describe('AppCommandParser', () => {
                     expect(parsed.values?.epic).toBe('M');
                 }},
             },
-
             {
                 title: 'happy full view',
                 command: '/jira issue view --project=`P 1` MM-123',
@@ -423,6 +419,60 @@ describe('AppCommandParser', () => {
                 command: '/jira issue create --project == test',
                 submit: {expectError: 'Multiple `=` signs are not allowed.'},
             },
+            {
+                title: 'rest field',
+                command: '/jira issue rest hello world',
+                autocomplete: {verify: (parsed: ParsedCommand): void => {
+                    expect(parsed.state).toBe(ParseState.Rest);
+                    expect(parsed.binding?.label).toBe('rest');
+                    expect(parsed.incomplete).toBe('hello world');
+                    expect(parsed.values?.summary).toBe(undefined);
+                }},
+                submit: {verify: (parsed: ParsedCommand): void => {
+                    expect(parsed.state).toBe(ParseState.Rest);
+                    expect(parsed.binding?.label).toBe('rest');
+                    expect(parsed.values?.summary).toBe('hello world');
+                }},
+            },
+            {
+                title: 'rest field with other field',
+                command: '/jira issue rest --verbose true hello world',
+                autocomplete: {verify: (parsed: ParsedCommand): void => {
+                    expect(parsed.state).toBe(ParseState.Rest);
+                    expect(parsed.binding?.label).toBe('rest');
+                    expect(parsed.incomplete).toBe('hello world');
+                    expect(parsed.values?.summary).toBe(undefined);
+                    expect(parsed.values?.verbose).toBe('true');
+                }},
+                submit: {verify: (parsed: ParsedCommand): void => {
+                    expect(parsed.state).toBe(ParseState.Rest);
+                    expect(parsed.binding?.label).toBe('rest');
+                    expect(parsed.values?.summary).toBe('hello world');
+                    expect(parsed.values?.verbose).toBe('true');
+                }},
+            },
+            {
+                title: 'rest field as flag with other field',
+                command: '/jira issue rest --summary "hello world" --verbose true',
+                autocomplete: {verify: (parsed: ParsedCommand): void => {
+                    expect(parsed.state).toBe(ParseState.EndValue);
+                    expect(parsed.binding?.label).toBe('rest');
+                    expect(parsed.incomplete).toBe('true');
+                    expect(parsed.values?.summary).toBe('hello world');
+                    expect(parsed.values?.verbose).toBe(undefined);
+                }},
+                submit: {verify: (parsed: ParsedCommand): void => {
+                    expect(parsed.state).toBe(ParseState.EndValue);
+                    expect(parsed.binding?.label).toBe('rest');
+                    expect(parsed.values?.summary).toBe('hello world');
+                    expect(parsed.values?.verbose).toBe('true');
+                }},
+            },
+            {
+                title: 'error: rest after rest field flag',
+                command: '/jira issue rest --summary "hello world" --verbose true hello world',
+                submit: {expectError: 'Unable to identify argument.'},
+            },
         ];
 
         table.forEach((tc) => {
@@ -512,6 +562,13 @@ describe('AppCommandParser', () => {
                     IconData: 'Create icon',
                     Description: 'Create a new Jira issue',
                 },
+                {
+                    Suggestion: 'rest',
+                    Complete: 'jira issue rest',
+                    Hint: 'rest hint',
+                    IconData: 'rest icon',
+                    Description: 'rest description',
+                },
             ]);
         });
 
@@ -532,6 +589,14 @@ describe('AppCommandParser', () => {
                     IconData: 'Create icon',
                     Description: 'Create a new Jira issue',
                 },
+                {
+                    Suggestion: 'rest',
+                    Complete: 'JiRa IsSuE rest',
+                    Hint: 'rest hint',
+                    IconData: 'rest icon',
+                    Description: 'rest description',
+                },
+
             ]);
         });
 
@@ -863,7 +928,7 @@ describe('AppCommandParser', () => {
             context: {
                 app_id: 'jira',
                 channel_id: 'current_channel_id',
-                location: '/command',
+                location: '/command/jira/issue/create',
                 root_id: 'root_id',
                 team_id: 'team_id',
             },
@@ -877,6 +942,10 @@ describe('AppCommandParser', () => {
             const {call} = await parser.composeCallFromCommand(cmd);
             expect(call).toEqual({
                 ...base,
+                context: {
+                    ...base.context,
+                    location: '/command/jira/issue/create',
+                },
                 raw_command: cmd,
                 expand: {},
                 query: undefined,
@@ -900,6 +969,10 @@ describe('AppCommandParser', () => {
             const {call} = await parser.composeCallFromCommand(cmd);
             expect(call).toEqual({
                 ...base,
+                context: {
+                    ...base.context,
+                    location: '/command/jira/issue/create',
+                },
                 expand: {},
                 selected_field: undefined,
                 query: undefined,
@@ -931,7 +1004,7 @@ describe('AppCommandParser', () => {
                 context: {
                     app_id: 'jira',
                     channel_id: 'current_channel_id',
-                    location: '/command',
+                    location: '/command/jira/issue/create',
                     root_id: 'root_id',
                     team_id: 'team_id',
                 },

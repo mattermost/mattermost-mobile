@@ -3,11 +3,11 @@
 
 import assert from 'assert';
 
-import deepFreezeAndThrowOnMutation from '@mm-redux/utils/deep_freeze';
-import TestHelper from 'test/test_helper';
-import * as Selectors from '@mm-redux/selectors/entities/teams';
-import {getPreferenceKey} from '@mm-redux/utils/preference_utils';
 import {General, Preferences} from '@mm-redux/constants';
+import * as Selectors from '@mm-redux/selectors/entities/teams';
+import deepFreezeAndThrowOnMutation from '@mm-redux/utils/deep_freeze';
+import {getPreferenceKey} from '@mm-redux/utils/preference_utils';
+import TestHelper from '@test/test_helper';
 
 describe('Selectors.Teams', () => {
     TestHelper.initMockEntities();
@@ -89,34 +89,6 @@ describe('Selectors.Teams', () => {
 
     it('getTeamMember', () => {
         assert.deepEqual(Selectors.getTeamMember(testState, team1.id, user2.id), membersInTeam[team1.id][user2.id]);
-    });
-
-    it('getJoinableTeams', () => {
-        const openTeams = [team3, team4];
-        const joinableTeams = Selectors.getJoinableTeams(testState);
-        assert.strictEqual(joinableTeams[0], openTeams[0]);
-        assert.strictEqual(joinableTeams[1], openTeams[1]);
-    });
-
-    it('getSortedJoinableTeams', () => {
-        const openTeams = [team4, team3];
-        const joinableTeams = Selectors.getSortedJoinableTeams(testState);
-        assert.strictEqual(joinableTeams[0], openTeams[0]);
-        assert.strictEqual(joinableTeams[1], openTeams[1]);
-    });
-
-    it('getListableTeams', () => {
-        const openTeams = [team3, team4];
-        const listableTeams = Selectors.getListableTeams(testState);
-        assert.strictEqual(listableTeams[0], openTeams[0]);
-        assert.strictEqual(listableTeams[1], openTeams[1]);
-    });
-
-    it('getListedJoinableTeams', () => {
-        const openTeams = [team4, team3];
-        const joinableTeams = Selectors.getSortedListableTeams(testState);
-        assert.strictEqual(joinableTeams[0], openTeams[0]);
-        assert.strictEqual(joinableTeams[1], openTeams[1]);
     });
 
     it('getJoinableTeamsUsingPermissions', () => {

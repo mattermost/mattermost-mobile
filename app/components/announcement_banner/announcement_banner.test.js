@@ -2,9 +2,9 @@
 // See LICENSE.txt for license information.
 
 import React from 'react';
-import {shallowWithIntl} from 'test/intl-test-helper';
 
 import Preferences from '@mm-redux/constants/preferences';
+import {shallowWithIntl} from '@test/intl-test-helper';
 
 import AnnouncementBanner from './announcement_banner.js';
 
@@ -17,7 +17,7 @@ describe('AnnouncementBanner', () => {
         bannerEnabled: true,
         bannerText: 'Banner Text',
         bannerTextColor: '#fff',
-        theme: Preferences.THEMES.default,
+        theme: Preferences.THEMES.denim,
     };
 
     test('should match snapshot', () => {

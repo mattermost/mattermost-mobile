@@ -3,8 +3,8 @@
 
 import {Parser, Node} from 'commonmark';
 import Renderer from 'commonmark-react-renderer';
-import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
+import React, {PureComponent} from 'react';
 import {
     Platform,
     Text,
@@ -26,9 +26,9 @@ import MarkdownLink from './markdown_link';
 import MarkdownList from './markdown_list';
 import MarkdownListItem from './markdown_list_item';
 import MarkdownTable from './markdown_table';
+import MarkdownTableCell from './markdown_table_cell';
 import MarkdownTableImage from './markdown_table_image';
 import MarkdownTableRow from './markdown_table_row';
-import MarkdownTableCell from './markdown_table_cell';
 import {
     addListItemIndices,
     combineTextNodes,
@@ -226,6 +226,7 @@ export default class Markdown extends PureComponent {
 
         return (
             <AtMention
+                disableAtChannelMentionHighlight={this.props.disableAtChannelMentionHighlight}
                 mentionStyle={this.props.textStyles.mention}
                 textStyle={[this.computeTextStyle(this.props.baseTextStyle, context), style.atMentionOpacity]}
                 isSearchResult={this.props.isSearchResult}

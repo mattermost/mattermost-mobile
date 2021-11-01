@@ -2,15 +2,14 @@
 // See LICENSE.txt for license information.
 
 import assert from 'assert';
+
 import {Server, WebSocket as MockWebSocket} from 'mock-socket';
 
-import {Client4} from '@client/rest';
-
 import * as Actions from '@actions/websocket';
+import {Client4} from '@client/rest';
 import {WebsocketEvents} from '@constants';
-
-import TestHelper from 'test/test_helper';
-import configureStore from 'test/test_store';
+import TestHelper from '@test/test_helper';
+import configureStore from '@test/test_store';
 
 global.WebSocket = MockWebSocket;
 
@@ -27,7 +26,7 @@ describe('Websocket Reaction Events', () => {
     });
 
     afterAll(async () => {
-        Actions.close()();
+        Actions.close();
         mockServer.stop();
         await TestHelper.tearDown();
     });

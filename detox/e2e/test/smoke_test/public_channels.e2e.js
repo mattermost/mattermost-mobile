@@ -7,17 +7,18 @@
 // - Use element testID when selecting an element. Create one if none.
 // *******************************************************************
 
-import {MainSidebar} from '@support/ui/component';
-import {
-    ChannelInfoScreen,
-    ChannelScreen,
-    MoreChannelsScreen,
-} from '@support/ui/screen';
 import {
     Channel,
     Setup,
     System,
 } from '@support/server_api';
+import {MainSidebar} from '@support/ui/component';
+import {
+    ChannelInfoScreen,
+    ChannelMembersScreen,
+    ChannelScreen,
+    MoreChannelsScreen,
+} from '@support/ui/screen';
 
 describe('Public Channels', () => {
     const testPublicChannePrefix = '1-public-channel';
@@ -29,6 +30,7 @@ describe('Public Channels', () => {
     const {
         archiveChannel,
         leaveChannel,
+        manageMembersAction,
     } = ChannelInfoScreen;
     const {
         hasChannelDisplayNameAtIndex,
@@ -39,17 +41,19 @@ describe('Public Channels', () => {
         getFilteredChannelByDisplayName,
         searchInput,
     } = MainSidebar;
+    let testUser;
     let testPublicChannel;
     let townSquareChannel;
 
     beforeAll(async () => {
         const {team, user} = await Setup.apiInit();
+        testUser = user;
 
         ({channel: townSquareChannel} = await Channel.apiGetChannelByName(team.id, 'town-square'));
         ({channel: testPublicChannel} = await Channel.apiCreateChannel({type: 'O', prefix: testPublicChannePrefix, teamId: team.id}));
 
         // # Open channel screen
-        await ChannelScreen.open(user);
+        await ChannelScreen.open(testUser);
     });
 
     afterAll(async () => {
@@ -64,7 +68,14 @@ describe('Public Channels', () => {
         await getFilteredChannelByDisplayName(testPublicChannel.display_name).tap();
 
         // * Verify user is added to the channel
-        await expect(element(by.text('You and @sysadmin joined the channel.'))).toBeVisible();
+        await ChannelInfoScreen.open();
+        await expect(element(by.id(ChannelInfoScreen.testID.manageMembersAction).withDescendant(by.text('2')))).toBeVisible();
+        await manageMembersAction.tap();
+        await ChannelMembersScreen.getUserByDisplayUsername(`@${testUser.username}`);
+
+        // # Go back to channel
+        await ChannelMembersScreen.back();
+        await ChannelInfoScreen.close();
     });
 
     it('MM-T3202 should be able to leave public channel', async () => {

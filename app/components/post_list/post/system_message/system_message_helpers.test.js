@@ -2,15 +2,15 @@
 // See LICENSE.txt for license information.
 
 import React from 'react';
-import {renderWithReduxIntl} from 'test/testing_library';
 
 import {Posts, Preferences} from '@mm-redux/constants';
+import {renderWithReduxIntl} from '@test/testing_library';
 
 import SystemMessage from './system_message';
 
 const baseProps = {
     ownerUsername: 'username',
-    theme: Preferences.THEMES.default,
+    theme: Preferences.THEMES.denim,
 };
 
 describe('renderSystemMessage', () => {
@@ -142,5 +142,40 @@ describe('renderSystemMessage', () => {
             />,
         );
         expect(renderedMessage.toJSON()).toBeNull();
+    });
+
+    test('uses renderer for Guest added and join to channel', () => {
+        const post = {
+            props: {
+                username: 'username',
+            },
+            type: Posts.POST_TYPES.GUEST_JOIN_CHANNEL,
+        };
+        const joined = renderWithReduxIntl(
+            <SystemMessage
+                post={post}
+                {...baseProps}
+            />,
+        );
+        expect(joined.toJSON()).toMatchSnapshot();
+        expect(joined.getByText('@username')).toBeTruthy();
+        expect(joined.getByText(' joined the channel as a guest.')).toBeTruthy();
+
+        post.type = Posts.POST_TYPES.ADD_GUEST_TO_CHANNEL;
+        post.props = {
+            username: 'username',
+            addedUsername: 'other.user',
+        };
+
+        const added = renderWithReduxIntl(
+            <SystemMessage
+                post={post}
+                {...baseProps}
+            />,
+        );
+        expect(added.toJSON()).toMatchSnapshot();
+        expect(added.getByText('@other.user')).toBeTruthy();
+        expect(added.getByText(' added to the channel as a guest by ')).toBeTruthy();
+        expect(added.getByText('@username.')).toBeTruthy();
     });
 });

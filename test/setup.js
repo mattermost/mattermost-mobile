@@ -3,10 +3,10 @@
 
 /* eslint-disable react/no-multi-comp */
 
-import * as ReactNative from 'react-native';
-import MockAsyncStorage from 'mock-async-storage';
 import {configure} from 'enzyme';
 import Adapter from 'enzyme-adapter-react-16';
+import MockAsyncStorage from 'mock-async-storage';
+import * as ReactNative from 'react-native';
 import 'react-native-gesture-handler/jestSetup';
 require('react-native-reanimated/lib/reanimated2/jestUtils').setUpTests();
 
@@ -15,8 +15,9 @@ require('isomorphic-fetch');
 configure({adapter: new Adapter()});
 
 const mockImpl = new MockAsyncStorage();
-jest.mock('@react-native-community/async-storage', () => mockImpl);
-global.window = {};
+jest.mock('@react-native-async-storage/async-storage', () => mockImpl);
+
+// global.window = {};
 
 /* eslint-disable no-console */
 

@@ -5,7 +5,7 @@ import React from 'react';
 import {TouchableHighlight} from 'react-native';
 
 import Preferences from '@mm-redux/constants/preferences';
-import {shallowWithIntl} from 'test/intl-test-helper';
+import {shallowWithIntl} from '@test/intl-test-helper';
 
 import ChannelItem from './channel_item';
 
@@ -35,7 +35,7 @@ describe('ChannelItem', () => {
         onSelectChannel: () => true,
         shouldHideChannel: false,
         showUnreadForMsgs: true,
-        theme: Preferences.THEMES.default,
+        theme: Preferences.THEMES.denim,
         unreadMsgs: 1,
         isSearchResult: false,
         isBot: false,

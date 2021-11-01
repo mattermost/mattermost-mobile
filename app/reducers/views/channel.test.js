@@ -1,8 +1,9 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import channelReducer, {handleSetTempUploadFilesForPostDraft} from './channel';
 import {ViewTypes} from '@constants';
+
+import channelReducer, {handleSetTempUploadFilesForPostDraft} from './channel';
 
 describe('Reducers.channel', () => {
     test('Initial state', () => {
@@ -22,7 +23,10 @@ describe('Reducers.channel', () => {
 
         const nextState = channelReducer(
             initialState,
-            {},
+            {
+                type: '',
+                data: {},
+            },
         );
 
         expect(nextState).toEqual(initialState);

@@ -1,15 +1,15 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import AsyncStorage from '@react-native-community/async-storage';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
 import * as KeyChain from 'react-native-keychain';
 
 import {Client4} from '@client/rest';
-
-import mattermostManaged from 'app/mattermost_managed';
-import EphemeralStore from 'app/store/ephemeral_store';
-import {setCSRFFromCookie} from 'app/utils/security';
 import {analytics} from '@init/analytics.ts';
+import mattermostManaged from '@mattermost-managed';
+import EphemeralStore from '@store/ephemeral_store';
+import {setCSRFFromCookie} from '@utils/security';
 
 const CURRENT_SERVER = '@currentServerUrl';
 

@@ -10,14 +10,12 @@ import {
     View,
 } from 'react-native';
 
-import {Preferences} from '@mm-redux/constants';
-
-import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
-import {t} from 'app/utils/i18n';
-
 import FormattedText from '@components/formatted_text';
-import RadioButtonGroup from 'app/components/radio_button';
-import SectionItem from 'app/screens/settings/section_item';
+import RadioButtonGroup from '@components/radio_button';
+import {Preferences} from '@mm-redux/constants';
+import SectionItem from '@screens/settings/section_item';
+import {t} from '@utils/i18n';
+import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 import NotificationSettingsEmailBase from './notification_settings_email_base';
 
@@ -36,6 +34,15 @@ class NotificationSettingsEmailAndroid extends NotificationSettingsEmailBase {
     handleSaveEmailNotification = () => {
         this.setState({showEmailNotificationsModal: false});
         this.saveEmailNotifyProps();
+    };
+
+    handleEmailThreadsChanged = (value) => {
+        let emailThreads = 'mention';
+        if (value) {
+            emailThreads = 'all';
+        }
+
+        this.setEmailThreads(emailThreads, this.saveEmailThreadsNotifyProps);
     };
 
     showEmailModal = () => {
@@ -94,6 +101,34 @@ class NotificationSettingsEmailAndroid extends NotificationSettingsEmailBase {
                 theme={theme}
                 testID='notification_settings_email.send.action'
             />
+        );
+    }
+
+    renderEmailThreadsSection(style) {
+        const {theme} = this.props;
+
+        return (
+            <View>
+                <SectionItem
+                    label={(
+                        <FormattedText
+                            id='user.settings.notifications.email_threads.title_android'
+                            defaultMessage='Thread reply notifications'
+                        />
+                    )}
+                    description={(
+                        <FormattedText
+                            id='user.settings.notifications.email_threads.description'
+                            defaultMessage={'Notify me about all replies to threads I\'m following'}
+                        />
+                    )}
+                    action={this.handleEmailThreadsChanged}
+                    actionType='toggle'
+                    selected={this.state.emailThreads === 'all'}
+                    theme={theme}
+                />
+                <View style={style.separator}/>
+            </View>
         );
     }
 
@@ -229,7 +264,7 @@ class NotificationSettingsEmailAndroid extends NotificationSettingsEmailBase {
     }
 
     render() {
-        const {theme} = this.props;
+        const {theme, isCollapsedThreadsEnabled, notifyProps} = this.props;
         const style = getStyleSheet(theme);
 
         return (
@@ -244,6 +279,9 @@ class NotificationSettingsEmailAndroid extends NotificationSettingsEmailBase {
                 >
                     {this.renderEmailSection()}
                     <View style={style.separator}/>
+                    {isCollapsedThreadsEnabled && notifyProps.email === 'true' && (
+                        this.renderEmailThreadsSection(style)
+                    )}
                     {this.renderEmailNotificationsModal(style)}
                 </ScrollView>
             </View>

@@ -1,11 +1,10 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React from 'react';
 import {shallow} from 'enzyme';
+import React from 'react';
 
 import Preferences from '@mm-redux/constants/preferences';
-
 import SectionItem from '@screens/settings/section_item';
 
 import NotificationSettingsEmailIos from './notification_settings_email.ios.js';
@@ -23,6 +22,7 @@ describe('NotificationSettingsEmailIos', () => {
         currentUser: {id: 'current_user_id'},
         notifyProps: {
             email: 'true',
+            email_threads: 'all',
         },
         emailInterval: '30',
         enableEmailBatching: false,
@@ -31,8 +31,9 @@ describe('NotificationSettingsEmailIos', () => {
             savePreferences: jest.fn(),
         },
         sendEmailNotifications: true,
-        theme: Preferences.THEMES.default,
+        theme: Preferences.THEMES.denim,
         componentId: 'component-id',
+        isCollapsedThreadsEnabled: false,
     };
 
     test('should match snapshot, renderEmailSection', () => {
@@ -41,6 +42,18 @@ describe('NotificationSettingsEmailIos', () => {
         );
 
         expect(wrapper.instance().renderEmailSection()).toMatchSnapshot();
+    });
+
+    test('should match snapshot, renderEmailThreadsSection', () => {
+        const style = {
+            separator: {},
+        };
+
+        const wrapper = shallow(
+            <NotificationSettingsEmailIos {...{...baseProps, isCollapsedThreadsEnabled: true}}/>,
+        );
+
+        expect(wrapper.instance().renderEmailThreadsSection(style)).toMatchSnapshot();
     });
 
     test('should save preference on back button only if email interval has changed', () => {

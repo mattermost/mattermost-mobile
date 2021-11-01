@@ -2,15 +2,16 @@
 // See LICENSE.txt for license information.
 
 import assert from 'assert';
+
 import nock from 'nock';
 
+import {Client4} from '@client/rest';
 import * as Actions from '@mm-redux/actions/teams';
 import {login} from '@mm-redux/actions/users';
-import {Client4} from '@client/rest';
+import TestHelper from '@test/test_helper';
+import configureStore from '@test/test_store';
+
 import {RequestStatus} from '../constants';
-import {GeneralTypes} from '@mm-redux/action_types';
-import TestHelper from 'test/test_helper';
-import configureStore from 'test/test_store';
 
 const OK_RESPONSE = {status: 'OK'};
 
@@ -257,64 +258,6 @@ describe('Actions.Teams', () => {
         assert.ok(patched);
         assert.strictEqual(patched.display_name, displayName);
         assert.strictEqual(patched.description, description);
-    });
-
-    it('Join Open Team', async () => {
-        const client = TestHelper.createClient();
-
-        nock(Client4.getBaseRoute()).
-            post('/users').
-            query(true).
-            reply(201, TestHelper.fakeUserWithId());
-        const user = await client.createUser(
-            TestHelper.fakeUser(),
-            null,
-            null,
-            TestHelper.basicTeam.invite_id,
-        );
-
-        nock(Client4.getBaseRoute()).
-            post('/users/login').
-            reply(200, user);
-        await client.login(user.email, 'password1');
-
-        nock(Client4.getBaseRoute()).
-            post('/teams').
-            reply(201, {...TestHelper.fakeTeamWithId(), allow_open_invite: true});
-        const team = await client.createTeam({...TestHelper.fakeTeam(), allow_open_invite: true});
-
-        store.dispatch({type: GeneralTypes.RECEIVED_SERVER_VERSION, data: '4.0.0'});
-
-        nock(Client4.getBaseRoute()).
-            post('/teams/members/invite').
-            query(true).
-            reply(201, {user_id: TestHelper.basicUser.id, team_id: team.id});
-
-        nock(Client4.getBaseRoute()).
-            get(`/teams/${team.id}`).
-            reply(200, team);
-
-        nock(Client4.getUserRoute('me')).
-            get('/teams/members').
-            reply(200, [{user_id: TestHelper.basicUser.id, roles: 'team_user', team_id: team.id}]);
-
-        nock(Client4.getUserRoute('me')).
-            get('/teams/unread').
-            reply(200, [{team_id: team.id, msg_count: 0, mention_count: 0}]);
-
-        await Actions.joinTeam(team.invite_id, team.id)(store.dispatch, store.getState);
-
-        const state = store.getState();
-
-        const request = state.requests.teams.joinTeam;
-
-        if (request.status !== RequestStatus.SUCCESS) {
-            throw new Error(JSON.stringify(request.error));
-        }
-
-        const {teams, myMembers} = state.entities.teams;
-        assert.ok(teams[team.id]);
-        assert.ok(myMembers[team.id]);
     });
 
     it('getMyTeamMembers and getMyTeamUnreads', async () => {

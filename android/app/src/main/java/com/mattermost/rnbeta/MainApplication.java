@@ -4,7 +4,6 @@ import android.content.Context;
 import android.content.RestrictionsManager;
 import android.os.Bundle;
 import android.util.Log;
-import java.lang.reflect.InvocationTargetException;
 import java.io.File;
 import java.util.HashMap;
 import java.util.List;
@@ -58,7 +57,6 @@ private final ReactNativeHost mReactNativeHost =
       // Packages that cannot be auto linked yet can be added manually here, for example:
       // packages.add(new MyReactNativePackage());
       packages.add(new RNNotificationsPackage(MainApplication.this));
-      packages.add(new RNPasteableTextInputPackage());
       packages.add(
         new TurboReactPackage() {
               @Override
@@ -101,7 +99,7 @@ private final ReactNativeHost mReactNativeHost =
 
     @Override
     protected JSIModulePackage getJSIModulePackage() {
-      return new CustomMMKVJSIModulePackage();
+      return (JSIModulePackage) new CustomMMKVJSIModulePackage();
     }
   };
 

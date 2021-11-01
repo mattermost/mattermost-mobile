@@ -2,13 +2,16 @@
 // See LICENSE.txt for license information.
 
 import * as reselect from 'reselect';
-import {General, Preferences} from '../../constants';
-import {getConfig, getLicense} from '@mm-redux/selectors/entities/general';
-import {getCurrentTeamId} from '@mm-redux/selectors/entities/teams';
-import {createShallowSelector} from '@mm-redux/utils/helpers';
-import {getPreferenceKey} from '@mm-redux/utils/preference_utils';
-import {GlobalState} from '@mm-redux/types/store';
+
+import {General, Preferences} from '@mm-redux/constants';
+import {getCurrentTeamId} from '@mm-redux/selectors/entities/common';
+import {getConfig, getFeatureFlagValue, getLicense} from '@mm-redux/selectors/entities/general';
 import {PreferenceType} from '@mm-redux/types/preferences';
+import {GlobalState} from '@mm-redux/types/store';
+import {Theme} from '@mm-redux/types/theme';
+import {createShallowSelector, isMinimumServerVersion} from '@mm-redux/utils/helpers';
+import {getPreferenceKey} from '@mm-redux/utils/preference_utils';
+import {setThemeDefaults} from '@mm-redux/utils/theme_utils';
 
 export function getMyPreferences(state: GlobalState) {
     return state.entities.preferences.myPreferences;
@@ -131,52 +134,20 @@ const getDefaultTheme = reselect.createSelector(getConfig, (config) => {
     }
 
     // If no config.DefaultTheme or value doesn't refer to a valid theme name...
-    return Preferences.THEMES.default;
+    return Preferences.THEMES.denim;
 });
 
 export const getTheme = createShallowSelector(
     getThemePreference,
     getDefaultTheme,
     (themePreference, defaultTheme) => {
-        let theme: any;
-        if (themePreference) {
-            theme = themePreference.value;
-        } else {
-            theme = defaultTheme;
-        }
+        const themeValue: Theme | string = themePreference?.value ?? defaultTheme;
 
-        if (typeof theme === 'string') {
-            // A custom theme will be a JSON-serialized object stored in a preference
-            theme = JSON.parse(theme);
-        }
-
+        // A custom theme will be a JSON-serialized object stored in a preference
         // At this point, the theme should be a plain object
+        const theme: Theme = typeof themeValue === 'string' ? JSON.parse(themeValue) : themeValue;
 
-        // If this is a system theme, find it in case the user's theme is missing any fields
-        if (theme.type && theme.type !== 'custom') {
-            const match = Object.values(Preferences.THEMES).find((v: any) => v.type === theme.type) as any;
-            if (match) {
-                if (!match.mentionBg) {
-                    match.mentionBg = match.mentionBj;
-                }
-
-                return match;
-            }
-        }
-
-        for (const key of Object.keys(defaultTheme)) {
-            if (theme[key]) {
-                // Fix a case where upper case theme colours are rendered as black
-                theme[key] = theme[key].toLowerCase();
-            }
-        }
-
-        // Backwards compatability with old name
-        if (!theme.mentionBg) {
-            theme.mentionBg = theme.mentionBj;
-        }
-
-        return Object.assign({}, defaultTheme, theme);
+        return setThemeDefaults(theme);
     },
 );
 
@@ -199,12 +170,10 @@ const defaultSidebarPrefs = {
 
 export const getSidebarPreferences = reselect.createSelector(
     (state: GlobalState) => {
-        const config = getConfig(state);
-        return config.ExperimentalGroupUnreadChannels !== General.DISABLED && getBool(
+        return getBool(
             state,
             Preferences.CATEGORY_SIDEBAR_SETTINGS,
             'show_unread_section',
-            config.ExperimentalGroupUnreadChannels === General.DEFAULT_ON,
         );
     },
     (state) => {
@@ -221,6 +190,7 @@ export const getSidebarPreferences = reselect.createSelector(
             // Support unread settings for old implementation
             sidebarPrefs = {
                 ...defaultSidebarPrefs,
+
                 unreads_at_top: showUnreadSection ? 'true' : 'false',
             };
         }
@@ -258,10 +228,40 @@ export const getNewSidebarPreference = reselect.createSelector(
 
 export function shouldAutocloseDMs(state: GlobalState) {
     const config = getConfig(state);
-    if (!config.CloseUnusedDirectMessages || config.CloseUnusedDirectMessages === 'false') {
+    const {serverVersion} = state.entities.general;
+    if ((!config.CloseUnusedDirectMessages || config.CloseUnusedDirectMessages === 'false') && !isMinimumServerVersion(serverVersion, 6)) {
         return false;
     }
 
     const preference = get(state, Preferences.CATEGORY_SIDEBAR_SETTINGS, Preferences.CHANNEL_SIDEBAR_AUTOCLOSE_DMS, Preferences.AUTOCLOSE_DMS_ENABLED);
     return preference === Preferences.AUTOCLOSE_DMS_ENABLED;
+}
+
+export function getCollapsedThreadsPreference(state: GlobalState): string {
+    const configValue = getConfig(state)?.CollapsedThreads;
+    let preferenceDefault = Preferences.COLLAPSED_REPLY_THREADS_OFF;
+
+    if (configValue === 'default_on') {
+        preferenceDefault = Preferences.COLLAPSED_REPLY_THREADS_ON;
+    }
+
+    return get(
+        state,
+        Preferences.CATEGORY_DISPLAY_SETTINGS,
+        Preferences.COLLAPSED_REPLY_THREADS,
+        preferenceDefault ?? Preferences.COLLAPSED_REPLY_THREADS_FALLBACK_DEFAULT,
+    );
+}
+
+export function isCollapsedThreadsAllowed(state: GlobalState): boolean {
+    return (
+        getFeatureFlagValue(state, 'CollapsedThreads') === 'true' &&
+        getConfig(state).CollapsedThreads !== 'disabled'
+    );
+}
+
+export function isCollapsedThreadsEnabled(state: GlobalState): boolean {
+    const isAllowed = isCollapsedThreadsAllowed(state);
+    const userPreference = getCollapsedThreadsPreference(state);
+    return isAllowed && (userPreference === Preferences.COLLAPSED_REPLY_THREADS_ON || getConfig(state).CollapsedThreads as string === 'always_on');
 }

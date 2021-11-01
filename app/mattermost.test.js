@@ -1,10 +1,9 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import EventEmitter from '@mm-redux/utils/event_emitter';
-
-import EphemeralStore from '@store/ephemeral_store';
 import {NavigationTypes} from '@constants';
+import EventEmitter from '@mm-redux/utils/event_emitter';
+import EphemeralStore from '@store/ephemeral_store';
 
 import {
     componentDidAppearListener,
@@ -52,6 +51,12 @@ describe('componentDidAppearListener', () => {
         componentDidAppearListener({componentId});
         expect(EventEmitter.emit).toHaveBeenCalledTimes(1);
         expect(EventEmitter.emit).toHaveBeenCalledWith(NavigationTypes.BLUR_POST_DRAFT);
+    });
+
+    it('should not add componentIds starting with "!screen" to the store as they are not screens', () => {
+        const componentId = '!screen';
+        componentDidAppearListener({componentId});
+        expect(EphemeralStore.addNavigationComponentId).not.toHaveBeenCalledWith(componentId);
     });
 });
 

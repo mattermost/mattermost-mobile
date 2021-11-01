@@ -21,6 +21,7 @@ export type Config = {
     BuildHashEnterprise: string;
     BuildNumber: string;
     CloseUnusedDirectMessages: string;
+    CollapsedThreads: 'disabled' | 'default_off' | 'default_on';
     CustomBrandText: string;
     CustomDescriptionText: string;
     CustomTermsOfServiceId: string;
@@ -62,6 +63,7 @@ export type Config = {
     EnableIncomingWebhooks: string;
     EnableLatex: string;
     EnableLdap: string;
+    EnableLegacySidebar: string;
     EnableLinkPreviews: string;
     EnableMarketplace: string;
     EnableMetrics: string;
@@ -93,10 +95,9 @@ export type Config = {
     EnableUserCreation: string;
     EnableUserDeactivation: string;
     EnableUserTypingMessages: string;
-    EnableXToLeaveChannelsFromLHS: string;
     EnforceMultifactorAuthentication: string;
     ExperimentalChannelOrganization: string;
-    ExperimentalChannelSidebarOrganization: string;
+    ExperimentalChannelSidebarOrganization?: string;
     ExperimentalClientSideCertCheck: string;
     ExperimentalClientSideCertEnable: string;
     ExperimentalEnableAuthenticationTransfer: string;
@@ -169,3 +170,5 @@ export type Config = {
     WebsocketSecurePort: string;
     WebsocketURL: string;
 };
+
+export type FeatureFlags = Record<string, string>;

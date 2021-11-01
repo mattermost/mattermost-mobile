@@ -1,8 +1,9 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
+import React, {PureComponent} from 'react';
+import {intlShape} from 'react-intl';
 import {
     Alert,
     BackHandler,
@@ -12,14 +13,12 @@ import {
     Platform,
 } from 'react-native';
 import * as Animatable from 'react-native-animatable';
-import {intlShape} from 'react-intl';
 import RNFetchBlob from 'rn-fetch-blob';
 
 import FormattedText from '@components/formatted_text';
-import {MAX_FILE_COUNT, MAX_FILE_COUNT_WARNING, UPLOAD_FILES, PASTE_FILES} from '@constants/post_draft';
+import {MAX_FILE_COUNT_WARNING, UPLOAD_FILES, PASTE_FILES} from '@constants/post_draft';
 import EventEmitter from '@mm-redux/utils/event_emitter';
 import {getFormattedFileSize} from '@mm-redux/utils/file_utils';
-import EphemeralStore from '@store/ephemeral_store';
 import {openGalleryAtIndex} from '@utils/gallery';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 
@@ -40,6 +39,7 @@ export default class Uploads extends PureComponent {
         handleRemoveLastFile: PropTypes.func.isRequired,
         initUploadFiles: PropTypes.func.isRequired,
         maxFileSize: PropTypes.number.isRequired,
+        maxFileCount: PropTypes.number.isRequired,
         rootId: PropTypes.string,
         screenId: PropTypes.string,
         theme: PropTypes.object.isRequired,
@@ -93,7 +93,7 @@ export default class Uploads extends PureComponent {
                 this.showOrHideContainer();
             }
 
-            if (prevProps.files.length === MAX_FILE_COUNT && this.state.showFileMaxWarning) {
+            if (prevProps.files.length === this.props.maxFileCount && this.state.showFileMaxWarning) {
                 this.hideError();
             }
         }
@@ -159,8 +159,8 @@ export default class Uploads extends PureComponent {
         }
     };
 
-    handlePasteFiles = (error, files) => {
-        if (this.props.screenId !== EphemeralStore.getNavigationTopComponentId()) {
+    handlePasteFiles = (error, files, screenId) => {
+        if (screenId !== this.props.screenId) {
             return;
         }
 
@@ -169,8 +169,8 @@ export default class Uploads extends PureComponent {
             return;
         }
 
-        const {canUploadFiles, maxFileSize} = this.props;
-        const availableCount = MAX_FILE_COUNT - this.props.files.length;
+        const {canUploadFiles, maxFileSize, maxFileCount} = this.props;
+        const availableCount = maxFileCount - this.props.files.length;
 
         if (!canUploadFiles) {
             this.handleUploadDisabled();
@@ -188,7 +188,7 @@ export default class Uploads extends PureComponent {
             return;
         }
 
-        this.handleUploadFiles(files);
+        this.handleUploadFiles(files, screenId);
     };
 
     handleUploadDisabled = () => {
@@ -206,17 +206,23 @@ export default class Uploads extends PureComponent {
         }
     };
 
-    handleUploadFiles = async (files) => {
-        if (this.props.screenId !== EphemeralStore.getNavigationTopComponentId()) {
+    handleUploadFiles = async (files, screenId) => {
+        if (screenId !== this.props.screenId) {
             return;
         }
 
         let exceed = false;
 
+        const uploadFiles = [];
         const totalFiles = files.length;
         let i = 0;
         while (i < totalFiles) {
             const file = files[i];
+            if (file.error) {
+                i++;
+                continue;
+            }
+
             if (!file.fileSize | !file.fileName) {
                 const path = (file.path || file.uri).replace('file://', '');
                 // eslint-disable-next-line no-await-in-loop
@@ -229,6 +235,7 @@ export default class Uploads extends PureComponent {
                 exceed = true;
                 break;
             }
+            uploadFiles.push(file);
 
             i++;
         }
@@ -236,7 +243,7 @@ export default class Uploads extends PureComponent {
         if (exceed) {
             this.handleFileSizeWarning();
         } else {
-            this.props.initUploadFiles(files, this.props.rootId);
+            this.props.initUploadFiles(uploadFiles, this.props.rootId);
             this.hideError();
         }
     };
@@ -337,7 +344,10 @@ export default class Uploads extends PureComponent {
                             <FormattedText
                                 style={style.warning}
                                 id='mobile.file_upload.max_warning'
-                                defaultMessage='Uploads limited to 5 files maximum.'
+                                defaultMessage='Uploads limited to {count} files maximum.'
+                                values={{
+                                    count: this.props.maxFileCount,
+                                }}
                             />
                         )}
                         {Boolean(fileSizeWarning) &&

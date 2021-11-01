@@ -1,17 +1,18 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import AsyncStorage from '@react-native-community/async-storage';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
 import {PureComponent} from 'react';
-import {Dimensions} from 'react-native';
+import {Dimensions, EmitterSubscription} from 'react-native';
 
 import {DeviceTypes} from '@constants';
+import mattermostManaged from '@mattermost-managed';
 import EventEmitter from '@mm-redux/utils/event_emitter';
-
-import mattermostManaged from 'app/mattermost_managed';
 
 // TODO: Use permanentSidebar and splitView hooks instead
 export default class ImageViewPort extends PureComponent {
+    dimensionsListener: EmitterSubscription | undefined;
     mounted = false;
     state = {
         isSplitView: false,
@@ -23,13 +24,13 @@ export default class ImageViewPort extends PureComponent {
         this.handlePermanentSidebar();
         this.handleDimensions();
         EventEmitter.on(DeviceTypes.PERMANENT_SIDEBAR_SETTINGS, this.handlePermanentSidebar);
-        Dimensions.addEventListener('change', this.handleDimensions);
+        this.dimensionsListener = Dimensions.addEventListener('change', this.handleDimensions);
     }
 
     componentWillUnmount() {
         this.mounted = false;
         EventEmitter.off(DeviceTypes.PERMANENT_SIDEBAR_SETTINGS, this.handlePermanentSidebar);
-        Dimensions.removeEventListener('change', this.handleDimensions);
+        this.dimensionsListener?.remove();
     }
 
     handleDimensions = () => {

@@ -8,6 +8,12 @@
 // *******************************************************************
 
 import {
+    Channel,
+    Post,
+    Setup,
+    User,
+} from '@support/server_api';
+import {
     ChannelScreen,
     PermalinkScreen,
 } from '@support/ui/screen';
@@ -15,12 +21,6 @@ import {
     timeouts,
     wait,
 } from '@support/utils';
-import {
-    Channel,
-    Post,
-    Setup,
-    User,
-} from '@support/server_api';
 
 describe('Permalink', () => {
     let testUser;
@@ -41,7 +41,7 @@ describe('Permalink', () => {
         await ChannelScreen.logout();
     });
 
-    const expectPermalinkTargetMessage = async (permalinkTargetPost, permalinkTargetChannel) => {
+    const expectPermalinkTargetMessage = async (permalinkTargetPost, permalinkTargetChannelDiplayName) => {
         // # Post a message in the test channel referencing the given permalink.
         const permalinkLabel = `permalink-${Date.now().toString()}`;
         const permalinkMessage = `[${permalinkLabel}](/_redirect/pl/${permalinkTargetPost.id})`;
@@ -66,7 +66,7 @@ describe('Permalink', () => {
         await PermalinkScreen.jumpToRecentMessages();
 
         // * Verify user is on channel where message is posted
-        await expect(ChannelScreen.channelNavBarTitle).toHaveText(permalinkTargetChannel.display_name);
+        await expect(ChannelScreen.channelNavBarTitle).toHaveText(permalinkTargetChannelDiplayName);
         const {postListPostItem: channelPostItem} = await ChannelScreen.getPostListPostItem(permalinkTargetPost.id, permalinkTargetPost.message);
         await expect(channelPostItem).toBeVisible();
     };
@@ -79,7 +79,7 @@ describe('Permalink', () => {
             message: permalinkTargetMessage,
         });
 
-        await expectPermalinkTargetMessage(permalinkTargetPost.post, townSquareChannel);
+        await expectPermalinkTargetMessage(permalinkTargetPost.post, townSquareChannel.display_name);
     });
 
     it('MM-T3805_2 should support _redirect to DM post', async () => {
@@ -92,6 +92,6 @@ describe('Permalink', () => {
             message: permalinkTargetMessage,
         });
 
-        await expectPermalinkTargetMessage(permalinkTargetPost.post, directMessageChannel);
+        await expectPermalinkTargetMessage(permalinkTargetPost.post, dmOtherUser.username);
     });
 });

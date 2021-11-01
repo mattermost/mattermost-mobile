@@ -39,31 +39,31 @@ NotificationSettingsMentionsKeywords {
     "keywords": "",
     "onBack": [MockFunction],
     "theme": Object {
-      "awayIndicator": "#ffbc42",
-      "buttonBg": "#166de0",
+      "awayIndicator": "#ffbc1f",
+      "buttonBg": "#1c58d9",
       "buttonColor": "#ffffff",
       "centerChannelBg": "#ffffff",
-      "centerChannelColor": "#3d3c40",
+      "centerChannelColor": "#3f4350",
       "codeTheme": "github",
-      "dndIndicator": "#f74343",
-      "errorTextColor": "#fd5960",
-      "linkColor": "#2389d7",
+      "dndIndicator": "#d24b4e",
+      "errorTextColor": "#d24b4e",
+      "linkColor": "#386fe5",
       "mentionBg": "#ffffff",
-      "mentionBj": "#ffffff",
-      "mentionColor": "#145dbf",
-      "mentionHighlightBg": "#ffe577",
-      "mentionHighlightLink": "#166de0",
-      "newMessageSeparator": "#ff8800",
-      "onlineIndicator": "#06d6a0",
-      "sidebarBg": "#145dbf",
-      "sidebarHeaderBg": "#1153ab",
+      "mentionColor": "#1e325c",
+      "mentionHighlightBg": "#ffd470",
+      "mentionHighlightLink": "#1b1d22",
+      "newMessageSeparator": "#cc8f00",
+      "onlineIndicator": "#3db887",
+      "sidebarBg": "#1e325c",
+      "sidebarHeaderBg": "#192a4d",
       "sidebarHeaderTextColor": "#ffffff",
+      "sidebarTeamBarBg": "#14213e",
       "sidebarText": "#ffffff",
-      "sidebarTextActiveBorder": "#579eff",
+      "sidebarTextActiveBorder": "#5d89ea",
       "sidebarTextActiveColor": "#ffffff",
-      "sidebarTextHoverBg": "#4578bf",
+      "sidebarTextHoverBg": "#28427b",
       "sidebarUnreadText": "#ffffff",
-      "type": "Mattermost",
+      "type": "Denim",
     },
   },
   "refs": Object {},
@@ -125,31 +125,31 @@ NotificationSettingsMentionsKeywords {
         onBack={[MockFunction]}
         theme={
           Object {
-            "awayIndicator": "#ffbc42",
-            "buttonBg": "#166de0",
+            "awayIndicator": "#ffbc1f",
+            "buttonBg": "#1c58d9",
             "buttonColor": "#ffffff",
             "centerChannelBg": "#ffffff",
-            "centerChannelColor": "#3d3c40",
+            "centerChannelColor": "#3f4350",
             "codeTheme": "github",
-            "dndIndicator": "#f74343",
-            "errorTextColor": "#fd5960",
-            "linkColor": "#2389d7",
+            "dndIndicator": "#d24b4e",
+            "errorTextColor": "#d24b4e",
+            "linkColor": "#386fe5",
             "mentionBg": "#ffffff",
-            "mentionBj": "#ffffff",
-            "mentionColor": "#145dbf",
-            "mentionHighlightBg": "#ffe577",
-            "mentionHighlightLink": "#166de0",
-            "newMessageSeparator": "#ff8800",
-            "onlineIndicator": "#06d6a0",
-            "sidebarBg": "#145dbf",
-            "sidebarHeaderBg": "#1153ab",
+            "mentionColor": "#1e325c",
+            "mentionHighlightBg": "#ffd470",
+            "mentionHighlightLink": "#1b1d22",
+            "newMessageSeparator": "#cc8f00",
+            "onlineIndicator": "#3db887",
+            "sidebarBg": "#1e325c",
+            "sidebarHeaderBg": "#192a4d",
             "sidebarHeaderTextColor": "#ffffff",
+            "sidebarTeamBarBg": "#14213e",
             "sidebarText": "#ffffff",
-            "sidebarTextActiveBorder": "#579eff",
+            "sidebarTextActiveBorder": "#5d89ea",
             "sidebarTextActiveColor": "#ffffff",
-            "sidebarTextHoverBg": "#4578bf",
+            "sidebarTextHoverBg": "#28427b",
             "sidebarUnreadText": "#ffffff",
-            "type": "Mattermost",
+            "type": "Denim",
           }
         }
       />,
@@ -179,7 +179,7 @@ NotificationSettingsMentionsKeywords {
           alwaysBounceVertical={false}
           contentContainerStyle={
             Object {
-              "backgroundColor": "rgba(61,60,64,0.06)",
+              "backgroundColor": "rgba(63,67,80,0.06)",
               "flex": 1,
               "paddingTop": 35,
             }
@@ -189,14 +189,15 @@ NotificationSettingsMentionsKeywords {
             style={
               Object {
                 "backgroundColor": "#ffffff",
-                "borderBottomColor": "rgba(61,60,64,0.1)",
+                "borderBottomColor": "rgba(63,67,80,0.1)",
                 "borderBottomWidth": 1,
-                "borderTopColor": "rgba(61,60,64,0.1)",
+                "borderTopColor": "rgba(63,67,80,0.1)",
                 "borderTopWidth": 1,
               }
             }
           >
             <TextInputWithLocalizedPlaceholder
+              allowFontScaling={true}
               autoCapitalize="none"
               autoCorrect={false}
               blurOnSubmit={true}
@@ -211,11 +212,11 @@ NotificationSettingsMentionsKeywords {
                   "id": "mobile.notification_settings_mentions.keywordsDescription",
                 }
               }
-              placeholderTextColor="rgba(61,60,64,0.4)"
+              placeholderTextColor="rgba(63,67,80,0.4)"
               returnKeyType="done"
               style={
                 Object {
-                  "color": "#3d3c40",
+                  "color": "#3f4350",
                   "fontSize": 15,
                   "height": 150,
                   "paddingHorizontal": 15,
@@ -238,7 +239,7 @@ NotificationSettingsMentionsKeywords {
               id="mobile.notification_settings_mentions.keywordsHelp"
               style={
                 Object {
-                  "color": "rgba(61,60,64,0.4)",
+                  "color": "rgba(63,67,80,0.4)",
                   "fontSize": 13,
                 }
               }

@@ -1,8 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React from 'react';
 import {shallow} from 'enzyme';
+import React from 'react';
 
 import {General} from '@mm-redux/constants';
 import Preferences from '@mm-redux/constants/preferences';
@@ -12,7 +12,7 @@ import UserStatus from './user_status';
 describe('UserStatus', () => {
     const baseProps = {
         size: 32,
-        theme: Preferences.THEMES.default,
+        theme: Preferences.THEMES.denim,
     };
 
     test('should match snapshot, should default to offline status', () => {

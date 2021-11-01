@@ -1,28 +1,24 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
-import {Action, ActionFunc, ActionResult, batchActions, DispatchFunc, GetStateFunc} from '@mm-redux/types/actions';
-import {UserProfile, UserStatus} from '@mm-redux/types/users';
-import {TeamMembership} from '@mm-redux/types/teams';
 import {Client4} from '@client/rest';
-import {General} from '../constants';
+import {analytics} from '@init/analytics';
 import {UserTypes, TeamTypes} from '@mm-redux/action_types';
-import {getAllCustomEmojis} from './emojis';
-import {getClientConfig, setServerVersion} from './general';
-import {getMyTeams} from './teams';
-import {loadRolesIfNeeded} from './roles';
+import {getCurrentUserId, getUsers} from '@mm-redux/selectors/entities/users';
+import {Action, ActionFunc, ActionResult, batchActions, DispatchFunc, GetStateFunc} from '@mm-redux/types/actions';
+import {TeamMembership} from '@mm-redux/types/teams';
+import {UserProfile, UserStatus} from '@mm-redux/types/users';
+import {Dictionary} from '@mm-redux/types/utilities';
 import {getUserIdFromChannelName, isDirectChannel, isDirectChannelVisible, isGroupChannel, isGroupChannelVisible} from '@mm-redux/utils/channel_utils';
 import {removeUserFromList} from '@mm-redux/utils/user_utils';
-import {isMinimumServerVersion} from '@mm-redux/utils/helpers';
 
-import {getConfig, getServerVersion} from '@mm-redux/selectors/entities/general';
-
-import {getCurrentUserId, getUsers} from '@mm-redux/selectors/entities/users';
+import {General} from '../constants';
 
 import {logError} from './errors';
+import {getClientConfig, setServerVersion} from './general';
 import {bindClientFunc, forceLogoutIfNecessary, debounce} from './helpers';
 import {getMyPreferences, makeDirectChannelVisibleIfNecessary, makeGroupMessageVisibleIfNecessary} from './preferences';
-import {Dictionary} from '@mm-redux/types/utilities';
-import {analytics} from '@init/analytics';
+import {loadRolesIfNeeded} from './roles';
+import {getMyTeams} from './teams';
 
 export function checkMfa(loginId: string): ActionFunc {
     return async (dispatch: DispatchFunc) => {
@@ -113,7 +109,7 @@ export function loginById(id: string, password: string, mfaToken = ''): ActionFu
 }
 
 function completeLogin(data: UserProfile): ActionFunc {
-    return async (dispatch: DispatchFunc, getState: GetStateFunc) => {
+    return async (dispatch: DispatchFunc) => {
         dispatch({
             type: UserTypes.RECEIVED_ME,
             data,
@@ -154,9 +150,6 @@ function completeLogin(data: UserProfile): ActionFunc {
 
         const serverVersion = Client4.getServerVersion();
         dispatch(setServerVersion(serverVersion));
-        if (!isMinimumServerVersion(serverVersion, 4, 7) && getConfig(getState()).EnableCustomEmoji === 'true') {
-            dispatch(getAllCustomEmojis());
-        }
 
         try {
             await Promise.all(promises);
@@ -916,11 +909,6 @@ export function checkForModifiedUsers() {
         const state = getState();
         const users = getUsers(state);
         const lastDisconnectAt = state.websocket.lastDisconnectAt;
-        const serverVersion = getServerVersion(state);
-
-        if (!isMinimumServerVersion(serverVersion, 5, 14)) {
-            return {data: true};
-        }
 
         await dispatch(getProfilesByIds(Object.keys(users), {since: lastDisconnectAt}));
         return {data: true};

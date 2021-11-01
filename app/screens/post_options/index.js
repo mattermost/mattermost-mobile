@@ -1,12 +1,13 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {bindActionCreators} from 'redux';
 import {connect} from 'react-redux';
+import {bindActionCreators} from 'redux';
 
 import {addReaction} from '@actions/views/emoji';
 import {MAX_ALLOWED_REACTIONS} from '@constants/emoji';
 import {THREAD} from '@constants/screen';
+import mattermostManaged from '@mattermost-managed';
 import {
     deletePost,
     flagPost,
@@ -16,19 +17,21 @@ import {
     removePost,
     setUnreadPost,
 } from '@mm-redux/actions/posts';
+import {setThreadFollow} from '@mm-redux/actions/threads';
 import {General, Permissions, Posts} from '@mm-redux/constants';
-import {makeGetReactionsForPost} from '@mm-redux/selectors/entities/posts';
 import {isChannelReadOnlyById, getChannel, getCurrentChannelId} from '@mm-redux/selectors/entities/channels';
-import {getCurrentUserId} from '@mm-redux/selectors/entities/users';
 import {getConfig, getLicense} from '@mm-redux/selectors/entities/general';
-import {getMyPreferences, getTheme} from '@mm-redux/selectors/entities/preferences';
+import {makeGetReactionsForPost} from '@mm-redux/selectors/entities/posts';
+import {getMyPreferences, getTheme, isCollapsedThreadsEnabled} from '@mm-redux/selectors/entities/preferences';
 import {haveIChannelPermission} from '@mm-redux/selectors/entities/roles';
 import {getCurrentTeamId, getCurrentTeamUrl} from '@mm-redux/selectors/entities/teams';
+import {getThread} from '@mm-redux/selectors/entities/threads';
+import {getCurrentUserId} from '@mm-redux/selectors/entities/users';
+import {isMinimumServerVersion} from '@mm-redux/utils/helpers';
 import {canEditPost, isPostFlagged, isSystemMessage} from '@mm-redux/utils/post_utils';
 import {getDimensions} from '@selectors/device';
-import {canDeletePost} from '@selectors/permissions';
 import {selectEmojisCountFromReactions} from '@selectors/emojis';
-import mattermostManaged from 'app/mattermost_managed';
+import {canDeletePost} from '@selectors/permissions';
 
 import PostOptions from './post_options';
 
@@ -50,6 +53,7 @@ export function makeMapStateToProps() {
         const channelIsArchived = channel.delete_at !== 0;
         const isSystemPost = isSystemMessage(post);
         const hasBeenDeleted = (post.delete_at !== 0 || post.state === Posts.POST_DELETED);
+        const {serverVersion} = state.entities.general;
 
         let canMarkAsUnread = true;
         let canReply = true;
@@ -94,7 +98,7 @@ export function makeMapStateToProps() {
         } else {
             canEdit = canEditPost(state, config, license, currentTeamId, currentChannelId, currentUserId, post);
             if (canEdit && license.IsLicensed === 'true' &&
-                (config.AllowEditPost === General.ALLOW_EDIT_POST_TIME_LIMIT || (config.PostEditTimeLimit !== -1 && config.PostEditTimeLimit !== '-1'))
+                ((config.AllowEditPost === General.ALLOW_EDIT_POST_TIME_LIMIT && !isMinimumServerVersion(serverVersion, 6)) || (config.PostEditTimeLimit !== -1 && config.PostEditTimeLimit !== '-1'))
             ) {
                 canEditUntil = post.create_at + (config.PostEditTimeLimit * 1000);
             }
@@ -144,6 +148,7 @@ export function makeMapStateToProps() {
             currentUserId,
             isFlagged: isPostFlagged(post.id, myPreferences),
             theme: getTheme(state),
+            thread: isCollapsedThreadsEnabled(state) ? getThread(state, post.id, true) : null,
         };
     };
 }
@@ -158,6 +163,7 @@ function mapDispatchToProps(dispatch) {
             removePost,
             unflagPost,
             unpinPost,
+            setThreadFollow,
             setUnreadPost,
         }, dispatch),
     };

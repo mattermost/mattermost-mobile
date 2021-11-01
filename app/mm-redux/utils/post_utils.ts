@@ -1,17 +1,15 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
-import {General, Posts, Preferences, Permissions} from '../constants';
-import {hasNewPermissions} from '@mm-redux/selectors/entities/general';
 import {haveIChannelPermission} from '@mm-redux/selectors/entities/roles';
-
-import {GlobalState} from '@mm-redux/types/store';
-import {PreferenceType} from '@mm-redux/types/preferences';
-import {Post, PostType, PostMetadata, PostEmbed} from '@mm-redux/types/posts';
-import {UserProfile} from '@mm-redux/types/users';
-import {Team} from '@mm-redux/types/teams';
 import {Channel} from '@mm-redux/types/channels';
+import {Post, PostType, PostMetadata, PostEmbed} from '@mm-redux/types/posts';
+import {PreferenceType} from '@mm-redux/types/preferences';
+import {GlobalState} from '@mm-redux/types/store';
+import {Team} from '@mm-redux/types/teams';
+import {UserProfile} from '@mm-redux/types/users';
 import {$ID} from '@mm-redux/types/utilities';
-import {isMinimumServerVersion} from '@mm-redux/utils/helpers';
+
+import {Posts, Preferences, Permissions} from '../constants';
 
 import {getPreferenceKey} from './preference_utils';
 
@@ -54,37 +52,6 @@ export function isEdited(post: Post): boolean {
     return post.edit_at > 0;
 }
 
-export function canDeletePost(state: GlobalState, config: any, license: any, teamId: $ID<Team>, channelId: $ID<Channel>, userId: $ID<UserProfile>, post: Post, isAdmin: boolean, isSystemAdmin: boolean): boolean {
-    if (!post) {
-        return false;
-    }
-
-    const isOwner = isPostOwner(userId, post);
-
-    if (hasNewPermissions(state)) {
-        let permissions = [];
-        if (isOwner) {
-            permissions = [Permissions.DELETE_POST];
-        } else {
-            const {serverVersion} = state.entities.general;
-
-            // prior to v5.27, the server used to require delete_own_posts and
-            // delete_others_posts permissions to be able to delete a post by a
-            // different author.
-            permissions = isMinimumServerVersion(serverVersion, 5, 27) ? [Permissions.DELETE_OTHERS_POSTS] : [Permissions.DELETE_POST, Permissions.DELETE_OTHERS_POSTS];
-        }
-        return permissions.every((permission) => haveIChannelPermission(state, {team: teamId, channel: channelId, permission, default: false}));
-    }
-
-    // Backwards compatibility with pre-advanced permissions config settings.
-    if (license.IsLicensed === 'true') {
-        return (config.RestrictPostDelete === General.PERMISSIONS_ALL && (isOwner || isAdmin)) ||
-            (config.RestrictPostDelete === General.PERMISSIONS_TEAM_ADMIN && isAdmin) ||
-            (config.RestrictPostDelete === General.PERMISSIONS_SYSTEM_ADMIN && isSystemAdmin);
-    }
-    return isOwner || isAdmin;
-}
-
 export function canEditPost(state: GlobalState, config: any, license: any, teamId: $ID<Team>, channelId: $ID<Channel>, userId: $ID<UserProfile>, post: Post): boolean {
     if (!post || isSystemMessage(post)) {
         return false;
@@ -93,33 +60,17 @@ export function canEditPost(state: GlobalState, config: any, license: any, teamI
     const isOwner = isPostOwner(userId, post);
     let canEdit = true;
 
-    if (hasNewPermissions(state)) {
-        let permissions = [];
-        if (isOwner) {
-            permissions = [Permissions.EDIT_POST];
-        } else {
-            const {serverVersion} = state.entities.general;
-
-            // prior to v5.26, the server used to require edit_own_posts and
-            // edit_others_posts permissions to be able to edit a post by a
-            // different author.
-            permissions = isMinimumServerVersion(serverVersion, 5, 26) ? [Permissions.EDIT_OTHERS_POSTS] : [Permissions.EDIT_POST, Permissions.EDIT_OTHERS_POSTS];
-        }
-        canEdit = permissions.every((permission) => haveIChannelPermission(state, {team: teamId, channel: channelId, permission, default: false}));
-        if (license.IsLicensed === 'true' && config.PostEditTimeLimit !== '-1' && config.PostEditTimeLimit !== -1) {
-            const timeLeft = (post.create_at + (config.PostEditTimeLimit * 1000)) - Date.now();
-            if (timeLeft <= 0) {
-                canEdit = false;
-            }
-        }
+    let permissions = [];
+    if (isOwner) {
+        permissions = [Permissions.EDIT_POST];
     } else {
-        // Backwards compatibility with pre-advanced permissions config settings.
-        canEdit = isOwner && config.AllowEditPost !== 'never';
-        if (config.AllowEditPost === General.ALLOW_EDIT_POST_TIME_LIMIT) {
-            const timeLeft = (post.create_at + (config.PostEditTimeLimit * 1000)) - Date.now();
-            if (timeLeft <= 0) {
-                canEdit = false;
-            }
+        permissions = [Permissions.EDIT_POST, Permissions.EDIT_OTHERS_POSTS];
+    }
+    canEdit = permissions.every((permission) => haveIChannelPermission(state, {team: teamId, channel: channelId, permission, default: false}));
+    if (license.IsLicensed === 'true' && config.PostEditTimeLimit !== '-1' && config.PostEditTimeLimit !== -1) {
+        const timeLeft = (post.create_at + (config.PostEditTimeLimit * 1000)) - Date.now();
+        if (timeLeft <= 0) {
+            canEdit = false;
         }
     }
 

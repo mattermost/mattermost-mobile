@@ -80,7 +80,10 @@ public class CustomPushNotificationHelper {
                     .setName(senderName);
 
             try {
-                sender.setIcon(IconCompat.createWithBitmap(Objects.requireNonNull(userAvatar(context, senderId))));
+                Bitmap avatar = userAvatar(context, senderId);
+                if (avatar != null) {
+                    sender.setIcon(IconCompat.createWithBitmap(avatar));
+                }
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -137,7 +140,7 @@ public class CustomPushNotificationHelper {
                 .addAction(replyAction);
     }
 
-    public static NotificationCompat.Builder createNotificationBuilder(Context context, PendingIntent intent, Bundle bundle) {
+    public static NotificationCompat.Builder createNotificationBuilder(Context context, PendingIntent intent, Bundle bundle, boolean createSummary) {
         final NotificationCompat.Builder notification = new NotificationCompat.Builder(context, CHANNEL_HIGH_IMPORTANCE_ID);
 
         String channelId = bundle.getString("channel_id");
@@ -148,7 +151,7 @@ public class CustomPushNotificationHelper {
         addNotificationExtras(notification, bundle);
         setNotificationIcons(context, notification, bundle);
         setNotificationMessagingStyle(context, notification, bundle);
-        setNotificationGroup(notification, channelId);
+        setNotificationGroup(notification, channelId, createSummary);
         setNotificationBadgeType(notification);
         setNotificationSound(notification, notificationPreferences);
         setNotificationVibrate(notification, notificationPreferences);
@@ -242,7 +245,10 @@ public class CustomPushNotificationHelper {
                     .setName("Me");
 
             try {
-                sender.setIcon(IconCompat.createWithBitmap(Objects.requireNonNull(userAvatar(context, "me"))));
+                Bitmap avatar = userAvatar(context, "me");
+                if (avatar != null) {
+                    sender.setIcon(IconCompat.createWithBitmap(avatar));
+                }
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -373,10 +379,13 @@ public class CustomPushNotificationHelper {
         notification.setStyle(messagingStyle);
     }
 
-    private static void setNotificationGroup(NotificationCompat.Builder notification, String channelId) {
-        notification
-                .setGroup(channelId)
-                .setGroupSummary(true);
+    private static void setNotificationGroup(NotificationCompat.Builder notification, String channelId, boolean setAsSummary) {
+        notification.setGroup(channelId);
+
+        if (setAsSummary) {
+            // if this is the first notification for the channel then set as summary, otherwise skip
+            notification.setGroupSummary(true);
+        }
     }
 
     private static void setNotificationIcons(Context context, NotificationCompat.Builder notification, Bundle bundle) {
@@ -390,7 +399,10 @@ public class CustomPushNotificationHelper {
         if (channelName.equals(senderName)) {
             try {
                 String senderId = bundle.getString("sender_id");
-                notification.setLargeIcon(userAvatar(context, senderId));
+                Bitmap avatar = userAvatar(context, senderId);
+                if (avatar != null) {
+                    notification.setLargeIcon(avatar);
+                }
             } catch (IOException e) {
                 e.printStackTrace();
             }

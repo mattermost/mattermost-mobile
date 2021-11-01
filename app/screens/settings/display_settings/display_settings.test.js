@@ -6,13 +6,13 @@ import React from 'react';
 import {DeviceTypes} from '@constants';
 import Preferences from '@mm-redux/constants/preferences';
 import SettingsItem from '@screens/settings/settings_item';
-import {shallowWithIntl} from 'test/intl-test-helper';
+import {shallowWithIntl} from '@test/intl-test-helper';
 
 import DisplaySettings from './display_settings';
 
 describe('DisplaySettings', () => {
     const baseProps = {
-        theme: Preferences.THEMES.default,
+        theme: Preferences.THEMES.denim,
         enableTheme: false,
         enableTimezone: false,
         componentId: 'component-id',

@@ -11,23 +11,22 @@ import {useResetNativeScrollView} from '@hooks';
 import {Posts} from '@mm-redux/constants';
 import EventEmitter from '@mm-redux/utils/event_emitter';
 import {getDateForDateLine, isCombinedUserActivityPost, isDateLine, isStartOfNewMessages} from '@mm-redux/utils/post_list';
+import telemetry, {PERF_MARKERS} from '@telemetry';
 import {badDeepLink, errorBadChannel} from '@utils/draft';
 import {emptyFunction} from '@utils/general';
 import {makeExtraData} from '@utils/list_view';
 import {matchDeepLink, PERMALINK_GENERIC_TEAM_NAME_REDIRECT} from '@utils/url';
-import telemetry, {PERF_MARKERS} from '@telemetry';
-
-import {INITIAL_BATCH_TO_RENDER, SCROLL_POSITION_CONFIG, VIEWABILITY_CONFIG} from './post_list_config';
-
-import type {ActionResult} from '@mm-redux/types/actions';
-import type {Theme} from '@mm-redux/types/preferences';
 
 import CombinedUserActivity from './combined_user_activity';
 import DateSeparator from './date_separator';
 import MoreMessagesButton from './more_messages_button';
 import NewMessagesLine from './new_message_line';
 import Post from './post';
+import {INITIAL_BATCH_TO_RENDER, SCROLL_POSITION_CONFIG, VIEWABILITY_CONFIG} from './post_list_config';
 import PostListRefreshControl from './post_list_refresh_control';
+
+import type {ActionResult} from '@mm-redux/types/actions';
+import type {Theme} from '@mm-redux/types/theme';
 
 type PostListProps = {
     channelId?: string;
@@ -56,7 +55,7 @@ type PostListProps = {
     setDeepLinkURL: (url?: string) => void;
     showPermalink: (intl: typeof intlShape, teamName: string, postId: string, openAsPermalink?: boolean) => Promise<{}>;
     testID?: string;
-    theme: Theme
+    theme: Theme;
 }
 
 type ViewableItemsChanged = {
@@ -298,10 +297,10 @@ const PostList = ({
 
             if (match) {
                 if (match.type === DeepLinkTypes.CHANNEL) {
-                    handleSelectChannelByName(match.channelName!, match.teamName, errorBadChannel, intl);
+                    handleSelectChannelByName(match.channelName!, match.teamName!, errorBadChannel, intl);
                 } else if (match.type === DeepLinkTypes.PERMALINK) {
                     const teamName = match.teamName === PERMALINK_GENERIC_TEAM_NAME_REDIRECT ? currentTeamName : match.teamName;
-                    onPermalinkPress(match.postId!, teamName);
+                    onPermalinkPress(match.postId!, teamName!);
                 }
             } else {
                 badDeepLink(intl);
@@ -312,10 +311,20 @@ const PostList = ({
     }, [deepLinkURL]);
 
     useLayoutEffect(() => {
+        let scrollFrame: number;
         if (postIds.length && channelId !== prevChannelId.current) {
             telemetry.end([PERF_MARKERS.CHANNEL_RENDER]);
             prevChannelId.current = channelId;
+            scrollFrame = requestAnimationFrame(() => {
+                flatListRef.current?.scrollToOffset({animated: true, offset: 0});
+            });
         }
+
+        return () => {
+            if (scrollFrame) {
+                cancelAnimationFrame(scrollFrame);
+            }
+        };
     }, [channelId, postIds]);
 
     useLayoutEffect(() => {

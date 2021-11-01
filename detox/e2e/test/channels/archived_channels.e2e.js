@@ -8,11 +8,6 @@
 // *******************************************************************
 
 import {
-    ChannelScreen,
-    ChannelInfoScreen,
-    MoreChannelsScreen,
-} from '@support/ui/screen';
-import {
     Channel,
     Post,
     Setup,
@@ -20,6 +15,11 @@ import {
     Team,
     User,
 } from '@support/server_api';
+import {
+    ChannelScreen,
+    ChannelInfoScreen,
+    MoreChannelsScreen,
+} from '@support/ui/screen';
 
 describe('Archived Channels', () => {
     const {
@@ -62,7 +62,7 @@ describe('Archived Channels', () => {
 
         // * Verify favorites section and favorited archived channel are not displayed
         await openMainSidebar();
-        await expect(element(by.text('FAVORITE CHANNELS'))).not.toBeVisible();
+        await expect(element(by.text('FAVORITES'))).not.toBeVisible();
         await expect(element(by.text(favoritedChannel.display_name))).not.toBeVisible();
 
         // # Close main sidebar

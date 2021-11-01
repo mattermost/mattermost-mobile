@@ -1,13 +1,14 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
-import {Platform, ScrollView, View} from 'react-native';
+import React, {PureComponent} from 'react';
 import {intlShape} from 'react-intl';
+import {Platform, ScrollView, View} from 'react-native';
 import HWKeyboardEvent from 'react-native-hw-keyboard-event';
 import {SafeAreaView} from 'react-native-safe-area-context';
 
+import {showAppForm} from '@actions/navigation';
 import Autocomplete from '@components/autocomplete';
 import PostInput from '@components/post_draft/post_input';
 import QuickActions from '@components/post_draft/quick_actions';
@@ -161,7 +162,6 @@ export default class DraftInput extends PureComponent {
             user_id: currentUserId,
             channel_id: channelId,
             root_id: rootId,
-            parent_id: rootId,
             message: value,
         };
 
@@ -294,7 +294,7 @@ export default class DraftInput extends PureComponent {
 
     sendCommand = async (msg) => {
         const {intl} = this.context;
-        const {channelId, executeCommand, rootId, userIsOutOfOffice} = this.props;
+        const {channelId, executeCommand, rootId, userIsOutOfOffice, theme} = this.props;
 
         const status = DraftUtils.getStatusFromSlashCommand(msg);
         if (userIsOutOfOffice && DraftUtils.isStatusSlashCommand(status)) {
@@ -312,6 +312,10 @@ export default class DraftInput extends PureComponent {
             return;
         }
 
+        if (data.form) {
+            showAppForm(data.form, data.call, theme);
+        }
+
         this.setInputValue('');
         this.input.current.changeDraft('');
 
@@ -325,12 +329,13 @@ export default class DraftInput extends PureComponent {
         const notificationsToChannel = enableConfirmNotificationsToChannel && useChannelMentions;
         const notificationsToGroups = enableConfirmNotificationsToChannel && useGroupMentions;
         const toAllOrChannel = DraftUtils.textContainsAtAllAtChannel(value);
-        const groupMentions = (!toAllOrChannel && notificationsToGroups) ? DraftUtils.groupsMentionedInText(groupsWithAllowReference, value) : [];
+        const toHere = DraftUtils.textContainsAtHere(value);
+        const groupMentions = (!toAllOrChannel && !toHere && notificationsToGroups) ? DraftUtils.groupsMentionedInText(groupsWithAllowReference, value) : [];
 
         if (value.indexOf('/') === 0) {
             this.sendCommand(value);
-        } else if (notificationsToChannel && membersCount > NOTIFY_ALL_MEMBERS && toAllOrChannel) {
-            this.showSendToAllOrChannelAlert(membersCount, value);
+        } else if (notificationsToChannel && membersCount > NOTIFY_ALL_MEMBERS && (toAllOrChannel || toHere)) {
+            this.showSendToAllOrChannelOrHereAlert(membersCount, value, toHere && !toAllOrChannel);
         } else if (groupMentions.length > 0) {
             const {groupMentionsSet, memberNotifyCount, channelTimezoneCount} = DraftUtils.mapGroupMentions(channelMemberCountsByGroup, groupMentions);
             if (memberNotifyCount > 0) {
@@ -360,11 +365,11 @@ export default class DraftInput extends PureComponent {
         }
     }
 
-    showSendToAllOrChannelAlert = (membersCount, msg) => {
+    showSendToAllOrChannelOrHereAlert = (membersCount, msg, atHere) => {
         const {formatMessage} = this.context.intl;
         const {channelTimezoneCount} = this.state;
         const {isTimezoneEnabled} = this.props;
-        const notifyAllMessage = DraftUtils.buildChannelWideMentionMessage(formatMessage, membersCount, isTimezoneEnabled, channelTimezoneCount);
+        const notifyAllMessage = DraftUtils.buildChannelWideMentionMessage(formatMessage, membersCount, isTimezoneEnabled, channelTimezoneCount, atHere);
         const cancel = () => {
             this.setInputValue(msg);
             this.setState({sendingMessage: false});
@@ -484,6 +489,7 @@ export default class DraftInput extends PureComponent {
                         <View style={style.actionsContainer}>
                             <QuickActions
                                 testID={quickActionsTestID}
+                                screenId={screenId}
                                 ref={this.quickActions}
                                 fileCount={files.length}
                                 inputEventType={valueEvent}

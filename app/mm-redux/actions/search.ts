@@ -1,19 +1,19 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 import {Client4} from '@client/rest';
+import {analytics} from '@init/analytics';
 import {SearchTypes} from '@mm-redux/action_types';
 import {getCurrentTeamId} from '@mm-redux/selectors/entities/teams';
 import {getCurrentUserId, getCurrentUserMentionKeys} from '@mm-redux/selectors/entities/users';
-
-import {getChannelAndMyMember, getChannelMembers} from './channels';
-import {forceLogoutIfNecessary} from './helpers';
-import {logError} from './errors';
-import {getProfilesAndStatusesForPosts, receivedPosts} from './posts';
 import {ActionResult, batchActions, DispatchFunc, GetStateFunc, ActionFunc} from '@mm-redux/types/actions';
-import {RelationOneToOne} from '@mm-redux/types/utilities';
 import {Post} from '@mm-redux/types/posts';
 import {SearchParameter} from '@mm-redux/types/search';
-import {analytics} from '@init/analytics';
+import {RelationOneToOne} from '@mm-redux/types/utilities';
+
+import {getChannelAndMyMember, getChannelMembers} from './channels';
+import {logError} from './errors';
+import {forceLogoutIfNecessary} from './helpers';
+import {getProfilesAndStatusesForPosts, receivedPosts} from './posts';
 
 const WEBAPP_SEARCH_PER_PAGE = 20;
 export function getMissingChannelsFromPosts(posts: RelationOneToOne<Post, Post>): ActionFunc {
@@ -114,13 +114,12 @@ export function getFlaggedPosts(): ActionFunc {
     return async (dispatch: DispatchFunc, getState: GetStateFunc) => {
         const state = getState();
         const userId = getCurrentUserId(state);
-        const teamId = getCurrentTeamId(state);
 
         dispatch({type: SearchTypes.SEARCH_FLAGGED_POSTS_REQUEST});
 
         let posts;
         try {
-            posts = await Client4.getFlaggedPosts(userId, '', teamId);
+            posts = await Client4.getFlaggedPosts(userId);
 
             await Promise.all([getProfilesAndStatusesForPosts(posts.posts, dispatch, getState) as any, dispatch(getMissingChannelsFromPosts(posts.posts)) as any]);
         } catch (error) {
@@ -202,7 +201,6 @@ export function clearPinnedPosts(channelId: string): ActionFunc {
 export function getRecentMentions(): ActionFunc {
     return async (dispatch: DispatchFunc, getState: GetStateFunc) => {
         const state = getState();
-        const teamId = getCurrentTeamId(state);
 
         let posts;
         try {
@@ -213,7 +211,7 @@ export function getRecentMentions(): ActionFunc {
             const terms = termKeys.map(({key}) => key).join(' ').trim() + ' ';
 
             analytics.trackAPI('api_posts_search_mention');
-            posts = await Client4.searchPosts(teamId, terms, true);
+            posts = await Client4.searchPosts('', terms, true);
 
             const profilesAndStatuses = getProfilesAndStatusesForPosts(posts.posts, dispatch, getState);
             const missingChannels = dispatch(getMissingChannelsFromPosts(posts.posts));

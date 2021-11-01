@@ -3,11 +3,10 @@
 
 import {connect} from 'react-redux';
 
-import {isMinimumServerVersion} from '@mm-redux/utils/helpers';
 import {General, Permissions} from '@mm-redux/constants';
 import {getCurrentChannel, getChannel, isChannelReadOnlyById} from '@mm-redux/selectors/entities/channels';
-import {haveIChannelPermission} from '@mm-redux/selectors/entities/roles';
 import {getTheme} from '@mm-redux/selectors/entities/preferences';
+import {haveIChannelPermission} from '@mm-redux/selectors/entities/roles';
 import {getCurrentUserId} from '@mm-redux/selectors/entities/users';
 import {getChannelMembersForDm} from '@selectors/channel';
 
@@ -27,7 +26,7 @@ export function mapStateToProps(state, ownProps) {
         }
     }
 
-    if (channel && isMinimumServerVersion(state.entities.general.serverVersion, 5, 22)) {
+    if (channel) {
         canPost = haveIChannelPermission(
             state,
             {

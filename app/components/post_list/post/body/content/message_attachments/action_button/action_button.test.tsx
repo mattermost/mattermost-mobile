@@ -1,15 +1,14 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React from 'react';
 import {shallow} from 'enzyme';
-
-import ActionButton from './action_button';
-
-import {changeOpacity} from '@utils/theme';
-import {getStatusColors} from '@utils/message_attachment_colors';
+import React from 'react';
 
 import Preferences from '@mm-redux/constants/preferences';
+import {getStatusColors} from '@utils/message_attachment_colors';
+import {changeOpacity} from '@utils/theme';
+
+import ActionButton from './action_button';
 
 describe('ActionButton', () => {
     test('correct styles when from global theme', () => {
@@ -25,7 +24,7 @@ describe('ActionButton', () => {
             name: buttonConfig.name,
             postId: buttonConfig.id,
             buttonColor: buttonConfig.style,
-            theme: Preferences.THEMES.default,
+            theme: Preferences.THEMES.denim,
             doPostActionWithCookie: jest.fn(),
         };
 
@@ -34,8 +33,8 @@ describe('ActionButton', () => {
         const buttonTextChild = wrapper.getElement().props.children;
         const dynamicButtonStyles = wrapper.getElement().props.containerStyle[1];
 
-        expect(dynamicButtonStyles.borderColor).toBe(changeOpacity(Preferences.THEMES.default[buttonConfig.style], 0.25));
-        expect(buttonTextChild.props.style.color).toBe(Preferences.THEMES.default[buttonConfig.style]);
+        expect(dynamicButtonStyles.borderColor).toBe(changeOpacity(Preferences.THEMES.denim[buttonConfig.style], 0.25));
+        expect(buttonTextChild.props.style.color).toBe(Preferences.THEMES.denim[buttonConfig.style]);
     });
 
     test('correct styles when a status color', () => {
@@ -51,7 +50,7 @@ describe('ActionButton', () => {
             name: buttonConfig.name,
             postId: buttonConfig.id,
             buttonColor: buttonConfig.style,
-            theme: Preferences.THEMES.default,
+            theme: Preferences.THEMES.denim,
             doPostActionWithCookie: jest.fn(),
         };
 
@@ -60,7 +59,7 @@ describe('ActionButton', () => {
         const buttonTextChild = wrapper.getElement().props.children;
         const dynamicButtonStyles = wrapper.getElement().props.containerStyle[1];
 
-        const STATUS_COLORS = getStatusColors(Preferences.THEMES.default);
+        const STATUS_COLORS = getStatusColors(Preferences.THEMES.denim);
         expect(dynamicButtonStyles.borderColor).toBe(changeOpacity(STATUS_COLORS[buttonConfig.style], 0.25));
         expect(buttonTextChild.props.style.color).toBe(STATUS_COLORS[buttonConfig.style]);
     });
@@ -78,7 +77,7 @@ describe('ActionButton', () => {
             name: buttonConfig.name,
             postId: buttonConfig.id,
             buttonColor: buttonConfig.style,
-            theme: Preferences.THEMES.default,
+            theme: Preferences.THEMES.denim,
             doPostActionWithCookie: jest.fn(),
         };
 
@@ -102,7 +101,7 @@ describe('ActionButton', () => {
             cookie: '',
             name: buttonConfig.name,
             postId: buttonConfig.id,
-            theme: Preferences.THEMES.default,
+            theme: Preferences.THEMES.denim,
             doPostActionWithCookie: jest.fn(),
         };
 
@@ -112,10 +111,10 @@ describe('ActionButton', () => {
         const baseButtonStyles = wrapper.getElement().props.containerStyle[0];
         const dynamicButtonStyles = wrapper.getElement().props.containerStyle[1];
 
-        expect(baseButtonStyles.borderColor).toBe(changeOpacity(Preferences.THEMES.default.centerChannelColor, 0.25));
+        expect(baseButtonStyles.borderColor).toBe(changeOpacity(Preferences.THEMES.denim.centerChannelColor, 0.25));
         expect(baseButtonStyles.borderWidth).toBe(2);
         expect(baseButtonStyles.borderRadius).toBe(4);
         expect(dynamicButtonStyles).toBe(undefined);
-        expect(buttonTextChild.props.style.color).toBe(Preferences.THEMES.default.centerChannelColor);
+        expect(buttonTextChild.props.style.color).toBe(Preferences.THEMES.denim.centerChannelColor);
     });
 });

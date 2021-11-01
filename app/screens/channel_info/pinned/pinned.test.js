@@ -2,9 +2,9 @@
 // See LICENSE.txt for license information.
 
 import React from 'react';
-import {shallowWithIntl} from 'test/intl-test-helper';
 
 import Preferences from '@mm-redux/constants/preferences';
+import {shallowWithIntl} from '@test/intl-test-helper';
 
 import Pinned from './pinned';
 
@@ -20,7 +20,7 @@ describe('ChannelInfo -> Pinned', () => {
     const baseProps = {
         channelId: '123',
         pinnedCount: 0,
-        theme: Preferences.THEMES.default,
+        theme: Preferences.THEMES.denim,
         userId: 'user-123',
     };
 

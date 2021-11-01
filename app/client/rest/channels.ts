@@ -2,6 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {analytics} from '@init/analytics';
+import {ChannelCategory, OrderedChannelCategories} from '@mm-redux/types/channel_categories';
 import {Channel, ChannelMemberCountByGroup, ChannelMembership, ChannelNotifyProps, ChannelStats} from '@mm-redux/types/channels';
 import {buildQueryString} from '@mm-redux/utils/helpers';
 
@@ -18,7 +19,7 @@ export interface ClientChannelsMix {
     convertChannelToPrivate: (channelId: string) => Promise<Channel>;
     updateChannelPrivacy: (channelId: string, privacy: any) => Promise<Channel>;
     patchChannel: (channelId: string, channelPatch: Partial<Channel>) => Promise<Channel>;
-    updateChannelNotifyProps: (props: ChannelNotifyProps & {channel_id: string, user_id: string}) => Promise<any>;
+    updateChannelNotifyProps: (props: ChannelNotifyProps & {channel_id: string; user_id: string}) => Promise<any>;
     getChannel: (channelId: string) => Promise<Channel>;
     getChannelByName: (teamId: string, channelName: string, includeDeleted?: boolean) => Promise<Channel>;
     getChannelByNameAndTeamName: (teamName: string, channelName: string, includeDeleted?: boolean) => Promise<Channel>;
@@ -40,6 +41,12 @@ export interface ClientChannelsMix {
     autocompleteChannelsForSearch: (teamId: string, name: string) => Promise<Channel[]>;
     searchChannels: (teamId: string, term: string) => Promise<Channel[]>;
     searchArchivedChannels: (teamId: string, term: string) => Promise<Channel[]>;
+
+    // Categories
+    getChannelCategories: (userId: string, teamId: string) => Promise<OrderedChannelCategories>;
+    getChannelCategory: () => Promise<ChannelCategory>;
+    updateChannelCategory: (userId: string, teamId: string, category: ChannelCategory) => Promise<OrderedChannelCategories>;
+    updateChannelCategories: (userId: string, teamId: string, categories: ChannelCategory[]) => Promise<OrderedChannelCategories>;
 }
 
 const ClientChannels = (superclass: any) => class extends superclass {
@@ -138,7 +145,7 @@ const ClientChannels = (superclass: any) => class extends superclass {
         );
     };
 
-    updateChannelNotifyProps = async (props: ChannelNotifyProps & {channel_id: string, user_id: string}) => {
+    updateChannelNotifyProps = async (props: ChannelNotifyProps & {channel_id: string; user_id: string}) => {
         analytics.trackAPI('api_users_update_channel_notifications', {channel_id: props.channel_id});
 
         return this.doFetch(
@@ -272,7 +279,7 @@ const ClientChannels = (superclass: any) => class extends superclass {
     };
 
     viewMyChannel = async (channelId: string, prevChannelId?: string) => {
-        const data = {channel_id: channelId, prev_channel_id: prevChannelId};
+        const data = {channel_id: channelId, prev_channel_id: prevChannelId, collapsed_threads_supported: true};
         return this.doFetch(
             `${this.getChannelsRoute()}/members/me/view`,
             {method: 'post', body: JSON.stringify(data)},
@@ -304,6 +311,39 @@ const ClientChannels = (superclass: any) => class extends superclass {
         return this.doFetch(
             `${this.getTeamRoute(teamId)}/channels/search_archived`,
             {method: 'post', body: JSON.stringify({term})},
+        );
+    };
+
+    // Channel Category Routes
+    getChannelCategoriesRoute(userId: string, teamId: string) {
+        return `${this.getUserRoute('me')}/teams/${teamId}/channels/categories`;
+    }
+
+    getChannelCategories = async (userId: string, teamId: string) => {
+        return this.doFetch(
+            `${this.getChannelCategoriesRoute(userId, teamId)}`,
+            {method: 'get'},
+        );
+    };
+
+    getChannelCategory = async (userId: string, teamId: string, categoryId: string) => {
+        return this.doFetch(
+            `${this.getChannelCategoriesRoute(userId, teamId)}/${categoryId}`,
+            {method: 'get'},
+        );
+    };
+
+    updateChannelCategory = (userId: string, teamId: string, category: ChannelCategory) => {
+        return this.doFetch(
+            `${this.getChannelCategoriesRoute(userId, teamId)}/${category.id}`,
+            {method: 'put', body: JSON.stringify(category)},
+        );
+    };
+
+    updateChannelCategories = (userId: string, teamId: string, categories: ChannelCategory[]) => {
+        return this.doFetch(
+            `${this.getChannelCategoriesRoute(userId, teamId)}`,
+            {method: 'put', body: JSON.stringify(categories)},
         );
     };
 };

@@ -3,11 +3,11 @@
 
 import React from 'react';
 
-import BindingMenu from './menu_binding';
 import ButtonBinding from './button_binding';
+import BindingMenu from './menu_binding';
 
 import type {AppBinding} from '@mm-redux/types/apps';
-import type {Theme} from '@mm-redux/types/preferences';
+import type {Theme} from '@mm-redux/types/theme';
 
 type Props = {
     bindings: AppBinding[];

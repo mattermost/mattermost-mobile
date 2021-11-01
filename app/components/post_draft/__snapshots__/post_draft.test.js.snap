@@ -5,7 +5,7 @@ exports[`PostDraft Should render the Archived for channelIsArchived 1`] = `
   style={
     Object {
       "backgroundColor": "#ffffff",
-      "borderTopColor": "rgba(61,60,64,0.2)",
+      "borderTopColor": "rgba(63,67,80,0.2)",
       "borderTopWidth": 1,
       "paddingBottom": 10,
       "paddingLeft": 20,
@@ -20,7 +20,7 @@ exports[`PostDraft Should render the Archived for channelIsArchived 1`] = `
       style={
         Array [
           Object {
-            "color": "#3d3c40",
+            "color": "#3f4350",
             "textAlign": "center",
           },
           Array [
@@ -35,7 +35,7 @@ exports[`PostDraft Should render the Archived for channelIsArchived 1`] = `
       style={
         Array [
           Object {
-            "color": "#3d3c40",
+            "color": "#3f4350",
             "textAlign": "center",
           },
           Array [
@@ -53,7 +53,7 @@ exports[`PostDraft Should render the Archived for channelIsArchived 1`] = `
       style={
         Array [
           Object {
-            "color": "#3d3c40",
+            "color": "#3f4350",
             "textAlign": "center",
           },
           Array [
@@ -68,7 +68,9 @@ exports[`PostDraft Should render the Archived for channelIsArchived 1`] = `
   <View
     accessibilityRole="button"
     accessible={true}
+    collapsable={false}
     focusable={true}
+    nativeID="animatedComponent"
     onClick={[Function]}
     onResponderGrant={[Function]}
     onResponderMove={[Function]}
@@ -79,7 +81,7 @@ exports[`PostDraft Should render the Archived for channelIsArchived 1`] = `
     style={
       Object {
         "alignItems": "center",
-        "backgroundColor": "#166de0",
+        "backgroundColor": "#1c58d9",
         "borderRadius": 4,
         "height": 40,
         "marginTop": 10,
@@ -109,7 +111,7 @@ exports[`PostDraft Should render the Archived for deactivatedChannel 1`] = `
   style={
     Object {
       "backgroundColor": "#ffffff",
-      "borderTopColor": "rgba(61,60,64,0.2)",
+      "borderTopColor": "rgba(63,67,80,0.2)",
       "borderTopWidth": 1,
       "paddingBottom": 10,
       "paddingLeft": 20,
@@ -124,7 +126,7 @@ exports[`PostDraft Should render the Archived for deactivatedChannel 1`] = `
       style={
         Array [
           Object {
-            "color": "#3d3c40",
+            "color": "#3f4350",
             "textAlign": "center",
           },
           Array [
@@ -139,7 +141,7 @@ exports[`PostDraft Should render the Archived for deactivatedChannel 1`] = `
       style={
         Array [
           Object {
-            "color": "#3d3c40",
+            "color": "#3f4350",
             "textAlign": "center",
           },
           Array [
@@ -157,7 +159,7 @@ exports[`PostDraft Should render the Archived for deactivatedChannel 1`] = `
       style={
         Array [
           Object {
-            "color": "#3d3c40",
+            "color": "#3f4350",
             "textAlign": "center",
           },
           Array [
@@ -172,7 +174,9 @@ exports[`PostDraft Should render the Archived for deactivatedChannel 1`] = `
   <View
     accessibilityRole="button"
     accessible={true}
+    collapsable={false}
     focusable={true}
+    nativeID="animatedComponent"
     onClick={[Function]}
     onResponderGrant={[Function]}
     onResponderMove={[Function]}
@@ -183,7 +187,7 @@ exports[`PostDraft Should render the Archived for deactivatedChannel 1`] = `
     style={
       Object {
         "alignItems": "center",
-        "backgroundColor": "#166de0",
+        "backgroundColor": "#1c58d9",
         "borderRadius": 4,
         "height": 40,
         "marginTop": 10,
@@ -213,6 +217,8 @@ exports[`PostDraft Should render the DraftInput 1`] = `
   inverted={false}
 >
   <View
+    collapsable={false}
+    nativeID="animatedComponent"
     style={
       Object {
         "bottom": 0,
@@ -225,7 +231,7 @@ exports[`PostDraft Should render the DraftInput 1`] = `
       style={
         Object {
           "backgroundColor": "transparent",
-          "color": "#3d3c40",
+          "color": "#3f4350",
           "fontSize": 11,
           "marginBottom": 2,
           "paddingLeft": 10,
@@ -247,7 +253,7 @@ exports[`PostDraft Should render the DraftInput 1`] = `
       Object {
         "alignItems": "flex-end",
         "backgroundColor": "#ffffff",
-        "borderTopColor": "rgba(61,60,64,0.2)",
+        "borderTopColor": "rgba(63,67,80,0.2)",
         "borderTopWidth": 1,
         "flexDirection": "row",
         "justifyContent": "center",
@@ -278,32 +284,52 @@ exports[`PostDraft Should render the DraftInput 1`] = `
       }
     >
       <View>
-        <TextInput
+        <PasteInput
+          accessible={true}
           allowFontScaling={true}
+          autoCapitalize="sentences"
           autoCompleteType="off"
           blurOnSubmit={false}
+          disableCopyPaste={false}
           disableFullscreenUI={true}
+          focusable={true}
           keyboardAppearance="light"
           keyboardType="default"
+          mostRecentEventCount={0}
           multiline={true}
+          onBlur={[Function]}
+          onChange={[Function]}
           onChangeText={[Function]}
+          onClick={[Function]}
           onEndEditing={[Function]}
+          onFocus={[Function]}
           onPaste={[Function]}
+          onPressIn={[Function]}
+          onPressOut={[Function]}
+          onResponderGrant={[Function]}
+          onResponderMove={[Function]}
+          onResponderRelease={[Function]}
+          onResponderTerminate={[Function]}
+          onResponderTerminationRequest={[Function]}
+          onScroll={[Function]}
           onSelectionChange={[Function]}
+          onStartShouldSetResponder={[Function]}
           placeholder="Write to "
-          placeholderTextColor="rgba(61,60,64,0.5)"
-          rejectResponderTermination={true}
+          placeholderTextColor="rgba(63,67,80,0.5)"
+          screenId="NavigationScreen1"
           style={
-            Object {
-              "color": "#3d3c40",
-              "fontSize": 15,
-              "lineHeight": 20,
-              "maxHeight": 150,
-              "minHeight": 30,
-              "paddingBottom": 6,
-              "paddingHorizontal": 12,
-              "paddingTop": 6,
-            }
+            Array [
+              Object {
+                "color": "#3f4350",
+                "fontSize": 15,
+                "lineHeight": 20,
+                "maxHeight": 150,
+                "minHeight": 30,
+                "paddingBottom": 6,
+                "paddingHorizontal": 12,
+                "paddingTop": 6,
+              },
+            ]
           }
           testID="post_draft.post.input"
           textContentType="none"
@@ -318,8 +344,10 @@ exports[`PostDraft Should render the DraftInput 1`] = `
           }
         >
           <View
+            collapsable={false}
             forwardedRef={[Function]}
             isInteraction={true}
+            nativeID="animatedComponent"
             style={
               Object {
                 "display": "flex",
@@ -348,8 +376,10 @@ exports[`PostDraft Should render the DraftInput 1`] = `
             </RCTScrollView>
           </View>
           <View
+            collapsable={false}
             forwardedRef={[Function]}
             isInteraction={true}
+            nativeID="animatedComponent"
             style={
               Object {
                 "height": 0,
@@ -389,8 +419,15 @@ exports[`PostDraft Should render the DraftInput 1`] = `
             testID="post_draft.quick_actions"
           >
             <View
+              accessibilityState={
+                Object {
+                  "disabled": false,
+                }
+              }
               accessible={true}
+              collapsable={false}
               focusable={true}
+              nativeID="animatedComponent"
               onClick={[Function]}
               onResponderGrant={[Function]}
               onResponderMove={[Function]}
@@ -409,14 +446,21 @@ exports[`PostDraft Should render the DraftInput 1`] = `
               testID="post_draft.quick_actions.at_input_action"
             >
               <Icon
-                color="rgba(61,60,64,0.64)"
+                color="rgba(63,67,80,0.64)"
                 name="at"
                 size={24}
               />
             </View>
             <View
+              accessibilityState={
+                Object {
+                  "disabled": false,
+                }
+              }
               accessible={true}
+              collapsable={false}
               focusable={true}
+              nativeID="animatedComponent"
               onClick={[Function]}
               onResponderGrant={[Function]}
               onResponderMove={[Function]}
@@ -435,14 +479,21 @@ exports[`PostDraft Should render the DraftInput 1`] = `
               testID="post_draft.quick_actions.slash_input_action"
             >
               <Icon
-                color="rgba(61,60,64,0.64)"
+                color="rgba(63,67,80,0.64)"
                 name="slash-forward-box-outline"
                 size={24}
               />
             </View>
             <View
+              accessibilityState={
+                Object {
+                  "disabled": false,
+                }
+              }
               accessible={true}
+              collapsable={false}
               focusable={true}
+              nativeID="animatedComponent"
               onClick={[Function]}
               onResponderGrant={[Function]}
               onResponderMove={[Function]}
@@ -461,14 +512,21 @@ exports[`PostDraft Should render the DraftInput 1`] = `
               testID="post_draft.quick_actions.file_action"
             >
               <Icon
-                color="rgba(61,60,64,0.64)"
+                color="rgba(63,67,80,0.64)"
                 name="file-document-outline"
                 size={24}
               />
             </View>
             <View
+              accessibilityState={
+                Object {
+                  "disabled": false,
+                }
+              }
               accessible={true}
+              collapsable={false}
               focusable={true}
+              nativeID="animatedComponent"
               onClick={[Function]}
               onResponderGrant={[Function]}
               onResponderMove={[Function]}
@@ -487,14 +545,21 @@ exports[`PostDraft Should render the DraftInput 1`] = `
               testID="post_draft.quick_actions.image_action"
             >
               <Icon
-                color="rgba(61,60,64,0.64)"
+                color="rgba(63,67,80,0.64)"
                 name="image-outline"
                 size={24}
               />
             </View>
             <View
+              accessibilityState={
+                Object {
+                  "disabled": false,
+                }
+              }
               accessible={true}
+              collapsable={false}
               focusable={true}
+              nativeID="animatedComponent"
               onClick={[Function]}
               onResponderGrant={[Function]}
               onResponderMove={[Function]}
@@ -513,7 +578,7 @@ exports[`PostDraft Should render the DraftInput 1`] = `
               testID="post_draft.quick_actions.camera_action"
             >
               <Icon
-                color="rgba(61,60,64,0.64)"
+                color="rgba(63,67,80,0.64)"
                 name="camera-outline"
                 size={24}
               />
@@ -533,14 +598,14 @@ exports[`PostDraft Should render the DraftInput 1`] = `
                 Array [
                   Object {
                     "alignItems": "center",
-                    "backgroundColor": "#166de0",
+                    "backgroundColor": "#1c58d9",
                     "borderRadius": 4,
                     "height": 32,
                     "justifyContent": "center",
                     "width": 80,
                   },
                   Object {
-                    "backgroundColor": "rgba(22,109,224,0.3)",
+                    "backgroundColor": "rgba(28,88,217,0.3)",
                   },
                 ]
               }
@@ -568,7 +633,7 @@ exports[`PostDraft Should render the ReadOnly for canPost 1`] = `
   }
   style={
     Object {
-      "backgroundColor": "rgba(61,60,64,0.04)",
+      "backgroundColor": "rgba(63,67,80,0.04)",
     }
   }
 >
@@ -576,7 +641,7 @@ exports[`PostDraft Should render the ReadOnly for canPost 1`] = `
     style={
       Object {
         "alignItems": "center",
-        "borderTopColor": "rgba(61,60,64,0.2)",
+        "borderTopColor": "rgba(63,67,80,0.2)",
         "borderTopWidth": 1,
         "flexDirection": "row",
         "height": 50,
@@ -586,7 +651,7 @@ exports[`PostDraft Should render the ReadOnly for canPost 1`] = `
     testID="post_draft.read_only"
   >
     <Icon
-      color="#3d3c40"
+      color="#3f4350"
       name="glasses"
       style={
         Object {
@@ -599,7 +664,7 @@ exports[`PostDraft Should render the ReadOnly for canPost 1`] = `
     <Text
       style={
         Object {
-          "color": "#3d3c40",
+          "color": "#3f4350",
           "fontSize": 15,
           "lineHeight": 20,
           "marginLeft": 9,
@@ -622,7 +687,7 @@ exports[`PostDraft Should render the ReadOnly for channelIsReadOnly 1`] = `
   }
   style={
     Object {
-      "backgroundColor": "rgba(61,60,64,0.04)",
+      "backgroundColor": "rgba(63,67,80,0.04)",
     }
   }
 >
@@ -630,7 +695,7 @@ exports[`PostDraft Should render the ReadOnly for channelIsReadOnly 1`] = `
     style={
       Object {
         "alignItems": "center",
-        "borderTopColor": "rgba(61,60,64,0.2)",
+        "borderTopColor": "rgba(63,67,80,0.2)",
         "borderTopWidth": 1,
         "flexDirection": "row",
         "height": 50,
@@ -640,7 +705,7 @@ exports[`PostDraft Should render the ReadOnly for channelIsReadOnly 1`] = `
     testID="post_draft.read_only"
   >
     <Icon
-      color="#3d3c40"
+      color="#3f4350"
       name="glasses"
       style={
         Object {
@@ -653,7 +718,7 @@ exports[`PostDraft Should render the ReadOnly for channelIsReadOnly 1`] = `
     <Text
       style={
         Object {
-          "color": "#3d3c40",
+          "color": "#3f4350",
           "fontSize": 15,
           "lineHeight": 20,
           "marginLeft": 9,

@@ -1,12 +1,14 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+/* eslint-disable max-lines */
 import assert from 'assert';
 
-import deepFreezeAndThrowOnMutation from '@mm-redux/utils/deep_freeze';
-import TestHelper from 'test/test_helper';
-import {sortChannelsByDisplayName, getDirectChannelName} from '@mm-redux/utils/channel_utils';
 import * as Selectors from '@mm-redux/selectors/entities/channels';
+import {sortChannelsByDisplayName, getDirectChannelName} from '@mm-redux/utils/channel_utils';
+import deepFreezeAndThrowOnMutation from '@mm-redux/utils/deep_freeze';
+import TestHelper from '@test/test_helper';
+
 import {General, Preferences} from '../../constants';
 
 const sortUsernames = (a, b) => a.localeCompare(b, General.DEFAULT_LOCALE, {numeric: true});
@@ -1398,20 +1400,6 @@ describe('Selectors.Channels.getRedirectChannelNameForTeam', () => {
         },
     });
 
-    it('getRedirectChannelNameForTeam without advanced permissions', () => {
-        const modifiedState = {
-            ...testState,
-            entities: {
-                ...testState.entities,
-                general: {
-                    ...testState.entities.general,
-                    serverVersion: '4.8.0',
-                },
-            },
-        };
-        assert.equal(Selectors.getRedirectChannelNameForTeam(modifiedState, team1.id), General.DEFAULT_CHANNEL);
-    });
-
     it('getRedirectChannelNameForTeam with advanced permissions but without JOIN_PUBLIC_CHANNELS permission', () => {
         const modifiedState = {
             ...testState,
@@ -1503,20 +1491,6 @@ describe('Selectors.Channels.getRedirectChannelNameForTeam', () => {
             },
         };
         assert.equal(Selectors.getRedirectChannelNameForTeam(modifiedState, team1.id), General.DEFAULT_CHANNEL);
-    });
-
-    it('getRedirectChannelNameForTeam without advanced permissions in not current team', () => {
-        const modifiedState = {
-            ...testState,
-            entities: {
-                ...testState.entities,
-                general: {
-                    ...testState.entities.general,
-                    serverVersion: '4.8.0',
-                },
-            },
-        };
-        assert.equal(Selectors.getRedirectChannelNameForTeam(modifiedState, team2.id), General.DEFAULT_CHANNEL);
     });
 
     it('getRedirectChannelNameForTeam with advanced permissions but without JOIN_PUBLIC_CHANNELS permission in not current team', () => {
@@ -2738,12 +2712,11 @@ describe('Selectors.Channels.getSortedUnreadChannelIds', () => {
         assert.ok(fromOriginalState === fromModifiedState);
         assert.ok(fromMentionState !== fromModifiedState);
 
-        // channel3 and channel1 are above all others
-        // since default order is "alpha", channel3 with display_name "ABC" should come first
-        assert.ok(fromMentionState[0] === channel3.id);
+        // Recency by default, so channel1 first
+        assert.ok(fromMentionState[0] === channel1.id);
 
-        // followed by channel1 with display_name "DEF"
-        assert.ok(fromMentionState[1] === channel1.id);
+        // followed by channel3
+        assert.ok(fromMentionState[1] === channel3.id);
 
         const hasMentionMutedChannelState = {
             ...mentionState,
@@ -2980,6 +2953,12 @@ describe('Selectors.Channels.getUnreadChannelIds', () => {
                 channels,
                 channelsInTeam,
                 myMembers: myChannelMembers,
+            },
+            general: {
+                config: {},
+            },
+            preferences: {
+                myPreferences: {},
             },
         },
     });
@@ -3350,12 +3329,21 @@ describe('Selectors.Channels.getUnreads', () => {
                 teams,
                 myMembers: myTeamMembers,
             },
+            threads: {
+                count: {},
+            },
             channels: {
                 channels,
                 myMembers: myChannelMembers,
             },
             users: {
                 profiles: {},
+            },
+            general: {
+                config: {},
+            },
+            preferences: {
+                myPreferences: {},
             },
         },
     });
@@ -3467,6 +3455,15 @@ describe('Selectors.Channels.getUnreads', () => {
                     currentUserId: 'user1',
                     profiles: {},
                 },
+                threads: {
+                    count: {},
+                },
+                general: {
+                    config: {},
+                },
+                preferences: {
+                    myPreferences: {},
+                },
             },
         };
 
@@ -3503,6 +3500,15 @@ describe('Selectors.Channels.getUnreads', () => {
                     currentUserId: 'user1',
                     profiles: {},
                 },
+                threads: {
+                    count: {},
+                },
+                general: {
+                    config: {},
+                },
+                preferences: {
+                    myPreferences: {},
+                },
             },
         };
 
@@ -3537,6 +3543,15 @@ describe('Selectors.Channels.getUnreads', () => {
                     profiles: {
                         user2: {delete_at: 0},
                     },
+                },
+                threads: {
+                    count: {},
+                },
+                general: {
+                    config: {},
+                },
+                preferences: {
+                    myPreferences: {},
                 },
             },
         };
@@ -3573,6 +3588,15 @@ describe('Selectors.Channels.getUnreads', () => {
                         user2: {delete_at: 1},
                     },
                 },
+                threads: {
+                    count: {},
+                },
+                general: {
+                    config: {},
+                },
+                preferences: {
+                    myPreferences: {},
+                },
             },
         };
 
@@ -3605,6 +3629,15 @@ describe('Selectors.Channels.getUnreads', () => {
                 users: {
                     currentUserId: 'user1',
                     profiles: {},
+                },
+                threads: {
+                    count: {},
+                },
+                general: {
+                    config: {},
+                },
+                preferences: {
+                    myPreferences: {},
                 },
             },
         };
@@ -3648,6 +3681,15 @@ describe('Selectors.Channels.getUnreads', () => {
                 users: {
                     currentUserId: 'user1',
                     profiles: {},
+                },
+                threads: {
+                    count: {},
+                },
+                general: {
+                    config: {},
+                },
+                preferences: {
+                    myPreferences: {},
                 },
             },
         };

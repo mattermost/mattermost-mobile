@@ -4,20 +4,21 @@
 import React from 'react';
 import {View} from 'react-native';
 
-import {copyAndFillBindings} from '@utils/apps';
-import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
+import {AppBindingLocations} from '@mm-redux/constants/apps';
+import {cleanBinding} from '@utils/apps';
+import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
-import type {AppBinding} from '@mm-redux/types/apps';
-import type {Theme} from '@mm-redux/types/preferences';
-
-import EmbedSubBindings from './embedded_sub_bindings';
 import EmbedText from './embed_text';
 import EmbedTitle from './embed_title';
+import EmbedSubBindings from './embedded_sub_bindings';
+
+import type {AppBinding} from '@mm-redux/types/apps';
+import type {Theme} from '@mm-redux/types/theme';
 
 type Props = {
-    embed: AppBinding,
-    postId: string,
-    theme: Theme,
+    embed: AppBinding;
+    postId: string;
+    theme: Theme;
 }
 
 const getStyleSheet = makeStyleSheetFromTheme((theme:Theme) => {
@@ -40,7 +41,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme:Theme) => {
 const EmbeddedBinding = ({embed, postId, theme}: Props) => {
     const style = getStyleSheet(theme);
 
-    const bindings = copyAndFillBindings(embed)?.bindings;
+    const bindings = cleanBinding(embed, AppBindingLocations.IN_POST)?.bindings;
 
     return (
         <>

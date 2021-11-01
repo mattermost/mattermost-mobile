@@ -1,8 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
+import React, {PureComponent} from 'react';
 import {intlShape} from 'react-intl';
 import {
     Keyboard,
@@ -10,12 +10,11 @@ import {
 } from 'react-native';
 import {Navigation} from 'react-native-navigation';
 
+import {popTopScreen, dismissModal, setButtons} from '@actions/navigation';
+import EditChannelInfo from '@components/edit_channel_info';
+import {NavigationTypes} from '@constants';
 import {General, RequestStatus} from '@mm-redux/constants';
 import EventEmitter from '@mm-redux/utils/event_emitter';
-
-import {popTopScreen, dismissModal, setButtons} from 'app/actions/navigation';
-import EditChannelInfo from 'app/components/edit_channel_info';
-import {NavigationTypes} from 'app/constants';
 
 export default class CreateChannel extends PureComponent {
     static propTypes = {
@@ -27,6 +26,7 @@ export default class CreateChannel extends PureComponent {
         actions: PropTypes.shape({
             handleCreateChannel: PropTypes.func.isRequired,
         }),
+        categoryId: PropTypes.string,
     };
 
     static contextTypes = {
@@ -57,6 +57,7 @@ export default class CreateChannel extends PureComponent {
             displayName: '',
             purpose: '',
             header: '',
+            type: this.props.channelType,
         };
 
         this.rightButton.text = context.intl.formatMessage({id: 'mobile.create_channel', defaultMessage: 'Create'});
@@ -152,7 +153,7 @@ export default class CreateChannel extends PureComponent {
     onCreateChannel = () => {
         Keyboard.dismiss();
         const {displayName, purpose, header} = this.state;
-        this.props.actions.handleCreateChannel(displayName, purpose, header, this.props.channelType);
+        this.props.actions.handleCreateChannel(displayName, purpose, header, this.state.type, this.props.categoryId);
     };
 
     onDisplayNameChange = (displayName) => {
@@ -167,6 +168,10 @@ export default class CreateChannel extends PureComponent {
         this.setState({header});
     };
 
+    onTypeChange = (type) => {
+        this.setState({type});
+    }
+
     render() {
         const {theme} = this.props;
         const {
@@ -175,6 +180,7 @@ export default class CreateChannel extends PureComponent {
             displayName,
             purpose,
             header,
+            type,
         } = this.state;
 
         return (
@@ -187,9 +193,11 @@ export default class CreateChannel extends PureComponent {
                 onDisplayNameChange={this.onDisplayNameChange}
                 onPurposeChange={this.onPurposeChange}
                 onHeaderChange={this.onHeaderChange}
+                onTypeChange={this.onTypeChange}
                 displayName={displayName}
                 purpose={purpose}
                 header={header}
+                type={type}
             />
         );
     }
