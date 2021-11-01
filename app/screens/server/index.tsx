@@ -145,7 +145,7 @@ const Server = ({componentId, extra, launchType, launchError, theme}: ServerProp
             },
         };
 
-        goToScreen(screen, title, passProps, defaultOptions);
+        goToScreen(screen, '', passProps, defaultOptions);
         setConnecting(false);
         setUrl(serverUrl);
     };
