@@ -160,7 +160,7 @@ const Server = ({componentId, extra, launchType, launchError, theme}: ServerProp
             return;
         }
 
-        const serverUrl = manualUrl === 'junk' ? manualUrl : 'http://jasonf.ngrok.io';
+        const serverUrl = typeof manualUrl === 'string' ? manualUrl : url;
         if (!serverUrl || serverUrl.trim() === '') {
             setUrlError(formatMessage(defaultServerUrlMessage));
             return;
