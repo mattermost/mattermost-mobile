@@ -5,17 +5,14 @@ import React, {useCallback, useEffect, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
 import {
     ActivityIndicator,
-    Image,
     InteractionManager,
     Keyboard,
-    SafeAreaView,
     StyleProp,
     Text,
     TextInput,
     TextStyle,
-    TouchableWithoutFeedback,
-    View,
     ViewStyle,
+    View,
 } from 'react-native';
 import Button from 'react-native-button';
 import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
@@ -23,12 +20,14 @@ import {NavigationFunctionComponent} from 'react-native-navigation';
 
 import {login} from '@actions/remote/session';
 import ErrorText from '@components/error_text';
+import FloatingTextInput, {FloatingTextInputRef} from '@components/floating_text_input_label';
 import FormattedText from '@components/formatted_text';
 import {FORGOT_PASSWORD, MFA} from '@constants/screens';
 import {t} from '@i18n';
 import {goToScreen, resetToHome} from '@screens/navigation';
 import {preventDoubleTap} from '@utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
+import {typography} from '@utils/typography';
 
 import type {LaunchProps} from '@typings/launch';
 
@@ -259,6 +258,12 @@ const Login: NavigationFunctionComponent = ({config, serverDisplayName, extra, l
         return '';
     };
 
+    // const onBlur = useCallback(() => {
+    //     if (Platform.OS === 'ios' && isTablet && !urlRef.current?.isFocused() && !displayNameRef.current?.isFocused()) {
+    //         keyboardAwareRef.current?.scrollToPosition(0, 0);
+    //     }
+    // }, []);
+
     const onBlur = () => {
         loginRef?.current?.blur();
         passwordRef?.current?.blur();
@@ -312,7 +317,7 @@ const Login: NavigationFunctionComponent = ({config, serverDisplayName, extra, l
             >
                 <FormattedText
                     id='login.signIn'
-                    defaultMessage='Sign in'
+                    defaultMessage='Log in'
                     style={[styles.signupButtonText, additionalTextStyle]}
                 />
             </Button>
@@ -320,90 +325,87 @@ const Login: NavigationFunctionComponent = ({config, serverDisplayName, extra, l
     };
 
     return (
-        <SafeAreaView style={styles.container}>
-            <TouchableWithoutFeedback
-                onPress={onBlur}
-                accessible={false}
-            >
-                <KeyboardAwareScrollView
-                    ref={scrollRef}
-                    style={styles.container}
-                    contentContainerStyle={styles.innerContainer}
-                    keyboardShouldPersistTaps='handled'
-                    enableOnAndroid={true}
+        <>
+            {error && (
+                <ErrorText
+                    testID='login.error.text'
+                    error={error}
+                    theme={theme}
+                />
+            )}
+            <FloatingTextInput
+                autoCorrect={false}
+                autoCapitalize={'none'}
+                blurOnSubmit={false}
+
+                // containerStyle={styles.inputBox}
+                enablesReturnKeyAutomatically={true}
+                keyboardType='email-address'
+                label={createLoginPlaceholder()}
+                onChangeText={onLoginChange}
+                onSubmitEditing={onPasswordFocus}
+
+                // onBlur={onBlur}
+                ref={loginRef}
+                returnKeyType='next'
+                testID='login.username.input'
+                theme={theme}
+                value={loginId} //to remove
+            />
+
+            <FloatingTextInput
+                autoCorrect={false}
+                autoCapitalize={'none'}
+                blurOnSubmit={false}
+
+                // containerStyle={styles.inputBox}
+                enablesReturnKeyAutomatically={true}
+                keyboardType='email-address'
+                label={intl.formatMessage({
+                    id: 'login.password',
+                    defaultMessage: 'Password',
+                })}
+                onChangeText={onPasswordChange}
+                onSubmitEditing={preSignIn}
+
+                // onBlur={onBlur}
+                ref={passwordRef}
+                returnKeyType='go'
+                secureTextEntry={true}
+                testID='login.password.input'
+                theme={theme}
+                value={password} //to remove
+            />
+
+            {/*
+            // TODO: these textinput props were not translated to
+            // FloatingTextInput props
+            <TextInput
+                disableFullscreenUI={true}
+                secureTextEntry={true}
+            />
+             */}
+
+            {(config.EnableSignInWithEmail === 'true' || config.EnableSignInWithUsername === 'true') && (
+                <Button
+                    onPress={onPressForgotPassword}
+                    containerStyle={[styles.forgotPasswordBtn]}
                 >
-                    <Image
-                        source={require('@assets/images/logo.png')}
-                        style={{height: 72, resizeMode: 'contain'}}
+                    <FormattedText
+                        id='login.forgot'
+                        defaultMessage='Forgot your password?'
+                        style={styles.forgotPasswordTxt}
+                        testID={'login.forgot'}
                     />
-                    {config?.SiteName && (<View testID='login.screen'>
-                        <Text style={styles.header}>{config?.SiteName}</Text>
-                        <FormattedText
-                            style={styles.subheader}
-                            id='web.root.signup_info'
-                            defaultMessage='Log In to Your Account'
-                        />
-                    </View>)}
-                    {error && (
-                        <ErrorText
-                            testID='login.error.text'
-                            error={error}
-                            theme={theme}
-                        />
-                    )}
-                    <TextInput
-                        testID='login.username.input'
-                        autoCapitalize='none'
-                        autoCorrect={false}
-                        blurOnSubmit={false}
-                        disableFullscreenUI={true}
-                        keyboardType='email-address'
-                        onChangeText={onLoginChange}
-                        onSubmitEditing={onPasswordFocus}
-                        placeholder={createLoginPlaceholder()}
-                        placeholderTextColor={changeOpacity(theme.centerChannelColor, 0.5)}
-                        ref={loginRef}
-                        returnKeyType='next'
-                        style={styles.inputBox}
-                        underlineColorAndroid='transparent'
-                        value={loginId} //to remove
-                    />
-                    <TextInput
-                        testID='login.password.input'
-                        autoCapitalize='none'
-                        autoCorrect={false}
-                        disableFullscreenUI={true}
-                        onChangeText={onPasswordChange}
-                        onSubmitEditing={preSignIn}
-                        style={styles.inputBox}
-                        placeholder={intl.formatMessage({
-                            id: 'login.password',
-                            defaultMessage: 'Password',
-                        })}
-                        placeholderTextColor={changeOpacity(theme.centerChannelColor, 0.5)}
-                        ref={passwordRef}
-                        returnKeyType='go'
-                        secureTextEntry={true}
-                        underlineColorAndroid='transparent'
-                        value={password} //to remove
-                    />
-                    {renderProceedButton()}
-                    {(config.EnableSignInWithEmail === 'true' || config.EnableSignInWithUsername === 'true') && (
-                        <Button
-                            onPress={onPressForgotPassword}
-                            containerStyle={[styles.forgotPasswordBtn]}
-                        >
-                            <FormattedText
-                                id='login.forgot'
-                                defaultMessage='I forgot my password'
-                                style={styles.forgotPasswordTxt}
-                                testID={'login.forgot'}
-                            />
-                        </Button>
-                    )}
-                </KeyboardAwareScrollView>
-            </TouchableWithoutFeedback>
-        </SafeAreaView>
+                </Button>
+            )}
+            {renderProceedButton()}
+            <View style={styles.separatorContainer}>
+                <View style={styles.separatorLine}/>
+                <Text style={styles.separatorText}>{' or log in with '}</Text>
+                <View style={styles.separatorLine}/>
+            </View>
+        </>
     );
 };
 
@@ -417,6 +419,20 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         justifyContent: 'center',
         paddingHorizontal: 15,
         paddingVertical: 50,
+    },
+    separatorContainer: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        color: changeOpacity(theme.centerChannelColor, 0.64),
+    },
+    separatorLine: {
+        flex: 1,
+        height: 1,
+        backgroundColor: changeOpacity(theme.centerChannelColor, 0.64),
+    },
+    separatorText: {
+        textAlign: 'center',
+        ...typography('Body', 25, 'SemiBold'),
     },
     forgotPasswordBtn: {
         borderColor: 'transparent',

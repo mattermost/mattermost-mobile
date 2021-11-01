@@ -9,7 +9,9 @@ import {SafeAreaView} from 'react-native-safe-area-context';
 
 import FormattedText from '@components/formatted_text';
 import {LOGIN, SSO} from '@constants/screens';
+import {t} from '@i18n';
 import Background from '@screens/background';
+import Login from '@screens/login';
 import {goToScreen} from '@screens/navigation';
 import {preventDoubleTap} from '@utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
@@ -52,7 +54,6 @@ const getStyles = makeStyleSheetFromTheme((theme: Theme) => ({
         ...typography('Body', 200, 'SemiBold'),
     },
     innerContainer: {
-        alignItems: 'center',
         flexDirection: 'column',
         justifyContent: 'center',
         paddingHorizontal: 15,
@@ -86,28 +87,30 @@ const LoginOptions: NavigationFunctionComponent = ({config, extra, launchType, l
                     contentContainerStyle={styles.innerContainer}
                 >
                     <FormattedText
-                        style={styles.header}
-                        id={'mobile.login_options.choose_title1'}
-                        testID={'mobile.login_options.choose_title1'}
                         defaultMessage='Log In to Your Account'
+                        id={t('mobile.login_options.heading')}
+                        testID={t('mobile.login_options.heading')}
+                        style={styles.header}
                     />
                     <FormattedText
                         style={styles.subheader}
-                        id='mobile.login_options.choose_title2'
-                        testID={'mobile.login_options.choose_title2'}
+                        id={t('mobile.login_options.description')}
+                        testID={t('mobile.login_options.description')}
                         defaultMessage='Enter your login details below.'
                     />
-                    <EmailOption
-                        config={config}
-                        onPress={displayLogin}
-                        theme={theme}
-                    />
-                    <LdapOption
+                    <Login
                         config={config}
                         license={license}
-                        onPress={displayLogin}
                         theme={theme}
+                        serverDisplayName={serverDisplayName}
                     />
+
+                    {/* <LdapOption */}
+                    {/*     config={config} */}
+                    {/*     license={license} */}
+                    {/*     onPress={displayLogin} */}
+                    {/*     theme={theme} */}
+                    {/* /> */}
                     <GitLabOption
                         config={config}
                         onPress={displaySSO}

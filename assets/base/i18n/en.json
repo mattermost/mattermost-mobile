@@ -123,7 +123,7 @@
   "login_mfa.token": "MFA Token",
   "login_mfa.tokenReq": "Please enter an MFA token",
   "login.email": "Email",
-  "login.forgot": "I forgot my password",
+  "login.forgot": "Forgot your password?",
   "login.invalidPassword": "Your password is incorrect.",
   "login.ldapUsername": "AD/LDAP Username",
   "login.ldapUsernameLower": "AD/LDAP username",
@@ -137,7 +137,7 @@
   "login.noUsernameLdapUsername": "Please enter your username or {ldapUsername}",
   "login.or": "or",
   "login.password": "Password",
-  "login.signIn": "Sign in",
+  "login.signIn": "Log in",
   "login.username": "Username",
   "login.userNotFound": "We couldn't find an account matching your login credentials.",
   "mobile.about.appVersion": "App Version: {version} (Build {number})",
@@ -177,9 +177,8 @@
   "mobile.join_channel.error": "We couldn't join the channel {displayName}. Please check your connection and try again.",
   "mobile.link.error.text": "Unable to open the link.",
   "mobile.link.error.title": "Error",
-  "mobile.login_options.choose_title": "Choose your login method",
-  "mobile.login_options.choose_title1": "Log In to Your Account",
-  "mobile.login_options.choose_title2": "Enter your login details below.",
+  "mobile.login_options.description": "Enter your login details below.",
+  "mobile.login_options.heading": "Log In to Your Account",
   "mobile.managed.blocked_by": "Blocked by {vendor}",
   "mobile.managed.exit": "Exit",
   "mobile.managed.jailbreak": "Jailbroken devices are not trusted by {vendor}, please exit the app.",
@@ -305,6 +304,5 @@
   "status_dropdown.set_online": "Online",
   "status_dropdown.set_ooo": "Out Of Office",
   "team_list.no_other_teams.description": "To join another team, ask a Team Admin for an invitation, or create your own team.",
-  "team_list.no_other_teams.title": "No additional teams to join",
-  "web.root.signup_info": "All team communication in one place, searchable and accessible anywhere"
+  "team_list.no_other_teams.title": "No additional teams to join"
 }
