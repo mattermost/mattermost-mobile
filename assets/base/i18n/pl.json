@@ -368,6 +368,7 @@
   "mobile.files_paste.error_title": "Wklejenie nie powiodło się",
   "mobile.flagged_posts.empty_description": "Zapisane wiadomości są widoczne tylko dla Ciebie. Zaznacz wiadomości do uzupełnienia lub zapisz coś na później, naciskając długo wiadomość i wybierając z menu polecenie Zapisz.",
   "mobile.flagged_posts.empty_title": "Nie ma jeszcze zapisanych wiadomości",
+  "mobile.forms.select.done": "Ukończono",
   "mobile.gallery.title": "{index} z {total}",
   "mobile.general.error.title": "Błąd",
   "mobile.help.title": "Pomoc",
