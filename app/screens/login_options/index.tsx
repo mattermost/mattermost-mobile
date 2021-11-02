@@ -8,6 +8,7 @@ import {NavigationFunctionComponent} from 'react-native-navigation';
 import {SafeAreaView} from 'react-native-safe-area-context';
 
 import FormattedText from '@components/formatted_text';
+import {Sso} from '@constants';
 import {LOGIN, SSO} from '@constants/screens';
 import {t} from '@i18n';
 import Background from '@screens/background';
@@ -24,6 +25,7 @@ import LdapOption from './ldap';
 import Office365Option from './office365';
 import OpenIdOption from './open_id';
 import SamlOption from './saml';
+import SsoOption from './sso_option';
 
 import type {LaunchProps} from '@typings/launch';
 
@@ -111,29 +113,37 @@ const LoginOptions: NavigationFunctionComponent = ({config, extra, launchType, l
                     {/*     onPress={displayLogin} */}
                     {/*     theme={theme} */}
                     {/* /> */}
-                    <GitLabOption
-                        config={config}
-                        onPress={displaySSO}
-                        theme={theme}
-                    />
-                    <GoogleOption
-                        config={config}
-                        onPress={displaySSO}
-                        theme={theme}
-                    />
-                    <Office365Option
+
+                    <SsoOption
+                        ssoType={Sso.GITLAB}
                         config={config}
                         license={license}
                         onPress={displaySSO}
                         theme={theme}
                     />
-                    <OpenIdOption
+                    <SsoOption
+                        ssoType={Sso.GOOGLE}
                         config={config}
                         license={license}
                         onPress={displaySSO}
                         theme={theme}
                     />
-                    <SamlOption
+                    <SsoOption
+                        ssoType={Sso.OFFICE365}
+                        config={config}
+                        license={license}
+                        onPress={displaySSO}
+                        theme={theme}
+                    />
+                    <SsoOption
+                        ssoType={Sso.OPENID}
+                        config={config}
+                        license={license}
+                        onPress={displaySSO}
+                        theme={theme}
+                    />
+                    <SsoOption
+                        ssoType={Sso.SAML}
                         config={config}
                         license={license}
                         onPress={displaySSO}

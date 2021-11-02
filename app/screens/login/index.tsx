@@ -7,11 +7,7 @@ import {
     ActivityIndicator,
     InteractionManager,
     Keyboard,
-    StyleProp,
-    Text,
     TextInput,
-    TextStyle,
-    ViewStyle,
     View,
 } from 'react-native';
 import Button from 'react-native-button';
@@ -427,12 +423,13 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     },
     separatorContainer: {
         flexDirection: 'row',
+        marginVertical: 24,
         alignItems: 'center',
         color: changeOpacity(theme.centerChannelColor, 0.64),
     },
     separatorLine: {
         flex: 1,
-        height: 0.3,
+        height: 0.4,
         backgroundColor: changeOpacity(theme.centerChannelColor, 0.64),
     },
     separatorText: {
@@ -443,7 +440,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     },
     forgotPasswordBtn: {
         borderColor: 'transparent',
-        marginTop: 15,
     },
     forgotPasswordTxt: {
         marginBottom: 45,
