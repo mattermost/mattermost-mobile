@@ -102,7 +102,7 @@ export default class AutocompleteSelector extends PureComponent<Props, State> {
 
     handleClear = () => {
         this.setState({selectedText: ''});
-        this.props.onClear();
+        this.props.onClear?.();
     }
 
     handleSelect = (selected: Selection) => {
