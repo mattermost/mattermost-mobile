@@ -25,7 +25,6 @@ exports[`CustomList should match snapshot with FlatList 1`] = `
   keyboardDismissMode="on-drag"
   keyboardShouldPersistTaps="always"
   maxToRenderPerBatch={16}
-  numColumns={1}
   onLayout={[Function]}
   onScroll={[Function]}
   removeClippedSubviews={true}

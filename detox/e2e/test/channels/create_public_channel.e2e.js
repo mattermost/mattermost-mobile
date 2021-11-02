@@ -27,6 +27,7 @@ describe('Channels', () => {
         nameInput,
         purposeInput,
         headerInput,
+        publicChannelTypeAction,
     } = CreateChannelScreen;
 
     beforeAll(async () => {
@@ -71,6 +72,7 @@ describe('Channels', () => {
         await expect(element(by.text('New Public Channel'))).toBeVisible();
 
         // # Fill data
+        await publicChannelTypeAction.tap();
         await nameInput.typeText('a');
         await attemptToTapCreateButton();
 
@@ -82,10 +84,7 @@ describe('Channels', () => {
         await purposeInput.tapReturnKey();
         await purposeInput.typeText('multiple lines');
 
-        // # Scroll down if Android
-        if (isAndroid()) {
-            await createChannelScreen.scroll(200, 'down');
-        }
+        await createChannelScreen.scroll(200, 'down');
 
         await expect(headerInput).toBeVisible();
         const expectedChannelHeader = 'I 🌮 love 🌮 tacos 🌮';

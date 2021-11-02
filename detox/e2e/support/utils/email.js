@@ -80,7 +80,6 @@ export const getMentionEmailTemplate = (sender, message, postId, siteName, teamN
         '',
         `@${sender}`,
         '<skip-local-time-check>',
-        '',
         channelDisplayName,
         '',
         message,

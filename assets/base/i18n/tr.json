@@ -368,6 +368,7 @@
   "mobile.files_paste.error_title": "Yapıştırılamadı",
   "mobile.flagged_posts.empty_description": "Kaydedilmiş iletileri yalnız siz görebilirsiniz. İletileri izlemek için işaretleyin ya da bir şeyi kaydetmek için ileti üzerine uzun basıp menüden Kaydet komutunu seçin.",
   "mobile.flagged_posts.empty_title": "Kaydedilmiş bir ileti yok",
+  "mobile.forms.select.done": "Tamam",
   "mobile.gallery.title": "{index} / {total}",
   "mobile.general.error.title": "Hata",
   "mobile.help.title": "Yardım",

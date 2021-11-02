@@ -1,7 +1,7 @@
 {
   "about.date": "Compilatiedatum:",
   "about.enterpriseEditionLearn": "Meer informatie over de Enterprise-Editie op ",
-  "about.enterpriseEditionSt": "Moderne communicatie achter de eigen firewall.",
+  "about.enterpriseEditionSt": "Moderne communicatie achter jouw eigen firewall.",
   "about.enterpriseEditione1": "Enterprise-Editie",
   "about.hash": "Compilatiehash:",
   "about.hashee": "EE Compilatiehash:",
@@ -368,6 +368,7 @@
   "mobile.files_paste.error_title": "Plakken mislukt",
   "mobile.flagged_posts.empty_description": "Bewaarde berichten zijn enkel zichtbaar voor jou. Markeer berichten om ze op te volgen om ze te bewaren voor iets later door lang te duwen op het bericht dan bewaren te kiezen in het menu.",
   "mobile.flagged_posts.empty_title": "Nog geen bewaarde berichten",
+  "mobile.forms.select.done": "Klaar",
   "mobile.gallery.title": "{index} van {total}",
   "mobile.general.error.title": "Fout",
   "mobile.help.title": "Help",
