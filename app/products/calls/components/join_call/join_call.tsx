@@ -3,7 +3,7 @@
 
 import React, {useCallback, useEffect} from 'react';
 import {injectIntl, IntlShape} from 'react-intl';
-import {View, Text, Pressable, Alert} from 'react-native';
+import {View, Text, Pressable} from 'react-native';
 
 import Avatars from '@components/avatars';
 import CompassIcon from '@components/compass_icon';
@@ -11,6 +11,7 @@ import FormattedRelativeTime from '@components/formatted_relative_time';
 import FormattedText from '@components/formatted_text';
 import ViewTypes, {JOIN_CALL_BAR_HEIGHT} from '@constants/view';
 import EventEmitter from '@mm-redux/utils/event_emitter';
+import leaveAndJoinWithAlert from '@mmproducts/calls/components/leave_and_join_alert';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 import type {Theme} from '@mm-redux/types/theme';
@@ -79,28 +80,8 @@ const JoinCall = (props: Props) => {
     }, [props.call, props.alreadyInTheCall]);
 
     const joinHandler = useCallback(() => {
-        if (props.confirmToJoin) {
-            Alert.alert(
-                props.intl.formatMessage({id: 'calls.confirm-to-join-title', defaultMessage: 'Are you sure you want to switch to a different call?'}),
-                props.intl.formatMessage({
-                    id: 'calls.confirm-to-join-description',
-                    defaultMessage: 'You are already on a channel call in ~{callChannelName}. Do you want to leave your current call and join the call in ~{currentChannelName}?',
-                }, {callChannelName: props.callChannelName, currentChannelName: props.currentChannelName}),
-                [
-                    {
-                        text: props.intl.formatMessage({id: 'calls.confirm-to-join-cancel', defaultMessage: 'Cancel'}),
-                    },
-                    {
-                        text: props.intl.formatMessage({id: 'calls.confirm-to-join-leave-and-join', defaultMessage: 'Leave & Join'}),
-                        onPress: () => props.actions.joinCall(props.call.channelId),
-                        style: 'cancel',
-                    },
-                ],
-            );
-        } else {
-            props.actions.joinCall(props.call.channelId);
-        }
-    }, [props.call, props.confirmToJoin]);
+        leaveAndJoinWithAlert(props.intl, props.call.channelId, props.callChannelName, props.currentChannelName, props.confirmToJoin, props.actions.joinCall);
+    }, [props.call.channelId, props.callChannelName, props.currentChannelName, props.confirmToJoin, props.actions.joinCall]);
 
     if (!props.call) {
         return null;

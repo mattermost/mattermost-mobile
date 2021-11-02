@@ -4,13 +4,14 @@
 import moment from 'moment-timezone';
 import React, {useCallback} from 'react';
 import {injectIntl, IntlShape} from 'react-intl';
-import {View, Alert, TouchableOpacity, Text} from 'react-native';
+import {View, TouchableOpacity, Text} from 'react-native';
 
 import CompassIcon from '@components/compass_icon';
 import FormattedRelativeTime from '@components/formatted_relative_time';
 import FormattedText from '@components/formatted_text';
 import FormattedTime from '@components/formatted_time';
 import {displayUsername} from '@mm-redux/utils/user_utils';
+import leaveAndJoinWithAlert from '@mmproducts/calls/components/leave_and_join_alert';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 import type {Post} from '@mm-redux/types/posts';
@@ -104,28 +105,8 @@ const CallMessage = ({post, user, teammateNameDisplay, confirmToJoin, alreadyInT
         if (alreadyInTheCall) {
             return;
         }
-        if (confirmToJoin) {
-            Alert.alert(
-                intl.formatMessage({id: 'calls.confirm-to-join-title', defaultMessage: 'Are you sure you want to switch to a different call?'}),
-                intl.formatMessage({
-                    id: 'calls.confirm-to-join-description',
-                    defaultMessage: 'You are already on a channel call in ~{callChannelName}. Do you want to leave your current call and join the call in ~{currentChannelName}?',
-                }, {callChannelName, currentChannelName}),
-                [
-                    {
-                        text: intl.formatMessage({id: 'calls.confirm-to-join-cancel', defaultMessage: 'Cancel'}),
-                    },
-                    {
-                        text: intl.formatMessage({id: 'calls.confirm-to-join-leave-and-join', defaultMessage: 'Leave & Join'}),
-                        onPress: () => actions.joinCall(post.channel_id),
-                        style: 'cancel',
-                    },
-                ],
-            );
-        } else {
-            actions.joinCall(post.channel_id);
-        }
-    }, [post.channel_id, confirmToJoin, alreadyInTheCall]);
+        leaveAndJoinWithAlert(intl, post.channel_id, callChannelName, currentChannelName, confirmToJoin, actions.joinCall);
+    }, [post.channel_id, callChannelName, currentChannelName, confirmToJoin, actions.joinCall]);
 
     if (post.props.end_at) {
         return (

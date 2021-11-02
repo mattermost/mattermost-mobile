@@ -320,6 +320,7 @@
   "mobile.channel_info.disable_calls": "Disable Calls",
   "mobile.channel_info.edit": "Edit Channel",
   "mobile.channel_info.enable_calls": "Enable Calls",
+  "mobile.channel_info.join_ongoing_call": "Join Ongoing Call",
   "mobile.channel_info.privateChannel": "Private Channel",
   "mobile.channel_info.publicChannel": "Public Channel",
   "mobile.channel_info.start_call": "Start Call",

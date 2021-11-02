@@ -183,6 +183,7 @@ export default class ChannelInfo extends PureComponent {
                             testID='channel_info.start_call.action'
                             theme={theme}
                             currentChannelId={currentChannel.id}
+                            currentChannelName={currentChannel.display_name}
                             joinCall={this.startCallHandler}
                             canStartCall={isCallsEnabled}
                         />
