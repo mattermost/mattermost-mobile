@@ -38,7 +38,7 @@ type Props = {
     teammateNameDisplay?: string;
     theme: Theme;
     onSelected?: ((item: DialogOption) => void) | ((item: DialogOption[]) => void);
-    onClear: () => void;
+    onClear?: () => void;
     helpText?: string;
     errorText?: string;
     roundedBorders?: boolean;
