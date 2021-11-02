@@ -2,6 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React from 'react';
+import {Image} from 'react-native';
 import Button from 'react-native-button';
 
 import LocalConfig from '@assets/config.json';
@@ -19,6 +20,7 @@ const SsoOption = ({ssoType, config, license, onPress, theme}: LoginOptionWithCo
     let forceHideFromLocal = false;
     let enabled = false;
     let id = '';
+    let imageSrc;
     let defaultMessage;
     const isLicensed = license!.IsLicensed === 'true';
     switch (ssoType) {
@@ -29,6 +31,7 @@ const SsoOption = ({ssoType, config, license, onPress, theme}: LoginOptionWithCo
             break;
 
         case Sso.GITLAB:
+            imageSrc = require('@assets/images/gitlab.png');
             enabled = config.EnableSignUpWithGitLab === 'true';
             forceHideFromLocal = LocalConfig.HideGitLabLoginExperimental;
             defaultMessage = 'GitLab';
@@ -36,20 +39,32 @@ const SsoOption = ({ssoType, config, license, onPress, theme}: LoginOptionWithCo
 
         case Sso.GOOGLE:
             enabled = config.EnableSignUpWithGoogle === 'true';
+            imageSrc = require('@assets/images/google.png');
             id = 'signup.google';
+            defaultMessage = 'Google';
             break;
 
         case Sso.OPENID:
             enabled = config.EnableSignUpWithOpenId === 'true' && isLicensed && isMinimumServerVersion(config.Version, 5, 33, 0);
+            defaultMessage = 'Open ID';
             break;
 
         case Sso.OFFICE365:
+            defaultMessage = 'Office 365';
             enabled = config.EnableSignUpWithOffice365 === 'true' && isLicensed && license!.Office365OAuth === 'true';
             forceHideFromLocal = LocalConfig.HideO365LoginExperimental;
             break;
 
         default:
     }
+    enabled = true;
+
+    const logoStyle = {
+        height: 18,
+        marginRight: 5,
+        backgroundColor: 'black',
+        width: 18,
+    };
 
     const handlePress = () => {
         onPress(ssoType);
@@ -62,6 +77,13 @@ const SsoOption = ({ssoType, config, license, onPress, theme}: LoginOptionWithCo
                 onPress={handlePress}
                 containerStyle={[styleButtonBackground, styles.button]}
             >
+
+                {imageSrc && (
+                    <Image
+                        source={imageSrc}
+                        style={logoStyle}
+                    />
+                )}
                 <FormattedText
                     id={ssoType}
                     style={[styleButtonText, styles.buttonText]}

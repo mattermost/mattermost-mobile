@@ -3,12 +3,11 @@
 
 import React from 'react';
 import {useIntl} from 'react-intl';
-import {ScrollView, View} from 'react-native';
+import {GestureResponderEvent, ScrollView, View} from 'react-native';
 import {NavigationFunctionComponent} from 'react-native-navigation';
 import {SafeAreaView} from 'react-native-safe-area-context';
 
 import FormattedText from '@components/formatted_text';
-import {Sso} from '@constants';
 import {LOGIN, SSO} from '@constants/screens';
 import {t} from '@i18n';
 import Background from '@screens/background';
@@ -18,18 +17,12 @@ import {preventDoubleTap} from '@utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
-import EmailOption from './email';
-import GitLabOption from './gitlab';
-import GoogleOption from './google';
-import LdapOption from './ldap';
-import Office365Option from './office365';
-import OpenIdOption from './open_id';
-import SamlOption from './saml';
-import SsoOption from './sso_option';
+import SsoOptions from './sso_options';
 
 import type {LaunchProps} from '@typings/launch';
 
-interface LoginOptionsProps extends LaunchProps {
+export interface LoginOptionsProps extends LaunchProps {
+    onPress?: (type: string|GestureResponderEvent) => void | (() => void);
     componentId: string;
     serverUrl: string;
     serverDisplayName: string;
@@ -74,12 +67,6 @@ const LoginOptions: NavigationFunctionComponent = ({config, extra, launchType, l
         goToScreen(screen, title, {config, extra, launchError, launchType, license, serverDisplayName, serverUrl, theme});
     });
 
-    const displaySSO = preventDoubleTap((ssoType: string) => {
-        const screen = SSO;
-        const title = intl.formatMessage({id: 'mobile.routes.sso', defaultMessage: 'Single Sign-On'});
-        goToScreen(screen, title, {config, extra, launchError, launchType, license, theme, ssoType, serverDisplayName, serverUrl});
-    });
-
     return (
         <View style={styles.flex}>
             <Background theme={theme}/>
@@ -103,6 +90,8 @@ const LoginOptions: NavigationFunctionComponent = ({config, extra, launchType, l
                     <Login
                         config={config}
                         license={license}
+                        launchError={launchError}
+                        launchType={launchType}
                         theme={theme}
                         serverDisplayName={serverDisplayName}
                     />
@@ -114,39 +103,13 @@ const LoginOptions: NavigationFunctionComponent = ({config, extra, launchType, l
                     {/*     theme={theme} */}
                     {/* /> */}
 
-                    <SsoOption
-                        ssoType={Sso.GITLAB}
+                    <SsoOptions
+                        launchType={launchType}
+                        launchError={launchError}
                         config={config}
                         license={license}
-                        onPress={displaySSO}
-                        theme={theme}
-                    />
-                    <SsoOption
-                        ssoType={Sso.GOOGLE}
-                        config={config}
-                        license={license}
-                        onPress={displaySSO}
-                        theme={theme}
-                    />
-                    <SsoOption
-                        ssoType={Sso.OFFICE365}
-                        config={config}
-                        license={license}
-                        onPress={displaySSO}
-                        theme={theme}
-                    />
-                    <SsoOption
-                        ssoType={Sso.OPENID}
-                        config={config}
-                        license={license}
-                        onPress={displaySSO}
-                        theme={theme}
-                    />
-                    <SsoOption
-                        ssoType={Sso.SAML}
-                        config={config}
-                        license={license}
-                        onPress={displaySSO}
+                        serverDisplayName={serverDisplayName}
+                        serverUrl={serverUrl}
                         theme={theme}
                     />
                 </ScrollView>

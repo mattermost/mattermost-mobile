@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 type LoginOptionWithConfigProps = {
-    ssoType: string;
+    ssoType?: string;
     config: ClientConfig;
     onPress: (type: string|GestureResponderEvent) => void | (() => void);
     theme: Theme;
