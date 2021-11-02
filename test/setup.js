@@ -15,8 +15,9 @@ require('isomorphic-fetch');
 configure({adapter: new Adapter()});
 
 const mockImpl = new MockAsyncStorage();
-jest.mock('@react-native-community/async-storage', () => mockImpl);
-global.window = {};
+jest.mock('@react-native-async-storage/async-storage', () => mockImpl);
+
+// global.window = {};
 
 /* eslint-disable no-console */
 

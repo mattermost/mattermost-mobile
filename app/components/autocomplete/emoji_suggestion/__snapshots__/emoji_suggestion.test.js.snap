@@ -4685,7 +4685,6 @@ exports[`components/autocomplete/emoji_suggestion should match snapshot 2`] = `
   keyExtractor={[Function]}
   keyboardShouldPersistTaps="always"
   nestedScrollEnabled={false}
-  numColumns={1}
   pageSize={10}
   removeClippedSubviews={true}
   renderItem={[Function]}

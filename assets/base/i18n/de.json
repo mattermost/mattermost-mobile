@@ -368,6 +368,7 @@
   "mobile.files_paste.error_title": "Einfügen fehlgeschlagen",
   "mobile.flagged_posts.empty_description": "Gespeicherte Nachrichten sind nur für Sie sichtbar. Markieren Sie Nachrichten zur Nachverfolgung oder speicheren sie diese für später, indem länger auf die Nachricht gedrückt wird und dann Speichern ausgewählt wird.",
   "mobile.flagged_posts.empty_title": "Noch keine gespeicherten Nachrichten",
+  "mobile.forms.select.done": "Erledigt",
   "mobile.gallery.title": "{index} von {total}",
   "mobile.general.error.title": "Fehler",
   "mobile.help.title": "Hilfe",

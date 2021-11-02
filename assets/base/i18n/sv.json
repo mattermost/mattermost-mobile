@@ -368,6 +368,7 @@
   "mobile.files_paste.error_title": "Det gick inte att klistra",
   "mobile.flagged_posts.empty_description": "Sparade meddelanden är personliga och kan inte ses av andra användare. Markera meddelanden för uppföljning genom att trycka länge och välja Spara i menyn.",
   "mobile.flagged_posts.empty_title": "Inga sparade meddelanden ännu",
+  "mobile.forms.select.done": "Klar",
   "mobile.gallery.title": "{index} av {total}",
   "mobile.general.error.title": "Fel",
   "mobile.help.title": "Hjälp",

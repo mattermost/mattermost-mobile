@@ -196,7 +196,10 @@ export default class ChannelPostList extends PureComponent {
         const style = getStyleSheet(theme);
 
         return (
-            <Animated.View style={[style.container, {paddingBottom: this.bottomPadding}]}>
+            <Animated.View
+                key={channelId}
+                style={[style.container, {paddingBottom: this.bottomPadding}]}
+            >
                 <View style={style.separator}/>
                 {component}
                 <RetryBarIndicator/>

@@ -368,6 +368,7 @@
   "mobile.files_paste.error_title": "粘贴失败",
   "mobile.flagged_posts.empty_description": "只有您可见保存的消息。长按消息并在菜单选择保存可标记信息以便之后更进。",
   "mobile.flagged_posts.empty_title": "无保存的信息",
+  "mobile.forms.select.done": "完成",
   "mobile.gallery.title": "{index}/{total}",
   "mobile.general.error.title": "错误",
   "mobile.help.title": "帮助",

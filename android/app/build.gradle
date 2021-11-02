@@ -119,6 +119,11 @@ def jscFlavor = 'org.webkit:android-jsc-intl:+'
  */
 def enableHermes = project.ext.react.get("enableHermes", false);
 
+/**
+ * Architectures to build native code for in debug.
+ */
+def nativeArchitectures = project.getProperties().get("reactNativeDebugArchitectures")
+
 android {
     compileSdkVersion rootProject.ext.compileSdkVersion
 
@@ -160,6 +165,11 @@ android {
         debug {
             minifyEnabled enableProguardInReleaseBuilds
             proguardFiles getDefaultProguardFile("proguard-android.txt"), "proguard-rules.pro"
+            if (nativeArchitectures) {
+                ndk {
+                    abiFilters nativeArchitectures.split(',')
+                }
+            }
         }
         unsigned.initWith(buildTypes.release)
         unsigned {
@@ -225,7 +235,7 @@ dependencies {
 
     implementation "androidx.swiperefreshlayout:swiperefreshlayout:1.0.0"
     debugImplementation("com.facebook.flipper:flipper:${FLIPPER_VERSION}") {
-      exclude group:'com.facebook.fbjni'
+        exclude group:'com.facebook.fbjni'
     }
     debugImplementation("com.facebook.flipper:flipper-network-plugin:${FLIPPER_VERSION}") {
         exclude group:'com.facebook.flipper'
