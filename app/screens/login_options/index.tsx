@@ -44,14 +44,14 @@ const getStyles = makeStyleSheetFromTheme((theme: Theme) => ({
         flex: 1,
     },
     header: {
-        color: changeOpacity(theme.centerChannelColor, 0.6),
-        marginBottom: 15,
+        color: theme.mentionColor,
+        marginBottom: 12,
         ...typography('Heading', 1000, 'SemiBold'),
     },
     subheader: {
         color: changeOpacity(theme.centerChannelColor, 0.6),
-        marginBottom: 15,
-        ...typography('Body', 200, 'SemiBold'),
+        marginBottom: 12,
+        ...typography('Body', 200, 'Regular'),
     },
     innerContainer: {
         flexDirection: 'column',

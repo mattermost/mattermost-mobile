@@ -25,6 +25,7 @@ import FormattedText from '@components/formatted_text';
 import {FORGOT_PASSWORD, MFA} from '@constants/screens';
 import {t} from '@i18n';
 import {goToScreen, resetToHome} from '@screens/navigation';
+import {buttonBackgroundStyle, buttonTextStyle} from '@utils/buttonStyles';
 import {preventDoubleTap} from '@utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
@@ -285,40 +286,41 @@ const Login: NavigationFunctionComponent = ({config, serverDisplayName, extra, l
     // **** **** ****   RENDER METHOD **** **** ****
 
     const renderProceedButton = () => {
+        let styleButtonText = buttonTextStyle(theme, 'lg', 'primary', 'default');
+        let styleButtonBackground = buttonBackgroundStyle(theme, 'lg', 'primary');
+
+        let buttonID = t('login.signIn');
+        let buttonText = 'Log In';
+        let buttonIcon;
+
         if (isLoading) {
-            return (
+            buttonID = t('login.signingIn');
+            buttonText = 'Signing In';
+            buttonIcon = (
                 <ActivityIndicator
                     animating={true}
                     size='small'
+                    color={'white'}
+                    style={styles.connectingIndicator}
                 />
             );
+        } else {
+            styleButtonText = buttonTextStyle(theme, 'lg', 'primary', 'disabled');
+            styleButtonBackground = buttonBackgroundStyle(theme, 'lg', 'primary', 'disabled');
         }
-
-        const additionalStyle: StyleProp<ViewStyle> = {
-            ...(config.EmailLoginButtonColor && {
-                backgroundColor: config.EmailLoginButtonColor,
-            }),
-            ...(config.EmailLoginButtonBorderColor && {
-                borderColor: config.EmailLoginButtonBorderColor,
-            }),
-        };
-
-        const additionalTextStyle: StyleProp<TextStyle> = {
-            ...(config.EmailLoginButtonTextColor && {
-                color: config.EmailLoginButtonTextColor,
-            }),
-        };
 
         return (
             <Button
                 testID='login.signin.button'
+                disabled={false}
                 onPress={preSignIn}
-                containerStyle={[styles.signupButton, additionalStyle]}
+                containerStyle={[styles.connectButton, styleButtonBackground]}
             >
+                {buttonIcon}
                 <FormattedText
-                    id='login.signIn'
-                    defaultMessage='Log in'
-                    style={[styles.signupButtonText, additionalTextStyle]}
+                    id={buttonID}
+                    defaultMessage={buttonText}
+                    style={styleButtonText}
                 />
             </Button>
         );
@@ -337,8 +339,7 @@ const Login: NavigationFunctionComponent = ({config, serverDisplayName, extra, l
                 autoCorrect={false}
                 autoCapitalize={'none'}
                 blurOnSubmit={false}
-
-                // containerStyle={styles.inputBox}
+                containerStyle={styles.inputBoxEmail}
                 enablesReturnKeyAutomatically={true}
                 keyboardType='email-address'
                 label={createLoginPlaceholder()}
@@ -357,8 +358,7 @@ const Login: NavigationFunctionComponent = ({config, serverDisplayName, extra, l
                 autoCorrect={false}
                 autoCapitalize={'none'}
                 blurOnSubmit={false}
-
-                // containerStyle={styles.inputBox}
+                containerStyle={styles.inputBoxPassword}
                 enablesReturnKeyAutomatically={true}
                 keyboardType='email-address'
                 label={intl.formatMessage({
@@ -446,18 +446,16 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         marginTop: 15,
     },
     forgotPasswordTxt: {
+        marginBottom: 45,
         color: theme.linkColor,
     },
-    inputBox: {
-        fontSize: 16,
-        height: 45,
-        borderColor: 'gainsboro',
-        borderWidth: 1,
-        marginTop: 5,
+    inputBoxEmail: {
+        marginTop: 16,
         marginBottom: 5,
-        paddingLeft: 10,
-        alignSelf: 'stretch',
-        borderRadius: 3,
+        color: theme.centerChannelColor,
+    },
+    inputBoxPassword: {
+        marginVertical: 21,
         color: theme.centerChannelColor,
     },
     subheader: {
@@ -475,6 +473,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         alignItems: 'center',
         alignSelf: 'stretch',
         marginTop: 10,
+        marginBottom: 45,
         padding: 15,
     },
     signupButtonText: {
