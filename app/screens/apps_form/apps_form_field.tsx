@@ -31,7 +31,7 @@ export type Props = {
 }
 
 type State = {
-    selected?: DialogOption | DialogOption[];
+    selected?: DialogOption | DialogOption[] | null;
 }
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
@@ -76,8 +76,10 @@ export default class AppsFormField extends React.PureComponent<Props, State> {
     handleClear = () => {
         const {field, onChange} = this.props;
 
-        this.setState({selected: undefined});
-        onChange(field.name, null);
+        const selected = field.multiselect ? [] : null;
+
+        this.setState({selected});
+        onChange(field.name, selected);
     };
 
     handleMultioptionAutocompleteSelect = (selected: DialogOption[]) => {
