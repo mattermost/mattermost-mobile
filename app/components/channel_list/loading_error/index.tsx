@@ -14,6 +14,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     container: {
         flex: 1,
         alignItems: 'center',
+        justifyContent: 'center',
         padding: 20,
     },
     iconWrapper: {

@@ -65,8 +65,13 @@ const ChannelList = ({iconPad}: ChannelListProps) => {
                     iconPad={iconPad}
                 />
             </TouchableOpacity>
-            <SearchField/>
-            {showCats && (<Categories categories={categories}/>)}
+
+            {showCats && (
+                <>
+                    <SearchField/>
+                    <Categories categories={categories}/>
+                </>
+            )}
             {/* <Loading/> */}
             {!showCats && (<LoadingError/>)}
         </View>

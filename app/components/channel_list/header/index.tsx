@@ -5,6 +5,7 @@ import React from 'react';
 import {Text, View} from 'react-native';
 
 import CompassIcon, {COMPASS_ICONS} from '@app/components/compass_icon';
+import TouchableWithFeedback from '@app/components/touchable_with_feedback';
 import {useTheme} from '@app/context/theme';
 import {typography} from '@app/utils/typography';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
@@ -24,19 +25,32 @@ const getStyles = makeStyleSheetFromTheme((theme: Theme) => ({
         color: changeOpacity(theme.sidebarText, 0.64),
         ...typography('Heading', 50),
     },
-    chevronRow: {
-        flexDirection: 'row',
-        textAlignVertical: 'center',
-        justifyContents: 'center',
-        alignItems: 'center',
-    },
-    icon: {
-        color: changeOpacity(theme.sidebarText, 0.8),
-        fontSize: 24,
-        marginLeft: 4,
-    },
     iconPad: {
         marginLeft: 44,
+    },
+    headerRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+    },
+    chevronButton: {
+        marginLeft: 4,
+    },
+    chevronIcon: {
+        color: changeOpacity(theme.sidebarText, 0.8),
+        fontSize: 24,
+    },
+    plusButton: {
+        backgroundColor: changeOpacity(theme.sidebarText, 0.08),
+        height: 28,
+        width: 28,
+        borderRadius: 14,
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    plusIcon: {
+        color: changeOpacity(theme.sidebarText, 0.8),
+        fontSize: 18,
     },
 }));
 
@@ -46,14 +60,24 @@ const ChannelListHeader = (props: Props) => {
 
     return (
         <View style={props.iconPad && styles.iconPad}>
-            <View style={styles.chevronRow}>
-                <Text style={styles.headingStyles}>
-                    {props.heading}
-                </Text>
-                <CompassIcon
-                    style={styles.icon}
-                    name={COMPASS_ICONS['chevron-down']}
-                />
+            <View style={styles.headerRow}>
+                <View style={styles.headerRow}>
+                    <Text style={styles.headingStyles}>
+                        {props.heading}
+                    </Text>
+                    <TouchableWithFeedback style={styles.chevronButton}>
+                        <CompassIcon
+                            style={styles.chevronIcon}
+                            name={COMPASS_ICONS['chevron-down']}
+                        />
+                    </TouchableWithFeedback>
+                </View>
+                <TouchableWithFeedback style={styles.plusButton}>
+                    <CompassIcon
+                        style={styles.plusIcon}
+                        name={COMPASS_ICONS.plus}
+                    />
+                </TouchableWithFeedback>
             </View>
             <Text style={styles.subHeadingStyles}>
                 {props.subheading}
