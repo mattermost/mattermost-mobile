@@ -32,7 +32,7 @@ type Props = {
     placeholder?: string;
     dataSource?: string;
     options?: DialogOption[];
-    selected?: DialogOption | DialogOption[];
+    selected?: DialogOption | DialogOption[] | null;
     optional?: boolean;
     showRequiredAsterisk?: boolean;
     teammateNameDisplay?: string;
@@ -48,7 +48,7 @@ type Props = {
 
 type State = {
     selectedText: string;
-    selected?: DialogOption | DialogOption[];
+    selected?: DialogOption | DialogOption[] | null;
 }
 
 export default class AutocompleteSelector extends PureComponent<Props, State> {
