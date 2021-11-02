@@ -244,8 +244,6 @@ export default class AutocompleteSelector extends PureComponent<Props, State> {
         const textStyles = getMarkdownTextStyles(theme);
         const blockStyles = getMarkdownBlockStyles(theme);
 
-        const chevron = Platform.select({ios: 'chevron-right', default: 'chevron-down'});
-
         let text = placeholder || intl.formatMessage({id: 'mobile.action_menu.select', defaultMessage: 'Select an option'});
         let selectedStyle = style.dropdownPlaceholder;
 
