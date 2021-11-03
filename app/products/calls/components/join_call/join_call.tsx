@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback, useEffect} from 'react';
+import React, {useCallback, useEffect, useMemo} from 'react';
 import {injectIntl, IntlShape} from 'react-intl';
 import {View, Text, Pressable} from 'react-native';
 
@@ -92,6 +92,9 @@ const JoinCall = (props: Props) => {
     }
 
     const style = getStyleSheet(props.theme);
+    const userIds = useMemo(() => {
+        return Object.values(props.call.participants || {}).map((x) => x.id);
+    }, [props.call.participants]);
 
     return (
         <Pressable
@@ -112,7 +115,7 @@ const JoinCall = (props: Props) => {
             </Text>
             <View style={style.avatars}>
                 <Avatars
-                    userIds={Object.values(props.call.participants || {}).map((x) => x.id)}
+                    userIds={userIds}
                     breakAt={1}
                     listTitle={
                         <FormattedText
