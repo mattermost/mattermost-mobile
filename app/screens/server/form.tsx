@@ -191,12 +191,14 @@ const ServerForm = ({
                     value={displayName}
                 />
             </View>
+            {!displayNameError &&
             <FormattedText
                 defaultMessage={'Choose a display name for your server'}
                 id={'mobile.components.select_server_view.displayHelp'}
                 style={styles.chooseText}
                 testID={'mobile.components.select_server_view.displayHelp'}
             />
+            }
             <Button
                 containerStyle={[styles.connectButton, styleButtonBackground]}
                 disabled={buttonDisabled}

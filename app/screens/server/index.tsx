@@ -15,8 +15,10 @@ import LocalConfig from '@assets/config.json';
 import ClientError from '@client/rest/error';
 import AppVersion from '@components/app_version';
 import {Screens} from '@constants';
+import DatabaseManager from '@database/manager';
 import {t} from '@i18n';
 import NetworkManager from '@init/network_manager';
+import {queryServerByDisplayName, queryServerByIdentifier} from '@queries/app/servers';
 import {goToScreen} from '@screens/navigation';
 import {DeepLinkWithData, LaunchProps, LaunchType} from '@typings/launch';
 import {getErrorMessage} from '@utils/client_error';
@@ -49,11 +51,13 @@ const Server = ({componentId, extra, launchType, launchError, theme}: ServerProp
     const [displayName, setDisplayName] = useState<string>('');
     const [buttonDisabled, setButtonDisabled] = useState(true);
     const [url, setUrl] = useState<string>('');
-    const [urlError, setUrlError] = useState<string | undefined>(undefined);
+    const [displayNameError, setDisplayNameError] = useState<string | undefined>();
+    const [urlError, setUrlError] = useState<string | undefined>();
     const styles = getStyleSheet(theme);
     const {formatMessage} = intl;
 
     useEffect(() => {
+        const serverName = managedConfig?.serverName || LocalConfig.DefaultServerName;
         let serverUrl = managedConfig?.serverUrl || LocalConfig.DefaultServerUrl;
         let autoconnect = managedConfig?.allowOtherServers === 'false' || LocalConfig.AutoSelectServerUrl;
 
@@ -76,11 +80,15 @@ const Server = ({componentId, extra, launchType, launchError, theme}: ServerProp
         if (serverUrl) {
             // If a server Url is set by the managed or local configuration, use it.
             setUrl(serverUrl);
+        }
 
-            if (autoconnect) {
-                // If no other servers are allowed or the local config for AutoSelectServerUrl is set, attempt to connect
-                handleConnect(managedConfig?.serverUrl || LocalConfig.DefaultServerUrl);
-            }
+        if (serverName) {
+            setDisplayName(serverName);
+        }
+
+        if (serverUrl && serverName && autoconnect) {
+            // If no other servers are allowed or the local config for AutoSelectServerUrl is set, attempt to connect
+            handleConnect(managedConfig?.serverUrl || LocalConfig.DefaultServerUrl);
         }
     }, []);
 
@@ -151,7 +159,7 @@ const Server = ({componentId, extra, launchType, launchError, theme}: ServerProp
     };
 
     const handleConnect = preventDoubleTap(async (manualUrl?: string) => {
-        if (buttonDisabled) {
+        if (buttonDisabled && !manualUrl) {
             return;
         }
 
@@ -170,15 +178,23 @@ const Server = ({componentId, extra, launchType, launchError, theme}: ServerProp
             return;
         }
 
-        // TODO: Query to see if there is a server with the same display name
-        // Set the error here and return
-        // Elias to add this change in a Later PR. as soon as this one goes in
+        const server = await queryServerByDisplayName(DatabaseManager.appDatabase!.database, displayName);
+        if (server && server.lastActiveAt > 0) {
+            setButtonDisabled(true);
+            setDisplayNameError(formatMessage({
+                id: 'mobile.server_name.exists',
+                defaultMessage: 'You are using this name for another server.',
+            }));
+            setConnecting(false);
+            return;
+        }
 
         pingServer(serverUrl);
     });
 
     const handleDisplayNameTextChanged = useCallback((text: string) => {
         setDisplayName(text);
+        setDisplayNameError(undefined);
     }, []);
 
     const handleUrlTextChanged = useCallback((text: string) => {
@@ -235,6 +251,17 @@ const Server = ({componentId, extra, launchType, launchError, theme}: ServerProp
             return;
         }
 
+        const server = await queryServerByIdentifier(DatabaseManager.appDatabase!.database, data.config!.DiagnosticId);
+        if (server && server.lastActiveAt > 0) {
+            setButtonDisabled(true);
+            setUrlError(formatMessage({
+                id: 'mobile.server_identifier.exists',
+                defaultMessage: 'You are already connected to this server.',
+            }));
+            setConnecting(false);
+            return;
+        }
+
         displayLogin(serverUrl, data.config!, data.license!);
     };
 
@@ -266,6 +293,7 @@ const Server = ({componentId, extra, launchType, launchError, theme}: ServerProp
                         buttonDisabled={buttonDisabled}
                         connecting={connecting}
                         displayName={displayName}
+                        displayNameError={displayNameError}
                         handleConnect={handleConnect}
                         handleDisplayNameTextChanged={handleDisplayNameTextChanged}
                         handleUrlTextChanged={handleUrlTextChanged}
