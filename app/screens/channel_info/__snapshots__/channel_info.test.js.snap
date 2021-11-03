@@ -1118,9 +1118,10 @@ exports[`channelInfo should match snapshot on calls features enabled and calls d
           }
         />
         <React.Fragment>
-          <StartCall
+          <Connect(InjectIntl(StartCall))
             canStartCall={false}
             currentChannelId="1234"
+            currentChannelName="Channel Name"
             joinCall={[Function]}
             testID="channel_info.start_call.action"
             theme={
@@ -1804,9 +1805,10 @@ exports[`channelInfo should match snapshot on calls features enabled and calls e
           }
         />
         <React.Fragment>
-          <StartCall
+          <Connect(InjectIntl(StartCall))
             canStartCall={true}
             currentChannelId="1234"
+            currentChannelName="Channel Name"
             joinCall={[Function]}
             testID="channel_info.start_call.action"
             theme={
@@ -2490,9 +2492,10 @@ exports[`channelInfo should match snapshot on calls features enabled, user is no
           }
         />
         <React.Fragment>
-          <StartCall
+          <Connect(InjectIntl(StartCall))
             canStartCall={false}
             currentChannelId="1234"
+            currentChannelName="Channel Name"
             joinCall={[Function]}
             testID="channel_info.start_call.action"
             theme={
