@@ -10,8 +10,10 @@ import {t} from '@i18n';
 
 const style = StyleSheet.create({
     info: {
-        alignItems: 'center',
-        justifyContent: 'flex-end',
+        position: 'absolute',
+        bottom: 0,
+        marginLeft: 20,
+        marginBottom: 12,
     },
     version: {
         fontSize: 12,

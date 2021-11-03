@@ -10,9 +10,8 @@ import {SafeAreaView, useSafeAreaInsets} from 'react-native-safe-area-context';
 import ChannelList from '@components/channel_list';
 import ServerIcon from '@components/server_icon/server_icon';
 import TeamSidebar from '@components/team_sidebar';
-import {Device} from '@constants';
 import {useTheme} from '@context/theme';
-import {useSplitView} from '@hooks/device';
+import {useIsTablet} from '@hooks/device';
 import Channel from '@screens/channel';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 
@@ -45,9 +44,7 @@ const ChannelListScreen = (props: ChannelProps) => {
     const theme = useTheme();
     const styles = getStyleSheet(theme);
 
-    const isSplitView = useSplitView();
-    const showTabletLayout = Device.IS_TABLET && !isSplitView;
-
+    const isTablet = useIsTablet();
     const route = useRoute();
     const isFocused = useIsFocused();
     const insets = useSafeAreaInsets();
@@ -83,7 +80,7 @@ const ChannelListScreen = (props: ChannelProps) => {
                 >
                     <TeamSidebar iconPad={true}/>
                     <ChannelList iconPad={false}/>
-                    {showTabletLayout &&
+                    {isTablet &&
                         <Channel {...props}/>
                     }
                 </Animated.View>

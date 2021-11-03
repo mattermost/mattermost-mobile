@@ -6,7 +6,7 @@ import React, {useState} from 'react';
 
 import {ssoLogin} from '@actions/remote/session';
 import ClientError from '@client/rest/error';
-import {SSO as SSOEnum} from '@constants';
+import {Sso} from '@constants';
 import {resetToHome} from '@screens/navigation';
 import {isMinimumServerVersion} from '@utils/helpers';
 
@@ -19,37 +19,38 @@ interface SSOProps extends LaunchProps {
   config: Partial<ClientConfig>;
   license: Partial<ClientLicense>;
   ssoType: string;
+  serverDisplayName: string;
   theme: Partial<Theme>;
 }
 
-const SSO = ({config, extra, launchError, launchType, serverUrl, ssoType, theme}: SSOProps) => {
+const SSO = ({config, extra, launchError, launchType, serverDisplayName, serverUrl, ssoType, theme}: SSOProps) => {
     const managedConfig = useManagedConfig();
 
     const [loginError, setLoginError] = useState<string>('');
     let completeUrlPath = '';
     let loginUrl = '';
     switch (ssoType) {
-        case SSOEnum.GOOGLE: {
+        case Sso.GOOGLE: {
             completeUrlPath = '/signup/google/complete';
             loginUrl = `${serverUrl}/oauth/google/mobile_login`;
             break;
         }
-        case SSOEnum.GITLAB: {
+        case Sso.GITLAB: {
             completeUrlPath = '/signup/gitlab/complete';
             loginUrl = `${serverUrl}/oauth/gitlab/mobile_login`;
             break;
         }
-        case SSOEnum.SAML: {
+        case Sso.SAML: {
             completeUrlPath = '/login/sso/saml';
             loginUrl = `${serverUrl}/login/sso/saml?action=mobile`;
             break;
         }
-        case SSOEnum.OFFICE365: {
+        case Sso.OFFICE365: {
             completeUrlPath = '/signup/office365/complete';
             loginUrl = `${serverUrl}/oauth/office365/mobile_login`;
             break;
         }
-        case SSOEnum.OPENID: {
+        case Sso.OPENID: {
             completeUrlPath = '/signup/openid/complete';
             loginUrl = `${serverUrl}/oauth/openid/mobile_login`;
             break;
@@ -73,7 +74,7 @@ const SSO = ({config, extra, launchError, launchType, serverUrl, ssoType, theme}
     };
 
     const doSSOLogin = async (bearerToken: string, csrfToken: string) => {
-        const result: LoginActionResponse = await ssoLogin(serverUrl!, config.DiagnosticId!, bearerToken, csrfToken);
+        const result: LoginActionResponse = await ssoLogin(serverUrl!, serverDisplayName, config.DiagnosticId!, bearerToken, csrfToken);
         if (result?.error && result.failed) {
             onLoadEndError(result.error);
             return;

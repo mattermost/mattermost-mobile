@@ -6,7 +6,6 @@ import {useIntl} from 'react-intl';
 import {Text, View} from 'react-native';
 import Button from 'react-native-button';
 
-import {View as ViewConstants} from '@constants';
 import {useTheme} from '@context/theme';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
@@ -26,7 +25,6 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme: Theme) => {
             flex: 1,
             justifyContent: 'center',
             paddingHorizontal: 20,
-            paddingVertical: ViewConstants.INDICATOR_BAR_HEIGHT,
             paddingBottom: 15,
         },
         title: {

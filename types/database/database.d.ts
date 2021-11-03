@@ -252,6 +252,7 @@ export type LoginArgs = {
   loginId: string;
   mfaToken?: string;
   password: string;
+  serverDisplayName: string;
 };
 
 export type ServerUrlChangedArgs = {

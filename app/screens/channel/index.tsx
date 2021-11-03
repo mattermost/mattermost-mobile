@@ -12,7 +12,6 @@ import {map} from 'rxjs/operators';
 import {logout} from '@actions/remote/session';
 import PostList from '@components/post_list';
 import ServerVersion from '@components/server_version';
-import StatusBar from '@components/status_bar';
 import {Screens, Database} from '@constants';
 import {useServerUrl} from '@context/server_url';
 import {useTheme} from '@context/theme';
@@ -130,7 +129,6 @@ const Channel = ({currentChannelId, currentTeamId, time}: ChannelProps) => {
             edges={['left', 'right', 'bottom']}
         >
             <ServerVersion/>
-            <StatusBar theme={theme}/>
             {renderComponent}
         </SafeAreaView>
     );

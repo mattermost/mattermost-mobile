@@ -75,7 +75,7 @@ const PostsInChannelHandler = (superclass: any) => class extends superclass {
         // Find the records in the PostsInChannel table that have a matching channel_id
         const chunks = (await this.database.get(POSTS_IN_CHANNEL).query(
             Q.where('channel_id', channelId),
-            Q.experimentalSortBy('latest', Q.desc),
+            Q.sortBy('latest', Q.desc),
         ).fetch()) as PostsInChannelModel[];
 
         // chunk length 0; then it's a new chunk to be added to the PostsInChannel table
@@ -130,7 +130,7 @@ const PostsInChannelHandler = (superclass: any) => class extends superclass {
         let recentChunk: PostsInChannelModel|undefined;
         const chunks = (await this.database.get(POSTS_IN_CHANNEL).query(
             Q.where('channel_id', firstPost.channel_id),
-            Q.experimentalSortBy('latest', Q.desc),
+            Q.sortBy('latest', Q.desc),
         ).fetch()) as PostsInChannelModel[];
 
         if (chunks.length) {
@@ -193,7 +193,7 @@ const PostsInChannelHandler = (superclass: any) => class extends superclass {
         // Find the records in the PostsInChannel table that have a matching channel_id
         const chunks = (await this.database.get(POSTS_IN_CHANNEL).query(
             Q.where('channel_id', channelId),
-            Q.experimentalSortBy('latest', Q.desc),
+            Q.sortBy('latest', Q.desc),
         ).fetch()) as PostsInChannelModel[];
 
         // chunk length 0; then it's a new chunk to be added to the PostsInChannel table

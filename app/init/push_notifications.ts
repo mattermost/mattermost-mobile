@@ -17,7 +17,7 @@ import {
 import {markChannelAsViewed} from '@actions/local/channel';
 import {backgroundNotification, openNotification} from '@actions/remote/notifications';
 import EphemeralStore from '@app/store/ephemeral_store';
-import {Device, General, Navigation, Screens} from '@constants';
+import {Device, Events, Navigation, Screens} from '@constants';
 import {GLOBAL_IDENTIFIERS} from '@constants/database';
 import DatabaseManager from '@database/manager';
 import {DEFAULT_LOCALE, getLocalizedMessage, t} from '@i18n';
@@ -187,7 +187,7 @@ class PushNotifications {
         const serverUrl = await this.getServerUrlFromNotification(notification);
 
         if (serverUrl) {
-            DeviceEventEmitter.emit(General.SERVER_LOGOUT, serverUrl);
+            DeviceEventEmitter.emit(Events.SERVER_LOGOUT, serverUrl);
         }
     }
 

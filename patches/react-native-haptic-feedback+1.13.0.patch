@@ -1,0 +1,13 @@
+diff --git a/node_modules/react-native-haptic-feedback/android/src/main/java/com/mkuczera/VibrateFactory/VibrateFactory.java b/node_modules/react-native-haptic-feedback/android/src/main/java/com/mkuczera/VibrateFactory/VibrateFactory.java
+index 167118f..e7b8fc4 100644
+--- a/node_modules/react-native-haptic-feedback/android/src/main/java/com/mkuczera/VibrateFactory/VibrateFactory.java
++++ b/node_modules/react-native-haptic-feedback/android/src/main/java/com/mkuczera/VibrateFactory/VibrateFactory.java
+@@ -15,7 +15,7 @@ import com.mkuczera.VibrateWithCreatePredefined;
+ public class VibrateFactory {
+     static Map<String, Vibrate> vibrateMap = new HashMap<>();
+     static {
+-        vibrateMap.put("impactLight", new VibrateWithDuration(new long[]{0, 20}));
++        vibrateMap.put("impactLight", new VibrateWithDuration(new long[]{0, 5}));
+         vibrateMap.put("impactMedium", new VibrateWithDuration(new long[]{0, 40}));
+         vibrateMap.put("impactHeavy", new VibrateWithDuration(new long[]{0, 60}));
+         vibrateMap.put("notificationSuccess", new VibrateWithDuration(new long[]{0, 40 ,60, 20}));

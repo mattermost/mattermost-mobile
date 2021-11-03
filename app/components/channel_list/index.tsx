@@ -5,9 +5,8 @@ import React, {useState} from 'react';
 import {View} from 'react-native';
 import {TouchableOpacity} from 'react-native-gesture-handler';
 
-import {Device} from '@app/constants';
-import {TABLET} from '@app/constants/view';
-import {useSplitView} from '@app/hooks/device';
+import TABLET from '@app/constants/view';
+import {useIsTablet} from '@app/hooks/device';
 import {useTheme} from '@context/theme';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 
@@ -37,7 +36,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         paddingVertical: 10,
     },
     maxW: {
-        maxWidth: TABLET.SIDEBAR_WIDTH,
+        maxWidth: TABLET.TABLET_SIDEBAR_WIDTH,
     },
 
 }));
@@ -53,11 +52,10 @@ const ChannelList = ({iconPad}: ChannelListProps) => {
     // @to-do; remove after testing
     const [showCats, setShowCats] = useState<boolean>(true);
 
-    const isSplitView = useSplitView();
-    const showTabletLayout = Device.IS_TABLET && !isSplitView;
+    const isTablet = useIsTablet();
 
     return (
-        <View style={[styles.container, showTabletLayout && styles.maxW]}>
+        <View style={[styles.container, isTablet && styles.maxW]}>
             <TouchableOpacity onPress={() => setShowCats(!showCats)}>
                 <ChannelListHeader
                     heading='Contributors'

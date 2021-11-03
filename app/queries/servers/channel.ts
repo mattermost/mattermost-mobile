@@ -150,7 +150,7 @@ export const queryDefaultChannelForTeam = async (database: Database, teamId: str
             Q.where('delete_at', 0),
             Q.where('type', General.OPEN_CHANNEL),
         ),
-        Q.experimentalSortBy('display_name', Q.asc),
+        Q.sortBy('display_name', Q.asc),
     ).fetch();
 
     const defaultChannel = myChannels.find((c) => c.name === General.DEFAULT_CHANNEL);

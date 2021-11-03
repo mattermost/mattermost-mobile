@@ -4,7 +4,7 @@
 // Note: This file has been adapted from the library https://github.com/csath/react-native-reanimated-text-input
 
 import {debounce} from 'lodash';
-import React, {useState, useEffect, useRef} from 'react';
+import React, {useState, useEffect, useRef, useImperativeHandle, forwardRef} from 'react';
 import {View, TextInput, TouchableWithoutFeedback, Text, Platform, TextStyle, NativeSyntheticEvent, TextInputFocusEventData, TextInputProps, GestureResponderEvent, TargetedEvent} from 'react-native';
 import Animated, {useCode, interpolateNode, EasingNode, Value, set, Clock} from 'react-native-reanimated';
 
@@ -13,12 +13,13 @@ import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 import {timingAnimation} from './animation_utils';
 
+const DEFAULT_INPUT_HEIGHT = 48;
 const BORDER_DEFAULT_WIDTH = 1;
 const BORDER_FOCUSED_WIDTH = 2;
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     container: {
-        height: 48,
+        height: DEFAULT_INPUT_HEIGHT + (2 * BORDER_DEFAULT_WIDTH),
         width: '100%',
     },
     errorContainer: {
@@ -43,7 +44,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         left: 16,
         fontFamily: 'OpenSans',
         fontSize: 16,
-        zIndex: 1,
+        zIndex: 10,
     },
     smallLabel: {
         fontSize: 10,
@@ -51,7 +52,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     textInput: {
         fontFamily: 'OpenSans',
         fontSize: 16,
-        lineHeight: 24,
         paddingTop: 12,
         paddingBottom: 12,
         paddingHorizontal: 16,
@@ -59,6 +59,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         borderColor: changeOpacity(theme.centerChannelColor, 0.16),
         borderRadius: 4,
         borderWidth: BORDER_DEFAULT_WIDTH,
+        backgroundColor: theme.centerChannelBg,
     },
 }));
 
@@ -85,6 +86,11 @@ const getLabelPositions = (style: TextStyle, labelStyle: TextStyle, smallLabelSt
     return [unfocused, focused];
 };
 
+export type FloatingTextInputRef = {
+    focus: () => void;
+    isFocused: () => boolean;
+}
+
 type FloatingTextInputProps = TextInputProps & {
     containerStyle?: TextStyle;
     editable?: boolean;
@@ -100,12 +106,12 @@ type FloatingTextInputProps = TextInputProps & {
     value: string;
 }
 
-const FloatingTextInput = ({
+const FloatingTextInput = forwardRef<FloatingTextInputRef, FloatingTextInputProps>(({
     error,
     containerStyle,
     isKeyboardInput = true,
     editable = true,
-    errorIcon = 'BRKN-alert-outline',
+    errorIcon = 'alert-outline',
     label = '',
     onPress = undefined,
     onFocus,
@@ -114,9 +120,9 @@ const FloatingTextInput = ({
     theme,
     value = '',
     ...props
-}: FloatingTextInputProps) => {
+}: FloatingTextInputProps, ref) => {
     const [focusedLabel, setIsFocusLabel] = useState<boolean | undefined>();
-    const [focused, setIsFocused] = useState(Boolean(value));
+    const [focused, setIsFocused] = useState(Boolean(value) && editable);
     const inputRef = useRef<TextInput>(null);
     const [animation] = useState(new Value(focusedLabel ? 1 : 0));
     const debouncedOnFocusTextInput = debounce(setIsFocusLabel, 500, {leading: true, trailing: false});
@@ -127,6 +133,11 @@ const FloatingTextInput = ({
         from = focusedLabel ? 0 : 1;
         to = focusedLabel ? 1 : 0;
     }
+
+    useImperativeHandle(ref, () => ({
+        focus: () => inputRef.current?.focus(),
+        isFocused: () => inputRef.current?.isFocused() || false,
+    }), [inputRef]);
 
     useCode(
         () => set(
@@ -164,6 +175,7 @@ const FloatingTextInput = ({
         backgroundColor: (
             focusedLabel ? theme.centerChannelBg : 'transparent'
         ),
+        paddingHorizontal: focusedLabel ? 4 : 0,
         color: styles.label.color,
     };
 
@@ -200,7 +212,10 @@ const FloatingTextInput = ({
         textInputColorStyles = {borderColor: theme.errorTextColor};
     }
 
-    const textInputBorder = {borderWidth: focusedLabel ? BORDER_FOCUSED_WIDTH : BORDER_DEFAULT_WIDTH};
+    const textInputBorder = {
+        borderWidth: focusedLabel ? BORDER_FOCUSED_WIDTH : BORDER_DEFAULT_WIDTH,
+        height: DEFAULT_INPUT_HEIGHT + ((focusedLabel ? BORDER_FOCUSED_WIDTH : BORDER_DEFAULT_WIDTH) * 2),
+    };
     const combinedTextInputStyle = [styles.textInput, textInputBorder, textInputColorStyles];
     const textAnimatedTextStyle = [styles.label, focusStyle, labelColorStyles];
 
@@ -235,7 +250,7 @@ const FloatingTextInput = ({
                     ref={inputRef}
                     underlineColorAndroid='transparent'
                 />
-                {!focused && error && (
+                {error && (
                     <View style={styles.errorContainer}>
                         {showErrorIcon && errorIcon &&
                         <CompassIcon
@@ -249,7 +264,7 @@ const FloatingTextInput = ({
             </View>
         </TouchableWithoutFeedback>
     );
-};
+});
 
 export default FloatingTextInput;
 

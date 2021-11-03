@@ -7,8 +7,10 @@ exports[`@components/app_version should match snapshot 1`] = `
   <View
     style={
       Object {
-        "alignItems": "center",
-        "justifyContent": "flex-end",
+        "bottom": 0,
+        "marginBottom": 12,
+        "marginLeft": 20,
+        "position": "absolute",
       }
     }
   >
