@@ -12,16 +12,15 @@ import useDidUpdate from '@hooks/did_update';
 import NetworkManager from '@init/network_manager';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
-import type UserModel from '@typings/database/models/servers/user';
-
 type ProfilePictureProps = {
     edit: boolean;
     imageUri?: string;
+    lastPictureUpdate: number;
     profileImageRemove?: boolean;
     profileImageUri?: string;
     size?: number;
-    author: UserModel;
     testID?: string;
+    userId: string;
 };
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
@@ -52,13 +51,14 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
 });
 
 const ProfilePicture = ({
-    author,
     edit = false,
     imageUri,
+    lastPictureUpdate,
     profileImageRemove,
     profileImageUri,
     size = 128,
     testID,
+    userId,
 }: ProfilePictureProps) => {
     const [pictureUrl, setPictureUrl] = useState<string|undefined>();
     const theme = useTheme();
@@ -98,11 +98,11 @@ const ProfilePicture = ({
     }, [profileImageUri]);
 
     useDidUpdate(() => {
-        const url = author && client ? client.getProfilePictureUrl(author.id, author.lastPictureUpdate) : undefined;
+        const url = userId && client ? client.getProfilePictureUrl(userId, lastPictureUpdate) : undefined;
         if (url !== pictureUrl && !edit) {
             setPictureUrl(url);
         }
-    }, [author, edit]);
+    }, [userId, lastPictureUpdate, edit]);
 
     let source = null;
     if (pictureUrl) {
@@ -134,14 +134,14 @@ const ProfilePicture = ({
                     width: size,
                 },
             ]}
-            testID={`${testID}.${author?.id}`}
+            testID={`${testID}.${userId}`}
         >
             <UserProfileImage
                 imageUrl={pictureUrl}
-                lastPictureUpdate={author.lastPictureUpdate}
+                lastPictureUpdate={lastPictureUpdate}
                 size={size}
                 source={source || undefined}
-                userId={author.id}
+                userId={userId}
             />
         </View>
     );

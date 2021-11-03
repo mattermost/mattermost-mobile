@@ -264,12 +264,13 @@ const EditProfile = ({closeButtonId, componentId, currentUser, isModal, isTablet
     const renderProfilePicture = () => {
         const profilePicture = (
             <ProfilePicture
-                author={currentUser}
-                size={153}
                 edit={!lockedPicture}
                 imageUri={profileImage?.uri}
+                lastPictureUpdate={currentUser.lastPictureUpdate}
                 profileImageRemove={isProfileImageRemoved}
+                size={153}
                 testID='edit_profile.profile_picture'
+                userId={currentUser.id}
             />
         );
 
