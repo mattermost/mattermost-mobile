@@ -14,10 +14,10 @@ import {of as of$} from 'rxjs';
 import {switchMap} from 'rxjs/operators';
 
 import {setDefaultProfileImage, updateMe} from '@actions/remote/user';
-import ProfilePicture from '@components/profile_picture';
-import ProfilePictureButton from '@components/profile_picture_picker';
 import StatusBar from '@components/status_bar';
 import TabletTitle from '@components/tablet_title';
+import ProfilePicture from '@components/user_profile_picture/edit_image';
+import ProfilePictureButton from '@components/user_profile_picture/picker';
 import {Events} from '@constants';
 import {MM_TABLES, SYSTEM_IDENTIFIERS} from '@constants/database';
 import {useServerUrl} from '@context/server_url';

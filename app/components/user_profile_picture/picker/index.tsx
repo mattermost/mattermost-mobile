@@ -12,9 +12,9 @@ import Permissions from 'react-native-permissions';
 
 import {Client} from '@client/rest';
 import CompassIcon from '@components/compass_icon';
-import {getPermissionMessages} from '@components/profile_picture_picker/constant';
 import SlideUpPanelItem, {ITEM_HEIGHT} from '@components/slide_up_panel_item';
 import TouchableWithFeedback from '@components/touchable_with_feedback';
+import {getPermissionMessages} from '@components/user_profile_picture/picker/constant';
 import {Navigation, Files} from '@constants';
 import {useServerUrl} from '@context/server_url';
 import {useTheme} from '@context/theme';
