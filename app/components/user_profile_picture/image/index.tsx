@@ -12,7 +12,6 @@ import NetworkManager from '@init/network_manager';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 import type {Client} from '@client/rest';
-import type UserModel from '@typings/database/models/servers/user';
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     return {
@@ -28,15 +27,17 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
 });
 
 type UserProfileImageProps = {
-    author?: UserModel;
+    lastPictureUpdate: number;
     size: number;
     testID?: string;
+    userId?: string;
 };
 
 const UserProfileImage = ({
-    author,
+    lastPictureUpdate,
     size = 64,
     testID,
+    userId,
 }: UserProfileImageProps) => {
     const theme = useTheme();
     const serverUrl = useServerUrl();
@@ -50,8 +51,8 @@ const UserProfileImage = ({
     }
 
     let image;
-    if (author && client) {
-        const pictureUrl = client.getProfilePictureUrl(author.id, author.lastPictureUpdate);
+    if (userId && client) {
+        const pictureUrl = client.getProfilePictureUrl(userId, lastPictureUpdate);
 
         image = (
             <FastImage
@@ -73,7 +74,7 @@ const UserProfileImage = ({
     return (
         <View
             style={[style.container]}
-            testID={`${testID}.${author?.id}`}
+            testID={`${testID}.${userId}`}
         >
             {image}
         </View>
