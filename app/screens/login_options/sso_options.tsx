@@ -19,63 +19,52 @@ import {makeStyleSheetFromTheme, changeOpacity} from '@utils/theme';
 
 // LoginOptionWithConfigAndLicenseProps
 const SsoOptions = ({config, extra, launchType, launchError, license, theme, serverDisplayName, serverUrl}: LoginOptionsProps) => {
-    const styles = getStyleSheet(theme);
     const intl = useIntl();
+    const styles = getStyleSheet(theme);
+    const styleButtonText = buttonTextStyle(theme, 'lg', 'secondary', 'default');
+    const styleButtonBackground = buttonBackgroundStyle(theme, 'lg', 'primary');
+
     const displaySSO = preventDoubleTap((ssoType: string) => {
         const screen = SSO;
         const title = intl.formatMessage({id: 'mobile.routes.sso', defaultMessage: 'Single Sign-On'});
         goToScreen(screen, title, {config, extra, launchError, launchType, license, theme, ssoType, serverDisplayName, serverUrl});
     });
 
-    const styleButtonText = buttonTextStyle(theme, 'lg', 'secondary', 'default');
-    const styleButtonBackground = buttonBackgroundStyle(theme, 'lg', 'primary');
-    const isLicensed = license!.IsLicensed === 'true';
-
-    const componentArray = [];
-
     const getEnabledSSOs = () => {
         const prunedSSOs = [];
-        for (const ssoType in Sso.constants) {
-            if (ssoType) {
-                let forceHideFromLocal = false;
-                let enabled = false;
-                switch (ssoType) {
-                    case Sso.constants.SAML:
-                        enabled = config.EnableSaml === 'true' && isLicensed && license!.SAML === 'true';
-                        enabled = true;
-                        forceHideFromLocal = LocalConfig.HideSAMLLoginExperimental;
-                        break;
+        const isLicensed = license!.IsLicensed === 'true';
+        for (const ssoType in Sso.values) {
+            if (!ssoType) {
+                continue;
+            }
 
-                    case Sso.constants.GITLAB:
-                        enabled = config.EnableSignUpWithGitLab === 'true';
-                        enabled = true;
-                        forceHideFromLocal = LocalConfig.HideGitLabLoginExperimental;
-                        break;
+            let forceHideFromLocal = false;
+            let enabled = false;
+            switch (ssoType) {
+                case Sso.constants.SAML:
+                    enabled = config.EnableSaml === 'true' && isLicensed && license!.SAML === 'true';
+                    forceHideFromLocal = LocalConfig.HideSAMLLoginExperimental;
+                    break;
+                case Sso.constants.GITLAB:
+                    enabled = config.EnableSignUpWithGitLab === 'true';
+                    forceHideFromLocal = LocalConfig.HideGitLabLoginExperimental;
+                    break;
+                case Sso.constants.GOOGLE:
+                    enabled = config.EnableSignUpWithGoogle === 'true';
+                    break;
+                case Sso.constants.OPENID:
+                    enabled = config.EnableSignUpWithOpenId === 'true' && isLicensed && isMinimumServerVersion(config.Version, 5, 33, 0);
+                    break;
+                case Sso.constants.OFFICE365:
+                    enabled = config.EnableSignUpWithOffice365 === 'true' && isLicensed && license!.Office365OAuth === 'true';
+                    forceHideFromLocal = LocalConfig.HideO365LoginExperimental;
+                    break;
 
-                    case Sso.constants.GOOGLE:
-                        enabled = config.EnableSignUpWithGoogle === 'true';
+                default:
+            }
 
-                        enabled = true;
-                        break;
-
-                    case Sso.constants.OPENID:
-                        enabled = config.EnableSignUpWithOpenId === 'true' && isLicensed && isMinimumServerVersion(config.Version, 5, 33, 0);
-                        break;
-
-                    case Sso.constants.OFFICE365:
-                        enabled = config.EnableSignUpWithOffice365 === 'true' && isLicensed && license!.Office365OAuth === 'true';
-
-                        // enabled = true;
-                        forceHideFromLocal = LocalConfig.HideO365LoginExperimental;
-                        break;
-
-                    default:
-                }
-
-                // enabled = true;
-                if (!forceHideFromLocal && enabled) {
-                    prunedSSOs.push(ssoType);
-                }
+            if (!forceHideFromLocal && enabled) {
+                prunedSSOs.push(ssoType);
             }
         }
 
@@ -91,20 +80,15 @@ const SsoOptions = ({config, extra, launchType, launchError, license, theme, ser
         styleButtonContainer = styles.separatorContainer;
     }
 
+    const componentArray = [];
     for (const ssoType of enabledSSOs) {
-        const ssoConstants = Sso.values[ssoType];
-        const id = ssoConstants.id || '';
-        const defaultMessage = ssoConstants.defaultMessage || '';
-        const imageSrc = ssoConstants.imageSrc;
+        const sso = Sso.values[ssoType];
+        const id = sso.id;
+        const defaultMessage = sso.defaultMessage;
+        const imageSrc = sso.imageSrc;
 
         const handlePress = () => {
             displaySSO(ssoType);
-        };
-
-        const logoStyle = {
-            height: 18,
-            marginRight: 5,
-            width: 18,
         };
 
         componentArray.push(
@@ -117,7 +101,7 @@ const SsoOptions = ({config, extra, launchType, launchError, license, theme, ser
                     {imageSrc && (
                         <Image
                             source={imageSrc}
-                            style={logoStyle}
+                            style={styles.logoStyle}
                         />
                     )}
                     <FormattedText
@@ -157,6 +141,11 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => ({
     buttonText: {
         textAlign: 'center',
         color: theme.centerChannelColor,
+    },
+    logoStyle: {
+        height: 18,
+        marginRight: 5,
+        width: 18,
     },
 }));
 
