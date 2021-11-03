@@ -60,17 +60,9 @@ const SsoOptions = ({config, extra, launchType, launchError, license, theme, ser
         return !forceHideFromLocal && enabled;
     };
 
-    const getEnabledSSOs = () => {
-        const prunedSSOs = [];
-        for (const ssoType in Sso.values) {
-            if (ssoEnabled(ssoType)) {
-                prunedSSOs.push(ssoType);
-            }
-        }
-        return prunedSSOs;
-    };
-
-    const enabledSSOs = getEnabledSSOs();
+    const enabledSSOs = Object.keys(Sso.constants).filter(
+        (ssoType: string) => ssoEnabled(ssoType),
+    );
 
     let styleContainer;
     let styleButtonContainer;
