@@ -1,0 +1,743 @@
+diff --git a/node_modules/commonmark/lib/inlines.js b/node_modules/commonmark/lib/inlines.js
+index 5d2a545..72a7e7d 100644
+--- a/node_modules/commonmark/lib/inlines.js
++++ b/node_modules/commonmark/lib/inlines.js
+@@ -4,6 +4,7 @@ import Node from "./node.js";
+ import * as common from "./common.js";
+ import fromCodePoint from "./from-code-point.js";
+ import { decodeHTML } from "entities";
++import XRegExp from "xregexp";
+ import "string.prototype.repeat"; // Polyfill for String.prototype.repeat
+ 
+ var normalizeURI = common.normalizeURI;
+@@ -26,6 +27,13 @@ var C_CLOSE_PAREN = 41;
+ var C_COLON = 58;
+ var C_SINGLEQUOTE = 39;
+ var C_DOUBLEQUOTE = 34;
++var C_AT_SIGN = 64;
++var C_SEMICOLON = 59;
++var C_UPPER_X = 88;
++var C_LOWER_X = 120;
++var C_TILDE = 126;
++var C_NUMBER_SIGN = 35;
++var C_DOLLAR_SIGN = 36;
+ 
+ // Some regexps used in inline parser:
+ 
+@@ -39,6 +47,8 @@ var rePunctuation = new RegExp(
+     /^[!"#$%&'()*+,\-./:;<=>?@\[\]\\^_`{|}~\xA1\xA7\xAB\xB6\xB7\xBB\xBF\u037E\u0387\u055A-\u055F\u0589\u058A\u05BE\u05C0\u05C3\u05C6\u05F3\u05F4\u0609\u060A\u060C\u060D\u061B\u061E\u061F\u066A-\u066D\u06D4\u0700-\u070D\u07F7-\u07F9\u0830-\u083E\u085E\u0964\u0965\u0970\u0AF0\u0DF4\u0E4F\u0E5A\u0E5B\u0F04-\u0F12\u0F14\u0F3A-\u0F3D\u0F85\u0FD0-\u0FD4\u0FD9\u0FDA\u104A-\u104F\u10FB\u1360-\u1368\u1400\u166D\u166E\u169B\u169C\u16EB-\u16ED\u1735\u1736\u17D4-\u17D6\u17D8-\u17DA\u1800-\u180A\u1944\u1945\u1A1E\u1A1F\u1AA0-\u1AA6\u1AA8-\u1AAD\u1B5A-\u1B60\u1BFC-\u1BFF\u1C3B-\u1C3F\u1C7E\u1C7F\u1CC0-\u1CC7\u1CD3\u2010-\u2027\u2030-\u2043\u2045-\u2051\u2053-\u205E\u207D\u207E\u208D\u208E\u2308-\u230B\u2329\u232A\u2768-\u2775\u27C5\u27C6\u27E6-\u27EF\u2983-\u2998\u29D8-\u29DB\u29FC\u29FD\u2CF9-\u2CFC\u2CFE\u2CFF\u2D70\u2E00-\u2E2E\u2E30-\u2E42\u3001-\u3003\u3008-\u3011\u3014-\u301F\u3030\u303D\u30A0\u30FB\uA4FE\uA4FF\uA60D-\uA60F\uA673\uA67E\uA6F2-\uA6F7\uA874-\uA877\uA8CE\uA8CF\uA8F8-\uA8FA\uA8FC\uA92E\uA92F\uA95F\uA9C1-\uA9CD\uA9DE\uA9DF\uAA5C-\uAA5F\uAADE\uAADF\uAAF0\uAAF1\uABEB\uFD3E\uFD3F\uFE10-\uFE19\uFE30-\uFE52\uFE54-\uFE61\uFE63\uFE68\uFE6A\uFE6B\uFF01-\uFF03\uFF05-\uFF0A\uFF0C-\uFF0F\uFF1A\uFF1B\uFF1F\uFF20\uFF3B-\uFF3D\uFF3F\uFF5B\uFF5D\uFF5F-\uFF65]|\uD800[\uDD00-\uDD02\uDF9F\uDFD0]|\uD801\uDD6F|\uD802[\uDC57\uDD1F\uDD3F\uDE50-\uDE58\uDE7F\uDEF0-\uDEF6\uDF39-\uDF3F\uDF99-\uDF9C]|\uD804[\uDC47-\uDC4D\uDCBB\uDCBC\uDCBE-\uDCC1\uDD40-\uDD43\uDD74\uDD75\uDDC5-\uDDC9\uDDCD\uDDDB\uDDDD-\uDDDF\uDE38-\uDE3D\uDEA9]|\uD805[\uDCC6\uDDC1-\uDDD7\uDE41-\uDE43\uDF3C-\uDF3E]|\uD809[\uDC70-\uDC74]|\uD81A[\uDE6E\uDE6F\uDEF5\uDF37-\uDF3B\uDF44]|\uD82F\uDC9F|\uD836[\uDE87-\uDE8B]/
+ );
+ 
++var reLinkSize = new RegExp('^=([0-9]*)x([0-9]*)');
++
+ var reLinkTitle = new RegExp(
+     '^(?:"(' +
+         ESCAPED_CHAR +
+@@ -83,10 +93,40 @@ var reInitialSpace = /^ */;
+ 
+ var reSpaceAtEndOfLine = /^ *(?:\n|$)/;
+ 
++var reNonWord = /^\W+$/;
++
+ var reLinkLabel = /^\[(?:[^\\\[\]]|\\.){0,1000}\]/s;
+ 
++var reDelimChar = /^[*_~]/;
++
++var reDelimCharAll = /^[\W]/;
++
++// Adapted from https://github.com/gregjacobs/Autolinker.js
++var emailAlphaNumericChars = "\\p{L}\\p{Nd}";
++var emailSpecialCharacters = '!#$%&\'*+\\-\\/=?^_`{|}~';
++var emailRestrictedSpecialCharacters = "\\s(),:;<>@\\[\\]";
++var emailValidCharacters = emailAlphaNumericChars + emailSpecialCharacters;
++var emailValidRestrictedCharacters = emailValidCharacters + emailRestrictedSpecialCharacters;
++
++// Matches a proper email address
++var emailStartPattern = "(?:[" + emailValidCharacters + "](?:[" + emailValidCharacters + ']|\\.(?!\\.|@))*|\\"[' + emailValidRestrictedCharacters + '.]+\\")@';
++
++var reDelimChar = /^[*_~]/;
++
++var reDelimCharAll = /^[\W]/
++
++// Adapted from https://github.com/gregjacobs/Autolinker.js
++var emailAlphaNumericChars = "\\p{L}\\p{Nd}";
++var emailSpecialCharacters = '!#$%&\'*+\\-\\/=?^_`{|}~';
++var emailRestrictedSpecialCharacters = "\\s(),:;<>@\\[\\]";
++var emailValidCharacters = emailAlphaNumericChars + emailSpecialCharacters;
++var emailValidRestrictedCharacters = emailValidCharacters + emailRestrictedSpecialCharacters;
++
++// Matches a proper email address
++var emailStartPattern = "(?:[" + emailValidCharacters + "](?:[" + emailValidCharacters + ']|\\.(?!\\.|@))*|\\"[' + emailValidRestrictedCharacters + '.]+\\")@';
++
+ // Matches a string of non-special characters.
+-var reMain = /^[^\n`\[\]\\!<&*_'"]+/m;
++var reMain = XRegExp.cache('^[\\s\\S]+?(?=[\\n`\\[\\]\\\\!<&*_\'"@:;xX~#$]|[a-z][a-z0-9.+-]{1,31}:|www\\d{0,3}\\.|[' + emailValidCharacters + ".]{1,64}@|$)");
+ 
+ var text = function(s) {
+     var node = new Node("text");
+@@ -115,15 +155,37 @@ var normalizeReference = function(string) {
+ // If re matches at current position in the subject, advance
+ // position in subject and return the match; otherwise return null.
+ var match = function(re) {
++    var m = this.matchRegex(re);
++    if (m === null) {
++        return null;
++    } else {
++        return m[0];
++    }
++};
++
++var matchRegex = function(re) {
+     var m = re.exec(this.subject.slice(this.pos));
+     if (m === null) {
+         return null;
+     } else {
+         this.pos += m.index + m[0].length;
+-        return m[0];
++        return m;
++    }
++};
++
++var tryMatch = function(re) {
++    var m = re.exec(this.subject.slice(this.pos));
++    if (m === null) {
++        return null;
++    } else {
++        return m;
+     }
+ };
+ 
++var acceptMatch = function(m) {
++    this.pos += m.index + m[0].length;
++};
++
+ // Returns the code for the character at the current subject position, or -1
+ // there are no more characters.
+ var peek = function() {
+@@ -171,6 +233,11 @@ var parseBackticks = function(block) {
+             } else {
+                 node._literal = contents;
+             }
++
++            if (block.type === "table_cell") {
++                node._literal = node._literal.replace(/\\\|/g, "|");
++            }
++
+             block.appendChild(node);
+             return true;
+         }
+@@ -265,7 +332,8 @@ var scanDelims = function(cc) {
+         }
+     }
+ 
+-    if (numdelims === 0) {
++    if (numdelims === 0 || (cc === C_TILDE && numdelims < 2)) {
++        this.pos -= numdelims;
+         return null;
+     }
+ 
+@@ -294,7 +362,7 @@ var scanDelims = function(cc) {
+     if (cc === C_UNDERSCORE) {
+         can_open = left_flanking && (!right_flanking || before_is_punctuation);
+         can_close = right_flanking && (!left_flanking || after_is_punctuation);
+-    } else if (cc === C_SINGLEQUOTE || cc === C_DOUBLEQUOTE) {
++    } else if (cc === C_SINGLEQUOTE || cc === C_DOUBLEQUOTE || cc === C_TILDE) {
+         can_open = left_flanking && !right_flanking;
+         can_close = right_flanking;
+     } else {
+@@ -305,7 +373,7 @@ var scanDelims = function(cc) {
+     return { numdelims: numdelims, can_open: can_open, can_close: can_close };
+ };
+ 
+-// Handle a delimiter marker for emphasis or a quote.
++// Handle a delimiter marker for emphasis, quotes, or deleted text.
+ var handleDelim = function(cc, block) {
+     var res = this.scanDelims(cc);
+     if (!res) {
+@@ -420,7 +488,7 @@ var processEmphasis = function(stack_bottom) {
+                     (closer.can_open || opener.can_close) &&
+                     closer.origdelims % 3 !== 0 &&
+                     (opener.origdelims + closer.origdelims) % 3 === 0;
+-                if (opener.cc === closer.cc && opener.can_open && !odd_match) {
++                if (opener.cc === closer.cc && opener.can_open && (!odd_match || opener.cc === C_TILDE)) {
+                     opener_found = true;
+                     break;
+                 }
+@@ -480,6 +548,40 @@ var processEmphasis = function(stack_bottom) {
+                         closer = tempstack;
+                     }
+                 }
++
++            } else if (closercc === C_TILDE) {
++                if (!opener_found) {
++                    closer = closer.next;
++                } else {
++                    opener_inl = opener.node;
++                    closer_inl = closer.node;
++
++                    // build contents for new del element
++                    var emph = new Node("del");
++
++                    tmp = opener_inl._next;
++                    while (tmp && tmp !== closer_inl) {
++                        next = tmp._next;
++                        tmp.unlink();
++                        emph.appendChild(tmp);
++                        tmp = next;
++                    }
++
++                    opener_inl.insertAfter(emph);
++
++                    // remove elts between opener and closer in delimiters stack
++                    removeDelimitersBetween(opener, closer);
++
++                    // remove the opening and closing delimiters
++                    opener_inl.unlink();
++                    this.removeDelimiter(opener);
++
++                    closer_inl.unlink();
++                    tempstack = closer.next;
++                    this.removeDelimiter(closer);
++                    closer = tempstack;
++                }
++
+             } else if (closercc === C_SINGLEQUOTE) {
+                 closer.node._literal = "\u2019";
+                 if (opener_found) {
+@@ -512,6 +614,29 @@ var processEmphasis = function(stack_bottom) {
+     }
+ };
+ 
++var parseLinkSize = function() {
++    var size_matches = this.match(reLinkSize);
++
++    if (size_matches === null) {
++        return null;
++    } else {
++        var detailed = size_matches.match(reLinkSize);
++        var width = detailed[1];
++        var height = detailed[2];
++        var size = {};
++
++        if (width) {
++            size.width = parseInt(width);
++        }
++
++        if (height) {
++            size.height = parseInt(height);
++        }
++
++        return size;
++    }
++}
++
+ // Attempt to parse link title (sans quotes), returning the string
+ // or null if no match.
+ var parseLinkTitle = function() {
+@@ -625,6 +750,7 @@ var parseCloseBracket = function(block) {
+     var startpos;
+     var is_image;
+     var dest;
++    var size;
+     var title;
+     var matched = false;
+     var reflabel;
+@@ -664,6 +790,8 @@ var parseCloseBracket = function(block) {
+             this.spnl() &&
+             (dest = this.parseLinkDestination()) !== null &&
+             this.spnl() &&
++            (size = this.parseLinkSize() || true) &&
++            this.spnl() &&
+             // make sure there's a space before the title:
+             ((reWhitespaceChar.test(this.subject.charAt(this.pos - 1)) &&
+                 (title = this.parseLinkTitle())) ||
+@@ -709,6 +837,7 @@ var parseCloseBracket = function(block) {
+         var node = new Node(is_image ? "image" : "link");
+         node._destination = dest;
+         node._title = title || "";
++        node._size = size;
+ 
+         var tmp, next;
+         tmp = opener.node._next;
+@@ -776,6 +905,262 @@ var parseEntity = function(block) {
+     }
+ };
+ 
++// Attempt to parse a url
++var reUrl = XRegExp.cache('^(?:[A-Za-z][A-Za-z\\d-.+]*:(?:\\/{1,3}|[\\pL\\d%])|www\\d{0,3}[.]|[\\pL\\d.\\-]+[.]\\pL{2,4}\\/)(?:\\[[\\da-f:]+\\]|[^\\s`!()\\[\\]{;:\'",<>?«»“”‘’*_]|[*_]+(?=[^_*\\s])|[`!\\[\\]{;:\'",<>?«»“”‘’](?=[^\\s()<>])|\\((?:[^\\s()<>]|(?:\\([^\\s()<>]+\\)))*\\))+', 'i');
++var parseUrl = function(block) {
++    if (this.brackets) {
++        // Don't perform autolinking while inside an explicit link
++        return false;
++    }
++
++    var m;
++    if ((m = this.tryMatch(reUrl))) {
++        // Only link urls after non-word, non-formatting characters
++        if (this.pos !== 0 && this.subject[this.pos - 1] !== "_" && !reNonWord.test(this.subject[this.pos - 1])) {
++            return false;
++        }
++
++        // Step back to remove trailing punctuation like how GitHub does
++        // https://github.com/github/cmark/blob/master/extensions/autolink.c#L58
++        var url = m[0];
++        while ((/[?!.,,:*_~'"]$/).test(url)) {
++            url = url.substring(0, url.length - 1);
++        }
++
++        if (this.options.urlFilter && !this.options.urlFilter(url)) {
++            return false;
++        }
++
++        this.pos += m.index + url.length;
++
++        var node = new Node("link");
++        node._destination = normalizeURI(url);
++        node._title = "";
++        node.appendChild(text(url));
++        block.appendChild(node);
++
++        return true;
++    } else {
++        return false;
++    }
++}
++
++// Attempt to parse an at mention
++var reAtMention = /^@([a-z][a-z0-9._-]*)/i;
++var parseAtMention = function(block) {
++    if (this.brackets) {
++        // Don't perform autolinking while inside an explicit link
++        return false;
++    }
++
++    var m;
++    if ((m = this.tryMatch(reAtMention))) {
++        // Only allow at mentions after non-word characters
++        if (this.pos === 0 || reNonWord.test(this.subject[this.pos - 1])) {
++            this.acceptMatch(m);
++
++            // It's up to the renderer to determine what part of this is actually a username
++            var node = new Node("at_mention");
++            node._mentionName = m[1];
++            node.appendChild(text(m[0]));
++            block.appendChild(node);
++            return true;
++        } else {
++            return false;
++        }
++    } else {
++        return false;
++    }
++}
++
++// Attempt to parse a channel link
++var reChannelLink = /^~([a-z0-9_-]+)/i;
++var parseChannelLink = function(block) {
++    if (this.brackets) {
++        // Don't perform autolinking while inside an explicit link
++        return false;
++    }
++
++    var m;
++    if ((m = this.tryMatch(reChannelLink))) {
++        // Only allow channel links after non-word characters
++        if (this.pos === 0 || reNonWord.test(this.subject[this.pos - 1])) {
++            this.acceptMatch(m);
++
++            // It's up to the renderer to determine if this is actually a channel link
++            var node = new Node("channel_link");
++            node._channelName = m[1];
++            node.appendChild(text(m[0]));
++            block.appendChild(node);
++            return true;
++        } else {
++            return false;
++        }
++    } else {
++        return false;
++    }
++}
++
++// Attempt to parse a named emoji
++var reEmoji = /^:([a-z0-9_\-+]+):\B/i;
++var parseEmoji = function(block) {
++    var m;
++    if ((m = this.tryMatch(reEmoji))) {
++        // Only allow emojis after non-word characters
++        if (this.pos === 0 || reNonWord.test(this.subject[this.pos - 1])) {
++            this.acceptMatch(m);
++
++            // It's up to the renderer to determine if this is a real emoji
++            var node = new Node("emoji");
++            node._literal = m[0];
++            node._emojiName = m[1];
++            node.appendChild(text(m[0]));
++            block.appendChild(node);
++            return true;
++        } else {
++            return false;
++        }
++    } else {
++        return false;
++    }
++}
++
++// Attempt to parse an emoticon (eg. :D, <3)
++var reEmoticon = /^(?:(:-?\))|(;-?\))|(:o)|(:-o)|(:-?])|(:-?d)|(x-d)|(:-?p)|(:-?[[@])|(:-?\()|(:[`'’]-?\()|(:-?\/)|(:-?s)|(:-?\|)|(:-?\$)|(:-x)|(<3|&lt;3)|(<\/3|&lt;\/3))(?=$|\W)/i;
++var EMOTICONS = [
++    "slightly_smiling_face",
++    "wink",
++    "open_mouth",
++    "scream",
++    "smirk",
++    "smile",
++    "stuck_out_tongue_closed_eyes",
++    "stuck_out_tongue",
++    "rage",
++    "slightly_frowning_face",
++    "cry",
++    "confused",
++    "confounded",
++    "neutral_face",
++    "flushed",
++    "mask",
++    "heart",
++    "broken_heart"
++];
++var parseEmoticon = function(block) {
++    var m;
++    if ((m = this.tryMatch(reEmoticon))) {
++        // Only allow emoticons after whitespace or a delimiter
++        if (this.pos === 0 || reWhitespaceChar.test(this.subject[this.pos - 1]) || reDelimCharAll.test(this.subject[this.pos - 1])) {
++            this.acceptMatch(m);
++
++            var node = new Node("emoji");
++            node._literal = m[0];
++
++            // Capture groups in the regex correspond to entries in EMOTICONS
++            for (var i = 0; i < EMOTICONS.length; i++) {
++                if (m[i + 1]) {
++                    node._emojiName = EMOTICONS[i];
++                }
++            }
++
++            node.appendChild(text(m[0]));
++            block.appendChild(node);
++            return true;
++        } else {
++            return false;
++        }
++    } else {
++        return false;
++    }
++}
++
++var reEmail = XRegExp.cache("^" + emailStartPattern + "[\\pL\\d.\\-]+[.]\\pL{2,4}(?=$|[^\\p{L}])");
++var parseEmail = function(block) {
++    if (this.brackets) {
++        // Don't perform autolinking while inside an explicit link
++        return false;
++    }
++
++    var m;
++    if ((m = this.tryMatch(reEmail))) {
++        // Only allow at mentions after non-word characters
++        if (this.pos === 0 || reNonWord.test(this.subject[this.pos - 1])) {
++            this.acceptMatch(m);
++
++            var dest = m[0];
++
++            var node = new Node("link");
++            node._destination = normalizeURI("mailto:" + dest);
++            node._title = "";
++
++            node.appendChild(text(m[0]));
++            block.appendChild(node);
++            return true;
++        } else {
++            return false;
++        }
++    } else {
++        return false;
++    }
++}
++
++var reHashtag = XRegExp.cache("^#(\\pL[\\pL\\d\\-_.]*[\\pL\\d])");
++var parseHashtag = function(block) {
++    if (this.brackets) {
++        // Don't perform autolinking while inside an explicit link
++        return false;
++    }
++
++    var m;
++    if ((m = this.tryMatch(reHashtag, true))) {
++        // Only allow hashtags after a non-word character or a delimiter and only allow hashtags that are long enough
++        if (
++            (this.pos === 0 || reNonWord.test(this.subject[this.pos - 1]) || reDelimChar.test(this.subject[this.pos - 1])) &&
++            m[1].length >= this.options.minimumHashtagLength
++        ) {
++            this.acceptMatch(m);
++
++            var node = new Node("hashtag");
++            node._hashtag = m[1];
++            node.appendChild(text(m[0]));
++            block.appendChild(node);
++            return true;
++        } else {
++            return false;
++        }
++    } else {
++        return false;
++    }
++}
++
++var reInlineLatex = /^\$([^\$\n]+)\$(?!\w)/;
++var parseInlineLatex = function(block) {
++
++    if (this.brackets) {
++        // Don't perform autolinking while inside an explicit link
++        return false;
++    }
++
++    var m;
++    if ((m = this.tryMatch(reInlineLatex, true))) {
++        //Only allow for inline latex if the dollarsign was present after a non-word character
++        if (
++            (this.pos === 0 || reNonWord.test(this.subject[this.pos - 1]) || reDelimChar.test(this.subject[this.pos - 1]))
++        ) {
++            this.acceptMatch(m);
++
++            var node = new Node("latex_inline");
++            node._latexCode = m[1].trim();
++            node.appendChild(text(m[0]));
++            block.appendChild(node);
++            return true;
++        } else {
++            return false;
++        }
++    }
++}
++
+ // Parse a run of ordinary characters, or a single character with
+ // a special meaning in markdown, as a plain string.
+ var parseString = function(block) {
+@@ -959,18 +1344,48 @@ var parseInline = function(block) {
+             res = this.parseCloseBracket(block);
+             break;
+         case C_LESSTHAN:
+-            res = this.parseAutolink(block) || this.parseHtmlTag(block);
++            res = this.parseAutolink(block) || this.parseHtmlTag(block) || this.parseEmoticon(block);
+             break;
+         case C_AMPERSAND:
+-            res = this.parseEntity(block);
++            res = this.parseEmoticon(block) || this.parseEntity(block);
++            break;
++        case C_AT_SIGN:
++            res = this.parseAtMention(block);
++            break;
++        case C_TILDE:
++            res = this.handleDelim(c, block) || this.parseChannelLink(block);
++            break;
++        case C_COLON:
++            res = this.parseEmoji(block) || this.parseEmoticon(block);
++            break;
++        case C_SEMICOLON:
++            res = this.parseEmoticon(block);
++            break;
++        case C_UPPER_X:
++        case C_LOWER_X:
++            res = this.parseEmoticon(block);
++            break;
++        case C_NUMBER_SIGN:
++            res = this.parseHashtag(block);
++            break;
++        case C_DOLLAR_SIGN:
++            res = this.parseInlineLatex(block);
+             break;
+         default:
+-            res = this.parseString(block);
+             break;
+     }
++
+     if (!res) {
+-        this.pos += 1;
+-        block.appendChild(text(fromCodePoint(c)));
++        res = this.parseEmail(block);
++    }
++
++    if (!res) {
++        res = this.parseUrl(block);
++    }
++
++    // parseString always captures at least a single character
++    if (!res) {
++        res = this.parseString(block);
+     }
+ 
+     return true;
+@@ -997,6 +1412,9 @@ function InlineParser(options) {
+         pos: 0,
+         refmap: {},
+         match: match,
++        matchRegex: matchRegex,
++        tryMatch: tryMatch,
++        acceptMatch: acceptMatch,
+         peek: peek,
+         spnl: spnl,
+         parseBackticks: parseBackticks,
+@@ -1005,6 +1423,7 @@ function InlineParser(options) {
+         parseHtmlTag: parseHtmlTag,
+         scanDelims: scanDelims,
+         handleDelim: handleDelim,
++        parseLinkSize: parseLinkSize,
+         parseLinkTitle: parseLinkTitle,
+         parseLinkDestination: parseLinkDestination,
+         parseLinkLabel: parseLinkLabel,
+@@ -1014,6 +1433,14 @@ function InlineParser(options) {
+         addBracket: addBracket,
+         removeBracket: removeBracket,
+         parseEntity: parseEntity,
++        parseUrl: parseUrl,
++        parseAtMention: parseAtMention,
++        parseChannelLink: parseChannelLink,
++        parseEmoji: parseEmoji,
++        parseEmoticon: parseEmoticon,
++        parseEmail: parseEmail,
++        parseHashtag: parseHashtag,
++        parseInlineLatex: parseInlineLatex,
+         parseString: parseString,
+         parseNewline: parseNewline,
+         parseReference: parseReference,
+diff --git a/node_modules/commonmark/lib/node.js b/node_modules/commonmark/lib/node.js
+index 0e9c4b6..bfe7d7d 100644
+--- a/node_modules/commonmark/lib/node.js
++++ b/node_modules/commonmark/lib/node.js
+@@ -6,12 +6,23 @@ function isContainer(node) {
+         case "block_quote":
+         case "list":
+         case "item":
++        case "table":
++        case "table_row":
++        case "table_cell":
+         case "paragraph":
+         case "heading":
+         case "emph":
+         case "strong":
++        case "del":
+         case "link":
+         case "image":
++        case "at_mention":
++        case "channel_link":
++        case "emoji":
++        case "hashtag":
++        case "latex_inline":
++        case "mention_highlight":
++        case "search_highlight":
+         case "custom_inline":
+         case "custom_block":
+             return true;
+@@ -82,12 +93,23 @@ var Node = function(nodeType, sourcepos) {
+     this._listData = {};
+     this._info = null;
+     this._destination = null;
++    this._size = null;
+     this._title = null;
+     this._isFenced = false;
+     this._fenceChar = null;
+     this._fenceLength = 0;
+     this._fenceOffset = null;
+     this._level = null;
++    this._mentionName = null;
++    this._emojiName = null;
++    this._hashtag = null;
++    this._latexCode = null;
++
++    // used by tables
++    this._alignColumns = [];
++    this._isHeading = false;
++    this._align = "";
++
+     this._onEnter = null;
+     this._onExit = null;
+ };
+@@ -160,6 +182,15 @@ Object.defineProperty(proto, "destination", {
+     }
+ });
+ 
++Object.defineProperty(proto, "size", {
++    get: function() {
++        return this._size;
++    },
++    set: function(s) {
++        this._size = s;
++    }
++});
++
+ Object.defineProperty(proto, "title", {
+     get: function() {
+         return this._title;
+@@ -223,6 +254,63 @@ Object.defineProperty(proto, "listDelimiter", {
+     }
+ });
+ 
++Object.defineProperty(proto, "mentionName", {
++    get: function() {
++        return this._mentionName;
++    },
++});
++
++Object.defineProperty(proto, "channelName", {
++    get: function() {
++        return this._channelName;
++    },
++});
++
++Object.defineProperty(proto, "emojiName", {
++    get: function() {
++        return this._emojiName;
++    },
++});
++
++Object.defineProperty(proto, "hashtag", {
++    get: function() {
++        return this._hashtag;
++    },
++});
++
++Object.defineProperty(proto, "latexCode", {
++    get: function() {
++        return this._latexCode;
++    },
++});
++
++Object.defineProperty(proto, "alignColumns", {
++    get: function() {
++        return this._alignColumns;
++    },
++    set: function(s) {
++        this._alignColumns = s;
++    }
++});
++
++Object.defineProperty(proto, "isHeading", {
++    get: function() {
++        return this._isHeading;
++    },
++    set: function(t) {
++        this._isHeading = t;
++    }
++});
++
++Object.defineProperty(proto, "align", {
++    get: function() {
++        return this._align;
++    },
++    set: function(s) {
++        this._align = s;
++    }
++});
++
+ Object.defineProperty(proto, "onEnter", {
+     get: function() {
+         return this._onEnter;
