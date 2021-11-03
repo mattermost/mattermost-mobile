@@ -13,7 +13,7 @@ import {switchMap} from 'rxjs/operators';
 import CompassIcon from '@components/compass_icon';
 import SystemAvatar from '@components/system_avatar';
 import TouchableWithFeedback from '@components/touchable_with_feedback';
-import YourPicture from '@components/your_picture';
+import UserProfilePicture from '@components/user_profile_picture/image';
 import {View as ViewConstant} from '@constants';
 import {MM_TABLES, SYSTEM_IDENTIFIERS} from '@constants/database';
 import {useServerUrl} from '@context/server_url';
@@ -138,11 +138,10 @@ const Avatar = ({author, enablePostIconOverride, isAutoReponse, isSystemPost, pe
     });
 
     let component = (
-        <YourPicture
-            author={author}
+        <UserProfilePicture
+            lastPictureUpdate={author.lastPictureUpdate}
             size={ViewConstant.PROFILE_PICTURE_SIZE}
-            iconSize={24}
-            showStatus={!isAutoReponse}
+            userId={author.id}
             testID='post_profile_picture.profile_picture'
         />
     );
