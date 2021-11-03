@@ -27,21 +27,26 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
 });
 
 type UserProfileImageProps = {
+    imageUrl?: string;
     lastPictureUpdate: number;
     size: number;
+    source?: { uri: string };
     testID?: string;
     userId?: string;
 };
 
 const UserProfileImage = ({
+    imageUrl,
     lastPictureUpdate,
     size = 64,
+    source,
     testID,
     userId,
 }: UserProfileImageProps) => {
     const theme = useTheme();
     const serverUrl = useServerUrl();
     const style = getStyleSheet(theme);
+
     let client: Client | undefined;
 
     try {
@@ -52,13 +57,12 @@ const UserProfileImage = ({
 
     let image;
     if (userId && client) {
-        const pictureUrl = client.getProfilePictureUrl(userId, lastPictureUpdate);
-
+        const pictureUrl = imageUrl ?? client.getProfilePictureUrl(userId, lastPictureUpdate);
+        const imageSource = source ?? {uri: `${serverUrl}${pictureUrl}`};
         image = (
             <FastImage
-                key={pictureUrl}
                 style={{width: size, height: size, borderRadius: (size / 2)}}
-                source={{uri: `${serverUrl}${pictureUrl}`}}
+                source={imageSource}
             />
         );
     } else {

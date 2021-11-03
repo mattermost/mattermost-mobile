@@ -266,9 +266,6 @@ const EditProfile = ({closeButtonId, componentId, currentUser, isModal, isTablet
             <ProfilePicture
                 author={currentUser}
                 size={153}
-                showStatus={false}
-                iconSize={104}
-                statusSize={36}
                 edit={!lockedPicture}
                 imageUri={profileImage?.uri}
                 profileImageRemove={isProfileImageRemoved}
