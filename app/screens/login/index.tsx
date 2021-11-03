@@ -337,6 +337,7 @@ const Login: NavigationFunctionComponent = ({config, serverDisplayName, extra, l
                 blurOnSubmit={false}
                 containerStyle={styles.inputBoxEmail}
                 enablesReturnKeyAutomatically={true}
+                key={'email'}
                 keyboardType='email-address'
                 label={createLoginPlaceholder()}
                 onChangeText={onLoginChange}
@@ -356,6 +357,7 @@ const Login: NavigationFunctionComponent = ({config, serverDisplayName, extra, l
                 blurOnSubmit={false}
                 containerStyle={styles.inputBoxPassword}
                 enablesReturnKeyAutomatically={true}
+                key={'password'}
                 keyboardType='email-address'
                 label={intl.formatMessage({
                     id: 'login.password',

@@ -30,44 +30,43 @@ const SsoOptions = ({config, extra, launchType, launchError, license, theme, ser
         goToScreen(screen, title, {config, extra, launchError, launchType, license, theme, ssoType, serverDisplayName, serverUrl});
     });
 
+    const ssoEnabled = (ssoType: string): boolean => {
+        let forceHideFromLocal = false;
+        let enabled = false;
+        const isLicensed = license!.IsLicensed === 'true';
+        switch (ssoType) {
+            case Sso.constants.SAML:
+                enabled = config.EnableSaml === 'true' && isLicensed && license!.SAML === 'true';
+                forceHideFromLocal = LocalConfig.HideSAMLLoginExperimental;
+                break;
+            case Sso.constants.GITLAB:
+                enabled = config.EnableSignUpWithGitLab === 'true';
+                forceHideFromLocal = LocalConfig.HideGitLabLoginExperimental;
+                enabled = true;
+                break;
+            case Sso.constants.GOOGLE:
+                enabled = config.EnableSignUpWithGoogle === 'true';
+                break;
+            case Sso.constants.OPENID:
+                enabled = config.EnableSignUpWithOpenId === 'true' && isLicensed && isMinimumServerVersion(config.Version, 5, 33, 0);
+                break;
+            case Sso.constants.OFFICE365:
+                enabled = config.EnableSignUpWithOffice365 === 'true' && isLicensed && license!.Office365OAuth === 'true';
+                forceHideFromLocal = LocalConfig.HideO365LoginExperimental;
+                break;
+
+            default:
+        }
+        return !forceHideFromLocal && enabled;
+    };
+
     const getEnabledSSOs = () => {
         const prunedSSOs = [];
-        const isLicensed = license!.IsLicensed === 'true';
         for (const ssoType in Sso.values) {
-            if (!ssoType) {
-                continue;
-            }
-
-            let forceHideFromLocal = false;
-            let enabled = false;
-            switch (ssoType) {
-                case Sso.constants.SAML:
-                    enabled = config.EnableSaml === 'true' && isLicensed && license!.SAML === 'true';
-                    forceHideFromLocal = LocalConfig.HideSAMLLoginExperimental;
-                    break;
-                case Sso.constants.GITLAB:
-                    enabled = config.EnableSignUpWithGitLab === 'true';
-                    forceHideFromLocal = LocalConfig.HideGitLabLoginExperimental;
-                    break;
-                case Sso.constants.GOOGLE:
-                    enabled = config.EnableSignUpWithGoogle === 'true';
-                    break;
-                case Sso.constants.OPENID:
-                    enabled = config.EnableSignUpWithOpenId === 'true' && isLicensed && isMinimumServerVersion(config.Version, 5, 33, 0);
-                    break;
-                case Sso.constants.OFFICE365:
-                    enabled = config.EnableSignUpWithOffice365 === 'true' && isLicensed && license!.Office365OAuth === 'true';
-                    forceHideFromLocal = LocalConfig.HideO365LoginExperimental;
-                    break;
-
-                default:
-            }
-
-            if (!forceHideFromLocal && enabled) {
+            if (ssoEnabled(ssoType)) {
                 prunedSSOs.push(ssoType);
             }
         }
-
         return prunedSSOs;
     };
 
@@ -84,7 +83,6 @@ const SsoOptions = ({config, extra, launchType, launchError, license, theme, ser
     for (const ssoType of enabledSSOs) {
         const sso = Sso.values[ssoType];
         const id = sso.id;
-        const defaultMessage = sso.defaultMessage;
         const imageSrc = sso.imageSrc;
 
         const handlePress = () => {
@@ -92,7 +90,10 @@ const SsoOptions = ({config, extra, launchType, launchError, license, theme, ser
         };
 
         componentArray.push(
-            <View style={styleButtonContainer}>
+            <View
+                style={styleButtonContainer}
+                key={ssoType}
+            >
                 <Button
                     key={ssoType}
                     onPress={handlePress}
@@ -100,14 +101,16 @@ const SsoOptions = ({config, extra, launchType, launchError, license, theme, ser
                 >
                     {imageSrc && (
                         <Image
+                            key={'image' + ssoType}
                             source={imageSrc}
                             style={styles.logoStyle}
                         />
                     )}
                     <FormattedText
+                        key={'text' + ssoType}
                         id={id}
                         style={[styleButtonText, styles.buttonText]}
-                        defaultMessage={defaultMessage}
+                        defaultMessage={sso.defaultMessage}
                         testID={id}
                     />
                 </Button>

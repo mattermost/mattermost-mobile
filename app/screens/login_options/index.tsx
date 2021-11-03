@@ -78,6 +78,7 @@ const LoginOptions: NavigationFunctionComponent = ({config, extra, launchType, l
                     />
                     <Login
                         config={config}
+                        key={'login'}
                         license={license}
                         launchError={launchError}
                         launchType={launchType}
@@ -87,6 +88,7 @@ const LoginOptions: NavigationFunctionComponent = ({config, extra, launchType, l
                     />
 
                     <SsoOptions
+                        componentId={'sso'}
                         key={'sso'}
                         launchType={launchType}
                         launchError={launchError}
