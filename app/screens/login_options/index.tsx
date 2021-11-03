@@ -83,6 +83,7 @@ const LoginOptions: NavigationFunctionComponent = ({config, extra, launchType, l
                         launchType={launchType}
                         theme={theme}
                         serverDisplayName={serverDisplayName}
+                        serverUrl={serverUrl}
                     />
 
                     <SsoOptions
