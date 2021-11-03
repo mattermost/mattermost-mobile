@@ -72,6 +72,10 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
 });
 
 const JoinCall = (props: Props) => {
+    if (!props.call) {
+        return null;
+    }
+
     useEffect(() => {
         EventEmitter.emit(ViewTypes.JOIN_CALL_BAR_VISIBLE, Boolean(props.call && !props.alreadyInTheCall));
         return () => {
@@ -82,10 +86,6 @@ const JoinCall = (props: Props) => {
     const joinHandler = useCallback(() => {
         leaveAndJoinWithAlert(props.intl, props.call.channelId, props.callChannelName, props.currentChannelName, props.confirmToJoin, props.actions.joinCall);
     }, [props.call.channelId, props.callChannelName, props.currentChannelName, props.confirmToJoin, props.actions.joinCall]);
-
-    if (!props.call) {
-        return null;
-    }
 
     if (props.alreadyInTheCall) {
         return null;
