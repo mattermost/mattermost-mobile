@@ -7,6 +7,7 @@ import {Image, View} from 'react-native';
 import Button from 'react-native-button';
 
 import LocalConfig from '@assets/config.json';
+import CompassIcon from '@components/compass_icon';
 import FormattedText from '@components/formatted_text';
 import {Sso} from '@constants';
 import {SSO} from '@constants/screens';
@@ -16,6 +17,7 @@ import {buttonBackgroundStyle, buttonTextStyle} from '@utils/buttonStyles';
 import {isMinimumServerVersion} from '@utils/helpers';
 import {preventDoubleTap} from '@utils/tap';
 import {makeStyleSheetFromTheme, changeOpacity} from '@utils/theme';
+import {typography} from '@utils/typography';
 
 // LoginOptionWithConfigAndLicenseProps
 const SsoOptions = ({config, extra, launchType, launchError, license, theme, serverDisplayName, serverUrl}: LoginOptionsProps) => {
@@ -68,7 +70,7 @@ const SsoOptions = ({config, extra, launchType, launchError, license, theme, ser
     let styleButtonContainer;
     if (enabledSSOs.length === 2) {
         styleContainer = styles.container;
-        styleButtonContainer = styles.separatorContainer;
+        styleButtonContainer = styles.buttonContainer;
     }
 
     const componentArray = [];
@@ -76,6 +78,7 @@ const SsoOptions = ({config, extra, launchType, launchError, license, theme, ser
         const sso = Sso.values[ssoType];
         const id = sso.id;
         const imageSrc = sso.imageSrc;
+        const compassIcon = sso.compassIcon;
 
         const handlePress = () => {
             displaySSO(ssoType);
@@ -98,6 +101,13 @@ const SsoOptions = ({config, extra, launchType, launchError, license, theme, ser
                             style={styles.logoStyle}
                         />
                     )}
+                    {compassIcon &&
+                        <CompassIcon
+                            name={compassIcon}
+                            size={16}
+                            color={theme.sidebarTeamBarBg}
+                        />
+                    }
                     <FormattedText
                         key={'text' + ssoType}
                         id={id}
@@ -110,10 +120,26 @@ const SsoOptions = ({config, extra, launchType, launchError, license, theme, ser
         );
     }
 
-    return (
-        <View style={styleContainer}>
-            {componentArray}
+    const separator = Boolean(enabledSSOs.length) && (
+        <View style={styles.separatorContainer}>
+            <View style={styles.separatorLine}/>
+            <FormattedText
+                id='mobile.login_options.separator_text'
+                defaultMessage='or log in with'
+                style={styles.separatorText}
+                testID='mobile.login_options.separator_text'
+            />
+            <View style={styles.separatorLine}/>
         </View>
+    );
+
+    return (
+        <>
+            {separator}
+            <View style={styleContainer}>
+                {componentArray}
+            </View>
+        </>
     );
 };
 
@@ -123,7 +149,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => ({
         marginVertical: 24,
         alignItems: 'center',
     },
-    separatorContainer: {
+    buttonContainer: {
         width: '48%',
         marginRight: 8,
     },
@@ -134,8 +160,27 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => ({
         borderColor: changeOpacity(theme.centerChannelColor, 0.64),
     },
     buttonText: {
+        marginLeft: 9,
         textAlign: 'center',
         color: theme.centerChannelColor,
+    },
+    separatorContainer: {
+        flexDirection: 'row',
+        marginTop: 24,
+        marginBottom: 8,
+        alignItems: 'center',
+        color: changeOpacity(theme.centerChannelColor, 0.64),
+    },
+    separatorLine: {
+        flex: 1,
+        height: 0.4,
+        backgroundColor: changeOpacity(theme.centerChannelColor, 0.64),
+    },
+    separatorText: {
+        marginRight: 6,
+        marginLeft: 6,
+        textAlign: 'center',
+        ...typography('Body', 25, 'SemiBold'),
     },
     logoStyle: {
         height: 18,

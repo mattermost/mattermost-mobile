@@ -17,6 +17,7 @@ const constants = keyMirror({
 const values = {
     SAML: {
         defaultMessage: 'SAML',
+        compassIcon: 'lock',
         id: 'mobile.login_options.saml',
     },
     GITLAB: {

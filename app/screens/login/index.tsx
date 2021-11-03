@@ -398,16 +398,6 @@ const Login: NavigationFunctionComponent = ({config, serverDisplayName, extra, l
                 </Button>
             )}
             {renderProceedButton()}
-            <View style={styles.separatorContainer}>
-                <View style={styles.separatorLine}/>
-                <FormattedText
-                    id='mobile.login_options.separator_text'
-                    defaultMessage='or log in with'
-                    style={styles.separatorText}
-                    testID='mobile.login_options.separator_text'
-                />
-                <View style={styles.separatorLine}/>
-            </View>
         </>
     );
 };
@@ -422,23 +412,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         justifyContent: 'center',
         paddingHorizontal: 15,
         paddingVertical: 50,
-    },
-    separatorContainer: {
-        flexDirection: 'row',
-        marginVertical: 24,
-        alignItems: 'center',
-        color: changeOpacity(theme.centerChannelColor, 0.64),
-    },
-    separatorLine: {
-        flex: 1,
-        height: 0.4,
-        backgroundColor: changeOpacity(theme.centerChannelColor, 0.64),
-    },
-    separatorText: {
-        marginRight: 6,
-        marginLeft: 6,
-        textAlign: 'center',
-        ...typography('Body', 25, 'SemiBold'),
     },
     forgotPasswordBtn: {
         borderColor: 'transparent',

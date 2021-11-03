@@ -2,7 +2,6 @@
 // See LICENSE.txt for license information.
 
 import React from 'react';
-import {useIntl} from 'react-intl';
 import {GestureResponderEvent, ScrollView, View} from 'react-native';
 import {NavigationFunctionComponent} from 'react-native-navigation';
 import {SafeAreaView} from 'react-native-safe-area-context';
@@ -53,7 +52,7 @@ const getStyles = makeStyleSheetFromTheme((theme: Theme) => ({
     },
 }));
 
-const LoginOptions: NavigationFunctionComponent = ({config, extra, launchType, launchError, license, serverDisplayName, serverUrl, theme}: LoginOptionsProps) => {
+const LoginOptions: NavigationFunctionComponent = ({config, launchType, launchError, license, serverDisplayName, serverUrl, theme}: LoginOptionsProps) => {
     const styles = getStyles(theme);
 
     return (
