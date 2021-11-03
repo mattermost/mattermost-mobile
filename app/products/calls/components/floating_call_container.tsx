@@ -14,16 +14,7 @@ const {
 } = ViewTypes;
 
 const getStyleSheet = makeStyleSheetFromTheme(() => {
-    let topBarHeight = 0;
-
-    switch (Platform.OS) {
-    case 'android':
-        topBarHeight = 9;
-        break;
-    case 'ios':
-        topBarHeight = IOS_TOP_PORTRAIT - STATUS_BAR_HEIGHT;
-        break;
-    }
+    const topBarHeight = Platform.select({android: 9, ios: IOS_TOP_PORTRAIT - STATUS_BAR_HEIGHT});
 
     return {
         wrapper: {
