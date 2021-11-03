@@ -8,12 +8,9 @@ import {NavigationFunctionComponent} from 'react-native-navigation';
 import {SafeAreaView} from 'react-native-safe-area-context';
 
 import FormattedText from '@components/formatted_text';
-import {LOGIN, SSO} from '@constants/screens';
 import {t} from '@i18n';
 import Background from '@screens/background';
 import Login from '@screens/login';
-import {goToScreen} from '@screens/navigation';
-import {preventDoubleTap} from '@utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
@@ -57,15 +54,7 @@ const getStyles = makeStyleSheetFromTheme((theme: Theme) => ({
 }));
 
 const LoginOptions: NavigationFunctionComponent = ({config, extra, launchType, launchError, license, serverDisplayName, serverUrl, theme}: LoginOptionsProps) => {
-    const intl = useIntl();
     const styles = getStyles(theme);
-
-    const displayLogin = preventDoubleTap(() => {
-        const screen = LOGIN;
-        const title = intl.formatMessage({id: 'mobile.routes.login', defaultMessage: 'Login'});
-
-        goToScreen(screen, title, {config, extra, launchError, launchType, license, serverDisplayName, serverUrl, theme});
-    });
 
     return (
         <View style={styles.flex}>
@@ -96,14 +85,8 @@ const LoginOptions: NavigationFunctionComponent = ({config, extra, launchType, l
                         serverDisplayName={serverDisplayName}
                     />
 
-                    {/* <LdapOption */}
-                    {/*     config={config} */}
-                    {/*     license={license} */}
-                    {/*     onPress={displayLogin} */}
-                    {/*     theme={theme} */}
-                    {/* /> */}
-
                     <SsoOptions
+                        key={'sso'}
                         launchType={launchType}
                         launchError={launchError}
                         config={config}
