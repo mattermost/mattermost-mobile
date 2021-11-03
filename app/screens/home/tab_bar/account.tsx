@@ -7,7 +7,7 @@ import React from 'react';
 import {View} from 'react-native';
 import {switchMap} from 'rxjs/operators';
 
-import ProfilePicture from '@components/your_picture';
+import UserProfilePicture from '@components/user_profile_picture/image';
 import {MM_TABLES, SYSTEM_IDENTIFIERS} from '@constants/database';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 
@@ -36,9 +36,8 @@ const Account = ({currentUser, isFocused, theme}: Props) => {
 
     return (
         <View style={isFocused ? style.selected : undefined}>
-            <ProfilePicture
+            <UserProfilePicture
                 author={currentUser}
-                showStatus={false}
                 size={28}
             />
         </View>
