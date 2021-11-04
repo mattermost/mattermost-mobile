@@ -9,7 +9,9 @@
     <string name="copyAndPasteProtection_title">Copy&amp;Paste Protection</string>
     <string name="copyAndPasteProtection_description">Disable the ability to copy from or paste into any text inputs in the app.</string>
     <string name="serverUrl_title">Mattermost Server URL</string>
-    <string name="serverUrl_description">Set a default Mattermost server URL.</string>
+    <string name="serverUrl_description">Set a default Server URL for your Mattermost instance.</string>
+    <string name="serverName_title">Mattermost Server Name</string>
+    <string name="serverName_description">Set a default Server Name for your Mattermost instance.</string>
     <string name="allowOtherServers_title">Allow Other Servers</string>
     <string name="allowOtherServers_description">Allow the user to change the above server URL.</string>
     <string name="username_title">Default Username</string>
