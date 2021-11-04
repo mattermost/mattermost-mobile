@@ -99,6 +99,7 @@ const LoginOptions: NavigationFunctionComponent = ({config, launchType, launchEr
                     {messageLine}
                     <SsoOptions
                         setHasComponents={setHasSSOs}
+                        vertical={!hasLogin}
                         show={hasSSOs}
                         componentId={'sso'}
                         key={'sso'}

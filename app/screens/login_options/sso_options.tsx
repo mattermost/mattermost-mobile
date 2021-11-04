@@ -19,7 +19,7 @@ import {preventDoubleTap} from '@utils/tap';
 import {makeStyleSheetFromTheme, changeOpacity} from '@utils/theme';
 
 // LoginOptionWithConfigAndLicenseProps
-const SsoOptions = ({config, extra, show, setHasComponents, launchType, launchError, license, theme, serverDisplayName, serverUrl}: LoginOptionsProps) => {
+const SsoOptions = ({config, extra, vertical, show, setHasComponents, launchType, launchError, license, theme, serverDisplayName, serverUrl}: LoginOptionsProps) => {
     const intl = useIntl();
     const styles = getStyleSheet(theme);
     const styleButtonText = buttonTextStyle(theme, 'lg', 'secondary', 'default');
@@ -67,7 +67,7 @@ const SsoOptions = ({config, extra, show, setHasComponents, launchType, launchEr
 
     let styleContainer;
     let styleButtonContainer;
-    if (enabledSSOs.length === 2) {
+    if (enabledSSOs.length === 2 && !vertical) {
         styleContainer = styles.container;
         styleButtonContainer = styles.buttonContainer;
     }
