@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React from 'react';
+import React, {useEffect} from 'react';
 import {useIntl} from 'react-intl';
 import {Image, View} from 'react-native';
 import Button from 'react-native-button';
@@ -17,10 +17,9 @@ import {buttonBackgroundStyle, buttonTextStyle} from '@utils/buttonStyles';
 import {isMinimumServerVersion} from '@utils/helpers';
 import {preventDoubleTap} from '@utils/tap';
 import {makeStyleSheetFromTheme, changeOpacity} from '@utils/theme';
-import {typography} from '@utils/typography';
 
 // LoginOptionWithConfigAndLicenseProps
-const SsoOptions = ({config, extra, launchType, launchError, license, theme, serverDisplayName, serverUrl}: LoginOptionsProps) => {
+const SsoOptions = ({config, extra, show, setHasComponents, launchType, launchError, license, theme, serverDisplayName, serverUrl}: LoginOptionsProps) => {
     const intl = useIntl();
     const styles = getStyleSheet(theme);
     const styleButtonText = buttonTextStyle(theme, 'lg', 'secondary', 'default');
@@ -73,6 +72,14 @@ const SsoOptions = ({config, extra, launchType, launchError, license, theme, ser
         styleButtonContainer = styles.buttonContainer;
     }
 
+    // useEffect to set hasComponents for SSO
+    useEffect(() => {
+        setHasComponents(false);
+        if (enabledSSOs.length) {
+            setHasComponents(true);
+        }
+    }, []);
+
     const componentArray = [];
     for (const ssoType of enabledSSOs) {
         const sso = Sso.values[ssoType];
@@ -120,22 +127,8 @@ const SsoOptions = ({config, extra, launchType, launchError, license, theme, ser
         );
     }
 
-    const separator = Boolean(enabledSSOs.length) && (
-        <View style={styles.separatorContainer}>
-            <View style={styles.separatorLine}/>
-            <FormattedText
-                id='mobile.login_options.separator_text'
-                defaultMessage='or log in with'
-                style={styles.separatorText}
-                testID='mobile.login_options.separator_text'
-            />
-            <View style={styles.separatorLine}/>
-        </View>
-    );
-
-    return (
+    return show && (
         <>
-            {separator}
             <View style={styleContainer}>
                 {componentArray}
             </View>
@@ -163,24 +156,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => ({
         marginLeft: 9,
         textAlign: 'center',
         color: theme.centerChannelColor,
-    },
-    separatorContainer: {
-        flexDirection: 'row',
-        marginTop: 24,
-        marginBottom: 8,
-        alignItems: 'center',
-        color: changeOpacity(theme.centerChannelColor, 0.64),
-    },
-    separatorLine: {
-        flex: 1,
-        height: 0.4,
-        backgroundColor: changeOpacity(theme.centerChannelColor, 0.64),
-    },
-    separatorText: {
-        marginRight: 6,
-        marginLeft: 6,
-        textAlign: 'center',
-        ...typography('Body', 25, 'SemiBold'),
     },
     logoStyle: {
         height: 18,

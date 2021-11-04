@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React from 'react';
+import React, {useState} from 'react';
 import {GestureResponderEvent, ScrollView, View} from 'react-native';
 import {NavigationFunctionComponent} from 'react-native-navigation';
 import {SafeAreaView} from 'react-native-safe-area-context';
@@ -10,6 +10,7 @@ import FormattedText from '@components/formatted_text';
 import {t} from '@i18n';
 import Background from '@screens/background';
 import Login from '@screens/login';
+import MessageLine from '@screens/message_line';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
@@ -54,6 +55,14 @@ const getStyles = makeStyleSheetFromTheme((theme: Theme) => ({
 
 const LoginOptions: NavigationFunctionComponent = ({config, launchType, launchError, license, serverDisplayName, serverUrl, theme}: LoginOptionsProps) => {
     const styles = getStyles(theme);
+    const [hasLogin, setHasLogin] = useState(false);
+    const [hasSSOs, setHasSSOs] = useState(false);
+
+    const messageLine = hasLogin && hasSSOs && (
+        <MessageLine
+            theme={theme}
+        />
+    );
 
     return (
         <View style={styles.flex}>
@@ -76,6 +85,8 @@ const LoginOptions: NavigationFunctionComponent = ({config, launchType, launchEr
                         defaultMessage='Enter your login details below.'
                     />
                     <Login
+                        setHasComponents={setHasLogin}
+                        show={hasLogin}
                         config={config}
                         key={'login'}
                         license={license}
@@ -85,8 +96,10 @@ const LoginOptions: NavigationFunctionComponent = ({config, launchType, launchEr
                         serverDisplayName={serverDisplayName}
                         serverUrl={serverUrl}
                     />
-
+                    {messageLine}
                     <SsoOptions
+                        setHasComponents={setHasSSOs}
+                        show={hasSSOs}
                         componentId={'sso'}
                         key={'sso'}
                         launchType={launchType}

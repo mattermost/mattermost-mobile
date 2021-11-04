@@ -8,7 +8,6 @@ import {
     InteractionManager,
     Keyboard,
     TextInput,
-    View,
 } from 'react-native';
 import Button from 'react-native-button';
 import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
@@ -24,7 +23,6 @@ import {goToScreen, resetToHome} from '@screens/navigation';
 import {buttonBackgroundStyle, buttonTextStyle} from '@utils/buttonStyles';
 import {preventDoubleTap} from '@utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
-import {typography} from '@utils/typography';
 
 import type {LaunchProps} from '@typings/launch';
 
@@ -38,7 +36,7 @@ interface LoginProps extends LaunchProps {
 
 export const MFA_EXPECTED_ERRORS = ['mfa.validate_token.authenticate.app_error', 'ent.mfa.validate_token.authenticate.app_error'];
 
-const Login: NavigationFunctionComponent = ({config, serverDisplayName, extra, launchError, launchType, license, serverUrl, theme}: LoginProps) => {
+const Login: NavigationFunctionComponent = ({config, serverDisplayName, show, setHasComponents, extra, launchError, launchType, license, serverUrl, theme}: LoginProps) => {
     const styles = getStyleSheet(theme);
 
     const loginRef = useRef<TextInput>(null);
@@ -63,6 +61,13 @@ const Login: NavigationFunctionComponent = ({config, serverDisplayName, extra, l
         };
 
         setEmmUsernameIfAvailable();
+    }, []);
+
+    // useEffect to set hasEmail for Login
+    useEffect(() => {
+        if (config.EnableSignInWithEmail === 'true') {
+            setHasComponents(true);
+        }
     }, []);
 
     const preSignIn = preventDoubleTap(async () => {
@@ -322,7 +327,7 @@ const Login: NavigationFunctionComponent = ({config, serverDisplayName, extra, l
         );
     };
 
-    return (
+    return show && (
         <>
             {error && (
                 <ErrorText
