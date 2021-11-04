@@ -19,7 +19,7 @@ import {preventDoubleTap} from '@utils/tap';
 import {makeStyleSheetFromTheme, changeOpacity} from '@utils/theme';
 
 // LoginOptionWithConfigAndLicenseProps
-const SsoOptions = ({config, extra, vertical, show, setHasComponents, launchType, launchError, license, theme, serverDisplayName, serverUrl}: LoginOptionsProps) => {
+const SsoOptions = ({config, extra, redirect, vertical, show, setHasComponents, launchType, launchError, license, theme, serverDisplayName, serverUrl}: LoginOptionsProps) => {
     const intl = useIntl();
     const styles = getStyleSheet(theme);
     const styleButtonText = buttonTextStyle(theme, 'lg', 'secondary', 'default');
@@ -74,10 +74,7 @@ const SsoOptions = ({config, extra, vertical, show, setHasComponents, launchType
 
     // useEffect to set hasComponents for SSO
     useEffect(() => {
-        setHasComponents(false);
-        if (enabledSSOs.length) {
-            setHasComponents(true);
-        }
+        setHasComponents(enabledSSOs.length);
     }, []);
 
     const componentArray = [];
@@ -90,6 +87,10 @@ const SsoOptions = ({config, extra, vertical, show, setHasComponents, launchType
         const handlePress = () => {
             displaySSO(ssoType);
         };
+
+        if (redirect) {
+            handlePress();
+        }
 
         componentArray.push(
             <View

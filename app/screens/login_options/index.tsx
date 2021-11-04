@@ -56,9 +56,11 @@ const getStyles = makeStyleSheetFromTheme((theme: Theme) => ({
 const LoginOptions: NavigationFunctionComponent = ({config, launchType, launchError, license, serverDisplayName, serverUrl, theme}: LoginOptionsProps) => {
     const styles = getStyles(theme);
     const [hasLogin, setHasLogin] = useState(false);
-    const [hasSSOs, setHasSSOs] = useState(false);
+    const [numberSSOs, setNumberSSOs] = useState(0);
 
-    const messageLine = hasLogin && hasSSOs && (
+    const redirect = Boolean(hasLogin && numberSSOs === 1);
+
+    const messageLine = hasLogin && Boolean(numberSSOs) && (
         <MessageLine
             theme={theme}
         />
@@ -98,9 +100,10 @@ const LoginOptions: NavigationFunctionComponent = ({config, launchType, launchEr
                     />
                     {messageLine}
                     <SsoOptions
-                        setHasComponents={setHasSSOs}
+                        setHasComponents={setNumberSSOs}
+                        redirect={redirect}
                         vertical={!hasLogin}
-                        show={hasSSOs}
+                        show={Boolean(numberSSOs)}
                         componentId={'sso'}
                         key={'sso'}
                         launchType={launchType}
