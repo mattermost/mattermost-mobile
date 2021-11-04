@@ -109,7 +109,7 @@ const LoginOptions: NavigationFunctionComponent = ({config, launchType, launchEr
             <SsoOptions
                 setHasComponents={setNumberSSOs}
                 redirect={redirectSSO}
-                vertical={!hasLogin}
+                onlySSO={!hasLogin}
                 show={Boolean(numberSSOs)}
                 componentId={'sso'}
                 key={'sso'}

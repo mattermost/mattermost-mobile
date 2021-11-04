@@ -180,6 +180,7 @@
   "mobile.link.error.title": "Error",
   "mobile.login_options.description1": "Enter your login details below.",
   "mobile.login_options.description2": "Choose a login option below.",
+  "mobile.login_options.sso_continue": "Continue with",
   "mobile.login_options.gitlab": "GitLab",
   "mobile.login_options.google": "Google",
   "mobile.login_options.heading": "Log In to Your Account",

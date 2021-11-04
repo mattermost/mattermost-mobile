@@ -19,7 +19,7 @@ import {preventDoubleTap} from '@utils/tap';
 import {makeStyleSheetFromTheme, changeOpacity} from '@utils/theme';
 
 // LoginOptionWithConfigAndLicenseProps
-const SsoOptions = ({config, extra, redirect, vertical, show, setHasComponents, launchType, launchError, license, theme, serverDisplayName, serverUrl}: LoginOptionsProps) => {
+const SsoOptions = ({config, extra, redirect, onlySSO, show, setHasComponents, launchType, launchError, license, theme, serverDisplayName, serverUrl}: LoginOptionsProps) => {
     const intl = useIntl();
     const styles = getStyleSheet(theme);
     const styleButtonText = buttonTextStyle(theme, 'lg', 'secondary', 'default');
@@ -67,7 +67,7 @@ const SsoOptions = ({config, extra, redirect, vertical, show, setHasComponents, 
 
     let styleContainer;
     let styleButtonContainer;
-    if (enabledSSOs.length === 2 && !vertical) {
+    if (enabledSSOs.length === 2 && !onlySSO) {
         styleContainer = styles.container;
         styleButtonContainer = styles.buttonContainer;
     }
@@ -116,13 +116,26 @@ const SsoOptions = ({config, extra, redirect, vertical, show, setHasComponents, 
                             color={theme.sidebarTeamBarBg}
                         />
                     }
-                    <FormattedText
-                        key={'text' + ssoType}
-                        id={id}
-                        style={[styleButtonText, styles.buttonText]}
-                        defaultMessage={sso.defaultMessage}
-                        testID={id}
-                    />
+                    <View
+                        style={styles.buttonTextContainer}
+                    >
+                        {onlySSO && (
+                            <FormattedText
+                                key={'pretext' + id}
+                                id={'mobile.login_options.sso_continue'}
+                                style={[styleButtonText, styles.buttonText]}
+                                defaultMessage={'Continue with '}
+                                testID={'pretext' + id}
+                            />
+                        )}
+                        <FormattedText
+                            key={ssoType}
+                            id={id}
+                            style={[styleButtonText, styles.buttonText]}
+                            defaultMessage={sso.defaultMessage}
+                            testID={id}
+                        />
+                    </View>
                 </Button>
             </View>,
         );
@@ -153,9 +166,13 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => ({
         borderWidth: 1,
         borderColor: changeOpacity(theme.centerChannelColor, 0.64),
     },
-    buttonText: {
+    buttonTextContainer: {
+        color: theme.centerChannelColor,
+        flexDirection: 'row',
         marginLeft: 9,
         textAlign: 'center',
+    },
+    buttonText: {
         color: theme.centerChannelColor,
     },
     logoStyle: {
