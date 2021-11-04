@@ -368,6 +368,7 @@
   "mobile.files_paste.error_title": "Pegar falló",
   "mobile.flagged_posts.empty_description": "Los mensajes guardados solo pueden ser vistos por ti. Marca mensajes para su seguimiento o guardar algo para más tarde manteniendo presionado un mensaje y seleccionando Guardar en el menú.",
   "mobile.flagged_posts.empty_title": "Aún no hay mensajes guardados",
+  "mobile.forms.select.done": "Listo",
   "mobile.gallery.title": "{index} de {total}",
   "mobile.general.error.title": "Error",
   "mobile.help.title": "Ayuda",
