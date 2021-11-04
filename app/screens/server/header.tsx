@@ -4,7 +4,7 @@
 import React from 'react';
 import {View} from 'react-native';
 
-import FormattedText from '@app/components/formatted_text';
+import FormattedText from '@components/formatted_text';
 import {useIsTablet} from '@hooks/device';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';

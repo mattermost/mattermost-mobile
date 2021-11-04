@@ -6,13 +6,13 @@ import {useIntl} from 'react-intl';
 import {DeviceEventEmitter, TextStyle} from 'react-native';
 
 import {setStatus} from '@actions/remote/user';
-import {useServerUrl} from '@app/context/server_url';
 import DrawerItem from '@components/drawer_item';
 import SlideUpPanelItem, {ITEM_HEIGHT} from '@components/slide_up_panel_item';
 import StatusLabel from '@components/status_label';
 import UserStatusIndicator from '@components/user_status';
 import {Navigation} from '@constants';
 import General from '@constants/general';
+import {useServerUrl} from '@context/server_url';
 import {bottomSheet, dismissModal} from '@screens/navigation';
 import {preventDoubleTap} from '@utils/tap';
 import {changeOpacity} from '@utils/theme';

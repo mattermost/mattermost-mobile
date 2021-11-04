@@ -1,0 +1,137 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Channel List Header Component should match snapshot 1`] = `
+<View>
+  <View
+    style={
+      Object {
+        "alignItems": "center",
+        "flexDirection": "row",
+        "justifyContent": "space-between",
+      }
+    }
+  >
+    <View
+      style={
+        Object {
+          "alignItems": "center",
+          "flexDirection": "row",
+          "justifyContent": "space-between",
+        }
+      }
+    >
+      <Text
+        style={
+          Object {
+            "color": "#ffffff",
+            "fontFamily": "Metropolis-SemiBold",
+            "fontSize": 28,
+            "fontWeight": "600",
+            "lineHeight": 36,
+          }
+        }
+      >
+        Hello World!
+      </Text>
+      <View
+        onMoveShouldSetResponder={[Function]}
+        onMoveShouldSetResponderCapture={[Function]}
+        onResponderEnd={[Function]}
+        onResponderGrant={[Function]}
+        onResponderMove={[Function]}
+        onResponderReject={[Function]}
+        onResponderRelease={[Function]}
+        onResponderStart={[Function]}
+        onResponderTerminate={[Function]}
+        onResponderTerminationRequest={[Function]}
+        onStartShouldSetResponder={[Function]}
+        onStartShouldSetResponderCapture={[Function]}
+      >
+        <View
+          accessible={true}
+          focusable={false}
+          onClick={[Function]}
+          onResponderGrant={[Function]}
+          onResponderMove={[Function]}
+          onResponderRelease={[Function]}
+          onResponderTerminate={[Function]}
+          onResponderTerminationRequest={[Function]}
+          onStartShouldSetResponder={[Function]}
+          style={
+            Object {
+              "marginLeft": 4,
+            }
+          }
+        >
+          <Icon
+            name="chevron-down"
+            style={
+              Object {
+                "color": "rgba(255,255,255,0.8)",
+                "fontSize": 24,
+              }
+            }
+          />
+        </View>
+      </View>
+    </View>
+    <View
+      onMoveShouldSetResponder={[Function]}
+      onMoveShouldSetResponderCapture={[Function]}
+      onResponderEnd={[Function]}
+      onResponderGrant={[Function]}
+      onResponderMove={[Function]}
+      onResponderReject={[Function]}
+      onResponderRelease={[Function]}
+      onResponderStart={[Function]}
+      onResponderTerminate={[Function]}
+      onResponderTerminationRequest={[Function]}
+      onStartShouldSetResponder={[Function]}
+      onStartShouldSetResponderCapture={[Function]}
+    >
+      <View
+        accessible={true}
+        focusable={false}
+        onClick={[Function]}
+        onResponderGrant={[Function]}
+        onResponderMove={[Function]}
+        onResponderRelease={[Function]}
+        onResponderTerminate={[Function]}
+        onResponderTerminationRequest={[Function]}
+        onStartShouldSetResponder={[Function]}
+        style={
+          Object {
+            "alignItems": "center",
+            "backgroundColor": "rgba(255,255,255,0.08)",
+            "borderRadius": 14,
+            "height": 28,
+            "justifyContent": "center",
+            "width": 28,
+          }
+        }
+      >
+        <Icon
+          name="plus"
+          style={
+            Object {
+              "color": "rgba(255,255,255,0.8)",
+              "fontSize": 18,
+            }
+          }
+        />
+      </View>
+    </View>
+  </View>
+  <Text
+    style={
+      Object {
+        "color": "rgba(255,255,255,0.64)",
+        "fontFamily": "OpenSans-SemiBold",
+        "fontSize": 11,
+        "fontWeight": "600",
+        "lineHeight": 16,
+      }
+    }
+  />
+</View>
+`;

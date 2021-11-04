@@ -1,0 +1,762 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Channels List should match snapshot 1`] = `
+<View
+  style={
+    Array [
+      Object {
+        "backgroundColor": "#1e325c",
+        "flex": 1,
+        "paddingHorizontal": 20,
+        "paddingVertical": 10,
+      },
+      false,
+    ]
+  }
+>
+  <RNGestureHandlerButton
+    collapsable={false}
+    onGestureEvent={[Function]}
+    onGestureHandlerEvent={[Function]}
+    onGestureHandlerStateChange={[Function]}
+    onHandlerStateChange={[Function]}
+    rippleColor={0}
+  >
+    <View
+      accessible={true}
+      collapsable={false}
+      nativeID="animatedComponent"
+      style={
+        Object {
+          "opacity": 1,
+        }
+      }
+    >
+      <View>
+        <View
+          style={
+            Object {
+              "alignItems": "center",
+              "flexDirection": "row",
+              "justifyContent": "space-between",
+            }
+          }
+        >
+          <View
+            style={
+              Object {
+                "alignItems": "center",
+                "flexDirection": "row",
+                "justifyContent": "space-between",
+              }
+            }
+          >
+            <Text
+              style={
+                Object {
+                  "color": "#ffffff",
+                  "fontFamily": "Metropolis-SemiBold",
+                  "fontSize": 28,
+                  "fontWeight": "600",
+                  "lineHeight": 36,
+                }
+              }
+            >
+              Contributors
+            </Text>
+            <View
+              onMoveShouldSetResponder={[Function]}
+              onMoveShouldSetResponderCapture={[Function]}
+              onResponderEnd={[Function]}
+              onResponderGrant={[Function]}
+              onResponderMove={[Function]}
+              onResponderReject={[Function]}
+              onResponderRelease={[Function]}
+              onResponderStart={[Function]}
+              onResponderTerminate={[Function]}
+              onResponderTerminationRequest={[Function]}
+              onStartShouldSetResponder={[Function]}
+              onStartShouldSetResponderCapture={[Function]}
+            >
+              <View
+                accessible={true}
+                focusable={false}
+                onClick={[Function]}
+                onResponderGrant={[Function]}
+                onResponderMove={[Function]}
+                onResponderRelease={[Function]}
+                onResponderTerminate={[Function]}
+                onResponderTerminationRequest={[Function]}
+                onStartShouldSetResponder={[Function]}
+                style={
+                  Object {
+                    "marginLeft": 4,
+                  }
+                }
+              >
+                <Icon
+                  name="chevron-down"
+                  style={
+                    Object {
+                      "color": "rgba(255,255,255,0.8)",
+                      "fontSize": 24,
+                    }
+                  }
+                />
+              </View>
+            </View>
+          </View>
+          <View
+            onMoveShouldSetResponder={[Function]}
+            onMoveShouldSetResponderCapture={[Function]}
+            onResponderEnd={[Function]}
+            onResponderGrant={[Function]}
+            onResponderMove={[Function]}
+            onResponderReject={[Function]}
+            onResponderRelease={[Function]}
+            onResponderStart={[Function]}
+            onResponderTerminate={[Function]}
+            onResponderTerminationRequest={[Function]}
+            onStartShouldSetResponder={[Function]}
+            onStartShouldSetResponderCapture={[Function]}
+          >
+            <View
+              accessible={true}
+              focusable={false}
+              onClick={[Function]}
+              onResponderGrant={[Function]}
+              onResponderMove={[Function]}
+              onResponderRelease={[Function]}
+              onResponderTerminate={[Function]}
+              onResponderTerminationRequest={[Function]}
+              onStartShouldSetResponder={[Function]}
+              style={
+                Object {
+                  "alignItems": "center",
+                  "backgroundColor": "rgba(255,255,255,0.08)",
+                  "borderRadius": 14,
+                  "height": 28,
+                  "justifyContent": "center",
+                  "width": 28,
+                }
+              }
+            >
+              <Icon
+                name="plus"
+                style={
+                  Object {
+                    "color": "rgba(255,255,255,0.8)",
+                    "fontSize": 18,
+                  }
+                }
+              />
+            </View>
+          </View>
+        </View>
+        <Text
+          style={
+            Object {
+              "color": "rgba(255,255,255,0.64)",
+              "fontFamily": "OpenSans-SemiBold",
+              "fontSize": 11,
+              "fontWeight": "600",
+              "lineHeight": 16,
+            }
+          }
+        >
+          Community TEST
+        </Text>
+      </View>
+    </View>
+  </RNGestureHandlerButton>
+  <View
+    style={
+      Object {
+        "alignItems": "center",
+        "backgroundColor": "rgba(255,255,255,0.12)",
+        "borderRadius": 8,
+        "flex": 1,
+        "flexDirection": "row",
+        "height": 40,
+        "justifyContent": "flex-start",
+        "marginVertical": 20,
+        "maxHeight": 40,
+        "padding": 8,
+        "width": "100%",
+      }
+    }
+  >
+    <Icon
+      name="magnify"
+      style={
+        Object {
+          "color": "rgba(255,255,255,0.72)",
+          "fontSize": 24,
+          "width": 24,
+        }
+      }
+    />
+    <TextInput
+      collapsable={false}
+      onGestureHandlerEvent={[Function]}
+      onGestureHandlerStateChange={[Function]}
+      placeholder="Find Channels"
+      placeholderTextColor="rgba(255,255,255,0.72)"
+      style={
+        Array [
+          Array [
+            Object {
+              "fontFamily": "OpenSans",
+              "fontSize": 16,
+              "fontWeight": "400",
+              "lineHeight": 24,
+            },
+            Object {
+              "textAlignVertical": "center",
+            },
+          ],
+          Object {
+            "alignContent": "center",
+            "alignItems": "center",
+            "color": "#ffffff",
+            "flex": 1,
+            "height": 40,
+            "marginLeft": 5,
+            "marginTop": -2,
+          },
+        ]
+      }
+    />
+  </View>
+  <RCTScrollView
+    ListHeaderComponent={[Function]}
+    data={
+      Array [
+        Object {
+          "channels": Array [
+            Object {
+              "id": "1",
+              "name": "Just a channel",
+            },
+            Object {
+              "highlight": true,
+              "id": "2",
+              "name": "A Highlighted Channel!!!",
+            },
+            Object {
+              "id": "3",
+              "name": "And a longer channel name.",
+            },
+          ],
+          "id": "1",
+          "title": "My first Category",
+        },
+        Object {
+          "channels": Array [
+            Object {
+              "id": "1",
+              "name": "Just a channel",
+            },
+            Object {
+              "highlight": true,
+              "id": "2",
+              "name": "A Highlighted Channel!!!",
+            },
+            Object {
+              "id": "3",
+              "name": "And a longer channel name.",
+            },
+          ],
+          "id": "2",
+          "title": "Another Cat",
+        },
+      ]
+    }
+    getItem={[Function]}
+    getItemCount={[Function]}
+    keyExtractor={[Function]}
+    onContentSizeChange={[Function]}
+    onLayout={[Function]}
+    onMomentumScrollBegin={[Function]}
+    onMomentumScrollEnd={[Function]}
+    onScroll={[Function]}
+    onScrollBeginDrag={[Function]}
+    onScrollEndDrag={[Function]}
+    removeClippedSubviews={false}
+    renderItem={[Function]}
+    scrollEventThrottle={50}
+    stickyHeaderIndices={Array []}
+    style={
+      Object {
+        "flex": 1,
+      }
+    }
+    viewabilityConfigCallbackPairs={Array []}
+  >
+    <View>
+      <View
+        onLayout={[Function]}
+      >
+        <View
+          onMoveShouldSetResponder={[Function]}
+          onMoveShouldSetResponderCapture={[Function]}
+          onResponderEnd={[Function]}
+          onResponderGrant={[Function]}
+          onResponderMove={[Function]}
+          onResponderReject={[Function]}
+          onResponderRelease={[Function]}
+          onResponderStart={[Function]}
+          onResponderTerminate={[Function]}
+          onResponderTerminationRequest={[Function]}
+          onStartShouldSetResponder={[Function]}
+          onStartShouldSetResponderCapture={[Function]}
+        >
+          <View
+            accessible={true}
+            focusable={true}
+            onClick={[Function]}
+            onResponderGrant={[Function]}
+            onResponderMove={[Function]}
+            onResponderRelease={[Function]}
+            onResponderTerminate={[Function]}
+            onResponderTerminationRequest={[Function]}
+            onStartShouldSetResponder={[Function]}
+          >
+            <View
+              style={
+                Object {
+                  "display": "flex",
+                  "flexDirection": "row",
+                }
+              }
+            >
+              <Icon
+                name="message-text-outline"
+                style={
+                  Object {
+                    "color": "#ffffff",
+                    "fontSize": 24,
+                    "lineHeight": 28,
+                  }
+                }
+              />
+              <Text
+                style={
+                  Array [
+                    Array [
+                      Object {
+                        "fontFamily": "OpenSans-SemiBold",
+                        "fontSize": 16,
+                        "fontWeight": "600",
+                        "lineHeight": 24,
+                      },
+                    ],
+                    Object {
+                      "color": "#ffffff",
+                      "paddingLeft": 12,
+                    },
+                  ]
+                }
+              >
+                Threads
+              </Text>
+            </View>
+          </View>
+        </View>
+      </View>
+      <View
+        onLayout={[Function]}
+        style={null}
+      >
+        <View
+          style={
+            Object {
+              "marginTop": 12,
+              "paddingVertical": 8,
+            }
+          }
+        >
+          <Text
+            style={
+              Object {
+                "color": "rgba(255,255,255,0.64)",
+                "fontFamily": "OpenSans-SemiBold",
+                "fontSize": 12,
+                "fontWeight": "600",
+                "lineHeight": 16,
+              }
+            }
+          >
+            MY FIRST CATEGORY
+          </Text>
+        </View>
+        <View
+          data={
+            Array [
+              Object {
+                "id": "1",
+                "name": "Just a channel",
+              },
+              Object {
+                "highlight": true,
+                "id": "2",
+                "name": "A Highlighted Channel!!!",
+              },
+              Object {
+                "id": "3",
+                "name": "And a longer channel name.",
+              },
+            ]
+          }
+          getItem={[Function]}
+          getItemCount={[Function]}
+          keyExtractor={[Function]}
+          onContentSizeChange={[Function]}
+          onLayout={[Function]}
+          onMomentumScrollBegin={[Function]}
+          onMomentumScrollEnd={[Function]}
+          onScroll={[Function]}
+          onScrollBeginDrag={[Function]}
+          onScrollEndDrag={[Function]}
+          removeClippedSubviews={false}
+          renderItem={[Function]}
+          scrollEventThrottle={50}
+          stickyHeaderIndices={Array []}
+          viewabilityConfigCallbackPairs={Array []}
+        >
+          <View
+            onLayout={[Function]}
+            style={null}
+          >
+            <View
+              style={
+                Object {
+                  "flexDirection": "row",
+                  "paddingVertical": 4,
+                }
+              }
+            >
+              <Icon
+                name="globe"
+                style={
+                  Object {
+                    "color": "rgba(255,255,255,0.72)",
+                    "fontSize": 24,
+                    "lineHeight": 28,
+                  }
+                }
+              />
+              <Text
+                style={
+                  Array [
+                    Object {
+                      "fontFamily": "OpenSans",
+                      "fontSize": 16,
+                      "fontWeight": "400",
+                      "lineHeight": 24,
+                    },
+                    Object {
+                      "color": "rgba(255,255,255,0.72)",
+                      "marginTop": 1,
+                      "paddingLeft": 12,
+                    },
+                    undefined,
+                  ]
+                }
+              >
+                Just a channel
+              </Text>
+            </View>
+          </View>
+          <View
+            onLayout={[Function]}
+            style={null}
+          >
+            <View
+              style={
+                Object {
+                  "flexDirection": "row",
+                  "paddingVertical": 4,
+                }
+              }
+            >
+              <Icon
+                name="globe"
+                style={
+                  Object {
+                    "color": "rgba(255,255,255,0.72)",
+                    "fontSize": 24,
+                    "lineHeight": 28,
+                  }
+                }
+              />
+              <Text
+                style={
+                  Array [
+                    Object {
+                      "fontFamily": "OpenSans-SemiBold",
+                      "fontSize": 16,
+                      "fontWeight": "600",
+                      "lineHeight": 24,
+                    },
+                    Object {
+                      "color": "rgba(255,255,255,0.72)",
+                      "marginTop": 1,
+                      "paddingLeft": 12,
+                    },
+                    Object {
+                      "color": "#ffffff",
+                    },
+                  ]
+                }
+              >
+                A Highlighted Channel!!!
+              </Text>
+            </View>
+          </View>
+          <View
+            onLayout={[Function]}
+            style={null}
+          >
+            <View
+              style={
+                Object {
+                  "flexDirection": "row",
+                  "paddingVertical": 4,
+                }
+              }
+            >
+              <Icon
+                name="globe"
+                style={
+                  Object {
+                    "color": "rgba(255,255,255,0.72)",
+                    "fontSize": 24,
+                    "lineHeight": 28,
+                  }
+                }
+              />
+              <Text
+                style={
+                  Array [
+                    Object {
+                      "fontFamily": "OpenSans",
+                      "fontSize": 16,
+                      "fontWeight": "400",
+                      "lineHeight": 24,
+                    },
+                    Object {
+                      "color": "rgba(255,255,255,0.72)",
+                      "marginTop": 1,
+                      "paddingLeft": 12,
+                    },
+                    undefined,
+                  ]
+                }
+              >
+                And a longer channel name.
+              </Text>
+            </View>
+          </View>
+        </View>
+      </View>
+      <View
+        onLayout={[Function]}
+        style={null}
+      >
+        <View
+          style={
+            Object {
+              "marginTop": 12,
+              "paddingVertical": 8,
+            }
+          }
+        >
+          <Text
+            style={
+              Object {
+                "color": "rgba(255,255,255,0.64)",
+                "fontFamily": "OpenSans-SemiBold",
+                "fontSize": 12,
+                "fontWeight": "600",
+                "lineHeight": 16,
+              }
+            }
+          >
+            ANOTHER CAT
+          </Text>
+        </View>
+        <View
+          data={
+            Array [
+              Object {
+                "id": "1",
+                "name": "Just a channel",
+              },
+              Object {
+                "highlight": true,
+                "id": "2",
+                "name": "A Highlighted Channel!!!",
+              },
+              Object {
+                "id": "3",
+                "name": "And a longer channel name.",
+              },
+            ]
+          }
+          getItem={[Function]}
+          getItemCount={[Function]}
+          keyExtractor={[Function]}
+          onContentSizeChange={[Function]}
+          onLayout={[Function]}
+          onMomentumScrollBegin={[Function]}
+          onMomentumScrollEnd={[Function]}
+          onScroll={[Function]}
+          onScrollBeginDrag={[Function]}
+          onScrollEndDrag={[Function]}
+          removeClippedSubviews={false}
+          renderItem={[Function]}
+          scrollEventThrottle={50}
+          stickyHeaderIndices={Array []}
+          viewabilityConfigCallbackPairs={Array []}
+        >
+          <View
+            onLayout={[Function]}
+            style={null}
+          >
+            <View
+              style={
+                Object {
+                  "flexDirection": "row",
+                  "paddingVertical": 4,
+                }
+              }
+            >
+              <Icon
+                name="globe"
+                style={
+                  Object {
+                    "color": "rgba(255,255,255,0.72)",
+                    "fontSize": 24,
+                    "lineHeight": 28,
+                  }
+                }
+              />
+              <Text
+                style={
+                  Array [
+                    Object {
+                      "fontFamily": "OpenSans",
+                      "fontSize": 16,
+                      "fontWeight": "400",
+                      "lineHeight": 24,
+                    },
+                    Object {
+                      "color": "rgba(255,255,255,0.72)",
+                      "marginTop": 1,
+                      "paddingLeft": 12,
+                    },
+                    undefined,
+                  ]
+                }
+              >
+                Just a channel
+              </Text>
+            </View>
+          </View>
+          <View
+            onLayout={[Function]}
+            style={null}
+          >
+            <View
+              style={
+                Object {
+                  "flexDirection": "row",
+                  "paddingVertical": 4,
+                }
+              }
+            >
+              <Icon
+                name="globe"
+                style={
+                  Object {
+                    "color": "rgba(255,255,255,0.72)",
+                    "fontSize": 24,
+                    "lineHeight": 28,
+                  }
+                }
+              />
+              <Text
+                style={
+                  Array [
+                    Object {
+                      "fontFamily": "OpenSans-SemiBold",
+                      "fontSize": 16,
+                      "fontWeight": "600",
+                      "lineHeight": 24,
+                    },
+                    Object {
+                      "color": "rgba(255,255,255,0.72)",
+                      "marginTop": 1,
+                      "paddingLeft": 12,
+                    },
+                    Object {
+                      "color": "#ffffff",
+                    },
+                  ]
+                }
+              >
+                A Highlighted Channel!!!
+              </Text>
+            </View>
+          </View>
+          <View
+            onLayout={[Function]}
+            style={null}
+          >
+            <View
+              style={
+                Object {
+                  "flexDirection": "row",
+                  "paddingVertical": 4,
+                }
+              }
+            >
+              <Icon
+                name="globe"
+                style={
+                  Object {
+                    "color": "rgba(255,255,255,0.72)",
+                    "fontSize": 24,
+                    "lineHeight": 28,
+                  }
+                }
+              />
+              <Text
+                style={
+                  Array [
+                    Object {
+                      "fontFamily": "OpenSans",
+                      "fontSize": 16,
+                      "fontWeight": "400",
+                      "lineHeight": 24,
+                    },
+                    Object {
+                      "color": "rgba(255,255,255,0.72)",
+                      "marginTop": 1,
+                      "paddingLeft": 12,
+                    },
+                    undefined,
+                  ]
+                }
+              >
+                And a longer channel name.
+              </Text>
+            </View>
+          </View>
+        </View>
+      </View>
+    </View>
+  </RCTScrollView>
+</View>
+`;
