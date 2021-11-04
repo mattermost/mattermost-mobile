@@ -23,6 +23,7 @@ import {goToScreen, resetToHome} from '@screens/navigation';
 import {buttonBackgroundStyle, buttonTextStyle} from '@utils/buttonStyles';
 import {preventDoubleTap} from '@utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
+import {typography} from '@utils/typography';
 
 import type {LaunchProps} from '@typings/launch';
 
@@ -336,6 +337,12 @@ const Login: NavigationFunctionComponent = ({config, serverDisplayName, show, se
                     theme={theme}
                 />
             )}
+            <FormattedText
+                style={styles.subheader}
+                id={t('mobile.login_options.description')}
+                testID={t('mobile.login_options.description')}
+                defaultMessage='Enter your login details below.'
+            />
             <FloatingTextInput
                 autoCorrect={false}
                 autoCapitalize={'none'}
@@ -435,12 +442,9 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         color: theme.centerChannelColor,
     },
     subheader: {
-        textAlign: 'center',
-        fontSize: 16,
-        fontWeight: '300',
         color: changeOpacity(theme.centerChannelColor, 0.6),
-        marginBottom: 15,
-        lineHeight: 22,
+        marginBottom: 12,
+        ...typography('Body', 200, 'Regular'),
     },
     signupButton: {
         borderRadius: 3,

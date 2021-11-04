@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useState} from 'react';
+import React, {useState, useEffect} from 'react';
 import {GestureResponderEvent, ScrollView, View} from 'react-native';
 import {NavigationFunctionComponent} from 'react-native-navigation';
 import {SafeAreaView} from 'react-native-safe-area-context';
@@ -57,6 +57,7 @@ const LoginOptions: NavigationFunctionComponent = ({config, launchType, launchEr
     const styles = getStyles(theme);
     const [hasLogin, setHasLogin] = useState(false);
     const [numberSSOs, setNumberSSOs] = useState(0);
+    const [hasOptions, setHasOptions] = useState(false);
 
     const redirectSSO = Boolean(!hasLogin && numberSSOs === 1);
 
@@ -65,6 +66,54 @@ const LoginOptions: NavigationFunctionComponent = ({config, launchType, launchEr
             theme={theme}
         />
     );
+
+    const noLoginOptions = (
+        <FormattedText
+            style={styles.subheader}
+            id={t('mobile.login_options.none')}
+            testID={t('mobile.login_options.none')}
+            defaultMessage='No options available to log in, contact your Team Admin for more information.'
+        />
+    );
+
+    const loginOptions = (
+        <>
+            <Login
+                setHasComponents={setHasLogin}
+                show={hasLogin}
+                config={config}
+                key={'login'}
+                license={license}
+                launchError={launchError}
+                launchType={launchType}
+                theme={theme}
+                serverDisplayName={serverDisplayName}
+                serverUrl={serverUrl}
+            />
+            {messageLine}
+            <SsoOptions
+                setHasComponents={setNumberSSOs}
+                redirect={redirectSSO}
+                vertical={!hasLogin}
+                show={Boolean(numberSSOs)}
+                componentId={'sso'}
+                key={'sso'}
+                launchType={launchType}
+                launchError={launchError}
+                config={config}
+                license={license}
+                serverDisplayName={serverDisplayName}
+                serverUrl={serverUrl}
+                theme={theme}
+            />
+        </>
+    );
+
+    useEffect(() => {
+        if (hasLogin || numberSSOs) {
+            setHasOptions(true);
+        }
+    }, [hasLogin, numberSSOs]);
 
     return (
         <View style={styles.flex}>
@@ -80,40 +129,8 @@ const LoginOptions: NavigationFunctionComponent = ({config, launchType, launchEr
                         testID={t('mobile.login_options.heading')}
                         style={styles.header}
                     />
-                    <FormattedText
-                        style={styles.subheader}
-                        id={t('mobile.login_options.description')}
-                        testID={t('mobile.login_options.description')}
-                        defaultMessage='Enter your login details below.'
-                    />
-                    <Login
-                        setHasComponents={setHasLogin}
-                        show={hasLogin}
-                        config={config}
-                        key={'login'}
-                        license={license}
-                        launchError={launchError}
-                        launchType={launchType}
-                        theme={theme}
-                        serverDisplayName={serverDisplayName}
-                        serverUrl={serverUrl}
-                    />
-                    {messageLine}
-                    <SsoOptions
-                        setHasComponents={setNumberSSOs}
-                        redirect={redirectSSO}
-                        vertical={!hasLogin}
-                        show={Boolean(numberSSOs)}
-                        componentId={'sso'}
-                        key={'sso'}
-                        launchType={launchType}
-                        launchError={launchError}
-                        config={config}
-                        license={license}
-                        serverDisplayName={serverDisplayName}
-                        serverUrl={serverUrl}
-                        theme={theme}
-                    />
+                    {!hasOptions && noLoginOptions}
+                    {loginOptions}
                 </ScrollView>
             </SafeAreaView>
         </View>
