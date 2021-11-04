@@ -337,12 +337,6 @@ const Login: NavigationFunctionComponent = ({config, serverDisplayName, show, se
                     theme={theme}
                 />
             )}
-            <FormattedText
-                style={styles.subheader}
-                id={t('mobile.login_options.description')}
-                testID={t('mobile.login_options.description')}
-                defaultMessage='Enter your login details below.'
-            />
             <FloatingTextInput
                 autoCorrect={false}
                 autoCapitalize={'none'}
@@ -440,11 +434,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     inputBoxPassword: {
         marginVertical: 21,
         color: theme.centerChannelColor,
-    },
-    subheader: {
-        color: changeOpacity(theme.centerChannelColor, 0.6),
-        marginBottom: 12,
-        ...typography('Body', 200, 'Regular'),
     },
     signupButton: {
         borderRadius: 3,

@@ -57,17 +57,24 @@ const LoginOptions: NavigationFunctionComponent = ({config, launchType, launchEr
     const styles = getStyles(theme);
     const [hasLogin, setHasLogin] = useState(false);
     const [numberSSOs, setNumberSSOs] = useState(0);
-    const [hasOptions, setHasOptions] = useState(false);
 
-    const redirectSSO = Boolean(!hasLogin && numberSSOs === 1);
-
-    const messageLine = hasLogin && Boolean(numberSSOs) && (
-        <MessageLine
-            theme={theme}
+    const textLoginOption = (
+        <FormattedText
+            style={styles.subheader}
+            id={t('mobile.login_options.description1')}
+            testID={t('mobile.login_options.description1')}
+            defaultMessage='Enter your login details below.'
         />
     );
-
-    const noLoginOptions = (
+    const textSsoOptionsOnly = (
+        <FormattedText
+            style={styles.subheader}
+            id={t('mobile.login_options.description2')}
+            testID={t('mobile.login_options.description2')}
+            defaultMessage='Choose a login option below.'
+        />
+    );
+    const textNoLoginOptions = (
         <FormattedText
             style={styles.subheader}
             id={t('mobile.login_options.none')}
@@ -75,7 +82,15 @@ const LoginOptions: NavigationFunctionComponent = ({config, launchType, launchEr
             defaultMessage='No options available to log in, contact your Team Admin for more information.'
         />
     );
+    const [description, setDescription] = useState(textNoLoginOptions);
 
+    const messageLine = hasLogin && Boolean(numberSSOs) && (
+        <MessageLine
+            theme={theme}
+        />
+    );
+
+    const redirectSSO = Boolean(!hasLogin && numberSSOs === 1);
     const loginOptions = (
         <>
             <Login
@@ -110,8 +125,11 @@ const LoginOptions: NavigationFunctionComponent = ({config, launchType, launchEr
     );
 
     useEffect(() => {
-        if (hasLogin || numberSSOs) {
-            setHasOptions(true);
+        if (hasLogin) {
+            setDescription(textLoginOption);
+        }
+        if (!hasLogin && numberSSOs) {
+            setDescription(textSsoOptionsOnly);
         }
     }, [hasLogin, numberSSOs]);
 
@@ -129,7 +147,7 @@ const LoginOptions: NavigationFunctionComponent = ({config, launchType, launchEr
                         testID={t('mobile.login_options.heading')}
                         style={styles.header}
                     />
-                    {!hasOptions && noLoginOptions}
+                    {description}
                     {loginOptions}
                 </ScrollView>
             </SafeAreaView>
