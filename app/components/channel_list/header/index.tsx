@@ -6,7 +6,6 @@ import {Text, View} from 'react-native';
 
 import CompassIcon from '@components/compass_icon';
 import TouchableWithFeedback from '@components/touchable_with_feedback';
-import {COMPASS_ICONS} from '@constants/compass_icons';
 import {useTheme} from '@context/theme';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
@@ -69,14 +68,14 @@ const ChannelListHeader = (props: Props) => {
                     <TouchableWithFeedback style={styles.chevronButton}>
                         <CompassIcon
                             style={styles.chevronIcon}
-                            name={COMPASS_ICONS['chevron-down']}
+                            name={'chevron-down'}
                         />
                     </TouchableWithFeedback>
                 </View>
                 <TouchableWithFeedback style={styles.plusButton}>
                     <CompassIcon
                         style={styles.plusIcon}
-                        name={COMPASS_ICONS.plus}
+                        name={'plus'}
                     />
                 </TouchableWithFeedback>
             </View>

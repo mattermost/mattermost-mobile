@@ -4,14 +4,12 @@
 import React from 'react';
 import {FlatList} from 'react-native';
 
-import {COMPASS_ICONS} from '@constants/compass_icons';
-
 import ChannelListItem from './channel';
 
 const renderChannelItem = (data: { item: TempoChannel }) => {
     return (
         <ChannelListItem
-            icon={COMPASS_ICONS.globe}
+            icon={'globe'}
             name={data.item.name}
             highlight={data.item.highlight}
         />

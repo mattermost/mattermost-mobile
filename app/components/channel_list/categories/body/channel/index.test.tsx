@@ -3,7 +3,6 @@
 
 import React from 'react';
 
-import {COMPASS_ICONS} from '@constants/compass_icons';
 import {renderWithIntlAndTheme} from '@test/intl-test-helper';
 
 import ChannelItem from './index';
@@ -11,7 +10,7 @@ import ChannelItem from './index';
 test('Category Channel List Item should match snapshot', () => {
     const {toJSON} = renderWithIntlAndTheme(
         <ChannelItem
-            icon={COMPASS_ICONS.globe}
+            icon={'globe'}
             name='Channel Name'
         />,
     );
