@@ -58,7 +58,7 @@ const LoginOptions: NavigationFunctionComponent = ({config, launchType, launchEr
     const [hasLogin, setHasLogin] = useState(false);
     const [numberSSOs, setNumberSSOs] = useState(0);
 
-    const redirect = Boolean(hasLogin && numberSSOs === 1);
+    const redirectSSO = Boolean(!hasLogin && numberSSOs === 1);
 
     const messageLine = hasLogin && Boolean(numberSSOs) && (
         <MessageLine
@@ -101,7 +101,7 @@ const LoginOptions: NavigationFunctionComponent = ({config, launchType, launchEr
                     {messageLine}
                     <SsoOptions
                         setHasComponents={setNumberSSOs}
-                        redirect={redirect}
+                        redirect={redirectSSO}
                         vertical={!hasLogin}
                         show={Boolean(numberSSOs)}
                         componentId={'sso'}
