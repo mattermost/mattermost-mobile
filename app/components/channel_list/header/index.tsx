@@ -4,11 +4,12 @@
 import React from 'react';
 import {Text, View} from 'react-native';
 
-import CompassIcon, {COMPASS_ICONS} from '@app/components/compass_icon';
-import TouchableWithFeedback from '@app/components/touchable_with_feedback';
-import {useTheme} from '@app/context/theme';
-import {typography} from '@app/utils/typography';
+import CompassIcon from '@components/compass_icon';
+import TouchableWithFeedback from '@components/touchable_with_feedback';
+import {COMPASS_ICONS} from '@constants/compass_icons';
+import {useTheme} from '@context/theme';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
+import {typography} from '@utils/typography';
 
 type Props = {
     heading: string;

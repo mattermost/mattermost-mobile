@@ -7,9 +7,9 @@ import withObservables from '@nozbe/with-observables';
 import {of as of$} from 'rxjs';
 import {switchMap} from 'rxjs/operators';
 
-import {Permissions} from '@app/constants';
-import {hasPermission} from '@app/utils/role';
+import {Permissions} from '@constants';
 import {MM_TABLES, SYSTEM_IDENTIFIERS} from '@constants/database';
+import {hasPermission} from '@utils/role';
 
 import TeamSidebar from './team_sidebar';
 

@@ -8,11 +8,11 @@ import Animated, {useAnimatedStyle, withTiming} from 'react-native-reanimated';
 import {SafeAreaView, useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import ChannelList from '@components/channel_list';
-import ServerIcon from '@components/server_icon/server_icon';
 import TeamSidebar from '@components/team_sidebar';
 import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
 import Channel from '@screens/channel';
+import ServerIcon from '@screens/home/channel_list/server_icon/server_icon';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 
 import type {LaunchProps} from '@typings/launch';
@@ -78,6 +78,9 @@ const ChannelListScreen = (props: ChannelProps) => {
                 <Animated.View
                     style={[styles.content, animated]}
                 >
+                    {/* @to-do: Server Icon requires padding in the team and channel components:
+                      * https://mattermost.atlassian.net/browse/MM-39702
+                      */}
                     <TeamSidebar iconPad={true}/>
                     <ChannelList iconPad={false}/>
                     {isTablet &&

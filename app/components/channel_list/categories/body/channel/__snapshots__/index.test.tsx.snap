@@ -4,7 +4,6 @@ exports[`Category Channel List Item should match snapshot 1`] = `
 <View
   style={
     Object {
-      "display": "flex",
       "flexDirection": "row",
       "paddingVertical": 4,
     }

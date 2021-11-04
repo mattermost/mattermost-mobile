@@ -39,7 +39,6 @@ exports[`Category Body Component should match snapshot 1`] = `
       <View
         style={
           Object {
-            "display": "flex",
             "flexDirection": "row",
             "paddingVertical": 4,
           }
@@ -84,7 +83,6 @@ exports[`Category Body Component should match snapshot 1`] = `
       <View
         style={
           Object {
-            "display": "flex",
             "flexDirection": "row",
             "paddingVertical": 4,
           }

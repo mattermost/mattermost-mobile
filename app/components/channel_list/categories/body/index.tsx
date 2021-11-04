@@ -4,7 +4,7 @@
 import React from 'react';
 import {FlatList} from 'react-native';
 
-import {COMPASS_ICONS} from '@app/components/compass_icon';
+import {COMPASS_ICONS} from '@constants/compass_icons';
 
 import ChannelListItem from './channel';
 

@@ -5,10 +5,10 @@ import React from 'react';
 import {StyleSheet, View} from 'react-native';
 import {TextInput} from 'react-native-gesture-handler';
 
-import {useTheme} from '@app/context/theme';
-import {typography} from '@app/utils/typography';
 import CompassIcon from '@components/compass_icon';
+import {useTheme} from '@context/theme';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
+import {typography} from '@utils/typography';
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     container: {

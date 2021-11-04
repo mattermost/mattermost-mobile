@@ -4,15 +4,14 @@
 import React from 'react';
 import {StyleSheet, Text, View} from 'react-native';
 
-import {useTheme} from '@app/context/theme';
-import {typography} from '@app/utils/typography';
-import CompassIcon, {COMPASS_ICONS} from '@components/compass_icon';
+import CompassIcon from '@components/compass_icon';
+import {useTheme} from '@context/theme';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
+import {typography} from '@utils/typography';
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     container: {
         paddingVertical: 4,
-        display: 'flex',
         flexDirection: 'row',
     },
     icon: {
@@ -39,7 +38,7 @@ type Props = {
     unreadCount?: number;
     highlight?: boolean;
     name: string;
-    icon: COMPASS_ICONS;
+    icon: string;
 }
 
 const ChannelListItem = (props: Props) => {

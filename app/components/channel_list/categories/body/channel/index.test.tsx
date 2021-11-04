@@ -3,7 +3,7 @@
 
 import React from 'react';
 
-import {COMPASS_ICONS} from '@app/components/compass_icon';
+import {COMPASS_ICONS} from '@constants/compass_icons';
 import {renderWithIntlAndTheme} from '@test/intl-test-helper';
 
 import ChannelItem from './index';

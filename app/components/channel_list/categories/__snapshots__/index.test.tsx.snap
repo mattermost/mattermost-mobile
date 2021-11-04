@@ -133,156 +133,146 @@ exports[`Category List Component should match snapshot 1`] = `
       onLayout={[Function]}
       style={null}
     >
-      <View>
-        <View
+      <View
+        style={
+          Object {
+            "marginTop": 12,
+            "paddingVertical": 8,
+          }
+        }
+      >
+        <Text
           style={
             Object {
-              "marginTop": 12,
-              "paddingVertical": 8,
+              "color": "rgba(255,255,255,0.64)",
+              "fontFamily": "OpenSans-SemiBold",
+              "fontSize": 12,
+              "fontWeight": "600",
+              "lineHeight": 16,
             }
           }
         >
-          <Text
+          MY FIRST CATEGORY
+        </Text>
+      </View>
+      <View
+        data={
+          Array [
+            Object {
+              "id": "1",
+              "name": "Just a channel",
+            },
+            Object {
+              "highlight": true,
+              "id": "2",
+              "name": "Highlighted!!!",
+            },
+          ]
+        }
+        getItem={[Function]}
+        getItemCount={[Function]}
+        keyExtractor={[Function]}
+        onContentSizeChange={[Function]}
+        onLayout={[Function]}
+        onMomentumScrollBegin={[Function]}
+        onMomentumScrollEnd={[Function]}
+        onScroll={[Function]}
+        onScrollBeginDrag={[Function]}
+        onScrollEndDrag={[Function]}
+        removeClippedSubviews={false}
+        renderItem={[Function]}
+        scrollEventThrottle={50}
+        stickyHeaderIndices={Array []}
+        viewabilityConfigCallbackPairs={Array []}
+      >
+        <View
+          onLayout={[Function]}
+          style={null}
+        >
+          <View
             style={
-              Array [
+              Object {
+                "flexDirection": "row",
+                "paddingVertical": 4,
+              }
+            }
+          >
+            <Icon
+              name="globe"
+              style={
+                Object {
+                  "color": "rgba(255,255,255,0.72)",
+                  "fontSize": 24,
+                  "lineHeight": 28,
+                }
+              }
+            />
+            <Text
+              style={
+                Array [
+                  Object {
+                    "fontFamily": "OpenSans",
+                    "fontSize": 16,
+                    "fontWeight": "400",
+                    "lineHeight": 24,
+                  },
+                  Object {
+                    "color": "rgba(255,255,255,0.72)",
+                    "marginTop": 1,
+                    "paddingLeft": 12,
+                  },
+                  undefined,
+                ]
+              }
+            >
+              Just a channel
+            </Text>
+          </View>
+        </View>
+        <View
+          onLayout={[Function]}
+          style={null}
+        >
+          <View
+            style={
+              Object {
+                "flexDirection": "row",
+                "paddingVertical": 4,
+              }
+            }
+          >
+            <Icon
+              name="globe"
+              style={
+                Object {
+                  "color": "rgba(255,255,255,0.72)",
+                  "fontSize": 24,
+                  "lineHeight": 28,
+                }
+              }
+            />
+            <Text
+              style={
                 Array [
                   Object {
                     "fontFamily": "OpenSans-SemiBold",
-                    "fontSize": 12,
+                    "fontSize": 16,
                     "fontWeight": "600",
-                    "lineHeight": 16,
+                    "lineHeight": 24,
                   },
-                ],
-                Object {
-                  "color": "rgba(255,255,255,0.64)",
-                },
-              ]
-            }
-          >
-            MY FIRST CATEGORY
-          </Text>
-        </View>
-        <View
-          data={
-            Array [
-              Object {
-                "id": "1",
-                "name": "Just a channel",
-              },
-              Object {
-                "highlight": true,
-                "id": "2",
-                "name": "Highlighted!!!",
-              },
-            ]
-          }
-          getItem={[Function]}
-          getItemCount={[Function]}
-          keyExtractor={[Function]}
-          onContentSizeChange={[Function]}
-          onLayout={[Function]}
-          onMomentumScrollBegin={[Function]}
-          onMomentumScrollEnd={[Function]}
-          onScroll={[Function]}
-          onScrollBeginDrag={[Function]}
-          onScrollEndDrag={[Function]}
-          removeClippedSubviews={false}
-          renderItem={[Function]}
-          scrollEventThrottle={50}
-          stickyHeaderIndices={Array []}
-          viewabilityConfigCallbackPairs={Array []}
-        >
-          <View
-            onLayout={[Function]}
-            style={null}
-          >
-            <View
-              style={
-                Object {
-                  "display": "flex",
-                  "flexDirection": "row",
-                  "paddingVertical": 4,
-                }
-              }
-            >
-              <Icon
-                name="globe"
-                style={
                   Object {
                     "color": "rgba(255,255,255,0.72)",
-                    "fontSize": 24,
-                    "lineHeight": 28,
-                  }
-                }
-              />
-              <Text
-                style={
-                  Array [
-                    Object {
-                      "fontFamily": "OpenSans",
-                      "fontSize": 16,
-                      "fontWeight": "400",
-                      "lineHeight": 24,
-                    },
-                    Object {
-                      "color": "rgba(255,255,255,0.72)",
-                      "marginTop": 1,
-                      "paddingLeft": 12,
-                    },
-                    undefined,
-                  ]
-                }
-              >
-                Just a channel
-              </Text>
-            </View>
-          </View>
-          <View
-            onLayout={[Function]}
-            style={null}
-          >
-            <View
-              style={
-                Object {
-                  "display": "flex",
-                  "flexDirection": "row",
-                  "paddingVertical": 4,
-                }
+                    "marginTop": 1,
+                    "paddingLeft": 12,
+                  },
+                  Object {
+                    "color": "#ffffff",
+                  },
+                ]
               }
             >
-              <Icon
-                name="globe"
-                style={
-                  Object {
-                    "color": "rgba(255,255,255,0.72)",
-                    "fontSize": 24,
-                    "lineHeight": 28,
-                  }
-                }
-              />
-              <Text
-                style={
-                  Array [
-                    Object {
-                      "fontFamily": "OpenSans-SemiBold",
-                      "fontSize": 16,
-                      "fontWeight": "600",
-                      "lineHeight": 24,
-                    },
-                    Object {
-                      "color": "rgba(255,255,255,0.72)",
-                      "marginTop": 1,
-                      "paddingLeft": 12,
-                    },
-                    Object {
-                      "color": "#ffffff",
-                    },
-                  ]
-                }
-              >
-                Highlighted!!!
-              </Text>
-            </View>
+              Highlighted!!!
+            </Text>
           </View>
         </View>
       </View>
@@ -291,156 +281,146 @@ exports[`Category List Component should match snapshot 1`] = `
       onLayout={[Function]}
       style={null}
     >
-      <View>
-        <View
+      <View
+        style={
+          Object {
+            "marginTop": 12,
+            "paddingVertical": 8,
+          }
+        }
+      >
+        <Text
           style={
             Object {
-              "marginTop": 12,
-              "paddingVertical": 8,
+              "color": "rgba(255,255,255,0.64)",
+              "fontFamily": "OpenSans-SemiBold",
+              "fontSize": 12,
+              "fontWeight": "600",
+              "lineHeight": 16,
             }
           }
         >
-          <Text
+          ANOTHER CAT
+        </Text>
+      </View>
+      <View
+        data={
+          Array [
+            Object {
+              "id": "1",
+              "name": "Just a channel",
+            },
+            Object {
+              "highlight": true,
+              "id": "2",
+              "name": "Highlighted!!!",
+            },
+          ]
+        }
+        getItem={[Function]}
+        getItemCount={[Function]}
+        keyExtractor={[Function]}
+        onContentSizeChange={[Function]}
+        onLayout={[Function]}
+        onMomentumScrollBegin={[Function]}
+        onMomentumScrollEnd={[Function]}
+        onScroll={[Function]}
+        onScrollBeginDrag={[Function]}
+        onScrollEndDrag={[Function]}
+        removeClippedSubviews={false}
+        renderItem={[Function]}
+        scrollEventThrottle={50}
+        stickyHeaderIndices={Array []}
+        viewabilityConfigCallbackPairs={Array []}
+      >
+        <View
+          onLayout={[Function]}
+          style={null}
+        >
+          <View
             style={
-              Array [
+              Object {
+                "flexDirection": "row",
+                "paddingVertical": 4,
+              }
+            }
+          >
+            <Icon
+              name="globe"
+              style={
+                Object {
+                  "color": "rgba(255,255,255,0.72)",
+                  "fontSize": 24,
+                  "lineHeight": 28,
+                }
+              }
+            />
+            <Text
+              style={
+                Array [
+                  Object {
+                    "fontFamily": "OpenSans",
+                    "fontSize": 16,
+                    "fontWeight": "400",
+                    "lineHeight": 24,
+                  },
+                  Object {
+                    "color": "rgba(255,255,255,0.72)",
+                    "marginTop": 1,
+                    "paddingLeft": 12,
+                  },
+                  undefined,
+                ]
+              }
+            >
+              Just a channel
+            </Text>
+          </View>
+        </View>
+        <View
+          onLayout={[Function]}
+          style={null}
+        >
+          <View
+            style={
+              Object {
+                "flexDirection": "row",
+                "paddingVertical": 4,
+              }
+            }
+          >
+            <Icon
+              name="globe"
+              style={
+                Object {
+                  "color": "rgba(255,255,255,0.72)",
+                  "fontSize": 24,
+                  "lineHeight": 28,
+                }
+              }
+            />
+            <Text
+              style={
                 Array [
                   Object {
                     "fontFamily": "OpenSans-SemiBold",
-                    "fontSize": 12,
+                    "fontSize": 16,
                     "fontWeight": "600",
-                    "lineHeight": 16,
+                    "lineHeight": 24,
                   },
-                ],
-                Object {
-                  "color": "rgba(255,255,255,0.64)",
-                },
-              ]
-            }
-          >
-            ANOTHER CAT
-          </Text>
-        </View>
-        <View
-          data={
-            Array [
-              Object {
-                "id": "1",
-                "name": "Just a channel",
-              },
-              Object {
-                "highlight": true,
-                "id": "2",
-                "name": "Highlighted!!!",
-              },
-            ]
-          }
-          getItem={[Function]}
-          getItemCount={[Function]}
-          keyExtractor={[Function]}
-          onContentSizeChange={[Function]}
-          onLayout={[Function]}
-          onMomentumScrollBegin={[Function]}
-          onMomentumScrollEnd={[Function]}
-          onScroll={[Function]}
-          onScrollBeginDrag={[Function]}
-          onScrollEndDrag={[Function]}
-          removeClippedSubviews={false}
-          renderItem={[Function]}
-          scrollEventThrottle={50}
-          stickyHeaderIndices={Array []}
-          viewabilityConfigCallbackPairs={Array []}
-        >
-          <View
-            onLayout={[Function]}
-            style={null}
-          >
-            <View
-              style={
-                Object {
-                  "display": "flex",
-                  "flexDirection": "row",
-                  "paddingVertical": 4,
-                }
-              }
-            >
-              <Icon
-                name="globe"
-                style={
                   Object {
                     "color": "rgba(255,255,255,0.72)",
-                    "fontSize": 24,
-                    "lineHeight": 28,
-                  }
-                }
-              />
-              <Text
-                style={
-                  Array [
-                    Object {
-                      "fontFamily": "OpenSans",
-                      "fontSize": 16,
-                      "fontWeight": "400",
-                      "lineHeight": 24,
-                    },
-                    Object {
-                      "color": "rgba(255,255,255,0.72)",
-                      "marginTop": 1,
-                      "paddingLeft": 12,
-                    },
-                    undefined,
-                  ]
-                }
-              >
-                Just a channel
-              </Text>
-            </View>
-          </View>
-          <View
-            onLayout={[Function]}
-            style={null}
-          >
-            <View
-              style={
-                Object {
-                  "display": "flex",
-                  "flexDirection": "row",
-                  "paddingVertical": 4,
-                }
+                    "marginTop": 1,
+                    "paddingLeft": 12,
+                  },
+                  Object {
+                    "color": "#ffffff",
+                  },
+                ]
               }
             >
-              <Icon
-                name="globe"
-                style={
-                  Object {
-                    "color": "rgba(255,255,255,0.72)",
-                    "fontSize": 24,
-                    "lineHeight": 28,
-                  }
-                }
-              />
-              <Text
-                style={
-                  Array [
-                    Object {
-                      "fontFamily": "OpenSans-SemiBold",
-                      "fontSize": 16,
-                      "fontWeight": "600",
-                      "lineHeight": 24,
-                    },
-                    Object {
-                      "color": "rgba(255,255,255,0.72)",
-                      "marginTop": 1,
-                      "paddingLeft": 12,
-                    },
-                    Object {
-                      "color": "#ffffff",
-                    },
-                  ]
-                }
-              >
-                Highlighted!!!
-              </Text>
-            </View>
+              Highlighted!!!
+            </Text>
           </View>
         </View>
       </View>

@@ -4,13 +4,13 @@
 import React from 'react';
 import {StyleSheet, Text, View} from 'react-native';
 
-import TouchableWithFeedback from '@app/components/touchable_with_feedback';
-import {Screens} from '@app/constants';
-import {useTheme} from '@app/context/theme';
-import {goToScreen} from '@app/screens/navigation';
-import {makeStyleSheetFromTheme} from '@app/utils/theme';
-import {typography} from '@app/utils/typography';
 import CompassIcon from '@components/compass_icon';
+import TouchableWithFeedback from '@components/touchable_with_feedback';
+import {Screens} from '@constants';
+import {useTheme} from '@context/theme';
+import {goToScreen} from '@screens/navigation';
+import {makeStyleSheetFromTheme} from '@utils/theme';
+import {typography} from '@utils/typography';
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     container: {

@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React from 'react';
-import {FlatList, View} from 'react-native';
+import {FlatList, StyleSheet} from 'react-native';
 
 import ThreadsButton from '../threads';
 
@@ -13,11 +13,17 @@ type Props = {
     categories: TempoCategory[];
 }
 
+const styles = StyleSheet.create({
+    flex: {
+        flex: 1,
+    },
+});
+
 const renderCategory = (data: {item: TempoCategory}) => (
-    <View>
+    <>
         <CategoryHeader heading={data.item.title}/>
         <CategoryBody channels={data.item.channels}/>
-    </View>
+    </>
 );
 
 const Categories = (props: Props) => {
@@ -26,7 +32,7 @@ const Categories = (props: Props) => {
             data={props.categories}
             renderItem={renderCategory}
             ListHeaderComponent={ThreadsButton}
-            style={{flex: 1}}
+            style={styles.flex}
         />
     );
 };

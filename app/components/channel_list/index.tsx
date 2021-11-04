@@ -5,9 +5,9 @@ import React, {useState} from 'react';
 import {View} from 'react-native';
 import {TouchableOpacity} from 'react-native-gesture-handler';
 
-import TABLET from '@app/constants/view';
-import {useIsTablet} from '@app/hooks/device';
+import TABLET from '@constants/view';
 import {useTheme} from '@context/theme';
+import {useIsTablet} from '@hooks/device';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 
 import Categories from './categories';

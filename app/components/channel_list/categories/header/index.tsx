@@ -2,11 +2,11 @@
 // See LICENSE.txt for license information.
 
 import React from 'react';
-import {StyleSheet, Text, View} from 'react-native';
+import {Text, View} from 'react-native';
 
-import {useTheme} from '@app/context/theme';
-import {typography} from '@app/utils/typography';
+import {useTheme} from '@context/theme';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
+import {typography} from '@utils/typography';
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     container: {
@@ -15,10 +15,9 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     },
     heading: {
         color: changeOpacity(theme.sidebarText, 0.64),
+        ...typography('Heading', 75),
     },
 }));
-
-const textStyle = StyleSheet.create([typography('Heading', 75)]);
 
 type Props = {
     heading: string;
@@ -30,7 +29,7 @@ const CategoryHeader = (props: Props) => {
 
     return (
         <View style={styles.container}>
-            <Text style={[textStyle, styles.heading]}>
+            <Text style={styles.heading}>
                 {props.heading.toUpperCase()}
             </Text>
         </View>
