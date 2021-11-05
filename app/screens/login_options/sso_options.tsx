@@ -164,7 +164,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => ({
         marginVertical: 4,
         backgroundColor: 'transparent',
         borderWidth: 1,
-        borderColor: changeOpacity(theme.centerChannelColor, 0.64),
+        borderColor: changeOpacity(theme.centerChannelColor, 0.16),
     },
     buttonTextContainer: {
         color: theme.centerChannelColor,
