@@ -17,7 +17,7 @@ import {setDefaultProfileImage, updateMe} from '@actions/remote/user';
 import StatusBar from '@components/status_bar';
 import TabletTitle from '@components/tablet_title';
 import ProfilePicture from '@components/user_profile_picture/edit_image';
-import ProfilePictureButton from '@components/user_profile_picture/picker';
+import ImagePicker from '@components/user_profile_picture/picker';
 import {Events} from '@constants';
 import {MM_TABLES, SYSTEM_IDENTIFIERS} from '@constants/database';
 import {useServerUrl} from '@context/server_url';
@@ -284,7 +284,7 @@ const EditProfile = ({closeButtonId, componentId, currentUser, isModal, isTablet
 
         return (
             <View style={style.top}>
-                <ProfilePictureButton
+                <ImagePicker
                     browseFileTypes={DocumentPicker.types.images}
                     currentUser={currentUser}
                     maxFileSize={MAX_SIZE}
@@ -295,7 +295,7 @@ const EditProfile = ({closeButtonId, componentId, currentUser, isModal, isTablet
                     wrapper={true}
                 >
                     {profilePicture}
-                </ProfilePictureButton>
+                </ImagePicker>
             </View>
         );
     };

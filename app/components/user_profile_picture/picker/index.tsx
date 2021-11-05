@@ -63,7 +63,7 @@ const style = StyleSheet.create({
     },
 });
 
-const ProfilePictureButton = ({
+const ImagePicker = ({
     browseFileTypes = Platform.OS === 'ios' ? 'public.item' : '*/*',
     canBrowseFiles = true,
     canBrowsePhotoLibrary = true,
@@ -451,4 +451,4 @@ const ProfilePictureButton = ({
     );
 };
 
-export default ProfilePictureButton;
+export default ImagePicker;
