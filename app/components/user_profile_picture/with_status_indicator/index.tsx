@@ -77,7 +77,7 @@ const UserProfilePictureWithStatus = ({
                     size={120}
                     lastPictureUpdate={lastPictureUpdate}
                 />
-                { userStatus && !isBot && showStatus && (
+                { Boolean(userStatus) && !isBot && showStatus && (
                     <View
                         style={[
                             style.statusWrapper,
