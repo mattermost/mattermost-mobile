@@ -5,12 +5,14 @@ import React, {useEffect, useState} from 'react';
 import {Platform, View} from 'react-native';
 
 import {Client} from '@client/rest';
-import UserProfileImage from '@components/user_profile_picture/image';
+import CompassIcon from '@components/compass_icon';
 import {useServerUrl} from '@context/server_url';
 import {useTheme} from '@context/theme';
 import useDidUpdate from '@hooks/did_update';
 import NetworkManager from '@init/network_manager';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
+
+import UserProfileImage from '../image';
 
 type ProfilePictureProps = {
     edit: boolean;
@@ -30,10 +32,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             alignItems: 'center',
             borderRadius: 80,
         },
-        icon: {
-            color: changeOpacity(theme.centerChannelColor, 0.48),
-        },
-        statusWrapper: {
+        camera: {
             position: 'absolute',
             bottom: 0,
             right: 0,
@@ -43,14 +42,14 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             backgroundColor: theme.centerChannelBg,
             borderWidth: 1,
             borderColor: theme.centerChannelBg,
-        },
-        status: {
-            color: theme.centerChannelBg,
+            borderRadius: 36 / 2,
+            height: 36,
+            width: 36,
         },
     };
 });
 
-const ProfilePicture = ({
+const EditProfilePicture = ({
     edit = false,
     imageUri,
     lastPictureUpdate,
@@ -64,7 +63,7 @@ const ProfilePicture = ({
     const theme = useTheme();
     const serverUrl = useServerUrl();
 
-    const style = getStyleSheet(theme);
+    const styles = getStyleSheet(theme);
     let client: Client | undefined;
 
     try {
@@ -105,6 +104,7 @@ const ProfilePicture = ({
     }, [userId, lastPictureUpdate, edit]);
 
     let source = null;
+
     if (pictureUrl) {
         let prefix = '';
         if (Platform.OS === 'android' &&
@@ -127,7 +127,7 @@ const ProfilePicture = ({
     return (
         <View
             style={[
-                style.container,
+                styles.container,
                 {
                     backgroundColor: changeOpacity(theme.centerChannelColor, 0.08),
                     height: size,
@@ -143,8 +143,18 @@ const ProfilePicture = ({
                 source={source || undefined}
                 userId={userId}
             />
+            <View
+                style={styles.camera}
+            >
+                <CompassIcon
+                    name='camera-outline'
+                    size={22}
+                    color={changeOpacity(theme.centerChannelColor, 0.6)}
+                />
+            </View>
+
         </View>
     );
 };
 
-export default ProfilePicture;
+export default EditProfilePicture;

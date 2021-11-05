@@ -16,7 +16,7 @@ import {switchMap} from 'rxjs/operators';
 import {setDefaultProfileImage, updateMe} from '@actions/remote/user';
 import StatusBar from '@components/status_bar';
 import TabletTitle from '@components/tablet_title';
-import ProfilePicture from '@components/user_profile_picture/edit_image';
+import EditProfilePicture from '@components/user_profile_picture/edit_image';
 import ImagePicker from '@components/user_profile_picture/picker';
 import {Events} from '@constants';
 import {MM_TABLES, SYSTEM_IDENTIFIERS} from '@constants/database';
@@ -263,7 +263,7 @@ const EditProfile = ({closeButtonId, componentId, currentUser, isModal, isTablet
 
     const renderProfilePicture = () => {
         const profilePicture = (
-            <ProfilePicture
+            <EditProfilePicture
                 edit={!lockedPicture}
                 imageUri={profileImage?.uri}
                 lastPictureUpdate={currentUser.lastPictureUpdate}
@@ -282,22 +282,26 @@ const EditProfile = ({closeButtonId, componentId, currentUser, isModal, isTablet
             );
         }
 
-        return (
-            <View style={style.top}>
-                <ImagePicker
-                    browseFileTypes={DocumentPicker.types.images}
-                    currentUser={currentUser}
-                    maxFileSize={MAX_SIZE}
-                    onShowFileSizeWarning={onShowFileSizeWarning}
-                    onShowUnsupportedMimeTypeWarning={onShowUnsupportedMimeTypeWarning}
-                    removeProfileImage={handleRemoveProfileImage}
-                    uploadFiles={handleUploadProfileImage}
-                    wrapper={true}
-                >
-                    {profilePicture}
-                </ImagePicker>
-            </View>
-        );
+        if (!currentUser.isBot) {
+            return (
+                <View style={style.top}>
+                    <ImagePicker
+                        browseFileTypes={DocumentPicker.types.images}
+                        currentUser={currentUser}
+                        maxFileSize={MAX_SIZE}
+                        onShowFileSizeWarning={onShowFileSizeWarning}
+                        onShowUnsupportedMimeTypeWarning={onShowUnsupportedMimeTypeWarning}
+                        removeProfileImage={handleRemoveProfileImage}
+                        uploadFiles={handleUploadProfileImage}
+                        wrapper={true}
+                    >
+                        {profilePicture}
+                    </ImagePicker>
+                </View>
+            );
+        }
+
+        return null;
     };
 
     if (updating) {
