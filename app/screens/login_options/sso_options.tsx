@@ -22,7 +22,7 @@ import {makeStyleSheetFromTheme, changeOpacity} from '@utils/theme';
 const SsoOptions = ({config, extra, redirect, onlySSO, show, setHasComponents, launchType, launchError, license, theme, serverDisplayName, serverUrl}: LoginOptionsProps) => {
     const intl = useIntl();
     const styles = getStyleSheet(theme);
-    const styleButtonText = buttonTextStyle(theme, 'lg', 'secondary', 'default');
+    const styleButtonText = buttonTextStyle(theme, 'lg', 'primary', 'default');
     const styleButtonBackground = buttonBackgroundStyle(theme, 'lg', 'primary');
 
     const displaySSO = preventDoubleTap((ssoType: string) => {
