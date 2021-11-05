@@ -24,10 +24,11 @@ exports[`ChannelNotificationPreference should match snapshot 1`] = `
       id="channel_notifications.preference.header"
       style={
         Object {
+          "backgroundColor": "rgba(63,67,80,0.03)",
           "color": "rgba(63,67,80,0.56)",
           "fontSize": 13,
-          "marginTop": 10,
           "padding": 16,
+          "paddingTop": 26,
           "textTransform": "uppercase",
         }
       }

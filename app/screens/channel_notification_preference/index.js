@@ -5,7 +5,7 @@ import {connect} from 'react-redux';
 import {bindActionCreators} from 'redux';
 
 import {updateChannelNotifyProps} from '@mm-redux/actions/channels';
-import {getTheme} from '@mm-redux/selectors/entities/preferences';
+import {getTheme, isCollapsedThreadsEnabled} from '@mm-redux/selectors/entities/preferences';
 import {getCurrentUser} from '@mm-redux/selectors/entities/users';
 import {isLandscape} from '@selectors/device';
 
@@ -15,6 +15,7 @@ function mapStateToProps(state) {
     return {
         globalNotifyProps: getCurrentUser(state)?.notify_props,
         isLandscape: isLandscape(state),
+        isCollapsedThreadsEnabled: isCollapsedThreadsEnabled(state),
         theme: getTheme(state),
     };
 }

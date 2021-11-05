@@ -167,7 +167,6 @@ exports[`Global Thread List Should render threads with functional tabs & mark al
       }
       initialNumToRender={10}
       keyExtractor={[Function]}
-      numColumns={1}
       onEndReached={[Function]}
       onEndReachedThreshold={2}
       onScroll={[Function]}

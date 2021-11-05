@@ -30,7 +30,7 @@ describe('SelectServer', () => {
             <SelectServer {...baseProps}/>,
         );
 
-        const button = getByText('Connect');
+        const button = getByTestId('mobile.components.select_server_view.connect');
         fireEvent.press(button);
 
         await waitFor(() => expect(getByTestId('select_server.error.text')).toBeTruthy());
@@ -45,7 +45,7 @@ describe('SelectServer', () => {
         const urlInput = getByTestId('select_server.server_url.input');
         fireEvent.changeText(urlInput, '  ');
 
-        const button = getByText('Connect');
+        const button = getByTestId('mobile.components.select_server_view.connect');
         fireEvent.press(button);
 
         await waitFor(() => expect(getByTestId('select_server.error.text')).toBeTruthy());
@@ -60,7 +60,7 @@ describe('SelectServer', () => {
         const urlInput = getByTestId('select_server.server_url.input');
         fireEvent.changeText(urlInput, 'ht://invalid:8065');
 
-        const button = getByText('Connect');
+        const button = getByTestId('mobile.components.select_server_view.connect');
         fireEvent.press(button);
 
         await waitFor(() => expect(getByTestId('select_server.error.text')).toBeTruthy());
@@ -68,17 +68,16 @@ describe('SelectServer', () => {
     });
 
     test('should not show error when valid URL is entered', async () => {
-        const {getByTestId, getByText, queryByTestId} = renderWithReduxIntl(
+        const {getByTestId, queryByTestId} = renderWithReduxIntl(
             <SelectServer {...baseProps}/>,
         );
 
         const urlInput = getByTestId('select_server.server_url.input');
         fireEvent.changeText(urlInput, 'http://localhost:8065');
 
-        const button = getByText('Connect');
+        const button = getByTestId('mobile.components.select_server_view.connect');
         fireEvent.press(button);
 
         expect(queryByTestId('select_server.error.text')).toBeNull();
-        await waitFor(() => expect(getByText('Connecting...')).toBeTruthy());
     });
 });

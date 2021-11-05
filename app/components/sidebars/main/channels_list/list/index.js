@@ -83,6 +83,7 @@ function mapStateToProps(state) {
         showLegacySidebar,
         unreadsOnTop,
         currentChannelId,
+        currentTeamId,
     };
 }
 
