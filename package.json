@@ -76,7 +76,6 @@
     "react-native-share": "7.2.1",
     "react-native-slider": "0.11.0",
     "react-native-svg": "12.1.1",
-    "react-native-unimodules": "0.14.10",
     "react-native-vector-icons": "9.0.0",
     "react-native-video": "5.2.0",
     "react-native-webview": "11.14.2",
@@ -87,7 +86,8 @@
     "serialize-error": "8.1.0",
     "shallow-equals": "1.0.0",
     "tinycolor2": "1.4.2",
-    "url-parse": "1.5.3"
+    "url-parse": "1.5.3",
+    "expo": ">=43.0.0-* <44.0.0"
   },
   "devDependencies": {
     "@babel/cli": "7.16.0",
@@ -190,6 +190,11 @@
       ],
       "pattern": "**/*.stories.@(js|jsx|ts|tsx)",
       "outputFile": "./storybook/storyLoader.js"
+    }
+  },
+  "expo": {
+    "autolinking": {
+      "exclude": ["expo-keep-awake", "expo-font", "expo-constants", "expo-application", "expo-assets", "expo-error-recovery"]
     }
   }
 }

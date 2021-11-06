@@ -5,9 +5,6 @@
 #import <React/RCTLinkingManager.h>
 #import <RNKeychain/RNKeychainManager.h>
 
-#import <UMCore/UMModuleRegistry.h>
-#import <UMReactNativeAdapter/UMNativeModulesProxy.h>
-#import <UMReactNativeAdapter/UMModuleRegistryAdapter.h>
 #import <ReactNativeNavigation/ReactNativeNavigation.h>
 #import <UploadAttachments/UploadAttachments-Swift.h>
 #import <UploadAttachments/MattermostBucket.h>
@@ -20,8 +17,6 @@
 @import Gekidou;
 
 @interface AppDelegate () <RCTBridgeDelegate>
- 
-@property (nonatomic, strong) UMModuleRegistryAdapter *moduleRegistryAdapter;
  
 @end
 
@@ -49,8 +44,6 @@ MattermostBucket* bucket = nil;
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions
 {
-  self.moduleRegistryAdapter = [[UMModuleRegistryAdapter alloc] initWithModuleRegistryProvider:[[UMModuleRegistryProvider alloc] init]];
-
   if (bucket == nil) {
     bucket = [[MattermostBucket alloc] init];
   }
@@ -153,7 +146,6 @@ MattermostBucket* bucket = nil;
 {
   NSMutableArray<id<RCTBridgeModule>> *extraModules = [NSMutableArray new];
   [extraModules addObjectsFromArray:[ReactNativeNavigation extraModulesForBridge:bridge]];
-  [extraModules addObjectsFromArray:[_moduleRegistryAdapter extraModulesForBridge:bridge]];
   
   // You can inject any extra modules that you would like here, more information at:
   // https://facebook.github.io/react-native/docs/native-modules-ios.html#dependency-injection

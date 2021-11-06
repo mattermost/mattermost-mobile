@@ -1,8 +1,8 @@
 #import <React/RCTBridgeDelegate.h>
-#import <UMCore/UMAppDelegateWrapper.h>
+#import <Expo/Expo.h>
 #import "RNNotifications.h"
 
-@interface AppDelegate : UMAppDelegateWrapper <UIApplicationDelegate, RCTBridgeDelegate>
+@interface AppDelegate : EXAppDelegateWrapper <UIApplicationDelegate, RCTBridgeDelegate>
 
 @property (nonatomic, strong) UIWindow *window;
 

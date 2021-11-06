@@ -174,15 +174,13 @@ jest.mock('react-native-vector-icons', () => {
     };
 });
 
-jest.mock('react-native-unimodules', () => ({
-    FileSystem: {
-        cacheDirectory: 'root/cache',
-        documentDirectory: 'root/documents',
-        deleteAsync: jest.fn().mockResolvedValue(true),
-        getInfoAsync: jest.fn().mockResolvedValue({exists: false}),
-        makeDirectoryAsync: jest.fn().mockResolvedValue(true),
-        readDirectoryAsync: jest.fn().mockResolvedValue([]),
-    },
+jest.mock('expo-file-system', () => ({
+    cacheDirectory: 'root/cache',
+    documentDirectory: 'root/documents',
+    deleteAsync: jest.fn().mockResolvedValue(true),
+    getInfoAsync: jest.fn().mockResolvedValue({exists: false}),
+    makeDirectoryAsync: jest.fn().mockResolvedValue(true),
+    readDirectoryAsync: jest.fn().mockResolvedValue([]),
 }));
 
 jest.mock('react-native/Libraries/Animated/NativeAnimatedHelper');

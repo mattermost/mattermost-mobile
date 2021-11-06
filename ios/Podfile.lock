@@ -4,21 +4,14 @@ PODS:
   - BVLinearGradient (2.5.6):
     - React
   - DoubleConversion (1.1.6)
-  - EXConstants (11.0.2):
+  - EXErrorRecovery (3.0.3):
     - ExpoModulesCore
-    - UMCore
-  - EXFileSystem (11.1.3):
+  - EXFileSystem (13.0.3):
     - ExpoModulesCore
-    - UMCore
-  - ExpoModulesCore (0.2.0):
-    - ExpoModulesCore/Core (= 0.2.0)
-    - ExpoModulesCore/Interfaces (= 0.2.0)
-    - UMCore
-  - ExpoModulesCore/Core (0.2.0):
-    - UMCore
-  - ExpoModulesCore/Interfaces (0.2.0):
-    - ExpoModulesCore/Core
-    - UMCore
+  - Expo (43.0.2):
+    - ExpoModulesCore
+  - ExpoModulesCore (0.4.7):
+    - React-Core
   - FBLazyVector (0.66.2)
   - FBReactNativeSpec (0.66.2):
     - RCT-Folly (= 2021.06.28.00-v2)
@@ -470,14 +463,6 @@ PODS:
   - Starscream (4.0.4)
   - SwiftyJSON (5.0.1)
   - Swime (3.0.6)
-  - UMAppLoader (2.2.0)
-  - UMCore (7.1.2)
-  - UMReactNativeAdapter (6.3.9):
-    - ExpoModulesCore
-    - React-Core
-    - UMCore
-  - UMTaskManagerInterface (6.2.0):
-    - UMCore
   - WatermelonDB (0.24.0):
     - React
     - React-jsi
@@ -489,8 +474,9 @@ DEPENDENCIES:
   - boost (from `../node_modules/react-native/third-party-podspecs/boost.podspec`)
   - BVLinearGradient (from `../node_modules/react-native-linear-gradient`)
   - DoubleConversion (from `../node_modules/react-native/third-party-podspecs/DoubleConversion.podspec`)
-  - EXConstants (from `../node_modules/expo-constants/ios`)
+  - EXErrorRecovery (from `../node_modules/expo-error-recovery/ios`)
   - EXFileSystem (from `../node_modules/expo-file-system/ios`)
+  - Expo (from `../node_modules/expo/ios`)
   - ExpoModulesCore (from `../node_modules/expo-modules-core/ios`)
   - FBLazyVector (from `../node_modules/react-native/Libraries/FBLazyVector`)
   - FBReactNativeSpec (from `../node_modules/react-native/React/FBReactNativeSpec`)
@@ -569,10 +555,6 @@ DEPENDENCIES:
   - "simdjson (from `../node_modules/@nozbe/simdjson`)"
   - Starscream (from `https://github.com/mattermost/Starscream.git`, commit `cb83dd247339ff6c155f0e749d6fe2cc145f5283`)
   - Swime (= 3.0.6)
-  - UMAppLoader (from `../node_modules/unimodules-app-loader/ios`)
-  - "UMCore (from `../node_modules/@unimodules/core/ios`)"
-  - "UMReactNativeAdapter (from `../node_modules/@unimodules/react-native-adapter/ios`)"
-  - UMTaskManagerInterface (from `../node_modules/unimodules-task-manager-interface/ios`)
   - "WatermelonDB (from `../node_modules/@nozbe/watermelondb`)"
   - XCDYouTubeKit (= 2.8.2)
   - Yoga (from `../node_modules/react-native/ReactCommon/yoga`)
@@ -601,10 +583,12 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native-linear-gradient"
   DoubleConversion:
     :podspec: "../node_modules/react-native/third-party-podspecs/DoubleConversion.podspec"
-  EXConstants:
-    :path: "../node_modules/expo-constants/ios"
+  EXErrorRecovery:
+    :path: "../node_modules/expo-error-recovery/ios"
   EXFileSystem:
     :path: "../node_modules/expo-file-system/ios"
+  Expo:
+    :path: "../node_modules/expo/ios"
   ExpoModulesCore:
     :path: "../node_modules/expo-modules-core/ios"
   FBLazyVector:
@@ -752,14 +736,6 @@ EXTERNAL SOURCES:
   Starscream:
     :commit: cb83dd247339ff6c155f0e749d6fe2cc145f5283
     :git: https://github.com/mattermost/Starscream.git
-  UMAppLoader:
-    :path: "../node_modules/unimodules-app-loader/ios"
-  UMCore:
-    :path: "../node_modules/@unimodules/core/ios"
-  UMReactNativeAdapter:
-    :path: "../node_modules/@unimodules/react-native-adapter/ios"
-  UMTaskManagerInterface:
-    :path: "../node_modules/unimodules-task-manager-interface/ios"
   WatermelonDB:
     :path: "../node_modules/@nozbe/watermelondb"
   Yoga:
@@ -775,9 +751,10 @@ SPEC CHECKSUMS:
   boost: a7c83b31436843459a1961bfd74b96033dc77234
   BVLinearGradient: e3aad03778a456d77928f594a649e96995f1c872
   DoubleConversion: 831926d9b8bf8166fd87886c4abab286c2422662
-  EXConstants: 4cb52b6d8f636c767104a44bf7db3873e9c01a6f
-  EXFileSystem: 0a04aba8da751b9ac954065911bcf166503f8267
-  ExpoModulesCore: 2734852616127a6c1fc23012197890a6f3763dc7
+  EXErrorRecovery: ac2622400a32be84604591f70d0efff416e4b9a2
+  EXFileSystem: 99aac7962c11c680681819dd9cbca24e20e5b1e7
+  Expo: b66c9661cf2514b4adf67b8367178e8ed3eb9801
+  ExpoModulesCore: c353a3bed60c3b83dbe63f134aaa7bf4733ffa16
   FBLazyVector: 57a8b34460679fb69e1ce7d625b04dbd1596b1f1
   FBReactNativeSpec: 18438b1c04ce502ed681cd19db3f4508964c082a
   fmt: ff9d55029c625d3757ed641535fd4a75fedc7ce9
@@ -861,15 +838,11 @@ SPEC CHECKSUMS:
   Starscream: 5178aed56b316f13fa3bc55694e583d35dd414d9
   SwiftyJSON: 2f33a42c6fbc52764d96f13368585094bfd8aa5e
   Swime: d7b2c277503b6cea317774aedc2dce05613f8b0b
-  UMAppLoader: 21af63390e55c82e037fb9752d93114a80ecf16e
-  UMCore: ce3a4faa010239063b8343895b29a6d97b01069d
-  UMReactNativeAdapter: d03cefd0e4e4179ab8c490408589f1c8a6c8b785
-  UMTaskManagerInterface: 2be431101b73604e64fbfffcf759336f9d8fccbb
   WatermelonDB: e043b1a32ddc63864eb539b562e86ef80f8224cd
   XCDYouTubeKit: 79baadb0560673a67c771eba45f83e353fd12c1f
   Yoga: 9a08effa851c1d8cc1647691895540bc168ea65f
   YoutubePlayer-in-WKWebView: 4fca3b4f6f09940077bfbae7bddb771f2b43aacd
 
-PODFILE CHECKSUM: 7d223db07581157903686d5b376c1b697a056354
+PODFILE CHECKSUM: b69e74be8467386d2b72be99483af3956a8ed0e0
 
 COCOAPODS: 1.10.2
