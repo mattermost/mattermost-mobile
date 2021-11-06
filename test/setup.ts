@@ -12,7 +12,7 @@ require('react-native-reanimated/lib/reanimated2/jestUtils').setUpTests();
 require('isomorphic-fetch');
 
 /* eslint-disable no-console */
-jest.mock('@react-native-community/async-storage', () => new MockAsyncStorage());
+jest.mock('@react-native-async-storage/async-storage', () => new MockAsyncStorage());
 jest.mock('@database/manager');
 jest.doMock('react-native', () => {
     const {
