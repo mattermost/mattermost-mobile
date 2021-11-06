@@ -7,8 +7,8 @@ import {ActivityIndicator, Platform, useWindowDimensions, View} from 'react-nati
 import Button from 'react-native-button';
 import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
 
-import FormattedText from '@app/components/formatted_text';
 import FloatingTextInput, {FloatingTextInputRef} from '@components/floating_text_input_label';
+import FormattedText from '@components/formatted_text';
 import {useIsTablet} from '@hooks/device';
 import {t} from '@i18n';
 import {buttonBackgroundStyle, buttonTextStyle} from '@utils/buttonStyles';
@@ -193,12 +193,14 @@ const ServerForm = ({
                     value={displayName}
                 />
             </View>
+            {!displayNameError &&
             <FormattedText
                 defaultMessage={'Choose a display name for your server'}
                 id={'mobile.components.select_server_view.displayHelp'}
                 style={styles.chooseText}
                 testID={'mobile.components.select_server_view.displayHelp'}
             />
+            }
             <Button
                 containerStyle={[styles.connectButton, styleButtonBackground]}
                 disabled={buttonDisabled}

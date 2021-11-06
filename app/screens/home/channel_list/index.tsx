@@ -3,16 +3,16 @@
 
 import {useIsFocused, useRoute} from '@react-navigation/native';
 import React from 'react';
-import {Text, View} from 'react-native';
+import {View} from 'react-native';
 import Animated, {useAnimatedStyle, withTiming} from 'react-native-reanimated';
 import {SafeAreaView, useSafeAreaInsets} from 'react-native-safe-area-context';
 
+import ChannelList from '@components/channel_list';
 import TeamSidebar from '@components/team_sidebar';
-import {View as ViewConstants} from '@constants';
 import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
 import Channel from '@screens/channel';
-import {goToScreen} from '@screens/navigation';
+import ServerIcon from '@screens/home/channel_list/server_icon/server_icon';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 
 import type {LaunchProps} from '@typings/launch';
@@ -43,17 +43,12 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
 const ChannelListScreen = (props: ChannelProps) => {
     const theme = useTheme();
     const styles = getStyleSheet(theme);
+
     const isTablet = useIsTablet();
     const route = useRoute();
     const isFocused = useIsFocused();
     const insets = useSafeAreaInsets();
     const params = route.params as {direction: string};
-
-    let tabletSidebarStyle;
-    if (isTablet) {
-        const {TABLET_SIDEBAR_WIDTH, TEAM_SIDEBAR_WIDTH} = ViewConstants;
-        tabletSidebarStyle = {maxWidth: (TABLET_SIDEBAR_WIDTH - TEAM_SIDEBAR_WIDTH)};
-    }
 
     const animated = useAnimatedStyle(() => {
         if (!isFocused) {
@@ -79,18 +74,15 @@ const ChannelListScreen = (props: ChannelProps) => {
                 style={styles.content}
                 edges={['bottom', 'left', 'right']}
             >
+                <ServerIcon/>
                 <Animated.View
                     style={[styles.content, animated]}
                 >
-                    <TeamSidebar/>
-                    <View style={[styles.flex, {alignItems: 'center', justifyContent: 'center'}, tabletSidebarStyle]}>
-                        <Text
-                            onPress={() => goToScreen('Channel', '', undefined, {topBar: {visible: false}})}
-                            style={{fontSize: 20, color: theme.centerChannelColor}}
-                        >
-                            {'Channel List'}
-                        </Text>
-                    </View>
+                    {/* @to-do: Server Icon requires padding in the team and channel components:
+                      * https://mattermost.atlassian.net/browse/MM-39702
+                      */}
+                    <TeamSidebar iconPad={true}/>
+                    <ChannelList iconPad={false}/>
                     {isTablet &&
                         <Channel {...props}/>
                     }

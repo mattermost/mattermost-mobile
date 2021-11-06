@@ -8,12 +8,12 @@ import {Navigation as RNN} from 'react-native-navigation';
 import Animated from 'react-native-reanimated';
 import RNBottomSheet from 'reanimated-bottom-sheet';
 
-import {changeOpacity, makeStyleSheetFromTheme} from '@app/utils/theme';
 import {Navigation} from '@constants';
 import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
 import {dismissModal} from '@screens/navigation';
 import {hapticFeedback} from '@utils/general';
+import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 import Indicator from './indicator';
 
