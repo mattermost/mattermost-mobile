@@ -449,7 +449,7 @@
 				AE4769B235D14E6C9C64EA78 /* Upload Debug Symbols to Sentry */,
 				7FFE32A91FD9CB650038C7A0 /* Embed App Extensions */,
 				ED4C644925C525E30315E09E /* [CP] Copy Pods Resources */,
-				B1484B6A3F208DA26A730A27 /* [CP] Embed Pods Frameworks */,
+				791C6C6593EFE251279CC4E9 /* [CP] Embed Pods Frameworks */,
 			);
 			buildRules = (
 			);
@@ -681,21 +681,7 @@
 			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
 			showEnvVarsInLog = 0;
 		};
-		AE4769B235D14E6C9C64EA78 /* Upload Debug Symbols to Sentry */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputPaths = (
-			);
-			name = "Upload Debug Symbols to Sentry";
-			outputPaths = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "./uploadDebugSymbols.sh\n";
-		};
-		B1484B6A3F208DA26A730A27 /* [CP] Embed Pods Frameworks */ = {
+		791C6C6593EFE251279CC4E9 /* [CP] Embed Pods Frameworks */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -712,6 +698,20 @@
 			shellPath = /bin/sh;
 			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-Mattermost/Pods-Mattermost-frameworks.sh\"\n";
 			showEnvVarsInLog = 0;
+		};
+		AE4769B235D14E6C9C64EA78 /* Upload Debug Symbols to Sentry */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			name = "Upload Debug Symbols to Sentry";
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "./uploadDebugSymbols.sh\n";
 		};
 		ED4C644925C525E30315E09E /* [CP] Copy Pods Resources */ = {
 			isa = PBXShellScriptBuildPhase;
