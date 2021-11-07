@@ -3,6 +3,7 @@
 
 import {SYSTEM_IDENTIFIERS} from '@constants/database';
 import DatabaseManager from '@database/manager';
+import {t} from '@i18n';
 import NetworkManager from '@init/network_manager';
 import {queryExpandedLinks} from '@queries/servers/system';
 
@@ -12,16 +13,21 @@ import type {Client} from '@client/rest';
 import type {ClientResponse} from '@mattermost/react-native-network-client';
 
 export const doPing = async (serverUrl: string) => {
-    const client = await NetworkManager.createClient(serverUrl);
+    let client: Client;
+    try {
+        client = await NetworkManager.createClient(serverUrl);
+    } catch (error) {
+        return {error};
+    }
 
     const certificateError = {
-        id: 'mobile.server_requires_client_certificate',
-        defaultMessage: 'Server required client certificate for authentication.',
+        id: t('mobile.server_requires_client_certificate'),
+        defaultMessage: 'Server requires client certificate for authentication.',
     };
 
     const pingError = {
-        id: 'mobile.server_ping_failed',
-        defaultMessage: 'Cannot connect to the server. Please check your server URL and internet connection.',
+        id: t('mobile.server_ping_failed'),
+        defaultMessage: 'Cannot connect to the server.',
     };
 
     let response: ClientResponse;
@@ -41,7 +47,7 @@ export const doPing = async (serverUrl: string) => {
         }
     } catch (error) {
         NetworkManager.invalidateClient(serverUrl);
-        return {error};
+        return {error: {intl: pingError}};
     }
 
     return {error: undefined};

@@ -31,11 +31,12 @@ type MFAProps = {
     license: Partial<ClientLicense>;
     loginId: string;
     password: string;
+    serverDisplayName: string;
     serverUrl: string;
     theme: Theme;
 }
 
-const MFA = ({config, goToHome, license, loginId, password, serverUrl, theme}: MFAProps) => {
+const MFA = ({config, goToHome, license, loginId, password, serverDisplayName, serverUrl, theme}: MFAProps) => {
     const intl = useIntl();
     const [token, setToken] = useState<string>('');
     const [error, setError] = useState<string>('');
@@ -78,7 +79,7 @@ const MFA = ({config, goToHome, license, loginId, password, serverUrl, theme}: M
             return;
         }
         setIsLoading(true);
-        const result: LoginActionResponse = await login(serverUrl, {loginId, password, mfaToken: token, config, license});
+        const result: LoginActionResponse = await login(serverUrl, {loginId, password, mfaToken: token, config, license, serverDisplayName});
         setIsLoading(false);
         if (result?.error && result.failed) {
             if (typeof result.error == 'string') {

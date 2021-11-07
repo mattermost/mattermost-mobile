@@ -12,10 +12,10 @@ import {map} from 'rxjs/operators';
 import {logout} from '@actions/remote/session';
 import PostList from '@components/post_list';
 import ServerVersion from '@components/server_version';
-import StatusBar from '@components/status_bar';
 import {Screens, Database} from '@constants';
 import {useServerUrl} from '@context/server_url';
 import {useTheme} from '@context/theme';
+import {useAppState} from '@hooks/device';
 import {goToScreen} from '@screens/navigation';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 
@@ -69,6 +69,7 @@ const Channel = ({currentChannelId, currentTeamId, time}: ChannelProps) => {
     const theme = useTheme();
     const intl = useIntl();
     const styles = getStyleSheet(theme);
+    const appState = useAppState();
 
     const serverUrl = useServerUrl();
 
@@ -99,6 +100,7 @@ const Channel = ({currentChannelId, currentTeamId, time}: ChannelProps) => {
                 <PostList
                     channelId={currentChannelId}
                     testID='channel.post_list'
+                    forceQueryAfterAppState={appState}
                 />
                 <View style={styles.sectionContainer}>
                     <Text
@@ -118,7 +120,7 @@ const Channel = ({currentChannelId, currentTeamId, time}: ChannelProps) => {
                 </View>
             </>
         );
-    }, [currentTeamId, currentChannelId, theme]);
+    }, [currentTeamId, currentChannelId, theme, appState]);
 
     return (
         <SafeAreaView
@@ -127,7 +129,6 @@ const Channel = ({currentChannelId, currentTeamId, time}: ChannelProps) => {
             edges={['left', 'right', 'bottom']}
         >
             <ServerVersion/>
-            <StatusBar theme={theme}/>
             {renderComponent}
         </SafeAreaView>
     );

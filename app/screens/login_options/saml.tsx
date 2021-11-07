@@ -6,7 +6,7 @@ import {Text} from 'react-native';
 import Button from 'react-native-button';
 
 import LocalConfig from '@assets/config.json';
-import {SSO} from '@constants';
+import {Sso} from '@constants';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 
 const SamlOption = ({config, license, onPress, theme}: LoginOptionWithConfigAndLicenseProps) => {
@@ -15,7 +15,7 @@ const SamlOption = ({config, license, onPress, theme}: LoginOptionWithConfigAndL
     const enabled = config.EnableSaml === 'true' && license.IsLicensed === 'true' && license.SAML === 'true';
 
     const handlePress = () => {
-        onPress(SSO.SAML);
+        onPress(Sso.SAML);
     };
 
     if (!forceHideFromLocal && enabled) {

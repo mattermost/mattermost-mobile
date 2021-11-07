@@ -130,13 +130,19 @@ export const queryLastTeam = async (database: Database) => {
 
 export const syncTeamTable = async (operator: ServerDataOperator, teams: Team[]) => {
     try {
-        const notAvailable = await operator.database.get<TeamModel>(TEAM).query(Q.where('id', Q.notIn(teams.map((t) => t.id)))).fetch();
+        const deletedTeams = teams.filter((t) => t.delete_at > 0).map((t) => t.id);
+        const availableTeams = teams.filter((a) => !deletedTeams.includes(a.id));
         const models = [];
-        const deletions = await Promise.all(notAvailable.map((t) => prepareDeleteTeam(t)));
-        for (const d of deletions) {
-            models.push(...d);
+
+        if (deletedTeams.length) {
+            const notAvailable = await operator.database.get<TeamModel>(TEAM).query(Q.where('id', Q.oneOf(deletedTeams))).fetch();
+            const deletions = await Promise.all(notAvailable.map((t) => prepareDeleteTeam(t)));
+            for (const d of deletions) {
+                models.push(...d);
+            }
         }
-        models.push(...await operator.handleTeam({teams, prepareRecordsOnly: true}));
+
+        models.push(...await operator.handleTeam({teams: availableTeams, prepareRecordsOnly: true}));
         await operator.batchRecords(models);
         return {};
     } catch (error) {
@@ -163,7 +169,7 @@ export const queryDefaultTeam = async (database: Database) => {
 export const prepareMyTeams = (operator: ServerDataOperator, teams: Team[], memberships: TeamMembership[]) => {
     try {
         const teamRecords = operator.handleTeam({prepareRecordsOnly: true, teams});
-        const teamMemberships = memberships.filter((m) => teams.find((t) => t.id === m.team_id));
+        const teamMemberships = memberships.filter((m) => teams.find((t) => t.id === m.team_id) && m.delete_at === 0);
         const teamMembershipRecords = operator.handleTeamMemberships({prepareRecordsOnly: true, teamMemberships});
         const myTeams: MyTeam[] = teamMemberships.map((tm) => {
             return {id: tm.team_id, roles: tm.roles ?? ''};

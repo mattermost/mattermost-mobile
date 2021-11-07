@@ -136,13 +136,14 @@ export default class WebSocketClient {
             }
 
             if (this.connectFailCount > 0) {
-                console.log('websocket re-established connection'); //eslint-disable-line no-console
+                console.log('websocket re-established connection to', url); //eslint-disable-line no-console
                 if (!reliableWebSockets && this.reconnectCallback) {
                     this.reconnectCallback();
                 } else if (reliableWebSockets && this.serverSequence && this.missedEventsCallback) {
                     this.missedEventsCallback();
                 }
             } else if (this.firstConnectCallback) {
+                console.log('websocket connected to', url); //eslint-disable-line no-console
                 this.firstConnectCallback();
             }
 
@@ -159,7 +160,7 @@ export default class WebSocketClient {
             this.responseSequence = 1;
 
             if (this.connectFailCount === 0) {
-                console.log('websocket closed'); //eslint-disable-line no-console
+                console.log('websocket closed', url); //eslint-disable-line no-console
             }
 
             this.connectFailCount++;
@@ -200,7 +201,7 @@ export default class WebSocketClient {
 
         this.conn!.onError((evt: any) => {
             if (this.connectFailCount <= 1) {
-                console.log('websocket error'); //eslint-disable-line no-console
+                console.log('websocket error', url); //eslint-disable-line no-console
                 console.log(evt); //eslint-disable-line no-console
             }
 
@@ -224,14 +225,14 @@ export default class WebSocketClient {
                     // We check the hello packet, which is always the first packet in a stream.
                     if (msg.event === WebsocketEvents.HELLO && this.reconnectCallback) {
                         //eslint-disable-next-line no-console
-                        console.log('got connection id ', msg.data.connection_id);
+                        console.log(url, 'got connection id ', msg.data.connection_id);
 
                         // If we already have a connectionId present, and server sends a different one,
                         // that means it's either a long timeout, or server restart, or sequence number is not found.
                         // Then we do the sync calls, and reset sequence number to 0.
                         if (this.connectionId !== '' && this.connectionId !== msg.data.connection_id) {
                             //eslint-disable-next-line no-console
-                            console.log('long timeout, or server restart, or sequence number is not found.');
+                            console.log(url, 'long timeout, or server restart, or sequence number is not found.');
                             this.reconnectCallback();
                             this.serverSequence = 0;
                         }
@@ -245,7 +246,7 @@ export default class WebSocketClient {
                     // we just disconnect and reconnect.
                     if (msg.seq !== this.serverSequence) {
                         // eslint-disable-next-line no-console
-                        console.log('missed websocket event, act_seq=' + msg.seq + ' exp_seq=' + this.serverSequence);
+                        console.log(url, 'missed websocket event, act_seq=' + msg.seq + ' exp_seq=' + this.serverSequence);
 
                         // We are not calling this.close() because we need to auto-restart.
                         this.connectFailCount = 0;
@@ -255,7 +256,7 @@ export default class WebSocketClient {
                     }
                 } else if (msg.seq !== this.serverSequence && this.reconnectCallback) {
                     // eslint-disable-next-line no-console
-                    console.log('missed websocket event, act_seq=' + msg.seq + ' exp_seq=' + this.serverSequence);
+                    console.log(url, 'missed websocket event, act_seq=' + msg.seq + ' exp_seq=' + this.serverSequence);
                     this.reconnectCallback();
                 }
 

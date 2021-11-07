@@ -2,7 +2,6 @@ package com.mattermost.rnbeta;
 
 import com.facebook.react.bridge.JSIModuleSpec;
 import com.facebook.react.bridge.JavaScriptContextHolder;
-import com.mattermost.rnbeta.generated.BasePackageList;
 
 import android.content.Context;
 import android.os.Bundle;
@@ -40,9 +39,6 @@ import com.facebook.react.module.model.ReactModuleInfoProvider;
 import com.facebook.react.modules.network.OkHttpClientProvider;
 import com.facebook.soloader.SoLoader;
 
-import org.unimodules.adapters.react.ModuleRegistryAdapter;
-import org.unimodules.adapters.react.ReactModuleRegistryProvider;
-
 import com.mattermost.networkclient.RCTOkHttpClientFactory;
 import com.swmansion.reanimated.ReanimatedJSIModulePackage;
 import com.nozbe.watermelondb.jsi.WatermelonDBJSIPackage;
@@ -51,8 +47,6 @@ public class MainApplication extends NavigationApplication implements INotificat
   public static MainApplication instance;
 
   public Boolean sharedExtensionIsOpened = false;
-
-  private final ReactModuleRegistryProvider mModuleRegistryProvider = new ReactModuleRegistryProvider(new BasePackageList().getPackageList(), null);
 
   private final ReactNativeHost mReactNativeHost =
     new ReactNativeHost(this) {
@@ -68,11 +62,6 @@ public class MainApplication extends NavigationApplication implements INotificat
         // packages.add(new MyReactNativePackage());
         packages.add(new RNNotificationsPackage(MainApplication.this));
 
-        // Add unimodules
-        List<ReactPackage> unimodules = Collections.singletonList(
-                new ModuleRegistryAdapter(mModuleRegistryProvider)
-        );
-        packages.addAll(unimodules);
 
         packages.add(
           new TurboReactPackage() {

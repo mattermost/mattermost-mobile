@@ -44,7 +44,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
 const getViewPostWidth = (isReplyPost: boolean, deviceHeight: number, deviceWidth: number) => {
     const deviceSize = deviceWidth > deviceHeight ? deviceHeight : deviceWidth;
     const viewPortWidth = deviceSize - VIEWPORT_IMAGE_OFFSET - (isReplyPost ? VIEWPORT_IMAGE_REPLY_OFFSET : 0);
-    const tabletOffset = DeviceConstant.IS_TABLET ? ViewConstants.TABLET.SIDEBAR_WIDTH : 0;
+    const tabletOffset = DeviceConstant.IS_TABLET ? ViewConstants.TABLET_SIDEBAR_WIDTH : 0;
 
     return viewPortWidth - tabletOffset;
 };

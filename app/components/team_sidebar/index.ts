@@ -7,9 +7,9 @@ import withObservables from '@nozbe/with-observables';
 import {of as of$} from 'rxjs';
 import {switchMap} from 'rxjs/operators';
 
-import {Permissions} from '@app/constants';
-import {hasPermission} from '@app/utils/role';
+import {Permissions} from '@constants';
 import {MM_TABLES, SYSTEM_IDENTIFIERS} from '@constants/database';
+import {hasPermission} from '@utils/role';
 
 import TeamSidebar from './team_sidebar';
 
@@ -22,18 +22,17 @@ import type UserModel from '@typings/database/models/servers/user';
 
 const {SERVER: {SYSTEM, MY_TEAM, TEAM, USER, ROLE}} = MM_TABLES;
 
-type PropsInput = WithDatabaseArgs & {
-    currentUser: UserModel;
-}
+const enhanced = withObservables([], ({database}: WithDatabaseArgs) => {
+    const currentUser = database.get<SystemModel>(SYSTEM).findAndObserve(SYSTEM_IDENTIFIERS.CURRENT_USER_ID).pipe(
+        switchMap(({value}) => database.get<UserModel>(USER).findAndObserve(value)),
+    );
+    const rolesArray = currentUser.pipe(
+        switchMap((u) => of$(u.roles.split(' '))),
+    );
+    const roles = rolesArray.pipe(
+        switchMap((values) => database.get<RoleModel>(ROLE).query(Q.where('name', Q.oneOf(values))).observe()),
+    );
 
-const withSystem = withObservables([], ({database}: WithDatabaseArgs) => ({
-    currentUser: database.get(SYSTEM).findAndObserve(SYSTEM_IDENTIFIERS.CURRENT_USER_ID).pipe(
-        switchMap((currentUserId: SystemModel) => database.get(USER).findAndObserve(currentUserId.value))),
-}));
-
-const withTeams = withObservables([], ({currentUser, database}: PropsInput) => {
-    const rolesArray = [...currentUser.roles.split(' ')];
-    const roles = database.get<RoleModel>(ROLE).query(Q.where('name', Q.oneOf(rolesArray))).observe();
     const canCreateTeams = roles.pipe(switchMap((r) => of$(hasPermission(r, Permissions.CREATE_TEAM, false))));
 
     const otherTeams = database.get<MyTeam>(MY_TEAM).query().observe().pipe(
@@ -50,4 +49,4 @@ const withTeams = withObservables([], ({currentUser, database}: PropsInput) => {
     };
 });
 
-export default withDatabase(withSystem(withTeams(TeamSidebar)));
+export default withDatabase(enhanced(TeamSidebar));

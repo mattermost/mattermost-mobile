@@ -11,7 +11,6 @@ import {useTheme} from '@context/theme';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 
 import AddTeam from './add_team/add_team';
-import ServerIcon from './server_icon/server_icon';
 import TeamList from './team_list';
 
 import type TeamModel from '@typings/database/models/servers/team';
@@ -19,9 +18,10 @@ import type TeamModel from '@typings/database/models/servers/team';
 type Props = {
     canCreateTeams: boolean;
     otherTeams: TeamModel[];
+    iconPad?: boolean;
 }
 
-export default function TeamSidebar({canCreateTeams, otherTeams}: Props) {
+export default function TeamSidebar({canCreateTeams, otherTeams, iconPad}: Props) {
     const theme = useTheme();
     const styles = getStyleSheet(theme);
     const serverUrl = useServerUrl();
@@ -34,8 +34,7 @@ export default function TeamSidebar({canCreateTeams, otherTeams}: Props) {
 
     return (
         <View style={styles.container}>
-            <ServerIcon/>
-            <View style={styles.listContainer}>
+            <View style={[styles.listContainer, iconPad && styles.iconMargin]}>
                 <TeamList/>
                 {showAddTeam && (
                     <AddTeam
@@ -55,11 +54,16 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             height: '100%',
             backgroundColor: theme.sidebarBg,
             display: 'flex',
+            paddingTop: 10,
         },
         listContainer: {
             backgroundColor: theme.sidebarTeamBarBg,
             borderTopRightRadius: 12,
             flex: 1,
+        },
+        iconMargin: {
+            marginTop: 44,
+            paddingTop: 0,
         },
     };
 });

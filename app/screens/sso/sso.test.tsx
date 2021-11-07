@@ -29,6 +29,7 @@ describe('SSO', () => {
         ssoType: 'GITLAB',
         theme: Preferences.THEMES.denim,
         serverUrl: 'https://locahost:8065',
+        serverDisplayName: 'Test Server',
         launchType: LaunchType.Normal,
     };
 

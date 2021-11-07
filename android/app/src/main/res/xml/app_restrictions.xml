@@ -38,6 +38,12 @@
             android:restrictionType="string"
             android:defaultValue="" />
     <restriction
+            android:key="serverName"
+            android:title="@string/serverName_title"
+            android:description="@string/serverName_description"
+            android:restrictionType="string"
+            android:defaultValue="" />
+    <restriction
             android:key="allowOtherServers"
             android:title="@string/allowOtherServers_title"
             android:description="@string/allowOtherServers_description"
