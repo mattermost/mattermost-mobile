@@ -356,8 +356,6 @@ const ImagePicker = ({
     };
 
     const showFileAttachmentOptions = () => {
-        DeviceEventEmitter.emit(Navigation.BLUR_POST_DRAFT);
-
         const removeImageOption = getRemoveProfileImageOption();
 
         const renderContent = () => {

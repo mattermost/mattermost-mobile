@@ -7,7 +7,7 @@ import {ActivityIndicator, Platform, useWindowDimensions, View} from 'react-nati
 import Button from 'react-native-button';
 import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
 
-import FloatingTextInput, {FloatingTextInputRef} from '@components/floating_text_input_label';
+import FloatingTextInput, {FloatingTextInputRef} from '@components/floating_text_input_label/animated_input';
 import FormattedText from '@components/formatted_text';
 import {useIsTablet} from '@hooks/device';
 import {t} from '@i18n';

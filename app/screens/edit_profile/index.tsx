@@ -14,7 +14,6 @@ import {of as of$} from 'rxjs';
 import {switchMap} from 'rxjs/operators';
 
 import {setDefaultProfileImage, updateMe} from '@actions/remote/user';
-import StatusBar from '@components/status_bar';
 import TabletTitle from '@components/tablet_title';
 import EditProfilePicture from '@components/user_profile_picture/edit_image';
 import ImagePicker from '@components/user_profile_picture/picker';
@@ -324,7 +323,6 @@ const EditProfile = ({closeButtonId, componentId, currentUser, isModal, isTablet
                 style={style.flex}
                 testID='edit_profile.screen'
             >
-                <StatusBar theme={theme}/>
                 <KeyboardAwareScrollView
                     bounces={false}
                     innerRef={setScrollViewRef}
