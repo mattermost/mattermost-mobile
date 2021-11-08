@@ -11,9 +11,9 @@ import {of as of$} from 'rxjs';
 import {switchMap} from 'rxjs/operators';
 
 import CompassIcon from '@components/compass_icon';
+import UserProfilePicture from '@components/profile_picture/image';
 import SystemAvatar from '@components/system_avatar';
 import TouchableWithFeedback from '@components/touchable_with_feedback';
-import UserProfilePicture from '@components/user_profile_picture/image';
 import {View as ViewConstant} from '@constants';
 import {MM_TABLES, SYSTEM_IDENTIFIERS} from '@constants/database';
 import {useServerUrl} from '@context/server_url';

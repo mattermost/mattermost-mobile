@@ -14,9 +14,9 @@ import {of as of$} from 'rxjs';
 import {switchMap} from 'rxjs/operators';
 
 import {setDefaultProfileImage, updateMe} from '@actions/remote/user';
+import EditProfilePicture from '@components/profile_picture/edit_image';
+import ImagePicker from '@components/profile_picture/picker';
 import TabletTitle from '@components/tablet_title';
-import EditProfilePicture from '@components/user_profile_picture/edit_image';
-import ImagePicker from '@components/user_profile_picture/picker';
 import {Events} from '@constants';
 import {MM_TABLES, SYSTEM_IDENTIFIERS} from '@constants/database';
 import {useServerUrl} from '@context/server_url';
