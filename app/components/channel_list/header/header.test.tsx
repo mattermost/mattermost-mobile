@@ -5,7 +5,7 @@ import React from 'react';
 
 import {renderWithIntlAndTheme} from '@test/intl-test-helper';
 
-import Header from './index';
+import Header from './header';
 
 test('Channel List Header Component should match snapshot', () => {
     const {toJSON} = renderWithIntlAndTheme(
