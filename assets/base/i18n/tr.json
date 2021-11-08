@@ -277,7 +277,7 @@
   "mobile.camera_photo_permission_denied_title": "{applicationName} kameranıza erişmek istiyor",
   "mobile.camera_video_permission_denied_description": "Görüntü çekin ve Mattermost kopyanıza yükleyin ya da aygıtınıza kaydedin. Mattermost uygulamasına kameranızı okuma ve yazma izni vermek için ayarları açın.",
   "mobile.camera_video_permission_denied_title": "{applicationName} kameranıza erişmek istiyor",
-  "mobile.channel_drawer.search": "Şuraya geç...",
+  "mobile.channel_drawer.search": "Kanal ara",
   "mobile.channel_info.alertMessageConvertChannel": "{displayName} özel bir kanala dönüştürüldüğünde, geçmiş iletiler ve üyelikler korunur. Herkese açık olarak paylaşılmış dosyalara bağlantıya sahip olan herkes erişmeye devam edebilir. Özel kanallara yalnız çağrı ile üye olunabilir. \n \nBu değişiklik kalıcıdır ve geri alınamaz.\n\n{displayName} kanalını özel kanala dönüştürmek istediğinize emin misiniz?",
   "mobile.channel_info.alertMessageDeleteChannel": "{term} {name} kanalını arşivlemek istediğinize emin misiniz?",
   "mobile.channel_info.alertMessageLeaveChannel": "{term} {name} kanalından ayrılmak istediğinize emin misiniz?",
