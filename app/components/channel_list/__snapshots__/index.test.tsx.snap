@@ -62,7 +62,7 @@ exports[`components/channel_list should match snapshot 1`] = `
                 }
               }
             >
-              Unit Test uidb334fda7-0e0e-42a6-8296-5d6d39757b51
+              Test Team!
             </Text>
             <View
               onMoveShouldSetResponder={[Function]}
