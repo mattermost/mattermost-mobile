@@ -37,6 +37,7 @@
     "deep-equal": "2.0.5",
     "deepmerge": "4.2.2",
     "emoji-regex": "10.0.0",
+    "expo": ">=43.0.0-* <44.0.0",
     "fuse.js": "6.4.6",
     "jail-monkey": "2.6.0",
     "lottie-ios": "3.2.3",
@@ -59,6 +60,7 @@
     "react-native-gesture-handler": "1.10.3",
     "react-native-haptic-feedback": "1.13.0",
     "react-native-hw-keyboard-event": "0.0.4",
+    "react-native-image-picker": "4.1.2",
     "react-native-keyboard-aware-scroll-view": "0.9.5",
     "react-native-keyboard-tracking-view": "5.7.0",
     "react-native-keychain": "8.0.0",
@@ -86,8 +88,7 @@
     "serialize-error": "8.1.0",
     "shallow-equals": "1.0.0",
     "tinycolor2": "1.4.2",
-    "url-parse": "1.5.3",
-    "expo": ">=43.0.0-* <44.0.0"
+    "url-parse": "1.5.3"
   },
   "devDependencies": {
     "@babel/cli": "7.16.0",
@@ -194,7 +195,14 @@
   },
   "expo": {
     "autolinking": {
-      "exclude": ["expo-keep-awake", "expo-font", "expo-constants", "expo-application", "expo-assets", "expo-error-recovery"]
+      "exclude": [
+        "expo-keep-awake",
+        "expo-font",
+        "expo-constants",
+        "expo-application",
+        "expo-assets",
+        "expo-error-recovery"
+      ]
     }
   }
 }
