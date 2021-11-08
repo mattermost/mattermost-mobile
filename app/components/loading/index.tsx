@@ -1,23 +1,22 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import LottieView from 'lottie-react-native';
 import React from 'react';
-import {ActivityIndicator, StyleSheet, View, ViewStyle} from 'react-native';
+import {StyleSheet, View, ViewStyle} from 'react-native';
 
 type LoadingProps = {
-    color?: string;
-    size?: 'small' | 'large';
     style?: ViewStyle;
 }
 
-const Loading = ({size = 'large', color = 'grey', style}: LoadingProps) => {
+const Loading = ({style}: LoadingProps) => {
     return (
         <View style={styles.container}>
-            <ActivityIndicator
-                style={[styles.loading, style]}
-                animating={true}
-                size={size}
-                color={color}
+            <LottieView
+                source={require('./spinner.json')}
+                autoPlay={true}
+                loop={true}
+                style={style}
             />
         </View>
     );
@@ -27,11 +26,12 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
         justifyContent: 'center',
-        alignItems: 'center',
+        padding: 20,
+        maxHeight: 40,
     },
-
-    loading: {
-        marginLeft: 3,
+    lottie: {
+        height: 32,
+        width: 32,
     },
 });
 

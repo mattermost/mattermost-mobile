@@ -14,6 +14,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.airbnb.android.react.lottie.LottiePackage;
 import com.mattermost.helpers.RealPathUtil;
 import com.mattermost.share.ShareModule;
 import com.wix.reactnativenotifications.RNNotificationsPackage;
@@ -67,6 +68,7 @@ public class MainApplication extends NavigationApplication implements INotificat
         // Packages that cannot be autolinked yet can be added manually here, for example:
         // packages.add(new MyReactNativePackage());
         packages.add(new RNNotificationsPackage(MainApplication.this));
+        packages.add(new LottiePackage());
 
         // Add unimodules
         List<ReactPackage> unimodules = Collections.singletonList(

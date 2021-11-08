@@ -15,7 +15,7 @@ import ChannelListHeader from './header';
 import LoadingError from './loading_error';
 import SearchField from './search';
 
-// import Loading from './loading';
+// import Loading from '@components/loading';
 
 const channels: TempoChannel[] = [
     {id: '1', name: 'Just a channel'},

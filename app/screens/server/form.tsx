@@ -3,12 +3,13 @@
 
 import React, {MutableRefObject, useCallback, useEffect, useRef} from 'react';
 import {useIntl} from 'react-intl';
-import {ActivityIndicator, Platform, useWindowDimensions, View} from 'react-native';
+import {Platform, useWindowDimensions, View} from 'react-native';
 import Button from 'react-native-button';
 import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
 
 import FloatingTextInput, {FloatingTextInputRef} from '@components/floating_text_input_label';
 import FormattedText from '@components/formatted_text';
+import Loading from '@components/loading';
 import {useIsTablet} from '@hooks/device';
 import {t} from '@i18n';
 import {buttonBackgroundStyle, buttonTextStyle} from '@utils/buttonStyles';
@@ -133,12 +134,7 @@ const ServerForm = ({
         buttonID = t('mobile.components.select_server_view.connecting');
         buttonText = 'Connecting';
         buttonIcon = (
-            <ActivityIndicator
-                animating={true}
-                size='small'
-                color={'white'}
-                style={styles.connectingIndicator}
-            />
+            <Loading/>
         );
     } else if (buttonDisabled) {
         styleButtonText = buttonTextStyle(theme, 'lg', 'primary', 'disabled');
