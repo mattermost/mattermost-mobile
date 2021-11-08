@@ -277,7 +277,7 @@
   "mobile.camera_photo_permission_denied_title": "{applicationName} möchte auf Ihre Kamera zugreifen",
   "mobile.camera_video_permission_denied_description": "Nehmen Sie Videos auf und laden sie auf ihre Mattermost-Instanz hoch oder speichern Sie sie auf Ihrem Gerät. Öffnen Sie die Einstellungen, um Mattermost Lese- und Schreibzugriff auf ihre Kamera zu gewähren.",
   "mobile.camera_video_permission_denied_title": "{applicationName} möchte auf Ihre Kamera zugreifen",
-  "mobile.channel_drawer.search": "Springe zu...",
+  "mobile.channel_drawer.search": "Finde Kanal",
   "mobile.channel_info.alertMessageConvertChannel": "Wenn Sie **{displayName}**** in einen privaten Kanal umwandeln, bleiben Historie und Mitgliedschaft erhalten. Öffentlich freigegebene Dateien bleiben für jeden mit dem Link zugänglich. Die Mitgliedschaft in einem privaten Kanal ist nur auf Einladung möglich. \n\nDie Änderung ist dauerhaft und kann nicht rückgängig gemacht werden.\n\nSind Sie sicher, dass Sie **{displayName}**** in einen privaten Kanal umwandeln möchten?",
   "mobile.channel_info.alertMessageDeleteChannel": "Sind Sie sicher, dass Sie den {term} {name} archivieren möchten?",
   "mobile.channel_info.alertMessageLeaveChannel": "Sind Sie sicher, dass Sie den {term} {name} verlassen möchten?",
