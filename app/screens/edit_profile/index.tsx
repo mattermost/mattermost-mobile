@@ -74,7 +74,18 @@ const getStyleSheet = makeStyleSheetFromTheme(() => {
     };
 });
 
-const EditProfile = ({closeButtonId, componentId, currentUser, isModal, isTablet, lockedFirstName, lockedLastName, lockedNickname, lockedPosition, lockedPicture}: EditProfileProps) => {
+const EditProfile = ({
+    closeButtonId,
+    componentId,
+    currentUser,
+    isModal,
+    isTablet,
+    lockedFirstName,
+    lockedLastName,
+    lockedNickname,
+    lockedPicture,
+    lockedPosition,
+}: EditProfileProps) => {
     const intl = useIntl();
     const serverUrl = useServerUrl();
     const theme = useTheme();
