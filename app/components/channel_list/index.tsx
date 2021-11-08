@@ -11,7 +11,7 @@ import {useIsTablet} from '@hooks/device';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 
 import Categories from './categories';
-import ChannelListHeader from './header';
+import ChannelListHeader from './header/header';
 import LoadingError from './loading_error';
 import SearchField from './search';
 
