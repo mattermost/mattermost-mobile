@@ -8,7 +8,7 @@ import {Text, StyleProp, TextStyle} from 'react-native';
 type CallDurationProps = {
     style: StyleProp<TextStyle>;
     value: number;
-    updateIntervalInSeconds: number;
+    updateIntervalInSeconds?: number;
 }
 
 const CallDuration = ({value, style, updateIntervalInSeconds}: CallDurationProps) => {
@@ -33,11 +33,14 @@ const CallDuration = ({value, style, updateIntervalInSeconds}: CallDurationProps
 
     const [formattedTime, setFormattedTime] = useState(getCallDuration());
     useEffect(() => {
-        const interval = setInterval(() => setFormattedTime(getCallDuration()), updateIntervalInSeconds * 1000);
-        return () => {
-            clearInterval(interval);
-        };
-    }, []);
+        if (updateIntervalInSeconds) {
+            const interval = setInterval(() => setFormattedTime(getCallDuration()), updateIntervalInSeconds * 1000);
+            return () => {
+                clearInterval(interval);
+            };
+        }
+        return () => null;
+    }, [updateIntervalInSeconds]);
 
     return (
         <Text style={style}>

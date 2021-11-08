@@ -50,4 +50,14 @@ describe('CallDuration', () => {
         expect(wrapper.getElement().props.children).toBe('00:10');
         jest.useRealTimers();
     });
+
+    test('should not re-render if updateIntervalInSeconds is not passed', () => {
+        jest.useFakeTimers();
+        const props = {value: moment.now()};
+        const wrapper = shallow(<CallDuration {...props}/>);
+        expect(wrapper.getElement().props.children).toBe('00:00');
+        jest.advanceTimersByTime(500000000);
+        expect(wrapper.getElement().props.children).toBe('00:00');
+        jest.useRealTimers();
+    });
 });
