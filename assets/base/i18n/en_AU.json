@@ -277,7 +277,7 @@
   "mobile.camera_photo_permission_denied_title": "{applicationName} would like to access your camera",
   "mobile.camera_video_permission_denied_description": "Take videos and upload them to your Mattermost instance or save them to your device. Open Settings to grant Mattermost Read and Write access to your camera.",
   "mobile.camera_video_permission_denied_title": "{applicationName} would like to access your camera",
-  "mobile.channel_drawer.search": "Jump to...",
+  "mobile.channel_drawer.search": "Find channel",
   "mobile.channel_info.alertMessageConvertChannel": "When you convert {displayName} to a private channel, history and membership are preserved. Publicly shared files remain accessible to anyone with the link. Membership in a private channel is by invitation only.\n\nThe change is permanent and cannot be undone.\n\nAre you sure you want to convert {displayName} to a private channel?",
   "mobile.channel_info.alertMessageDeleteChannel": "Are you sure you want to archive the {term} {name}?",
   "mobile.channel_info.alertMessageLeaveChannel": "Are you sure you want to leave the {term} {name}?",
