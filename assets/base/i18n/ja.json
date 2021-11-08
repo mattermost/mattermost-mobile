@@ -277,7 +277,7 @@
   "mobile.camera_photo_permission_denied_title": "{applicationName} があなたのカメラへアクセスしようとしています",
   "mobile.camera_video_permission_denied_description": "動画を撮影し、それらをMattermostインスタンスへアップロードし、デバイスへ保存します。カメラへのアクセスを許可するには、設定を開いてください。",
   "mobile.camera_video_permission_denied_title": "{applicationName} があなたのカメラへアクセスしようとしています",
-  "mobile.channel_drawer.search": "移動する...",
+  "mobile.channel_drawer.search": "チャンネルを探す",
   "mobile.channel_info.alertMessageConvertChannel": "{displayName} を非公開チャンネルに変更する際、過去の履歴やメンバーシップは保持されます。公開されていたファイルは、同じリンクで誰でもアクセス可能なままになります。非公開チャンネルへのメンバー追加は招待のみです。\n\nこの変更を取り消すことはできません。\n\n本当に {displayName} を非公開チャンネルに変更しますか?",
   "mobile.channel_info.alertMessageDeleteChannel": "{term} {name} を本当にアーカイブしますか?",
   "mobile.channel_info.alertMessageLeaveChannel": "{term} {name} から本当に脱退しますか?",
