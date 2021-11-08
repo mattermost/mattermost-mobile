@@ -115,7 +115,7 @@ const EditProfilePicture = ({
             prefix = 'file://';
         }
 
-        if (pictureUrl.includes('api')) {
+        if (pictureUrl.includes('/api/')) {
             prefix = serverUrl;
         }
 

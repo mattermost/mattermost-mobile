@@ -296,8 +296,11 @@ const ImagePicker = ({
         }
 
         if (!file.fileSize || !file.fileName) {
-            const path = Platform.OS === 'ios' ? (file?.path || file.uri).replace('file://', '') : (file?.path || file.uri);
-            const fileInfo = await FileSystem.getInfoAsync(path);
+            const path = Platform.select({
+                ios: (file?.path || file.uri).replace('file://', ''),
+                android: (file?.path || file.uri),
+            });
+            const fileInfo = await FileSystem.getInfoAsync(path!);
             const uri = fileInfo.uri;
             file.fileSize = fileInfo.size;
             file.fileName = uri.substr(uri.lastIndexOf('/') + 1);

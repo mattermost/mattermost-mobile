@@ -21,7 +21,6 @@ import {Events} from '@constants';
 import {MM_TABLES, SYSTEM_IDENTIFIERS} from '@constants/database';
 import {useServerUrl} from '@context/server_url';
 import {useTheme} from '@context/theme';
-import {t} from '@i18n';
 import NetworkManager from '@init/network_manager';
 import {MAX_SIZE} from '@screens/edit_profile/constants';
 import {dismissModal, popTopScreen, setButtons} from '@screens/navigation';
@@ -143,7 +142,7 @@ const EditProfile = ({
         showAsAction: 'always',
         testID: 'edit_profile.save.button',
         color: theme.sidebarHeaderTextColor,
-        text: intl.formatMessage({id: t('mobile.account.settings.save'), defaultMessage: 'Save'}),
+        text: intl.formatMessage({id: 'mobile.account.settings.save', defaultMessage: 'Save'}),
     };
 
     const close = () => {
@@ -213,17 +212,21 @@ const EditProfile = ({
             const {error: reqError} = await updateMe(serverUrl, partialUser);
 
             if (reqError) {
-                setError(error);
-                setUpdating(false);
-                enableSaveButton(true);
-                scrollViewRef.current?.scrollToPosition(0, 0, true);
-                return;
+                return resetScreen();
             }
 
             close();
         } catch (e) {
-            // console.error(e);
+            return resetScreen();
         }
+        return null;
+    };
+
+    const resetScreen = () => {
+        setError(error);
+        setUpdating(false);
+        enableSaveButton(true);
+        scrollViewRef.current?.scrollToPosition(0, 0, true);
     };
 
     const updateField = useCallback((id: string, name: string) => {
