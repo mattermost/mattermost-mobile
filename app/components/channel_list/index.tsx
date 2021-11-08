@@ -11,7 +11,7 @@ import {useIsTablet} from '@hooks/device';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 
 import Categories from './categories';
-import ChannelListHeader from './header/header';
+import ChannelListHeader from './header';
 import LoadingError from './loading_error';
 import SearchField from './search';
 
@@ -58,8 +58,6 @@ const ChannelList = ({iconPad}: ChannelListProps) => {
         <View style={[styles.container, isTablet && styles.maxW]}>
             <TouchableOpacity onPress={() => setShowCats(!showCats)}>
                 <ChannelListHeader
-                    heading='Contributors'
-                    subheading='Community TEST'
                     iconPad={iconPad}
                 />
             </TouchableOpacity>

@@ -3,14 +3,17 @@
 
 import React from 'react';
 
-import {renderWithIntlAndTheme} from '@test/intl-test-helper';
+import {render} from '@test/intl-test-helper';
+import TeamModel from '@typings/database/models/servers/team';
 
 import Header from './header';
 
-test('Channel List Header Component should match snapshot', () => {
-    const {toJSON} = renderWithIntlAndTheme(
-        <Header heading='Hello World!'/>,
-    );
+describe('components/channel_list/header', () => {
+    it('Channel List Header Component should match snapshot', () => {
+        const {toJSON} = render(
+            <Header team={{displayName: 'Test!'} as TeamModel}/>,
+        );
 
-    expect(toJSON()).toMatchSnapshot();
+        expect(toJSON()).toMatchSnapshot();
+    });
 });
