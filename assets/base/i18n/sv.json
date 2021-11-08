@@ -277,7 +277,7 @@
   "mobile.camera_photo_permission_denied_title": "{applicationName} vill få åtkomst till din kamera",
   "mobile.camera_video_permission_denied_description": "Ta videos och ladda upp video till Mattermost eller spara dem på din mojäng. Öppna Inställningar för att ge Mattermost Läs och Skriv-rättigheter till Video.",
   "mobile.camera_video_permission_denied_title": "{applicationName} vill få åtkomst till din kamera",
-  "mobile.channel_drawer.search": "Hoppa till...",
+  "mobile.channel_drawer.search": "Sök kanal",
   "mobile.channel_info.alertMessageConvertChannel": "När du konverterar **{displayName}** till en privat kanal och historik och medlemskap bevaras. Publikt tillgängliga delningar kommer fortfarande vara tillgängliga med alla som kan länken. Medlemskap i en privat kanal är endast via inbjudan.\n\nÄndringen är permanent och kan inte ångras.\n\nÄr du säker på att du vill konvertera **{displayName}** till en privat kanal?",
   "mobile.channel_info.alertMessageDeleteChannel": "Är du säker på att du vill arkivera {term} {name}?",
   "mobile.channel_info.alertMessageLeaveChannel": "Är du säker på att du vill lämna {term} {name}?",
