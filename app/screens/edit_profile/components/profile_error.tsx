@@ -12,7 +12,7 @@ type DisplayErrorProps = {
     error: Partial<ClientErrorProps> | string;
 }
 
-const DisplayError = ({error}: DisplayErrorProps) => {
+const ProfileError = ({error}: DisplayErrorProps) => {
     const theme = useTheme();
     const style = getStyleSheet(theme);
 
@@ -47,4 +47,4 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     };
 });
 
-export default DisplayError;
+export default ProfileError;

@@ -3,11 +3,11 @@
 
 import React from 'react';
 import {useIntl} from 'react-intl';
-import {View} from 'react-native';
 
-import Field from '@components/field';
 import {t} from '@i18n';
 import {HOLDERS} from '@screens/edit_profile/constants';
+
+import InputField from './input_field';
 
 import type UserModel from '@typings/database/models/servers/user';
 
@@ -17,7 +17,7 @@ type EmailSettingsProps = {
     onChange: (id: string, value: string) => void;
 }
 
-const EmailSettings = ({currentUser, email, onChange}: EmailSettingsProps) => {
+const EmailField = ({currentUser, email, onChange}: EmailSettingsProps) => {
     const intl = useIntl();
 
     let defaultMessage: string;
@@ -65,18 +65,16 @@ const EmailSettings = ({currentUser, email, onChange}: EmailSettingsProps) => {
     const helpText = intl.formatMessage({id, defaultMessage}, {email});
 
     return (
-        <View>
-            <Field
-                disabled={true}
-                id='email'
-                label={HOLDERS.email}
-                disabledText={helpText ?? ''}
-                onChange={onChange}
-                value={email}
-                testID='edit_profile.text_setting.email'
-            />
-        </View>
+        <InputField
+            disabled={true}
+            id='email'
+            label={HOLDERS.email}
+            fieldDescription={helpText ?? ''}
+            onChange={onChange}
+            value={email}
+            testID='edit_profile.text_setting.email'
+        />
     );
 };
 
-export default EmailSettings;
+export default EmailField;

@@ -29,9 +29,9 @@ import {File, UserInfo} from '@typings/screens/edit_profile';
 import {getFormattedFileSize} from '@utils/file';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 
-import CommonFieldSettings from './components/common_field_settings';
-import DisplayError from './components/display_error';
-import EmailSettings from './components/email_settings';
+import EmailField from './components/email_field';
+import Field from './components/field';
+import ProfileError from './components/profile_error';
 import ProfileUpdating from './components/profile_updating';
 
 import type {WithDatabaseArgs} from '@typings/database/database';
@@ -328,23 +328,23 @@ const EditProfile = ({closeButtonId, componentId, currentUser, isModal, isTablet
                     innerRef={setScrollViewRef}
                     testID='edit_profile.scroll_view'
                 >
-                    {error && <DisplayError error={error}/>}
+                    {error && <ProfileError error={error}/>}
                     {renderProfilePicture()}
-                    <CommonFieldSettings
+                    <Field
                         id={'firstName'}
                         isDisabled={(['ldap', 'saml'].includes(service) && lockedFirstName) || ['gitlab', 'google', 'office365'].includes(service)}
                         onChange={updateField}
                         value={userInfo.firstName}
                     />
                     <View style={style.separator}/>
-                    <CommonFieldSettings
+                    <Field
                         id={'lastName'}
                         isDisabled={(['ldap', 'saml'].includes(service) && lockedLastName) || ['gitlab', 'google', 'office365'].includes(service)}
                         onChange={updateField}
                         value={userInfo.lastName}
                     />
                     <View style={style.separator}/>
-                    <CommonFieldSettings
+                    <Field
                         id={'username'}
                         isDisabled={service !== ''}
                         onChange={updateField}
@@ -352,13 +352,13 @@ const EditProfile = ({closeButtonId, componentId, currentUser, isModal, isTablet
                         maxLength={22}
                     />
                     <View style={style.separator}/>
-                    <EmailSettings
+                    <EmailField
                         email={userInfo.email}
                         currentUser={currentUser}
                         onChange={updateField}
                     />
                     <View style={style.separator}/>
-                    <CommonFieldSettings
+                    <Field
                         id={'nickname'}
                         isDisabled={['ldap', 'saml'].includes(service) && lockedNickname}
                         onChange={updateField}
@@ -366,7 +366,7 @@ const EditProfile = ({closeButtonId, componentId, currentUser, isModal, isTablet
                         maxLength={22}
                     />
                     <View style={style.separator}/>
-                    <CommonFieldSettings
+                    <Field
                         id={'position'}
                         isDisabled={['ldap', 'saml'].includes(service) && lockedPosition}
                         onChange={updateField}

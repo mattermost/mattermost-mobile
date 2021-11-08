@@ -4,8 +4,9 @@
 import React from 'react';
 import {useIntl} from 'react-intl';
 
-import Field from '@components/field';
 import {HOLDERS} from '@screens/edit_profile/constants';
+
+import InputField from './input_field';
 
 type CommonFieldSettingsProps = {
     isDisabled: boolean;
@@ -16,15 +17,15 @@ type CommonFieldSettingsProps = {
     maxLength?: number;
 }
 
-const CommonFieldSettings = ({isDisabled, id, value, onChange, optional, maxLength}: CommonFieldSettingsProps) => {
+const Field = ({isDisabled, id, value, onChange, optional, maxLength}: CommonFieldSettingsProps) => {
     const intl = useIntl();
 
     return (
-        <Field
+        <InputField
             disabled={isDisabled}
             id={id}
             label={HOLDERS[id]}
-            disabledText={intl.formatMessage({
+            fieldDescription={intl.formatMessage({
                 id: 'user.settings.general.field_handled_externally',
                 defaultMessage: 'This field is handled through your login provider. If you want to change it, you need to do so through your login provider.',
             })}
@@ -37,4 +38,4 @@ const CommonFieldSettings = ({isDisabled, id, value, onChange, optional, maxLeng
     );
 };
 
-export default CommonFieldSettings;
+export default Field;

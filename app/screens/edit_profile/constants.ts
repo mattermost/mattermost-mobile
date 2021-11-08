@@ -1,6 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {MessageDescriptor} from '@formatjs/intl/src/types';
+
 import {t} from '@i18n';
 
 export const MAX_SIZE = 20 * 1024 * 1024;
@@ -32,7 +34,7 @@ export const VALID_MIME_TYPES = [
     'application/x-win-bitmap',
 ] as const;
 
-export const HOLDERS: { [id: string]: any } = {
+export const HOLDERS: { [id: string]: MessageDescriptor } = {
     firstName: {
         id: t('user.settings.general.firstName'),
         defaultMessage: 'First Name',
