@@ -10,7 +10,7 @@ import type {UserTimezone} from '@mm-redux/types/users';
 type FormattedRelativeTimeProps = TextProps & {
     timezone?: UserTimezone | string;
     value: number | string | Date;
-    updateIntervalInSeconds: number;
+    updateIntervalInSeconds?: number;
 }
 
 const FormattedRelativeTime = ({timezone, value, updateIntervalInSeconds, ...props}: FormattedRelativeTimeProps) => {
@@ -25,11 +25,14 @@ const FormattedRelativeTime = ({timezone, value, updateIntervalInSeconds, ...pro
 
     const [formattedTime, setFormattedTime] = useState(getFormattedRelativeTime());
     useEffect(() => {
-        const interval = setInterval(() => setFormattedTime(getFormattedRelativeTime()), updateIntervalInSeconds * 1000);
-        return () => {
-            clearInterval(interval);
-        };
-    }, []);
+        if (updateIntervalInSeconds) {
+            const interval = setInterval(() => setFormattedTime(getFormattedRelativeTime()), updateIntervalInSeconds * 1000);
+            return () => {
+                clearInterval(interval);
+            };
+        }
+        return () => null;
+    }, [updateIntervalInSeconds]);
 
     return (
         <Text {...props}>

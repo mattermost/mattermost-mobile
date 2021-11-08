@@ -49,4 +49,14 @@ describe('FormattedRelativeTime', () => {
         expect(wrapper.getElement().props.children).toBe('2 minutes ago');
         jest.useRealTimers();
     });
+
+    test('should not re-render if updateIntervalInSeconds is not passed', () => {
+        jest.useFakeTimers();
+        const props = {value: baseProps.value};
+        const wrapper = shallow(<FormattedRelativeTime {...props}/>);
+        expect(wrapper.getElement().props.children).toBe('a few seconds ago');
+        jest.advanceTimersByTime(120000000000);
+        expect(wrapper.getElement().props.children).toBe('a few seconds ago');
+        jest.useRealTimers();
+    });
 });
