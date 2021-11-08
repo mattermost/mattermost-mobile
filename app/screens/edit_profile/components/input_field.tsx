@@ -4,14 +4,14 @@
 import {MessageDescriptor} from '@formatjs/intl/src/types';
 import React, {useCallback} from 'react';
 import {useIntl} from 'react-intl';
-import {View, Platform, ViewStyle} from 'react-native';
+import {View, Platform, ViewStyle, KeyboardType} from 'react-native';
 
 import FloatingTextInput from '@components/floating_text_input_label/animated_input';
 import {useTheme} from '@context/theme';
 import {getMarkdownBlockStyles, getMarkdownTextStyles} from '@utils/markdown';
 import {makeStyleSheetFromTheme, getKeyboardAppearanceFromTheme} from '@utils/theme';
 
-import MarkdownContent from './input_field_description';
+import FieldDescription from './input_field_description';
 
 type InputFieldProps = {
     containerStyle?: ViewStyle;
@@ -19,7 +19,7 @@ type InputFieldProps = {
     error?: string;
     fieldDescription?: string;
     id: string;
-    keyboardType?: 'default' | 'number-pad' | 'decimal-pad' | 'numeric' | 'email-address' | 'phone-pad' | 'url';
+    keyboardType?: KeyboardType | 'url';
     label: MessageDescriptor | string;
     maxLength?: number;
     multiline?: boolean;
@@ -53,13 +53,16 @@ const InputField = ({
     const theme = useTheme();
     const intl = useIntl();
 
-    const onChangeText = useCallback((text: string) => {
-        return onChange(id, text);
-    }, []);
+    const onChangeText = useCallback(
+        (text: string) => {
+            return onChange(id, text);
+        },
+        [id, onChange],
+    );
 
     const onBlurField = useCallback(() => {
         return onBlur?.(id);
-    }, []);
+    }, [id, onBlur]);
 
     const style = getStyleSheet(theme);
     const textStyles = getMarkdownTextStyles(theme);
@@ -68,13 +71,15 @@ const InputField = ({
     const keyboard = Platform.OS === 'android' && keyboardType === 'url' ? 'default' : keyboardType;
 
     const labelText = typeof label === 'string' ? label : intl.formatMessage(label);
-    const optionalText = optional ? intl.formatMessage({id: 'channel_modal.optional', defaultMessage: '(optional)'}) : ' *';
+
+    const optionalText = optional ? intl.formatMessage({
+        id: 'channel_modal.optional',
+        defaultMessage: '(optional)',
+    }) : ' *';
 
     const formattedLabel = labelText + optionalText;
 
-    const viewContainerStyle = [
-        style.viewContainer,
-    ];
+    const viewContainerStyle = [style.viewContainer];
 
     if (error) {
         viewContainerStyle.push({
@@ -87,7 +92,7 @@ const InputField = ({
             testID={testID}
             style={[viewContainerStyle, containerStyle]}
         >
-            <View style={[style.subContainer, subContainerStyle]} >
+            <View style={[style.subContainer, subContainerStyle]}>
                 <FloatingTextInput
                     autoCapitalize='none'
                     autoCorrect={false}
@@ -106,15 +111,13 @@ const InputField = ({
                     theme={theme}
                     value={value}
                 />
-                <View>
-                    {disabled && fieldDescription && (
-                        <MarkdownContent
-                            blockStyles={blockStyles}
-                            text={fieldDescription}
-                            textStyles={textStyles}
-                        />
-                    )}
-                </View>
+                {disabled && fieldDescription && (
+                    <FieldDescription
+                        blockStyles={blockStyles}
+                        text={fieldDescription}
+                        textStyles={textStyles}
+                    />
+                )}
             </View>
         </View>
     );

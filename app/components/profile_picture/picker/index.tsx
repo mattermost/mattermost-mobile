@@ -416,7 +416,7 @@ const ImagePicker = ({
             );
         };
 
-        bottomSheet({
+        return bottomSheet({
             closeButtonId: 'close-edit-profile',
             renderContent,
             snapPoints: [(5 * ITEM_HEIGHT) + 10, 10],

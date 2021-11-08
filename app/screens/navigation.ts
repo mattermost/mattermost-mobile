@@ -414,12 +414,12 @@ export function showSearchModal(initialValue = '') {
     showModal(name, title, passProps, options);
 }
 
-export async function dismissModal(options: any = {}) {
+export async function dismissModal(options?: Options & { componentId: string}) {
     if (!EphemeralStore.hasModalsOpened()) {
         return;
     }
 
-    const componentId = options.componentId || EphemeralStore.getNavigationTopModalId();
+    const componentId = options?.componentId || EphemeralStore.getNavigationTopModalId();
     if (componentId) {
         try {
             await Navigation.dismissModal(componentId, options);
@@ -431,7 +431,7 @@ export async function dismissModal(options: any = {}) {
     }
 }
 
-export async function dismissAllModals(options = {}) {
+export async function dismissAllModals(options: Options = {}) {
     if (!EphemeralStore.hasModalsOpened()) {
         return;
     }
