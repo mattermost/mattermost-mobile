@@ -8,14 +8,16 @@ import {Touchable, TouchableOpacity, TouchableWithoutFeedback, View, StyleProp, 
 import {TouchableNativeFeedback} from 'react-native-gesture-handler';
 
 type TouchableProps = Touchable & {
-    testID: string;
     children: React.ReactNode | React.ReactNode[];
-    underlayColor: string;
-    type: 'native' | 'opacity' | 'none';
+    borderlessRipple?: boolean;
+    rippleRadius?: number;
     style?: StyleProp<ViewStyle>;
+    testID: string;
+    type: 'native' | 'opacity' | 'none';
+    underlayColor: string;
 }
 
-const TouchableWithFeedbackAndroid = ({testID, children, underlayColor, type = 'native', ...props}: TouchableProps) => {
+const TouchableWithFeedbackAndroid = ({borderlessRipple = false, children, rippleRadius, testID, type = 'native', underlayColor, ...props}: TouchableProps) => {
     switch (type) {
         case 'native':
             return (
@@ -23,7 +25,7 @@ const TouchableWithFeedbackAndroid = ({testID, children, underlayColor, type = '
                     testID={testID}
                     {...props}
                     style={[props.style]}
-                    background={TouchableNativeFeedback.Ripple(underlayColor || '#fff', false)}
+                    background={TouchableNativeFeedback.Ripple(underlayColor || '#fff', borderlessRipple, rippleRadius)}
                 >
                     <View>
                         {children}
