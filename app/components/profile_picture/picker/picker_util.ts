@@ -20,9 +20,9 @@ import {lookupMimeType} from '@utils/file';
 
 const ShareExtension = NativeModules.MattermostShare;
 
-export type PermissionSource = 'camera' | 'storage' | 'denied_android' | 'denied_ios' | 'photo';
+type PermissionSource = 'camera' | 'storage' | 'denied_android' | 'denied_ios' | 'photo';
 
-export default class ProfilePictureUtils {
+export default class PickerUtil {
     private readonly maxFileSize: number;
     private readonly onShowFileSizeWarning: (fileName: string) => void;
     private readonly onShowUnsupportedMimeTypeWarning: () => void;

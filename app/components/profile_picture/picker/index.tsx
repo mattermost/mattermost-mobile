@@ -6,7 +6,7 @@ import {useIntl} from 'react-intl';
 import {DeviceEventEmitter, Platform, StyleSheet} from 'react-native';
 
 import CompassIcon from '@components/compass_icon';
-import ProfilePictureUtils from '@components/profile_picture/picker/utils';
+import PickerUtil from '@components/profile_picture/picker/picker_util';
 import SlideUpPanelItem, {ITEM_HEIGHT} from '@components/slide_up_panel_item';
 import TouchableWithFeedback from '@components/touchable_with_feedback';
 import {Navigation} from '@constants';
@@ -70,7 +70,7 @@ const ImagePicker = ({
     const serverUrl = useServerUrl();
     const pictureUtils = useMemo(
         () =>
-            new ProfilePictureUtils(
+            new PickerUtil(
                 intl,
                 maxFileSize,
                 onShowFileSizeWarning,
