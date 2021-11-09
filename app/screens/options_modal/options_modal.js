@@ -23,6 +23,7 @@ const DURATION = 200;
 
 export default class OptionsModal extends PureComponent {
     static propTypes = {
+        componentId: PropTypes.string,
         items: PropTypes.array.isRequired,
         deviceHeight: PropTypes.number.isRequired,
         deviceWidth: PropTypes.number.isRequired,
@@ -70,7 +71,8 @@ export default class OptionsModal extends PureComponent {
             duration: DURATION,
             useNativeDriver: false,
         }).start(() => {
-            dismissModal();
+            const {componentId} = this.props;
+            dismissModal({componentId});
         });
     };
 
@@ -78,7 +80,8 @@ export default class OptionsModal extends PureComponent {
         if (Platform.OS === 'android') {
             this.close();
         } else {
-            dismissModal();
+            const {componentId} = this.props;
+            dismissModal({componentId});
         }
     };
 
