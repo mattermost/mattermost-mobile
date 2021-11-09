@@ -3,12 +3,13 @@
 
 import React, {useMemo} from 'react';
 import {useIntl} from 'react-intl';
-import {Platform, StyleSheet} from 'react-native';
+import {DeviceEventEmitter, Platform, StyleSheet} from 'react-native';
 
 import CompassIcon from '@components/compass_icon';
 import ProfilePictureUtils from '@components/profile_picture/picker/utils';
 import SlideUpPanelItem, {ITEM_HEIGHT} from '@components/slide_up_panel_item';
 import TouchableWithFeedback from '@components/touchable_with_feedback';
+import {Navigation} from '@constants';
 import {useServerUrl} from '@context/server_url';
 import {useTheme} from '@context/theme';
 import {bottomSheet} from '@screens/navigation';
@@ -50,19 +51,18 @@ const style = StyleSheet.create({
     },
 });
 
-//fixme: replace anonymous function with callback function
 const ImagePicker = ({
     browseFileType,
     canBrowseFiles = true,
     canBrowsePhotoLibrary = true,
     canTakePhoto = true,
     children,
-    user,
     maxFileSize,
+    onRemoveProfileImage,
     onShowFileSizeWarning,
     onShowUnsupportedMimeTypeWarning,
-    onRemoveProfileImage,
     uploadFiles,
+    user,
     wrapper,
 }: ProfilePictureButtonProps) => {
     const intl = useIntl();
@@ -81,62 +81,58 @@ const ImagePicker = ({
     );
 
     const showFileAttachmentOptions = () => {
-        const removeImageOption = pictureUtils.getRemoveProfileImageOption(user, serverUrl, onRemoveProfileImage);
+        const canRemovePicture = pictureUtils.hasPictureUrl(user, serverUrl);
 
         const renderContent = () => {
-            const onBrowsePhotoLibrary = async () => pictureUtils.attachFileFromLibrary;
-            const onTakePhoto = async () => pictureUtils.attachFileFromCamera;
+            const renderPanelItems = (itemType: string) => {
+                const types = {
+                    takePhoto: {
+                        icon: 'camera-outline',
+                        onPress: () => pictureUtils.attachFileFromCamera(),
+                        testID: 'attachment.canTakePhoto',
+                        text: intl.formatMessage({id: 'mobile.file_upload.camera_photo', defaultMessage: 'Take Photo'}),
+                    },
+                    browsePhotoLibrary: {
+                        icon: 'file-generic-outline',
+                        onPress: () => pictureUtils.attachFileFromLibrary(),
+                        testID: 'attachment.canBrowsePhotoLibrary',
+                        text: intl.formatMessage({id: 'mobile.file_upload.library', defaultMessage: 'Photo Library'}),
+                    },
+                    browseFiles: {
+                        icon: 'file-multiple-outline',
+                        onPress: () => pictureUtils.attachFileFromFiles(intl, browseFileType),
+                        testID: 'attachment.canBrowseFiles',
+                        text: intl.formatMessage({id: 'mobile.file_upload.browse', defaultMessage: 'Browse Files'}),
+                    },
+                    removeProfilePicture: {
+                        icon: 'trash-can-outline',
+                        onPress: () => {
+                            DeviceEventEmitter.emit(Navigation.NAVIGATION_CLOSE_MODAL);
+                            return onRemoveProfileImage();
+                        },
+                        testID: 'attachment.removeImage',
+                        text: intl.formatMessage({id: 'mobile.edit_profile.remove_profile_photo', defaultMessage: 'Remove Photo'}),
+                    },
+                };
+
+                //@ts-expect-error object string index
+                const item = types[itemType];
+                return (
+                    <SlideUpPanelItem
+                        icon={item.icon}
+                        onPress={item.onPress}
+                        testID={item.testID}
+                        text={item.text}
+                    />
+                );
+            };
 
             return (
                 <>
-                    {canTakePhoto && (
-                        <SlideUpPanelItem
-                            icon='camera-outline'
-                            onPress={onTakePhoto}
-                            testID='attachment.canTakePhoto'
-                            text={intl.formatMessage({
-                                id: 'mobile.file_upload.camera_photo',
-                                defaultMessage: 'Take Photo',
-                            })}
-                        />
-                    )}
-
-                    {canBrowsePhotoLibrary && (
-                        <SlideUpPanelItem
-                            icon='file-generic-outline'
-                            onPress={onBrowsePhotoLibrary}
-                            testID='attachment.canBrowsePhotoLibrary'
-                            text={intl.formatMessage({
-                                id: 'mobile.file_upload.library',
-                                defaultMessage: 'Photo Library',
-                            })}
-                        />
-                    )}
-
-                    {canBrowseFiles && (
-                        <SlideUpPanelItem
-                            icon='file-multiple-outline'
-                            onPress={() => pictureUtils.attachFileFromFiles(intl, browseFileType)}
-                            testID='attachment.canBrowseFiles'
-                            text={intl.formatMessage({
-                                id: 'mobile.file_upload.browse',
-                                defaultMessage: 'Browse Files',
-                            })}
-                        />
-                    )}
-
-                    {removeImageOption && (
-                        <SlideUpPanelItem
-                            destructive={true}
-                            icon={removeImageOption.icon}
-                            onPress={removeImageOption.action}
-                            testID='attachment.removeImage'
-                            text={intl.formatMessage({
-                                id: removeImageOption.text.id,
-                                defaultMessage: removeImageOption.text.defaultMessage,
-                            })}
-                        />
-                    )}
+                    {canTakePhoto && renderPanelItems('takePhoto')}
+                    {canBrowsePhotoLibrary && renderPanelItems('browsePhotoLibrary')}
+                    {canBrowseFiles && renderPanelItems('browseFiles')}
+                    {canRemovePicture && renderPanelItems('removeProfilePicture')}
                 </>
             );
         };

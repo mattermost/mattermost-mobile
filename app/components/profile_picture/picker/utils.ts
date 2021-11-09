@@ -3,27 +3,15 @@
 
 import * as FileSystem from 'expo-file-system';
 import {IntlShape} from 'react-intl';
-import {
-    Alert,
-    DeviceEventEmitter,
-    NativeModules,
-    Platform,
-    StatusBar,
-} from 'react-native';
+import {Alert, DeviceEventEmitter, NativeModules, Platform, StatusBar} from 'react-native';
 import AndroidOpenSettings from 'react-native-android-open-settings';
 import DeviceInfo from 'react-native-device-info';
 import DocumentPicker from 'react-native-document-picker';
-import {
-    CameraOptions,
-    ImageLibraryOptions,
-    launchCamera,
-    launchImageLibrary,
-} from 'react-native-image-picker';
+import {CameraOptions, ImageLibraryOptions, launchCamera, launchImageLibrary} from 'react-native-image-picker';
 import Permissions from 'react-native-permissions';
 
 import {Client} from '@client/rest';
 import {Files, Navigation} from '@constants';
-import {t} from '@i18n';
 import NetworkManager from '@init/network_manager';
 import {VALID_MIME_TYPES} from '@screens/edit_profile/constants';
 import UserModel from '@typings/database/models/servers/user';
@@ -60,8 +48,8 @@ export default class ProfilePictureUtils {
         this.uploadFiles = uploadFiles;
     }
 
-    getPermissionMessages = (intl: IntlShape, source: PermissionSource) => {
-        const {formatMessage} = intl;
+    getPermissionMessages = (source: PermissionSource) => {
+        const {formatMessage} = this.intl;
         const applicationName = DeviceInfo.getApplicationName();
 
         const permissions: Record<string, { title: string; text: string }> = {
@@ -164,12 +152,12 @@ export default class ProfilePictureUtils {
         }
     };
 
-    getPermissionDeniedMessage = (intl: IntlShape, source?: PermissionSource) => {
+    getPermissionDeniedMessage = (source?: PermissionSource) => {
         const sources = ['camera', 'storage', 'photo'];
         const deniedSource: PermissionSource = Platform.select({android: 'denied_android', ios: 'denied_ios'})!;
         const msgForSource = source && sources.includes(source) ? source : deniedSource;
 
-        return this.getPermissionMessages(intl, msgForSource);
+        return this.getPermissionMessages(msgForSource);
     };
 
     getFilesFromResponse = async (response: FileResponse): Promise<File[]> => {
@@ -198,7 +186,7 @@ export default class ProfilePictureUtils {
         return files;
     };
 
-    attachFileFromLibrary = async (intl: IntlShape) => {
+    attachFileFromLibrary = async () => {
         const options: ImageLibraryOptions = {
             quality: 1,
             mediaType: 'mixed',
@@ -209,7 +197,7 @@ export default class ProfilePictureUtils {
             options.mediaType = 'mixed';
         }
 
-        const hasPermission = await this.hasPhotoPermission('photo', intl);
+        const hasPermission = await this.hasPhotoPermission('photo');
 
         if (hasPermission) {
             launchImageLibrary(options, async (response: FileResponse) => {
@@ -227,14 +215,11 @@ export default class ProfilePictureUtils {
     };
 
     //fixme: Android...does it always have permissions?
-    hasPhotoPermission = async (source: PermissionSource, intl: IntlShape) => {
+    hasPhotoPermission = async (source: PermissionSource) => {
         if (Platform.OS === 'ios') {
             let permissionRequest;
-            const targetSource =
-                source === 'camera' ? Permissions.PERMISSIONS.IOS.CAMERA : Permissions.PERMISSIONS.IOS.PHOTO_LIBRARY;
-            const hasPermissionToStorage = await Permissions.check(
-                targetSource,
-            );
+            const targetSource = source === 'camera' ? Permissions.PERMISSIONS.IOS.CAMERA : Permissions.PERMISSIONS.IOS.PHOTO_LIBRARY;
+            const hasPermissionToStorage = await Permissions.check(targetSource);
 
             switch (hasPermissionToStorage) {
                 case Permissions.RESULTS.DENIED:
@@ -245,22 +230,19 @@ export default class ProfilePictureUtils {
                     break;
                 case Permissions.RESULTS.BLOCKED: {
                     const grantOption = {
-                        text: intl.formatMessage({
+                        text: this.intl.formatMessage({
                             id: 'mobile.permission_denied_retry',
                             defaultMessage: 'Settings',
                         }),
                         onPress: () => Permissions.openSettings(),
                     };
 
-                    const {title, text} = this.getPermissionDeniedMessage(
-                        intl,
-                        source,
-                    );
+                    const {title, text} = this.getPermissionDeniedMessage(source);
 
                     Alert.alert(title, text, [
                         grantOption,
                         {
-                            text: intl.formatMessage({
+                            text: this.intl.formatMessage({
                                 id: 'mobile.permission_denied_dismiss',
                                 defaultMessage: "Don't Allow",
                             }),
@@ -274,7 +256,7 @@ export default class ProfilePictureUtils {
         return true;
     };
 
-    attachFileFromCamera = async (intl: IntlShape) => {
+    attachFileFromCamera = async () => {
         const options: CameraOptions = {
             quality: 0.8,
             videoQuality: 'high',
@@ -282,7 +264,7 @@ export default class ProfilePictureUtils {
             saveToPhotos: true,
         };
 
-        const hasCameraPermission = await this.hasPhotoPermission('camera', intl);
+        const hasCameraPermission = await this.hasPhotoPermission('camera');
 
         if (hasCameraPermission) {
             launchCamera(options, async (response: FileResponse) => {
@@ -338,24 +320,19 @@ export default class ProfilePictureUtils {
         }
 
         const {formatMessage} = intl;
-        const storagePermission =
-            Permissions.PERMISSIONS.ANDROID.READ_EXTERNAL_STORAGE;
+        const storagePermission = Permissions.PERMISSIONS.ANDROID.READ_EXTERNAL_STORAGE;
         let permissionRequest;
-        const hasPermissionToStorage = await Permissions.check(
-            storagePermission,
-        );
+        const hasPermissionToStorage = await Permissions.check(storagePermission);
 
         switch (hasPermissionToStorage) {
             case Permissions.RESULTS.DENIED:
-                permissionRequest = await Permissions.request(
-                    storagePermission,
-                );
+                permissionRequest = await Permissions.request(storagePermission);
                 if (permissionRequest !== Permissions.RESULTS.GRANTED) {
                     return false;
                 }
                 break;
             case Permissions.RESULTS.BLOCKED: {
-                const {title, text} = this.getPermissionDeniedMessage(intl);
+                const {title, text} = this.getPermissionDeniedMessage();
 
                 Alert.alert(title, text, [
                     {
@@ -379,11 +356,7 @@ export default class ProfilePictureUtils {
         return false;
     };
 
-    getRemoveProfileImageOption = (
-        user: UserModel,
-        serverUrl: string,
-        onRemoveProfileImage: () => void,
-    ) => {
+    hasPictureUrl = (user: UserModel, serverUrl: string) => {
         const {id, lastPictureUpdate} = user;
 
         let client: Client | undefined;
@@ -391,39 +364,12 @@ export default class ProfilePictureUtils {
 
         try {
             client = NetworkManager.getClient(serverUrl);
-            profileImageUrl = client.getProfilePictureUrl(
-                id,
-                lastPictureUpdate,
-            );
+            profileImageUrl = client.getProfilePictureUrl(id, lastPictureUpdate);
         } catch {
             // does nothing
         }
 
         // Check if image url includes query string for timestamp. If so, it means the image has been updated from the default, i.e. '.../image?_=1544159746868'
-        if (profileImageUrl?.includes('?')) {
-            return {
-                ...(onRemoveProfileImage && {
-                    action: () => {
-                        DeviceEventEmitter.emit(
-                            Navigation.NAVIGATION_CLOSE_MODAL,
-                        );
-                        return onRemoveProfileImage();
-                    },
-                }),
-                text: {
-                    id: t('mobile.edit_profile.remove_profile_photo'),
-                    defaultMessage: 'Remove Photo',
-                },
-                textStyle: {
-                    color: '#CC3239',
-                },
-                icon: 'trash-can-outline',
-                iconStyle: {
-                    color: '#CC3239',
-                },
-            };
-        }
-
-        return null;
+        return Boolean(profileImageUrl?.includes('?'));
     };
 }
