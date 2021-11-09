@@ -6,6 +6,7 @@ import React from 'react';
 import {Preferences, Screens} from '@constants';
 import * as NavigationActions from '@screens/navigation';
 import {waitFor, renderWithIntl, fireEvent} from '@test/intl-test-helper';
+import {LaunchType} from '@typings/launch';
 
 import Login from './index';
 
@@ -32,6 +33,13 @@ describe('Login', () => {
         },
         license: {
             IsLicensed: 'false',
+        },
+        show: true,
+        serverDisplayName: 'serverName',
+        launchType: LaunchType.Normal,
+        setHasComponents: () => {
+            return true
+            ;
         },
         theme: Preferences.THEMES.denim,
         serverUrl: 'https://locahost:8065',

@@ -3,7 +3,7 @@
 
 import React, {useEffect} from 'react';
 import {useIntl} from 'react-intl';
-import {Image, View} from 'react-native';
+import {Image, ImageSourcePropType, View} from 'react-native';
 import Button from 'react-native-button';
 
 import LocalConfig from '@assets/config.json';
@@ -18,6 +18,13 @@ import {isMinimumServerVersion} from '@utils/helpers';
 import {preventDoubleTap} from '@utils/tap';
 import {makeStyleSheetFromTheme, changeOpacity} from '@utils/theme';
 
+type SsoInfo = {
+    defaultMessage: string;
+    id: string;
+    imageSrc?: ImageSourcePropType;
+    compassIcon?: string;
+};
+
 // LoginOptionWithConfigAndLicenseProps
 const SsoOptions = ({config, extra, redirect, onlySSO, show, setHasComponents, launchType, launchError, license, theme, serverDisplayName, serverUrl}: LoginOptionsProps) => {
     const intl = useIntl();
@@ -29,6 +36,39 @@ const SsoOptions = ({config, extra, redirect, onlySSO, show, setHasComponents, l
         const screen = SSO;
         const title = intl.formatMessage({id: 'mobile.routes.sso', defaultMessage: 'Single Sign-On'});
         goToScreen(screen, title, {config, extra, launchError, launchType, license, theme, ssoType, serverDisplayName, serverUrl});
+    });
+
+    const getSsoButtonOptions = ((ssoType: string): SsoInfo => {
+        const sso: SsoInfo = {} as SsoInfo;
+        switch (ssoType) {
+            case Sso.constants.SAML:
+                sso.defaultMessage = 'SAML';
+                sso.compassIcon = 'lock';
+                sso.id = 'mobile.login_options.saml';
+                break;
+            case Sso.constants.GITLAB:
+                sso.defaultMessage = 'GitLab';
+                sso.imageSrc = require('@assets/images/Icon_Gitlab.png');
+                sso.id = 'mobile.login_options.gitlab';
+                break;
+            case Sso.constants.GOOGLE:
+                sso.defaultMessage = 'Google';
+                sso.imageSrc = require('@assets/images/Icon_Google.png');
+                sso.id = 'mobile.login_options.google';
+                break;
+            case Sso.constants.OFFICE365:
+                sso.defaultMessage = 'Office 365';
+                sso.imageSrc = require('@assets/images/Icon_Office.png');
+                sso.id = 'mobile.login_options.office365';
+                break;
+            case Sso.constants.OPENID:
+                sso.defaultMessage = 'Open ID';
+                sso.id = 'mobile.login_options.openid';
+                break;
+
+            default:
+        }
+        return sso;
     });
 
     const ssoEnabled = (ssoType: string): boolean => {
@@ -79,7 +119,7 @@ const SsoOptions = ({config, extra, redirect, onlySSO, show, setHasComponents, l
 
     const componentArray = [];
     for (const ssoType of enabledSSOs) {
-        const sso = Sso.values[ssoType];
+        const sso = getSsoButtonOptions(ssoType);
         const id = sso.id;
         const imageSrc = sso.imageSrc;
         const compassIcon = sso.compassIcon;
@@ -136,11 +176,14 @@ const SsoOptions = ({config, extra, redirect, onlySSO, show, setHasComponents, l
         );
     }
 
-    return show && (
+    return (
         <>
-            <View style={[styleViewContainer, styles.container]}>
-                {componentArray}
-            </View>
+            {
+                show &&
+                <View style={[styleViewContainer, styles.container]}>
+                    {componentArray}
+                </View>
+            }
         </>
     );
 };

@@ -30,27 +30,27 @@ const SSO = ({config, extra, launchError, launchType, serverDisplayName, serverU
     let completeUrlPath = '';
     let loginUrl = '';
     switch (ssoType) {
-        case Sso.GOOGLE: {
+        case Sso.constants.GOOGLE: {
             completeUrlPath = '/signup/google/complete';
             loginUrl = `${serverUrl}/oauth/google/mobile_login`;
             break;
         }
-        case Sso.GITLAB: {
+        case Sso.constants.GITLAB: {
             completeUrlPath = '/signup/gitlab/complete';
             loginUrl = `${serverUrl}/oauth/gitlab/mobile_login`;
             break;
         }
-        case Sso.SAML: {
+        case Sso.constants.SAML: {
             completeUrlPath = '/login/sso/saml';
             loginUrl = `${serverUrl}/login/sso/saml?action=mobile`;
             break;
         }
-        case Sso.OFFICE365: {
+        case Sso.constants.OFFICE365: {
             completeUrlPath = '/signup/office365/complete';
             loginUrl = `${serverUrl}/oauth/office365/mobile_login`;
             break;
         }
-        case Sso.OPENID: {
+        case Sso.constants.OPENID: {
             completeUrlPath = '/signup/openid/complete';
             loginUrl = `${serverUrl}/oauth/openid/mobile_login`;
             break;

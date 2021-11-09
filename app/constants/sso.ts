@@ -14,35 +14,7 @@ const constants = keyMirror({
     OPENID: null,
 });
 
-const values = {
-    SAML: {
-        defaultMessage: 'SAML',
-        compassIcon: 'lock',
-        id: 'mobile.login_options.saml',
-    },
-    GITLAB: {
-        defaultMessage: 'GitLab',
-        imageSrc: require('@assets/images/Icon_Gitlab.png'),
-        id: 'mobile.login_options.gitlab',
-    },
-    GOOGLE: {
-        defaultMessage: 'Google',
-        imageSrc: require('@assets/images/Icon_Google.png'),
-        id: 'mobile.login_options.google',
-    },
-    OFFICE365: {
-        defaultMessage: 'Office 365',
-        imageSrc: require('@assets/images/Icon_Office.png'),
-        id: 'mobile.login_options.office365',
-    },
-    OPENID: {
-        defaultMessage: 'Open ID',
-        id: 'mobile.login_options.openid',
-    },
-};
-
 export default {
-    values,
     constants,
     REDIRECT_URL_SCHEME,
     REDIRECT_URL_SCHEME_DEV,

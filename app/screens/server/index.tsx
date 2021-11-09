@@ -121,10 +121,9 @@ const Server = ({componentId, extra, launchType, launchError, theme}: ServerProp
         const openIdEnabled = config.EnableSignUpWithOpenId === 'true' && license.IsLicensed === 'true' && isMinimumServerVersion(config.Version, 5, 33, 0);
 
         let screen = Screens.LOGIN;
-        let title = formatMessage({id: 'mobile.routes.login', defaultMessage: 'Login'});
+
         if (samlEnabled || gitlabEnabled || googleEnabled || o365Enabled || openIdEnabled) {
             screen = Screens.LOGIN_OPTIONS;
-            title = formatMessage({id: 'mobile.routes.loginOptions', defaultMessage: 'Login Chooser'});
         }
 
         const {allowOtherServers} = managedConfig;

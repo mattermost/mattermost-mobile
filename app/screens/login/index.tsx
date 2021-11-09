@@ -10,12 +10,10 @@ import {
     View,
 } from 'react-native';
 import Button from 'react-native-button';
-import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
-import {NavigationFunctionComponent} from 'react-native-navigation';
 
 import {login} from '@actions/remote/session';
 import ErrorText from '@components/error_text';
-import FloatingTextInput, {FloatingTextInputRef} from '@components/floating_text_input_label';
+import FloatingTextInput from '@components/floating_text_input_label';
 import FormattedText from '@components/formatted_text';
 import Loading from '@components/loading';
 import {FORGOT_PASSWORD, MFA} from '@constants/screens';
@@ -28,21 +26,23 @@ import {makeStyleSheetFromTheme} from '@utils/theme';
 import type {LaunchProps} from '@typings/launch';
 
 interface LoginProps extends LaunchProps {
-    componentId: string;
-    config: ClientConfig;
+    show: boolean;
+    config: Partial<ClientConfig>;
+    setHasComponents: Function;
     serverDisplayName: string;
-    license: ClientLicense;
+    license: Partial<ClientLicense>;
     theme: Theme;
 }
 
 export const MFA_EXPECTED_ERRORS = ['mfa.validate_token.authenticate.app_error', 'ent.mfa.validate_token.authenticate.app_error'];
 
-const Login: NavigationFunctionComponent = ({config, serverDisplayName, show, setHasComponents, extra, launchError, launchType, license, serverUrl, theme}: LoginProps) => {
+const Login = ({config, serverDisplayName, show, setHasComponents, extra, launchError, launchType, license, serverUrl, theme}: LoginProps) => {
     const styles = getStyleSheet(theme);
 
     const loginRef = useRef<TextInput>(null);
     const passwordRef = useRef<TextInput>(null);
-    const scrollRef = useRef<KeyboardAwareScrollView>(null);
+
+    // const scrollRef = useRef<KeyboardAwareScrollView>(null);
 
     const intl = useIntl();
     const managedConfig = useManagedConfig();
@@ -268,11 +268,11 @@ const Login: NavigationFunctionComponent = ({config, serverDisplayName, show, se
     //     }
     // }, []);
 
-    const onBlur = () => {
-        loginRef?.current?.blur();
-        passwordRef?.current?.blur();
-        Keyboard.dismiss();
-    };
+    // const onBlur = () => {
+    //     loginRef?.current?.blur();
+    //     passwordRef?.current?.blur();
+    //     Keyboard.dismiss();
+    // };
 
     const onLoginChange = useCallback((text) => {
         setLoginId(text);
@@ -330,60 +330,63 @@ const Login: NavigationFunctionComponent = ({config, serverDisplayName, show, se
         );
     };
 
-    return show && (
-        <View style={styles.container}>
-            {error && (
-                <ErrorText
-                    testID='login.error.text'
-                    error={error}
-                    theme={theme}
-                />
-            )}
-            <FloatingTextInput
-                autoCorrect={false}
-                autoCapitalize={'none'}
-                blurOnSubmit={false}
-                containerStyle={styles.inputBoxEmail}
-                enablesReturnKeyAutomatically={true}
-                key={'email'}
-                keyboardType='email-address'
-                label={createLoginPlaceholder()}
-                onChangeText={onLoginChange}
-                onSubmitEditing={onPasswordFocus}
+    return (
+        <>
+            {
+                show &&
+                <View style={styles.container}>
+                    {error && (
+                        <ErrorText
+                            testID='login.error.text'
+                            error={error}
+                            theme={theme}
+                        />
+                    )}
+                    <FloatingTextInput
+                        autoCorrect={false}
+                        autoCapitalize={'none'}
+                        blurOnSubmit={false}
+                        containerStyle={styles.inputBoxEmail}
+                        enablesReturnKeyAutomatically={true}
+                        key={'email'}
+                        keyboardType='email-address'
+                        label={createLoginPlaceholder()}
+                        onChangeText={onLoginChange}
+                        onSubmitEditing={onPasswordFocus}
 
-                // onBlur={onBlur}
-                ref={loginRef}
-                returnKeyType='next'
-                testID='login.username.input'
-                theme={theme}
-                value={loginId}
-            />
+                        // onBlur={onBlur}
+                        ref={loginRef}
+                        returnKeyType='next'
+                        testID='login.username.input'
+                        theme={theme}
+                        value={loginId}
+                    />
 
-            <FloatingTextInput
-                autoCorrect={false}
-                autoCapitalize={'none'}
-                blurOnSubmit={false}
-                containerStyle={styles.inputBoxPassword}
-                enablesReturnKeyAutomatically={true}
-                key={'password'}
-                keyboardType='email-address'
-                label={intl.formatMessage({
-                    id: 'login.password',
-                    defaultMessage: 'Password',
-                })}
-                onChangeText={onPasswordChange}
-                onSubmitEditing={preSignIn}
+                    <FloatingTextInput
+                        autoCorrect={false}
+                        autoCapitalize={'none'}
+                        blurOnSubmit={false}
+                        containerStyle={styles.inputBoxPassword}
+                        enablesReturnKeyAutomatically={true}
+                        key={'password'}
+                        keyboardType='email-address'
+                        label={intl.formatMessage({
+                            id: 'login.password',
+                            defaultMessage: 'Password',
+                        })}
+                        onChangeText={onPasswordChange}
+                        onSubmitEditing={preSignIn}
 
-                // onBlur={onBlur}
-                ref={passwordRef}
-                returnKeyType='go'
-                secureTextEntry={true}
-                testID='login.password.input'
-                theme={theme}
-                value={password}
-            />
+                        // onBlur={onBlur}
+                        ref={passwordRef}
+                        returnKeyType='go'
+                        secureTextEntry={true}
+                        testID='login.password.input'
+                        theme={theme}
+                        value={password}
+                    />
 
-            {/*
+                    {/*
             // TODO: these textinput props were not translated to
             // FloatingTextInput props
             <TextInput
@@ -392,21 +395,23 @@ const Login: NavigationFunctionComponent = ({config, serverDisplayName, show, se
             />
              */}
 
-            {(config.EnableSignInWithEmail === 'true' || config.EnableSignInWithUsername === 'true') && (
-                <Button
-                    onPress={onPressForgotPassword}
-                    containerStyle={[styles.forgotPasswordBtn]}
-                >
-                    <FormattedText
-                        id='login.forgot'
-                        defaultMessage='Forgot your password?'
-                        style={styles.forgotPasswordTxt}
-                        testID={'login.forgot'}
-                    />
-                </Button>
-            )}
-            {renderProceedButton()}
-        </View>
+                    {(config.EnableSignInWithEmail === 'true' || config.EnableSignInWithUsername === 'true') && (
+                        <Button
+                            onPress={onPressForgotPassword}
+                            containerStyle={[styles.forgotPasswordBtn]}
+                        >
+                            <FormattedText
+                                id='login.forgot'
+                                defaultMessage='Forgot your password?'
+                                style={styles.forgotPasswordTxt}
+                                testID={'login.forgot'}
+                            />
+                        </Button>
+                    )}
+                    {renderProceedButton()}
+                </View>
+            }
+        </>
     );
 };
 

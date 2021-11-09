@@ -3,7 +3,6 @@
 
 import React, {useState, useEffect} from 'react';
 import {GestureResponderEvent, ScrollView, View} from 'react-native';
-import {NavigationFunctionComponent} from 'react-native-navigation';
 import {SafeAreaView} from 'react-native-safe-area-context';
 
 import FormattedText from '@components/formatted_text';
@@ -20,9 +19,12 @@ import type {LaunchProps} from '@typings/launch';
 
 export interface LoginOptionsProps extends LaunchProps {
     onPress?: (type: string|GestureResponderEvent) => void | (() => void);
-    componentId: string;
     serverUrl: string;
     serverDisplayName: string;
+    setHasComponents: Function;
+    onlySSO?: boolean;
+    redirect: boolean;
+    show: boolean;
     config: ClientConfig;
     license: ClientLicense;
     theme: Theme;
@@ -53,7 +55,7 @@ const getStyles = makeStyleSheetFromTheme((theme: Theme) => ({
     },
 }));
 
-const LoginOptions: NavigationFunctionComponent = ({config, launchType, launchError, license, serverDisplayName, serverUrl, theme}: LoginOptionsProps) => {
+const LoginOptions = ({config, launchType, launchError, license, serverDisplayName, serverUrl, theme}: LoginOptionsProps) => {
     const styles = getStyles(theme);
     const [hasLogin, setHasLogin] = useState(false);
     const [numberSSOs, setNumberSSOs] = useState(0);
@@ -134,7 +136,6 @@ const LoginOptions: NavigationFunctionComponent = ({config, launchType, launchEr
                         redirect={redirectSSO}
                         onlySSO={!hasLogin}
                         show={Boolean(numberSSOs)}
-                        componentId={'sso'}
                         key={'sso'}
                         launchType={launchType}
                         launchError={launchError}
