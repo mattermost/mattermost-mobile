@@ -20,12 +20,7 @@ import {lookupMimeType} from '@utils/file';
 
 const ShareExtension = NativeModules.MattermostShare;
 
-export type PermissionSource =
-    | 'camera'
-    | 'storage'
-    | 'denied_android'
-    | 'denied_ios'
-    | 'photo';
+export type PermissionSource = 'camera' | 'storage' | 'denied_android' | 'denied_ios' | 'photo';
 
 export default class ProfilePictureUtils {
     private readonly maxFileSize: number;
@@ -48,7 +43,7 @@ export default class ProfilePictureUtils {
         this.uploadFiles = uploadFiles;
     }
 
-    getPermissionMessages = (source: PermissionSource) => {
+    private getPermissionMessages = (source: PermissionSource) => {
         const {formatMessage} = this.intl;
         const applicationName = DeviceInfo.getApplicationName();
 
@@ -118,7 +113,7 @@ export default class ProfilePictureUtils {
         return permissions[source];
     };
 
-    prepareFileUpload = async (files: File[]) => {
+    private prepareFileUpload = async (files: File[]) => {
         const file = files?.[0];
 
         if (!file) {
@@ -152,7 +147,7 @@ export default class ProfilePictureUtils {
         }
     };
 
-    getPermissionDeniedMessage = (source?: PermissionSource) => {
+    private getPermissionDeniedMessage = (source?: PermissionSource) => {
         const sources = ['camera', 'storage', 'photo'];
         const deniedSource: PermissionSource = Platform.select({android: 'denied_android', ios: 'denied_ios'})!;
         const msgForSource = source && sources.includes(source) ? source : deniedSource;
@@ -160,7 +155,7 @@ export default class ProfilePictureUtils {
         return this.getPermissionMessages(msgForSource);
     };
 
-    getFilesFromResponse = async (response: FileResponse): Promise<File[]> => {
+    private getFilesFromResponse = async (response: FileResponse): Promise<File[]> => {
         const files = [];
         const file = response?.assets?.[0];
 
@@ -186,36 +181,8 @@ export default class ProfilePictureUtils {
         return files;
     };
 
-    attachFileFromLibrary = async () => {
-        const options: ImageLibraryOptions = {
-            quality: 1,
-            mediaType: 'mixed',
-            includeBase64: false,
-        };
-
-        if (Platform.OS === 'ios') {
-            options.mediaType = 'mixed';
-        }
-
-        const hasPermission = await this.hasPhotoPermission('photo');
-
-        if (hasPermission) {
-            launchImageLibrary(options, async (response: FileResponse) => {
-                StatusBar.setHidden(false);
-
-                // emmProvider.inBackgroundSince = null;
-                if (response.error || response.didCancel) {
-                    return;
-                }
-
-                const files = await this.getFilesFromResponse(response);
-                await this.prepareFileUpload(files);
-            });
-        }
-    };
-
     //fixme: Android...does it always have permissions?
-    hasPhotoPermission = async (source: PermissionSource) => {
+    private hasPhotoPermission = async (source: PermissionSource) => {
         if (Platform.OS === 'ios') {
             let permissionRequest;
             const targetSource = source === 'camera' ? Permissions.PERMISSIONS.IOS.CAMERA : Permissions.PERMISSIONS.IOS.PHOTO_LIBRARY;
@@ -256,65 +223,7 @@ export default class ProfilePictureUtils {
         return true;
     };
 
-    attachFileFromCamera = async () => {
-        const options: CameraOptions = {
-            quality: 0.8,
-            videoQuality: 'high',
-            mediaType: 'photo',
-            saveToPhotos: true,
-        };
-
-        const hasCameraPermission = await this.hasPhotoPermission('camera');
-
-        if (hasCameraPermission) {
-            launchCamera(options, async (response: FileResponse) => {
-                StatusBar.setHidden(false);
-
-                // emmProvider.inBackgroundSince = null;
-                if (response.error || response.didCancel) {
-                    return;
-                }
-
-                const files = await this.getFilesFromResponse(response);
-                await this.prepareFileUpload(files);
-            });
-        }
-    };
-
-    attachFileFromFiles = async (intl: IntlShape, browseFileType?: string) => {
-        const hasPermission = await this.hasStoragePermission(intl);
-        const fileType =
-            browseFileType ??
-            Platform.select({ios: 'public.item', android: '*/*'})!;
-
-        if (hasPermission) {
-            try {
-                const res = (await DocumentPicker.pickSingle({
-                    type: [fileType],
-                })) as unknown as File;
-
-                // emmProvider.inBackgroundSince = null;
-                if (Platform.OS === 'android') {
-                    // For android we need to retrieve the realPath in case the file being imported is from the cloud
-                    const newUri = await ShareExtension.getFilePath(res.uri);
-                    if (newUri.filePath) {
-                        res.uri = newUri.filePath;
-                    } else {
-                        return;
-                    }
-                }
-
-                // Decode file uri to get the actual path
-                res.uri = decodeURIComponent(res.uri);
-
-                await this.prepareFileUpload([res]);
-            } catch (error) {
-                // Do nothing
-            }
-        }
-    };
-
-    hasStoragePermission = async (intl: IntlShape) => {
+    private hasStoragePermission = async (intl: IntlShape) => {
         if (Platform.OS === 'ios') {
             return true;
         }
@@ -354,6 +263,86 @@ export default class ProfilePictureUtils {
         }
 
         return false;
+    };
+
+    attachFileFromCamera = async () => {
+        const options: CameraOptions = {
+            quality: 0.8,
+            videoQuality: 'high',
+            mediaType: 'photo',
+            saveToPhotos: true,
+        };
+
+        const hasCameraPermission = await this.hasPhotoPermission('camera');
+
+        if (hasCameraPermission) {
+            launchCamera(options, async (response: FileResponse) => {
+                StatusBar.setHidden(false);
+
+                if (response.error || response.didCancel) {
+                    return;
+                }
+
+                const files = await this.getFilesFromResponse(response);
+                await this.prepareFileUpload(files);
+            });
+        }
+    };
+
+    attachFileFromFiles = async (intl: IntlShape, browseFileType?: string) => {
+        const hasPermission = await this.hasStoragePermission(intl);
+        const fileType =
+            browseFileType ??
+            Platform.select({ios: 'public.item', android: '*/*'})!;
+
+        if (hasPermission) {
+            try {
+                const res = (await DocumentPicker.pickSingle({type: [fileType]})) as unknown as File;
+
+                if (Platform.OS === 'android') {
+                    // For android we need to retrieve the realPath in case the file being imported is from the cloud
+                    const newUri = await ShareExtension.getFilePath(res.uri);
+                    if (newUri.filePath) {
+                        res.uri = newUri.filePath;
+                    } else {
+                        return;
+                    }
+                }
+
+                // Decode file uri to get the actual path
+                res.uri = decodeURIComponent(res.uri);
+
+                await this.prepareFileUpload([res]);
+            } catch (error) {
+                // Do nothing
+            }
+        }
+    };
+
+    attachFileFromLibrary = async () => {
+        const options: ImageLibraryOptions = {
+            quality: 1,
+            mediaType: 'mixed',
+            includeBase64: false,
+        };
+
+        if (Platform.OS === 'ios') {
+            options.mediaType = 'mixed';
+        }
+
+        const hasPermission = await this.hasPhotoPermission('photo');
+
+        if (hasPermission) {
+            launchImageLibrary(options, async (response: FileResponse) => {
+                StatusBar.setHidden(false);
+                if (response.error || response.didCancel) {
+                    return;
+                }
+
+                const files = await this.getFilesFromResponse(response);
+                await this.prepareFileUpload(files);
+            });
+        }
     };
 
     hasPictureUrl = (user: UserModel, serverUrl: string) => {
