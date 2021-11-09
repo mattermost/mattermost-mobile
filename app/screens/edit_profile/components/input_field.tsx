@@ -68,7 +68,7 @@ const InputField = ({
     const textStyles = getMarkdownTextStyles(theme);
     const blockStyles = getMarkdownBlockStyles(theme);
 
-    const keyboard = Platform.OS === 'android' && keyboardType === 'url' ? 'default' : keyboardType;
+    const keyboard = (Platform.OS === 'android' && keyboardType === 'url') ? 'default' : keyboardType;
 
     const labelText = typeof label === 'string' ? label : intl.formatMessage(label);
 

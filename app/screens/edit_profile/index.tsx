@@ -299,12 +299,12 @@ const EditProfile = ({
             return (
                 <View style={style.top}>
                     <ImagePicker
-                        browseFileTypes={DocumentPicker.types.images}
-                        currentUser={currentUser}
+                        browseFileType={DocumentPicker.types.images}
+                        user={currentUser}
                         maxFileSize={MAX_SIZE}
                         onShowFileSizeWarning={onShowFileSizeWarning}
                         onShowUnsupportedMimeTypeWarning={onShowUnsupportedMimeTypeWarning}
-                        removeProfileImage={handleRemoveProfileImage}
+                        onRemoveProfileImage={handleRemoveProfileImage}
                         uploadFiles={handleUploadProfileImage}
                         wrapper={true}
                     >
