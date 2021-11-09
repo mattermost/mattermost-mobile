@@ -5,7 +5,7 @@ import React, {useMemo} from 'react';
 import {Text} from 'react-native';
 import Animated, {useAnimatedStyle} from 'react-native-reanimated';
 
-import {makeStyleSheetFromTheme} from '@utils/theme';
+import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
 type Props = {
@@ -30,7 +30,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     },
     subHeading: {
         ...typography('Heading', 200, 'Regular'),
-        color: theme.sidebarHeaderTextColor,
+        color: changeOpacity(theme.sidebarHeaderTextColor, 0.8),
     },
 }));
 
