@@ -51,6 +51,7 @@ const Login: NavigationFunctionComponent = ({config, serverDisplayName, show, se
 
     const [loginId, setLoginId] = useState<string>('');
     const [password, setPassword] = useState<string>('');
+    const [buttonDisabled, setButtonDisabled] = useState(true);
 
     // useEffect to set userName for EMM
     useEffect(() => {
@@ -285,11 +286,20 @@ const Login: NavigationFunctionComponent = ({config, serverDisplayName, show, se
         passwordRef?.current?.focus();
     }, []);
 
+    useEffect(() => {
+        if (loginId && password) {
+            setButtonDisabled(false);
+            return;
+        }
+        setButtonDisabled(true);
+    }, [loginId, password]);
+
     // **** **** ****   RENDER METHOD **** **** ****
 
     const renderProceedButton = () => {
-        let styleButtonText = buttonTextStyle(theme, 'lg', 'primary', 'default');
-        let styleButtonBackground = buttonBackgroundStyle(theme, 'lg', 'primary');
+        const buttonType = buttonDisabled ? 'disabled' : 'default';
+        const styleButtonText = buttonTextStyle(theme, 'lg', 'primary', buttonType);
+        const styleButtonBackground = buttonBackgroundStyle(theme, 'lg', 'primary', buttonType);
 
         let buttonID = t('login.signIn');
         let buttonText = 'Log In';
@@ -297,19 +307,16 @@ const Login: NavigationFunctionComponent = ({config, serverDisplayName, show, se
 
         if (isLoading) {
             buttonID = t('login.signingIn');
-            buttonText = 'Signing In';
+            buttonText = 'Logging In';
             buttonIcon = (
                 <Loading/>
             );
-        } else {
-            styleButtonText = buttonTextStyle(theme, 'lg', 'primary', 'disabled');
-            styleButtonBackground = buttonBackgroundStyle(theme, 'lg', 'primary', 'disabled');
         }
 
         return (
             <Button
                 testID='login.signin.button'
-                disabled={false}
+                disabled={buttonDisabled}
                 onPress={preSignIn}
                 containerStyle={styleButtonBackground}
             >

@@ -123,8 +123,9 @@ const ServerForm = ({
         }
     }, [dimensions, isTablet]);
 
-    let styleButtonText = buttonTextStyle(theme, 'lg', 'primary', 'default');
-    let styleButtonBackground = buttonBackgroundStyle(theme, 'lg', 'primary');
+    const buttonType = buttonDisabled ? 'disabled' : 'default';
+    const styleButtonText = buttonTextStyle(theme, 'lg', 'primary', buttonType);
+    const styleButtonBackground = buttonBackgroundStyle(theme, 'lg', 'primary', buttonType);
 
     let buttonID = t('mobile.components.select_server_view.connect');
     let buttonText = 'Connect';
@@ -136,9 +137,6 @@ const ServerForm = ({
         buttonIcon = (
             <Loading/>
         );
-    } else if (buttonDisabled) {
-        styleButtonText = buttonTextStyle(theme, 'lg', 'primary', 'disabled');
-        styleButtonBackground = buttonBackgroundStyle(theme, 'lg', 'primary', 'disabled');
     }
 
     return (
