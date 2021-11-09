@@ -88,21 +88,18 @@ const ImagePicker = ({
                 const types = {
                     takePhoto: {
                         icon: 'camera-outline',
-                        isDestructive: false,
                         onPress: () => pictureUtils.attachFileFromCamera(),
                         testID: 'attachment.canTakePhoto',
                         text: intl.formatMessage({id: 'mobile.file_upload.camera_photo', defaultMessage: 'Take Photo'}),
                     },
                     browsePhotoLibrary: {
                         icon: 'file-generic-outline',
-                        isDestructive: false,
                         onPress: () => pictureUtils.attachFileFromLibrary(),
                         testID: 'attachment.canBrowsePhotoLibrary',
                         text: intl.formatMessage({id: 'mobile.file_upload.library', defaultMessage: 'Photo Library'}),
                     },
                     browseFiles: {
                         icon: 'file-multiple-outline',
-                        isDestructive: false,
                         onPress: () => pictureUtils.attachFileFromFiles(intl, browseFileType),
                         testID: 'attachment.canBrowseFiles',
                         text: intl.formatMessage({id: 'mobile.file_upload.browse', defaultMessage: 'Browse Files'}),
@@ -127,7 +124,7 @@ const ImagePicker = ({
                         onPress={item.onPress}
                         testID={item.testID}
                         text={item.text}
-                        destructive={item.isDestructive}
+                        destructive={item?.isDestructive}
                     />
                 );
             };

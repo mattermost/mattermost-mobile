@@ -181,47 +181,47 @@ export default class ProfilePictureUtils {
         return files;
     };
 
-    //fixme: Android...does it always have permissions?
     private hasPhotoPermission = async (source: PermissionSource) => {
-        if (Platform.OS === 'ios') {
-            let permissionRequest;
-            const targetSource = source === 'camera' ? Permissions.PERMISSIONS.IOS.CAMERA : Permissions.PERMISSIONS.IOS.PHOTO_LIBRARY;
-            const hasPermissionToStorage = await Permissions.check(targetSource);
-
-            switch (hasPermissionToStorage) {
-                case Permissions.RESULTS.DENIED:
-                    permissionRequest = await Permissions.request(targetSource);
-                    if (permissionRequest !== Permissions.RESULTS.GRANTED) {
-                        return false;
-                    }
-                    break;
-                case Permissions.RESULTS.BLOCKED: {
-                    const grantOption = {
-                        text: this.intl.formatMessage({
-                            id: 'mobile.permission_denied_retry',
-                            defaultMessage: 'Settings',
-                        }),
-                        onPress: () => Permissions.openSettings(),
-                    };
-
-                    const {title, text} = this.getPermissionDeniedMessage(source);
-
-                    Alert.alert(title, text, [
-                        grantOption,
-                        {
-                            text: this.intl.formatMessage({
-                                id: 'mobile.permission_denied_dismiss',
-                                defaultMessage: "Don't Allow",
-                            }),
-                        },
-                    ]);
-                    return false;
-                }
-            }
+        if (Platform.OS === 'android') {
+            return true;
         }
 
-        return true;
-    };
+        let permissionRequest;
+        const targetSource = source === 'camera' ? Permissions.PERMISSIONS.IOS.CAMERA : Permissions.PERMISSIONS.IOS.PHOTO_LIBRARY;
+        const hasPermissionToStorage = await Permissions.check(targetSource);
+
+        switch (hasPermissionToStorage) {
+            case Permissions.RESULTS.DENIED:
+                permissionRequest = await Permissions.request(targetSource);
+                if (permissionRequest !== Permissions.RESULTS.GRANTED) {
+                    return false;
+                }
+                break;
+            case Permissions.RESULTS.BLOCKED: {
+                const grantOption = {
+                    text: this.intl.formatMessage({
+                        id: 'mobile.permission_denied_retry',
+                        defaultMessage: 'Settings',
+                    }),
+                    onPress: () => Permissions.openSettings(),
+                };
+
+                const {title, text} = this.getPermissionDeniedMessage(source);
+
+                Alert.alert(title, text, [
+                    grantOption,
+                    {
+                        text: this.intl.formatMessage({
+                            id: 'mobile.permission_denied_dismiss',
+                            defaultMessage: "Don't Allow",
+                        }),
+                    },
+                ]);
+                return false;
+            }
+        }
+        return false;
+    }
 
     private hasStoragePermission = async (intl: IntlShape) => {
         if (Platform.OS === 'ios') {
