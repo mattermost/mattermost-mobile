@@ -164,7 +164,7 @@ const Search = forwardRef<SearchRef, SearchProps>((props: SearchProps, ref) => {
 
             // @ts-expect-error onChangeText type definition is wrong in elements
             onChangeText={onChangeText}
-            placeholder={props.placeholder || intl.formatMessage({id: 'search_bar.search', defaultMessage: 'Search messages & files'})}
+            placeholder={props.placeholder || intl.formatMessage({id: 'search_bar.search', defaultMessage: 'Search'})}
             placeholderTextColor={props.placeholderTextColor || changeOpacity(theme.sidebarText, Platform.select({android: 0.56, default: 0.72}))}
             platform={Platform.select({android: 'android', default: 'ios'})}
             ref={searchRef}
