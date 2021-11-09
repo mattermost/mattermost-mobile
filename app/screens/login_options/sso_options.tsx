@@ -65,10 +65,10 @@ const SsoOptions = ({config, extra, redirect, onlySSO, show, setHasComponents, l
         (ssoType: string) => ssoEnabled(ssoType),
     );
 
-    let styleContainer;
+    let styleViewContainer;
     let styleButtonContainer;
     if (enabledSSOs.length === 2 && !onlySSO) {
-        styleContainer = styles.containerAsRow;
+        styleViewContainer = styles.containerAsRow;
         styleButtonContainer = styles.buttonContainer;
     }
 
@@ -93,57 +93,52 @@ const SsoOptions = ({config, extra, redirect, onlySSO, show, setHasComponents, l
         }
 
         componentArray.push(
-            <View
-                style={styleButtonContainer}
+            <Button
                 key={ssoType}
+                onPress={handlePress}
+                containerStyle={[styleButtonBackground, styleButtonContainer, styles.button]}
             >
-                <Button
-                    key={ssoType}
-                    onPress={handlePress}
-                    containerStyle={[styleButtonBackground, styles.button]}
+                {imageSrc && (
+                    <Image
+                        key={'image' + ssoType}
+                        source={imageSrc}
+                        style={styles.logoStyle}
+                    />
+                )}
+                {compassIcon &&
+                <CompassIcon
+                    name={compassIcon}
+                    size={16}
+                    color={theme.sidebarTextActiveColor}
+                />
+                }
+                <View
+                    style={styles.buttonTextContainer}
                 >
-                    {imageSrc && (
-                        <Image
-                            key={'image' + ssoType}
-                            source={imageSrc}
-                            style={styles.logoStyle}
+                    {onlySSO && (
+                        <FormattedText
+                            key={'pretext' + id}
+                            id={'mobile.login_options.sso_continue'}
+                            style={styleButtonText}
+                            defaultMessage={'Continue with '}
+                            testID={'pretext' + id}
                         />
                     )}
-                    {compassIcon &&
-                        <CompassIcon
-                            name={compassIcon}
-                            size={16}
-                            color={theme.sidebarTextActiveColor}
-                        />
-                    }
-                    <View
-                        style={styles.buttonTextContainer}
-                    >
-                        {onlySSO && (
-                            <FormattedText
-                                key={'pretext' + id}
-                                id={'mobile.login_options.sso_continue'}
-                                style={[styleButtonText, styles.buttonText]}
-                                defaultMessage={'Continue with '}
-                                testID={'pretext' + id}
-                            />
-                        )}
-                        <FormattedText
-                            key={ssoType}
-                            id={id}
-                            style={[styleButtonText, styles.buttonText]}
-                            defaultMessage={sso.defaultMessage}
-                            testID={id}
-                        />
-                    </View>
-                </Button>
-            </View>,
+                    <FormattedText
+                        key={ssoType}
+                        id={id}
+                        style={styleButtonText}
+                        defaultMessage={sso.defaultMessage}
+                        testID={id}
+                    />
+                </View>
+            </Button>,
         );
     }
 
     return show && (
         <>
-            <View style={[styleContainer, styles.container]}>
+            <View style={[styleViewContainer, styles.container]}>
                 {componentArray}
             </View>
         </>
@@ -170,12 +165,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => ({
     },
     buttonTextContainer: {
         color: theme.centerChannelColor,
-        flexDirection: 'row',
         marginLeft: 9,
-        textAlign: 'center',
-    },
-    buttonText: {
-        color: theme.centerChannelColor,
     },
     logoStyle: {
         height: 18,
