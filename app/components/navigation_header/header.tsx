@@ -117,11 +117,11 @@ const Header = ({
 
     const containerStyle = useMemo(() => {
         return [styles.container, {height: defaultHeight + top, paddingTop: top}];
-    }, [top, defaultHeight]);
+    }, [top, defaultHeight, theme]);
 
     const additionalTitleStyle = useMemo(() => ({
         marginLeft: Platform.select({android: showBackButton && !leftComponent ? 20 : 0}),
-    }), [leftComponent, showBackButton]);
+    }), [leftComponent, showBackButton, theme]);
 
     return (
         <Animated.View style={containerStyle}>

@@ -57,7 +57,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         marginLeft: 0,
     },
     inputStyle: {
-        color: theme.centerChannelBg,
+        color: theme.sidebarText,
         marginLeft: Platform.select({ios: 6, android: 14}),
         top: Platform.select({android: 1}),
         ...typography('Body', 200, 'Regular'),
@@ -92,7 +92,7 @@ const Search = forwardRef<SearchRef, SearchProps>((props: SearchProps, ref) => {
 
     const cancelButtonProps = useMemo(() => ({
         buttonTextStyle: {
-            color: changeOpacity(theme.centerChannelBg, 0.72),
+            color: changeOpacity(theme.sidebarText, 0.72),
             ...typography('Body', 100, 'Regular'),
         },
     }), [theme]);
@@ -107,19 +107,19 @@ const Search = forwardRef<SearchRef, SearchProps>((props: SearchProps, ref) => {
                 testID={searchClearButtonTestID}
             />
         );
-    }, [searchRef.current]);
+    }, [searchRef.current, theme]);
 
     const searchIcon = useMemo(() => (
         <CompassIcon
-            color={changeOpacity(theme.centerChannelBg, Platform.select({android: 0.56, default: 0.72}))}
+            color={changeOpacity(theme.sidebarText, Platform.select({android: 0.56, default: 0.72}))}
             name='magnify'
             size={24}
         />
-    ), []);
+    ), [theme]);
 
     const cancelIcon = useMemo(() => (
         <CompassIcon
-            color={changeOpacity(theme.sidebarHeaderTextColor, Platform.select({android: 0.56, default: 0.72}))}
+            color={changeOpacity(theme.sidebarText, Platform.select({android: 0.56, default: 0.72}))}
             name='arrow-left'
 
             // @ts-expect-error cancel is not part of TextInput does exist in SearchBar
@@ -127,7 +127,7 @@ const Search = forwardRef<SearchRef, SearchProps>((props: SearchProps, ref) => {
             size={24}
             testID={searchCancelButtonTestID}
         />
-    ), [searchRef.current]);
+    ), [searchRef.current, theme]);
 
     useImperativeHandle(ref, () => ({
         blur: () => {
@@ -165,13 +165,13 @@ const Search = forwardRef<SearchRef, SearchProps>((props: SearchProps, ref) => {
             // @ts-expect-error onChangeText type definition is wrong in elements
             onChangeText={onChangeText}
             placeholder={props.placeholder || intl.formatMessage({id: 'search_bar.search', defaultMessage: 'Search messages & files'})}
-            placeholderTextColor={props.placeholderTextColor || changeOpacity(theme.centerChannelBg, Platform.select({android: 0.56, default: 0.72}))}
+            placeholderTextColor={props.placeholderTextColor || changeOpacity(theme.sidebarText, Platform.select({android: 0.56, default: 0.72}))}
             platform={Platform.select({android: 'android', default: 'ios'})}
             ref={searchRef}
 
             // @ts-expect-error searchIcon definition does not include a ReactElement
             searchIcon={searchIcon}
-            selectionColor={theme.centerChannelBg}
+            selectionColor={Platform.select({android: changeOpacity(theme.sidebarText, 0.24), default: theme.sidebarText})}
             testID={searchInputTestID}
             value={value}
         />

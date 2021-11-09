@@ -60,7 +60,7 @@ const NavigationSearch = ({
         searchProps.onFocus?.(e);
     }, [largeHeight, top]);
 
-    const style = useMemo(() => ({height: defaultHeight, ...styles.container}), [defaultHeight]);
+    const style = useMemo(() => ({height: defaultHeight, ...styles.container}), [defaultHeight, theme]);
 
     return (
         <Animated.View style={[style, searchTop]}>

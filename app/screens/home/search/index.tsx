@@ -9,6 +9,7 @@ import {SafeAreaView} from 'react-native-safe-area-context';
 
 import Badge from '@components/badge';
 import NavigationHeader from '@components/navigation_header';
+import {useTheme} from '@context/theme';
 import {useCollapsibleHeader} from '@hooks/header';
 
 const AnimatedFlatList = Animated.createAnimatedComponent(FlatList);
@@ -16,6 +17,7 @@ const AnimatedFlatList = Animated.createAnimatedComponent(FlatList);
 const SearchScreen = () => {
     const nav = useNavigation();
     const isFocused = useIsFocused();
+    const theme = useTheme();
     const searchScreenIndex = 1;
     const stateIndex = nav.getState().index;
 
@@ -54,6 +56,7 @@ const SearchScreen = () => {
                             visible={true}
                             value={1}
                             style={{top: 0, left: 2, position: 'relative'}}
+                            borderColor='transparent'
                         />
                     </View>
                 )}
@@ -105,7 +108,7 @@ const SearchScreen = () => {
                             const height = index === data.length - 1 ? undefined : 400;
                             return (
                                 <View style={{flex: 1, alignItems: 'center'}}>
-                                    <Text style={{fontSize: 20, color: '#000', height}}>{item as string}</Text>
+                                    <Text style={{fontSize: 20, color: theme.centerChannelColor, height}}>{item as string}</Text>
                                 </View>
                             );
                         }}
