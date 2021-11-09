@@ -4,10 +4,10 @@ import {useManagedConfig} from '@mattermost/react-native-emm';
 import React, {useCallback, useEffect, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
 import {
-    ActivityIndicator,
     InteractionManager,
     Keyboard,
     TextInput,
+    View,
 } from 'react-native';
 import Button from 'react-native-button';
 import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
@@ -17,13 +17,13 @@ import {login} from '@actions/remote/session';
 import ErrorText from '@components/error_text';
 import FloatingTextInput, {FloatingTextInputRef} from '@components/floating_text_input_label';
 import FormattedText from '@components/formatted_text';
+import Loading from '@components/loading';
 import {FORGOT_PASSWORD, MFA} from '@constants/screens';
 import {t} from '@i18n';
 import {goToScreen, resetToHome} from '@screens/navigation';
 import {buttonBackgroundStyle, buttonTextStyle} from '@utils/buttonStyles';
 import {preventDoubleTap} from '@utils/tap';
-import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
-import {typography} from '@utils/typography';
+import {makeStyleSheetFromTheme} from '@utils/theme';
 
 import type {LaunchProps} from '@typings/launch';
 
@@ -299,12 +299,7 @@ const Login: NavigationFunctionComponent = ({config, serverDisplayName, show, se
             buttonID = t('login.signingIn');
             buttonText = 'Signing In';
             buttonIcon = (
-                <ActivityIndicator
-                    animating={true}
-                    size='small'
-                    color={'white'}
-                    style={styles.connectingIndicator}
-                />
+                <Loading/>
             );
         } else {
             styleButtonText = buttonTextStyle(theme, 'lg', 'primary', 'disabled');
@@ -316,7 +311,7 @@ const Login: NavigationFunctionComponent = ({config, serverDisplayName, show, se
                 testID='login.signin.button'
                 disabled={false}
                 onPress={preSignIn}
-                containerStyle={[styles.connectButton, styleButtonBackground]}
+                containerStyle={styleButtonBackground}
             >
                 {buttonIcon}
                 <FormattedText
@@ -329,7 +324,7 @@ const Login: NavigationFunctionComponent = ({config, serverDisplayName, show, se
     };
 
     return show && (
-        <>
+        <View style={styles.container}>
             {error && (
                 <ErrorText
                     testID='login.error.text'
@@ -354,7 +349,7 @@ const Login: NavigationFunctionComponent = ({config, serverDisplayName, show, se
                 returnKeyType='next'
                 testID='login.username.input'
                 theme={theme}
-                value={loginId} //to remove
+                value={loginId}
             />
 
             <FloatingTextInput
@@ -378,7 +373,7 @@ const Login: NavigationFunctionComponent = ({config, serverDisplayName, show, se
                 secureTextEntry={true}
                 testID='login.password.input'
                 theme={theme}
-                value={password} //to remove
+                value={password}
             />
 
             {/*
@@ -404,27 +399,13 @@ const Login: NavigationFunctionComponent = ({config, serverDisplayName, show, se
                 </Button>
             )}
             {renderProceedButton()}
-        </>
+        </View>
     );
 };
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     container: {
-        flex: 1,
-    },
-    innerContainer: {
-        alignItems: 'center',
-        flexDirection: 'column',
-        justifyContent: 'center',
-        paddingHorizontal: 15,
-        paddingVertical: 50,
-    },
-    forgotPasswordBtn: {
-        borderColor: 'transparent',
-    },
-    forgotPasswordTxt: {
-        marginBottom: 45,
-        color: theme.linkColor,
+        marginBottom: 24,
     },
     inputBoxEmail: {
         marginTop: 16,
@@ -435,28 +416,12 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         marginVertical: 21,
         color: theme.centerChannelColor,
     },
-    signupButton: {
-        borderRadius: 3,
-        borderColor: theme.buttonBg,
-        borderWidth: 1,
-        alignItems: 'center',
-        alignSelf: 'stretch',
-        marginTop: 10,
+    forgotPasswordBtn: {
+        borderColor: 'transparent',
+    },
+    forgotPasswordTxt: {
         marginBottom: 45,
-        padding: 15,
-    },
-    signupButtonText: {
-        textAlign: 'center',
-        color: theme.buttonBg,
-        fontSize: 17,
-    },
-    header: {
-        color: theme.centerChannelColor,
-        textAlign: 'center',
-        marginTop: 15,
-        marginBottom: 15,
-        fontSize: 32,
-        fontFamily: 'OpenSans-Semibold',
+        color: theme.linkColor,
     },
 }));
 

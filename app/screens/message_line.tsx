@@ -36,8 +36,6 @@ function MessageLine({theme}: NewMessagesLineProps) {
 const getStyleFromTheme = makeStyleSheetFromTheme((theme: Theme) => ({
     container: {
         flexDirection: 'row',
-        marginTop: 24,
-        marginBottom: 8,
         alignItems: 'center',
         color: changeOpacity(theme.centerChannelColor, 0.64),
     },
@@ -50,6 +48,7 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme: Theme) => ({
         marginRight: 6,
         marginLeft: 6,
         textAlign: 'center',
+        color: changeOpacity(theme.centerChannelColor, 0.64),
         ...typography('Body', 25, 'SemiBold'),
     },
 }));

@@ -68,7 +68,7 @@ const SsoOptions = ({config, extra, redirect, onlySSO, show, setHasComponents, l
     let styleContainer;
     let styleButtonContainer;
     if (enabledSSOs.length === 2 && !onlySSO) {
-        styleContainer = styles.container;
+        styleContainer = styles.containerAsRow;
         styleButtonContainer = styles.buttonContainer;
     }
 
@@ -113,7 +113,7 @@ const SsoOptions = ({config, extra, redirect, onlySSO, show, setHasComponents, l
                         <CompassIcon
                             name={compassIcon}
                             size={16}
-                            color={theme.sidebarTeamBarBg}
+                            color={theme.sidebarTextActiveColor}
                         />
                     }
                     <View
@@ -143,7 +143,7 @@ const SsoOptions = ({config, extra, redirect, onlySSO, show, setHasComponents, l
 
     return show && (
         <>
-            <View style={styleContainer}>
+            <View style={[styleContainer, styles.container]}>
                 {componentArray}
             </View>
         </>
@@ -152,8 +152,10 @@ const SsoOptions = ({config, extra, redirect, onlySSO, show, setHasComponents, l
 
 const getStyleSheet = makeStyleSheetFromTheme((theme) => ({
     container: {
-        flexDirection: 'row',
         marginVertical: 24,
+    },
+    containerAsRow: {
+        flexDirection: 'row',
         alignItems: 'center',
     },
     buttonContainer: {
