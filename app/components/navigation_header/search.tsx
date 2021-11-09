@@ -37,6 +37,7 @@ const NavigationSearch = ({
     scrollValue,
     theme,
     top,
+    ...searchProps
 }: Props) => {
     const styles = getStyleSheet(theme);
 
@@ -44,7 +45,7 @@ const NavigationSearch = ({
         return {marginTop: Math.max((-scrollValue.value + largeHeight), top)};
     }, [defaultHeight, largeHeight, top]);
 
-    const onFocus = useCallback(() => {
+    const onFocus = useCallback((e) => {
         const offset = Platform.select({android: largeHeight, default: SEARCH_INPUT_HEIGHT});
         if (forwardedRef?.current && Math.abs(scrollValue.value) <= top) {
             if ((forwardedRef.current as ScrollView).scrollTo) {
@@ -56,6 +57,7 @@ const NavigationSearch = ({
                 });
             }
         }
+        searchProps.onFocus?.(e);
     }, [largeHeight, top]);
 
     const style = useMemo(() => ({height: defaultHeight, ...styles.container}), [defaultHeight]);
@@ -63,6 +65,7 @@ const NavigationSearch = ({
     return (
         <Animated.View style={[style, searchTop]}>
             <Search
+                {...searchProps}
                 onFocus={onFocus}
             />
         </Animated.View>

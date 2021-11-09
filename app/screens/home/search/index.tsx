@@ -77,6 +77,15 @@ const SearchScreen = () => {
                 hasSearch={true}
                 scrollValue={scrollValue}
                 forwardedRef={scrollRef}
+                onChangeText={(text) => {
+                    // eslint-disable-next-line no-console
+                    console.log('Search for value', text);
+                }}
+                onSubmitEditing={() => {
+                    // eslint-disable-next-line no-console
+                    console.log('Execute search');
+                }}
+                blurOnSubmit={true}
             />
             <SafeAreaView
                 style={{flex: 1}}

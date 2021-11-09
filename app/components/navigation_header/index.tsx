@@ -15,7 +15,9 @@ import Header, {HeaderRightButton} from './header';
 import NavigationHeaderLargeTitle from './large';
 import NavigationSearch from './search';
 
-type Props = {
+import type {SearchProps} from '@components/search';
+
+type Props = SearchProps & {
     forwardedRef?: React.RefObject<ScrollView | FlatList | SectionList>;
     hasSearch?: boolean;
     isLargeTitle?: boolean;
@@ -50,6 +52,7 @@ const NavigationHeader = ({
     showHeaderInContext = true,
     subtitle,
     title = '',
+    ...searchProps
 }: Props) => {
     const theme = useTheme();
     const insets = useSafeAreaInsets();
@@ -95,6 +98,7 @@ const NavigationHeader = ({
             </Animated.View>
             {hasSearch &&
             <NavigationSearch
+                {...searchProps}
                 defaultHeight={defaultHeight}
                 forwardedRef={forwardedRef}
                 largeHeight={largeHeight}

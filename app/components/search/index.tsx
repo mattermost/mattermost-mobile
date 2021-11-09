@@ -158,6 +158,7 @@ const Search = forwardRef<SearchRef, SearchProps>((props: SearchProps, ref) => {
             containerStyle={[styles.containerStyle, props.containerStyle]}
             inputContainerStyle={[styles.inputContainerStyle, props.inputContainerStyle]}
             inputStyle={[styles.inputStyle, props.inputStyle]}
+            returnKeyType='search'
             onCancel={onCancel}
             onClear={onClear}
 
