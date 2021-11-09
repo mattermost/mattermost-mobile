@@ -91,38 +91,6 @@ const LoginOptions: NavigationFunctionComponent = ({config, launchType, launchEr
     );
 
     const redirectSSO = Boolean(!hasLogin && numberSSOs === 1);
-    const loginOptions = (
-        <>
-            <Login
-                setHasComponents={setHasLogin}
-                show={hasLogin}
-                config={config}
-                key={'login'}
-                license={license}
-                launchError={launchError}
-                launchType={launchType}
-                theme={theme}
-                serverDisplayName={serverDisplayName}
-                serverUrl={serverUrl}
-            />
-            {messageLine}
-            <SsoOptions
-                setHasComponents={setNumberSSOs}
-                redirect={redirectSSO}
-                onlySSO={!hasLogin}
-                show={Boolean(numberSSOs)}
-                componentId={'sso'}
-                key={'sso'}
-                launchType={launchType}
-                launchError={launchError}
-                config={config}
-                license={license}
-                serverDisplayName={serverDisplayName}
-                serverUrl={serverUrl}
-                theme={theme}
-            />
-        </>
-    );
 
     useEffect(() => {
         if (hasLogin) {
@@ -148,7 +116,34 @@ const LoginOptions: NavigationFunctionComponent = ({config, launchType, launchEr
                         style={styles.header}
                     />
                     {description}
-                    {loginOptions}
+                    <Login
+                        setHasComponents={setHasLogin}
+                        show={hasLogin}
+                        config={config}
+                        key={'login'}
+                        license={license}
+                        launchError={launchError}
+                        launchType={launchType}
+                        theme={theme}
+                        serverDisplayName={serverDisplayName}
+                        serverUrl={serverUrl}
+                    />
+                    {messageLine}
+                    <SsoOptions
+                        setHasComponents={setNumberSSOs}
+                        redirect={redirectSSO}
+                        onlySSO={!hasLogin}
+                        show={Boolean(numberSSOs)}
+                        componentId={'sso'}
+                        key={'sso'}
+                        launchType={launchType}
+                        launchError={launchError}
+                        config={config}
+                        license={license}
+                        serverDisplayName={serverDisplayName}
+                        serverUrl={serverUrl}
+                        theme={theme}
+                    />
                 </ScrollView>
             </SafeAreaView>
         </View>
