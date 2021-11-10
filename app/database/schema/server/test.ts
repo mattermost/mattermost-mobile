@@ -26,6 +26,7 @@ const {
     POSTS_IN_THREAD,
     PREFERENCE,
     REACTION,
+    RECENT_MENTIONS,
     ROLE,
     SLASH_COMMAND,
     SYSTEM,
@@ -321,6 +322,17 @@ describe('*** Test schema for SERVER database ***', () => {
                         {name: 'emoji_name', type: 'string'},
                         {name: 'post_id', type: 'string', isIndexed: true},
                         {name: 'user_id', type: 'string', isIndexed: true},
+                    ],
+                },
+                [RECENT_MENTIONS]: {
+                    name: RECENT_MENTIONS,
+                    columns: {
+                        update_at: {name: 'update_at', type: 'number'},
+                        post_id: {name: 'post_id', type: 'string', isIndexed: true},
+                    },
+                    columnArray: [
+                        {name: 'update_at', type: 'number'},
+                        {name: 'post_id', type: 'string', isIndexed: true},
                     ],
                 },
                 [MY_TEAM]: {
