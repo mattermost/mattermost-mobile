@@ -25,8 +25,8 @@ export interface ClientPostsMix {
     addReaction: (userId: string, postId: string, emojiName: string) => Promise<Reaction>;
     removeReaction: (userId: string, postId: string, emojiName: string) => Promise<any>;
     getReactionsForPost: (postId: string) => Promise<any>;
-    searchPostsWithParams: (teamId: string, params: any) => Promise<any>;
-    searchPosts: (teamId: string, terms: string, isOrSearch: boolean) => Promise<any>;
+    searchPostsWithParams: (params: PostSearchParams) => Promise<any>;
+    searchPosts: (terms: string, isOrSearch: boolean) => Promise<any>;
     doPostAction: (postId: string, actionId: string, selectedOption?: string) => Promise<any>;
     doPostActionWithCookie: (postId: string, actionId: string, actionCookie: string, selectedOption?: string) => Promise<any>;
 }
@@ -194,17 +194,17 @@ const ClientPosts = (superclass: any) => class extends superclass {
         );
     };
 
-    searchPostsWithParams = async (teamId: string, params: any) => {
-        this.analytics.trackAPI('api_posts_search', {team_id: teamId});
+    searchPostsWithParams = async (params: PostSearchParams) => {
+        this.analytics.trackAPI('api_posts_search');
 
         return this.doFetch(
-            `${this.getTeamRoute(teamId)}/posts/search`,
-            {method: 'post', body: params},
+            `${this.getPostsRoute()}/search`,
+            {method: 'post', body: JSON.stringify(params)},
         );
     };
 
-    searchPosts = async (teamId: string, terms: string, isOrSearch: boolean) => {
-        return this.searchPostsWithParams(teamId, {terms, is_or_search: isOrSearch});
+    searchPosts = async (terms: string, isOrSearch: boolean) => {
+        return this.searchPostsWithParams({terms, is_or_search: isOrSearch});
     };
 
     doPostAction = async (postId: string, actionId: string, selectedOption = '') => {

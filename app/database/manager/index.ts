@@ -16,7 +16,7 @@ import {ChannelModel, ChannelInfoModel, ChannelMembershipModel, CustomEmojiModel
     GroupModel, GroupMembershipModel, GroupsChannelModel, GroupsTeamModel, MyChannelModel, MyChannelSettingsModel, MyTeamModel,
     PostModel, PostsInChannelModel, PostsInThreadModel, PreferenceModel, ReactionModel, RoleModel,
     SlashCommandModel, SystemModel, TeamModel, TeamChannelHistoryModel, TeamMembershipModel, TeamSearchHistoryModel,
-    TermsOfServiceModel, UserModel,
+    TermsOfServiceModel, UserModel, RecentMentionsModel,
 } from '@database/models/server';
 import AppDataOperator from '@database/operator/app_data_operator';
 import ServerDataOperator from '@database/operator/server_data_operator';
@@ -46,7 +46,7 @@ class DatabaseManager {
             GroupModel, GroupMembershipModel, GroupsChannelModel, GroupsTeamModel, MyChannelModel, MyChannelSettingsModel, MyTeamModel,
             PostModel, PostsInChannelModel, PostsInThreadModel, PreferenceModel, ReactionModel, RoleModel,
             SlashCommandModel, SystemModel, TeamModel, TeamChannelHistoryModel, TeamMembershipModel, TeamSearchHistoryModel,
-            TermsOfServiceModel, UserModel,
+            TermsOfServiceModel, UserModel, RecentMentionsModel,
         ];
 
         this.databaseDirectory = Platform.OS === 'ios' ? getIOSAppGroupDetails().appGroupDatabase : `${FileSystem.documentDirectory}databases/`;

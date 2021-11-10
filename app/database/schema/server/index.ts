@@ -31,6 +31,7 @@ import {
     TeamSearchHistorySchema,
     TermsOfServiceSchema,
     UserSchema,
+    RecentMentionsSchema,
 } from './table_schemas';
 
 export const serverSchema: AppSchema = appSchema({
@@ -49,11 +50,12 @@ export const serverSchema: AppSchema = appSchema({
         MyChannelSchema,
         MyChannelSettingsSchema,
         MyTeamSchema,
-        PostsInChannelSchema,
         PostInThreadSchema,
         PostSchema,
+        PostsInChannelSchema,
         PreferenceSchema,
         ReactionSchema,
+        RecentMentionsSchema,
         RoleSchema,
         SlashCommandSchema,
         SystemSchema,

@@ -93,4 +93,6 @@ export default class UserModel extends Model {
 
     /**  prepareStatus: Prepare the model to update the user status in a batch operation */
     prepareStatus: (status: string) => void;
+
+    mentionKeys: UserMentionKey[];
 }

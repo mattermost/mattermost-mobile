@@ -28,6 +28,7 @@ export const MM_TABLES = {
         POSTS_IN_THREAD: 'PostsInThread',
         PREFERENCE: 'Preference',
         REACTION: 'Reaction',
+        RECENT_MENTIONS: 'RecentMentions',
         ROLE: 'Role',
         SLASH_COMMAND: 'SlashCommand',
         SYSTEM: 'System',

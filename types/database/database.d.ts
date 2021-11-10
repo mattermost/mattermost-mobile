@@ -273,3 +273,8 @@ export type ProcessRecordResults = {
     updateRaws: RecordPair[];
     deleteRaws: Model[];
 }
+
+export type HandleRecentMentionsArgs = {
+    posts: Record<string, Post>;
+    order: string[];
+}
