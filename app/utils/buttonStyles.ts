@@ -44,7 +44,6 @@ export const buttonBackgroundStyle = (
             flex: 0,
             alignItems: 'center',
             justifyContent: 'center',
-            textAlignVertical: 'center',
             borderRadius: 4,
         },
         fullWidth: {
