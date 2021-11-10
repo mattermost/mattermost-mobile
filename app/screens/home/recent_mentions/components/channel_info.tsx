@@ -20,20 +20,22 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         paddingVertical: 5,
     },
     channel: {
-        marginRight: 5,
+        color: theme.centerChannelColor,
         fontFamily: 'OpenSans-Semibold',
         fontSize: 12,
         lineHeight: 16,
+        marginRight: 5,
     },
     teamContainer: {
-        borderLeftWidth: StyleSheet.hairlineWidth,
         borderColor: theme.centerChannelColor,
+        borderLeftWidth: StyleSheet.hairlineWidth,
     },
     team: {
-        marginLeft: 5,
+        color: theme.centerChannelColor,
         fontFamily: 'OpenSans',
         fontSize: 12,
         lineHeight: 16,
+        marginLeft: 5,
     },
 }));
 
