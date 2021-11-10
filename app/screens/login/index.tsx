@@ -65,9 +65,21 @@ const Login = ({config, serverDisplayName, show, setHasComponents, extra, launch
         setEmmUsernameIfAvailable();
     }, []);
 
-    // useEffect to set hasEmail for Login
+    const emailEnabled = (): boolean => {
+        return config.EnableSignInWithEmail === 'true';
+    };
+
+    const userNameEnabled = (): boolean => {
+        return config.EnableSignInWithUsername === 'true';
+    };
+
+    const ldapEnabled = (): boolean => {
+        return license.IsLicensed === 'true' && config.EnableLdap === 'true';
+    };
+
+    // determine if any logins will be rendered for this component
     useEffect(() => {
-        if (config.EnableSignInWithEmail === 'true') {
+        if (emailEnabled() || userNameEnabled() || ldapEnabled()) {
             setHasComponents(true);
         }
     }, []);
@@ -89,13 +101,13 @@ const Login = ({config, serverDisplayName, show, setHasComponents, extra, launch
 
                 // it's slightly weird to be constructing the message ID, but it's a bit nicer than triply nested if statements
                 let msgId = 'login.no';
-                if (config.EnableSignInWithEmail === 'true') {
+                if (emailEnabled()) {
                     msgId += 'Email';
                 }
-                if (config.EnableSignInWithUsername === 'true') {
+                if (userNameEnabled()) {
                     msgId += 'Username';
                 }
-                if (license.IsLicensed === 'true' && config.EnableLdap === 'true') {
+                if (ldapEnabled()) {
                     msgId += 'LdapUsername';
                 }
 
