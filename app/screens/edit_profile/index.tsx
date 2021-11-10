@@ -280,10 +280,10 @@ const EditProfile = ({
     const renderProfilePicture = () => {
         const profilePicture = (
             <EditProfilePicture
-                edit={!lockedPicture}
+                canUpdateProfilePicture={!lockedPicture}
                 imageUri={profileImage?.uri}
                 lastPictureUpdate={currentUser.lastPictureUpdate}
-                profileImageRemove={isProfileImageRemoved}
+                isProfileImageRemoved={isProfileImageRemoved}
                 size={153}
                 testID='edit_profile.profile_picture'
                 userId={currentUser.id}

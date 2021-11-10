@@ -15,11 +15,10 @@ import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import UserProfileImage from '../image';
 
 type ProfilePictureProps = {
-    edit: boolean;
+    canUpdateProfilePicture: boolean;
     imageUri?: string;
+    isProfileImageRemoved?: boolean;
     lastPictureUpdate: number;
-    profileImageRemove?: boolean;
-    profileImageUri?: string;
     size?: number;
     testID?: string;
     userId: string;
@@ -50,11 +49,10 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
 });
 
 const EditProfilePicture = ({
-    edit = false,
+    canUpdateProfilePicture = false,
     imageUri,
+    isProfileImageRemoved,
     lastPictureUpdate,
-    profileImageRemove,
-    profileImageUri,
     size = 128,
     testID,
     userId,
@@ -73,35 +71,28 @@ const EditProfilePicture = ({
     }
 
     useEffect(() => {
-        if (profileImageUri) {
-            setPictureUrl(profileImageUri);
-        } else if (edit && imageUri) {
+        if (canUpdateProfilePicture && imageUri) {
             setPictureUrl(imageUri);
         }
     }, []);
 
     useDidUpdate(() => {
         setPictureUrl(undefined);
-    }, [profileImageRemove]);
+    }, [isProfileImageRemoved]);
 
+    // can this replace the useEffect function above?
     useDidUpdate(() => {
-        if (edit && imageUri) {
+        if (canUpdateProfilePicture && imageUri) {
             setPictureUrl(imageUri);
         }
-    }, [edit, imageUri]);
-
-    useDidUpdate(() => {
-        if (profileImageUri) {
-            setPictureUrl(profileImageUri);
-        }
-    }, [profileImageUri]);
+    }, [canUpdateProfilePicture, imageUri]);
 
     useDidUpdate(() => {
         const url = userId && client ? client.getProfilePictureUrl(userId, lastPictureUpdate) : undefined;
-        if (url !== pictureUrl && !edit) {
+        if (url !== pictureUrl && !canUpdateProfilePicture) {
             setPictureUrl(url);
         }
-    }, [userId, lastPictureUpdate, edit]);
+    }, [userId, lastPictureUpdate, canUpdateProfilePicture]);
 
     let source = null;
 
