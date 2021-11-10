@@ -2,10 +2,8 @@
 // See LICENSE.txt for license information.
 
 import withObservables from '@nozbe/with-observables';
-import compose from 'lodash/fp/compose';
 import React from 'react';
-import {View, Text, StyleSheet} from 'react-native';
-import {switchMap, of as of$} from 'rxjs';
+import {View, StyleSheet} from 'react-native';
 
 import Avatar from '@components/post_list/post/avatar';
 import Message from '@components/post_list/post/body/message';
@@ -15,16 +13,14 @@ import SystemHeader from '@components/system_header';
 import * as Screens from '@constants/screens';
 import {fromAutoResponder, isFromWebhook, isSystemMessage, isEdited as postEdited} from '@utils/post';
 
-import type ChannelModel from '@typings/database/models/servers/channel';
+import ChannelInfo from './channel_info';
+
 import type PostModel from '@typings/database/models/servers/post';
-import type TeamModel from '@typings/database/models/servers/team';
 import type UserModel from '@typings/database/models/servers/user';
 
 type Props = {
-    channel: ChannelModel;
     currentUser: UserModel;
     post: PostModel;
-    team: TeamModel;
     theme: Theme;
 }
 
@@ -54,7 +50,7 @@ const styles = StyleSheet.create({
     },
 });
 
-function Mention({post, channel, team, currentUser, theme}: Props) {
+function Mention({post, currentUser, theme}: Props) {
     const isAutoResponder = fromAutoResponder(post);
     const isSystemPost = isSystemMessage(post);
     const isWebHook = isFromWebhook(post);
@@ -92,12 +88,10 @@ function Mention({post, channel, team, currentUser, theme}: Props) {
 
     return (
         <View style={styles.container}>
-            <View style={styles.header}>
-                <Text>{channel.displayName}</Text>
-                {Boolean(team) && (
-                    <Text>{` | ${team?.displayName}`}</Text>
-                )}
-            </View>
+            <ChannelInfo
+                post={post}
+                theme={theme}
+            />
             <View style={styles.content}>
                 {postAvatar}
                 <View style={styles.rightColumn}>
@@ -119,16 +113,8 @@ function Mention({post, channel, team, currentUser, theme}: Props) {
     );
 }
 
-const enhance = compose(
-    withObservables(['mention'], ({mention}) => ({
-        post: mention.post,
-    })),
-    withObservables(['post'], ({post}: {post: PostModel}) => ({
-        channel: post.channel,
-        team: post.channel.observe().pipe(
-            switchMap((channel) => channel.team || of$(null)),
-        ),
-    })),
-);
+const enhance = withObservables(['mention'], ({mention}) => ({
+    post: mention.post,
+}));
 
 export default enhance(Mention);
