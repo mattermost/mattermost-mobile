@@ -2,9 +2,9 @@
 // See LICENSE.txt for license information.
 
 import Model from '@nozbe/watermelondb/Model';
+import * as FileSystem from 'expo-file-system';
 import mimeDB from 'mime-db';
 import {Platform} from 'react-native';
-import {FileSystem} from 'react-native-unimodules';
 
 import {Files} from '@constants';
 import {deleteEntititesFile, getIOSAppGroupDetails} from '@utils/mattermost_managed';

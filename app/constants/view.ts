@@ -1,11 +1,23 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {Platform} from 'react-native';
+
 export const BOTTOM_TAB_ICON_SIZE = 31.2;
 export const PROFILE_PICTURE_SIZE = 32;
 export const PROFILE_PICTURE_EMOJI_SIZE = 28;
+export const SEARCH_INPUT_HEIGHT = Platform.select({android: 40, ios: 36})!;
 export const TABLET_SIDEBAR_WIDTH = 320;
 export const TEAM_SIDEBAR_WIDTH = 72;
+export const TABLET_HEADER_HEIGHT = 44;
+export const IOS_DEFAULT_HEADER_HEIGHT = 50;
+export const ANDROID_DEFAULT_HEADER_HEIGHT = 56;
+export const LARGE_HEADER_TITLE = 60;
+export const HEADER_WITH_SEARCH_HEIGHT = -16;
+export const HEADER_WITH_SUBTITLE = 24;
+export const IOS_HEADER_SEARCH_INSET = 20;
+export const TABLET_HEADER_SEARCH_INSET = 28;
+export const ANDROID_HEADER_SEARCH_INSET = 11;
 
 export default {
     BOTTOM_TAB_ICON_SIZE,
@@ -13,6 +25,16 @@ export default {
     PROFILE_PICTURE_EMOJI_SIZE,
     DATA_SOURCE_USERS: 'users',
     DATA_SOURCE_CHANNELS: 'channels',
+    SEARCH_INPUT_HEIGHT,
     TABLET_SIDEBAR_WIDTH,
     TEAM_SIDEBAR_WIDTH,
+    TABLET_HEADER_HEIGHT,
+    IOS_DEFAULT_HEADER_HEIGHT,
+    ANDROID_DEFAULT_HEADER_HEIGHT,
+    LARGE_HEADER_TITLE,
+    HEADER_WITH_SEARCH_HEIGHT,
+    HEADER_WITH_SUBTITLE,
+    IOS_HEADER_SEARCH_INSET,
+    TABLET_HEADER_SEARCH_INSET,
+    ANDROID_HEADER_SEARCH_INSET,
 };
