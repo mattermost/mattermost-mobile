@@ -66,7 +66,7 @@ const NavigationHeaderLargeTitle = ({
             >
                 {title}
             </Text>
-            {!hasSearch &&
+            {!hasSearch && Boolean(subtitle) &&
             <Text
                 ellipsizeMode='tail'
                 numberOfLines={1}

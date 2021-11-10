@@ -14,6 +14,7 @@ import NavigationHeaderContext from './context';
 import Header, {HeaderRightButton} from './header';
 import NavigationHeaderLargeTitle from './large';
 import NavigationSearch from './search';
+import NavigationHeaderSearchContext from './search_context';
 
 import type {SearchProps} from '@components/search';
 
@@ -97,15 +98,23 @@ const NavigationHeader = ({
                 }
             </Animated.View>
             {hasSearch &&
-            <NavigationSearch
-                {...searchProps}
-                defaultHeight={defaultHeight}
-                forwardedRef={forwardedRef}
-                largeHeight={largeHeight}
-                scrollValue={scrollValue}
-                theme={theme}
-                top={insets.top}
-            />
+            <>
+                <NavigationSearch
+                    {...searchProps}
+                    defaultHeight={defaultHeight}
+                    forwardedRef={forwardedRef}
+                    largeHeight={largeHeight}
+                    scrollValue={scrollValue}
+                    theme={theme}
+                    top={insets.top}
+                />
+                <NavigationHeaderSearchContext
+                    defaultHeight={defaultHeight}
+                    largeHeight={largeHeight}
+                    scrollValue={scrollValue}
+                    theme={theme}
+                />
+            </>
             }
             {showHeaderInContext &&
             <NavigationHeaderContext

@@ -1,12 +1,13 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback, useMemo} from 'react';
+import React, {useCallback} from 'react';
 import {FlatList, Platform, ScrollView, SectionList, VirtualizedList} from 'react-native';
 import Animated, {useAnimatedStyle} from 'react-native-reanimated';
 
 import Search, {SearchProps} from '@components/search';
-import {SEARCH_INPUT_HEIGHT} from '@constants/view';
+import {ANDROID_HEADER_SEARCH_INSET, IOS_HEADER_SEARCH_INSET, SEARCH_INPUT_HEIGHT, TABLET_HEADER_SEARCH_INSET} from '@constants/view';
+import {useIsTablet} from '@hooks/device';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 
 type Props = SearchProps & {
@@ -21,9 +22,9 @@ type Props = SearchProps & {
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     container: {
         backgroundColor: theme.sidebarBg,
+        height: SEARCH_INPUT_HEIGHT + 5,
         justifyContent: 'flex-start',
         paddingHorizontal: 20,
-        paddingTop: 4,
         position: 'absolute',
         width: '100%',
         zIndex: 10,
@@ -39,6 +40,7 @@ const NavigationSearch = ({
     top,
     ...searchProps
 }: Props) => {
+    const isTablet = useIsTablet();
     const styles = getStyleSheet(theme);
 
     const searchTop = useAnimatedStyle(() => {
@@ -46,7 +48,8 @@ const NavigationSearch = ({
     }, [defaultHeight, largeHeight, top]);
 
     const onFocus = useCallback((e) => {
-        const offset = Platform.select({android: largeHeight, default: SEARCH_INPUT_HEIGHT});
+        const searchInset = isTablet ? TABLET_HEADER_SEARCH_INSET : IOS_HEADER_SEARCH_INSET;
+        const offset = Platform.select({android: largeHeight + ANDROID_HEADER_SEARCH_INSET, default: defaultHeight + searchInset});
         if (forwardedRef?.current && Math.abs(scrollValue.value) <= top) {
             if ((forwardedRef.current as ScrollView).scrollTo) {
                 (forwardedRef.current as ScrollView).scrollTo({y: offset, animated: true});
@@ -60,10 +63,8 @@ const NavigationSearch = ({
         searchProps.onFocus?.(e);
     }, [largeHeight, top]);
 
-    const style = useMemo(() => ({height: defaultHeight, ...styles.container}), [defaultHeight, theme]);
-
     return (
-        <Animated.View style={[style, searchTop]}>
+        <Animated.View style={[styles.container, searchTop]}>
             <Search
                 {...searchProps}
                 onFocus={onFocus}
