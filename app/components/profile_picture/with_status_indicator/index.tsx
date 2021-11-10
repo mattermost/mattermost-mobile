@@ -38,7 +38,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
 type UserProfilePictureWithStatusProps = {
     isBot?: boolean;
     lastPictureUpdate: number;
-    showStatus?: boolean;
     statusSize?: number;
     statusStyle?: StyleProp<ViewProps>;
     testID?: string;
@@ -49,7 +48,6 @@ type UserProfilePictureWithStatusProps = {
 const UserProfilePictureWithStatus = ({
     isBot,
     lastPictureUpdate,
-    showStatus = true,
     statusSize = 14,
     statusStyle,
     testID,
@@ -59,12 +57,11 @@ const UserProfilePictureWithStatus = ({
     const theme = useTheme();
     const serverUrl = useServerUrl();
     const style = getStyleSheet(theme);
-
     useEffect(() => {
-        if (userId && !userStatus && showStatus) {
+        if (userId) {
             fetchStatusInBatch(serverUrl, userId);
         }
-    }, [userStatus, serverUrl, showStatus]);
+    }, [userStatus, serverUrl]);
 
     return (
         <View
@@ -77,7 +74,7 @@ const UserProfilePictureWithStatus = ({
                     size={120}
                     lastPictureUpdate={lastPictureUpdate}
                 />
-                { Boolean(userStatus) && !isBot && showStatus && (
+                { Boolean(userStatus) && !isBot && (
                     <View
                         style={[
                             style.statusWrapper,

@@ -13,6 +13,7 @@ import {Edge, SafeAreaView} from 'react-native-safe-area-context';
 import {of as of$} from 'rxjs';
 import {switchMap} from 'rxjs/operators';
 
+import {updateLocalUser} from '@actions/local/user';
 import {setDefaultProfileImage, updateMe} from '@actions/remote/user';
 import EditProfilePicture from '@components/profile_picture/edit_image';
 import ImagePicker from '@components/profile_picture/picker';
@@ -193,7 +194,9 @@ const EditProfile = ({
         setUpdating(true);
         try {
             if (profileImage) {
+                const now = Date.now();
                 await uploadProfileImage();
+                updateLocalUser(serverUrl, currentUser.id, {lastPictureUpdate: now});
             }
 
             if (isProfileImageRemoved) {

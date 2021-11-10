@@ -3,7 +3,7 @@
 
 import {Model, Q} from '@nozbe/watermelondb';
 
-import {updateRecentCustomStatuses, updateUserPresence} from '@actions/local/user';
+import {updateLocalUser, updateRecentCustomStatuses} from '@actions/local/user';
 import {fetchRolesIfNeeded} from '@actions/remote/role';
 import {Database, General} from '@constants';
 import DatabaseManager from '@database/manager';
@@ -373,6 +373,7 @@ export const updateUsersNoLongerVisible = async (serverUrl: string): Promise<{er
 
     return {};
 };
+
 export const setStatus = async (serverUrl: string, status: UserStatus) => {
     let client: Client;
     try {
@@ -383,13 +384,13 @@ export const setStatus = async (serverUrl: string, status: UserStatus) => {
 
     try {
         const data = await client.updateStatus(status);
-        updateUserPresence(serverUrl, status);
+        await updateLocalUser(serverUrl, status.user_id, {status: status.status});
 
         return {
             data,
         };
-    } catch (error: any) {
-        forceLogoutIfNecessary(serverUrl, error);
+    } catch (error) {
+        forceLogoutIfNecessary(serverUrl, error as ClientErrorProps);
         return {error};
     }
 };
@@ -463,6 +464,7 @@ export const setDefaultProfileImage = async (serverUrl: string, userId: string) 
 
     try {
         await client.setDefaultProfileImage(userId);
+        updateLocalUser(serverUrl, userId, {lastPictureUpdate: 0});
     } catch (error) {
         return {error};
     }

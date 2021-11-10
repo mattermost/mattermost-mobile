@@ -1,11 +1,11 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {SYSTEM_IDENTIFIERS} from '@constants/database';
+import {MM_TABLES, SYSTEM_IDENTIFIERS} from '@constants/database';
 import General from '@constants/general';
 import DatabaseManager from '@database/manager';
 import {queryRecentCustomStatuses} from '@queries/servers/system';
-import {queryCurrentUser, queryUserById} from '@queries/servers/user';
+import {queryCurrentUser} from '@queries/servers/user';
 
 import {addRecentReaction} from './reactions';
 
@@ -105,25 +105,25 @@ export const updateRecentCustomStatuses = async (serverUrl: string, customStatus
     });
 };
 
-export const updateUserPresence = async (serverUrl: string, userStatus: UserStatus) => {
-    const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
-    if (!operator) {
+export const updateLocalUser = async (serverUrl: string, userId: string, userDetails: Partial<UserModel>) => {
+    const database = DatabaseManager.serverDatabases[serverUrl]?.database;
+    if (!database) {
         return {error: `${serverUrl} database not found`};
     }
 
-    const user = await queryUserById(operator.database, userStatus.user_id);
-    if (user) {
-        user.prepareUpdate((record) => {
-            record.status = userStatus.status;
+    try {
+        const user = await database.get(MM_TABLES.SERVER.USER).find(userId) as UserModel;
+        await database.write(async () => {
+            await user.update((userRecord: UserModel) => {
+                userRecord.status = userDetails?.status ?? user.status;
+                userRecord.lastPictureUpdate = userDetails?.lastPictureUpdate ?? user.lastPictureUpdate;
+            });
         });
-        try {
-            await operator.batchRecords([user]);
-        } catch {
-            // eslint-disable-next-line no-console
-            console.log('FAILED TO BATCH CHANGES FOR UPDATE USER PRESENCE');
-        }
+    } catch {
+        // eslint-disable-next-line no-console
+        console.log('FAILED TO BATCH CHANGES FOR UPDATE USER PRESENCE');
+        return {};
     }
 
     return {};
 };
-
