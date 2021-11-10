@@ -355,10 +355,10 @@ export default class PickerUtil {
             client = NetworkManager.getClient(serverUrl);
             profileImageUrl = client.getProfilePictureUrl(id, lastPictureUpdate);
         } catch {
-            // does nothing
+            return false;
         }
 
         // Check if image url includes query string for timestamp. If so, it means the image has been updated from the default, i.e. '.../image?_=1544159746868'
-        return Boolean(profileImageUrl?.includes('?'));
+        return Boolean(profileImageUrl?.includes('image?_'));
     };
 }
