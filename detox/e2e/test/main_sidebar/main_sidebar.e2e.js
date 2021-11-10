@@ -26,35 +26,19 @@ describe('Main Sidebar', () => {
         switchTeamsButton,
     } = MainSidebar;
     let testChannel;
+    let testUser;
 
     beforeAll(async () => {
-        const {user, channel} = await Setup.apiInit();
+        const {channel, user} = await Setup.apiInit();
         testChannel = channel;
-
-        const {team: testOtherTeam} = await Team.apiCreateTeam();
-        await Team.apiAddUserToTeam(user.id, testOtherTeam.id);
+        testUser = user;
 
         // # Open channel screen
-        await ChannelScreen.open(user);
+        await ChannelScreen.open(testUser);
     });
 
     afterAll(async () => {
         await ChannelScreen.logout();
-    });
-
-    it('MM-T435 should not show switch teams button when jump to search is focused', async () => {
-        // # Open main sidebar
-        await openMainSidebar();
-
-        // # Tap on search input
-        await expect(switchTeamsButton).toBeVisible();
-        await searchInput.tap();
-
-        // * Verify switch teams button is not visible
-        await expect(switchTeamsButton).not.toBeVisible();
-
-        // # Go back to channel
-        await closeMainSidebar();
     });
 
     it('MM-T3412 should close the sidebar menu when selecting the same channel', async () => {
@@ -69,5 +53,23 @@ describe('Main Sidebar', () => {
 
         // * Selected channel should remain the same
         await expect(channelNavBarTitle).toHaveText(testChannel.display_name);
+    });
+
+    it('MM-T435 should not show switch teams button when jump to search is focused', async () => {
+        const {team: testOtherTeam} = await Team.apiCreateTeam();
+        await Team.apiAddUserToTeam(testUser.id, testOtherTeam.id);
+
+        // # Open main sidebar
+        await openMainSidebar();
+
+        // # Tap on search input
+        await expect(switchTeamsButton).toBeVisible();
+        await searchInput.tap();
+
+        // * Verify switch teams button is not visible
+        await expect(switchTeamsButton).not.toBeVisible();
+
+        // # Go back to channel
+        await closeMainSidebar();
     });
 });
