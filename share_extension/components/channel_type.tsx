@@ -46,7 +46,7 @@ export function GroupChannel() {
     return (
         <View style={style.container}>
             <CompassIcon
-                name='account-group-outline'
+                name='account-multiple-outline'
                 style={style.icon}
             />
         </View>
