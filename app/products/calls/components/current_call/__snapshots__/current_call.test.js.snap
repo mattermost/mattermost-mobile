@@ -1,0 +1,253 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`CurrentCall should match snapshot muted 1`] = `
+<View
+  style={
+    Object {
+      "padding": 10,
+    }
+  }
+>
+  <View
+    style={
+      Object {
+        "alignItems": "center",
+        "backgroundColor": "#3F4350",
+        "borderRadius": 5,
+        "flexDirection": "row",
+        "height": 64,
+        "padding": 4,
+        "width": "100%",
+      }
+    }
+  >
+    <CallAvatar
+      userId="user-1-id"
+      volume={0.5}
+    />
+    <View
+      style={
+        Object {
+          "flex": 1,
+        }
+      }
+    >
+      <Text
+        style={
+          Object {
+            "color": "#ffffff",
+            "fontSize": 16,
+            "fontWeight": "600",
+          }
+        }
+      >
+        <InjectIntl(FormattedText)
+          defaultMessage="{username} is speaking"
+          id="current_call.user-is-speaking"
+          values={
+            Object {
+              "username": "User 1",
+            }
+          }
+        />
+      </Text>
+      <Text
+        style={
+          Object {
+            "color": "#ffffff",
+            "opacity": 0.64,
+          }
+        }
+      >
+        <InjectIntl(FormattedText)
+          defaultMessage="~{channelName}"
+          id="current_call.channel-name"
+          values={
+            Object {
+              "channelName": "Channel Name",
+            }
+          }
+        />
+      </Text>
+    </View>
+    <Pressable
+      onPressIn={[Function]}
+      style={
+        Object {
+          "zIndex": 10,
+        }
+      }
+    >
+      <CompassIcon
+        name="arrow-expand"
+        size={24}
+        style={
+          Object {
+            "color": "#ffffff",
+            "marginRight": 8,
+            "padding": 8,
+          }
+        }
+      />
+    </Pressable>
+    <TouchableOpacity
+      onPress={[Function]}
+      style={
+        Object {
+          "zIndex": 10,
+        }
+      }
+    >
+      <CompassIcon
+        name="microphone-off"
+        size={24}
+        style={
+          Array [
+            Object {
+              "backgroundColor": "#3DB887",
+              "borderRadius": 4,
+              "color": "#ffffff",
+              "height": 42,
+              "justifyContent": "center",
+              "margin": 4,
+              "overflow": "hidden",
+              "padding": 9,
+              "textAlign": "center",
+              "textAlignVertical": "center",
+              "width": 42,
+            },
+            Object {
+              "backgroundColor": "transparent",
+            },
+          ]
+        }
+      />
+    </TouchableOpacity>
+  </View>
+</View>
+`;
+
+exports[`CurrentCall should match snapshot unmuted 1`] = `
+<View
+  style={
+    Object {
+      "padding": 10,
+    }
+  }
+>
+  <View
+    style={
+      Object {
+        "alignItems": "center",
+        "backgroundColor": "#3F4350",
+        "borderRadius": 5,
+        "flexDirection": "row",
+        "height": 64,
+        "padding": 4,
+        "width": "100%",
+      }
+    }
+  >
+    <CallAvatar
+      userId="user-1-id"
+      volume={0.5}
+    />
+    <View
+      style={
+        Object {
+          "flex": 1,
+        }
+      }
+    >
+      <Text
+        style={
+          Object {
+            "color": "#ffffff",
+            "fontSize": 16,
+            "fontWeight": "600",
+          }
+        }
+      >
+        <InjectIntl(FormattedText)
+          defaultMessage="{username} is speaking"
+          id="current_call.user-is-speaking"
+          values={
+            Object {
+              "username": "User 1",
+            }
+          }
+        />
+      </Text>
+      <Text
+        style={
+          Object {
+            "color": "#ffffff",
+            "opacity": 0.64,
+          }
+        }
+      >
+        <InjectIntl(FormattedText)
+          defaultMessage="~{channelName}"
+          id="current_call.channel-name"
+          values={
+            Object {
+              "channelName": "Channel Name",
+            }
+          }
+        />
+      </Text>
+    </View>
+    <Pressable
+      onPressIn={[Function]}
+      style={
+        Object {
+          "zIndex": 10,
+        }
+      }
+    >
+      <CompassIcon
+        name="arrow-expand"
+        size={24}
+        style={
+          Object {
+            "color": "#ffffff",
+            "marginRight": 8,
+            "padding": 8,
+          }
+        }
+      />
+    </Pressable>
+    <TouchableOpacity
+      onPress={[Function]}
+      style={
+        Object {
+          "zIndex": 10,
+        }
+      }
+    >
+      <CompassIcon
+        name="microphone"
+        size={24}
+        style={
+          Array [
+            Object {
+              "backgroundColor": "#3DB887",
+              "borderRadius": 4,
+              "color": "#ffffff",
+              "height": 42,
+              "justifyContent": "center",
+              "margin": 4,
+              "overflow": "hidden",
+              "padding": 9,
+              "textAlign": "center",
+              "textAlignVertical": "center",
+              "width": 42,
+            },
+            undefined,
+          ]
+        }
+      />
+    </TouchableOpacity>
+  </View>
+</View>
+`;

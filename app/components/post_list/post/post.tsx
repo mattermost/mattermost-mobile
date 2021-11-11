@@ -16,6 +16,7 @@ import {UserThread} from '@mm-redux/types/threads';
 import {UserProfile} from '@mm-redux/types/users';
 import EventEmitter from '@mm-redux/utils/event_emitter';
 import {fromAutoResponder, isPostEphemeral, isPostPendingOrFailed, isSystemMessage} from '@mm-redux/utils/post_utils';
+import CallMessage from '@mmproducts/calls/components/call_message';
 import {preventDoubleTap} from '@utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
@@ -54,6 +55,7 @@ type PostProps = {
     theme: Theme;
     thread: UserThread;
     threadStarter: UserProfile;
+    callsFeatureEnabled: boolean;
 };
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
@@ -113,7 +115,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
 const Post = ({
     canDelete, collapsedThreadsEnabled, enablePostUsernameOverride, highlight, highlightPinnedOrFlagged = true, intl, isConsecutivePost, isFirstReply, isFlagged, isLastReply,
     location, post, removePost, rootPostAuthor, shouldRenderReplyButton, skipFlaggedHeader, skipPinnedHeader, showAddReaction = true, showPermalink, style,
-    teammateNameDisplay, testID, theme, thread, threadStarter,
+    teammateNameDisplay, testID, theme, thread, threadStarter, callsFeatureEnabled,
 }: PostProps) => {
     const pressDetected = useRef(false);
     const styles = getStyleSheet(theme);
@@ -235,6 +237,13 @@ const Post = ({
     if (isSystemMessage(post) && !isPostEphemeral(post) && !isAutoResponder) {
         body = (
             <SystemMessage
+                post={post}
+                theme={theme}
+            />
+        );
+    } else if (post.type === 'custom_calls' && callsFeatureEnabled) {
+        body = (
+            <CallMessage
                 post={post}
                 theme={theme}
             />

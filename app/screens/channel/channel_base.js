@@ -24,6 +24,7 @@ export default class ChannelBase extends PureComponent {
             loadChannelsForTeam: PropTypes.func.isRequired,
             selectDefaultTeam: PropTypes.func.isRequired,
             selectInitialChannel: PropTypes.func.isRequired,
+            loadCalls: PropTypes.func.isRequired,
         }).isRequired,
         componentId: PropTypes.string.isRequired,
         currentChannelId: PropTypes.string,
@@ -38,6 +39,7 @@ export default class ChannelBase extends PureComponent {
         skipMetrics: PropTypes.bool,
         viewingGlobalThreads: PropTypes.bool,
         collapsedThreadsEnabled: PropTypes.bool.isRequired,
+        callsFeatureEnabled: PropTypes.bool.isRequired,
         selectedPost: PropTypes.shape({
             id: PropTypes.string.isRequired,
             channel_id: PropTypes.string.isRequired,
@@ -101,6 +103,10 @@ export default class ChannelBase extends PureComponent {
         } else if (!isSupportedServer) {
             // Only display the Alert if the TOS does not need to show first
             unsupportedServer(isSystemAdmin, this.context.intl.formatMessage);
+        }
+
+        if (this.props.callsFeatureEnabled) {
+            this.props.actions.loadCalls();
         }
     }
 

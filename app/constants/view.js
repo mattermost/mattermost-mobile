@@ -27,6 +27,8 @@ export const NotificationLevels = {
 
 export const NOTIFY_ALL_MEMBERS = 5;
 export const INDICATOR_BAR_HEIGHT = 38;
+export const JOIN_CALL_BAR_HEIGHT = 38;
+export const CURRENT_CALL_BAR_HEIGHT = 74;
 
 export const CHANNEL_ITEM_LARGE_BADGE_MAX_WIDTH = 38;
 export const CHANNEL_ITEM_SMALL_BADGE_MAX_WIDTH = 32;
@@ -107,6 +109,9 @@ const ViewTypes = keyMirror({
     VIEWING_GLOBAL_THREADS_ALL: null,
 
     THREAD_LAST_VIEWED_AT: null,
+
+    JOIN_CALL_BAR_VISIBLE: null,
+    CURRENT_CALL_BAR_VISIBLE: null,
 });
 
 const RequiredServer = {
