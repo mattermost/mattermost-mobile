@@ -11,7 +11,7 @@ import {getThreads} from '@mm-redux/actions/threads';
 import {getProfilesByIds, getStatusesByIds} from '@mm-redux/actions/users';
 import {General} from '@mm-redux/constants';
 import {getCurrentChannelId, getCurrentChannelStats} from '@mm-redux/selectors/entities/channels';
-import {getConfig} from '@mm-redux/selectors/entities/general';
+import {getConfig, getFeatureFlagValue} from '@mm-redux/selectors/entities/general';
 import {getPostIdsInChannel} from '@mm-redux/selectors/entities/posts';
 import {isCollapsedThreadsEnabled} from '@mm-redux/selectors/entities/preferences';
 import {getCurrentTeamId} from '@mm-redux/selectors/entities/teams';
@@ -23,6 +23,20 @@ import {TeamMembership} from '@mm-redux/types/teams';
 import {WebSocketMessage} from '@mm-redux/types/websocket';
 import EventEmitter from '@mm-redux/utils/event_emitter';
 import {removeUserFromList} from '@mm-redux/utils/user_utils';
+import {loadCalls} from '@mmproducts/calls/store/actions/calls';
+import {
+    handleCallStarted,
+    handleCallUserConnected,
+    handleCallUserDisconnected,
+    handleCallUserMuted,
+    handleCallUserUnmuted,
+    handleCallUserVoiceOn,
+    handleCallUserVoiceOff,
+    handleCallChannelEnabled,
+    handleCallChannelDisabled,
+    handleCallScreenOn,
+    handleCallScreenOff,
+} from '@mmproducts/calls/store/actions/websockets';
 import {getChannelSinceValue} from '@utils/channels';
 import websocketClient from '@websocket';
 
@@ -147,6 +161,10 @@ export function doReconnect(now: number) {
             const {data: me}: any = await dispatch(loadMe(null, null, true));
 
             if (!me.error) {
+                if (getFeatureFlagValue(getState(), 'CallsMobile') === 'true') {
+                    dispatch(loadCalls());
+                }
+
                 const roles = [];
 
                 if (me.roles?.length) {
@@ -325,7 +343,7 @@ function handleClose(connectFailCount: number) {
 }
 
 function handleEvent(msg: WebSocketMessage) {
-    return (dispatch: DispatchFunc) => {
+    return (dispatch: DispatchFunc, getState: GetStateFunc) => {
         switch (msg.event) {
         case WebsocketEvents.POSTED:
         case WebsocketEvents.EPHEMERAL_MESSAGE:
@@ -419,6 +437,33 @@ function handleEvent(msg: WebSocketMessage) {
             return dispatch(handleSidebarCategoryDeleted(msg));
         case WebsocketEvents.SIDEBAR_CATEGORY_ORDER_UPDATED:
             return dispatch(handleSidebarCategoryOrderUpdated(msg));
+        }
+
+        if (getFeatureFlagValue(getState(), 'CallsMobile') === 'true') {
+            switch (msg.event) {
+            case WebsocketEvents.CALLS_CHANNEL_ENABLED:
+                return dispatch(handleCallChannelEnabled(msg));
+            case WebsocketEvents.CALLS_CHANNEL_DISABLED:
+                return dispatch(handleCallChannelDisabled(msg));
+            case WebsocketEvents.CALLS_USER_CONNECTED:
+                return dispatch(handleCallUserConnected(msg));
+            case WebsocketEvents.CALLS_USER_DISCONNECTED:
+                return dispatch(handleCallUserDisconnected(msg));
+            case WebsocketEvents.CALLS_USER_MUTED:
+                return dispatch(handleCallUserMuted(msg));
+            case WebsocketEvents.CALLS_USER_UNMUTED:
+                return dispatch(handleCallUserUnmuted(msg));
+            case WebsocketEvents.CALLS_USER_VOICE_ON:
+                return dispatch(handleCallUserVoiceOn(msg));
+            case WebsocketEvents.CALLS_USER_VOICE_OFF:
+                return dispatch(handleCallUserVoiceOff(msg));
+            case WebsocketEvents.CALLS_CALL_START:
+                return dispatch(handleCallStarted(msg));
+            case WebsocketEvents.CALLS_SCREEN_ON:
+                return dispatch(handleCallScreenOn(msg));
+            case WebsocketEvents.CALLS_SCREEN_OFF:
+                return dispatch(handleCallScreenOff(msg));
+            }
         }
 
         return {data: true};

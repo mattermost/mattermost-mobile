@@ -276,6 +276,8 @@ PODS:
     - react-native-video/Video (= 5.2.0)
   - react-native-video/Video (5.2.0):
     - React-Core
+  - react-native-webrtc2 (1.84.5):
+    - React
   - react-native-webview (11.14.2):
     - React-Core
   - React-perflogger (0.66.1)
@@ -345,6 +347,8 @@ PODS:
     - React-perflogger (= 0.66.1)
   - ReactNativeExceptionHandler (2.10.10):
     - React-Core
+  - ReactNativeIncallManager (3.3.0):
+    - React
   - ReactNativeKeyboardTrackingView (5.7.0):
     - React
   - ReactNativeNavigation (7.23.1):
@@ -493,6 +497,7 @@ DEPENDENCIES:
   - react-native-safe-area-context (from `../node_modules/react-native-safe-area-context`)
   - react-native-startup-time (from `../node_modules/react-native-startup-time`)
   - react-native-video (from `../node_modules/react-native-video`)
+  - react-native-webrtc2 (from `../node_modules/react-native-webrtc2`)
   - react-native-webview (from `../node_modules/react-native-webview`)
   - React-perflogger (from `../node_modules/react-native/ReactCommon/reactperflogger`)
   - React-RCTActionSheet (from `../node_modules/react-native/Libraries/ActionSheetIOS`)
@@ -507,6 +512,7 @@ DEPENDENCIES:
   - React-runtimeexecutor (from `../node_modules/react-native/ReactCommon/runtimeexecutor`)
   - ReactCommon/turbomodule/core (from `../node_modules/react-native/ReactCommon`)
   - ReactNativeExceptionHandler (from `../node_modules/react-native-exception-handler`)
+  - ReactNativeIncallManager (from `../node_modules/react-native-incall-manager`)
   - ReactNativeKeyboardTrackingView (from `../node_modules/react-native-keyboard-tracking-view`)
   - ReactNativeNavigation (from `../node_modules/react-native-navigation`)
   - rn-fetch-blob (from `../node_modules/rn-fetch-blob`)
@@ -631,6 +637,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native-startup-time"
   react-native-video:
     :path: "../node_modules/react-native-video"
+  react-native-webrtc2:
+    :path: "../node_modules/react-native-webrtc2"
   react-native-webview:
     :path: "../node_modules/react-native-webview"
   React-perflogger:
@@ -659,6 +667,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native/ReactCommon"
   ReactNativeExceptionHandler:
     :path: "../node_modules/react-native-exception-handler"
+  ReactNativeIncallManager:
+    :path: "../node_modules/react-native-incall-manager"
   ReactNativeKeyboardTrackingView:
     :path: "../node_modules/react-native-keyboard-tracking-view"
   ReactNativeNavigation:
@@ -764,6 +774,7 @@ SPEC CHECKSUMS:
   react-native-safe-area-context: 584dc04881deb49474363f3be89e4ca0e854c057
   react-native-startup-time: 1a068b744ce5097a85ebe0fbff691b05961c324d
   react-native-video: a4c2635d0802f983594b7057e1bce8f442f0ad28
+  react-native-webrtc2: b3f1d5504c8bbd3aa4ce9b6c3ce0fbc47c7e146a
   react-native-webview: cc4ac8f021a832dce2979e1f48c5595341dd2fb5
   React-perflogger: fcac6090a80e3d967791b4c7f1b1a017f9d4a398
   React-RCTActionSheet: caf5913d9f9e605f5467206cf9d1caa6d47d7ad6
@@ -778,6 +789,7 @@ SPEC CHECKSUMS:
   React-runtimeexecutor: 33a949a51bec5f8a3c9e8d8092deb259600d761e
   ReactCommon: 620442811dc6f707b4bf5e3b27d4f19c12d5a821
   ReactNativeExceptionHandler: b11ff67c78802b2f62eed0e10e75cb1ef7947c60
+  ReactNativeIncallManager: a840ef75640518065742a893e6c6ff98ee820039
   ReactNativeKeyboardTrackingView: 02137fac3b2ebd330d74fa54ead48b14750a2306
   ReactNativeNavigation: 3ab7ff832654964985de47c9ee67999e34cd63d8
   rn-fetch-blob: 17961aec08caae68bb8fc0e5b40f93b3acfa6932
