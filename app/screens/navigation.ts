@@ -18,7 +18,51 @@ import type {LaunchProps} from '@typings/launch';
 
 const {MattermostManaged} = NativeModules;
 const isRunningInSplitView = MattermostManaged.isRunningInSplitView;
-const appearanceControlledScreens = [Screens.SERVER, Screens.LOGIN, Screens.LOGIN_OPTIONS, Screens.FORGOT_PASSWORD, Screens.MFA];
+const appearanceControlledScreens = [Screens.SERVER, Screens.LOGIN, Screens.FORGOT_PASSWORD, Screens.MFA];
+
+const alpha = {
+    from: 0,
+    to: 1,
+    duration: 150,
+};
+
+export const loginAnimationOptions = {
+    topBar: {
+        visible: true,
+        drawBehind: true,
+        translucid: true,
+        noBorder: true,
+        elevation: 0,
+        background: {
+            color: 'transparent',
+        },
+        scrollEdgeAppearance: {
+            active: true,
+            noBorder: true,
+            translucid: true,
+        },
+    },
+    animations: {
+        topBar: {
+            alpha,
+        },
+        push: {
+            waitForRender: true,
+            content: {
+                alpha,
+            },
+        },
+        pop: {
+            content: {
+                alpha: {
+                    from: 1,
+                    to: 0,
+                    duration: 100,
+                },
+            },
+        },
+    },
+};
 
 Navigation.setDefaultOptions({
     layout: {

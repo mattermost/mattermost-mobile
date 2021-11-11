@@ -63,6 +63,16 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     connectingIndicator: {
         marginRight: 10,
     },
+    loadingContainerStyle: {
+        marginRight: 10,
+        padding: 0,
+        top: -2,
+        flex: undefined,
+    },
+    loading: {
+        height: 20,
+        width: 20,
+    },
 }));
 
 const ServerForm = ({
@@ -100,8 +110,11 @@ const ServerForm = ({
     };
 
     const onBlur = useCallback(() => {
-        if (Platform.OS === 'ios' && isTablet && !urlRef.current?.isFocused() && !displayNameRef.current?.isFocused()) {
-            keyboardAwareRef.current?.scrollToPosition(0, 0);
+        if (Platform.OS === 'ios') {
+            const reset = !displayNameRef.current?.isFocused() && !urlRef.current?.isFocused();
+            if (reset) {
+                keyboardAwareRef.current?.scrollToPosition(0, 0);
+            }
         }
     }, []);
 
@@ -135,7 +148,10 @@ const ServerForm = ({
         buttonID = t('mobile.components.select_server_view.connecting');
         buttonText = 'Connecting';
         buttonIcon = (
-            <Loading/>
+            <Loading
+                containerStyle={styles.loadingContainerStyle}
+                style={styles.loading}
+            />
         );
     }
 
@@ -160,6 +176,7 @@ const ServerForm = ({
                     onSubmitEditing={onUrlSubmit}
                     ref={urlRef}
                     returnKeyType='next'
+                    spellCheck={false}
                     testID='select_server.server_url.input'
                     theme={theme}
                     value={url}
@@ -182,6 +199,7 @@ const ServerForm = ({
                     onSubmitEditing={handleConnect}
                     ref={displayNameRef}
                     returnKeyType='done'
+                    spellCheck={false}
                     testID='select_server.server_display_name.input'
                     theme={theme}
                     value={displayName}

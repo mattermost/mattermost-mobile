@@ -6,17 +6,18 @@ import React from 'react';
 import {StyleSheet, View, ViewStyle} from 'react-native';
 
 type LoadingProps = {
+    containerStyle?: ViewStyle;
     style?: ViewStyle;
 }
 
-const Loading = ({style}: LoadingProps) => {
+const Loading = ({containerStyle, style}: LoadingProps) => {
     return (
-        <View style={styles.container}>
+        <View style={[styles.container, containerStyle]}>
             <LottieView
                 source={require('./spinner.json')}
                 autoPlay={true}
                 loop={true}
-                style={style}
+                style={[styles.lottie, style]}
             />
         </View>
     );

@@ -137,9 +137,6 @@ Navigation.setLazyComponentRegistrator((screenName) => {
     case Screens.LOGIN:
         screen = withIntl(require('@screens/login').default);
         break;
-    case Screens.LOGIN_OPTIONS:
-        screen = withIntl(require('@screens/login_options').default);
-        break;
     // case 'LongPost':
     //     screen = require('@screens/long_post').default;
     //     break;

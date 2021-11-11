@@ -8,29 +8,8 @@ import FormattedText from '@components/formatted_text';
 import {makeStyleSheetFromTheme, changeOpacity} from '@utils/theme';
 import {typography} from '@utils/typography';
 
-type NewMessagesLineProps = {
+type LoginOptionsSeparatorProps = {
     theme: Theme;
-}
-
-function MessageLine({theme}: NewMessagesLineProps) {
-    const styles = getStyleFromTheme(theme);
-
-    const text = (
-        <FormattedText
-            id='mobile.login_options.separator_text'
-            defaultMessage='or log in with'
-            style={styles.text}
-            testID='mobile.login_options.separator_text'
-        />
-    );
-
-    return (
-        <View style={styles.container}>
-            <View style={styles.line}/>
-            {text}
-            <View style={styles.line}/>
-        </View>
-    );
 }
 
 const getStyleFromTheme = makeStyleSheetFromTheme((theme: Theme) => ({
@@ -53,4 +32,25 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme: Theme) => ({
     },
 }));
 
-export default MessageLine;
+const LoginOptionsSeparator = ({theme}: LoginOptionsSeparatorProps) => {
+    const styles = getStyleFromTheme(theme);
+
+    const text = (
+        <FormattedText
+            id='mobile.login_options.separator_text'
+            defaultMessage='or log in with'
+            style={styles.text}
+            testID='mobile.login_options.separator_text'
+        />
+    );
+
+    return (
+        <View style={styles.container}>
+            <View style={styles.line}/>
+            {text}
+            <View style={styles.line}/>
+        </View>
+    );
+};
+
+export default LoginOptionsSeparator;

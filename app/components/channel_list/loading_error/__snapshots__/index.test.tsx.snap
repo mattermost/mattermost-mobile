@@ -107,7 +107,6 @@ exports[`Loading Error should match snapshot 1`] = `
               "borderRadius": 4,
               "flex": 0,
               "justifyContent": "center",
-              "textAlignVertical": "center",
             },
             Object {
               "height": 48,
@@ -134,8 +133,8 @@ exports[`Loading Error should match snapshot 1`] = `
             },
             Object {
               "fontSize": 16,
-              "lineHeight": 18,
-              "marginTop": 2,
+              "lineHeight": 16,
+              "marginTop": 1,
             },
             Object {
               "color": "#1c58d9",

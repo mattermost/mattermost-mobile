@@ -15,7 +15,7 @@ const constants = keyMirror({
 });
 
 export default {
-    constants,
+    ...constants,
     REDIRECT_URL_SCHEME,
     REDIRECT_URL_SCHEME_DEV,
 };

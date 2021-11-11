@@ -250,7 +250,7 @@ const FloatingTextInput = forwardRef<FloatingTextInputRef, FloatingTextInputProp
                     ref={inputRef}
                     underlineColorAndroid='transparent'
                 />
-                {error && (
+                {Boolean(error) && (
                     <View style={styles.errorContainer}>
                         {showErrorIcon && errorIcon &&
                         <CompassIcon
