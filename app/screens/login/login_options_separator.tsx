@@ -6,7 +6,6 @@ import {View} from 'react-native';
 
 import FormattedText from '@components/formatted_text';
 import {makeStyleSheetFromTheme, changeOpacity} from '@utils/theme';
-import {typography} from '@utils/typography';
 
 type LoginOptionsSeparatorProps = {
     theme: Theme;
@@ -21,14 +20,16 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme: Theme) => ({
     line: {
         flex: 1,
         height: 0.4,
-        backgroundColor: changeOpacity(theme.centerChannelColor, 0.64),
+        backgroundColor: changeOpacity(theme.centerChannelColor, 0.16),
     },
     text: {
         marginRight: 6,
         marginLeft: 6,
         textAlign: 'center',
         color: changeOpacity(theme.centerChannelColor, 0.64),
-        ...typography('Body', 25, 'SemiBold'),
+        fontFamily: 'OpenSans',
+        fontSize: 12,
+        top: -2,
     },
 }));
 

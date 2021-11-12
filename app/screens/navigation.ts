@@ -26,42 +26,48 @@ const alpha = {
     duration: 150,
 };
 
-export const loginAnimationOptions = {
-    topBar: {
-        visible: true,
-        drawBehind: true,
-        translucid: true,
-        noBorder: true,
-        elevation: 0,
-        background: {
-            color: 'transparent',
-        },
-        scrollEdgeAppearance: {
-            active: true,
-            noBorder: true,
-            translucid: true,
-        },
-    },
-    animations: {
+export const loginAnimationOptions = () => {
+    const theme = getThemeFromState();
+    return {
         topBar: {
-            alpha,
-        },
-        push: {
-            waitForRender: true,
-            content: {
-                alpha,
+            visible: true,
+            drawBehind: true,
+            translucid: true,
+            noBorder: true,
+            elevation: 0,
+            background: {
+                color: 'transparent',
+            },
+            backButton: {
+                color: changeOpacity(theme.centerChannelColor, 0.56),
+            },
+            scrollEdgeAppearance: {
+                active: true,
+                noBorder: true,
+                translucid: true,
             },
         },
-        pop: {
-            content: {
-                alpha: {
-                    from: 1,
-                    to: 0,
-                    duration: 100,
+        animations: {
+            topBar: {
+                alpha,
+            },
+            push: {
+                waitForRender: true,
+                content: {
+                    alpha,
+                },
+            },
+            pop: {
+                content: {
+                    alpha: {
+                        from: 1,
+                        to: 0,
+                        duration: 100,
+                    },
                 },
             },
         },
-    },
+    };
 };
 
 Navigation.setDefaultOptions({
@@ -79,7 +85,7 @@ Appearance.addChangeListener(() => {
         for (const screen of screens) {
             if (appearanceControlledScreens.includes(screen)) {
                 Navigation.updateProps(screen, {theme});
-                setNavigatorStyles(screen, theme);
+                setNavigatorStyles(screen, theme, loginAnimationOptions(), theme.centerChannelBg);
             }
         }
     }
@@ -139,7 +145,7 @@ export function resetToHome(passProps = {}) {
 
 export function resetToSelectServer(passProps: LaunchProps) {
     const theme = getThemeFromState();
-    const isDark = tinyColor(theme.sidebarBg).isDark();
+    const isDark = tinyColor(theme.centerChannelBg).isDark();
     StatusBar.setBarStyle(isDark ? 'light-content' : 'dark-content');
 
     EphemeralStore.clearNavigationComponents();

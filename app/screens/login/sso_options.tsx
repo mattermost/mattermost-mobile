@@ -9,7 +9,7 @@ import CompassIcon from '@components/compass_icon';
 import FormattedText from '@components/formatted_text';
 import {Sso} from '@constants';
 import {t} from '@i18n';
-import {buttonBackgroundStyle, buttonTextStyle} from '@utils/buttonStyles';
+import {buttonBackgroundStyle} from '@utils/buttonStyles';
 import {makeStyleSheetFromTheme, changeOpacity} from '@utils/theme';
 
 type SsoInfo = {
@@ -28,7 +28,6 @@ type Props = {
 
 const SsoOptions = ({goToSso, ssoOnly, ssoOptions, theme}: Props) => {
     const styles = getStyleSheet(theme);
-    const styleButtonText = buttonTextStyle(theme, 'lg', 'primary', 'default');
     const styleButtonBackground = buttonBackgroundStyle(theme, 'lg', 'primary');
 
     const getSsoButtonOptions = ((ssoType: string): SsoInfo => {
@@ -103,7 +102,7 @@ const SsoOptions = ({goToSso, ssoOnly, ssoOptions, theme}: Props) => {
                 <CompassIcon
                     name={compassIcon}
                     size={16}
-                    color={theme.sidebarTextActiveColor}
+                    color={theme.centerChannelColor}
                 />
                 }
                 <View
@@ -113,7 +112,7 @@ const SsoOptions = ({goToSso, ssoOnly, ssoOptions, theme}: Props) => {
                         <FormattedText
                             key={'pretext' + id}
                             id='mobile.login_options.sso_continue'
-                            style={styleButtonText}
+                            style={styles.buttonText}
                             defaultMessage={'Continue with '}
                             testID={'pretext' + id}
                         />
@@ -121,7 +120,7 @@ const SsoOptions = ({goToSso, ssoOnly, ssoOptions, theme}: Props) => {
                     <FormattedText
                         key={ssoType}
                         id={id}
-                        style={styleButtonText}
+                        style={styles.buttonText}
                         defaultMessage={sso.defaultMessage}
                         testID={id}
                     />
@@ -137,7 +136,7 @@ const SsoOptions = ({goToSso, ssoOnly, ssoOptions, theme}: Props) => {
     );
 };
 
-const getStyleSheet = makeStyleSheetFromTheme((theme) => ({
+const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     container: {
         marginVertical: 24,
     },
@@ -159,6 +158,13 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => ({
         color: theme.centerChannelColor,
         flexDirection: 'row',
         marginLeft: 9,
+    },
+    buttonText: {
+        color: theme.centerChannelColor,
+        fontFamily: 'OpenSans-SemiBold',
+        fontSize: 16,
+        lineHeight: 18,
+        top: 2,
     },
     logoStyle: {
         height: 18,

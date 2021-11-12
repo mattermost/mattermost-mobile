@@ -54,7 +54,9 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     },
     forgotPasswordTxt: {
         paddingVertical: 10,
-        color: theme.linkColor,
+        color: theme.buttonBg,
+        fontSize: 14,
+        fontFamily: 'OpenSans-SemiBold',
     },
     loadingContainerStyle: {
         marginRight: 10,
@@ -164,7 +166,7 @@ const LoginForm = ({config, extra, keyboardAwareRef, numberSSOs, serverDisplayNa
     };
 
     const goToMfa = () => {
-        goToScreen(MFA, '', {goToHome, loginId, password, config, serverDisplayName, license, serverUrl, theme}, loginAnimationOptions);
+        goToScreen(MFA, '', {goToHome, loginId, password, config, serverDisplayName, license, serverUrl, theme}, loginAnimationOptions());
     };
 
     const getLoginErrorMessage = (loginError: string | ClientErrorProps | Error) => {
@@ -259,8 +261,8 @@ const LoginForm = ({config, extra, keyboardAwareRef, numberSSOs, serverDisplayNa
             serverUrl,
         };
 
-        goToScreen(FORGOT_PASSWORD, '', passProps, loginAnimationOptions);
-    }, []);
+        goToScreen(FORGOT_PASSWORD, '', passProps, loginAnimationOptions());
+    }, [theme]);
 
     // useEffect to set userName for EMM
     useEffect(() => {

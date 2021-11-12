@@ -57,9 +57,9 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     },
     innerContainer: {
         alignItems: 'center',
+        height: '100%',
         justifyContent: 'center',
-        paddingHorizontal: 15,
-        flex: 1,
+        paddingHorizontal: 24,
     },
     returnButton: {
         marginTop: 32,
@@ -71,8 +71,9 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     },
     successContainer: {
         alignItems: 'center',
-        marginHorizontal: 20,
+        paddingHorizontal: 24,
         justifyContent: 'center',
+        flex: 1,
     },
     successText: {
         color: changeOpacity(theme.centerChannelColor, 0.64),

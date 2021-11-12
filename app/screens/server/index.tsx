@@ -160,7 +160,7 @@ const Server = ({componentId, extra, launchType, launchError, theme}: ServerProp
             passProps.ssoType = enabledSSOs[0];
         }
 
-        goToScreen(screen, '', passProps, loginAnimationOptions);
+        goToScreen(screen, '', passProps, loginAnimationOptions());
         setConnecting(false);
         setButtonDisabled(false);
         setUrl(serverUrl);
@@ -332,9 +332,9 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         flex: 1,
     },
     scrollContainer: {
-        justifyContent: 'center',
         alignItems: 'center',
-        flex: 1,
+        height: '100%',
+        justifyContent: 'center',
     },
 }));
 

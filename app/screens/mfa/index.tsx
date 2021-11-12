@@ -65,8 +65,8 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     innerContainer: {
         alignItems: 'center',
         justifyContent: 'center',
-        paddingHorizontal: 15,
-        flex: 1,
+        paddingHorizontal: 24,
+        height: '100%',
     },
     loading: {
         height: 20,
@@ -89,21 +89,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         color: changeOpacity(theme.centerChannelColor, 0.6),
         marginBottom: 12,
         ...typography('Body', 200, 'Regular'),
-    },
-    successContainer: {
-        alignItems: 'center',
-        marginHorizontal: 20,
-        justifyContent: 'center',
-    },
-    successText: {
-        color: changeOpacity(theme.centerChannelColor, 0.64),
-        ...typography('Body', 200, 'SemiBold'),
-        textAlign: 'center',
-    },
-    successTitle: {
-        color: theme.mentionColor,
-        marginBottom: 12,
-        ...typography('Heading', 1000),
     },
 }));
 

@@ -57,7 +57,7 @@ const getStyles = makeStyleSheetFromTheme((theme: Theme) => ({
     innerContainer: {
         alignItems: 'center',
         justifyContent: 'center',
-        paddingHorizontal: 15,
+        paddingHorizontal: 24,
     },
     subheader: {
         color: changeOpacity(theme.centerChannelColor, 0.6),
@@ -106,10 +106,10 @@ const LoginOptions = ({config, extra, hasLoginForm, launchType, launchError, lic
                 defaultMessage="You can't log in to your account yet. At lease one login option must be configured. Contact your system Admin for assistance."
             />
         );
-    }, [hasLoginForm, numberSSOs]);
+    }, [hasLoginForm, numberSSOs, theme]);
 
     const goToSso = preventDoubleTap((ssoType: string) => {
-        goToScreen(Screens.SSO, '', {config, extra, launchError, launchType, license, theme, ssoType, serverDisplayName, serverUrl}, loginAnimationOptions);
+        goToScreen(Screens.SSO, '', {config, extra, launchError, launchType, license, theme, ssoType, serverDisplayName, serverUrl}, loginAnimationOptions());
     });
 
     const optionsSeparator = hasLoginForm && Boolean(numberSSOs) && (

@@ -37,7 +37,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     },
     description: {
         color: changeOpacity(theme.centerChannelColor, 0.64),
-        ...typography('Body', 100, 'Regular'),
+        ...typography('Body', 200, 'Regular'),
     },
 }));
 
