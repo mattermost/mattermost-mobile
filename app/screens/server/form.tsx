@@ -119,8 +119,6 @@ const ServerForm = ({
     }, []);
 
     const onConnect = useCallback(() => {
-        displayNameRef.current?.blur();
-        urlRef.current?.blur();
         Keyboard.dismiss();
         handleConnect();
     }, []);

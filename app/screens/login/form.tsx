@@ -242,8 +242,6 @@ const LoginForm = ({config, extra, keyboardAwareRef, numberSSOs, serverDisplayNa
     }, [dimensions]);
 
     const onLogin = useCallback(() => {
-        loginRef.current?.blur();
-        passwordRef.current?.blur();
         Keyboard.dismiss();
         preSignIn();
     }, []);

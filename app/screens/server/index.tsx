@@ -245,9 +245,9 @@ const Server = ({componentId, extra, launchType, launchError, theme}: ServerProp
                 pingServer(nurl, false);
             } else {
                 setUrlError(getErrorMessage(result.error as ClientError, intl));
+                setButtonDisabled(true);
                 setConnecting(false);
             }
-            setButtonDisabled(true);
             return;
         }
 
@@ -260,13 +260,14 @@ const Server = ({componentId, extra, launchType, launchError, theme}: ServerProp
         }
 
         const server = await queryServerByIdentifier(DatabaseManager.appDatabase!.database, data.config!.DiagnosticId);
+        setConnecting(false);
+
         if (server && server.lastActiveAt > 0) {
             setButtonDisabled(true);
             setUrlError(formatMessage({
                 id: 'mobile.server_identifier.exists',
                 defaultMessage: 'You are already connected to this server.',
             }));
-            setConnecting(false);
             return;
         }
 
