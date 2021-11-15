@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {Linking} from 'react-native';
+import {Linking, LogBox} from 'react-native';
 import {Navigation} from 'react-native-navigation';
 import {Provider} from 'react-redux';
 
@@ -10,6 +10,7 @@ import {setDeepLinkURL} from '@actions/views/root';
 import {loadMe, logout} from '@actions/views/user';
 import {NavigationTypes} from '@constants';
 import {CHANNEL, THREAD} from '@constants/screen';
+import {RUNNING_E2E} from '@env';
 import {getAppCredentials} from '@init/credentials';
 import {setupPermanentSidebar} from '@init/device';
 import emmProvider from '@init/emm_provider';
@@ -154,3 +155,7 @@ export function componentDidDisappearListener({componentId}) {
         }
     }
 }
+
+// Ignore all notifications if running e2e
+const isRunningE2e = RUNNING_E2E === 'true';
+LogBox.ignoreAllLogs(isRunningE2e);
