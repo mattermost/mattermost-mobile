@@ -56,6 +56,8 @@
   "apps.suggestion.no_static": "Inga matchande alternativ.",
   "apps.suggestion.no_suggestion": "Inget matchande förslag.",
   "archivedChannelMessage": "Du tittar på en **arkiverad kanal**. Du kan inte skapa nya meddelanden här.",
+  "call.settings": "Inställningar",
+  "calls.confirm-to-join-cancel": "Avbryt",
   "camera_type.photo.option": "Ta foto",
   "camera_type.title": "Välj åtgärd",
   "camera_type.video.option": "Spela in video",
