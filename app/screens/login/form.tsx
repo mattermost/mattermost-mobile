@@ -241,6 +241,13 @@ const LoginForm = ({config, extra, keyboardAwareRef, numberSSOs, serverDisplayNa
         focus();
     }, [dimensions]);
 
+    const onLogin = useCallback(() => {
+        loginRef.current?.blur();
+        passwordRef.current?.blur();
+        Keyboard.dismiss();
+        preSignIn();
+    }, []);
+
     const onLoginChange = useCallback((text) => {
         setLoginId(text);
         if (error) {
@@ -308,7 +315,7 @@ const LoginForm = ({config, extra, keyboardAwareRef, numberSSOs, serverDisplayNa
             <Button
                 testID='login.signin.button'
                 disabled={buttonDisabled}
-                onPress={preSignIn}
+                onPress={onLogin}
                 containerStyle={[styles.loginButton, styleButtonBackground]}
             >
                 {buttonIcon}
@@ -358,7 +365,7 @@ const LoginForm = ({config, extra, keyboardAwareRef, numberSSOs, serverDisplayNa
                 onBlur={onBlur}
                 onChangeText={onPasswordChange}
                 onFocus={onFocus}
-                onSubmitEditing={preSignIn}
+                onSubmitEditing={onLogin}
                 ref={passwordRef}
                 returnKeyType='join'
                 spellCheck={false}

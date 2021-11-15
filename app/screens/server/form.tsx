@@ -3,7 +3,7 @@
 
 import React, {MutableRefObject, useCallback, useEffect, useRef} from 'react';
 import {useIntl} from 'react-intl';
-import {Platform, useWindowDimensions, View} from 'react-native';
+import {Keyboard, Platform, useWindowDimensions, View} from 'react-native';
 import Button from 'react-native-button';
 import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
 
@@ -118,6 +118,13 @@ const ServerForm = ({
         }
     }, []);
 
+    const onConnect = useCallback(() => {
+        displayNameRef.current?.blur();
+        urlRef.current?.blur();
+        Keyboard.dismiss();
+        handleConnect();
+    }, []);
+
     const onFocus = useCallback(() => {
         focus();
     }, [dimensions]);
@@ -196,7 +203,7 @@ const ServerForm = ({
                     onBlur={onBlur}
                     onChangeText={handleDisplayNameTextChanged}
                     onFocus={onFocus}
-                    onSubmitEditing={handleConnect}
+                    onSubmitEditing={onConnect}
                     ref={displayNameRef}
                     returnKeyType='done'
                     spellCheck={false}
@@ -216,7 +223,7 @@ const ServerForm = ({
             <Button
                 containerStyle={[styles.connectButton, styleButtonBackground]}
                 disabled={buttonDisabled}
-                onPress={handleConnect}
+                onPress={onConnect}
                 testID='select_server.connect.button'
             >
                 {buttonIcon}

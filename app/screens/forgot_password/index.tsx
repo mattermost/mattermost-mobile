@@ -3,7 +3,7 @@
 
 import React, {useCallback, useEffect, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
-import {Platform, Text, useWindowDimensions, View} from 'react-native';
+import {Keyboard, Platform, Text, useWindowDimensions, View} from 'react-native';
 import Button from 'react-native-button';
 import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
 import {Navigation} from 'react-native-navigation';
@@ -122,6 +122,7 @@ const ForgotPassword = ({serverUrl, theme}: Props) => {
     }, []);
 
     const submitResetPassword = useCallback(async () => {
+        Keyboard.dismiss();
         if (!isEmail(email)) {
             setError(
                 formatMessage({
