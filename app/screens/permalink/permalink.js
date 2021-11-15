@@ -108,6 +108,7 @@ export default class Permalink extends PureComponent {
         this.navigationEventListener = Navigation.events().bindComponent(this);
 
         this.mounted = true;
+        this.focusedPostId = this.props.focusedPostId;
 
         if (this.state.loading && this.props.focusedPostId) {
             this.initialLoad = true;
@@ -116,7 +117,13 @@ export default class Permalink extends PureComponent {
     }
 
     componentDidUpdate() {
-        if (this.state.loading && this.props.focusedPostId && !this.initialLoad) {
+        let focusedPostIdChanged;
+        if (this.focusedPostId !== this.props.focusedPostId) {
+            focusedPostIdChanged = true;
+            this.focusedPostId = this.props.focusedPostId;
+        }
+
+        if (focusedPostIdChanged || (this.state.loading && this.props.focusedPostId && !this.initialLoad)) {
             this.loadPosts();
         }
     }

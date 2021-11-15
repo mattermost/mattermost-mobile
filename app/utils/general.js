@@ -110,7 +110,3 @@ export function permalinkBadTeam(intl) {
 
     alertErrorWithFallback(intl, {}, message);
 }
-
-export function getRandomComponentId() {
-    return Math.floor(Math.random() * 0x10000000000).toString(16);
-}

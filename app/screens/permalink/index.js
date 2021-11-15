@@ -12,7 +12,7 @@ import {getChannel as getChannelAction, joinChannel} from '@mm-redux/actions/cha
 import {selectPost} from '@mm-redux/actions/posts';
 import {addUserToTeam, getTeamByName, removeUserFromTeam} from '@mm-redux/actions/teams';
 import {makeGetChannel, getMyChannelMemberships} from '@mm-redux/selectors/entities/channels';
-import {makeGetPostIdsAroundPost, getPost, makeGetPostIdsForThread} from '@mm-redux/selectors/entities/posts';
+import {makeGetPostIdsAroundPost, getPost, makeGetPostIdsForThreadWithLimit} from '@mm-redux/selectors/entities/posts';
 import {getTheme} from '@mm-redux/selectors/entities/preferences';
 import {getCurrentTeamId, getTeamByName as selectTeamByName, getTeamMemberships} from '@mm-redux/selectors/entities/teams';
 import {getCurrentUserId} from '@mm-redux/selectors/entities/users';
@@ -20,13 +20,13 @@ import {getCurrentUserId} from '@mm-redux/selectors/entities/users';
 import Permalink from './permalink';
 
 function makeMapStateToProps() {
-    const getPostIdsForThread = makeGetPostIdsForThread();
+    const getPostIdsForThread = makeGetPostIdsForThreadWithLimit();
     const getPostIdsAroundPost = makeGetPostIdsAroundPost();
     const getChannel = makeGetChannel();
 
     return function mapStateToProps(state, props) {
-        const {currentFocusedPostId} = state.entities.posts;
-        const post = getPost(state, currentFocusedPostId);
+        const {focusedPostId} = props;
+        const post = getPost(state, focusedPostId);
 
         let channel;
         let postIds;
@@ -41,12 +41,9 @@ function makeMapStateToProps() {
 
             // It is passed only when CRT is enabled and post has a root_id
             if (props.isThreadPost) {
-                postIds = getPostIdsForThread(state, post.root_id, {
-                    ...options,
-                    focusedPostId: post.id,
-                });
+                postIds = getPostIdsForThread(state, post.root_id, focusedPostId, options.postsBeforeCount, options.postsAfterCount);
             } else {
-                postIds = getPostIdsAroundPost(state, currentFocusedPostId, post.channel_id, options);
+                postIds = getPostIdsAroundPost(state, focusedPostId, post.channel_id, options);
             }
         }
 
@@ -57,7 +54,7 @@ function makeMapStateToProps() {
             channelTeamId: channel ? channel.team_id : '',
             currentTeamId: getCurrentTeamId(state),
             currentUserId: getCurrentUserId(state),
-            focusedPostId: currentFocusedPostId,
+            focusedPostId,
             myChannelMemberships: getMyChannelMemberships(state),
             myTeamMemberships: getTeamMemberships(state),
             post,

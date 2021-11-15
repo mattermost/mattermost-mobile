@@ -78,14 +78,12 @@ export const getPostsInCurrentChannel: (a: GlobalState) => Array<PostWithFormatD
     const getPostsInChannel = makeGetPostsInChannel();
     return (state: GlobalState) => getPostsInChannel(state, state.entities.channels.currentChannelId, -1);
 })();
+
 export function makeGetPostIdsForThread(): (b: GlobalState, a: $ID<Post>) => Array<$ID<Post>> {
     return createIdsSelector(
         getAllPosts,
         (state: GlobalState, rootId: string) => state.entities.posts.posts[rootId],
-        (state: GlobalState, rootId: string, options) => options && options.focusedPostId,
-        (state: GlobalState, rootId: string, options) => options && options.postsBeforeCount,
-        (state: GlobalState, rootId: string, options) => options && options.postsAfterCount,
-        (posts, rootPost, focusedPostId, postsBeforeCount = Posts.POST_CHUNK_SIZE / 2, postsAfterCount = Posts.POST_CHUNK_SIZE / 2) => {
+        (posts, rootPost) => {
             const thread: Post[] = [];
 
             if (rootPost) {
@@ -99,17 +97,25 @@ export function makeGetPostIdsForThread(): (b: GlobalState, a: $ID<Post>) => Arr
                 thread.sort(comparePosts);
             }
 
-            const postIds = thread.map((post) => post.id);
+            return thread.map((post) => post.id);
+        },
+    );
+}
 
-            if (focusedPostId) {
-                const index = postIds.indexOf(focusedPostId);
-                if (index > -1) {
-                    const minPostIndex = Math.max(index - postsAfterCount, 0);
-                    const maxPostIndex = Math.min(index + postsBeforeCount + 1, postIds.length);
-                    return postIds.slice(minPostIndex, maxPostIndex);
-                }
+export function makeGetPostIdsForThreadWithLimit(): (b: GlobalState, a: $ID<Post>, c: string, d: number, e: number) => Array<$ID<Post>> {
+    const getPostIdsForThread = makeGetPostIdsForThread();
+    return createIdsSelector(
+        (state: GlobalState, rootId: string) => getPostIdsForThread(state, rootId),
+        (state: GlobalState, rootId: string, focusedPostId: string) => focusedPostId,
+        (state: GlobalState, rootId: string, focusedPostId: string, postsBeforeCount: number) => postsBeforeCount,
+        (state: GlobalState, rootId: string, focusedPostId: string, postsBeforeCount: number, postsAfterCount: number) => postsAfterCount,
+        (postIds: $ID<Post>[], focusedPostId: string, postsBeforeCount = Posts.POST_CHUNK_SIZE / 2, postsAfterCount = Posts.POST_CHUNK_SIZE / 2) => {
+            const index = postIds.indexOf(focusedPostId);
+            if (index > -1) {
+                const minPostIndex = Math.max(index - postsAfterCount, 0);
+                const maxPostIndex = Math.min(index + postsBeforeCount + 1, postIds.length);
+                return postIds.slice(minPostIndex, maxPostIndex);
             }
-
             return postIds;
         },
     );

@@ -3,14 +3,15 @@
 
 import {intlShape} from 'react-intl';
 import {Keyboard} from 'react-native';
+import {Navigation} from 'react-native-navigation';
 
-import {dismissAllModals, showModalOverCurrentContext} from '@actions/navigation';
+import {showModalOverCurrentContext} from '@actions/navigation';
 import {loadChannelsByTeamName} from '@actions/views/channel';
 import {getPost as fetchPost, selectFocusedPostId} from '@mm-redux/actions/posts';
 import {getPost} from '@mm-redux/selectors/entities/posts';
 import {isCollapsedThreadsEnabled} from '@mm-redux/selectors/entities/preferences';
 import {getCurrentTeam} from '@mm-redux/selectors/entities/teams';
-import {getRandomComponentId, permalinkBadTeam} from '@utils/general';
+import {permalinkBadTeam} from '@utils/general';
 import {changeOpacity} from '@utils/theme';
 
 import type {DispatchFunc, GetStateFunc} from '@mm-redux/types/actions';
@@ -49,16 +50,19 @@ export function showPermalink(intl: typeof intlShape, teamName: string, postId: 
         if (!loadTeam.error) {
             Keyboard.dismiss();
             dispatch(selectFocusedPostId(postId));
-            if (showingPermalink) {
-                await dismissAllModals();
-            }
 
             const screen = 'Permalink';
             const passProps = {
                 isPermalink: openAsPermalink,
                 isThreadPost,
+                focusedPostId: postId,
                 teamName,
             };
+
+            if (showingPermalink) {
+                Navigation.updateProps(screen, passProps);
+                return {};
+            }
 
             const options = {
                 layout: {
@@ -67,7 +71,7 @@ export function showPermalink(intl: typeof intlShape, teamName: string, postId: 
             };
 
             showingPermalink = true;
-            showModalOverCurrentContext(screen, passProps, options, getRandomComponentId());
+            showModalOverCurrentContext(screen, passProps, options);
         }
 
         return {};
