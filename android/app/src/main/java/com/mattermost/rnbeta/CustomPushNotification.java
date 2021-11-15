@@ -15,7 +15,6 @@ import androidx.annotation.Nullable;
 import androidx.core.app.NotificationCompat;
 import androidx.core.app.NotificationManagerCompat;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -30,7 +29,6 @@ import static com.wix.reactnativenotifications.Defs.NOTIFICATION_RECEIVED_EVENT_
 
 import com.mattermost.react_native_interface.ResolvePromise;
 
-import org.json.JSONArray;
 import org.json.JSONObject;
 
 public class CustomPushNotification extends PushNotification {
@@ -61,7 +59,7 @@ public class CustomPushNotification extends PushNotification {
                     editor.apply();
                 }
 
-                Map<String, List<Integer>> inputMap = new HashMap<>();
+                Map<String, Map<String, JSONObject>> inputMap = new HashMap<>();
                 saveNotificationsMap(context, inputMap);
             }
         } catch (PackageManager.NameNotFoundException e) {
@@ -69,55 +67,70 @@ public class CustomPushNotification extends PushNotification {
         }
     }
 
-    public static void cancelNotification(Context context, String channelId, Integer notificationId) {
+    public static void cancelNotification(Context context, String channelId, String rootId, Integer notificationId, Boolean isCRTEnabled) {
         if (!android.text.TextUtils.isEmpty(channelId)) {
-            Map<String, List<Integer>> notificationsInChannel = loadNotificationsMap(context);
-            List<Integer> notifications = notificationsInChannel.get(channelId);
+            final String notificationIdStr = notificationId.toString();
+            final Boolean isThreadNotification = isCRTEnabled && !android.text.TextUtils.isEmpty(rootId);
+            final String groupId = isThreadNotification ? rootId : channelId;
+            Map<String, Map<String, JSONObject>> notificationsInChannel = loadNotificationsMap(context);
+            Map<String, JSONObject> notifications = notificationsInChannel.get(groupId);
             if (notifications == null) {
                 return;
             }
-
             final NotificationManager notificationManager = context.getSystemService(NotificationManager.class);
             notificationManager.cancel(notificationId);
-            notifications.remove(notificationId);
+            notifications.remove(notificationIdStr);
             final StatusBarNotification[] statusNotifications = notificationManager.getActiveNotifications();
             boolean hasMore = false;
             for (final StatusBarNotification status : statusNotifications) {
-                if (status.getNotification().extras.getString("channel_id").equals(channelId)) {
-                    hasMore = true;
+                Bundle bundle = status.getNotification().extras;
+                if (isThreadNotification) {
+                    hasMore = bundle.getString("root_id").equals(rootId);
+                } else if (isCRTEnabled) {
+                    hasMore = !bundle.getString("root_id").equals(rootId);
+                } else {
+                    hasMore = bundle.getString("channel_id").equals(channelId);
+                }
+                if (hasMore) {
                     break;
                 }
             }
 
             if (!hasMore) {
-                notificationsInChannel.remove(channelId);
+                notificationsInChannel.remove(groupId);
+            } else {
+                notificationsInChannel.put(groupId, notifications);
             }
-
             saveNotificationsMap(context, notificationsInChannel);
         }
     }
 
-    public static void clearChannelNotifications(Context context, String channelId) {
+    public static void clearChannelNotifications(Context context, String channelId, String rootId, Boolean isCRTEnabled) {
         if (!android.text.TextUtils.isEmpty(channelId)) {
-            Map<String, List<Integer>> notificationsInChannel = loadNotificationsMap(context);
-            List<Integer> notifications = notificationsInChannel.get(channelId);
+            final NotificationManagerCompat notificationManager = NotificationManagerCompat.from(context);
+
+            // rootId is available only when CRT is enabled & clearing the thread
+            final boolean isClearThread = isCRTEnabled && !android.text.TextUtils.isEmpty(rootId);
+            
+            Map<String, Map<String, JSONObject>> notificationsInChannel = loadNotificationsMap(context);
+            String groupId = isClearThread ? rootId : channelId;
+            Map<String, JSONObject> notifications = notificationsInChannel.get(groupId);
+
             if (notifications == null) {
                 return;
             }
 
-            notificationsInChannel.remove(channelId);
+            notificationsInChannel.remove(groupId);
             saveNotificationsMap(context, notificationsInChannel);
-
-            for (final Integer notificationId : notifications) {
-                final NotificationManagerCompat notificationManager = NotificationManagerCompat.from(context);
-                notificationManager.cancel(notificationId);
-            }
+            notifications.forEach(
+                    (notificationIdStr, post) -> notificationManager.cancel(Integer.valueOf(notificationIdStr))
+            );
         }
     }
 
     public static void clearAllNotifications(Context context) {
         if (context != null) {
-            Map<String, List<Integer>> notificationsInChannel = loadNotificationsMap(context);
+            Map<String, Map<String, JSONObject>> notificationsInChannel = loadNotificationsMap(context);
             notificationsInChannel.clear();
             saveNotificationsMap(context, notificationsInChannel);
             final NotificationManagerCompat notificationManager = NotificationManagerCompat.from(context);
@@ -132,6 +145,8 @@ public class CustomPushNotification extends PushNotification {
         final String ackId = initialData.getString("ack_id");
         final String postId = initialData.getString("post_id");
         final String channelId = initialData.getString("channel_id");
+        final String rootId = initialData.getString("root_id");
+        final boolean isCRTEnabled = initialData.getString("is_crt_enabled") != null && initialData.getString("is_crt_enabled").equals("true");
         final boolean isIdLoaded = initialData.getString("id_loaded") != null && initialData.getString("id_loaded").equals("true");
         int notificationId = CustomPushNotificationHelper.MESSAGE_NOTIFICATION_ID;
         if (postId != null) {
@@ -165,24 +180,41 @@ public class CustomPushNotification extends PushNotification {
 
                     if (type.equals(PUSH_TYPE_MESSAGE)) {
                         if (channelId != null) {
-                            Map<String, List<Integer>> notificationsInChannel = loadNotificationsMap(mContext);
-                            List<Integer> list = notificationsInChannel.get(channelId);
-                            if (list == null) {
-                                list = Collections.synchronizedList(new ArrayList(0));
-                            }
+                            try {
 
-                            list.add(0, notificationId);
-                            if (list.size() > 1) {
-                                createSummary = false;
-                            }
+                                JSONObject post = new JSONObject();
+                                if (!android.text.TextUtils.isEmpty(rootId)) {
+                                    post.put("root_id", rootId);
+                                }
+                                if (!android.text.TextUtils.isEmpty(postId)) {
+                                    post.put("post_id", postId);
+                                }
 
-                            if (createSummary) {
-                                // Add the summary notification id as well
-                                list.add(0, notificationId + 1);
-                            }
+                                final Boolean isThreadNotification = isCRTEnabled && post.has("root_id");
+                                final String groupId = isThreadNotification ? rootId : channelId;
+                                
+                                Map<String, Map<String, JSONObject>> notificationsInChannel = loadNotificationsMap(mContext);
+                                Map<String, JSONObject> notifications = notificationsInChannel.get(groupId);
+                                if (notifications == null) {
+                                    notifications = Collections.synchronizedMap(new HashMap<String, JSONObject>());
+                                }
 
-                            notificationsInChannel.put(channelId, list);
-                            saveNotificationsMap(mContext, notificationsInChannel);
+                                if (notifications.size() > 0) {
+                                    createSummary = false;
+                                }
+    
+                                notifications.put(String.valueOf(notificationId),  post);
+        
+                                if (createSummary) {
+                                    // Add the summary notification id as well
+                                    notifications.put(String.valueOf(notificationId + 1), new JSONObject());
+                                }
+    
+                                notificationsInChannel.put(groupId, notifications);
+                                saveNotificationsMap(mContext, notificationsInChannel);
+                            } catch(Exception e) {
+                                e.printStackTrace();
+                            }
                         }
                     }
 
@@ -190,7 +222,7 @@ public class CustomPushNotification extends PushNotification {
                 }
                 break;
             case PUSH_TYPE_CLEAR:
-                clearChannelNotifications(mContext, channelId);
+                clearChannelNotifications(mContext, channelId, rootId, isCRTEnabled);
                 break;
         }
 
@@ -205,22 +237,11 @@ public class CustomPushNotification extends PushNotification {
 
         Bundle data = mNotificationProps.asBundle();
         final String channelId = data.getString("channel_id");
-        final String postId = data.getString("post_id");
-        Integer notificationId = CustomPushNotificationHelper.MESSAGE_NOTIFICATION_ID;
-
-        if (postId != null) {
-            notificationId = postId.hashCode();
-        }
+        final String rootId = data.getString("root_id");
+        final Boolean isCRTEnabled = data.getBoolean("is_crt_enabled");
 
         if (channelId != null) {
-            Map<String, List<Integer>> notificationsInChannel = loadNotificationsMap(mContext);
-            List<Integer> notifications = notificationsInChannel.get(channelId);
-            if (notifications == null) {
-                return;
-            }
-            notifications.remove(notificationId);
-            saveNotificationsMap(mContext, notificationsInChannel);
-            clearChannelNotifications(mContext, channelId); 
+            clearChannelNotifications(mContext, channelId, rootId, isCRTEnabled);
         }
     }
 
@@ -253,7 +274,7 @@ public class CustomPushNotification extends PushNotification {
         mJsIOHelper.sendEventToJS(NOTIFICATION_RECEIVED_EVENT_NAME, mNotificationProps.asBundle(), mAppLifecycleFacade.getRunningReactContext());
     }
 
-    private static void saveNotificationsMap(Context context, Map<String, List<Integer>> inputMap) {
+    private static void saveNotificationsMap(Context context, Map<String, Map<String, JSONObject>> inputMap) {
         SharedPreferences pSharedPref = context.getSharedPreferences(PUSH_NOTIFICATIONS, Context.MODE_PRIVATE);
         if (pSharedPref != null && context != null) {
             JSONObject json = new JSONObject(inputMap);
@@ -265,23 +286,41 @@ public class CustomPushNotification extends PushNotification {
         }
     }
 
-    private static Map<String, List<Integer>> loadNotificationsMap(Context context) {
-        Map<String, List<Integer>> outputMap = new HashMap<>();
+    /**
+     * Map Structure
+     * 
+     * {
+     *     channel_id1 | thread_id1: {
+     *         notification_id1: {
+     *             post_id: 'p1',
+     *             root_id: 'r1',
+     *         }
+     *     }
+     * }
+     *
+     */
+    private static Map<String, Map<String, JSONObject>> loadNotificationsMap(Context context) {
+        Map<String, Map<String, JSONObject>> outputMap = new HashMap<>();
         if (context != null) {
             SharedPreferences pSharedPref = context.getSharedPreferences(PUSH_NOTIFICATIONS, Context.MODE_PRIVATE);
             try {
                 if (pSharedPref != null) {
                     String jsonString = pSharedPref.getString(NOTIFICATIONS_IN_CHANNEL, (new JSONObject()).toString());
                     JSONObject json = new JSONObject(jsonString);
-                    Iterator<String> keysItr = json.keys();
-                    while (keysItr.hasNext()) {
-                        String key = keysItr.next();
-                        JSONArray array = json.getJSONArray(key);
-                        List<Integer> values = new ArrayList<>();
-                        for (int i = 0; i < array.length(); ++i) {
-                            values.add(array.getInt(i));
+
+                    // Can be a channel_id or thread_id
+                    Iterator<String> groupIdsItr = json.keys();
+                    while (groupIdsItr.hasNext()) {
+                        String groupId = groupIdsItr.next();
+                        JSONObject notificationsJSONObj = json.getJSONObject(groupId);
+                        Map<String, JSONObject> notifications = new HashMap<>();
+                        Iterator<String> notificationIdKeys = notificationsJSONObj.keys();
+                        while(notificationIdKeys.hasNext()) {
+                            String notificationId = notificationIdKeys.next();
+                            JSONObject post = notificationsJSONObj.getJSONObject(notificationId);
+                            notifications.put(notificationId, post);
                         }
-                        outputMap.put(key, values);
+                        outputMap.put(groupId, notifications);
                     }
                 }
             } catch (Exception e) {

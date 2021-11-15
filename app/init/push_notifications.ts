@@ -46,6 +46,8 @@ const NOTIFICATION_TYPE = {
 interface NotificationWithChannel extends Notification {
     identifier: string;
     channel_id: string;
+    post_id: string;
+    root_id: string;
 }
 
 class PushNotifications {
@@ -59,6 +61,13 @@ class PushNotifications {
         Notifications.events().registerNotificationReceivedForeground(this.onNotificationReceivedForeground);
 
         this.getInitialNotification();
+    }
+
+    getNotifications = async (): Promise<NotificationWithChannel[]> => {
+        if (Platform.OS === 'android') {
+            return AndroidNotificationPreferences.getDeliveredNotifications();
+        }
+        return Notifications.ios.getDeliveredNotifications() as Promise<NotificationWithChannel[]>;
     }
 
     cancelAllLocalNotifications() {
@@ -75,33 +84,53 @@ class PushNotifications {
         }
     };
 
-    clearChannelNotifications = async (channelId: string) => {
-        if (Platform.OS === 'android') {
-            const notifications = await AndroidNotificationPreferences.getDeliveredNotifications();
-            const notificationForChannel = notifications.find((n: NotificationWithChannel) => n.channel_id === channelId);
-            if (notificationForChannel) {
-                AndroidNotificationPreferences.removeDeliveredNotifications(channelId);
-            }
-        } else {
-            const ids: string[] = [];
-            const notifications = await Notifications.ios.getDeliveredNotifications();
+    clearChannelNotifications = async (channelId: string, rootId?: string) => {
+        const notifications = await this.getNotifications();
 
-            //set the badge count to the total amount of notifications present in the not-center
-            let badgeCount = notifications.length;
+        let collapsedThreadsEnabled = false;
+        if (Store.redux) {
+            collapsedThreadsEnabled = isCollapsedThreadsEnabled(Store.redux.getState());
+        }
 
-            for (let i = 0; i < notifications.length; i++) {
-                const notification = notifications[i] as NotificationWithChannel;
-                if (notification.channel_id === channelId) {
-                    ids.push(notification.identifier);
-                    badgeCount--;
+        const clearThreads = Boolean(rootId);
+
+        const notificationIds: string[] = [];
+        for (let i = 0; i < notifications.length; i++) {
+            const notification = notifications[i];
+            if (notification.channel_id === channelId) {
+                let doesNotificationMatch = true;
+                if (clearThreads) {
+                    doesNotificationMatch = notification.root_id === rootId;
+                } else if (collapsedThreadsEnabled) {
+                    // Do not match when CRT is enabled BUT post is not a root post
+                    doesNotificationMatch = !notification.root_id;
+                }
+
+                if (doesNotificationMatch) {
+                    notificationIds.push(notification.identifier || notification.post_id);
+
+                    // For Android, We just need one matching notification to clear the notifications
+                    if (Platform.OS === 'android') {
+                        break;
+                    }
                 }
             }
+        }
 
-            if (ids.length) {
-                Notifications.ios.removeDeliveredNotifications(ids);
-            }
-
+        if (Platform.OS === 'ios') {
+            //set the badge count to the total amount of notifications present in the not-center
+            const badgeCount = notifications.length - notificationIds.length;
             this.setBadgeCountByMentions(badgeCount);
+        }
+
+        if (!notificationIds.length) {
+            return;
+        }
+
+        if (Platform.OS === 'android') {
+            AndroidNotificationPreferences.removeDeliveredNotifications(channelId, rootId, collapsedThreadsEnabled);
+        } else {
+            Notifications.ios.removeDeliveredNotifications(notificationIds);
         }
     }
 

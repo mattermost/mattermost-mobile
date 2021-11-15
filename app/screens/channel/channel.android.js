@@ -101,6 +101,7 @@ export default class ChannelAndroid extends ChannelBase {
                     openMainSidebar={this.openMainSidebar}
                     openSettingsSidebar={this.openSettingsSidebar}
                     onPress={this.goToChannelInfo}
+                    isGlobalThreads={viewingGlobalThreads}
                 />
                 {component}
                 <NetworkIndicator/>
