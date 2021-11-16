@@ -7,7 +7,6 @@ import GroupHandler, {GroupHandlerMix} from '@database/operator/server_data_oper
 import PostHandler, {PostHandlerMix} from '@database/operator/server_data_operator/handlers/post';
 import PostsInChannelHandler, {PostsInChannelHandlerMix} from '@database/operator/server_data_operator/handlers/posts_in_channel';
 import PostsInThreadHandler, {PostsInThreadHandlerMix} from '@database/operator/server_data_operator/handlers/posts_in_thread';
-import RecentMentionsHandler, {RecentMentionsHandlerMix} from '@database/operator/server_data_operator/handlers/recent_mentions';
 import TeamHandler, {TeamHandlerMix} from '@database/operator/server_data_operator/handlers/team';
 import UserHandler, {UserHandlerMix} from '@database/operator/server_data_operator/handlers/user';
 import mix from '@utils/mix';
@@ -15,7 +14,7 @@ import mix from '@utils/mix';
 import type {Database} from '@nozbe/watermelondb';
 
 interface ServerDataOperator extends ServerDataOperatorBase, PostHandlerMix, PostsInChannelHandlerMix,
-    PostsInThreadHandlerMix, UserHandlerMix, GroupHandlerMix, ChannelHandlerMix, TeamHandlerMix, RecentMentionsHandlerMix {}
+    PostsInThreadHandlerMix, UserHandlerMix, GroupHandlerMix, ChannelHandlerMix, TeamHandlerMix {}
 
 class ServerDataOperator extends mix(ServerDataOperatorBase).with(
     ChannelHandler,
@@ -25,7 +24,6 @@ class ServerDataOperator extends mix(ServerDataOperatorBase).with(
     PostsInThreadHandler,
     TeamHandler,
     UserHandler,
-    RecentMentionsHandler,
 ) {
     // eslint-disable-next-line no-useless-constructor
     constructor(database: Database) {
