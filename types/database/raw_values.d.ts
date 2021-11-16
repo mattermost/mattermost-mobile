@@ -58,11 +58,6 @@ type PostsInThread = {
     root_id: string;
 };
 
-type RecentMentions = {
-    post_id: string;
-    update_at: number;
-};
-
 type Metadata = {
     data: PostMetadata;
     id: string;
@@ -117,7 +112,6 @@ type RawValue =
   | PostsInChannel
   | PostsInThread
   | PreferenceType
-  | RecentMentions
   | Reaction
   | Role
   | SlashCommand

@@ -19,7 +19,6 @@ export {default as PostsInChannelModel} from './posts_in_channel';
 export {default as PostsInThreadModel} from './posts_in_thread';
 export {default as PreferenceModel} from './preference';
 export {default as ReactionModel} from './reaction';
-export {default as RecentMentionsModel} from './recent_mentions';
 export {default as RoleModel} from './role';
 export {default as SlashCommandModel} from './slash_command';
 export {default as SystemModel} from './system';

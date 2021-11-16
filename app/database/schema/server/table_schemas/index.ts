@@ -19,7 +19,6 @@ export {default as PostSchema} from './post';
 export {default as PostsInChannelSchema} from './posts_in_channel';
 export {default as PreferenceSchema} from './preference';
 export {default as ReactionSchema} from './reaction';
-export {default as RecentMentionsSchema} from './recent_mentions';
 export {default as RoleSchema} from './role';
 export {default as SlashCommandSchema} from './slash_command';
 export {default as SystemSchema} from './system';

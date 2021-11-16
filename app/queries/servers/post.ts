@@ -2,8 +2,12 @@
 // See LICENSE.txt for license information.
 
 import {Database, Model, Q, Query, Relation} from '@nozbe/watermelondb';
+import {of as of$} from 'rxjs';
+import {catchError, switchMap} from 'rxjs/operators';
 
 import {MM_TABLES} from '@constants/database';
+
+import {queryRecentMentionIds} from './system';
 
 import type PostModel from '@typings/database/models/servers/post';
 import type PostInChannelModel from '@typings/database/models/servers/posts_in_channel';
@@ -85,3 +89,11 @@ export const queryRecentPostsInChannel = async (database: Database, channelId: s
     }
 };
 
+export function queryRecentMentions(database: Database) {
+    return queryRecentMentionIds(database).pipe(
+        switchMap((ids: string[]) => {
+            return database.get(POST).query(Q.where('id', Q.oneOf(ids))).fetch();
+        }),
+        catchError(() => of$([])),
+    );
+}

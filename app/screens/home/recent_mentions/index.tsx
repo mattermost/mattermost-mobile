@@ -1,6 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {Q} from '@nozbe/watermelondb';
 import {withDatabase} from '@nozbe/watermelondb/DatabaseProvider';
 import withObservables from '@nozbe/with-observables';
 import {useIsFocused, useNavigation} from '@react-navigation/native';
@@ -8,15 +9,16 @@ import compose from 'lodash/fp/compose';
 import groupBy from 'lodash/groupBy';
 import moment from 'moment-timezone';
 import React, {useCallback, useState, useEffect, useMemo} from 'react';
-import {SectionList} from 'react-native';
+import {StyleSheet, View, ActivityIndicator, SectionList, SectionListRenderItemInfo} from 'react-native';
 import Animated, {useAnimatedStyle, withTiming} from 'react-native-reanimated';
 import {SafeAreaView} from 'react-native-safe-area-context';
-import {switchMap} from 'rxjs';
+import {of as of$, map as map$} from 'rxjs';
+import {catchError, switchMap} from 'rxjs/operators';
 
 import {getRecentMentions} from '@actions/remote/search';
 import DateSeparator from '@app/components/post_list/date_separator';
 import {MM_TABLES, SYSTEM_IDENTIFIERS} from '@app/constants/database';
-import {RecentMentionsModel, SystemModel, UserModel} from '@app/database/models/server';
+import {SystemModel, UserModel} from '@app/database/models/server';
 import NavigationHeader from '@components/navigation_header';
 import {LARGE_HEADER_PROGRESSVIEW_OFFSET} from '@constants/view';
 import {useServerUrl} from '@context/server_url';
@@ -26,13 +28,14 @@ import {useCollapsibleHeader} from '@hooks/header';
 import Mention from './components/mention';
 
 import type {WithDatabaseArgs} from '@typings/database/database';
+import type PostModel from '@typings/database/models/servers/post';
 
 const AnimatedSectionList = Animated.createAnimatedComponent(SectionList);
 
-const {RECENT_MENTIONS, USER, SYSTEM} = MM_TABLES.SERVER;
+const {USER, SYSTEM, POST} = MM_TABLES.SERVER;
 
 type Props = {
-    mentions: RecentMentionsModel[];
+    mentions: PostModel[];
     theme: Theme;
     currentUser: UserModel;
 }
@@ -40,20 +43,28 @@ type Props = {
 type Section = {
     key: string;
     title: string;
-    data: RecentMentionsModel[];
-    keyExtractor: (item: RecentMentionsModel) => string;
+    data: PostModel[];
+    keyExtractor: (item: PostModel) => string;
 }
 
-function getSections(items: RecentMentionsModel[]) {
+const styles = StyleSheet.create({
+    loading: {
+        alignItems: 'center',
+        flex: 1,
+        justifyContent: 'center',
+    },
+});
+
+function getSections(items: PostModel[]) {
     const groups = groupBy(items, (mention) => {
-        return moment(mention.updateAt).startOf('day').format();
+        return moment(mention.createAt).startOf('day').format();
     });
 
     const sections: Section[] = Object.keys(groups).map((key) => ({
         key: String(key),
         title: String(key),
         data: groups[key],
-        keyExtractor: (item: RecentMentionsModel) => item.id,
+        keyExtractor: (item: PostModel) => item.id,
     }));
 
     return sections.sort((a, b) => (a.title > b.title ? -1 : 1));
@@ -61,6 +72,7 @@ function getSections(items: RecentMentionsModel[]) {
 
 const RecentMentionsScreen = ({mentions, theme, currentUser}: Props) => {
     const [refreshing, setRefreshing] = useState(false);
+    const [loading, setLoading] = useState(false);
     const searchScreenIndex = 1;
 
     const subtitle = 'Messages you\'ve been mentioned in';
@@ -74,7 +86,10 @@ const RecentMentionsScreen = ({mentions, theme, currentUser}: Props) => {
     const sections = useMemo(() => getSections(mentions), [mentions]);
 
     useEffect(() => {
-        getRecentMentions(serverUrl);
+        setLoading(true);
+        getRecentMentions(serverUrl).finally(() => {
+            setLoading(false);
+        });
     }, [serverUrl]);
 
     const handleRefresh = useCallback(async () => {
@@ -100,6 +115,14 @@ const RecentMentionsScreen = ({mentions, theme, currentUser}: Props) => {
         };
     }, [isFocused, stateIndex]);
 
+    const renderItem = useCallback(({item}: SectionListRenderItemInfo<PostModel>) => (
+        <Mention
+            currentUser={currentUser}
+            post={item}
+            theme={theme}
+        />
+    ), [theme, currentUser]);
+
     return (
         <>
             <NavigationHeader
@@ -116,32 +139,35 @@ const RecentMentionsScreen = ({mentions, theme, currentUser}: Props) => {
                 edges={['bottom', 'left', 'right']}
             >
                 <Animated.View style={[{flex: 1}, animated]}>
-                    <AnimatedSectionList
-                        ref={scrollRef}
-                        contentContainerStyle={paddingTop}
-                        sections={sections}
-                        scrollToOverflowEnabled={true}
-                        showsVerticalScrollIndicator={false}
-                        progressViewOffset={LARGE_HEADER_PROGRESSVIEW_OFFSET}
-                        scrollEventThrottle={16}
-                        indicatorStyle='black'
-                        onScroll={onScroll}
-                        onRefresh={handleRefresh}
-                        refreshing={refreshing}
-                        renderItem={({item}) => (
-                            <Mention
-                                currentUser={currentUser}
-                                mention={item}
-                                theme={theme}
+                    {loading && !mentions.length ? (
+                        <View style={styles.loading}>
+                            <ActivityIndicator
+                                color={theme.sidebarBg}
+                                size='large'
                             />
-                        )}
-                        renderSectionHeader={({section: {title: date}}: {section: Section}) => (
-                            <DateSeparator
-                                date={new Date(date)}
-                                theme={theme}
-                            />
-                        )}
-                    />
+                        </View>
+                    ) : (
+                        <AnimatedSectionList
+                            ref={scrollRef}
+                            contentContainerStyle={paddingTop}
+                            sections={sections}
+                            scrollToOverflowEnabled={true}
+                            showsVerticalScrollIndicator={false}
+                            progressViewOffset={LARGE_HEADER_PROGRESSVIEW_OFFSET}
+                            scrollEventThrottle={16}
+                            indicatorStyle='black'
+                            onScroll={onScroll}
+                            onRefresh={handleRefresh}
+                            refreshing={refreshing}
+                            renderItem={renderItem}
+                            renderSectionHeader={({section: {title: date}}: {section: Section}) => (
+                                <DateSeparator
+                                    date={new Date(date)}
+                                    theme={theme}
+                                />
+                            )}
+                        />
+                    )}
                 </Animated.View>
             </SafeAreaView>
         </>
@@ -149,14 +175,29 @@ const RecentMentionsScreen = ({mentions, theme, currentUser}: Props) => {
 };
 
 const enhance = withObservables([], ({database}: WithDatabaseArgs) => ({
-    mentions: database.get(RECENT_MENTIONS).query(),
+    mentions: database.get<SystemModel>(SYSTEM).query(
+        Q.where('id', SYSTEM_IDENTIFIERS.RECENT_MENTIONS),
+        Q.take(1),
+    ).observeWithColumns(['value']).pipe(
+        switchMap((rows) => {
+            if (!rows.length || !rows[0].value.length) {
+                return of$([]);
+            }
+            const row = rows[0];
+            return database.get(POST).query(
+                Q.where('id', Q.oneOf(row.value)),
+                Q.sortBy('create_at', Q.desc),
+            ).observe();
+        }),
+        catchError(() => of$([])),
+    ),
     currentUser: database.get<SystemModel>(SYSTEM).findAndObserve(SYSTEM_IDENTIFIERS.CURRENT_USER_ID).pipe(
-        switchMap((currentUserId) => database.get<UserModel>(USER).findAndObserve(currentUserId.value)),
+        map$((currentUserId) => database.get<UserModel>(USER).findAndObserve(currentUserId.value)),
     ),
 }));
 
 export default compose(
     withDatabase,
-    withTheme,
     enhance,
+    withTheme,
 )(RecentMentionsScreen);

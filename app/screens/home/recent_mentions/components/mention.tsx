@@ -1,7 +1,6 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import withObservables from '@nozbe/with-observables';
 import React from 'react';
 import {View, StyleSheet} from 'react-native';
 
@@ -113,8 +112,4 @@ function Mention({post, currentUser, theme}: Props) {
     );
 }
 
-const enhance = withObservables(['mention'], ({mention}) => ({
-    post: mention.post,
-}));
-
-export default enhance(Mention);
+export default Mention;

@@ -16,7 +16,6 @@ import type MyChannelSettingsModel from '@typings/database/models/servers/my_cha
 import type MyTeamModel from '@typings/database/models/servers/my_team';
 import type PostModel from '@typings/database/models/servers/post';
 import type PreferenceModel from '@typings/database/models/servers/preference';
-import type RecentMentionsModel from '@typings/database/models/servers/recent_mentions';
 import type RoleModel from '@typings/database/models/servers/role';
 import type SlashCommandModel from '@typings/database/models/servers/slash_command';
 import type SystemModel from '@typings/database/models/servers/system';
@@ -132,8 +131,4 @@ export const isRecordMyChannelEqualToRaw = (record: MyChannelModel, raw: Channel
 
 export const isRecordFileEqualToRaw = (record: FileModel, raw: FileInfo) => {
     return raw.id === record.id;
-};
-
-export const isRecordRecentMentionEqualToRaw = (record: RecentMentionsModel, raw: Post) => {
-    return raw.id === record.postId;
 };

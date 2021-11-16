@@ -28,7 +28,6 @@ export const MM_TABLES = {
         POSTS_IN_THREAD: 'PostsInThread',
         PREFERENCE: 'Preference',
         REACTION: 'Reaction',
-        RECENT_MENTIONS: 'RecentMentions',
         ROLE: 'Role',
         SLASH_COMMAND: 'SlashCommand',
         SYSTEM: 'System',
@@ -54,12 +53,13 @@ export const SYSTEM_IDENTIFIERS = {
     CURRENT_USER_ID: 'currentUserId',
     DATA_RETENTION_POLICIES: 'dataRetentionPolicies',
     EXPANDED_LINKS: 'expandedLinks',
-    RECENT_REACTIONS: 'recentReactions',
     INTEGRATION_TRIGGER_ID: 'IntegreationTriggerId',
     LICENSE: 'license',
-    WEBSOCKET: 'WebSocket',
-    TEAM_HISTORY: 'teamHistory',
     RECENT_CUSTOM_STATUS: 'recentCustomStatus',
+    RECENT_MENTIONS: 'recentMentions',
+    RECENT_REACTIONS: 'recentReactions',
+    TEAM_HISTORY: 'teamHistory',
+    WEBSOCKET: 'WebSocket',
 };
 
 export const GLOBAL_IDENTIFIERS = {

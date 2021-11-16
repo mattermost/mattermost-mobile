@@ -1,6 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {SYSTEM_IDENTIFIERS} from '@app/constants/database';
 import {ActionType} from '@constants';
 import DatabaseManager from '@database/manager';
 import NetworkManager from '@init/network_manager';
@@ -47,9 +48,17 @@ export async function getRecentMentions(serverUrl: string): Promise<PostSearchRe
         return {error};
     }
 
-    const {posts, order} = processPostsFetched(serverUrl, ActionType.SEARCH.RECEIVED_MENTIONS, data);
+    const {posts, order} = await processPostsFetched(serverUrl, ActionType.SEARCH.RECEIVED_MENTIONS, data);
 
-    await operator.handleRecentMentions(data);
+    const mentions: IdValue = {
+        id: SYSTEM_IDENTIFIERS.RECENT_MENTIONS,
+        value: JSON.stringify(order),
+    };
+
+    await operator.handleSystem({
+        systems: [mentions],
+        prepareRecordsOnly: false,
+    });
 
     return {
         order,
@@ -76,14 +85,14 @@ export const searchPosts = async (serverUrl: string, params: PostSearchParams): 
     return processPostsFetched(serverUrl, ActionType.SEARCH.RECEIVED_POSTS, data);
 };
 
-const processPostsFetched = (serverUrl: string, actionType: string, data: {order: string[]; posts: Post[]}, fetchOnly = false) => {
+const processPostsFetched = async (serverUrl: string, actionType: string, data: {order: string[]; posts: Post[]}, fetchOnly = false) => {
     const order = data.order;
     const posts = Object.values(data.posts) as Post[];
 
     if (!fetchOnly) {
         const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
         if (operator) {
-            operator.handlePosts({
+            await operator.handlePosts({
                 actionType,
                 order: [],
                 posts,
