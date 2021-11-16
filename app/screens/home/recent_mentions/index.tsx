@@ -189,7 +189,7 @@ const enhance = withObservables([], ({database}: WithDatabaseArgs) => ({
             return database.get(POST).query(
                 Q.where('id', Q.oneOf(row.value)),
                 Q.sortBy('create_at', Q.desc),
-            ).observe();
+            ).observeWithColumns(['message']);
         }),
         catchError(() => of$([])),
     ),
