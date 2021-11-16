@@ -9,6 +9,7 @@ import compose from 'lodash/fp/compose';
 import groupBy from 'lodash/groupBy';
 import moment from 'moment-timezone';
 import React, {useCallback, useState, useEffect, useMemo} from 'react';
+import {useIntl} from 'react-intl';
 import {StyleSheet, View, ActivityIndicator, SectionList, SectionListRenderItemInfo} from 'react-native';
 import Animated, {useAnimatedStyle, withTiming} from 'react-native-reanimated';
 import {SafeAreaView} from 'react-native-safe-area-context';
@@ -71,12 +72,13 @@ function getSections(items: PostModel[]) {
 }
 
 const RecentMentionsScreen = ({mentions, theme, currentUser}: Props) => {
+    const {formatMessage} = useIntl();
     const [refreshing, setRefreshing] = useState(false);
     const [loading, setLoading] = useState(false);
     const searchScreenIndex = 1;
 
-    const subtitle = 'Messages you\'ve been mentioned in';
-    const title = 'Recent Mentions';
+    const subtitle = formatMessage({id: 'screen.mentions.subtitle', defaultMessage: 'Messages you\'ve been mentioned in'});
+    const title = formatMessage({id: 'screen.mentions.title', defaultMessage: 'Recent Mentions'});
     const isLargeTitle = true;
     const isFocused = useIsFocused();
     const {scrollPaddingTop, scrollRef, scrollValue, onScroll} = useCollapsibleHeader<SectionList<string>>(isLargeTitle, Boolean(subtitle), false);
