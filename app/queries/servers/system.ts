@@ -2,8 +2,6 @@
 // See LICENSE.txt for license information.
 
 import {Database} from '@nozbe/watermelondb';
-import {of as of$} from 'rxjs';
-import {catchError, switchMap} from 'rxjs/operators';
 
 import {MM_TABLES, SYSTEM_IDENTIFIERS} from '@constants/database';
 
@@ -222,10 +220,3 @@ export const setCurrentTeamAndChannelId = async (operator: ServerDataOperator, t
         return {error};
     }
 };
-
-export function queryRecentMentionIds(serverDatabase: Database) {
-    return serverDatabase.get<SystemModel>(SYSTEM).findAndObserve(SYSTEM_IDENTIFIERS.RECENT_MENTIONS).pipe(
-        switchMap((row) => of$(row.value)),
-        catchError(() => of$([])),
-    );
-}

@@ -1,6 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {processPostsFetched} from '@actions/local/post';
 import {ActionType, General} from '@constants';
 import {SYSTEM_IDENTIFIERS} from '@constants/database';
 import DatabaseManager from '@database/manager';
@@ -233,28 +234,4 @@ export const postActionWithCookie = async (serverUrl: string, postId: string, ac
         forceLogoutIfNecessary(serverUrl, error as ClientErrorProps);
         return {error};
     }
-};
-
-const processPostsFetched = (serverUrl: string, actionType: string, data: {order: string[]; posts: Post[]; prev_post_id?: string}, fetchOnly = false) => {
-    const order = data.order;
-    const posts = Object.values(data.posts) as Post[];
-    const previousPostId = data.prev_post_id;
-
-    if (!fetchOnly) {
-        const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
-        if (operator) {
-            operator.handlePosts({
-                actionType,
-                order,
-                posts,
-                previousPostId,
-            });
-        }
-    }
-
-    return {
-        posts,
-        order,
-        previousPostId,
-    };
 };

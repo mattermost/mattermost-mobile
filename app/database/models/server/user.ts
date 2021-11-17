@@ -14,11 +14,7 @@ import type PostModel from '@typings/database/models/servers/post';
 import type PreferenceModel from '@typings/database/models/servers/preference';
 import type ReactionModel from '@typings/database/models/servers/reaction';
 import type TeamMembershipModel from '@typings/database/models/servers/team_membership';
-
-export type UserMentionKey= {
-    key: string;
-    caseSensitive?: boolean;
-}
+import type {UserMentionKey} from '@typings/global/markdown';
 
 const {
     CHANNEL,

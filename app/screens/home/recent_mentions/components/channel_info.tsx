@@ -2,11 +2,14 @@
 // See LICENSE.txt for license information.
 
 import withObservables from '@nozbe/with-observables';
+import compose from 'lodash/fp/compose';
 import React from 'react';
 import {View, Text, StyleSheet} from 'react-native';
 import {switchMap, of as of$} from 'rxjs';
 
+import {withTheme} from '@context/theme';
 import {makeStyleSheetFromTheme} from '@utils/theme';
+import {typography} from '@utils/typography';
 
 import type ChannelModel from '@typings/database/models/servers/channel';
 import type PostModel from '@typings/database/models/servers/post';
@@ -20,10 +23,8 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         paddingVertical: 5,
     },
     channel: {
+        ...typography('Body', 75, 'SemiBold'),
         color: theme.centerChannelColor,
-        fontFamily: 'OpenSans-Semibold',
-        fontSize: 12,
-        lineHeight: 16,
         marginRight: 5,
     },
     teamContainer: {
@@ -31,40 +32,49 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         borderLeftWidth: StyleSheet.hairlineWidth,
     },
     team: {
+        ...typography('Body', 75, 'Light'),
         color: theme.centerChannelColor,
-        fontFamily: 'OpenSans',
-        fontSize: 12,
-        lineHeight: 16,
         marginLeft: 5,
     },
 }));
 
 type Props = {
-    channel: ChannelModel;
+    channelName: ChannelModel['displayName'];
     post: PostModel;
-    team: TeamModel;
+    teamName: TeamModel['displayName'];
     theme: Theme;
 }
 
-function ChannelInfo({channel, team, theme}: Props) {
+function ChannelInfo({channelName, teamName, theme}: Props) {
     const styles = getStyleSheet(theme);
+
     return (
         <View style={styles.container}>
-            <Text style={styles.channel}>{channel.displayName}</Text>
-            {Boolean(team) && (
+            <Text style={styles.channel}>{channelName}</Text>
+            {Boolean(teamName) && (
                 <View style={styles.teamContainer}>
-                    <Text style={styles.team}>{team?.displayName}</Text>
+                    <Text style={styles.team}>{teamName}</Text>
                 </View>
             )}
         </View>
     );
 }
 
-const enhance = withObservables(['post'], ({post}: {post: PostModel}) => ({
-    channel: post.channel,
-    team: post.channel.observe().pipe(
-        switchMap((channel) => channel.team || of$(null)),
-    ),
-}));
+const enhance = withObservables(['post'], ({post}: {post: PostModel}) => {
+    const channel = post.channel.observe();
 
-export default enhance(ChannelInfo);
+    return {
+        channelName: channel.pipe(
+            switchMap((chan) => of$(chan.displayName)),
+        ),
+        teamName: channel.pipe(
+            switchMap((chan) => chan.team || of$(null)),
+            switchMap((team: TeamModel|null) => of$(team?.displayName || null)),
+        ),
+    };
+});
+
+export default compose(
+    withTheme,
+    enhance,
+)(ChannelInfo);

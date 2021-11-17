@@ -1,8 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {processPostsFetched} from '@actions/local/post';
 import {SYSTEM_IDENTIFIERS} from '@app/constants/database';
-import {ActionType} from '@constants';
 import DatabaseManager from '@database/manager';
 import NetworkManager from '@init/network_manager';
 import {queryCurrentUser} from '@queries/servers/user';
@@ -31,7 +31,8 @@ export async function getRecentMentions(serverUrl: string): Promise<PostSearchRe
         return {error};
     }
 
-    let data;
+    let posts = [];
+    let order = [];
 
     try {
         const currentUser = await queryCurrentUser(operator.database);
@@ -42,23 +43,25 @@ export async function getRecentMentions(serverUrl: string): Promise<PostSearchRe
             };
         }
         const terms = currentUser.mentionKeys.map(({key}) => key).join(' ').trim() + ' ';
-        data = await client.searchPosts(terms, true);
+        const data = await client.searchPosts(terms, true);
+        const processed = await processPostsFetched(serverUrl, '', data);
+
+        posts = processed.posts;
+        order = processed.order;
+
+        const mentions: IdValue = {
+            id: SYSTEM_IDENTIFIERS.RECENT_MENTIONS,
+            value: JSON.stringify(order),
+        };
+
+        await operator.handleSystem({
+            systems: [mentions],
+            prepareRecordsOnly: false,
+        });
     } catch (error) {
         forceLogoutIfNecessary(serverUrl, error as ClientErrorProps);
         return {error};
     }
-
-    const {posts, order} = await processPostsFetched(serverUrl, ActionType.SEARCH.RECEIVED_MENTIONS, data);
-
-    const mentions: IdValue = {
-        id: SYSTEM_IDENTIFIERS.RECENT_MENTIONS,
-        value: JSON.stringify(order),
-    };
-
-    await operator.handleSystem({
-        systems: [mentions],
-        prepareRecordsOnly: false,
-    });
 
     return {
         order,
@@ -82,27 +85,5 @@ export const searchPosts = async (serverUrl: string, params: PostSearchParams): 
         return {error};
     }
 
-    return processPostsFetched(serverUrl, ActionType.SEARCH.RECEIVED_POSTS, data);
-};
-
-const processPostsFetched = async (serverUrl: string, actionType: string, data: {order: string[]; posts: Post[]}, fetchOnly = false) => {
-    const order = data.order;
-    const posts = Object.values(data.posts) as Post[];
-
-    if (!fetchOnly) {
-        const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
-        if (operator) {
-            await operator.handlePosts({
-                actionType,
-                order: [],
-                posts,
-                previousPostId: undefined,
-            });
-        }
-    }
-
-    return {
-        posts,
-        order,
-    };
+    return processPostsFetched(serverUrl, '', data);
 };

@@ -1,6 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import withObservables from '@nozbe/with-observables';
+import compose from 'lodash/fp/compose';
 import React from 'react';
 import {View, StyleSheet} from 'react-native';
 
@@ -9,7 +11,8 @@ import Message from '@components/post_list/post/body/message';
 import Header from '@components/post_list/post/header';
 import SystemAvatar from '@components/system_avatar';
 import SystemHeader from '@components/system_header';
-import * as Screens from '@constants/screens';
+import {Screens} from '@constants';
+import {withTheme} from '@context/theme';
 import {fromAutoResponder, isFromWebhook, isSystemMessage, isEdited as postEdited} from '@utils/post';
 
 import ChannelInfo from './channel_info';
@@ -87,10 +90,7 @@ function Mention({post, currentUser, theme}: Props) {
 
     return (
         <View style={styles.container}>
-            <ChannelInfo
-                post={post}
-                theme={theme}
-            />
+            <ChannelInfo post={post}/>
             <View style={styles.content}>
                 {postAvatar}
                 <View style={styles.rightColumn}>
@@ -112,4 +112,11 @@ function Mention({post, currentUser, theme}: Props) {
     );
 }
 
-export default Mention;
+const enhance = withObservables(['post'], ({post}) => ({
+    post,
+}));
+
+export default compose(
+    withTheme,
+    enhance,
+)(Mention);

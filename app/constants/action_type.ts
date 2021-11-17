@@ -11,12 +11,6 @@ export const POSTS = keyMirror({
     RECEIVED_NEW: null,
 });
 
-export const SEARCH = keyMirror({
-    RECEIVED_MENTIONS: null,
-    RECEIVED_POSTS: null,
-});
-
 export default {
     POSTS,
-    SEARCH,
 };
