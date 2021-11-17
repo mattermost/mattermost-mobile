@@ -464,7 +464,7 @@ export const setDefaultProfileImage = async (serverUrl: string, userId: string) 
 
     try {
         await client.setDefaultProfileImage(userId);
-        updateLocalUser(serverUrl, userId, {lastPictureUpdate: 0});
+        updateLocalUser(serverUrl, userId, {last_picture_update: Date.now()});
     } catch (error) {
         return {error};
     }

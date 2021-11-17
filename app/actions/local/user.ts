@@ -105,7 +105,7 @@ export const updateRecentCustomStatuses = async (serverUrl: string, customStatus
     });
 };
 
-export const updateLocalUser = async (serverUrl: string, userId: string, userDetails: Partial<UserModel>) => {
+export const updateLocalUser = async (serverUrl: string, userId: string, userDetails: Partial<UserProfile> & { status?: string}) => {
     const database = DatabaseManager.serverDatabases[serverUrl]?.database;
     if (!database) {
         return {error: `${serverUrl} database not found`};
@@ -116,13 +116,27 @@ export const updateLocalUser = async (serverUrl: string, userId: string, userDet
         await database.write(async () => {
             await user.update((userRecord: UserModel) => {
                 userRecord.status = userDetails?.status ?? user.status;
-                userRecord.lastPictureUpdate = userDetails?.lastPictureUpdate ?? user.lastPictureUpdate;
+                userRecord.authService = userDetails.auth_service ?? user.authService;
+                userRecord.deleteAt = userDetails.delete_at ?? user.deleteAt;
+                userRecord.email = userDetails.email ?? user.email;
+                userRecord.firstName = userDetails.first_name ?? user.firstName;
+                userRecord.isBot = userDetails.is_bot ?? user.isBot;
+                userRecord.isGuest = userDetails?.roles?.includes('system_guest') ?? user.isGuest;
+                userRecord.lastName = userDetails.last_name ?? user.lastName;
+                userRecord.lastPictureUpdate = userDetails.last_picture_update ?? user.lastPictureUpdate;
+                userRecord.locale = userDetails.locale ?? user.locale;
+                userRecord.nickname = userDetails.nickname ?? user.nickname;
+                userRecord.notifyProps = userDetails.notify_props ?? user.notifyProps;
+                userRecord.position = userDetails?.position ?? '' ?? user.position;
+                userRecord.props = userDetails.props ?? user.props;
+                userRecord.roles = userDetails.roles ?? user.roles;
+                userRecord.timezone = userDetails.timezone ?? user.timezone;
+                userRecord.updateAt = userDetails.update_at ?? user.updateAt;
+                userRecord.username = userDetails.username ?? user.username;
             });
         });
-    } catch {
-        // eslint-disable-next-line no-console
-        console.log('FAILED TO BATCH CHANGES FOR UPDATE USER PRESENCE');
-        return {};
+    } catch (error) {
+        return {error};
     }
 
     return {};
