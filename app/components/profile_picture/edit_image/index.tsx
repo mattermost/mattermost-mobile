@@ -28,7 +28,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
         container: {
             justifyContent: 'center',
             alignItems: 'center',
-            borderRadius: 80,
         },
         camera: {
             position: 'absolute',
@@ -114,6 +113,7 @@ const EditProfileImage = ({
                     backgroundColor: changeOpacity(theme.centerChannelColor, 0.08),
                     height: size,
                     width: size,
+                    borderRadius: size / 2,
                 },
             ]}
             testID={`${testID}.${userId}`}
