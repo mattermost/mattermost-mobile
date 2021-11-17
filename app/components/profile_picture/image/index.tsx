@@ -30,7 +30,7 @@ type UserProfileImageProps = {
     imageUrl?: string;
     lastPictureUpdate: number;
     size: number;
-    source?: { uri: string };
+    source?: {uri: string};
     testID?: string;
     userId?: string;
 };
