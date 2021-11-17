@@ -1,6 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import Model from '@nozbe/watermelondb/Model';
+
 import {processPostsFetched} from '@actions/local/post';
 import {SYSTEM_IDENTIFIERS} from '@app/constants/database';
 import DatabaseManager from '@database/manager';
@@ -43,21 +45,39 @@ export async function getRecentMentions(serverUrl: string): Promise<PostSearchRe
             };
         }
         const terms = currentUser.mentionKeys.map(({key}) => key).join(' ').trim() + ' ';
-        const data = await client.searchPosts(terms, true);
-        const processed = await processPostsFetched(serverUrl, '', data);
+        const data = await client.searchPosts('', terms, true);
+        posts = data.posts;
+        order = data.order;
 
-        posts = processed.posts;
-        order = processed.order;
+        const models: Model[] = [];
+
+        const postModels = await operator.handlePosts({
+            actionType: '',
+            order: [],
+            posts,
+            previousPostId: '',
+            prepareRecordsOnly: true,
+        });
 
         const mentions: IdValue = {
             id: SYSTEM_IDENTIFIERS.RECENT_MENTIONS,
             value: JSON.stringify(order),
         };
 
-        await operator.handleSystem({
+        const mentionModels = await operator.handleSystem({
             systems: [mentions],
-            prepareRecordsOnly: false,
+            prepareRecordsOnly: true,
         });
+
+        models.push(...mentionModels);
+
+        if (postModels) {
+            models.push(...postModels);
+        }
+
+        if (models.length) {
+            await operator.batchRecords(models);
+        }
     } catch (error) {
         forceLogoutIfNecessary(serverUrl, error as ClientErrorProps);
         return {error};
@@ -79,11 +99,11 @@ export const searchPosts = async (serverUrl: string, params: PostSearchParams): 
 
     let data;
     try {
-        data = await client.searchPosts(params.terms, params.is_or_search);
+        data = await client.searchPosts('', params.terms, params.is_or_search);
     } catch (error) {
         forceLogoutIfNecessary(serverUrl, error as ClientErrorProps);
         return {error};
     }
 
-    return processPostsFetched(serverUrl, '', data);
+    return processPostsFetched(serverUrl, '', data, false);
 };

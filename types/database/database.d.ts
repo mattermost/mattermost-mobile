@@ -84,6 +84,7 @@ export type HandlePostsArgs = {
   order: string[];
   previousPostId?: string;
   posts: Post[];
+  prepareRecordsOnly?: boolean;
 };
 
 export type SanitizeReactionsArgs = {
