@@ -22,7 +22,7 @@ import {getDateForDateLine, isDateLine, selectOrderedPosts} from '@app/utils/pos
 import {getTimezone} from '@app/utils/user';
 import NavigationHeader from '@components/navigation_header';
 import {useServerUrl} from '@context/server_url';
-import {withTheme} from '@context/theme';
+import {useTheme} from '@context/theme';
 import {useCollapsibleHeader} from '@hooks/header';
 
 import Mention from './components/mention';
@@ -43,6 +43,9 @@ type Props = {
 }
 
 const styles = StyleSheet.create({
+    flex: {
+        flex: 1,
+    },
     loading: {
         alignItems: 'center',
         flex: 1,
@@ -50,23 +53,21 @@ const styles = StyleSheet.create({
     },
 });
 
-const RecentMentionsScreen = ({mentions, theme, currentUser, currentTimezone, isTimezoneEnabled}: Props) => {
+const RecentMentionsScreen = ({mentions, currentUser, currentTimezone, isTimezoneEnabled}: Props) => {
+    const theme = useTheme();
     const route = useRoute();
-    const params = route.params! as {direction: string};
-    const toLeft = params.direction === 'left';
-
+    const isFocused = useIsFocused();
     const {formatMessage} = useIntl();
     const [refreshing, setRefreshing] = useState(false);
     const [loading, setLoading] = useState(false);
-
-    const subtitle = formatMessage({id: 'screen.mentions.subtitle', defaultMessage: 'Messages you\'ve been mentioned in'});
-    const title = formatMessage({id: 'screen.mentions.title', defaultMessage: 'Recent Mentions'});
-    const isLargeTitle = true;
-    const isFocused = useIsFocused();
-    const {scrollPaddingTop, scrollRef, scrollValue, onScroll} = useCollapsibleHeader<FlatList<string>>(isLargeTitle, Boolean(subtitle), false);
-    const paddingTop = useMemo(() => ({paddingTop: scrollPaddingTop, paddingBottom: 10}), [scrollPaddingTop]);
-
     const serverUrl = useServerUrl();
+
+    const params = route.params! as {direction: string};
+    const toLeft = params.direction === 'left';
+
+    const title = formatMessage({id: 'screen.mentions.title', defaultMessage: 'Recent Mentions'});
+    const subtitle = formatMessage({id: 'screen.mentions.subtitle', defaultMessage: 'Messages you\'ve been mentioned in'});
+    const isLargeTitle = true;
 
     useEffect(() => {
         setLoading(true);
@@ -74,6 +75,10 @@ const RecentMentionsScreen = ({mentions, theme, currentUser, currentTimezone, is
             setLoading(false);
         });
     }, [serverUrl]);
+
+    const {scrollPaddingTop, scrollRef, scrollValue, onScroll} = useCollapsibleHeader<FlatList<string>>(isLargeTitle, Boolean(subtitle), false);
+
+    const paddingTop = useMemo(() => ({paddingTop: scrollPaddingTop, paddingBottom: 10}), [scrollPaddingTop]);
 
     const posts = useMemo(() => selectOrderedPosts(mentions, 0, false, '', false, isTimezoneEnabled, currentTimezone, false).reverse(), [mentions]);
 
@@ -131,10 +136,10 @@ const RecentMentionsScreen = ({mentions, theme, currentUser, currentTimezone, is
                 forwardedRef={scrollRef}
             />
             <SafeAreaView
-                style={{flex: 1}}
+                style={styles.flex}
                 edges={['bottom', 'left', 'right']}
             >
-                <Animated.View style={[{flex: 1}, animated]}>
+                <Animated.View style={[styles.flex, animated]}>
                     {loading && !mentions.length ? (
                         <View style={styles.loading}>
                             <ActivityIndicator
@@ -196,5 +201,4 @@ const enhance = withObservables([], ({database}: WithDatabaseArgs) => {
 export default compose(
     withDatabase,
     enhance,
-    withTheme,
 )(RecentMentionsScreen);

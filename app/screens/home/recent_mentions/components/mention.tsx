@@ -2,7 +2,6 @@
 // See LICENSE.txt for license information.
 
 import withObservables from '@nozbe/with-observables';
-import compose from 'lodash/fp/compose';
 import React from 'react';
 import {View, StyleSheet} from 'react-native';
 
@@ -12,7 +11,7 @@ import Header from '@components/post_list/post/header';
 import SystemAvatar from '@components/system_avatar';
 import SystemHeader from '@components/system_header';
 import {Screens} from '@constants';
-import {withTheme} from '@context/theme';
+import {useTheme} from '@context/theme';
 import {fromAutoResponder, isFromWebhook, isSystemMessage, isEdited as postEdited} from '@utils/post';
 
 import ChannelInfo from './channel_info';
@@ -23,7 +22,6 @@ import type UserModel from '@typings/database/models/servers/user';
 type Props = {
     currentUser: UserModel;
     post: PostModel;
-    theme: Theme;
 }
 
 const styles = StyleSheet.create({
@@ -52,7 +50,9 @@ const styles = StyleSheet.create({
     },
 });
 
-function Mention({post, currentUser, theme}: Props) {
+function Mention({post, currentUser}: Props) {
+    const theme = useTheme();
+
     const isAutoResponder = fromAutoResponder(post);
     const isSystemPost = isSystemMessage(post);
     const isWebHook = isFromWebhook(post);
@@ -116,7 +116,4 @@ const enhance = withObservables(['post'], ({post}) => ({
     post,
 }));
 
-export default compose(
-    withTheme,
-    enhance,
-)(Mention);
+export default enhance(Mention);

@@ -2,12 +2,11 @@
 // See LICENSE.txt for license information.
 
 import withObservables from '@nozbe/with-observables';
-import compose from 'lodash/fp/compose';
 import React from 'react';
 import {View, Text, StyleSheet} from 'react-native';
 import {switchMap, of as of$} from 'rxjs';
 
-import {withTheme} from '@context/theme';
+import {useTheme} from '@context/theme';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
@@ -42,10 +41,10 @@ type Props = {
     channelName: ChannelModel['displayName'];
     post: PostModel;
     teamName: TeamModel['displayName'];
-    theme: Theme;
 }
 
-function ChannelInfo({channelName, teamName, theme}: Props) {
+function ChannelInfo({channelName, teamName}: Props) {
+    const theme = useTheme();
     const styles = getStyleSheet(theme);
 
     return (
@@ -74,7 +73,4 @@ const enhance = withObservables(['post'], ({post}: {post: PostModel}) => {
     };
 });
 
-export default compose(
-    withTheme,
-    enhance,
-)(ChannelInfo);
+export default enhance(ChannelInfo);
