@@ -8,7 +8,7 @@ import Foundation
 }
 
 @objc @objcMembers public class UploadSessionManager: NSObject {
-    private let bucket = MattermostBucket().bucket(byName: Bundle.main.infoDictionary!["AppGroupIdentifier"] as! String)
+    private let bucket = MattermostBucket().bucket(byName: Bundle.main.infoDictionary!["AppGroupIdentifier"] as? String)
     
     public class var shared :UploadSessionManager {
         struct Singleton {

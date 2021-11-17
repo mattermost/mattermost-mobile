@@ -23,7 +23,7 @@ describe('NotificationSettingsEmailAndroid', () => {
             savePreferences: jest.fn(),
         },
         sendEmailNotifications: true,
-        theme: Preferences.THEMES.default,
+        theme: Preferences.THEMES.denim,
         componentId: 'component-id',
         isCollapsedThreadsEnabled: false,
     };

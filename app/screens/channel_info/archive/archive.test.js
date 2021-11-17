@@ -30,7 +30,7 @@ describe('ChannelInfo -> Archive', () => {
         unarchiveChannel: jest.fn(),
         selectPenultimateChannel: jest.fn(),
         teamId: 'team-123',
-        theme: Preferences.THEMES.default,
+        theme: Preferences.THEMES.denim,
         viewArchivedChannels: true,
     };
 

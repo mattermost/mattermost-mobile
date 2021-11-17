@@ -15,7 +15,7 @@ describe('ReactionHeaderItem', () => {
         emojiName: 'smile',
         highlight: false,
         onPress: jest.fn(),
-        theme: Preferences.THEMES.default,
+        theme: Preferences.THEMES.denim,
     };
 
     test('should match snapshot', () => {

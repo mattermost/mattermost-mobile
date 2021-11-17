@@ -37,7 +37,7 @@ describe('@actions/navigation', () => {
     const topComponentId = 'top-component-id';
     const name = 'name';
     const title = 'title';
-    const theme = Preferences.THEMES.default;
+    const theme = Preferences.THEMES.denim;
     const passProps = {
         testProp: 'prop',
     };

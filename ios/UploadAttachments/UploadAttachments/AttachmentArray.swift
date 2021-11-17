@@ -88,7 +88,7 @@ public extension AttachmentArray {
     /// - Returns: An array of the non-nil results of calling transform with each element of the sequence.
     func flatMap<ElementOfResult>(_ transform: (Element) -> ElementOfResult?) -> [ElementOfResult] {
         var result = [ElementOfResult]()
-        queue.sync { result = self.array.flatMap(transform) }
+        queue.sync { result = self.array.compactMap(transform) }
         return result
     }
     

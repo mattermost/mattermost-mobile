@@ -24,11 +24,11 @@ describe('Global Thread Footer', () => {
         currentTeamId: 'team1',
         intl,
         testID,
-        theme: Preferences.THEMES.default,
+        theme: Preferences.THEMES.denim,
         thread: {
             id: 'thread1',
             participants: [{
-                id: 'user1',
+                id: 'user2',
             }],
             is_following: true,
             reply_count: 2,

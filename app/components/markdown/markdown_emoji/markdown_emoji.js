@@ -111,7 +111,7 @@ export default class MarkdownEmoji extends PureComponent {
         if (this.props.isEdited) {
             const editIndicatorNode = new Node('edited_indicator');
             if (ast.lastChild && ['heading', 'paragraph'].includes(ast.lastChild.type)) {
-                ast.lastChild.appendChild(editIndicatorNode);
+                ast.appendChild(editIndicatorNode);
             } else {
                 const node = new Node('paragraph');
                 node.appendChild(editIndicatorNode);

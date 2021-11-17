@@ -16,7 +16,7 @@ import ShowMoreButton from './show_more_button';
 
 import type {UserMentionKey} from '@mm-redux/selectors/entities/users';
 import type {Post} from '@mm-redux/types/posts';
-import type {Theme} from '@mm-redux/types/preferences';
+import type {Theme} from '@mm-redux/types/theme';
 
 type MessageProps = {
     highlight: boolean;

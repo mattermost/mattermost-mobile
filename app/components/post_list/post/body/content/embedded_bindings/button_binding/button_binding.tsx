@@ -10,7 +10,7 @@ import {AppExpandLevels, AppBindingLocations, AppCallTypes, AppCallResponseTypes
 import {ActionResult} from '@mm-redux/types/actions';
 import {AppBinding} from '@mm-redux/types/apps';
 import {Post} from '@mm-redux/types/posts';
-import {Theme} from '@mm-redux/types/preferences';
+import {Theme} from '@mm-redux/types/theme';
 import {DoAppCall, PostEphemeralCallResponseForPost} from '@mm-types/actions/apps';
 import {createCallContext, createCallRequest} from '@utils/apps';
 import {getStatusColors} from '@utils/message_attachment_colors';
@@ -58,11 +58,15 @@ const ButtonBinding = ({binding, doAppCall, intl, post, postEphemeralCallRespons
     const style = getStyleSheet(theme);
 
     const onPress = useCallback(preventDoubleTap(async () => {
-        if (!binding.call || pressed.current) {
+        if (pressed.current) {
             return;
         }
 
-        pressed.current = true;
+        const call = binding.form?.call || binding.call;
+
+        if (!call) {
+            return;
+        }
 
         const context = createCallContext(
             binding.app_id,
@@ -72,13 +76,20 @@ const ButtonBinding = ({binding, doAppCall, intl, post, postEphemeralCallRespons
             post.id,
         );
 
-        const call = createCallRequest(
-            binding.call,
+        const callRequest = createCallRequest(
+            call,
             context,
             {post: AppExpandLevels.EXPAND_ALL},
         );
 
-        const res = await doAppCall(call, AppCallTypes.SUBMIT, intl);
+        if (binding.form) {
+            showAppForm(binding.form, callRequest, theme);
+            return;
+        }
+
+        pressed.current = true;
+
+        const res = await doAppCall(callRequest, AppCallTypes.SUBMIT, intl);
         pressed.current = false;
 
         if (res.error) {

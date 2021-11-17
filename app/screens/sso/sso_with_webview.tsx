@@ -18,7 +18,7 @@ import StatusBar from '@components/status_bar';
 import {ViewTypes} from '@constants';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
-import type {Theme} from '@mm-redux/types/preferences';
+import type {Theme} from '@mm-redux/types/theme';
 
 const HEADERS = {
     'X-Mobile-App': 'mattermost',
@@ -75,7 +75,7 @@ function SSOWithWebView({completeUrlPath, intl, loginError, loginUrl, onCSRFToke
     const [jsCode, setJSCode] = React.useState('');
     const [messagingEnabled, setMessagingEnabled] = React.useState(false);
     const [shouldRenderWebView, setShouldRenderWebView] = React.useState(true);
-    const cookiesTimeout = React.useRef<number>();
+    const cookiesTimeout = React.useRef<NodeJS.Timeout>();
     const webView = React.useRef<WebView>(null);
 
     React.useEffect(() => {

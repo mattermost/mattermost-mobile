@@ -12,7 +12,7 @@ exports[`ErrorText should match snapshot 1`] = `
         "textAlign": "left",
       },
       Object {
-        "color": "#fd5960",
+        "color": "#d24b4e",
       },
       Object {
         "fontSize": 14,

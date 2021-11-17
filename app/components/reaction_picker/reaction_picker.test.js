@@ -13,7 +13,7 @@ describe('Reactions', () => {
         addReaction: jest.fn(),
         openReactionScreen: jest.fn(),
         recentEmojis: [],
-        theme: Preferences.THEMES.default,
+        theme: Preferences.THEMES.denim,
     };
 
     test('Should match snapshot with default emojis', () => {

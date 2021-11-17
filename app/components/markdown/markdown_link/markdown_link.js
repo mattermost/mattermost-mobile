@@ -9,7 +9,7 @@ import {intlShape} from 'react-intl';
 import {Alert, Text} from 'react-native';
 import urlParse from 'url-parse';
 
-import {dismissAllModals, popToRoot} from '@actions/navigation';
+import {dismissAllModals, popToRoot, showModal} from '@actions/navigation';
 import Config from '@assets/config';
 import {DeepLinkTypes} from '@constants';
 import {getCurrentServerUrl} from '@init/credentials';
@@ -59,13 +59,20 @@ export default class MarkdownLink extends PureComponent {
         const match = matchDeepLink(url, serverURL, siteURL);
 
         if (match) {
-            if (match.type === DeepLinkTypes.CHANNEL) {
+            switch (match.type) {
+            case DeepLinkTypes.CHANNEL:
                 await handleSelectChannelByName(match.channelName, match.teamName, errorBadChannel, intl);
                 await dismissAllModals();
                 await popToRoot();
-            } else if (match.type === DeepLinkTypes.PERMALINK) {
+                break;
+            case DeepLinkTypes.PERMALINK: {
                 const teamName = match.teamName === PERMALINK_GENERIC_TEAM_NAME_REDIRECT ? currentTeamName : match.teamName;
                 showPermalink(intl, teamName, match.postId);
+                break;
+            }
+            case DeepLinkTypes.PLUGIN:
+                showModal('PluginInternal', match.id, {link: url});
+                break;
             }
         } else {
             const onError = () => {
@@ -130,7 +137,6 @@ export default class MarkdownLink extends PureComponent {
             const actionText = formatMessage({id: 'mobile.markdown.link.copy_url', defaultMessage: 'Copy URL'});
             BottomSheet.showBottomSheetWithOptions({
                 options: [actionText, cancelText],
-                cancelButtonIndex: 1,
             }, (value) => {
                 if (value !== 1) {
                     this.handleLinkCopy();

@@ -60,9 +60,7 @@ exports[`ChannelLoader should match snapshot 1`] = `
         }
       >
         <ActivityIndicator
-          animating={true}
           color="#FFFFFF"
-          hidesWhenStopped={true}
           size="small"
         />
       </View>
@@ -100,20 +98,20 @@ exports[`ChannelLoader should match snapshot 1`] = `
       styles={
         Object {
           "left": Object {
-            "color": "rgba(61,60,64,0.15)",
+            "color": "rgba(63,67,80,0.15)",
           },
         }
       }
     >
       <Unknown
-        color="rgba(61,60,64,0.15)"
+        color="rgba(63,67,80,0.15)"
       />
       <Unknown
-        color="rgba(61,60,64,0.15)"
+        color="rgba(63,67,80,0.15)"
         width={80}
       />
       <Unknown
-        color="rgba(61,60,64,0.15)"
+        color="rgba(63,67,80,0.15)"
         width={60}
       />
     </Unknown>
@@ -140,20 +138,20 @@ exports[`ChannelLoader should match snapshot 1`] = `
       styles={
         Object {
           "left": Object {
-            "color": "rgba(61,60,64,0.15)",
+            "color": "rgba(63,67,80,0.15)",
           },
         }
       }
     >
       <Unknown
-        color="rgba(61,60,64,0.15)"
+        color="rgba(63,67,80,0.15)"
       />
       <Unknown
-        color="rgba(61,60,64,0.15)"
+        color="rgba(63,67,80,0.15)"
         width={80}
       />
       <Unknown
-        color="rgba(61,60,64,0.15)"
+        color="rgba(63,67,80,0.15)"
         width={60}
       />
     </Unknown>
@@ -180,20 +178,20 @@ exports[`ChannelLoader should match snapshot 1`] = `
       styles={
         Object {
           "left": Object {
-            "color": "rgba(61,60,64,0.15)",
+            "color": "rgba(63,67,80,0.15)",
           },
         }
       }
     >
       <Unknown
-        color="rgba(61,60,64,0.15)"
+        color="rgba(63,67,80,0.15)"
       />
       <Unknown
-        color="rgba(61,60,64,0.15)"
+        color="rgba(63,67,80,0.15)"
         width={80}
       />
       <Unknown
-        color="rgba(61,60,64,0.15)"
+        color="rgba(63,67,80,0.15)"
         width={60}
       />
     </Unknown>
@@ -220,20 +218,20 @@ exports[`ChannelLoader should match snapshot 1`] = `
       styles={
         Object {
           "left": Object {
-            "color": "rgba(61,60,64,0.15)",
+            "color": "rgba(63,67,80,0.15)",
           },
         }
       }
     >
       <Unknown
-        color="rgba(61,60,64,0.15)"
+        color="rgba(63,67,80,0.15)"
       />
       <Unknown
-        color="rgba(61,60,64,0.15)"
+        color="rgba(63,67,80,0.15)"
         width={80}
       />
       <Unknown
-        color="rgba(61,60,64,0.15)"
+        color="rgba(63,67,80,0.15)"
         width={60}
       />
     </Unknown>
@@ -260,20 +258,20 @@ exports[`ChannelLoader should match snapshot 1`] = `
       styles={
         Object {
           "left": Object {
-            "color": "rgba(61,60,64,0.15)",
+            "color": "rgba(63,67,80,0.15)",
           },
         }
       }
     >
       <Unknown
-        color="rgba(61,60,64,0.15)"
+        color="rgba(63,67,80,0.15)"
       />
       <Unknown
-        color="rgba(61,60,64,0.15)"
+        color="rgba(63,67,80,0.15)"
         width={80}
       />
       <Unknown
-        color="rgba(61,60,64,0.15)"
+        color="rgba(63,67,80,0.15)"
         width={60}
       />
     </Unknown>
@@ -300,20 +298,20 @@ exports[`ChannelLoader should match snapshot 1`] = `
       styles={
         Object {
           "left": Object {
-            "color": "rgba(61,60,64,0.15)",
+            "color": "rgba(63,67,80,0.15)",
           },
         }
       }
     >
       <Unknown
-        color="rgba(61,60,64,0.15)"
+        color="rgba(63,67,80,0.15)"
       />
       <Unknown
-        color="rgba(61,60,64,0.15)"
+        color="rgba(63,67,80,0.15)"
         width={80}
       />
       <Unknown
-        color="rgba(61,60,64,0.15)"
+        color="rgba(63,67,80,0.15)"
         width={60}
       />
     </Unknown>
@@ -340,20 +338,20 @@ exports[`ChannelLoader should match snapshot 1`] = `
       styles={
         Object {
           "left": Object {
-            "color": "rgba(61,60,64,0.15)",
+            "color": "rgba(63,67,80,0.15)",
           },
         }
       }
     >
       <Unknown
-        color="rgba(61,60,64,0.15)"
+        color="rgba(63,67,80,0.15)"
       />
       <Unknown
-        color="rgba(61,60,64,0.15)"
+        color="rgba(63,67,80,0.15)"
         width={80}
       />
       <Unknown
-        color="rgba(61,60,64,0.15)"
+        color="rgba(63,67,80,0.15)"
         width={60}
       />
     </Unknown>
@@ -380,20 +378,20 @@ exports[`ChannelLoader should match snapshot 1`] = `
       styles={
         Object {
           "left": Object {
-            "color": "rgba(61,60,64,0.15)",
+            "color": "rgba(63,67,80,0.15)",
           },
         }
       }
     >
       <Unknown
-        color="rgba(61,60,64,0.15)"
+        color="rgba(63,67,80,0.15)"
       />
       <Unknown
-        color="rgba(61,60,64,0.15)"
+        color="rgba(63,67,80,0.15)"
         width={80}
       />
       <Unknown
-        color="rgba(61,60,64,0.15)"
+        color="rgba(63,67,80,0.15)"
         width={60}
       />
     </Unknown>
@@ -420,20 +418,20 @@ exports[`ChannelLoader should match snapshot 1`] = `
       styles={
         Object {
           "left": Object {
-            "color": "rgba(61,60,64,0.15)",
+            "color": "rgba(63,67,80,0.15)",
           },
         }
       }
     >
       <Unknown
-        color="rgba(61,60,64,0.15)"
+        color="rgba(63,67,80,0.15)"
       />
       <Unknown
-        color="rgba(61,60,64,0.15)"
+        color="rgba(63,67,80,0.15)"
         width={80}
       />
       <Unknown
-        color="rgba(61,60,64,0.15)"
+        color="rgba(63,67,80,0.15)"
         width={60}
       />
     </Unknown>
@@ -460,20 +458,20 @@ exports[`ChannelLoader should match snapshot 1`] = `
       styles={
         Object {
           "left": Object {
-            "color": "rgba(61,60,64,0.15)",
+            "color": "rgba(63,67,80,0.15)",
           },
         }
       }
     >
       <Unknown
-        color="rgba(61,60,64,0.15)"
+        color="rgba(63,67,80,0.15)"
       />
       <Unknown
-        color="rgba(61,60,64,0.15)"
+        color="rgba(63,67,80,0.15)"
         width={80}
       />
       <Unknown
-        color="rgba(61,60,64,0.15)"
+        color="rgba(63,67,80,0.15)"
         width={60}
       />
     </Unknown>
@@ -500,20 +498,20 @@ exports[`ChannelLoader should match snapshot 1`] = `
       styles={
         Object {
           "left": Object {
-            "color": "rgba(61,60,64,0.15)",
+            "color": "rgba(63,67,80,0.15)",
           },
         }
       }
     >
       <Unknown
-        color="rgba(61,60,64,0.15)"
+        color="rgba(63,67,80,0.15)"
       />
       <Unknown
-        color="rgba(61,60,64,0.15)"
+        color="rgba(63,67,80,0.15)"
         width={80}
       />
       <Unknown
-        color="rgba(61,60,64,0.15)"
+        color="rgba(63,67,80,0.15)"
         width={60}
       />
     </Unknown>
@@ -540,20 +538,20 @@ exports[`ChannelLoader should match snapshot 1`] = `
       styles={
         Object {
           "left": Object {
-            "color": "rgba(61,60,64,0.15)",
+            "color": "rgba(63,67,80,0.15)",
           },
         }
       }
     >
       <Unknown
-        color="rgba(61,60,64,0.15)"
+        color="rgba(63,67,80,0.15)"
       />
       <Unknown
-        color="rgba(61,60,64,0.15)"
+        color="rgba(63,67,80,0.15)"
         width={80}
       />
       <Unknown
-        color="rgba(61,60,64,0.15)"
+        color="rgba(63,67,80,0.15)"
         width={60}
       />
     </Unknown>
@@ -580,20 +578,20 @@ exports[`ChannelLoader should match snapshot 1`] = `
       styles={
         Object {
           "left": Object {
-            "color": "rgba(61,60,64,0.15)",
+            "color": "rgba(63,67,80,0.15)",
           },
         }
       }
     >
       <Unknown
-        color="rgba(61,60,64,0.15)"
+        color="rgba(63,67,80,0.15)"
       />
       <Unknown
-        color="rgba(61,60,64,0.15)"
+        color="rgba(63,67,80,0.15)"
         width={80}
       />
       <Unknown
-        color="rgba(61,60,64,0.15)"
+        color="rgba(63,67,80,0.15)"
         width={60}
       />
     </Unknown>

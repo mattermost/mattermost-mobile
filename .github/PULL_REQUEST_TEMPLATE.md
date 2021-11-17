@@ -26,6 +26,7 @@ Place an '[x]' (no spaces) in all applicable fields. Please remove unrelated fie
 - [ ] Added or updated unit tests (required for all new features)
 - [ ] Has UI changes
 - [ ] Includes text changes and localization file updates
+- [ ] Have tested against the 5 core themes to ensure consistency between them.
 
 #### Device Information
 This PR was tested on: <!-- Device name(s), OS version(s) -->

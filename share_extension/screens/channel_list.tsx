@@ -43,7 +43,7 @@ type SectionDataHeader = (info: {section: SectionListData<Channel>}) => React.Re
 
 export type ChannelListRoute = RouteProp<ChannnelListParams, 'Channels'>;
 
-const theme = Preferences.THEMES.default;
+const theme = Preferences.THEMES.denim;
 
 const ChannelList = ({intl}: ChannnelListProps) => {
     const navigation = useNavigation();
@@ -173,7 +173,7 @@ const ChannelList = ({intl}: ChannnelListProps) => {
                 style={styles.flex}
                 sections={sections}
                 ItemSeparatorComponent={renderItemSeparator}
-                removeClippedSubviews={true}
+                removeClippedSubviews={false}
                 renderItem={renderItem}
                 renderSectionHeader={renderSectionHeader}
                 keyExtractor={keyExtractor}

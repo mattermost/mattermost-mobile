@@ -13,8 +13,8 @@ import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 import Reaction from './reaction';
 
-import type {Theme} from '@mm-redux/types/preferences';
 import type {Reaction as ReactionType} from '@mm-redux/types/reactions';
+import type {Theme} from '@mm-redux/types/theme';
 
 type ReactionsProps = {
     addReaction: (postId: string, emojiName: string) => void;

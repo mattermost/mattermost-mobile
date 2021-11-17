@@ -17,7 +17,7 @@ describe('RecentMentions', () => {
             showPermalink: jest.fn(),
             selectPost: jest.fn(),
         },
-        theme: Preferences.THEMES.default,
+        theme: Preferences.THEMES.denim,
     };
 
     test('should match snapshot', () => {

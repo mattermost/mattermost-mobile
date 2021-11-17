@@ -21,7 +21,7 @@ import AttachmentTitle from './attachment_title';
 
 import type {MessageAttachment as MessageAttachmentType} from '@mm-redux/types/message_attachments';
 import type {PostMetadata} from '@mm-redux/types/posts';
-import type {Theme} from '@mm-redux/types/preferences';
+import type {Theme} from '@mm-redux/types/theme';
 
 type Props = {
     attachment: MessageAttachmentType;

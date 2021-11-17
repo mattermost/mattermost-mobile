@@ -32,7 +32,7 @@ exports[`AttachmentFooter it matches snapshot when both footer and footer_icon a
     numberOfLines={1}
     style={
       Object {
-        "color": "rgba(61,60,64,0.5)",
+        "color": "rgba(63,67,80,0.5)",
         "fontSize": 11,
       }
     }
@@ -58,7 +58,7 @@ exports[`AttachmentFooter it matches snapshot when footer text is provided 1`] =
     numberOfLines={1}
     style={
       Object {
-        "color": "rgba(61,60,64,0.5)",
+        "color": "rgba(63,67,80,0.5)",
         "fontSize": 11,
       }
     }

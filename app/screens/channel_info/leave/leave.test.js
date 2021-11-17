@@ -39,7 +39,7 @@ describe('ChannelInfo -> Leave', () => {
         isFavorite: false,
         isGroupMessage: false,
         isPublic: true,
-        theme: Preferences.THEMES.default,
+        theme: Preferences.THEMES.denim,
     };
 
     test('should match snapshot for Leave Public Channel', () => {

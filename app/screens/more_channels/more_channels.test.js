@@ -29,7 +29,7 @@ describe('MoreChannels', () => {
         closeButton: {},
         currentUserId: 'current_user_id',
         currentTeamId: 'current_team_id',
-        theme: Preferences.THEMES.default,
+        theme: Preferences.THEMES.denim,
         componentId: 'component-id',
         canShowArchivedChannels: true,
     };

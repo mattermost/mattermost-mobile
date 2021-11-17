@@ -9,7 +9,7 @@ import ClearButton from '@components/custom_status/clear_button';
 import CustomStatusText from '@components/custom_status/custom_status_text';
 import Emoji from '@components/emoji';
 import {durationValues} from '@constants/custom_status';
-import {Theme} from '@mm-redux/types/preferences';
+import {Theme} from '@mm-redux/types/theme';
 import {CustomStatusDuration, UserCustomStatus} from '@mm-redux/types/users';
 import {preventDoubleTap} from '@utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
@@ -39,6 +39,10 @@ const CustomStatusSuggestion = ({handleSuggestionClick, emoji, text, theme, sepa
             handleClear({emoji, text, duration, expires_at});
         }
     }, []);
+
+    const showCustomStatus = Boolean(duration &&
+        duration !== CustomStatusDuration.DATE_AND_TIME &&
+        isExpirySupported);
 
     const clearButton = handleClear && expires_at ?
         (
@@ -74,7 +78,7 @@ const CustomStatusSuggestion = ({handleSuggestionClick, emoji, text, theme, sepa
                                 textStyle={style.customStatusText}
                             />
                         </View>
-                        {Boolean(duration && isExpirySupported) && (
+                        {showCustomStatus && (
                             <View style={{paddingTop: 5}}>
                                 <CustomStatusText
                                     text={intl.formatMessage(durationValues[duration])}

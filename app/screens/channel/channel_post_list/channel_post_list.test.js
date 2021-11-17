@@ -19,7 +19,7 @@ describe('ChannelPostList', () => {
         channelId: 'channel-id',
         loadMorePostsVisible: false,
         refreshing: false,
-        theme: Preferences.THEMES.default,
+        theme: Preferences.THEMES.denim,
         registerTypingAnimation: jest.fn(() => {
             return jest.fn();
         }),

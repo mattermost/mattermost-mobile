@@ -16,7 +16,7 @@ describe('NotificationPreference', () => {
         notifyProps: {
             push: 'default',
         },
-        theme: Preferences.THEMES.default,
+        theme: Preferences.THEMES.denim,
     };
 
     test('should match snapshot', () => {

@@ -2,6 +2,16 @@
 // See LICENSE.txt for license information.
 import {ViewTypes} from '@constants';
 
+export function updateThreadLastViewedAt(threadId: string, lastViewedAt: number) {
+    return {
+        type: ViewTypes.THREAD_LAST_VIEWED_AT,
+        data: {
+            threadId,
+            lastViewedAt,
+        },
+    };
+}
+
 export const handleViewingGlobalThreadsScreen = () => (
     {
         type: ViewTypes.VIEWING_GLOBAL_THREADS_SCREEN,

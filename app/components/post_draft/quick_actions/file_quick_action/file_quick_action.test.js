@@ -18,7 +18,7 @@ describe('FileQuickAction', () => {
         testID: 'post_draft.quick_actions.file_action',
         fileCount: 0,
         maxFileCount: 5,
-        theme: Preferences.THEMES.default,
+        theme: Preferences.THEMES.denim,
         onUploadFiles: jest.fn(),
     };
 

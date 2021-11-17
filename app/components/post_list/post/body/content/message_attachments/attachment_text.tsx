@@ -9,7 +9,7 @@ import Markdown from '@components/markdown';
 import ShowMoreButton from '@components/post_list/post/body/message/show_more_button';
 import {useShowMoreAnimatedStyle} from '@hooks/show_more';
 import {PostMetadata} from '@mm-redux/types/posts';
-import {Theme} from '@mm-redux/types/preferences';
+import {Theme} from '@mm-redux/types/theme';
 
 type Props = {
     baseTextStyle: StyleProp<TextStyle>;

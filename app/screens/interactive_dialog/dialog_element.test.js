@@ -18,7 +18,7 @@ describe('DialogElement', () => {
         type: 'text',
     };
 
-    const theme = Preferences.THEMES.default;
+    const theme = Preferences.THEMES.denim;
     test('secureTextEntry is true and multiline is false when subtype is password', () => {
         const wrapper = shallow(
             <DialogElement

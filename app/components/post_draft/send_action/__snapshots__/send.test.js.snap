@@ -15,14 +15,14 @@ exports[`SendAction should change theme backgroundColor to 0.3 opacity 1`] = `
       Array [
         Object {
           "alignItems": "center",
-          "backgroundColor": "#166de0",
+          "backgroundColor": "#1c58d9",
           "borderRadius": 4,
           "height": 32,
           "justifyContent": "center",
           "width": 80,
         },
         Object {
-          "backgroundColor": "rgba(22,109,224,0.3)",
+          "backgroundColor": "rgba(28,88,217,0.3)",
         },
       ]
     }
@@ -52,7 +52,7 @@ exports[`SendAction should match snapshot 1`] = `
     style={
       Object {
         "alignItems": "center",
-        "backgroundColor": "#166de0",
+        "backgroundColor": "#1c58d9",
         "borderRadius": 4,
         "height": 32,
         "justifyContent": "center",
@@ -85,7 +85,7 @@ exports[`SendAction should render theme backgroundColor 1`] = `
     style={
       Object {
         "alignItems": "center",
-        "backgroundColor": "#166de0",
+        "backgroundColor": "#1c58d9",
         "borderRadius": 4,
         "height": 32,
         "justifyContent": "center",

@@ -9,7 +9,7 @@ import Preferences from '@mm-redux/constants/preferences';
 
 describe('components/custom_status/clear_button', () => {
     const baseProps = {
-        theme: Preferences.THEMES.default,
+        theme: Preferences.THEMES.denim,
         handlePress: jest.fn(),
     };
 

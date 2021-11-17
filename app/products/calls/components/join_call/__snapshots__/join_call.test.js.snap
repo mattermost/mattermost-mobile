@@ -1,0 +1,89 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`JoinCall should match snapshot 1`] = `
+<Pressable
+  onPress={[Function]}
+  style={
+    Object {
+      "alignItems": "center",
+      "backgroundColor": "#3DB887",
+      "flexDirection": "row",
+      "height": 38,
+      "justifyContent": "center",
+      "padding": 5,
+      "width": "100%",
+    }
+  }
+>
+  <CompassIcon
+    name="phone-in-talk"
+    size={16}
+    style={
+      Object {
+        "color": "#ffffff",
+        "marginLeft": 10,
+        "marginRight": 5,
+      }
+    }
+  />
+  <Text
+    style={
+      Object {
+        "color": "#ffffff",
+        "fontSize": 16,
+        "fontWeight": "bold",
+      }
+    }
+  >
+    Join Call
+  </Text>
+  <Text
+    style={
+      Object {
+        "color": "#ffffff",
+        "flex": 1,
+        "fontWeight": "400",
+        "marginLeft": 10,
+      }
+    }
+  >
+    <FormattedRelativeTime
+      updateIntervalInSeconds={1}
+      value={100}
+    />
+  </Text>
+  <View
+    style={
+      Object {
+        "marginRight": 5,
+      }
+    }
+  >
+    <Connect(Avatars)
+      breakAt={1}
+      listTitle={
+        <InjectIntl(FormattedText)
+          defaultMessage="CALL PARTICIPANTS"
+          id="calls.join_call.participants_list_header"
+          style={
+            Object {
+              "color": "rgba(63,67,80,0.56)",
+              "fontSize": 12,
+              "fontWeight": "600",
+              "paddingHorizontal": 16,
+              "paddingVertical": 0,
+              "top": 16,
+            }
+          }
+        />
+      }
+      userIds={
+        Array [
+          "user-1-id",
+          "user-2-id",
+        ]
+      }
+    />
+  </View>
+</Pressable>
+`;

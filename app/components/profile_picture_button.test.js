@@ -10,7 +10,7 @@ import ProfilePictureButton from './profile_picture_button.js';
 
 describe('profile_picture_button', () => {
     const baseProps = {
-        theme: Preferences.THEMES.default,
+        theme: Preferences.THEMES.denim,
         currentUser: {
             first_name: 'Dwight',
             last_name: 'Schrute',

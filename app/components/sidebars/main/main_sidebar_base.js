@@ -28,6 +28,7 @@ export default class MainSidebarBase extends Component {
             joinChannel: PropTypes.func.isRequired,
             makeDirectChannel: PropTypes.func.isRequired,
             setChannelDisplayName: PropTypes.func.isRequired,
+            setCategoryCollapsed: PropTypes.func.isRequired,
             handleNotViewingGlobalThreadsScreen: PropTypes.func,
         }).isRequired,
         children: PropTypes.node,
@@ -55,7 +56,7 @@ export default class MainSidebarBase extends Component {
         this.props.actions.getTeams();
         EventEmitter.on(NavigationTypes.CLOSE_MAIN_SIDEBAR, this.closeMainSidebar);
         EventEmitter.on(WebsocketEvents.CHANNEL_UPDATED, this.handleUpdateTitle);
-        Dimensions.addEventListener('change', this.handleDimensions);
+        this.dimensionsListener = Dimensions.addEventListener('change', this.handleDimensions);
     }
 
     shouldComponentUpdate(nextProps, nextState) {
@@ -90,7 +91,7 @@ export default class MainSidebarBase extends Component {
         this.mounted = false;
         EventEmitter.off(NavigationTypes.CLOSE_MAIN_SIDEBAR, this.closeMainSidebar);
         EventEmitter.off(WebsocketEvents.CHANNEL_UPDATED, this.handleUpdateTitle);
-        Dimensions.removeEventListener('change', this.handleDimensions);
+        this.dimensionsListener?.remove();
     }
 
     drawerSwiperRef = (ref) => {
@@ -240,6 +241,7 @@ export default class MainSidebarBase extends Component {
                     testID='main.sidebar.channels_list'
                     ref={this.channelListRef}
                     onSelectChannel={this.selectChannel}
+                    onCollapseCategory={this.collapseCategory}
                     onJoinChannel={this.joinChannel}
                     onShowTeams={multipleTeams ? this.showTeams : undefined}
                     onSearchStart={this.onSearchStart}
@@ -271,6 +273,12 @@ export default class MainSidebarBase extends Component {
             </SafeAreaView>
         );
     };
+
+    collapseCategory = (categoryId, collapse) => {
+        const {setCategoryCollapsed} = this.props.actions;
+
+        setCategoryCollapsed(categoryId, collapse);
+    }
 
     selectChannel = (channel, currentChannelId, closeDrawer = true) => {
         const {handleSelectChannel, handleNotViewingGlobalThreadsScreen} = this.props.actions;

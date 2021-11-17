@@ -143,7 +143,7 @@ describe('GlobalEventHandler', () => {
             jest.clearAllMocks();
         });
 
-        const minVersion = semver.parse('5.31.0');
+        const minVersion = semver.parse('5.37.0');
         const currentUserId = 'current-user-id';
         Store.redux.getState = jest.fn().mockReturnValue({
             entities: {

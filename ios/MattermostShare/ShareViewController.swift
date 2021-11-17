@@ -47,48 +47,49 @@ class ShareViewController: SLComposeServiceViewController {
 
     title = Bundle.main.displayName
     placeholder = "Write a message..."
-
+    self.loadData()
+    
+  }
+  
+  override func viewDidAppear(_ animated: Bool) {
+    super.viewDidAppear(animated);
     let config = getManagedConfig()
     if let inAppPinCode = config["inAppPinCode"] as? String, inAppPinCode == "true" {
-      self.auth(vendor: config["vendor"] as? String)
-    } else {
-      self.loadData()
+      self.auth(vendor: "Mattermost")
     }
   }
 
   func auth(vendor: String?) {
-    let context = LAContext()
+      let context = LAContext()
 
-    var error: NSError?
-    if !context.canEvaluatePolicy(.deviceOwnerAuthentication, error: &error) {
-      if let error = error, error.code == kLAErrorPasscodeNotSet {
-        var message = "This device must be secured with a passcode to use Mattermost.\n\nGo to Settings > Touch ID & Passcode."
-        if #available(iOS 11.0, *) {
-          if (context.biometryType == LABiometryType.faceID) {
-            message = "This device must be secured with a passcode to use Mattermost.\n\nGo to Settings > Face ID & Passcode."
+      var error: NSError?
+      if !context.canEvaluatePolicy(.deviceOwnerAuthentication, error: &error) {
+        if let error = error, error.code == kLAErrorPasscodeNotSet {
+          var message = "This device must be secured with a passcode to use Mattermost.\n\nGo to Settings > Touch ID & Passcode."
+          if #available(iOS 11.0, *) {
+            if (context.biometryType == LABiometryType.faceID) {
+              message = "This device must be secured with a passcode to use Mattermost.\n\nGo to Settings > Face ID & Passcode."
+            }
           }
+
+          self.showErrorMessage(
+            title: "",
+            message: message,
+            VC: self
+          )
+        } else {
+          self.showErrorMessage(title: "", message: "Unable to authenticate device owner for Mattermost", VC: self)
         }
 
-        self.showErrorMessage(
-          title: "",
-          message: message,
-          VC: self
-        )
-      } else {
-        self.showErrorMessage(title: "", message: "Unable to authenticate device owner for Mattermost", VC: self)
+        return
       }
 
-      return
-    }
-
-    let reason = "Secured by " + (vendor ?? "Mattermost")
-    context.evaluatePolicy(.deviceOwnerAuthentication, localizedReason: reason) { success, error in
-      if success {
-        self.loadData()
-      } else {
-        self.showErrorMessage(title: "", message: "Unable to authenticate device owner for Mattermost", VC: self)
+      let reason = "Secured by " + (vendor ?? "Mattermost")
+      context.evaluatePolicy(.deviceOwnerAuthentication, localizedReason: reason) { success, error in
+        if !success || error != nil {
+          self.showErrorMessage(title: "", message: "Unable to authenticate device owner to use Mattermost", VC: self)
+        }
       }
-    }
   }
 
   func loadData() {
@@ -190,6 +191,11 @@ class ShareViewController: SLComposeServiceViewController {
       teams.tapHandler = {
         self.teamsVC.teamDecks = teamDecks
         self.teamsVC.delegate = self
+        if let layoutContainerView = self.view.subviews.last {
+          let frame = layoutContainerView.frame
+          let newSize:CGSize = CGSize(width:frame.size.width, height:frame.size.height * 1.3)
+          self.teamsVC.preferredContentSize = newSize
+        }
         self.pushConfigurationViewController(self.teamsVC)
       }
       items.append(teams)
@@ -204,6 +210,11 @@ class ShareViewController: SLComposeServiceViewController {
         self.channelsVC.channelDecks = channelDecks!
         self.channelsVC.navbarTitle = self.selectedTeam?.title
         self.channelsVC.delegate = self
+        if let layoutContainerView = self.view.subviews.last {
+          let frame = layoutContainerView.frame
+          let newSize:CGSize = CGSize(width:frame.size.width, height:frame.size.height * 1.3)
+          self.channelsVC.preferredContentSize = newSize
+        }
         self.pushConfigurationViewController(self.channelsVC)
       }
       
@@ -485,13 +496,15 @@ class ShareViewController: SLComposeServiceViewController {
   // MARK: - Utiilities
   
   func showErrorMessage(title: String, message: String, VC: UIViewController) {
-    let alert: UIAlertController = UIAlertController(title: title, message: message, preferredStyle: UIAlertController.Style.alert)
-    let okAction = UIAlertAction(title: "OK", style: UIAlertAction.Style.default) {
-      UIAlertAction in
-      self.cancel()
+    DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+      let alert: UIAlertController = UIAlertController(title: title, message: message, preferredStyle: UIAlertController.Style.alert)
+      let okAction = UIAlertAction(title: "OK", style: UIAlertAction.Style.default) {
+        UIAlertAction in
+        self.cancel()
+      }
+      alert.addAction(okAction)
+      VC.present(alert, animated: true, completion: nil)
     }
-    alert.addAction(okAction)
-    VC.present(alert, animated: true, completion: nil)
   }
   
   func showErrorMessageAndStayOpen(title: String, message: String, VC: UIViewController) {

@@ -45,8 +45,6 @@ const handleRedirectProtocol = (url, response) => {
 };
 
 Client4.doFetchWithResponse = async (url, options) => {
-    // eslint-disable-next-line no-console
-    console.log('Request endpoint', url);
     const customHeaders = LocalConfig.CustomRequestHeaders;
     let waitsForConnectivity = false;
     let timeoutIntervalForResource = 30;

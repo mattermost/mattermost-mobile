@@ -2,7 +2,6 @@
 // See LICENSE.txt for license information.
 import {Client4} from '@client/rest';
 import {ChannelTypes, RoleTypes, TeamTypes, UserTypes} from '@mm-redux/action_types';
-import {isCompatibleWithJoinViewTeamPermissions} from '@mm-redux/selectors/entities/general';
 import {getRoles} from '@mm-redux/selectors/entities/roles_helpers';
 import {getCurrentTeamId} from '@mm-redux/selectors/entities/teams';
 import {getCurrentUserId} from '@mm-redux/selectors/entities/users';
@@ -417,18 +416,14 @@ export function removeUserFromTeam(teamId: string, userId: string): ActionFunc {
     };
 }
 
-export function joinTeam(inviteId: string, teamId: string): ActionFunc {
+export function joinTeam(teamId: string): ActionFunc {
     return async (dispatch: DispatchFunc, getState: GetStateFunc) => {
         dispatch({type: TeamTypes.JOIN_TEAM_REQUEST, data: null});
 
         const state = getState();
         try {
-            if (isCompatibleWithJoinViewTeamPermissions(state)) {
-                const currentUserId = state.entities.users.currentUserId;
-                await Client4.addToTeam(teamId, currentUserId);
-            } else {
-                await Client4.joinTeam(inviteId);
-            }
+            const currentUserId = state.entities.users.currentUserId;
+            await Client4.addToTeam(teamId, currentUserId);
         } catch (error) {
             forceLogoutIfNecessary(error, dispatch, getState);
             dispatch(batchActions([

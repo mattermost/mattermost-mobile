@@ -7,7 +7,7 @@ import {View} from 'react-native';
 import EmbeddedBinding from './embedded_binding';
 
 import type {AppBinding} from '@mm-redux/types/apps';
-import type {Theme} from '@mm-redux/types/preferences';
+import type {Theme} from '@mm-redux/types/theme';
 
 type Props = {
     embeds: AppBinding[];

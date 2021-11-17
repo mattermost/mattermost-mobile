@@ -14,7 +14,7 @@ import TouchableWithFeedback from '@components/touchable_with_feedback';
 import {General} from '@mm-redux/constants';
 import {makeStyleSheetFromTheme, changeOpacity} from '@utils/theme';
 
-import type {Theme} from '@mm-redux/types/preferences';
+import type {Theme} from '@mm-redux/types/theme';
 
 interface AtMentionItemProps {
     firstName: string;

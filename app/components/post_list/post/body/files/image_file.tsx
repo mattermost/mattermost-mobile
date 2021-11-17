@@ -12,7 +12,7 @@ import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import FileIcon from './file_icon';
 
 import type {FileInfo} from '@mm-redux/types/files';
-import type {Theme} from '@mm-redux/types/preferences';
+import type {Theme} from '@mm-redux/types/theme';
 
 type ImageFileProps = {
     backgroundColor?: string;

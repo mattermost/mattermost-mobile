@@ -13,13 +13,13 @@ import {shallowWithIntl} from '@test/intl-test-helper';
 import MoreMessagesButton, {
     MIN_INPUT,
     MAX_INPUT,
-    INDICATOR_BAR_FACTOR,
+    BARS_FACTOR,
     CANCEL_TIMER_DELAY,
 } from './more_messages_button';
 
 describe('MoreMessagesButton', () => {
     const baseProps = {
-        theme: Preferences.THEMES.default,
+        theme: Preferences.THEMES.denim,
         postIds: [],
         channelId: 'channel-id',
         unreadCount: 10,
@@ -55,7 +55,6 @@ describe('MoreMessagesButton', () => {
 
     describe('lifecycle methods', () => {
         AppState.addEventListener = jest.fn();
-        AppState.removeEventListener = jest.fn();
 
         test('componentDidMount should register app state listener, indicator visibility listener, viewable items listener, and scroll end index listener', () => {
             EventEmitter.on = jest.fn();
@@ -94,7 +93,6 @@ describe('MoreMessagesButton', () => {
             instance.removeScrollEndIndexListener = jest.fn();
 
             instance.componentWillUnmount();
-            expect(AppState.removeEventListener).toHaveBeenCalledWith('change', instance.onAppStateChange);
             expect(EventEmitter.off).toHaveBeenCalledWith(ViewTypes.INDICATOR_BAR_VISIBLE, instance.onIndicatorBarVisible);
             expect(instance.removeViewableItemsListener).toHaveBeenCalled();
             expect(instance.removeScrollEndIndexListener).toHaveBeenCalled();
@@ -298,17 +296,19 @@ describe('MoreMessagesButton', () => {
             expect(Animated.spring).not.toHaveBeenCalledTimes(1);
         });
 
-        it('should animate to MAX_INPUT - INDICATOR_BAR_FACTOR if visible and indicator bar hides', () => {
+        it('should animate to MAX_INPUT - BARS_FACTOR if visible and indicator bar hides', () => {
             instance.buttonVisible = true;
             instance.onIndicatorBarVisible(false);
             expect(Animated.spring).toHaveBeenCalledWith(instance.top, {
-                toValue: MAX_INPUT - INDICATOR_BAR_FACTOR,
+                toValue: MAX_INPUT - BARS_FACTOR,
                 useNativeDriver: true,
             });
         });
 
         it('should animate to MAX_INPUT if visible and indicator becomes visible', () => {
             instance.buttonVisible = true;
+            instance.joinCallBarVisible = true;
+            instance.currentCallBarVisible = true;
             instance.onIndicatorBarVisible(true);
             expect(Animated.spring).toHaveBeenCalledWith(instance.top, {
                 toValue: MAX_INPUT,
@@ -323,6 +323,8 @@ describe('MoreMessagesButton', () => {
                 <MoreMessagesButton {...baseProps}/>,
             );
             const instance = wrapper.instance();
+            const clearTimeout = jest.spyOn(global, 'clearTimeout');
+
             wrapper.setProps({unreadCount: 10});
             instance.setState({moreText: '60+ new messages'});
             const autoCancelTimer = jest.fn();
@@ -414,13 +416,15 @@ describe('MoreMessagesButton', () => {
             instance.show();
             expect(instance.buttonVisible).toBe(true);
             expect(Animated.spring).toHaveBeenCalledWith(instance.top, {
-                toValue: MAX_INPUT - INDICATOR_BAR_FACTOR,
+                toValue: MAX_INPUT - BARS_FACTOR,
                 useNativeDriver: true,
             });
         });
 
-        it('should account for the indicator bar height when the indicator is visible', () => {
+        it('should account for the indicator bar heights when the indicator is visible', () => {
             instance.indicatorBarVisible = true;
+            instance.joinCallBarVisible = true;
+            instance.currentCallBarVisible = true;
             instance.buttonVisible = false;
             wrapper.setState({moreText: '1 new message'});
             wrapper.setProps({deepLinkURL: null, unreadCount: 1});
@@ -457,13 +461,15 @@ describe('MoreMessagesButton', () => {
             instance.hide();
             expect(instance.buttonVisible).toBe(false);
             expect(Animated.spring).toHaveBeenCalledWith(instance.top, {
-                toValue: MIN_INPUT + INDICATOR_BAR_FACTOR,
+                toValue: MIN_INPUT + BARS_FACTOR,
                 useNativeDriver: true,
             });
         });
 
-        it('should account for the indicator bar height when the indicator is visible', () => {
+        it('should account for the indicator bars heights when the indicator is visible', () => {
             instance.indicatorBarVisible = true;
+            instance.joinCallBarVisible = true;
+            instance.currentCallBarVisible = true;
             instance.buttonVisible = true;
 
             instance.hide();
@@ -517,6 +523,8 @@ describe('MoreMessagesButton', () => {
                 <MoreMessagesButton {...baseProps}/>,
             );
             const instance = wrapper.instance();
+            const setTimeout = jest.spyOn(global, 'setTimeout');
+
             instance.componentDidUpdate = jest.fn();
             instance.canceled = false;
             instance.hide = jest.fn();
@@ -539,6 +547,8 @@ describe('MoreMessagesButton', () => {
                 <MoreMessagesButton {...baseProps}/>,
             );
             const instance = wrapper.instance();
+            const setTimeout = jest.spyOn(global, 'setTimeout');
+
             instance.componentDidUpdate = jest.fn();
             instance.canceled = false;
             instance.hide = jest.fn();
@@ -564,7 +574,9 @@ describe('MoreMessagesButton', () => {
                 <MoreMessagesButton {...baseProps}/>,
             );
             const instance = wrapper.instance();
+            const clearTimeout = jest.spyOn(global, 'clearTimeout');
             const autoCancelTimer = jest.fn();
+
             instance.autoCancelTimer = autoCancelTimer;
             instance.canceled = true;
             instance.disableViewableItems = true;
@@ -621,6 +633,7 @@ describe('MoreMessagesButton', () => {
 
         it('should return early when newMessageLineIndex <= 0', () => {
             const viewableItems = [{index: 0}, {index: 1}];
+            const clearTimeout = jest.spyOn(global, 'clearTimeout');
 
             wrapper.setProps({newMessageLineIndex: 0});
             instance.onViewableItemsChanged(viewableItems);
@@ -633,8 +646,9 @@ describe('MoreMessagesButton', () => {
 
         it('should return early when viewableItems length is 0', () => {
             const viewableItems = [];
-            wrapper.setProps({newMessageLineIndex: 1, unreadCount: 10});
+            const clearTimeout = jest.spyOn(global, 'clearTimeout');
 
+            wrapper.setProps({newMessageLineIndex: 1, unreadCount: 10});
             instance.onViewableItemsChanged(viewableItems);
             expect(clearTimeout).not.toHaveBeenCalled();
         });
@@ -643,6 +657,7 @@ describe('MoreMessagesButton', () => {
             const viewableItems = [{index: 0}];
             wrapper.setProps({newMessageLineIndex: 1, unreadCount: 10});
             instance.disableViewableItems = true;
+            const clearTimeout = jest.spyOn(global, 'clearTimeout');
 
             instance.onViewableItemsChanged(viewableItems);
             expect(clearTimeout).not.toHaveBeenCalled();
@@ -685,6 +700,7 @@ describe('MoreMessagesButton', () => {
             instance.disableViewableItems = false;
             instance.autoCancelTimer = null;
             instance.cancel = jest.fn();
+            const setTimeout = jest.spyOn(global, 'setTimeout');
 
             instance.onViewableItemsChanged(viewableItems);
             jest.runOnlyPendingTimers();
@@ -701,6 +717,7 @@ describe('MoreMessagesButton', () => {
             instance.disableViewableItems = false;
             instance.autoCancelTimer = null;
             instance.cancel = jest.fn();
+            const setTimeout = jest.spyOn(global, 'setTimeout');
 
             instance.onViewableItemsChanged(viewableItems);
             jest.runOnlyPendingTimers();

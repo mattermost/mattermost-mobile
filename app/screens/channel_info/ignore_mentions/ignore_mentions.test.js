@@ -20,7 +20,7 @@ describe('ChannelInfo -> IgnoreMentions', () => {
     const baseProps = {
         channelId: '123',
         ignore: false,
-        theme: Preferences.THEMES.default,
+        theme: Preferences.THEMES.denim,
         updateChannelNotifyProps: jest.fn(),
         userId: 'user-123',
     };

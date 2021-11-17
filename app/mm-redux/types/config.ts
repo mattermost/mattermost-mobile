@@ -63,6 +63,7 @@ export type Config = {
     EnableIncomingWebhooks: string;
     EnableLatex: string;
     EnableLdap: string;
+    EnableLegacySidebar: string;
     EnableLinkPreviews: string;
     EnableMarketplace: string;
     EnableMetrics: string;
@@ -94,10 +95,9 @@ export type Config = {
     EnableUserCreation: string;
     EnableUserDeactivation: string;
     EnableUserTypingMessages: string;
-    EnableXToLeaveChannelsFromLHS: string;
     EnforceMultifactorAuthentication: string;
     ExperimentalChannelOrganization: string;
-    ExperimentalChannelSidebarOrganization: string;
+    ExperimentalChannelSidebarOrganization?: string;
     ExperimentalClientSideCertCheck: string;
     ExperimentalClientSideCertEnable: string;
     ExperimentalEnableAuthenticationTransfer: string;

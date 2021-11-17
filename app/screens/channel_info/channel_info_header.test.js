@@ -36,7 +36,7 @@ describe('channel_info_header', () => {
         header: 'Header string',
         purpose: 'Purpose string',
         status: 'status',
-        theme: Preferences.THEMES.default,
+        theme: Preferences.THEMES.denim,
         type: General.OPEN_CHANNEL,
         isArchived: false,
         isBot: false,

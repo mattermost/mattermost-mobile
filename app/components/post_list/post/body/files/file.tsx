@@ -15,7 +15,7 @@ import ImageFile from './image_file';
 import ImageFileOverlay from './image_file_overlay';
 
 import type {FileInfo as FileInfoType} from '@mm-redux/types/files';
-import type {Theme} from '@mm-redux/types/preferences';
+import type {Theme} from '@mm-redux/types/theme';
 
 type FileProps = {
     canDownloadFiles: boolean;

@@ -20,7 +20,7 @@ describe('ChannelInfo -> Add Members', () => {
     const baseProps = {
         canManageUsers: true,
         groupConstrained: false,
-        theme: Preferences.THEMES.default,
+        theme: Preferences.THEMES.denim,
     };
 
     test('should match snapshot', () => {

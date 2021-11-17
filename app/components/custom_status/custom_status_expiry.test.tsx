@@ -20,7 +20,7 @@ describe('components/custom_status/custom_status_expiry', () => {
     const date = moment().endOf('day');
 
     const baseProps = {
-        theme: Preferences.THEMES.default,
+        theme: Preferences.THEMES.denim,
         time: date.toDate(),
     };
 

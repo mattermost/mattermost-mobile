@@ -48,7 +48,7 @@ export default class SpecialMentionItem extends PureComponent {
                 <View style={style.row}>
                     <View style={style.rowPicture}>
                         <CompassIcon
-                            name='account-group-outline'
+                            name='account-multiple-outline'
                             style={style.rowIcon}
                         />
                     </View>

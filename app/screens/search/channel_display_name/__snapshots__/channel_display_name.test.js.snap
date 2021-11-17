@@ -1,0 +1,83 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`SearchResultPost should match snapshot when no team is provided 1`] = `
+<View
+  style={
+    Object {
+      "alignItems": "baseline",
+      "flexDirection": "row",
+      "marginTop": 5,
+      "paddingHorizontal": 16,
+    }
+  }
+>
+  <Text
+    numberOfLines={1}
+    style={
+      Object {
+        "color": "rgba(63,67,80,0.8)",
+        "flexShrink": 1,
+        "fontSize": 14,
+        "fontWeight": "600",
+      }
+    }
+  >
+    channel
+  </Text>
+</View>
+`;
+
+exports[`SearchResultPost should match snapshot when team is provided 1`] = `
+<View
+  style={
+    Object {
+      "alignItems": "baseline",
+      "flexDirection": "row",
+      "marginTop": 5,
+      "paddingHorizontal": 16,
+    }
+  }
+>
+  <Text
+    numberOfLines={1}
+    style={
+      Object {
+        "color": "rgba(63,67,80,0.8)",
+        "flexShrink": 1,
+        "fontSize": 14,
+        "fontWeight": "600",
+      }
+    }
+  >
+    channel
+  </Text>
+  <React.Fragment>
+    <View
+      style={
+        Object {
+          "alignSelf": "stretch",
+          "borderLeftColor": "rgba(63,67,80,0.2)",
+          "borderLeftWidth": 1,
+          "borderStyle": "solid",
+          "height": 16,
+          "marginLeft": 8,
+          "marginRight": 8,
+        }
+      }
+    />
+    <Text
+      numberOfLines={1}
+      style={
+        Object {
+          "color": "rgba(63,67,80,0.5)",
+          "flexShrink": 2,
+          "fontSize": 12,
+          "fontWeight": "400",
+        }
+      }
+    >
+      team
+    </Text>
+  </React.Fragment>
+</View>
+`;

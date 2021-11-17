@@ -13,7 +13,7 @@ import AtMentionItem from '@components/autocomplete/at_mention_item';
 import ChannelMentionItem from '@components/autocomplete/channel_mention_item';
 import {analytics} from '@init/analytics';
 import {AutocompleteSuggestion} from '@mm-redux/types/integrations';
-import {Theme} from '@mm-redux/types/preferences';
+import {Theme} from '@mm-redux/types/theme';
 import {isMinimumServerVersion} from '@mm-redux/utils/helpers';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 

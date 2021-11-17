@@ -13,6 +13,7 @@ import {
 
 import Badge from '@components/badge';
 import ChannelIcon from '@components/channel_icon';
+import CompassIcon from '@components/compass_icon';
 import CustomStatusEmoji from '@components/custom_status/custom_status_emoji';
 import {General} from '@mm-redux/constants';
 import {preventDoubleTap} from '@utils/tap';
@@ -41,6 +42,8 @@ export default class ChannelItem extends PureComponent {
         isSearchResult: PropTypes.bool,
         viewingGlobalThreads: PropTypes.bool,
         customStatusEnabled: PropTypes.bool.isRequired,
+        channelHasCall: PropTypes.bool.isRequired,
+        callsFeatureEnabled: PropTypes.bool.isRequired,
     };
 
     static defaultProps = {
@@ -181,14 +184,13 @@ export default class ChannelItem extends PureComponent {
         const itemTestID = `${testID}.${channelId}`;
         const displayNameTestID = `${testID}.display_name`;
 
-        const customStatus = this.props.teammateId && this.props.customStatusEnabled ?
-            (
-                <CustomStatusEmoji
-                    userID={this.props.teammateId}
-                    style={[style.emoji, extraTextStyle]}
-                    testID={displayName}
-                />
-            ) : null;
+        const customStatus = this.props.teammateId && this.props.customStatusEnabled ? (
+            <CustomStatusEmoji
+                userID={this.props.teammateId}
+                style={[style.emoji, extraTextStyle]}
+                testID={displayName}
+            />
+        ) : null;
 
         return (
             <TouchableHighlight
@@ -215,6 +217,13 @@ export default class ChannelItem extends PureComponent {
                         </Text>
                         {customStatus}
                         {badge}
+                        {this.props.callsFeatureEnabled && this.props.channelHasCall &&
+                            <CompassIcon
+                                name='phone-in-talk'
+                                size={16}
+                                style={style.hasCall}
+                            />
+                        }
                     </View>
                 </View>
             </TouchableHighlight>
@@ -288,6 +297,12 @@ export const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         },
         muted: {
             opacity: 0.5,
+        },
+        hasCall: {
+            color: theme.sidebarText,
+            flex: 1,
+            textAlign: 'right',
+            marginRight: 20,
         },
     };
 });

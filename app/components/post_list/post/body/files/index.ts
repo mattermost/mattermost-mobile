@@ -8,8 +8,8 @@ import {canDownloadFilesOnMobile} from '@mm-redux/selectors/entities/general';
 
 import Files from './files';
 
-import type {Theme} from '@mm-redux/types/preferences';
 import type {GlobalState} from '@mm-redux/types/store';
+import type {Theme} from '@mm-redux/types/theme';
 
 type OwnProps = {
     fileIds: string[];
