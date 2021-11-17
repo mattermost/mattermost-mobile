@@ -31,7 +31,7 @@ export async function loadSidebarDirectMessagesProfiles(state: GlobalState, chan
     // Prepare preferences and start fetching profiles to batch them
     directChannels.forEach((c) => {
         const profileIds = Array.from(usersInChannel[c.id] || []);
-        const profilesInChannel: string[] = profileIds.filter((u: string) => u !== currentUserId);
+        const profilesInChannel: Array<string> = profileIds.filter((u: string) => u !== currentUserId);
         userIds.push(...profilesInChannel);
 
         switch (c.type) {
