@@ -185,7 +185,7 @@ const EditProfile = ({
                 },
             });
         } catch (e) {
-            // handleUploadError(e as Error);
+            return resetScreen(e as Error);
         }
     };
 
@@ -216,18 +216,19 @@ const EditProfile = ({
             const {error: reqError} = await updateMe(serverUrl, partialUser);
 
             if (reqError) {
-                return resetScreen();
+                return resetScreen(reqError as Error);
             }
 
             close();
         } catch (e) {
-            return resetScreen();
+            return resetScreen(e as Error);
         }
+
         return null;
     };
 
-    const resetScreen = () => {
-        setError(error);
+    const resetScreen = (resetError: Error) => {
+        setError(resetError?.message);
         setUpdating(false);
         enableSaveButton(true);
         scrollViewRef.current?.scrollToPosition(0, 0, true);
