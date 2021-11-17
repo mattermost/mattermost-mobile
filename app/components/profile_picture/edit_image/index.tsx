@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useEffect, useState} from 'react';
+import React, {useState} from 'react';
 import {Platform, View} from 'react-native';
 
 import {Client} from '@client/rest';
@@ -12,10 +12,9 @@ import useDidUpdate from '@hooks/did_update';
 import NetworkManager from '@init/network_manager';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
-import UserProfileImage from '../image';
+import ProfileImage from '../image';
 
 type ProfilePictureProps = {
-    canUpdateProfilePicture: boolean;
     imageUri?: string;
     isProfileImageRemoved?: boolean;
     lastPictureUpdate: number;
@@ -48,8 +47,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     };
 });
 
-const EditProfilePicture = ({
-    canUpdateProfilePicture = false,
+const EditProfileImage = ({
     imageUri,
     isProfileImageRemoved,
     lastPictureUpdate,
@@ -70,29 +68,22 @@ const EditProfilePicture = ({
         // does nothing
     }
 
-    useEffect(() => {
-        if (canUpdateProfilePicture && imageUri) {
+    useDidUpdate(() => {
+        if (imageUri) {
             setPictureUrl(imageUri);
         }
-    }, []);
+    }, [imageUri]);
 
     useDidUpdate(() => {
         setPictureUrl(undefined);
     }, [isProfileImageRemoved]);
 
-    // can this replace the useEffect function above?
-    useDidUpdate(() => {
-        if (canUpdateProfilePicture && imageUri) {
-            setPictureUrl(imageUri);
-        }
-    }, [canUpdateProfilePicture, imageUri]);
-
     useDidUpdate(() => {
         const url = userId && client ? client.getProfilePictureUrl(userId, lastPictureUpdate) : undefined;
-        if (url !== pictureUrl && !canUpdateProfilePicture) {
+        if (url !== pictureUrl) {
             setPictureUrl(url);
         }
-    }, [userId, lastPictureUpdate, canUpdateProfilePicture]);
+    }, [userId, lastPictureUpdate]);
 
     let source = null;
 
@@ -127,7 +118,7 @@ const EditProfilePicture = ({
             ]}
             testID={`${testID}.${userId}`}
         >
-            <UserProfileImage
+            <ProfileImage
                 imageUrl={pictureUrl}
                 lastPictureUpdate={lastPictureUpdate}
                 size={size}
@@ -143,9 +134,8 @@ const EditProfilePicture = ({
                     color={changeOpacity(theme.centerChannelColor, 0.6)}
                 />
             </View>
-
         </View>
     );
 };
 
-export default EditProfilePicture;
+export default EditProfileImage;

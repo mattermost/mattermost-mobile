@@ -15,7 +15,8 @@ import {switchMap} from 'rxjs/operators';
 
 import {updateLocalUser} from '@actions/local/user';
 import {setDefaultProfileImage, updateMe} from '@actions/remote/user';
-import EditProfilePicture from '@components/profile_picture/edit_image';
+import EditProfileImage from '@components/profile_picture/edit_image';
+import ProfileImage from '@components/profile_picture/image';
 import ImagePicker from '@components/profile_picture/picker';
 import TabletTitle from '@components/tablet_title';
 import {Events} from '@constants';
@@ -278,22 +279,15 @@ const EditProfile = ({
     };
 
     const renderProfilePicture = () => {
-        const profilePicture = (
-            <EditProfilePicture
-                canUpdateProfilePicture={!lockedPicture}
-                imageUri={profileImage?.uri}
-                lastPictureUpdate={currentUser.lastPictureUpdate}
-                isProfileImageRemoved={isProfileImageRemoved}
-                size={153}
-                testID='edit_profile.profile_picture'
-                userId={currentUser.id}
-            />
-        );
-
         if (lockedPicture) {
             return (
                 <View style={style.top}>
-                    {profilePicture}
+                    <ProfileImage
+                        imageUrl={profileImage?.uri}
+                        userId={currentUser.id}
+                        lastPictureUpdate={currentUser.lastPictureUpdate}
+                        size={153}
+                    />
                 </View>
             );
         }
@@ -311,7 +305,14 @@ const EditProfile = ({
                         uploadFiles={handleUploadProfileImage}
                         wrapper={true}
                     >
-                        {profilePicture}
+                        <EditProfileImage
+                            imageUri={profileImage?.uri}
+                            lastPictureUpdate={currentUser.lastPictureUpdate}
+                            isProfileImageRemoved={isProfileImageRemoved}
+                            size={153}
+                            testID='edit_profile.profile_picture'
+                            userId={currentUser.id}
+                        />
                     </ImagePicker>
                 </View>
             );

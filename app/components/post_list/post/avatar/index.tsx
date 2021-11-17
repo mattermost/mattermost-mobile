@@ -11,7 +11,7 @@ import {of as of$} from 'rxjs';
 import {switchMap} from 'rxjs/operators';
 
 import CompassIcon from '@components/compass_icon';
-import UserProfilePicture from '@components/profile_picture/image';
+import ProfilePicture from '@components/profile_picture/image';
 import SystemAvatar from '@components/system_avatar';
 import TouchableWithFeedback from '@components/touchable_with_feedback';
 import {View as ViewConstant} from '@constants';
@@ -138,7 +138,7 @@ const Avatar = ({author, enablePostIconOverride, isAutoReponse, isSystemPost, pe
     });
 
     let component = (
-        <UserProfilePicture
+        <ProfilePicture
             lastPictureUpdate={author.lastPictureUpdate}
             size={ViewConstant.PROFILE_PICTURE_SIZE}
             userId={author.id}

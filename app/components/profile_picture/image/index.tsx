@@ -26,7 +26,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     };
 });
 
-type UserProfileImageProps = {
+type ProfileImageProps = {
     imageUrl?: string;
     lastPictureUpdate: number;
     size: number;
@@ -35,14 +35,14 @@ type UserProfileImageProps = {
     userId?: string;
 };
 
-const UserProfileImage = ({
+const ProfileImage = ({
     imageUrl,
     lastPictureUpdate,
     size = 64,
     source,
     testID,
     userId,
-}: UserProfileImageProps) => {
+}: ProfileImageProps) => {
     const theme = useTheme();
     const serverUrl = useServerUrl();
     const style = getStyleSheet(theme);
@@ -85,4 +85,4 @@ const UserProfileImage = ({
     );
 };
 
-export default memo(UserProfileImage);
+export default memo(ProfileImage);
