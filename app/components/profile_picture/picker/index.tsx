@@ -94,13 +94,13 @@ const ImagePicker = ({
                     },
                     browsePhotoLibrary: {
                         icon: 'file-generic-outline',
-                        onPress: () => pictureUtils.attachFileFromLibrary(),
+                        onPress: () => pictureUtils.attachFileFromPhotoGallery(),
                         testID: 'attachment.canBrowsePhotoLibrary',
                         text: intl.formatMessage({id: 'mobile.file_upload.library', defaultMessage: 'Photo Library'}),
                     },
                     browseFiles: {
                         icon: 'file-multiple-outline',
-                        onPress: () => pictureUtils.attachFileFromFiles(intl, browseFileType),
+                        onPress: () => pictureUtils.attachFileFromFiles(browseFileType),
                         testID: 'attachment.canBrowseFiles',
                         text: intl.formatMessage({id: 'mobile.file_upload.browse', defaultMessage: 'Browse Files'}),
                     },

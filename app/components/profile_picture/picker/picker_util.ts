@@ -223,16 +223,14 @@ export default class PickerUtil {
         return false;
     }
 
-    private hasStoragePermission = async (intl: IntlShape) => {
+    private hasStoragePermission = async () => {
         if (Platform.OS === 'ios') {
             return true;
         }
 
-        const {formatMessage} = intl;
         const storagePermission = Permissions.PERMISSIONS.ANDROID.READ_EXTERNAL_STORAGE;
         let permissionRequest;
         const hasPermissionToStorage = await Permissions.check(storagePermission);
-
         switch (hasPermissionToStorage) {
             case Permissions.RESULTS.DENIED:
                 permissionRequest = await Permissions.request(storagePermission);
@@ -245,13 +243,13 @@ export default class PickerUtil {
 
                 Alert.alert(title, text, [
                     {
-                        text: formatMessage({
+                        text: this.intl.formatMessage({
                             id: 'mobile.permission_denied_dismiss',
                             defaultMessage: "Don't Allow",
                         }),
                     },
                     {
-                        text: formatMessage({
+                        text: this.intl.formatMessage({
                             id: 'mobile.permission_denied_retry',
                             defaultMessage: 'Settings',
                         }),
@@ -260,6 +258,7 @@ export default class PickerUtil {
                 ]);
                 return false;
             }
+            default: return true;
         }
 
         return false;
@@ -289,11 +288,9 @@ export default class PickerUtil {
         }
     };
 
-    attachFileFromFiles = async (intl: IntlShape, browseFileType?: string) => {
-        const hasPermission = await this.hasStoragePermission(intl);
-        const fileType =
-            browseFileType ??
-            Platform.select({ios: 'public.item', android: '*/*'})!;
+    attachFileFromFiles = async (browseFileType?: string) => {
+        const hasPermission = await this.hasStoragePermission();
+        const fileType = browseFileType ?? Platform.select({ios: 'public.item', android: '*/*'})!;
 
         if (hasPermission) {
             try {
@@ -319,7 +316,7 @@ export default class PickerUtil {
         }
     };
 
-    attachFileFromLibrary = async () => {
+    attachFileFromPhotoGallery = async () => {
         const options: ImageLibraryOptions = {
             quality: 1,
             mediaType: 'mixed',
