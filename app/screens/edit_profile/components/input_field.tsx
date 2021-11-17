@@ -15,18 +15,18 @@ import FieldDescription from './input_field_description';
 
 type InputFieldProps = {
     containerStyle?: ViewStyle;
-    disabled?: boolean;
+    isDisabled?: boolean;
     error?: string;
     fieldDescription?: string;
     id: string;
     keyboardType?: KeyboardType | 'url';
     label: MessageDescriptor | string;
     maxLength?: number;
-    multiline?: boolean;
+    isMultiline?: boolean;
     onBlur?: (id: string) => void;
     onChange: (id: string, value: string) => void;
-    optional?: boolean;
-    secureTextEntry?: boolean;
+    isOptional?: boolean;
+    isSecureTextEntry?: boolean;
     subContainerStyle?: ViewStyle;
     testID: string;
     value: string;
@@ -34,18 +34,18 @@ type InputFieldProps = {
 
 const InputField = ({
     containerStyle,
-    disabled = false,
+    isDisabled = false,
     error,
     fieldDescription,
     id,
     keyboardType = 'default',
     label,
     maxLength,
-    multiline = false,
+    isMultiline = false,
     onBlur,
     onChange,
-    optional = false,
-    secureTextEntry = false,
+    isOptional = false,
+    isSecureTextEntry = false,
     subContainerStyle,
     testID,
     value,
@@ -72,7 +72,7 @@ const InputField = ({
 
     const labelText = typeof label === 'string' ? label : intl.formatMessage(label);
 
-    const optionalText = optional ? intl.formatMessage({
+    const optionalText = isOptional ? intl.formatMessage({
         id: 'channel_modal.optional',
         defaultMessage: '(optional)',
     }) : ' *';
@@ -97,21 +97,21 @@ const InputField = ({
                     autoCapitalize='none'
                     autoCorrect={false}
                     disableFullscreenUI={true}
-                    editable={!disabled}
+                    editable={!isDisabled}
                     error={error}
                     keyboardAppearance={getKeyboardAppearanceFromTheme(theme)}
                     keyboardType={keyboard}
                     label={formattedLabel}
                     maxLength={maxLength}
-                    multiline={multiline}
+                    multiline={isMultiline}
                     onChangeText={onChangeText}
                     onBlur={onBlurField}
-                    secureTextEntry={secureTextEntry}
+                    secureTextEntry={isSecureTextEntry}
                     testID={`${testID}.input`}
                     theme={theme}
                     value={value}
                 />
-                {disabled && fieldDescription && (
+                {isDisabled && fieldDescription && (
                     <FieldDescription
                         blockStyles={blockStyles}
                         text={fieldDescription}

@@ -24,14 +24,14 @@ import {MM_TABLES, SYSTEM_IDENTIFIERS} from '@constants/database';
 import {useServerUrl} from '@context/server_url';
 import {useTheme} from '@context/theme';
 import NetworkManager from '@init/network_manager';
-import {MAX_SIZE} from '@screens/edit_profile/constants';
+import {HOLDERS, MAX_SIZE} from '@screens/edit_profile/constants';
 import {dismissModal, popTopScreen, setButtons} from '@screens/navigation';
 import {File, UserInfo} from '@typings/screens/edit_profile';
 import {getFormattedFileSize} from '@utils/file';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 
 import EmailField from './components/email_field';
-import Field from './components/field';
+import InputField from './components/input_field';
 import ProfileError from './components/profile_error';
 import ProfileUpdating from './components/profile_updating';
 
@@ -348,26 +348,45 @@ const EditProfile = ({
                 >
                     {error && <ProfileError error={error}/>}
                     {renderProfilePicture()}
-                    <Field
+                    <InputField
+                        fieldDescription={intl.formatMessage({
+                            id: 'user.settings.general.field_handled_externally',
+                            defaultMessage: 'This field is handled through your login provider. If you want to change it, you need to do so through your login provider.',
+                        })}
                         id={'firstName'}
                         isDisabled={(['ldap', 'saml'].includes(service) && lockedFirstName) || ['gitlab', 'google', 'office365'].includes(service)}
+                        label={HOLDERS.firstName}
                         onChange={updateField}
+                        testID={'edit_profile.text_setting.firstName'}
                         value={userInfo.firstName}
+
                     />
                     <View style={style.separator}/>
-                    <Field
+                    <InputField
+                        fieldDescription={intl.formatMessage({
+                            id: 'user.settings.general.field_handled_externally',
+                            defaultMessage: 'This field is handled through your login provider. If you want to change it, you need to do so through your login provider.',
+                        })}
                         id={'lastName'}
                         isDisabled={(['ldap', 'saml'].includes(service) && lockedLastName) || ['gitlab', 'google', 'office365'].includes(service)}
+                        label={HOLDERS.lastName}
                         onChange={updateField}
+                        testID={'edit_profile.text_setting.lastName'}
                         value={userInfo.lastName}
                     />
                     <View style={style.separator}/>
-                    <Field
+                    <InputField
+                        fieldDescription={intl.formatMessage({
+                            id: 'user.settings.general.field_handled_externally',
+                            defaultMessage: 'This field is handled through your login provider. If you want to change it, you need to do so through your login provider.',
+                        })}
                         id={'username'}
                         isDisabled={service !== ''}
-                        onChange={updateField}
-                        value={userInfo.username}
+                        label={HOLDERS.username}
                         maxLength={22}
+                        onChange={updateField}
+                        testID={'edit_profile.text_setting.username'}
+                        value={userInfo.username}
                     />
                     <View style={style.separator}/>
                     <EmailField
@@ -376,21 +395,33 @@ const EditProfile = ({
                         onChange={updateField}
                     />
                     <View style={style.separator}/>
-                    <Field
+                    <InputField
+                        fieldDescription={intl.formatMessage({
+                            id: 'user.settings.general.field_handled_externally',
+                            defaultMessage: 'This field is handled through your login provider. If you want to change it, you need to do so through your login provider.',
+                        })}
                         id={'nickname'}
                         isDisabled={['ldap', 'saml'].includes(service) && lockedNickname}
-                        onChange={updateField}
-                        value={userInfo.nickname}
+                        label={HOLDERS.nickname}
                         maxLength={22}
+                        onChange={updateField}
+                        testID={'edit_profile.text_setting.nickname'}
+                        value={userInfo.nickname}
                     />
                     <View style={style.separator}/>
-                    <Field
+                    <InputField
+                        fieldDescription={intl.formatMessage({
+                            id: 'user.settings.general.field_handled_externally',
+                            defaultMessage: 'This field is handled through your login provider. If you want to change it, you need to do so through your login provider.',
+                        })}
                         id={'position'}
                         isDisabled={['ldap', 'saml'].includes(service) && lockedPosition}
-                        onChange={updateField}
-                        value={userInfo.position}
+                        label={HOLDERS.position}
                         maxLength={128}
-                        optional={true}
+                        onChange={updateField}
+                        isOptional={true}
+                        testID={'edit_profile.text_setting.position'}
+                        value={userInfo.position}
                     />
                     <View style={style.footer}/>
                 </KeyboardAwareScrollView>

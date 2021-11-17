@@ -66,13 +66,13 @@ const EmailField = ({currentUser, email, onChange}: EmailSettingsProps) => {
 
     return (
         <InputField
-            disabled={true}
-            id='email'
-            label={HOLDERS.email}
             fieldDescription={helpText ?? ''}
+            id='email'
+            isDisabled={true}
+            label={HOLDERS.email}
             onChange={onChange}
-            value={email}
             testID='edit_profile.text_setting.email'
+            value={email}
         />
     );
 };
