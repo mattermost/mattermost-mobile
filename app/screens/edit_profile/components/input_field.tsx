@@ -6,7 +6,7 @@ import React, {useCallback} from 'react';
 import {useIntl} from 'react-intl';
 import {View, Platform, ViewStyle, KeyboardType} from 'react-native';
 
-import FloatingTextInput from '@components/floating_text_input_label/animated_input';
+import FloatingTextInput from '@components/floating_text_input_label';
 import {useTheme} from '@context/theme';
 import {getMarkdownBlockStyles, getMarkdownTextStyles} from '@utils/markdown';
 import {makeStyleSheetFromTheme, getKeyboardAppearanceFromTheme} from '@utils/theme';

@@ -238,7 +238,6 @@ const FloatingTextInput = forwardRef<FloatingTextInputRef, FloatingTextInputProp
                     </Animated.Text>
                 }
                 <TextInput
-                    autoCapitalize={'none'}
                     {...props}
                     editable={isKeyboardInput && editable}
                     style={combinedTextInputStyle}
