@@ -3,12 +3,13 @@
 
 import React, {MutableRefObject, useCallback, useEffect, useRef} from 'react';
 import {useIntl} from 'react-intl';
-import {ActivityIndicator, Platform, useWindowDimensions, View} from 'react-native';
+import {Keyboard, Platform, useWindowDimensions, View} from 'react-native';
 import Button from 'react-native-button';
 import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
 
 import FloatingTextInput, {FloatingTextInputRef} from '@components/floating_text_input_label';
 import FormattedText from '@components/formatted_text';
+import Loading from '@components/loading';
 import {useIsTablet} from '@hooks/device';
 import {t} from '@i18n';
 import {buttonBackgroundStyle, buttonTextStyle} from '@utils/buttonStyles';
@@ -62,6 +63,16 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     connectingIndicator: {
         marginRight: 10,
     },
+    loadingContainerStyle: {
+        marginRight: 10,
+        padding: 0,
+        top: -2,
+        flex: undefined,
+    },
+    loading: {
+        height: 20,
+        width: 20,
+    },
 }));
 
 const ServerForm = ({
@@ -99,10 +110,18 @@ const ServerForm = ({
     };
 
     const onBlur = useCallback(() => {
-        if (Platform.OS === 'ios' && isTablet && !urlRef.current?.isFocused() && !displayNameRef.current?.isFocused()) {
-            keyboardAwareRef.current?.scrollToPosition(0, 0);
+        if (Platform.OS === 'ios') {
+            const reset = !displayNameRef.current?.isFocused() && !urlRef.current?.isFocused();
+            if (reset) {
+                keyboardAwareRef.current?.scrollToPosition(0, 0);
+            }
         }
     }, []);
+
+    const onConnect = useCallback(() => {
+        Keyboard.dismiss();
+        handleConnect();
+    }, [buttonDisabled, connecting]);
 
     const onFocus = useCallback(() => {
         focus();
@@ -122,8 +141,9 @@ const ServerForm = ({
         }
     }, [dimensions, isTablet]);
 
-    let styleButtonText = buttonTextStyle(theme, 'lg', 'primary', 'default');
-    let styleButtonBackground = buttonBackgroundStyle(theme, 'lg', 'primary');
+    const buttonType = buttonDisabled ? 'disabled' : 'default';
+    const styleButtonText = buttonTextStyle(theme, 'lg', 'primary', buttonType);
+    const styleButtonBackground = buttonBackgroundStyle(theme, 'lg', 'primary', buttonType);
 
     let buttonID = t('mobile.components.select_server_view.connect');
     let buttonText = 'Connect';
@@ -133,16 +153,11 @@ const ServerForm = ({
         buttonID = t('mobile.components.select_server_view.connecting');
         buttonText = 'Connecting';
         buttonIcon = (
-            <ActivityIndicator
-                animating={true}
-                size='small'
-                color={'white'}
-                style={styles.connectingIndicator}
+            <Loading
+                containerStyle={styles.loadingContainerStyle}
+                style={styles.loading}
             />
         );
-    } else if (buttonDisabled) {
-        styleButtonText = buttonTextStyle(theme, 'lg', 'primary', 'disabled');
-        styleButtonBackground = buttonBackgroundStyle(theme, 'lg', 'primary', 'disabled');
     }
 
     return (
@@ -150,6 +165,7 @@ const ServerForm = ({
             <View style={[styles.fullWidth, urlError?.length ? styles.error : undefined]}>
                 <FloatingTextInput
                     autoCorrect={false}
+                    autoCapitalize={'none'}
                     blurOnSubmit={false}
                     containerStyle={styles.enterServer}
                     enablesReturnKeyAutomatically={true}
@@ -165,6 +181,7 @@ const ServerForm = ({
                     onSubmitEditing={onUrlSubmit}
                     ref={urlRef}
                     returnKeyType='next'
+                    spellCheck={false}
                     testID='select_server.server_url.input'
                     theme={theme}
                     value={url}
@@ -173,6 +190,7 @@ const ServerForm = ({
             <View style={[styles.fullWidth, displayNameError?.length ? styles.error : undefined]}>
                 <FloatingTextInput
                     autoCorrect={false}
+                    autoCapitalize={'none'}
                     enablesReturnKeyAutomatically={true}
                     error={displayNameError}
                     keyboardType='url'
@@ -183,9 +201,10 @@ const ServerForm = ({
                     onBlur={onBlur}
                     onChangeText={handleDisplayNameTextChanged}
                     onFocus={onFocus}
-                    onSubmitEditing={handleConnect}
+                    onSubmitEditing={onConnect}
                     ref={displayNameRef}
                     returnKeyType='done'
+                    spellCheck={false}
                     testID='select_server.server_display_name.input'
                     theme={theme}
                     value={displayName}
@@ -202,7 +221,7 @@ const ServerForm = ({
             <Button
                 containerStyle={[styles.connectButton, styleButtonBackground]}
                 disabled={buttonDisabled}
-                onPress={handleConnect}
+                onPress={onConnect}
                 testID='select_server.connect.button'
             >
                 {buttonIcon}

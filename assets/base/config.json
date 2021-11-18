@@ -13,12 +13,6 @@
     "MobileNoticeURL": "https://about.mattermost.com/mobile-notice-txt/",
     "RudderApiKey": "",
 
-    "HideEmailLoginExperimental": false,
-    "HideGitLabLoginExperimental": false,
-    "HideLDAPLoginExperimental": false,
-    "HideSAMLLoginExperimental": false,
-    "HideO365LoginExperimental": false,
-
     "SentryEnabled": false,
     "SentryDsnIos": "",
     "SentryDsnAndroid": "",

@@ -7,11 +7,11 @@ export const REDIRECT_URL_SCHEME = 'mmauth://';
 export const REDIRECT_URL_SCHEME_DEV = 'mmauthbeta://';
 
 const constants = keyMirror({
+    SAML: null,
     GITLAB: null,
     GOOGLE: null,
     OFFICE365: null,
     OPENID: null,
-    SAML: null,
 });
 
 export default {

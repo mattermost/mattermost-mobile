@@ -3,12 +3,15 @@
 exports[`Loading  should match snapshot 1`] = `
 <View
   style={
-    Object {
-      "flex": 1,
-      "justifyContent": "center",
-      "maxHeight": 40,
-      "padding": 20,
-    }
+    Array [
+      Object {
+        "flex": 1,
+        "justifyContent": "center",
+        "maxHeight": 40,
+        "padding": 20,
+      },
+      undefined,
+    ]
   }
 >
   <View
@@ -17,14 +20,14 @@ exports[`Loading  should match snapshot 1`] = `
         Object {
           "aspectRatio": 1,
         },
-        Object {
-          "bottom": 0,
-          "left": 0,
-          "position": "absolute",
-          "right": 0,
-          "top": 0,
-        },
         undefined,
+        Array [
+          Object {
+            "height": 32,
+            "width": 32,
+          },
+          undefined,
+        ],
       ]
     }
   >
@@ -45,11 +48,8 @@ exports[`Loading  should match snapshot 1`] = `
       style={
         Object {
           "aspectRatio": 1,
-          "bottom": 0,
-          "left": 0,
-          "position": "absolute",
-          "right": 0,
-          "top": 0,
+          "height": 32,
+          "width": 32,
         }
       }
     />

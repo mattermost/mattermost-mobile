@@ -87,6 +87,7 @@ const getLabelPositions = (style: TextStyle, labelStyle: TextStyle, smallLabelSt
 };
 
 export type FloatingTextInputRef = {
+    blur: () => void;
     focus: () => void;
     isFocused: () => boolean;
 }
@@ -135,6 +136,7 @@ const FloatingTextInput = forwardRef<FloatingTextInputRef, FloatingTextInputProp
     }
 
     useImperativeHandle(ref, () => ({
+        blur: () => inputRef.current?.blur(),
         focus: () => inputRef.current?.focus(),
         isFocused: () => inputRef.current?.isFocused() || false,
     }), [inputRef]);
@@ -250,7 +252,7 @@ const FloatingTextInput = forwardRef<FloatingTextInputRef, FloatingTextInputProp
                     ref={inputRef}
                     underlineColorAndroid='transparent'
                 />
-                {error && (
+                {Boolean(error) && (
                     <View style={styles.errorContainer}>
                         {showErrorIcon && errorIcon &&
                         <CompassIcon

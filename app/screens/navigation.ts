@@ -18,7 +18,57 @@ import type {LaunchProps} from '@typings/launch';
 
 const {MattermostManaged} = NativeModules;
 const isRunningInSplitView = MattermostManaged.isRunningInSplitView;
-const appearanceControlledScreens = [Screens.SERVER, Screens.LOGIN, Screens.LOGIN_OPTIONS, Screens.FORGOT_PASSWORD, Screens.MFA];
+const appearanceControlledScreens = [Screens.SERVER, Screens.LOGIN, Screens.FORGOT_PASSWORD, Screens.MFA];
+
+const alpha = {
+    from: 0,
+    to: 1,
+    duration: 150,
+};
+
+export const loginAnimationOptions = () => {
+    const theme = getThemeFromState();
+    return {
+        topBar: {
+            visible: true,
+            drawBehind: true,
+            translucid: true,
+            noBorder: true,
+            elevation: 0,
+            background: {
+                color: 'transparent',
+            },
+            backButton: {
+                color: changeOpacity(theme.centerChannelColor, 0.56),
+            },
+            scrollEdgeAppearance: {
+                active: true,
+                noBorder: true,
+                translucid: true,
+            },
+        },
+        animations: {
+            topBar: {
+                alpha,
+            },
+            push: {
+                waitForRender: true,
+                content: {
+                    alpha,
+                },
+            },
+            pop: {
+                content: {
+                    alpha: {
+                        from: 1,
+                        to: 0,
+                        duration: 100,
+                    },
+                },
+            },
+        },
+    };
+};
 
 Navigation.setDefaultOptions({
     layout: {
@@ -35,7 +85,7 @@ Appearance.addChangeListener(() => {
         for (const screen of screens) {
             if (appearanceControlledScreens.includes(screen)) {
                 Navigation.updateProps(screen, {theme});
-                setNavigatorStyles(screen, theme);
+                setNavigatorStyles(screen, theme, loginAnimationOptions(), theme.centerChannelBg);
             }
         }
     }
@@ -95,7 +145,7 @@ export function resetToHome(passProps = {}) {
 
 export function resetToSelectServer(passProps: LaunchProps) {
     const theme = getThemeFromState();
-    const isDark = tinyColor(theme.sidebarBg).isDark();
+    const isDark = tinyColor(theme.centerChannelBg).isDark();
     StatusBar.setBarStyle(isDark ? 'light-content' : 'dark-content');
 
     EphemeralStore.clearNavigationComponents();
