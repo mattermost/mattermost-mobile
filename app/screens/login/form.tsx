@@ -246,7 +246,7 @@ const LoginForm = ({config, extra, keyboardAwareRef, numberSSOs, serverDisplayNa
     const onLogin = useCallback(() => {
         Keyboard.dismiss();
         preSignIn();
-    }, []);
+    }, [loginId, password]);
 
     const onLoginChange = useCallback((text) => {
         setLoginId(text);
