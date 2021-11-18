@@ -15,7 +15,7 @@ import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {isValidUrl} from '@utils/url';
 
 import type {PostImage} from '@mm-redux/types/posts';
-import type {Theme} from '@mm-redux/types/preferences';
+import type {Theme} from '@mm-redux/types/theme';
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     return {

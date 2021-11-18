@@ -22,6 +22,6 @@ storiesOf('Avatars', module).
     add('Avatars', () => (
         <Avatars
             userIds={userIds.slice(0, number(`number of named participants (max ${userIds.length})`, userIds.length))}
-            theme={select('theme', Preferences.THEMES, Preferences.THEMES.default)}
+            theme={select('theme', Preferences.THEMES, Preferences.THEMES.denim)}
         />
     ));

@@ -10,6 +10,9 @@
 #import <os/log.h>
 #import <RNHWKeyboardEvent.h>
 
+@interface AppDelegate () <RCTBridgeDelegate>
+@end
+
 @implementation AppDelegate
 
 NSString* const NOTIFICATION_MESSAGE_ACTION = @"message";
@@ -54,7 +57,8 @@ NSString* const NOTIFICATION_UPDATE_BADGE_ACTION = @"update_badge";
     [[NSUserDefaults standardUserDefaults] synchronize];
   }
 
-  [ReactNativeNavigation bootstrapWithDelegate:self launchOptions:launchOptions];
+  RCTBridge *bridge = [[RCTBridge alloc] initWithDelegate:self launchOptions:launchOptions];
+  [ReactNativeNavigation bootstrapWithBridge:bridge];
 
   [[AVAudioSession sharedInstance] setCategory:AVAudioSessionCategoryPlayback error: nil];
 
@@ -78,15 +82,17 @@ NSString* const NOTIFICATION_UPDATE_BADGE_ACTION = @"update_badge";
 // Required for the notification event.
 
 -(void)application:(UIApplication *)application didReceiveRemoteNotification:(nonnull NSDictionary *)userInfo fetchCompletionHandler:(nonnull void (^)(UIBackgroundFetchResult))completionHandler {
-  UIApplicationState state = [UIApplication sharedApplication].applicationState;
   NSString* action = [userInfo objectForKey:@"type"];
   NSString* channelId = [userInfo objectForKey:@"channel_id"];
+  NSString* rootId = [userInfo objectForKey:@"root_id"];
   NSString* ackId = [userInfo objectForKey:@"ack_id"];
+  BOOL isCRTEnabled = [userInfo objectForKey:@"is_crt_enabled"];
+  
   RuntimeUtils *utils = [[RuntimeUtils alloc] init];
-
-  if ((action && [action isEqualToString: NOTIFICATION_CLEAR_ACTION]) || (state == UIApplicationStateInactive)) {
+  
+  if (action && [action isEqualToString: NOTIFICATION_CLEAR_ACTION]) {
     // If received a notification that a channel was read, remove all notifications from that channel (only with app in foreground/background)
-    [self cleanNotificationsFromChannel:channelId];
+    [self cleanNotificationsFromChannel:channelId :rootId :isCRTEnabled];
   }
 
   [[UploadSession shared] notificationReceiptWithNotificationId:ackId receivedAt:round([[NSDate date] timeIntervalSince1970] * 1000.0) type:action];
@@ -96,7 +102,7 @@ NSString* const NOTIFICATION_UPDATE_BADGE_ACTION = @"update_badge";
   }];
 }
 
--(void)cleanNotificationsFromChannel:(NSString *)channelId {
+-(void)cleanNotificationsFromChannel:(NSString *)channelId :(NSString *)rootId :(BOOL)isCRTEnabled {
   if ([UNUserNotificationCenter class]) {
     UNUserNotificationCenter *center = [UNUserNotificationCenter currentNotificationCenter];
     [center getDeliveredNotificationsWithCompletionHandler:^(NSArray<UNNotification *> * _Nonnull notifications) {
@@ -107,9 +113,22 @@ NSString* const NOTIFICATION_UPDATE_BADGE_ACTION = @"update_badge";
         UNNotificationContent *notificationContent = [notificationRequest content];
         NSString *identifier = [notificationRequest identifier];
         NSString* cId = [[notificationContent userInfo] objectForKey:@"channel_id"];
-
+        NSString* pId = [[notificationContent userInfo] objectForKey:@"post_id"];
+        NSString* rId = [[notificationContent userInfo] objectForKey:@"root_id"];
         if ([cId isEqualToString: channelId]) {
-          [notificationIds addObject:identifier];
+          BOOL doesNotificationMatch = true;
+          if (isCRTEnabled) {
+            // Check if it is a thread notification
+            if (rootId != nil) {
+              doesNotificationMatch = [pId isEqualToString: rootId] || [rId isEqualToString: rootId];
+            } else {
+              // With CRT ON, remove notifications without rootId
+              doesNotificationMatch = rId == nil;
+            }
+          }
+          if (doesNotificationMatch) {
+            [notificationIds addObject:identifier];
+          }
         }
       }
 
@@ -121,10 +140,9 @@ NSString* const NOTIFICATION_UPDATE_BADGE_ACTION = @"update_badge";
 // Required for deeplinking
 
 - (BOOL)application:(UIApplication *)application openURL:(NSURL *)url
-  sourceApplication:(NSString *)sourceApplication annotation:(id)annotation
+            options:(NSDictionary<UIApplicationOpenURLOptionsKey, id> *)options
 {
-  return [RCTLinkingManager application:application openURL:url
-                      sourceApplication:sourceApplication annotation:annotation];
+  return [RCTLinkingManager application:application openURL:url options:options];
 }
 
 // Only if your app is using [Universal Links](https://developer.apple.com/library/prerelease/ios/documentation/General/Conceptual/AppSearch/UniversalLinks.html).
@@ -143,23 +161,35 @@ NSString* const NOTIFICATION_UPDATE_BADGE_ACTION = @"update_badge";
 */
 RNHWKeyboardEvent *hwKeyEvent = nil;
 - (NSMutableArray<UIKeyCommand *> *)keyCommands {
-  NSMutableArray *keys = [NSMutableArray new];
   if (hwKeyEvent == nil) {
     hwKeyEvent = [[RNHWKeyboardEvent alloc] init];
   }
+  
+  NSMutableArray *commands = [NSMutableArray new];
+  
   if ([hwKeyEvent isListening]) {
-    [keys addObject: [UIKeyCommand keyCommandWithInput:@"\r" modifierFlags:0 action:@selector(sendEnter:)]];
-    [keys addObject: [UIKeyCommand keyCommandWithInput:@"\r" modifierFlags:UIKeyModifierShift action:@selector(sendShiftEnter:)]];
+    UIKeyCommand *enter = [UIKeyCommand keyCommandWithInput:@"\r" modifierFlags:0 action:@selector(sendEnter:)];
+    UIKeyCommand *shiftEnter = [UIKeyCommand keyCommandWithInput:@"\r" modifierFlags:UIKeyModifierShift action:@selector(sendShiftEnter:)];
+    if (@available(iOS 13.0, *)) {
+      [enter setTitle:@"Send message"];
+      [shiftEnter setTitle:@"Add new line"];
+    }
+    if (@available(iOS 15.0, *)) {
+      [enter setWantsPriorityOverSystemBehavior:YES];
+      [shiftEnter setWantsPriorityOverSystemBehavior:YES];
+    }
+    
+    [commands addObject: enter];
+    [commands addObject: shiftEnter];
   }
-  return keys;
+  
+  return commands;
 }
 
 - (void)sendEnter:(UIKeyCommand *)sender {
-  NSString *selected = sender.input;
   [hwKeyEvent sendHWKeyEvent:@"enter"];
 }
 - (void)sendShiftEnter:(UIKeyCommand *)sender {
-  NSString *selected = sender.input;
   [hwKeyEvent sendHWKeyEvent:@"shift-enter"];
 }
 @end

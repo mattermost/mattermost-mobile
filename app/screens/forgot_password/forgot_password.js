@@ -121,6 +121,7 @@ export default class ForgotPassword extends PureComponent {
                         defaultMessage='To reset your password, enter the email address you used to sign up'
                     />
                     <TextInput
+                        allowFontScaling={true}
                         ref={this.emailIdRef}
                         style={GlobalStyles.inputBox}
                         onChangeText={this.changeEmail}

@@ -78,7 +78,6 @@ export default class MarkdownCodeBlock extends React.PureComponent {
             const actionText = formatMessage({id: 'mobile.markdown.code.copy_code', defaultMessage: 'Copy Code'});
             BottomSheet.showBottomSheetWithOptions({
                 options: [actionText, cancelText],
-                cancelButtonIndex: 1,
             }, (value) => {
                 if (value !== 1) {
                     this.handleCopyCode();

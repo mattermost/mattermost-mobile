@@ -4,7 +4,7 @@
 import React from 'react';
 import {View} from 'react-native';
 
-import {Theme} from '@mm-redux/types/preferences';
+import {Theme} from '@mm-redux/types/theme';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 interface SeparatorProps {

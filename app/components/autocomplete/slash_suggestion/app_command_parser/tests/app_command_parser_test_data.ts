@@ -100,7 +100,7 @@ export const reduxTestState = {
 export const viewCommand: AppBinding = {
     app_id: 'jira',
     label: 'view',
-    location: 'view',
+    location: '/command/jira/issue/view',
     description: 'View details of a Jira issue',
     form: {
         call: {
@@ -130,7 +130,7 @@ export const viewCommand: AppBinding = {
 export const createCommand: AppBinding = {
     app_id: 'jira',
     label: 'create',
-    location: 'create',
+    location: '/command/jira/issue/create',
     description: 'Create a new Jira issue',
     icon: 'Create icon',
     hint: 'Create hint',
@@ -181,6 +181,37 @@ export const createCommand: AppBinding = {
     } as AppForm,
 };
 
+export const restCommand: AppBinding = {
+    app_id: 'jira',
+    label: 'rest',
+    location: 'rest',
+    description: 'rest description',
+    icon: 'rest icon',
+    hint: 'rest hint',
+    form: {
+        call: {
+            path: '/create-issue',
+        },
+        fields: [
+            {
+                name: 'summary',
+                label: 'summary',
+                description: 'The Jira issue summary',
+                type: AppFieldTypes.TEXT,
+                hint: 'The thing is working great!',
+                position: -1,
+            },
+            {
+                name: 'verbose',
+                label: 'verbose',
+                description: 'display details',
+                type: AppFieldTypes.BOOL,
+                hint: 'yes or no!',
+            },
+        ],
+    } as AppForm,
+};
+
 export const testBindings: AppBinding[] = [
     {
         app_id: '',
@@ -188,12 +219,14 @@ export const testBindings: AppBinding[] = [
         location: '/command',
         bindings: [
             {
+                location: '/command/jira',
                 app_id: 'jira',
                 label: 'jira',
                 description: 'Interact with your Jira instance',
                 icon: 'Jira icon',
                 hint: 'Jira hint',
                 bindings: [{
+                    location: '/command/jira/issue',
                     app_id: 'jira',
                     label: 'issue',
                     description: 'Interact with Jira issues',
@@ -202,16 +235,19 @@ export const testBindings: AppBinding[] = [
                     bindings: [
                         viewCommand,
                         createCommand,
+                        restCommand,
                     ],
                 }],
             },
             {
+                location: '/command/other',
                 app_id: 'other',
                 label: 'other',
                 description: 'Other description',
                 icon: 'Other icon',
                 hint: 'Other hint',
                 bindings: [{
+                    location: '/command/other/sub1',
                     app_id: 'other',
                     label: 'sub1',
                     description: 'Some Description',

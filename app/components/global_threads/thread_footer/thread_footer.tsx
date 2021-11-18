@@ -14,7 +14,7 @@ import {$ID} from '@mm-redux/types/utilities';
 import {preventDoubleTap} from '@utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
-import type {Theme} from '@mm-redux/types/preferences';
+import type {Theme} from '@mm-redux/types/theme';
 
 export type DispatchProps = {
     actions: {
@@ -133,15 +133,13 @@ function ThreadFooter({actions, currentUserId, intl, location, testID, theme, th
     // threadstarter should be the first one in the avatars list
     const participants = React.useMemo(() => {
         if (thread.participants?.length) {
-            let isThreadStarterFound = false;
             const participantIds = thread.participants.flatMap((participant) => {
-                if (participant.id === threadStarter?.id) {
-                    isThreadStarterFound = true;
+                if (location === GLOBAL_THREADS && participant.id === threadStarter?.id) {
                     return [];
                 }
                 return participant.id;
-            });
-            if (isThreadStarterFound) {
+            }).reverse();
+            if (location === GLOBAL_THREADS) {
                 participantIds.unshift(threadStarter?.id);
             }
             return participantIds;

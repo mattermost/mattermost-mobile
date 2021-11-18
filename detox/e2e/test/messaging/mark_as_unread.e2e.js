@@ -132,7 +132,7 @@ describe('Mark as Unread', () => {
         await closeMainSidebar();
     });
 
-    it('MM-T245 should be able to mark a DM post as unread', async () => {
+    it('MM-T1280 should be able to mark a DM post as unread', async () => {
         const {user: dmOtherUser} = await User.apiCreateUser();
         await Team.apiAddUserToTeam(dmOtherUser.id, testTeam1.id);
         const {channel: directMessageChannel} = await Channel.apiCreateDirectChannel([testUser.id, dmOtherUser.id]);

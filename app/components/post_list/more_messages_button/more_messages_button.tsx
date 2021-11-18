@@ -3,36 +3,36 @@
 
 import React from 'react';
 import {intlShape} from 'react-intl';
-import {ActivityIndicator, Animated, AppState, AppStateStatus, Text, View, ViewToken} from 'react-native';
+import {ActivityIndicator, Animated, AppState, AppStateStatus, NativeEventSubscription, Text, View, ViewToken} from 'react-native';
 
 import CompassIcon from '@components/compass_icon';
 import TouchableWithFeedback from '@components/touchable_with_feedback';
-import ViewTypes, {INDICATOR_BAR_HEIGHT} from '@constants/view';
+import ViewTypes, {INDICATOR_BAR_HEIGHT, JOIN_CALL_BAR_HEIGHT, CURRENT_CALL_BAR_HEIGHT} from '@constants/view';
 import EventEmitter from '@mm-redux/utils/event_emitter';
 import {messageCount} from '@mm-redux/utils/post_list';
 import {t} from '@utils/i18n';
 import {makeStyleSheetFromTheme, hexToHue} from '@utils/theme';
 
-import type {Theme} from '@mm-redux/types/preferences';
+import type {Theme} from '@mm-redux/types/theme';
 
 const HIDDEN_TOP = -400;
 const SHOWN_TOP = 0;
-export const INDICATOR_BAR_FACTOR = Math.abs(INDICATOR_BAR_HEIGHT / (HIDDEN_TOP - SHOWN_TOP));
+export const BARS_FACTOR = Math.abs((INDICATOR_BAR_HEIGHT + JOIN_CALL_BAR_HEIGHT + CURRENT_CALL_BAR_HEIGHT) / (HIDDEN_TOP - SHOWN_TOP));
 export const MIN_INPUT = 0;
 export const MAX_INPUT = 1;
 
 const TOP_INTERPOL_CONFIG: Animated.InterpolationConfigType = {
     inputRange: [
         MIN_INPUT,
-        MIN_INPUT + INDICATOR_BAR_FACTOR,
-        MAX_INPUT - INDICATOR_BAR_FACTOR,
+        MIN_INPUT + BARS_FACTOR,
+        MAX_INPUT - BARS_FACTOR,
         MAX_INPUT,
     ],
     outputRange: [
-        HIDDEN_TOP - INDICATOR_BAR_HEIGHT,
+        HIDDEN_TOP - (INDICATOR_BAR_HEIGHT + JOIN_CALL_BAR_HEIGHT + CURRENT_CALL_BAR_HEIGHT),
         HIDDEN_TOP,
         SHOWN_TOP,
-        SHOWN_TOP + INDICATOR_BAR_HEIGHT,
+        SHOWN_TOP + INDICATOR_BAR_HEIGHT + JOIN_CALL_BAR_HEIGHT + CURRENT_CALL_BAR_HEIGHT,
     ],
     extrapolate: 'clamp',
 };
@@ -64,12 +64,15 @@ export default class MoreMessageButton extends React.PureComponent<MoreMessagesB
         intl: intlShape.isRequired,
     };
 
+    appStateListener: NativeEventSubscription | undefined;
     autoCancelTimer: undefined | null | NodeJS.Timeout;
     buttonVisible = false;
     canceled = false;
     disableViewableItems = false;
     endIndex: number | null = null;
     indicatorBarVisible = false;
+    joinCallBarVisible = false;
+    currentCallBarVisible = false;
     pressed = false;
     removeViewableItemsListener: undefined | (() => void) = undefined;
     removeScrollEndIndexListener: undefined | (() => void) = undefined;
@@ -78,15 +81,19 @@ export default class MoreMessageButton extends React.PureComponent<MoreMessagesB
     viewableItems: ViewToken[] = [];
 
     componentDidMount() {
-        AppState.addEventListener('change', this.onAppStateChange);
+        this.appStateListener = AppState.addEventListener('change', this.onAppStateChange);
         EventEmitter.on(ViewTypes.INDICATOR_BAR_VISIBLE, this.onIndicatorBarVisible);
+        EventEmitter.on(ViewTypes.JOIN_CALL_BAR_VISIBLE, this.onJoinCallBarVisible);
+        EventEmitter.on(ViewTypes.CURRENT_CALL_BAR_VISIBLE, this.onCurrentCallBarVisible);
         this.removeViewableItemsListener = this.props.registerViewableItemsListener(this.onViewableItemsChanged);
         this.removeScrollEndIndexListener = this.props.registerScrollEndIndexListener(this.onScrollEndIndex);
     }
 
     componentWillUnmount() {
-        AppState.removeEventListener('change', this.onAppStateChange);
+        this.appStateListener?.remove();
         EventEmitter.off(ViewTypes.INDICATOR_BAR_VISIBLE, this.onIndicatorBarVisible);
+        EventEmitter.off(ViewTypes.JOIN_CALL_BAR_VISIBLE, this.onJoinCallBarVisible);
+        EventEmitter.off(ViewTypes.CURRENT_CALL_BAR_VISIBLE, this.onCurrentCallBarVisible);
         if (this.removeViewableItemsListener) {
             this.removeViewableItemsListener();
         }
@@ -143,8 +150,22 @@ export default class MoreMessageButton extends React.PureComponent<MoreMessagesB
 
     onIndicatorBarVisible = (indicatorVisible: boolean) => {
         this.indicatorBarVisible = indicatorVisible;
+        this.animateButton();
+    }
+
+    onCurrentCallBarVisible = (currentCallVisible: boolean) => {
+        this.currentCallBarVisible = currentCallVisible;
+        this.animateButton();
+    }
+
+    onJoinCallBarVisible = (joinCallVisible: boolean) => {
+        this.joinCallBarVisible = joinCallVisible;
+        this.animateButton();
+    }
+
+    animateButton = () => {
         if (this.buttonVisible) {
-            const toValue = this.indicatorBarVisible ? MAX_INPUT : MAX_INPUT - INDICATOR_BAR_FACTOR;
+            const toValue = MAX_INPUT - this.getBarsFactor();
             Animated.spring(this.top, {
                 toValue,
                 useNativeDriver: true,
@@ -168,18 +189,22 @@ export default class MoreMessageButton extends React.PureComponent<MoreMessagesB
     show = () => {
         if (!this.buttonVisible && this.state.moreText && !this.props.deepLinkURL && !this.canceled && this.props.unreadCount > 0) {
             this.buttonVisible = true;
-            const toValue = this.indicatorBarVisible ? MAX_INPUT : MAX_INPUT - INDICATOR_BAR_FACTOR;
-            Animated.spring(this.top, {
-                toValue,
-                useNativeDriver: true,
-            }).start();
+            this.animateButton();
         }
+    }
+
+    getBarsFactor = () => {
+        return Math.abs((
+            (this.indicatorBarVisible ? 0 : INDICATOR_BAR_HEIGHT) +
+            (this.joinCallBarVisible ? 0 : JOIN_CALL_BAR_HEIGHT) +
+            (this.currentCallBarVisible ? 0 : CURRENT_CALL_BAR_HEIGHT)
+        ) / (HIDDEN_TOP - SHOWN_TOP));
     }
 
     hide = () => {
         if (this.buttonVisible) {
             this.buttonVisible = false;
-            const toValue = this.indicatorBarVisible ? MIN_INPUT : MIN_INPUT + INDICATOR_BAR_FACTOR;
+            const toValue = MIN_INPUT + this.getBarsFactor();
             Animated.spring(this.top, {
                 toValue,
                 useNativeDriver: true,

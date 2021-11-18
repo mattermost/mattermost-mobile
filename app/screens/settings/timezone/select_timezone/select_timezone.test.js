@@ -14,7 +14,7 @@ describe('Settings SelectTimezone', () => {
         selectedTimezone: 'selected-timezone',
         initialScrollIndex: 1,
         timezones: [],
-        theme: Preferences.THEMES.default,
+        theme: Preferences.THEMES.denim,
         isLandscape: false,
     };
 

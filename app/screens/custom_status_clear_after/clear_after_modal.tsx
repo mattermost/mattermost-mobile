@@ -15,7 +15,7 @@ import {
 } from 'react-native-navigation';
 
 import {mergeNavigationOptions, popTopScreen} from '@actions/navigation';
-import {Theme} from '@mm-redux/types/preferences';
+import {Theme} from '@mm-redux/types/theme';
 import {CustomStatusDuration} from '@mm-redux/types/users';
 import {makeStyleSheetFromTheme, changeOpacity} from '@utils/theme';
 

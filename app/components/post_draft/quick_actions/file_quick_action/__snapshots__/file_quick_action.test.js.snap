@@ -2,8 +2,15 @@
 
 exports[`FileQuickAction should match snapshot 1`] = `
 <View
+  accessibilityState={
+    Object {
+      "disabled": false,
+    }
+  }
   accessible={true}
+  collapsable={false}
   focusable={true}
+  nativeID="animatedComponent"
   onClick={[Function]}
   onResponderGrant={[Function]}
   onResponderMove={[Function]}
@@ -22,8 +29,8 @@ exports[`FileQuickAction should match snapshot 1`] = `
   testID="post_draft.quick_actions.file_action"
 >
   <Icon
-    color="rgba(61,60,64,0.64)"
-    name="file-document-outline"
+    color="rgba(63,67,80,0.64)"
+    name="file-text-outline"
     size={24}
   />
 </View>

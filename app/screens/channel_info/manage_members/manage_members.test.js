@@ -22,7 +22,7 @@ describe('ChannelInfo -> Manage Members', () => {
         isDirectMessage: false,
         membersCount: 10,
         separator: true,
-        theme: Preferences.THEMES.default,
+        theme: Preferences.THEMES.denim,
     };
 
     test('should match snapshot for Manage Members', () => {

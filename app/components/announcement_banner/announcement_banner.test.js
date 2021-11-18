@@ -17,7 +17,7 @@ describe('AnnouncementBanner', () => {
         bannerEnabled: true,
         bannerText: 'Banner Text',
         bannerTextColor: '#fff',
-        theme: Preferences.THEMES.default,
+        theme: Preferences.THEMES.denim,
     };
 
     test('should match snapshot', () => {

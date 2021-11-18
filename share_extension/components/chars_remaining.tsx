@@ -11,7 +11,7 @@ interface CharsRemainingProps {
     text?: string;
 }
 
-const theme = Preferences.THEMES.default;
+const theme = Preferences.THEMES.denim;
 
 const CharsRemaining = ({text}: CharsRemainingProps) => {
     const count = text?.trim().length || 0;

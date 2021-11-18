@@ -18,7 +18,7 @@ describe('TeamsListItem', () => {
         mentionCount: 1,
         name: 'name',
         teamId: 'team-id',
-        theme: Preferences.THEMES.default,
+        theme: Preferences.THEMES.denim,
     };
 
     test('should match snapshot', () => {

@@ -3,11 +3,9 @@
 
 import moment from 'moment-timezone';
 
-import {Client4} from '@client/rest';
 import PushNotifications from '@init/push_notifications';
 import {getSessions} from '@mm-redux/actions/users';
 import {getConfig} from '@mm-redux/selectors/entities/general';
-import {isMinimumServerVersion} from '@mm-redux/utils/helpers';
 
 const sortByNewest = (a, b) => {
     if (a.create_at > b.create_at) {
@@ -23,7 +21,7 @@ export function scheduleExpiredNotification(intl) {
         const {currentUserId} = state.entities.users;
         const config = getConfig(state);
 
-        if (isMinimumServerVersion(Client4.serverVersion, 5, 24) && config.ExtendSessionLengthWithActivity === 'true') {
+        if (config.ExtendSessionLengthWithActivity === 'true') {
             PushNotifications.cancelAllLocalNotifications();
             return;
         }

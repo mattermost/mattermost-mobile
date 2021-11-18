@@ -38,7 +38,7 @@ describe('SelectTeam', () => {
         currentUrl: 'test',
         userWithoutTeams: false,
         teams: [],
-        theme: Preferences.THEMES.default,
+        theme: Preferences.THEMES.denim,
         teamsRequest: {
             status: RequestStatus.FAILURE,
         },

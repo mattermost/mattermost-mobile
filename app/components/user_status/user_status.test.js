@@ -12,7 +12,7 @@ import UserStatus from './user_status';
 describe('UserStatus', () => {
     const baseProps = {
         size: 32,
-        theme: Preferences.THEMES.default,
+        theme: Preferences.THEMES.denim,
     };
 
     test('should match snapshot, should default to offline status', () => {

@@ -10,7 +10,7 @@ import ChannelMembers from './channel_members';
 
 describe('ChannelMembers', () => {
     const baseProps = {
-        theme: Preferences.THEMES.default,
+        theme: Preferences.THEMES.denim,
         currentUserId: 'current-user-id',
         currentChannelId: 'current-channel-id',
         canManageUsers: false,

@@ -18,7 +18,7 @@ jest.mock('react-native-image-picker', () => ({
 
 describe('AttachmentButton', () => {
     const baseProps = {
-        theme: Preferences.THEMES.default,
+        theme: Preferences.THEMES.denim,
         maxFileSize: 10,
         uploadFiles: jest.fn(),
     };

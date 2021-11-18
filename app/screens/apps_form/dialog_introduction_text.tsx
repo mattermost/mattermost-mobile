@@ -5,7 +5,7 @@ import React, {PureComponent} from 'react';
 import {View} from 'react-native';
 
 import Markdown from '@components/markdown';
-import {Theme} from '@mm-redux/types/preferences';
+import {Theme} from '@mm-redux/types/theme';
 import {getMarkdownBlockStyles, getMarkdownTextStyles} from '@utils/markdown';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 

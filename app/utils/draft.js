@@ -109,14 +109,18 @@ export function alertSlashCommandFailed(formatMessage, error) {
     );
 }
 
-export function buildChannelWideMentionMessage(formatMessage, membersCount, isTimezoneEnabled, channelTimezoneCount) {
+export function buildChannelWideMentionMessage(formatMessage, membersCount, isTimezoneEnabled, channelTimezoneCount, atHere) {
     let notifyAllMessage = '';
     if (isTimezoneEnabled && channelTimezoneCount) {
+        const msgID = atHere ? t('mobile.post_textbox.entire_channel_here.message.with_timezones') : t('mobile.post_textbox.entire_channel.message.with_timezones');
+        const atHereMsg = 'By using @here you are about to send notifications up to {totalMembers, number} {totalMembers, plural, one {person} other {people}} in {timezones, number} {timezones, plural, one {timezone} other {timezones}}. Are you sure you want to do this?';
+        const atAllOrChannelMsg = 'By using @all or @channel you are about to send notifications to {totalMembers, number} {totalMembers, plural, one {person} other {people}} in {timezones, number} {timezones, plural, one {timezone} other {timezones}}. Are you sure you want to do this?';
+
         notifyAllMessage = (
             formatMessage(
                 {
-                    id: 'mobile.post_textbox.entire_channel.message.with_timezones',
-                    defaultMessage: 'By using @all or @channel you are about to send notifications to {totalMembers, number} {totalMembers, plural, one {person} other {people}} in {timezones, number} {timezones, plural, one {timezone} other {timezones}}. Are you sure you want to do this?',
+                    id: msgID,
+                    defaultMessage: atHere ? atHereMsg : atAllOrChannelMsg,
                 },
                 {
                     totalMembers: membersCount - 1,
@@ -125,11 +129,15 @@ export function buildChannelWideMentionMessage(formatMessage, membersCount, isTi
             )
         );
     } else {
+        const msgID = atHere ? t('mobile.post_textbox.entire_channel_here.message') : t('mobile.post_textbox.entire_channel.message');
+        const atHereMsg = 'By using @here you are about to send notifications to up to {totalMembers, number} {totalMembers, plural, one {person} other {people}}. Are you sure you want to do this?';
+        const atAllOrChannelMsg = 'By using @all or @channel you are about to send notifications to {totalMembers, number} {totalMembers, plural, one {person} other {people}}. Are you sure you want to do this?';
+
         notifyAllMessage = (
             formatMessage(
                 {
-                    id: 'mobile.post_textbox.entire_channel.message',
-                    defaultMessage: 'By using @all or @channel you are about to send notifications to {totalMembers, number} {totalMembers, plural, one {person} other {people}}. Are you sure you want to do this?',
+                    id: msgID,
+                    defaultMessage: atHere ? atHereMsg : atAllOrChannelMsg,
                 },
                 {
                     totalMembers: membersCount - 1,
@@ -255,6 +263,11 @@ export const mapGroupMentions = (channelMemberCountsByGroup, groupMentions) => {
 export const textContainsAtAllAtChannel = (text) => {
     const textWithoutCode = text.replace(CODE_REGEX, '');
     return (/(?:\B|\b_+)@(channel|all)(?!(\.|-|_)*[^\W_])/i).test(textWithoutCode);
+};
+
+export const textContainsAtHere = (text) => {
+    const textWithoutCode = text.replace(CODE_REGEX, '');
+    return (/(?:\B|\b_+)@(here)(?!(\.|-|_)*[^\W_])/i).test(textWithoutCode);
 };
 
 export const badDeepLink = (intl) => {

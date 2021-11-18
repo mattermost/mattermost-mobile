@@ -10,7 +10,7 @@ import {shallowWithIntl} from '@test/intl-test-helper';
 
 describe('screens/clear_after_modal', () => {
     const baseProps = {
-        theme: Preferences.THEMES.default,
+        theme: Preferences.THEMES.denim,
         initialDuration: CustomStatusDuration.DONT_CLEAR,
         handleClearAfterClick: jest.fn(),
     };

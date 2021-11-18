@@ -10,7 +10,7 @@ import Latex from './latex';
 
 describe('Latex', () => {
     const baseProps = {
-        theme: Preferences.THEMES.default,
+        theme: Preferences.THEMES.denim,
     };
 
     test('should match snapshot', () => {

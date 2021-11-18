@@ -11,7 +11,7 @@ import UserStatus from '@components/user_status';
 import {useDidUpdate} from '@hooks';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
-import type {Theme} from '@mm-redux/types/preferences';
+import type {Theme} from '@mm-redux/types/theme';
 import type {UserProfile} from '@mm-redux/types/users';
 
 const STATUS_BUFFER = Platform.select({

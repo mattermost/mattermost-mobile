@@ -15,7 +15,7 @@ interface FilesProps {
     files: Array<ShareFileInfo>;
 }
 
-const theme = Preferences.THEMES.default;
+const theme = Preferences.THEMES.denim;
 
 const Files = ({files}: FilesProps) => {
     const elements = files.map((file, index) => {

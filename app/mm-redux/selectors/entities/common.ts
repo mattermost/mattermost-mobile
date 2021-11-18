@@ -7,6 +7,11 @@ import {GlobalState} from '@mm-redux/types/store';
 import {UserProfile} from '@mm-redux/types/users';
 import {RelationOneToOne, IDMappedObjects} from '@mm-redux/types/utilities';
 
+// Teams
+export function getCurrentTeamId(state: GlobalState) {
+    return state.entities.teams.currentTeamId;
+}
+
 // Channels
 
 export function getCurrentChannelId(state: GlobalState): string {

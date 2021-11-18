@@ -20,7 +20,7 @@ interface ChannelButtonProps {
     teamId?: string;
 }
 
-const theme = Preferences.THEMES.default;
+const theme = Preferences.THEMES.denim;
 
 const ChannelButton = ({channel, intl, onSelect, teamId}: ChannelButtonProps) => {
     const navigation = useNavigation();

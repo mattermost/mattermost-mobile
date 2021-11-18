@@ -6,7 +6,7 @@ import {PixelRatio, StyleSheet, Text, useWindowDimensions, View} from 'react-nat
 
 import {makeStyleSheetFromTheme} from '@utils/theme';
 
-import type {Theme} from '@mm-redux/types/preferences';
+import type {Theme} from '@mm-redux/types/theme';
 
 type ImageFileOverlayProps = {
     theme: Theme;

@@ -215,16 +215,13 @@ export function updateThreadRead(userId: string, threadId: string, timestamp: nu
 }
 
 export function handleFollowChanged(threadId: string, teamId: string, following: boolean) {
-    return (dispatch: DispatchFunc) => {
-        dispatch({
-            type: ThreadTypes.FOLLOW_CHANGED_THREAD,
-            data: {
-                id: threadId,
-                team_id: teamId,
-                following,
-            },
-        });
-        return {data: true};
+    return {
+        type: ThreadTypes.FOLLOW_CHANGED_THREAD,
+        data: {
+            id: threadId,
+            team_id: teamId,
+            following,
+        },
     };
 }
 
@@ -270,20 +267,17 @@ export function handleReadChanged(
         newUnreadReplies: number;
     },
 ) {
-    return (dispatch: DispatchFunc) => {
-        dispatch({
-            type: ThreadTypes.READ_CHANGED_THREAD,
-            data: {
-                id: threadId,
-                teamId,
-                channelId,
-                lastViewedAt,
-                prevUnreadMentions,
-                newUnreadMentions,
-                prevUnreadReplies,
-                newUnreadReplies,
-            },
-        });
-        return {data: true};
+    return {
+        type: ThreadTypes.READ_CHANGED_THREAD,
+        data: {
+            id: threadId,
+            teamId,
+            channelId,
+            lastViewedAt,
+            prevUnreadMentions,
+            newUnreadMentions,
+            prevUnreadReplies,
+            newUnreadReplies,
+        },
     };
 }

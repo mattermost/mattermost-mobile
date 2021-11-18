@@ -4,6 +4,8 @@
 export const ACCESSORIES_CONTAINER_NATIVE_ID = 'channelAccessoriesContainer';
 export const CHANNEL_POST_TEXTBOX_CURSOR_CHANGE = 'onChannelTextBoxCursorChange';
 export const CHANNEL_POST_TEXTBOX_VALUE_CHANGE = 'onChannelTextBoxValueChange';
+export const THREAD_POST_TEXTBOX_CURSOR_CHANGE = 'onThreadTextBoxCursorChange';
+export const THREAD_POST_TEXTBOX_VALUE_CHANGE = 'onThreadTextBoxValueChange';
 export const ICON_SIZE = 24;
 export const INSERT_TO_COMMENT = 'insert_to_comment';
 export const INSERT_TO_DRAFT = 'insert_to_draft';

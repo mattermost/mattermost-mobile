@@ -127,7 +127,7 @@
 {
   const CGFloat EffectColorAlpha = 0.6;
   UIColor *effectColor = tintColor;
-  int componentCount = CGColorGetNumberOfComponents(tintColor.CGColor);
+  size_t componentCount = CGColorGetNumberOfComponents(tintColor.CGColor);
   if (componentCount == 2) {
     CGFloat b;
     if ([tintColor getWhite:&b alpha:NULL]) {

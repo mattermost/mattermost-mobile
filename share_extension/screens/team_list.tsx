@@ -29,7 +29,7 @@ type TeamListRoute = RouteProp<TeamListParams, 'Teams'>;
 
 type ListItem = (info: {item: Team}) => React.ReactElement;
 
-const theme = Preferences.THEMES.default;
+const theme = Preferences.THEMES.denim;
 
 const TeamList = () => {
     const navigation = useNavigation();
@@ -77,7 +77,7 @@ const TeamList = () => {
             testID='share_extension.team_list.screen'
             data={teams}
             ItemSeparatorComponent={renderItemSeparator}
-            removeClippedSubviews={true}
+            removeClippedSubviews={false}
             renderItem={renderItem}
             keyExtractor={keyExtractor}
             keyboardShouldPersistTaps='always'

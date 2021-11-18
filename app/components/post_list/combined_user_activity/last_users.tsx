@@ -13,7 +13,7 @@ import {makeStyleSheetFromTheme} from '@utils/theme';
 
 import {postTypeMessages, systemMessages} from './messages';
 
-import type {Theme} from '@mm-redux/types/preferences';
+import type {Theme} from '@mm-redux/types/theme';
 
 type LastUsersProps = {
     actor: string;

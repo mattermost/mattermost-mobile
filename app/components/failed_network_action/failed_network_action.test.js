@@ -13,7 +13,7 @@ import FailedNetworkAction from './failed_network_action';
 describe('FailedNetworkAction', () => {
     const baseProps = {
         onRetry: jest.fn(),
-        theme: Preferences.THEMES.default,
+        theme: Preferences.THEMES.denim,
         isLandscape: false,
         errorMessage: 'Error Message',
         errorTitle: 'Error Title',

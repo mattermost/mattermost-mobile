@@ -12,7 +12,7 @@ import SendAction from './index';
 describe('SendAction', () => {
     const baseProps = {
         testID: 'post_draft.send_action',
-        theme: Preferences.THEMES.default,
+        theme: Preferences.THEMES.denim,
         handleSendMessage: jest.fn(),
         disabled: false,
     };

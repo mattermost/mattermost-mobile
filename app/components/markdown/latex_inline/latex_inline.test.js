@@ -10,7 +10,7 @@ import LatexInline from './latex_inline';
 
 describe('LatexCodeBlock', () => {
     const baseProps = {
-        theme: Preferences.THEMES.default,
+        theme: Preferences.THEMES.denim,
     };
 
     test('should match snapshot', () => {

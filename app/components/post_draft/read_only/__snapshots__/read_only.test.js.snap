@@ -9,7 +9,7 @@ exports[`PostDraft ReadOnly should match snapshot 1`] = `
   }
   style={
     Object {
-      "backgroundColor": "rgba(61,60,64,0.04)",
+      "backgroundColor": "rgba(63,67,80,0.04)",
     }
   }
 >
@@ -17,7 +17,7 @@ exports[`PostDraft ReadOnly should match snapshot 1`] = `
     style={
       Object {
         "alignItems": "center",
-        "borderTopColor": "rgba(61,60,64,0.2)",
+        "borderTopColor": "rgba(63,67,80,0.2)",
         "borderTopWidth": 1,
         "flexDirection": "row",
         "height": 50,
@@ -27,7 +27,7 @@ exports[`PostDraft ReadOnly should match snapshot 1`] = `
     testID="post_draft.read_only"
   >
     <CompassIcon
-      color="#3d3c40"
+      color="#3f4350"
       name="glasses"
       style={
         Object {
@@ -42,7 +42,7 @@ exports[`PostDraft ReadOnly should match snapshot 1`] = `
       id="mobile.create_post.read_only"
       style={
         Object {
-          "color": "#3d3c40",
+          "color": "#3f4350",
           "fontSize": 15,
           "lineHeight": 20,
           "marginLeft": 9,

@@ -8,7 +8,7 @@ import {ActionFunc, DispatchFunc} from '@mm-redux/types/actions';
 import {AppCallResponse, AppCallRequest, AppCallType, AppContext} from '@mm-redux/types/apps';
 import {CommandArgs} from '@mm-redux/types/integrations';
 import {Post} from '@mm-redux/types/posts';
-import {makeCallErrorResponse} from '@utils/apps';
+import {cleanForm, makeCallErrorResponse} from '@utils/apps';
 
 export function doAppCall<Res=unknown>(call: AppCallRequest, type: AppCallType, intl: any): ActionFunc {
     return async () => {
@@ -29,6 +29,8 @@ export function doAppCall<Res=unknown>(call: AppCallRequest, type: AppCallType, 
                     });
                     return {error: makeCallErrorResponse(errMsg)};
                 }
+
+                cleanForm(res.form);
 
                 return {data: res};
             }

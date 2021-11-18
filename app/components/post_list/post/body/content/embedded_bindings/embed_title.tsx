@@ -7,7 +7,7 @@ import {View} from 'react-native';
 import Markdown from '@components/markdown';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 
-import type {Theme} from '@mm-redux/types/preferences';
+import type {Theme} from '@mm-redux/types/theme';
 
 type Props = {
     theme: Theme;

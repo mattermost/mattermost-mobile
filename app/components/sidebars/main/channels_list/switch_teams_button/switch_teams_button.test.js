@@ -15,7 +15,7 @@ describe('SwitchTeamsButton', () => {
         currentTeamId: 'current-team-id',
         mentionCount: 1,
         teamsCount: 2,
-        theme: Preferences.THEMES.default,
+        theme: Preferences.THEMES.denim,
     };
 
     test('should match snapshot', () => {

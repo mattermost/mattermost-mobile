@@ -3,11 +3,7 @@
 
 import PropTypes from 'prop-types';
 import React, {PureComponent} from 'react';
-import {
-    ActivityIndicator,
-    View,
-    ViewPropTypes,
-} from 'react-native';
+import {ActivityIndicator, Platform, View, ViewPropTypes} from 'react-native';
 
 import FormattedText from '@components/formatted_text';
 import TouchableWithFeedback from '@components/touchable_with_feedback';
@@ -75,6 +71,11 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             height: 28,
             marginVertical: 10,
             overflow: 'hidden',
+            ...Platform.select({
+                android: {
+                    scaleY: -1,
+                },
+            }),
         },
         text: {
             fontSize: 14,

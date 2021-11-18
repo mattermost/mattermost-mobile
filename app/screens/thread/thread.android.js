@@ -10,6 +10,7 @@ import PostDraft from '@components/post_draft';
 import PostList from '@components/post_list';
 import SafeAreaView from '@components/safe_area_view';
 import StatusBar from '@components/status_bar';
+import {THREAD_POST_TEXTBOX_CURSOR_CHANGE, THREAD_POST_TEXTBOX_VALUE_CHANGE} from '@constants/post_draft';
 import {THREAD} from '@constants/screen';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
@@ -23,6 +24,7 @@ export default class ThreadAndroid extends ThreadBase {
             postIds,
             rootId,
             channelIsArchived,
+            collapsedThreadsEnabled,
             theme,
         } = this.props;
 
@@ -37,7 +39,7 @@ export default class ThreadAndroid extends ThreadBase {
                         <PostList
                             testID='thread.post_list'
                             renderFooter={this.renderFooter()}
-                            indicateNewMessages={false}
+                            indicateNewMessages={collapsedThreadsEnabled}
                             postIds={postIds}
                             currentUserId={myMember && myMember.user_id}
                             lastViewedAt={this.state.lastViewedAt}
@@ -50,9 +52,11 @@ export default class ThreadAndroid extends ThreadBase {
                         ref={this.postDraft}
                         channelId={channelId}
                         channelIsArchived={channelIsArchived}
+                        cursorPositionEvent={THREAD_POST_TEXTBOX_CURSOR_CHANGE}
                         rootId={rootId}
                         screenId={this.props.componentId}
                         registerTypingAnimation={this.registerTypingAnimation}
+                        valueEvent={THREAD_POST_TEXTBOX_VALUE_CHANGE}
                     />
                 </>
             );

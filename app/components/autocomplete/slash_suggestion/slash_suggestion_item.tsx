@@ -10,7 +10,7 @@ import {SvgXml} from 'react-native-svg';
 
 import TouchableWithFeedback from '@components/touchable_with_feedback';
 import {COMMAND_SUGGESTION_ERROR} from '@mm-redux/constants/apps';
-import {Theme} from '@mm-redux/types/preferences';
+import {Theme} from '@mm-redux/types/theme';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 const slashIcon = require('@assets/images/autocomplete/slash_command.png');
@@ -155,13 +155,15 @@ const SlashSuggestionItem = (props: Props) => {
                 </View>
                 <View style={style.suggestionContainer}>
                     <Text style={style.suggestionName}>{`${suggestionText}`}</Text>
-                    <Text
-                        ellipsizeMode='tail'
-                        numberOfLines={1}
-                        style={style.suggestionDescription}
-                    >
-                        {description}
-                    </Text>
+                    {Boolean(description) &&
+                        <Text
+                            ellipsizeMode='tail'
+                            numberOfLines={1}
+                            style={style.suggestionDescription}
+                        >
+                            {description}
+                        </Text>
+                    }
                 </View>
             </View>
         </TouchableWithFeedback>

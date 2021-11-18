@@ -2776,6 +2776,27 @@ describe('Components.Markdown.transform', () => {
                     }],
                 }],
             },
+        }, {
+            name: 'Do not mention partial keys',
+            input: 'This is a mention for @Gvn.',
+            mentionKeys: [{key: 'gv'}],
+            expected: {
+                type: 'document',
+                children: [{
+                    type: 'paragraph',
+                    children: [{
+                        type: 'text',
+                        literal: 'This is a mention for ',
+                    }, {
+                        type: 'at_mention',
+                        _mentionName: 'Gvn.',
+                        children: [{
+                            type: 'text',
+                            literal: '@Gvn.',
+                        }],
+                    }],
+                }],
+            },
         }];
 
         for (const test of tests) {

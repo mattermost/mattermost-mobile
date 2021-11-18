@@ -1,7 +1,11 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {EditChannelInfo} from '@support/ui/component';
+import {
+    BottomSheet,
+    EditChannelInfo,
+    MainSidebar,
+} from '@support/ui/component';
 
 class CreateChannelScreen {
     testID = {
@@ -15,6 +19,8 @@ class CreateChannelScreen {
     backButton = element(by.id(this.testID.backButton));
 
     // convenience props
+    publicChannelTypeAction = EditChannelInfo.publicChannelTypeAction;
+    privateChannelTypeAction = EditChannelInfo.privateChannelTypeAction;
     nameInput = EditChannelInfo.nameInput;
     purposeInput = EditChannelInfo.purposeInput;
     headerInput = EditChannelInfo.headerInput;
@@ -23,6 +29,14 @@ class CreateChannelScreen {
         await expect(this.createChannelScreen).toBeVisible();
 
         return this.createChannelScreen;
+    }
+
+    open = async () => {
+        // # Open create channel screen
+        await MainSidebar.channelsActionButton.tap();
+        await BottomSheet.createOption.tap();
+
+        return this.toBeVisible();
     }
 
     back = async () => {

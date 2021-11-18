@@ -10,7 +10,7 @@ import LatexCodeBlock from './latex_code_block';
 
 describe('LatexCodeBlock', () => {
     const baseProps = {
-        theme: Preferences.THEMES.default,
+        theme: Preferences.THEMES.denim,
         language: 'latex',
         textStyle: {},
     };

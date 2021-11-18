@@ -10,7 +10,7 @@ import DateTimeSelector from './date_time_selector';
 
 describe('screens/date_time_selector', () => {
     const baseProps = {
-        theme: Preferences.THEMES.default,
+        theme: Preferences.THEMES.denim,
         handleChange: jest.fn(),
     };
 
