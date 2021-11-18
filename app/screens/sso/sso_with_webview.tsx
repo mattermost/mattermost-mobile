@@ -156,8 +156,8 @@ const SSOWithWebView = ({completeUrlPath, doSSOLogin, loginError, loginUrl, serv
                 '',
                 [{
                     text: intl.formatMessage({
-                        id: 'mobile.oauth.something_wrong.okButon',
-                        defaultMessage: 'Ok',
+                        id: 'mobile.oauth.something_wrong.okButton',
+                        defaultMessage: 'OK',
                     }),
                     onPress: () => {
                         popTopScreen();

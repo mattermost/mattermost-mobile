@@ -200,7 +200,7 @@
   "mobile.oauth.failed_to_open_link": "The link failed to open. Please try again.",
   "mobile.oauth.failed_to_open_link_no_browser": "The link failed to open. Please verify that a browser is installed on the device.",
   "mobile.oauth.something_wrong": "Something went wrong",
-  "mobile.oauth.something_wrong.okButon": "Ok",
+  "mobile.oauth.something_wrong.okButton": "OK",
   "mobile.oauth.switch_to_browser": "You are being redirected to your login provider",
   "mobile.oauth.switch_to_browser.error_title": "Sign in error",
   "mobile.oauth.switch_to_browser.title": "Redirecting...",
