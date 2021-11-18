@@ -85,7 +85,7 @@ const SSOWithRedirectURL = ({doSSOLogin, loginError, loginUrl, serverUrl, setLog
             if (e && Platform.OS === 'android' && e?.message?.match(/no activity found to handle intent/i)) {
                 message = intl.formatMessage({
                     id: 'mobile.oauth.failed_to_open_link_no_browser',
-                    defaultMessage: 'The link failed to open. Please verify if a browser is installed in the current space.',
+                    defaultMessage: 'The link failed to open. Please verify that a browser is installed on the device.',
                 });
             } else {
                 message = intl.formatMessage({

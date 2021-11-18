@@ -198,7 +198,7 @@
   "mobile.notice_text": "Mattermost is made possible by the open source software used in our {platform} and {mobile}.",
   "mobile.oauth.failed_to_login": "Your login attempt failed. Please try again.",
   "mobile.oauth.failed_to_open_link": "The link failed to open. Please try again.",
-  "mobile.oauth.failed_to_open_link_no_browser": "The link failed to open. Please verify if a browser is installed in the current space.",
+  "mobile.oauth.failed_to_open_link_no_browser": "The link failed to open. Please verify that a browser is installed on the device.",
   "mobile.oauth.something_wrong": "Something went wrong",
   "mobile.oauth.something_wrong.okButon": "Ok",
   "mobile.oauth.switch_to_browser": "You are being redirected to your login provider",
