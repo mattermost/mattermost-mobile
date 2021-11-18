@@ -76,11 +76,7 @@ const SsoOptions = ({goToSso, ssoOnly, ssoOptions, theme}: Props) => {
 
     const componentArray = [];
     for (const ssoType of enabledSSOs) {
-        const sso = getSsoButtonOptions(ssoType);
-        const id = sso.id;
-        const imageSrc = sso.imageSrc;
-        const compassIcon = sso.compassIcon;
-
+        const {compassIcon, defaultMessage, id, imageSrc} = getSsoButtonOptions(ssoType);
         const handlePress = () => {
             goToSso(ssoType);
         };
@@ -121,7 +117,7 @@ const SsoOptions = ({goToSso, ssoOnly, ssoOptions, theme}: Props) => {
                         key={ssoType}
                         id={id}
                         style={styles.buttonText}
-                        defaultMessage={sso.defaultMessage}
+                        defaultMessage={defaultMessage}
                         testID={id}
                     />
                 </View>

@@ -1,5 +1,6 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
+
 import {useManagedConfig} from '@mattermost/react-native-emm';
 import React, {MutableRefObject, useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
@@ -8,6 +9,7 @@ import Button from 'react-native-button';
 import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
 
 import {login} from '@actions/remote/session';
+import ClientError from '@client/rest/error';
 import FloatingTextInput from '@components/floating_text_input_label';
 import FormattedText from '@components/formatted_text';
 import Loading from '@components/loading';
@@ -174,21 +176,21 @@ const LoginForm = ({config, extra, keyboardAwareRef, numberSSOs, serverDisplayNa
             return loginError;
         }
 
-        const serverError = loginError as ClientErrorProps;
-        const errorId = serverError.server_error_id;
+        if (loginError instanceof ClientError) {
+            const errorId = loginError.server_error_id;
+            if (!errorId) {
+                return loginError.message;
+            }
 
-        if (!errorId) {
-            return serverError.message;
+            if (errorId === 'api.user.login.invalid_credentials_email_username') {
+                return intl.formatMessage({
+                    id: 'login.invalid_credentials',
+                    defaultMessage: 'The email and password combination is incorrect',
+                });
+            }
         }
 
-        if (errorId === 'api.user.login.invalid_credentials_email_username') {
-            return intl.formatMessage({
-                id: 'login.invalid_credentials',
-                defaultMessage: 'The email and password combination is incorrect',
-            });
-        }
-
-        return serverError.message;
+        return loginError.message;
     };
 
     const createLoginPlaceholder = () => {

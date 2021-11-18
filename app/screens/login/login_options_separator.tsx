@@ -36,19 +36,15 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme: Theme) => ({
 const LoginOptionsSeparator = ({theme}: LoginOptionsSeparatorProps) => {
     const styles = getStyleFromTheme(theme);
 
-    const text = (
-        <FormattedText
-            id='mobile.login_options.separator_text'
-            defaultMessage='or log in with'
-            style={styles.text}
-            testID='mobile.login_options.separator_text'
-        />
-    );
-
     return (
         <View style={styles.container}>
             <View style={styles.line}/>
-            {text}
+            <FormattedText
+                id='mobile.login_options.separator_text'
+                defaultMessage='or log in with'
+                style={styles.text}
+                testID='mobile.login_options.separator_text'
+            />
             <View style={styles.line}/>
         </View>
     );

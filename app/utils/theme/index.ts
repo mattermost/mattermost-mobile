@@ -92,7 +92,7 @@ export function concatStyles<T>(...styles: T[]) {
     return ([] as T[]).concat(...styles);
 }
 
-export function setNavigatorStyles(componentId: string, theme: Theme, additionalOptions = {}, statusBarColor?: string) {
+export function setNavigatorStyles(componentId: string, theme: Theme, additionalOptions: Options = {}, statusBarColor?: string) {
     const options: Options = {
         topBar: {
             title: {

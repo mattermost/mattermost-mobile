@@ -153,7 +153,7 @@ const Server = ({componentId, extra, launchType, launchError, theme}: ServerProp
             theme,
         };
 
-        const redirectSSO = Boolean(!hasLoginForm && numberSSOs === 1);
+        const redirectSSO = !hasLoginForm && numberSSOs === 1;
         const screen = redirectSSO ? Screens.SSO : Screens.LOGIN;
         if (redirectSSO) {
             // @ts-expect-error ssoType not in definition
