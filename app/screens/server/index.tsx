@@ -24,7 +24,6 @@ import Background from '@screens/background';
 import {goToScreen, loginAnimationOptions} from '@screens/navigation';
 import {DeepLinkWithData, LaunchProps, LaunchType} from '@typings/launch';
 import {getErrorMessage} from '@utils/client_error';
-import {preventDoubleTap} from '@utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {getServerUrlAfterRedirect, isValidUrl, sanitizeUrl} from '@utils/url';
 
@@ -166,7 +165,7 @@ const Server = ({componentId, extra, launchType, launchError, theme}: ServerProp
         setUrl(serverUrl);
     };
 
-    const handleConnect = preventDoubleTap(async (manualUrl?: string) => {
+    const handleConnect = async (manualUrl?: string) => {
         if (buttonDisabled && !manualUrl) {
             return;
         }
@@ -198,7 +197,7 @@ const Server = ({componentId, extra, launchType, launchError, theme}: ServerProp
         }
 
         pingServer(serverUrl);
-    });
+    };
 
     const handleDisplayNameTextChanged = useCallback((text: string) => {
         setDisplayName(text);
@@ -226,7 +225,6 @@ const Server = ({componentId, extra, launchType, launchError, theme}: ServerProp
         let canceled = false;
         setConnecting(true);
         cancelPing = () => {
-            // We should not need this once we have the cancelable network-client library
             canceled = true;
             setConnecting(false);
             cancelPing = undefined;
