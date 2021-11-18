@@ -103,7 +103,7 @@ const LoginOptions = ({config, extra, hasLoginForm, launchType, launchError, lic
                 style={styles.subheader}
                 id='mobile.login_options.none'
                 testID='mobile.login_options.none'
-                defaultMessage="You can't log in to your account yet. At lease one login option must be configured. Contact your system Admin for assistance."
+                defaultMessage="You can't log in to your account yet. At least one login option must be configured. Contact your system Admin for assistance."
             />
         );
     }, [hasLoginForm, numberSSOs, theme]);
