@@ -52,18 +52,23 @@ export default class AppsFormField extends React.PureComponent<Props, State> {
     constructor(props: Props) {
         super(props);
 
-        let selected = null;
+        let selected;
         switch (props.field.type) {
         case AppFieldTypes.STATIC_SELECT:
         case AppFieldTypes.DYNAMIC_SELECT:
         case AppFieldTypes.USER:
         case AppFieldTypes.CHANNEL: {
-            const value = props.value as AppSelectOption | null;
+            const value = props.value as AppSelectOption[] | null;
             if (value) {
-                selected = {
-                    text: value.label,
-                    value: value.value,
-                };
+                selected = value.map((option) => {
+                    return {
+                        text: option.label,
+                        value: option.value,
+                    };
+                });
+                if (selected.length === 1 && !props.field.multiselect) {
+                    selected = selected[0];
+                }
             }
         }
         }
