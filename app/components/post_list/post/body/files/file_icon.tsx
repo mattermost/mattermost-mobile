@@ -25,21 +25,21 @@ const BLUE_ICON = '#338AFF';
 const RED_ICON = '#ED522A';
 const GREEN_ICON = '#1CA660';
 const GRAY_ICON = '#999999';
-const FAILED_ICON_NAME_AND_COLOR = ['jumbo-attachment-image-broken', GRAY_ICON];
+const FAILED_ICON_NAME_AND_COLOR = ['file-image-broken-outline-large', GRAY_ICON];
 const ICON_NAME_AND_COLOR_FROM_FILE_TYPE: Record<string, string[]> = {
-    audio: ['jumbo-attachment-audio', BLUE_ICON],
-    code: ['jumbo-attachment-code', BLUE_ICON],
-    image: ['jumbo-attachment-image', BLUE_ICON],
+    audio: ['file-audio-outline-large', BLUE_ICON],
+    code: ['file-code-outline-large', BLUE_ICON],
+    image: ['file-image-outline-large', BLUE_ICON],
     smallImage: ['image-outline', BLUE_ICON],
-    other: ['jumbo-attachment-generic', BLUE_ICON],
-    patch: ['jumbo-attachment-patch', BLUE_ICON],
-    pdf: ['jumbo-attachment-pdf', RED_ICON],
-    presentation: ['jumbo-attachment-powerpoint', RED_ICON],
-    spreadsheet: ['jumbo-attachment-excel', GREEN_ICON],
-    text: ['jumbo-attachment-text', GRAY_ICON],
-    video: ['jumbo-attachment-video', BLUE_ICON],
-    word: ['jumbo-attachment-word', BLUE_ICON],
-    zip: ['jumbo-attachment-zip', BLUE_ICON],
+    other: ['file-generic-outline-large', BLUE_ICON],
+    patch: ['file-patch-outline-large', BLUE_ICON],
+    pdf: ['file-pdf-outline-large', RED_ICON],
+    presentation: ['file-powerpoint-outline-large', RED_ICON],
+    spreadsheet: ['file-excel-outline-large', GREEN_ICON],
+    text: ['file-text-outline-large', GRAY_ICON],
+    video: ['file-video-outline-large', BLUE_ICON],
+    word: ['file-word-outline-large', BLUE_ICON],
+    zip: ['file-zip-outline-large', BLUE_ICON],
 };
 
 const styles = StyleSheet.create({
