@@ -121,7 +121,7 @@ const ServerForm = ({
     const onConnect = useCallback(() => {
         Keyboard.dismiss();
         handleConnect();
-    }, [buttonDisabled, connecting]);
+    }, [buttonDisabled, connecting, theme]);
 
     const onFocus = useCallback(() => {
         focus();
