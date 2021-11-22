@@ -47,7 +47,7 @@ type Props = {
 
 type State = {
     selectedText: string;
-    selected?: DialogOption[];
+    selected?: DialogOption | DialogOption[];
 }
 
 export default class AutocompleteSelector extends PureComponent<Props, State> {
@@ -74,17 +74,14 @@ export default class AutocompleteSelector extends PureComponent<Props, State> {
             return null;
         }
 
-        const options = props.selected as DialogOption[];
         if (!props.isMultiselect) {
-            if (options.length === 1) {
-                return {
-                    selectedText: (options)[0].text,
-                    selected: props.selected,
-                };
-            }
-            return null;
+            return {
+                selectedText: (props.selected as DialogOption).text,
+                selected: props.selected,
+            };
         }
 
+        const options = props.selected as DialogOption[];
         let selectedText = '';
         const selected: DialogOption[] = [];
 
