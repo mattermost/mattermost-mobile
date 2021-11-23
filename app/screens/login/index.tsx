@@ -1,472 +1,219 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
-import {useManagedConfig} from '@mattermost/react-native-emm';
-import React, {useCallback, useEffect, useRef, useState} from 'react';
-import {useIntl} from 'react-intl';
-import {
-    ActivityIndicator,
-    Image,
-    InteractionManager,
-    Keyboard,
-    SafeAreaView,
-    StyleProp,
-    Text,
-    TextInput,
-    TextStyle,
-    TouchableWithoutFeedback,
-    View,
-    ViewStyle,
-} from 'react-native';
-import Button from 'react-native-button';
-import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
-import {NavigationFunctionComponent} from 'react-native-navigation';
 
-import {login} from '@actions/remote/session';
-import ErrorText from '@components/error_text';
+import React, {useEffect, useMemo, useRef} from 'react';
+import {Platform, useWindowDimensions, View} from 'react-native';
+import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
+import {Navigation} from 'react-native-navigation';
+import Animated, {useAnimatedStyle, useSharedValue, withTiming} from 'react-native-reanimated';
+import {SafeAreaView} from 'react-native-safe-area-context';
+
 import FormattedText from '@components/formatted_text';
-import {FORGOT_PASSWORD, MFA} from '@constants/screens';
-import {t} from '@i18n';
-import {goToScreen, resetToHome} from '@screens/navigation';
+import {Screens} from '@constants';
+import {useIsTablet} from '@hooks/device';
+import Background from '@screens/background';
+import {goToScreen, loginAnimationOptions} from '@screens/navigation';
 import {preventDoubleTap} from '@utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
+import {typography} from '@utils/typography';
+
+import Form from './form';
+import LoginOptionsSeparator from './login_options_separator';
+import SsoOptions from './sso_options';
 
 import type {LaunchProps} from '@typings/launch';
 
-interface LoginProps extends LaunchProps {
-    componentId: string;
+export interface LoginOptionsProps extends LaunchProps {
     config: ClientConfig;
-    serverDisplayName: string;
+    hasLoginForm: boolean;
     license: ClientLicense;
+    serverDisplayName: string;
+    serverUrl: string;
+    ssoOptions: Record<string, boolean>;
     theme: Theme;
 }
 
-export const MFA_EXPECTED_ERRORS = ['mfa.validate_token.authenticate.app_error', 'ent.mfa.validate_token.authenticate.app_error'];
+const getStyles = makeStyleSheetFromTheme((theme: Theme) => ({
+    centered: {
+        width: '100%',
+        maxWidth: 600,
+    },
+    container: {
+        flex: 1,
+        ...Platform.select({
+            android: {
+                marginTop: 56,
+            },
+        }),
+    },
+    flex: {
+        flex: 1,
+    },
+    header: {
+        color: theme.mentionColor,
+        marginBottom: 12,
+        ...typography('Heading', 1000, 'SemiBold'),
+    },
+    innerContainer: {
+        alignItems: 'center',
+        justifyContent: 'center',
+        paddingHorizontal: 24,
+    },
+    subheader: {
+        color: changeOpacity(theme.centerChannelColor, 0.6),
+        marginBottom: 12,
+        ...typography('Body', 200, 'Regular'),
+    },
+}));
 
-const Login: NavigationFunctionComponent = ({config, serverDisplayName, extra, launchError, launchType, license, serverUrl, theme}: LoginProps) => {
-    const styles = getStyleSheet(theme);
+const AnimatedSafeArea = Animated.createAnimatedComponent(SafeAreaView);
 
-    const loginRef = useRef<TextInput>(null);
-    const passwordRef = useRef<TextInput>(null);
-    const scrollRef = useRef<KeyboardAwareScrollView>(null);
-
-    const intl = useIntl();
-    const managedConfig = useManagedConfig();
-    const [isLoading, setIsLoading] = useState<boolean>(false);
-    const [error, setError] = useState<Partial<ClientErrorProps> | string | undefined | null>();
-
-    const [loginId, setLoginId] = useState<string>('');
-    const [password, setPassword] = useState<string>('');
-
-    // useEffect to set userName for EMM
-    useEffect(() => {
-        const setEmmUsernameIfAvailable = async () => {
-            if (managedConfig?.username && loginRef.current) {
-                loginRef.current.setNativeProps({text: managedConfig.username});
-                setLoginId(managedConfig.username);
-            }
-        };
-
-        setEmmUsernameIfAvailable();
-    }, []);
-
-    const preSignIn = preventDoubleTap(async () => {
-        setIsLoading(true);
-        setError(null);
-
-        Keyboard.dismiss();
-        InteractionManager.runAfterInteractions(async () => {
-            if (!loginId) {
-                t('login.noEmail');
-                t('login.noEmailLdapUsername');
-                t('login.noEmailUsername');
-                t('login.noEmailUsernameLdapUsername');
-                t('login.noLdapUsername');
-                t('login.noUsername');
-                t('login.noUsernameLdapUsername');
-
-                // it's slightly weird to be constructing the message ID, but it's a bit nicer than triply nested if statements
-                let msgId = 'login.no';
-                if (config.EnableSignInWithEmail === 'true') {
-                    msgId += 'Email';
-                }
-                if (config.EnableSignInWithUsername === 'true') {
-                    msgId += 'Username';
-                }
-                if (license.IsLicensed === 'true' && config.EnableLdap === 'true') {
-                    msgId += 'LdapUsername';
-                }
-
-                const ldapUsername = intl.formatMessage({
-                    id: 'login.ldapUsernameLower',
-                    defaultMessage: 'AD/LDAP username',
-                });
-
-                setIsLoading(false);
-                setError(intl.formatMessage(
-                    {
-                        id: msgId,
-                        defaultMessage: '',
-                    },
-                    {
-                        ldapUsername: config.LdapLoginFieldName || ldapUsername,
-                    },
-                ));
-                return;
-            }
-
-            if (!password) {
-                setIsLoading(false);
-                setError(intl.formatMessage({
-                    id: t('login.noPassword'),
-                    defaultMessage: 'Please enter your password',
-                }));
-
-                return;
-            }
-
-            signIn();
-        });
-    });
-
-    const signIn = async () => {
-        const result: LoginActionResponse = await login(serverUrl!, {serverDisplayName, loginId: loginId.toLowerCase(), password, config, license});
-        if (checkLoginResponse(result)) {
-            if (!result.hasTeams && !result.error) {
-                // eslint-disable-next-line no-console
-                console.log('GO TO NO TEAMS');
-                return;
-            }
-            goToHome(result.time || 0, result.error as never);
-        }
-    };
-
-    const goToHome = (time: number, loginError?: never) => {
-        const hasError = launchError || Boolean(loginError);
-        resetToHome({extra, launchError: hasError, launchType, serverUrl, time});
-    };
-
-    const checkLoginResponse = (data: LoginActionResponse) => {
-        let errorId = '';
-        const clientError = data.error as ClientErrorProps;
-        if (clientError && clientError.server_error_id) {
-            errorId = clientError.server_error_id;
-        }
-
-        if (data.failed && MFA_EXPECTED_ERRORS.includes(errorId)) {
-            goToMfa();
-            setIsLoading(false);
-            return false;
-        }
-
-        if (data?.error && data.failed) {
-            setIsLoading(false);
-            setError(getLoginErrorMessage(data.error));
-            return false;
-        }
-
-        setIsLoading(false);
-
-        return true;
-    };
-
-    const goToMfa = () => {
-        const screen = MFA;
-        const title = intl.formatMessage({id: 'mobile.routes.mfa', defaultMessage: 'Multi-factor Authentication'});
-        goToScreen(screen, title, {goToHome, loginId, password, config, serverDisplayName, license, serverUrl, theme});
-    };
-
-    const getLoginErrorMessage = (loginError: string | ClientErrorProps | Error) => {
-        if (typeof loginError === 'string') {
-            return loginError;
-        }
-
-        return getServerErrorForLogin(loginError as ClientErrorProps);
-    };
-
-    const getServerErrorForLogin = (serverError?: ClientErrorProps) => {
-        if (!serverError) {
-            return null;
-        }
-
-        const errorId = serverError.server_error_id;
-
-        if (!errorId) {
-            return serverError.message;
-        }
-
-        if (errorId === 'store.sql_user.get_for_login.app_error' || errorId === 'ent.ldap.do_login.user_not_registered.app_error') {
-            return {
-                intl: {
-                    id: t('login.userNotFound'),
-                    defaultMessage: 'We couldn\'t find an account matching your login credentials.',
-                },
-            };
-        }
-
-        if (errorId === 'api.user.check_user_password.invalid.app_error' || errorId === 'ent.ldap.do_login.invalid_password.app_error') {
-            return {
-                intl: {
-                    id: t('login.invalidPassword'),
-                    defaultMessage: 'Your password is incorrect.',
-                },
-            };
-        }
-
-        return serverError.message;
-    };
-
-    const onPressForgotPassword = () => {
-        const screen = FORGOT_PASSWORD;
-        const title = intl.formatMessage({id: 'password_form.title', defaultMessage: 'Password Reset'});
-        const passProps = {
-            theme,
-            serverUrl,
-        };
-
-        goToScreen(screen, title, passProps);
-    };
-
-    const createLoginPlaceholder = () => {
-        const {formatMessage} = intl;
-        const loginPlaceholders = [];
-
-        if (config.EnableSignInWithEmail === 'true') {
-            loginPlaceholders.push(formatMessage({id: 'login.email', defaultMessage: 'Email'}));
-        }
-
-        if (config.EnableSignInWithUsername === 'true') {
-            loginPlaceholders.push(formatMessage({id: 'login.username', defaultMessage: 'Username'}));
-        }
-
-        if (license.IsLicensed === 'true' && license.LDAP === 'true' && config.EnableLdap === 'true') {
-            if (config.LdapLoginFieldName) {
-                loginPlaceholders.push(config.LdapLoginFieldName);
-            } else {
-                loginPlaceholders.push(formatMessage({id: 'login.ldapUsername', defaultMessage: 'AD/LDAP Username'}));
-            }
-        }
-
-        if (loginPlaceholders.length >= 2) {
-            return loginPlaceholders.slice(0, loginPlaceholders.length - 1).join(', ') +
-                ` ${formatMessage({id: 'login.or', defaultMessage: 'or'})} ` +
-                loginPlaceholders[loginPlaceholders.length - 1];
-        }
-
-        if (loginPlaceholders.length === 1) {
-            return loginPlaceholders[0];
-        }
-
-        return '';
-    };
-
-    const onBlur = () => {
-        loginRef?.current?.blur();
-        passwordRef?.current?.blur();
-        Keyboard.dismiss();
-    };
-
-    const onLoginChange = useCallback((text) => {
-        setLoginId(text);
-    }, []);
-
-    const onPasswordChange = useCallback((text) => {
-        setPassword(text);
-    }, []);
-
-    const onPasswordFocus = useCallback(() => {
-        passwordRef?.current?.focus();
-    }, []);
-
-    // **** **** ****   RENDER METHOD **** **** ****
-
-    const renderProceedButton = () => {
-        if (isLoading) {
+const LoginOptions = ({config, extra, hasLoginForm, launchType, launchError, license, serverDisplayName, serverUrl, ssoOptions, theme}: LoginOptionsProps) => {
+    const styles = getStyles(theme);
+    const keyboardAwareRef = useRef<KeyboardAwareScrollView>();
+    const dimensions = useWindowDimensions();
+    const isTablet = useIsTablet();
+    const translateX = useSharedValue(dimensions.width);
+    const numberSSOs = useMemo(() => {
+        return Object.values(ssoOptions).filter((v) => v).length;
+    }, [ssoOptions]);
+    const description = useMemo(() => {
+        if (hasLoginForm) {
             return (
-                <ActivityIndicator
-                    animating={true}
-                    size='small'
+                <FormattedText
+                    style={styles.subheader}
+                    id='mobile.login_options.enter_credentials'
+                    testID='mobile.login_options.enter_credentials'
+                    defaultMessage='Enter your login details below.'
+                />
+            );
+        } else if (numberSSOs) {
+            return (
+                <FormattedText
+                    style={styles.subheader}
+                    id='mobile.login_options.select_option'
+                    testID='mobile.login_options.select_option'
+                    defaultMessage='Select a login option below.'
                 />
             );
         }
 
-        const additionalStyle: StyleProp<ViewStyle> = {
-            ...(config.EmailLoginButtonColor && {
-                backgroundColor: config.EmailLoginButtonColor,
-            }),
-            ...(config.EmailLoginButtonBorderColor && {
-                borderColor: config.EmailLoginButtonBorderColor,
-            }),
-        };
-
-        const additionalTextStyle: StyleProp<TextStyle> = {
-            ...(config.EmailLoginButtonTextColor && {
-                color: config.EmailLoginButtonTextColor,
-            }),
-        };
-
         return (
-            <Button
-                testID='login.signin.button'
-                onPress={preSignIn}
-                containerStyle={[styles.signupButton, additionalStyle]}
-            >
-                <FormattedText
-                    id='login.signIn'
-                    defaultMessage='Sign in'
-                    style={[styles.signupButtonText, additionalTextStyle]}
-                />
-            </Button>
+            <FormattedText
+                style={styles.subheader}
+                id='mobile.login_options.none'
+                testID='mobile.login_options.none'
+                defaultMessage="You can't log in to your account yet. At least one login option must be configured. Contact your System Admin for assistance."
+            />
         );
-    };
+    }, [hasLoginForm, numberSSOs, theme]);
+
+    const goToSso = preventDoubleTap((ssoType: string) => {
+        goToScreen(Screens.SSO, '', {config, extra, launchError, launchType, license, theme, ssoType, serverDisplayName, serverUrl}, loginAnimationOptions());
+    });
+
+    const optionsSeparator = hasLoginForm && Boolean(numberSSOs) && (
+        <LoginOptionsSeparator
+            theme={theme}
+        />
+    );
+
+    const transform = useAnimatedStyle(() => {
+        const duration = Platform.OS === 'android' ? 250 : 350;
+        return {
+            transform: [{translateX: withTiming(translateX.value, {duration})}],
+        };
+    }, []);
+
+    useEffect(() => {
+        const listener = {
+            componentDidAppear: () => {
+                translateX.value = 0;
+            },
+            componentDidDisappear: () => {
+                translateX.value = -dimensions.width;
+            },
+        };
+        const unsubscribe = Navigation.events().registerComponentListener(listener, Screens.LOGIN);
+
+        return () => unsubscribe.remove();
+    }, [dimensions]);
+
+    let additionalContainerStyle;
+    if (numberSSOs < 3 || !hasLoginForm || (isTablet && dimensions.height > dimensions.width)) {
+        additionalContainerStyle = styles.flex;
+    }
+
+    let title;
+    if (hasLoginForm || numberSSOs > 0) {
+        title = (
+            <FormattedText
+                defaultMessage='Log In to Your Account'
+                id={'mobile.login_options.heading'}
+                testID={'mobile.login_options.heading'}
+                style={styles.header}
+            />
+        );
+    } else {
+        title = (
+            <FormattedText
+                defaultMessage="Can't Log In"
+                id={'mobile.login_options.cant_heading'}
+                testID={'mobile.login_options.cant_heading'}
+                style={styles.header}
+            />
+        );
+    }
 
     return (
-        <SafeAreaView style={styles.container}>
-            <TouchableWithoutFeedback
-                onPress={onBlur}
-                accessible={false}
-            >
+        <View style={styles.flex}>
+            <Background theme={theme}/>
+            <AnimatedSafeArea style={[styles.container, transform]}>
                 <KeyboardAwareScrollView
-                    ref={scrollRef}
-                    style={styles.container}
-                    contentContainerStyle={styles.innerContainer}
-                    keyboardShouldPersistTaps='handled'
+                    bounces={false}
+                    contentContainerStyle={[styles.innerContainer, additionalContainerStyle]}
+                    enableAutomaticScroll={Platform.OS === 'android'}
                     enableOnAndroid={true}
+                    enableResetScrollToCoords={true}
+                    extraScrollHeight={0}
+                    keyboardDismissMode='on-drag'
+                    keyboardShouldPersistTaps='handled'
+
+                    // @ts-expect-error legacy ref
+                    ref={keyboardAwareRef}
+                    scrollToOverflowEnabled={true}
+                    style={styles.flex}
                 >
-                    <Image
-                        source={require('@assets/images/logo.png')}
-                        style={{height: 72, resizeMode: 'contain'}}
-                    />
-                    {config?.SiteName && (<View testID='login.screen'>
-                        <Text style={styles.header}>{config?.SiteName}</Text>
-                        <FormattedText
-                            style={styles.subheader}
-                            id='web.root.signup_info'
-                            defaultMessage='All team communication in one place, searchable and accessible anywhere'
+                    <View style={styles.centered}>
+                        {title}
+                        {description}
+                        {hasLoginForm &&
+                        <Form
+                            config={config}
+                            keyboardAwareRef={keyboardAwareRef}
+                            license={license}
+                            launchError={launchError}
+                            launchType={launchType}
+                            numberSSOs={numberSSOs}
+                            theme={theme}
+                            serverDisplayName={serverDisplayName}
+                            serverUrl={serverUrl}
                         />
-                    </View>)}
-                    {error && (
-                        <ErrorText
-                            testID='login.error.text'
-                            error={error}
+                        }
+                        {optionsSeparator}
+                        {numberSSOs > 0 &&
+                        <SsoOptions
+                            goToSso={goToSso}
+                            ssoOnly={!hasLoginForm}
+                            ssoOptions={ssoOptions}
                             theme={theme}
                         />
-                    )}
-                    <TextInput
-                        testID='login.username.input'
-                        autoCapitalize='none'
-                        autoCorrect={false}
-                        blurOnSubmit={false}
-                        disableFullscreenUI={true}
-                        keyboardType='email-address'
-                        onChangeText={onLoginChange}
-                        onSubmitEditing={onPasswordFocus}
-                        placeholder={createLoginPlaceholder()}
-                        placeholderTextColor={changeOpacity(theme.centerChannelColor, 0.5)}
-                        ref={loginRef}
-                        returnKeyType='next'
-                        style={styles.inputBox}
-                        underlineColorAndroid='transparent'
-                        value={loginId} //to remove
-                    />
-                    <TextInput
-                        testID='login.password.input'
-                        autoCapitalize='none'
-                        autoCorrect={false}
-                        disableFullscreenUI={true}
-                        onChangeText={onPasswordChange}
-                        onSubmitEditing={preSignIn}
-                        style={styles.inputBox}
-                        placeholder={intl.formatMessage({
-                            id: 'login.password',
-                            defaultMessage: 'Password',
-                        })}
-                        placeholderTextColor={changeOpacity(theme.centerChannelColor, 0.5)}
-                        ref={passwordRef}
-                        returnKeyType='go'
-                        secureTextEntry={true}
-                        underlineColorAndroid='transparent'
-                        value={password} //to remove
-                    />
-                    {renderProceedButton()}
-                    {(config.EnableSignInWithEmail === 'true' || config.EnableSignInWithUsername === 'true') && (
-                        <Button
-                            onPress={onPressForgotPassword}
-                            containerStyle={[styles.forgotPasswordBtn]}
-                        >
-                            <FormattedText
-                                id='login.forgot'
-                                defaultMessage='I forgot my password'
-                                style={styles.forgotPasswordTxt}
-                                testID={'login.forgot'}
-                            />
-                        </Button>
-                    )}
+                        }
+                    </View>
                 </KeyboardAwareScrollView>
-            </TouchableWithoutFeedback>
-        </SafeAreaView>
+            </AnimatedSafeArea>
+        </View>
     );
 };
 
-const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
-    container: {
-        flex: 1,
-    },
-    innerContainer: {
-        alignItems: 'center',
-        flexDirection: 'column',
-        justifyContent: 'center',
-        paddingHorizontal: 15,
-        paddingVertical: 50,
-    },
-    forgotPasswordBtn: {
-        borderColor: 'transparent',
-        marginTop: 15,
-    },
-    forgotPasswordTxt: {
-        color: theme.linkColor,
-    },
-    inputBox: {
-        fontSize: 16,
-        height: 45,
-        borderColor: 'gainsboro',
-        borderWidth: 1,
-        marginTop: 5,
-        marginBottom: 5,
-        paddingLeft: 10,
-        alignSelf: 'stretch',
-        borderRadius: 3,
-        color: theme.centerChannelColor,
-    },
-    subheader: {
-        textAlign: 'center',
-        fontSize: 16,
-        fontWeight: '300',
-        color: changeOpacity(theme.centerChannelColor, 0.6),
-        marginBottom: 15,
-        lineHeight: 22,
-    },
-    signupButton: {
-        borderRadius: 3,
-        borderColor: theme.buttonBg,
-        borderWidth: 1,
-        alignItems: 'center',
-        alignSelf: 'stretch',
-        marginTop: 10,
-        padding: 15,
-    },
-    signupButtonText: {
-        textAlign: 'center',
-        color: theme.buttonBg,
-        fontSize: 17,
-    },
-    header: {
-        color: theme.centerChannelColor,
-        textAlign: 'center',
-        marginTop: 15,
-        marginBottom: 15,
-        fontSize: 32,
-        fontFamily: 'OpenSans-Semibold',
-    },
-}));
-
-export default Login;
+export default LoginOptions;

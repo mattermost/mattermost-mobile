@@ -5,7 +5,6 @@ import CookieManager, {Cookie, Cookies} from '@react-native-cookies/cookies';
 import React, {useEffect} from 'react';
 import {useIntl} from 'react-intl';
 import {Alert, Platform, Text, View} from 'react-native';
-import {SafeAreaView} from 'react-native-safe-area-context';
 import {WebView} from 'react-native-webview';
 import {
     WebViewErrorEvent,
@@ -19,6 +18,16 @@ import Loading from '@components/loading';
 import {Sso} from '@constants';
 import {popTopScreen} from '@screens/navigation';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
+
+interface SSOWithWebViewProps {
+    completeUrlPath: string;
+    doSSOLogin: (bearerToken: string, csrfToken: string) => void;
+    loginError: string;
+    loginUrl: string;
+    serverUrl: string;
+    ssoType: string;
+    theme: Partial<Theme>;
+}
 
 const HEADERS = {
     'X-Mobile-App': 'mattermost',
@@ -56,15 +65,25 @@ const oneLoginFormScalingJS = `
     })();
 `;
 
-interface SSOWithWebViewProps {
-    completeUrlPath: string;
-    doSSOLogin: (bearerToken: string, csrfToken: string) => void;
-    loginError: string;
-    loginUrl: string;
-    serverUrl: string;
-    ssoType: string;
-    theme: Partial<Theme>;
-}
+const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
+    return {
+        container: {
+            flex: 1,
+            marginTop: Platform.select({android: 56}),
+        },
+        errorContainer: {
+            alignItems: 'center',
+            flex: 1,
+            marginTop: 40,
+        },
+        errorText: {
+            color: changeOpacity(theme.centerChannelColor, 0.4),
+            fontSize: 16,
+            lineHeight: 23,
+            paddingHorizontal: 30,
+        },
+    };
+});
 
 const SSOWithWebView = ({completeUrlPath, doSSOLogin, loginError, loginUrl, serverUrl, ssoType, theme}: SSOWithWebViewProps) => {
     const style = getStyleSheet(theme);
@@ -137,8 +156,8 @@ const SSOWithWebView = ({completeUrlPath, doSSOLogin, loginError, loginUrl, serv
                 '',
                 [{
                     text: intl.formatMessage({
-                        id: 'mobile.oauth.something_wrong.okButon',
-                        defaultMessage: 'Ok',
+                        id: 'mobile.oauth.something_wrong.okButton',
+                        defaultMessage: 'OK',
                     }),
                     onPress: () => {
                         popTopScreen();
@@ -227,7 +246,7 @@ const SSOWithWebView = ({completeUrlPath, doSSOLogin, loginError, loginUrl, serv
     };
 
     return (
-        <SafeAreaView
+        <View
             style={style.container}
             testID='sso.webview'
         >
@@ -236,27 +255,8 @@ const SSOWithWebView = ({completeUrlPath, doSSOLogin, loginError, loginUrl, serv
                     <Text style={style.errorText}>{error || loginError}</Text>
                 </View>
             ) : renderWebView()}
-        </SafeAreaView>
+        </View>
     );
 };
-
-const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
-    return {
-        container: {
-            flex: 1,
-        },
-        errorContainer: {
-            alignItems: 'center',
-            flex: 1,
-            marginTop: 40,
-        },
-        errorText: {
-            color: changeOpacity(theme.centerChannelColor, 0.4),
-            fontSize: 16,
-            lineHeight: 23,
-            paddingHorizontal: 30,
-        },
-    };
-});
 
 export default SSOWithWebView;
