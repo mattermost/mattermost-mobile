@@ -41,6 +41,7 @@ export const transformChannelRecord = ({action, database, value}: TransformerArg
         channel.name = raw.name;
         channel.shared = Boolean(raw.shared);
         channel.teamId = raw.team_id;
+        channel.categoryId = raw.category_id;
         channel.type = raw.type;
     };
 

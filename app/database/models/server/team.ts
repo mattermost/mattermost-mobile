@@ -7,6 +7,7 @@ import Model, {Associations} from '@nozbe/watermelondb/Model';
 
 import {MM_TABLES} from '@constants/database';
 
+import type CategoryModel from '@typings/database/models/servers/category';
 import type ChannelModel from '@typings/database/models/servers/channel';
 import type GroupsTeamModel from '@typings/database/models/servers/groups_team';
 import type MyTeamModel from '@typings/database/models/servers/my_team';
@@ -16,6 +17,7 @@ import type TeamMembershipModel from '@typings/database/models/servers/team_memb
 import type TeamSearchHistoryModel from '@typings/database/models/servers/team_search_history';
 
 const {
+    CATEGORY,
     CHANNEL,
     GROUPS_TEAM,
     TEAM,
@@ -38,6 +40,9 @@ export default class TeamModel extends Model {
 
         /** A TEAM has a 1:N relationship with CHANNEL. A TEAM can possess multiple channels */
         [CHANNEL]: {type: 'has_many', foreignKey: 'team_id'},
+
+        /** A TEAM has a 1:N relationship with CATEGORY. A TEAM can possess multiple categories */
+        [CATEGORY]: {type: 'has_many', foreignKey: 'team_id'},
 
         /** A TEAM has a 1:N relationship with GROUPS_TEAM. A TEAM can possess multiple groups */
         [GROUPS_TEAM]: {type: 'has_many', foreignKey: 'team_id'},
@@ -84,6 +89,9 @@ export default class TeamModel extends Model {
 
     /** channels : All the channels associated with this team */
     @children(CHANNEL) channels!: ChannelModel[];
+
+    /** channels : All the channels associated with this team */
+    @children(CATEGORY) categories!: CategoryModel[];
 
     /** groupsTeam : All the groups associated with this team */
     @children(GROUPS_TEAM) groupsTeam!: GroupsTeamModel[];

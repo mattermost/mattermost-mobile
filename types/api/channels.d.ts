@@ -18,6 +18,7 @@ type Channel = {
     create_at: number;
     update_at: number;
     delete_at: number;
+    category_id: string;
     team_id: string;
     type: ChannelType;
     display_name: string;

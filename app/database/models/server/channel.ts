@@ -6,6 +6,7 @@ import {children, field, immutableRelation} from '@nozbe/watermelondb/decorators
 import Model, {Associations} from '@nozbe/watermelondb/Model';
 
 import {MM_TABLES} from '@constants/database';
+import CategoryModel from '@typings/database/models/servers/category';
 
 import type ChannelInfoModel from '@typings/database/models/servers/channel_info';
 import type ChannelMembershipModel from '@typings/database/models/servers/channel_membership';
@@ -19,6 +20,7 @@ import type TeamModel from '@typings/database/models/servers/team';
 import type UserModel from '@typings/database/models/servers/user';
 
 const {
+    CATEGORY,
     CHANNEL,
     CHANNEL_INFO,
     CHANNEL_MEMBERSHIP,
@@ -65,6 +67,9 @@ export default class ChannelModel extends Model {
 
         /** A USER can create multiple CHANNEL (relationship is 1:N) */
         [USER]: {type: 'belongs_to', key: 'creator_id'},
+
+        /** A CATEGORY can be associated to CHANNEL (relationship is 1:N) */
+        [CATEGORY]: {type: 'belongs_to', key: 'category_id'},
     };
 
     /** create_at : The creation date for this channel */
@@ -97,6 +102,9 @@ export default class ChannelModel extends Model {
     /** team_id : The team to which this channel belongs.  It can be empty for direct/group message. */
     @field('team_id') teamId!: string;
 
+    /** category_id : The category to which this channel belongs. */
+    @field('category_id') categoryId!: string;
+
     /** type : The type of the channel ( e.g. G: group messages, D: direct messages, P: private channel and O: public channel) */
     @field('type') type!: ChannelType;
 
@@ -118,6 +126,9 @@ export default class ChannelModel extends Model {
     /** team : The TEAM to which this CHANNEL belongs */
     @immutableRelation(TEAM, 'team_id') team!: Relation<TeamModel>;
 
+    /** team : The CATEGORY to which this CHANNEL belongs */
+    @immutableRelation(CATEGORY, 'category_id') category!: Relation<CategoryModel>;
+
     /** creator : The USER who created this CHANNEL*/
     @immutableRelation(USER, 'creator_id') creator!: Relation<UserModel>;
 
@@ -131,7 +142,7 @@ export default class ChannelModel extends Model {
     /** settings: User specific settings/preferences for this channel */
     @immutableRelation(MY_CHANNEL_SETTINGS, 'id') settings!: Relation<MyChannelSettingsModel>;
 
-    toApi = (): Channel => {
+    toApi = (): Omit<Channel, 'category_id'> => {
         return {
             id: this.id,
             create_at: this.createAt,

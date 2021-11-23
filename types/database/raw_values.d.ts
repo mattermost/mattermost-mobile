@@ -95,6 +95,7 @@ type TermsOfService = {
 
 type RawValue =
   | AppInfo
+  | Category
   | Channel
   | ChannelInfo
   | ChannelMembership

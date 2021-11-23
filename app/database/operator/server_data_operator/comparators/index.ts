@@ -1,6 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import type CategoryModel from '@typings/database/models/servers/category';
 import type ChannelModel from '@typings/database/models/servers/channel';
 import type ChannelInfoModel from '@typings/database/models/servers/channel_info';
 import type ChannelMembershipModel from '@typings/database/models/servers/channel_membership';
@@ -110,6 +111,10 @@ export const isRecordSlashCommandEqualToRaw = (record: SlashCommandModel, raw: S
 };
 
 export const isRecordMyTeamEqualToRaw = (record: MyTeamModel, raw: MyTeam) => {
+    return raw.id === record.id;
+};
+
+export const isRecordCategoryEqualToRaw = (record: CategoryModel, raw: Category) => {
     return raw.id === record.id;
 };
 

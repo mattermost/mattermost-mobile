@@ -184,6 +184,10 @@ export type HandleMyChannelSettingsArgs = PrepareOnly & {
   settings: ChannelMembership[];
 };
 
+export type HandleCategoryArgs = PrepareOnly & {
+  categories: Categories;
+};
+
 export type HandleChannelArgs = PrepareOnly & {
   channels: Channel[];
 };

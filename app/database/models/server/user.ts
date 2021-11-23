@@ -16,6 +16,7 @@ import type ReactionModel from '@typings/database/models/servers/reaction';
 import type TeamMembershipModel from '@typings/database/models/servers/team_membership';
 
 const {
+    CATEGORY,
     CHANNEL,
     CHANNEL_MEMBERSHIP,
     GROUP_MEMBERSHIP,
@@ -36,6 +37,9 @@ export default class UserModel extends Model {
 
     /** associations : Describes every relationship to this table. */
     static associations: Associations = {
+
+        /** USER has a 1:N relationship with TEAM_MEMBERSHIP.  A user can join multiple teams */
+        [CATEGORY]: {type: 'has_many', foreignKey: 'user_id'},
 
         /** USER has a 1:N relationship with CHANNEL.  A user can create multiple channels */
         [CHANNEL]: {type: 'has_many', foreignKey: 'creator_id'},

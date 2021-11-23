@@ -8,10 +8,11 @@ import {switchMap} from 'rxjs/operators';
 import {SystemModel} from '@app/database/models/server';
 import {MM_TABLES, SYSTEM_IDENTIFIERS} from '@constants/database';
 
-const {SERVER: {SYSTEM, TEAM}} = MM_TABLES;
 import ChannelListHeader from './header';
 
 import type {WithDatabaseArgs} from '@typings/database/database';
+
+const {SERVER: {SYSTEM, TEAM}} = MM_TABLES;
 
 const withCurrentTeam = withObservables([], ({database}: WithDatabaseArgs) => ({
     team: database.get<SystemModel>(SYSTEM).findAndObserve(SYSTEM_IDENTIFIERS.CURRENT_TEAM_ID).pipe(

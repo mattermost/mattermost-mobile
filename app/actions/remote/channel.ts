@@ -5,6 +5,7 @@ import {Model} from '@nozbe/watermelondb';
 import {IntlShape} from 'react-intl';
 
 import {switchToChannel} from '@actions/local/channel';
+import {prepareCategories} from '@app/queries/servers/category';
 import {General} from '@constants';
 import DatabaseManager from '@database/manager';
 import {privateChannelJoinPrompt} from '@helpers/api/channel';
@@ -96,7 +97,9 @@ export const fetchMyChannelsForTeam = async (serverUrl: string, teamId: string, 
     }
 
     try {
-        let [channels, memberships] = await Promise.all<Channel[], ChannelMembership[]>([
+        // eslint-disable-next-line prefer-const
+        let [categories, channels, memberships] = await Promise.all<Categories, Channel[], ChannelMembership[]>([
+            client.getCategories(teamId, 'me'),
             client.getMyChannels(teamId, includeDeleted, since),
             client.getMyChannelMembers(teamId),
         ]);
@@ -113,6 +116,16 @@ export const fetchMyChannelsForTeam = async (serverUrl: string, teamId: string, 
             return result;
         }, []);
 
+        // Add category information to channels
+        channels.forEach((channel) => {
+            // Find the category this channel belongs to
+            const category = categories.categories.find((cat) => {
+                return cat.channel_ids.includes(channel.id);
+            });
+
+            channel.category_id = category!.id;
+        });
+
         if (!fetchOnly) {
             const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
             const modelPromises: Array<Promise<Model[]>> = [];
@@ -121,6 +134,12 @@ export const fetchMyChannelsForTeam = async (serverUrl: string, teamId: string, 
                 if (prepare) {
                     modelPromises.push(...prepare);
                 }
+
+                const categoryModels = prepareCategories(operator, categories);
+                if (categoryModels) {
+                    modelPromises.push(categoryModels);
+                }
+
                 if (modelPromises.length) {
                     const models = await Promise.all(modelPromises);
                     const flattenedModels = models.flat() as Model[];
