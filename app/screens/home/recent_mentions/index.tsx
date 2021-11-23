@@ -10,7 +10,7 @@ import React, {useCallback, useState, useEffect, useMemo} from 'react';
 import {useIntl} from 'react-intl';
 import {StyleSheet, View, ActivityIndicator, FlatList} from 'react-native';
 import Animated, {useAnimatedStyle, withTiming} from 'react-native-reanimated';
-import {SafeAreaView} from 'react-native-safe-area-context';
+import {SafeAreaView, Edge} from 'react-native-safe-area-context';
 import {of as of$} from 'rxjs';
 import {switchMap} from 'rxjs/operators';
 
@@ -33,6 +33,8 @@ import type PostModel from '@typings/database/models/servers/post';
 const AnimatedFlatList = Animated.createAnimatedComponent(FlatList);
 
 const {USER, SYSTEM, POST} = MM_TABLES.SERVER;
+
+const EDGES: Edge[] = ['bottom', 'left', 'right'];
 
 type Props = {
     currentTimezone: string | null;
@@ -137,7 +139,7 @@ const RecentMentionsScreen = ({mentions, currentUser, currentTimezone, isTimezon
             />
             <SafeAreaView
                 style={styles.flex}
-                edges={['bottom', 'left', 'right']}
+                edges={EDGES}
             >
                 <Animated.View style={[styles.flex, animated]}>
                     {loading && !mentions.length ? (

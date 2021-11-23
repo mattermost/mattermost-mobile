@@ -84,3 +84,4 @@ export const queryRecentPostsInChannel = async (database: Database, channelId: s
         return Promise.resolve([] as PostModel[]);
     }
 };
+
