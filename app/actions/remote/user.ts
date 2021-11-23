@@ -384,7 +384,7 @@ export const setStatus = async (serverUrl: string, status: UserStatus) => {
 
     try {
         const data = await client.updateStatus(status);
-        await updateLocalUser(serverUrl, status.user_id, {status: status.status});
+        await updateLocalUser(serverUrl, {status: status.status});
 
         return {
             data,
@@ -464,7 +464,7 @@ export const setDefaultProfileImage = async (serverUrl: string, userId: string) 
 
     try {
         await client.setDefaultProfileImage(userId);
-        updateLocalUser(serverUrl, userId, {last_picture_update: Date.now()});
+        updateLocalUser(serverUrl, {last_picture_update: Date.now()});
     } catch (error) {
         return {error};
     }

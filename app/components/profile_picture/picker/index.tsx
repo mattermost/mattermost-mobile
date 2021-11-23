@@ -3,9 +3,8 @@
 
 import React, {useMemo} from 'react';
 import {useIntl} from 'react-intl';
-import {DeviceEventEmitter, Platform, StyleSheet} from 'react-native';
+import {DeviceEventEmitter} from 'react-native';
 
-import CompassIcon from '@components/compass_icon';
 import PickerUtil from '@components/profile_picture/picker/picker_util';
 import SlideUpPanelItem, {ITEM_HEIGHT} from '@components/slide_up_panel_item';
 import TouchableWithFeedback from '@components/touchable_with_feedback';
@@ -14,7 +13,6 @@ import {useServerUrl} from '@context/server_url';
 import {useTheme} from '@context/theme';
 import {bottomSheet} from '@screens/navigation';
 import UserModel from '@typings/database/models/servers/user';
-import {changeOpacity} from '@utils/theme';
 
 import type {File} from '@typings/screens/edit_profile';
 
@@ -30,26 +28,7 @@ type ProfilePictureButtonProps = {
     onShowUnsupportedMimeTypeWarning: () => void;
     onRemoveProfileImage: () => void;
     uploadFiles: (files: File[]) => void;
-    wrapper: boolean;
 };
-
-const style = StyleSheet.create({
-    attachIcon: {
-        marginTop: Platform.select({
-            ios: 2,
-            android: -5,
-        }),
-    },
-    buttonContainer: {
-        height: Platform.select({
-            ios: 34,
-            android: 36,
-        }),
-        width: 45,
-        alignItems: 'center',
-        justifyContent: 'center',
-    },
-});
 
 const ImagePicker = ({
     browseFileType,
@@ -63,7 +42,6 @@ const ImagePicker = ({
     onShowUnsupportedMimeTypeWarning,
     uploadFiles,
     user,
-    wrapper,
 }: ProfilePictureButtonProps) => {
     const intl = useIntl();
     const theme = useTheme();
@@ -148,29 +126,12 @@ const ImagePicker = ({
         });
     };
 
-    if (wrapper) {
-        return (
-            <TouchableWithFeedback
-                onPress={showFileAttachmentOptions}
-                type={'opacity'}
-            >
-                {children}
-            </TouchableWithFeedback>
-        );
-    }
-
     return (
         <TouchableWithFeedback
             onPress={showFileAttachmentOptions}
-            style={style.buttonContainer}
             type={'opacity'}
         >
-            <CompassIcon
-                size={30}
-                style={style.attachIcon}
-                color={changeOpacity(theme.centerChannelColor, 0.9)}
-                name='plus'
-            />
+            {children}
         </TouchableWithFeedback>
     );
 };

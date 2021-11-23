@@ -187,6 +187,7 @@ const EditProfile = ({
         } catch (e) {
             return resetScreen(e as Error);
         }
+        return null;
     };
 
     const submitUser = async () => {
@@ -197,7 +198,7 @@ const EditProfile = ({
             if (profileImage) {
                 const now = Date.now();
                 await uploadProfileImage();
-                updateLocalUser(serverUrl, currentUser.id, {last_picture_update: now});
+                updateLocalUser(serverUrl, {last_picture_update: now});
             }
 
             if (isProfileImageRemoved) {
@@ -304,7 +305,6 @@ const EditProfile = ({
                         onShowUnsupportedMimeTypeWarning={onShowUnsupportedMimeTypeWarning}
                         onRemoveProfileImage={handleRemoveProfileImage}
                         uploadFiles={handleUploadProfileImage}
-                        wrapper={true}
                     >
                         <EditProfileImage
                             imageUri={profileImage?.uri}

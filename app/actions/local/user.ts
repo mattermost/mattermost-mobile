@@ -105,19 +105,17 @@ export const updateRecentCustomStatuses = async (serverUrl: string, customStatus
     });
 };
 
-export const updateLocalUser = async (serverUrl: string, userId: string, userDetails: Partial<UserProfile> & { status?: string}) => {
+export const updateLocalUser = async (serverUrl: string, userDetails: Partial<UserProfile> & { status?: string}) => {
     const database = DatabaseManager.serverDatabases[serverUrl]?.database;
     if (!database) {
         return {error: `${serverUrl} database not found`};
     }
 
     try {
-        const user = await database.get(MM_TABLES.SERVER.USER).find(userId) as UserModel;
+        const user = await database.get(MM_TABLES.SERVER.USER).find(userDetails.id!) as UserModel;
         await database.write(async () => {
             await user.update((userRecord: UserModel) => {
-                userRecord.status = userDetails?.status ?? user.status;
                 userRecord.authService = userDetails.auth_service ?? user.authService;
-                userRecord.deleteAt = userDetails.delete_at ?? user.deleteAt;
                 userRecord.email = userDetails.email ?? user.email;
                 userRecord.firstName = userDetails.first_name ?? user.firstName;
                 userRecord.isBot = userDetails.is_bot ?? user.isBot;
@@ -127,11 +125,11 @@ export const updateLocalUser = async (serverUrl: string, userId: string, userDet
                 userRecord.locale = userDetails.locale ?? user.locale;
                 userRecord.nickname = userDetails.nickname ?? user.nickname;
                 userRecord.notifyProps = userDetails.notify_props ?? user.notifyProps;
-                userRecord.position = userDetails?.position ?? '' ?? user.position;
+                userRecord.position = userDetails?.position ?? user.position;
                 userRecord.props = userDetails.props ?? user.props;
                 userRecord.roles = userDetails.roles ?? user.roles;
+                userRecord.status = userDetails?.status ?? user.status;
                 userRecord.timezone = userDetails.timezone ?? user.timezone;
-                userRecord.updateAt = userDetails.update_at ?? user.updateAt;
                 userRecord.username = userDetails.username ?? user.username;
             });
         });
