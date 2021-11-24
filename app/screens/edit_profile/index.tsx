@@ -15,9 +15,9 @@ import {switchMap} from 'rxjs/operators';
 
 import {updateLocalUser} from '@actions/local/user';
 import {setDefaultProfileImage, updateMe} from '@actions/remote/user';
+import ImagePicker from '@components/file_picker';
 import EditProfileImage from '@components/profile_picture/edit_image';
 import ProfileImage from '@components/profile_picture/image';
-import ImagePicker from '@components/profile_picture/picker';
 import TabletTitle from '@components/tablet_title';
 import {Events} from '@constants';
 import {MM_TABLES, SYSTEM_IDENTIFIERS} from '@constants/database';
@@ -299,12 +299,13 @@ const EditProfile = ({
                 <View style={style.top}>
                     <ImagePicker
                         browseFileType={DocumentPicker.types.images}
-                        user={currentUser}
+                        lastPictureUpdate={currentUser.lastPictureUpdate}
                         maxFileSize={MAX_SIZE}
+                        onRemoveProfileImage={handleRemoveProfileImage}
                         onShowFileSizeWarning={onShowFileSizeWarning}
                         onShowUnsupportedMimeTypeWarning={onShowUnsupportedMimeTypeWarning}
-                        onRemoveProfileImage={handleRemoveProfileImage}
                         uploadFiles={handleUploadProfileImage}
+                        userId={currentUser.id}
                     >
                         <EditProfileImage
                             imageUri={profileImage?.uri}
@@ -392,7 +393,7 @@ const EditProfile = ({
                     <View style={style.separator}/>
                     <EmailField
                         email={userInfo.email}
-                        currentUser={currentUser}
+                        authService={currentUser.authService}
                         onChange={updateField}
                     />
                     <View style={style.separator}/>

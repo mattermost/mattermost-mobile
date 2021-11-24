@@ -5,14 +5,13 @@ import React, {useMemo} from 'react';
 import {useIntl} from 'react-intl';
 import {DeviceEventEmitter} from 'react-native';
 
-import PickerUtil from '@components/profile_picture/picker/picker_util';
 import SlideUpPanelItem, {ITEM_HEIGHT} from '@components/slide_up_panel_item';
 import TouchableWithFeedback from '@components/touchable_with_feedback';
 import {Navigation} from '@constants';
 import {useServerUrl} from '@context/server_url';
 import {useTheme} from '@context/theme';
 import {bottomSheet} from '@screens/navigation';
-import UserModel from '@typings/database/models/servers/user';
+import PickerUtil from '@utils/file/picker_util';
 
 import type {File} from '@typings/screens/edit_profile';
 
@@ -22,12 +21,13 @@ type ProfilePictureButtonProps = {
     canBrowsePhotoLibrary?: boolean;
     canTakePhoto?: boolean;
     children?: React.ReactNode;
-    user: UserModel;
+    lastPictureUpdate: number;
     maxFileSize: number;
+    onRemoveProfileImage: () => void;
     onShowFileSizeWarning: (fileName: string) => void;
     onShowUnsupportedMimeTypeWarning: () => void;
-    onRemoveProfileImage: () => void;
     uploadFiles: (files: File[]) => void;
+    userId: string;
 };
 
 const ImagePicker = ({
@@ -36,12 +36,13 @@ const ImagePicker = ({
     canBrowsePhotoLibrary = true,
     canTakePhoto = true,
     children,
+    lastPictureUpdate,
     maxFileSize,
     onRemoveProfileImage,
     onShowFileSizeWarning,
     onShowUnsupportedMimeTypeWarning,
     uploadFiles,
-    user,
+    userId,
 }: ProfilePictureButtonProps) => {
     const intl = useIntl();
     const theme = useTheme();
@@ -59,7 +60,7 @@ const ImagePicker = ({
     );
 
     const showFileAttachmentOptions = () => {
-        const canRemovePicture = pictureUtils.hasPictureUrl(user, serverUrl);
+        const canRemovePicture = pictureUtils.hasPictureUrl(userId, lastPictureUpdate, serverUrl);
 
         const renderContent = () => {
             const renderPanelItems = (itemType: string) => {

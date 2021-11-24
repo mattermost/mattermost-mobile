@@ -9,22 +9,20 @@ import {HOLDERS} from '@screens/edit_profile/constants';
 
 import InputField from './input_field';
 
-import type UserModel from '@typings/database/models/servers/user';
-
 type EmailSettingsProps = {
-    currentUser: UserModel;
+    authService: string;
     email: string;
     onChange: (id: string, value: string) => void;
 }
 
-const EmailField = ({currentUser, email, onChange}: EmailSettingsProps) => {
+const EmailField = ({authService, email, onChange}: EmailSettingsProps) => {
     const intl = useIntl();
 
     let defaultMessage: string;
     let service = '';
     let id = '';
 
-    switch (currentUser.authService) {
+    switch (authService) {
         case 'gitlab':
             service = 'GitLab';
             id = t('user.settings.general.emailGitlabCantUpdate');

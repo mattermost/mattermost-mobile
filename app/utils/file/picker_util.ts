@@ -14,9 +14,9 @@ import {Client} from '@client/rest';
 import {Files, Navigation} from '@constants';
 import NetworkManager from '@init/network_manager';
 import {VALID_MIME_TYPES} from '@screens/edit_profile/constants';
-import UserModel from '@typings/database/models/servers/user';
 import {File, FileResponse} from '@typings/screens/edit_profile';
-import {lookupMimeType} from '@utils/file';
+
+import {lookupMimeType} from './';
 
 const ShareExtension = NativeModules.MattermostShare;
 
@@ -219,6 +219,7 @@ export default class PickerUtil {
                 ]);
                 return false;
             }
+            default: return true;
         }
         return false;
     }
@@ -342,15 +343,13 @@ export default class PickerUtil {
         }
     };
 
-    hasPictureUrl = (user: UserModel, serverUrl: string) => {
-        const {id, lastPictureUpdate} = user;
-
+    hasPictureUrl = (userId: string, lastPictureUpdate: number, serverUrl: string) => {
         let client: Client | undefined;
         let profileImageUrl: string | undefined;
 
         try {
             client = NetworkManager.getClient(serverUrl);
-            profileImageUrl = client.getProfilePictureUrl(id, lastPictureUpdate);
+            profileImageUrl = client.getProfilePictureUrl(userId, lastPictureUpdate);
         } catch {
             return false;
         }
