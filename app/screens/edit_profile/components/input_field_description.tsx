@@ -2,36 +2,22 @@
 // See LICENSE.txt for license information.
 
 import React from 'react';
-import {View} from 'react-native';
+import {Text, View} from 'react-native';
 
-import Markdown from '@components/markdown';
 import {useTheme} from '@context/theme';
-import {MarkdownBlockStyles, MarkdownTextStyles} from '@typings/global/markdown';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 type HelpContentProps = {
-    blockStyles: MarkdownBlockStyles;
     text: string | number;
-    textStyles: MarkdownTextStyles;
 };
 
-const InputFieldDescription = ({
-    blockStyles,
-    text,
-    textStyles,
-}: HelpContentProps) => {
+const InputFieldDescription = ({text}: HelpContentProps) => {
     const theme = useTheme();
     const style = getStyleSheet(theme);
 
     return (
         <View style={style.container}>
-            <Markdown
-                baseTextStyle={style.text}
-                textStyles={textStyles}
-                blockStyles={blockStyles}
-                value={text}
-                theme={theme}
-            />
+            <Text style={style.text}>{text}</Text>
         </View>
     );
 };

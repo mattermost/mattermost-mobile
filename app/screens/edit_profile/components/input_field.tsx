@@ -8,7 +8,6 @@ import {View, Platform, ViewStyle, KeyboardType} from 'react-native';
 
 import FloatingTextInput from '@components/floating_text_input_label';
 import {useTheme} from '@context/theme';
-import {getMarkdownBlockStyles, getMarkdownTextStyles} from '@utils/markdown';
 import {makeStyleSheetFromTheme, getKeyboardAppearanceFromTheme} from '@utils/theme';
 
 import FieldDescription from './input_field_description';
@@ -65,8 +64,6 @@ const InputField = ({
     }, [id, onBlur]);
 
     const style = getStyleSheet(theme);
-    const textStyles = getMarkdownTextStyles(theme);
-    const blockStyles = getMarkdownBlockStyles(theme);
 
     const keyboard = (Platform.OS === 'android' && keyboardType === 'url') ? 'default' : keyboardType;
 
@@ -113,9 +110,7 @@ const InputField = ({
                 />
                 {isDisabled && fieldDescription && (
                     <FieldDescription
-                        blockStyles={blockStyles}
                         text={fieldDescription}
-                        textStyles={textStyles}
                     />
                 )}
             </View>
