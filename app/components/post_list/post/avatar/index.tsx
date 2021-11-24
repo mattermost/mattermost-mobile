@@ -141,8 +141,9 @@ const Avatar = ({author, enablePostIconOverride, isAutoReponse, isSystemPost, pe
         <ProfilePicture
             lastPictureUpdate={author.lastPictureUpdate}
             size={ViewConstant.PROFILE_PICTURE_SIZE}
-            userId={author.id}
             testID='post_profile_picture.profile_picture'
+            userId={author.id}
+            userStatus={author.status}
         />
     );
 

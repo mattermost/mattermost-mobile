@@ -4,7 +4,7 @@
 import React from 'react';
 import {Text, View} from 'react-native';
 
-import ProfilePictureWithStatus from '@components/profile_picture/with_status_indicator';
+import ProfilePicture from '@components/profile_picture/image';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 
 import type UserModel from '@typings/database/models/servers/user';
@@ -42,6 +42,9 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             fontFamily: 'OpenSans',
             marginTop: 4,
         },
+        containerStyle: {
+            width: 120,
+        },
     };
 });
 
@@ -53,7 +56,7 @@ const AccountUserInfo = ({user, showFullName, theme}: Props) => {
 
     return (
         <View style={styles.container}>
-            <ProfilePictureWithStatus
+            <ProfilePicture
                 isBot={user.isBot}
                 lastPictureUpdate={user.lastPictureUpdate}
                 statusSize={34}
@@ -61,6 +64,8 @@ const AccountUserInfo = ({user, showFullName, theme}: Props) => {
                 testID={'account.profile_picture'}
                 userId={user.id}
                 userStatus={user.status}
+                size={120}
+                containerStyle={styles.containerStyle}
             />
             {showFullName && <Text style={styles.textFullName}>{title}</Text>}
             <Text style={showFullName ? styles.textUserName : styles.textFullName}>{`${userName}`}</Text>

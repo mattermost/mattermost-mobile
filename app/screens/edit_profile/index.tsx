@@ -285,6 +285,7 @@ const EditProfile = ({
             return (
                 <View style={style.top}>
                     <ProfileImage
+                        userStatus={currentUser.status}
                         imageUrl={profileImage?.uri}
                         userId={currentUser.id}
                         lastPictureUpdate={currentUser.lastPictureUpdate}
