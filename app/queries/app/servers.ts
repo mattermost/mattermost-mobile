@@ -37,6 +37,12 @@ export const queryServerByIdentifier = async (appDatabase: Database, identifier:
     }
 };
 
+export const queryServerByDisplayName = async (appDatabase: Database, displayName: string) => {
+    const servers = await queryAllServers(appDatabase);
+    const server = servers.find((s) => s.displayName.toLowerCase() === displayName.toLowerCase());
+    return server;
+};
+
 export const queryServerName = async (appDatabase: Database, serverUrl: string) => {
     try {
         const servers = (await appDatabase.get<ServerModel>(SERVERS).query(Q.where('url', serverUrl)).fetch());
@@ -45,4 +51,3 @@ export const queryServerName = async (appDatabase: Database, serverUrl: string) 
         return serverUrl;
     }
 };
-

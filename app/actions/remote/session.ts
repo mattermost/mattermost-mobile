@@ -170,10 +170,8 @@ export const sendPasswordResetEmail = async (serverUrl: string, email: string) =
     let response;
     try {
         response = await client.sendPasswordResetEmail(email);
-    } catch (e) {
-        return {
-            error: e,
-        };
+    } catch (error) {
+        return {error};
     }
     return {
         data: response.data,

@@ -106,13 +106,13 @@ export const buttonBackgroundStyle = (
                     backgroundColor: changeOpacity(theme.centerChannelColor, 0.08),
                 },
                 hover: {
-                    backgroundColor: changeOpacity(theme.centerChannelColor, 0),
+                    backgroundColor: changeOpacity(theme.centerChannelColor, 0.08),
                 },
                 active: {
-                    backgroundColor: changeOpacity(theme.centerChannelColor, 0),
+                    backgroundColor: changeOpacity(theme.centerChannelColor, 0.08),
                 },
                 focus: {
-                    backgroundColor: changeOpacity(theme.centerChannelColor, 0),
+                    backgroundColor: changeOpacity(theme.centerChannelColor, 0.08),
                 },
             },
         },
@@ -392,6 +392,10 @@ export const buttonTextStyle = (
         main: {
             fontFamily: 'OpenSans-SemiBold',
             fontWeight: '600',
+            textAlignVertical: 'center',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: 1,
         },
         underline: {
             textDecorationLine: 'underline',
@@ -403,18 +407,22 @@ export const buttonTextStyle = (
             fontSize: 11,
             lineHeight: 10,
             letterSpacing: 0.02,
+            marginTop: 2,
         },
         s: {
             fontSize: 12,
-            lineHeight: 11,
+            lineHeight: 12,
+            marginTop: 1,
         },
         m: {
             fontSize: 14,
             lineHeight: 14,
+            marginTop: 3,
         },
         lg: {
             fontSize: 16,
-            lineHeight: 18,
+            lineHeight: 16,
+            marginTop: 1,
         },
     });
 

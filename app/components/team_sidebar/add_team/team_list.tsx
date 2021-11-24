@@ -5,9 +5,9 @@ import React from 'react';
 import {ListRenderItemInfo, View} from 'react-native';
 import {FlatList} from 'react-native-gesture-handler';
 
-import {makeStyleSheetFromTheme} from '@app/utils/theme';
 import FormattedText from '@components/formatted_text';
 import {useTheme} from '@context/theme';
+import {makeStyleSheetFromTheme} from '@utils/theme';
 
 import TeamListItem from './team_list_item';
 

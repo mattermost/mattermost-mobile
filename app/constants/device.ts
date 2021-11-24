@@ -1,8 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import * as FileSystem from 'expo-file-system';
 import DeviceInfo from 'react-native-device-info';
-import {FileSystem} from 'react-native-unimodules';
 
 export default {
     DOCUMENTS_PATH: `${FileSystem.cacheDirectory}/Documents`,

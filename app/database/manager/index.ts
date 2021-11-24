@@ -4,9 +4,9 @@
 import {Database, Q} from '@nozbe/watermelondb';
 import SQLiteAdapter from '@nozbe/watermelondb/adapters/sqlite';
 import logger from '@nozbe/watermelondb/utils/common/logger';
+import * as FileSystem from 'expo-file-system';
 import {DeviceEventEmitter, Platform} from 'react-native';
 import DeviceInfo from 'react-native-device-info';
-import {FileSystem} from 'react-native-unimodules';
 
 import {MIGRATION_EVENTS, MM_TABLES} from '@constants/database';
 import AppDatabaseMigrations from '@database/migration/app';

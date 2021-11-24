@@ -5,7 +5,7 @@ import React, {useCallback, useEffect} from 'react';
 import {Keyboard} from 'react-native';
 import {Navigation} from 'react-native-navigation';
 
-import EmojiPicker from '@app/components/emoji_picker';
+import EmojiPicker from '@components/emoji_picker';
 import {dismissModal, setButtons} from '@screens/navigation';
 
 type Props = {

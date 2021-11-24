@@ -4,9 +4,10 @@
 import {useManagedConfig, ManagedConfig} from '@mattermost/react-native-emm';
 import React, {useCallback, useEffect, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
-import {Alert, Platform, View} from 'react-native';
+import {Alert, Platform, useWindowDimensions, View} from 'react-native';
 import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
 import {Navigation} from 'react-native-navigation';
+import Animated, {useAnimatedStyle, useSharedValue, withTiming} from 'react-native-reanimated';
 import {SafeAreaView} from 'react-native-safe-area-context';
 
 import {doPing} from '@actions/remote/general';
@@ -14,18 +15,18 @@ import {fetchConfigAndLicense} from '@actions/remote/systems';
 import LocalConfig from '@assets/config.json';
 import ClientError from '@client/rest/error';
 import AppVersion from '@components/app_version';
-import {Screens} from '@constants';
+import {Screens, Sso} from '@constants';
+import DatabaseManager from '@database/manager';
 import {t} from '@i18n';
 import NetworkManager from '@init/network_manager';
-import {goToScreen} from '@screens/navigation';
+import {queryServerByDisplayName, queryServerByIdentifier} from '@queries/app/servers';
+import Background from '@screens/background';
+import {goToScreen, loginAnimationOptions} from '@screens/navigation';
 import {DeepLinkWithData, LaunchProps, LaunchType} from '@typings/launch';
 import {getErrorMessage} from '@utils/client_error';
-import {isMinimumServerVersion} from '@utils/helpers';
-import {preventDoubleTap} from '@utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {getServerUrlAfterRedirect, isValidUrl, sanitizeUrl} from '@utils/url';
 
-import Background from './background';
 import ServerForm from './form';
 import ServerHeader from './header';
 
@@ -41,19 +42,25 @@ const defaultServerUrlMessage = {
     defaultMessage: 'Please enter a valid server URL',
 };
 
+const AnimatedSafeArea = Animated.createAnimatedComponent(SafeAreaView);
+
 const Server = ({componentId, extra, launchType, launchError, theme}: ServerProps) => {
     const intl = useIntl();
     const managedConfig = useManagedConfig<ManagedConfig>();
+    const dimensions = useWindowDimensions();
+    const translateX = useSharedValue(0);
     const keyboardAwareRef = useRef<KeyboardAwareScrollView>();
     const [connecting, setConnecting] = useState(false);
     const [displayName, setDisplayName] = useState<string>('');
     const [buttonDisabled, setButtonDisabled] = useState(true);
     const [url, setUrl] = useState<string>('');
-    const [urlError, setUrlError] = useState<string | undefined>(undefined);
+    const [displayNameError, setDisplayNameError] = useState<string | undefined>();
+    const [urlError, setUrlError] = useState<string | undefined>();
     const styles = getStyleSheet(theme);
     const {formatMessage} = intl;
 
     useEffect(() => {
+        const serverName = managedConfig?.serverName || LocalConfig.DefaultServerName;
         let serverUrl = managedConfig?.serverUrl || LocalConfig.DefaultServerUrl;
         let autoconnect = managedConfig?.allowOtherServers === 'false' || LocalConfig.AutoSelectServerUrl;
 
@@ -76,11 +83,15 @@ const Server = ({componentId, extra, launchType, launchError, theme}: ServerProp
         if (serverUrl) {
             // If a server Url is set by the managed or local configuration, use it.
             setUrl(serverUrl);
+        }
 
-            if (autoconnect) {
-                // If no other servers are allowed or the local config for AutoSelectServerUrl is set, attempt to connect
-                handleConnect(managedConfig?.serverUrl || LocalConfig.DefaultServerUrl);
-            }
+        if (serverName) {
+            setDisplayName(serverName);
+        }
+
+        if (serverUrl && serverName && autoconnect) {
+            // If no other servers are allowed or the local config for AutoSelectServerUrl is set, attempt to connect
+            handleConnect(managedConfig?.serverUrl || LocalConfig.DefaultServerUrl);
         }
     }, []);
 
@@ -95,63 +106,67 @@ const Server = ({componentId, extra, launchType, launchError, theme}: ServerProp
     useEffect(() => {
         const listener = {
             componentDidAppear: () => {
+                translateX.value = 0;
                 if (url) {
                     NetworkManager.invalidateClient(url);
                 }
+            },
+            componentDidDisappear: () => {
+                translateX.value = -dimensions.width;
             },
         };
         const unsubscribe = Navigation.events().registerComponentListener(listener, componentId);
 
         return () => unsubscribe.remove();
-    }, [componentId, url]);
+    }, [componentId, url, dimensions]);
 
     const displayLogin = (serverUrl: string, config: ClientConfig, license: ClientLicense) => {
-        const samlEnabled = config.EnableSaml === 'true' && license.IsLicensed === 'true' && license.SAML === 'true';
+        const isLicensed = license.IsLicensed === 'true';
+        const samlEnabled = config.EnableSaml === 'true' && isLicensed && license.SAML === 'true';
         const gitlabEnabled = config.EnableSignUpWithGitLab === 'true';
-        const googleEnabled = config.EnableSignUpWithGoogle === 'true' && license.IsLicensed === 'true';
-        const o365Enabled = config.EnableSignUpWithOffice365 === 'true' && license.IsLicensed === 'true' && license.Office365OAuth === 'true';
-        const openIdEnabled = config.EnableSignUpWithOpenId === 'true' && license.IsLicensed === 'true' && isMinimumServerVersion(config.Version, 5, 33, 0);
-
-        let screen = Screens.LOGIN;
-        let title = formatMessage({id: 'mobile.routes.login', defaultMessage: 'Login'});
-        if (samlEnabled || gitlabEnabled || googleEnabled || o365Enabled || openIdEnabled) {
-            screen = Screens.LOGIN_OPTIONS;
-            title = formatMessage({id: 'mobile.routes.loginOptions', defaultMessage: 'Login Chooser'});
-        }
-
-        const {allowOtherServers} = managedConfig;
-        let visible = !LocalConfig.AutoSelectServerUrl;
-
-        if (allowOtherServers === 'false') {
-            visible = false;
-        }
+        const googleEnabled = config.EnableSignUpWithGoogle === 'true' && isLicensed;
+        const o365Enabled = config.EnableSignUpWithOffice365 === 'true' && isLicensed && license.Office365OAuth === 'true';
+        const openIdEnabled = config.EnableSignUpWithOpenId === 'true' && isLicensed;
+        const ldapEnabled = isLicensed && config.EnableLdap === 'true' && license.LDAP === 'true';
+        const hasLoginForm = config.EnableSignInWithEmail === 'true' || config.EnableSignInWithUsername === 'true' || ldapEnabled;
+        const ssoOptions: Record<string, boolean> = {
+            [Sso.SAML]: samlEnabled,
+            [Sso.GITLAB]: gitlabEnabled,
+            [Sso.GOOGLE]: googleEnabled,
+            [Sso.OFFICE365]: o365Enabled,
+            [Sso.OPENID]: openIdEnabled,
+        };
+        const enabledSSOs = Object.keys(ssoOptions).filter((key) => ssoOptions[key]);
+        const numberSSOs = enabledSSOs.length;
 
         const passProps = {
             config,
-            displayName,
             extra,
+            hasLoginForm,
             launchError,
             launchType,
             license,
-            theme,
+            serverDisplayName: displayName,
             serverUrl,
+            ssoOptions,
+            theme,
         };
 
-        const defaultOptions = {
-            popGesture: visible,
-            topBar: {
-                visible,
-                height: visible ? null : 0,
-            },
-        };
+        const redirectSSO = !hasLoginForm && numberSSOs === 1;
+        const screen = redirectSSO ? Screens.SSO : Screens.LOGIN;
+        if (redirectSSO) {
+            // @ts-expect-error ssoType not in definition
+            passProps.ssoType = enabledSSOs[0];
+        }
 
-        goToScreen(screen, title, passProps, defaultOptions);
+        goToScreen(screen, '', passProps, loginAnimationOptions());
         setConnecting(false);
+        setButtonDisabled(false);
         setUrl(serverUrl);
     };
 
-    const handleConnect = preventDoubleTap(async (manualUrl?: string) => {
-        if (buttonDisabled) {
+    const handleConnect = async (manualUrl?: string) => {
+        if (buttonDisabled && !manualUrl) {
             return;
         }
 
@@ -170,15 +185,23 @@ const Server = ({componentId, extra, launchType, launchError, theme}: ServerProp
             return;
         }
 
-        // TODO: Query to see if there is a server with the same display name
-        // Set the error here and return
-        // Elias to add this change in a Later PR. as soon as this one goes in
+        const server = await queryServerByDisplayName(DatabaseManager.appDatabase!.database, displayName);
+        if (server && server.lastActiveAt > 0) {
+            setButtonDisabled(true);
+            setDisplayNameError(formatMessage({
+                id: 'mobile.server_name.exists',
+                defaultMessage: 'You are using this name for another server.',
+            }));
+            setConnecting(false);
+            return;
+        }
 
         pingServer(serverUrl);
-    });
+    };
 
     const handleDisplayNameTextChanged = useCallback((text: string) => {
         setDisplayName(text);
+        setDisplayNameError(undefined);
     }, []);
 
     const handleUrlTextChanged = useCallback((text: string) => {
@@ -202,7 +225,6 @@ const Server = ({componentId, extra, launchType, launchError, theme}: ServerProp
         let canceled = false;
         setConnecting(true);
         cancelPing = () => {
-            // We should not need this once we have the cancelable network-client library
             canceled = true;
             setConnecting(false);
             cancelPing = undefined;
@@ -221,9 +243,9 @@ const Server = ({componentId, extra, launchType, launchError, theme}: ServerProp
                 pingServer(nurl, false);
             } else {
                 setUrlError(getErrorMessage(result.error as ClientError, intl));
+                setButtonDisabled(true);
                 setConnecting(false);
             }
-            setButtonDisabled(true);
             return;
         }
 
@@ -235,15 +257,34 @@ const Server = ({componentId, extra, launchType, launchError, theme}: ServerProp
             return;
         }
 
+        const server = await queryServerByIdentifier(DatabaseManager.appDatabase!.database, data.config!.DiagnosticId);
+        setConnecting(false);
+
+        if (server && server.lastActiveAt > 0) {
+            setButtonDisabled(true);
+            setUrlError(formatMessage({
+                id: 'mobile.server_identifier.exists',
+                defaultMessage: 'You are already connected to this server.',
+            }));
+            return;
+        }
+
         displayLogin(serverUrl, data.config!, data.license!);
     };
+
+    const transform = useAnimatedStyle(() => {
+        const duration = Platform.OS === 'android' ? 250 : 350;
+        return {
+            transform: [{translateX: withTiming(translateX.value, {duration})}],
+        };
+    }, []);
 
     return (
         <View style={styles.flex}>
             <Background theme={theme}/>
-            <SafeAreaView
+            <AnimatedSafeArea
                 key={'server_content'}
-                style={styles.flex}
+                style={[styles.flex, transform]}
                 testID='select_server.screen'
             >
                 <KeyboardAwareScrollView
@@ -266,6 +307,7 @@ const Server = ({componentId, extra, launchType, launchError, theme}: ServerProp
                         buttonDisabled={buttonDisabled}
                         connecting={connecting}
                         displayName={displayName}
+                        displayNameError={displayNameError}
                         handleConnect={handleConnect}
                         handleDisplayNameTextChanged={handleDisplayNameTextChanged}
                         handleUrlTextChanged={handleUrlTextChanged}
@@ -276,7 +318,7 @@ const Server = ({componentId, extra, launchType, launchError, theme}: ServerProp
                     />
                 </KeyboardAwareScrollView>
                 <AppVersion textStyle={styles.appInfo}/>
-            </SafeAreaView>
+            </AnimatedSafeArea>
         </View>
     );
 };
@@ -289,9 +331,9 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         flex: 1,
     },
     scrollContainer: {
-        justifyContent: 'center',
         alignItems: 'center',
-        flex: 1,
+        height: '100%',
+        justifyContent: 'center',
     },
 }));
 

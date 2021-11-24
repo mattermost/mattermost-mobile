@@ -1,0 +1,63 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Search Field should match snapshot 1`] = `
+<View
+  style={
+    Object {
+      "alignItems": "center",
+      "backgroundColor": "rgba(255,255,255,0.12)",
+      "borderRadius": 8,
+      "flex": 1,
+      "flexDirection": "row",
+      "height": 40,
+      "justifyContent": "flex-start",
+      "marginVertical": 20,
+      "maxHeight": 40,
+      "padding": 8,
+      "width": "100%",
+    }
+  }
+>
+  <Icon
+    name="magnify"
+    style={
+      Object {
+        "color": "rgba(255,255,255,0.72)",
+        "fontSize": 24,
+        "width": 24,
+      }
+    }
+  />
+  <TextInput
+    collapsable={false}
+    onGestureHandlerEvent={[Function]}
+    onGestureHandlerStateChange={[Function]}
+    placeholder="Find Channels"
+    placeholderTextColor="rgba(255,255,255,0.72)"
+    style={
+      Array [
+        Array [
+          Object {
+            "fontFamily": "OpenSans",
+            "fontSize": 16,
+            "fontWeight": "400",
+            "lineHeight": 24,
+          },
+          Object {
+            "textAlignVertical": "center",
+          },
+        ],
+        Object {
+          "alignContent": "center",
+          "alignItems": "center",
+          "color": "#ffffff",
+          "flex": 1,
+          "height": 40,
+          "marginLeft": 5,
+          "marginTop": -2,
+        },
+      ]
+    }
+  />
+</View>
+`;

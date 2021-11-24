@@ -4,7 +4,7 @@
 import React from 'react';
 import {View} from 'react-native';
 
-import FormattedText from '@app/components/formatted_text';
+import FormattedText from '@components/formatted_text';
 import {useIsTablet} from '@hooks/device';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
@@ -37,7 +37,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     },
     description: {
         color: changeOpacity(theme.centerChannelColor, 0.64),
-        ...typography('Body', 100, 'Regular'),
+        ...typography('Body', 200, 'Regular'),
     },
 }));
 

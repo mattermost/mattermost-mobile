@@ -7,11 +7,11 @@ import {AppState, AppStateStatus} from 'react-native';
 import {setCurrentUserStatusOffline} from '@actions/local/user';
 import {fetchStatusByIds} from '@actions/remote/user';
 import {handleClose, handleEvent, handleFirstConnect, handleReconnect} from '@actions/websocket';
-import WebSocketClient from '@app/client/websocket';
-import {General} from '@app/constants';
-import {queryCurrentUserId, resetWebSocketLastDisconnected} from '@app/queries/servers/system';
-import {queryAllUsers} from '@app/queries/servers/user';
+import WebSocketClient from '@client/websocket';
+import {General} from '@constants';
 import DatabaseManager from '@database/manager';
+import {queryCurrentUserId, resetWebSocketLastDisconnected} from '@queries/servers/system';
+import {queryAllUsers} from '@queries/servers/user';
 
 import type {ServerCredential} from '@typings/credentials';
 

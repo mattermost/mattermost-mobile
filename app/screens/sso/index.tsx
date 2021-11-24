@@ -2,13 +2,17 @@
 // See LICENSE.txt for license information.
 
 import {useManagedConfig} from '@mattermost/react-native-emm';
-import React, {useState} from 'react';
+import React, {useEffect, useState} from 'react';
+import {Platform, StyleSheet, useWindowDimensions, View} from 'react-native';
+import {Navigation} from 'react-native-navigation';
+import Animated, {useAnimatedStyle, useSharedValue, withTiming} from 'react-native-reanimated';
+import {SafeAreaView} from 'react-native-safe-area-context';
 
 import {ssoLogin} from '@actions/remote/session';
 import ClientError from '@client/rest/error';
-import {Sso} from '@constants';
+import {Screens, Sso} from '@constants';
+import Background from '@screens/background';
 import {resetToHome} from '@screens/navigation';
-import {isMinimumServerVersion} from '@utils/helpers';
 
 import SSOWithRedirectURL from './sso_with_redirect_url';
 import SSOWithWebView from './sso_with_webview';
@@ -20,11 +24,22 @@ interface SSOProps extends LaunchProps {
   license: Partial<ClientLicense>;
   ssoType: string;
   serverDisplayName: string;
-  theme: Partial<Theme>;
+  theme: Theme;
 }
+
+const AnimatedSafeArea = Animated.createAnimatedComponent(SafeAreaView);
+
+const styles = StyleSheet.create({
+    flex: {
+        flex: 1,
+    },
+});
 
 const SSO = ({config, extra, launchError, launchType, serverDisplayName, serverUrl, ssoType, theme}: SSOProps) => {
     const managedConfig = useManagedConfig();
+    const inAppSessionAuth = managedConfig?.inAppSessionAuth === 'true';
+    const dimensions = useWindowDimensions();
+    const translateX = useSharedValue(inAppSessionAuth ? 0 : dimensions.width);
 
     const [loginError, setLoginError] = useState<string>('');
     let completeUrlPath = '';
@@ -92,7 +107,26 @@ const SSO = ({config, extra, launchError, launchType, serverDisplayName, serverU
         resetToHome({extra, launchError: hasError, launchType, serverUrl, time});
     };
 
-    const isSSOWithRedirectURLAvailable = isMinimumServerVersion(config.Version!, 5, 33, 0);
+    const transform = useAnimatedStyle(() => {
+        const duration = Platform.OS === 'android' ? 250 : 350;
+        return {
+            transform: [{translateX: withTiming(translateX.value, {duration})}],
+        };
+    }, []);
+
+    useEffect(() => {
+        const listener = {
+            componentDidAppear: () => {
+                translateX.value = 0;
+            },
+            componentDidDisappear: () => {
+                translateX.value = -dimensions.width;
+            },
+        };
+        const unsubscribe = Navigation.events().registerComponentListener(listener, Screens.SSO);
+
+        return () => unsubscribe.remove();
+    }, [dimensions]);
 
     const props = {
         doSSOLogin,
@@ -102,8 +136,9 @@ const SSO = ({config, extra, launchError, launchType, serverDisplayName, serverU
         theme,
     };
 
-    if (!isSSOWithRedirectURLAvailable || managedConfig?.inAppSessionAuth === 'true') {
-        return (
+    let ssoComponent;
+    if (inAppSessionAuth) {
+        ssoComponent = (
             <SSOWithWebView
                 {...props}
                 completeUrlPath={completeUrlPath}
@@ -111,12 +146,22 @@ const SSO = ({config, extra, launchError, launchType, serverDisplayName, serverU
                 ssoType={ssoType}
             />
         );
+    } else {
+        ssoComponent = (
+            <SSOWithRedirectURL
+                {...props}
+                serverUrl={serverUrl!}
+            />
+        );
     }
+
     return (
-        <SSOWithRedirectURL
-            {...props}
-            serverUrl={serverUrl!}
-        />
+        <View style={styles.flex}>
+            <Background theme={theme}/>
+            <AnimatedSafeArea style={[styles.flex, transform]}>
+                {ssoComponent}
+            </AnimatedSafeArea>
+        </View>
     );
 };
 

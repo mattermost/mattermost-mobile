@@ -16,7 +16,6 @@ import {
 
 import {markChannelAsViewed} from '@actions/local/channel';
 import {backgroundNotification, openNotification} from '@actions/remote/notifications';
-import EphemeralStore from '@app/store/ephemeral_store';
 import {Device, Events, Navigation, Screens} from '@constants';
 import {GLOBAL_IDENTIFIERS} from '@constants/database';
 import DatabaseManager from '@database/manager';
@@ -25,6 +24,7 @@ import NativeNotifications from '@notifications';
 import {queryServerName} from '@queries/app/servers';
 import {queryCurrentChannelId} from '@queries/servers/system';
 import {showOverlay} from '@screens/navigation';
+import EphemeralStore from '@store/ephemeral_store';
 import {isTablet} from '@utils/helpers';
 import {convertToNotificationData} from '@utils/notification';
 
