@@ -12,6 +12,7 @@ import CompassIcon from '@components/compass_icon';
 import {Device, Preferences, Screens} from '@constants';
 import NavigationConstants from '@constants/navigation';
 import EphemeralStore from '@store/ephemeral_store';
+import {NavButtons} from '@typings/screens/navigation';
 import {changeOpacity, setNavigatorStyles} from '@utils/theme';
 
 import type {LaunchProps} from '@typings/launch';
@@ -445,7 +446,6 @@ export async function dismissAllModals(options: Options = {}) {
     }
 }
 
-type NavButtons = {leftButtons?: any[]; rightButtons?: any[]}
 export function setButtons(componentId: string, buttons: NavButtons = {leftButtons: [], rightButtons: []}) {
     const options = {
         topBar: {

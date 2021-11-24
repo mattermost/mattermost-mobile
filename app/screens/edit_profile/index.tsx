@@ -141,7 +141,7 @@ const EditProfile = ({
     const rightButton = {
         id: 'update-profile',
         enabled: false,
-        showAsAction: 'always',
+        showAsAction: 'always' as const,
         testID: 'edit_profile.save.button',
         color: theme.sidebarHeaderTextColor,
         text: intl.formatMessage({id: 'mobile.account.settings.save', defaultMessage: 'Save'}),
