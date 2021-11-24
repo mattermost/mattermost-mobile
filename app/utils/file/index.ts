@@ -288,8 +288,7 @@ export const isVideo = (file?: FileInfo | FileModel) => {
     return SUPPORTED_VIDEO_FORMAT!.includes(mime);
 };
 
-export function getFormattedFileSize(file: FileInfo): string {
-    const bytes = file.size;
+export function getFormattedFileSize(bytes: number): string {
     const fileSizes = [
         ['TB', 1024 * 1024 * 1024 * 1024],
         ['GB', 1024 * 1024 * 1024],

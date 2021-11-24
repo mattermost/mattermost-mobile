@@ -1,0 +1,158 @@
+// Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
+// See LICENSE.txt for license information.
+import React, {useEffect, useRef, useState} from 'react';
+import {
+    Animated,
+    DeviceEventEmitter,
+    Platform,
+    Text,
+} from 'react-native';
+
+import FormattedText from '@components/formatted_text';
+import {Events} from '@constants';
+import {TYPING_HEIGHT} from '@constants/post_draft';
+import {useTheme} from '@context/theme';
+import {makeStyleSheetFromTheme} from '@utils/theme';
+
+type Props = {
+    channelId: string;
+    rootId: string;
+}
+
+export default function Typing({
+    channelId,
+    rootId,
+}: Props) {
+    const typingBottom = useRef(new Animated.Value(0));
+    const typing = useRef<Array<{id: string; now: number}>>([]);
+    const [refresh, setRefresh] = useState(0);
+
+    const theme = useTheme();
+
+    const typingAnimation = (visible = false) => {
+        const [bottom, duration] = visible ?
+            [TYPING_HEIGHT, 200] :
+            [0, 400];
+
+        return Animated.timing(typingBottom.current, {
+            toValue: bottom,
+            duration,
+            useNativeDriver: false,
+        });
+    };
+
+    useEffect(() => {
+        const listener = DeviceEventEmitter.addListener(Events.USER_TYPING, (msg: any) => {
+            if (channelId !== msg.channelId) {
+                return;
+            }
+
+            const msgRootId = msg.parentId || '';
+            if (rootId !== msgRootId) {
+                return;
+            }
+
+            typing.current = typing.current.filter(({id, now}) => id !== msg.userId && now !== msg.now); //eslint-disable-line max-nested-callbacks
+            typing.current.push({id: msg.userId, now: msg.now});
+            setRefresh(Date.now());
+        });
+        return () => {
+            listener.remove();
+        };
+    }, [channelId, rootId]);
+
+    useEffect(() => {
+        const listener = DeviceEventEmitter.addListener(Events.USER_STOP_TYPING, (msg: any) => {
+            if (channelId !== msg.channelId) {
+                return;
+            }
+
+            const msgRootId = msg.parentId || '';
+            if (rootId !== msgRootId) {
+                return;
+            }
+
+            typing.current = typing.current.filter(({id, now}) => id !== msg.userId && now !== msg.now);//eslint-disable-line max-nested-callbacks
+            setRefresh(Date.now());
+        });
+        return () => {
+            listener.remove();
+        };
+    }, [channelId, rootId]);
+
+    useEffect(() => {
+        const anim = typingAnimation(typing.current.length > 0);
+        anim.start();
+        return () => {
+            anim.stop();
+        };
+    }, [refresh]);
+
+    const renderTyping = () => {
+        const nextTyping = [...typing.current];
+        const numUsers = nextTyping.length;
+
+        switch (numUsers) {
+            case 0:
+                return null;
+            case 1:
+                return (
+                    <FormattedText
+                        id='msg_typing.isTyping'
+                        defaultMessage='{user} is typing...'
+                        values={{
+                            user: nextTyping[0],
+                        }}
+                    />
+                );
+            default: {
+                const last = nextTyping.pop();
+                return (
+                    <FormattedText
+                        id='msg_typing.areTyping'
+                        defaultMessage='{users} and {last} are typing...'
+                        values={{
+                            users: (nextTyping.join(', ')),
+                            last,
+                        }}
+                    />
+                );
+            }
+        }
+    };
+
+    const style = getStyleSheet(theme);
+
+    return (
+        <Animated.View style={{bottom: typingBottom.current}}>
+            <Text
+                style={style.typing}
+                ellipsizeMode='tail'
+                numberOfLines={1}
+            >
+                {renderTyping()}
+            </Text>
+        </Animated.View>
+    );
+}
+
+const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
+    return {
+        typing: {
+            position: 'absolute',
+            paddingLeft: 10,
+            paddingTop: 3,
+            fontSize: 11,
+            ...Platform.select({
+                android: {
+                    marginBottom: 5,
+                },
+                ios: {
+                    marginBottom: 2,
+                },
+            }),
+            color: theme.centerChannelColor,
+            backgroundColor: 'transparent',
+        },
+    };
+});

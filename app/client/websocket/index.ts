@@ -326,7 +326,7 @@ export default class WebSocketClient {
         }
     }
 
-    public sendUserTypingEvent(channelId: string, parentId: string) {
+    public sendUserTypingEvent(channelId: string, parentId?: string) {
         this.sendMessage('user_typing', {
             channel_id: channelId,
             parent_id: parentId,

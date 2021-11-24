@@ -459,3 +459,23 @@ export const switchToChannelByName = async (serverUrl: string, channelName: stri
         return {error};
     }
 };
+
+export async function getChannelMemberCountsByGroup(serverUrl: string, channelId: string, includeTimezones: boolean) {
+    try {
+        const client = NetworkManager.getClient(serverUrl);
+        const channelMemberCountsByGroup = await client.getChannelMemberCountsByGroup(channelId, includeTimezones);
+        return {channelMemberCountsByGroup};
+    } catch (error) {
+        return {error};
+    }
+}
+
+export async function getChannelTimezones(serverUrl: string, channelId: string) {
+    try {
+        const client = NetworkManager.getClient(serverUrl);
+        const channelTimezones = await client.getChannelTimezones(channelId);
+        return {channelTimezones};
+    } catch (error) {
+        return {error};
+    }
+}

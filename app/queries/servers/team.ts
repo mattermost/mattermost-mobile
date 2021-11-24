@@ -51,13 +51,15 @@ export const addChannelToTeamHistory = async (operator: ServerDataOperator, team
     return operator.handleTeamChannelHistory({teamChannelHistories: [tch], prepareRecordsOnly});
 };
 
-export const queryLastChannelFromTeam = async (database: Database, teamId: string) => {
+export const queryLastChannelFromTeam = async (database: Database, teamId: string, n = 0) => {
     let channelId = '';
 
     try {
         const teamChannelHistory = await database.get<TeamChannelHistoryModel>(TEAM_CHANNEL_HISTORY).find(teamId);
-        if (teamChannelHistory.channelIds.length) {
-            channelId = teamChannelHistory.channelIds[0];
+        if (teamChannelHistory.channelIds.length > n + 1) {
+            channelId = teamChannelHistory.channelIds[n];
+        } else {
+            throw new Error('no nth channel, falling back to default');
         }
     } catch {
         // No channel history for the team

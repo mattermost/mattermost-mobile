@@ -20,6 +20,8 @@ type FileInfo = {
     localPath?: string;
     uri?: string;
     loading?: boolean;
+    failed?: boolean;
+    progress?: number;
 };
 
 type FilesState = {

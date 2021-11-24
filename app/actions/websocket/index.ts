@@ -21,6 +21,7 @@ import {queryCurrentUser} from '@queries/servers/user';
 
 import {handleChannelDeletedEvent, handleUserRemovedEvent} from './channel';
 import {handleLeaveTeamEvent} from './teams';
+import {handleUserTypingEvent} from './user';
 
 import type {Model} from '@nozbe/watermelondb';
 
@@ -258,9 +259,8 @@ export async function handleEvent(serverUrl: string, msg: any) {
 
         // return dispatch(handleStatusChangedEvent(msg));
         case WebsocketEvents.TYPING:
+            handleUserTypingEvent(serverUrl, msg);
             break;
-
-        // return dispatch(handleUserTypingEvent(msg));
         case WebsocketEvents.HELLO:
             break;
 

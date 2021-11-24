@@ -26,6 +26,84 @@ type AuthorsRequest = {
     error?: unknown;
 }
 
+export const createPost = async (serverUrl: string, post: Partial<Post>, files: FileInfo[] = []): Promise<{data?: boolean; error?: any}> => {
+    const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
+    if (!operator) {
+        return {error: `${serverUrl} database not found`};
+    }
+
+    const currentUserId = queryCurrentUserId(operator.database);
+    const timestamp = Date.now();
+    const pendingPostId = post.pending_post_id || `${currentUserId}:${timestamp}`;
+
+    // Check if is sending this post id
+
+    let newPost = {
+        ...post,
+        id: '',
+        pending_post_id: pendingPostId,
+        create_at: timestamp,
+        update_at: timestamp,
+        ownPost: true,
+    } as Post;
+
+    if (files.length) {
+        const fileIds = files.map((file) => file.id);
+
+        newPost = {
+            ...newPost,
+            file_ids: fileIds,
+        };
+    }
+
+    await operator.handlePosts({
+        actionType: ActionType.POSTS.RECEIVED_NEW,
+        order: [newPost.id],
+        posts: [newPost],
+    });
+
+    let client: Client;
+    try {
+        client = NetworkManager.getClient(serverUrl);
+    } catch (error) {
+        return {error};
+    }
+
+    try {
+        const created = await client.createPost(newPost);
+        await operator.handlePosts({
+            actionType: ActionType.POSTS.RECEIVED_NEW,
+            order: [created.id],
+            posts: [created],
+        });
+        newPost = created;
+    } catch (error: any) {
+        const errorPost = {
+            ...newPost,
+            id: pendingPostId,
+            failed: true,
+            update_at: Date.now(),
+        };
+
+        // If the failure was because: the root post was deleted or
+        // TownSquareIsReadOnly=true then remove the post
+        if (error.server_error_id === 'api.post.create_post.root_id.app_error' ||
+            error.server_error_id === 'api.post.create_post.town_square_read_only' ||
+            error.server_error_id === 'plugin.message_will_be_posted.dismiss_post'
+        ) {
+            // Delete Post
+        } else {
+            await operator.handlePost({
+                actionType: ActionType.POSTS.RECEIVED_NEW,
+                order: [errorPost.id],
+                posts: [errorPost],
+            });
+        }
+    }
+
+    return {data: true};
+};
+
 export const fetchPostsForCurrentChannel = async (serverUrl: string) => {
     const database = DatabaseManager.serverDatabases[serverUrl]?.database;
     if (!database) {

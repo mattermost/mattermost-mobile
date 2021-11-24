@@ -7,9 +7,9 @@ import {PER_PAGE_DEFAULT} from './constants';
 
 export interface ClientIntegrationsMix {
     getCommandsList: (teamId: string) => Promise<Command[]>;
-    getCommandAutocompleteSuggestionsList: (userInput: string, teamId: string, commandArgs?: Record<string, any>) => Promise<Command[]>;
+    getCommandAutocompleteSuggestionsList: (userInput: string, teamId: string, commandArgs?: CommandArgs) => Promise<Command[]>;
     getAutocompleteCommandsList: (teamId: string, page?: number, perPage?: number) => Promise<Command[]>;
-    executeCommand: (command: Command, commandArgs?: Record<string, any>) => Promise<any>;
+    executeCommand: (command: string, commandArgs?: CommandArgs) => Promise<CommandResponse>;
     addCommand: (command: Command) => Promise<Command>;
     submitInteractiveDialog: (data: DialogSubmission) => Promise<any>;
 }
@@ -36,7 +36,7 @@ const ClientIntegrations = (superclass: any) => class extends superclass {
         );
     };
 
-    executeCommand = async (command: Command, commandArgs = {}) => {
+    executeCommand = async (command: string, commandArgs = {}) => {
         this.analytics.trackAPI('api_integrations_used');
 
         return this.doFetch(

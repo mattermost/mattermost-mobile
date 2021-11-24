@@ -93,7 +93,6 @@ const ImagePreview = ({expandedLink, isReplyPost, link, metadata, postId, theme}
                 <View style={[styles.image, {width: dimensions.width, height: dimensions.height}]}>
                     <FileIcon
                         failed={true}
-                        theme={theme}
                     />
                 </View>
             </View>

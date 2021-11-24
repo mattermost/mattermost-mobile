@@ -4,19 +4,15 @@
 import {withDatabase} from '@nozbe/watermelondb/DatabaseProvider';
 import withObservables from '@nozbe/with-observables';
 import React, {useMemo} from 'react';
-import {useIntl} from 'react-intl';
-import {Text, View} from 'react-native';
 import {SafeAreaView} from 'react-native-safe-area-context';
 import {map} from 'rxjs/operators';
 
-import {logout} from '@actions/remote/session';
+import PostDraft from '@components/post_draft';
 import PostList from '@components/post_list';
 import ServerVersion from '@components/server_version';
-import {Screens, Database} from '@constants';
-import {useServerUrl} from '@context/server_url';
+import {Database} from '@constants';
 import {useTheme} from '@context/theme';
 import {useAppState} from '@hooks/device';
-import {goToScreen} from '@screens/navigation';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 
 import ChannelNavBar from './channel_nav_bar';
@@ -51,7 +47,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     },
 }));
 
-const Channel = ({currentChannelId, currentTeamId, time}: ChannelProps) => {
+const Channel = ({currentChannelId, currentTeamId}: ChannelProps) => {
     // TODO: If we have LaunchProps, ensure we load the correct channel/post/modal.
     // TODO: If LaunchProps.error is true, use the LaunchProps.launchType to determine which
     // error message to display. For example:
@@ -67,20 +63,8 @@ const Channel = ({currentChannelId, currentTeamId, time}: ChannelProps) => {
     //todo: https://mattermost.atlassian.net/browse/MM-37266
 
     const theme = useTheme();
-    const intl = useIntl();
     const styles = getStyleSheet(theme);
     const appState = useAppState();
-
-    const serverUrl = useServerUrl();
-
-    const doLogout = () => {
-        logout(serverUrl!);
-    };
-
-    const goToAbout = () => {
-        const title = intl.formatMessage({id: 'about.title', defaultMessage: 'About {appTitle}'}, {appTitle: 'Mattermost'});
-        goToScreen(Screens.ABOUT, title);
-    };
 
     const renderComponent = useMemo(() => {
         if (!currentTeamId) {
@@ -102,22 +86,10 @@ const Channel = ({currentChannelId, currentTeamId, time}: ChannelProps) => {
                     testID='channel.post_list'
                     forceQueryAfterAppState={appState}
                 />
-                <View style={styles.sectionContainer}>
-                    <Text
-                        onPress={doLogout}
-                        style={styles.sectionTitle}
-                    >
-                        {`Loaded in: ${time || 0}ms. Logout from ${serverUrl}`}
-                    </Text>
-                </View>
-                <View style={styles.sectionContainer}>
-                    <Text
-                        onPress={goToAbout}
-                        style={styles.sectionTitle}
-                    >
-                        {'Go to About Screen'}
-                    </Text>
-                </View>
+                <PostDraft
+                    channelId={currentChannelId}
+                    screenId={''}
+                />
             </>
         );
     }, [currentTeamId, currentChannelId, theme, appState]);

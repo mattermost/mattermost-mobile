@@ -16,3 +16,5 @@ export default {
     TABLET_SIDEBAR_WIDTH,
     TEAM_SIDEBAR_WIDTH,
 };
+
+export const NOTIFY_ALL_MEMBERS = 5;

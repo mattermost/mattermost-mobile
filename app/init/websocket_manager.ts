@@ -180,6 +180,10 @@ class WebsocketManager {
 
         this.closeAll();
     }
+
+    public getClient = (serverUrl: string) => {
+        return this.clients[serverUrl];
+    }
 }
 
 export default new WebsocketManager();

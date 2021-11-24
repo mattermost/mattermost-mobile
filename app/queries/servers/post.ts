@@ -4,11 +4,12 @@
 import {Database, Model, Q, Query, Relation} from '@nozbe/watermelondb';
 
 import {MM_TABLES} from '@constants/database';
+import {PostsInThreadModel} from '@database/models/server';
 
 import type PostModel from '@typings/database/models/servers/post';
 import type PostInChannelModel from '@typings/database/models/servers/posts_in_channel';
 
-const {SERVER: {POST, POSTS_IN_CHANNEL}} = MM_TABLES;
+const {SERVER: {POST, POSTS_IN_CHANNEL, POSTS_IN_THREAD}} = MM_TABLES;
 
 export const prepareDeletePost = async (post: PostModel): Promise<Model[]> => {
     const preparedModels: Model[] = [post.prepareDestroyPermanently()];
@@ -48,12 +49,23 @@ export const queryPostById = async (database: Database, postId: string) => {
 
 export const queryPostsInChannel = (database: Database, channelId: string): Promise<PostInChannelModel[]> => {
     try {
-        return database.get(POSTS_IN_CHANNEL).query(
+        return database.get<PostInChannelModel>(POSTS_IN_CHANNEL).query(
             Q.where('channel_id', channelId),
             Q.sortBy('latest', Q.desc),
-        ).fetch() as Promise<PostInChannelModel[]>;
+        ).fetch();
     } catch {
-        return Promise.resolve([] as PostInChannelModel[]);
+        return Promise.resolve([]);
+    }
+};
+
+export const queryPostsInThread = (database: Database, rootId: string): Promise<PostsInThreadModel[]> => {
+    try {
+        return database.get<PostsInThreadModel>(POSTS_IN_THREAD).query(
+            Q.where('root_id', rootId),
+            Q.sortBy('latest', Q.desc),
+        ).fetch();
+    } catch {
+        return Promise.resolve([]);
     }
 };
 
