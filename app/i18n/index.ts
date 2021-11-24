@@ -13,7 +13,7 @@ export const DEFAULT_LOCALE = deviceLocale;
 
 function loadTranslation(locale?: string) {
     try {
-        let translations;
+        let translations: Record<string, string>;
         let momentData;
 
         switch (locale) {
@@ -184,7 +184,7 @@ export function getLocalizedMessage(lang: string, id: string, defaultMessage?: s
     const locale = getLocaleFromLanguage(lang);
     const translations = getTranslations(locale);
 
-    return translations[id] || defaultMessage;
+    return translations[id] || defaultMessage || '';
 }
 
 export function t(v: string): string {

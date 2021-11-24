@@ -61,7 +61,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
         consecutivePostContainer: {
             marginBottom: 10,
             marginRight: 10,
-            marginLeft: 47,
+            marginLeft: 27,
             marginTop: 10,
         },
         container: {flexDirection: 'row'},
@@ -89,7 +89,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
         rightColumn: {
             flex: 1,
             flexDirection: 'column',
-            marginRight: 12,
         },
         rightColumnPadding: {paddingBottom: 3},
     };

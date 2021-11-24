@@ -59,7 +59,12 @@ const UserHandler = (superclass: any) => class extends superclass {
             );
         }
 
-        const createOrUpdateRawValues = getUniqueRawsBy({raws: channelMemberships, key: 'channel_id'});
+        const memberships: ChannelMember[] = channelMemberships.map((m) => ({
+            id: `${m.channel_id}-${m.user_id}`,
+            ...m,
+        }));
+
+        const createOrUpdateRawValues = getUniqueRawsBy({raws: memberships, key: 'id'});
 
         return this.handleRecords({
             fieldName: 'user_id',

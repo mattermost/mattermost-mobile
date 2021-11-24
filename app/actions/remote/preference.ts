@@ -25,7 +25,7 @@ export const fetchMyPreferences = async (serverUrl: string, fetchOnly = false): 
         if (!fetchOnly) {
             const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
             if (operator) {
-                operator.handlePreferences({
+                await operator.handlePreferences({
                     prepareRecordsOnly: false,
                     preferences,
                 });

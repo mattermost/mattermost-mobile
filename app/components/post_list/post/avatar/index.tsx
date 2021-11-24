@@ -44,8 +44,7 @@ const style = StyleSheet.create({
     },
     profilePictureContainer: {
         marginBottom: 5,
-        marginLeft: 12,
-        marginRight: Platform.select({android: 11, ios: 10}),
+        marginRight: 10,
         marginTop: 10,
     },
 });
