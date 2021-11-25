@@ -79,7 +79,7 @@ const ProfileImage = ({
     }
 
     let image;
-    if (userId && client) {
+    if (userId && client && source !== undefined) {
         const defaultSource = {
             uri: `${serverUrl}${client.getProfilePictureUrl(userId, lastPictureUpdate)}`,
         };

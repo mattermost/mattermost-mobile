@@ -103,6 +103,8 @@ const EditProfileImage = ({
         source = {
             uri: `${prefix}${pictureUrl}`,
         };
+    } else {
+        source = undefined;
     }
 
     return (
@@ -121,7 +123,7 @@ const EditProfileImage = ({
             <ProfileImage
                 lastPictureUpdate={lastPictureUpdate}
                 size={size}
-                source={source || undefined}
+                source={source}
                 userId={userId}
             />
             <View
