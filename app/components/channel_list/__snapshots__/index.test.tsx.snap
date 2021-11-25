@@ -163,7 +163,9 @@ exports[`components/channel_list should match snapshot 1`] = `
               "lineHeight": 16,
             }
           }
-        />
+        >
+          
+        </Text>
       </View>
     </View>
   </RNGestureHandlerButton>

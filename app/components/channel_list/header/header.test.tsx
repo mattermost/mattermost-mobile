@@ -4,14 +4,13 @@
 import React from 'react';
 
 import {render} from '@test/intl-test-helper';
-import TeamModel from '@typings/database/models/servers/team';
 
 import Header from './header';
 
 describe('components/channel_list/header', () => {
     it('Channel List Header Component should match snapshot', () => {
         const {toJSON} = render(
-            <Header team={{displayName: 'Test!'} as TeamModel}/>,
+            <Header displayName={'Test!'}/>,
         );
 
         expect(toJSON()).toMatchSnapshot();

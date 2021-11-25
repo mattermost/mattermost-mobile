@@ -3,20 +3,28 @@
 
 import {withDatabase} from '@nozbe/watermelondb/DatabaseProvider';
 import withObservables from '@nozbe/with-observables';
+import {of as of$} from 'rxjs';
 import {switchMap} from 'rxjs/operators';
 
-import {SystemModel} from '@app/database/models/server';
 import {MM_TABLES, SYSTEM_IDENTIFIERS} from '@constants/database';
 
 const {SERVER: {SYSTEM, TEAM}} = MM_TABLES;
 import ChannelListHeader from './header';
 
 import type {WithDatabaseArgs} from '@typings/database/database';
+import type SystemModel from '@typings/database/models/servers/system';
+import type TeamModel from '@typings/database/models/servers/team';
 
-const withCurrentTeam = withObservables([], ({database}: WithDatabaseArgs) => ({
-    team: database.get<SystemModel>(SYSTEM).findAndObserve(SYSTEM_IDENTIFIERS.CURRENT_TEAM_ID).pipe(
-        switchMap((id) => database.get(TEAM).findAndObserve(id.value)),
-    ),
-}));
+const withCurrentTeam = withObservables([], ({database}: WithDatabaseArgs) => {
+    const team = database.get<SystemModel>(SYSTEM).findAndObserve(SYSTEM_IDENTIFIERS.CURRENT_TEAM_ID).pipe(
+        switchMap((id) => database.get<TeamModel>(TEAM).findAndObserve(id.value)),
+    );
+
+    return {
+        displayName: team.pipe(
+            switchMap((t) => of$(t.displayName)),
+        ),
+    };
+});
 
 export default withDatabase(withCurrentTeam(ChannelListHeader));

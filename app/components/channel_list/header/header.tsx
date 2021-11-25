@@ -6,13 +6,13 @@ import {Text, View} from 'react-native';
 
 import CompassIcon from '@components/compass_icon';
 import TouchableWithFeedback from '@components/touchable_with_feedback';
+import {useServerDisplayName} from '@context/server';
 import {useTheme} from '@context/theme';
-import TeamModel from '@typings/database/models/servers/team';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
 type Props = {
-    team: TeamModel;
+    displayName: string;
     iconPad?: boolean;
 }
 
@@ -54,8 +54,9 @@ const getStyles = makeStyleSheetFromTheme((theme: Theme) => ({
     },
 }));
 
-const ChannelListHeader = ({team, iconPad}: Props) => {
+const ChannelListHeader = ({displayName, iconPad}: Props) => {
     const theme = useTheme();
+    const serverDisplayName = useServerDisplayName();
     const styles = getStyles(theme);
 
     return (
@@ -63,7 +64,7 @@ const ChannelListHeader = ({team, iconPad}: Props) => {
             <View style={styles.headerRow}>
                 <View style={styles.headerRow}>
                     <Text style={styles.headingStyles}>
-                        {team.displayName}
+                        {displayName}
                     </Text>
                     <TouchableWithFeedback style={styles.chevronButton}>
                         <CompassIcon
@@ -79,7 +80,9 @@ const ChannelListHeader = ({team, iconPad}: Props) => {
                     />
                 </TouchableWithFeedback>
             </View>
-            <Text style={styles.subHeadingStyles}/>
+            <Text style={styles.subHeadingStyles}>
+                {serverDisplayName}
+            </Text>
         </View>
     );
 };

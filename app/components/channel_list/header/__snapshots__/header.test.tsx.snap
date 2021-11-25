@@ -132,6 +132,8 @@ exports[`components/channel_list/header Channel List Header Component should mat
         "lineHeight": 16,
       }
     }
-  />
+  >
+    
+  </Text>
 </View>
 `;
