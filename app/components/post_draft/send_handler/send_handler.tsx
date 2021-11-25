@@ -152,7 +152,7 @@ export default function SendHandler({
     });
 
     const sendReaction = (emoji: string) => {
-        addReactionToLatestPost(emoji, rootId);
+        addReactionToLatestPost(serverUrl, emoji, rootId);
         setSendingMessage(false);
     };
 

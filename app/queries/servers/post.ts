@@ -69,6 +69,19 @@ export const queryPostsInThread = (database: Database, rootId: string): Promise<
     }
 };
 
+export const queryRecentPostsInThread = async (database: Database, channelId: string): Promise<PostModel[]> => {
+    try {
+        const chunks = await queryPostsInThread(database, channelId);
+        if (chunks.length) {
+            const recent = chunks[0];
+            return queryPostsChunk(database, channelId, recent.earliest, recent.latest);
+        }
+        return Promise.resolve([] as PostModel[]);
+    } catch {
+        return Promise.resolve([] as PostModel[]);
+    }
+};
+
 export const queryPostsChunk = (database: Database, channelId: string, earliest: number, latest: number): Promise<PostModel[]> => {
     try {
         return database.get(POST).query(

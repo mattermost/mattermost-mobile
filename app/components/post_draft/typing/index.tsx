@@ -2,11 +2,11 @@
 // See LICENSE.txt for license information.
 import React, {useEffect, useRef, useState} from 'react';
 import {
-    Animated,
     DeviceEventEmitter,
     Platform,
     Text,
 } from 'react-native';
+import Animated, {useAnimatedStyle, useSharedValue, withTiming} from 'react-native-reanimated';
 
 import FormattedText from '@components/formatted_text';
 import {Events} from '@constants';
@@ -23,23 +23,17 @@ export default function Typing({
     channelId,
     rootId,
 }: Props) {
-    const typingBottom = useRef(new Animated.Value(0));
-    const typing = useRef<Array<{id: string; now: number}>>([]);
+    const typingBottom = useSharedValue(0);
+    const typing = useRef<Array<{id: string; now: number; username: string}>>([]);
     const [refresh, setRefresh] = useState(0);
 
     const theme = useTheme();
 
-    const typingAnimation = (visible = false) => {
-        const [bottom, duration] = visible ?
-            [TYPING_HEIGHT, 200] :
-            [0, 400];
-
-        return Animated.timing(typingBottom.current, {
-            toValue: bottom,
-            duration,
-            useNativeDriver: false,
-        });
-    };
+    const typingAnimatedStyle = useAnimatedStyle(() => {
+        return {
+            height: withTiming(typingBottom.value),
+        };
+    });
 
     useEffect(() => {
         const listener = DeviceEventEmitter.addListener(Events.USER_TYPING, (msg: any) => {
@@ -52,8 +46,8 @@ export default function Typing({
                 return;
             }
 
-            typing.current = typing.current.filter(({id, now}) => id !== msg.userId && now !== msg.now); //eslint-disable-line max-nested-callbacks
-            typing.current.push({id: msg.userId, now: msg.now});
+            typing.current = typing.current.filter(({id}) => id !== msg.userId); //eslint-disable-line max-nested-callbacks
+            typing.current.push({id: msg.userId, now: msg.now, username: msg.username});
             setRefresh(Date.now());
         });
         return () => {
@@ -81,15 +75,11 @@ export default function Typing({
     }, [channelId, rootId]);
 
     useEffect(() => {
-        const anim = typingAnimation(typing.current.length > 0);
-        anim.start();
-        return () => {
-            anim.stop();
-        };
+        typingBottom.value = typing.current.length ? TYPING_HEIGHT : 0;
     }, [refresh]);
 
     const renderTyping = () => {
-        const nextTyping = [...typing.current];
+        const nextTyping = typing.current.map(({username}) => username);
         const numUsers = nextTyping.length;
 
         switch (numUsers) {
@@ -124,7 +114,7 @@ export default function Typing({
     const style = getStyleSheet(theme);
 
     return (
-        <Animated.View style={{bottom: typingBottom.current}}>
+        <Animated.View style={typingAnimatedStyle}>
             <Text
                 style={style.typing}
                 ellipsizeMode='tail'

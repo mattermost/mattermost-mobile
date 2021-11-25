@@ -25,6 +25,7 @@ type Props = {
     channelId: string;
     maxMessageLength: number;
     rootId: string;
+    timeBetweenUserTypingUpdatesMilliseconds: number;
     value: string;
     updateValue: (value: string) => void;
     updateFiles: (files: FileInfo[]) => void;
@@ -37,6 +38,7 @@ export default function PostInput({
     channelId,
     maxMessageLength,
     rootId,
+    timeBetweenUserTypingUpdatesMilliseconds,
     value,
     updateValue,
     updateFiles,
@@ -49,6 +51,7 @@ export default function PostInput({
     const style = getStyleSheet(theme);
     const serverUrl = useServerUrl();
     const managedConfig = useManagedConfig();
+    const lastTypingEventSent = useRef(0);
 
     const input = useRef<PasteInputRef>();
 
@@ -160,8 +163,9 @@ export default function PostInput({
             handlePostDraftSelectionChanged(null, true);
         }
 
-        if (newValue) {
+        if (newValue && lastTypingEventSent.current + timeBetweenUserTypingUpdatesMilliseconds < Date.now()) {
             userTyping(serverUrl, channelId, rootId);
+            lastTypingEventSent.current = Date.now();
         }
     };
 

@@ -4,16 +4,16 @@
 import {Model, Q} from '@nozbe/watermelondb';
 
 import {addRecentReaction} from '@actions/local/reactions';
-import {PostsInChannelModel, PostsInThreadModel} from '@app/database/models/server';
-import {queryPostsInChannel, queryPostsInThread} from '@app/queries/servers/post';
 import {MM_TABLES} from '@constants/database';
 import DatabaseManager from '@database/manager';
 import NetworkManager from '@init/network_manager';
+import {queryRecentPostsInChannel, queryRecentPostsInThread} from '@queries/servers/post';
 import {queryCurrentChannelId, queryCurrentUserId} from '@queries/servers/system';
 
 import {forceLogoutIfNecessary} from './session';
 
 import type {Client} from '@client/rest';
+import type PostModel from '@typings/database/models/servers/post';
 
 export const addReaction = async (serverUrl: string, postId: string, emojiName: string) => {
     const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
@@ -102,12 +102,12 @@ export const addReactionToLatestPost = async (serverUrl: string, emojiName: stri
     }
 
     try {
-        let posts: PostsInThreadModel[] | PostsInChannelModel[];
+        let posts: PostModel[];
         if (rootId) {
-            posts = await queryPostsInThread(operator.database, rootId);
+            posts = await queryRecentPostsInThread(operator.database, rootId);
         } else {
             const channelId = await queryCurrentChannelId(operator.database);
-            posts = await queryPostsInChannel(operator.database, channelId);
+            posts = await queryRecentPostsInChannel(operator.database, channelId);
         }
 
         return addReaction(serverUrl, posts[0].id, emojiName);
