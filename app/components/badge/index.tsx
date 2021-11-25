@@ -8,7 +8,7 @@ import {useTheme} from '@context/theme';
 
 type Props = {
     backgroundColor?: string;
-    borderColor: string;
+    borderColor?: string;
     color?: string;
     style?: Animated.WithAnimatedValue<StyleProp<TextStyle>>;
     type?: 'Normal' | 'Small';
