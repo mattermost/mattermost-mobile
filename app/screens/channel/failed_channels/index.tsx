@@ -10,7 +10,7 @@ import {retryInitialChannel} from '@actions/remote/retry';
 import FailedAction from '@components/failed_action';
 import Loading from '@components/loading';
 import {MM_TABLES} from '@constants/database';
-import {useServerUrl} from '@context/server_url';
+import {useServerUrl} from '@context/server';
 
 import type {WithDatabaseArgs} from '@typings/database/database';
 import type TeamModel from '@typings/database/models/servers/team';

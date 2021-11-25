@@ -14,7 +14,7 @@ import ProgressiveImage from '@components/progressive_image';
 import SlideUpPanelItem, {ITEM_HEIGHT} from '@components/slide_up_panel_item';
 import TouchableWithFeedback from '@components/touchable_with_feedback';
 import {Navigation} from '@constants';
-import {useServerUrl} from '@context/server_url';
+import {useServerUrl} from '@context/server';
 import {useIsTablet} from '@hooks/device';
 import {showModalOverCurrentContext} from '@screens/navigation';
 import {openGallerWithMockFile} from '@utils/gallery';

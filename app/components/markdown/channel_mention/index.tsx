@@ -12,7 +12,7 @@ import {map, switchMap} from 'rxjs/operators';
 import {switchToChannel} from '@actions/local/channel';
 import {joinChannel} from '@actions/remote/channel';
 import {MM_TABLES, SYSTEM_IDENTIFIERS} from '@constants/database';
-import {useServerUrl} from '@context/server_url';
+import {useServerUrl} from '@context/server';
 import {t} from '@i18n';
 import {dismissAllModals, popToRoot} from '@screens/navigation';
 import {alertErrorWithFallback} from '@utils/draft';

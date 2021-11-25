@@ -10,7 +10,7 @@ import {unsetCustomStatus} from '@actions/remote/user';
 import DrawerItem from '@components/drawer_item';
 import {Events, Screens} from '@constants';
 import {SET_CUSTOM_STATUS_FAILURE} from '@constants/custom_status';
-import {useServerUrl} from '@context/server_url';
+import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {showModal} from '@screens/navigation';
 import {preventDoubleTap} from '@utils/tap';

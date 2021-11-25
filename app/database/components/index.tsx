@@ -5,9 +5,8 @@ import {Database, Q} from '@nozbe/watermelondb';
 import DatabaseProvider from '@nozbe/watermelondb/DatabaseProvider';
 import React, {ComponentType, useEffect, useState} from 'react';
 
-import ServerDisplayNameProvider from '@app/context/server_display_name';
 import {MM_TABLES} from '@constants/database';
-import ServerUrlProvider from '@context/server_url';
+import ServerProvider from '@context/server';
 import ThemeProvider from '@context/theme';
 import UserLocaleProvider from '@context/user_locale';
 import DatabaseManager from '@database/manager';
@@ -65,13 +64,11 @@ export function withServerDatabase<T>(Component: ComponentType<T>): ComponentTyp
         return (
             <DatabaseProvider database={state.database}>
                 <UserLocaleProvider database={state.database}>
-                    <ServerDisplayNameProvider displayName={state.serverDisplayName}>
-                        <ServerUrlProvider url={state.serverUrl}>
-                            <ThemeProvider database={state.database}>
-                                <Component {...props}/>
-                            </ThemeProvider>
-                        </ServerUrlProvider>
-                    </ServerDisplayNameProvider>
+                    <ServerProvider server={{displayName: state.serverDisplayName, url: state.serverUrl}}>
+                        <ThemeProvider database={state.database}>
+                            <Component {...props}/>
+                        </ThemeProvider>
+                    </ServerProvider>
                 </UserLocaleProvider>
             </DatabaseProvider>
         );
