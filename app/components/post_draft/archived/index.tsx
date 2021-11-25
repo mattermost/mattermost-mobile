@@ -20,6 +20,36 @@ type Props = {
     deactivated?: boolean;
 }
 
+const getStyleSheet = makeStyleSheetFromTheme((theme) => ({
+    archivedWrapper: {
+        paddingLeft: 20,
+        paddingRight: 20,
+        paddingTop: 10,
+        paddingBottom: 10,
+        borderTopWidth: 1,
+        backgroundColor: theme.centerChannelBg,
+        borderTopColor: changeOpacity(theme.centerChannelColor, 0.20),
+    },
+    archivedText: {
+        textAlign: 'center',
+        color: theme.centerChannelColor,
+    },
+    closeButton: {
+        backgroundColor: theme.buttonBg,
+        alignItems: 'center',
+        paddingTop: 5,
+        paddingBottom: 5,
+        borderRadius: 4,
+        marginTop: 10,
+        height: 40,
+    },
+    closeButtonText: {
+        marginTop: 7,
+        color: 'white',
+        fontWeight: 'bold',
+    },
+}));
+
 export default function Archived({
     testID,
     deactivated,
@@ -30,7 +60,6 @@ export default function Archived({
     const serverUrl = useServerUrl();
 
     const onCloseChannelPress = useCallback(() => {
-        // TODO this seems wrong. Check expected behaviour for mobile
         if (isTablet) {
             switchToPenultimateChannel(serverUrl);
         } else {
@@ -75,33 +104,3 @@ export default function Archived({
         </View>
     );
 }
-
-const getStyleSheet = makeStyleSheetFromTheme((theme) => ({
-    archivedWrapper: {
-        paddingLeft: 20,
-        paddingRight: 20,
-        paddingTop: 10,
-        paddingBottom: 10,
-        borderTopWidth: 1,
-        backgroundColor: theme.centerChannelBg,
-        borderTopColor: changeOpacity(theme.centerChannelColor, 0.20),
-    },
-    archivedText: {
-        textAlign: 'center',
-        color: theme.centerChannelColor,
-    },
-    closeButton: {
-        backgroundColor: theme.buttonBg,
-        alignItems: 'center',
-        paddingTop: 5,
-        paddingBottom: 5,
-        borderRadius: 4,
-        marginTop: 10,
-        height: 40,
-    },
-    closeButtonText: {
-        marginTop: 7,
-        color: 'white',
-        fontWeight: 'bold',
-    },
-}));

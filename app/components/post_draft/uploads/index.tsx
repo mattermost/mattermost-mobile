@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback, useEffect, useRef} from 'react';
+import React, {useCallback, useEffect} from 'react';
 import {
     ScrollView,
     Text,
@@ -31,44 +31,35 @@ export default function Uploads({
 }: Props) {
     const theme = useTheme();
 
-    const errorTop = useSharedValue(0);
-    const containerTop = useSharedValue(150);
+    const errorHeight = useSharedValue(0);
+    const containerHeight = useSharedValue(150);
 
     const errorAnimatedStyle = useAnimatedStyle(() => {
         return {
-            height: withTiming(errorTop.value),
+            height: withTiming(errorHeight.value),
         };
     });
 
     const containerAnimatedStyle = useAnimatedStyle(() => {
         return {
-            height: withTiming(containerTop.value),
+            height: withTiming(containerHeight.value),
         };
     });
 
-    const hideErrorTimer = useRef<NodeJS.Timeout>();
-
     useEffect(() => {
         if (uploadFileError) {
-            errorTop.value = 200;
-            if (hideErrorTimer.current) {
-                clearTimeout(hideErrorTimer.current);
-            }
-
-            hideErrorTimer.current = setTimeout(() => {
-                errorTop.value = 0;
-            }, 5000);
-            return;
+            errorHeight.value = 20;
+        } else {
+            errorHeight.value = 0;
         }
-        errorTop.value = 0;
     }, [uploadFileError]);
 
     useEffect(() => {
         if (files.length) {
-            containerTop.value = 67;
+            containerHeight.value = 67;
             return;
         }
-        containerTop.value = 0;
+        containerHeight.value = 0;
     }, [files.length > 0]);
 
     const openGallery = useCallback((file: FileInfo) => {

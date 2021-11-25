@@ -125,7 +125,6 @@ export default function SendHandler({
         }
 
         setSendingMessage(true);
-        updateValue('');
 
         const isReactionMatch = value.match(IS_REACTION_REGEX);
         if (isReactionMatch) {
@@ -137,7 +136,6 @@ export default function SendHandler({
         const hasFailedAttachments = files.some((f) => f.failed);
         if (hasFailedAttachments) {
             const cancel = () => {
-                updateValue(value);
                 setSendingMessage(false);
             };
             const accept = () => {
@@ -153,6 +151,7 @@ export default function SendHandler({
 
     const sendReaction = (emoji: string) => {
         addReactionToLatestPost(serverUrl, emoji, rootId);
+        clearDraft();
         setSendingMessage(false);
     };
 
@@ -176,12 +175,12 @@ export default function SendHandler({
         setSendingMessage(false);
 
         if (error) {
-            updateValue(value);
             const errorMessage = typeof (error) === 'string' ? error : error.message;
             DraftUtils.alertSlashCommandFailed(intl, errorMessage);
             return;
         }
 
+        clearDraft();
         // TODO Apps related
         // if (data?.form) {
         //     showAppForm(data.form, data.call, theme);
@@ -255,7 +254,6 @@ export default function SendHandler({
     const showSendToAllOrChannelOrHereAlert = (calculatedMembersCount: number, atHere: boolean) => {
         const notifyAllMessage = DraftUtils.buildChannelWideMentionMessage(intl, calculatedMembersCount, Boolean(isTimezoneEnabled), channelTimezoneCount, atHere);
         const cancel = () => {
-            updateValue(value);
             setSendingMessage(false);
         };
 
@@ -265,7 +263,6 @@ export default function SendHandler({
     const showSendToGroupsAlert = (groupMentions: string[], memberNotifyCount: number, calculatedChannelTimezoneCount: number) => {
         const notifyAllMessage = DraftUtils.buildGroupMentionsMessage(intl, groupMentions, memberNotifyCount, calculatedChannelTimezoneCount);
         const cancel = () => {
-            updateValue(value);
             setSendingMessage(false);
         };
 
