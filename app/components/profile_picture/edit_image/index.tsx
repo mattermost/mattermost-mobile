@@ -119,7 +119,6 @@ const EditProfileImage = ({
             testID={`${testID}.${userId}`}
         >
             <ProfileImage
-                imageUrl={pictureUrl}
                 lastPictureUpdate={lastPictureUpdate}
                 size={size}
                 source={source || undefined}

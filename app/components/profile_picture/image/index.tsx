@@ -36,7 +36,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
 });
 
 type ProfileImageProps = {
-    imageUrl?: string;
     isBot?: boolean;
     lastPictureUpdate: number;
     size?: number;
@@ -51,7 +50,6 @@ type ProfileImageProps = {
 
 const ProfileImage = ({
     containerStyle,
-    imageUrl,
     isBot,
     lastPictureUpdate,
     size = 64,
@@ -82,13 +80,14 @@ const ProfileImage = ({
 
     let image;
     if (userId && client) {
-        const pictureUrl =
-            imageUrl ?? client.getProfilePictureUrl(userId, lastPictureUpdate);
-        const imageSource = source ?? {uri: `${serverUrl}${pictureUrl}`};
+        const defaultSource = {
+            uri: `${serverUrl}${client.getProfilePictureUrl(userId, lastPictureUpdate)}`,
+        };
+
         image = (
             <FastImage
                 style={{width: size, height: size, borderRadius: size / 2}}
-                source={imageSource}
+                source={source ?? defaultSource}
             />
         );
     } else {
