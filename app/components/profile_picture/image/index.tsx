@@ -62,7 +62,7 @@ const ProfileImage = ({
 }: ProfileImageProps) => {
     const theme = useTheme();
     const serverUrl = useServerUrl();
-    const style = getStyleSheet(theme);
+    const styles = getStyleSheet(theme);
 
     useEffect(() => {
         if (userId) {
@@ -94,8 +94,8 @@ const ProfileImage = ({
         image = (
             <CompassIcon
                 name='account-outline'
-                size={size}
-                style={style.icon}
+                size={size * 0.78}
+                style={styles.icon}
             />
         );
     }
@@ -103,14 +103,14 @@ const ProfileImage = ({
     return (
         <>
             <View
-                style={[style.container, containerStyle]}
+                style={[styles.container, containerStyle]}
                 testID={`${testID}.${userId}`}
             >
                 {image}
                 {Boolean(userStatus) && !isBot && (
                     <View
                         style={[
-                            style.statusWrapper,
+                            styles.statusWrapper,
                             statusStyle,
                             {
                                 borderRadius: statusSize / 2,

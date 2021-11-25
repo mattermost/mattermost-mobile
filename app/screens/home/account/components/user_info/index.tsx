@@ -5,7 +5,7 @@ import React from 'react';
 import {Text, View} from 'react-native';
 
 import ProfilePicture from '@components/profile_picture/image';
-import {makeStyleSheetFromTheme} from '@utils/theme';
+import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 import type UserModel from '@typings/database/models/servers/user';
 
@@ -44,6 +44,11 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
         },
         containerStyle: {
             width: 120,
+            height: 120,
+            borderRadius: 60,
+            alignItems: 'center',
+            justifyContent: 'center',
+            backgroundColor: changeOpacity(theme.centerChannelColor, 0.08),
         },
     };
 });
