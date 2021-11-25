@@ -5,7 +5,7 @@ import React, {useCallback, useState} from 'react';
 import {StyleProp, StyleSheet, useWindowDimensions, View, ViewStyle} from 'react-native';
 
 import ProgressiveImage from '@components/progressive_image';
-import {useServerUrl} from '@context/server_url';
+import {useServerUrl} from '@context/server';
 import NetworkManager from '@init/network_manager';
 import {calculateDimensions} from '@utils/images';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';

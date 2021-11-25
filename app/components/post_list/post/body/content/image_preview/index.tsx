@@ -14,7 +14,7 @@ import FileIcon from '@components/post_list/post/body/files/file_icon';
 import ProgressiveImage from '@components/progressive_image';
 import TouchableWithFeedback from '@components/touchable_with_feedback';
 import {MM_TABLES, SYSTEM_IDENTIFIERS} from '@constants/database';
-import {useServerUrl} from '@context/server_url';
+import {useServerUrl} from '@context/server';
 import {useIsTablet} from '@hooks/device';
 import useDidUpdate from '@hooks/did_update';
 import {openGallerWithMockFile} from '@utils/gallery';

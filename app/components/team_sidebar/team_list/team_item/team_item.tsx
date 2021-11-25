@@ -7,7 +7,7 @@ import {View} from 'react-native';
 import {handleTeamChange} from '@actions/local/team';
 import Badge from '@components/badge';
 import TouchableWithFeedback from '@components/touchable_with_feedback';
-import {useServerUrl} from '@context/server_url';
+import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 

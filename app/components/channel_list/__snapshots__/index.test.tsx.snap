@@ -1,17 +1,23 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`Channels List should match snapshot 1`] = `
+exports[`components/channel_list should match snapshot 1`] = `
 <View
-  style={
-    Array [
-      Object {
-        "backgroundColor": "#1e325c",
-        "flex": 1,
-        "paddingHorizontal": 20,
-        "paddingVertical": 10,
+  animatedStyle={
+    Object {
+      "value": Object {
+        "maxWidth": undefined,
       },
-      false,
-    ]
+    }
+  }
+  collapsable={false}
+  style={
+    Object {
+      "backgroundColor": "#1e325c",
+      "flex": 1,
+      "maxWidth": undefined,
+      "paddingHorizontal": 20,
+      "paddingVertical": 10,
+    }
   }
 >
   <RNGestureHandlerButton
@@ -62,7 +68,7 @@ exports[`Channels List should match snapshot 1`] = `
                 }
               }
             >
-              Contributors
+              Test Team!
             </Text>
             <View
               onMoveShouldSetResponder={[Function]}
@@ -164,7 +170,7 @@ exports[`Channels List should match snapshot 1`] = `
             }
           }
         >
-          Community TEST
+          
         </Text>
       </View>
     </View>

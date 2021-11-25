@@ -18,7 +18,7 @@ import SlideUpPanelItem, {ITEM_HEIGHT} from '@components/slide_up_panel_item';
 import {Navigation} from '@constants';
 import {MM_TABLES, SYSTEM_IDENTIFIERS} from '@constants/database';
 import DeepLinkTypes from '@constants/deep_linking';
-import {useServerUrl} from '@context/server_url';
+import {useServerUrl} from '@context/server';
 import {dismissAllModals, popToRoot, showModalOverCurrentContext} from '@screens/navigation';
 import {errorBadChannel} from '@utils/draft';
 import {preventDoubleTap} from '@utils/tap';
