@@ -9,12 +9,10 @@ import {General} from '@constants';
 import DatabaseManager from '@database/manager';
 import {privateChannelJoinPrompt} from '@helpers/api/channel';
 import NetworkManager from '@init/network_manager';
-import {prepareMyChannelsForTeam, queryMyChannel} from '@queries/servers/channel';
-import {queryCommonSystemValues} from '@queries/servers/system';
+import {prepareMyChannelsForTeam, queryChannelByName, queryMyChannel} from '@queries/servers/channel';
+import {queryCommonSystemValues, queryCurrentUserId} from '@queries/servers/system';
 import {prepareMyTeams, queryMyTeamById, queryTeamById, queryTeamByName} from '@queries/servers/team';
-import MyChannelModel from '@typings/database/models/servers/my_channel';
-import MyTeamModel from '@typings/database/models/servers/my_team';
-import TeamModel from '@typings/database/models/servers/team';
+import {getDirectChannelName} from '@utils/channel';
 import {PERMALINK_GENERIC_TEAM_NAME_REDIRECT} from '@utils/url';
 import {displayGroupMessageName, displayUsername} from '@utils/user';
 
@@ -24,6 +22,9 @@ import {addUserToTeam, fetchTeamByName, removeUserFromTeam} from './team';
 import {fetchProfilesPerChannels, fetchUsersByIds} from './user';
 
 import type {Client} from '@client/rest';
+import type MyChannelModel from '@typings/database/models/servers/my_channel';
+import type MyTeamModel from '@typings/database/models/servers/my_team';
+import type TeamModel from '@typings/database/models/servers/team';
 
 export type MyChannelsRequest = {
     channels?: Channel[];
@@ -478,4 +479,38 @@ export async function getChannelTimezones(serverUrl: string, channelId: string) 
     } catch (error) {
         return {error};
     }
+}
+
+export async function makeDirectChannel(serverUrl: string, otherUserId: string, switchToChannelFoo = true) {
+    const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
+    if (!operator) {
+        return {error: `${serverUrl} database not found`};
+    }
+
+    const currentUserId = await queryCurrentUserId(operator.database);
+    const channelName = getDirectChannelName(currentUserId, otherUserId);
+
+    const channel = await queryChannelByName(operator.database, channelName);
+    let result;
+    if (channel) {
+        result = {data: channel};
+    } else {
+        try {
+            const client = NetworkManager.getClient(serverUrl);
+            const newChannel = await client.createDirectChannel([currentUserId, otherUserId]);
+
+            result = {data: newChannel};
+            operator.handleChannel({channels: [newChannel], prepareRecordsOnly: false});
+
+            // Missing membership?
+        } catch (error) {
+            return {error};
+        }
+    }
+
+    if (switchToChannelFoo) {
+        switchToChannel(serverUrl, result.data.id);
+    }
+
+    return result;
 }

@@ -7,10 +7,9 @@ import {combineLatest, of as of$, from as from$} from 'rxjs';
 import {switchMap} from 'rxjs/operators';
 
 import {General, Permissions} from '@constants';
-import {hasPermissionForChannel} from '@utils/role';
-import {isSystemAdmin} from '@utils/user';
 import {MM_TABLES, SYSTEM_IDENTIFIERS} from '@constants/database';
-import {getUserIdFromChannelName} from '@utils/user';
+import {hasPermissionForChannel} from '@utils/role';
+import {isSystemAdmin, getUserIdFromChannelName} from '@utils/user';
 
 import PostDraft from './post_draft';
 
@@ -25,6 +24,7 @@ type OwnProps = {
     channelId?: string;
     channelIsArchived?: boolean;
 }
+
 const enhanced = withObservables([], (ownProps: WithDatabaseArgs & OwnProps) => {
     const database = ownProps.database;
     const currentUser = database.get<SystemModel>(SYSTEM).findAndObserve(SYSTEM_IDENTIFIERS.CURRENT_USER_ID).pipe(

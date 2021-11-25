@@ -9,17 +9,17 @@ import {showPermalink} from '@actions/local/permalink';
 import {Client} from '@client/rest';
 import ClientError from '@client/rest/error';
 import {SYSTEM_IDENTIFIERS} from '@constants/database';
+import DeepLinkTypes from '@constants/deep_linking';
+import DatabaseManager from '@database/manager';
+import NetworkManager from '@init/network_manager';
 import {queryChannelsById} from '@queries/servers/channel';
 import {queryConfig, queryCurrentTeamId} from '@queries/servers/system';
 import {queryUsersByUsername} from '@queries/servers/user';
 import {showModal} from '@screens/navigation';
-import {matchDeepLink, tryOpenURL} from '@utils/url';
-import DeepLinkTypes from '@constants/deep_linking';
-import DatabaseManager from '@database/manager';
-import NetworkManager from '@init/network_manager';
 import * as DraftUtils from '@utils/draft';
+import {matchDeepLink, tryOpenURL} from '@utils/url';
 
-import {switchToChannelByName} from './channel';
+import {makeDirectChannel, switchToChannelByName} from './channel';
 
 import type {DeepLinkChannel, DeepLinkPermalink, DeepLinkDM, DeepLinkGM, DeepLinkPlugin} from '@typings/launch';
 
@@ -45,7 +45,7 @@ export const executeCommand = async (serverUrl: string, intl: IntlShape, message
     // }
 
     const channel = (await queryChannelsById(operator.database, [channelId]))?.[0];
-    const teamId = channel?.id || (await queryCurrentTeamId(operator.database));
+    const teamId = channel?.teamId || (await queryCurrentTeamId(operator.database));
 
     const args: CommandArgs = {
         channel_id: channelId,
@@ -63,7 +63,7 @@ export const executeCommand = async (serverUrl: string, intl: IntlShape, message
     }
 
     const cmd = msg.substring(0, cmdLength).toLowerCase();
-    msg = cmd + msg.substring(cmdLength, msg.length);
+    msg = cmd + msg.substring(cmdLength);
 
     let data;
     try {
@@ -82,44 +82,44 @@ export const executeCommand = async (serverUrl: string, intl: IntlShape, message
     return {data};
 };
 
-const executeAppCommand = (serverUrl: string, intl: IntlShape, parser: any) => {
-    // const {call, errorMessage} = await parser.composeCallFromCommand(msg);
-    // const createErrorMessage = (errMessage: string) => {
-    //     return {error: {message: errMessage}};
-    // };
+// const executeAppCommand = (serverUrl: string, intl: IntlShape, parser: any) => {
+//     const {call, errorMessage} = await parser.composeCallFromCommand(msg);
+//     const createErrorMessage = (errMessage: string) => {
+//         return {error: {message: errMessage}};
+//     };
 
-    // if (!call) {
-    //     return createErrorMessage(errorMessage!);
-    // }
+//     if (!call) {
+//         return createErrorMessage(errorMessage!);
+//     }
 
-    // const res = await dispatch(doAppCall(call, AppCallTypes.SUBMIT, intl));
-    // if (res.error) {
-    //     const errorResponse = res.error as AppCallResponse;
-    //     return createErrorMessage(errorResponse.error || intl.formatMessage({
-    //         id: 'apps.error.unknown',
-    //         defaultMessage: 'Unknown error.',
-    //     }));
-    // }
-    // const callResp = res.data as AppCallResponse;
-    // switch (callResp.type) {
-    // case AppCallResponseTypes.OK:
-    //     if (callResp.markdown) {
-    //         dispatch(postEphemeralCallResponseForCommandArgs(callResp, callResp.markdown, args));
-    //     }
-    //     return {data: {}};
-    // case AppCallResponseTypes.FORM:
-    // case AppCallResponseTypes.NAVIGATE:
-    //     return {data: {}};
-    // default:
-    //     return createErrorMessage(intl.formatMessage({
-    //         id: 'apps.error.responses.unknown_type',
-    //         defaultMessage: 'App response type not supported. Response type: {type}.',
-    //     }, {
-    //         type: callResp.type,
-    //     }));
-    // }
-    return {error: 'Not implemented'};
-};
+//     const res = await dispatch(doAppCall(call, AppCallTypes.SUBMIT, intl));
+//     if (res.error) {
+//         const errorResponse = res.error as AppCallResponse;
+//         return createErrorMessage(errorResponse.error || intl.formatMessage({
+//             id: 'apps.error.unknown',
+//             defaultMessage: 'Unknown error.',
+//         }));
+//     }
+//     const callResp = res.data as AppCallResponse;
+//     switch (callResp.type) {
+//     case AppCallResponseTypes.OK:
+//         if (callResp.markdown) {
+//             dispatch(postEphemeralCallResponseForCommandArgs(callResp, callResp.markdown, args));
+//         }
+//         return {data: {}};
+//     case AppCallResponseTypes.FORM:
+//     case AppCallResponseTypes.NAVIGATE:
+//         return {data: {}};
+//     default:
+//         return createErrorMessage(intl.formatMessage({
+//             id: 'apps.error.responses.unknown_type',
+//             defaultMessage: 'App response type not supported. Response type: {type}.',
+//         }, {
+//             type: callResp.type,
+//         }));
+//     }
+// };
+
 const filterEmDashForCommand = (command: string): string => {
     return command.replace(/\u2014/g, '--');
 };
@@ -128,13 +128,6 @@ export const handleGotoLocation = async (serverUrl: string, intl: IntlShape, loc
     const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
     if (!operator) {
         return {error: `${serverUrl} database not found`};
-    }
-
-    let client: Client;
-    try {
-        client = NetworkManager.getClient(serverUrl);
-    } catch (error) {
-        return {error};
     }
 
     const config = await queryConfig(operator.database);
@@ -172,8 +165,7 @@ export const handleGotoLocation = async (serverUrl: string, intl: IntlShape, loc
                     return {data: false};
                 }
 
-                // TODO
-                //makeDirectChannel(data.serverUrl, user.id)
+                makeDirectChannel(data.serverUrl, user.id);
                 break;
             }
             case DeepLinkTypes.GROUPCHANNEL: {

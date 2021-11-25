@@ -56,20 +56,19 @@ export const createPost = async (serverUrl: string, post: Partial<Post>, files: 
         };
     }
 
+    const databasePost = {
+        ...newPost,
+        id: pendingPostId,
+    };
+
     await operator.handlePosts({
         actionType: ActionType.POSTS.RECEIVED_NEW,
-        order: [newPost.id],
-        posts: [newPost],
+        order: [databasePost.id],
+        posts: [databasePost],
     });
 
-    let client: Client;
     try {
-        client = NetworkManager.getClient(serverUrl);
-    } catch (error) {
-        return {error};
-    }
-
-    try {
+        const client = NetworkManager.getClient(serverUrl);
         const created = await client.createPost(newPost);
         await operator.handlePosts({
             actionType: ActionType.POSTS.RECEIVED_NEW,
@@ -93,7 +92,7 @@ export const createPost = async (serverUrl: string, post: Partial<Post>, files: 
         ) {
             // Delete Post
         } else {
-            await operator.handlePost({
+            await operator.handlePosts({
                 actionType: ActionType.POSTS.RECEIVED_NEW,
                 order: [errorPost.id],
                 posts: [errorPost],

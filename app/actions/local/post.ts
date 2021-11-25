@@ -2,9 +2,9 @@
 // See LICENSE.txt for license information.
 
 import {postActionWithCookie} from '@actions/remote/post';
-import {queryDraft} from '@app/queries/servers/drats';
 import {ActionType, Post} from '@constants';
 import DatabaseManager from '@database/manager';
+import {queryDraft} from '@queries/servers/drats';
 import {queryPostById} from '@queries/servers/post';
 import {queryCurrentUserId} from '@queries/servers/system';
 import {generateId} from '@utils/general';

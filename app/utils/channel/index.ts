@@ -13,6 +13,18 @@ import type ChannelMembershipModel from '@typings/database/models/servers/channe
 import type PreferenceModel from '@typings/database/models/servers/preference';
 import type RoleModel from '@typings/database/models/servers/role';
 
+export function getDirectChannelName(id: string, otherId: string): string {
+    let handle;
+
+    if (otherId > id) {
+        handle = id + '__' + otherId;
+    } else {
+        handle = otherId + '__' + id;
+    }
+
+    return handle;
+}
+
 export function isDirectChannelVisible(userId: string, myPreferences: PreferenceModel[], channel: ChannelModel) {
     const channelId = getUserIdFromChannelName(userId, channel.name);
     return getPreferenceAsBool(myPreferences, Preferences.CATEGORY_DIRECT_CHANNEL_SHOW, channelId, false);
