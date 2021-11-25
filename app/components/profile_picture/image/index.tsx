@@ -37,6 +37,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
 
 type ProfileImageProps = {
     isBot?: boolean;
+    isEditing?: boolean;
     lastPictureUpdate: number;
     size?: number;
     source?: { uri: string };
@@ -51,6 +52,7 @@ type ProfileImageProps = {
 const ProfileImage = ({
     containerStyle,
     isBot,
+    isEditing = false,
     lastPictureUpdate,
     size = 64,
     source,
@@ -83,13 +85,22 @@ const ProfileImage = ({
         const defaultSource = {
             uri: `${serverUrl}${client.getProfilePictureUrl(userId, lastPictureUpdate)}`,
         };
-
-        image = (
-            <FastImage
-                style={{width: size, height: size, borderRadius: size / 2}}
-                source={source ?? defaultSource}
-            />
-        );
+        if (source === undefined && isEditing) {
+            image = (
+                <CompassIcon
+                    name='account-outline'
+                    size={size * 0.78}
+                    style={styles.icon}
+                />
+            );
+        } else {
+            image = (
+                <FastImage
+                    style={{width: size, height: size, borderRadius: size / 2}}
+                    source={source ?? defaultSource}
+                />
+            );
+        }
     } else {
         image = (
             <CompassIcon

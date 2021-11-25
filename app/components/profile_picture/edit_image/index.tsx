@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useState} from 'react';
+import React, {useEffect, useState} from 'react';
 import {Platform, View} from 'react-native';
 
 import {Client} from '@client/rest';
@@ -67,6 +67,11 @@ const EditProfileImage = ({
         // does nothing
     }
 
+    useEffect(() => {
+        // sets initial picture url
+        setPictureUrl(client?.getProfilePictureUrl(userId, lastPictureUpdate));
+    }, []);
+
     useDidUpdate(() => {
         if (imageUri) {
             setPictureUrl(imageUri);
@@ -84,7 +89,7 @@ const EditProfileImage = ({
         }
     }, [userId, lastPictureUpdate]);
 
-    let source = null;
+    let source;
 
     if (pictureUrl) {
         let prefix = '';
@@ -103,8 +108,6 @@ const EditProfileImage = ({
         source = {
             uri: `${prefix}${pictureUrl}`,
         };
-    } else {
-        source = undefined;
     }
 
     return (
@@ -124,6 +127,7 @@ const EditProfileImage = ({
                 lastPictureUpdate={lastPictureUpdate}
                 size={size}
                 source={source}
+                isEditing={true}
                 userId={userId}
             />
             <View
