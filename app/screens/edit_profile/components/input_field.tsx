@@ -4,7 +4,7 @@
 import {MessageDescriptor} from '@formatjs/intl/src/types';
 import React, {useCallback} from 'react';
 import {useIntl} from 'react-intl';
-import {View, Platform, ViewStyle, KeyboardType} from 'react-native';
+import {View, Platform, KeyboardType} from 'react-native';
 
 import FloatingTextInput from '@components/floating_text_input_label';
 import {useTheme} from '@context/theme';
@@ -13,39 +13,27 @@ import {makeStyleSheetFromTheme, getKeyboardAppearanceFromTheme} from '@utils/th
 import FieldDescription from './input_field_description';
 
 type InputFieldProps = {
-    containerStyle?: ViewStyle;
     isDisabled?: boolean;
-    error?: string;
     fieldDescription?: string;
     id: string;
     keyboardType?: KeyboardType | 'url';
     label: MessageDescriptor | string;
     maxLength?: number;
-    isMultiline?: boolean;
-    onBlur?: (id: string) => void;
     onChange: (id: string, value: string) => void;
     isOptional?: boolean;
-    isSecureTextEntry?: boolean;
-    subContainerStyle?: ViewStyle;
     testID: string;
     value: string;
 };
 
 const InputField = ({
-    containerStyle,
     isDisabled = false,
-    error,
     fieldDescription,
     id,
     keyboardType = 'default',
     label,
     maxLength,
-    isMultiline = false,
-    onBlur,
     onChange,
     isOptional = false,
-    isSecureTextEntry = false,
-    subContainerStyle,
     testID,
     value,
 }: InputFieldProps) => {
@@ -58,10 +46,6 @@ const InputField = ({
         },
         [id, onChange],
     );
-
-    const onBlurField = useCallback(() => {
-        return onBlur?.(id);
-    }, [id, onBlur]);
 
     const style = getStyleSheet(theme);
 
@@ -76,39 +60,27 @@ const InputField = ({
 
     const formattedLabel = labelText + optionalText;
 
-    const viewContainerStyle = [style.viewContainer];
-
-    if (error) {
-        viewContainerStyle.push({
-            marginBottom: 20,
-        });
-    }
-
     return (
         <View
             testID={testID}
-            style={[viewContainerStyle, containerStyle]}
+            style={style.viewContainer}
         >
-            <View style={[style.subContainer, subContainerStyle]}>
+            <View style={style.subContainer}>
                 <FloatingTextInput
                     autoCapitalize='none'
                     autoCorrect={false}
                     disableFullscreenUI={true}
                     editable={!isDisabled}
-                    error={error}
                     keyboardAppearance={getKeyboardAppearanceFromTheme(theme)}
                     keyboardType={keyboard}
                     label={formattedLabel}
                     maxLength={maxLength}
-                    multiline={isMultiline}
                     onChangeText={onChangeText}
-                    onBlur={onBlurField}
-                    secureTextEntry={isSecureTextEntry}
                     testID={`${testID}.input`}
                     theme={theme}
                     value={value}
                 />
-                {isDisabled && fieldDescription && (
+                {isDisabled && (
                     <FieldDescription
                         text={fieldDescription}
                     />

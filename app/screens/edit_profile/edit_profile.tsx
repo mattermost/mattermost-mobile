@@ -1,8 +1,6 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {withDatabase} from '@nozbe/watermelondb/DatabaseProvider';
-import withObservables from '@nozbe/with-observables';
 import React, {useCallback, useEffect, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
 import {Alert, BackHandler, DeviceEventEmitter, View} from 'react-native';
@@ -10,8 +8,6 @@ import DocumentPicker from 'react-native-document-picker';
 import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
 import {Navigation} from 'react-native-navigation';
 import {Edge, SafeAreaView} from 'react-native-safe-area-context';
-import {of as of$} from 'rxjs';
-import {switchMap} from 'rxjs/operators';
 
 import {updateLocalUser} from '@actions/local/user';
 import {setDefaultProfileImage, updateMe} from '@actions/remote/user';
@@ -20,7 +16,6 @@ import EditProfileImage from '@components/profile_picture/edit_image';
 import ProfilePicture from '@components/profile_picture/image';
 import TabletTitle from '@components/tablet_title';
 import {Events} from '@constants';
-import {MM_TABLES, SYSTEM_IDENTIFIERS} from '@constants/database';
 import {useServerUrl} from '@context/server_url';
 import {useTheme} from '@context/theme';
 import NetworkManager from '@init/network_manager';
@@ -35,8 +30,6 @@ import InputField from './components/input_field';
 import ProfileError from './components/profile_error';
 import ProfileUpdating from './components/profile_updating';
 
-import type {WithDatabaseArgs} from '@typings/database/database';
-import type SystemModel from '@typings/database/models/servers/system';
 import type UserModel from '@typings/database/models/servers/user';
 
 type EditProfileProps = {
@@ -52,7 +45,6 @@ type EditProfileProps = {
     lockedPicture: boolean;
 };
 
-const {SERVER: {USER, SYSTEM}} = MM_TABLES;
 const edges: Edge[] = ['bottom', 'left', 'right'];
 
 const getStyleSheet = makeStyleSheetFromTheme(() => {
@@ -90,7 +82,7 @@ const EditProfile = ({
     const intl = useIntl();
     const serverUrl = useServerUrl();
     const theme = useTheme();
-    const style = getStyleSheet(theme);
+
     const [userInfo, setUserInfo] = useState<UserInfo>({
         email: currentUser.email,
         firstName: currentUser.firstName,
@@ -136,6 +128,7 @@ const EditProfile = ({
         }
     }, [isTablet]);
 
+    const style = getStyleSheet(theme);
     const service = currentUser.authService;
 
     const rightButton = {
@@ -351,24 +344,15 @@ const EditProfile = ({
                     {error && <ProfileError error={error}/>}
                     {renderProfilePicture()}
                     <InputField
-                        fieldDescription={intl.formatMessage({
-                            id: 'user.settings.general.field_handled_externally',
-                            defaultMessage: 'This field is handled through your login provider. If you want to change it, you need to do so through your login provider.',
-                        })}
                         id={'firstName'}
                         isDisabled={(['ldap', 'saml'].includes(service) && lockedFirstName) || ['gitlab', 'google', 'office365'].includes(service)}
                         label={HOLDERS.firstName}
                         onChange={updateField}
                         testID={'edit_profile.text_setting.firstName'}
                         value={userInfo.firstName}
-
                     />
                     <View style={style.separator}/>
                     <InputField
-                        fieldDescription={intl.formatMessage({
-                            id: 'user.settings.general.field_handled_externally',
-                            defaultMessage: 'This field is handled through your login provider. If you want to change it, you need to do so through your login provider.',
-                        })}
                         id={'lastName'}
                         isDisabled={(['ldap', 'saml'].includes(service) && lockedLastName) || ['gitlab', 'google', 'office365'].includes(service)}
                         label={HOLDERS.lastName}
@@ -378,10 +362,6 @@ const EditProfile = ({
                     />
                     <View style={style.separator}/>
                     <InputField
-                        fieldDescription={intl.formatMessage({
-                            id: 'user.settings.general.field_handled_externally',
-                            defaultMessage: 'This field is handled through your login provider. If you want to change it, you need to do so through your login provider.',
-                        })}
                         id={'username'}
                         isDisabled={service !== ''}
                         label={HOLDERS.username}
@@ -398,10 +378,6 @@ const EditProfile = ({
                     />
                     <View style={style.separator}/>
                     <InputField
-                        fieldDescription={intl.formatMessage({
-                            id: 'user.settings.general.field_handled_externally',
-                            defaultMessage: 'This field is handled through your login provider. If you want to change it, you need to do so through your login provider.',
-                        })}
                         id={'nickname'}
                         isDisabled={['ldap', 'saml'].includes(service) && lockedNickname}
                         label={HOLDERS.nickname}
@@ -412,10 +388,6 @@ const EditProfile = ({
                     />
                     <View style={style.separator}/>
                     <InputField
-                        fieldDescription={intl.formatMessage({
-                            id: 'user.settings.general.field_handled_externally',
-                            defaultMessage: 'This field is handled through your login provider. If you want to change it, you need to do so through your login provider.',
-                        })}
                         id={'position'}
                         isDisabled={['ldap', 'saml'].includes(service) && lockedPosition}
                         label={HOLDERS.position}
@@ -432,41 +404,4 @@ const EditProfile = ({
     );
 };
 
-const enhanced = withObservables([], ({database}: WithDatabaseArgs) => {
-    const config = database.get<SystemModel>(MM_TABLES.SERVER.SYSTEM).findAndObserve(SYSTEM_IDENTIFIERS.CONFIG);
-
-    return {
-        currentUser: database.get<SystemModel>(SYSTEM).findAndObserve(SYSTEM_IDENTIFIERS.CURRENT_USER_ID).pipe(
-            switchMap(
-                (id) => database.get<UserModel>(USER).findAndObserve(id.value),
-            ),
-        ),
-        lockedFirstName: config.pipe(
-            switchMap(
-                ({value}: {value: ClientConfig}) => of$(value.LdapFirstNameAttributeSet === 'true' || value.SamlFirstNameAttributeSet === 'true'),
-            ),
-        ),
-        lockedLastName: config.pipe(
-            switchMap(
-                ({value}: {value: ClientConfig}) => of$(value.LdapLastNameAttributeSet === 'true' || value.SamlLastNameAttributeSet === 'true'),
-            ),
-        ),
-        lockedNickname: config.pipe(
-            switchMap(
-                ({value}: {value: ClientConfig}) => of$(value.LdapNicknameAttributeSet === 'true' || value.SamlNicknameAttributeSet === 'true'),
-            ),
-        ),
-        lockedPosition: config.pipe(
-            switchMap(
-                ({value}: {value: ClientConfig}) => of$(value.LdapPositionAttributeSet === 'true' || value.SamlPositionAttributeSet === 'true'),
-            ),
-        ),
-        lockedPicture: config.pipe(
-            switchMap(
-                ({value}: {value: ClientConfig}) => of$(value.LdapPictureAttributeSet === 'true'),
-            ),
-        ),
-    };
-});
-
-export default withDatabase(enhanced(EditProfile));
+export default EditProfile;
