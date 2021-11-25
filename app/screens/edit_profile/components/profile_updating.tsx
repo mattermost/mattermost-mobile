@@ -14,7 +14,7 @@ const ProfileUpdating = () => {
 
     return (
         <SafeAreaView style={style.flex}>
-            <Loading color={theme.centerChannelColor}/>
+            <Loading/>
         </SafeAreaView>
     );
 };

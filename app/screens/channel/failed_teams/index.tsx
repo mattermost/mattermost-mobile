@@ -7,7 +7,7 @@ import {useIntl} from 'react-intl';
 import {retryInitialTeamAndChannel} from '@actions/remote/retry';
 import FailedAction from '@components/failed_action';
 import Loading from '@components/loading';
-import {useServerUrl} from '@context/server_url';
+import {useServerUrl} from '@context/server';
 
 const FailedTeams = () => {
     const intl = useIntl();

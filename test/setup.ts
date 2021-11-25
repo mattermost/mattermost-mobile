@@ -233,6 +233,9 @@ jest.mock('react-native-navigation', () => {
             ...RNN.Navigation,
             events: () => ({
                 registerAppLaunchedListener: jest.fn(),
+                registerComponentListener: jest.fn(() => {
+                    return {remove: jest.fn()};
+                }),
                 bindComponent: jest.fn(() => {
                     return {remove: jest.fn()};
                 }),

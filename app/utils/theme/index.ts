@@ -92,7 +92,7 @@ export function concatStyles<T>(...styles: T[]) {
     return ([] as T[]).concat(...styles);
 }
 
-export function setNavigatorStyles(componentId: string, theme: Theme) {
+export function setNavigatorStyles(componentId: string, theme: Theme, additionalOptions: Options = {}, statusBarColor?: string) {
     const options: Options = {
         topBar: {
             title: {
@@ -117,10 +117,15 @@ export function setNavigatorStyles(componentId: string, theme: Theme) {
             color: theme.sidebarHeaderTextColor,
         };
     }
-    const isDark = tinyColor(theme.sidebarBg).isDark();
+    const isDark = tinyColor(statusBarColor || theme.sidebarBg).isDark();
     StatusBar.setBarStyle(isDark ? 'light-content' : 'dark-content');
 
-    mergeNavigationOptions(componentId, options);
+    const mergeOptions = {
+        ...options,
+        ...additionalOptions,
+    };
+
+    mergeNavigationOptions(componentId, mergeOptions);
 }
 
 export function setNavigationStackStyles(theme: Theme) {

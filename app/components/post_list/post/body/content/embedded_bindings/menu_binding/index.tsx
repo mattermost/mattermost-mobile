@@ -10,7 +10,7 @@ import {doAppCall, postEphemeralCallResponseForPost} from '@actions/remote/apps'
 import AutocompleteSelector from '@components/autocomplete_selector';
 import {AppExpandLevels, AppBindingLocations, AppCallTypes, AppCallResponseTypes} from '@constants/apps';
 import {MM_TABLES, SYSTEM_IDENTIFIERS} from '@constants/database';
-import {useServerUrl} from '@context/server_url';
+import {useServerUrl} from '@context/server';
 import {createCallContext, createCallRequest} from '@utils/apps';
 
 import type ChannelModel from '@typings/database/models/servers/channel';

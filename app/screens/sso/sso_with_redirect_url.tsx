@@ -1,17 +1,19 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
+
 import React, {useEffect, useState} from 'react';
 import {useIntl} from 'react-intl';
-import {Linking, Platform, Text, TouchableOpacity, View} from 'react-native';
+import {Linking, Platform, Text, View} from 'react-native';
+import Button from 'react-native-button';
 import DeviceInfo from 'react-native-device-info';
-import {SafeAreaView} from 'react-native-safe-area-context';
 import urlParse from 'url-parse';
 
 import FormattedText from '@components/formatted_text';
-import Loading from '@components/loading';
 import {Sso} from '@constants';
 import NetworkManager from '@init/network_manager';
+import {buttonBackgroundStyle, buttonTextStyle} from '@utils/buttonStyles';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
+import {typography} from '@utils/typography';
 import {tryOpenURL} from '@utils/url';
 
 interface SSOWithRedirectURLProps {
@@ -20,8 +22,39 @@ interface SSOWithRedirectURLProps {
     loginUrl: string;
     serverUrl: string;
     setLoginError: (value: string) => void;
-    theme: Partial<Theme>;
+    theme: Theme;
 }
+
+const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
+    return {
+        button: {
+            marginTop: 25,
+        },
+        container: {
+            flex: 1,
+            paddingHorizontal: 24,
+        },
+        errorText: {
+            color: changeOpacity(theme.centerChannelColor, 0.72),
+            textAlign: 'center',
+            ...typography('Body', 200, 'Regular'),
+        },
+        infoContainer: {
+            alignItems: 'center',
+            flex: 1,
+            justifyContent: 'center',
+        },
+        infoText: {
+            color: changeOpacity(theme.centerChannelColor, 0.72),
+            ...typography('Body', 100, 'Regular'),
+        },
+        infoTitle: {
+            color: theme.mentionColor,
+            marginBottom: 4,
+            ...typography('Heading', 700),
+        },
+    };
+});
 
 const SSOWithRedirectURL = ({doSSOLogin, loginError, loginUrl, serverUrl, setLoginError, theme}: SSOWithRedirectURLProps) => {
     const [error, setError] = useState<string>('');
@@ -52,7 +85,7 @@ const SSOWithRedirectURL = ({doSSOLogin, loginError, loginUrl, serverUrl, setLog
             if (e && Platform.OS === 'android' && e?.message?.match(/no activity found to handle intent/i)) {
                 message = intl.formatMessage({
                     id: 'mobile.oauth.failed_to_open_link_no_browser',
-                    defaultMessage: 'The link failed to open. Please verify if a browser is installed in the current space.',
+                    defaultMessage: 'The link failed to open. Please verify that a browser is installed on the device.',
                 });
             } else {
                 message = intl.formatMessage({
@@ -88,88 +121,62 @@ const SSOWithRedirectURL = ({doSSOLogin, loginError, loginUrl, serverUrl, setLog
         };
 
         const listener = Linking.addEventListener('url', onURLChange);
-        init(false);
+
+        const timeout = setTimeout(() => {
+            init(false);
+        }, 1000);
         return () => {
             listener.remove();
+            clearTimeout(timeout);
         };
     }, []);
 
     return (
-        <SafeAreaView
+        <View
             style={style.container}
             testID='sso.redirect_url'
         >
             {loginError || error ? (
-                <View style={style.errorContainer}>
-                    <View style={style.errorTextContainer}>
-                        <Text style={style.errorText}>
-                            {`${loginError || error}.`}
-                        </Text>
-                    </View>
-                    <TouchableOpacity onPress={() => init()}>
+                <View style={style.infoContainer}>
+                    <FormattedText
+                        id='mobile.oauth.switch_to_browser.error_title'
+                        testID='mobile.oauth.switch_to_browser.error_title'
+                        defaultMessage='Sign in error'
+                        style={style.infoTitle}
+                    />
+                    <Text style={style.errorText}>
+                        {`${loginError || error}.`}
+                    </Text>
+                    <Button
+                        testID='mobile.oauth.try_again'
+                        onPress={() => init()}
+                        containerStyle={[style.button, buttonBackgroundStyle(theme, 'lg', 'primary', 'default')]}
+                    >
                         <FormattedText
                             id='mobile.oauth.try_again'
-                            testID='mobile.oauth.try_again'
                             defaultMessage='Try again'
-                            style={style.button}
+                            style={buttonTextStyle(theme, 'lg', 'primary', 'default')}
                         />
-                    </TouchableOpacity>
+                    </Button>
                 </View>
             ) : (
                 <View style={style.infoContainer}>
                     <FormattedText
+                        id='mobile.oauth.switch_to_browser.title'
+                        testID='mobile.oauth.switch_to_browser.title'
+                        defaultMessage='Redirecting...'
+                        style={style.infoTitle}
+                    />
+                    <FormattedText
                         id='mobile.oauth.switch_to_browser'
                         testID='mobile.oauth.switch_to_browser'
-                        defaultMessage='Please use your browser to complete the login'
+                        defaultMessage='You are being redirected to your login provider'
                         style={style.infoText}
                     />
-                    <Loading/>
                 </View>
             )}
-        </SafeAreaView>
+        </View>
     );
 };
-
-const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
-    return {
-        container: {
-            flex: 1,
-        },
-        errorContainer: {
-            alignItems: 'center',
-            flex: 1,
-            marginTop: 40,
-        },
-        errorTextContainer: {
-            marginBottom: 12,
-        },
-        errorText: {
-            color: changeOpacity(theme.centerChannelColor, 0.6),
-            fontSize: 16,
-            lineHeight: 23,
-            textAlign: 'center',
-        },
-        infoContainer: {
-            alignItems: 'center',
-            flex: 1,
-            justifyContent: 'center',
-            marginTop: 40,
-        },
-        infoText: {
-            color: changeOpacity(theme.centerChannelColor, 0.6),
-            fontSize: 16,
-            lineHeight: 23,
-            marginBottom: 6,
-        },
-        button: {
-            backgroundColor: theme.buttonBg,
-            color: theme.buttonColor,
-            fontSize: 16,
-            paddingHorizontal: 9,
-            paddingVertical: 9,
-            marginTop: 3,
-        },
-    };
-});
 
 export default SSOWithRedirectURL;

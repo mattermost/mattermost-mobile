@@ -7,7 +7,7 @@ import {TextStyle, View} from 'react-native';
 import {logout} from '@actions/remote/session';
 import DrawerItem from '@components/drawer_item';
 import FormattedText from '@components/formatted_text';
-import {useServerUrl} from '@context/server_url';
+import {useServerUrl} from '@context/server';
 import DatabaseManager from '@database/manager';
 import {queryServer} from '@queries/app/servers';
 import {preventDoubleTap} from '@utils/tap';

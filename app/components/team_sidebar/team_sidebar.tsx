@@ -6,7 +6,7 @@ import {View} from 'react-native';
 
 import {fetchAllTeams} from '@actions/remote/team';
 import {TEAM_SIDEBAR_WIDTH} from '@constants/view';
-import {useServerUrl} from '@context/server_url';
+import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 

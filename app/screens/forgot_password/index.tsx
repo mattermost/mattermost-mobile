@@ -1,36 +1,128 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback, useRef, useState} from 'react';
+import React, {useCallback, useEffect, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
-import {Image, Text, TextInput, TouchableWithoutFeedback, View} from 'react-native';
+import {Keyboard, Platform, Text, useWindowDimensions, View} from 'react-native';
 import Button from 'react-native-button';
+import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
+import {Navigation} from 'react-native-navigation';
+import Animated, {useAnimatedStyle, useSharedValue, withTiming} from 'react-native-reanimated';
 import {SafeAreaView} from 'react-native-safe-area-context';
 
 import {sendPasswordResetEmail} from '@actions/remote/session';
-import ErrorText from '@components/error_text';
+import FloatingTextInput from '@components/floating_text_input_label';
 import FormattedText from '@components/formatted_text';
+import {Screens} from '@constants';
+import {useIsTablet} from '@hooks/device';
+import Background from '@screens/background';
+import {buttonBackgroundStyle, buttonTextStyle} from '@utils/buttonStyles';
 import {isEmail} from '@utils/helpers';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
+import {typography} from '@utils/typography';
+
+// @ts-expect-error svg extension
+import Inbox from './inbox.svg';
 
 type Props = {
     serverUrl: string;
     theme: Theme;
 }
 
+const AnimatedSafeArea = Animated.createAnimatedComponent(SafeAreaView);
+
+const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
+    centered: {
+        width: '100%',
+        maxWidth: 600,
+    },
+    container: {
+        flex: 1,
+        justifyContent: 'center',
+        marginTop: Platform.select({android: 56}),
+    },
+    error: {
+        marginTop: 64,
+    },
+    flex: {
+        flex: 1,
+    },
+    form: {
+        marginTop: 20,
+    },
+    header: {
+        color: theme.mentionColor,
+        marginBottom: 12,
+        ...typography('Heading', 1000, 'SemiBold'),
+    },
+    innerContainer: {
+        alignItems: 'center',
+        height: '100%',
+        justifyContent: 'center',
+        paddingHorizontal: 24,
+    },
+    returnButton: {
+        marginTop: 32,
+    },
+    subheader: {
+        color: changeOpacity(theme.centerChannelColor, 0.6),
+        marginBottom: 12,
+        ...typography('Body', 200, 'Regular'),
+    },
+    successContainer: {
+        alignItems: 'center',
+        paddingHorizontal: 24,
+        justifyContent: 'center',
+        flex: 1,
+    },
+    successText: {
+        color: changeOpacity(theme.centerChannelColor, 0.64),
+        ...typography('Body', 200, 'SemiBold'),
+        textAlign: 'center',
+    },
+    successTitle: {
+        color: theme.mentionColor,
+        marginBottom: 12,
+        ...typography('Heading', 1000),
+    },
+}));
+
 const ForgotPassword = ({serverUrl, theme}: Props) => {
+    const dimensions = useWindowDimensions();
+    const translateX = useSharedValue(dimensions.width);
+    const isTablet = useIsTablet();
     const [email, setEmail] = useState<string>('');
     const [error, setError] = useState<string>('');
     const [isPasswordLinkSent, setIsPasswordLinkSent] = useState<boolean>(false);
     const {formatMessage} = useIntl();
-    const emailIdRef = useRef<TextInput>(null);
+    const keyboardAwareRef = useRef<KeyboardAwareScrollView>();
     const styles = getStyleSheet(theme);
 
-    const changeEmail = (emailAddress: string) => {
+    const changeEmail = useCallback((emailAddress: string) => {
         setEmail(emailAddress);
-    };
+        setError('');
+    }, []);
 
-    const submitResetPassword = async () => {
+    const onFocus = useCallback(() => {
+        if (Platform.OS === 'ios') {
+            let offsetY = 150;
+            if (isTablet) {
+                const {width, height} = dimensions;
+                const isLandscape = width > height;
+                offsetY = (isLandscape ? 230 : 150);
+            }
+            requestAnimationFrame(() => {
+                keyboardAwareRef.current?.scrollToPosition(0, offsetY);
+            });
+        }
+    }, [dimensions]);
+
+    const onReturn = useCallback(() => {
+        Navigation.popTo(Screens.LOGIN);
+    }, []);
+
+    const submitResetPassword = useCallback(async () => {
+        Keyboard.dismiss();
         if (!isEmail(email)) {
             setError(
                 formatMessage({
@@ -41,184 +133,156 @@ const ForgotPassword = ({serverUrl, theme}: Props) => {
             return;
         }
 
-        const {data, error: apiError = undefined} = await sendPasswordResetEmail(serverUrl, email);
+        const {data} = await sendPasswordResetEmail(serverUrl, email);
 
         if (data) {
             setIsPasswordLinkSent(true);
+            return;
         }
 
-        setError(apiError as string);
-    };
-
-    const onBlur = useCallback(() => {
-        emailIdRef.current?.blur();
-    }, []);
-
-    const getDisplayErrorView = () => {
-        return (
-            <ErrorText
-                error={error}
-                testID='forgot.password.error.text'
-                textStyle={styles.errorText}
-                theme={theme}
-            />
-        );
-    };
+        setError(formatMessage({
+            id: 'password_send.generic_error',
+            defaultMessage: 'We were unable to send you a reset password link. Please contact your System Admin for assistance.',
+        }));
+    }, [email]);
 
     const getCenterContent = () => {
         if (isPasswordLinkSent) {
             return (
                 <View
-                    style={styles.resetSuccessContainer}
+                    style={styles.successContainer}
                     testID={'password_send.link.sent'}
                 >
+                    <Inbox/>
                     <FormattedText
-                        style={styles.successTxtColor}
+                        style={styles.successTitle}
+                        id='password_send.link.title'
+                        defaultMessage='Reset Link Sent'
+                    />
+                    <FormattedText
+                        style={styles.successText}
                         id='password_send.link'
                         defaultMessage='If the account exists, a password reset email will be sent to:'
                     />
-                    <Text style={[styles.successTxtColor, styles.emailId]}>
+                    <Text style={styles.successText}>
                         {email}
                     </Text>
-                    <FormattedText
-                        style={[
-                            styles.successTxtColor,
-                            styles.defaultTopPadding,
-                        ]}
-                        id='password_send.checkInbox'
-                        defaultMessage='Please check your inbox.'
-                    />
+                    <Button
+                        testID='password_send.return'
+                        onPress={onReturn}
+                        containerStyle={[styles.returnButton, buttonBackgroundStyle(theme, 'lg', 'primary', 'default')]}
+                    >
+                        <FormattedText
+                            id='password_send.return'
+                            defaultMessage='Return to Log In'
+                            style={buttonTextStyle(theme, 'lg', 'primary', 'default')}
+                        />
+                    </Button>
                 </View>
             );
         }
 
         return (
-            <View testID={'password_send.link.prepare'}>
-                <FormattedText
-                    style={[styles.subheader, styles.defaultTopPadding]}
-                    id='password_send.description'
-                    defaultMessage='To reset your password, enter the email address you used to sign up'
-                />
-                <TextInput
-                    ref={emailIdRef}
-                    style={styles.inputBox}
-                    onChangeText={changeEmail}
-                    placeholder={formatMessage({
-                        id: 'login.email',
-                        defaultMessage: 'Email',
-                    })}
-                    placeholderTextColor={changeOpacity(theme.centerChannelColor, 0.5)}
-                    autoCorrect={false}
-                    autoCapitalize='none'
-                    keyboardType='email-address'
-                    underlineColorAndroid='transparent'
-                    blurOnSubmit={false}
-                    disableFullscreenUI={true}
-                    testID={'forgot.password.email'}
-                />
-                <Button
-                    testID='forgot.password.button'
-                    containerStyle={styles.signupButton}
-                    disabled={!email}
-                    onPress={submitResetPassword}
+            <KeyboardAwareScrollView
+                bounces={false}
+                contentContainerStyle={styles.innerContainer}
+                enableAutomaticScroll={Platform.OS === 'android'}
+                enableOnAndroid={true}
+                enableResetScrollToCoords={true}
+                extraScrollHeight={0}
+                keyboardDismissMode='on-drag'
+                keyboardShouldPersistTaps='handled'
+
+                // @ts-expect-error legacy ref
+                ref={keyboardAwareRef}
+                scrollToOverflowEnabled={true}
+                style={styles.flex}
+            >
+                <View
+                    style={styles.centered}
+                    testID={'password_send.link.prepare'}
                 >
                     <FormattedText
+                        defaultMessage='Reset Your Password'
                         id='password_send.reset'
-                        defaultMessage='Reset my password'
-                        style={styles.signupButtonText}
+                        testID='password_send.reset'
+                        style={styles.header}
                     />
-                </Button>
-            </View>
+                    <FormattedText
+                        style={styles.subheader}
+                        id='password_send.description'
+                        defaultMessage='To reset your password, enter the email address you used to sign up'
+                    />
+                    <View style={styles.form}>
+                        <FloatingTextInput
+                            autoCorrect={false}
+                            autoCapitalize={'none'}
+                            blurOnSubmit={true}
+                            containerStyle={styles.inputBoxEmail}
+                            disableFullscreenUI={true}
+                            enablesReturnKeyAutomatically={true}
+                            error={error}
+                            keyboardType='email-address'
+                            label={formatMessage({id: 'login.email', defaultMessage: 'Email'})}
+                            onChangeText={changeEmail}
+                            onFocus={onFocus}
+                            onSubmitEditing={submitResetPassword}
+                            returnKeyType='next'
+                            spellCheck={false}
+                            testID='forgot.password.email'
+                            theme={theme}
+                            value={email}
+                        />
+                        <Button
+                            testID='forgot.password.button'
+                            containerStyle={[styles.returnButton, buttonBackgroundStyle(theme, 'lg', 'primary', email ? 'default' : 'disabled'), error ? styles.error : undefined]}
+                            disabled={!email}
+                            onPress={submitResetPassword}
+                        >
+                            <FormattedText
+                                id='password_send.reset'
+                                defaultMessage='Reset my password'
+                                style={buttonTextStyle(theme, 'lg', 'primary', email ? 'default' : 'disabled')}
+                            />
+                        </Button>
+                    </View>
+                </View>
+            </KeyboardAwareScrollView>
         );
     };
 
+    const transform = useAnimatedStyle(() => {
+        const duration = Platform.OS === 'android' ? 250 : 350;
+        return {
+            transform: [{translateX: withTiming(translateX.value, {duration})}],
+        };
+    }, []);
+
+    useEffect(() => {
+        const listener = {
+            componentDidAppear: () => {
+                translateX.value = 0;
+            },
+            componentDidDisappear: () => {
+                translateX.value = -dimensions.width;
+            },
+        };
+        const unsubscribe = Navigation.events().registerComponentListener(listener, Screens.FORGOT_PASSWORD);
+
+        return () => unsubscribe.remove();
+    }, [dimensions]);
+
     return (
-        <SafeAreaView
-            testID='forgot.password.screen'
-            style={styles.container}
-        >
-            <TouchableWithoutFeedback onPress={onBlur}>
-                <View style={styles.innerContainer}>
-                    <Image
-                        source={require('@assets/images/logo.png')}
-                        style={styles.innerContainerImage}
-                    />
-                    {getDisplayErrorView()}
-                    {getCenterContent()}
-                </View>
-            </TouchableWithoutFeedback>
-        </SafeAreaView>
+        <View style={styles.flex}>
+            <Background theme={theme}/>
+            <AnimatedSafeArea
+                testID='forgot.password.screen'
+                style={[styles.container, transform]}
+            >
+                {getCenterContent()}
+            </AnimatedSafeArea>
+        </View>
     );
 };
-
-const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
-    container: {
-        flex: 1,
-    },
-    innerContainer: {
-        alignItems: 'center',
-        flexDirection: 'column',
-        justifyContent: 'center',
-        paddingHorizontal: 15,
-        paddingVertical: 50,
-    },
-    forgotPasswordBtn: {
-        borderColor: 'transparent',
-        marginTop: 15,
-    },
-    resetSuccessContainer: {
-        marginTop: 15,
-        padding: 10,
-        backgroundColor: '#dff0d8',
-        borderColor: '#d6e9c6',
-    },
-    emailId: {
-        fontFamily: 'OpenSans-Semibold',
-    },
-    successTxtColor: {
-        color: '#3c763d',
-    },
-    defaultTopPadding: {
-        paddingTop: 15,
-    },
-    subheader: {
-        textAlign: 'center',
-        fontSize: 16,
-        fontWeight: '300',
-        color: changeOpacity(theme.centerChannelColor, 0.6),
-        marginBottom: 15,
-        lineHeight: 22,
-    },
-    inputBox: {
-        fontSize: 16,
-        height: 45,
-        borderColor: 'gainsboro',
-        borderWidth: 1,
-        marginTop: 5,
-        marginBottom: 5,
-        paddingLeft: 10,
-        alignSelf: 'stretch',
-        borderRadius: 3,
-        color: theme.centerChannelColor,
-    },
-    signupButton: {
-        borderRadius: 3,
-        borderColor: theme.buttonBg,
-        borderWidth: 1,
-        alignItems: 'center',
-        alignSelf: 'stretch',
-        marginTop: 10,
-        padding: 15,
-    },
-    signupButtonText: {
-        textAlign: 'center',
-        color: theme.buttonBg,
-        fontSize: 17,
-    },
-    innerContainerImage: {
-        height: 72,
-        resizeMode: 'contain',
-    },
-}));
 
 export default ForgotPassword;

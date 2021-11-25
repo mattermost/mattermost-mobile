@@ -12,7 +12,7 @@ import StatusLabel from '@components/status_label';
 import UserStatusIndicator from '@components/user_status';
 import {Navigation} from '@constants';
 import General from '@constants/general';
-import {useServerUrl} from '@context/server_url';
+import {useServerUrl} from '@context/server';
 import {bottomSheet, dismissModal} from '@screens/navigation';
 import {preventDoubleTap} from '@utils/tap';
 import {changeOpacity} from '@utils/theme';

@@ -13,7 +13,7 @@ import {logout} from '@actions/remote/session';
 import PostList from '@components/post_list';
 import ServerVersion from '@components/server_version';
 import {Screens, Database} from '@constants';
-import {useServerUrl} from '@context/server_url';
+import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {useAppState} from '@hooks/device';
 import {goToScreen} from '@screens/navigation';

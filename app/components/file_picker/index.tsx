@@ -8,7 +8,7 @@ import {DeviceEventEmitter} from 'react-native';
 import SlideUpPanelItem, {ITEM_HEIGHT} from '@components/slide_up_panel_item';
 import TouchableWithFeedback from '@components/touchable_with_feedback';
 import {Navigation} from '@constants';
-import {useServerUrl} from '@context/server_url';
+import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {bottomSheet} from '@screens/navigation';
 import PickerUtil from '@utils/file/picker_util';

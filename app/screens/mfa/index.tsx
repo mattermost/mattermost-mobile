@@ -3,27 +3,29 @@
 
 import React, {useCallback, useEffect, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
-import {
-    ActivityIndicator,
-    EventSubscription,
-    Image,
-    Keyboard,
-    KeyboardAvoidingView,
-    Platform,
-    TextInput,
-    TouchableWithoutFeedback,
-    View,
-} from 'react-native';
+import {Keyboard, Platform, useWindowDimensions, View} from 'react-native';
 import Button from 'react-native-button';
+import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
+import {Navigation} from 'react-native-navigation';
+import Animated, {useAnimatedStyle, useSharedValue, withTiming} from 'react-native-reanimated';
 import {SafeAreaView} from 'react-native-safe-area-context';
 
 import {login} from '@actions/remote/session';
 import ClientError from '@client/rest/error';
-import ErrorText from '@components/error_text';
+import FloatingTextInput from '@components/floating_text_input_label';
 import FormattedText from '@components/formatted_text';
+import Loading from '@components/loading';
+import {Screens} from '@constants';
+import {useIsTablet} from '@hooks/device';
 import {t} from '@i18n';
+import Background from '@screens/background';
+import {buttonBackgroundStyle, buttonTextStyle} from '@utils/buttonStyles';
 import {preventDoubleTap} from '@utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
+import {typography} from '@utils/typography';
+
+// @ts-expect-error svg extension
+import Shield from './mfa.svg';
 
 type MFAProps = {
     config: Partial<ClientConfig>;
@@ -36,38 +38,95 @@ type MFAProps = {
     theme: Theme;
 }
 
+const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
+    centered: {
+        width: '100%',
+        maxWidth: 600,
+    },
+    container: {
+        flex: 1,
+        justifyContent: 'center',
+        marginTop: Platform.select({android: 56}),
+    },
+    error: {
+        marginTop: 64,
+    },
+    flex: {
+        flex: 1,
+    },
+    form: {
+        marginTop: 20,
+    },
+    header: {
+        color: theme.mentionColor,
+        marginBottom: 12,
+        ...typography('Heading', 1000, 'SemiBold'),
+    },
+    innerContainer: {
+        alignItems: 'center',
+        justifyContent: 'center',
+        paddingHorizontal: 24,
+        height: '100%',
+    },
+    loading: {
+        height: 20,
+        width: 20,
+    },
+    loadingContainerStyle: {
+        marginRight: 10,
+        padding: 0,
+        top: -2,
+        flex: undefined,
+    },
+    proceedButton: {
+        marginTop: 32,
+    },
+    shield: {
+        alignItems: 'center',
+        marginBottom: 56.22,
+    },
+    subheader: {
+        color: changeOpacity(theme.centerChannelColor, 0.6),
+        marginBottom: 12,
+        ...typography('Body', 200, 'Regular'),
+    },
+}));
+
+const AnimatedSafeArea = Animated.createAnimatedComponent(SafeAreaView);
+
 const MFA = ({config, goToHome, license, loginId, password, serverDisplayName, serverUrl, theme}: MFAProps) => {
+    const dimensions = useWindowDimensions();
+    const translateX = useSharedValue(dimensions.width);
+    const isTablet = useIsTablet();
+    const keyboardAwareRef = useRef<KeyboardAwareScrollView>();
     const intl = useIntl();
     const [token, setToken] = useState<string>('');
     const [error, setError] = useState<string>('');
     const [isLoading, setIsLoading] = useState<boolean>(false);
     const {formatMessage} = useIntl();
-    const textInputRef = useRef<TextInput>(null);
 
     const styles = getStyleSheet(theme);
 
-    const onBlur = useCallback(() => {
-        textInputRef?.current?.blur();
-    }, []);
-
-    useEffect(() => {
-        let listener: undefined | EventSubscription;
-        if (Platform.OS === 'android') {
-            listener = Keyboard.addListener('keyboardDidHide', onBlur);
-        }
-        return () => {
-            if (listener) {
-                listener.remove();
+    const onFocus = useCallback(() => {
+        if (Platform.OS === 'ios') {
+            let offsetY = 150;
+            if (isTablet) {
+                const {width, height} = dimensions;
+                const isLandscape = width > height;
+                offsetY = (isLandscape ? 270 : 150);
             }
-        };
-    }, []);
+            requestAnimationFrame(() => {
+                keyboardAwareRef.current?.scrollToPosition(0, offsetY);
+            });
+        }
+    }, [dimensions]);
 
-    const handleInput = (userToken: string) => {
+    const handleInput = useCallback((userToken: string) => {
         setToken(userToken);
         setError('');
-    };
+    }, []);
 
-    const submit = preventDoubleTap(async () => {
+    const submit = useCallback(preventDoubleTap(async () => {
         Keyboard.dismiss();
         if (!token) {
             setError(
@@ -100,141 +159,110 @@ const MFA = ({config, goToHome, license, loginId, password, serverDisplayName, s
             return;
         }
         goToHome(result.time || 0, result.error as never);
-    });
+    }), [token]);
 
-    const getProceedView = () => {
-        if (isLoading) {
-            return (
-                <ActivityIndicator
-                    animating={true}
-                    size='small'
-                />
-            );
-        }
-        return (
-            <Button
-                testID={'login_mfa.submit'}
-                onPress={submit}
-                containerStyle={styles.signupButton}
-            >
-                <FormattedText
-                    style={styles.signupButtonText}
-                    id='mobile.components.select_server_view.proceed'
-                    defaultMessage='Proceed'
-                />
-            </Button>
-        );
-    };
+    const transform = useAnimatedStyle(() => {
+        const duration = Platform.OS === 'android' ? 250 : 350;
+        return {
+            transform: [{translateX: withTiming(translateX.value, {duration})}],
+        };
+    }, []);
+
+    useEffect(() => {
+        const listener = {
+            componentDidAppear: () => {
+                translateX.value = 0;
+            },
+            componentDidDisappear: () => {
+                translateX.value = -dimensions.width;
+            },
+        };
+        const unsubscribe = Navigation.events().registerComponentListener(listener, Screens.MFA);
+
+        return () => unsubscribe.remove();
+    }, [dimensions]);
 
     return (
-        <SafeAreaView
-            testID='mfa.screen'
-            style={styles.flex}
-        >
-            <KeyboardAvoidingView
-                behavior='padding'
-                style={styles.flex}
-                keyboardVerticalOffset={5}
-                enabled={Platform.OS === 'ios'}
+        <View style={styles.flex}>
+            <Background theme={theme}/>
+            <AnimatedSafeArea
+                testID='mfa.screen'
+                style={[styles.container, transform]}
             >
-                <TouchableWithoutFeedback onPress={onBlur}>
-                    <View style={[styles.container, styles.signupContainer]}>
-                        <Image
-                            source={require('@assets/images/logo.png')}
-                            style={styles.containerImage}
-                        />
-                        <View>
-                            <FormattedText
-                                style={[styles.header, styles.label]}
-                                id='login_mfa.enterToken'
-                                defaultMessage="To complete the sign in process, please enter a token from your smartphone's authenticator"
-                            />
+                <KeyboardAwareScrollView
+                    bounces={false}
+                    contentContainerStyle={styles.innerContainer}
+                    enableAutomaticScroll={Platform.OS === 'android'}
+                    enableOnAndroid={true}
+                    enableResetScrollToCoords={true}
+                    extraScrollHeight={0}
+                    keyboardDismissMode='on-drag'
+                    keyboardShouldPersistTaps='handled'
+
+                    // @ts-expect-error legacy ref
+                    ref={keyboardAwareRef}
+                    scrollToOverflowEnabled={true}
+                    style={styles.flex}
+                >
+                    <View style={styles.centered}>
+                        <View style={styles.shield}>
+                            <Shield/>
                         </View>
-                        <ErrorText
-                            error={error}
-                            testID='mfa.error.text'
-                            theme={theme}
+                        <FormattedText
+                            defaultMessage='Enter MFA Token'
+                            id='login_mfa.token'
+                            testID='login_mfa.token'
+                            style={styles.header}
                         />
-                        <TextInput
-                            testID={'login_mfa.input'}
-                            ref={textInputRef}
-                            value={token}
-                            onChangeText={handleInput}
-                            onSubmitEditing={submit}
-                            style={styles.inputBox}
-                            autoCapitalize='none'
-                            autoCorrect={false}
-                            keyboardType='numeric'
-                            placeholder={formatMessage({id: 'login_mfa.token', defaultMessage: 'MFA Token'})}
-                            placeholderTextColor={changeOpacity(theme.centerChannelColor, 0.5)}
-                            returnKeyType='go'
-                            underlineColorAndroid='transparent'
-                            disableFullscreenUI={true}
+                        <FormattedText
+                            style={styles.subheader}
+                            id='login_mfa.enterToken'
+                            defaultMessage="To complete the sign in process, please enter the code from your mobile device's authenticator app."
                         />
-                        {getProceedView()}
+                        <View style={styles.form}>
+                            <FloatingTextInput
+                                autoCorrect={false}
+                                autoCapitalize={'none'}
+                                blurOnSubmit={true}
+                                containerStyle={styles.inputBoxEmail}
+                                disableFullscreenUI={true}
+                                enablesReturnKeyAutomatically={true}
+                                error={error}
+                                keyboardType='numeric'
+                                label={formatMessage({id: 'login_mfa.token', defaultMessage: 'Enter MFA Token'})}
+                                onChangeText={handleInput}
+                                onFocus={onFocus}
+                                onSubmitEditing={submit}
+                                returnKeyType='go'
+                                spellCheck={false}
+                                testID='login_mfa.input'
+                                theme={theme}
+                                value={token}
+                            />
+                            <Button
+                                testID='login_mfa.submit'
+                                containerStyle={[styles.proceedButton, buttonBackgroundStyle(theme, 'lg', 'primary', token ? 'default' : 'disabled'), error ? styles.error : undefined]}
+                                disabled={!token}
+                                onPress={submit}
+                            >
+                                {isLoading &&
+                                <Loading
+                                    containerStyle={styles.loadingContainerStyle}
+                                    style={styles.loading}
+                                />
+                                }
+                                <FormattedText
+                                    id='mobile.components.select_server_view.proceed'
+                                    defaultMessage='Proceed'
+                                    style={buttonTextStyle(theme, 'lg', 'primary', token ? 'default' : 'disabled')}
+                                />
+                            </Button>
+                        </View>
                     </View>
-                </TouchableWithoutFeedback>
-            </KeyboardAvoidingView>
-        </SafeAreaView>
+                </KeyboardAwareScrollView>
+            </AnimatedSafeArea>
+        </View>
     );
 };
-
-const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
-    flex: {
-        flex: 1,
-    },
-    signupButton: {
-        borderRadius: 3,
-        borderColor: theme.buttonBg,
-        borderWidth: 1,
-        alignItems: 'center',
-        alignSelf: 'stretch',
-        marginTop: 10,
-        padding: 15,
-    },
-    inputBox: {
-        fontSize: 16,
-        height: 45,
-        borderColor: 'gainsboro',
-        borderWidth: 1,
-        marginTop: 5,
-        marginBottom: 5,
-        paddingLeft: 10,
-        alignSelf: 'stretch',
-        borderRadius: 3,
-        color: theme.centerChannelColor,
-    },
-    header: {
-        color: theme.centerChannelColor,
-        textAlign: 'center',
-        marginTop: 15,
-        marginBottom: 15,
-        fontSize: 32,
-        fontFamily: 'OpenSans-Semibold',
-    },
-    label: {
-        color: changeOpacity(theme.centerChannelColor, 0.6),
-        fontSize: 20,
-    },
-    container: {
-        flex: 1,
-        flexDirection: 'column',
-        justifyContent: 'center',
-        alignItems: 'center',
-    },
-    signupContainer: {
-        paddingRight: 15,
-        paddingLeft: 15,
-    },
-    signupButtonText: {
-        color: theme.buttonBg,
-        textAlign: 'center',
-        fontSize: 17,
-    },
-    containerImage: {
-        height: 72,
-        resizeMode: 'contain',
-    },
-}));
 
 export default MFA;
