@@ -2,18 +2,18 @@
 // See LICENSE.txt for license information.
 
 import {ClientResponse, ProgressPromise} from '@mattermost/react-native-network-client';
+import * as FileSystem from 'expo-file-system';
 import React, {forwardRef, useImperativeHandle, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
 import {Platform, StatusBar, StatusBarStyle, StyleSheet, View} from 'react-native';
 import FileViewer from 'react-native-file-viewer';
-import {FileSystem} from 'react-native-unimodules';
 import tinyColor from 'tinycolor2';
 
 import ProgressBar from '@components/progress_bar';
 import TouchableWithFeedback from '@components/touchable_with_feedback';
 import {Device} from '@constants';
 import {DOWNLOAD_TIMEOUT} from '@constants/network';
-import {useServerUrl} from '@context/server_url';
+import {useServerUrl} from '@context/server';
 import NetworkManager from '@init/network_manager';
 import {alertDownloadDocumentDisabled, alertDownloadFailed, alertFailedToOpenDocument} from '@utils/document';
 import {getLocalFilePathFromFile} from '@utils/file';

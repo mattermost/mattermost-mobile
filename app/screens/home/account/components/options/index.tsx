@@ -51,7 +51,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
 const AccountOptions = ({user, enableCustomUserStatuses, isCustomStatusExpirySupported, isTablet, theme}: AccountScreenProps) => {
     const styles = getStyleSheet(theme);
     const dimensions = useWindowDimensions();
-    const width = dimensions.width - (isTablet ? ViewConstants.TABLET.SIDEBAR_WIDTH : 0);
+    const width = dimensions.width - (isTablet ? ViewConstants.TABLET_SIDEBAR_WIDTH : 0);
 
     return (
         <Shadow

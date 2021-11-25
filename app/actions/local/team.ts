@@ -8,7 +8,7 @@ import {fetchPostsForChannel, fetchPostsForUnreadChannels} from '@actions/remote
 import {fetchAllTeams} from '@actions/remote/team';
 import Events from '@constants/events';
 import DatabaseManager from '@database/manager';
-import {queryCurrentTeamId, setCurrentTeamAndChannelId} from '@queries/servers/system';
+import {prepareCommonSystemValues, queryCurrentTeamId} from '@queries/servers/system';
 import {prepareDeleteTeam, queryMyTeamById, removeTeamFromTeamHistory, queryLastChannelFromTeam, addTeamToTeamHistory} from '@queries/servers/team';
 import {isTablet} from '@utils/helpers';
 
@@ -29,8 +29,19 @@ export const handleTeamChange = async (serverUrl: string, teamId: string) => {
             fetchPostsForChannel(serverUrl, channelId);
         }
     }
-    setCurrentTeamAndChannelId(operator, teamId, channelId);
-    addTeamToTeamHistory(operator, teamId);
+    const models = [];
+    const system = await prepareCommonSystemValues(operator, {currentChannelId: channelId, currentTeamId: teamId});
+    if (system?.length) {
+        models.push(...system);
+    }
+    const history = await addTeamToTeamHistory(operator, teamId, true);
+    if (history.length) {
+        models.push(...history);
+    }
+
+    if (models.length) {
+        operator.batchRecords(models);
+    }
 
     const {channels, memberships, error} = await fetchMyChannelsForTeam(serverUrl, teamId);
     if (error) {

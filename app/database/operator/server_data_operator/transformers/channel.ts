@@ -128,6 +128,7 @@ export const transformMyChannelRecord = ({action, database, value}: TransformerA
         myChannel.mentionsCount = raw.mention_count;
         myChannel.lastPostAt = raw.last_post_at || 0;
         myChannel.lastViewedAt = raw.last_viewed_at;
+        myChannel.viewedAt = record?.viewedAt || 0;
     };
 
     return prepareBaseRecord({

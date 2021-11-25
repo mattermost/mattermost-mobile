@@ -13,7 +13,6 @@ import Config from '@assets/config.json';
 import AppVersion from '@components/app_version';
 import CompassIcon from '@components/compass_icon';
 import FormattedText from '@components/formatted_text';
-import StatusBar from '@components/status_bar';
 import AboutLinks from '@constants/about_links';
 import {MM_TABLES, SYSTEM_IDENTIFIERS} from '@constants/database';
 import {useTheme} from '@context/theme';
@@ -175,7 +174,6 @@ const ConnectedAbout = ({config, license}: ConnectedAboutProps) => {
             style={style.container}
             testID='about.screen'
         >
-            <StatusBar theme={theme}/>
             <ScrollView
                 style={style.scrollView}
                 contentContainerStyle={style.scrollViewContent}

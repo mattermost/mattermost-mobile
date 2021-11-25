@@ -19,9 +19,11 @@ interface NotificationUserInfo {
 }
 
 interface NotificationData {
+    ack_id?: string;
     body?: string;
     channel_id: string;
     channel_name?: string;
+    identifier?: string;
     from_webhook?: string;
     message?: string;
     override_icon_url?: string;
@@ -29,6 +31,8 @@ interface NotificationData {
     post_id: string;
     root_id?: string;
     sender_id?: string;
+    sender_name?: string;
+    server_id?: string;
     server_url?: string;
     team_id?: string;
     type: string;

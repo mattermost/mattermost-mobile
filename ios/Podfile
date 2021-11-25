@@ -1,22 +1,17 @@
+require File.join(File.dirname(`node --print "require.resolve('expo/package.json')"`), "scripts/autolinking")
 require_relative '../node_modules/react-native/scripts/react_native_pods'
 require_relative '../node_modules/@react-native-community/cli-platform-ios/native_modules'
-require_relative '../node_modules/react-native-unimodules/cocoapods.rb'
 
 platform :ios, '12.1'
 
 target 'Mattermost' do
+  use_expo_modules!
   # Pods for Mattermost
-  use_unimodules!(exclude: [
-    'expo-image-loader',
-    'expo-permissions',
-    'expo-application',
-    'expo-face-detector',
-  ])
   config = use_native_modules!
   use_react_native!(
     :path => config[:reactNativePath],
     # to enable hermes on iOS, change `false` to `true` and then install pods
-    :hermes_enabled => false
+    :hermes_enabled => true
   )
 
   permissions_path = '../node_modules/react-native-permissions/ios'
@@ -30,6 +25,8 @@ target 'Mattermost' do
 
   # TODO: Remove this once upstream PR https://github.com/daltoniam/Starscream/pull/871 is merged
   pod 'Starscream', :git => 'https://github.com/mattermost/Starscream.git', :commit => 'cb83dd247339ff6c155f0e749d6fe2cc145f5283'
+  pod 'lottie-react-native', :path => '../node_modules/lottie-react-native'
+
 end
 
 # Enables Flipper.

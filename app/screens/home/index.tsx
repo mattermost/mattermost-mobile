@@ -3,11 +3,14 @@
 
 import {createBottomTabNavigator, BottomTabBarProps} from '@react-navigation/bottom-tabs';
 import {NavigationContainer} from '@react-navigation/native';
-import React from 'react';
-import {Platform} from 'react-native';
+import React, {useEffect} from 'react';
+import {useIntl} from 'react-intl';
+import {DeviceEventEmitter, Platform} from 'react-native';
 import {enableScreens} from 'react-native-screens';
 
+import {Events} from '@constants';
 import {useTheme} from '@context/theme';
+import {notificationError} from '@utils/notification';
 
 import Account from './account';
 import ChannelList from './channel_list';
@@ -30,6 +33,15 @@ const Tab = createBottomTabNavigator();
 
 export default function HomeScreen(props: HomeProps) {
     const theme = useTheme();
+    const intl = useIntl();
+
+    useEffect(() => {
+        const listener = DeviceEventEmitter.addListener(Events.NOTIFICATION_ERROR, (value: 'Team' | 'Channel') => {
+            notificationError(intl, value);
+        });
+
+        return () => listener.remove();
+    }, []);
 
     return (
         <NavigationContainer

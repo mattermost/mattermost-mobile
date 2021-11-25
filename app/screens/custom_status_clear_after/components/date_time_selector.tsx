@@ -17,14 +17,12 @@ import {MM_TABLES} from '@constants/database';
 import {getPreferenceAsBool} from '@helpers/api/preference';
 import {getCurrentMomentForTimezone, getRoundedTime, getUtcOffsetForTimeZone} from '@utils/helpers';
 import {makeStyleSheetFromTheme} from '@utils/theme';
-import {getTimezone} from '@utils/user';
 
 import type {WithDatabaseArgs} from '@typings/database/database';
 import type PreferenceModel from '@typings/database/models/servers/preference';
-import type UserModel from '@typings/database/models/servers/user';
 
 type Props = {
-    currentUser: UserModel;
+    timezone: string | null;
     isMilitaryTime: boolean;
     theme: Theme;
     handleChange: (currentDate: Moment) => void;
@@ -49,9 +47,8 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     };
 });
 
-const DateTimeSelector = ({currentUser, handleChange, isMilitaryTime, theme}: Props) => {
+const DateTimeSelector = ({timezone, handleChange, isMilitaryTime, theme}: Props) => {
     const styles = getStyleSheet(theme);
-    const timezone = getTimezone(currentUser.timezone);
     const currentTime = getCurrentMomentForTimezone(timezone);
     const timezoneOffSetInMinutes = timezone ? getUtcOffsetForTimeZone(timezone) : undefined;
     const minimumDate = getRoundedTime(currentTime);

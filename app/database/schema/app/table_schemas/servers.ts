@@ -12,10 +12,8 @@ export default tableSchema({
     columns: [
         {name: 'db_path', type: 'string'},
         {name: 'display_name', type: 'string'},
-        {name: 'mention_count', type: 'number'},
-        {name: 'unread_count', type: 'number'},
         {name: 'url', type: 'string', isIndexed: true},
         {name: 'last_active_at', type: 'number', isIndexed: true},
-        {name: 'is_secured', type: 'boolean'},
+        {name: 'identifier', type: 'string', isIndexed: true},
     ],
 });

@@ -63,7 +63,6 @@ export const SYSTEM_IDENTIFIERS = {
 
 export const GLOBAL_IDENTIFIERS = {
     DEVICE_TOKEN: 'deviceToken',
-    MENTION_COUNT: 'mentionCount',
 };
 
 export default {

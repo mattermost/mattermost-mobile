@@ -66,7 +66,7 @@ class NotificationService: UNNotificationServiceExtension {
         bestAttemptContent.title = channelName
       }
 
-      let userInfoKeys = ["channel_name", "team_id", "sender_id", "root_id", "override_username", "override_icon_url", "from_webhook"]
+      let userInfoKeys = ["channel_name", "team_id", "sender_id", "root_id", "override_username", "override_icon_url", "from_webhook", "message"]
       for key in userInfoKeys {
         if let value = json[key] as? String {
           bestAttemptContent.userInfo[key] = value

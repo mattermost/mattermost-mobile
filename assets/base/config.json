@@ -1,5 +1,6 @@
 {
     "DefaultServerUrl": "",
+    "DefaultServerName": "",
     "TestServerUrl": "http://localhost:8065",
     "DefaultTheme": "default",
     "ShowErrorsList": false,
@@ -11,12 +12,6 @@
     "PlatformNoticeURL": "https://about.mattermost.com/platform-notice-txt/",
     "MobileNoticeURL": "https://about.mattermost.com/mobile-notice-txt/",
     "RudderApiKey": "",
-
-    "HideEmailLoginExperimental": false,
-    "HideGitLabLoginExperimental": false,
-    "HideLDAPLoginExperimental": false,
-    "HideSAMLLoginExperimental": false,
-    "HideO365LoginExperimental": false,
 
     "SentryEnabled": false,
     "SentryDsnIos": "",

@@ -4,7 +4,7 @@
 import {IntlShape} from 'react-intl';
 import {Alert, AlertButton} from 'react-native';
 
-import ViewTypes from '@constants/view';
+import {SupportedServer} from '@constants';
 import {tryOpenURL} from '@utils/url';
 
 export function unsupportedServer(isSystemAdmin: boolean, intl: IntlShape) {
@@ -20,7 +20,7 @@ function unsupportedServerAdminAlert(intl: IntlShape) {
     const message = intl.formatMessage({
         id: 'mobile.server_upgrade.alert_description',
         defaultMessage: 'This server version is unsupported and users will be exposed to compatibility issues that cause crashes or severe bugs breaking core functionality of the app. Upgrading to server version {serverVersion} or later is required.',
-    }, {serverVersion: ViewTypes.RequiredServer.FULL_VERSION});
+    }, {serverVersion: SupportedServer.FULL_VERSION});
 
     const cancel: AlertButton = {
         text: intl.formatMessage({id: 'mobile.server_upgrade.dismiss', defaultMessage: 'Dismiss'}),

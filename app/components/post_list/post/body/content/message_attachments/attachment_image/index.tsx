@@ -7,8 +7,7 @@ import {View} from 'react-native';
 import FileIcon from '@components/post_list/post/body/files/file_icon';
 import ProgressiveImage from '@components/progressive_image';
 import TouchableWithFeedback from '@components/touchable_with_feedback';
-import {Device} from '@constants';
-import {useSplitView} from '@hooks/device';
+import {useIsTablet} from '@hooks/device';
 import {openGallerWithMockFile} from '@utils/gallery';
 import {generateId} from '@utils/general';
 import {isGifTooLarge, calculateDimensions, getViewPortWidth} from '@utils/images';
@@ -49,9 +48,8 @@ export type Props = {
 const AttachmentImage = ({imageUrl, imageMetadata, postId, theme}: Props) => {
     const [error, setError] = useState(false);
     const fileId = useRef(generateId()).current;
-    const splitView = useSplitView();
-    const tabletOffset = !splitView && Device.IS_TABLET;
-    const {height, width} = calculateDimensions(imageMetadata.height, imageMetadata.width, getViewPortWidth(false, tabletOffset));
+    const isTablet = useIsTablet();
+    const {height, width} = calculateDimensions(imageMetadata.height, imageMetadata.width, getViewPortWidth(false, isTablet));
     const style = getStyleSheet(theme);
 
     const onError = useCallback(() => {

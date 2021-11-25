@@ -8,9 +8,9 @@ import {OptionsModalPresentationStyle} from 'react-native-navigation';
 
 import CompassIcon from '@components/compass_icon';
 import TouchableWithFeedback from '@components/touchable_with_feedback';
-import {Device, Screens} from '@constants';
+import {Screens} from '@constants';
 import {useTheme} from '@context/theme';
-import {useSplitView} from '@hooks/device';
+import {useIsTablet} from '@hooks/device';
 import {showModal, showModalOverCurrentContext} from '@screens/navigation';
 import {preventDoubleTap} from '@utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
@@ -33,8 +33,7 @@ export default function AddTeam({canCreateTeams, otherTeams}: Props) {
     const styles = getStyleSheet(theme);
     const dimensions = useWindowDimensions();
     const intl = useIntl();
-    const isSplitView = useSplitView();
-    const isTablet = Device.IS_TABLET && !isSplitView;
+    const isTablet = useIsTablet();
     const maxHeight = Math.round((dimensions.height * 0.9));
 
     const onPress = useCallback(preventDoubleTap(() => {

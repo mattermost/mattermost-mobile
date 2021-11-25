@@ -29,9 +29,10 @@ export default function TeamList({myOrderedTeams}: Props) {
                 bounces={false}
                 contentContainerStyle={styles.contentContainer}
                 data={myOrderedTeams}
-                fadingEdgeLength={36}
+                fadingEdgeLength={30}
                 keyExtractor={keyExtractor}
                 renderItem={renderTeam}
+                showsVerticalScrollIndicator={false}
             />
         </View>
     );
@@ -44,5 +45,6 @@ const styles = StyleSheet.create({
     contentContainer: {
         alignItems: 'center',
         marginVertical: 6,
+        paddingBottom: 10,
     },
 });

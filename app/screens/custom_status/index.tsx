@@ -15,12 +15,11 @@ import {switchMap, catchError} from 'rxjs/operators';
 import {updateLocalCustomStatus} from '@actions/local/user';
 import {removeRecentCustomStatus, updateCustomStatus, unsetCustomStatus} from '@actions/remote/user';
 import CompassIcon from '@components/compass_icon';
-import StatusBar from '@components/status_bar';
 import TabletTitle from '@components/tablet_title';
 import {CustomStatusDuration, Events, Screens} from '@constants';
 import {SET_CUSTOM_STATUS_FAILURE} from '@constants/custom_status';
 import {MM_TABLES, SYSTEM_IDENTIFIERS} from '@constants/database';
-import {withServerUrl} from '@context/server_url';
+import {withServerUrl} from '@context/server';
 import {withTheme} from '@context/theme';
 import {dismissModal, goToScreen, mergeNavigationOptions, showModal} from '@screens/navigation';
 import {getCurrentMomentForTimezone, getRoundedTime, isCustomStatusExpirySupported, safeParseJSON} from '@utils/helpers';
@@ -344,7 +343,6 @@ class CustomStatusModal extends NavigationComponent<Props, State> {
                             keyboardDismissMode='none'
                             keyboardShouldPersistTaps='always'
                         >
-                            <StatusBar theme={theme}/>
                             <View style={style.scrollView}>
                                 <View style={style.block}>
                                     <CustomStatusInput

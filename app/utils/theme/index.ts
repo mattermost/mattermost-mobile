@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {StyleSheet} from 'react-native';
+import {StatusBar, StyleSheet} from 'react-native';
 import tinyColor from 'tinycolor2';
 
 import {Preferences, Screens} from '@constants';
@@ -92,7 +92,7 @@ export function concatStyles<T>(...styles: T[]) {
     return ([] as T[]).concat(...styles);
 }
 
-export function setNavigatorStyles(componentId: string, theme: Theme) {
+export function setNavigatorStyles(componentId: string, theme: Theme, additionalOptions: Options = {}, statusBarColor?: string) {
     const options: Options = {
         topBar: {
             title: {
@@ -104,6 +104,9 @@ export function setNavigatorStyles(componentId: string, theme: Theme) {
             leftButtonColor: theme.sidebarHeaderTextColor,
             rightButtonColor: theme.sidebarHeaderTextColor,
         },
+        statusBar: {
+            backgroundColor: theme.sidebarBg,
+        },
         layout: {
             componentBackgroundColor: theme.centerChannelBg,
         },
@@ -114,8 +117,15 @@ export function setNavigatorStyles(componentId: string, theme: Theme) {
             color: theme.sidebarHeaderTextColor,
         };
     }
+    const isDark = tinyColor(statusBarColor || theme.sidebarBg).isDark();
+    StatusBar.setBarStyle(isDark ? 'light-content' : 'dark-content');
 
-    mergeNavigationOptions(componentId, options);
+    const mergeOptions = {
+        ...options,
+        ...additionalOptions,
+    };
+
+    mergeNavigationOptions(componentId, mergeOptions);
 }
 
 export function setNavigationStackStyles(theme: Theme) {

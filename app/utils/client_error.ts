@@ -1,6 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {IntlShape} from 'react-intl';
+
 import {cleanUrlForLogging} from '@utils/url';
 
 export class ClientError extends Error {
@@ -25,3 +27,14 @@ export class ClientError extends Error {
         Object.defineProperty(this, 'message', {enumerable: true});
     }
 }
+
+export const getErrorMessage = (error: Error | string, intl: IntlShape) => {
+    const intlError = error as ClientError;
+    if (intlError.intl) {
+        return intl.formatMessage(intlError.intl);
+    } else if (error instanceof Error) {
+        return error.message;
+    }
+
+    return error;
+};

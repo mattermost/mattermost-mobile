@@ -1,0 +1,26 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Server Icon Component should match snapshot 1`] = `
+<View
+  style={
+    Object {
+      "alignItems": "center",
+      "flex": 0,
+      "height": 40,
+      "justifyContent": "center",
+      "left": 16,
+      "overflow": "hidden",
+      "position": "absolute",
+      "top": 10,
+      "width": 40,
+      "zIndex": 10,
+    }
+  }
+>
+  <Icon
+    color="rgba(255,255,255,0.56)"
+    name="server-variant"
+    size={24}
+  />
+</View>
+`;

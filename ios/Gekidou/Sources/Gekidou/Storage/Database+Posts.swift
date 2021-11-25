@@ -98,9 +98,9 @@ extension Database {
 
         var earliest: Int64?
         var latest: Int64?
-        if let result = try db.pluck(earliestLatestQuery) {
-            earliest = try result.get(earliestCol)
-            latest = try result.get(latestCol)
+        if let result = try? db.pluck(earliestLatestQuery) {
+            earliest = try? result.get(earliestCol)
+            latest = try? result.get(latestCol)
         } else {
             return nil
         }
@@ -146,22 +146,19 @@ extension Database {
     public func handlePostData(_ db: Connection, _ postData: PostData, _ channelId: String, _ usedSince: Bool = false) throws {
         let sortedChainedPosts = chainAndSortPosts(postData)
         try insertOrUpdatePosts(db, sortedChainedPosts, channelId)
-        try handlePostsInChannel(db, channelId, postData, usedSince)
+        let earliest = sortedChainedPosts.first!.create_at
+        let latest = sortedChainedPosts.last!.create_at
+        try handlePostsInChannel(db, channelId, earliest, latest, usedSince)
         try handlePostsInThread(db, postData.posts)
     }
     
-    private func handlePostsInChannel(_ db: Connection, _ channelId: String, _ postData: PostData, _ usedSince: Bool = false) throws {
-        let firstId = postData.order.first
-        let lastId = postData.order.last
-        let earliest = postData.posts.first(where: { $0.id == lastId})!.create_at
-        let latest = postData.posts.first(where: { $0.id == firstId})!.create_at
-        
+    private func handlePostsInChannel(_ db: Connection, _ channelId: String, _ earliest: Int64, _ latest: Int64, _ usedSince: Bool = false) throws {
         if usedSince {
-            try updatePostsInChannelLatestOnly(db, channelId, latest)
+            try? updatePostsInChannelLatestOnly(db, channelId, latest)
         } else {
             let updated = try updatePostsInChannelEarliestAndLatest(db, channelId, earliest, latest)
             if (!updated) {
-                try insertPostsInChannel(db, channelId, earliest, latest)
+                try? insertPostsInChannel(db, channelId, earliest, latest)
             }
         }
     }
@@ -393,10 +390,10 @@ extension Database {
                         fileSetter.append(ext <- f["extension"] as! String)
                         fileSetter.append(size <- f["size"] as! Int64)
                         fileSetter.append(mimeType <- f["mime_type"] as! String)
-                        fileSetter.append(width <- f["width"] as! Int64)
-                        fileSetter.append(height <- f["height"] as! Int64)
+                        fileSetter.append(width <- (f["width"] as? Int64 ?? 0))
+                        fileSetter.append(height <- (f["height"] as? Int64 ?? 0))
                         fileSetter.append(localPath <- "")
-                        fileSetter.append(imageThumbnail <- f["mini_preview"] as? String)
+                        fileSetter.append(imageThumbnail <- (f["mini_preview"] as? String ?? ""))
                         fileSetter.append(statusCol <- "created")
 
                         fileSetters.append(fileSetter)

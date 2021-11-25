@@ -10,7 +10,7 @@ import CompassIcon from '@components/compass_icon';
 import SlideUpPanelItem, {ITEM_HEIGHT} from '@components/slide_up_panel_item';
 import TouchableWithFeedback from '@components/touchable_with_feedback';
 import Navigation from '@constants/navigation';
-import {useServerUrl} from '@context/server_url';
+import {useServerUrl} from '@context/server';
 import {showModalOverCurrentContext} from '@screens/navigation';
 
 import type PostModel from '@typings/database/models/servers/post';

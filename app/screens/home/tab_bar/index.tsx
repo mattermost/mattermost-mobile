@@ -7,6 +7,8 @@ import {Shadow} from 'react-native-neomorph-shadows';
 import Animated, {useAnimatedStyle, withTiming} from 'react-native-reanimated';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
+import {Navigation as NavigationConstants, Screens} from '@constants';
+import EphemeralStore from '@store/ephemeral_store';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 import Account from './account';
@@ -71,6 +73,15 @@ function TabBar({state, descriptors, navigation, theme}: BottomTabBarProps & {th
         return () => event.remove();
     }, []);
 
+    useEffect(() => {
+        const listner = DeviceEventEmitter.addListener(NavigationConstants.NAVIGATION_HOME, () => {
+            EphemeralStore.setVisibleTap(Screens.HOME);
+            navigation.navigate(Screens.HOME);
+        });
+
+        return () => listner.remove();
+    });
+
     const transform = useAnimatedStyle(() => {
         const translateX = withTiming(state.index * tabWidth, {duration: 150});
         return {
@@ -130,6 +141,7 @@ function TabBar({state, descriptors, navigation, theme}: BottomTabBarProps & {th
                     if (!isFocused && !event.defaultPrevented) {
                         // The `merge: true` option makes sure that the params inside the tab screen are preserved
                         navigation.navigate({params: {...route.params, direction}, name: route.name, merge: true});
+                        EphemeralStore.setVisibleTap(route.name);
                     }
                 };
 

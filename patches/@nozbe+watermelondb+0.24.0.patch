@@ -1,0 +1,26 @@
+diff --git a/node_modules/@nozbe/watermelondb/native/android/src/main/java/com/nozbe/watermelondb/Database.kt b/node_modules/@nozbe/watermelondb/native/android/src/main/java/com/nozbe/watermelondb/Database.kt
+index ca31e20..b45c753 100644
+--- a/node_modules/@nozbe/watermelondb/native/android/src/main/java/com/nozbe/watermelondb/Database.kt
++++ b/node_modules/@nozbe/watermelondb/native/android/src/main/java/com/nozbe/watermelondb/Database.kt
+@@ -22,6 +22,21 @@ class Database(
+             if (name == ":memory:" || name.contains("mode=memory")) {
+                 context.cacheDir.delete()
+                 File(context.cacheDir, name).path
++            } else if (name.contains("/") || name.contains("file")) {
++                // Extracts the database name from the path
++                val dbName = name.substringAfterLast("/")
++
++                // Extracts the real path where the *.db file will be created
++                val truePath = name.substringAfterLast("file://").substringBeforeLast("/")
++
++                // Creates the directory
++                if (!truePath.contains("databases")) {
++                    val fileObj = File(truePath, "databases")
++                    fileObj.mkdir()
++                    File("${truePath}/databases", dbName).path
++                } else {
++                    File(truePath, dbName).path
++                }
+             } else {
+                 // On some systems there is some kind of lock on `/databases` folder ¯\_(ツ)_/¯
+                 context.getDatabasePath("$name.db").path.replace("/databases", "")

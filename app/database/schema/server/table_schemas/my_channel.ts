@@ -16,5 +16,6 @@ export default tableSchema({
         {name: 'mentions_count', type: 'number'},
         {name: 'message_count', type: 'number'},
         {name: 'roles', type: 'string'},
+        {name: 'viewed_at', type: 'number'},
     ],
 });

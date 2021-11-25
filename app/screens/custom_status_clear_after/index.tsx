@@ -5,7 +5,7 @@ import {withDatabase} from '@nozbe/watermelondb/DatabaseProvider';
 import withObservables from '@nozbe/with-observables';
 import React from 'react';
 import {injectIntl, IntlShape} from 'react-intl';
-import {BackHandler, NativeEventSubscription, SafeAreaView, StatusBar, View} from 'react-native';
+import {BackHandler, NativeEventSubscription, SafeAreaView, View} from 'react-native';
 import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
 import {
     Navigation,
@@ -185,7 +185,6 @@ class ClearAfterModal extends NavigationComponent<Props, State> {
                 style={style.container}
                 testID='clear_after.screen'
             >
-                <StatusBar/>
                 <KeyboardAwareScrollView bounces={false}>
                     <View style={style.scrollView}>
                         {this.renderClearAfterMenu()}

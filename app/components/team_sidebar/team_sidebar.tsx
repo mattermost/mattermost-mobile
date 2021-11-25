@@ -7,23 +7,23 @@ import Animated, {useAnimatedStyle, withTiming} from 'react-native-reanimated';
 
 import {fetchAllTeams} from '@actions/remote/team';
 import {TEAM_SIDEBAR_WIDTH} from '@constants/view';
-import {useServerUrl} from '@context/server_url';
+import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 
 import AddTeam from './add_team/add_team';
-import ServerIcon from './server_icon/server_icon';
 import TeamList from './team_list';
 
 import type TeamModel from '@typings/database/models/servers/team';
 
 type Props = {
     canCreateTeams: boolean;
+    iconPad?: boolean;
     otherTeams: TeamModel[];
     myTeamsCount: number;
 }
 
-export default function TeamSidebar({canCreateTeams, otherTeams, myTeamsCount}: Props) {
+export default function TeamSidebar({canCreateTeams, iconPad, otherTeams, myTeamsCount}: Props) {
     const theme = useTheme();
     const styles = getStyleSheet(theme);
     const serverUrl = useServerUrl();
@@ -48,8 +48,7 @@ export default function TeamSidebar({canCreateTeams, otherTeams, myTeamsCount}: 
 
     return (
         <View style={styles.container}>
-            <ServerIcon/>
-            <Animated.View style={[styles.listContainer, transform]}>
+            <Animated.View style={[styles.listContainer, transform, iconPad && styles.iconMargin]}>
                 <TeamList/>
                 {showAddTeam && (
                     <AddTeam
@@ -69,11 +68,16 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             height: '100%',
             backgroundColor: theme.sidebarBg,
             display: 'flex',
+            paddingTop: 10,
         },
         listContainer: {
             backgroundColor: theme.sidebarTeamBarBg,
             borderTopRightRadius: 12,
             flex: 1,
+        },
+        iconMargin: {
+            marginTop: 44,
+            paddingTop: 0,
         },
     };
 });

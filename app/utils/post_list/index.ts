@@ -4,7 +4,6 @@
 import moment from 'moment-timezone';
 
 import {Post} from '@constants';
-import {getTimezone} from '@utils/user';
 
 import type PostModel from '@typings/database/models/servers/post';
 
@@ -171,7 +170,7 @@ function isJoinLeavePostForUsername(post: PostModel, currentUsername: string): b
 // are we going to do something with selectedPostId as in v1?
 function selectOrderedPosts(
     posts: PostModel[], lastViewedAt: number, indicateNewMessages: boolean, currentUsername: string, showJoinLeave: boolean,
-    timezoneEnabled: boolean, currentTimezone: UserTimezone | null, isThreadScreen = false) {
+    timezoneEnabled: boolean, currentTimezone: string | null, isThreadScreen = false) {
     if (posts.length === 0) {
         return [];
     }
@@ -200,9 +199,8 @@ function selectOrderedPosts(
         const postDate = new Date(post.createAt);
         if (timezoneEnabled) {
             const currentOffset = postDate.getTimezoneOffset() * 60 * 1000;
-            const timezone = getTimezone(currentTimezone);
-            if (timezone) {
-                const zone = moment.tz.zone(timezone);
+            if (currentTimezone) {
+                const zone = moment.tz.zone(currentTimezone);
                 if (zone) {
                     const timezoneOffset = zone.utcOffset(post.createAt) * 60 * 1000;
                     postDate.setTime(post.createAt + (currentOffset - timezoneOffset));
@@ -354,7 +352,7 @@ export function isStartOfNewMessages(item: string) {
 
 export function preparePostList(
     posts: PostModel[], lastViewedAt: number, indicateNewMessages: boolean, currentUsername: string, showJoinLeave: boolean,
-    timezoneEnabled: boolean, currentTimezone: UserTimezone | null, isThreadScreen = false) {
+    timezoneEnabled: boolean, currentTimezone: string | null, isThreadScreen = false) {
     const orderedPosts = selectOrderedPosts(posts, lastViewedAt, indicateNewMessages, currentUsername, showJoinLeave, timezoneEnabled, currentTimezone, isThreadScreen);
     return combineUserActivityPosts(orderedPosts);
 }

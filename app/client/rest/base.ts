@@ -3,7 +3,7 @@
 
 import {DeviceEventEmitter} from 'react-native';
 
-import {General} from '@constants';
+import {Events} from '@constants';
 import {t} from '@i18n';
 import {Analytics, create} from '@init/analytics';
 import {setServerCredentials} from '@init/credentials';
@@ -42,6 +42,13 @@ export default class ClientBase {
         if (this.apiClient) {
             this.apiClient.invalidate();
         }
+    }
+
+    getAbsoluteUrl(baseUrl?: string) {
+        if (typeof baseUrl !== 'string' || !baseUrl.startsWith('/')) {
+            return baseUrl;
+        }
+        return this.apiClient.baseUrl + baseUrl;
     }
 
     getRequestHeaders(requestMethod: string) {
@@ -226,7 +233,7 @@ export default class ClientBase {
         const hasCacheControl = Boolean(headers[ClientConstants.HEADER_CACHE_CONTROL] || headers[ClientConstants.HEADER_CACHE_CONTROL.toLowerCase()]);
         if (serverVersion && !hasCacheControl && this.serverVersion !== serverVersion) {
             this.serverVersion = serverVersion;
-            DeviceEventEmitter.emit(General.SERVER_VERSION_CHANGED, {serverUrl: this.apiClient.baseUrl, serverVersion});
+            DeviceEventEmitter.emit(Events.SERVER_VERSION_CHANGED, {serverUrl: this.apiClient.baseUrl, serverVersion});
         }
 
         const bearerToken = headers[ClientConstants.HEADER_TOKEN] || headers[ClientConstants.HEADER_TOKEN.toLowerCase()];

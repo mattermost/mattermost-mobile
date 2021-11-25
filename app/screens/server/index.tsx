@@ -4,31 +4,31 @@
 import {useManagedConfig, ManagedConfig} from '@mattermost/react-native-emm';
 import React, {useCallback, useEffect, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
-import {
-    ActivityIndicator, EventSubscription, Image, Keyboard, KeyboardAvoidingView,
-    Platform, StatusBar, StatusBarStyle, StyleSheet, TextInput, TouchableWithoutFeedback, View,
-} from 'react-native';
-import Button from 'react-native-button';
-import {Navigation, NavigationFunctionComponent} from 'react-native-navigation';
+import {Alert, Platform, useWindowDimensions, View} from 'react-native';
+import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
+import {Navigation} from 'react-native-navigation';
+import Animated, {useAnimatedStyle, useSharedValue, withTiming} from 'react-native-reanimated';
 import {SafeAreaView} from 'react-native-safe-area-context';
-import tinyColor from 'tinycolor2';
 
 import {doPing} from '@actions/remote/general';
 import {fetchConfigAndLicense} from '@actions/remote/systems';
 import LocalConfig from '@assets/config.json';
+import ClientError from '@client/rest/error';
 import AppVersion from '@components/app_version';
-import ErrorText from '@components/error_text';
-import FormattedText from '@components/formatted_text';
-import {Screens} from '@constants';
+import {Screens, Sso} from '@constants';
+import DatabaseManager from '@database/manager';
+import {t} from '@i18n';
 import NetworkManager from '@init/network_manager';
-import {goToScreen} from '@screens/navigation';
+import {queryServerByDisplayName, queryServerByIdentifier} from '@queries/app/servers';
+import Background from '@screens/background';
+import {goToScreen, loginAnimationOptions} from '@screens/navigation';
 import {DeepLinkWithData, LaunchProps, LaunchType} from '@typings/launch';
-import {isMinimumServerVersion} from '@utils/helpers';
-import {preventDoubleTap} from '@utils/tap';
+import {getErrorMessage} from '@utils/client_error';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {getServerUrlAfterRedirect, isValidUrl, sanitizeUrl} from '@utils/url';
 
-import type ClientError from '@client/rest/error';
+import ServerForm from './form';
+import ServerHeader from './header';
 
 interface ServerProps extends LaunchProps {
     componentId: string;
@@ -37,104 +37,194 @@ interface ServerProps extends LaunchProps {
 
 let cancelPing: undefined | (() => void);
 
-const Server: NavigationFunctionComponent = ({componentId, extra, launchType, launchError, theme}: ServerProps) => {
-    // TODO: If we have LaunchProps, ensure they get passed along to subsequent screens
-    // so that they are eventually accessible in the Channel screen.
+const defaultServerUrlMessage = {
+    id: t('mobile.server_url.empty'),
+    defaultMessage: 'Please enter a valid server URL',
+};
 
+const AnimatedSafeArea = Animated.createAnimatedComponent(SafeAreaView);
+
+const Server = ({componentId, extra, launchType, launchError, theme}: ServerProps) => {
     const intl = useIntl();
     const managedConfig = useManagedConfig<ManagedConfig>();
-    const input = useRef<TextInput>(null);
+    const dimensions = useWindowDimensions();
+    const translateX = useSharedValue(0);
+    const keyboardAwareRef = useRef<KeyboardAwareScrollView>();
     const [connecting, setConnecting] = useState(false);
-    const initialError = launchError && launchType === LaunchType.Notification ? intl.formatMessage({
-        id: 'mobile.launchError.notification',
-        defaultMessage: 'Did not find a server for this notification',
-    }) : undefined;
-    const [error, setError] = useState<Partial<ClientErrorProps>|string|undefined>(initialError);
-
+    const [displayName, setDisplayName] = useState<string>('');
+    const [buttonDisabled, setButtonDisabled] = useState(true);
     const [url, setUrl] = useState<string>('');
+    const [displayNameError, setDisplayNameError] = useState<string | undefined>();
+    const [urlError, setUrlError] = useState<string | undefined>();
     const styles = getStyleSheet(theme);
     const {formatMessage} = intl;
 
+    useEffect(() => {
+        const serverName = managedConfig?.serverName || LocalConfig.DefaultServerName;
+        let serverUrl = managedConfig?.serverUrl || LocalConfig.DefaultServerUrl;
+        let autoconnect = managedConfig?.allowOtherServers === 'false' || LocalConfig.AutoSelectServerUrl;
+
+        if (launchType === LaunchType.DeepLink) {
+            const deepLinkServerUrl = (extra as DeepLinkWithData).data?.serverUrl;
+            if (managedConfig) {
+                autoconnect = (managedConfig.allowOtherServers === 'false' && managedConfig.serverUrl === deepLinkServerUrl);
+                if (managedConfig.serverUrl !== deepLinkServerUrl || launchError) {
+                    Alert.alert('', intl.formatMessage({
+                        id: 'mobile.server_url.deeplink.emm.denied',
+                        defaultMessage: 'This app is controlled by an EMM and the DeepLink server url does not match the EMM allowed server',
+                    }));
+                }
+            } else {
+                autoconnect = true;
+                serverUrl = deepLinkServerUrl;
+            }
+        }
+
+        if (serverUrl) {
+            // If a server Url is set by the managed or local configuration, use it.
+            setUrl(serverUrl);
+        }
+
+        if (serverName) {
+            setDisplayName(serverName);
+        }
+
+        if (serverUrl && serverName && autoconnect) {
+            // If no other servers are allowed or the local config for AutoSelectServerUrl is set, attempt to connect
+            handleConnect(managedConfig?.serverUrl || LocalConfig.DefaultServerUrl);
+        }
+    }, []);
+
+    useEffect(() => {
+        if (url && displayName) {
+            setButtonDisabled(false);
+        } else {
+            setButtonDisabled(true);
+        }
+    }, [url, displayName]);
+
+    useEffect(() => {
+        const listener = {
+            componentDidAppear: () => {
+                translateX.value = 0;
+                if (url) {
+                    NetworkManager.invalidateClient(url);
+                }
+            },
+            componentDidDisappear: () => {
+                translateX.value = -dimensions.width;
+            },
+        };
+        const unsubscribe = Navigation.events().registerComponentListener(listener, componentId);
+
+        return () => unsubscribe.remove();
+    }, [componentId, url, dimensions]);
+
     const displayLogin = (serverUrl: string, config: ClientConfig, license: ClientLicense) => {
-        const samlEnabled = config.EnableSaml === 'true' && license.IsLicensed === 'true' && license.SAML === 'true';
+        const isLicensed = license.IsLicensed === 'true';
+        const samlEnabled = config.EnableSaml === 'true' && isLicensed && license.SAML === 'true';
         const gitlabEnabled = config.EnableSignUpWithGitLab === 'true';
-        const googleEnabled = config.EnableSignUpWithGoogle === 'true' && license.IsLicensed === 'true';
-        const o365Enabled = config.EnableSignUpWithOffice365 === 'true' && license.IsLicensed === 'true' && license.Office365OAuth === 'true';
-        const openIdEnabled = config.EnableSignUpWithOpenId === 'true' && license.IsLicensed === 'true' && isMinimumServerVersion(config.Version, 5, 33, 0);
-
-        let screen = Screens.LOGIN;
-        let title = formatMessage({id: 'mobile.routes.login', defaultMessage: 'Login'});
-        if (samlEnabled || gitlabEnabled || googleEnabled || o365Enabled || openIdEnabled) {
-            screen = Screens.LOGIN_OPTIONS;
-            title = formatMessage({id: 'mobile.routes.loginOptions', defaultMessage: 'Login Chooser'});
-        }
-
-        const {allowOtherServers} = managedConfig;
-        let visible = !LocalConfig.AutoSelectServerUrl;
-
-        if (allowOtherServers === 'false') {
-            visible = false;
-        }
+        const googleEnabled = config.EnableSignUpWithGoogle === 'true' && isLicensed;
+        const o365Enabled = config.EnableSignUpWithOffice365 === 'true' && isLicensed && license.Office365OAuth === 'true';
+        const openIdEnabled = config.EnableSignUpWithOpenId === 'true' && isLicensed;
+        const ldapEnabled = isLicensed && config.EnableLdap === 'true' && license.LDAP === 'true';
+        const hasLoginForm = config.EnableSignInWithEmail === 'true' || config.EnableSignInWithUsername === 'true' || ldapEnabled;
+        const ssoOptions: Record<string, boolean> = {
+            [Sso.SAML]: samlEnabled,
+            [Sso.GITLAB]: gitlabEnabled,
+            [Sso.GOOGLE]: googleEnabled,
+            [Sso.OFFICE365]: o365Enabled,
+            [Sso.OPENID]: openIdEnabled,
+        };
+        const enabledSSOs = Object.keys(ssoOptions).filter((key) => ssoOptions[key]);
+        const numberSSOs = enabledSSOs.length;
 
         const passProps = {
             config,
             extra,
+            hasLoginForm,
             launchError,
             launchType,
             license,
-            theme,
+            serverDisplayName: displayName,
             serverUrl,
+            ssoOptions,
+            theme,
         };
 
-        const defaultOptions = {
-            popGesture: visible,
-            topBar: {
-                visible,
-                height: visible ? null : 0,
-            },
-        };
+        const redirectSSO = !hasLoginForm && numberSSOs === 1;
+        const screen = redirectSSO ? Screens.SSO : Screens.LOGIN;
+        if (redirectSSO) {
+            // @ts-expect-error ssoType not in definition
+            passProps.ssoType = enabledSSOs[0];
+        }
 
-        goToScreen(screen, title, passProps, defaultOptions);
+        goToScreen(screen, '', passProps, loginAnimationOptions());
         setConnecting(false);
+        setButtonDisabled(false);
         setUrl(serverUrl);
     };
 
-    const handleConnect = preventDoubleTap((manualUrl?: string) => {
+    const handleConnect = async (manualUrl?: string) => {
+        if (buttonDisabled && !manualUrl) {
+            return;
+        }
+
         if (connecting && cancelPing) {
             cancelPing();
             return;
         }
 
-        let serverUrl = typeof manualUrl === 'string' ? manualUrl : url;
+        const serverUrl = typeof manualUrl === 'string' ? manualUrl : url;
         if (!serverUrl || serverUrl.trim() === '') {
-            setError(intl.formatMessage({
-                id: 'mobile.server_url.empty',
-                defaultMessage: 'Please enter a valid server URL',
-            }));
-
+            setUrlError(formatMessage(defaultServerUrlMessage));
             return;
         }
 
-        serverUrl = sanitizeUrl(serverUrl);
-        if (!isValidUrl(serverUrl)) {
-            setError(formatMessage({
-                id: 'mobile.server_url.invalid_format',
-                defaultMessage: 'URL must start with http:// or https://',
-            }));
+        if (!isServerUrlValid(serverUrl)) {
+            return;
+        }
 
+        const server = await queryServerByDisplayName(DatabaseManager.appDatabase!.database, displayName);
+        if (server && server.lastActiveAt > 0) {
+            setButtonDisabled(true);
+            setDisplayNameError(formatMessage({
+                id: 'mobile.server_name.exists',
+                defaultMessage: 'You are using this name for another server.',
+            }));
+            setConnecting(false);
             return;
         }
 
         pingServer(serverUrl);
-    });
+    };
+
+    const handleDisplayNameTextChanged = useCallback((text: string) => {
+        setDisplayName(text);
+        setDisplayNameError(undefined);
+    }, []);
+
+    const handleUrlTextChanged = useCallback((text: string) => {
+        setUrlError(undefined);
+        setUrl(text);
+    }, []);
+
+    const isServerUrlValid = (serverUrl?: string) => {
+        const testUrl = sanitizeUrl(serverUrl ?? url);
+        if (!isValidUrl(testUrl)) {
+            setUrlError(intl.formatMessage({
+                id: 'mobile.server_url.invalid_format',
+                defaultMessage: 'URL must start with http:// or https://',
+            }));
+            return false;
+        }
+        return true;
+    };
 
     const pingServer = async (pingUrl: string, retryWithHttp = true) => {
         let canceled = false;
         setConnecting(true);
-        setError(undefined);
-
         cancelPing = () => {
-            // We should not need this once we have the cancelable network-client library
             canceled = true;
             setConnecting(false);
             cancelPing = undefined;
@@ -152,260 +242,98 @@ const Server: NavigationFunctionComponent = ({componentId, extra, launchType, la
                 const nurl = serverUrl.replace('https:', 'http:');
                 pingServer(nurl, false);
             } else {
-                setError(result.error as ClientError);
+                setUrlError(getErrorMessage(result.error as ClientError, intl));
+                setButtonDisabled(true);
                 setConnecting(false);
             }
-
             return;
         }
 
-        const data = await fetchConfigAndLicense(serverUrl);
+        const data = await fetchConfigAndLicense(serverUrl, true);
         if (data.error) {
-            setError(data.error as ClientError);
+            setButtonDisabled(true);
+            setUrlError(getErrorMessage(data.error as ClientError, intl));
             setConnecting(false);
+            return;
+        }
+
+        const server = await queryServerByIdentifier(DatabaseManager.appDatabase!.database, data.config!.DiagnosticId);
+        setConnecting(false);
+
+        if (server && server.lastActiveAt > 0) {
+            setButtonDisabled(true);
+            setUrlError(formatMessage({
+                id: 'mobile.server_identifier.exists',
+                defaultMessage: 'You are already connected to this server.',
+            }));
             return;
         }
 
         displayLogin(serverUrl, data.config!, data.license!);
     };
 
-    const blur = useCallback(() => {
-        input.current?.blur();
-    }, []);
-
-    const handleTextChanged = useCallback((text: string) => {
-        setUrl(text);
-    }, []);
-
-    useEffect(() => {
-        let listener: EventSubscription;
-        if (Platform.OS === 'android') {
-            listener = Keyboard.addListener('keyboardDidHide', blur);
-        }
-
-        return () => listener?.remove();
-    }, []);
-
-    useEffect(() => {
-        let serverUrl = managedConfig?.serverUrl || LocalConfig.DefaultServerUrl;
-        let autoconnect = managedConfig?.allowOtherServers === 'false' || LocalConfig.AutoSelectServerUrl;
-
-        if (launchType === LaunchType.DeepLink) {
-            const deepLinkServerUrl = (extra as DeepLinkWithData).data?.serverUrl;
-            if (managedConfig) {
-                autoconnect = (managedConfig.allowOtherServers === 'false' && managedConfig.serverUrl === deepLinkServerUrl);
-                if (managedConfig.serverUrl !== deepLinkServerUrl || launchError) {
-                    setError(intl.formatMessage({
-                        id: 'mobile.server_url.deeplink.emm.denied',
-                        defaultMessage: 'This app is controlled by an EMM and the DeepLink server url does not match the EMM allowed server',
-                    }));
-                }
-            } else {
-                autoconnect = true;
-                serverUrl = deepLinkServerUrl;
-            }
-        }
-
-        if (serverUrl) {
-            // If a server Url is set by the managed or local configuration, use it.
-            setUrl(serverUrl);
-
-            if (autoconnect) {
-                // If no other servers are allowed or the local config for AutoSelectServerUrl is set, attempt to connect
-                handleConnect(managedConfig?.serverUrl || LocalConfig.DefaultServerUrl);
-            }
-        }
-    }, []);
-
-    useEffect(() => {
-        const listener = {
-            componentDidAppear: () => {
-                if (url) {
-                    NetworkManager.invalidateClient(url);
-                }
-            },
+    const transform = useAnimatedStyle(() => {
+        const duration = Platform.OS === 'android' ? 250 : 350;
+        return {
+            transform: [{translateX: withTiming(translateX.value, {duration})}],
         };
-        const unsubscribe = Navigation.events().registerComponentListener(listener, componentId);
-
-        return () => unsubscribe.remove();
-    }, [componentId, url]);
-
-    let buttonIcon;
-    let buttonText;
-
-    if (connecting) {
-        buttonIcon = (
-            <ActivityIndicator
-                animating={true}
-                size='small'
-                color={theme.buttonBg}
-                style={styles.connectingIndicator}
-            />
-        );
-        buttonText = (
-            <FormattedText
-                id='mobile.components.select_server_view.connecting'
-                defaultMessage='Connecting...'
-                style={styles.connectText}
-            />
-        );
-    } else {
-        buttonText = (
-            <FormattedText
-                id='mobile.components.select_server_view.connect'
-                defaultMessage='Connect'
-                style={styles.connectText}
-            />
-        );
-    }
-
-    const statusColor = tinyColor(theme.centerChannelBg);
-    const inputDisabled = managedConfig.allowOtherServers === 'false' || connecting;
-    let barStyle: StatusBarStyle = 'light-content';
-    if (Platform.OS === 'ios' && statusColor.isLight()) {
-        barStyle = 'dark-content';
-    }
-
-    const inputStyle = [styles.inputBox];
-    if (inputDisabled) {
-        inputStyle.push(styles.disabledInput);
-    }
+    }, []);
 
     return (
-        <SafeAreaView
-            testID='select_server.screen'
-            style={styles.container}
-        >
-            <KeyboardAvoidingView
-                behavior='padding'
-                style={styles.flex}
-                keyboardVerticalOffset={0}
-                enabled={Platform.OS === 'ios'}
+        <View style={styles.flex}>
+            <Background theme={theme}/>
+            <AnimatedSafeArea
+                key={'server_content'}
+                style={[styles.flex, transform]}
+                testID='select_server.screen'
             >
-                <StatusBar barStyle={barStyle}/>
-                <TouchableWithoutFeedback
-                    onPress={blur}
-                    accessible={false}
-                >
-                    <View style={styles.formContainer}>
-                        <Image
-                            source={require('@assets/images/logo.png')}
-                            style={styles.logo}
-                        />
+                <KeyboardAwareScrollView
+                    bounces={false}
+                    contentContainerStyle={styles.scrollContainer}
+                    enableAutomaticScroll={Platform.OS === 'android'}
+                    enableOnAndroid={true}
+                    enableResetScrollToCoords={true}
+                    extraScrollHeight={20}
+                    keyboardDismissMode='on-drag'
+                    keyboardShouldPersistTaps='handled'
 
-                        <View testID='select_server.header.text'>
-                            <FormattedText
-                                style={styles.header}
-                                id='mobile.components.select_server_view.enterServerUrl'
-                                defaultMessage='Enter Server URL'
-                            />
-                        </View>
-                        <TextInput
-                            testID='select_server.server_url.input'
-                            ref={input}
-                            value={url}
-                            editable={!inputDisabled}
-                            onChangeText={handleTextChanged}
-                            onSubmitEditing={handleConnect}
-                            style={StyleSheet.flatten(inputStyle)}
-                            autoCapitalize='none'
-                            autoCorrect={false}
-                            keyboardType='url'
-                            placeholder={formatMessage({
-                                id: 'mobile.components.select_server_view.siteUrlPlaceholder',
-                                defaultMessage: 'https://mattermost.example.com',
-                            })}
-                            placeholderTextColor={changeOpacity(theme.centerChannelColor, 0.5)}
-                            returnKeyType='go'
-                            underlineColorAndroid='transparent'
-                            disableFullscreenUI={true}
-                        />
-                        <Button
-                            testID='select_server.connect.button'
-                            onPress={handleConnect}
-                            containerStyle={styles.connectButton}
-                        >
-                            {buttonIcon}
-                            {buttonText}
-                        </Button>
-                        {Boolean(error) &&
-                        <View>
-                            <ErrorText
-                                testID='select_server.error.text'
-                                error={error!}
-                                theme={theme}
-                            />
-                        </View>
-                        }
-                    </View>
-                </TouchableWithoutFeedback>
+                    // @ts-expect-error legacy ref
+                    ref={keyboardAwareRef}
+                    scrollToOverflowEnabled={true}
+                    style={styles.flex}
+                >
+                    <ServerHeader theme={theme}/>
+                    <ServerForm
+                        buttonDisabled={buttonDisabled}
+                        connecting={connecting}
+                        displayName={displayName}
+                        displayNameError={displayNameError}
+                        handleConnect={handleConnect}
+                        handleDisplayNameTextChanged={handleDisplayNameTextChanged}
+                        handleUrlTextChanged={handleUrlTextChanged}
+                        keyboardAwareRef={keyboardAwareRef}
+                        theme={theme}
+                        url={url}
+                        urlError={urlError}
+                    />
+                </KeyboardAwareScrollView>
                 <AppVersion textStyle={styles.appInfo}/>
-            </KeyboardAvoidingView>
-        </SafeAreaView>
+            </AnimatedSafeArea>
+        </View>
     );
 };
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     appInfo: {
-        color: theme.centerChannelColor,
-    },
-    container: {
-        flex: 1,
-        backgroundColor: theme.centerChannelBg,
+        color: changeOpacity(theme.centerChannelColor, 0.56),
     },
     flex: {
         flex: 1,
     },
-    formContainer: {
-        flex: 1,
-        flexDirection: 'column',
+    scrollContainer: {
+        alignItems: 'center',
+        height: '100%',
         justifyContent: 'center',
-        alignItems: 'center',
-        paddingRight: 15,
-        paddingLeft: 15,
-    },
-    disabledInput: {
-        backgroundColor: changeOpacity(theme.centerChannelColor, 0.1),
-    },
-    connectButton: {
-        borderRadius: 3,
-        borderColor: theme.buttonBg,
-        alignItems: 'center',
-        borderWidth: 1,
-        alignSelf: 'stretch',
-        marginTop: 10,
-        padding: 15,
-    },
-    connectingIndicator: {
-        marginRight: 5,
-    },
-    inputBox: {
-        fontSize: 16,
-        height: 45,
-        borderColor: theme.centerChannelColor,
-        borderWidth: 1,
-        marginTop: 5,
-        marginBottom: 5,
-        paddingLeft: 10,
-        alignSelf: 'stretch',
-        borderRadius: 3,
-        color: theme.centerChannelColor,
-    },
-    logo: {
-        height: 72,
-        resizeMode: 'contain',
-    },
-    header: {
-        color: theme.centerChannelColor,
-        textAlign: 'center',
-        marginTop: 15,
-        marginBottom: 15,
-        fontSize: 20,
-    },
-    connectText: {
-        textAlign: 'center',
-        color: theme.buttonBg,
-        fontSize: 17,
     },
 }));
 

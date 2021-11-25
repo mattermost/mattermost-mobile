@@ -1,20 +1,74 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+/* eslint-disable max-lines */
+
 import merge from 'deepmerge';
-import {Appearance, DeviceEventEmitter, NativeModules, Platform} from 'react-native';
+import {Appearance, DeviceEventEmitter, NativeModules, StatusBar, Platform} from 'react-native';
 import {Navigation, Options, OptionsModalPresentationStyle} from 'react-native-navigation';
+import tinyColor from 'tinycolor2';
 
 import CompassIcon from '@components/compass_icon';
 import {Device, Preferences, Screens} from '@constants';
 import NavigationConstants from '@constants/navigation';
 import EphemeralStore from '@store/ephemeral_store';
-import {changeOpacity} from '@utils/theme';
+import {changeOpacity, setNavigatorStyles} from '@utils/theme';
 
 import type {LaunchProps} from '@typings/launch';
 
 const {MattermostManaged} = NativeModules;
 const isRunningInSplitView = MattermostManaged.isRunningInSplitView;
+const appearanceControlledScreens = [Screens.SERVER, Screens.LOGIN, Screens.FORGOT_PASSWORD, Screens.MFA];
+
+const alpha = {
+    from: 0,
+    to: 1,
+    duration: 150,
+};
+
+export const loginAnimationOptions = () => {
+    const theme = getThemeFromState();
+    return {
+        topBar: {
+            visible: true,
+            drawBehind: true,
+            translucid: true,
+            noBorder: true,
+            elevation: 0,
+            background: {
+                color: 'transparent',
+            },
+            backButton: {
+                color: changeOpacity(theme.centerChannelColor, 0.56),
+            },
+            scrollEdgeAppearance: {
+                active: true,
+                noBorder: true,
+                translucid: true,
+            },
+        },
+        animations: {
+            topBar: {
+                alpha,
+            },
+            push: {
+                waitForRender: true,
+                content: {
+                    alpha,
+                },
+            },
+            pop: {
+                content: {
+                    alpha: {
+                        from: 1,
+                        to: 0,
+                        duration: 100,
+                    },
+                },
+            },
+        },
+    };
+};
 
 Navigation.setDefaultOptions({
     layout: {
@@ -22,9 +76,19 @@ Navigation.setDefaultOptions({
         //@ts-expect-error all not defined in type definition
         orientation: [Device.IS_TABLET ? 'all' : 'portrait'],
     },
-    statusBar: {
-        backgroundColor: 'rgba(20, 33, 62, 0.42)',
-    },
+});
+
+Appearance.addChangeListener(() => {
+    const theme = getThemeFromState();
+    const screens = EphemeralStore.getAllNavigationComponents();
+    if (screens.includes(Screens.SERVER)) {
+        for (const screen of screens) {
+            if (appearanceControlledScreens.includes(screen)) {
+                Navigation.updateProps(screen, {theme});
+                setNavigatorStyles(screen, theme, loginAnimationOptions(), theme.centerChannelBg);
+            }
+        }
+    }
 });
 
 function getThemeFromState() {
@@ -39,6 +103,8 @@ function getThemeFromState() {
 
 export function resetToHome(passProps = {}) {
     const theme = getThemeFromState();
+    const isDark = tinyColor(theme.sidebarBg).isDark();
+    StatusBar.setBarStyle(isDark ? 'light-content' : 'dark-content');
 
     EphemeralStore.clearNavigationComponents();
 
@@ -54,6 +120,7 @@ export function resetToHome(passProps = {}) {
                     },
                     statusBar: {
                         visible: true,
+                        backgroundColor: theme.sidebarBg,
                     },
                     topBar: {
                         visible: false,
@@ -78,6 +145,8 @@ export function resetToHome(passProps = {}) {
 
 export function resetToSelectServer(passProps: LaunchProps) {
     const theme = getThemeFromState();
+    const isDark = tinyColor(theme.centerChannelBg).isDark();
+    StatusBar.setBarStyle(isDark ? 'light-content' : 'dark-content');
 
     EphemeralStore.clearNavigationComponents();
 
@@ -96,6 +165,7 @@ export function resetToSelectServer(passProps: LaunchProps) {
                 },
                 statusBar: {
                     visible: true,
+                    backgroundColor: theme.sidebarBg,
                 },
                 topBar: {
                     backButton: {
@@ -123,12 +193,16 @@ export function resetToSelectServer(passProps: LaunchProps) {
 
 export function resetToTeams(name: string, title: string, passProps = {}, options = {}) {
     const theme = getThemeFromState();
+    const isDark = tinyColor(theme.sidebarBg).isDark();
+    StatusBar.setBarStyle(isDark ? 'light-content' : 'dark-content');
+
     const defaultOptions = {
         layout: {
             componentBackgroundColor: theme.centerChannelBg,
         },
         statusBar: {
             visible: true,
+            backgroundColor: theme.sidebarBg,
         },
         topBar: {
             visible: true,
@@ -230,6 +304,37 @@ export async function dismissAllModalsAndPopToRoot() {
     await popToRoot();
 
     DeviceEventEmitter.emit(NavigationConstants.NAVIGATION_DISMISS_AND_POP_TO_ROOT);
+}
+
+/**
+ * Dismisses All modals in the stack and pops the stack to the desired screen
+ * (if the screen is not in the stack, it will push a new one)
+ * @param screenId Screen to pop or display
+ * @param title Title to be shown in the top bar
+ * @param passProps Props to pass to the screen (Only if the screen does not exist in the stack)
+ * @param options Navigation options
+ */
+export async function dismissAllModalsAndPopToScreen(screenId: string, title: string, passProps = {}, options = {}) {
+    await dismissAllModals();
+    if (EphemeralStore.getNavigationComponents().includes(screenId)) {
+        let mergeOptions = options;
+        if (title) {
+            mergeOptions = merge(mergeOptions, {
+                topBar: {
+                    title: {
+                        text: title,
+                    },
+                },
+            });
+        }
+        try {
+            await Navigation.popTo(screenId, mergeOptions);
+        } catch {
+            // catch in case there is nothing to pop
+        }
+    } else {
+        goToScreen(screenId, title, passProps, options);
+    }
 }
 
 export function showModal(name: string, title: string, passProps = {}, options = {}) {

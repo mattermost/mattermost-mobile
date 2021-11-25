@@ -4,7 +4,7 @@
 import moment from 'moment-timezone';
 import {Alert} from 'react-native';
 
-import {General, Preferences} from '@constants';
+import {Permissions, Preferences} from '@constants';
 import {CustomStatusDuration} from '@constants/custom_status';
 import {UserModel} from '@database/models/server';
 import {DEFAULT_LOCALE, getLocalizedMessage, t} from '@i18n';
@@ -87,11 +87,11 @@ export function isRoleInRoles(roles: string, role: string): boolean {
 }
 
 export function isGuest(roles: string): boolean {
-    return isRoleInRoles(roles, General.SYSTEM_GUEST_ROLE);
+    return isRoleInRoles(roles, Permissions.SYSTEM_GUEST_ROLE);
 }
 
 export function isSystemAdmin(roles: string): boolean {
-    return isRoleInRoles(roles, General.SYSTEM_ADMIN_ROLE);
+    return isRoleInRoles(roles, Permissions.SYSTEM_ADMIN_ROLE);
 }
 
 export const getUsersByUsername = (users: UserModel[]) => {

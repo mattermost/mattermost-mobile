@@ -50,7 +50,7 @@ export function getViewPortWidth(isReplyPost: boolean, tabletOffset = false) {
     let portraitPostWidth = Math.min(width, height) - VIEWPORT_IMAGE_OFFSET;
 
     if (tabletOffset) {
-        portraitPostWidth -= View.TABLET.SIDEBAR_WIDTH;
+        portraitPostWidth -= View.TABLET_SIDEBAR_WIDTH;
     }
 
     if (isReplyPost) {

@@ -95,7 +95,7 @@ export function safeParseJSON(rawJson: string | Record<string, unknown> | unknow
     return data;
 }
 
-export function getCurrentMomentForTimezone(timezone: string) {
+export function getCurrentMomentForTimezone(timezone: string | null) {
     return timezone ? moment.tz(timezone) : moment();
 }
 

@@ -8,7 +8,7 @@ import {MM_TABLES, SYSTEM_IDENTIFIERS} from '@constants/database';
 import type ServerDataOperator from '@database/operator/server_data_operator';
 import type SystemModel from '@typings/database/models/servers/system';
 
-type PrepareCommonSystemValuesArgs = {
+export type PrepareCommonSystemValuesArgs = {
     config?: ClientConfig;
     currentChannelId?: string;
     currentTeamId?: string;
@@ -118,6 +118,14 @@ export const queryWebSocketLastDisconnected = async (serverDatabase: Database) =
     }
 };
 
+export const resetWebSocketLastDisconnected = (operator: ServerDataOperator) => {
+    return operator.handleSystem({systems: [{
+        id: SYSTEM_IDENTIFIERS.WEBSOCKET,
+        value: 0,
+    }],
+    prepareRecordsOnly: false});
+};
+
 export const queryTeamHistory = async (serverDatabase: Database) => {
     try {
         const teamHistory = await serverDatabase.get<SystemModel>(SYSTEM).find(SYSTEM_IDENTIFIERS.TEAM_HISTORY);
@@ -127,7 +135,7 @@ export const queryTeamHistory = async (serverDatabase: Database) => {
     }
 };
 
-export const patchTeamHistory = async (operator: ServerDataOperator, value: string[], prepareRecordsOnly = false) => {
+export const patchTeamHistory = (operator: ServerDataOperator, value: string[], prepareRecordsOnly = false) => {
     return operator.handleSystem({systems: [{
         id: SYSTEM_IDENTIFIERS.TEAM_HISTORY,
         value: JSON.stringify(value),

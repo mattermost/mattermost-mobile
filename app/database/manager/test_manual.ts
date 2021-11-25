@@ -34,6 +34,7 @@ export default async () => {
                 dbName: 'community mattermost',
                 dbType: DatabaseType.SERVER,
                 serverUrl: 'https://comm4.mattermost.com',
+                identifier: 'test-server',
             },
         });
     };

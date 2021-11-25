@@ -43,14 +43,14 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 ---
 
-## @react-native-community/async-storage
+## @react-native-async-storage/async-storage
 
-This product contains 'async-storage' by Krzysztof Borowy.
+This product contains 'async-storage' by Facebook.
 
 Asynchronous, persistent, key-value storage system for React Native.
 
 * HOMEPAGE:
-  * https://github.com/react-native-community/react-native-async-storage#readme
+  * https://github.com/react-native-async-storage/async-storage/
 
 * LICENSE: MIT
 

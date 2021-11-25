@@ -11,7 +11,7 @@ import {createPostsChain} from '@database/operator/utils/post';
 
 import ServerDataOperator from '..';
 
-Q.experimentalSortBy = jest.fn().mockImplementation((field) => {
+Q.sortBy = jest.fn().mockImplementation((field) => {
     return Q.where(field, Q.gte(0));
 });
 describe('*** Operator: Post Handlers tests ***', () => {

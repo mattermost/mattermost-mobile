@@ -98,7 +98,7 @@ export default class ChannelModel extends Model {
     @field('team_id') teamId!: string;
 
     /** type : The type of the channel ( e.g. G: group messages, D: direct messages, P: private channel and O: public channel) */
-    @field('type') type!: string;
+    @field('type') type!: ChannelType;
 
     /** members : Users belonging to this channel */
     @children(CHANNEL_MEMBERSHIP) members!: ChannelMembershipModel[];
@@ -130,4 +130,26 @@ export default class ChannelModel extends Model {
 
     /** settings: User specific settings/preferences for this channel */
     @immutableRelation(MY_CHANNEL_SETTINGS, 'id') settings!: Relation<MyChannelSettingsModel>;
+
+    toApi = (): Channel => {
+        return {
+            id: this.id,
+            create_at: this.createAt,
+            update_at: this.updateAt,
+            delete_at: this.deleteAt,
+            team_id: this.teamId,
+            type: this.type,
+            display_name: this.displayName,
+            name: this.name,
+            header: '',
+            purpose: '',
+            last_post_at: 0,
+            total_msg_count: 0,
+            extra_update_at: 0,
+            creator_id: this.creatorId,
+            scheme_id: null,
+            group_constrained: null,
+            shared: this.shared,
+        };
+    };
 }

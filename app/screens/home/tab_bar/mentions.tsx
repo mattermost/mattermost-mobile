@@ -5,6 +5,7 @@ import React from 'react';
 import {View} from 'react-native';
 
 import CompassIcon from '@components/compass_icon';
+import {BOTTOM_TAB_ICON_SIZE} from '@constants/view';
 import {changeOpacity} from '@utils/theme';
 
 type Props = {
@@ -16,7 +17,7 @@ const Mentions = ({isFocused, theme}: Props) => {
     return (
         <View>
             <CompassIcon
-                size={28}
+                size={BOTTOM_TAB_ICON_SIZE}
                 name='at'
                 color={isFocused ? theme.buttonBg : changeOpacity(theme.centerChannelColor, 0.48)}
             />

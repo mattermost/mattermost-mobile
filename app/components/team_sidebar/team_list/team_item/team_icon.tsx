@@ -5,7 +5,7 @@ import React, {useCallback, useEffect, useRef, useState} from 'react';
 import {View, Text} from 'react-native';
 import FastImage from 'react-native-fast-image';
 
-import {useServerUrl} from '@context/server_url';
+import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import NetworkManager from '@init/network_manager';
 import {makeStyleSheetFromTheme} from '@utils/theme';

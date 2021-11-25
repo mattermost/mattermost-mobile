@@ -1,5 +1,4 @@
 apply plugin: "com.android.application"
-apply from: '../../node_modules/react-native-unimodules/gradle.groovy'
 apply plugin: 'kotlin-android'
 import com.android.build.OutputFile
 
@@ -240,18 +239,12 @@ configurations.all {
 dependencies {
     implementation fileTree(dir: "libs", include: ["*.jar"])
     implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-core:1.5.2'
+    implementation project(':lottie-react-native')
 
     //noinspection GradleDynamicVersio
     implementation "com.facebook.react:react-native:+"  // From node_modules
 
     implementation "androidx.swiperefreshlayout:swiperefreshlayout:1.0.0"
-
-    addUnimodulesDependencies([exclude:  [
-        'expo-image-loader',
-        'expo-permissions',
-        'expo-application',
-        'expo-face-detector',
-    ]])
 
     debugImplementation("com.facebook.flipper:flipper:${FLIPPER_VERSION}") {
         exclude group:'com.facebook.fbjni'

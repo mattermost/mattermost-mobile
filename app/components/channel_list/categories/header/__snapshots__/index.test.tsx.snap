@@ -1,0 +1,26 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Category Header Component should match snapshot 1`] = `
+<View
+  style={
+    Object {
+      "marginTop": 12,
+      "paddingVertical": 8,
+    }
+  }
+>
+  <Text
+    style={
+      Object {
+        "color": "rgba(255,255,255,0.64)",
+        "fontFamily": "OpenSans-SemiBold",
+        "fontSize": 12,
+        "fontWeight": "600",
+        "lineHeight": 16,
+      }
+    }
+  >
+    CAT HEADING
+  </Text>
+</View>
+`;
