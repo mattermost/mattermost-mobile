@@ -3,7 +3,7 @@
 
 import React, {useEffect} from 'react';
 import {View} from 'react-native';
-import Animated, {useAnimatedStyle, withTiming} from 'react-native-reanimated';
+import Animated, {useAnimatedStyle, useSharedValue, withTiming} from 'react-native-reanimated';
 
 import {fetchAllTeams} from '@actions/remote/team';
 import {TEAM_SIDEBAR_WIDTH} from '@constants/view';
@@ -20,45 +20,7 @@ type Props = {
     canCreateTeams: boolean;
     iconPad?: boolean;
     otherTeams: TeamModel[];
-    myTeamsCount: number;
-}
-
-export default function TeamSidebar({canCreateTeams, iconPad, otherTeams, myTeamsCount}: Props) {
-    const theme = useTheme();
-    const styles = getStyleSheet(theme);
-    const serverUrl = useServerUrl();
-
-    useEffect(() => {
-        fetchAllTeams(serverUrl);
-    }, [serverUrl]);
-
-    const showAddTeam = canCreateTeams || otherTeams.length > 0;
-
-    const transform = useAnimatedStyle(() => {
-        const showTeams = showAddTeam || myTeamsCount > 1;
-        if (showTeams) {
-            return {
-                transform: [{translateX: withTiming(0, {duration: 100})}],
-            };
-        }
-        return {
-            transform: [{translateX: withTiming(-TEAM_SIDEBAR_WIDTH, {duration: 100})}],
-        };
-    }, [showAddTeam || myTeamsCount > 1]);
-
-    return (
-        <View style={styles.container}>
-            <Animated.View style={[styles.listContainer, transform, iconPad && styles.iconMargin]}>
-                <TeamList/>
-                {showAddTeam && (
-                    <AddTeam
-                        canCreateTeams={canCreateTeams}
-                        otherTeams={otherTeams}
-                    />
-                )}
-            </Animated.View>
-        </View>
-    );
+    teamsCount: number;
 }
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
@@ -67,7 +29,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             width: TEAM_SIDEBAR_WIDTH,
             height: '100%',
             backgroundColor: theme.sidebarBg,
-            display: 'flex',
             paddingTop: 10,
         },
         listContainer: {
@@ -81,3 +42,40 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
         },
     };
 });
+
+export default function TeamSidebar({canCreateTeams, iconPad, otherTeams, teamsCount}: Props) {
+    const showAddTeam = canCreateTeams || otherTeams.length > 0;
+    const initialWidth = teamsCount > 1 ? TEAM_SIDEBAR_WIDTH : 0;
+    const width = useSharedValue(initialWidth);
+    const theme = useTheme();
+    const serverUrl = useServerUrl();
+    const styles = getStyleSheet(theme);
+
+    const transform = useAnimatedStyle(() => {
+        return {
+            width: withTiming(width.value, {duration: 350}),
+        };
+    }, []);
+
+    useEffect(() => {
+        fetchAllTeams(serverUrl);
+    }, [serverUrl]);
+
+    useEffect(() => {
+        width.value = teamsCount > 1 ? TEAM_SIDEBAR_WIDTH : 0;
+    }, [teamsCount]);
+
+    return (
+        <Animated.View style={[styles.container, transform]}>
+            <View style={[styles.listContainer, iconPad && styles.iconMargin]}>
+                <TeamList/>
+                {showAddTeam && (
+                    <AddTeam
+                        canCreateTeams={canCreateTeams}
+                        otherTeams={otherTeams}
+                    />
+                )}
+            </View>
+        </Animated.View>
+    );
+}

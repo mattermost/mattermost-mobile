@@ -34,7 +34,6 @@ const enhanced = withObservables([], ({database}: WithDatabaseArgs) => {
     );
 
     const canCreateTeams = roles.pipe(switchMap((r) => of$(hasPermission(r, Permissions.CREATE_TEAM, false))));
-    const myTeamsCount = database.get<MyTeam>(MY_TEAM).query().observeCount();
 
     const otherTeams = database.get<MyTeam>(MY_TEAM).query().observe().pipe(
         switchMap((mm) => {
@@ -47,7 +46,6 @@ const enhanced = withObservables([], ({database}: WithDatabaseArgs) => {
     return {
         canCreateTeams,
         otherTeams,
-        myTeamsCount,
     };
 });
 
