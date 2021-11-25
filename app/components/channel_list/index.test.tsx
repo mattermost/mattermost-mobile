@@ -3,8 +3,8 @@
 import Database from '@nozbe/watermelondb/Database';
 import React from 'react';
 
-import {MM_TABLES} from '@app/constants/database';
-import {TeamModel} from '@app/database/models/server';
+import {MM_TABLES} from '@constants/database';
+import {TeamModel} from '@database/models/server';
 import {renderWithEverything} from '@test/intl-test-helper';
 import TestHelper from '@test/test_helper';
 
@@ -16,8 +16,8 @@ describe('components/channel_list', () => {
         const server = await TestHelper.setupServerDatabase();
         database = server.database;
 
+        const team = await database.get<TeamModel>(MM_TABLES.SERVER.TEAM).find(TestHelper.basicTeam!.id);
         await database.write(async () => {
-            const team = (await database.get<TeamModel>(MM_TABLES.SERVER.TEAM).query().fetch()).pop();
             await team?.update(() => {
                 team.displayName = 'Test Team!';
             });
