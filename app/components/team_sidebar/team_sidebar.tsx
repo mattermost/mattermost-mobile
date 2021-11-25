@@ -2,7 +2,6 @@
 // See LICENSE.txt for license information.
 
 import React, {useEffect} from 'react';
-import {View} from 'react-native';
 import Animated, {useAnimatedStyle, useSharedValue, withTiming} from 'react-native-reanimated';
 
 import {fetchAllTeams} from '@actions/remote/team';
@@ -38,7 +37,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
         },
         iconMargin: {
             marginTop: 44,
-            paddingTop: 0,
         },
     };
 });
@@ -47,6 +45,7 @@ export default function TeamSidebar({canCreateTeams, iconPad, otherTeams, teamsC
     const showAddTeam = canCreateTeams || otherTeams.length > 0;
     const initialWidth = teamsCount > 1 ? TEAM_SIDEBAR_WIDTH : 0;
     const width = useSharedValue(initialWidth);
+    const marginTop = useSharedValue(iconPad ? 44 : 0);
     const theme = useTheme();
     const serverUrl = useServerUrl();
     const styles = getStyleSheet(theme);
@@ -56,6 +55,14 @@ export default function TeamSidebar({canCreateTeams, iconPad, otherTeams, teamsC
             width: withTiming(width.value, {duration: 350}),
         };
     }, []);
+
+    const serverStyle = useAnimatedStyle(() => ({
+        marginTop: withTiming(marginTop.value, {duration: 350}),
+    }), []);
+
+    useEffect(() => {
+        marginTop.value = iconPad ? 44 : 0;
+    }, [iconPad]);
 
     useEffect(() => {
         fetchAllTeams(serverUrl);
@@ -67,7 +74,7 @@ export default function TeamSidebar({canCreateTeams, iconPad, otherTeams, teamsC
 
     return (
         <Animated.View style={[styles.container, transform]}>
-            <View style={[styles.listContainer, iconPad && styles.iconMargin]}>
+            <Animated.View style={[styles.listContainer, serverStyle]}>
                 <TeamList/>
                 {showAddTeam && (
                     <AddTeam
@@ -75,7 +82,7 @@ export default function TeamSidebar({canCreateTeams, iconPad, otherTeams, teamsC
                         otherTeams={otherTeams}
                     />
                 )}
-            </View>
+            </Animated.View>
         </Animated.View>
     );
 }
