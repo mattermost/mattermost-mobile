@@ -48,7 +48,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             borderRadius: 60,
             alignItems: 'center',
             justifyContent: 'center',
-            backgroundColor: changeOpacity(theme.centerChannelColor, 0.08),
+            backgroundColor: changeOpacity(theme.centerChannelBg, 0.58),
         },
     };
 });
@@ -62,15 +62,15 @@ const AccountUserInfo = ({user, showFullName, theme}: Props) => {
     return (
         <View style={styles.container}>
             <ProfilePicture
+                containerStyle={styles.containerStyle}
                 isBot={user.isBot}
                 lastPictureUpdate={user.lastPictureUpdate}
+                size={120}
                 statusSize={34}
                 statusStyle={styles.statusStyle}
                 testID={'account.profile_picture'}
                 userId={user.id}
                 userStatus={user.status}
-                size={120}
-                containerStyle={styles.containerStyle}
             />
             {showFullName && <Text style={styles.textFullName}>{title}</Text>}
             <Text style={showFullName ? styles.textUserName : styles.textFullName}>{`${userName}`}</Text>
