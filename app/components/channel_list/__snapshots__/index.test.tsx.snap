@@ -2,16 +2,22 @@
 
 exports[`components/channel_list should match snapshot 1`] = `
 <View
-  style={
-    Array [
-      Object {
-        "backgroundColor": "#1e325c",
-        "flex": 1,
-        "paddingHorizontal": 20,
-        "paddingVertical": 10,
+  animatedStyle={
+    Object {
+      "value": Object {
+        "maxWidth": undefined,
       },
-      false,
-    ]
+    }
+  }
+  collapsable={false}
+  style={
+    Object {
+      "backgroundColor": "#1e325c",
+      "flex": 1,
+      "maxWidth": undefined,
+      "paddingHorizontal": 20,
+      "paddingVertical": 10,
+    }
   }
 >
   <RNGestureHandlerButton
