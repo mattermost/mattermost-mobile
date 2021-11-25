@@ -15,9 +15,9 @@ import {switchMap} from 'rxjs/operators';
 
 import {updateLocalUser} from '@actions/local/user';
 import {setDefaultProfileImage, updateMe} from '@actions/remote/user';
-import ImagePicker from '@components/file_picker';
+import FilePicker from '@components/file_picker';
 import EditProfileImage from '@components/profile_picture/edit_image';
-import ProfileImage from '@components/profile_picture/image';
+import ProfilePicture from '@components/profile_picture/image';
 import TabletTitle from '@components/tablet_title';
 import {Events} from '@constants';
 import {MM_TABLES, SYSTEM_IDENTIFIERS} from '@constants/database';
@@ -284,9 +284,8 @@ const EditProfile = ({
         if (lockedPicture) {
             return (
                 <View style={style.top}>
-                    <ProfileImage
+                    <ProfilePicture
                         userStatus={currentUser.status}
-                        imageUrl={profileImage?.uri}
                         userId={currentUser.id}
                         lastPictureUpdate={currentUser.lastPictureUpdate}
                         size={153}
@@ -298,7 +297,7 @@ const EditProfile = ({
         if (!currentUser.isBot) {
             return (
                 <View style={style.top}>
-                    <ImagePicker
+                    <FilePicker
                         browseFileType={DocumentPicker.types.images}
                         lastPictureUpdate={currentUser.lastPictureUpdate}
                         maxFileSize={MAX_SIZE}
@@ -316,7 +315,7 @@ const EditProfile = ({
                             testID='edit_profile.profile_picture'
                             userId={currentUser.id}
                         />
-                    </ImagePicker>
+                    </FilePicker>
                 </View>
             );
         }
