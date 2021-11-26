@@ -191,7 +191,7 @@ const EditProfile = ({
             if (profileImage) {
                 const now = Date.now();
                 await uploadProfileImage();
-                updateLocalUser(serverUrl, {last_picture_update: now});
+                updateLocalUser(serverUrl, {last_picture_update: now, id: currentUser.id});
             }
 
             if (isProfileImageRemoved) {

@@ -374,7 +374,7 @@ export const updateUsersNoLongerVisible = async (serverUrl: string): Promise<{er
     return {};
 };
 
-export const setStatus = async (serverUrl: string, status: UserStatus) => {
+export const setStatus = async (serverUrl: string, status: UserStatus, userId: string) => {
     let client: Client;
     try {
         client = NetworkManager.getClient(serverUrl);
@@ -384,7 +384,7 @@ export const setStatus = async (serverUrl: string, status: UserStatus) => {
 
     try {
         const data = await client.updateStatus(status);
-        await updateLocalUser(serverUrl, {status: status.status});
+        await updateLocalUser(serverUrl, {status: status.status, id: userId});
 
         return {
             data,
@@ -464,7 +464,7 @@ export const setDefaultProfileImage = async (serverUrl: string, userId: string) 
 
     try {
         await client.setDefaultProfileImage(userId);
-        updateLocalUser(serverUrl, {last_picture_update: Date.now()});
+        updateLocalUser(serverUrl, {last_picture_update: Date.now(), id: userId});
     } catch (error) {
         return {error};
     }

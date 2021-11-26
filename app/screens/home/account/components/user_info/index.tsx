@@ -67,6 +67,7 @@ const AccountUserInfo = ({user, showFullName, theme}: Props) => {
                 lastPictureUpdate={user.lastPictureUpdate}
                 size={120}
                 statusSize={34}
+                showStatus={true}
                 statusStyle={styles.statusStyle}
                 testID={'account.profile_picture'}
                 userId={user.id}
