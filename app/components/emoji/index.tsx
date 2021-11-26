@@ -17,7 +17,7 @@ import {of as of$} from 'rxjs';
 import {switchMap} from 'rxjs/operators';
 
 import {MM_TABLES, SYSTEM_IDENTIFIERS} from '@constants/database';
-import {useServerUrl} from '@context/server_url';
+import {useServerUrl} from '@context/server';
 import NetworkManager from '@init/network_manager';
 import {EmojiIndicesByAlias, Emojis} from '@utils/emoji';
 

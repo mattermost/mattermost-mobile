@@ -8,7 +8,7 @@ import FastImage from 'react-native-fast-image';
 import {fetchStatusInBatch} from '@actions/remote/user';
 import CompassIcon from '@components/compass_icon';
 import UserStatus from '@components/user_status';
-import {useServerUrl} from '@context/server_url';
+import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import NetworkManager from '@init/network_manager';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';

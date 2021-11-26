@@ -7,7 +7,7 @@ import {useIntl} from 'react-intl';
 
 import {removeDraft, updateDraft} from '@actions/local/post';
 import {uploadFile} from '@actions/remote/file';
-import {useServerUrl} from '@context/server_url';
+import {useServerUrl} from '@context/server';
 import {DraftModel} from '@database/models/server';
 import {fileMaxWarning, fileSizeWarning, uploadDisabledWarning} from '@utils/file';
 

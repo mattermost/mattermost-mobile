@@ -8,7 +8,7 @@ import sectionListGetItemLayout from 'react-native-section-list-get-item-layout'
 
 import {fetchCustomEmojis} from '@actions/remote/custom_emoji';
 import {EMOJIS_PER_PAGE} from '@constants/emoji';
-import {useServerUrl} from '@context/server_url';
+import {useServerUrl} from '@context/server';
 import {CategoryNames, EmojiIndicesByCategory, CategoryTranslations, CategoryMessage} from '@utils/emoji';
 import {fillEmoji} from '@utils/emoji/helpers';
 

@@ -13,7 +13,7 @@ import {addReactionToLatestPost} from '@actions/remote/reactions';
 import {setStatus} from '@actions/remote/user';
 import {IS_REACTION_REGEX} from '@constants/post_draft';
 import {NOTIFY_ALL_MEMBERS} from '@constants/view';
-import {useServerUrl} from '@context/server_url';
+import {useServerUrl} from '@context/server';
 import EphemeralStore from '@store/ephemeral_store';
 import * as DraftUtils from '@utils/draft';
 import {preventDoubleTap} from '@utils/tap';

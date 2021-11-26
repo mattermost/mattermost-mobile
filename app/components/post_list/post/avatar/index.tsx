@@ -16,7 +16,7 @@ import SystemAvatar from '@components/system_avatar';
 import TouchableWithFeedback from '@components/touchable_with_feedback';
 import {View as ViewConstant} from '@constants';
 import {MM_TABLES, SYSTEM_IDENTIFIERS} from '@constants/database';
-import {useServerUrl} from '@context/server_url';
+import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import NetworkManager from '@init/network_manager';
 import {showModal} from '@screens/navigation';

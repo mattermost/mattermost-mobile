@@ -82,7 +82,10 @@ const ChannelListScreen = (props: ChannelProps) => {
                       * https://mattermost.atlassian.net/browse/MM-39702
                       */}
                     <TeamSidebar iconPad={true}/>
-                    <ChannelList iconPad={false}/>
+                    <ChannelList
+                        iconPad={false}
+                        isTablet={isTablet}
+                    />
                     {isTablet &&
                         <Channel {...props}/>
                     }

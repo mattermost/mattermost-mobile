@@ -8,7 +8,7 @@ import parseUrl from 'url-parse';
 import CompassIcon from '@components/compass_icon';
 import ProgressiveImage from '@components/progressive_image';
 import TouchableWithFeedback from '@components/touchable_with_feedback';
-import {useServerUrl} from '@context/server_url';
+import {useServerUrl} from '@context/server';
 import {openGallerWithMockFile} from '@utils/gallery';
 import {generateId} from '@utils/general';
 import {calculateDimensions, isGifTooLarge} from '@utils/images';

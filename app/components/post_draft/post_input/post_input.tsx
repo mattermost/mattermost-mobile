@@ -10,7 +10,7 @@ import HWKeyboardEvent from 'react-native-hw-keyboard-event';
 
 import {userTyping} from '@actions/websocket/user';
 import {BLUR_POST_DRAFT_EVENT} from '@constants/post_draft';
-import {useServerUrl} from '@context/server_url';
+import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
 import {t} from '@i18n';

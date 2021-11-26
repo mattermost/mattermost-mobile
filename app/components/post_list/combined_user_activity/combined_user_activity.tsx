@@ -11,7 +11,7 @@ import SystemAvatar from '@components/system_avatar';
 import SystemHeader from '@components/system_header';
 import TouchableWithFeedback from '@components/touchable_with_feedback';
 import {Post as PostConstants} from '@constants';
-import {useServerUrl} from '@context/server_url';
+import {useServerUrl} from '@context/server';
 import {showModalOverCurrentContext} from '@screens/navigation';
 import {emptyFunction} from '@utils/general';
 import {getMarkdownTextStyles} from '@utils/markdown';
