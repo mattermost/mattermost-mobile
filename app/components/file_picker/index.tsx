@@ -118,10 +118,12 @@ const ImagePicker = ({
             );
         };
 
+        const snapPoints = canRemovePicture ? 5 : 4;
+
         return bottomSheet({
             closeButtonId: 'close-edit-profile',
             renderContent,
-            snapPoints: [(5 * ITEM_HEIGHT) + 10, 10],
+            snapPoints: [(snapPoints * ITEM_HEIGHT), 10],
             title: '',
             theme,
         });

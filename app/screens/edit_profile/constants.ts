@@ -34,7 +34,7 @@ export const VALID_MIME_TYPES = [
     'application/x-win-bitmap',
 ] as const;
 
-export const HOLDERS: { [id: string]: MessageDescriptor } = {
+export const FIELDS: { [id: string]: MessageDescriptor } = {
     firstName: {
         id: t('user.settings.general.firstName'),
         defaultMessage: 'First Name',

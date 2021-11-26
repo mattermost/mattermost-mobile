@@ -5,7 +5,7 @@ import React from 'react';
 import {useIntl} from 'react-intl';
 
 import {t} from '@i18n';
-import {HOLDERS} from '@screens/edit_profile/constants';
+import {FIELDS} from '@screens/edit_profile/constants';
 
 import InputField from './input_field';
 
@@ -67,7 +67,7 @@ const EmailField = ({authService, email, onChange}: EmailSettingsProps) => {
             fieldDescription={helpText ?? ''}
             id='email'
             isDisabled={true}
-            label={HOLDERS.email}
+            label={FIELDS.email}
             onChange={onChange}
             testID='edit_profile.text_setting.email'
             value={email}

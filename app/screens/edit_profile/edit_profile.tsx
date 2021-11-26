@@ -18,7 +18,7 @@ import {Events} from '@constants';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import NetworkManager from '@init/network_manager';
-import {HOLDERS, MAX_SIZE} from '@screens/edit_profile/constants';
+import {FIELDS, MAX_SIZE} from '@screens/edit_profile/constants';
 import {dismissModal, popTopScreen, setButtons} from '@screens/navigation';
 import {File, UserInfo} from '@typings/screens/edit_profile';
 import {getFormattedFileSize} from '@utils/file';
@@ -346,7 +346,7 @@ const EditProfile = ({
                     <InputField
                         id={'firstName'}
                         isDisabled={(['ldap', 'saml'].includes(service) && lockedFirstName) || ['gitlab', 'google', 'office365'].includes(service)}
-                        label={HOLDERS.firstName}
+                        label={FIELDS.firstName}
                         onChange={updateField}
                         testID={'edit_profile.text_setting.firstName'}
                         value={userInfo.firstName}
@@ -355,7 +355,7 @@ const EditProfile = ({
                     <InputField
                         id={'lastName'}
                         isDisabled={(['ldap', 'saml'].includes(service) && lockedLastName) || ['gitlab', 'google', 'office365'].includes(service)}
-                        label={HOLDERS.lastName}
+                        label={FIELDS.lastName}
                         onChange={updateField}
                         testID={'edit_profile.text_setting.lastName'}
                         value={userInfo.lastName}
@@ -364,7 +364,7 @@ const EditProfile = ({
                     <InputField
                         id={'username'}
                         isDisabled={service !== ''}
-                        label={HOLDERS.username}
+                        label={FIELDS.username}
                         maxLength={22}
                         onChange={updateField}
                         testID={'edit_profile.text_setting.username'}
@@ -380,7 +380,7 @@ const EditProfile = ({
                     <InputField
                         id={'nickname'}
                         isDisabled={['ldap', 'saml'].includes(service) && lockedNickname}
-                        label={HOLDERS.nickname}
+                        label={FIELDS.nickname}
                         maxLength={22}
                         onChange={updateField}
                         testID={'edit_profile.text_setting.nickname'}
@@ -390,7 +390,7 @@ const EditProfile = ({
                     <InputField
                         id={'position'}
                         isDisabled={['ldap', 'saml'].includes(service) && lockedPosition}
-                        label={HOLDERS.position}
+                        label={FIELDS.position}
                         maxLength={128}
                         onChange={updateField}
                         isOptional={true}
