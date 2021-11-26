@@ -140,6 +140,7 @@ const Avatar = ({author, enablePostIconOverride, isAutoReponse, isSystemPost, pe
     let component = (
         <ProfilePicture
             lastPictureUpdate={author.lastPictureUpdate}
+            showStatus={!isAutoReponse}
             size={ViewConstant.PROFILE_PICTURE_SIZE}
             testID='post_profile_picture.profile_picture'
             userId={author.id}

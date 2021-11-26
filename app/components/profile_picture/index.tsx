@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {memo, useEffect} from 'react';
+import React, {useEffect} from 'react';
 import {StyleProp, View, ViewProps} from 'react-native';
 import FastImage from 'react-native-fast-image';
 
@@ -35,10 +35,11 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     };
 });
 
-type ProfileImageProps = {
+type ProfilePictureProps = {
     isBot?: boolean;
     isEditing?: boolean;
     lastPictureUpdate: number;
+    showStatus?: boolean;
     size?: number;
     source?: { uri: string };
     statusSize?: number;
@@ -49,11 +50,12 @@ type ProfileImageProps = {
     userStatus?: string;
 };
 
-const ProfileImage = ({
+const ProfilePicture = ({
     containerStyle,
     isBot,
     isEditing = false,
     lastPictureUpdate,
+    showStatus = false,
     size = 64,
     source,
     statusSize = 14,
@@ -61,7 +63,7 @@ const ProfileImage = ({
     testID,
     userId,
     userStatus,
-}: ProfileImageProps) => {
+}: ProfilePictureProps) => {
     const theme = useTheme();
     const serverUrl = useServerUrl();
     const styles = getStyleSheet(theme);
@@ -118,7 +120,7 @@ const ProfileImage = ({
                 testID={`${testID}.${userId}`}
             >
                 {image}
-                {Boolean(userStatus) && !isBot && (
+                {showStatus && !isBot && (
                     <View
                         style={[
                             styles.statusWrapper,
@@ -142,4 +144,4 @@ const ProfileImage = ({
     );
 };
 
-export default memo(ProfileImage);
+export default ProfilePicture;
