@@ -23,98 +23,6 @@ type Props = {
     retryFileUpload: (file: FileInfo) => void;
 }
 
-export default function Uploads({
-    files,
-    uploadFileError,
-    removeFile,
-    retryFileUpload,
-}: Props) {
-    const theme = useTheme();
-
-    const errorHeight = useSharedValue(0);
-    const containerHeight = useSharedValue(150);
-
-    const errorAnimatedStyle = useAnimatedStyle(() => {
-        return {
-            height: withTiming(errorHeight.value),
-        };
-    });
-
-    const containerAnimatedStyle = useAnimatedStyle(() => {
-        return {
-            height: withTiming(containerHeight.value),
-        };
-    });
-
-    useEffect(() => {
-        if (uploadFileError) {
-            errorHeight.value = 20;
-        } else {
-            errorHeight.value = 0;
-        }
-    }, [uploadFileError]);
-
-    useEffect(() => {
-        if (files.length) {
-            containerHeight.value = 67;
-            return;
-        }
-        containerHeight.value = 0;
-    }, [files.length > 0]);
-
-    const openGallery = useCallback((file: FileInfo) => {
-        const index = files.indexOf(file);
-        openGalleryAtIndex(index, files.filter((f) => !f.failed && !f.loading));
-    }, [files]);
-
-    const buildFilePreviews = () => {
-        return files.map((file) => {
-            return (
-                <UploadItem
-                    key={file.clientId}
-                    file={file}
-                    openGallery={openGallery}
-                    removeFile={removeFile}
-                    retryFileUpload={retryFileUpload}
-                />
-            );
-        });
-    };
-
-    const style = getStyleSheet(theme);
-    const fileContainerStyle = {
-        paddingBottom: files.length ? 5 : 0,
-    };
-
-    return (
-        <View style={style.previewContainer}>
-            <Animated.View
-                style={[style.fileContainer, fileContainerStyle, containerAnimatedStyle]}
-            >
-                <ScrollView
-                    horizontal={true}
-                    style={style.scrollView}
-                    contentContainerStyle={style.scrollViewContent}
-                    keyboardShouldPersistTaps={'handled'}
-                >
-                    {buildFilePreviews()}
-                </ScrollView>
-            </Animated.View>
-            <Animated.View
-                style={[style.errorContainer, errorAnimatedStyle]}
-            >
-                <View style={style.errorTextContainer}>
-                    {Boolean(uploadFileError) &&
-                        <Text style={style.warning}>
-                            {uploadFileError}
-                        </Text>
-                    }
-                </View>
-            </Animated.View>
-        </View>
-    );
-}
-
 const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     return {
         previewContainer: {
@@ -151,3 +59,95 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         },
     };
 });
+
+export default function Uploads({
+    files,
+    uploadFileError,
+    removeFile,
+    retryFileUpload,
+}: Props) {
+    const theme = useTheme();
+    const style = getStyleSheet(theme);
+
+    const errorHeight = useSharedValue(0);
+    const containerHeight = useSharedValue(150);
+
+    const errorAnimatedStyle = useAnimatedStyle(() => {
+        return {
+            height: withTiming(errorHeight.value),
+        };
+    });
+
+    const containerAnimatedStyle = useAnimatedStyle(() => {
+        return {
+            height: withTiming(containerHeight.value),
+        };
+    });
+
+    const fileContainerStyle = {
+        paddingBottom: files.length ? 5 : 0,
+    };
+
+    useEffect(() => {
+        if (uploadFileError) {
+            errorHeight.value = 20;
+        } else {
+            errorHeight.value = 0;
+        }
+    }, [uploadFileError]);
+
+    useEffect(() => {
+        if (files.length) {
+            containerHeight.value = 67;
+            return;
+        }
+        containerHeight.value = 0;
+    }, [files.length > 0]);
+
+    const openGallery = useCallback((file: FileInfo) => {
+        const index = files.indexOf(file);
+        openGalleryAtIndex(index, files.filter((f) => !f.failed && !f.loading));
+    }, [files]);
+
+    const buildFilePreviews = () => {
+        return files.map((file) => {
+            return (
+                <UploadItem
+                    key={file.clientId}
+                    file={file}
+                    openGallery={openGallery}
+                    removeFile={removeFile}
+                    retryFileUpload={retryFileUpload}
+                />
+            );
+        });
+    };
+
+    return (
+        <View style={style.previewContainer}>
+            <Animated.View
+                style={[style.fileContainer, fileContainerStyle, containerAnimatedStyle]}
+            >
+                <ScrollView
+                    horizontal={true}
+                    style={style.scrollView}
+                    contentContainerStyle={style.scrollViewContent}
+                    keyboardShouldPersistTaps={'handled'}
+                >
+                    {buildFilePreviews()}
+                </ScrollView>
+            </Animated.View>
+            <Animated.View
+                style={[style.errorContainer, errorAnimatedStyle]}
+            >
+                <View style={style.errorTextContainer}>
+                    {Boolean(uploadFileError) &&
+                        <Text style={style.warning}>
+                            {uploadFileError}
+                        </Text>
+                    }
+                </View>
+            </Animated.View>
+        </View>
+    );
+}

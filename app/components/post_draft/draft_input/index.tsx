@@ -3,20 +3,19 @@
 
 import React from 'react';
 import {Platform, ScrollView, View} from 'react-native';
-import {SafeAreaView} from 'react-native-safe-area-context';
+import {Edge, SafeAreaView} from 'react-native-safe-area-context';
 
-import PostInput from '@components/post_draft/post_input';
-import QuickActions from '@components/post_draft/quick_actions';
-import SendAction from '@components/post_draft/send_action';
-import Typing from '@components/post_draft/typing';
 import {useTheme} from '@context/theme';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
+import PostInput from '../post_input';
+import QuickActions from '../quick_actions';
+import SendAction from '../send_action';
+import Typing from '../typing';
 import Uploads from '../uploads';
 
 type Props = {
     testID?: string;
-    channelDisplayName?: string;
     channelId: string;
     rootId?: string;
 
@@ -39,129 +38,7 @@ type Props = {
     retryFileUpload: (file: FileInfo) => void;
 }
 
-export default function DraftInput({
-    testID,
-    channelDisplayName,
-    channelId,
-    files,
-    maxMessageLength,
-    rootId = '',
-    value,
-    uploadFileError,
-    sendMessage,
-    canSend,
-    updateValue,
-    addFiles,
-    updateCursorPosition,
-    cursorPosition,
-    removeFile,
-    retryFileUpload,
-}: Props) {
-    const theme = useTheme();
-
-    // const [top, setTop] = useState(0);
-
-    // Did mount
-    // useEffect(() => {
-    //     HWKeyboardEvent.onHWKeyPressed(handleHardwareEnterPress)
-    //     return () => {
-    //         HWKeyboardEvent.removeOnHWKeyPressed();
-    //     }
-    // })
-
-    // const handleHardwareEnterPress = (keyEvent) => {
-    //     if (HW_EVENT_IN_SCREEN.includes(EphemeralStore.getNavigationTopComponentId())) {
-    //         switch (keyEvent.pressedKey) {
-    //         case 'enter':
-    //             handleSendMessage();
-    //             break;
-    //         case 'shift-enter':
-    //             onInsertTextToDraft(HW_SHIFT_ENTER_TEXT);
-    //             break;
-    //         }
-    //     }
-    // }
-
-    // const handleLayout = useCallback((e: LayoutChangeEvent) => {
-    //     setTop(e.nativeEvent.layout.y);
-    // }, []);
-
-    // Render
-    const postInputTestID = `${testID}.post.input`;
-    const quickActionsTestID = `${testID}.quick_actions`;
-    const sendActionTestID = `${testID}.send_action`;
-    const style = getStyleSheet(theme);
-
-    return (
-        <>
-            <Typing
-                channelId={channelId}
-                rootId={rootId}
-            />
-            {/* {Platform.OS === 'android' &&
-            <Autocomplete
-                maxHeight={Math.min(top - AUTOCOMPLETE_MARGIN, DEVICE.AUTOCOMPLETE_MAX_HEIGHT)}
-                onChangeText={handleInputQuickAction}
-                rootId={rootId}
-                channelId={channelId}
-                offsetY={0}
-            />
-            } */}
-            <SafeAreaView
-                edges={['left', 'right']}
-
-                // onLayout={handleLayout}
-                style={style.inputWrapper}
-                testID={testID}
-            >
-                <ScrollView
-                    style={style.inputContainer}
-                    contentContainerStyle={style.inputContentContainer}
-                    keyboardShouldPersistTaps={'always'}
-                    scrollEnabled={false}
-                    showsVerticalScrollIndicator={false}
-                    showsHorizontalScrollIndicator={false}
-                    pinchGestureEnabled={false}
-                    overScrollMode={'never'}
-                    disableScrollViewPanResponder={true}
-                >
-                    <PostInput
-                        testID={postInputTestID}
-                        channelDisplayName={channelDisplayName}
-                        channelId={channelId}
-                        maxMessageLength={maxMessageLength}
-                        rootId={rootId}
-                        cursorPosition={cursorPosition}
-                        updateCursorPosition={updateCursorPosition}
-                        updateValue={updateValue}
-                        value={value}
-                        updateFiles={addFiles}
-                    />
-                    <Uploads
-                        files={files}
-                        removeFile={removeFile}
-                        retryFileUpload={retryFileUpload}
-                        uploadFileError={uploadFileError}
-                    />
-                    <View style={style.actionsContainer}>
-                        <QuickActions
-                            testID={quickActionsTestID}
-                            fileCount={files.length}
-                            addFiles={addFiles}
-                            updateValue={updateValue}
-                            value={value}
-                        />
-                        <SendAction
-                            testID={sendActionTestID}
-                            disabled={!canSend}
-                            sendMessage={sendMessage}
-                        />
-                    </View>
-                </ScrollView>
-            </SafeAreaView>
-        </>
-    );
-}
+const SAFE_AREA_VIEW_EDGES: Edge[] = ['left', 'right'];
 
 const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     return {
@@ -197,3 +74,105 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         },
     };
 });
+
+export default function DraftInput({
+    testID,
+    channelId,
+    files,
+    maxMessageLength,
+    rootId = '',
+    value,
+    uploadFileError,
+    sendMessage,
+    canSend,
+    updateValue,
+    addFiles,
+    updateCursorPosition,
+    cursorPosition,
+    removeFile,
+    retryFileUpload,
+}: Props) {
+    const theme = useTheme();
+
+    // const [top, setTop] = useState(0);
+
+    // const handleLayout = useCallback((e: LayoutChangeEvent) => {
+    //     setTop(e.nativeEvent.layout.y);
+    // }, []);
+
+    // Render
+    const postInputTestID = `${testID}.post.input`;
+    const quickActionsTestID = `${testID}.quick_actions`;
+    const sendActionTestID = `${testID}.send_action`;
+    const style = getStyleSheet(theme);
+
+    return (
+        <>
+            <Typing
+                channelId={channelId}
+                rootId={rootId}
+            />
+            {/* {Platform.OS === 'android' &&
+            <Autocomplete
+                maxHeight={Math.min(top - AUTOCOMPLETE_MARGIN, DEVICE.AUTOCOMPLETE_MAX_HEIGHT)}
+                onChangeText={handleInputQuickAction}
+                rootId={rootId}
+                channelId={channelId}
+                offsetY={0}
+            />
+            } */}
+            <SafeAreaView
+                edges={SAFE_AREA_VIEW_EDGES}
+
+                // onLayout={handleLayout}
+                style={style.inputWrapper}
+                testID={testID}
+            >
+                <ScrollView
+                    style={style.inputContainer}
+                    contentContainerStyle={style.inputContentContainer}
+                    keyboardShouldPersistTaps={'always'}
+                    scrollEnabled={false}
+                    showsVerticalScrollIndicator={false}
+                    showsHorizontalScrollIndicator={false}
+                    pinchGestureEnabled={false}
+                    overScrollMode={'never'}
+                    disableScrollViewPanResponder={true}
+                >
+                    <PostInput
+                        testID={postInputTestID}
+                        channelId={channelId}
+                        maxMessageLength={maxMessageLength}
+                        rootId={rootId}
+                        cursorPosition={cursorPosition}
+                        updateCursorPosition={updateCursorPosition}
+                        updateValue={updateValue}
+                        value={value}
+                        addFiles={addFiles}
+                        sendMessage={sendMessage}
+                    />
+                    <Uploads
+                        files={files}
+                        removeFile={removeFile}
+                        retryFileUpload={retryFileUpload}
+                        uploadFileError={uploadFileError}
+                    />
+                    <View style={style.actionsContainer}>
+                        <QuickActions
+                            testID={quickActionsTestID}
+                            fileCount={files.length}
+                            addFiles={addFiles}
+                            updateValue={updateValue}
+                            value={value}
+                        />
+                        <SendAction
+                            testID={sendActionTestID}
+                            disabled={!canSend}
+                            sendMessage={sendMessage}
+                        />
+                    </View>
+                </ScrollView>
+            </SafeAreaView>
+        </>
+    );
+}

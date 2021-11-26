@@ -32,7 +32,7 @@ const enhanced = withObservables([], (ownProps: WithDatabaseArgs & OwnProps) => 
     );
 
     let channelId = of$(ownProps.channelId);
-    if (!channelId) {
+    if (!ownProps.channelId) {
         channelId = database.get<SystemModel>(SYSTEM).findAndObserve(SYSTEM_IDENTIFIERS.CURRENT_CHANNEL_ID).pipe(
             switchMap((t) => of$(t.value)),
         );

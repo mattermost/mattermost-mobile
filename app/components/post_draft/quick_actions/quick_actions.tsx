@@ -18,7 +18,26 @@ type Props = {
     // Draft Handler
     value: string;
     updateValue: (value: string) => void;
-    addFiles: (file: FileInfo[]) => void;}
+    addFiles: (file: FileInfo[]) => void;
+}
+
+const style = StyleSheet.create({
+    container: {
+        display: 'flex',
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        paddingBottom: Platform.select({
+            ios: 1,
+            android: 2,
+        }),
+    },
+    quickActionsContainer: {
+        display: 'flex',
+        flexDirection: 'row',
+        height: 44,
+    },
+});
 
 export default function QuickActions({
     testID,
@@ -41,7 +60,7 @@ export default function QuickActions({
     const uploadProps = {
         disabled: !canUploadFiles,
         onUploadFiles: addFiles,
-        fileCount,
+        maxFilesReached: fileCount >= maxFileCount,
         maxFileCount,
     };
 
@@ -79,21 +98,3 @@ export default function QuickActions({
         </View>
     );
 }
-
-const style = StyleSheet.create({
-    container: {
-        display: 'flex',
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        paddingBottom: Platform.select({
-            ios: 1,
-            android: 2,
-        }),
-    },
-    quickActionsContainer: {
-        display: 'flex',
-        flexDirection: 'row',
-        height: 44,
-    },
-});

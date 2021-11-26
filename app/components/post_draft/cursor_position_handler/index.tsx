@@ -3,7 +3,7 @@
 
 import React, {useCallback, useState} from 'react';
 
-import DraftInput from '../draft_input/draft_input';
+import DraftInput from '../draft_input';
 
 type Props = {
     testID?: string;

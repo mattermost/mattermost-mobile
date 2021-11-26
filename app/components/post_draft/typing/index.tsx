@@ -19,19 +19,41 @@ type Props = {
     rootId: string;
 }
 
+const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
+    return {
+        typing: {
+            position: 'absolute',
+            paddingLeft: 10,
+            paddingTop: 3,
+            fontSize: 11,
+            ...Platform.select({
+                android: {
+                    marginBottom: 5,
+                },
+                ios: {
+                    marginBottom: 2,
+                },
+            }),
+            color: theme.centerChannelColor,
+            backgroundColor: 'transparent',
+        },
+    };
+});
+
 export default function Typing({
     channelId,
     rootId,
 }: Props) {
-    const typingBottom = useSharedValue(0);
+    const typingHeight = useSharedValue(0);
     const typing = useRef<Array<{id: string; now: number; username: string}>>([]);
     const [refresh, setRefresh] = useState(0);
 
     const theme = useTheme();
+    const style = getStyleSheet(theme);
 
     const typingAnimatedStyle = useAnimatedStyle(() => {
         return {
-            height: withTiming(typingBottom.value),
+            height: withTiming(typingHeight.value),
         };
     });
 
@@ -75,7 +97,7 @@ export default function Typing({
     }, [channelId, rootId]);
 
     useEffect(() => {
-        typingBottom.value = typing.current.length ? TYPING_HEIGHT : 0;
+        typingHeight.value = typing.current.length ? TYPING_HEIGHT : 0;
     }, [refresh]);
 
     const renderTyping = () => {
@@ -111,8 +133,6 @@ export default function Typing({
         }
     };
 
-    const style = getStyleSheet(theme);
-
     return (
         <Animated.View style={typingAnimatedStyle}>
             <Text
@@ -125,24 +145,3 @@ export default function Typing({
         </Animated.View>
     );
 }
-
-const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
-    return {
-        typing: {
-            position: 'absolute',
-            paddingLeft: 10,
-            paddingTop: 3,
-            fontSize: 11,
-            ...Platform.select({
-                android: {
-                    marginBottom: 5,
-                },
-                ios: {
-                    marginBottom: 2,
-                },
-            }),
-            color: theme.centerChannelColor,
-            backgroundColor: 'transparent',
-        },
-    };
-});

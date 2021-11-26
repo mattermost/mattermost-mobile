@@ -11,6 +11,7 @@ import PostDraft from '@components/post_draft';
 import PostList from '@components/post_list';
 import ServerVersion from '@components/server_version';
 import {Database} from '@constants';
+import {ACCESSORIES_CONTAINER_NATIVE_ID} from '@constants/post_draft';
 import {useTheme} from '@context/theme';
 import {useAppState} from '@hooks/device';
 import {makeStyleSheetFromTheme} from '@utils/theme';
@@ -89,6 +90,8 @@ const Channel = ({currentChannelId, currentTeamId}: ChannelProps) => {
                 <PostDraft
                     channelId={currentChannelId}
                     screenId={''}
+                    scrollViewNativeID={currentChannelId}
+                    accessoriesContainerID={ACCESSORIES_CONTAINER_NATIVE_ID}
                 />
             </>
         );

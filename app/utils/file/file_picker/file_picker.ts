@@ -1,7 +1,6 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import * as FileSystem from 'expo-file-system';
 import {IntlShape} from 'react-intl';
 import {Alert, DeviceEventEmitter, NativeModules, Platform, StatusBar} from 'react-native';
 import AndroidOpenSettings from 'react-native-android-open-settings';
@@ -10,12 +9,12 @@ import DocumentPicker, {DocumentPickerResponse} from 'react-native-document-pick
 import {Asset, CameraOptions, ImageLibraryOptions, ImagePickerResponse, launchCamera, launchImageLibrary} from 'react-native-image-picker';
 import Permissions from 'react-native-permissions';
 
-import {generateId} from '@app/utils/general';
 import {Client} from '@client/rest';
 import {Navigation} from '@constants';
 import NetworkManager from '@init/network_manager';
-import UserModel from '@typings/database/models/servers/user';
-import {lookupMimeType} from '@utils/file';
+import {extractFileInfos, lookupMimeType} from '@utils/file';
+
+import type UserModel from '@typings/database/models/servers/user';
 
 const ShareExtension = NativeModules.MattermostShare;
 
@@ -104,44 +103,7 @@ export default class PickerUtil {
     };
 
     private prepareFileUpload = async (files: Array<Asset | DocumentPickerResponse>) => {
-        const out: FileInfo[] = [];
-
-        await Promise.all(files.map(async (file) => {
-            if (!file) {
-                return;
-            }
-
-            const outFile = {
-                progress: 0,
-                localPath: file.uri,
-                clientId: generateId(),
-                loading: true,
-            } as FileInfo;
-
-            if (file.hasOwnProperty('fileSize')) {
-                outFile.size = (file as Asset).fileSize || 0;
-                outFile.name = (file as Asset).fileName || '';
-            } else {
-                const path = Platform.select({
-                    ios: (file.uri || '').replace('file://', ''),
-                    default: file.uri || '',
-                });
-
-                const fileInfo = await FileSystem.getInfoAsync(path);
-                const uri = fileInfo.uri;
-
-                outFile.size = fileInfo.size || 0;
-                outFile.name = uri.substr(uri.lastIndexOf('/') + 1);
-            }
-
-            if (file.type) {
-                outFile.mime_type = file.type;
-            } else {
-                outFile.mime_type = lookupMimeType(outFile.name);
-            }
-
-            out.push(outFile);
-        }));
+        const out = await extractFileInfos(files);
 
         if (out.length > 0) {
             DeviceEventEmitter.emit(Navigation.NAVIGATION_CLOSE_MODAL);
@@ -268,13 +230,16 @@ export default class PickerUtil {
         return false;
     };
 
-    attachFileFromCamera = async () => {
-        const options: CameraOptions = {
-            quality: 0.8,
-            videoQuality: 'high',
-            mediaType: 'photo',
-            saveToPhotos: true,
-        };
+    attachFileFromCamera = async (customOptions?: CameraOptions) => {
+        let options = customOptions;
+        if (!options) {
+            options = {
+                quality: 0.8,
+                videoQuality: 'high',
+                mediaType: 'photo',
+                saveToPhotos: true,
+            };
+        }
 
         const hasCameraPermission = await this.hasPhotoPermission('camera');
         if (hasCameraPermission) {

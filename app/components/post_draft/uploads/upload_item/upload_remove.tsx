@@ -13,30 +13,6 @@ type Props = {
     onPress: () => void;
 }
 
-export default function UploadRemove({
-    onPress,
-}: Props) {
-    const theme = useTheme();
-    const style = getStyleSheet(theme);
-
-    return (
-        <TouchableWithFeedback
-            style={style.tappableContainer}
-            onPress={onPress}
-            type={'opacity'}
-        >
-            <View style={style.removeButton}>
-                <CompassIcon
-                    name='close-circle'
-                    color={changeOpacity(theme.centerChannelColor, 0.64)}
-                    size={24}
-                    style={style.removeIcon}
-                />
-            </View>
-        </TouchableWithFeedback>
-    );
-}
-
 const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     return {
         tappableContainer: {
@@ -60,3 +36,27 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         },
     };
 });
+
+export default function UploadRemove({
+    onPress,
+}: Props) {
+    const theme = useTheme();
+    const style = getStyleSheet(theme);
+
+    return (
+        <TouchableWithFeedback
+            style={style.tappableContainer}
+            onPress={onPress}
+            type={'opacity'}
+        >
+            <View style={style.removeButton}>
+                <CompassIcon
+                    name='close-circle'
+                    color={changeOpacity(theme.centerChannelColor, 0.64)}
+                    size={24}
+                    style={style.removeIcon}
+                />
+            </View>
+        </TouchableWithFeedback>
+    );
+}

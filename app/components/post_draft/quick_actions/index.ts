@@ -6,7 +6,6 @@ import withObservables from '@nozbe/with-observables';
 import {combineLatest, of as of$} from 'rxjs';
 import {switchMap} from 'rxjs/operators';
 
-import {DEFAULT_SERVER_MAX_FILE_SIZE} from '@app/constants/post_draft';
 import {isMinimumServerVersion} from '@app/utils/helpers';
 import {MM_TABLES, SYSTEM_IDENTIFIERS} from '@constants/database';
 
@@ -33,17 +32,12 @@ const enhanced = withObservables([], ({database}: WithDatabaseArgs) => {
         ),
     );
 
-    const maxFileSize = config.pipe(
-        switchMap((cfg) => of$(parseInt(cfg.MaxFileSize || '0', 10) || DEFAULT_SERVER_MAX_FILE_SIZE)),
-    );
-
     const maxFileCount = config.pipe(
         switchMap((cfg) => of$(isMinimumServerVersion(cfg.Version, 6, 0) ? 10 : 5)),
     );
 
     return {
         canUploadFiles,
-        maxFileSize,
         maxFileCount,
     };
 });

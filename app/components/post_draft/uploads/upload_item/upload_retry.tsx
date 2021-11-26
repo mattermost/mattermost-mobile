@@ -11,6 +11,18 @@ type Props = {
     onPress: () => void;
 }
 
+const style = StyleSheet.create({
+    failed: {
+        backgroundColor: 'rgba(0, 0, 0, 0.8)',
+        position: 'absolute',
+        height: '100%',
+        width: '100%',
+        alignItems: 'center',
+        justifyContent: 'center',
+        borderRadius: 4,
+    },
+});
+
 export default function UploadRetry({
     onPress,
 }: Props) {
@@ -28,15 +40,3 @@ export default function UploadRetry({
         </TouchableWithFeedback>
     );
 }
-
-const style = StyleSheet.create({
-    failed: {
-        backgroundColor: 'rgba(0, 0, 0, 0.8)',
-        position: 'absolute',
-        height: '100%',
-        width: '100%',
-        alignItems: 'center',
-        justifyContent: 'center',
-        borderRadius: 4,
-    },
-});

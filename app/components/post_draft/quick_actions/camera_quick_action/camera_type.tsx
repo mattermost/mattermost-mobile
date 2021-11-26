@@ -2,17 +2,18 @@
 // See LICENSE.txt for license information.
 
 import React from 'react';
-import {View} from 'react-native';
+import {View, DeviceEventEmitter} from 'react-native';
 import {CameraOptions} from 'react-native-image-picker';
 
 import CompassIcon from '@components/compass_icon';
 import FormattedText from '@components/formatted_text';
 import TouchableWithFeedback from '@components/touchable_with_feedback';
+import {Navigation} from '@constants';
+import {useTheme} from '@context/theme';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 
 type Props = {
     onPress: (options: CameraOptions) => void;
-    theme: Theme;
 }
 
 const getStyle = makeStyleSheetFromTheme((theme: Theme) => ({
@@ -50,7 +51,8 @@ const getStyle = makeStyleSheetFromTheme((theme: Theme) => ({
     },
 }));
 
-const CameraType = ({onPress, theme}: Props) => {
+const CameraType = ({onPress}: Props) => {
+    const theme = useTheme();
     const style = getStyle(theme);
 
     const onPhoto = () => {
@@ -61,6 +63,7 @@ const CameraType = ({onPress, theme}: Props) => {
         };
 
         onPress(options);
+        DeviceEventEmitter.emit(Navigation.NAVIGATION_CLOSE_MODAL);
     };
 
     const onVideo = () => {
@@ -71,6 +74,7 @@ const CameraType = ({onPress, theme}: Props) => {
         };
 
         onPress(options);
+        DeviceEventEmitter.emit(Navigation.NAVIGATION_CLOSE_MODAL);
     };
 
     return (

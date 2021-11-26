@@ -3,13 +3,13 @@
 
 import {ClientResponse, ClientResponseError} from '@mattermost/react-native-network-client';
 import React, {useCallback, useEffect, useRef, useState} from 'react';
-import {IntlShape, useIntl} from 'react-intl';
+import {useIntl} from 'react-intl';
 
 import {removeDraft, updateDraft} from '@actions/local/post';
 import {uploadFile} from '@actions/remote/file';
-import {useServerUrl} from '@app/context/server_url';
-import {DraftModel} from '@app/database/models/server';
-import {getFormattedFileSize} from '@app/utils/file';
+import {useServerUrl} from '@context/server_url';
+import {DraftModel} from '@database/models/server';
+import {fileMaxWarning, fileSizeWarning, uploadDisabledWarning} from '@utils/file';
 
 import SendHandler from '../send_handler';
 
@@ -80,31 +80,6 @@ function prepareUpload(file: FileInfo, fileHandler: React.MutableRefObject<FileH
         return;
     }
     fileHandler.current[file.clientId!].cancel = cancel;
-}
-
-function fileSizeWarning(intl: IntlShape, maxFileSize: number) {
-    return intl.formatMessage({
-        id: 'file_upload.fileAbove',
-        defaultMessage: 'Files must be less than {max}',
-    }, {
-        max: getFormattedFileSize(maxFileSize),
-    });
-}
-
-function fileMaxWarning(intl: IntlShape, maxFileCount: number) {
-    return intl.formatMessage({
-        id: 'mobile.file_upload.max_warning',
-        defaultMessage: 'Uploads limited to {count} files maximum.',
-    }, {
-        count: maxFileCount,
-    });
-}
-
-function uploadDisabledWarning(intl: IntlShape) {
-    return intl.formatMessage({
-        id: 'mobile.file_upload.disabled2',
-        defaultMessage: 'File uploads from mobile are disabled.',
-    });
 }
 
 export default function DraftHandler(props: Props) {

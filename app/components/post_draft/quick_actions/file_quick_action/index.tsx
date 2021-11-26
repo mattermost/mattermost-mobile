@@ -3,12 +3,13 @@
 
 import React, {useCallback} from 'react';
 import {useIntl} from 'react-intl';
-import {StyleSheet} from 'react-native';
+import {Alert, StyleSheet} from 'react-native';
 
 import CompassIcon from '@components/compass_icon';
 import TouchableWithFeedback from '@components/touchable_with_feedback';
 import {ICON_SIZE} from '@constants/post_draft';
 import {useTheme} from '@context/theme';
+import {fileMaxWarning} from '@utils/file';
 import PickerUtil from '@utils/file/file_picker/file_picker';
 import {changeOpacity} from '@utils/theme';
 
@@ -25,12 +26,24 @@ const style = StyleSheet.create({
 export default function FileQuickAction({
     disabled,
     onUploadFiles,
+    maxFilesReached,
+    maxFileCount,
     testID = '',
 }: QuickActionAttachmentProps) {
     const intl = useIntl();
     const theme = useTheme();
 
     const handleButtonPress = useCallback(() => {
+        if (maxFilesReached) {
+            Alert.alert(
+                intl.formatMessage({
+                    id: 'mobile.link.error.title',
+                    defaultMessage: 'Error',
+                }),
+                fileMaxWarning(intl, maxFileCount),
+            );
+            return;
+        }
         const picker = new PickerUtil(intl,
             onUploadFiles);
 

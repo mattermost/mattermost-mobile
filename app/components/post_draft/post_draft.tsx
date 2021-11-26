@@ -62,7 +62,7 @@ export default function PostDraft({
                 cancelAnimationFrame(resetScrollViewAnimationFrame.current);
             }
         };
-    });
+    }, [updateNativeScrollView]);
 
     if (channelIsArchived || deactivatedChannel) {
         const archivedTestID = `${testID}.archived`;
@@ -75,9 +75,7 @@ export default function PostDraft({
         );
     }
 
-    const readonly = channelIsReadOnly || !canPost;
-
-    if (readonly) {
+    if (channelIsReadOnly || !canPost) {
         const readOnlyTestID = `${testID}.read_only`;
 
         return (

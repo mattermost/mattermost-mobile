@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useEffect, useState} from 'react';
+import React, {useCallback, useEffect, useState} from 'react';
 import {useIntl} from 'react-intl';
 import {DeviceEventEmitter} from 'react-native';
 
@@ -79,28 +79,7 @@ export default function SendHandler({
     const [sendingMessage, setSendingMessage] = useState(false);
     const [channelMemberCountsByGroup, setChannelMemberCountsByGroup] = useState<ChannelMemberCountByGroup[]>([]);
 
-    useEffect(() => {
-        if (useGroupMentions) {
-            getChannelMemberCountsByGroup(serverUrl, channelId, isTimezoneEnabled).then((resp) => {
-                if (resp.error) {
-                    return;
-                }
-
-                const received = resp.channelMemberCountsByGroup || [];
-                if (received.length || channelMemberCountsByGroup.length) {
-                    setChannelMemberCountsByGroup(received);
-                }
-            });
-        }
-    }, [useGroupMentions, channelId, isTimezoneEnabled, channelMemberCountsByGroup.length]);
-
-    useEffect(() => {
-        getChannelTimezones(serverUrl, channelId).then(({channelTimezones}) => {
-            setChannelTimezoneCount(channelTimezones?.length || 0);
-        });
-    }, [channelId]);
-
-    const canSend = () => {
+    const canSend = useCallback(() => {
         if (sendingMessage) {
             return false;
         }
@@ -117,108 +96,15 @@ export default function SendHandler({
         }
 
         return messageLength > 0;
-    };
+    }, [sendingMessage, value, files, maxMessageLength]);
 
-    const handleSendMessage = preventDoubleTap(() => {
-        if (!canSend()) {
-            return;
-        }
-
-        setSendingMessage(true);
-
-        const isReactionMatch = value.match(IS_REACTION_REGEX);
-        if (isReactionMatch) {
-            const emoji = isReactionMatch[2];
-            sendReaction(emoji);
-            return;
-        }
-
-        const hasFailedAttachments = files.some((f) => f.failed);
-        if (hasFailedAttachments) {
-            const cancel = () => {
-                setSendingMessage(false);
-            };
-            const accept = () => {
-                // Files are filtered on doSubmitMessage
-                sendMessage();
-            };
-
-            DraftUtils.alertAttachmentFail(intl, accept, cancel);
-        } else {
-            sendMessage();
-        }
-    });
-
-    const sendReaction = (emoji: string) => {
+    const sendReaction = useCallback((emoji: string) => {
         addReactionToLatestPost(serverUrl, emoji, rootId);
         clearDraft();
         setSendingMessage(false);
-    };
+    }, [serverUrl, rootId, clearDraft]);
 
-    const sendCommand = async () => {
-        const status = DraftUtils.getStatusFromSlashCommand(value);
-        if (userIsOutOfOffice && status) {
-            const updateStatus = (newStatus: string) => {
-                setStatus(serverUrl, {
-                    status: newStatus,
-                    last_activity_at: Date.now(),
-                    manual: true,
-                    user_id: currentUserId,
-                });
-            };
-            confirmOutOfOfficeDisabled(intl, status, updateStatus);
-            setSendingMessage(false);
-            return;
-        }
-
-        const {data, error} = await executeCommand(serverUrl, intl, value, channelId, rootId);
-        setSendingMessage(false);
-
-        if (error) {
-            const errorMessage = typeof (error) === 'string' ? error : error.message;
-            DraftUtils.alertSlashCommandFailed(intl, errorMessage);
-            return;
-        }
-
-        clearDraft();
-        // TODO Apps related
-        // if (data?.form) {
-        //     showAppForm(data.form, data.call, theme);
-        // }
-
-        if (data?.goto_location) {
-            handleGotoLocation(serverUrl, intl, data.goto_location);
-        }
-    };
-
-    const sendMessage = () => {
-        const notificationsToChannel = enableConfirmNotificationsToChannel && useChannelMentions;
-        const notificationsToGroups = enableConfirmNotificationsToChannel && useGroupMentions;
-        const toAllOrChannel = DraftUtils.textContainsAtAllAtChannel(value);
-        const toHere = DraftUtils.textContainsAtHere(value);
-        const groupMentions = (!toAllOrChannel && !toHere && notificationsToGroups) ? DraftUtils.groupsMentionedInText(groupsWithAllowReference, value) : [];
-
-        if (value.indexOf('/') === 0) {
-            sendCommand();
-        } else if (notificationsToChannel && membersCount > NOTIFY_ALL_MEMBERS && (toAllOrChannel || toHere)) {
-            showSendToAllOrChannelOrHereAlert(membersCount, toHere && !toAllOrChannel);
-        } else if (groupMentions.length > 0) {
-            const {
-                groupMentionsSet,
-                memberNotifyCount,
-                channelTimezoneCount: calculatedChannelTimezoneCount,
-            } = DraftUtils.mapGroupMentions(channelMemberCountsByGroup, groupMentions);
-            if (memberNotifyCount > 0) {
-                showSendToGroupsAlert(Array.from(groupMentionsSet), memberNotifyCount, calculatedChannelTimezoneCount);
-            } else {
-                doSubmitMessage();
-            }
-        } else {
-            doSubmitMessage();
-        }
-    };
-
-    const doSubmitMessage = () => {
+    const doSubmitMessage = useCallback(() => {
         const postFiles = files.filter((f) => !f.failed);
         const post = {
             user_id: currentUserId,
@@ -249,25 +135,152 @@ export default function SendHandler({
         // }
 
         DeviceEventEmitter.emit('scroll-to-bottom', EphemeralStore.getNavigationTopComponentId());
-    };
+    }, [files, currentUserId, channelId, rootId, value, clearDraft]);
 
-    const showSendToAllOrChannelOrHereAlert = (calculatedMembersCount: number, atHere: boolean) => {
+    const showSendToAllOrChannelOrHereAlert = useCallback((calculatedMembersCount: number, atHere: boolean) => {
         const notifyAllMessage = DraftUtils.buildChannelWideMentionMessage(intl, calculatedMembersCount, Boolean(isTimezoneEnabled), channelTimezoneCount, atHere);
         const cancel = () => {
             setSendingMessage(false);
         };
 
         DraftUtils.alertChannelWideMention(intl, notifyAllMessage, doSubmitMessage, cancel);
-    };
+    }, [intl, isTimezoneEnabled, channelTimezoneCount, doSubmitMessage]);
 
-    const showSendToGroupsAlert = (groupMentions: string[], memberNotifyCount: number, calculatedChannelTimezoneCount: number) => {
+    const showSendToGroupsAlert = useCallback((groupMentions: string[], memberNotifyCount: number, calculatedChannelTimezoneCount: number) => {
         const notifyAllMessage = DraftUtils.buildGroupMentionsMessage(intl, groupMentions, memberNotifyCount, calculatedChannelTimezoneCount);
         const cancel = () => {
             setSendingMessage(false);
         };
 
         DraftUtils.alertSendToGroups(intl, notifyAllMessage, doSubmitMessage, cancel);
-    };
+    }, [intl, doSubmitMessage]);
+
+    const sendCommand = useCallback(async () => {
+        const status = DraftUtils.getStatusFromSlashCommand(value);
+        if (userIsOutOfOffice && status) {
+            const updateStatus = (newStatus: string) => {
+                setStatus(serverUrl, {
+                    status: newStatus,
+                    last_activity_at: Date.now(),
+                    manual: true,
+                    user_id: currentUserId,
+                });
+            };
+            confirmOutOfOfficeDisabled(intl, status, updateStatus);
+            setSendingMessage(false);
+            return;
+        }
+
+        const {data, error} = await executeCommand(serverUrl, intl, value, channelId, rootId);
+        setSendingMessage(false);
+
+        if (error) {
+            const errorMessage = typeof (error) === 'string' ? error : error.message;
+            DraftUtils.alertSlashCommandFailed(intl, errorMessage);
+            return;
+        }
+
+        clearDraft();
+
+        // TODO Apps related
+        // if (data?.form) {
+        //     showAppForm(data.form, data.call, theme);
+        // }
+
+        if (data?.goto_location) {
+            handleGotoLocation(serverUrl, intl, data.goto_location);
+        }
+    }, [userIsOutOfOffice, currentUserId, intl, value, serverUrl, channelId, rootId]);
+
+    const sendMessage = useCallback(() => {
+        const notificationsToChannel = enableConfirmNotificationsToChannel && useChannelMentions;
+        const notificationsToGroups = enableConfirmNotificationsToChannel && useGroupMentions;
+        const toAllOrChannel = DraftUtils.textContainsAtAllAtChannel(value);
+        const toHere = DraftUtils.textContainsAtHere(value);
+        const groupMentions = (!toAllOrChannel && !toHere && notificationsToGroups) ? DraftUtils.groupsMentionedInText(groupsWithAllowReference, value) : [];
+
+        if (value.indexOf('/') === 0) {
+            sendCommand();
+        } else if (notificationsToChannel && membersCount > NOTIFY_ALL_MEMBERS && (toAllOrChannel || toHere)) {
+            showSendToAllOrChannelOrHereAlert(membersCount, toHere && !toAllOrChannel);
+        } else if (groupMentions.length > 0) {
+            const {
+                groupMentionsSet,
+                memberNotifyCount,
+                channelTimezoneCount: calculatedChannelTimezoneCount,
+            } = DraftUtils.mapGroupMentions(channelMemberCountsByGroup, groupMentions);
+            if (memberNotifyCount > 0) {
+                showSendToGroupsAlert(Array.from(groupMentionsSet), memberNotifyCount, calculatedChannelTimezoneCount);
+            } else {
+                doSubmitMessage();
+            }
+        } else {
+            doSubmitMessage();
+        }
+    }, [
+        enableConfirmNotificationsToChannel,
+        useChannelMentions,
+        useGroupMentions,
+        value,
+        groupsWithAllowReference,
+        channelTimezoneCount,
+        channelMemberCountsByGroup,
+        sendCommand,
+        showSendToAllOrChannelOrHereAlert,
+        showSendToGroupsAlert,
+        doSubmitMessage,
+    ]);
+
+    const handleSendMessage = useCallback(preventDoubleTap(() => {
+        if (!canSend()) {
+            return;
+        }
+
+        setSendingMessage(true);
+
+        const isReactionMatch = value.match(IS_REACTION_REGEX);
+        if (isReactionMatch) {
+            const emoji = isReactionMatch[2];
+            sendReaction(emoji);
+            return;
+        }
+
+        const hasFailedAttachments = files.some((f) => f.failed);
+        if (hasFailedAttachments) {
+            const cancel = () => {
+                setSendingMessage(false);
+            };
+            const accept = () => {
+                // Files are filtered on doSubmitMessage
+                sendMessage();
+            };
+
+            DraftUtils.alertAttachmentFail(intl, accept, cancel);
+        } else {
+            sendMessage();
+        }
+    }), [canSend, value, sendReaction, files, sendMessage]);
+
+    useEffect(() => {
+        if (useGroupMentions) {
+            getChannelMemberCountsByGroup(serverUrl, channelId, isTimezoneEnabled).then((resp) => {
+                if (resp.error) {
+                    return;
+                }
+
+                const received = resp.channelMemberCountsByGroup || [];
+                if (received.length || channelMemberCountsByGroup.length) {
+                    setChannelMemberCountsByGroup(received);
+                }
+            });
+        }
+    }, [useGroupMentions, channelId, isTimezoneEnabled, channelMemberCountsByGroup.length]);
+
+    useEffect(() => {
+        getChannelTimezones(serverUrl, channelId).then(({channelTimezones}) => {
+            setChannelTimezoneCount(channelTimezones?.length || 0);
+        });
+    }, [serverUrl, channelId]);
 
     return (
         <CursorPositionHandler
