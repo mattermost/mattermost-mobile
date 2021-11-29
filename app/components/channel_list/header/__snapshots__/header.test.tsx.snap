@@ -1,6 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`Channel List Header Component should match snapshot 1`] = `
+exports[`components/channel_list/header Channel List Header Component should match snapshot 1`] = `
 <View>
   <View
     style={
@@ -31,7 +31,7 @@ exports[`Channel List Header Component should match snapshot 1`] = `
           }
         }
       >
-        Hello World!
+        Test!
       </Text>
       <View
         onMoveShouldSetResponder={[Function]}
@@ -132,6 +132,8 @@ exports[`Channel List Header Component should match snapshot 1`] = `
         "lineHeight": 16,
       }
     }
-  />
+  >
+    
+  </Text>
 </View>
 `;

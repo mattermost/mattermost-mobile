@@ -9,7 +9,7 @@ import {combineLatest, of as of$} from 'rxjs';
 import {map, switchMap} from 'rxjs/operators';
 
 import {MM_TABLES, SYSTEM_IDENTIFIERS} from '@constants/database';
-import {useServerUrl} from '@context/server_url';
+import {useServerUrl} from '@context/server';
 import {useIsTablet} from '@hooks/device';
 import NetworkManager from '@init/network_manager';
 import {isGif, isImage} from '@utils/file';
