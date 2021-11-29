@@ -1,6 +1,9 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+/* eslint-disable react/prop-types */
+// We disable the prop types check here as forwardRef & typescript has a bug
+
 import React, {forwardRef, useCallback, useImperativeHandle, useMemo, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
 import {ActivityIndicatorProps, Platform, StyleProp, TextInput, TextInputProps, TextStyle, TouchableOpacityProps, ViewStyle} from 'react-native';

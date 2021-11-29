@@ -220,7 +220,7 @@ class DatabaseManager {
                 });
             });
         }
-    }
+    };
 
     public updateServerDisplayName = async (serverUrl: string, displayName: string) => {
         const appDatabase = this.appDatabase?.database;
@@ -232,7 +232,7 @@ class DatabaseManager {
                 });
             });
         }
-    }
+    };
 
     /**
     * isServerPresent : Confirms if the current serverUrl does not already exist in the database
@@ -246,7 +246,7 @@ class DatabaseManager {
         }
 
         return false;
-    }
+    };
 
     /**
     * getActiveServerUrl: Get the record for active server database.
@@ -260,7 +260,7 @@ class DatabaseManager {
         }
 
         return null;
-    }
+    };
 
     public getServerUrlFromIdentifier = async (identifier: string): Promise<string|undefined> => {
         const database = this.appDatabase?.database;
@@ -270,7 +270,7 @@ class DatabaseManager {
         }
 
         return undefined;
-    }
+    };
 
     /**
     * getActiveServerDatabase: Get the record for active server database.
@@ -286,7 +286,7 @@ class DatabaseManager {
         }
 
         return undefined;
-    }
+    };
 
     /**
     * setActiveServerDatabase: Set the new active server database.
@@ -330,7 +330,7 @@ class DatabaseManager {
                 this.deleteServerDatabaseFiles(serverUrl);
             }
         }
-    }
+    };
 
     /**
     * destroyServerDatabase: Removes the *.db file from the App-Group directory for iOS or the files directory on Android.
@@ -351,7 +351,7 @@ class DatabaseManager {
                 this.deleteServerDatabaseFiles(serverUrl);
             }
         }
-    }
+    };
 
     /**
     * deleteServerDatabaseFiles: Removes the *.db file from the App-Group directory for iOS or the files directory on Android.
@@ -376,7 +376,7 @@ class DatabaseManager {
         FileSystem.deleteAsync(databaseFile);
         FileSystem.deleteAsync(databaseShm);
         FileSystem.deleteAsync(databaseWal);
-    }
+    };
 
     /**
     * factoryReset: Removes the databases directory and all its contents on the respective platform

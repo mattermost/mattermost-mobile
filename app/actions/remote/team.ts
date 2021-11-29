@@ -83,7 +83,7 @@ export const fetchMyTeams = async (serverUrl: string, fetchOnly = false): Promis
     }
 
     try {
-        const [teams, memberships] = await Promise.all<Team[], TeamMembership[]>([
+        const [teams, memberships]: [Team[], TeamMembership[]] = await Promise.all([
             client.getMyTeams(),
             client.getMyTeamMembers(),
         ]);
