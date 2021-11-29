@@ -12,7 +12,7 @@ type HelpContentProps = {
     text?: string;
 };
 
-const InputFieldDescription = ({text}: HelpContentProps) => {
+const Description = ({text}: HelpContentProps) => {
     const theme = useTheme();
     const intl = useIntl();
 
@@ -37,4 +37,4 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     };
 });
 
-export default InputFieldDescription;
+export default Description;

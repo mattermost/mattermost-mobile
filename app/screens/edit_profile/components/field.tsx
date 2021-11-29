@@ -10,9 +10,9 @@ import FloatingTextInput from '@components/floating_text_input_label';
 import {useTheme} from '@context/theme';
 import {makeStyleSheetFromTheme, getKeyboardAppearanceFromTheme} from '@utils/theme';
 
-import FieldDescription from './input_field_description';
+import FieldDescription from './field_description';
 
-type InputFieldProps = {
+type FieldProps = {
     isDisabled?: boolean;
     fieldDescription?: string;
     id: string;
@@ -25,7 +25,7 @@ type InputFieldProps = {
     value: string;
 };
 
-const InputField = ({
+const Field = ({
     isDisabled = false,
     fieldDescription,
     id,
@@ -36,7 +36,7 @@ const InputField = ({
     isOptional = false,
     testID,
     value,
-}: InputFieldProps) => {
+}: FieldProps) => {
     const theme = useTheme();
     const intl = useIntl();
 
@@ -102,4 +102,4 @@ const getStyleSheet = makeStyleSheetFromTheme(() => {
         },
     };
 });
-export default InputField;
+export default Field;

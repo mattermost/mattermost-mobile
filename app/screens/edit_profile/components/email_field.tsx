@@ -7,7 +7,7 @@ import {useIntl} from 'react-intl';
 import {t} from '@i18n';
 import {FIELDS} from '@screens/edit_profile/constants';
 
-import InputField from './input_field';
+import Field from './field';
 
 type EmailSettingsProps = {
     authService: string;
@@ -63,7 +63,7 @@ const EmailField = ({authService, email, onChange}: EmailSettingsProps) => {
     const helpText = intl.formatMessage({id, defaultMessage}, {email});
 
     return (
-        <InputField
+        <Field
             fieldDescription={helpText ?? ''}
             id='email'
             isDisabled={true}

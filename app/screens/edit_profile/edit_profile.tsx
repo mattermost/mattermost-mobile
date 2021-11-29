@@ -19,7 +19,7 @@ import {dismissModal, popTopScreen, setButtons} from '@screens/navigation';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 
 import EmailField from './components/email_field';
-import InputField from './components/input_field';
+import Field from './components/field';
 import ProfileError from './components/profile_error';
 import ProfileUpdating from './components/profile_updating';
 
@@ -244,7 +244,7 @@ const EditProfile = ({
                 >
                     {error && <ProfileError error={error}/>}
                     {renderProfilePicture()}
-                    <InputField
+                    <Field
                         id={'firstName'}
                         isDisabled={(['ldap', 'saml'].includes(service) && lockedFirstName) || ['gitlab', 'google', 'office365'].includes(service)}
                         label={FIELDS.firstName}
@@ -253,7 +253,7 @@ const EditProfile = ({
                         value={userInfo.firstName}
                     />
                     <View style={style.separator}/>
-                    <InputField
+                    <Field
                         id={'lastName'}
                         isDisabled={(['ldap', 'saml'].includes(service) && lockedLastName) || ['gitlab', 'google', 'office365'].includes(service)}
                         label={FIELDS.lastName}
@@ -262,7 +262,7 @@ const EditProfile = ({
                         value={userInfo.lastName}
                     />
                     <View style={style.separator}/>
-                    <InputField
+                    <Field
                         id={'username'}
                         isDisabled={service !== ''}
                         label={FIELDS.username}
@@ -278,7 +278,7 @@ const EditProfile = ({
                         onChange={updateField}
                     />
                     <View style={style.separator}/>
-                    <InputField
+                    <Field
                         id={'nickname'}
                         isDisabled={['ldap', 'saml'].includes(service) && lockedNickname}
                         label={FIELDS.nickname}
@@ -288,7 +288,7 @@ const EditProfile = ({
                         value={userInfo.nickname}
                     />
                     <View style={style.separator}/>
-                    <InputField
+                    <Field
                         id={'position'}
                         isDisabled={['ldap', 'saml'].includes(service) && lockedPosition}
                         label={FIELDS.position}
