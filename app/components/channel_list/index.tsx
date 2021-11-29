@@ -63,7 +63,6 @@ const ChannelList = ({iconPad, isTablet, teamsCount}: ChannelListProps) => {
         }
     }, [isTablet, teamsCount]);
 
-    // @to-do; remove after testing
     const [showCats, setShowCats] = useState<boolean>(true);
 
     return (
