@@ -6,7 +6,7 @@ import {DeviceEventEmitter} from 'react-native';
 
 import {Navigation as NavigationConstants, Screens} from '@constants';
 import DatabaseManager from '@database/manager';
-import {prepareDeleteChannel, queryAllMyChannelIds, queryChannelsById, queryMyChannel} from '@queries/servers/channel';
+import {prepareDeleteChannel, prepareMyChannelsForTeam, queryAllMyChannelIds, queryChannelsById, queryMyChannel} from '@queries/servers/channel';
 import {prepareCommonSystemValues, PrepareCommonSystemValuesArgs, queryCommonSystemValues, queryCurrentTeamId} from '@queries/servers/system';
 import {addChannelToTeamHistory, addTeamToTeamHistory, removeChannelFromTeamHistory} from '@queries/servers/team';
 import {dismissAllModalsAndPopToRoot, dismissAllModalsAndPopToScreen} from '@screens/navigation';
@@ -167,4 +167,64 @@ export const markChannelAsViewed = async (serverUrl: string, channelId: string, 
     } catch (error) {
         return {error};
     }
+};
+
+export const markChannelAsUnread = async (serverUrl: string, channelId: string, messageCount: number, mentionsCount: number, manuallyUnread: boolean, prepareRecordsOnly = false) => {
+    const database = DatabaseManager.serverDatabases[serverUrl]?.database;
+    if (!database) {
+        return {error: `${serverUrl} database not found`};
+    }
+
+    const member = await queryMyChannel(database, channelId);
+    if (!member) {
+        return {error: 'not a member'};
+    }
+
+    member.prepareUpdate((m) => {
+        m.messageCount += messageCount;
+        m.mentionsCount += mentionsCount;
+        m.manuallyUnread = manuallyUnread;
+    });
+
+    try {
+        if (!prepareRecordsOnly) {
+            const {operator} = DatabaseManager.serverDatabases[serverUrl];
+            await operator.batchRecords([member]);
+        }
+
+        return member;
+    } catch (error) {
+        return {error};
+    }
+};
+
+export const localMyChannels = async (serverUrl: string, teamId: string, channels: Channel[], memberships: ChannelMembership[], prepareRecordsOnly = false) => {
+    const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
+    if (!operator) {
+        return {error: `${serverUrl} database not found`};
+    }
+    const modelPromises: Array<Promise<Model[]>> = [];
+    const prepare = await prepareMyChannelsForTeam(operator, teamId, channels, memberships);
+    if (prepare) {
+        modelPromises.push(...prepare);
+    }
+
+    const models = await Promise.all(modelPromises);
+    const flattenedModels = models.flat() as Model[];
+
+    if (prepareRecordsOnly) {
+        return {models: flattenedModels};
+    }
+
+    if (flattenedModels?.length > 0) {
+        try {
+            await operator.batchRecords(flattenedModels);
+        } catch (error) {
+            // eslint-disable-next-line no-console
+            console.log('FAILED TO BATCH CHANNELS');
+            return {error};
+        }
+    }
+
+    return {models: flattenedModels};
 };

@@ -13,10 +13,11 @@ import {queryConfig, setCurrentChannelId} from '@queries/servers/system';
 import {queryLastChannelFromTeam} from '@queries/servers/team';
 import {queryCurrentUser} from '@queries/servers/user';
 import {dismissAllModals, popToRoot} from '@screens/navigation';
+import {WebSocketMessage} from '@typings/api/websocket';
 import {isTablet} from '@utils/helpers';
 import {isGuest} from '@utils/user';
 
-export async function handleUserRemovedEvent(serverUrl: string, msg: any) {
+export async function handleUserRemovedEvent(serverUrl: string, msg: WebSocketMessage) {
     const database = DatabaseManager.serverDatabases[serverUrl];
     if (!database) {
         return;
@@ -58,7 +59,7 @@ export async function handleUserRemovedEvent(serverUrl: string, msg: any) {
     }
 }
 
-export async function handleChannelDeletedEvent(serverUrl: string, msg: any) {
+export async function handleChannelDeletedEvent(serverUrl: string, msg: WebSocketMessage) {
     const database = DatabaseManager.serverDatabases[serverUrl];
     if (!database) {
         return;

@@ -18,8 +18,10 @@ import {getTeammateNameDisplaySetting} from '@helpers/api/preference';
 import {prepareMyChannelsForTeam} from '@queries/servers/channel';
 import {queryCommonSystemValues, queryConfig, queryWebSocketLastDisconnected} from '@queries/servers/system';
 import {queryCurrentUser} from '@queries/servers/user';
+import {WebSocketMessage} from '@typings/api/websocket';
 
 import {handleChannelDeletedEvent, handleUserRemovedEvent} from './channel';
+import {handleNewPostEvent, handlePostDeleted, handlePostEdited, handlePostUnread} from './posts';
 import {handleLeaveTeamEvent} from './teams';
 
 import type {Model} from '@nozbe/watermelondb';
@@ -121,11 +123,11 @@ async function doReconnect(serverUrl: string) {
             const viewArchivedChannels = config?.ExperimentalViewArchivedChannels === 'true';
 
             if (!stillMemberOfCurrentChannel) {
-                handleUserRemovedEvent(serverUrl, {data: {user_id: currentUserId, channel_id: currentChannelId}});
+                handleUserRemovedEvent(serverUrl, {data: {user_id: currentUserId, channel_id: currentChannelId}} as WebSocketMessage);
             } else if (!channelStillExist ||
                 (!viewArchivedChannels && channelStillExist.delete_at !== 0)
             ) {
-                handleChannelDeletedEvent(serverUrl, {data: {user_id: currentUserId, channel_id: currentChannelId}});
+                handleChannelDeletedEvent(serverUrl, {data: {user_id: currentUserId, channel_id: currentChannelId}} as WebSocketMessage);
             } else {
                 // TODO Differentiate between post and thread, to fetch the thread posts
                 fetchPostsSince(serverUrl, currentChannelId, lastDisconnectedAt);
@@ -134,7 +136,7 @@ async function doReconnect(serverUrl: string) {
 
         // TODO Consider global thread screen to update global threads
     } else if (!teamMembershipsError) {
-        handleLeaveTeamEvent(serverUrl, {data: {user_id: currentUserId, team_id: currentTeamId}});
+        handleLeaveTeamEvent(serverUrl, {data: {user_id: currentUserId, team_id: currentTeamId}} as WebSocketMessage);
     }
 
     fetchRoles(serverUrl, teamMemberships, channelMemberships);
@@ -145,25 +147,25 @@ async function doReconnect(serverUrl: string) {
     updateAllUsersSinceLastDisconnect(serverUrl);
 }
 
-export async function handleEvent(serverUrl: string, msg: any) {
+export async function handleEvent(serverUrl: string, msg: WebSocketMessage) {
     switch (msg.event) {
         case WebsocketEvents.POSTED:
         case WebsocketEvents.EPHEMERAL_MESSAGE:
+            handleNewPostEvent(serverUrl, msg);
             break;
 
-        //return dispatch(handleNewPostEvent(msg));
         case WebsocketEvents.POST_EDITED:
+            handlePostEdited(serverUrl, msg);
             break;
 
-        //return dispatch(handlePostEdited(msg));
         case WebsocketEvents.POST_DELETED:
+            handlePostDeleted(serverUrl, msg);
             break;
 
-        // return dispatch(handlePostDeleted(msg));
         case WebsocketEvents.POST_UNREAD:
+            handlePostUnread(serverUrl, msg);
             break;
 
-        // return dispatch(handlePostUnread(msg));
         case WebsocketEvents.LEAVE_TEAM:
             handleLeaveTeamEvent(serverUrl, msg);
             break;
