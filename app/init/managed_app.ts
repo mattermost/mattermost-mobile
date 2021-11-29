@@ -39,7 +39,7 @@ class ManagedApp {
                 Emm.setAppGroupId(appGroupIdentifier);
             }
         }
-    }
+    };
 
     processConfig = async (config?: ManagedConfig) => {
         // If the managed configuration changed while authentication was

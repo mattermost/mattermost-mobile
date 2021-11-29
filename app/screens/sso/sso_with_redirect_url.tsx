@@ -1,6 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import qs from 'querystring';
+
 import React, {useEffect, useState} from 'react';
 import {useIntl} from 'react-intl';
 import {Linking, Platform, Text, View} from 'react-native';
@@ -74,10 +76,11 @@ const SSOWithRedirectURL = ({doSSOLogin, loginError, loginUrl, serverUrl, setLog
             NetworkManager.createClient(serverUrl);
         }
         const parsedUrl = urlParse(loginUrl, true);
-        parsedUrl.set('query', {
+        const query: Record<string, string> = {
             ...parsedUrl.query,
             redirect_to: redirectUrl,
-        });
+        };
+        parsedUrl.set('query', qs.stringify(query));
         const url = parsedUrl.toString();
 
         const onError = (e: Error) => {

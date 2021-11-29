@@ -43,7 +43,7 @@ export default class ServerDataOperatorBase extends BaseDataOperator {
             createOrUpdateRawValues: getUniqueRawsBy({raws: roles, key: 'id'}),
             tableName: ROLE,
         }) as Promise<RoleModel[]>;
-    }
+    };
 
     handleCustomEmojis = ({emojis, prepareRecordsOnly = true}: HandleCustomEmojiArgs) => {
         if (!emojis.length) {
@@ -60,7 +60,7 @@ export default class ServerDataOperatorBase extends BaseDataOperator {
             createOrUpdateRawValues: getUniqueRawsBy({raws: emojis, key: 'name'}),
             tableName: CUSTOM_EMOJI,
         }) as Promise<CustomEmojiModel[]>;
-    }
+    };
 
     handleSystem = ({systems, prepareRecordsOnly = true}: HandleSystemArgs) => {
         if (!systems.length) {
@@ -77,7 +77,7 @@ export default class ServerDataOperatorBase extends BaseDataOperator {
             createOrUpdateRawValues: getUniqueRawsBy({raws: systems, key: 'id'}),
             tableName: SYSTEM,
         }) as Promise<SystemModel[]>;
-    }
+    };
 
     handleTermOfService = ({termOfService, prepareRecordsOnly = true}: HandleTOSArgs) => {
         if (!termOfService.length) {
@@ -94,29 +94,29 @@ export default class ServerDataOperatorBase extends BaseDataOperator {
             createOrUpdateRawValues: getUniqueRawsBy({raws: termOfService, key: 'id'}),
             tableName: TERMS_OF_SERVICE,
         }) as Promise<TermsOfServiceModel[]>;
-    }
+    };
 
-  /**
-   * execute: Handles the Create/Update operations on an table.
-   * @param {OperationArgs} execute
-   * @param {string} execute.tableName
-   * @param {RecordValue[]} execute.createRaws
-   * @param {RecordValue[]} execute.updateRaws
-   * @param {(TransformerArgs) => Promise<Model>} execute.recordOperator
-   * @returns {Promise<void>}
-   */
-  execute = async ({createRaws, transformer, tableName, updateRaws}: OperationArgs): Promise<Model[]> => {
-      const models = await this.prepareRecords({
-          tableName,
-          createRaws,
-          updateRaws,
-          transformer,
-      });
+    /**
+     * execute: Handles the Create/Update operations on an table.
+     * @param {OperationArgs} execute
+     * @param {string} execute.tableName
+     * @param {RecordValue[]} execute.createRaws
+     * @param {RecordValue[]} execute.updateRaws
+     * @param {(TransformerArgs) => Promise<Model>} execute.recordOperator
+     * @returns {Promise<void>}
+     */
+    execute = async ({createRaws, transformer, tableName, updateRaws}: OperationArgs): Promise<Model[]> => {
+        const models = await this.prepareRecords({
+            tableName,
+            createRaws,
+            updateRaws,
+            transformer,
+        });
 
-      if (models?.length > 0) {
-          await this.batchRecords(models);
-      }
+        if (models?.length > 0) {
+            await this.batchRecords(models);
+        }
 
-      return models;
-  };
+        return models;
+    };
 }

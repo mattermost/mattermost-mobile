@@ -23,7 +23,7 @@ const ClientApps = (superclass: any) => class extends superclass {
             `${this.getAppsProxyRoute()}/api/v1/call`,
             {method: 'post', body: callCopy},
         );
-    }
+    };
 
     getAppsBindings = async (userID: string, channelID: string, teamID: string) => {
         const params = {
@@ -37,7 +37,7 @@ const ClientApps = (superclass: any) => class extends superclass {
             `${this.getAppsProxyRoute()}/api/v1/bindings${buildQueryString(params)}`,
             {method: 'get'},
         );
-    }
+    };
 };
 
 export default ClientApps;
