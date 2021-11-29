@@ -1,11 +1,11 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {SYSTEM_IDENTIFIERS} from '@constants/database';
+import {MM_TABLES, SYSTEM_IDENTIFIERS} from '@constants/database';
 import General from '@constants/general';
 import DatabaseManager from '@database/manager';
 import {queryRecentCustomStatuses} from '@queries/servers/system';
-import {queryCurrentUser, queryUserById} from '@queries/servers/user';
+import {queryCurrentUser} from '@queries/servers/user';
 
 import {addRecentReaction} from './reactions';
 
@@ -105,25 +105,40 @@ export const updateRecentCustomStatuses = async (serverUrl: string, customStatus
     });
 };
 
-export const updateUserPresence = async (serverUrl: string, userStatus: UserStatus) => {
-    const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
-    if (!operator) {
+export const updateLocalUser = async (
+    serverUrl: string,
+    userDetails: Partial<UserProfile> & { id: string; status?: string},
+) => {
+    const database = DatabaseManager.serverDatabases[serverUrl]?.database;
+    if (!database) {
         return {error: `${serverUrl} database not found`};
     }
 
-    const user = await queryUserById(operator.database, userStatus.user_id);
-    if (user) {
-        user.prepareUpdate((record) => {
-            record.status = userStatus.status;
+    try {
+        const user = await database.get(MM_TABLES.SERVER.USER).find(userDetails.id) as UserModel;
+        await database.write(async () => {
+            await user.update((userRecord: UserModel) => {
+                userRecord.authService = userDetails.auth_service ?? user.authService;
+                userRecord.email = userDetails.email ?? user.email;
+                userRecord.firstName = userDetails.first_name ?? user.firstName;
+                userRecord.isBot = userDetails.is_bot ?? user.isBot;
+                userRecord.isGuest = userDetails?.roles?.includes('system_guest') ?? user.isGuest;
+                userRecord.lastName = userDetails.last_name ?? user.lastName;
+                userRecord.lastPictureUpdate = userDetails.last_picture_update ?? user.lastPictureUpdate;
+                userRecord.locale = userDetails.locale ?? user.locale;
+                userRecord.nickname = userDetails.nickname ?? user.nickname;
+                userRecord.notifyProps = userDetails.notify_props ?? user.notifyProps;
+                userRecord.position = userDetails?.position ?? user.position;
+                userRecord.props = userDetails.props ?? user.props;
+                userRecord.roles = userDetails.roles ?? user.roles;
+                userRecord.status = userDetails?.status ?? user.status;
+                userRecord.timezone = userDetails.timezone ?? user.timezone;
+                userRecord.username = userDetails.username ?? user.username;
+            });
         });
-        try {
-            await operator.batchRecords([user]);
-        } catch {
-            // eslint-disable-next-line no-console
-            console.log('FAILED TO BATCH CHANGES FOR UPDATE USER PRESENCE');
-        }
+    } catch (error) {
+        return {error};
     }
 
     return {};
 };
-

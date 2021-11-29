@@ -10,6 +10,7 @@ import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 type Props = {
     action?: string;
+    enabled?: boolean;
     onPress: () => void;
     title: string;
     testID: string;
@@ -22,7 +23,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         marginRight: 20,
     },
     action: {
-        color: theme.buttonBg,
+        color: changeOpacity(theme.centerChannelColor, 0.7),
         fontFamily: 'OpenSans-Semibold',
         fontSize: 16,
         lineHeight: 24,
@@ -34,6 +35,9 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         flexDirection: 'row',
         height: 34,
         width: '100%',
+    },
+    enabled: {
+        color: theme.buttonBg,
     },
     titleContainer: {
         alignItems: 'center',
@@ -48,7 +52,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     },
 }));
 
-const TabletTitle = ({action, onPress, testID, title}: Props) => {
+const TabletTitle = ({action, enabled = true, onPress, testID, title}: Props) => {
     const theme = useTheme();
     const styles = getStyleSheet(theme);
 
@@ -61,12 +65,13 @@ const TabletTitle = ({action, onPress, testID, title}: Props) => {
                 {Boolean(action) &&
                 <View style={styles.actionContainer}>
                     <TouchableWithFeedback
+                        disabled={!enabled}
                         onPress={onPress}
                         type={Platform.select({android: 'native', ios: 'opacity'})}
                         testID={testID}
                         underlayColor={changeOpacity(theme.centerChannelColor, 0.1)}
                     >
-                        <Text style={styles.action}>{action}</Text>
+                        <Text style={[styles.action, enabled ? styles.enabled : undefined]}>{action}</Text>
                     </TouchableWithFeedback>
                 </View>
                 }
