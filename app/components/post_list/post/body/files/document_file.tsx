@@ -199,4 +199,6 @@ const DocumentFile = forwardRef<DocumentFileRef, DocumentFileProps>(({background
     );
 });
 
+DocumentFile.displayName = 'DocumentFile';
+
 export default DocumentFile;

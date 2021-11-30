@@ -46,13 +46,13 @@ class WebsocketManager {
 
         AppState.addEventListener('change', this.onAppStateChange);
         NetInfo.addEventListener(this.onNetStateChange);
-    }
+    };
 
     public invalidateClient = (serverUrl: string) => {
         this.clients[serverUrl]?.close();
         this.clients[serverUrl]?.invalidate();
         delete this.clients[serverUrl];
-    }
+    };
 
     public createClient = (serverUrl: string, bearerToken: string, storedLastDisconnect = 0) => {
         const client = new WebSocketClient(serverUrl, bearerToken, storedLastDisconnect);
@@ -70,13 +70,13 @@ class WebsocketManager {
         this.clients[serverUrl] = client;
 
         return this.clients[serverUrl];
-    }
+    };
 
     public closeAll = () => {
         for (const client of Object.values(this.clients)) {
             client.close(true);
         }
-    }
+    };
 
     public openAll = () => {
         for (const client of Object.values(this.clients)) {
@@ -84,21 +84,21 @@ class WebsocketManager {
                 client.initialize();
             }
         }
-    }
+    };
 
     public isConnected = (serverUrl: string): boolean => {
         return this.clients[serverUrl]?.isConnected();
-    }
+    };
 
     private onFirstConnect = (serverUrl: string) => {
         this.startPeriodicStatusUpdates(serverUrl);
         handleFirstConnect(serverUrl);
-    }
+    };
 
     private onReconnect = (serverUrl: string) => {
         this.startPeriodicStatusUpdates(serverUrl);
         handleReconnect(serverUrl);
-    }
+    };
 
     private onWebsocketClose = async (serverUrl: string, connectFailCount: number, lastDisconnect: number) => {
         if (connectFailCount <= 1) { // First fail
@@ -107,7 +107,7 @@ class WebsocketManager {
 
             this.stopPeriodicStatusUpdates(serverUrl);
         }
-    }
+    };
 
     private startPeriodicStatusUpdates(serverUrl: string) {
         let currentId = this.statusUpdatesIntervalIDs[serverUrl];
@@ -134,7 +134,7 @@ class WebsocketManager {
 
         currentId = setInterval(getStatusForUsers, General.STATUS_INTERVAL);
         this.statusUpdatesIntervalIDs[serverUrl] = currentId;
-    }
+    };
 
     private stopPeriodicStatusUpdates(serverUrl: string) {
         const currentId = this.statusUpdatesIntervalIDs[serverUrl];
@@ -143,7 +143,7 @@ class WebsocketManager {
         }
 
         delete this.statusUpdatesIntervalIDs[serverUrl];
-    }
+    };
 
     private onAppStateChange = async (appState: AppStateStatus) => {
         if (appState === this.previousAppState) {
@@ -163,7 +163,7 @@ class WebsocketManager {
         }
 
         this.previousAppState = appState;
-    }
+    };
 
     private onNetStateChange = async (netState: NetInfoState) => {
         const newState = Boolean(netState.isConnected);
@@ -179,11 +179,11 @@ class WebsocketManager {
         }
 
         this.closeAll();
-    }
+    };
 
     public getClient = (serverUrl: string) => {
         return this.clients[serverUrl];
-    }
+    };
 }
 
 export default new WebsocketManager();

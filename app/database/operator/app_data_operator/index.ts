@@ -28,7 +28,7 @@ export default class AppDataOperator extends BaseDataOperator {
             createOrUpdateRawValues: getUniqueRawsBy({raws: info, key: 'version_number'}),
             tableName: INFO,
         });
-    }
+    };
 
     handleGlobal = async ({global, prepareRecordsOnly = true}: HandleGlobalArgs) => {
         if (!global.length) {
@@ -45,5 +45,5 @@ export default class AppDataOperator extends BaseDataOperator {
             createOrUpdateRawValues: getUniqueRawsBy({raws: global, key: 'id'}),
             tableName: GLOBAL,
         });
-    }
+    };
 }
