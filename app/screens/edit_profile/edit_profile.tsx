@@ -172,15 +172,15 @@ const EditProfile = ({
             const {error: reqError} = await updateMe(serverUrl, partialUser);
 
             if (reqError) {
-                return resetScreen(reqError as Error);
+                resetScreen(reqError as Error);
+                return;
             }
 
             close();
         } catch (e) {
-            return resetScreen(e as Error);
+            resetScreen(e as Error);
         }
 
-        return null;
     };
 
     const resetScreen = (resetError: Error) => {
@@ -242,23 +242,23 @@ const EditProfile = ({
                     innerRef={setScrollViewRef}
                     testID='edit_profile.scroll_view'
                 >
-                    {error && <ProfileError error={error}/>}
+                    {Boolean(error) && <ProfileError error={error}/>}
                     {renderProfilePicture()}
                     <Field
-                        id={'firstName'}
+                        id='firstName'
                         isDisabled={(['ldap', 'saml'].includes(service) && lockedFirstName) || ['gitlab', 'google', 'office365'].includes(service)}
                         label={FIELDS.firstName}
                         onChange={updateField}
-                        testID={'edit_profile.text_setting.firstName'}
+                        testID='edit_profile.text_setting.firstName'
                         value={userInfo.firstName}
                     />
                     <View style={style.separator}/>
                     <Field
-                        id={'lastName'}
+                        id='lastName'
                         isDisabled={(['ldap', 'saml'].includes(service) && lockedLastName) || ['gitlab', 'google', 'office365'].includes(service)}
                         label={FIELDS.lastName}
                         onChange={updateField}
-                        testID={'edit_profile.text_setting.lastName'}
+                        testID='edit_profile.text_setting.lastName'
                         value={userInfo.lastName}
                     />
                     <View style={style.separator}/>

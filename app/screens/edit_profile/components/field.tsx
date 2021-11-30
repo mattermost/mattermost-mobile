@@ -4,7 +4,7 @@
 import {MessageDescriptor} from '@formatjs/intl/src/types';
 import React, {useCallback} from 'react';
 import {useIntl} from 'react-intl';
-import {View, Platform, KeyboardType} from 'react-native';
+import {View, Platform, KeyboardTypeOptions} from 'react-native';
 
 import FloatingTextInput from '@components/floating_text_input_label';
 import {useTheme} from '@context/theme';
@@ -16,7 +16,7 @@ type FieldProps = {
     isDisabled?: boolean;
     fieldDescription?: string;
     id: string;
-    keyboardType?: KeyboardType | 'url';
+    keyboardType?: KeyboardTypeOptions;
     label: MessageDescriptor | string;
     maxLength?: number;
     onChange: (id: string, value: string) => void;
