@@ -27,4 +27,6 @@ export {default as TeamMembershipSchema} from './team_membership';
 export {default as TeamSchema} from './team';
 export {default as TeamSearchHistorySchema} from './team_search_history';
 export {default as TermsOfServiceSchema} from './terms_of_service';
+export {default as ThreadSchema} from './thread';
+export {default as ThreadParticipantsSchema} from './thread_participants';
 export {default as UserSchema} from './user';
