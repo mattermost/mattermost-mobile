@@ -50,7 +50,7 @@ const ClientFiles = (superclass: any) => class extends superclass {
             `${this.getFileRoute(fileId)}/link`,
             {method: 'get'},
         );
-    }
+    };
 
     uploadFile = async (
         file: FileInfo,
@@ -72,7 +72,7 @@ const ClientFiles = (superclass: any) => class extends superclass {
         const promise = this.apiClient.upload(url, file.localPath, options) as ProgressPromise<ClientResponse>;
         promise.progress!(onProgress).then(onComplete).catch(onError);
         return promise.cancel!;
-    }
+    };
 };
 
 export default ClientFiles;

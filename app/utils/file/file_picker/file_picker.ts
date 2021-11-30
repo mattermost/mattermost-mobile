@@ -187,7 +187,7 @@ export default class PickerUtil {
             }
         }
         return false;
-    }
+    };
 
     private hasStoragePermission = async () => {
         if (Platform.OS === 'ios') {

@@ -134,7 +134,7 @@ class WebsocketManager {
 
         currentId = setInterval(getStatusForUsers, General.STATUS_INTERVAL);
         this.statusUpdatesIntervalIDs[serverUrl] = currentId;
-    };
+    }
 
     private stopPeriodicStatusUpdates(serverUrl: string) {
         const currentId = this.statusUpdatesIntervalIDs[serverUrl];
@@ -143,7 +143,7 @@ class WebsocketManager {
         }
 
         delete this.statusUpdatesIntervalIDs[serverUrl];
-    };
+    }
 
     private onAppStateChange = async (appState: AppStateStatus) => {
         if (appState === this.previousAppState) {
