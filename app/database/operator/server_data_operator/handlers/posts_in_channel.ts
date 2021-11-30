@@ -54,7 +54,7 @@ const PostsInChannelHandler = (superclass: any) => class extends superclass {
         }
 
         return result;
-    }
+    };
 
     handleReceivedPostsInChannel = async (posts: Post[], prepareRecordsOnly = false): Promise<PostsInChannelModel[]> => {
         if (!posts.length) {
@@ -168,11 +168,11 @@ const PostsInChannelHandler = (superclass: any) => class extends superclass {
 
     handleReceivedPostsInChannelBefore = async (posts: Post[], prepareRecordsOnly = false): Promise<PostsInChannelModel[]> => {
         throw new Error(`handleReceivedPostsInChannelBefore Not implemented yet. posts count${posts.length} prepareRecordsOnly=${prepareRecordsOnly}`);
-    }
+    };
 
     handleReceivedPostsInChannelAfter = async (posts: Post[], prepareRecordsOnly = false): Promise<PostsInChannelModel[]> => {
         throw new Error(`handleReceivedPostsInChannelAfter Not implemented yet. posts count${posts.length} prepareRecordsOnly=${prepareRecordsOnly}`);
-    }
+    };
 
     handleReceivedPostForChannel = async (posts: Post[], prepareRecordsOnly = false): Promise<PostsInChannelModel[]> => {
         if (!posts.length) {
@@ -221,7 +221,7 @@ const PostsInChannelHandler = (superclass: any) => class extends superclass {
         }
 
         return targetChunk;
-    }
+    };
 };
 
 export default PostsInChannelHandler;

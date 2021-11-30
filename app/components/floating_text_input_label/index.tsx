@@ -268,5 +268,7 @@ const FloatingTextInput = forwardRef<FloatingTextInputRef, FloatingTextInputProp
     );
 });
 
+FloatingTextInput.displayName = 'FloatingTextInput';
+
 export default FloatingTextInput;
 

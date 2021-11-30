@@ -63,7 +63,7 @@ export const fetchConfigAndLicense = async (serverUrl: string, fetchOnly = false
     }
 
     try {
-        const [config, license] = await Promise.all<ClientConfig, ClientLicense>([
+        const [config, license]: [ClientConfig, ClientLicense] = await Promise.all([
             client.getClientConfigOld(),
             client.getClientLicenseOld(),
         ]);

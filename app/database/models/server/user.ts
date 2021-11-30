@@ -140,5 +140,5 @@ export default class UserModel extends Model {
         this.prepareUpdate((u) => {
             u.status = status;
         });
-    }
+    };
 }
