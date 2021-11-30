@@ -125,7 +125,7 @@ export default {
     ...ViewTypes,
     RequiredServer,
     POST_VISIBILITY_CHUNK_SIZE: 60,
-    CRT_CHUNK_SIZE: 60,
+    CRT_CHUNK_SIZE: 30,
     FEATURE_TOGGLE_PREFIX: 'feature_enabled_',
     EMBED_PREVIEW: 'embed_preview',
     LINK_PREVIEW_DISPLAY: 'link_previews',
