@@ -5,8 +5,9 @@ import {useIsFocused, useRoute} from '@react-navigation/native';
 import React, {useCallback, useState, useEffect, useMemo} from 'react';
 import {useIntl} from 'react-intl';
 import {StyleSheet, View, ActivityIndicator, FlatList} from 'react-native';
-import Animated, {useAnimatedStyle, withTiming} from 'react-native-reanimated';
+import Animated, {useAnimatedStyle, useSharedValue, withTiming} from 'react-native-reanimated';
 import {SafeAreaView, Edge} from 'react-native-safe-area-context';
+
 import {getRecentMentions} from '@actions/remote/search';
 import DateSeparator from '@app/components/post_list/date_separator';
 import {UserModel} from '@app/database/models/server';
@@ -53,6 +54,9 @@ const RecentMentionsScreen = ({mentions, currentUser, currentTimezone, isTimezon
 
     const params = route.params! as {direction: string};
     const toLeft = params.direction === 'left';
+    const translateSide = toLeft ? -25 : 25;
+    const opacity = useSharedValue(isFocused ? 1 : 0);
+    const translateX = useSharedValue(isFocused ? 0 : translateSide);
 
     const title = formatMessage({id: 'screen.mentions.title', defaultMessage: 'Recent Mentions'});
     const subtitle = formatMessage({id: 'screen.mentions.subtitle', defaultMessage: 'Messages you\'ve been mentioned in'});
@@ -77,19 +81,17 @@ const RecentMentionsScreen = ({mentions, currentUser, currentTimezone, isTimezon
         setRefreshing(false);
     }, [serverUrl]);
 
-    const animated = useAnimatedStyle(() => {
-        if (isFocused) {
-            return {
-                opacity: withTiming(1, {duration: 150}),
-                transform: [{translateX: withTiming(0, {duration: 150})}],
-            };
-        }
-
-        return {
-            opacity: withTiming(0, {duration: 150}),
-            transform: [{translateX: withTiming(toLeft ? -25 : 25, {duration: 150})}],
-        };
+    useEffect(() => {
+        opacity.value = isFocused ? 1 : 0;
+        translateX.value = isFocused ? 0 : translateSide;
     }, [isFocused]);
+
+    const animated = useAnimatedStyle(() => {
+        return {
+            opacity: withTiming(opacity.value, {duration: 150}),
+            transform: [{translateX: withTiming(translateX.value, {duration: 150})}],
+        };
+    }, []);
 
     const renderItem = useCallback(({item}) => {
         if (typeof item === 'string') {
