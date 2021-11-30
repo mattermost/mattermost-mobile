@@ -15,14 +15,14 @@ export function getConfig(state: GlobalState): Partial<Config> {
  * Safely get value of a specific or known FeatureFlag
  */
 export function getFeatureFlagValue(state: GlobalState, key: keyof FeatureFlags): string | undefined {
-    return getConfig(state)?.[`FeatureFlag${key}` as keyof Partial<Config>];
+    return getConfig(state)?.[`FeatureFlag${key}` as unknown as keyof Partial<Config>];
 }
 
 export function getLicense(state: GlobalState): any {
     return state.entities.general.license;
 }
 
-export function getSupportedTimezones(state: GlobalState): Array<string> {
+export function getSupportedTimezones(state: GlobalState): string[] {
     return state.entities.general.timezones;
 }
 

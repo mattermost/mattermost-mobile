@@ -1,6 +1,9 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+/* eslint-disable react/prop-types */
+// React prop validations are not recognized with forwardRef
+
 import React, {forwardRef, useCallback, useImperativeHandle, useRef, useState} from 'react';
 import {ScrollView, StyleSheet, TextInput} from 'react-native';
 
@@ -11,8 +14,8 @@ import CharsRemaining from './chars_remaining';
 import Files from './files';
 
 export interface BodyProps {
-    canPost: (error?: string, text?: string, extensionFiles?: Array<ShareFileInfo>, calculatedSize?: number) => void;
-    files: Array<ShareFileInfo>;
+    canPost: (error?: string, text?: string, extensionFiles?: ShareFileInfo[], calculatedSize?: number) => void;
+    files: ShareFileInfo[];
     initialValue?: string;
     placeholder: string;
 }

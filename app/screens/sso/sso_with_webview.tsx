@@ -86,7 +86,7 @@ function SSOWithWebView({completeUrlPath, intl, loginError, loginUrl, onCSRFToke
         };
     }, []);
 
-    const extractCookie = (parsedUrl: urlParse) => {
+    const extractCookie = (parsedUrl: urlParse<string>) => {
         try {
             const original = urlParse(serverUrl);
 
