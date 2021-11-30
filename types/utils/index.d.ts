@@ -5,3 +5,4 @@ type Dictionary<T> = {
     [key: string]: T;
 };
 
+type ErrorText = Partial<ClientErrorProps> | string;

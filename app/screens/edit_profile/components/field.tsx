@@ -80,7 +80,7 @@ const Field = ({
                     theme={theme}
                     value={value}
                 />
-                {isDisabled && (
+                {isDisabled && fieldDescription && (
                     <FieldDescription
                         text={fieldDescription}
                     />

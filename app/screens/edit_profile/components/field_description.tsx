@@ -9,7 +9,7 @@ import {useTheme} from '@context/theme';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 type HelpContentProps = {
-    text?: string;
+    text: string;
 };
 
 const Description = ({text}: HelpContentProps) => {

@@ -64,13 +64,14 @@ const EmailField = ({authService, email, onChange}: EmailSettingsProps) => {
 
     return (
         <Field
-            fieldDescription={helpText ?? ''}
+            fieldDescription={helpText}
             id='email'
             isDisabled={true}
             label={FIELDS.email}
             onChange={onChange}
             testID='edit_profile.text_setting.email'
             value={email}
+            keyboardType='email-address'
         />
     );
 };

@@ -84,7 +84,7 @@ const EditProfile = ({
         username: currentUser.username,
     });
     const [canSave, setCanSave] = useState(false);
-    const [error, setError] = useState<string | undefined>();
+    const [error, setError] = useState<ErrorText | undefined>();
 
     const [profileImage] = useState<undefined>();
 
@@ -180,7 +180,6 @@ const EditProfile = ({
         } catch (e) {
             resetScreen(e as Error);
         }
-
     };
 
     const resetScreen = (resetError: Error) => {
@@ -242,7 +241,7 @@ const EditProfile = ({
                     innerRef={setScrollViewRef}
                     testID='edit_profile.scroll_view'
                 >
-                    {Boolean(error) && <ProfileError error={error}/>}
+                    {Boolean(error) && <ProfileError error={error!}/>}
                     {renderProfilePicture()}
                     <Field
                         id='firstName'
