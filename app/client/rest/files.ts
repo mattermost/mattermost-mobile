@@ -41,7 +41,7 @@ const ClientFiles = (superclass: any) => class extends superclass {
             `${this.getFileRoute(fileId)}/link`,
             {method: 'get'},
         );
-    }
+    };
 };
 
 export default ClientFiles;

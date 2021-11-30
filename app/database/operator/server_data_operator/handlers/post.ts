@@ -202,7 +202,7 @@ const PostHandler = (superclass: any) => class extends superclass {
         }
 
         return batch;
-    }
+    };
 
     /**
      * handleFiles: Handler responsible for the Create/Update operations occurring on the File table from the 'Server' schema
