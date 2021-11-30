@@ -7,6 +7,7 @@ import {SYSTEM_IDENTIFIERS} from '@constants/database';
 import DatabaseManager from '@database/manager';
 import {getNeededAtMentionedUsernames} from '@helpers/api/user';
 import NetworkManager from '@init/network_manager';
+import {queryAllMyChannelIds} from '@queries/servers/channel';
 import {queryRecentPostsInChannel} from '@queries/servers/post';
 import {queryCurrentUserId, queryCurrentChannelId} from '@queries/servers/system';
 import {queryAllUsers} from '@queries/servers/user';
@@ -235,3 +236,39 @@ export const postActionWithCookie = async (serverUrl: string, postId: string, ac
         return {error};
     }
 };
+
+export async function getMissingChannelsFromPosts(serverUrl: string, posts: Post[], fetchOnly = false) {
+    const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
+    if (!operator) {
+        return {error: `${serverUrl} database not found`};
+    }
+
+    let client: Client;
+    try {
+        client = NetworkManager.getClient(serverUrl);
+    } catch (error) {
+        return {error};
+    }
+
+    const channelIds = await queryAllMyChannelIds(operator.database);
+    const promises: Array<Promise<Channel>> = [];
+
+    posts.forEach((post) => {
+        const id = post.channel_id;
+
+        if (channelIds.indexOf(id) === -1) {
+            promises.push(client.getChannel(id));
+        }
+    });
+
+    const channels = await Promise.all(promises);
+
+    if (!fetchOnly) {
+        await operator.handleChannel({
+            channels,
+            prepareRecordsOnly: false,
+        });
+    }
+
+    return {channels};
+}

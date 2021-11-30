@@ -9,6 +9,7 @@ import DatabaseManager from '@database/manager';
 import NetworkManager from '@init/network_manager';
 import {queryCurrentUser} from '@queries/servers/user';
 
+import {fetchPostAuthors, getMissingChannelsFromPosts} from './post';
 import {forceLogoutIfNecessary} from './session';
 
 import type {Client} from '@client/rest';
@@ -33,8 +34,9 @@ export async function getRecentMentions(serverUrl: string): Promise<PostSearchRe
         return {error};
     }
 
-    let posts = [];
-    let order = [];
+    let posts: Record<string, Post> = {};
+    let postsArray: Post[] = [];
+    let order: string[] = [];
 
     try {
         const currentUser = await queryCurrentUser(operator.database);
@@ -46,25 +48,42 @@ export async function getRecentMentions(serverUrl: string): Promise<PostSearchRe
         }
         const terms = currentUser.mentionKeys.map(({key}) => key).join(' ').trim() + ' ';
         const data = await client.searchPosts('', terms, true);
-        posts = data.posts;
-        order = data.order;
+        posts = data.posts || {};
+        order = data.order || [];
 
         const models: Model[] = [];
+        let postModels: Model[] = [];
+        let userModels: Model[] = [];
+        let channelModels: Model[] = [];
 
-        if (!posts.length) {
-            return {
-                posts: [],
+        postsArray = order.map((id) => posts[id]);
+
+        if (postsArray.length) {
+            const authors = await fetchPostAuthors(serverUrl, postsArray, true);
+            const channels = await getMissingChannelsFromPosts(serverUrl, postsArray, true);
+
+            if (authors.authors?.length) {
+                userModels = await operator.handleUsers({
+                    users: authors.authors,
+                    prepareRecordsOnly: true,
+                });
+            }
+
+            if (channels.channels?.length) {
+                channelModels = await operator.handleChannel({
+                    channels: channels.channels,
+                    prepareRecordsOnly: true,
+                });
+            }
+
+            postModels = await operator.handlePosts({
+                actionType: '',
                 order: [],
-            };
+                posts: postsArray,
+                previousPostId: '',
+                prepareRecordsOnly: true,
+            });
         }
-
-        const postModels = await operator.handlePosts({
-            actionType: '',
-            order: [],
-            posts,
-            previousPostId: '',
-            prepareRecordsOnly: true,
-        });
 
         const mentions: IdValue = {
             id: SYSTEM_IDENTIFIERS.RECENT_MENTIONS,
@@ -76,8 +95,10 @@ export async function getRecentMentions(serverUrl: string): Promise<PostSearchRe
             prepareRecordsOnly: true,
         });
 
-        models.push(...mentionModels);
+        models.push(...userModels);
+        models.push(...channelModels);
         models.push(...postModels);
+        models.push(...mentionModels);
 
         if (models.length) {
             await operator.batchRecords(models);
@@ -89,7 +110,7 @@ export async function getRecentMentions(serverUrl: string): Promise<PostSearchRe
 
     return {
         order,
-        posts,
+        posts: postsArray,
     };
 }
 
