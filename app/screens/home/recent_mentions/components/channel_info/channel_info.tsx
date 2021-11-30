@@ -1,10 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import withObservables from '@nozbe/with-observables';
 import React from 'react';
 import {View, Text, StyleSheet} from 'react-native';
-import {switchMap, of as of$} from 'rxjs';
 
 import {useTheme} from '@context/theme';
 import {makeStyleSheetFromTheme} from '@utils/theme';
@@ -59,18 +57,4 @@ function ChannelInfo({channelName, teamName}: Props) {
     );
 }
 
-const enhance = withObservables(['post'], ({post}: {post: PostModel}) => {
-    const channel = post.channel.observe();
-
-    return {
-        channelName: channel.pipe(
-            switchMap((chan) => of$(chan.displayName)),
-        ),
-        teamName: channel.pipe(
-            switchMap((chan) => chan.team || of$(null)),
-            switchMap((team: TeamModel|null) => of$(team?.displayName || null)),
-        ),
-    };
-});
-
-export default enhance(ChannelInfo);
+export default ChannelInfo;

@@ -196,7 +196,7 @@ const ClientPosts = (superclass: any) => class extends superclass {
 
     searchPostsWithParams = async (teamId: string, params: PostSearchParams) => {
         this.analytics.trackAPI('api_posts_search');
-        const endpoint = teamId === '' ? `${this.getPostsRoute()}/search` : `${this.getTeamRoute(teamId)}/posts/search`;
+        const endpoint = teamId ? `${this.getTeamRoute(teamId)}/posts/search` : `${this.getPostsRoute()}/search`;
         return this.doFetch(endpoint, {method: 'post', body: JSON.stringify(params)});
     };
 

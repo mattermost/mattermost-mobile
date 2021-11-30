@@ -4,7 +4,7 @@
 import Model from '@nozbe/watermelondb/Model';
 
 import {processPostsFetched} from '@actions/local/post';
-import {SYSTEM_IDENTIFIERS} from '@app/constants/database';
+import {SYSTEM_IDENTIFIERS} from '@constants/database';
 import DatabaseManager from '@database/manager';
 import NetworkManager from '@init/network_manager';
 import {queryCurrentUser} from '@queries/servers/user';
@@ -51,6 +51,13 @@ export async function getRecentMentions(serverUrl: string): Promise<PostSearchRe
 
         const models: Model[] = [];
 
+        if (!posts.length) {
+            return {
+                posts: [],
+                order: [],
+            };
+        }
+
         const postModels = await operator.handlePosts({
             actionType: '',
             order: [],
@@ -70,10 +77,7 @@ export async function getRecentMentions(serverUrl: string): Promise<PostSearchRe
         });
 
         models.push(...mentionModels);
-
-        if (postModels) {
-            models.push(...postModels);
-        }
+        models.push(...postModels);
 
         if (models.length) {
             await operator.batchRecords(models);

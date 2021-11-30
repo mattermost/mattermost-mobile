@@ -1,7 +1,6 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import withObservables from '@nozbe/with-observables';
 import React from 'react';
 import {View, StyleSheet} from 'react-native';
 
@@ -14,7 +13,7 @@ import {Screens} from '@constants';
 import {useTheme} from '@context/theme';
 import {fromAutoResponder, isFromWebhook, isSystemMessage, isEdited as postEdited} from '@utils/post';
 
-import ChannelInfo from './channel_info';
+import ChannelInfo from '../channel_info';
 
 import type PostModel from '@typings/database/models/servers/post';
 import type UserModel from '@typings/database/models/servers/user';
@@ -25,12 +24,6 @@ type Props = {
 }
 
 const styles = StyleSheet.create({
-    header: {
-        flex: 1,
-        flexDirection: 'row',
-        marginLeft: 12,
-        paddingTop: 5,
-    },
     container: {
         flex: 1,
     },
@@ -112,8 +105,4 @@ function Mention({post, currentUser}: Props) {
     );
 }
 
-const enhance = withObservables(['post'], ({post}) => ({
-    post,
-}));
-
-export default enhance(Mention);
+export default Mention;
