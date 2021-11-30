@@ -240,6 +240,7 @@ const FloatingTextInput = forwardRef<FloatingTextInputRef, FloatingTextInputProp
                     </Animated.Text>
                 }
                 <TextInput
+                    {...props}
                     editable={isKeyboardInput && editable}
                     style={combinedTextInputStyle}
                     placeholder=''
@@ -250,9 +251,6 @@ const FloatingTextInput = forwardRef<FloatingTextInputRef, FloatingTextInputProp
                     onBlur={onTextInputBlur}
                     ref={inputRef}
                     underlineColorAndroid='transparent'
-                    autoCorrect={false}
-                    autoCapitalize={'none'}
-                    {...props}
                 />
                 {Boolean(error) && (
                     <View style={styles.errorContainer}>
