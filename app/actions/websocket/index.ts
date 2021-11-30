@@ -18,9 +18,10 @@ import {getTeammateNameDisplaySetting} from '@helpers/api/preference';
 import {prepareMyChannelsForTeam} from '@queries/servers/channel';
 import {queryCommonSystemValues, queryConfig, queryWebSocketLastDisconnected} from '@queries/servers/system';
 import {queryCurrentUser} from '@queries/servers/user';
+import {WebSocketMessage} from '@typings/api/websocket';
 
 import {handleChannelDeletedEvent, handleUserRemovedEvent} from './channel';
-import {handleLeaveTeamEvent} from './teams';
+import {handleLeaveTeamEvent, handleTeamAddedEvent, handleUpdateTeamEvent} from './teams';
 
 import type {Model} from '@nozbe/watermelondb';
 
@@ -134,7 +135,7 @@ async function doReconnect(serverUrl: string) {
 
         // TODO Consider global thread screen to update global threads
     } else if (!teamMembershipsError) {
-        handleLeaveTeamEvent(serverUrl, {data: {user_id: currentUserId, team_id: currentTeamId}});
+        handleLeaveTeamEvent(serverUrl, {data: {user_id: currentUserId, team_id: currentTeamId}} as WebSocketMessage);
     }
 
     fetchRoles(serverUrl, teamMemberships, channelMemberships);
@@ -168,13 +169,12 @@ export async function handleEvent(serverUrl: string, msg: any) {
             handleLeaveTeamEvent(serverUrl, msg);
             break;
         case WebsocketEvents.UPDATE_TEAM:
+            handleUpdateTeamEvent(serverUrl, msg);
             break;
-
-        // return dispatch(handleUpdateTeamEvent(msg));
         case WebsocketEvents.ADDED_TO_TEAM:
+            handleTeamAddedEvent(serverUrl, msg);
             break;
 
-        // return dispatch(handleTeamAddedEvent(msg));
         case WebsocketEvents.USER_ADDED:
             break;
 
