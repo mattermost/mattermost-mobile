@@ -149,7 +149,7 @@ const ClientPosts = (superclass: any) => class extends superclass {
             `${this.getUserRoute(userId)}/posts/${postId}/set_unread`,
             {method: 'post'},
         );
-    }
+    };
 
     pinPost = async (postId: string) => {
         this.analytics.trackAPI('api_posts_pin');

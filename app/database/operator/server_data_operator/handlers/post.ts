@@ -200,7 +200,7 @@ const PostHandler = (superclass: any) => class extends superclass {
         if (batch.length) {
             await this.batchRecords(batch);
         }
-    }
+    };
 
     /**
      * handleFiles: Handler responsible for the Create/Update operations occurring on the File table from the 'Server' schema

@@ -26,7 +26,8 @@ const ClientGroups = (superclass: any) => class extends superclass {
             `${this.getUsersRoute()}/${userID}/groups`,
             {method: 'get'},
         );
-    }
+    };
+
     getAllGroupsAssociatedToTeam = async (teamID: string, filterAllowReference = false) => {
         return this.doFetch(
             `${this.urlVersion}/teams/${teamID}/groups${buildQueryString({paginate: false, filter_allow_reference: filterAllowReference})}`,
