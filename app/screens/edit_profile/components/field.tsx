@@ -38,6 +38,7 @@ const Field = ({
     onTextChange,
     testID,
     value,
+    ...props,
 }: FieldProps) => {
     const theme = useTheme();
     const intl = useIntl();
@@ -76,6 +77,7 @@ const Field = ({
                     testID={`${testID}.input`}
                     theme={theme}
                     value={value}
+                    {...props}
                 />
                 {isDisabled && fieldDescription && (
                     <FieldDescription
