@@ -198,7 +198,7 @@ const EditProfile = ({
         setUserInfo(update);
 
         // @ts-expect-error access object property by string key
-        const currentValue = currentUser[id];
+        const currentValue = currentUser[fieldKey];
         const didChange = currentValue !== name;
         enableSaveButton(didChange);
     }, [userInfo]);
