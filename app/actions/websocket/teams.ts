@@ -4,6 +4,7 @@
 import {DeviceEventEmitter} from 'react-native';
 
 import {handleTeamChange, localRemoveUserFromTeam} from '@actions/local/team';
+import {fetchRolesIfNeeded} from '@actions/remote/role';
 import {fetchMyTeam} from '@actions/remote/team';
 import {updateUsersNoLongerVisible} from '@actions/remote/user';
 import Events from '@constants/events';
@@ -76,66 +77,19 @@ export async function handleTeamAddedEvent(serverUrl: string, msg: WebSocketMess
         return;
     }
 
-    const user = await queryCurrentUser(database.database);
-    if (!user) {
-        return;
+    const teamId = msg.data.team_id;
+    const {teams, memberships: teamMemberships} = await fetchMyTeam(serverUrl, teamId, false);
+
+    if (teams) {
+        if (teamMemberships) {
+            const myMember = teamMemberships[0];
+            if (myMember.roles) {
+                const rolesToLoad = new Set<string>();
+                for (const role of myMember.roles.split(' ')) {
+                    rolesToLoad.add(role);
+                }
+                await fetchRolesIfNeeded(serverUrl, Array.from(rolesToLoad));
+            }
+        }
     }
-
-    const [team, memberships] = await Promise.all([
-        fetchMyTeam(serverUrl, msg.data.team_id),
-    ]);
-
-    console.log('team', team);
-    console.log('memberships', memberships);
-
-    // const [team, member, teamUnreads] = await Promise.all([
-    //     Client4.getTeam(msg.data.team_id),
-    //     Client4.getTeamMember(teamId, userId),
-    //     Client4.getMyTeamUnreads(),
-    // ]);
-
-    // const actions = [];
-    // if (team) {
-    //     actions.push({
-    //         type: TeamTypes.RECEIVED_TEAM,
-    //         data: team,
-    //     });
-    //
-    //     if (member) {
-    //         actions.push({
-    //             type: TeamTypes.RECEIVED_MY_TEAM_MEMBER,
-    //             data: member,
-    //         });
-    //
-    //         if (member.roles) {
-    //             const rolesToLoad = new Set<string>();
-    //             for (const role of member.roles.split(' ')) {
-    //                 rolesToLoad.add(role);
-    //             }
-    //
-    //             if (rolesToLoad.size > 0) {
-    //                 const roles = await Client4.getRolesByNames(Array.from(rolesToLoad));
-    //                 if (roles.length) {
-    //                     actions.push({
-    //                         type: RoleTypes.RECEIVED_ROLES,
-    //                         data: roles,
-    //                     });
-    //                 }
-    //             }
-    //         }
-    //     }
-    //
-    //     if (teamUnreads) {
-    //         actions.push({
-    //             type: TeamTypes.RECEIVED_MY_TEAM_UNREADS,
-    //             data: teamUnreads,
-    //         });
-    //     }
-    // }
-    //
-    // if (actions.length) {
-    //     dispatch(batchActions(actions, 'BATCH_WS_TEAM_ADDED'));
-    // }
-    //
-    // return {data: true};
 }
