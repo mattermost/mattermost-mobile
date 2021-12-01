@@ -17,6 +17,7 @@ import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {useCollapsibleHeader} from '@hooks/header';
 
+import EmptyState from './components/empty';
 import Mention from './components/mention';
 
 import type PostModel from '@typings/database/models/servers/post';
@@ -36,7 +37,7 @@ const styles = StyleSheet.create({
     flex: {
         flex: 1,
     },
-    loading: {
+    empty: {
         alignItems: 'center',
         flex: 1,
         justifyContent: 'center',
@@ -49,7 +50,7 @@ const RecentMentionsScreen = ({mentions, currentUser, currentTimezone, isTimezon
     const isFocused = useIsFocused();
     const {formatMessage} = useIntl();
     const [refreshing, setRefreshing] = useState(false);
-    const [loading, setLoading] = useState(false);
+    const [loading, setLoading] = useState(true);
     const serverUrl = useServerUrl();
 
     const params = route.params! as {direction: string};
@@ -93,6 +94,19 @@ const RecentMentionsScreen = ({mentions, currentUser, currentTimezone, isTimezon
         };
     }, []);
 
+    const renderEmptyList = useCallback(() => (
+        <View style={[styles.empty, paddingTop]}>
+            {loading ? (
+                <ActivityIndicator
+                    color={theme.sidebarBg}
+                    size='large'
+                />
+            ) : (
+                <EmptyState/>
+            )}
+        </View>
+    ), [loading]);
+
     const renderItem = useCallback(({item}) => {
         if (typeof item === 'string') {
             if (isDateLine(item)) {
@@ -131,29 +145,21 @@ const RecentMentionsScreen = ({mentions, currentUser, currentTimezone, isTimezon
                 edges={EDGES}
             >
                 <Animated.View style={[styles.flex, animated]}>
-                    {loading && !mentions.length ? (
-                        <View style={styles.loading}>
-                            <ActivityIndicator
-                                color={theme.sidebarBg}
-                                size='large'
-                            />
-                        </View>
-                    ) : (
-                        <AnimatedFlatList
-                            ref={scrollRef}
-                            contentContainerStyle={paddingTop}
-                            data={posts}
-                            scrollToOverflowEnabled={true}
-                            showsVerticalScrollIndicator={false}
-                            progressViewOffset={scrollPaddingTop}
-                            scrollEventThrottle={16}
-                            indicatorStyle='black'
-                            onScroll={onScroll}
-                            onRefresh={handleRefresh}
-                            refreshing={refreshing}
-                            renderItem={renderItem}
-                        />
-                    )}
+                    <AnimatedFlatList
+                        ref={scrollRef}
+                        contentContainerStyle={paddingTop}
+                        ListEmptyComponent={renderEmptyList()}
+                        data={posts}
+                        scrollToOverflowEnabled={true}
+                        showsVerticalScrollIndicator={false}
+                        progressViewOffset={scrollPaddingTop}
+                        scrollEventThrottle={16}
+                        indicatorStyle='black'
+                        onScroll={onScroll}
+                        onRefresh={handleRefresh}
+                        refreshing={refreshing}
+                        renderItem={renderItem}
+                    />
                 </Animated.View>
             </SafeAreaView>
         </>
