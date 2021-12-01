@@ -1,0 +1,189 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Action should match snapshot 1`] = `
+<View
+  style={
+    Object {
+      "height": 51,
+      "width": "100%",
+    }
+  }
+>
+  <TouchableHighlight
+    onPress={[Function]}
+    style={
+      Object {
+        "flex": 1,
+        "flexDirection": "row",
+      }
+    }
+    testID="action"
+    underlayColor="rgba(0, 0, 0, 0.1)"
+  >
+    <View
+      style={
+        Object {
+          "flex": 1,
+          "flexDirection": "row",
+        }
+      }
+    >
+      <View
+        style={
+          Object {
+            "alignItems": "center",
+            "height": 50,
+            "justifyContent": "center",
+            "width": 60,
+          }
+        }
+      >
+        <CompassIcon
+          name="test-icon"
+          size={24}
+          style={
+            Array [
+              Object {
+                "color": "rgba(63,67,80,0.64)",
+              },
+              null,
+            ]
+          }
+        />
+      </View>
+      <View
+        style={
+          Object {
+            "flex": 1,
+            "height": 50,
+            "justifyContent": "center",
+            "marginRight": 5,
+          }
+        }
+      >
+        <Text
+          style={
+            Array [
+              Object {
+                "color": "#3f4350",
+                "fontSize": 16,
+                "letterSpacing": -0.45,
+                "lineHeight": 19,
+                "opacity": 0.9,
+              },
+              null,
+            ]
+          }
+        >
+          test-text
+        </Text>
+      </View>
+    </View>
+  </TouchableHighlight>
+  <View
+    style={
+      Object {
+        "borderBottomColor": "rgba(63,67,80,0.2)",
+        "borderBottomWidth": 0.5,
+        "marginHorizontal": 17,
+      }
+    }
+  />
+</View>
+`;
+
+exports[`Action should match snapshot when is destructive 1`] = `
+<View
+  style={
+    Object {
+      "height": 51,
+      "width": "100%",
+    }
+  }
+>
+  <TouchableHighlight
+    onPress={[Function]}
+    style={
+      Object {
+        "flex": 1,
+        "flexDirection": "row",
+      }
+    }
+    testID="action"
+    underlayColor="rgba(0, 0, 0, 0.1)"
+  >
+    <View
+      style={
+        Object {
+          "flex": 1,
+          "flexDirection": "row",
+        }
+      }
+    >
+      <View
+        style={
+          Object {
+            "alignItems": "center",
+            "height": 50,
+            "justifyContent": "center",
+            "width": 60,
+          }
+        }
+      >
+        <CompassIcon
+          name="test-icon"
+          size={24}
+          style={
+            Array [
+              Object {
+                "color": "rgba(63,67,80,0.64)",
+              },
+              Object {
+                "color": "#D0021B",
+              },
+            ]
+          }
+        />
+      </View>
+      <View
+        style={
+          Object {
+            "flex": 1,
+            "height": 50,
+            "justifyContent": "center",
+            "marginRight": 5,
+          }
+        }
+      >
+        <Text
+          style={
+            Array [
+              Object {
+                "color": "#3f4350",
+                "fontSize": 16,
+                "letterSpacing": -0.45,
+                "lineHeight": 19,
+                "opacity": 0.9,
+              },
+              Object {
+                "color": "#D0021B",
+              },
+            ]
+          }
+        >
+          test-text
+        </Text>
+      </View>
+    </View>
+  </TouchableHighlight>
+  <View
+    style={
+      Object {
+        "borderBottomColor": "rgba(63,67,80,0.2)",
+        "borderBottomWidth": 0.5,
+        "marginHorizontal": 17,
+      }
+    }
+  />
+</View>
+`;

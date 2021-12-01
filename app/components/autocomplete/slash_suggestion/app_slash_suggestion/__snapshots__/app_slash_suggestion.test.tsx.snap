@@ -16,7 +16,6 @@ exports[`components/autocomplete/app_slash_suggestion should match snapshot 1`] 
   keyExtractor={[Function]}
   keyboardShouldPersistTaps="always"
   nestedScrollEnabled={false}
-  numColumns={1}
   removeClippedSubviews={true}
   renderItem={[Function]}
   style={

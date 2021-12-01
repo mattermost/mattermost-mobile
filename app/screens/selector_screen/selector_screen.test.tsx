@@ -5,11 +5,13 @@ import React from 'react';
 import {IntlProvider} from 'react-intl';
 
 import Preferences from '@mm-redux/constants/preferences';
+import {Channel} from '@mm-redux/types/channels';
+import {UserProfile} from '@mm-redux/types/users';
 
-import SelectorScreen from './selector_screen.js';
+import SelectorScreen from './selector_screen';
 
-const user1 = {id: 'id', username: 'username'};
-const user2 = {id: 'id2', username: 'username2'};
+const user1 = {id: 'id', username: 'username'} as UserProfile;
+const user2 = {id: 'id2', username: 'username2'} as UserProfile;
 
 const getProfiles = async () => {
     return {
@@ -25,8 +27,8 @@ const searchProfiles = async () => {
     };
 };
 
-const channel1 = {id: 'id', name: 'name', display_name: 'display_name'};
-const channel2 = {id: 'id2', name: 'name2', display_name: 'display_name2'};
+const channel1 = {id: 'id', name: 'name', display_name: 'display_name'} as Channel;
+const channel2 = {id: 'id2', name: 'name2', display_name: 'display_name2'} as Channel;
 
 const getChannels = async () => {
     return {
@@ -58,7 +60,7 @@ describe('SelectorScreen', () => {
         currentTeamId: 'someId',
         onSelect: jest.fn(),
         data: [{text: 'text', value: 'value'}],
-        dataSource: null,
+        dataSource: '',
         theme: Preferences.THEMES.denim,
     };
 
@@ -139,7 +141,7 @@ describe('SelectorScreen', () => {
             getDynamicOptions,
         };
 
-        const wrapper = shallow(
+        const wrapper = shallow<SelectorScreen>(
             <SelectorScreen {...props}/>,
             {context: {intl}},
         );

@@ -17,6 +17,7 @@ const NavigationTypes = keyMirror({
     CLOSE_SETTINGS_SIDEBAR: null,
     BLUR_POST_DRAFT: null,
     CLOSE_SLIDE_UP: null,
+    DRAWER: null,
 });
 
 export default NavigationTypes;

@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import AsyncStorage from '@react-native-community/async-storage';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 import DeviceInfo from 'react-native-device-info';
 import * as redux from 'redux';
@@ -74,9 +74,9 @@ const viewsBlackListFilter = createBlacklistFilter(
     ['extension', 'root'],
 );
 
-const typingBlackListFilter = createBlacklistFilter(
+const entitiesBlackListFilter = createBlacklistFilter(
     'entities',
-    ['typing'],
+    ['typing', 'calls'],
 );
 
 const channelViewBlackList: any = {loading: true, refreshing: true, loadingPosts: true, retryFailed: true, loadMorePostsVisible: true};
@@ -174,7 +174,7 @@ export default function configureStore(storage: any, preloadedState: any = {}, o
         transforms: [
             setTransformer,
             viewsBlackListFilter,
-            typingBlackListFilter,
+            entitiesBlackListFilter,
             channelViewBlackListFilter,
             emojiBlackListFilter,
         ],

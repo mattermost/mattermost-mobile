@@ -55,11 +55,11 @@ describe('Unread channels', () => {
         // # Open main sidebar (with at least one unread channel)
         await openMainSidebar();
 
-        // * Verify unread channel(s) display at top of channel list (with mentions first, if any), in alphabetical order, with title "Unreads"
+        // * Verify unread channel(s) display at top of channel list (with mentions first, if any), in post date descending order, with title "Unreads"
         await expect(element(by.text('UNREADS'))).toBeVisible();
-        await hasChannelDisplayNameAtIndex(0, aChannel.display_name);
-        await hasChannelDisplayNameAtIndex(1, newChannel.display_name);
-        await hasChannelDisplayNameAtIndex(2, zChannel.display_name);
+        await hasChannelDisplayNameAtIndex(0, zChannel.display_name);
+        await hasChannelDisplayNameAtIndex(1, aChannel.display_name);
+        await hasChannelDisplayNameAtIndex(2, newChannel.display_name);
         await closeMainSidebar();
 
         // # Tap an unread channel to view it
@@ -70,7 +70,7 @@ describe('Unread channels', () => {
         // * Channel you just read is no longer listed in Unreads
         await openMainSidebar();
         await expect(element(by.text('UNREADS'))).not.toBeVisible();
-        await expect(element(by.text('PUBLIC CHANNELS'))).toBeVisible();
+        await expect(element(by.text('CHANNELS'))).toBeVisible();
         await hasChannelDisplayNameAtIndex(0, aChannel.display_name);
         await hasChannelDisplayNameAtIndex(1, newChannel.display_name);
         await hasChannelDisplayNameAtIndex(2, 'Off-Topic');

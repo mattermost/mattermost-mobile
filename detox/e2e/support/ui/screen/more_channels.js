@@ -66,7 +66,8 @@ class MoreChannelsScreen {
 
     open = async () => {
         // # Open more channels screen
-        await MainSidebar.openMoreChannelsButton.tap();
+        await MainSidebar.channelsActionButton.tap();
+        await BottomSheet.moreChannelsOption.tap();
 
         return this.toBeVisible();
     }

@@ -86,6 +86,7 @@ export interface AvatarsProps {
     breakAt?: number;
     style?: StyleProp<ViewStyle>;
     theme: Theme;
+    listTitle?: JSX.Element;
 }
 
 export default class Avatars extends PureComponent<AvatarsProps> {
@@ -94,11 +95,12 @@ export default class Avatars extends PureComponent<AvatarsProps> {
     };
 
     showParticipantsList = () => {
-        const {userIds} = this.props;
+        const {userIds, listTitle} = this.props;
 
         const screen = 'ParticipantsList';
         const passProps = {
             userIds,
+            listTitle,
         };
 
         showModalOverCurrentContext(screen, passProps);

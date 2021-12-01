@@ -2,6 +2,11 @@
 
 exports[`ImageQuickAction should match snapshot 1`] = `
 <View
+  accessibilityState={
+    Object {
+      "disabled": false,
+    }
+  }
   accessible={true}
   collapsable={false}
   focusable={true}

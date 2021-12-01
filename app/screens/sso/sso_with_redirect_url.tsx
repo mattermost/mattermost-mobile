@@ -1,5 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
+
+import qs from 'querystringify';
 import React from 'react';
 import {intlShape} from 'react-intl';
 import {Linking, Platform, Text, TouchableOpacity, View} from 'react-native';
@@ -50,10 +52,10 @@ function SSOWithRedirectURL({
             setLoginError('');
         }
         const parsedUrl = urlParse(loginUrl, true);
-        parsedUrl.set('query', {
+        parsedUrl.set('query', qs.stringify({
             ...parsedUrl.query,
             redirect_to: redirectUrl,
-        });
+        }));
         const url = parsedUrl.toString();
 
         const onError = (e: Error) => {

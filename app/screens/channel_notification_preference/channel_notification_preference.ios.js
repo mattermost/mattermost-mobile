@@ -10,6 +10,7 @@ import {SafeAreaView} from 'react-native-safe-area-context';
 
 import FormattedText from '@components/formatted_text';
 import StatusBar from '@components/status_bar';
+import {ViewTypes} from '@constants';
 import SectionItem from '@screens/settings/section_item';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
@@ -17,7 +18,8 @@ import ChannelNotificationPreferenceBase from './channel_notification_preference
 
 export default class ChannelNotificationPreferenceIos extends ChannelNotificationPreferenceBase {
     render() {
-        const {theme} = this.props;
+        const {theme, isCollapsedThreadsEnabled} = this.props;
+        const {notificationLevel, notificationThreadsLevel} = this.state;
         const style = getStyleSheet(theme);
 
         const items = this.getItems();
@@ -60,6 +62,29 @@ export default class ChannelNotificationPreferenceIos extends ChannelNotificatio
                                     />
                                 </View>),
                             )}
+                            {isCollapsedThreadsEnabled && notificationLevel === ViewTypes.NotificationLevels.MENTION && (
+                                <View>
+                                    <FormattedText
+                                        id='mobile.notification_settings.push_threads.title'
+                                        defaultMessage={'Thread reply notifications'}
+                                        style={style.header}
+                                    />
+                                    <View style={style.divider}/>
+                                    <SectionItem
+                                        label={(
+                                            <FormattedText
+                                                id='mobile.notification_settings.push_threads.description'
+                                                defaultMessage={'Notify me about all replies to threads I\'m following'}
+                                            />
+                                        )}
+                                        description={<View/>}
+                                        action={this.handleThreadsPress}
+                                        actionType='toggle'
+                                        selected={notificationThreadsLevel === ViewTypes.NotificationLevels.ALL}
+                                        theme={theme}
+                                    />
+                                </View>
+                            )}
                         </SafeAreaView>
                         <View style={style.divider}/>
                     </View>
@@ -76,11 +101,12 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             backgroundColor: changeOpacity(theme.centerChannelColor, 0.03),
         },
         header: {
+            backgroundColor: changeOpacity(theme.centerChannelColor, 0.03),
             color: changeOpacity(theme.centerChannelColor, 0.56),
             fontSize: 13,
             textTransform: 'uppercase',
-            marginTop: 10,
             padding: 16,
+            paddingTop: 26,
         },
         divider: {
             backgroundColor: changeOpacity(theme.centerChannelColor, 0.1),

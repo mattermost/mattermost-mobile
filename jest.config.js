@@ -28,6 +28,6 @@ module.exports = {
         'assets/images/video_player/(.*).png': '<rootDir>/dist/assets/images/video_player/$1@2x.png',
     },
     transformIgnorePatterns: [
-        'node_modules/(?!(react-native|@react-native|jail-monkey|@sentry/react-native|react-navigation|@react-native-community/cameraroll))',
+        'node_modules/(?!(react-native|@react-native|jail-monkey|serialize-error|@sentry/react-native|react-navigation|@react-native-community/cameraroll))',
     ],
 };

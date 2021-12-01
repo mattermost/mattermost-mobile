@@ -3,6 +3,8 @@
 
 import {combineReducers} from 'redux';
 
+import calls from '@mmproducts/calls/store/reducers/calls';
+
 import apps from './apps';
 import bots from './bots';
 import channelCategories from './channel_categories';
@@ -43,4 +45,5 @@ export default combineReducers({
     threads,
     remoteCluster,
     apps,
+    calls,
 });

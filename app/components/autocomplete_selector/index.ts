@@ -2,23 +2,29 @@
 // See LICENSE.txt for license information.
 
 import {connect} from 'react-redux';
-import {bindActionCreators} from 'redux';
+import {ActionCreatorsMapObject, bindActionCreators, Dispatch} from 'redux';
 
 import {setAutocompleteSelector} from '@actions/views/post';
 import {getTeammateNameDisplaySetting, getTheme} from '@mm-redux/selectors/entities/preferences';
 
 import AutocompleteSelector from './autocomplete_selector';
 
-function mapStateToProps(state) {
+import type {Action, ActionResult, GenericAction} from '@mm-redux/types/actions';
+import type {GlobalState} from '@mm-redux/types/store';
+
+function mapStateToProps(state: GlobalState) {
     return {
         teammateNameDisplay: getTeammateNameDisplaySetting(state),
         theme: getTheme(state),
     };
 }
 
-function mapDispatchToProps(dispatch) {
+type Actions = {
+    setAutocompleteSelector: (dataSource: any, onSelect: any, options: any, getDynamicOptions: any) => Promise<ActionResult>;
+}
+function mapDispatchToProps(dispatch: Dispatch<GenericAction>) {
     return {
-        actions: bindActionCreators({
+        actions: bindActionCreators<ActionCreatorsMapObject<Action>, Actions>({
             setAutocompleteSelector,
         }, dispatch),
     };

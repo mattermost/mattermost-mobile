@@ -304,6 +304,8 @@ exports[`PostDraft Should render the DraftInput 1`] = `
           onEndEditing={[Function]}
           onFocus={[Function]}
           onPaste={[Function]}
+          onPressIn={[Function]}
+          onPressOut={[Function]}
           onResponderGrant={[Function]}
           onResponderMove={[Function]}
           onResponderRelease={[Function]}
@@ -417,6 +419,11 @@ exports[`PostDraft Should render the DraftInput 1`] = `
             testID="post_draft.quick_actions"
           >
             <View
+              accessibilityState={
+                Object {
+                  "disabled": false,
+                }
+              }
               accessible={true}
               collapsable={false}
               focusable={true}
@@ -445,6 +452,11 @@ exports[`PostDraft Should render the DraftInput 1`] = `
               />
             </View>
             <View
+              accessibilityState={
+                Object {
+                  "disabled": false,
+                }
+              }
               accessible={true}
               collapsable={false}
               focusable={true}
@@ -473,6 +485,11 @@ exports[`PostDraft Should render the DraftInput 1`] = `
               />
             </View>
             <View
+              accessibilityState={
+                Object {
+                  "disabled": false,
+                }
+              }
               accessible={true}
               collapsable={false}
               focusable={true}
@@ -496,11 +513,16 @@ exports[`PostDraft Should render the DraftInput 1`] = `
             >
               <Icon
                 color="rgba(63,67,80,0.64)"
-                name="file-document-outline"
+                name="file-text-outline"
                 size={24}
               />
             </View>
             <View
+              accessibilityState={
+                Object {
+                  "disabled": false,
+                }
+              }
               accessible={true}
               collapsable={false}
               focusable={true}
@@ -529,6 +551,11 @@ exports[`PostDraft Should render the DraftInput 1`] = `
               />
             </View>
             <View
+              accessibilityState={
+                Object {
+                  "disabled": false,
+                }
+              }
               accessible={true}
               collapsable={false}
               focusable={true}
