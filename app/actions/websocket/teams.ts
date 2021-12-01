@@ -82,15 +82,18 @@ export async function handleTeamAddedEvent(serverUrl: string, msg: WebSocketMess
     }
 
     fetchMyTeam(serverUrl, msg.data.team_id);
+    const [team, memberships] = await Promise.all([
+        fetchMyTeam(serverUrl, msg.data.team_id),
+    ]);
+
+    console.log('team', team);
+    console.log('memberships', memberships);
 
     // const [team, member, teamUnreads] = await Promise.all([
-    //     fetchMyTeam(serverUrl, msg.data.team_id),
+    //     Client4.getTeam(msg.data.team_id),
     //     Client4.getTeamMember(teamId, userId),
     //     Client4.getMyTeamUnreads(),
     // ]);
-
-    // const teamId = msg.data.team_id;
-    // const userId = msg.data.user_id;
 
     // const actions = [];
     // if (team) {
