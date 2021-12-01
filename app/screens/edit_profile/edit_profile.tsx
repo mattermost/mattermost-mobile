@@ -86,8 +86,6 @@ const EditProfile = ({
     const [canSave, setCanSave] = useState(false);
     const [error, setError] = useState<ErrorText | undefined>();
 
-    const [profileImage] = useState<undefined>();
-
     const [updating, setUpdating] = useState(false);
     const scrollViewRef = useRef<KeyboardAwareScrollView>();
 
@@ -105,13 +103,17 @@ const EditProfile = ({
             },
         }, componentId);
 
-        const backHandler = BackHandler.addEventListener('hardwareBackPress', close);
-
         return () => {
             unsubscribe.remove();
+        };
+    }, [userInfo, isTablet]);
+
+    useEffect(() => {
+        const backHandler = BackHandler.addEventListener('hardwareBackPress', close);
+        return () => {
             backHandler.remove();
         };
-    }, [userInfo, isTablet, profileImage]);
+    }, []);
 
     useEffect(() => {
         if (!isTablet) {
@@ -242,7 +244,7 @@ const EditProfile = ({
                         />
                     </View>
                     <Field
-                        key='firstName'
+                        fieldKey='firstName'
                         isDisabled={isFieldLockedWithProtocol(service, lockedFirstName) || includesSsoService(service)}
                         label={FIELDS.firstName}
                         onTextChange={updateField}
@@ -251,7 +253,7 @@ const EditProfile = ({
                     />
                     <View style={style.separator}/>
                     <Field
-                        key='lastName'
+                        fieldKey='lastName'
                         isDisabled={isFieldLockedWithProtocol(service, lockedLastName) || includesSsoService(service)}
                         label={FIELDS.lastName}
                         onTextChange={updateField}
@@ -260,7 +262,7 @@ const EditProfile = ({
                     />
                     <View style={style.separator}/>
                     <Field
-                        key='username'
+                        fieldKey='username'
                         isDisabled={service !== ''}
                         label={FIELDS.username}
                         maxLength={22}
@@ -276,7 +278,7 @@ const EditProfile = ({
                     />
                     <View style={style.separator}/>
                     <Field
-                        key='nickname'
+                        fieldKey='nickname'
                         isDisabled={isFieldLockedWithProtocol(service, lockedNickname)}
                         label={FIELDS.nickname}
                         maxLength={22}
@@ -286,7 +288,7 @@ const EditProfile = ({
                     />
                     <View style={style.separator}/>
                     <Field
-                        key='position'
+                        fieldKey='position'
                         isDisabled={isFieldLockedWithProtocol(service, lockedPosition)}
                         label={FIELDS.position}
                         maxLength={128}

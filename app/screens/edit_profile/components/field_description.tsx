@@ -7,9 +7,10 @@ import {Text, View} from 'react-native';
 
 import {useTheme} from '@context/theme';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
+import {typography} from '@utils/typography';
 
 type HelpContentProps = {
-    text: string;
+    text?: string;
 };
 
 const Description = ({text}: HelpContentProps) => {
@@ -31,7 +32,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             marginTop: 10,
         },
         text: {
-            fontSize: 12,
+            ...typography('Body', 75),
             color: changeOpacity(theme.centerChannelColor, 0.5),
         },
     };

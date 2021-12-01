@@ -65,7 +65,7 @@ const EmailField = ({authService, email, onChange}: EmailSettingsProps) => {
     return (
         <Field
             fieldDescription={helpText}
-            key='email'
+            fieldKey='email'
             isDisabled={true}
             label={FIELDS.email}
             onTextChange={onChange}

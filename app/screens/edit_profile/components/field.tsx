@@ -4,7 +4,7 @@
 import {MessageDescriptor} from '@formatjs/intl/src/types';
 import React, {useCallback} from 'react';
 import {useIntl} from 'react-intl';
-import {KeyboardTypeOptions, Platform, TextInputProps, View} from 'react-native';
+import {Platform, TextInputProps, View} from 'react-native';
 
 import FloatingTextInput from '@components/floating_text_input_label';
 import {useTheme} from '@context/theme';
@@ -15,8 +15,7 @@ import FieldDescription from './field_description';
 type FieldProps = TextInputProps & {
     isDisabled?: boolean;
     fieldDescription?: string;
-    key: string;
-    keyboardType?: KeyboardTypeOptions;
+    fieldKey: string;
     label: MessageDescriptor | string;
     maxLength?: number;
     onTextChange: (id: string, value: string) => void;
@@ -29,7 +28,7 @@ const Field = ({
     autoCapitalize = 'none',
     autoCorrect = false,
     fieldDescription,
-    key,
+    fieldKey,
     isDisabled = false,
     isOptional = false,
     keyboardType = 'default',
@@ -38,12 +37,12 @@ const Field = ({
     onTextChange,
     testID,
     value,
-    ...props,
+    ...props
 }: FieldProps) => {
     const theme = useTheme();
     const intl = useIntl();
 
-    const onChangeText = useCallback((text: string) => onTextChange(key, text), [key, onTextChange]);
+    const onChangeText = useCallback((text: string) => onTextChange(fieldKey, text), [fieldKey, onTextChange]);
 
     const style = getStyleSheet(theme);
 
@@ -79,7 +78,7 @@ const Field = ({
                     value={value}
                     {...props}
                 />
-                {isDisabled && fieldDescription && (
+                {isDisabled && (
                     <FieldDescription
                         text={fieldDescription}
                     />
