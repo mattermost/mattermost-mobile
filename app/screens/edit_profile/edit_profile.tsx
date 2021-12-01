@@ -16,6 +16,7 @@ import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {FIELDS} from '@screens/edit_profile/constants';
 import {dismissModal, popTopScreen, setButtons} from '@screens/navigation';
+import {preventDoubleTap} from '@utils/tap';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 
 import EmailField from './components/email_field';
@@ -157,7 +158,7 @@ const EditProfile = ({
         }
     };
 
-    const submitUser = async () => {
+    const submitUser = preventDoubleTap(async () => {
         enableSaveButton(false);
         setError(undefined);
         setUpdating(true);
@@ -182,7 +183,7 @@ const EditProfile = ({
         } catch (e) {
             resetScreen(e as Error);
         }
-    };
+    });
 
     const resetScreen = (resetError: Error) => {
         setError(resetError?.message);
