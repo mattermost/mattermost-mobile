@@ -6,13 +6,13 @@ import {intlShape, injectIntl} from 'react-intl';
 import Button from 'react-native-button';
 
 import {showAppForm} from '@actions/navigation';
-import {AppExpandLevels, AppBindingLocations, AppCallTypes, AppCallResponseTypes} from '@mm-redux/constants/apps';
+import {AppBindingLocations, AppCallResponseTypes} from '@mm-redux/constants/apps';
 import {ActionResult} from '@mm-redux/types/actions';
 import {AppBinding} from '@mm-redux/types/apps';
 import {Post} from '@mm-redux/types/posts';
 import {Theme} from '@mm-redux/types/theme';
-import {DoAppCall, PostEphemeralCallResponseForPost} from '@mm-types/actions/apps';
-import {createCallContext, createCallRequest} from '@utils/apps';
+import {HandleBindingClick, PostEphemeralCallResponseForPost} from '@mm-types/actions/apps';
+import {createCallContext} from '@utils/apps';
 import {getStatusColors} from '@utils/message_attachment_colors';
 import {preventDoubleTap} from '@utils/tap';
 import {makeStyleSheetFromTheme, changeOpacity} from '@utils/theme';
@@ -21,7 +21,7 @@ import ButtonBindingText from './button_binding_text';
 
 type Props = {
     binding: AppBinding;
-    doAppCall: DoAppCall;
+    handleBindingClick: HandleBindingClick;
     intl: typeof intlShape;
     post: Post;
     postEphemeralCallResponseForPost: PostEphemeralCallResponseForPost;
@@ -53,18 +53,12 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     };
 });
 
-const ButtonBinding = ({binding, doAppCall, intl, post, postEphemeralCallResponseForPost, teamID, theme, handleGotoLocation}: Props) => {
+const ButtonBinding = ({binding, handleBindingClick, intl, post, postEphemeralCallResponseForPost, teamID, theme, handleGotoLocation}: Props) => {
     const pressed = useRef(false);
     const style = getStyleSheet(theme);
 
     const onPress = useCallback(preventDoubleTap(async () => {
         if (pressed.current) {
-            return;
-        }
-
-        const call = binding.form?.call || binding.call;
-
-        if (!call) {
             return;
         }
 
@@ -76,25 +70,14 @@ const ButtonBinding = ({binding, doAppCall, intl, post, postEphemeralCallRespons
             post.id,
         );
 
-        const callRequest = createCallRequest(
-            call,
-            context,
-            {post: AppExpandLevels.EXPAND_ALL},
-        );
-
-        if (binding.form) {
-            showAppForm(binding.form, callRequest, theme);
-            return;
-        }
-
         pressed.current = true;
 
-        const res = await doAppCall(callRequest, AppCallTypes.SUBMIT, intl);
+        const res = await handleBindingClick(binding, context, intl);
         pressed.current = false;
 
         if (res.error) {
             const errorResponse = res.error;
-            const errorMessage = errorResponse.error || intl.formatMessage({
+            const errorMessage = errorResponse.text || intl.formatMessage({
                 id: 'apps.error.unknown',
                 defaultMessage: 'Unknown error occurred.',
             });
@@ -106,15 +89,15 @@ const ButtonBinding = ({binding, doAppCall, intl, post, postEphemeralCallRespons
 
         switch (callResp.type) {
         case AppCallResponseTypes.OK:
-            if (callResp.markdown) {
-                postEphemeralCallResponseForPost(callResp, callResp.markdown, post);
+            if (callResp.text) {
+                postEphemeralCallResponseForPost(callResp, callResp.text, post);
             }
             return;
         case AppCallResponseTypes.NAVIGATE:
             handleGotoLocation(callResp.navigate_to_url!, intl);
             return;
         case AppCallResponseTypes.FORM:
-            showAppForm(callResp.form, call, theme);
+            showAppForm(callResp.form, context, theme);
             return;
         default: {
             const errorMessage = intl.formatMessage({

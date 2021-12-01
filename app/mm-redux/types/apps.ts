@@ -8,7 +8,6 @@ export type AppManifest = {
     display_name: string;
     description?: string;
     homepage_url?: string;
-    root_url: string;
 }
 
 export type AppModalState = {
@@ -50,18 +49,16 @@ export type AppBinding = {
     depends_on_user?: boolean;
     depends_on_post?: boolean;
 
-    // A Binding is either to a Call, or is a "container" for other locations -
-    // i.e. menu sub-items or subcommands.
-    call?: AppCall;
+    // A Binding is either an action (makes a call), a Form, or is a
+    // "container" for other locations - i.e. menu sub-items or subcommands.
     bindings?: AppBinding[];
     form?: AppForm;
+    submit?: AppCall;
 };
 
 export type AppCallValues = {
     [name: string]: any;
 };
-
-export type AppCallType = string;
 
 export type AppCall = {
     path: string;
@@ -73,17 +70,14 @@ export type AppCallRequest = AppCall & {
     context: AppContext;
     values?: AppCallValues;
     raw_command?: string;
-    selected_field?: string;
-    query?: string;
 };
 
 export type AppCallResponseType = string;
 
 export type AppCallResponse<Res = unknown> = {
     type: AppCallResponseType;
-    markdown?: string;
+    text?: string;
     data?: Res;
-    error?: string;
     navigate_to_url?: string;
     use_external_browser?: boolean;
     call?: AppCall;
@@ -107,6 +101,7 @@ export type AppContext = {
     root_id?: string;
     props?: AppContextProps;
     user_agent?: string;
+    track_as_submit?: boolean;
 };
 
 export type AppContextProps = {
@@ -136,8 +131,19 @@ export type AppForm = {
     submit_buttons?: string;
     cancel_button?: boolean;
     submit_on_cancel?: boolean;
-    fields: AppField[];
-    call?: AppCall;
+    fields?: AppField[];
+
+    // source is used in 2 cases:
+    //   - if submit is not set, it is used to fetch the submittable form from
+    //     the app.
+    //   - if a select field change triggers a refresh, the form is refreshed
+    //     from source.
+    source?: AppCall;
+
+    // submit is called when one of the submit buttons is pressed, or the
+    // command is executed.
+    submit?: AppCall;
+
     depends_on?: string[];
 };
 
@@ -176,6 +182,7 @@ export type AppField = {
     refresh?: boolean;
     options?: AppSelectOption[];
     multiselect?: boolean;
+    lookup?: AppCall;
 
     // Text props
     subtype?: string;

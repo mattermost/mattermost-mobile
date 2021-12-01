@@ -6,19 +6,19 @@ import {intlShape, injectIntl} from 'react-intl';
 
 import {showAppForm} from '@actions/navigation';
 import AutocompleteSelector from '@components/autocomplete_selector';
-import {AppExpandLevels, AppBindingLocations, AppCallTypes, AppCallResponseTypes} from '@mm-redux/constants/apps';
+import {AppBindingLocations, AppCallResponseTypes} from '@mm-redux/constants/apps';
 import {ActionResult} from '@mm-redux/types/actions';
 import {Theme} from '@mm-redux/types/theme';
-import {createCallContext, createCallRequest} from '@utils/apps';
+import {createCallContext} from '@utils/apps';
 
 import type {AppBinding} from '@mm-redux/types/apps';
 import type {PostActionOption} from '@mm-redux/types/integration_actions';
 import type {Post} from '@mm-redux/types/posts';
-import type {DoAppCall, PostEphemeralCallResponseForPost} from '@mm-types/actions/apps';
+import type {HandleBindingClick, PostEphemeralCallResponseForPost} from '@mm-types/actions/apps';
 
 type Props = {
     binding: AppBinding;
-    doAppCall: DoAppCall;
+    handleBindingClick: HandleBindingClick;
     intl: typeof intlShape;
     post: Post;
     postEphemeralCallResponseForPost: PostEphemeralCallResponseForPost;
@@ -27,7 +27,7 @@ type Props = {
     theme: Theme;
 }
 
-const MenuBinding = ({binding, doAppCall, intl, post, postEphemeralCallResponseForPost, handleGotoLocation, teamID, theme}: Props) => {
+const MenuBinding = ({binding, handleBindingClick, intl, post, postEphemeralCallResponseForPost, handleGotoLocation, teamID, theme}: Props) => {
     const [selected, setSelected] = useState<PostActionOption>();
 
     const onSelect = useCallback(async (picked?: PostActionOption) => {
@@ -42,12 +42,6 @@ const MenuBinding = ({binding, doAppCall, intl, post, postEphemeralCallResponseF
             return;
         }
 
-        const call = bind.form?.call || bind.call;
-
-        if (!call) {
-            return;
-        }
-
         const context = createCallContext(
             bind.app_id,
             AppBindingLocations.IN_POST + bind.location,
@@ -56,21 +50,10 @@ const MenuBinding = ({binding, doAppCall, intl, post, postEphemeralCallResponseF
             post.id,
         );
 
-        const callRequest = createCallRequest(
-            call,
-            context,
-            {post: AppExpandLevels.EXPAND_ALL},
-        );
-
-        if (bind.form) {
-            showAppForm(bind.form, callRequest);
-            return;
-        }
-
-        const res = await doAppCall(callRequest, AppCallTypes.SUBMIT, intl);
+        const res = await handleBindingClick(bind, context, intl);
         if (res.error) {
             const errorResponse = res.error;
-            const errorMessage = errorResponse.error || intl.formatMessage({
+            const errorMessage = errorResponse.text || intl.formatMessage({
                 id: 'apps.error.unknown',
                 defaultMessage: 'Unknown error occurred.',
             });
@@ -81,15 +64,15 @@ const MenuBinding = ({binding, doAppCall, intl, post, postEphemeralCallResponseF
         const callResp = res.data!;
         switch (callResp.type) {
         case AppCallResponseTypes.OK:
-            if (callResp.markdown) {
-                postEphemeralCallResponseForPost(callResp, callResp.markdown, post);
+            if (callResp.text) {
+                postEphemeralCallResponseForPost(callResp, callResp.text, post);
             }
             return;
         case AppCallResponseTypes.NAVIGATE:
             handleGotoLocation(callResp.navigate_to_url!, intl);
             return;
         case AppCallResponseTypes.FORM:
-            showAppForm(callResp.form, call, theme);
+            showAppForm(callResp.form, context, theme);
             return;
         default: {
             const errorMessage = intl.formatMessage({

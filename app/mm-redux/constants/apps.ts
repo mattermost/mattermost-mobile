@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {AppCallResponseType, AppCallType, AppExpandLevel, AppFieldType} from '@mm-redux/types/apps';
+import {AppCallResponseType, AppExpandLevel, AppFieldType} from '@mm-redux/types/apps';
 
 export const AppBindingLocations = {
     POST_MENU_ITEM: '/post_menu',
@@ -20,13 +20,6 @@ export const AppCallResponseTypes: { [name: string]: AppCallResponseType } = {
     FORM: 'form',
     CALL: 'call',
     NAVIGATE: 'navigate',
-};
-
-export const AppCallTypes: { [name: string]: AppCallType } = {
-    SUBMIT: 'submit',
-    LOOKUP: 'lookup',
-    FORM: 'form',
-    CANCEL: 'cancel',
 };
 
 export const AppExpandLevels: { [name: string]: AppExpandLevel } = {

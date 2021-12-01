@@ -15,6 +15,7 @@ import type {ParsedCommand} from './app_command_parser';
 import type {AutocompleteSuggestion} from '@mm-redux/types/integrations';
 
 export type {
+    AppCall,
     AppCallRequest,
     AppBinding,
     AppField,
@@ -58,7 +59,6 @@ export type {
 
 export {
     AppBindingLocations,
-    AppCallTypes,
     AppFieldTypes,
     AppCallResponseTypes,
     COMMAND_SUGGESTION_ERROR,
@@ -86,7 +86,7 @@ export {
 
 export {getChannelByNameAndTeamName, getChannel, autocompleteChannels} from '@mm-redux/actions/channels';
 
-export {doAppCall} from '@actions/apps';
+export {doAppFetchForm, doAppLookup} from '@actions/apps';
 export {
     createCallRequest,
     filterEmptyOptions,
