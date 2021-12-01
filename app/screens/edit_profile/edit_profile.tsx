@@ -3,7 +3,7 @@
 
 import React, {useCallback, useEffect, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
-import {BackHandler, DeviceEventEmitter, View} from 'react-native';
+import {BackHandler, DeviceEventEmitter, Platform, View} from 'react-native';
 import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
 import {Navigation} from 'react-native-navigation';
 import {Edge, SafeAreaView} from 'react-native-safe-area-context';
@@ -75,6 +75,8 @@ const EditProfile = ({
     const intl = useIntl();
     const serverUrl = useServerUrl();
     const theme = useTheme();
+    const keyboardAwareRef = useRef<KeyboardAwareScrollView>();
+
     const buttonText = intl.formatMessage({id: 'mobile.account.settings.save', defaultMessage: 'Save'});
     const rightButton = isTablet ? null : {
         id: 'update-profile',
@@ -203,10 +205,6 @@ const EditProfile = ({
         enableSaveButton(didChange);
     }, [userInfo]);
 
-    const setScrollViewRef = useCallback((ref) => {
-        scrollViewRef.current = ref;
-    }, []);
-
     if (updating) {
         return <ProfileUpdating/>;
     }
@@ -233,7 +231,16 @@ const EditProfile = ({
             >
                 <KeyboardAwareScrollView
                     bounces={false}
-                    innerRef={setScrollViewRef}
+                    enableAutomaticScroll={Platform.OS === 'android'}
+                    enableOnAndroid={true}
+                    enableResetScrollToCoords={true}
+                    extraScrollHeight={0}
+                    keyboardDismissMode='on-drag'
+                    keyboardShouldPersistTaps='handled'
+
+                    // @ts-expect-error legacy ref
+                    ref={keyboardAwareRef}
+                    scrollToOverflowEnabled={true}
                     testID='edit_profile.scroll_view'
                 >
                     {Boolean(error) && <ProfileError error={error!}/>}
