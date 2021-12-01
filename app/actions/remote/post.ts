@@ -7,7 +7,7 @@ import {SYSTEM_IDENTIFIERS} from '@constants/database';
 import DatabaseManager from '@database/manager';
 import {getNeededAtMentionedUsernames} from '@helpers/api/user';
 import NetworkManager from '@init/network_manager';
-import {queryAllMyChannelIds} from '@queries/servers/channel';
+import {queryAllMyChannelIds, queryAllMyChannelMembershipIds} from '@queries/servers/channel';
 import {queryRecentPostsInChannel} from '@queries/servers/post';
 import {queryCurrentUserId, queryCurrentChannelId} from '@queries/servers/system';
 import {queryAllUsers} from '@queries/servers/user';
@@ -271,4 +271,41 @@ export async function getMissingChannelsFromPosts(serverUrl: string, posts: Post
     }
 
     return {channels};
+}
+
+export async function getMissingChannelMembershipsFromPosts(serverUrl: string, posts: Post[], fetchOnly = false) {
+    const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
+    if (!operator) {
+        return {error: `${serverUrl} database not found`};
+    }
+
+    let client: Client;
+    try {
+        client = NetworkManager.getClient(serverUrl);
+    } catch (error) {
+        return {error};
+    }
+
+    const currentUserId = await queryCurrentUserId(operator.database);
+    const channelIds = await queryAllMyChannelMembershipIds(operator.database, currentUserId);
+    const promises: Array<Promise<ChannelMembership>> = [];
+
+    posts.forEach((post) => {
+        const id = post.channel_id;
+
+        if (channelIds.indexOf(id) === -1) {
+            promises.push(client.getChannelMember(id, currentUserId));
+        }
+    });
+
+    const channelMemberships = await Promise.all(promises);
+
+    if (!fetchOnly) {
+        await operator.handleChannelMembership({
+            channelMemberships,
+            prepareRecordsOnly: false,
+        });
+    }
+
+    return {channelMemberships};
 }

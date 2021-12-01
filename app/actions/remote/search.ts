@@ -4,12 +4,13 @@
 import Model from '@nozbe/watermelondb/Model';
 
 import {processPostsFetched} from '@actions/local/post';
+import {prepareMissingChannelsForAllTeams} from '@app/queries/servers/channel';
 import {SYSTEM_IDENTIFIERS} from '@constants/database';
 import DatabaseManager from '@database/manager';
 import NetworkManager from '@init/network_manager';
 import {queryCurrentUser} from '@queries/servers/user';
 
-import {fetchPostAuthors, getMissingChannelsFromPosts} from './post';
+import {fetchPostAuthors, getMissingChannelMembershipsFromPosts, getMissingChannelsFromPosts} from './post';
 import {forceLogoutIfNecessary} from './session';
 
 import type {Client} from '@client/rest';
@@ -54,26 +55,25 @@ export async function getRecentMentions(serverUrl: string): Promise<PostSearchRe
         const models: Model[] = [];
         let postModels: Model[] = [];
         let userModels: Model[] = [];
-        let channelModels: Model[] = [];
+        let channelModelsArray: Model[][] = [[]];
 
         postsArray = order.map((id) => posts[id]);
 
         if (postsArray.length) {
-            const authors = await fetchPostAuthors(serverUrl, postsArray, true);
-            const channels = await getMissingChannelsFromPosts(serverUrl, postsArray, true);
+            const {authors} = await fetchPostAuthors(serverUrl, postsArray, true);
+            const {channels} = await getMissingChannelsFromPosts(serverUrl, postsArray, true) as {channels: Channel[]};
+            const {channelMemberships} = await getMissingChannelMembershipsFromPosts(serverUrl, postsArray, true) as {channelMemberships: ChannelMembership[]};
 
-            if (authors.authors?.length) {
+            if (authors?.length) {
                 userModels = await operator.handleUsers({
-                    users: authors.authors,
+                    users: authors,
                     prepareRecordsOnly: true,
                 });
             }
 
-            if (channels.channels?.length) {
-                channelModels = await operator.handleChannel({
-                    channels: channels.channels,
-                    prepareRecordsOnly: true,
-                });
+            if (channels?.length && channelMemberships?.length) {
+                const promises = prepareMissingChannelsForAllTeams(operator, channels, channelMemberships) as Array<Promise<Model[]>>;
+                channelModelsArray = await Promise.all(promises);
             }
 
             postModels = await operator.handlePosts({
@@ -96,8 +96,8 @@ export async function getRecentMentions(serverUrl: string): Promise<PostSearchRe
         });
 
         models.push(...userModels);
-        models.push(...channelModels);
         models.push(...postModels);
+        models.push(...channelModelsArray.flat());
         models.push(...mentionModels);
 
         if (models.length) {
