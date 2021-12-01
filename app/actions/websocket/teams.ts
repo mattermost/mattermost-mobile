@@ -81,7 +81,6 @@ export async function handleTeamAddedEvent(serverUrl: string, msg: WebSocketMess
         return;
     }
 
-    fetchMyTeam(serverUrl, msg.data.team_id);
     const [team, memberships] = await Promise.all([
         fetchMyTeam(serverUrl, msg.data.team_id),
     ]);
