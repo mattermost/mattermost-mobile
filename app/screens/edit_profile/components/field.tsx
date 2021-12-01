@@ -19,7 +19,7 @@ type FieldProps = TextInputProps & {
     fieldKey: string;
     label: MessageDescriptor | string;
     maxLength?: number;
-    onTextChange: (id: string, value: string) => void;
+    onTextChange: (fieldKey: string, value: string) => void;
     isOptional?: boolean;
     testID: string;
     value: string;

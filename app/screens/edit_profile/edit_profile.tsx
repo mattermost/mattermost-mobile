@@ -192,9 +192,9 @@ const EditProfile = ({
         scrollViewRef.current?.scrollToPosition(0, 0, true);
     };
 
-    const updateField = useCallback((id: string, name: string) => {
+    const updateField = useCallback((fieldKey: string, name: string) => {
         const update = {...userInfo};
-        update[id] = name;
+        update[fieldKey] = name;
         setUserInfo(update);
 
         // @ts-expect-error access object property by string key
