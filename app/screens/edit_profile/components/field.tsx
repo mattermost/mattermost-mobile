@@ -4,48 +4,45 @@
 import {MessageDescriptor} from '@formatjs/intl/src/types';
 import React, {useCallback} from 'react';
 import {useIntl} from 'react-intl';
-import {View, Platform, KeyboardTypeOptions} from 'react-native';
+import {KeyboardTypeOptions, Platform, TextInputProps, View} from 'react-native';
 
 import FloatingTextInput from '@components/floating_text_input_label';
 import {useTheme} from '@context/theme';
-import {makeStyleSheetFromTheme, getKeyboardAppearanceFromTheme} from '@utils/theme';
+import {getKeyboardAppearanceFromTheme, makeStyleSheetFromTheme} from '@utils/theme';
 
 import FieldDescription from './field_description';
 
-type FieldProps = {
+type FieldProps = TextInputProps & {
     isDisabled?: boolean;
     fieldDescription?: string;
-    id: string;
+    key: string;
     keyboardType?: KeyboardTypeOptions;
     label: MessageDescriptor | string;
     maxLength?: number;
-    onChange: (id: string, value: string) => void;
+    onTextChange: (id: string, value: string) => void;
     isOptional?: boolean;
     testID: string;
     value: string;
 };
 
 const Field = ({
-    isDisabled = false,
+    autoCapitalize = 'none',
+    autoCorrect = false,
     fieldDescription,
-    id,
+    key,
+    isDisabled = false,
+    isOptional = false,
     keyboardType = 'default',
     label,
     maxLength,
-    onChange,
-    isOptional = false,
+    onTextChange,
     testID,
     value,
 }: FieldProps) => {
     const theme = useTheme();
     const intl = useIntl();
 
-    const onChangeText = useCallback(
-        (text: string) => {
-            return onChange(id, text);
-        },
-        [id, onChange],
-    );
+    const onChangeText = useCallback((text: string) => onTextChange(key, text), [key, onTextChange]);
 
     const style = getStyleSheet(theme);
 
@@ -67,8 +64,8 @@ const Field = ({
         >
             <View style={style.subContainer}>
                 <FloatingTextInput
-                    autoCapitalize='none'
-                    autoCorrect={false}
+                    autoCapitalize={autoCapitalize}
+                    autoCorrect={autoCorrect}
                     disableFullscreenUI={true}
                     editable={!isDisabled}
                     keyboardAppearance={getKeyboardAppearanceFromTheme(theme)}

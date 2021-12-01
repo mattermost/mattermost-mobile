@@ -204,21 +204,13 @@ const EditProfile = ({
         scrollViewRef.current = ref;
     }, []);
 
-    const renderProfilePicture = () => {
-        return (
-            <View style={style.top}>
-                <ProfilePicture
-                    author={currentUser}
-                    size={153}
-                    showStatus={false}
-                />
-            </View>
-        );
-    };
-
     if (updating) {
         return <ProfileUpdating/>;
     }
+
+    const includesSsoService = (sso: string) => ['gitlab', 'google', 'office365'].includes(sso);
+
+    const isFieldLockedWithProtocol = (sso: string, lockedField: boolean) => ['ldap', 'saml'].includes(sso) && lockedField;
 
     return (
         <>
@@ -242,32 +234,38 @@ const EditProfile = ({
                     testID='edit_profile.scroll_view'
                 >
                     {Boolean(error) && <ProfileError error={error!}/>}
-                    {renderProfilePicture()}
+                    <View style={style.top}>
+                        <ProfilePicture
+                            author={currentUser}
+                            size={153}
+                            showStatus={false}
+                        />
+                    </View>
                     <Field
-                        id='firstName'
-                        isDisabled={(['ldap', 'saml'].includes(service) && lockedFirstName) || ['gitlab', 'google', 'office365'].includes(service)}
+                        key='firstName'
+                        isDisabled={isFieldLockedWithProtocol(service, lockedFirstName) || includesSsoService(service)}
                         label={FIELDS.firstName}
-                        onChange={updateField}
+                        onTextChange={updateField}
                         testID='edit_profile.text_setting.firstName'
                         value={userInfo.firstName}
                     />
                     <View style={style.separator}/>
                     <Field
-                        id='lastName'
-                        isDisabled={(['ldap', 'saml'].includes(service) && lockedLastName) || ['gitlab', 'google', 'office365'].includes(service)}
+                        key='lastName'
+                        isDisabled={isFieldLockedWithProtocol(service, lockedLastName) || includesSsoService(service)}
                         label={FIELDS.lastName}
-                        onChange={updateField}
+                        onTextChange={updateField}
                         testID='edit_profile.text_setting.lastName'
                         value={userInfo.lastName}
                     />
                     <View style={style.separator}/>
                     <Field
-                        id={'username'}
+                        key='username'
                         isDisabled={service !== ''}
                         label={FIELDS.username}
                         maxLength={22}
-                        onChange={updateField}
-                        testID={'edit_profile.text_setting.username'}
+                        onTextChange={updateField}
+                        testID='edit_profile.text_setting.username'
                         value={userInfo.username}
                     />
                     <View style={style.separator}/>
@@ -278,23 +276,23 @@ const EditProfile = ({
                     />
                     <View style={style.separator}/>
                     <Field
-                        id={'nickname'}
-                        isDisabled={['ldap', 'saml'].includes(service) && lockedNickname}
+                        key='nickname'
+                        isDisabled={isFieldLockedWithProtocol(service, lockedNickname)}
                         label={FIELDS.nickname}
                         maxLength={22}
-                        onChange={updateField}
-                        testID={'edit_profile.text_setting.nickname'}
+                        onTextChange={updateField}
+                        testID='edit_profile.text_setting.nickname'
                         value={userInfo.nickname}
                     />
                     <View style={style.separator}/>
                     <Field
-                        id={'position'}
-                        isDisabled={['ldap', 'saml'].includes(service) && lockedPosition}
+                        key='position'
+                        isDisabled={isFieldLockedWithProtocol(service, lockedPosition)}
                         label={FIELDS.position}
                         maxLength={128}
-                        onChange={updateField}
+                        onTextChange={updateField}
                         isOptional={true}
-                        testID={'edit_profile.text_setting.position'}
+                        testID='edit_profile.text_setting.position'
                         value={userInfo.position}
                     />
                     <View style={style.footer}/>
