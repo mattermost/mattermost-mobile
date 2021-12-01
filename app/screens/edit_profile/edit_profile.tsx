@@ -74,6 +74,15 @@ const EditProfile = ({
     const intl = useIntl();
     const serverUrl = useServerUrl();
     const theme = useTheme();
+    const buttonText = intl.formatMessage({id: 'mobile.account.settings.save', defaultMessage: 'Save'});
+    const rightButton = isTablet ? null : {
+        id: 'update-profile',
+        enabled: false,
+        showAsAction: 'always' as const,
+        testID: 'edit_profile.save.button',
+        color: theme.sidebarHeaderTextColor,
+        text: buttonText,
+    };
 
     const [userInfo, setUserInfo] = useState<UserInfo>({
         email: currentUser.email,
@@ -117,21 +126,12 @@ const EditProfile = ({
 
     useEffect(() => {
         if (!isTablet) {
-            setButtons(componentId, {rightButtons: [rightButton]});
+            setButtons(componentId, {rightButtons: [rightButton!]});
         }
     }, [isTablet]);
 
     const style = getStyleSheet(theme);
     const service = currentUser.authService;
-
-    const rightButton = {
-        id: 'update-profile',
-        enabled: false,
-        showAsAction: 'always' as const,
-        testID: 'edit_profile.save.button',
-        color: theme.sidebarHeaderTextColor,
-        text: intl.formatMessage({id: 'mobile.account.settings.save', defaultMessage: 'Save'}),
-    };
 
     const close = () => {
         if (isModal) {
@@ -150,7 +150,7 @@ const EditProfile = ({
             setCanSave(value);
         } else {
             const buttons = {
-                rightButtons: [{...rightButton, enabled: value}],
+                rightButtons: [{...rightButton!, enabled: value}],
             };
 
             setButtons(componentId, buttons);
@@ -218,7 +218,7 @@ const EditProfile = ({
         <>
             {isTablet &&
                 <TabletTitle
-                    action={rightButton.text}
+                    action={buttonText}
                     enabled={canSave}
                     onPress={submitUser}
                     testID='custom_status.done.button'

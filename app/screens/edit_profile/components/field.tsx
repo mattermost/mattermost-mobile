@@ -4,11 +4,12 @@
 import {MessageDescriptor} from '@formatjs/intl/src/types';
 import React, {useCallback} from 'react';
 import {useIntl} from 'react-intl';
-import {Platform, TextInputProps, View} from 'react-native';
+import {Platform, StyleSheet, TextInputProps, View} from 'react-native';
 
 import FloatingTextInput from '@components/floating_text_input_label';
 import {useTheme} from '@context/theme';
-import {getKeyboardAppearanceFromTheme, makeStyleSheetFromTheme} from '@utils/theme';
+import {useIsTablet} from '@hooks/device';
+import {getKeyboardAppearanceFromTheme} from '@utils/theme';
 
 import FieldDescription from './field_description';
 
@@ -22,6 +23,20 @@ type FieldProps = TextInputProps & {
     isOptional?: boolean;
     testID: string;
     value: string;
+};
+
+const getStyleSheet = (isTablet: boolean) => {
+    return StyleSheet.create({
+        viewContainer: {
+            marginVertical: 7,
+            alignItems: 'center',
+            width: '100%',
+        },
+        subContainer: {
+            width: '100%',
+            paddingHorizontal: isTablet ? 42 : 20,
+        },
+    });
 };
 
 const Field = ({
@@ -41,10 +56,11 @@ const Field = ({
 }: FieldProps) => {
     const theme = useTheme();
     const intl = useIntl();
+    const isTablet = useIsTablet();
 
     const onChangeText = useCallback((text: string) => onTextChange(fieldKey, text), [fieldKey, onTextChange]);
 
-    const style = getStyleSheet(theme);
+    const style = getStyleSheet(isTablet);
 
     const keyboard = (Platform.OS === 'android' && keyboardType === 'url') ? 'default' : keyboardType;
 
@@ -88,16 +104,4 @@ const Field = ({
     );
 };
 
-const getStyleSheet = makeStyleSheetFromTheme(() => {
-    return {
-        viewContainer: {
-            marginVertical: 7,
-            alignItems: 'center',
-            width: '100%',
-        },
-        subContainer: {
-            width: '84%',
-        },
-    };
-});
 export default Field;
