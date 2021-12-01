@@ -129,6 +129,20 @@ export const removePost = async (serverUrl: string, post: PostModel) => {
     return {post};
 };
 
+export const removePostById = async (serverUrl: string, postId: string) => {
+    const database = DatabaseManager.serverDatabases[serverUrl]?.database;
+    if (!database) {
+        return {error: `${serverUrl} database not found`};
+    }
+
+    const post = await queryPostById(database, postId);
+    if (post) {
+        return removePost(serverUrl, post);
+    }
+
+    return {post};
+};
+
 export const selectAttachmentMenuAction = (serverUrl: string, postId: string, actionId: string, selectedOption: string) => {
     return postActionWithCookie(serverUrl, postId, actionId, '', selectedOption);
 };

@@ -1,12 +1,13 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {removePostById} from '@actions/local/post';
 import {ActionType, General} from '@constants';
 import {SYSTEM_IDENTIFIERS} from '@constants/database';
 import DatabaseManager from '@database/manager';
 import {getNeededAtMentionedUsernames} from '@helpers/api/user';
 import NetworkManager from '@init/network_manager';
-import {queryRecentPostsInChannel} from '@queries/servers/post';
+import {queryPostById, queryRecentPostsInChannel} from '@queries/servers/post';
 import {queryCurrentUserId, queryCurrentChannelId} from '@queries/servers/system';
 import {queryAllUsers} from '@queries/servers/user';
 
@@ -36,7 +37,10 @@ export const createPost = async (serverUrl: string, post: Partial<Post>, files: 
     const timestamp = Date.now();
     const pendingPostId = post.pending_post_id || `${currentUserId}:${timestamp}`;
 
-    // Check if is sending this post id
+    const existing = await queryPostById(operator.database, pendingPostId);
+    if (existing && !existing.props.failed) {
+        return {data: false};
+    }
 
     let newPost = {
         ...post,
@@ -44,7 +48,6 @@ export const createPost = async (serverUrl: string, post: Partial<Post>, files: 
         pending_post_id: pendingPostId,
         create_at: timestamp,
         update_at: timestamp,
-        ownPost: true,
     } as Post;
 
     if (files.length) {
@@ -80,7 +83,10 @@ export const createPost = async (serverUrl: string, post: Partial<Post>, files: 
         const errorPost = {
             ...newPost,
             id: pendingPostId,
-            failed: true,
+            props: {
+                ...newPost.props,
+                failed: true,
+            },
             update_at: Date.now(),
         };
 
@@ -90,7 +96,7 @@ export const createPost = async (serverUrl: string, post: Partial<Post>, files: 
             error.server_error_id === 'api.post.create_post.town_square_read_only' ||
             error.server_error_id === 'plugin.message_will_be_posted.dismiss_post'
         ) {
-            // Delete Post
+            await removePostById(serverUrl, databasePost.id);
         } else {
             await operator.handlePosts({
                 actionType: ActionType.POSTS.RECEIVED_NEW,

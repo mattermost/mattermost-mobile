@@ -4,6 +4,7 @@
 import {Model} from '@nozbe/watermelondb';
 import {DeviceEventEmitter} from 'react-native';
 
+import {fetchPostsForChannel} from '@actions/remote/post';
 import {Navigation as NavigationConstants, Screens} from '@constants';
 import DatabaseManager from '@database/manager';
 import {prepareDeleteChannel, queryAllMyChannelIds, queryChannelsById, queryMyChannel} from '@queries/servers/channel';
@@ -42,6 +43,7 @@ export const switchToChannel = async (serverUrl: string, channelId: string, team
         const member = await queryMyChannel(database, channelId);
 
         if (member) {
+            fetchPostsForChannel(serverUrl, channelId); // Do not await for this, keep handling the switch
             const channel: ChannelModel = await member.channel.fetch();
             const {operator} = DatabaseManager.serverDatabases[serverUrl];
             const models = [];

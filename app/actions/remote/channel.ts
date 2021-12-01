@@ -481,7 +481,7 @@ export async function getChannelTimezones(serverUrl: string, channelId: string) 
     }
 }
 
-export async function makeDirectChannel(serverUrl: string, otherUserId: string, switchToChannelFoo = true) {
+export async function getOrCreateDirectChannel(serverUrl: string, otherUserId: string, shouldSwitchToChannel = true) {
     const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
     if (!operator) {
         return {error: `${serverUrl} database not found`};
@@ -493,23 +493,39 @@ export async function makeDirectChannel(serverUrl: string, otherUserId: string, 
     const channel = await queryChannelByName(operator.database, channelName);
     let result;
     if (channel) {
-        result = {data: channel};
+        result = {channel};
     } else {
         try {
             const client = NetworkManager.getClient(serverUrl);
             const newChannel = await client.createDirectChannel([currentUserId, otherUserId]);
+            result = {channel: newChannel};
 
-            result = {data: newChannel};
-            operator.handleChannel({channels: [newChannel], prepareRecordsOnly: false});
+            const member = await client.getChannelMember(newChannel.id, 'me');
 
-            // Missing membership?
+            const modelPromises: Array<Promise<Model[]>> = [];
+            const prepare = await prepareMyChannelsForTeam(operator, '', [newChannel], [member]);
+            if (prepare) {
+                modelPromises.push(...prepare);
+            }
+            if (modelPromises.length) {
+                const models = await Promise.all(modelPromises);
+                const flattenedModels = models.flat() as Model[];
+                if (flattenedModels?.length > 0) {
+                    try {
+                        await operator.batchRecords(flattenedModels);
+                    } catch {
+                        // eslint-disable-next-line no-console
+                        console.log('FAILED TO BATCH CHANNELS');
+                    }
+                }
+            }
         } catch (error) {
             return {error};
         }
     }
 
-    if (switchToChannelFoo) {
-        switchToChannel(serverUrl, result.data.id);
+    if (shouldSwitchToChannel) {
+        switchToChannel(serverUrl, result.channel.id);
     }
 
     return result;

@@ -214,6 +214,11 @@ export default class ClientBase {
             body: options.body,
             headers: this.getRequestHeaders(method),
         };
+        if (options.noRetry) {
+            requestOptions.retryPolicyConfiguration = {
+                retryLimit: 0,
+            };
+        }
         let response: ClientResponse;
         try {
             response = await request!(url, requestOptions);

@@ -41,7 +41,7 @@ const ClientPosts = (superclass: any) => class extends superclass {
 
         return this.doFetch(
             `${this.getPostsRoute()}`,
-            {method: 'post', body: post},
+            {method: 'post', body: post, noRetry: true},
         );
     };
 

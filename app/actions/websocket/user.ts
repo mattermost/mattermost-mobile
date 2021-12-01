@@ -1,22 +1,21 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {Q} from '@nozbe/watermelondb';
 import {DeviceEventEmitter} from 'react-native';
 
-import {getTeammateNameDisplaySetting} from '@app/helpers/api/preference';
+import {fetchUsersByIds} from '@actions/remote/user';
+import {queryPreferencesByCategoryAndName} from '@app/queries/servers/preference';
 import {Events, Preferences} from '@constants';
-import {MM_TABLES, SYSTEM_IDENTIFIERS} from '@constants/database';
 import DatabaseManager from '@database/manager';
+import {getTeammateNameDisplaySetting} from '@helpers/api/preference';
 import WebsocketManager from '@init/websocket_manager';
 import {queryActiveServer} from '@queries/app/servers';
-import {queryConfig} from '@queries/servers/system';
+import {queryCommonSystemValues} from '@queries/servers/system';
 import {queryCurrentUser, queryUserById} from '@queries/servers/user';
-import PreferenceModel from '@typings/database/models/servers/preference';
-import SystemModel from '@typings/database/models/servers/system';
 import {displayUsername} from '@utils/user';
 
-const {SERVER: {PREFERENCE, SYSTEM}} = MM_TABLES;
+import type UserModel from '@typings/database/models/servers/user';
+
 export async function handleUserTypingEvent(serverUrl: string, msg: any) {
     const currentServer = await queryActiveServer(DatabaseManager.appDatabase!.database);
     if (currentServer?.url === serverUrl) {
@@ -25,11 +24,15 @@ export async function handleUserTypingEvent(serverUrl: string, msg: any) {
             return;
         }
 
-        const user = await queryUserById(database.database, msg.data.user_id);
-        const config = await queryConfig(database.database);
-        const license = await database.database.get<SystemModel>(SYSTEM).find(SYSTEM_IDENTIFIERS.LICENSE);
-        const preferences = await database.database.get<PreferenceModel>(PREFERENCE).query(Q.where('category', Preferences.CATEGORY_DISPLAY_SETTINGS)).fetch();
-        const teammateDisplayNameSetting = await getTeammateNameDisplaySetting(preferences, config, license.value);
+        const {config, license} = await queryCommonSystemValues(database.database);
+
+        let user: UserModel | UserProfile | undefined = await queryUserById(database.database, msg.data.user_id);
+        if (user) {
+            const {users} = await fetchUsersByIds(serverUrl, [msg.data.user_id]);
+            user = users?.[0];
+        }
+        const namePreference = await queryPreferencesByCategoryAndName(database.database, Preferences.CATEGORY_DISPLAY_SETTINGS, Preferences.NAME_NAME_FORMAT);
+        const teammateDisplayNameSetting = await getTeammateNameDisplaySetting(namePreference, config, license);
         const currentUser = await queryCurrentUser(database.database);
         const username = displayUsername(user, currentUser?.locale, teammateDisplayNameSetting);
         const data = {

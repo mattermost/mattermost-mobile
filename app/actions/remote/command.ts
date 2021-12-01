@@ -19,7 +19,7 @@ import {showModal} from '@screens/navigation';
 import * as DraftUtils from '@utils/draft';
 import {matchDeepLink, tryOpenURL} from '@utils/url';
 
-import {makeDirectChannel, switchToChannelByName} from './channel';
+import {getOrCreateDirectChannel, switchToChannelByName} from './channel';
 
 import type {DeepLinkChannel, DeepLinkPermalink, DeepLinkDM, DeepLinkGM, DeepLinkPlugin} from '@typings/launch';
 
@@ -165,7 +165,7 @@ export const handleGotoLocation = async (serverUrl: string, intl: IntlShape, loc
                     return {data: false};
                 }
 
-                makeDirectChannel(data.serverUrl, user.id);
+                getOrCreateDirectChannel(data.serverUrl, user.id);
                 break;
             }
             case DeepLinkTypes.GROUPCHANNEL: {
