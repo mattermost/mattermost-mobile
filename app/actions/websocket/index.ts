@@ -20,6 +20,7 @@ import {queryCommonSystemValues, queryConfig, queryWebSocketLastDisconnected} fr
 import {queryCurrentUser} from '@queries/servers/user';
 
 import {handleChannelDeletedEvent, handleUserRemovedEvent} from './channel';
+import {handleRoleAddedEvent, handleRoleRemovedEvent, handleRoleUpdatedEvent} from './roles';
 import {handleLeaveTeamEvent} from './teams';
 
 import type {Model} from '@nozbe/watermelondb';
@@ -187,17 +188,17 @@ export async function handleEvent(serverUrl: string, msg: any) {
 
         // return dispatch(handleUserUpdatedEvent(msg));
         case WebsocketEvents.ROLE_ADDED:
+            handleRoleAddedEvent(serverUrl, msg);
             break;
 
-        // return dispatch(handleRoleAddedEvent(msg));
         case WebsocketEvents.ROLE_REMOVED:
+            handleRoleRemovedEvent(serverUrl, msg);
             break;
 
-        // return dispatch(handleRoleRemovedEvent(msg));
         case WebsocketEvents.ROLE_UPDATED:
+            handleRoleUpdatedEvent(serverUrl, msg);
             break;
 
-        // return dispatch(handleRoleUpdatedEvent(msg));
         case WebsocketEvents.USER_ROLE_UPDATED:
             break;
 
