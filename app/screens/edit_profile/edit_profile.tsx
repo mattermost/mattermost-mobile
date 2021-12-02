@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback, useEffect, useRef, useState} from 'react';
+import React, {RefObject, useCallback, useEffect, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
 import {BackHandler, DeviceEventEmitter, Platform, View} from 'react-native';
 import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
@@ -9,6 +9,7 @@ import {Navigation} from 'react-native-navigation';
 import {Edge, SafeAreaView} from 'react-native-safe-area-context';
 
 import {updateMe} from '@actions/remote/user';
+import {FloatingTextInputRef} from '@components/floating_text_input_label';
 import ProfilePicture from '@components/profile_picture';
 import TabletTitle from '@components/tablet_title';
 import {Events} from '@constants';
@@ -77,6 +78,13 @@ const EditProfile = ({
     const theme = useTheme();
     const keyboardAwareRef = useRef<KeyboardAwareScrollView>();
 
+    const firstNameRef = useRef<FloatingTextInputRef>(null);
+    const lastNameRef = useRef<FloatingTextInputRef>(null);
+    const usernameRef = useRef<FloatingTextInputRef>(null);
+    const emailRef = useRef<FloatingTextInputRef>(null);
+    const nicknameRef = useRef<FloatingTextInputRef>(null);
+    const positionRef = useRef<FloatingTextInputRef>(null);
+
     const buttonText = intl.formatMessage({id: 'mobile.account.settings.save', defaultMessage: 'Save'});
     const rightButton = isTablet ? null : {
         id: 'update-profile',
@@ -97,8 +105,8 @@ const EditProfile = ({
     });
     const [canSave, setCanSave] = useState(false);
     const [error, setError] = useState<ErrorText | undefined>();
-
     const [updating, setUpdating] = useState(false);
+
     const scrollViewRef = useRef<KeyboardAwareScrollView>();
 
     useEffect(() => {
@@ -213,6 +221,45 @@ const EditProfile = ({
 
     const isFieldLockedWithProtocol = (sso: string, lockedField: boolean) => ['ldap', 'saml'].includes(sso) && lockedField;
 
+    const onFocusNextField = (fieldKey: string) => {
+        type FieldSequence = Record<string, {
+            ref: RefObject<FloatingTextInputRef>;
+            nextRef: RefObject<FloatingTextInputRef> | undefined;
+        }>
+
+        const fieldSequence: FieldSequence = {
+            firstName: {
+                ref: firstNameRef,
+                nextRef: lastNameRef,
+            },
+            lastName: {
+                ref: lastNameRef,
+                nextRef: usernameRef,
+            },
+            username: {
+                ref: usernameRef,
+                nextRef: nicknameRef,
+            },
+            email: {
+                ref: emailRef,
+                nextRef: nicknameRef,
+            },
+            nickname: {
+                ref: nicknameRef,
+                nextRef: positionRef,
+            },
+            position: {
+                ref: positionRef,
+                nextRef: undefined,
+            },
+        };
+
+        //todo: if ref === positionRef then perform form submission.
+
+        const nextField = fieldSequence[fieldKey];
+        return nextField?.nextRef?.current?.focus();
+    };
+
     return (
         <>
             {isTablet &&
@@ -234,7 +281,7 @@ const EditProfile = ({
                     enableAutomaticScroll={Platform.OS === 'android'}
                     enableOnAndroid={true}
                     enableResetScrollToCoords={true}
-                    extraScrollHeight={0}
+                    extraScrollHeight={25}
                     keyboardDismissMode='on-drag'
                     keyboardShouldPersistTaps='handled'
 
@@ -254,32 +301,52 @@ const EditProfile = ({
                     <Field
                         fieldKey='firstName'
                         isDisabled={isFieldLockedWithProtocol(service, lockedFirstName) || includesSsoService(service)}
+                        isDisabled={false}
+                        fieldRef={firstNameRef}
+                        onFocusNextField={onFocusNextField}
+                        // isDisabled={isFieldLockedWithProtocol(service, lockedFirstName) || includesSsoService(service)}
                         label={FIELDS.firstName}
                         onTextChange={updateField}
                         testID='edit_profile.text_setting.firstName'
                         value={userInfo.firstName}
+                        blurOnSubmit={false}
+                        returnKeyType='next'
+                        enablesReturnKeyAutomatically={true}
                     />
                     <View style={style.separator}/>
                     <Field
+                        fieldRef={lastNameRef}
                         fieldKey='lastName'
                         isDisabled={isFieldLockedWithProtocol(service, lockedLastName) || includesSsoService(service)}
+                        onFocusNextField={onFocusNextField}
+                        // isDisabled={isFieldLockedWithProtocol(service, lockedLastName) || includesSsoService(service)}
                         label={FIELDS.lastName}
                         onTextChange={updateField}
                         testID='edit_profile.text_setting.lastName'
                         value={userInfo.lastName}
+                        blurOnSubmit={false}
+                        returnKeyType='next'
+                        enablesReturnKeyAutomatically={true}
                     />
                     <View style={style.separator}/>
                     <Field
+                        fieldRef={usernameRef}
                         fieldKey='username'
                         isDisabled={service !== ''}
+                        onFocusNextField={onFocusNextField}
                         label={FIELDS.username}
                         maxLength={22}
                         onTextChange={updateField}
                         testID='edit_profile.text_setting.username'
                         value={userInfo.username}
+                        blurOnSubmit={false}
+                        returnKeyType='next'
+                        enablesReturnKeyAutomatically={true}
                     />
                     <View style={style.separator}/>
                     <EmailField
+                        fieldRef={emailRef}
+                        onFocusNextField={onFocusNextField}
                         email={userInfo.email}
                         authService={currentUser.authService}
                         onChange={updateField}
@@ -287,23 +354,33 @@ const EditProfile = ({
                     <View style={style.separator}/>
                     <Field
                         fieldKey='nickname'
-                        isDisabled={isFieldLockedWithProtocol(service, lockedNickname)}
+                        fieldRef={nicknameRef}
+                        onFocusNextField={onFocusNextField}
+
                         label={FIELDS.nickname}
                         maxLength={22}
                         onTextChange={updateField}
                         testID='edit_profile.text_setting.nickname'
                         value={userInfo.nickname}
+                        blurOnSubmit={false}
+                        returnKeyType='next'
+                        enablesReturnKeyAutomatically={true}
                     />
                     <View style={style.separator}/>
                     <Field
                         fieldKey='position'
                         isDisabled={isFieldLockedWithProtocol(service, lockedPosition)}
+                        fieldRef={positionRef}
+                        onFocusNextField={onFocusNextField}
+
+                        isDisabled={false}
                         label={FIELDS.position}
                         maxLength={128}
                         onTextChange={updateField}
                         isOptional={true}
                         testID='edit_profile.text_setting.position'
                         value={userInfo.position}
+                        returnKeyType='done'
                     />
                     <View style={style.footer}/>
                 </KeyboardAwareScrollView>

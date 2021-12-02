@@ -2,11 +2,11 @@
 // See LICENSE.txt for license information.
 
 import {MessageDescriptor} from '@formatjs/intl/src/types';
-import React, {useCallback} from 'react';
+import React, {RefObject, useCallback} from 'react';
 import {useIntl} from 'react-intl';
 import {Platform, StyleSheet, TextInputProps, View} from 'react-native';
 
-import FloatingTextInput from '@components/floating_text_input_label';
+import FloatingTextInput, {FloatingTextInputRef} from '@components/floating_text_input_label';
 import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
 import {getKeyboardAppearanceFromTheme} from '@utils/theme';
@@ -23,6 +23,8 @@ type FieldProps = TextInputProps & {
     isOptional?: boolean;
     testID: string;
     value: string;
+    fieldRef: RefObject<FloatingTextInputRef>;
+    onFocusNextField: (fieldKey: string) => void;
 };
 
 const getStyleSheet = (isTablet: boolean) => {
@@ -52,6 +54,8 @@ const Field = ({
     onTextChange,
     testID,
     value,
+    fieldRef,
+    onFocusNextField,
     ...props
 }: FieldProps) => {
     const theme = useTheme();
@@ -59,6 +63,10 @@ const Field = ({
     const isTablet = useIsTablet();
 
     const onChangeText = useCallback((text: string) => onTextChange(fieldKey, text), [fieldKey, onTextChange]);
+
+    const onSubmitEditing = () => {
+        onFocusNextField(fieldKey);
+    };
 
     const style = getStyleSheet(isTablet);
 
@@ -92,6 +100,8 @@ const Field = ({
                     testID={`${testID}.input`}
                     theme={theme}
                     value={value}
+                    ref={fieldRef}
+                    onSubmitEditing={onSubmitEditing}
                     {...props}
                 />
                 {isDisabled && (

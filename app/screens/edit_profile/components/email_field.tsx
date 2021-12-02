@@ -1,9 +1,10 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React from 'react';
+import React, {RefObject} from 'react';
 import {useIntl} from 'react-intl';
 
+import {FloatingTextInputRef} from '@components/floating_text_input_label';
 import {t} from '@i18n';
 import {FIELDS} from '@screens/edit_profile/constants';
 
@@ -12,10 +13,18 @@ import Field from './field';
 type EmailSettingsProps = {
     authService: string;
     email: string;
-    onChange: (id: string, value: string) => void;
+    fieldRef: RefObject<FloatingTextInputRef>;
+    onChange: (fieldKey: string, value: string) => void;
+    onFocusNextField: (fieldKey: string) => void;
 }
 
-const EmailField = ({authService, email, onChange}: EmailSettingsProps) => {
+const EmailField = ({
+    authService,
+    email,
+    fieldRef,
+    onChange,
+    onFocusNextField,
+}: EmailSettingsProps) => {
     const intl = useIntl();
 
     let defaultMessage: string;
@@ -60,18 +69,21 @@ const EmailField = ({authService, email, onChange}: EmailSettingsProps) => {
         return null;
     }
 
-    const helpText = intl.formatMessage({id, defaultMessage}, {email});
-
     return (
         <Field
-            fieldDescription={helpText}
+            blurOnSubmit={false}
+            enablesReturnKeyAutomatically={true}
+            fieldDescription={intl.formatMessage({id, defaultMessage}, {email})}
             fieldKey='email'
+            fieldRef={fieldRef}
             isDisabled={true}
+            keyboardType='email-address'
             label={FIELDS.email}
+            onFocusNextField={onFocusNextField}
             onTextChange={onChange}
+            returnKeyType='next'
             testID='edit_profile.text_setting.email'
             value={email}
-            keyboardType='email-address'
         />
     );
 };
