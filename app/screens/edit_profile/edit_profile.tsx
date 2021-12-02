@@ -299,88 +299,83 @@ const EditProfile = ({
                         />
                     </View>
                     <Field
+                        blurOnSubmit={false}
+                        enablesReturnKeyAutomatically={true}
                         fieldKey='firstName'
-                        isDisabled={isFieldLockedWithProtocol(service, lockedFirstName) || includesSsoService(service)}
-                        isDisabled={false}
                         fieldRef={firstNameRef}
-                        onFocusNextField={onFocusNextField}
-                        // isDisabled={isFieldLockedWithProtocol(service, lockedFirstName) || includesSsoService(service)}
+                        isDisabled={isFieldLockedWithProtocol(service, lockedFirstName) || includesSsoService(service)}
                         label={FIELDS.firstName}
+                        onFocusNextField={onFocusNextField}
                         onTextChange={updateField}
+                        returnKeyType='next'
                         testID='edit_profile.text_setting.firstName'
                         value={userInfo.firstName}
-                        blurOnSubmit={false}
-                        returnKeyType='next'
-                        enablesReturnKeyAutomatically={true}
                     />
                     <View style={style.separator}/>
                     <Field
-                        fieldRef={lastNameRef}
+                        blurOnSubmit={false}
+                        enablesReturnKeyAutomatically={true}
                         fieldKey='lastName'
+                        fieldRef={lastNameRef}
                         isDisabled={isFieldLockedWithProtocol(service, lockedLastName) || includesSsoService(service)}
-                        onFocusNextField={onFocusNextField}
-                        // isDisabled={isFieldLockedWithProtocol(service, lockedLastName) || includesSsoService(service)}
                         label={FIELDS.lastName}
+                        onFocusNextField={onFocusNextField}
                         onTextChange={updateField}
+                        returnKeyType='next'
                         testID='edit_profile.text_setting.lastName'
                         value={userInfo.lastName}
-                        blurOnSubmit={false}
-                        returnKeyType='next'
-                        enablesReturnKeyAutomatically={true}
                     />
                     <View style={style.separator}/>
                     <Field
-                        fieldRef={usernameRef}
+                        blurOnSubmit={false}
+                        enablesReturnKeyAutomatically={true}
                         fieldKey='username'
+                        fieldRef={usernameRef}
                         isDisabled={service !== ''}
-                        onFocusNextField={onFocusNextField}
                         label={FIELDS.username}
                         maxLength={22}
+                        onFocusNextField={onFocusNextField}
                         onTextChange={updateField}
+                        returnKeyType='next'
                         testID='edit_profile.text_setting.username'
                         value={userInfo.username}
-                        blurOnSubmit={false}
-                        returnKeyType='next'
-                        enablesReturnKeyAutomatically={true}
                     />
                     <View style={style.separator}/>
                     <EmailField
-                        fieldRef={emailRef}
-                        onFocusNextField={onFocusNextField}
-                        email={userInfo.email}
                         authService={currentUser.authService}
+                        email={userInfo.email}
+                        fieldRef={emailRef}
                         onChange={updateField}
+                        onFocusNextField={onFocusNextField}
                     />
                     <View style={style.separator}/>
                     <Field
+                        blurOnSubmit={false}
+                        enablesReturnKeyAutomatically={true}
+                        isDisabled={isFieldLockedWithProtocol(service, lockedNickname)}
                         fieldKey='nickname'
                         fieldRef={nicknameRef}
-                        onFocusNextField={onFocusNextField}
-
                         label={FIELDS.nickname}
                         maxLength={22}
+                        onFocusNextField={onFocusNextField}
                         onTextChange={updateField}
+                        returnKeyType='next'
                         testID='edit_profile.text_setting.nickname'
                         value={userInfo.nickname}
-                        blurOnSubmit={false}
-                        returnKeyType='next'
-                        enablesReturnKeyAutomatically={true}
                     />
                     <View style={style.separator}/>
                     <Field
                         fieldKey='position'
-                        isDisabled={isFieldLockedWithProtocol(service, lockedPosition)}
                         fieldRef={positionRef}
-                        onFocusNextField={onFocusNextField}
-
-                        isDisabled={false}
+                        isDisabled={isFieldLockedWithProtocol(service, lockedPosition)}
+                        isOptional={true}
                         label={FIELDS.position}
                         maxLength={128}
+                        onFocusNextField={onFocusNextField}
                         onTextChange={updateField}
-                        isOptional={true}
+                        returnKeyType='done'
                         testID='edit_profile.text_setting.position'
                         value={userInfo.position}
-                        returnKeyType='done'
                     />
                     <View style={style.footer}/>
                 </KeyboardAwareScrollView>
