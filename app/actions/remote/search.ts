@@ -10,7 +10,7 @@ import DatabaseManager from '@database/manager';
 import NetworkManager from '@init/network_manager';
 import {queryCurrentUser} from '@queries/servers/user';
 
-import {fetchPostAuthors, getMissingChannelMembershipsFromPosts, getMissingChannelsFromPosts} from './post';
+import {fetchPostAuthors, getMissingChannelsFromPosts} from './post';
 import {forceLogoutIfNecessary} from './session';
 
 import type {Client} from '@client/rest';
@@ -49,6 +49,7 @@ export async function getRecentMentions(serverUrl: string): Promise<PostSearchRe
         }
         const terms = currentUser.mentionKeys.map(({key}) => key).join(' ').trim() + ' ';
         const data = await client.searchPosts('', terms, true);
+
         posts = data.posts || {};
         order = data.order || [];
 
@@ -61,8 +62,7 @@ export async function getRecentMentions(serverUrl: string): Promise<PostSearchRe
 
         if (postsArray.length) {
             const {authors} = await fetchPostAuthors(serverUrl, postsArray, true);
-            const {channels} = await getMissingChannelsFromPosts(serverUrl, postsArray, true) as {channels: Channel[]};
-            const {channelMemberships} = await getMissingChannelMembershipsFromPosts(serverUrl, postsArray, true) as {channelMemberships: ChannelMembership[]};
+            const {channels, channelMemberships} = await getMissingChannelsFromPosts(serverUrl, postsArray, true) as {channels: Channel[]; channelMemberships: ChannelMembership[]};
 
             if (authors?.length) {
                 userModels = await operator.handleUsers({

@@ -4,7 +4,7 @@ import React from 'react';
 import {View} from 'react-native';
 
 import {useTheme} from '@app/context/theme';
-import {makeStyleSheetFromTheme} from '@app/utils/theme';
+import {changeOpacity, makeStyleSheetFromTheme} from '@app/utils/theme';
 import {typography} from '@app/utils/typography';
 import FormattedText from '@components/formatted_text';
 
@@ -25,7 +25,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => ({
     paragraph: {
         marginTop: 8,
         textAlign: 'center',
-        color: theme.centerChannelColor,
+        color: changeOpacity(theme.centerChannelColor, 0.72),
         ...typography('Body', 200),
     },
     icon: {

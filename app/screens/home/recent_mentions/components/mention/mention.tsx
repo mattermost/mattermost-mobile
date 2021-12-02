@@ -26,19 +26,19 @@ type Props = {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
+        paddingHorizontal: 20,
     },
     content: {
         flexDirection: 'row',
+        paddingBottom: 8,
     },
     rightColumn: {
         flex: 1,
         flexDirection: 'column',
         marginRight: 12,
-        paddingBottom: 5,
     },
     message: {
-        paddingBottom: 2,
-        paddingTop: 2,
+        marginTop: 2,
         flex: 1,
     },
 });

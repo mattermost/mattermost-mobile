@@ -14,8 +14,7 @@ type Props = {
 const styles = StyleSheet.create({
     profilePictureContainer: {
         marginBottom: 5,
-        marginLeft: 12,
-        marginRight: 13,
+        marginRight: 10,
         marginTop: 10,
     },
 });
