@@ -38,7 +38,6 @@ const styles = StyleSheet.create({
         marginRight: 12,
     },
     message: {
-        marginTop: 2,
         flex: 1,
     },
 });
