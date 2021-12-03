@@ -3,7 +3,7 @@
 
 import React, {RefObject, useCallback, useEffect, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
-import {BackHandler, DeviceEventEmitter, Keyboard, Platform, View} from 'react-native';
+import {BackHandler, DeviceEventEmitter, Keyboard, View} from 'react-native';
 import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
 import {Navigation} from 'react-native-navigation';
 import {Edge, SafeAreaView} from 'react-native-safe-area-context';
@@ -21,7 +21,7 @@ import {preventDoubleTap} from '@utils/tap';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 
 import EmailField from './components/email_field';
-import Field from './components/field';
+import Field, {FieldProps} from './components/field';
 import ProfileError from './components/profile_error';
 import ProfileUpdating from './components/profile_updating';
 
@@ -39,6 +39,14 @@ type EditProfileProps = {
     lockedPosition: boolean;
     lockedPicture: boolean;
 };
+
+type FieldSequence = Record<string, {
+    ref: RefObject<FloatingTextInputRef>;
+    nextRef: RefObject<FloatingTextInputRef> | undefined;
+    isDisabled: boolean;
+}>
+
+type FieldConfig = Pick<FieldProps, 'blurOnSubmit' | 'enablesReturnKeyAutomatically' | 'onFocusNextField' | 'onTextChange' | 'returnKeyType'>
 
 const edges: Edge[] = ['bottom', 'left', 'right'];
 
@@ -217,55 +225,84 @@ const EditProfile = ({
     const includesSsoService = (sso: string) => ['gitlab', 'google', 'office365'].includes(sso);
 
     const isFieldLockedWithProtocol = (sso: string, lockedField: boolean) => {
-        // return ['ldap', 'saml'].includes(sso) && lockedField;
-        //fixme: undo
-        return false;
+        return ['ldap', 'saml'].includes(sso) && lockedField;
+    };
+
+    const fieldSequence: FieldSequence = {
+        firstName: {
+            ref: firstNameRef,
+            nextRef: lastNameRef,
+            isDisabled: isFieldLockedWithProtocol(service, lockedFirstName) || includesSsoService(service),
+        },
+        lastName: {
+            ref: lastNameRef,
+            nextRef: usernameRef,
+            isDisabled: isFieldLockedWithProtocol(service, lockedLastName) || includesSsoService(service),
+        },
+        username: {
+            ref: usernameRef,
+            nextRef: nicknameRef,
+            isDisabled: service !== '',
+        },
+        email: {
+            ref: emailRef,
+            nextRef: nicknameRef,
+            isDisabled: true,
+        },
+        nickname: {
+            ref: nicknameRef,
+            nextRef: positionRef,
+            isDisabled: isFieldLockedWithProtocol(service, lockedNickname),
+        },
+        position: {
+            ref: positionRef,
+            nextRef: undefined,
+            isDisabled: isFieldLockedWithProtocol(service, lockedPosition),
+        },
     };
 
     const onFocusNextField = (fieldKey: string) => {
-        type FieldSequence = Record<string, {
-            ref: RefObject<FloatingTextInputRef>;
-            nextRef: RefObject<FloatingTextInputRef> | undefined;
-        }>
+        const findNextField = () => {
+            const fields = Object.keys(fieldSequence);
+            const curIndex = fields.indexOf(fieldKey);
+            const searchIndex = curIndex + 1;
 
-        const fieldSequence: FieldSequence = {
-            firstName: {
-                ref: firstNameRef,
-                nextRef: lastNameRef,
-            },
-            lastName: {
-                ref: lastNameRef,
-                nextRef: usernameRef,
-            },
-            username: {
-                ref: usernameRef,
-                nextRef: nicknameRef,
-            },
-            email: {
-                ref: emailRef,
-                nextRef: nicknameRef,
-            },
-            nickname: {
-                ref: nicknameRef,
-                nextRef: positionRef,
-            },
-            position: {
-                ref: positionRef,
-                nextRef: undefined,
-            },
+            if (curIndex === -1 || searchIndex > fields.length) {
+                return undefined;
+            }
+
+            const remainingFields = fields.slice(searchIndex);
+
+            const nextFieldIndex = remainingFields.findIndex((f: string) => {
+                const field = fieldSequence[f];
+                return !field.isDisabled;
+            });
+
+            if (nextFieldIndex === -1) {
+                Keyboard.dismiss();
+                return undefined;
+            }
+
+            const fieldName = remainingFields[nextFieldIndex];
+            return fieldSequence[fieldName];
         };
-
-        //fixme: figure out how to implement field jumping if they are disabled in an adhoc way
-
-        const nextField = fieldSequence[fieldKey];
 
         if (fieldKey === 'position' && canSave) {
             // performs form submission
             Keyboard.dismiss();
             submitUser();
         } else {
-            nextField?.nextRef?.current?.focus();
+            const nextField = findNextField();
+            nextField?.ref?.current?.focus();
         }
+    };
+
+    const fieldConfig: FieldConfig = {
+        blurOnSubmit: false,
+        enablesReturnKeyAutomatically: true,
+        onFocusNextField,
+        onTextChange: updateField,
+        returnKeyType: 'next',
     };
 
     return (
@@ -307,46 +344,34 @@ const EditProfile = ({
                         />
                     </View>
                     <Field
-                        blurOnSubmit={false}
-                        enablesReturnKeyAutomatically={true}
                         fieldKey='firstName'
                         fieldRef={firstNameRef}
-                        isDisabled={isFieldLockedWithProtocol(service, lockedFirstName) || includesSsoService(service)}
+                        isDisabled={fieldSequence.firstName.isDisabled}
                         label={FIELDS.firstName}
-                        onFocusNextField={onFocusNextField}
-                        onTextChange={updateField}
-                        returnKeyType='next'
                         testID='edit_profile.text_setting.firstName'
                         value={userInfo.firstName}
+                        {...fieldConfig}
                     />
                     <View style={style.separator}/>
                     <Field
-                        blurOnSubmit={false}
-                        enablesReturnKeyAutomatically={true}
                         fieldKey='lastName'
                         fieldRef={lastNameRef}
-                        isDisabled={isFieldLockedWithProtocol(service, lockedLastName) || includesSsoService(service)}
+                        isDisabled={fieldSequence.lastName.isDisabled}
                         label={FIELDS.lastName}
-                        onFocusNextField={onFocusNextField}
-                        onTextChange={updateField}
-                        returnKeyType='next'
                         testID='edit_profile.text_setting.lastName'
                         value={userInfo.lastName}
+                        {...fieldConfig}
                     />
                     <View style={style.separator}/>
                     <Field
-                        blurOnSubmit={false}
-                        enablesReturnKeyAutomatically={true}
                         fieldKey='username'
                         fieldRef={usernameRef}
-                        isDisabled={service !== ''}
+                        isDisabled={fieldSequence.username.isDisabled}
                         label={FIELDS.username}
                         maxLength={22}
-                        onFocusNextField={onFocusNextField}
-                        onTextChange={updateField}
-                        returnKeyType='next'
                         testID='edit_profile.text_setting.username'
                         value={userInfo.username}
+                        {...fieldConfig}
                     />
                     <View style={style.separator}/>
                     <EmailField
@@ -358,29 +383,24 @@ const EditProfile = ({
                     />
                     <View style={style.separator}/>
                     <Field
-                        blurOnSubmit={false}
-                        enablesReturnKeyAutomatically={true}
-                        isDisabled={isFieldLockedWithProtocol(service, lockedNickname)}
                         fieldKey='nickname'
                         fieldRef={nicknameRef}
+                        isDisabled={fieldSequence.nickname.isDisabled}
                         label={FIELDS.nickname}
                         maxLength={22}
-                        onFocusNextField={onFocusNextField}
-                        onTextChange={updateField}
-                        returnKeyType='next'
                         testID='edit_profile.text_setting.nickname'
                         value={userInfo.nickname}
+                        {...fieldConfig}
                     />
                     <View style={style.separator}/>
                     <Field
                         fieldKey='position'
                         fieldRef={positionRef}
-                        isDisabled={isFieldLockedWithProtocol(service, lockedPosition)}
+                        isDisabled={fieldSequence.position.isDisabled}
                         isOptional={true}
                         label={FIELDS.position}
                         maxLength={128}
-                        onFocusNextField={onFocusNextField}
-                        onTextChange={updateField}
+                        {...fieldConfig}
                         returnKeyType='done'
                         testID='edit_profile.text_setting.position'
                         value={userInfo.position}

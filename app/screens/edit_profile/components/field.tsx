@@ -13,7 +13,7 @@ import {getKeyboardAppearanceFromTheme} from '@utils/theme';
 
 import FieldDescription from './field_description';
 
-type FieldProps = TextInputProps & {
+export type FieldProps = TextInputProps & {
     isDisabled?: boolean;
     fieldDescription?: string;
     fieldKey: string;
