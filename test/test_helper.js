@@ -62,7 +62,7 @@ class TestHelper {
         await operator.batchRecords(systems);
 
         return {database, operator};
-    }
+    };
 
     activateMocking() {
         if (!nock.isActive()) {
@@ -128,7 +128,7 @@ class TestHelper {
             id: this.generateId(),
             delete_at: 0,
         };
-    }
+    };
 
     fakeChannelMember = (userId, channelId) => {
         return {
@@ -289,26 +289,6 @@ class TestHelper {
             update_at: 1507840900004,
             delete_at: 0,
         };
-    }
-
-    generateId = () => {
-        // Implementation taken from http://stackoverflow.com/a/2117523
-        let id = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx';
-
-        id = id.replace(/[xy]/g, (c) => {
-            const r = Math.floor(Math.random() * 16);
-
-            let v;
-            if (c === 'x') {
-                v = r;
-            } else {
-                v = (r & 0x3) | 0x8;
-            }
-
-            return v.toString(16);
-        });
-
-        return 'uid' + id;
     };
 
     mockLogin = () => {
@@ -331,7 +311,7 @@ class TestHelper {
         nock(this.basicClient4.getBaseRoute()).
             get('/users/me/preferences').
             reply(200, [{user_id: this.basicUser.id, category: 'tutorial_step', name: this.basicUser.id, value: '999'}]);
-    }
+    };
 
     initMockEntities = () => {
         this.basicUser = this.fakeUserWithId();
@@ -410,7 +390,7 @@ class TestHelper {
             },
         };
         this.basicScheme = this.mockSchemeWithId();
-    }
+    };
 
     initBasic = async (client = this.createClient()) => {
         client.setUrl(Config.TestServerUrl || Config.DefaultServerUrl);
@@ -481,7 +461,7 @@ class TestHelper {
             description: '',
             content_type: 'application/x-www-form-urlencoded',
         };
-    }
+    };
 
     testCommand = (teamId) => {
         return {
@@ -514,9 +494,9 @@ class TestHelper {
         this.basicChannel = null;
         this.basicChannelMember = null;
         this.basicPost = null;
-    }
+    };
 
-    wait = (time) => new Promise((resolve) => setTimeout(resolve, time))
+    wait = (time) => new Promise((resolve) => setTimeout(resolve, time));
 }
 
 export default new TestHelper();

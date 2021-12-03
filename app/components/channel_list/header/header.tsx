@@ -1,18 +1,19 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React from 'react';
+import React, {useEffect} from 'react';
 import {Text, View} from 'react-native';
+import Animated, {useAnimatedStyle, useSharedValue, withTiming} from 'react-native-reanimated';
 
 import CompassIcon from '@components/compass_icon';
 import TouchableWithFeedback from '@components/touchable_with_feedback';
+import {useServerDisplayName} from '@context/server';
 import {useTheme} from '@context/theme';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
 type Props = {
-    heading: string;
-    subheading?: string;
+    displayName: string;
     iconPad?: boolean;
 }
 
@@ -24,9 +25,6 @@ const getStyles = makeStyleSheetFromTheme((theme: Theme) => ({
     subHeadingStyles: {
         color: changeOpacity(theme.sidebarText, 0.64),
         ...typography('Heading', 50),
-    },
-    iconPad: {
-        marginLeft: 44,
     },
     headerRow: {
         flexDirection: 'row',
@@ -54,16 +52,25 @@ const getStyles = makeStyleSheetFromTheme((theme: Theme) => ({
     },
 }));
 
-const ChannelListHeader = (props: Props) => {
+const ChannelListHeader = ({displayName, iconPad}: Props) => {
     const theme = useTheme();
+    const serverDisplayName = useServerDisplayName();
+    const marginLeft = useSharedValue(iconPad ? 44 : 0);
     const styles = getStyles(theme);
+    const animatedStyle = useAnimatedStyle(() => ({
+        marginLeft: withTiming(marginLeft.value, {duration: 350}),
+    }), []);
+
+    useEffect(() => {
+        marginLeft.value = iconPad ? 44 : 0;
+    }, [iconPad]);
 
     return (
-        <View style={props.iconPad && styles.iconPad}>
+        <Animated.View style={animatedStyle}>
             <View style={styles.headerRow}>
                 <View style={styles.headerRow}>
                     <Text style={styles.headingStyles}>
-                        {props.heading}
+                        {displayName}
                     </Text>
                     <TouchableWithFeedback style={styles.chevronButton}>
                         <CompassIcon
@@ -80,9 +87,9 @@ const ChannelListHeader = (props: Props) => {
                 </TouchableWithFeedback>
             </View>
             <Text style={styles.subHeadingStyles}>
-                {props.subheading}
+                {serverDisplayName}
             </Text>
-        </View>
+        </Animated.View>
     );
 };
 

@@ -8,7 +8,7 @@ import {Text, View} from 'react-native';
 import {fetchChannelCreator} from '@actions/remote/channel';
 import FormattedText from '@components/formatted_text';
 import {General} from '@constants';
-import {useServerUrl} from '@context/server_url';
+import {useServerUrl} from '@context/server';
 import {t} from '@i18n';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';

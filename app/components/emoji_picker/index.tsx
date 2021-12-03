@@ -15,7 +15,7 @@ import {searchCustomEmojis} from '@actions/remote/custom_emoji';
 import SearchBar from '@components/search_bar';
 import {Preferences} from '@constants';
 import {MM_TABLES, SYSTEM_IDENTIFIERS} from '@constants/database';
-import {useServerUrl} from '@context/server_url';
+import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {debounce} from '@helpers/api/general';
 import {safeParseJSON} from '@utils/helpers';

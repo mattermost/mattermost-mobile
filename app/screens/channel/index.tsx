@@ -10,7 +10,7 @@ import {map} from 'rxjs/operators';
 import {fetchPostsForChannel} from '@actions/remote/post';
 import PostList from '@components/post_list';
 import {Database} from '@constants';
-import {useServerUrl} from '@context/server_url';
+import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {useAppState} from '@hooks/device';
 import {makeStyleSheetFromTheme} from '@utils/theme';

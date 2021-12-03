@@ -9,7 +9,7 @@ import {addReaction, removeReaction} from '@actions/remote/reactions';
 import CompassIcon from '@components/compass_icon';
 import TouchableWithFeedback from '@components/touchable_with_feedback';
 import {MAX_ALLOWED_REACTIONS} from '@constants/emoji';
-import {useServerUrl} from '@context/server_url';
+import {useServerUrl} from '@context/server';
 import {showModal, showModalOverCurrentContext} from '@screens/navigation';
 import {preventDoubleTap} from '@utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';

@@ -7,7 +7,7 @@ import {View} from 'react-native';
 import {fetchProfilesInChannel} from '@actions/remote/user';
 import FormattedText from '@components/formatted_text';
 import {General} from '@constants';
-import {useServerUrl} from '@context/server_url';
+import {useServerUrl} from '@context/server';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 

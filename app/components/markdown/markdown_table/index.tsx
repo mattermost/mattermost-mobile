@@ -60,7 +60,7 @@ class MarkdownTable extends PureComponent<MarkdownTableProps, MarkdownTableState
     setMaxPreviewColumns = ({window}: {window: ScaledSize}) => {
         const maxPreviewColumns = Math.floor(window.width / CELL_MIN_WIDTH);
         this.setState({maxPreviewColumns});
-    }
+    };
 
     getTableWidth = (isFullView = false) => {
         const maxPreviewColumns = this.state.maxPreviewColumns || MAX_PREVIEW_COLUMNS;
@@ -99,7 +99,7 @@ class MarkdownTable extends PureComponent<MarkdownTableProps, MarkdownTableState
 
     renderPreviewRows = (isFullView = false) => {
         return this.renderRows(isFullView, true);
-    }
+    };
 
     shouldRenderAsFlex = (isFullView = false) => {
         const {numColumns} = this.props;
@@ -125,7 +125,7 @@ class MarkdownTable extends PureComponent<MarkdownTableProps, MarkdownTableState
         }
 
         return false;
-    }
+    };
 
     getTableStyle = (isFullView: boolean) => {
         const {theme} = this.props;
@@ -140,7 +140,7 @@ class MarkdownTable extends PureComponent<MarkdownTableProps, MarkdownTableState
 
         tableStyle.push({width: this.getTableWidth(isFullView)});
         return tableStyle;
-    }
+    };
 
     renderRows = (isFullView = false, isPreview = false) => {
         const tableStyle = this.getTableStyle(isFullView);
@@ -186,7 +186,7 @@ class MarkdownTable extends PureComponent<MarkdownTableProps, MarkdownTableState
                 {rows}
             </View>
         );
-    }
+    };
 
     render() {
         const {containerWidth, contentHeight} = this.state;

@@ -11,7 +11,7 @@ import SystemAvatar from '@components/system_avatar';
 import SystemHeader from '@components/system_header';
 import TouchableWithFeedback from '@components/touchable_with_feedback';
 import * as Screens from '@constants/screens';
-import {useServerUrl} from '@context/server_url';
+import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {showModalOverCurrentContext} from '@screens/navigation';
 import {fromAutoResponder, isFromWebhook, isPostPendingOrFailed, isSystemMessage} from '@utils/post';
