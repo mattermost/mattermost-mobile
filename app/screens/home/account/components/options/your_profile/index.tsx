@@ -39,7 +39,7 @@ const YourProfile = ({isTablet, style, theme}: Props) => {
                     },
                 });
         }
-    }), [isTablet]);
+    }), [isTablet, theme]);
 
     return (
         <DrawerItem
