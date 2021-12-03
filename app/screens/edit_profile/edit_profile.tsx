@@ -42,7 +42,6 @@ type EditProfileProps = {
 
 type FieldSequence = Record<string, {
     ref: RefObject<FloatingTextInputRef>;
-    nextRef: RefObject<FloatingTextInputRef> | undefined;
     isDisabled: boolean;
 }>
 
@@ -218,46 +217,32 @@ const EditProfile = ({
         enableSaveButton(didChange);
     }, [userInfo]);
 
-    if (updating) {
-        return <ProfileUpdating/>;
-    }
-
     const includesSsoService = (sso: string) => ['gitlab', 'google', 'office365'].includes(sso);
-
-    const isFieldLockedWithProtocol = (sso: string, lockedField: boolean) => {
-        return ['ldap', 'saml'].includes(sso) && lockedField;
-    };
 
     const fieldSequence: FieldSequence = {
         firstName: {
             ref: firstNameRef,
-            nextRef: lastNameRef,
-            isDisabled: isFieldLockedWithProtocol(service, lockedFirstName) || includesSsoService(service),
+            isDisabled: lockedFirstName || includesSsoService(service),
         },
         lastName: {
             ref: lastNameRef,
-            nextRef: usernameRef,
-            isDisabled: isFieldLockedWithProtocol(service, lockedLastName) || includesSsoService(service),
+            isDisabled: lockedLastName || includesSsoService(service),
         },
         username: {
             ref: usernameRef,
-            nextRef: nicknameRef,
             isDisabled: service !== '',
         },
         email: {
             ref: emailRef,
-            nextRef: nicknameRef,
             isDisabled: true,
         },
         nickname: {
             ref: nicknameRef,
-            nextRef: positionRef,
-            isDisabled: isFieldLockedWithProtocol(service, lockedNickname),
+            isDisabled: lockedNickname,
         },
         position: {
             ref: positionRef,
-            nextRef: undefined,
-            isDisabled: isFieldLockedWithProtocol(service, lockedPosition),
+            isDisabled: lockedPosition,
         },
     };
 
@@ -304,6 +289,10 @@ const EditProfile = ({
         onTextChange: updateField,
         returnKeyType: 'next',
     };
+
+    if (updating) {
+        return <ProfileUpdating/>;
+    }
 
     return (
         <>
