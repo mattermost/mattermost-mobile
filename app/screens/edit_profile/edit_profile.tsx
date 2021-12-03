@@ -3,7 +3,7 @@
 
 import React, {RefObject, useCallback, useEffect, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
-import {BackHandler, DeviceEventEmitter, Platform, View} from 'react-native';
+import {BackHandler, DeviceEventEmitter, Keyboard, Platform, View} from 'react-native';
 import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
 import {Navigation} from 'react-native-navigation';
 import {Edge, SafeAreaView} from 'react-native-safe-area-context';
@@ -85,16 +85,6 @@ const EditProfile = ({
     const nicknameRef = useRef<FloatingTextInputRef>(null);
     const positionRef = useRef<FloatingTextInputRef>(null);
 
-    const buttonText = intl.formatMessage({id: 'mobile.account.settings.save', defaultMessage: 'Save'});
-    const rightButton = isTablet ? null : {
-        id: 'update-profile',
-        enabled: false,
-        showAsAction: 'always' as const,
-        testID: 'edit_profile.save.button',
-        color: theme.sidebarHeaderTextColor,
-        text: buttonText,
-    };
-
     const [userInfo, setUserInfo] = useState<UserInfo>({
         email: currentUser.email,
         firstName: currentUser.firstName,
@@ -108,6 +98,16 @@ const EditProfile = ({
     const [updating, setUpdating] = useState(false);
 
     const scrollViewRef = useRef<KeyboardAwareScrollView>();
+
+    const buttonText = intl.formatMessage({id: 'mobile.account.settings.save', defaultMessage: 'Save'});
+    const rightButton = isTablet ? null : {
+        id: 'update-profile',
+        enabled: false,
+        showAsAction: 'always' as const,
+        testID: 'edit_profile.save.button',
+        color: theme.sidebarHeaderTextColor,
+        text: buttonText,
+    };
 
     useEffect(() => {
         const unsubscribe = Navigation.events().registerComponentListener({
@@ -157,15 +157,11 @@ const EditProfile = ({
     };
 
     const enableSaveButton = (value: boolean) => {
-        if (isTablet) {
-            setCanSave(value);
-        } else {
-            const buttons = {
-                rightButtons: [{...rightButton!, enabled: value}],
-            };
-
-            setButtons(componentId, buttons);
-        }
+        const buttons = {
+            rightButtons: [{...rightButton!, enabled: value}],
+        };
+        setCanSave(value);
+        setButtons(componentId, buttons);
     };
 
     const submitUser = preventDoubleTap(async () => {
@@ -197,6 +193,7 @@ const EditProfile = ({
 
     const resetScreen = (resetError: Error) => {
         setError(resetError?.message);
+        Keyboard.dismiss();
         setUpdating(false);
         enableSaveButton(true);
         scrollViewRef.current?.scrollToPosition(0, 0, true);
@@ -219,7 +216,11 @@ const EditProfile = ({
 
     const includesSsoService = (sso: string) => ['gitlab', 'google', 'office365'].includes(sso);
 
-    const isFieldLockedWithProtocol = (sso: string, lockedField: boolean) => ['ldap', 'saml'].includes(sso) && lockedField;
+    const isFieldLockedWithProtocol = (sso: string, lockedField: boolean) => {
+        // return ['ldap', 'saml'].includes(sso) && lockedField;
+        //fixme: undo
+        return false;
+    };
 
     const onFocusNextField = (fieldKey: string) => {
         type FieldSequence = Record<string, {
@@ -254,10 +255,17 @@ const EditProfile = ({
             },
         };
 
-        //todo: if ref === positionRef then perform form submission.
+        //fixme: figure out how to implement field jumping if they are disabled in an adhoc way
 
         const nextField = fieldSequence[fieldKey];
-        return nextField?.nextRef?.current?.focus();
+
+        if (fieldKey === 'position' && canSave) {
+            // performs form submission
+            Keyboard.dismiss();
+            submitUser();
+        } else {
+            nextField?.nextRef?.current?.focus();
+        }
     };
 
     return (
@@ -278,7 +286,7 @@ const EditProfile = ({
             >
                 <KeyboardAwareScrollView
                     bounces={false}
-                    enableAutomaticScroll={Platform.OS === 'android'}
+                    enableAutomaticScroll={true}
                     enableOnAndroid={true}
                     enableResetScrollToCoords={true}
                     extraScrollHeight={25}
