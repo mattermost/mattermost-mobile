@@ -20,6 +20,7 @@ import {queryCommonSystemValues, queryConfig, queryWebSocketLastDisconnected} fr
 import {queryCurrentUser} from '@queries/servers/user';
 
 import {handleChannelDeletedEvent, handleUserRemovedEvent} from './channel';
+import {handlePreferenceChangedEvent, handlePreferencesChangedEvent, handlePreferencesDeletedEvent} from './preferences';
 import {handleLeaveTeamEvent} from './teams';
 
 import type {Model} from '@nozbe/watermelondb';
@@ -242,17 +243,17 @@ export async function handleEvent(serverUrl: string, msg: any) {
 
         // return dispatch(handleDirectAddedEvent(msg));
         case WebsocketEvents.PREFERENCE_CHANGED:
+            handlePreferenceChangedEvent(serverUrl, msg);
             break;
 
-        // return dispatch(handlePreferenceChangedEvent(msg));
         case WebsocketEvents.PREFERENCES_CHANGED:
+            handlePreferencesChangedEvent(serverUrl, msg);
             break;
 
-        // return dispatch(handlePreferencesChangedEvent(msg));
         case WebsocketEvents.PREFERENCES_DELETED:
+            handlePreferencesDeletedEvent(serverUrl, msg);
             break;
 
-        // return dispatch(handlePreferencesDeletedEvent(msg));
         case WebsocketEvents.STATUS_CHANGED:
             break;
 
