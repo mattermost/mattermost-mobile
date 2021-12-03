@@ -10,39 +10,14 @@ export async function handlePreferenceChangedEvent(serverUrl: string, msg: WebSo
         return;
     }
 
-    //     const actions: GenericAction[] = [{
-    //         type: PreferenceTypes.RECEIVED_PREFERENCES,
-    //         data: [preference],
-    //     }];
-    //     const crtPreferenceChanged = dispatch(handleCRTPreferenceChange([preference])) as ActionResult;
-    //     if (crtPreferenceChanged.data) {
-    //         return {data: true};
-    //     }
-    //     const state = getState();
-    //     const dmActions = await getAddedDmUsersIfNecessary(state, [preference]);
-    //     if (dmActions.length) {
-    //         actions.push(...dmActions);
-    //     }
-    //     dispatch(batchActions(actions, 'BATCH_WS_PREFERENCE_CHANGED'));
-    //     return {data: true};
-    // return async (dispatch: DispatchFunc, getState: GetStateFunc): Promise<ActionResult> => {
-    //     const preference = JSON.parse(msg.data.preference);
-    //     const actions: GenericAction[] = [{
-    //         type: PreferenceTypes.RECEIVED_PREFERENCES,
-    //         data: [preference],
-    //     }];
-    //     const crtPreferenceChanged = dispatch(handleCRTPreferenceChange([preference])) as ActionResult;
-    //     if (crtPreferenceChanged.data) {
-    //         return {data: true};
-    //     }
-    //     const state = getState();
-    //     const dmActions = await getAddedDmUsersIfNecessary(state, [preference]);
-    //     if (dmActions.length) {
-    //         actions.push(...dmActions);
-    //     }
-    //     dispatch(batchActions(actions, 'BATCH_WS_PREFERENCE_CHANGED'));
-    //     return {data: true};
-    // };
+    const preferences = JSON.parse(msg.data.preferences) as PreferenceType[];
+    const operator = database?.operator;
+    if (operator) {
+        operator.handlePreferences({
+            prepareRecordsOnly: false,
+            preferences,
+        });
+    }
 }
 
 // example is flagging/saving a post
