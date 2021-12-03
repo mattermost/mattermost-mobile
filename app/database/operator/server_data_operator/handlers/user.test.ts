@@ -9,7 +9,7 @@ import {
     isRecordUserEqualToRaw,
 } from '@database/operator/server_data_operator/comparators';
 import {
-    transformChannelMembershipRecord,
+    transformMyChannelMembershipRecord,
     transformPreferenceRecord,
     transformUserRecord,
 } from '@database/operator/server_data_operator/transformers/user';
@@ -161,7 +161,7 @@ describe('*** Operator: User Handlers tests ***', () => {
 
     it('=> HandleChannelMembership: should write to the CHANNEL_MEMBERSHIP table', async () => {
         expect.assertions(2);
-        const channelMemberships: ChannelMembership[] = [
+        const channelMemberships: MyChannelMembership[] = [
             {
                 channel_id: '17bfnb1uwb8epewp4q3x3rx9go',
                 user_id: '9ciscaqbrpd6d8s68k76xb9bte',
@@ -214,7 +214,7 @@ describe('*** Operator: User Handlers tests ***', () => {
             tableName: 'ChannelMembership',
             prepareRecordsOnly: false,
             findMatchingRecordBy: isRecordChannelMembershipEqualToRaw,
-            transformer: transformChannelMembershipRecord,
+            transformer: transformMyChannelMembershipRecord,
         });
     });
 });

@@ -93,11 +93,16 @@ type TermsOfService = {
     text: string;
 };
 
+type ChannelMembership = {
+    channel_id: string;
+    user_id: string;
+}
+
 type RawValue =
   | AppInfo
   | Channel
   | ChannelInfo
-  | ChannelMembership
+  | MyChannelMembership
   | CustomEmoji
   | Draft
   | FileInfo
@@ -121,3 +126,4 @@ type RawValue =
   | TeamSearchHistory
   | TermsOfService
   | UserProfile
+  | ChannelMembership

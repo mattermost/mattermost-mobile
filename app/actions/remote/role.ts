@@ -57,7 +57,7 @@ export const fetchRolesIfNeeded = async (serverUrl: string, updatedRoles: string
     }
 };
 
-export const fetchRoles = async (serverUrl: string, teamMembership?: TeamMembership[], channelMembership?: ChannelMembership[], user?: UserProfile) => {
+export const fetchRoles = async (serverUrl: string, teamMembership?: TeamMembership[], channelMembership?: MyChannelMembership[], user?: UserProfile) => {
     const rolesToFetch = new Set<string>(user?.roles.split(' ') || []);
 
     if (teamMembership?.length) {

@@ -14,12 +14,13 @@ import {isTablet} from '@utils/helpers';
 
 import type ChannelModel from '@typings/database/models/servers/channel';
 
-export const switchToChannel = async (serverUrl: string, channelId: string, teamId?: string) => {
+export const switchToChannel = async (serverUrl: string, channelId: string, teamId?: string, prepareRecordsOnly = false) => {
     const database = DatabaseManager.serverDatabases[serverUrl]?.database;
     if (!database) {
         return {error: `${serverUrl} database not found`};
     }
 
+    const models: Model[] = [];
     try {
         const dt = Date.now();
         const isTabletDevice = await isTablet();
@@ -29,7 +30,6 @@ export const switchToChannel = async (serverUrl: string, channelId: string, team
         if (member) {
             const channel: ChannelModel = await member.channel.fetch();
             const {operator} = DatabaseManager.serverDatabases[serverUrl];
-            const models = [];
             const commonValues: PrepareCommonSystemValuesArgs = {currentChannelId: channelId};
 
             if (teamId && system.currentTeamId !== teamId) {
@@ -53,7 +53,7 @@ export const switchToChannel = async (serverUrl: string, channelId: string, team
                 models.push(viewedAt);
             }
 
-            if (models.length) {
+            if (models.length && !prepareRecordsOnly) {
                 await operator.batchRecords(models);
             }
 
@@ -70,21 +70,22 @@ export const switchToChannel = async (serverUrl: string, channelId: string, team
         return {error};
     }
 
-    return {error: undefined};
+    return {models};
 };
 
-export const localRemoveUserFromChannel = async (serverUrl: string, channelId: string) => {
+export const localRemoveCurrentUserFromChannel = async (serverUrl: string, channelId: string, prepareRecordsOnly = false) => {
     const serverDatabase = DatabaseManager.serverDatabases[serverUrl];
     if (!serverDatabase) {
-        return;
+        return {error: `${serverUrl} database not found`};
     }
 
     const {operator, database} = serverDatabase;
 
+    const models: Model[] = [];
     const myChannel = await queryMyChannel(database, channelId);
     if (myChannel) {
         const channel = await myChannel.channel.fetch() as ChannelModel;
-        const models = await prepareDeleteChannel(channel);
+        models.push(...await prepareDeleteChannel(channel));
         let teamId = channel.teamId;
         if (teamId) {
             teamId = await queryCurrentTeamId(database);
@@ -93,7 +94,7 @@ export const localRemoveUserFromChannel = async (serverUrl: string, channelId: s
         if (system) {
             models.push(...system);
         }
-        if (models.length) {
+        if (models.length && !prepareRecordsOnly) {
             try {
                 await operator.batchRecords(models);
             } catch {
@@ -102,6 +103,7 @@ export const localRemoveUserFromChannel = async (serverUrl: string, channelId: s
             }
         }
     }
+    return {models};
 };
 
 export const localSetChannelDeleteAt = async (serverUrl: string, channelId: string, deleteAt: number) => {

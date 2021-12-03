@@ -9,7 +9,7 @@ import {
     isRecordUserEqualToRaw,
 } from '@database/operator/server_data_operator/comparators';
 import {
-    transformChannelMembershipRecord,
+    transformMyChannelMembershipRecord,
     transformPreferenceRecord,
     transformReactionRecord,
     transformUserRecord,
@@ -47,7 +47,7 @@ const UserHandler = (superclass: any) => class extends superclass {
     /**
      * handleChannelMembership: Handler responsible for the Create/Update operations occurring on the CHANNEL_MEMBERSHIP table from the 'Server' schema
      * @param {HandleChannelMembershipArgs} channelMembershipsArgs
-     * @param {ChannelMembership[]} channelMembershipsArgs.channelMemberships
+     * @param {MyChannelMembership[]} channelMembershipsArgs.channelMemberships
      * @param {boolean} channelMembershipsArgs.prepareRecordsOnly
      * @throws DataOperatorException
      * @returns {Promise<ChannelMembershipModel[]>}
@@ -64,7 +64,7 @@ const UserHandler = (superclass: any) => class extends superclass {
         return this.handleRecords({
             fieldName: 'user_id',
             findMatchingRecordBy: isRecordChannelMembershipEqualToRaw,
-            transformer: transformChannelMembershipRecord,
+            transformer: transformMyChannelMembershipRecord,
             prepareRecordsOnly,
             createOrUpdateRawValues,
             tableName: CHANNEL_MEMBERSHIP,

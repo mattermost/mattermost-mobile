@@ -54,7 +54,7 @@ describe('*** CHANNEL Prepare Records Test ***', () => {
         const database = await createTestConnection({databaseName: 'channel_prepare_records', setActive: true});
         expect(database).toBeTruthy();
 
-        const raw: ChannelMembership = {
+        const raw: MyChannelMembership = {
             channel_id: 'c',
             user_id: 'me',
             roles: '',

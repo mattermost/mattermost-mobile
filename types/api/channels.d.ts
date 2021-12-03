@@ -4,6 +4,7 @@ type ChannelType = 'O' | 'P' | 'D' | 'G';
 type ChannelStats = {
     channel_id: string;
     member_count: number;
+    guest_count: number;
     pinnedpost_count: number;
 };
 type ChannelNotifyProps = {
@@ -41,7 +42,7 @@ type ChannelWithTeamData = Channel & {
     team_name: string;
     team_update_at: number;
 }
-type ChannelMembership = {
+type MyChannelMembership = {
     id?: string;
     channel_id: string;
     user_id: string;
@@ -69,8 +70,8 @@ type ChannelsState = {
     currentChannelId: string;
     channels: IDMappedObjects<Channel>;
     channelsInTeam: RelationOneToMany<Team, Channel>;
-    myMembers: RelationOneToOne<Channel, ChannelMembership>;
-    membersInChannel: RelationOneToOne<Channel, UserIDMappedObjects<ChannelMembership>>;
+    myMembers: RelationOneToOne<Channel, MyChannelMembership>;
+    membersInChannel: RelationOneToOne<Channel, UserIDMappedObjects<MyChannelMembership>>;
     stats: RelationOneToOne<Channel, ChannelStats>;
     groupsAssociatedToChannel: any;
     totalCount: number;

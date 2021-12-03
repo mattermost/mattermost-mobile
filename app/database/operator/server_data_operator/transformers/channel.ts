@@ -61,7 +61,7 @@ export const transformChannelRecord = ({action, database, value}: TransformerArg
  * @returns {Promise<MyChannelSettingsModel>}
  */
 export const transformMyChannelSettingsRecord = ({action, database, value}: TransformerArgs): Promise<MyChannelSettingsModel> => {
-    const raw = value.raw as ChannelMembership;
+    const raw = value.raw as MyChannelMembership;
     const record = value.record as MyChannelSettingsModel;
     const isCreateAction = action === OperationType.CREATE;
 
@@ -117,7 +117,7 @@ export const transformChannelInfoRecord = ({action, database, value}: Transforme
  * @returns {Promise<MyChannelModel>}
  */
 export const transformMyChannelRecord = ({action, database, value}: TransformerArgs): Promise<MyChannelModel> => {
-    const raw = value.raw as ChannelMembership;
+    const raw = value.raw as MyChannelMembership;
     const record = value.record as MyChannelModel;
     const isCreateAction = action === OperationType.CREATE;
 

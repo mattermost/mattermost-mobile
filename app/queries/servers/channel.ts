@@ -19,7 +19,7 @@ import type PostModel from '@typings/database/models/servers/post';
 
 const {SERVER: {CHANNEL, MY_CHANNEL, CHANNEL_MEMBERSHIP}} = MM_TABLES;
 
-export const prepareMyChannelsForTeam = async (operator: ServerDataOperator, teamId: string, channels: Channel[], channelMembers: ChannelMembership[]) => {
+export const prepareMyChannelsForTeam = async (operator: ServerDataOperator, teamId: string, channels: Channel[], channelMembers: MyChannelMembership[]) => {
     const allChannelsForTeam = await queryAllChannelsForTeam(operator.database, teamId);
     const channelInfos: ChannelInfo[] = [];
     const memberships = channelMembers.map((cm) => ({...cm, id: cm.channel_id}));
@@ -177,14 +177,25 @@ export const queryCurrentChannel = async (database: Database) => {
     return undefined;
 };
 
-export const deleteChannelMembership = async (operator: ServerDataOperator, userId: string, channelId: string) => {
+export const deleteChannelMembership = async (operator: ServerDataOperator, userId: string, channelId: string, prepareRecordsOnly = false) => {
     try {
         const channelMembership = await operator.database.get(CHANNEL_MEMBERSHIP).query(Q.where('user_id', Q.eq(userId)), Q.where('channel_id', Q.eq(channelId))).fetch();
         const models: Model[] = [];
         for (const membership of channelMembership) {
             models.push(membership.prepareDestroyPermanently());
         }
-        await operator.batchRecords(models);
+        if (models.length && !prepareRecordsOnly) {
+            await operator.batchRecords(models);
+        }
+        return {models};
+    } catch (error) {
+        return {error};
+    }
+};
+
+export const addChannelMembership = async (operator: ServerDataOperator, userId: string, channelId: string) => {
+    try {
+        await operator.handleChannelMembership({channelMemberships: [{channel_id: channelId, user_id: userId}], prepareRecordsOnly: false});
         return {};
     } catch (error) {
         return {error};

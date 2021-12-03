@@ -5,7 +5,7 @@ import {General, Permissions} from '@constants';
 import {DEFAULT_LOCALE} from '@i18n';
 import {hasPermission} from '@utils/role';
 
-export function selectDefaultChannelForTeam(channels: Channel[], memberships: ChannelMembership[], teamId: string, roles?: Role[], locale = DEFAULT_LOCALE) {
+export function selectDefaultChannelForTeam(channels: Channel[], memberships: MyChannelMembership[], teamId: string, roles?: Role[], locale = DEFAULT_LOCALE) {
     let channel: Channel|undefined;
     let canIJoinPublicChannelsInTeam = false;
 

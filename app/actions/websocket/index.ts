@@ -19,8 +19,9 @@ import {prepareMyChannelsForTeam} from '@queries/servers/channel';
 import {queryCommonSystemValues, queryConfig, queryWebSocketLastDisconnected} from '@queries/servers/system';
 import {queryCurrentUser} from '@queries/servers/user';
 
-import {handleChannelDeletedEvent, handleUserRemovedEvent} from './channel';
+import {handleChannelDeletedEvent, handleUserAddedEvent, handleUserRemovedEvent} from './channel';
 import {handleLeaveTeamEvent} from './teams';
+import {handleUserUpdatedEvent} from './users';
 
 import type {Model} from '@nozbe/watermelondb';
 
@@ -80,7 +81,7 @@ async function doReconnect(serverUrl: string) {
     const {currentChannelId, currentUserId, currentTeamId, license} = system;
     const currentTeamMembership = teamMemberships?.find((tm) => tm.team_id === currentTeamId && tm.delete_at === 0);
 
-    let channelMemberships: ChannelMembership[] | undefined;
+    let channelMemberships: MyChannelMembership[] | undefined;
     if (currentTeamMembership) {
         const {memberships, channels, error} = await fetchMyChannelsForTeam(serverUrl, currentTeamMembership.team_id, true, lastDisconnectedAt, true);
         if (error) {
@@ -176,16 +177,14 @@ export async function handleEvent(serverUrl: string, msg: any) {
 
         // return dispatch(handleTeamAddedEvent(msg));
         case WebsocketEvents.USER_ADDED:
+            handleUserAddedEvent(serverUrl, msg);
             break;
-
-        // return dispatch(handleUserAddedEvent(msg));
         case WebsocketEvents.USER_REMOVED:
             handleUserRemovedEvent(serverUrl, msg);
             break;
         case WebsocketEvents.USER_UPDATED:
+            handleUserUpdatedEvent(serverUrl, msg);
             break;
-
-        // return dispatch(handleUserUpdatedEvent(msg));
         case WebsocketEvents.ROLE_ADDED:
             break;
 

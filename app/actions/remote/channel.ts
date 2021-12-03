@@ -9,7 +9,7 @@ import {General} from '@constants';
 import DatabaseManager from '@database/manager';
 import {privateChannelJoinPrompt} from '@helpers/api/channel';
 import NetworkManager from '@init/network_manager';
-import {prepareMyChannelsForTeam, queryMyChannel} from '@queries/servers/channel';
+import {prepareMyChannelsForTeam, queryChannelsById, queryMyChannel} from '@queries/servers/channel';
 import {queryCommonSystemValues} from '@queries/servers/system';
 import {prepareMyTeams, queryMyTeamById, queryTeamById, queryTeamByName} from '@queries/servers/team';
 import MyChannelModel from '@typings/database/models/servers/my_channel';
@@ -27,7 +27,7 @@ import type {Client} from '@client/rest';
 
 export type MyChannelsRequest = {
     channels?: Channel[];
-    memberships?: ChannelMembership[];
+    memberships?: MyChannelMembership[];
     error?: unknown;
 }
 
@@ -46,7 +46,7 @@ export const addMembersToChannel = async (serverUrl: string, channelId: string, 
 
     try {
         const promises = userIds.map((id) => client.addToChannel(id, channelId, postRootId));
-        const channelMemberships: ChannelMembership[] = await Promise.all(promises);
+        const channelMemberships: MyChannelMembership[] = await Promise.all(promises);
         await fetchUsersByIds(serverUrl, userIds, false);
 
         if (!fetchOnly) {
@@ -96,7 +96,7 @@ export const fetchMyChannelsForTeam = async (serverUrl: string, teamId: string, 
     }
 
     try {
-        let [channels, memberships]: [Channel[], ChannelMembership[]] = await Promise.all([
+        let [channels, memberships]: [Channel[], MyChannelMembership[]] = await Promise.all([
             client.getMyChannels(teamId, includeDeleted, since),
             client.getMyChannelMembers(teamId),
         ]);
@@ -106,7 +106,7 @@ export const fetchMyChannelsForTeam = async (serverUrl: string, teamId: string, 
         }
 
         const channelIds = new Set<string>(channels.map((c) => c.id));
-        memberships = memberships.reduce((result: ChannelMembership[], m: ChannelMembership) => {
+        memberships = memberships.reduce((result: MyChannelMembership[], m: MyChannelMembership) => {
             if (channelIds.has(m.channel_id)) {
                 result.push(m);
             }
@@ -241,7 +241,7 @@ export const joinChannel = async (serverUrl: string, userId: string, teamId: str
         return {error};
     }
 
-    let member: ChannelMembership | undefined;
+    let member: MyChannelMembership | undefined;
     let channel: Channel | undefined;
     try {
         if (channelId) {
@@ -307,7 +307,7 @@ export const switchToChannelByName = async (serverUrl: string, channelName: stri
     }
 
     try {
-        let myChannel: MyChannelModel | ChannelMembership | undefined;
+        let myChannel: MyChannelModel | MyChannelMembership | undefined;
         let team: TeamModel | Team | undefined;
         let myTeam: MyTeamModel | TeamMembership | undefined;
         let name = teamName;
@@ -456,6 +456,47 @@ export const switchToChannelByName = async (serverUrl: string, channelName: stri
         return {error: undefined};
     } catch (error) {
         errorHandler(intl);
+        return {error};
+    }
+};
+
+export const fetchChannelInfo = async (serverUrl: string, channelId: string, fetchOnly = false) => {
+    const database = DatabaseManager.serverDatabases[serverUrl];
+    if (!database) {
+        return {error: `${serverUrl} database not found`};
+    }
+
+    let client: Client;
+    try {
+        client = NetworkManager.getClient(serverUrl);
+        const channels = await queryChannelsById(database.database, [channelId]);
+        let purpose = '';
+        let header = '';
+        const channelModel = channels?.[0];
+        if (channelModel) {
+            const oldInfo = await channelModel.info.fetch();
+            purpose = oldInfo.purpose;
+            header = oldInfo.header;
+        } else {
+            const channel = await client.getChannel(channelId);
+            purpose = channel.purpose;
+            header = channel.header;
+        }
+        const stat = await client.getChannelStats(channelId);
+        const channelInfo: ChannelInfo = {
+            id: stat.channel_id,
+            guest_count: stat.guest_count,
+            member_count: stat.member_count,
+            pinned_post_count: stat.pinnedpost_count,
+            purpose,
+            header,
+        };
+        if (!fetchOnly) {
+            database.operator.handleChannelInfo({channelInfos: [channelInfo], prepareRecordsOnly: false});
+        }
+
+        return {channelInfo};
+    } catch (error) {
         return {error};
     }
 };
