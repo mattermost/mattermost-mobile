@@ -61,13 +61,11 @@ export interface FooterRef {
 export interface GalleryProps {
     files: Array<FileInfo>;
     footerVisible: boolean;
-    height: number;
     initialIndex: number;
     isLandscape: boolean;
     onClose: CallbackFunctionWithoutArguments;
     onPageSelected: (index: number) => void;
     onTap: CallbackFunctionWithoutArguments;
-    width: number;
     theme: Theme;
 }
 
