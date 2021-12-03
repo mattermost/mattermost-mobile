@@ -98,7 +98,7 @@ const RecentMentionsScreen = ({mentions, currentUser, currentTimezone, isTimezon
         <View style={[styles.empty, paddingTop]}>
             {loading ? (
                 <ActivityIndicator
-                    color={theme.sidebarBg}
+                    color={theme.centerChannelColor}
                     size='large'
                 />
             ) : (

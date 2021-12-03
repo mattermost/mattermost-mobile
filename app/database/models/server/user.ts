@@ -173,4 +173,14 @@ export default class UserModel extends Model {
 
         return keys;
     }
+
+    get userMentionKeys() {
+        const mentionKeys = this.mentionKeys;
+
+        return mentionKeys.filter((m) => (
+            m.key !== '@all' &&
+            m.key !== '@channel' &&
+            m.key !== '@here'
+        ));
+    }
 }

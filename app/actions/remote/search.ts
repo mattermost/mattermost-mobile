@@ -47,7 +47,7 @@ export async function getRecentMentions(serverUrl: string): Promise<PostSearchRe
                 order: [],
             };
         }
-        const terms = currentUser.mentionKeys.map(({key}) => key).join(' ').trim() + ' ';
+        const terms = currentUser.userMentionKeys.map(({key}) => key).join(' ').trim() + ' ';
         const data = await client.searchPosts('', terms, true);
 
         posts = data.posts || {};
