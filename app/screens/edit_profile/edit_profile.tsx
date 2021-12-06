@@ -23,7 +23,6 @@ import {makeStyleSheetFromTheme} from '@utils/theme';
 import EmailField from './components/email_field';
 import Field, {FieldProps} from './components/field';
 import ProfileError from './components/profile_error';
-import ProfileUpdating from './components/profile_updating';
 
 import type UserModel from '@typings/database/models/servers/user';
 
@@ -218,15 +217,16 @@ const EditProfile = ({
     }, [userInfo]);
 
     const includesSsoService = (sso: string) => ['gitlab', 'google', 'office365'].includes(sso);
+    const isSAMLOrLDAP = (protocol: string) => ['ldap', 'saml'].includes(protocol);
 
     const fieldSequence: FieldSequence = {
         firstName: {
             ref: firstNameRef,
-            isDisabled: lockedFirstName || includesSsoService(service),
+            isDisabled: (isSAMLOrLDAP(service) && lockedFirstName) || includesSsoService(service),
         },
         lastName: {
             ref: lastNameRef,
-            isDisabled: lockedLastName || includesSsoService(service),
+            isDisabled: (isSAMLOrLDAP(service) && lockedLastName) || includesSsoService(service),
         },
         username: {
             ref: usernameRef,
@@ -238,11 +238,11 @@ const EditProfile = ({
         },
         nickname: {
             ref: nicknameRef,
-            isDisabled: lockedNickname,
+            isDisabled: isSAMLOrLDAP(service) && lockedNickname,
         },
         position: {
             ref: positionRef,
-            isDisabled: lockedPosition,
+            isDisabled: isSAMLOrLDAP(service) && lockedPosition,
         },
     };
 
