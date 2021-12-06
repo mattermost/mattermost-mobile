@@ -10,6 +10,7 @@ import {Edge, SafeAreaView} from 'react-native-safe-area-context';
 
 import {updateMe} from '@actions/remote/user';
 import {FloatingTextInputRef} from '@components/floating_text_input_label';
+import Loading from '@components/loading';
 import ProfilePicture from '@components/profile_picture';
 import TabletTitle from '@components/tablet_title';
 import {Events} from '@constants';
@@ -290,10 +291,6 @@ const EditProfile = ({
         returnKeyType: 'next',
     };
 
-    if (updating) {
-        return <ProfileUpdating/>;
-    }
-
     return (
         <>
             {isTablet &&
@@ -323,7 +320,30 @@ const EditProfile = ({
                     ref={keyboardAwareRef}
                     scrollToOverflowEnabled={true}
                     testID='edit_profile.scroll_view'
+                    style={style.flex}
                 >
+                    {updating && (
+                        <View
+                            style={{
+                                position: 'absolute',
+                                width: '100%',
+                                height: '100%',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                zIndex: 1000,
+                            }}
+                        >
+                            <Loading
+                                colorFilters={[
+                                    {
+                                        keypath: 'Shape Layer 1',
+                                        color: theme.buttonBg,
+                                    },
+                                ]}
+                            />
+                        </View>
+
+                    )}
                     {Boolean(error) && <ProfileError error={error!}/>}
                     <View style={style.top}>
                         <ProfilePicture
