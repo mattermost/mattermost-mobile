@@ -3,7 +3,7 @@
 
 import React, {RefObject, useCallback, useEffect, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
-import {BackHandler, DeviceEventEmitter, Keyboard, View} from 'react-native';
+import {BackHandler, DeviceEventEmitter, Keyboard, StyleSheet, View} from 'react-native';
 import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
 import {Navigation} from 'react-native-navigation';
 import {Edge, SafeAreaView} from 'react-native-safe-area-context';
@@ -19,7 +19,6 @@ import {useTheme} from '@context/theme';
 import {FIELDS} from '@screens/edit_profile/constants';
 import {dismissModal, popTopScreen, setButtons} from '@screens/navigation';
 import {preventDoubleTap} from '@utils/tap';
-import {makeStyleSheetFromTheme} from '@utils/theme';
 
 import EmailField from './components/email_field';
 import Field, {FieldProps} from './components/field';
@@ -49,25 +48,33 @@ type FieldConfig = Pick<FieldProps, 'blurOnSubmit' | 'enablesReturnKeyAutomatica
 
 const edges: Edge[] = ['bottom', 'left', 'right'];
 
-const getStyleSheet = makeStyleSheetFromTheme(() => {
-    return {
-        flex: {
-            flex: 1,
-        },
-        top: {
-            padding: 25,
-            alignItems: 'center',
-            justifyContent: 'center',
-        },
-        separator: {
-            height: 15,
-        },
-        footer: {
-            height: 40,
-            width: '100%',
-        },
-    };
+const styles = StyleSheet.create({
+    flex: {
+        flex: 1,
+    },
+    top: {
+        padding: 25,
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    separator: {
+        height: 15,
+    },
+    footer: {
+        height: 40,
+        width: '100%',
+    },
+    spinner: {
+        position: 'absolute',
+        width: '100%',
+        height: '100%',
+        alignItems: 'center',
+        justifyContent: 'center',
+        zIndex: 1000,
+    },
 });
+
+const SPINNER_LAYER = 'Shape Layer 1';
 
 const EditProfile = ({
     closeButtonId,
@@ -148,7 +155,6 @@ const EditProfile = ({
         }
     }, [isTablet]);
 
-    const style = getStyleSheet(theme);
     const service = currentUser.authService;
 
     const close = () => {
@@ -304,7 +310,7 @@ const EditProfile = ({
             }
             <SafeAreaView
                 edges={edges}
-                style={style.flex}
+                style={styles.flex}
                 testID='edit_profile.screen'
             >
                 <KeyboardAwareScrollView
@@ -320,23 +326,16 @@ const EditProfile = ({
                     ref={keyboardAwareRef}
                     scrollToOverflowEnabled={true}
                     testID='edit_profile.scroll_view'
-                    style={style.flex}
+                    style={styles.flex}
                 >
                     {updating && (
                         <View
-                            style={{
-                                position: 'absolute',
-                                width: '100%',
-                                height: '100%',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                zIndex: 1000,
-                            }}
+                            style={styles.spinner}
                         >
                             <Loading
                                 colorFilters={[
                                     {
-                                        keypath: 'Shape Layer 1',
+                                        keypath: SPINNER_LAYER,
                                         color: theme.buttonBg,
                                     },
                                 ]}
@@ -345,7 +344,7 @@ const EditProfile = ({
 
                     )}
                     {Boolean(error) && <ProfileError error={error!}/>}
-                    <View style={style.top}>
+                    <View style={styles.top}>
                         <ProfilePicture
                             author={currentUser}
                             size={153}
@@ -361,7 +360,7 @@ const EditProfile = ({
                         value={userInfo.firstName}
                         {...fieldConfig}
                     />
-                    <View style={style.separator}/>
+                    <View style={styles.separator}/>
                     <Field
                         fieldKey='lastName'
                         fieldRef={lastNameRef}
@@ -371,7 +370,7 @@ const EditProfile = ({
                         value={userInfo.lastName}
                         {...fieldConfig}
                     />
-                    <View style={style.separator}/>
+                    <View style={styles.separator}/>
                     <Field
                         fieldKey='username'
                         fieldRef={usernameRef}
@@ -382,7 +381,7 @@ const EditProfile = ({
                         value={userInfo.username}
                         {...fieldConfig}
                     />
-                    <View style={style.separator}/>
+                    <View style={styles.separator}/>
                     <EmailField
                         authService={currentUser.authService}
                         email={userInfo.email}
@@ -390,7 +389,7 @@ const EditProfile = ({
                         onChange={updateField}
                         onFocusNextField={onFocusNextField}
                     />
-                    <View style={style.separator}/>
+                    <View style={styles.separator}/>
                     <Field
                         fieldKey='nickname'
                         fieldRef={nicknameRef}
@@ -401,7 +400,7 @@ const EditProfile = ({
                         value={userInfo.nickname}
                         {...fieldConfig}
                     />
-                    <View style={style.separator}/>
+                    <View style={styles.separator}/>
                     <Field
                         fieldKey='position'
                         fieldRef={positionRef}
@@ -414,7 +413,7 @@ const EditProfile = ({
                         testID='edit_profile.text_setting.position'
                         value={userInfo.position}
                     />
-                    <View style={style.footer}/>
+                    <View style={styles.footer}/>
                 </KeyboardAwareScrollView>
             </SafeAreaView>
         </>
