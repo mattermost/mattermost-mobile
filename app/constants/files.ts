@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-export const VALID_MIME_TYPES = [
+export const VALID_IMAGE_MIME_TYPES = [
     'image/jpeg',
     'image/jpeg',
     'image/jpg',
