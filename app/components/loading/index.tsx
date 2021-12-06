@@ -5,12 +5,18 @@ import LottieView from 'lottie-react-native';
 import React from 'react';
 import {StyleSheet, View, ViewStyle} from 'react-native';
 
+type ColorFilter = {
+    keypath: string;
+    color: string;
+}
+
 type LoadingProps = {
     containerStyle?: ViewStyle;
     style?: ViewStyle;
+    colorFilters?: ColorFilter[];
 }
 
-const Loading = ({containerStyle, style}: LoadingProps) => {
+const Loading = ({containerStyle, style, colorFilters}: LoadingProps) => {
     return (
         <View style={[styles.container, containerStyle]}>
             <LottieView
@@ -18,6 +24,7 @@ const Loading = ({containerStyle, style}: LoadingProps) => {
                 autoPlay={true}
                 loop={true}
                 style={[styles.lottie, style]}
+                colorFilters={colorFilters}
             />
         </View>
     );
