@@ -4,9 +4,11 @@
 import React from 'react';
 import {View} from 'react-native';
 
+import CompassIcon from '@components/compass_icon';
 import ErrorText from '@components/error_text';
 import {useTheme} from '@context/theme';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
+import {typography} from '@utils/typography';
 
 type DisplayErrorProps = {
     error: Partial<ClientErrorProps> | string;
@@ -18,14 +20,17 @@ const ProfileError = ({error}: DisplayErrorProps) => {
 
     return (
         <View style={style.errorContainer}>
-            <View style={style.errorWrapper}>
-                <ErrorText
-                    theme={theme}
-                    testID='edit_profile.error.text'
-                    error={error}
-                    textStyle={style.errorText}
-                />
-            </View>
+            <CompassIcon
+                style={style.icon}
+                size={18}
+                name='alert-outline'
+            />
+            <ErrorText
+                theme={theme}
+                testID='edit_profile.error.text'
+                error={error}
+                textStyle={style.text}
+            />
         </View>
     );
 };
@@ -33,16 +38,21 @@ const ProfileError = ({error}: DisplayErrorProps) => {
 const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     return {
         errorContainer: {
-            backgroundColor: changeOpacity(theme.centerChannelColor, 0.03),
+            backgroundColor: changeOpacity(theme.errorTextColor, 0.08),
             width: '100%',
-        },
-        errorWrapper: {
+            maxHeight: 48,
             justifyContent: 'center',
             alignItems: 'center',
+            flexDirection: 'row',
         },
-        errorText: {
-            fontSize: 14,
-            marginHorizontal: 15,
+        text: {
+            ...typography('Heading', 100),
+            color: theme.centerChannelColor,
+        },
+        icon: {
+            color: changeOpacity(theme.dndIndicator, 0.64),
+            ...typography('Heading', 300),
+            marginRight: 9,
         },
     };
 });

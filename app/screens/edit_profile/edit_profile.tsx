@@ -333,12 +333,7 @@ const EditProfile = ({
                             style={styles.spinner}
                         >
                             <Loading
-                                colorFilters={[
-                                    {
-                                        keypath: SPINNER_LAYER,
-                                        color: theme.buttonBg,
-                                    },
-                                ]}
+                                colorFilters={[{keypath: SPINNER_LAYER, color: theme.buttonBg}]}
                             />
                         </View>
 
