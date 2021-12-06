@@ -60,15 +60,15 @@ export async function handleUpdateTeamEvent(serverUrl: string, msg: WebSocketMes
         return;
     }
 
-    const teamFromData = JSON.parse(msg.data.team);
-    const team: Team = {
-        ...teamFromData,
-    };
-
-    database.operator.handleTeam({
-        teams: [team],
-        prepareRecordsOnly: false,
-    });
+    try {
+        const team = JSON.parse(msg.data.team) as Team;
+        database.operator.handleTeam({
+            teams: [team],
+            prepareRecordsOnly: false,
+        });
+    } catch {
+        // Do nothing
+    }
 }
 
 export async function handleTeamAddedEvent(serverUrl: string, msg: WebSocketMessage) {
@@ -80,8 +80,8 @@ export async function handleTeamAddedEvent(serverUrl: string, msg: WebSocketMess
     const teamId = msg.data.team_id;
     const {teams, memberships: teamMemberships} = await fetchMyTeam(serverUrl, teamId, false);
 
-    if (teams) {
-        if (teamMemberships) {
+    if (teams?.length) {
+        if (teamMemberships?.length) {
             const myMember = teamMemberships[0];
             if (myMember.roles) {
                 const rolesToLoad = new Set<string>();
