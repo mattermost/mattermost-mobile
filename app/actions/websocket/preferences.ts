@@ -24,7 +24,6 @@ export async function handlePreferenceChangedEvent(serverUrl: string, msg: WebSo
     }
 }
 
-// example is flagging/saving a post
 export async function handlePreferencesChangedEvent(serverUrl: string, msg: WebSocketMessage): Promise<void> {
     const database = DatabaseManager.serverDatabases[serverUrl];
     if (!database) {
@@ -45,7 +44,6 @@ export async function handlePreferencesChangedEvent(serverUrl: string, msg: WebS
     }
 }
 
-// example is unflagging/unsaving a post
 export async function handlePreferencesDeletedEvent(serverUrl: string, msg: WebSocketMessage): Promise<void> {
     const database = DatabaseManager.serverDatabases[serverUrl];
     if (!database) {
