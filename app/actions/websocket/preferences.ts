@@ -10,13 +10,17 @@ export async function handlePreferenceChangedEvent(serverUrl: string, msg: WebSo
         return;
     }
 
-    const preferences = JSON.parse(msg.data.preferences) as PreferenceType[];
-    const operator = database?.operator;
-    if (operator) {
-        operator.handlePreferences({
-            prepareRecordsOnly: false,
-            preferences,
-        });
+    try {
+        const preferences = JSON.parse(msg.data.preferences) as PreferenceType[];
+        const operator = database?.operator;
+        if (operator) {
+            operator.handlePreferences({
+                prepareRecordsOnly: false,
+                preferences,
+            });
+        }
+    } catch (error) {
+        // Do nothing
     }
 }
 
@@ -26,14 +30,18 @@ export async function handlePreferencesChangedEvent(serverUrl: string, msg: WebS
     if (!database) {
         return;
     }
-    const preferences = JSON.parse(msg.data.preferences) as PreferenceType[];
 
-    const operator = database?.operator;
-    if (operator) {
-        operator.handlePreferences({
-            prepareRecordsOnly: false,
-            preferences,
-        });
+    try {
+        const preferences = JSON.parse(msg.data.preferences) as PreferenceType[];
+        const operator = database?.operator;
+        if (operator) {
+            operator.handlePreferences({
+                prepareRecordsOnly: false,
+                preferences,
+            });
+        }
+    } catch (error) {
+        // Do nothing
     }
 }
 
@@ -44,12 +52,16 @@ export async function handlePreferencesDeletedEvent(serverUrl: string, msg: WebS
         return;
     }
 
-    const preferences = JSON.parse(msg.data.preferences) as PreferenceType[];
-    const operator = database?.operator;
-    if (operator) {
-        operator.handlePreferences({
-            prepareRecordsOnly: false,
-            preferences,
-        });
+    try {
+        const preferences = JSON.parse(msg.data.preferences) as PreferenceType[];
+        const operator = database?.operator;
+        if (operator) {
+            operator.handlePreferences({
+                prepareRecordsOnly: false,
+                preferences,
+            });
+        }
+    } catch (error) {
+        // Do nothing
     }
 }
