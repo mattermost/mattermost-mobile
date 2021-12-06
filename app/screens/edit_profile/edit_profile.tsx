@@ -379,6 +379,7 @@ const EditProfile = ({
                     <View style={styles.separator}/>
                     <EmailField
                         authService={currentUser.authService}
+                        isDisabled={fieldSequence.email.isDisabled}
                         email={userInfo.email}
                         fieldRef={emailRef}
                         onChange={updateField}

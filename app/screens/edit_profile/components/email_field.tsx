@@ -16,6 +16,7 @@ type EmailSettingsProps = {
     fieldRef: RefObject<FloatingTextInputRef>;
     onChange: (fieldKey: string, value: string) => void;
     onFocusNextField: (fieldKey: string) => void;
+    isDisabled: boolean;
 }
 
 const EmailField = ({
@@ -24,6 +25,7 @@ const EmailField = ({
     fieldRef,
     onChange,
     onFocusNextField,
+    isDisabled,
 }: EmailSettingsProps) => {
     const intl = useIntl();
 
@@ -76,7 +78,7 @@ const EmailField = ({
             fieldDescription={intl.formatMessage({id, defaultMessage}, {email})}
             fieldKey='email'
             fieldRef={fieldRef}
-            isDisabled={true}
+            isDisabled={isDisabled}
             keyboardType='email-address'
             label={FIELDS.email}
             onFocusNextField={onFocusNextField}
