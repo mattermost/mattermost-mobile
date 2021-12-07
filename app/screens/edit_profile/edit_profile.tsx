@@ -271,21 +271,20 @@ const EditProfile = ({
             });
 
             if (nextFieldIndex === -1) {
-                Keyboard.dismiss();
-                return undefined;
+                return {isLastEnabledField: true, nextField: undefined};
             }
 
             const fieldName = remainingFields[nextFieldIndex];
-            return fieldSequence[fieldName];
+            return {isLastEnabledField: false, nextField: fieldSequence[fieldName]};
         };
 
-        if (fieldKey === 'position' && canSave) {
+        const next = findNextField();
+        if (next?.isLastEnabledField && canSave) {
             // performs form submission
             Keyboard.dismiss();
             submitUser();
         } else {
-            const nextField = findNextField();
-            nextField?.ref?.current?.focus();
+            next?.nextField?.ref?.current?.focus();
         }
     };
 
