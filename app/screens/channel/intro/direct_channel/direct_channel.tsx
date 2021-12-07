@@ -44,6 +44,9 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         width: '100%',
         ...typography('Heading', 700, 'SemiBold'),
     },
+    titleGroup: {
+        ...typography('Heading', 600, 'SemiBold'),
+    },
 }));
 
 const DirectChannel = ({channel, currentUserId, members, theme}: Props) => {
@@ -107,7 +110,7 @@ const DirectChannel = ({channel, currentUserId, members, theme}: Props) => {
             <View style={styles.profilesContainer}>
                 {profiles}
             </View>
-            <Text style={styles.title}>
+            <Text style={[styles.title, channel.type === General.GM_CHANNEL ? styles.titleGroup : undefined]}>
                 {channel.displayName}
             </Text>
             {message}

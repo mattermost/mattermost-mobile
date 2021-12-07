@@ -52,7 +52,7 @@ const Group = ({theme, users}: Props) => {
             return (
                 <FastImage
                     key={pictureUrl + i.toString()}
-                    style={[styles.profile, {transform: [{translateX: -(i * 20)}]}]}
+                    style={[styles.profile, {transform: [{translateX: -(i * 24)}]}]}
                     source={{uri: `${serverUrl}${pictureUrl}`}}
                 />
             );
@@ -61,7 +61,7 @@ const Group = ({theme, users}: Props) => {
         return (
             <View
                 key={'group_avatar' + k.toString()}
-                style={[styles.container, {left: (c.length - 1) * 10}]}
+                style={[styles.container, {left: (c.length - 1) * 12}]}
             >
                 {group}
             </View>
