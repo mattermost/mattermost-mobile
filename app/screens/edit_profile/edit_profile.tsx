@@ -2,6 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React, {RefObject, useCallback, useEffect, useRef, useState} from 'react';
+import React, {useCallback, useEffect, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
 import {BackHandler, DeviceEventEmitter, Keyboard, StyleSheet, View} from 'react-native';
 import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
@@ -18,33 +19,12 @@ import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {FIELDS} from '@screens/edit_profile/constants';
 import {dismissModal, popTopScreen, setButtons} from '@screens/navigation';
+import {EditProfileProps, FieldConfig, FieldSequence, UserInfo} from '@typings/screens/edit_profile';
 import {preventDoubleTap} from '@utils/tap';
 
 import EmailField from './components/email_field';
-import Field, {FieldProps} from './components/field';
+import Field from './components/field';
 import ProfileError from './components/profile_error';
-
-import type UserModel from '@typings/database/models/servers/user';
-
-type EditProfileProps = {
-    closeButtonId?: string;
-    componentId: string;
-    currentUser: UserModel;
-    isModal?: boolean;
-    isTablet?: boolean;
-    lockedFirstName: boolean;
-    lockedLastName: boolean;
-    lockedNickname: boolean;
-    lockedPosition: boolean;
-    lockedPicture: boolean;
-};
-
-type FieldSequence = Record<string, {
-    ref: RefObject<FloatingTextInputRef>;
-    isDisabled: boolean;
-}>
-
-type FieldConfig = Pick<FieldProps, 'blurOnSubmit' | 'enablesReturnKeyAutomatically' | 'onFocusNextField' | 'onTextChange' | 'returnKeyType'>
 
 const edges: Edge[] = ['bottom', 'left', 'right'];
 
@@ -283,8 +263,10 @@ const EditProfile = ({
             // performs form submission
             Keyboard.dismiss();
             submitUser();
-        } else {
+        } else if (next?.nextField) {
             next?.nextField?.ref?.current?.focus();
+        } else {
+            Keyboard.dismiss();
         }
     };
 
