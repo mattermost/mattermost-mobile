@@ -1,0 +1,815 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`NotificationSettings should match snapshot 1`] = `
+NotificationSettings {
+  "context": Object {
+    "intl": Object {
+      "defaultFormats": Object {},
+      "defaultLocale": "en",
+      "formatDate": [Function],
+      "formatHTMLMessage": [Function],
+      "formatMessage": [Function],
+      "formatNumber": [Function],
+      "formatPlural": [Function],
+      "formatRelative": [Function],
+      "formatTime": [Function],
+      "formats": Object {},
+      "formatters": Object {
+        "getDateTimeFormat": [Function],
+        "getMessageFormat": [Function],
+        "getNumberFormat": [Function],
+        "getPluralFormat": [Function],
+        "getRelativeFormat": [Function],
+      },
+      "locale": "en",
+      "messages": Object {},
+      "now": [Function],
+      "onError": [Function],
+      "textComponent": "span",
+      "timeZone": null,
+    },
+  },
+  "goToNotificationSettingsAutoResponder": [Function],
+  "goToNotificationSettingsEmail": [Function],
+  "goToNotificationSettingsMentions": [Function],
+  "goToNotificationSettingsMobile": [Function],
+  "handlePress": [Function],
+  "props": Object {
+    "actions": Object {
+      "updateMe": [MockFunction],
+    },
+    "componentId": "component-id",
+    "currentUser": Object {
+      "id": "current_user_id",
+    },
+    "currentUserStatus": "status",
+    "enableAutoResponder": false,
+    "intl": Object {
+      "defaultFormats": Object {},
+      "defaultLocale": "en",
+      "formatDate": [Function],
+      "formatHTMLMessage": [Function],
+      "formatMessage": [Function],
+      "formatNumber": [Function],
+      "formatPlural": [Function],
+      "formatRelative": [Function],
+      "formatTime": [Function],
+      "formats": Object {},
+      "formatters": Object {
+        "getDateTimeFormat": [Function],
+        "getMessageFormat": [Function],
+        "getNumberFormat": [Function],
+        "getPluralFormat": [Function],
+        "getRelativeFormat": [Function],
+      },
+      "locale": "en",
+      "messages": Object {},
+      "now": [Function],
+      "onError": [Function],
+      "textComponent": "span",
+      "timeZone": null,
+    },
+    "isCollapsedThreadsEnabled": false,
+    "theme": Object {
+      "awayIndicator": "#ffbc1f",
+      "buttonBg": "#1c58d9",
+      "buttonColor": "#ffffff",
+      "centerChannelBg": "#ffffff",
+      "centerChannelColor": "#3f4350",
+      "codeTheme": "github",
+      "dndIndicator": "#d24b4e",
+      "errorTextColor": "#d24b4e",
+      "linkColor": "#386fe5",
+      "mentionBg": "#ffffff",
+      "mentionColor": "#1e325c",
+      "mentionHighlightBg": "#ffd470",
+      "mentionHighlightLink": "#1b1d22",
+      "newMessageSeparator": "#cc8f00",
+      "onlineIndicator": "#3db887",
+      "sidebarBg": "#1e325c",
+      "sidebarHeaderBg": "#192a4d",
+      "sidebarHeaderTextColor": "#ffffff",
+      "sidebarTeamBarBg": "#14213e",
+      "sidebarText": "#ffffff",
+      "sidebarTextActiveBorder": "#5d89ea",
+      "sidebarTextActiveColor": "#ffffff",
+      "sidebarTextHoverBg": "#28427b",
+      "sidebarUnreadText": "#ffffff",
+      "type": "Denim",
+    },
+    "updateMeRequest": Object {},
+  },
+  "refs": Object {},
+  "sanitizeNotificationProps": [Function],
+  "saveAutoResponder": [Function],
+  "saveNotificationProps": [Function],
+  "setState": [Function],
+  "shouldSaveAutoResponder": [Function],
+  "state": null,
+  "updater": Updater {
+    "_callbacks": Array [],
+    "_renderer": ReactShallowRenderer {
+      "_context": Object {
+        "intl": Object {
+          "defaultFormats": Object {},
+          "defaultLocale": "en",
+          "formatDate": [Function],
+          "formatHTMLMessage": [Function],
+          "formatMessage": [Function],
+          "formatNumber": [Function],
+          "formatPlural": [Function],
+          "formatRelative": [Function],
+          "formatTime": [Function],
+          "formats": Object {},
+          "formatters": Object {
+            "getDateTimeFormat": [Function],
+            "getMessageFormat": [Function],
+            "getNumberFormat": [Function],
+            "getPluralFormat": [Function],
+            "getRelativeFormat": [Function],
+          },
+          "locale": "en",
+          "messages": Object {},
+          "now": [Function],
+          "onError": [Function],
+          "textComponent": "span",
+          "timeZone": null,
+        },
+      },
+      "_didScheduleRenderPhaseUpdate": false,
+      "_dispatcher": Object {
+        "readContext": [Function],
+        "useCallback": [Function],
+        "useContext": [Function],
+        "useDebugValue": [Function],
+        "useDeferredValue": [Function],
+        "useEffect": [Function],
+        "useImperativeHandle": [Function],
+        "useLayoutEffect": [Function],
+        "useMemo": [Function],
+        "useReducer": [Function],
+        "useRef": [Function],
+        "useResponder": [Function],
+        "useState": [Function],
+        "useTransition": [Function],
+      },
+      "_element": <NotificationSettings
+        actions={
+          Object {
+            "updateMe": [MockFunction],
+          }
+        }
+        componentId="component-id"
+        currentUser={
+          Object {
+            "id": "current_user_id",
+          }
+        }
+        currentUserStatus="status"
+        enableAutoResponder={false}
+        intl={
+          Object {
+            "defaultFormats": Object {},
+            "defaultLocale": "en",
+            "formatDate": [Function],
+            "formatHTMLMessage": [Function],
+            "formatMessage": [Function],
+            "formatNumber": [Function],
+            "formatPlural": [Function],
+            "formatRelative": [Function],
+            "formatTime": [Function],
+            "formats": Object {},
+            "formatters": Object {
+              "getDateTimeFormat": [Function],
+              "getMessageFormat": [Function],
+              "getNumberFormat": [Function],
+              "getPluralFormat": [Function],
+              "getRelativeFormat": [Function],
+            },
+            "locale": "en",
+            "messages": Object {},
+            "now": [Function],
+            "onError": [Function],
+            "textComponent": "span",
+            "timeZone": null,
+          }
+        }
+        isCollapsedThreadsEnabled={false}
+        theme={
+          Object {
+            "awayIndicator": "#ffbc1f",
+            "buttonBg": "#1c58d9",
+            "buttonColor": "#ffffff",
+            "centerChannelBg": "#ffffff",
+            "centerChannelColor": "#3f4350",
+            "codeTheme": "github",
+            "dndIndicator": "#d24b4e",
+            "errorTextColor": "#d24b4e",
+            "linkColor": "#386fe5",
+            "mentionBg": "#ffffff",
+            "mentionColor": "#1e325c",
+            "mentionHighlightBg": "#ffd470",
+            "mentionHighlightLink": "#1b1d22",
+            "newMessageSeparator": "#cc8f00",
+            "onlineIndicator": "#3db887",
+            "sidebarBg": "#1e325c",
+            "sidebarHeaderBg": "#192a4d",
+            "sidebarHeaderTextColor": "#ffffff",
+            "sidebarTeamBarBg": "#14213e",
+            "sidebarText": "#ffffff",
+            "sidebarTextActiveBorder": "#5d89ea",
+            "sidebarTextActiveColor": "#ffffff",
+            "sidebarTextHoverBg": "#28427b",
+            "sidebarUnreadText": "#ffffff",
+            "type": "Denim",
+          }
+        }
+        updateMeRequest={Object {}}
+      />,
+      "_firstWorkInProgressHook": null,
+      "_forcedUpdate": false,
+      "_instance": [Circular],
+      "_isReRender": false,
+      "_newState": null,
+      "_numberOfReRenders": 0,
+      "_renderPhaseUpdates": null,
+      "_rendered": <RNCSafeAreaView
+        edges={
+          Array [
+            "left",
+            "right",
+          ]
+        }
+        style={
+          Object {
+            "backgroundColor": "#ffffff",
+            "flex": 1,
+          }
+        }
+        testID="notification_settings.screen"
+      >
+        <Connect(StatusBar) />
+        <ScrollView
+          alwaysBounceVertical={false}
+          contentContainerStyle={
+            Object {
+              "backgroundColor": "rgba(63,67,80,0.06)",
+              "flex": 1,
+              "paddingTop": 35,
+            }
+          }
+        >
+          <View
+            style={
+              Object {
+                "backgroundColor": "rgba(63,67,80,0.1)",
+                "height": 1,
+                "width": "100%",
+              }
+            }
+          />
+          <SettingsItem
+            defaultMessage="Mentions and Replies"
+            i18nId="mobile.notification_settings.mentions_replies"
+            iconName="at"
+            isDestructor={false}
+            isLink={false}
+            onPress={[Function]}
+            separator={true}
+            showArrow={true}
+            testID="notification_settings.mentions_replies.action"
+            theme={
+              Object {
+                "awayIndicator": "#ffbc1f",
+                "buttonBg": "#1c58d9",
+                "buttonColor": "#ffffff",
+                "centerChannelBg": "#ffffff",
+                "centerChannelColor": "#3f4350",
+                "codeTheme": "github",
+                "dndIndicator": "#d24b4e",
+                "errorTextColor": "#d24b4e",
+                "linkColor": "#386fe5",
+                "mentionBg": "#ffffff",
+                "mentionColor": "#1e325c",
+                "mentionHighlightBg": "#ffd470",
+                "mentionHighlightLink": "#1b1d22",
+                "newMessageSeparator": "#cc8f00",
+                "onlineIndicator": "#3db887",
+                "sidebarBg": "#1e325c",
+                "sidebarHeaderBg": "#192a4d",
+                "sidebarHeaderTextColor": "#ffffff",
+                "sidebarTeamBarBg": "#14213e",
+                "sidebarText": "#ffffff",
+                "sidebarTextActiveBorder": "#5d89ea",
+                "sidebarTextActiveColor": "#ffffff",
+                "sidebarTextHoverBg": "#28427b",
+                "sidebarUnreadText": "#ffffff",
+                "type": "Denim",
+              }
+            }
+          />
+          <SettingsItem
+            defaultMessage="Mobile"
+            i18nId="mobile.notification_settings.mobile"
+            iconName="cellphone"
+            isDestructor={false}
+            isLink={false}
+            onPress={[Function]}
+            separator={true}
+            showArrow={true}
+            testID="notification_settings.mobile.action"
+            theme={
+              Object {
+                "awayIndicator": "#ffbc1f",
+                "buttonBg": "#1c58d9",
+                "buttonColor": "#ffffff",
+                "centerChannelBg": "#ffffff",
+                "centerChannelColor": "#3f4350",
+                "codeTheme": "github",
+                "dndIndicator": "#d24b4e",
+                "errorTextColor": "#d24b4e",
+                "linkColor": "#386fe5",
+                "mentionBg": "#ffffff",
+                "mentionColor": "#1e325c",
+                "mentionHighlightBg": "#ffd470",
+                "mentionHighlightLink": "#1b1d22",
+                "newMessageSeparator": "#cc8f00",
+                "onlineIndicator": "#3db887",
+                "sidebarBg": "#1e325c",
+                "sidebarHeaderBg": "#192a4d",
+                "sidebarHeaderTextColor": "#ffffff",
+                "sidebarTeamBarBg": "#14213e",
+                "sidebarText": "#ffffff",
+                "sidebarTextActiveBorder": "#5d89ea",
+                "sidebarTextActiveColor": "#ffffff",
+                "sidebarTextHoverBg": "#28427b",
+                "sidebarUnreadText": "#ffffff",
+                "type": "Denim",
+              }
+            }
+          />
+          <SettingsItem
+            defaultMessage="Email"
+            i18nId="mobile.notification_settings.email"
+            iconName="email-outline"
+            isDestructor={false}
+            isLink={false}
+            onPress={[Function]}
+            separator={false}
+            showArrow={true}
+            testID="notification_settings.email.action"
+            theme={
+              Object {
+                "awayIndicator": "#ffbc1f",
+                "buttonBg": "#1c58d9",
+                "buttonColor": "#ffffff",
+                "centerChannelBg": "#ffffff",
+                "centerChannelColor": "#3f4350",
+                "codeTheme": "github",
+                "dndIndicator": "#d24b4e",
+                "errorTextColor": "#d24b4e",
+                "linkColor": "#386fe5",
+                "mentionBg": "#ffffff",
+                "mentionColor": "#1e325c",
+                "mentionHighlightBg": "#ffd470",
+                "mentionHighlightLink": "#1b1d22",
+                "newMessageSeparator": "#cc8f00",
+                "onlineIndicator": "#3db887",
+                "sidebarBg": "#1e325c",
+                "sidebarHeaderBg": "#192a4d",
+                "sidebarHeaderTextColor": "#ffffff",
+                "sidebarTeamBarBg": "#14213e",
+                "sidebarText": "#ffffff",
+                "sidebarTextActiveBorder": "#5d89ea",
+                "sidebarTextActiveColor": "#ffffff",
+                "sidebarTextHoverBg": "#28427b",
+                "sidebarUnreadText": "#ffffff",
+                "type": "Denim",
+              }
+            }
+          />
+          <View
+            style={
+              Object {
+                "backgroundColor": "rgba(63,67,80,0.1)",
+                "height": 1,
+                "width": "100%",
+              }
+            }
+          />
+        </ScrollView>
+      </RNCSafeAreaView>,
+      "_rendering": false,
+      "_updater": [Circular],
+      "_workInProgressHook": null,
+    },
+  },
+}
+`;
+
+exports[`NotificationSettings should match snapshot, when CRT is ON 1`] = `
+NotificationSettings {
+  "context": Object {
+    "intl": Object {
+      "defaultFormats": Object {},
+      "defaultLocale": "en",
+      "formatDate": [Function],
+      "formatHTMLMessage": [Function],
+      "formatMessage": [Function],
+      "formatNumber": [Function],
+      "formatPlural": [Function],
+      "formatRelative": [Function],
+      "formatTime": [Function],
+      "formats": Object {},
+      "formatters": Object {
+        "getDateTimeFormat": [Function],
+        "getMessageFormat": [Function],
+        "getNumberFormat": [Function],
+        "getPluralFormat": [Function],
+        "getRelativeFormat": [Function],
+      },
+      "locale": "en",
+      "messages": Object {},
+      "now": [Function],
+      "onError": [Function],
+      "textComponent": "span",
+      "timeZone": null,
+    },
+  },
+  "goToNotificationSettingsAutoResponder": [Function],
+  "goToNotificationSettingsEmail": [Function],
+  "goToNotificationSettingsMentions": [Function],
+  "goToNotificationSettingsMobile": [Function],
+  "handlePress": [Function],
+  "props": Object {
+    "actions": Object {
+      "updateMe": [MockFunction],
+    },
+    "componentId": "component-id",
+    "currentUser": Object {
+      "id": "current_user_id",
+    },
+    "currentUserStatus": "status",
+    "enableAutoResponder": false,
+    "intl": Object {
+      "defaultFormats": Object {},
+      "defaultLocale": "en",
+      "formatDate": [Function],
+      "formatHTMLMessage": [Function],
+      "formatMessage": [Function],
+      "formatNumber": [Function],
+      "formatPlural": [Function],
+      "formatRelative": [Function],
+      "formatTime": [Function],
+      "formats": Object {},
+      "formatters": Object {
+        "getDateTimeFormat": [Function],
+        "getMessageFormat": [Function],
+        "getNumberFormat": [Function],
+        "getPluralFormat": [Function],
+        "getRelativeFormat": [Function],
+      },
+      "locale": "en",
+      "messages": Object {},
+      "now": [Function],
+      "onError": [Function],
+      "textComponent": "span",
+      "timeZone": null,
+    },
+    "isCollapsedThreadsEnabled": true,
+    "theme": Object {
+      "awayIndicator": "#ffbc1f",
+      "buttonBg": "#1c58d9",
+      "buttonColor": "#ffffff",
+      "centerChannelBg": "#ffffff",
+      "centerChannelColor": "#3f4350",
+      "codeTheme": "github",
+      "dndIndicator": "#d24b4e",
+      "errorTextColor": "#d24b4e",
+      "linkColor": "#386fe5",
+      "mentionBg": "#ffffff",
+      "mentionColor": "#1e325c",
+      "mentionHighlightBg": "#ffd470",
+      "mentionHighlightLink": "#1b1d22",
+      "newMessageSeparator": "#cc8f00",
+      "onlineIndicator": "#3db887",
+      "sidebarBg": "#1e325c",
+      "sidebarHeaderBg": "#192a4d",
+      "sidebarHeaderTextColor": "#ffffff",
+      "sidebarTeamBarBg": "#14213e",
+      "sidebarText": "#ffffff",
+      "sidebarTextActiveBorder": "#5d89ea",
+      "sidebarTextActiveColor": "#ffffff",
+      "sidebarTextHoverBg": "#28427b",
+      "sidebarUnreadText": "#ffffff",
+      "type": "Denim",
+    },
+    "updateMeRequest": Object {},
+  },
+  "refs": Object {},
+  "sanitizeNotificationProps": [Function],
+  "saveAutoResponder": [Function],
+  "saveNotificationProps": [Function],
+  "setState": [Function],
+  "shouldSaveAutoResponder": [Function],
+  "state": null,
+  "updater": Updater {
+    "_callbacks": Array [],
+    "_renderer": ReactShallowRenderer {
+      "_context": Object {
+        "intl": Object {
+          "defaultFormats": Object {},
+          "defaultLocale": "en",
+          "formatDate": [Function],
+          "formatHTMLMessage": [Function],
+          "formatMessage": [Function],
+          "formatNumber": [Function],
+          "formatPlural": [Function],
+          "formatRelative": [Function],
+          "formatTime": [Function],
+          "formats": Object {},
+          "formatters": Object {
+            "getDateTimeFormat": [Function],
+            "getMessageFormat": [Function],
+            "getNumberFormat": [Function],
+            "getPluralFormat": [Function],
+            "getRelativeFormat": [Function],
+          },
+          "locale": "en",
+          "messages": Object {},
+          "now": [Function],
+          "onError": [Function],
+          "textComponent": "span",
+          "timeZone": null,
+        },
+      },
+      "_didScheduleRenderPhaseUpdate": false,
+      "_dispatcher": Object {
+        "readContext": [Function],
+        "useCallback": [Function],
+        "useContext": [Function],
+        "useDebugValue": [Function],
+        "useDeferredValue": [Function],
+        "useEffect": [Function],
+        "useImperativeHandle": [Function],
+        "useLayoutEffect": [Function],
+        "useMemo": [Function],
+        "useReducer": [Function],
+        "useRef": [Function],
+        "useResponder": [Function],
+        "useState": [Function],
+        "useTransition": [Function],
+      },
+      "_element": <NotificationSettings
+        actions={
+          Object {
+            "updateMe": [MockFunction],
+          }
+        }
+        componentId="component-id"
+        currentUser={
+          Object {
+            "id": "current_user_id",
+          }
+        }
+        currentUserStatus="status"
+        enableAutoResponder={false}
+        intl={
+          Object {
+            "defaultFormats": Object {},
+            "defaultLocale": "en",
+            "formatDate": [Function],
+            "formatHTMLMessage": [Function],
+            "formatMessage": [Function],
+            "formatNumber": [Function],
+            "formatPlural": [Function],
+            "formatRelative": [Function],
+            "formatTime": [Function],
+            "formats": Object {},
+            "formatters": Object {
+              "getDateTimeFormat": [Function],
+              "getMessageFormat": [Function],
+              "getNumberFormat": [Function],
+              "getPluralFormat": [Function],
+              "getRelativeFormat": [Function],
+            },
+            "locale": "en",
+            "messages": Object {},
+            "now": [Function],
+            "onError": [Function],
+            "textComponent": "span",
+            "timeZone": null,
+          }
+        }
+        isCollapsedThreadsEnabled={true}
+        theme={
+          Object {
+            "awayIndicator": "#ffbc1f",
+            "buttonBg": "#1c58d9",
+            "buttonColor": "#ffffff",
+            "centerChannelBg": "#ffffff",
+            "centerChannelColor": "#3f4350",
+            "codeTheme": "github",
+            "dndIndicator": "#d24b4e",
+            "errorTextColor": "#d24b4e",
+            "linkColor": "#386fe5",
+            "mentionBg": "#ffffff",
+            "mentionColor": "#1e325c",
+            "mentionHighlightBg": "#ffd470",
+            "mentionHighlightLink": "#1b1d22",
+            "newMessageSeparator": "#cc8f00",
+            "onlineIndicator": "#3db887",
+            "sidebarBg": "#1e325c",
+            "sidebarHeaderBg": "#192a4d",
+            "sidebarHeaderTextColor": "#ffffff",
+            "sidebarTeamBarBg": "#14213e",
+            "sidebarText": "#ffffff",
+            "sidebarTextActiveBorder": "#5d89ea",
+            "sidebarTextActiveColor": "#ffffff",
+            "sidebarTextHoverBg": "#28427b",
+            "sidebarUnreadText": "#ffffff",
+            "type": "Denim",
+          }
+        }
+        updateMeRequest={Object {}}
+      />,
+      "_firstWorkInProgressHook": null,
+      "_forcedUpdate": false,
+      "_instance": [Circular],
+      "_isReRender": false,
+      "_newState": null,
+      "_numberOfReRenders": 0,
+      "_renderPhaseUpdates": null,
+      "_rendered": <RNCSafeAreaView
+        edges={
+          Array [
+            "left",
+            "right",
+          ]
+        }
+        style={
+          Object {
+            "backgroundColor": "#ffffff",
+            "flex": 1,
+          }
+        }
+        testID="notification_settings.screen"
+      >
+        <Connect(StatusBar) />
+        <ScrollView
+          alwaysBounceVertical={false}
+          contentContainerStyle={
+            Object {
+              "backgroundColor": "rgba(63,67,80,0.06)",
+              "flex": 1,
+              "paddingTop": 35,
+            }
+          }
+        >
+          <View
+            style={
+              Object {
+                "backgroundColor": "rgba(63,67,80,0.1)",
+                "height": 1,
+                "width": "100%",
+              }
+            }
+          />
+          <SettingsItem
+            defaultMessage="Mentions"
+            i18nId="mobile.notification_settings.mentions"
+            iconName="at"
+            isDestructor={false}
+            isLink={false}
+            onPress={[Function]}
+            separator={true}
+            showArrow={true}
+            testID="notification_settings.mentions_replies.action"
+            theme={
+              Object {
+                "awayIndicator": "#ffbc1f",
+                "buttonBg": "#1c58d9",
+                "buttonColor": "#ffffff",
+                "centerChannelBg": "#ffffff",
+                "centerChannelColor": "#3f4350",
+                "codeTheme": "github",
+                "dndIndicator": "#d24b4e",
+                "errorTextColor": "#d24b4e",
+                "linkColor": "#386fe5",
+                "mentionBg": "#ffffff",
+                "mentionColor": "#1e325c",
+                "mentionHighlightBg": "#ffd470",
+                "mentionHighlightLink": "#1b1d22",
+                "newMessageSeparator": "#cc8f00",
+                "onlineIndicator": "#3db887",
+                "sidebarBg": "#1e325c",
+                "sidebarHeaderBg": "#192a4d",
+                "sidebarHeaderTextColor": "#ffffff",
+                "sidebarTeamBarBg": "#14213e",
+                "sidebarText": "#ffffff",
+                "sidebarTextActiveBorder": "#5d89ea",
+                "sidebarTextActiveColor": "#ffffff",
+                "sidebarTextHoverBg": "#28427b",
+                "sidebarUnreadText": "#ffffff",
+                "type": "Denim",
+              }
+            }
+          />
+          <SettingsItem
+            defaultMessage="Mobile"
+            i18nId="mobile.notification_settings.mobile"
+            iconName="cellphone"
+            isDestructor={false}
+            isLink={false}
+            onPress={[Function]}
+            separator={true}
+            showArrow={true}
+            testID="notification_settings.mobile.action"
+            theme={
+              Object {
+                "awayIndicator": "#ffbc1f",
+                "buttonBg": "#1c58d9",
+                "buttonColor": "#ffffff",
+                "centerChannelBg": "#ffffff",
+                "centerChannelColor": "#3f4350",
+                "codeTheme": "github",
+                "dndIndicator": "#d24b4e",
+                "errorTextColor": "#d24b4e",
+                "linkColor": "#386fe5",
+                "mentionBg": "#ffffff",
+                "mentionColor": "#1e325c",
+                "mentionHighlightBg": "#ffd470",
+                "mentionHighlightLink": "#1b1d22",
+                "newMessageSeparator": "#cc8f00",
+                "onlineIndicator": "#3db887",
+                "sidebarBg": "#1e325c",
+                "sidebarHeaderBg": "#192a4d",
+                "sidebarHeaderTextColor": "#ffffff",
+                "sidebarTeamBarBg": "#14213e",
+                "sidebarText": "#ffffff",
+                "sidebarTextActiveBorder": "#5d89ea",
+                "sidebarTextActiveColor": "#ffffff",
+                "sidebarTextHoverBg": "#28427b",
+                "sidebarUnreadText": "#ffffff",
+                "type": "Denim",
+              }
+            }
+          />
+          <SettingsItem
+            defaultMessage="Email"
+            i18nId="mobile.notification_settings.email"
+            iconName="email-outline"
+            isDestructor={false}
+            isLink={false}
+            onPress={[Function]}
+            separator={false}
+            showArrow={true}
+            testID="notification_settings.email.action"
+            theme={
+              Object {
+                "awayIndicator": "#ffbc1f",
+                "buttonBg": "#1c58d9",
+                "buttonColor": "#ffffff",
+                "centerChannelBg": "#ffffff",
+                "centerChannelColor": "#3f4350",
+                "codeTheme": "github",
+                "dndIndicator": "#d24b4e",
+                "errorTextColor": "#d24b4e",
+                "linkColor": "#386fe5",
+                "mentionBg": "#ffffff",
+                "mentionColor": "#1e325c",
+                "mentionHighlightBg": "#ffd470",
+                "mentionHighlightLink": "#1b1d22",
+                "newMessageSeparator": "#cc8f00",
+                "onlineIndicator": "#3db887",
+                "sidebarBg": "#1e325c",
+                "sidebarHeaderBg": "#192a4d",
+                "sidebarHeaderTextColor": "#ffffff",
+                "sidebarTeamBarBg": "#14213e",
+                "sidebarText": "#ffffff",
+                "sidebarTextActiveBorder": "#5d89ea",
+                "sidebarTextActiveColor": "#ffffff",
+                "sidebarTextHoverBg": "#28427b",
+                "sidebarUnreadText": "#ffffff",
+                "type": "Denim",
+              }
+            }
+          />
+          <View
+            style={
+              Object {
+                "backgroundColor": "rgba(63,67,80,0.1)",
+                "height": 1,
+                "width": "100%",
+              }
+            }
+          />
+        </ScrollView>
+      </RNCSafeAreaView>,
+      "_rendering": false,
+      "_updater": [Circular],
+      "_workInProgressHook": null,
+    },
+  },
+}
+`;

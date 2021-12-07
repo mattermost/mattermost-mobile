@@ -1,0 +1,394 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Theme should match snapshot 1`] = `
+<View
+  style={
+    Object {
+      "flex": 1,
+    }
+  }
+>
+  <Connect(StatusBar) />
+  <View
+    style={
+      Object {
+        "backgroundColor": "rgba(63,67,80,0.06)",
+        "flex": 1,
+        "paddingTop": 35,
+      }
+    }
+  >
+    <View
+      style={
+        Object {
+          "backgroundColor": "#ffffff",
+          "borderBottomColor": "rgba(63,67,80,0.1)",
+          "borderBottomWidth": 1,
+          "borderTopColor": "rgba(63,67,80,0.1)",
+          "borderTopWidth": 1,
+          "flexDirection": "row",
+          "flexWrap": "wrap",
+          "marginBottom": 30,
+          "paddingLeft": 8,
+        }
+      }
+    >
+      <ThemeTile
+        action={[Function]}
+        actionValue="denim"
+        activeTheme={
+          Object {
+            "awayIndicator": "#ffbc1f",
+            "buttonBg": "#1c58d9",
+            "buttonColor": "#ffffff",
+            "centerChannelBg": "#ffffff",
+            "centerChannelColor": "#3f4350",
+            "codeTheme": "github",
+            "dndIndicator": "#d24b4e",
+            "errorTextColor": "#d24b4e",
+            "linkColor": "#386fe5",
+            "mentionBg": "#ffffff",
+            "mentionColor": "#1e325c",
+            "mentionHighlightBg": "#ffd470",
+            "mentionHighlightLink": "#1b1d22",
+            "newMessageSeparator": "#cc8f00",
+            "onlineIndicator": "#3db887",
+            "sidebarBg": "#1e325c",
+            "sidebarHeaderBg": "#192a4d",
+            "sidebarHeaderTextColor": "#ffffff",
+            "sidebarTeamBarBg": "#14213e",
+            "sidebarText": "#ffffff",
+            "sidebarTextActiveBorder": "#5d89ea",
+            "sidebarTextActiveColor": "#ffffff",
+            "sidebarTextHoverBg": "#28427b",
+            "sidebarUnreadText": "#ffffff",
+            "type": "Denim",
+          }
+        }
+        isLandscape={false}
+        isTablet={false}
+        label={
+          <Text>
+            Denim
+          </Text>
+        }
+        selected={true}
+        tileTheme={
+          Object {
+            "awayIndicator": "#ffbc1f",
+            "buttonBg": "#1c58d9",
+            "buttonColor": "#ffffff",
+            "centerChannelBg": "#ffffff",
+            "centerChannelColor": "#3f4350",
+            "codeTheme": "github",
+            "dndIndicator": "#d24b4e",
+            "errorTextColor": "#d24b4e",
+            "key": "denim",
+            "linkColor": "#386fe5",
+            "mentionBg": "#ffffff",
+            "mentionColor": "#1e325c",
+            "mentionHighlightBg": "#ffd470",
+            "mentionHighlightLink": "#1b1d22",
+            "newMessageSeparator": "#cc8f00",
+            "onlineIndicator": "#3db887",
+            "sidebarBg": "#1e325c",
+            "sidebarHeaderBg": "#192a4d",
+            "sidebarHeaderTextColor": "#ffffff",
+            "sidebarTeamBarBg": "#14213e",
+            "sidebarText": "#ffffff",
+            "sidebarTextActiveBorder": "#5d89ea",
+            "sidebarTextActiveColor": "#ffffff",
+            "sidebarTextHoverBg": "#28427b",
+            "sidebarUnreadText": "#ffffff",
+            "type": "Denim",
+          }
+        }
+      />
+      <ThemeTile
+        action={[Function]}
+        actionValue="sapphire"
+        activeTheme={
+          Object {
+            "awayIndicator": "#ffbc1f",
+            "buttonBg": "#1c58d9",
+            "buttonColor": "#ffffff",
+            "centerChannelBg": "#ffffff",
+            "centerChannelColor": "#3f4350",
+            "codeTheme": "github",
+            "dndIndicator": "#d24b4e",
+            "errorTextColor": "#d24b4e",
+            "linkColor": "#386fe5",
+            "mentionBg": "#ffffff",
+            "mentionColor": "#1e325c",
+            "mentionHighlightBg": "#ffd470",
+            "mentionHighlightLink": "#1b1d22",
+            "newMessageSeparator": "#cc8f00",
+            "onlineIndicator": "#3db887",
+            "sidebarBg": "#1e325c",
+            "sidebarHeaderBg": "#192a4d",
+            "sidebarHeaderTextColor": "#ffffff",
+            "sidebarTeamBarBg": "#14213e",
+            "sidebarText": "#ffffff",
+            "sidebarTextActiveBorder": "#5d89ea",
+            "sidebarTextActiveColor": "#ffffff",
+            "sidebarTextHoverBg": "#28427b",
+            "sidebarUnreadText": "#ffffff",
+            "type": "Denim",
+          }
+        }
+        isLandscape={false}
+        isTablet={false}
+        label={
+          <Text>
+            Sapphire
+          </Text>
+        }
+        selected={false}
+        tileTheme={
+          Object {
+            "awayIndicator": "#ffbc1f",
+            "buttonBg": "#1c58d9",
+            "buttonColor": "#ffffff",
+            "centerChannelBg": "#ffffff",
+            "centerChannelColor": "#3f4350",
+            "codeTheme": "github",
+            "dndIndicator": "#d24b4e",
+            "errorTextColor": "#d24b4e",
+            "key": "sapphire",
+            "linkColor": "#1c58d9",
+            "mentionBg": "#ffffff",
+            "mentionColor": "#174ab5",
+            "mentionHighlightBg": "#7ff0f0",
+            "mentionHighlightLink": "#0d6e6e",
+            "newMessageSeparator": "#15b7b7",
+            "onlineIndicator": "#3db887",
+            "sidebarBg": "#174ab5",
+            "sidebarHeaderBg": "#1542a2",
+            "sidebarHeaderTextColor": "#ffffff",
+            "sidebarTeamBarBg": "#133a91",
+            "sidebarText": "#ffffff",
+            "sidebarTextActiveBorder": "#57b5f0",
+            "sidebarTextActiveColor": "#ffffff",
+            "sidebarTextHoverBg": "#2a58ba",
+            "sidebarUnreadText": "#ffffff",
+            "type": "Sapphire",
+          }
+        }
+      />
+      <ThemeTile
+        action={[Function]}
+        actionValue="quartz"
+        activeTheme={
+          Object {
+            "awayIndicator": "#ffbc1f",
+            "buttonBg": "#1c58d9",
+            "buttonColor": "#ffffff",
+            "centerChannelBg": "#ffffff",
+            "centerChannelColor": "#3f4350",
+            "codeTheme": "github",
+            "dndIndicator": "#d24b4e",
+            "errorTextColor": "#d24b4e",
+            "linkColor": "#386fe5",
+            "mentionBg": "#ffffff",
+            "mentionColor": "#1e325c",
+            "mentionHighlightBg": "#ffd470",
+            "mentionHighlightLink": "#1b1d22",
+            "newMessageSeparator": "#cc8f00",
+            "onlineIndicator": "#3db887",
+            "sidebarBg": "#1e325c",
+            "sidebarHeaderBg": "#192a4d",
+            "sidebarHeaderTextColor": "#ffffff",
+            "sidebarTeamBarBg": "#14213e",
+            "sidebarText": "#ffffff",
+            "sidebarTextActiveBorder": "#5d89ea",
+            "sidebarTextActiveColor": "#ffffff",
+            "sidebarTextHoverBg": "#28427b",
+            "sidebarUnreadText": "#ffffff",
+            "type": "Denim",
+          }
+        }
+        isLandscape={false}
+        isTablet={false}
+        label={
+          <Text>
+            Quartz
+          </Text>
+        }
+        selected={false}
+        tileTheme={
+          Object {
+            "awayIndicator": "#f5ab07",
+            "buttonBg": "#1c58d9",
+            "buttonColor": "#ffffff",
+            "centerChannelBg": "#ffffff",
+            "centerChannelColor": "#3f4350",
+            "codeTheme": "github",
+            "dndIndicator": "#d24b4e",
+            "errorTextColor": "#d24b4e",
+            "key": "quartz",
+            "linkColor": "#1c58d9",
+            "mentionBg": "#1c58d9",
+            "mentionColor": "#ffffff",
+            "mentionHighlightBg": "#7ff0f0",
+            "mentionHighlightLink": "#0d6e6e",
+            "newMessageSeparator": "#15b7b7",
+            "onlineIndicator": "#3db887",
+            "sidebarBg": "#f4f4f6",
+            "sidebarHeaderBg": "#e8e9ed",
+            "sidebarHeaderTextColor": "#2d3039",
+            "sidebarTeamBarBg": "#dddfe4",
+            "sidebarText": "#090a0b",
+            "sidebarTextActiveBorder": "#32a4ec",
+            "sidebarTextActiveColor": "#2d3039",
+            "sidebarTextHoverBg": "#ebebed",
+            "sidebarUnreadText": "#2d3039",
+            "type": "Quartz",
+          }
+        }
+      />
+      <ThemeTile
+        action={[Function]}
+        actionValue="indigo"
+        activeTheme={
+          Object {
+            "awayIndicator": "#ffbc1f",
+            "buttonBg": "#1c58d9",
+            "buttonColor": "#ffffff",
+            "centerChannelBg": "#ffffff",
+            "centerChannelColor": "#3f4350",
+            "codeTheme": "github",
+            "dndIndicator": "#d24b4e",
+            "errorTextColor": "#d24b4e",
+            "linkColor": "#386fe5",
+            "mentionBg": "#ffffff",
+            "mentionColor": "#1e325c",
+            "mentionHighlightBg": "#ffd470",
+            "mentionHighlightLink": "#1b1d22",
+            "newMessageSeparator": "#cc8f00",
+            "onlineIndicator": "#3db887",
+            "sidebarBg": "#1e325c",
+            "sidebarHeaderBg": "#192a4d",
+            "sidebarHeaderTextColor": "#ffffff",
+            "sidebarTeamBarBg": "#14213e",
+            "sidebarText": "#ffffff",
+            "sidebarTextActiveBorder": "#5d89ea",
+            "sidebarTextActiveColor": "#ffffff",
+            "sidebarTextHoverBg": "#28427b",
+            "sidebarUnreadText": "#ffffff",
+            "type": "Denim",
+          }
+        }
+        isLandscape={false}
+        isTablet={false}
+        label={
+          <Text>
+            Indigo
+          </Text>
+        }
+        selected={false}
+        tileTheme={
+          Object {
+            "awayIndicator": "#f5ab00",
+            "buttonBg": "#386fe5",
+            "buttonColor": "#ffffff",
+            "centerChannelBg": "#0a111f",
+            "centerChannelColor": "#dddfe4",
+            "codeTheme": "github",
+            "dndIndicator": "#d24b4e",
+            "errorTextColor": "#d24b4e",
+            "key": "indigo",
+            "linkColor": "#5d89ea",
+            "mentionBg": "#1c58d9",
+            "mentionColor": "#ffffff",
+            "mentionHighlightBg": "#133a91",
+            "mentionHighlightLink": "#a4f4f4",
+            "newMessageSeparator": "#81a3ef",
+            "onlineIndicator": "#3db887",
+            "sidebarBg": "#0f1a2e",
+            "sidebarHeaderBg": "#152231",
+            "sidebarHeaderTextColor": "#dddfe4",
+            "sidebarTeamBarBg": "#05080f",
+            "sidebarText": "#ffffff",
+            "sidebarTextActiveBorder": "#1279ba",
+            "sidebarTextActiveColor": "#ffffff",
+            "sidebarTextHoverBg": "#222c3f",
+            "sidebarUnreadText": "#ffffff",
+            "type": "Indigo",
+          }
+        }
+      />
+      <ThemeTile
+        action={[Function]}
+        actionValue="onyx"
+        activeTheme={
+          Object {
+            "awayIndicator": "#ffbc1f",
+            "buttonBg": "#1c58d9",
+            "buttonColor": "#ffffff",
+            "centerChannelBg": "#ffffff",
+            "centerChannelColor": "#3f4350",
+            "codeTheme": "github",
+            "dndIndicator": "#d24b4e",
+            "errorTextColor": "#d24b4e",
+            "linkColor": "#386fe5",
+            "mentionBg": "#ffffff",
+            "mentionColor": "#1e325c",
+            "mentionHighlightBg": "#ffd470",
+            "mentionHighlightLink": "#1b1d22",
+            "newMessageSeparator": "#cc8f00",
+            "onlineIndicator": "#3db887",
+            "sidebarBg": "#1e325c",
+            "sidebarHeaderBg": "#192a4d",
+            "sidebarHeaderTextColor": "#ffffff",
+            "sidebarTeamBarBg": "#14213e",
+            "sidebarText": "#ffffff",
+            "sidebarTextActiveBorder": "#5d89ea",
+            "sidebarTextActiveColor": "#ffffff",
+            "sidebarTextHoverBg": "#28427b",
+            "sidebarUnreadText": "#ffffff",
+            "type": "Denim",
+          }
+        }
+        isLandscape={false}
+        isTablet={false}
+        label={
+          <Text>
+            Onyx
+          </Text>
+        }
+        selected={false}
+        tileTheme={
+          Object {
+            "awayIndicator": "#f5ab00",
+            "buttonBg": "#386fe5",
+            "buttonColor": "#ffffff",
+            "centerChannelBg": "#090a0b",
+            "centerChannelColor": "#dddfe4",
+            "codeTheme": "monokai",
+            "dndIndicator": "#d24b4e",
+            "errorTextColor": "#da6c6e",
+            "key": "onyx",
+            "linkColor": "#5d89ea",
+            "mentionBg": "#1c58d9",
+            "mentionColor": "#ffffff",
+            "mentionHighlightBg": "#0d6e6e",
+            "mentionHighlightLink": "#a4f4f4",
+            "newMessageSeparator": "#1adbdb",
+            "onlineIndicator": "#3db887",
+            "sidebarBg": "#121317",
+            "sidebarHeaderBg": "#1b1d22",
+            "sidebarHeaderTextColor": "#dddfe4",
+            "sidebarTeamBarBg": "#000000",
+            "sidebarText": "#ffffff",
+            "sidebarTextActiveBorder": "#1592e0",
+            "sidebarTextActiveColor": "#ffffff",
+            "sidebarTextHoverBg": "#25262a",
+            "sidebarUnreadText": "#ffffff",
+            "type": "Onyx",
+          }
+        }
+      />
+    </View>
+  </View>
+</View>
+`;

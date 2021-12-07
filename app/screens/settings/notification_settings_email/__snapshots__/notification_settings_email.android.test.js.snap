@@ -1,0 +1,201 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`NotificationSettingsEmailAndroid should match snapshot 1`] = `
+<sectionItem
+  action={[Function]}
+  actionType="default"
+  description={
+    <InjectIntl(FormattedText)
+      defaultMessage="Immediately"
+      id="user.settings.notifications.email.immediately"
+    />
+  }
+  label={
+    <InjectIntl(FormattedText)
+      defaultMessage="Send email notifications"
+      id="user.settings.notifications.email.send"
+    />
+  }
+  testID="notification_settings_email.send.action"
+  theme={
+    Object {
+      "awayIndicator": "#ffbc1f",
+      "buttonBg": "#1c58d9",
+      "buttonColor": "#ffffff",
+      "centerChannelBg": "#ffffff",
+      "centerChannelColor": "#3f4350",
+      "codeTheme": "github",
+      "dndIndicator": "#d24b4e",
+      "errorTextColor": "#d24b4e",
+      "linkColor": "#386fe5",
+      "mentionBg": "#ffffff",
+      "mentionColor": "#1e325c",
+      "mentionHighlightBg": "#ffd470",
+      "mentionHighlightLink": "#1b1d22",
+      "newMessageSeparator": "#cc8f00",
+      "onlineIndicator": "#3db887",
+      "sidebarBg": "#1e325c",
+      "sidebarHeaderBg": "#192a4d",
+      "sidebarHeaderTextColor": "#ffffff",
+      "sidebarTeamBarBg": "#14213e",
+      "sidebarText": "#ffffff",
+      "sidebarTextActiveBorder": "#5d89ea",
+      "sidebarTextActiveColor": "#ffffff",
+      "sidebarTextHoverBg": "#28427b",
+      "sidebarUnreadText": "#ffffff",
+      "type": "Denim",
+    }
+  }
+/>
+`;
+
+exports[`NotificationSettingsEmailAndroid should match snapshot 2`] = `
+<Modal
+  animationType="slide"
+  hardwareAccelerated={false}
+  onRequestClose={[Function]}
+  transparent={true}
+  visible={false}
+>
+  <View
+    testID="notification_settings_email.send.modal"
+  >
+    <View
+      style={Object {}}
+    >
+      <View
+        style={Object {}}
+      >
+        <View
+          style={Object {}}
+        >
+          <InjectIntl(FormattedText)
+            defaultMessage="Send email notifications"
+            id="user.settings.notifications.email.send"
+            style={Object {}}
+          />
+        </View>
+        <RadioButtonGroup
+          name="emailSettings"
+          onSelect={[Function]}
+          options={
+            Array [
+              Object {
+                "checked": true,
+                "label": "Immediately",
+                "testID": "notification_settings_email.immediately.action",
+                "value": "30",
+              },
+              Object {
+                "checked": false,
+                "label": "Never",
+                "testID": "notification_settings_email.never.action",
+                "value": "0",
+              },
+            ]
+          }
+        />
+        <InjectIntl(FormattedText)
+          defaultMessage="Email notifications are sent for mentions and direct messages when you are offline or away for more than 5 minutes."
+          id="user.settings.notifications.emailInfo"
+          style={Object {}}
+        />
+      </View>
+      <View
+        style={Object {}}
+      >
+        <View
+          style={Object {}}
+        />
+        <View
+          style={Object {}}
+        >
+          <TouchableOpacity
+            onPress={[Function]}
+            style={Object {}}
+            testID="notification_settings_email.send_modal_cancel.button"
+          >
+            <InjectIntl(FormattedText)
+              defaultMessage="CANCEL"
+              id="mobile.notification_settings.modal_cancel"
+              style={Object {}}
+            />
+          </TouchableOpacity>
+          <View>
+            <View
+              style={
+                Object {
+                  "marginRight": 10,
+                }
+              }
+            />
+            <TouchableOpacity
+              onPress={[Function]}
+              style={Object {}}
+              testID="notification_settings_email.send_modal_save.button"
+            >
+              <InjectIntl(FormattedText)
+                defaultMessage="SAVE"
+                id="mobile.notification_settings.modal_save"
+                style={Object {}}
+              />
+            </TouchableOpacity>
+          </View>
+        </View>
+      </View>
+    </View>
+  </View>
+</Modal>
+`;
+
+exports[`NotificationSettingsEmailAndroid should match snapshot, renderEmailThreadsSection 1`] = `
+<View>
+  <sectionItem
+    action={[Function]}
+    actionType="toggle"
+    description={
+      <InjectIntl(FormattedText)
+        defaultMessage="Notify me about all replies to threads I'm following"
+        id="user.settings.notifications.email_threads.description"
+      />
+    }
+    label={
+      <InjectIntl(FormattedText)
+        defaultMessage="Thread reply notifications"
+        id="user.settings.notifications.email_threads.title_android"
+      />
+    }
+    selected={true}
+    theme={
+      Object {
+        "awayIndicator": "#ffbc1f",
+        "buttonBg": "#1c58d9",
+        "buttonColor": "#ffffff",
+        "centerChannelBg": "#ffffff",
+        "centerChannelColor": "#3f4350",
+        "codeTheme": "github",
+        "dndIndicator": "#d24b4e",
+        "errorTextColor": "#d24b4e",
+        "linkColor": "#386fe5",
+        "mentionBg": "#ffffff",
+        "mentionColor": "#1e325c",
+        "mentionHighlightBg": "#ffd470",
+        "mentionHighlightLink": "#1b1d22",
+        "newMessageSeparator": "#cc8f00",
+        "onlineIndicator": "#3db887",
+        "sidebarBg": "#1e325c",
+        "sidebarHeaderBg": "#192a4d",
+        "sidebarHeaderTextColor": "#ffffff",
+        "sidebarTeamBarBg": "#14213e",
+        "sidebarText": "#ffffff",
+        "sidebarTextActiveBorder": "#5d89ea",
+        "sidebarTextActiveColor": "#ffffff",
+        "sidebarTextHoverBg": "#28427b",
+        "sidebarUnreadText": "#ffffff",
+        "type": "Denim",
+      }
+    }
+  />
+  <View />
+</View>
+`;

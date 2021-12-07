@@ -1,0 +1,256 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`NotificationSettingsMentionsKeywords should match snapshot 1`] = `
+NotificationSettingsMentionsKeywords {
+  "context": Object {},
+  "handleSubmit": [Function],
+  "keywordsRef": [Function],
+  "navigationEventListener": Object {
+    "remove": [MockFunction],
+  },
+  "onKeywordsChangeText": [Function],
+  "props": Object {
+    "componentId": "component-id",
+    "intl": Object {
+      "defaultFormats": Object {},
+      "defaultLocale": "en",
+      "formatDate": [Function],
+      "formatHTMLMessage": [Function],
+      "formatMessage": [Function],
+      "formatNumber": [Function],
+      "formatPlural": [Function],
+      "formatRelative": [Function],
+      "formatTime": [Function],
+      "formats": Object {},
+      "formatters": Object {
+        "getDateTimeFormat": [Function],
+        "getMessageFormat": [Function],
+        "getNumberFormat": [Function],
+        "getPluralFormat": [Function],
+        "getRelativeFormat": [Function],
+      },
+      "locale": "en",
+      "messages": Object {},
+      "now": [Function],
+      "onError": [Function],
+      "textComponent": "span",
+      "timeZone": null,
+    },
+    "keywords": "",
+    "onBack": [MockFunction],
+    "theme": Object {
+      "awayIndicator": "#ffbc1f",
+      "buttonBg": "#1c58d9",
+      "buttonColor": "#ffffff",
+      "centerChannelBg": "#ffffff",
+      "centerChannelColor": "#3f4350",
+      "codeTheme": "github",
+      "dndIndicator": "#d24b4e",
+      "errorTextColor": "#d24b4e",
+      "linkColor": "#386fe5",
+      "mentionBg": "#ffffff",
+      "mentionColor": "#1e325c",
+      "mentionHighlightBg": "#ffd470",
+      "mentionHighlightLink": "#1b1d22",
+      "newMessageSeparator": "#cc8f00",
+      "onlineIndicator": "#3db887",
+      "sidebarBg": "#1e325c",
+      "sidebarHeaderBg": "#192a4d",
+      "sidebarHeaderTextColor": "#ffffff",
+      "sidebarTeamBarBg": "#14213e",
+      "sidebarText": "#ffffff",
+      "sidebarTextActiveBorder": "#5d89ea",
+      "sidebarTextActiveColor": "#ffffff",
+      "sidebarTextHoverBg": "#28427b",
+      "sidebarUnreadText": "#ffffff",
+      "type": "Denim",
+    },
+  },
+  "refs": Object {},
+  "setState": [Function],
+  "state": Object {
+    "keywords": "",
+  },
+  "updater": Updater {
+    "_callbacks": Array [],
+    "_renderer": ReactShallowRenderer {
+      "_context": Object {},
+      "_didScheduleRenderPhaseUpdate": false,
+      "_dispatcher": Object {
+        "readContext": [Function],
+        "useCallback": [Function],
+        "useContext": [Function],
+        "useDebugValue": [Function],
+        "useDeferredValue": [Function],
+        "useEffect": [Function],
+        "useImperativeHandle": [Function],
+        "useLayoutEffect": [Function],
+        "useMemo": [Function],
+        "useReducer": [Function],
+        "useRef": [Function],
+        "useResponder": [Function],
+        "useState": [Function],
+        "useTransition": [Function],
+      },
+      "_element": <NotificationSettingsMentionsKeywords
+        componentId="component-id"
+        intl={
+          Object {
+            "defaultFormats": Object {},
+            "defaultLocale": "en",
+            "formatDate": [Function],
+            "formatHTMLMessage": [Function],
+            "formatMessage": [Function],
+            "formatNumber": [Function],
+            "formatPlural": [Function],
+            "formatRelative": [Function],
+            "formatTime": [Function],
+            "formats": Object {},
+            "formatters": Object {
+              "getDateTimeFormat": [Function],
+              "getMessageFormat": [Function],
+              "getNumberFormat": [Function],
+              "getPluralFormat": [Function],
+              "getRelativeFormat": [Function],
+            },
+            "locale": "en",
+            "messages": Object {},
+            "now": [Function],
+            "onError": [Function],
+            "textComponent": "span",
+            "timeZone": null,
+          }
+        }
+        keywords=""
+        onBack={[MockFunction]}
+        theme={
+          Object {
+            "awayIndicator": "#ffbc1f",
+            "buttonBg": "#1c58d9",
+            "buttonColor": "#ffffff",
+            "centerChannelBg": "#ffffff",
+            "centerChannelColor": "#3f4350",
+            "codeTheme": "github",
+            "dndIndicator": "#d24b4e",
+            "errorTextColor": "#d24b4e",
+            "linkColor": "#386fe5",
+            "mentionBg": "#ffffff",
+            "mentionColor": "#1e325c",
+            "mentionHighlightBg": "#ffd470",
+            "mentionHighlightLink": "#1b1d22",
+            "newMessageSeparator": "#cc8f00",
+            "onlineIndicator": "#3db887",
+            "sidebarBg": "#1e325c",
+            "sidebarHeaderBg": "#192a4d",
+            "sidebarHeaderTextColor": "#ffffff",
+            "sidebarTeamBarBg": "#14213e",
+            "sidebarText": "#ffffff",
+            "sidebarTextActiveBorder": "#5d89ea",
+            "sidebarTextActiveColor": "#ffffff",
+            "sidebarTextHoverBg": "#28427b",
+            "sidebarUnreadText": "#ffffff",
+            "type": "Denim",
+          }
+        }
+      />,
+      "_firstWorkInProgressHook": null,
+      "_forcedUpdate": false,
+      "_instance": [Circular],
+      "_isReRender": false,
+      "_newState": null,
+      "_numberOfReRenders": 0,
+      "_renderPhaseUpdates": null,
+      "_rendered": <RNCSafeAreaView
+        edges={
+          Array [
+            "left",
+            "right",
+          ]
+        }
+        style={
+          Object {
+            "backgroundColor": "#ffffff",
+            "flex": 1,
+          }
+        }
+      >
+        <Connect(StatusBar) />
+        <ScrollView
+          alwaysBounceVertical={false}
+          contentContainerStyle={
+            Object {
+              "backgroundColor": "rgba(63,67,80,0.06)",
+              "flex": 1,
+              "paddingTop": 35,
+            }
+          }
+        >
+          <View
+            style={
+              Object {
+                "backgroundColor": "#ffffff",
+                "borderBottomColor": "rgba(63,67,80,0.1)",
+                "borderBottomWidth": 1,
+                "borderTopColor": "rgba(63,67,80,0.1)",
+                "borderTopWidth": 1,
+              }
+            }
+          >
+            <TextInputWithLocalizedPlaceholder
+              allowFontScaling={true}
+              autoCapitalize="none"
+              autoCorrect={false}
+              blurOnSubmit={true}
+              keyboardAppearance="light"
+              multiline={true}
+              numberOfLines={1}
+              onChangeText={[Function]}
+              onSubmitEditing={[Function]}
+              placeholder={
+                Object {
+                  "defaultMessage": "Other words that trigger a mention",
+                  "id": "mobile.notification_settings_mentions.keywordsDescription",
+                }
+              }
+              placeholderTextColor="rgba(63,67,80,0.4)"
+              returnKeyType="done"
+              style={
+                Object {
+                  "color": "#3f4350",
+                  "fontSize": 15,
+                  "height": 150,
+                  "paddingHorizontal": 15,
+                  "paddingVertical": 10,
+                }
+              }
+              value=""
+            />
+          </View>
+          <View
+            style={
+              Object {
+                "marginTop": 10,
+                "paddingHorizontal": 15,
+              }
+            }
+          >
+            <InjectIntl(FormattedText)
+              defaultMessage="Keywords are non-case sensitive and should be separated by a comma."
+              id="mobile.notification_settings_mentions.keywordsHelp"
+              style={
+                Object {
+                  "color": "rgba(63,67,80,0.4)",
+                  "fontSize": 13,
+                }
+              }
+            />
+          </View>
+        </ScrollView>
+      </RNCSafeAreaView>,
+      "_rendering": false,
+      "_updater": [Circular],
+      "_workInProgressHook": null,
+    },
+  },
+}
+`;
