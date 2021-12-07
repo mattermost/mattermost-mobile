@@ -1,7 +1,6 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {RefObject, useCallback, useEffect, useRef, useState} from 'react';
 import React, {useCallback, useEffect, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
 import {BackHandler, DeviceEventEmitter, Keyboard, StyleSheet, View} from 'react-native';
