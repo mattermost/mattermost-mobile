@@ -6,6 +6,7 @@ import {Text, View} from 'react-native';
 
 import {fetchProfilesInChannel} from '@actions/remote/user';
 import FormattedText from '@components/formatted_text';
+import {BotTag} from '@components/tag';
 import {General} from '@constants';
 import {useServerUrl} from '@context/server';
 import {makeStyleSheetFromTheme} from '@utils/theme';
@@ -22,11 +23,27 @@ import type ChannelMembershipModel from '@typings/database/models/servers/channe
 type Props = {
     channel: ChannelModel;
     currentUserId: string;
+    isBot: boolean;
     members?: ChannelMembershipModel[];
     theme: Theme;
 }
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
+    botContainer: {
+        alignSelf: 'flex-end',
+        bottom: 7.5,
+        height: 20,
+        marginBottom: 0,
+        marginLeft: 4,
+        paddingVertical: 0,
+    },
+    botText: {
+        fontSize: 14,
+        lineHeight: 20,
+    },
+    container: {
+        alignItems: 'center',
+    },
     message: {
         color: theme.centerChannelColor,
         marginTop: 16,
@@ -41,7 +58,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         color: theme.centerChannelColor,
         marginTop: 16,
         textAlign: 'center',
-        width: '100%',
         ...typography('Heading', 700, 'SemiBold'),
     },
     titleGroup: {
@@ -49,7 +65,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     },
 }));
 
-const DirectChannel = ({channel, currentUserId, members, theme}: Props) => {
+const DirectChannel = ({channel, currentUserId, isBot, members, theme}: Props) => {
     const serverUrl = useServerUrl();
     const styles = getStyleSheet(theme);
 
@@ -106,13 +122,21 @@ const DirectChannel = ({channel, currentUserId, members, theme}: Props) => {
     }, [members, theme]);
 
     return (
-        <View style={{alignItems: 'center'}}>
+        <View style={styles.container}>
             <View style={styles.profilesContainer}>
                 {profiles}
             </View>
-            <Text style={[styles.title, channel.type === General.GM_CHANNEL ? styles.titleGroup : undefined]}>
-                {channel.displayName}
-            </Text>
+            <View style={{flexDirection: 'row'}}>
+                <Text style={[styles.title, channel.type === General.GM_CHANNEL ? styles.titleGroup : undefined]}>
+                    {channel.displayName}
+                </Text>
+                {isBot &&
+                <BotTag
+                    style={styles.botContainer}
+                    textStyle={styles.botText}
+                />
+                }
+            </View>
             {message}
             <IntroOptions
                 channelId={channel.id}
