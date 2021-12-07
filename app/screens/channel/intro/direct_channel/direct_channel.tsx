@@ -2,15 +2,18 @@
 // See LICENSE.txt for license information.
 
 import React, {useEffect, useMemo} from 'react';
-import {View} from 'react-native';
+import {Text, View} from 'react-native';
 
 import {fetchProfilesInChannel} from '@actions/remote/user';
 import FormattedText from '@components/formatted_text';
 import {General} from '@constants';
 import {useServerUrl} from '@context/server';
-import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
+import {makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
+import IntroOptions from '../options';
+
+import Group from './group';
 import Member from './member';
 
 import type ChannelModel from '@typings/database/models/servers/channel';
@@ -25,13 +28,21 @@ type Props = {
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     message: {
-        color: changeOpacity(theme.centerChannelColor, 0.8),
-        ...typography('Body', 100, 'Regular'),
+        color: theme.centerChannelColor,
+        marginTop: 16,
+        textAlign: 'center',
+        ...typography('Body', 200, 'Regular'),
     },
     profilesContainer: {
-        flexDirection: 'row',
-        flexWrap: 'wrap',
-        justifyContent: 'flex-start',
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    title: {
+        color: theme.centerChannelColor,
+        marginTop: 16,
+        textAlign: 'center',
+        width: '100%',
+        ...typography('Heading', 700, 'SemiBold'),
     },
 }));
 
@@ -50,8 +61,8 @@ const DirectChannel = ({channel, currentUserId, members, theme}: Props) => {
         if (channel.type === General.DM_CHANNEL) {
             return (
                 <FormattedText
-                    defaultMessage={'This is the start of your direct message history with {teammate}.\nDirect messages and files shared here are not shown to people outside this area.'}
-                    id='mobile.intro_messages.DM'
+                    defaultMessage={'This is the start of your conversation with {teammate}. Messages and files shared here are not shown to anyone else.'}
+                    id='intro.direct_message'
                     style={styles.message}
                     values={{teammate: channel.displayName}}
                 />
@@ -59,10 +70,9 @@ const DirectChannel = ({channel, currentUserId, members, theme}: Props) => {
         }
         return (
             <FormattedText
-                defaultMessage={'This is the start of your group message history with {teammates}.\nMessages and files shared here are not shown to people outside this area.'}
-                id='intro_messages.group_message'
+                defaultMessage={'This is the start of your conversation with this group. Messages and files shared here are not shown to anyone else outside of the group.'}
+                id='intro.group_message'
                 style={styles.message}
-                values={{teammates: channel.displayName}}
             />
         );
     }, [channel.displayName, theme]);
@@ -76,27 +86,38 @@ const DirectChannel = ({channel, currentUserId, members, theme}: Props) => {
         if (channel.type === General.DM_CHANNEL) {
             return (
                 <Member
+                    containerStyle={{height: 96}}
                     member={channelMembers[0]}
+                    size={96}
                     theme={theme}
                 />
             );
         }
 
-        return channelMembers?.map((cm) => (
-            <Member
-                key={cm.userId}
-                member={cm}
+        return (
+            <Group
                 theme={theme}
+                userIds={channelMembers.map((cm) => cm.userId)}
             />
-        ));
+        );
     }, [members, theme]);
 
     return (
-        <View>
+        <View style={{alignItems: 'center'}}>
             <View style={styles.profilesContainer}>
                 {profiles}
             </View>
+            <Text style={styles.title}>
+                {channel.displayName}
+            </Text>
             {message}
+            <IntroOptions
+                channelId={channel.id}
+                header={true}
+                favorite={true}
+                people={false}
+                theme={theme}
+            />
         </View>
     );
 };

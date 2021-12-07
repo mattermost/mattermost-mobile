@@ -6,37 +6,64 @@ import {useIntl} from 'react-intl';
 import {Text, View} from 'react-native';
 
 import {fetchChannelCreator} from '@actions/remote/channel';
-import FormattedText from '@components/formatted_text';
-import {General} from '@constants';
+import CompassIcon from '@app/components/compass_icon';
+import {General, Permissions} from '@constants';
 import {useServerUrl} from '@context/server';
 import {t} from '@i18n';
+import {hasPermission} from '@utils/role';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
+import PrivateChannel from '../illustration/private';
+import PublicChannel from '../illustration/public';
+import IntroOptions from '../options';
+
 import type ChannelModel from '@typings/database/models/servers/channel';
+import type RoleModel from '@typings/database/models/servers/role';
 
 type Props = {
     channel: ChannelModel;
     creator?: string;
+    roles: RoleModel[];
     theme: Theme;
 }
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
+    container: {
+        alignItems: 'center',
+    },
+    created: {
+        color: changeOpacity(theme.centerChannelColor, 0.64),
+        ...typography('Body', 50, 'Regular'),
+    },
+    icon: {
+        marginRight: 5,
+    },
     message: {
-        color: changeOpacity(theme.centerChannelColor, 0.8),
-        ...typography('Body', 100, 'Regular'),
+        color: theme.centerChannelColor,
+        marginTop: 16,
+        textAlign: 'center',
+        ...typography('Body', 200, 'Regular'),
     },
     title: {
         color: theme.centerChannelColor,
-        marginBottom: 12,
-        ...typography('Heading', 400, 'SemiBold'),
+        marginTop: 16,
+        marginBottom: 8,
+        ...typography('Heading', 700, 'SemiBold'),
     },
 }));
 
-const PublicOrPrivateChannel = ({channel, creator, theme}: Props) => {
+const PublicOrPrivateChannel = ({channel, creator, roles, theme}: Props) => {
     const intl = useIntl();
     const serverUrl = useServerUrl();
     const styles = getStyleSheet(theme);
+    const illustration = useMemo(() => {
+        if (channel.type === General.OPEN_CHANNEL) {
+            return <PublicChannel theme={theme}/>;
+        }
+
+        return <PrivateChannel theme={theme}/>;
+    }, [channel.type, theme]);
 
     useEffect(() => {
         if (!creator && channel.creatorId) {
@@ -44,69 +71,73 @@ const PublicOrPrivateChannel = ({channel, creator, theme}: Props) => {
         }
     }, []);
 
-    const message = useMemo(() => {
+    const canManagePeople = useMemo(() => {
+        const permission = channel.type === General.OPEN_CHANNEL ? Permissions.MANAGE_PUBLIC_CHANNEL_MEMBERS : Permissions.MANAGE_PRIVATE_CHANNEL_MEMBERS;
+        return hasPermission(roles, permission, false);
+    }, [channel.type, roles]);
+
+    const canSetHeader = useMemo(() => {
+        const permission = channel.type === General.OPEN_CHANNEL ? Permissions.MANAGE_PUBLIC_CHANNEL_PROPERTIES : Permissions.MANAGE_PRIVATE_CHANNEL_PROPERTIES;
+        return hasPermission(roles, permission, false);
+    }, [channel.type, roles]);
+
+    const createdBy = useMemo(() => {
+        const id = channel.type === General.OPEN_CHANNEL ? t('intro.public_channel') : t('intro.private_channel');
+        const defaultMessage = channel.type === General.OPEN_CHANNEL ? 'Public Channel' : 'Private Channel';
+        const channelType = `${intl.formatMessage({id, defaultMessage})} `;
+
         const date = intl.formatDate(channel.createAt, {
             year: 'numeric',
             month: 'long',
             day: 'numeric',
         });
+        const by = intl.formatMessage({id: 'intro.created_by', defaultMessage: 'created by {creator} on {date}.'}, {
+            creator,
+            date,
+        });
 
-        let mainMessageIntl;
-        if (creator) {
-            const id = channel.type === General.OPEN_CHANNEL ? t('intro_messages.creator') : t('intro_messages.creatorPrivate');
-            const defaultMessage = channel.type === General.OPEN_CHANNEL ? 'This is the start of the {name} channel, created by {creator} on {date}.' : 'This is the start of the {name} private channel, created by {creator} on {date}.';
-            mainMessageIntl = {
-                id,
-                defaultMessage,
-                values: {
-                    name: channel.displayName,
-                    creator,
-                    date,
-                },
-            };
-        } else {
-            mainMessageIntl = {
-                id: t('intro_messages.noCreator'),
-                defaultMessage: 'This is the start of the {name} channel, created on {date}.',
-                values: {
-                    name: channel.displayName,
-                    date,
-                },
-            };
-        }
+        return `${channelType} ${by}`;
+    }, [channel.type, creator, theme]);
 
+    const message = useMemo(() => {
+        const id = channel.type === General.OPEN_CHANNEL ? t('intro.welcome.public') : t('intro.welcome.private');
+        const msg = channel.type === General.OPEN_CHANNEL ? 'Add some more team members to the channel or start a conversation below.' : 'Only invited members can see messages posted in this private channel.';
         const mainMessage = intl.formatMessage({
-            id: mainMessageIntl.id,
-            defaultMessage: mainMessageIntl.defaultMessage,
-        }, mainMessageIntl.values);
+            id: 'intro.welcome',
+            defaultMessage: 'Welcome to {displayName} channel.',
+        }, {displayName: channel.displayName});
 
-        let suffix;
-        if (channel.type === General.OPEN_CHANNEL) {
-            suffix = intl.formatMessage({
-                id: 'intro_messages.anyMember',
-                defaultMessage: ' Any member can join and read this channel.',
-            });
-        } else {
-            suffix = intl.formatMessage({
-                id: 'intro_messages.onlyInvited',
-                defaultMessage: ' Only invited members can see this private channel.',
-            });
-        }
+        const suffix = intl.formatMessage({id, defaultMessage: msg});
 
         return `${mainMessage} ${suffix}`;
-    }, [channel.displayName, channel.type, creator, theme]);
+    }, [channel.displayName, channel.type, theme]);
 
     return (
-        <View>
-            <FormattedText
-                defaultMessage='Beginning of {name}'
-                id='intro_messages.beginning'
-                style={styles.title}
-                values={{name: channel.displayName}}
-            />
+        <View style={styles.container}>
+            {illustration}
+            <Text style={styles.title}>
+                {channel.displayName}
+            </Text>
+            <View style={{flexDirection: 'row'}}>
+                <CompassIcon
+                    name={channel.type === General.OPEN_CHANNEL ? 'globe' : 'lock'}
+                    size={14.4}
+                    color={changeOpacity(theme.centerChannelColor, 0.64)}
+                    style={styles.icon}
+                />
+                <Text style={styles.created}>
+                    {createdBy}
+                </Text>
+            </View>
             <Text style={styles.message}>
                 {message}
             </Text>
+            <IntroOptions
+                channelId={channel.id}
+                header={canSetHeader}
+                people={canManagePeople}
+                theme={theme}
+            />
         </View>
     );
 };

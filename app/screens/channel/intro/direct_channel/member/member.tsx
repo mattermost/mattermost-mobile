@@ -3,16 +3,20 @@
 
 import React, {useCallback} from 'react';
 import {useIntl} from 'react-intl';
-import {StyleSheet} from 'react-native';
+import {StyleProp, StyleSheet, ViewStyle} from 'react-native';
 
 import CompassIcon from '@components/compass_icon';
 import ProfilePicture from '@components/profile_picture';
 import TouchableWithFeedback from '@components/touchable_with_feedback';
+import {Screens} from '@constants';
 import {showModal} from '@screens/navigation';
 
 import type UserModel from '@typings/database/models/servers/user';
 
 type Props = {
+    containerStyle?: StyleProp<ViewStyle>;
+    size?: number;
+    showStatus?: boolean;
     theme: Theme;
     user: UserModel;
 }
@@ -25,10 +29,10 @@ const styles = StyleSheet.create({
     },
 });
 
-const Member = ({theme, user}: Props) => {
+const Member = ({containerStyle, size = 72, showStatus = true, theme, user}: Props) => {
     const intl = useIntl();
     const onPress = useCallback(() => {
-        const screen = 'UserProfile';
+        const screen = Screens.USER_PROFILE;
         const title = intl.formatMessage({id: 'mobile.routes.user_profile', defaultMessage: 'Profile'});
         const passProps = {
             userId: user.id,
@@ -52,14 +56,15 @@ const Member = ({theme, user}: Props) => {
     return (
         <TouchableWithFeedback
             onPress={onPress}
-            style={styles.profile}
+            style={[styles.profile, containerStyle]}
             type='opacity'
         >
             <ProfilePicture
                 author={user}
-                size={64}
+                size={size}
                 iconSize={48}
-                statusSize={25}
+                showStatus={showStatus}
+                statusSize={24}
                 testID='channel_intro.profile_picture'
             />
         </TouchableWithFeedback>

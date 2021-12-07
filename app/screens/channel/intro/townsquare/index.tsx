@@ -2,55 +2,62 @@
 // See LICENSE.txt for license information.
 
 import React from 'react';
-import {View} from 'react-native';
+import {Text, View} from 'react-native';
 
 import FormattedText from '@components/formatted_text';
-import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
+import {Permissions} from '@constants';
+import {hasPermission} from '@utils/role';
+import {makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
+import PublicChannel from '../illustration/public';
+import IntroOptions from '../options';
+
+import type RoleModel from '@typings/database/models/servers/role';
+
 type Props = {
+    channelId: string;
     displayName: string;
+    roles: RoleModel[];
     theme: Theme;
 }
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
+    container: {
+        alignItems: 'center',
+    },
     message: {
-        color: changeOpacity(theme.centerChannelColor, 0.8),
-        ...typography('Body', 100, 'Regular'),
+        color: theme.centerChannelColor,
+        marginTop: 16,
+        textAlign: 'center',
+        ...typography('Body', 200, 'Regular'),
+        width: '100%',
     },
     title: {
         color: theme.centerChannelColor,
-        marginBottom: 12,
-        ...typography('Heading', 400, 'SemiBold'),
-    },
-    welcome: {
-        color: theme.centerChannelColor,
-        marginBottom: 12,
-        ...typography('Body', 100, 'SemiBold'),
+        marginTop: 16,
+        ...typography('Heading', 700, 'SemiBold'),
     },
 }));
 
-const TownSquare = ({displayName, theme}: Props) => {
+const TownSquare = ({channelId, displayName, roles, theme}: Props) => {
     const styles = getStyleSheet(theme);
     return (
-        <View>
+        <View style={styles.container}>
+            <PublicChannel theme={theme}/>
+            <Text style={styles.title}>
+                {displayName}
+            </Text>
             <FormattedText
-                defaultMessage='Beginning of {name}'
-                id='intro_messages.beginning'
-                style={styles.title}
-                values={{name: displayName}}
-            />
-            <FormattedText
-                defaultMessage='Welcome to {name}'
-                id='mobile.intro_messages.default_welcome'
-                style={styles.welcome}
-                values={{name: displayName}}
-            />
-            <FormattedText
-                defaultMessage='This is the first channel teammates see when they sign up - use it for posting updates everyone needs to know.'
-                id='mobile.intro_messages.default_message'
+                defaultMessage='Welcome to {name}. Everyone automatically becomes a member of this channel when they join the team.'
+                id='intro.townsquare'
                 style={styles.message}
                 values={{name: displayName}}
+            />
+            <IntroOptions
+                channelId={channelId}
+                header={hasPermission(roles, Permissions.MANAGE_PUBLIC_CHANNEL_PROPERTIES, false)}
+                theme={theme}
             />
         </View>
     );

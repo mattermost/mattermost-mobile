@@ -12,10 +12,12 @@ import PublicOrPrivateChannel from './public_or_private_channel';
 import TownSquare from './townsquare';
 
 import type ChannelModel from '@typings/database/models/servers/channel';
+import type RoleModel from '@typings/database/models/servers/role';
 
 type Props = {
     channel: ChannelModel;
     loading?: boolean;
+    roles: RoleModel[];
 }
 
 const styles = StyleSheet.create({
@@ -30,13 +32,15 @@ const styles = StyleSheet.create({
     },
 });
 
-const Intro = ({channel, loading = false}: Props) => {
+const Intro = ({channel, loading = false, roles}: Props) => {
     const theme = useTheme();
     const element = useMemo(() => {
         if (channel.type === General.OPEN_CHANNEL && channel.name === General.DEFAULT_CHANNEL) {
             return (
                 <TownSquare
+                    channelId={channel.id}
                     displayName={channel.displayName}
+                    roles={roles}
                     theme={theme}
                 />
             );
@@ -48,6 +52,7 @@ const Intro = ({channel, loading = false}: Props) => {
                 return (
                     <PublicOrPrivateChannel
                         channel={channel}
+                        roles={roles}
                         theme={theme}
                     />
                 );
@@ -59,7 +64,7 @@ const Intro = ({channel, loading = false}: Props) => {
                     />
                 );
         }
-    }, [channel, theme]);
+    }, [channel, roles, theme]);
 
     if (loading) {
         return (
