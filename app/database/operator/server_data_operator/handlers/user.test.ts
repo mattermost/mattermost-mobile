@@ -151,9 +151,8 @@ describe('*** Operator: User Handlers tests ***', () => {
         expect(spyOnHandleRecords).toHaveBeenCalledWith({
             fieldName: 'user_id',
             createOrUpdateRawValues: preferences,
-            deleteRawValues: [],
             tableName: 'Preference',
-            prepareRecordsOnly: false,
+            prepareRecordsOnly: true,
             findMatchingRecordBy: isRecordPreferenceEqualToRaw,
             transformer: transformPreferenceRecord,
         });
