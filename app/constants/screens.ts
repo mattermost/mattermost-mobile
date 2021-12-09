@@ -5,6 +5,7 @@ export const ABOUT = 'About';
 export const EMOJI_PICKER = 'AddReaction';
 export const APP_FORM = 'AppForm';
 export const BOTTOM_SHEET = 'BottomSheet';
+export const BROWSE_CHANNELS = 'BrowseChannels';
 export const CHANNEL = 'Channel';
 export const CUSTOM_STATUS_CLEAR_AFTER = 'CustomStatusClearAfter';
 export const CUSTOM_STATUS = 'CustomStatus';
@@ -27,6 +28,7 @@ export default {
     EMOJI_PICKER,
     APP_FORM,
     BOTTOM_SHEET,
+    BROWSE_CHANNELS,
     CHANNEL,
     CUSTOM_STATUS_CLEAR_AFTER,
     CUSTOM_STATUS,

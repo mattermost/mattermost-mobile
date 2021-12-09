@@ -108,6 +108,7 @@ interface ClientConfig {
     ExperimentalHideTownSquareinLHS: string;
     ExperimentalNormalizeMarkdownLinks: string;
     ExperimentalPrimaryTeam: string;
+    ExperimentalSharedChannels: string;
     ExperimentalTimezone: string;
     ExperimentalTownSquareIsReadOnly: string;
     ExperimentalViewArchivedChannels: string;

@@ -5,7 +5,7 @@
 
 import merge from 'deepmerge';
 import {Appearance, DeviceEventEmitter, NativeModules, StatusBar, Platform} from 'react-native';
-import {Navigation, Options, OptionsModalPresentationStyle} from 'react-native-navigation';
+import {Navigation, Options, OptionsModalPresentationStyle, OptionsTopBarButton} from 'react-native-navigation';
 import tinyColor from 'tinycolor2';
 
 import CompassIcon from '@components/compass_icon';
@@ -495,8 +495,8 @@ export async function dismissAllModals(options = {}) {
     }
 }
 
-export function setButtons(componentId: string, buttons = {leftButtons: [], rightButtons: []}) {
-    const options = {
+export function setButtons(componentId: string, buttons: {leftButtons: OptionsTopBarButton[]; rightButtons: OptionsTopBarButton[]} = {leftButtons: [], rightButtons: []}) {
+    const options: Options = {
         topBar: {
             ...buttons,
         },
