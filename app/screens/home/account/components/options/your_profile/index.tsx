@@ -29,7 +29,8 @@ const YourProfile = ({isTablet, style, theme}: Props) => {
             showModal(
                 Screens.EDIT_PROFILE,
                 intl.formatMessage({id: 'mobile.screen.your_profile', defaultMessage: 'Your Profile'}),
-                {closeButtonId}, {
+                {closeButtonId},
+                {
                     topBar: {
                         leftButtons: [{
                             id: closeButtonId,
@@ -37,7 +38,8 @@ const YourProfile = ({isTablet, style, theme}: Props) => {
                             testID: closeButtonId,
                         }],
                     },
-                });
+                },
+            );
         }
     }), [isTablet, theme]);
 
