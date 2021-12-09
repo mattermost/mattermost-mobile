@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback, useEffect, useRef, useState} from 'react';
+import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
 import {BackHandler, DeviceEventEmitter, Keyboard, StyleSheet, View} from 'react-native';
 import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
@@ -129,6 +129,13 @@ const EditProfile = ({
         color: theme.sidebarHeaderTextColor,
         text: buttonText,
     };
+            enabled: false,
+            showAsAction: 'always' as const,
+            testID: 'edit_profile.save.button',
+            color: theme.sidebarHeaderTextColor,
+            text: buttonText,
+        };
+    }, [isTablet, theme.sidebarHeaderTextColor]);
 
     useEffect(() => {
         const unsubscribe = Navigation.events().registerComponentListener({
@@ -147,7 +154,7 @@ const EditProfile = ({
         return () => {
             unsubscribe.remove();
         };
-    }, [userInfo, isTablet]);
+    }, [userInfo, isTablet, componentId, closeButtonId]);
 
     useEffect(() => {
         const backHandler = BackHandler.addEventListener('hardwareBackPress', close);
@@ -160,7 +167,7 @@ const EditProfile = ({
         if (!isTablet) {
             setButtons(componentId, {rightButtons: [rightButton!]});
         }
-    }, [isTablet]);
+    }, [componentId, rightButton]);
 
     const service = currentUser.authService;
 
@@ -182,7 +189,7 @@ const EditProfile = ({
         };
         setCanSave(value);
         setButtons(componentId, buttons);
-    }, [componentId]);
+    }, [componentId, rightButton]);
 
     const submitUser = useCallback(preventDoubleTap(async () => {
         enableSaveButton(false);
@@ -228,7 +235,7 @@ const EditProfile = ({
         const currentValue = currentUser[fieldKey];
         const didChange = currentValue !== name;
         enableSaveButton(didChange);
-    }, [userInfo, currentUser, enableSaveButton]);
+    }, [userInfo, currentUser]);
 
     const includesSsoService = (sso: string) => ['gitlab', 'google', 'office365'].includes(sso);
     const isSAMLOrLDAP = (protocol: string) => ['ldap', 'saml'].includes(protocol);
@@ -260,43 +267,43 @@ const EditProfile = ({
         },
     };
 
-    const onFocusNextField = useCallback(
-        ((fieldKey: string) => {
-            const findNextField = () => {
-                const fields = Object.keys(userProfileFields);
-                const curIndex = fields.indexOf(fieldKey);
-                const searchIndex = curIndex + 1;
+    const onFocusNextField = useCallback(((fieldKey: string) => {
+        const findNextField = () => {
+            const fields = Object.keys(userProfileFields);
+            const curIndex = fields.indexOf(fieldKey);
+            const searchIndex = curIndex + 1;
 
-                if (curIndex === -1 || searchIndex > fields.length) {
-                    return undefined;
-                }
+            if (curIndex === -1 || searchIndex > fields.length) {
+                return undefined;
+            }
 
-                const remainingFields = fields.slice(searchIndex);
+            const remainingFields = fields.slice(searchIndex);
 
-                const nextFieldIndex = remainingFields.findIndex((f: string) => {
                     const field = userProfileFields[f];
-                    return !field.isDisabled;
-                });
+            const nextFieldIndex = remainingFields.findIndex((f: string) => {
+                const field = userProfileFields[f];
+            });
 
-                if (nextFieldIndex === -1) {
-                    return {isLastEnabledField: true, nextField: undefined};
                 }
+            if (nextFieldIndex === -1) {
+                return {isLastEnabledField: true, nextField: undefined};
+            }
 
                 const fieldName = remainingFields[nextFieldIndex];
-                return {isLastEnabledField: false, nextField: userProfileFields[fieldName]};
-            };
+            const fieldName = remainingFields[nextFieldIndex];
+            return {isLastEnabledField: false, nextField: userProfileFields[fieldName]};
 
-            const next = findNextField();
-            if (next?.isLastEnabledField && canSave) {
+        const next = findNextField();
+        if (next?.isLastEnabledField && canSave) {
             // performs form submission
-                Keyboard.dismiss();
-                submitUser();
-            } else if (next?.nextField) {
-                next?.nextField?.ref?.current?.focus();
-            } else {
-                Keyboard.dismiss();
-            }
-        }), []);
+            Keyboard.dismiss();
+            submitUser();
+        } else if (next?.nextField) {
+            next?.nextField?.ref?.current?.focus();
+        } else {
+            Keyboard.dismiss();
+        }
+    }), []);
 
     const fieldConfig: FieldConfig = {
         blurOnSubmit: false,

@@ -5,6 +5,7 @@ import React, {RefObject} from 'react';
 import {useIntl} from 'react-intl';
 
 import {FloatingTextInputRef} from '@components/floating_text_input_label';
+import {t} from '@i18n';
 
 import Field from './field';
 
@@ -43,10 +44,10 @@ const EmailField = ({
     let id: string;
 
     if (service) {
-        id = 'user.edit_profile.email.auth_service';
-        defaultMessage = `Login occurs through ${service}. Email cannot be updated. Email address used for notifications is {email}.`;
+        id = t('user.edit_profile.email.auth_service');
+        defaultMessage = 'Login occurs through {service}. Email cannot be updated. Email address used for notifications is {email}.';
     } else {
-        id = 'user.edit_profile.email.web_client';
+        id = t('user.edit_profile.email.web_client');
         defaultMessage = 'Email must be updated using a web client or desktop application.';
     }
 
@@ -54,7 +55,7 @@ const EmailField = ({
         <Field
             blurOnSubmit={false}
             enablesReturnKeyAutomatically={true}
-            fieldDescription={intl.formatMessage({id, defaultMessage}, {email})}
+            fieldDescription={intl.formatMessage({id, defaultMessage}, {email, service})}
             fieldKey='email'
             fieldRef={fieldRef}
             isDisabled={isDisabled}
