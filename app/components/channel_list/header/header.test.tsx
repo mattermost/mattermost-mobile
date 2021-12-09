@@ -3,7 +3,7 @@
 
 import React from 'react';
 
-import {render, renderWithIntl} from '@test/intl-test-helper';
+import {renderWithIntl} from '@test/intl-test-helper';
 
 import Header from './header';
 
