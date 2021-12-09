@@ -18,7 +18,7 @@ import {getLocalFilePathFromFile} from '@utils/file';
 import FileIcon from './file_icon';
 
 import type {FileInfo} from '@mm-redux/types/files';
-import type {Theme} from '@mm-redux/types/preferences';
+import type {Theme} from '@mm-redux/types/theme';
 
 type DocumentFileRef = {
     handlePreviewPress: () => void;
@@ -199,5 +199,7 @@ const DocumentFile = forwardRef<DocumentFileRef, DocumentFileProps>(({background
         </TouchableWithFeedback>
     );
 });
+
+DocumentFile.displayName = 'DocumentFile';
 
 export default injectIntl(DocumentFile, {withRef: true});

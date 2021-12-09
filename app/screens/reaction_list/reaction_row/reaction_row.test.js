@@ -11,7 +11,7 @@ describe('ReactionRow', () => {
     const baseProps = {
         emojiName: 'smile',
         teammateNameDisplay: 'username',
-        theme: Preferences.THEMES.default,
+        theme: Preferences.THEMES.denim,
         user: {id: 'user_id', username: 'username'},
     };
 

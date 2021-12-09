@@ -5,7 +5,7 @@ import React, {useCallback} from 'react';
 import {View} from 'react-native';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
-import type {Theme} from '@mm-redux/types/preferences';
+import type {Theme} from '@mm-redux/types/theme';
 
 type SafeAreaProps = {
     backgroundColor?: string;

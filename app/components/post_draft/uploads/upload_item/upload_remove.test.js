@@ -13,7 +13,7 @@ describe('UploadRemove', () => {
         onPress: jest.fn(),
         channelId: 'channel-id',
         clientId: 'client-id',
-        theme: Preferences.THEMES.default,
+        theme: Preferences.THEMES.denim,
     };
 
     test('should match, full snapshot', () => {

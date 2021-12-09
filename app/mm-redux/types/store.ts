@@ -1,6 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {CallsState} from '@mmproducts/calls/store/types/calls';
+
 import {AppsState} from './apps';
 import {Bot} from './bots';
 import {ChannelCategoriesState} from './channel_categories';
@@ -58,6 +60,7 @@ export type GlobalState = {
             };
         };
         apps: AppsState;
+        calls: CallsState;
     };
     errors: Array<any>;
     requests: {

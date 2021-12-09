@@ -4,11 +4,12 @@
 import React, {ReactElement} from 'react';
 import {Platform, RefreshControl, StyleSheet} from 'react-native';
 
-import type {Theme} from '@mm-redux/types/preferences';
+import type {Theme} from '@mm-redux/types/theme';
 
 type Props = {
     children: ReactElement;
     enabled: boolean;
+    isInverted?: boolean;
     onRefresh: () => void;
     refreshing: boolean;
     theme: Theme;
@@ -17,11 +18,13 @@ type Props = {
 const style = StyleSheet.create({
     container: {
         flex: 1,
+    },
+    containerInverse: {
         scaleY: -1,
     },
 });
 
-const PostListRefreshControl = ({children, enabled, onRefresh, refreshing, theme}: Props) => {
+const PostListRefreshControl = ({children, enabled, isInverted = true, onRefresh, refreshing, theme}: Props) => {
     const props = {
         colors: [theme.onlineIndicator, theme.awayIndicator, theme.dndIndicator],
         onRefresh,
@@ -34,7 +37,7 @@ const PostListRefreshControl = ({children, enabled, onRefresh, refreshing, theme
             <RefreshControl
                 {...props}
                 enabled={enabled}
-                style={style.container}
+                style={[style.container, isInverted ? style.containerInverse : undefined]}
             >
                 {children}
             </RefreshControl>
@@ -45,7 +48,7 @@ const PostListRefreshControl = ({children, enabled, onRefresh, refreshing, theme
 
     return React.cloneElement(
         children,
-        {refreshControl, inverted: true},
+        {refreshControl, inverted: isInverted},
     );
 };
 

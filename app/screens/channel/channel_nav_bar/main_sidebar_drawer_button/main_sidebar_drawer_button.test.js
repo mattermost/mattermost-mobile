@@ -13,7 +13,7 @@ describe('MainSidebarDrawerButton', () => {
     const baseProps = {
         openSidebar: jest.fn(),
         badgeCount: 0,
-        theme: Preferences.THEMES.default,
+        theme: Preferences.THEMES.denim,
         visible: false,
     };
 

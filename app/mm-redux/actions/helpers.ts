@@ -8,7 +8,6 @@ import {getCurrentUserId, getUsers} from '@mm-redux/selectors/entities/users';
 import {batchActions, Action, ActionFunc, GenericAction, DispatchFunc, GetStateFunc} from '@mm-redux/types/actions';
 import {Client4Error} from '@mm-redux/types/client4';
 import {GlobalState} from '@mm-redux/types/store';
-import {isMinimumServerVersion} from '@mm-redux/utils/helpers';
 
 import {logError} from './errors';
 
@@ -138,9 +137,6 @@ export function debounce(func: (...args: any) => unknown, wait: number, immediat
 }
 
 export async function notVisibleUsersActions(state: GlobalState): Promise<Array<GenericAction>> {
-    if (!isMinimumServerVersion(Client4.getServerVersion(), 5, 23)) {
-        return [];
-    }
     let knownUsers: Set<string>;
     try {
         const fetchResult = await Client4.getKnownUsers();

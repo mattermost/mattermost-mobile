@@ -34,7 +34,7 @@ describe('Websocket Post Events', () => {
     });
 
     afterAll(async () => {
-        Actions.close()();
+        Actions.close();
         mockServer.stop();
         await TestHelper.tearDown();
     });
@@ -62,7 +62,7 @@ describe('Websocket Post Events', () => {
         // Mock that post does not exist and check it is added
         PostSelectors.getPost.mockReturnValueOnce(false);
         mockServer.emit('message', message);
-        await TestHelper.wait(100);
+        await TestHelper.wait(300);
         entities = store.getState().entities;
         posts = entities.posts.posts;
         const postId = Object.keys(posts)[0];

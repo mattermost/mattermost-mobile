@@ -7,7 +7,7 @@ import CompassIcon from '@components/compass_icon';
 import {General} from '@mm-redux/constants';
 import {changeOpacity} from '@utils/theme';
 
-import type {Theme} from '@mm-redux/types/preferences';
+import type {Theme} from '@mm-redux/types/theme';
 
 type UserStatusProps = {
     size: number;

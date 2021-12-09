@@ -9,7 +9,7 @@ import Preferences from '@mm-redux/constants/preferences';
 import BoolSetting from './bool_setting';
 
 describe('components/widgets/settings/TextSetting', () => {
-    const theme = Preferences.THEMES.default;
+    const theme = Preferences.THEMES.denim;
     test('onChange', () => {
         const onChange = jest.fn();
         const wrapper = shallow(

@@ -36,13 +36,13 @@ export default class SettingsDrawer extends SettingsSidebarBase {
         super.componentDidMount();
 
         this.handleDimensions({window: Dimensions.get('window')});
-        Dimensions.addEventListener('change', this.handleDimensions);
+        this.dimensionsListener = Dimensions.addEventListener('change', this.handleDimensions);
     }
 
     componentWillUnmount() {
         super.componentWillUnmount();
 
-        Dimensions.removeEventListener('change', this.handleDimensions);
+        this.dimensionsListener?.remove();
     }
 
     confirmReset = (status) => {

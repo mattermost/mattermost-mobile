@@ -226,6 +226,7 @@ export default class Markdown extends PureComponent {
 
         return (
             <AtMention
+                disableAtChannelMentionHighlight={this.props.disableAtChannelMentionHighlight}
                 mentionStyle={this.props.textStyles.mention}
                 textStyle={[this.computeTextStyle(this.props.baseTextStyle, context), style.atMentionOpacity]}
                 isSearchResult={this.props.isSearchResult}

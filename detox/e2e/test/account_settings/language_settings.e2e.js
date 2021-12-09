@@ -29,7 +29,7 @@ describe('Language Settings', () => {
         await ChannelScreen.logout();
     });
 
-    it('MM-T304 no crash when setting language to zh-TW (Chinese Traditional)', async () => { // related issue https://mattermost.atlassian.net/browse/MM-35329
+    xit('MM-T304 no crash when setting language to zh-TW (Chinese Traditional)', async () => { // related issue https://mattermost.atlassian.net/browse/MM-35329
         // # Set user's locale
         await User.apiPatchUser(testUser.id, {locale: 'zh-TW'});
 

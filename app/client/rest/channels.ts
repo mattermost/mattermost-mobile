@@ -2,6 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {analytics} from '@init/analytics';
+import {ChannelCategory, OrderedChannelCategories} from '@mm-redux/types/channel_categories';
 import {Channel, ChannelMemberCountByGroup, ChannelMembership, ChannelNotifyProps, ChannelStats} from '@mm-redux/types/channels';
 import {buildQueryString} from '@mm-redux/utils/helpers';
 
@@ -40,6 +41,12 @@ export interface ClientChannelsMix {
     autocompleteChannelsForSearch: (teamId: string, name: string) => Promise<Channel[]>;
     searchChannels: (teamId: string, term: string) => Promise<Channel[]>;
     searchArchivedChannels: (teamId: string, term: string) => Promise<Channel[]>;
+
+    // Categories
+    getChannelCategories: (userId: string, teamId: string) => Promise<OrderedChannelCategories>;
+    getChannelCategory: () => Promise<ChannelCategory>;
+    updateChannelCategory: (userId: string, teamId: string, category: ChannelCategory) => Promise<OrderedChannelCategories>;
+    updateChannelCategories: (userId: string, teamId: string, categories: ChannelCategory[]) => Promise<OrderedChannelCategories>;
 }
 
 const ClientChannels = (superclass: any) => class extends superclass {
@@ -304,6 +311,39 @@ const ClientChannels = (superclass: any) => class extends superclass {
         return this.doFetch(
             `${this.getTeamRoute(teamId)}/channels/search_archived`,
             {method: 'post', body: JSON.stringify({term})},
+        );
+    };
+
+    // Channel Category Routes
+    getChannelCategoriesRoute(userId: string, teamId: string) {
+        return `${this.getUserRoute('me')}/teams/${teamId}/channels/categories`;
+    }
+
+    getChannelCategories = async (userId: string, teamId: string) => {
+        return this.doFetch(
+            `${this.getChannelCategoriesRoute(userId, teamId)}`,
+            {method: 'get'},
+        );
+    };
+
+    getChannelCategory = async (userId: string, teamId: string, categoryId: string) => {
+        return this.doFetch(
+            `${this.getChannelCategoriesRoute(userId, teamId)}/${categoryId}`,
+            {method: 'get'},
+        );
+    };
+
+    updateChannelCategory = (userId: string, teamId: string, category: ChannelCategory) => {
+        return this.doFetch(
+            `${this.getChannelCategoriesRoute(userId, teamId)}/${category.id}`,
+            {method: 'put', body: JSON.stringify(category)},
+        );
+    };
+
+    updateChannelCategories = (userId: string, teamId: string, categories: ChannelCategory[]) => {
+        return this.doFetch(
+            `${this.getChannelCategoriesRoute(userId, teamId)}`,
+            {method: 'put', body: JSON.stringify(categories)},
         );
     };
 };

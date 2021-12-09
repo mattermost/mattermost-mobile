@@ -27,7 +27,7 @@ describe('MarkdownTable', () => {
     const baseProps = {
         children,
         numColumns,
-        theme: Preferences.THEMES.default,
+        theme: Preferences.THEMES.denim,
     };
 
     test('should match snapshot', () => {

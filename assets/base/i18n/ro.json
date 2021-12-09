@@ -26,7 +26,6 @@
   "apps.error.lookup.error_preparing_request": "Eroare la pregătirea cererii de căutare: {errorMessage}",
   "apps.error.parser": "Eroare de parsare: {error}",
   "apps.error.parser.empty_value": "valorile goale nu sunt permise",
-  "apps.error.parser.missing_binding": "Lipsesc legăturile de comandă.",
   "apps.error.parser.missing_call": "Lipsește apelul obligatoriu.",
   "apps.error.parser.missing_field_value": "Valoarea câmpului lipsește.",
   "apps.error.parser.missing_quote": "Se așteaptă un ghilimele duble de potrivire înainte de sfârșitul intrării.",

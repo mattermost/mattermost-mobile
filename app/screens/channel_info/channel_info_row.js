@@ -79,17 +79,24 @@ function channelInfoRow(props) {
         );
     }
 
+    const labelStyle = [style.label, {color: textColor || theme.centerChannelColor}];
+    let label = <Text style={labelStyle}>{defaultMessage}</Text>;
+    if (textId) {
+        label = (
+            <FormattedText
+                style={labelStyle}
+                id={textId}
+                defaultMessage={defaultMessage}
+            />
+        );
+    }
     const RowComponent = (
         <View
             testID={testID}
             style={style.container}
         >
             {iconElement}
-            <FormattedText
-                style={[style.label, {color: textColor || theme.centerChannelColor}]}
-                id={textId}
-                defaultMessage={defaultMessage}
-            />
+            {label}
             <Text style={style.detail}>{detail}</Text>
             {actionElement}
         </View>
@@ -120,7 +127,7 @@ channelInfoRow.propTypes = {
     imageTintColor: PropTypes.string,
     isLandscape: PropTypes.bool,
     rightArrow: PropTypes.bool,
-    textId: PropTypes.string.isRequired,
+    textId: PropTypes.string,
     togglable: PropTypes.bool,
     textColor: PropTypes.string,
     theme: PropTypes.object.isRequired,

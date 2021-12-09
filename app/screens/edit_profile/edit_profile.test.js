@@ -29,7 +29,7 @@ describe('edit_profile', () => {
         nicknameDisabled: true,
         positionDisabled: true,
         profilePictureDisabled: true,
-        theme: Preferences.THEMES.default,
+        theme: Preferences.THEMES.denim,
         currentUser: {
             first_name: 'Dwight',
             last_name: 'Schrute',

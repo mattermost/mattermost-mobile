@@ -6,7 +6,7 @@ exports[`Search should match snapshot 1`] = `
   <View
     style={
       Object {
-        "backgroundColor": "#1153ab",
+        "backgroundColor": "#192a4d",
         "height": 61,
         "paddingLeft": 14,
         "paddingRight": 5,
@@ -86,15 +86,8 @@ exports[`Search should match snapshot 1`] = `
   >
     <SectionList
       ListFooterComponent={[Function]}
-      data={Array []}
-      disableVirtualization={false}
-      horizontal={false}
-      initialNumToRender={10}
-      keyExtractor={[Function]}
       keyboardDismissMode="interactive"
       keyboardShouldPersistTaps="always"
-      maxToRenderPerBatch={10}
-      onEndReachedThreshold={2}
       onLayout={[Function]}
       onScroll={[Function]}
       onViewableItemsChanged={[Function]}
@@ -158,8 +151,6 @@ exports[`Search should match snapshot 1`] = `
         }
       }
       testID="search.results_list"
-      updateCellsBatchingPeriod={50}
-      windowSize={21}
     />
   </RNCSafeAreaView>
   <Connect(Autocomplete)

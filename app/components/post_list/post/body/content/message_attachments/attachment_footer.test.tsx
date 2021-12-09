@@ -12,7 +12,7 @@ describe('AttachmentFooter', () => {
     const baseProps = {
         text: 'This is the footer!',
         icon: 'https://images.com/image.png',
-        theme: Preferences.THEMES.default,
+        theme: Preferences.THEMES.denim,
     };
 
     test('it matches snapshot when footer text is provided', () => {

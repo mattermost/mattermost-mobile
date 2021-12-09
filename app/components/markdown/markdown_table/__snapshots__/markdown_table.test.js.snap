@@ -26,7 +26,7 @@ exports[`MarkdownTable should match snapshot 1`] = `
       style={
         Array [
           Object {
-            "borderColor": "rgba(61,60,64,0.2)",
+            "borderColor": "rgba(63,67,80,0.2)",
             "borderWidth": 1,
             "width": "100%",
           },
@@ -218,8 +218,8 @@ exports[`MarkdownTable should match snapshot 1`] = `
   <LinearGradient
     colors={
       Array [
-        "rgba(61,60,64,0)",
-        "rgba(61,60,64,0.1)",
+        "rgba(63,67,80,0)",
+        "rgba(63,67,80,0.1)",
       ]
     }
     end={
@@ -237,7 +237,7 @@ exports[`MarkdownTable should match snapshot 1`] = `
     style={
       Array [
         Object {
-          "borderColor": "rgba(61,60,64,0.2)",
+          "borderColor": "rgba(63,67,80,0.2)",
           "borderRightWidth": 1,
           "maxHeight": 300,
           "position": "absolute",
@@ -254,8 +254,8 @@ exports[`MarkdownTable should match snapshot 1`] = `
   <LinearGradient
     colors={
       Array [
-        "rgba(61,60,64,0)",
-        "rgba(61,60,64,0.1)",
+        "rgba(63,67,80,0)",
+        "rgba(63,67,80,0.1)",
       ]
     }
     end={
@@ -273,7 +273,7 @@ exports[`MarkdownTable should match snapshot 1`] = `
     style={
       Array [
         Object {
-          "borderColor": "rgba(61,60,64,0.2)",
+          "borderColor": "rgba(63,67,80,0.2)",
           "bottom": 34,
           "height": 20,
           "left": 0,

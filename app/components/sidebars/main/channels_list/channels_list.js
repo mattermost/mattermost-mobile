@@ -32,6 +32,7 @@ export default class ChannelsList extends PureComponent {
         onSearchEnds: PropTypes.func.isRequired,
         onSearchStart: PropTypes.func.isRequired,
         onSelectChannel: PropTypes.func.isRequired,
+        onCollapseCategory: PropTypes.func.isRequired,
         theme: PropTypes.object.isRequired,
         onShowTeams: PropTypes.func,
     };
@@ -116,6 +117,7 @@ export default class ChannelsList extends PureComponent {
                 <List
                     testID={listTestID}
                     onSelectChannel={this.onSelectChannel}
+                    onCollapseCategory={this.props.onCollapseCategory}
                     styles={styles}
                 />
             );
@@ -144,7 +146,7 @@ export default class ChannelsList extends PureComponent {
                 <SearchBar
                     testID={searchBarTestID}
                     ref={this.setSearchBarRef}
-                    placeholder={intl.formatMessage({id: 'mobile.channel_drawer.search', defaultMessage: 'Jump to...'})}
+                    placeholder={intl.formatMessage({id: 'mobile.channel_drawer.search', defaultMessage: 'Find channel'})}
                     cancelTitle={intl.formatMessage({id: 'mobile.post.cancel', defaultMessage: 'Cancel'})}
                     backgroundColor='transparent'
                     inputHeight={36}
@@ -264,6 +266,14 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             justifyContent: 'center',
             marginHorizontal: 16,
         },
+        titleContainer: { // These aren't used by this component, but they are passed down to the list component
+            alignItems: 'center',
+            backgroundColor: theme.sidebarBg,
+            flex: 1,
+            flexDirection: 'row',
+            height: 40,
+            paddingLeft: 16,
+        },
         title: {
             color: theme.sidebarText,
             opacity: 0.4,
@@ -273,13 +283,11 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             lineHeight: 18,
             fontFamily: 'Open Sans',
         },
-        titleContainer: { // These aren't used by this component, but they are passed down to the list component
-            alignItems: 'center',
-            backgroundColor: theme.sidebarBg,
-            flex: 1,
-            flexDirection: 'row',
-            height: 40,
-            paddingLeft: 16,
+        chevron: {
+            marginLeft: -14,
+            color: changeOpacity(theme.sidebarText, 0.4),
+            fontSize: 18,
+            fontWeight: '100',
         },
     };
 });

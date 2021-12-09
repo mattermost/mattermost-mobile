@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import AsyncStorage from '@react-native-community/async-storage';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 import PropTypes from 'prop-types';
 import React, {useEffect, useState} from 'react';
@@ -111,11 +111,11 @@ const ChannelNavBar = (props) => {
     useEffect(() => {
         handleDimensions();
         handlePermanentSidebar();
-        Dimensions.addEventListener('change', handleDimensions);
+        const dimensionsListener = Dimensions.addEventListener('change', handleDimensions);
         EventEmitter.on(DeviceTypes.PERMANENT_SIDEBAR_SETTINGS, handlePermanentSidebar);
 
         return () => {
-            Dimensions.removeEventListener('change', handleDimensions);
+            dimensionsListener.remove();
             EventEmitter.off(DeviceTypes.PERMANENT_SIDEBAR_SETTINGS, handlePermanentSidebar);
         };
     }, []);

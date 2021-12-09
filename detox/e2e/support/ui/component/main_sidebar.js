@@ -7,15 +7,15 @@ import TeamsList from './teams_list';
 class MainSidebar {
     testID = {
         mainSidebar: 'main.sidebar',
-        openMoreChannelsButton: 'action_button_sidebar.channels',
-        openCreatePrivateChannelButton: 'action_button_sidebar.pg',
-        openMoreDirectMessagesButton: 'action_button_sidebar.direct',
+        channelsActionButton: 'action_button_channels',
+        directMessagesActionButton: 'action_button_direct_messages',
+        favoritesActionButton: 'action_button_favorites',
     }
 
     mainSidebar = element(by.id(this.testID.mainSidebar));
-    openMoreChannelsButton = element(by.id(this.testID.openMoreChannelsButton));
-    openCreatePrivateChannelButton = element(by.id(this.testID.openCreatePrivateChannelButton));
-    openMoreDirectMessagesButton = element(by.id(this.testID.openMoreDirectMessagesButton));
+    channelsActionButton = element(by.id(this.testID.channelsActionButton));
+    directMessagesActionButton = element(by.id(this.testID.directMessagesActionButton));
+    favoritesActionButton = element(by.id(this.testID.favoritesActionButton));
 
     // convenience props
     searchBar = ChannelsList.searchBar;

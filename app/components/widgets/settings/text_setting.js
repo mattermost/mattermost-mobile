@@ -185,6 +185,7 @@ export default class TextSetting extends PureComponent {
                 <View style={[style.inputContainer, noediting]}>
                     <View>
                         <TextInput
+                            allowFontScaling={true}
                             value={value}
                             placeholder={placeholder}
                             placeholderTextColor={changeOpacity(theme.centerChannelColor, 0.5)}

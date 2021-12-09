@@ -71,7 +71,7 @@ describe('AppsForm', () => {
 
             ],
         },
-        theme: Preferences.THEMES.default,
+        theme: Preferences.THEMES.denim,
     };
 
     test('should set match snapshot', () => {

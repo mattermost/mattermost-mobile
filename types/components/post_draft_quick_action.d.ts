@@ -4,7 +4,7 @@
 import {intlShape} from 'react-intl';
 import {Asset} from 'react-native-image-picker';
 
-import type {Theme} from '@mm-redux/types/preferences';
+import type {Theme} from '@mm-redux/types/theme';
 
 export interface QuickActionAttachmentProps {
     disabled: boolean;

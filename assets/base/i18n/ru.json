@@ -26,7 +26,6 @@
   "apps.error.lookup.error_preparing_request": "Ошибка при подготовке запроса на поиск: {errorMessage}",
   "apps.error.parser": "Ошибка разбора: {error}",
   "apps.error.parser.empty_value": "пустые значения не допускаются",
-  "apps.error.parser.missing_binding": "Пропущена привязка к команде.",
   "apps.error.parser.missing_call": "Отсутствует привязка вызова.",
   "apps.error.parser.missing_field_value": "Значение поля отсутствует.",
   "apps.error.parser.missing_quote": "Ожидается парная двойная кавычка до конца строки ввода.",

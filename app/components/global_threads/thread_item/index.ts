@@ -4,8 +4,7 @@
 import {connect} from 'react-redux';
 import {bindActionCreators, Dispatch} from 'redux';
 
-import {getPost, getPostThread} from '@actions/views/post';
-import {selectPost} from '@mm-redux/actions/posts';
+import {getPost} from '@actions/views/post';
 import {getChannel} from '@mm-redux/selectors/entities/channels';
 import {getPost as getPostSelector} from '@mm-redux/selectors/entities/posts';
 import {getThread} from '@mm-redux/selectors/entities/threads';
@@ -30,8 +29,6 @@ function mapDispatchToProps(dispatch: Dispatch) {
     return {
         actions: bindActionCreators({
             getPost,
-            getPostThread,
-            selectPost,
         }, dispatch),
     };
 }

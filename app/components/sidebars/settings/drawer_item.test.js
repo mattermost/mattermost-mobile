@@ -18,7 +18,7 @@ describe('DrawerItem', () => {
         iconName: 'icon-name',
         isDestructor: true,
         separator: true,
-        theme: Preferences.THEMES.default,
+        theme: Preferences.THEMES.denim,
     };
 
     test('should match snapshot', () => {

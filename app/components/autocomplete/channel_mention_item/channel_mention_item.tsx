@@ -9,7 +9,7 @@ import CompassIcon from '@components/compass_icon';
 import {BotTag, GuestTag} from '@components/tag';
 import TouchableWithFeedback from '@components/touchable_with_feedback';
 import {General} from '@mm-redux/constants';
-import {Theme} from '@mm-redux/types/preferences';
+import {Theme} from '@mm-redux/types/theme';
 import {makeStyleSheetFromTheme, changeOpacity} from '@utils/theme';
 
 const getStyleFromTheme = makeStyleSheetFromTheme((theme: Theme) => {

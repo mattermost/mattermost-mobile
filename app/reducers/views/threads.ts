@@ -5,6 +5,17 @@ import {combineReducers} from 'redux';
 import {ViewTypes} from '@constants';
 import {GenericAction} from '@mm-redux/types/actions';
 
+export const lastViewedAt = (state: Record<string, number> = {}, action: GenericAction) => {
+    switch (action.type) {
+    case ViewTypes.THREAD_LAST_VIEWED_AT:
+        return {
+            ...state,
+            [action.data.threadId]: action.data.lastViewedAt,
+        };
+    }
+    return state;
+};
+
 const viewingGlobalThreads = (state = false, action: GenericAction) => {
     switch (action.type) {
     case ViewTypes.VIEWING_GLOBAL_THREADS_SCREEN: {
@@ -30,6 +41,7 @@ const viewingGlobalThreadsUnreads = (state = false, action: GenericAction) => {
 };
 
 export default combineReducers({
+    lastViewedAt,
     viewingGlobalThreads,
     viewingGlobalThreadsUnreads,
 });

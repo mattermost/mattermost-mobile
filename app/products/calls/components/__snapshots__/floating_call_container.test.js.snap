@@ -1,0 +1,21 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`FloatingCallContainer should match snapshot 1`] = `
+<View
+  style={
+    Array [
+      Object {
+        "position": "absolute",
+        "top": 91,
+        "width": "100%",
+        "zIndex": 9,
+      },
+      undefined,
+    ]
+  }
+>
+  <Text>
+    test
+  </Text>
+</View>
+`;

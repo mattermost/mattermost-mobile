@@ -12,7 +12,7 @@ import DateSeparator from './date_separator';
 
 describe('DateHeader', () => {
     const baseProps = {
-        theme: Preferences.THEMES.default,
+        theme: Preferences.THEMES.denim,
         timezone: null,
     };
 

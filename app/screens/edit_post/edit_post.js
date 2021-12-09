@@ -272,6 +272,7 @@ export default class EditPost extends PureComponent {
                         {displayError}
                         <View style={[inputContainerStyle, {height}]}>
                             <TextInputWithLocalizedPlaceholder
+                                allowFontScaling={true}
                                 testID='edit_post.message.input'
                                 ref={this.messageRef}
                                 value={message}

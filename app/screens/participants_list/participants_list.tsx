@@ -10,7 +10,7 @@ import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 import ParticipantRow from './participant_row';
 
-import type {Theme} from '@mm-redux/types/preferences';
+import type {Theme} from '@mm-redux/types/theme';
 import type {UserProfile} from '@mm-redux/types/users';
 import type {$ID} from '@mm-redux/types/utilities';
 
@@ -18,16 +18,24 @@ type Props = {
     currentUserId: $ID<UserProfile>;
     userProfiles: UserProfile[];
     teammateNameDisplay: string;
+    listTitle?: JSX.Element;
     theme: Theme;
 }
 
-const ParticipantsList = ({currentUserId, teammateNameDisplay, theme, userProfiles}: Props) => {
+const ParticipantsList = ({currentUserId, teammateNameDisplay, theme, userProfiles, listTitle}: Props) => {
     const close = () => {
         dismissModal();
     };
 
     const renderHeader = () => {
         const style = getStyleSheet(theme);
+        if (listTitle) {
+            return (
+                <View style={style.header}>
+                    {listTitle}
+                </View>
+            );
+        }
         return (
             <View style={style.header}>
                 <FormattedText

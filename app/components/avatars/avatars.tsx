@@ -10,7 +10,7 @@ import TouchableWithFeedback from '@components/touchable_with_feedback';
 import {ViewTypes} from '@constants';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
-import type {Theme} from '@mm-redux/types/preferences';
+import type {Theme} from '@mm-redux/types/theme';
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     const size = ViewTypes.AVATAR_LIST_PICTURE_SIZE;
@@ -86,6 +86,7 @@ export interface AvatarsProps {
     breakAt?: number;
     style?: StyleProp<ViewStyle>;
     theme: Theme;
+    listTitle?: JSX.Element;
 }
 
 export default class Avatars extends PureComponent<AvatarsProps> {
@@ -94,11 +95,12 @@ export default class Avatars extends PureComponent<AvatarsProps> {
     };
 
     showParticipantsList = () => {
-        const {userIds} = this.props;
+        const {userIds, listTitle} = this.props;
 
         const screen = 'ParticipantsList';
         const passProps = {
             userIds,
+            listTitle,
         };
 
         showModalOverCurrentContext(screen, passProps);

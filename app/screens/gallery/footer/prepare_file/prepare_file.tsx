@@ -12,7 +12,7 @@ import {Client4} from '@client/rest';
 import CompassIcon from '@components/compass_icon';
 import FormattedText from '@components/formatted_text';
 import ProgressBar from '@components/progress_bar';
-import {Theme} from '@mm-redux/types/preferences';
+import {Theme} from '@mm-redux/types/theme';
 import {getLocalPath} from '@utils/file';
 
 import mattermostBucket from 'app/mattermost_bucket';

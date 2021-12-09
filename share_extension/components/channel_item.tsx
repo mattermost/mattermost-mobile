@@ -17,7 +17,7 @@ interface ChannelItemProps {
     channel: Channel;
 }
 
-const theme = Preferences.THEMES.default;
+const theme = Preferences.THEMES.denim;
 
 const channelTypes: Record<string, ReactNode> = {
     D: DirectChannel,

@@ -6,6 +6,7 @@ import {Platform} from 'react-native';
 import RNFetchBlob from 'rn-fetch-blob';
 
 import {DeviceTypes} from '@constants';
+import {isMinimumServerVersion} from '@mm-redux/utils/helpers';
 
 const EXTRACT_TYPE_REGEXP = /^\s*([^;\s]*)(?:;|\s|$)/;
 const CONTENT_DISPOSITION_REGEXP = /inline;filename=".*\.([a-z]+)";/i;
@@ -161,6 +162,10 @@ export const encodeHeaderURIStringToUTF8 = (string) => {
 
 export const getAllowedServerMaxFileSize = (config) => {
     return config && config.MaxFileSize ? parseInt(config.MaxFileSize, 10) : DEFAULT_SERVER_MAX_FILE_SIZE;
+};
+
+export const getMaxFileCount = (serverVersion) => {
+    return isMinimumServerVersion(serverVersion, 6, 0) ? 10 : 5;
 };
 
 export const isGif = (file) => {

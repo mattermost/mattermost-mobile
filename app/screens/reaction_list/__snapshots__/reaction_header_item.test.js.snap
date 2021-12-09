@@ -1,7 +1,7 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`ReactionHeaderItem should match snapshot 1`] = `
-<ForwardRef
+<TouchableOpacity
   onPress={[Function]}
   style={
     Array [
@@ -38,7 +38,7 @@ exports[`ReactionHeaderItem should match snapshot 1`] = `
     <Text
       style={
         Object {
-          "color": "#166de0",
+          "color": "#1c58d9",
           "fontSize": 16,
           "marginLeft": 4,
         }
@@ -47,7 +47,7 @@ exports[`ReactionHeaderItem should match snapshot 1`] = `
       3
     </Text>
   </React.Fragment>
-</ForwardRef>
+</TouchableOpacity>
 `;
 
 exports[`ReactionHeaderItem should match snapshot, renderContent 1`] = `
@@ -66,7 +66,7 @@ exports[`ReactionHeaderItem should match snapshot, renderContent 1`] = `
   <Text
     style={
       Object {
-        "color": "#166de0",
+        "color": "#1c58d9",
         "fontSize": 16,
         "marginLeft": 4,
       }
@@ -84,7 +84,7 @@ exports[`ReactionHeaderItem should match snapshot, renderContent 2`] = `
     id="mobile.reaction_header.all_emojis"
     style={
       Object {
-        "color": "#166de0",
+        "color": "#1c58d9",
         "fontSize": 16,
         "marginLeft": 4,
       }
@@ -93,7 +93,7 @@ exports[`ReactionHeaderItem should match snapshot, renderContent 2`] = `
   <Text
     style={
       Object {
-        "color": "#166de0",
+        "color": "#1c58d9",
         "fontSize": 16,
         "marginLeft": 4,
       }

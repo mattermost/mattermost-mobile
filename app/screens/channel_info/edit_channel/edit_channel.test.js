@@ -20,7 +20,7 @@ describe('ChannelInfo -> EditChannel', () => {
     const baseProps = {
         testID: 'test-id',
         canEdit: true,
-        theme: Preferences.THEMES.default,
+        theme: Preferences.THEMES.denim,
     };
 
     test('should match snapshot for Edit Channel', () => {

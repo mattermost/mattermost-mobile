@@ -19,6 +19,9 @@ public class NotificationDismissService extends IntentService {
         final Bundle bundle = NotificationIntentAdapter.extractPendingNotificationDataFromIntent(intent);
         final String channelId = bundle.getString("channel_id");
         final String postId = bundle.getString("post_id");
+        final String rootId = bundle.getString("root_id");
+        final Boolean isCRTEnabled = bundle.getString("is_crt_enabled") != null && bundle.getString("is_crt_enabled").equals("true");
+
         int notificationId = CustomPushNotificationHelper.MESSAGE_NOTIFICATION_ID;
         if (postId != null) {
             notificationId = postId.hashCode();
@@ -26,7 +29,7 @@ public class NotificationDismissService extends IntentService {
             notificationId = channelId.hashCode();
         }
 
-        CustomPushNotification.cancelNotification(context, channelId, notificationId);
+        CustomPushNotification.cancelNotification(context, channelId, rootId, notificationId, isCRTEnabled);
         Log.i("ReactNative", "Dismiss notification");
     }
 }

@@ -4,13 +4,11 @@
 import {connect} from 'react-redux';
 
 import {getTheme} from '@mm-redux/selectors/entities/preferences';
-import {getDimensions} from '@selectors/device';
 
 import Gallery from './gallery';
 
 function mapStateToProps(state) {
     return {
-        ...getDimensions(state),
         theme: getTheme(state),
     };
 }

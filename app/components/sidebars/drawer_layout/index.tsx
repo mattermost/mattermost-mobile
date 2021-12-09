@@ -1,8 +1,11 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React from 'react';
+import React, {useEffect, useState} from 'react';
+import {DeviceEventEmitter, EventSubscription, Platform} from 'react-native';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
+
+import NavigationTypes from '@constants/navigation';
 
 import DrawerLayout from './drawer_layout';
 
@@ -30,11 +33,23 @@ interface DrawerLayoutAdapterProps {
 const DrawerLayoutAdapter = (props: DrawerLayoutAdapterProps) => {
     const insets = useSafeAreaInsets();
     const horizontal = insets.left + insets.right;
+    const [drawerLockMode, setDrawerLockMode] = useState(props.drawerLockMode || 'unlocked');
+
+    useEffect(() => {
+        let listener: EventSubscription | undefined;
+        if (Platform.OS === 'ios') {
+            listener = DeviceEventEmitter.addListener(NavigationTypes.DRAWER, (value) => {
+                setDrawerLockMode(value);
+            });
+        }
+
+        return () => listener?.remove();
+    });
 
     return (
         <DrawerLayout
             drawerBackgroundColor={props.drawerBackgroundColor}
-            drawerLockMode={props.drawerLockMode}
+            drawerLockMode={drawerLockMode}
             drawerPosition={props.drawerPosition}
             drawerWidth={props.drawerWidth - horizontal}
             isTablet={props.isTablet}

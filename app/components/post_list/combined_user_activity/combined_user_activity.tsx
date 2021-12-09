@@ -19,7 +19,7 @@ import LastUsers from './last_users';
 import {postTypeMessages} from './messages';
 
 import type {Post} from '@mm-redux/types/posts';
-import type {Theme} from '@mm-redux/types/preferences';
+import type {Theme} from '@mm-redux/types/theme';
 
 type Props = {
     canDelete: boolean;

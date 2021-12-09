@@ -10,7 +10,7 @@ import Preferences from '@mm-redux/constants/preferences';
 import RadioSetting from './radio_setting.js';
 
 describe('components/widgets/settings/RadioSetting', () => {
-    const theme = Preferences.THEMES.default;
+    const theme = Preferences.THEMES.denim;
     const options = [
         {text: 'this is engineering', value: 'Engineering'},
         {text: 'this is sales', value: 'Sales'},

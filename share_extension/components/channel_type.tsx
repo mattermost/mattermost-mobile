@@ -7,7 +7,7 @@ import {StyleSheet, View} from 'react-native';
 import CompassIcon from '@components/compass_icon';
 import {Preferences} from '@mm-redux/constants';
 
-const theme = Preferences.THEMES.default;
+const theme = Preferences.THEMES.denim;
 
 export function PublicChannel() {
     return (
@@ -46,7 +46,7 @@ export function GroupChannel() {
     return (
         <View style={style.container}>
             <CompassIcon
-                name='account-group-outline'
+                name='account-multiple-outline'
                 style={style.icon}
             />
         </View>

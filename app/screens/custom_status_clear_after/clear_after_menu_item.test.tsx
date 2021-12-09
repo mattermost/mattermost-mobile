@@ -11,7 +11,7 @@ import ClearAfterMenuItem from './clear_after_menu_item';
 
 describe('screens/clear_after_menu_item', () => {
     const baseProps = {
-        theme: Preferences.THEMES.default,
+        theme: Preferences.THEMES.denim,
         duration: CustomStatusDuration.DONT_CLEAR,
         separator: false,
         isSelected: false,

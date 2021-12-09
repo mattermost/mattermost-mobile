@@ -190,12 +190,7 @@ export function setUrl(url: string) {
 
 export function getRedirectLocation(url: string): ActionFunc {
     return async (dispatch: DispatchFunc, getState: GetStateFunc) => {
-        let pendingData: Promise<any>;
-        if (isMinimumServerVersion(getServerVersion(getState()), 5, 3)) {
-            pendingData = Client4.getRedirectLocation(url);
-        } else {
-            pendingData = Promise.resolve({location: url});
-        }
+        const pendingData = Client4.getRedirectLocation(url);
 
         let data;
         try {

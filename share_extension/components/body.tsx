@@ -1,6 +1,9 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+/* eslint-disable react/prop-types */
+// React prop validations are not recognized with forwardRef
+
 import React, {forwardRef, useCallback, useImperativeHandle, useRef, useState} from 'react';
 import {ScrollView, StyleSheet, TextInput} from 'react-native';
 
@@ -18,7 +21,7 @@ export interface BodyProps {
 }
 
 const INPUT_HEIGHT = 150;
-const theme = Preferences.THEMES.default;
+const theme = Preferences.THEMES.denim;
 
 const Body = forwardRef<BodyRef, BodyProps>(({canPost, files, initialValue, placeholder}: BodyProps, ref) => {
     const scrollViewRef = useRef<ScrollView>(null);
@@ -58,6 +61,7 @@ const Body = forwardRef<BodyRef, BodyProps>(({canPost, files, initialValue, plac
                 style={styles.flex}
             >
                 <TextInput
+                    allowFontScaling={true}
                     ref={inputRef}
                     autoCapitalize='sentences'
                     autoCompleteType='off'

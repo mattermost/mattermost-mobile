@@ -12,7 +12,7 @@ import {tryOpenURL} from '@utils/url';
 import OpengraphImage from './opengraph_image';
 
 import type {Post} from '@mm-redux/types/posts';
-import type {Theme} from '@mm-redux/types/preferences';
+import type {Theme} from '@mm-redux/types/theme';
 
 type OpengraphProps = {
     intl: typeof intlShape;

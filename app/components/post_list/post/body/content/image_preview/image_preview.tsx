@@ -16,7 +16,7 @@ import {calculateDimensions, getViewPortWidth, isGifTooLarge} from '@utils/image
 import {isImageLink, isValidUrl} from '@utils/url';
 
 import type {Post} from '@mm-redux/types/posts';
-import type {Theme} from '@mm-redux/types/preferences';
+import type {Theme} from '@mm-redux/types/theme';
 
 type ImagePreviewProps = {
     expandedLink?: string;

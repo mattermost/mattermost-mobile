@@ -45,7 +45,7 @@ describe('channelInfo', () => {
         currentChannelMemberCount: 2,
         currentChannelGuestCount: 0,
         currentUserId: '1234',
-        theme: Preferences.THEMES.default,
+        theme: Preferences.THEMES.denim,
         isTeammateGuest: false,
         isDirectMessage: false,
         isLandscape: false,
@@ -57,13 +57,52 @@ describe('channelInfo', () => {
             getCustomEmojisInText: jest.fn(),
             showPermalink: jest.fn(),
             setChannelDisplayName: jest.fn(),
+            joinCall: jest.fn(),
+            enableChannelCalls: jest.fn(),
+            disableChannelCalls: jest.fn(),
         },
+        isCallsEnabled: false,
+        callsFeatureEnabled: false,
+        isChannelAdmin: false,
     };
 
     test('should match snapshot', async () => {
         const wrapper = shallow(
             <ChannelInfo
                 {...baseProps}
+            />,
+            {context: {intl: intlMock}},
+        );
+        expect(wrapper.getElement()).toMatchSnapshot();
+    });
+
+    test('should match snapshot on calls features enabled, user is not admin and calls disabled for channel', async () => {
+        const props = {...baseProps, isCallsEnabled: false, callsFeatureEnabled: true, isChannelAdmin: false};
+        const wrapper = shallow(
+            <ChannelInfo
+                {...props}
+            />,
+            {context: {intl: intlMock}},
+        );
+        expect(wrapper.getElement()).toMatchSnapshot();
+    });
+
+    test('should match snapshot on calls features enabled and calls disabled for channel', async () => {
+        const props = {...baseProps, isCallsEnabled: false, callsFeatureEnabled: true, isChannelAdmin: true};
+        const wrapper = shallow(
+            <ChannelInfo
+                {...props}
+            />,
+            {context: {intl: intlMock}},
+        );
+        expect(wrapper.getElement()).toMatchSnapshot();
+    });
+
+    test('should match snapshot on calls features enabled and calls enabled for channel', async () => {
+        const props = {...baseProps, isCallsEnabled: true, callsFeatureEnabled: true, isChannelAdmin: true};
+        const wrapper = shallow(
+            <ChannelInfo
+                {...props}
             />,
             {context: {intl: intlMock}},
         );
