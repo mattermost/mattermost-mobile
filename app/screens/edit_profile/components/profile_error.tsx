@@ -14,27 +14,6 @@ type DisplayErrorProps = {
     error: Partial<ClientErrorProps> | string;
 }
 
-const ProfileError = ({error}: DisplayErrorProps) => {
-    const theme = useTheme();
-    const style = getStyleSheet(theme);
-
-    return (
-        <View style={style.errorContainer}>
-            <CompassIcon
-                style={style.icon}
-                size={18}
-                name='alert-outline'
-            />
-            <ErrorText
-                theme={theme}
-                testID='edit_profile.error.text'
-                error={error}
-                textStyle={style.text}
-            />
-        </View>
-    );
-};
-
 const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     return {
         errorContainer: {
@@ -56,5 +35,26 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         },
     };
 });
+
+const ProfileError = ({error}: DisplayErrorProps) => {
+    const theme = useTheme();
+    const style = getStyleSheet(theme);
+
+    return (
+        <View style={style.errorContainer}>
+            <CompassIcon
+                style={style.icon}
+                size={18}
+                name='alert-outline'
+            />
+            <ErrorText
+                theme={theme}
+                testID='edit_profile.error.text'
+                error={error}
+                textStyle={style.text}
+            />
+        </View>
+    );
+};
 
 export default ProfileError;

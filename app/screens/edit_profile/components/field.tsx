@@ -1,7 +1,6 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {MessageDescriptor} from '@formatjs/intl/src/types';
 import React, {RefObject, useCallback} from 'react';
 import {useIntl} from 'react-intl';
 import {Platform, StyleSheet, TextInputProps, View} from 'react-native';
@@ -17,7 +16,7 @@ export type FieldProps = TextInputProps & {
     isDisabled?: boolean;
     fieldDescription?: string;
     fieldKey: string;
-    label: MessageDescriptor | string;
+    label: string;
     maxLength?: number;
     onTextChange: (fieldKey: string, value: string) => void;
     isOptional?: boolean;
@@ -64,22 +63,20 @@ const Field = ({
 
     const onChangeText = useCallback((text: string) => onTextChange(fieldKey, text), [fieldKey, onTextChange]);
 
-    const onSubmitEditing = () => {
+    const onSubmitEditing = useCallback(() => {
         onFocusNextField(fieldKey);
-    };
+    }, [fieldKey]);
 
     const style = getStyleSheet(isTablet);
 
     const keyboard = (Platform.OS === 'android' && keyboardType === 'url') ? 'default' : keyboardType;
-
-    const labelText = typeof label === 'string' ? label : intl.formatMessage(label);
 
     const optionalText = isOptional ? intl.formatMessage({
         id: 'channel_modal.optional',
         defaultMessage: '(optional)',
     }) : ' *';
 
-    const formattedLabel = labelText + optionalText;
+    const formattedLabel = label + optionalText;
 
     return (
         <View

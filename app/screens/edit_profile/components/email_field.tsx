@@ -5,7 +5,6 @@ import React, {RefObject} from 'react';
 import {useIntl} from 'react-intl';
 
 import {FloatingTextInputRef} from '@components/floating_text_input_label';
-import {FIELDS} from '@screens/edit_profile/constants';
 
 import Field from './field';
 
@@ -16,6 +15,7 @@ type EmailSettingsProps = {
     onChange: (fieldKey: string, value: string) => void;
     onFocusNextField: (fieldKey: string) => void;
     isDisabled: boolean;
+    label: string;
 }
 
 const EmailField = ({
@@ -25,6 +25,7 @@ const EmailField = ({
     onChange,
     onFocusNextField,
     isDisabled,
+    label,
 }: EmailSettingsProps) => {
     const intl = useIntl();
 
@@ -58,7 +59,7 @@ const EmailField = ({
             fieldRef={fieldRef}
             isDisabled={isDisabled}
             keyboardType='email-address'
-            label={FIELDS.email}
+            label={label}
             onFocusNextField={onFocusNextField}
             onTextChange={onChange}
             returnKeyType='next'

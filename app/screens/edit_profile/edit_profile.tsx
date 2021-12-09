@@ -16,7 +16,6 @@ import TabletTitle from '@components/tablet_title';
 import {Events} from '@constants';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
-import {FIELDS} from '@screens/edit_profile/constants';
 import {dismissModal, popTopScreen, setButtons} from '@screens/navigation';
 import {EditProfileProps, FieldConfig, FieldSequence, UserInfo} from '@typings/screens/edit_profile';
 import {preventDoubleTap} from '@utils/tap';
@@ -24,6 +23,8 @@ import {preventDoubleTap} from '@utils/tap';
 import EmailField from './components/email_field';
 import Field from './components/field';
 import ProfileError from './components/profile_error';
+
+import type {MessageDescriptor} from '@formatjs/intl/src/types';
 
 const edges: Edge[] = ['bottom', 'left', 'right'];
 
@@ -54,6 +55,33 @@ const styles = StyleSheet.create({
 });
 
 const SPINNER_LAYER = 'Shape Layer 1';
+
+const FIELDS: { [id: string]: MessageDescriptor } = {
+    firstName: {
+        id: 'user.settings.general.firstName',
+        defaultMessage: 'First Name',
+    },
+    lastName: {
+        id: 'user.settings.general.lastName',
+        defaultMessage: 'Last Name',
+    },
+    username: {
+        id: 'user.settings.general.username',
+        defaultMessage: 'Username',
+    },
+    nickname: {
+        id: 'user.settings.general.nickname',
+        defaultMessage: 'Nickname',
+    },
+    position: {
+        id: 'user.settings.general.position',
+        defaultMessage: 'Position',
+    },
+    email: {
+        id: 'user.settings.general.email',
+        defaultMessage: 'Email',
+    },
+};
 
 const EditProfile = ({
     closeButtonId,
@@ -136,7 +164,7 @@ const EditProfile = ({
 
     const service = currentUser.authService;
 
-    const close = () => {
+    const close = useCallback(() => {
         if (isModal) {
             dismissModal({componentId});
         } else if (isTablet) {
@@ -146,17 +174,17 @@ const EditProfile = ({
         }
 
         return true;
-    };
+    }, [isModal, isTablet, componentId]);
 
-    const enableSaveButton = (value: boolean) => {
+    const enableSaveButton = useCallback((value: boolean) => {
         const buttons = {
             rightButtons: [{...rightButton!, enabled: value}],
         };
         setCanSave(value);
         setButtons(componentId, buttons);
-    };
+    }, [componentId]);
 
-    const submitUser = preventDoubleTap(async () => {
+    const submitUser = useCallback(preventDoubleTap(async () => {
         enableSaveButton(false);
         setError(undefined);
         setUpdating(true);
@@ -181,15 +209,15 @@ const EditProfile = ({
         } catch (e) {
             resetScreen(e as Error);
         }
-    });
+    }), [userInfo]);
 
-    const resetScreen = (resetError: Error) => {
+    const resetScreen = useCallback((resetError: Error) => {
         setError(resetError?.message);
         Keyboard.dismiss();
         setUpdating(false);
         enableSaveButton(true);
         scrollViewRef.current?.scrollToPosition(0, 0, true);
-    };
+    }, []);
 
     const updateField = useCallback((fieldKey: string, name: string) => {
         const update = {...userInfo};
@@ -205,7 +233,7 @@ const EditProfile = ({
     const includesSsoService = (sso: string) => ['gitlab', 'google', 'office365'].includes(sso);
     const isSAMLOrLDAP = (protocol: string) => ['ldap', 'saml'].includes(protocol);
 
-    const fieldSequence: FieldSequence = {
+    const userProfileFields: FieldSequence = {
         firstName: {
             ref: firstNameRef,
             isDisabled: (isSAMLOrLDAP(service) && lockedFirstName) || includesSsoService(service),
@@ -232,42 +260,43 @@ const EditProfile = ({
         },
     };
 
-    const onFocusNextField = (fieldKey: string) => {
-        const findNextField = () => {
-            const fields = Object.keys(fieldSequence);
-            const curIndex = fields.indexOf(fieldKey);
-            const searchIndex = curIndex + 1;
+    const onFocusNextField = useCallback(
+        ((fieldKey: string) => {
+            const findNextField = () => {
+                const fields = Object.keys(userProfileFields);
+                const curIndex = fields.indexOf(fieldKey);
+                const searchIndex = curIndex + 1;
 
-            if (curIndex === -1 || searchIndex > fields.length) {
-                return undefined;
-            }
+                if (curIndex === -1 || searchIndex > fields.length) {
+                    return undefined;
+                }
 
-            const remainingFields = fields.slice(searchIndex);
+                const remainingFields = fields.slice(searchIndex);
 
-            const nextFieldIndex = remainingFields.findIndex((f: string) => {
-                const field = fieldSequence[f];
-                return !field.isDisabled;
-            });
+                const nextFieldIndex = remainingFields.findIndex((f: string) => {
+                    const field = userProfileFields[f];
+                    return !field.isDisabled;
+                });
 
-            if (nextFieldIndex === -1) {
-                return {isLastEnabledField: true, nextField: undefined};
-            }
+                if (nextFieldIndex === -1) {
+                    return {isLastEnabledField: true, nextField: undefined};
+                }
 
-            const fieldName = remainingFields[nextFieldIndex];
-            return {isLastEnabledField: false, nextField: fieldSequence[fieldName]};
-        };
+                const fieldName = remainingFields[nextFieldIndex];
+                return {isLastEnabledField: false, nextField: userProfileFields[fieldName]};
+            };
 
-        const next = findNextField();
-        if (next?.isLastEnabledField && canSave) {
+            const next = findNextField();
+            if (next?.isLastEnabledField && canSave) {
             // performs form submission
-            Keyboard.dismiss();
-            submitUser();
-        } else if (next?.nextField) {
-            next?.nextField?.ref?.current?.focus();
-        } else {
-            Keyboard.dismiss();
-        }
-    };
+                Keyboard.dismiss();
+                submitUser();
+            } else if (next?.nextField) {
+                next?.nextField?.ref?.current?.focus();
+            } else {
+                Keyboard.dismiss();
+            }
+        }), []);
 
     const fieldConfig: FieldConfig = {
         blurOnSubmit: false,
@@ -329,8 +358,8 @@ const EditProfile = ({
                     <Field
                         fieldKey='firstName'
                         fieldRef={firstNameRef}
-                        isDisabled={fieldSequence.firstName.isDisabled}
-                        label={FIELDS.firstName}
+                        isDisabled={userProfileFields.firstName.isDisabled}
+                        label={intl.formatMessage(FIELDS.firstName)}
                         testID='edit_profile.text_setting.firstName'
                         value={userInfo.firstName}
                         {...fieldConfig}
@@ -339,8 +368,8 @@ const EditProfile = ({
                     <Field
                         fieldKey='lastName'
                         fieldRef={lastNameRef}
-                        isDisabled={fieldSequence.lastName.isDisabled}
-                        label={FIELDS.lastName}
+                        isDisabled={userProfileFields.lastName.isDisabled}
+                        label={intl.formatMessage(FIELDS.lastName)}
                         testID='edit_profile.text_setting.lastName'
                         value={userInfo.lastName}
                         {...fieldConfig}
@@ -349,8 +378,8 @@ const EditProfile = ({
                     <Field
                         fieldKey='username'
                         fieldRef={usernameRef}
-                        isDisabled={fieldSequence.username.isDisabled}
-                        label={FIELDS.username}
+                        isDisabled={userProfileFields.username.isDisabled}
+                        label={intl.formatMessage(FIELDS.username)}
                         maxLength={22}
                         testID='edit_profile.text_setting.username'
                         value={userInfo.username}
@@ -360,8 +389,9 @@ const EditProfile = ({
                     {userInfo.email && (
                         <EmailField
                             authService={currentUser.authService}
-                            isDisabled={fieldSequence.email.isDisabled}
+                            isDisabled={userProfileFields.email.isDisabled}
                             email={userInfo.email}
+                            label={intl.formatMessage(FIELDS.email)}
                             fieldRef={emailRef}
                             onChange={updateField}
                             onFocusNextField={onFocusNextField}
@@ -371,8 +401,8 @@ const EditProfile = ({
                     <Field
                         fieldKey='nickname'
                         fieldRef={nicknameRef}
-                        isDisabled={fieldSequence.nickname.isDisabled}
-                        label={FIELDS.nickname}
+                        isDisabled={userProfileFields.nickname.isDisabled}
+                        label={intl.formatMessage(FIELDS.nickname)}
                         maxLength={22}
                         testID='edit_profile.text_setting.nickname'
                         value={userInfo.nickname}
@@ -382,9 +412,9 @@ const EditProfile = ({
                     <Field
                         fieldKey='position'
                         fieldRef={positionRef}
-                        isDisabled={fieldSequence.position.isDisabled}
+                        isDisabled={userProfileFields.position.isDisabled}
                         isOptional={true}
-                        label={FIELDS.position}
+                        label={intl.formatMessage(FIELDS.position)}
                         maxLength={128}
                         {...fieldConfig}
                         returnKeyType='done'
