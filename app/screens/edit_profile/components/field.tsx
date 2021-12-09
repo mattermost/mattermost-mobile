@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {RefObject, useCallback} from 'react';
+import React, {memo, RefObject, useCallback} from 'react';
 import {useIntl} from 'react-intl';
 import {Platform, StyleSheet, TextInputProps, View} from 'react-native';
 
@@ -65,7 +65,7 @@ const Field = ({
 
     const onSubmitEditing = useCallback(() => {
         onFocusNextField(fieldKey);
-    }, [fieldKey]);
+    }, [fieldKey, onFocusNextField]);
 
     const style = getStyleSheet(isTablet);
 
@@ -111,4 +111,4 @@ const Field = ({
     );
 };
 
-export default Field;
+export default memo(Field);
