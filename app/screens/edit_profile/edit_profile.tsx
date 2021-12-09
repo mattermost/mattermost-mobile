@@ -357,14 +357,16 @@ const EditProfile = ({
                         {...fieldConfig}
                     />
                     <View style={styles.separator}/>
-                    <EmailField
-                        authService={currentUser.authService}
-                        isDisabled={fieldSequence.email.isDisabled}
-                        email={userInfo.email}
-                        fieldRef={emailRef}
-                        onChange={updateField}
-                        onFocusNextField={onFocusNextField}
-                    />
+                    {userInfo.email && (
+                        <EmailField
+                            authService={currentUser.authService}
+                            isDisabled={fieldSequence.email.isDisabled}
+                            email={userInfo.email}
+                            fieldRef={emailRef}
+                            onChange={updateField}
+                            onFocusNextField={onFocusNextField}
+                        />
+                    )}
                     <View style={styles.separator}/>
                     <Field
                         fieldKey='nickname'

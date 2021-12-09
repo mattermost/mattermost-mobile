@@ -5,7 +5,6 @@ import React, {RefObject} from 'react';
 import {useIntl} from 'react-intl';
 
 import {FloatingTextInputRef} from '@components/floating_text_input_label';
-import {t} from '@i18n';
 import {FIELDS} from '@screens/edit_profile/constants';
 
 import Field from './field';
@@ -29,46 +28,25 @@ const EmailField = ({
 }: EmailSettingsProps) => {
     const intl = useIntl();
 
+    const services: Record<string, string> = {
+        gitlab: 'GitLab',
+        google: 'Google Apps',
+        office365: 'Office 365',
+        ldap: 'AD/LDAP',
+        saml: 'SAML',
+    };
+
+    const service = services[authService];
+
     let defaultMessage: string;
-    let service = '';
-    let id = '';
+    let id: string;
 
-    switch (authService) {
-        case 'gitlab':
-            service = 'GitLab';
-            id = t('user.settings.general.emailGitlabCantUpdate');
-            break;
-        case 'google':
-            service = 'Google Apps';
-            id = t('user.settings.general.emailGoogleCantUpdate');
-            break;
-        case 'office365':
-            service = 'Office 365';
-            id = t('user.settings.general.emailOffice365CantUpdate');
-            break;
-        case 'ldap':
-            service = 'AD/LDAP';
-            id = t('user.settings.general.emailLdapCantUpdate');
-            break;
-        case 'saml':
-            service = 'SAML';
-            id = t('user.settings.general.emailSamlCantUpdate');
-            break;
-
-        case '':
-            id = t('user.settings.general.emailCantUpdate');
-            service = '';
-            break;
-    }
-
-    if (id === 'user.settings.general.emailCantUpdate') {
-        defaultMessage = 'Email must be updated using a web client or desktop application.';
-    } else {
+    if (service) {
+        id = 'user.edit_profile.email.auth_service';
         defaultMessage = `Login occurs through ${service}. Email cannot be updated. Email address used for notifications is {email}.`;
-    }
-
-    if (!id) {
-        return null;
+    } else {
+        id = 'user.edit_profile.email.web_client';
+        defaultMessage = 'Email must be updated using a web client or desktop application.';
     }
 
     return (
