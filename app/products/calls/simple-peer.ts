@@ -322,7 +322,7 @@ export default class Peer extends stream.Duplex {
         if (this.destroying) {
             return;
         }
-        if (this.destroyed) {
+        if (this.destroyed || !this.pc) {
             throw errCode(
                 new Error('cannot addTrack after peer is destroyed'),
                 'ERR_DESTROYED',
@@ -332,7 +332,7 @@ export default class Peer extends stream.Duplex {
         const submap = this.senderMap.get(track) || new Map(); // nested Maps map [track, stream] to sender
         let sender = submap.get(s);
         if (!sender) {
-            sender = s.addTrack(track);
+            sender = this.pc.addTrack(track);
             submap.set(s, sender);
             this.senderMap.set(track, submap);
             this.needsNegotiation();
