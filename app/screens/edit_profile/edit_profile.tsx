@@ -283,6 +283,7 @@ const EditProfile = ({
             }
 
             const fieldName = remainingFields[nextFieldIndex];
+
             return {isLastEnabledField: false, nextField: userProfileFields[fieldName]};
         };
 
@@ -296,7 +297,7 @@ const EditProfile = ({
         } else {
             Keyboard.dismiss();
         }
-    }), []);
+    }), [canSave]);
 
     const fieldConfig: FieldConfig = {
         blurOnSubmit: false,
