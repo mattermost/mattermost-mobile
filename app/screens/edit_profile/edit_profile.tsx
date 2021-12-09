@@ -10,7 +10,7 @@ import {Edge, SafeAreaView} from 'react-native-safe-area-context';
 
 import {updateMe} from '@actions/remote/user';
 import {FloatingTextInputRef} from '@components/floating_text_input_label';
-import Loading from '@components/loading';
+import Loading, {SPINNER_LAYERS} from '@components/loading';
 import ProfilePicture from '@components/profile_picture';
 import TabletTitle from '@components/tablet_title';
 import {Events} from '@constants';
@@ -53,8 +53,6 @@ const styles = StyleSheet.create({
         zIndex: 1000,
     },
 });
-
-const SPINNER_LAYER = 'Shape Layer 1';
 
 const FIELDS: { [id: string]: MessageDescriptor } = {
     firstName: {
@@ -343,7 +341,7 @@ const EditProfile = ({
                             style={styles.spinner}
                         >
                             <Loading
-                                colorFilters={[{keypath: SPINNER_LAYER, color: theme.buttonBg}]}
+                                colorFilters={[{keypath: SPINNER_LAYERS.layerOne, color: theme.buttonBg}]}
                             />
                         </View>
 

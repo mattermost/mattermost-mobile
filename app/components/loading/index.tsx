@@ -6,7 +6,7 @@ import React from 'react';
 import {StyleSheet, View, ViewStyle} from 'react-native';
 
 type ColorFilter = {
-    keypath: string;
+    keypath: typeof SPINNER_LAYERS[keyof typeof SPINNER_LAYERS] ;
     color: string;
 }
 
@@ -15,20 +15,6 @@ type LoadingProps = {
     style?: ViewStyle;
     colorFilters?: ColorFilter[];
 }
-
-const Loading = ({containerStyle, style, colorFilters}: LoadingProps) => {
-    return (
-        <View style={[styles.container, containerStyle]}>
-            <LottieView
-                source={require('./spinner.json')}
-                autoPlay={true}
-                loop={true}
-                style={[styles.lottie, style]}
-                colorFilters={colorFilters}
-            />
-        </View>
-    );
-};
 
 const styles = StyleSheet.create({
     container: {
@@ -43,4 +29,22 @@ const styles = StyleSheet.create({
     },
 });
 
+export const SPINNER_LAYERS = {
+    layerOne: 'Shape Layer 1',
+    layerTwo: 'Shape Layer 2',
+} as const;
+
+const Loading = ({containerStyle, style, colorFilters}: LoadingProps) => {
+    return (
+        <View style={[styles.container, containerStyle]}>
+            <LottieView
+                source={require('./spinner.json')}
+                autoPlay={true}
+                loop={true}
+                style={[styles.lottie, style]}
+                colorFilters={colorFilters}
+            />
+        </View>
+    );
+};
 export default Loading;
