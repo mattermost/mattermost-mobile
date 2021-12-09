@@ -162,6 +162,8 @@ declare module 'react-native-webrtc2' {
 
         addStream(stream: MediaStream): void;
 
+        addTrack(track: MediaStreamTrack): void;
+
         addTransceiver(kind: 'audio'|'video'|MediaStreamTrack, init: any): void;
 
         removeStream(stream: MediaStream): void;

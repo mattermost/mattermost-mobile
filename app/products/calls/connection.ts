@@ -1,6 +1,9 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore
+import {deflate} from 'pako/lib/deflate.js';
 import InCallManager from 'react-native-incall-manager';
 import {
     MediaStream,
@@ -11,17 +14,11 @@ import {
 import {Client4} from '@client/rest';
 
 import Peer from './simple-peer';
+import WebSocketClient from './websocket';
 
 export let client: any = null;
 
 const websocketConnectTimeout = 3000;
-
-function getWSConnectionURL(channelID: string): string {
-    let url = Client4.getAbsoluteUrl(`/plugins/com.mattermost.calls/${channelID}/ws`);
-    url = url.replace(/^https:/, 'wss:');
-    url = url.replace(/^http:/, 'ws:');
-    return url;
-}
 
 export async function newClient(channelID: string, closeCb: () => void, setScreenShareURL: (url: string) => void) {
     let peer: any = null;
@@ -41,7 +38,7 @@ export async function newClient(channelID: string, closeCb: () => void, setScree
         console.log('Unable to get media device:', err); // eslint-disable-line no-console
     }
 
-    const ws = new WebSocket(getWSConnectionURL(channelID));
+    const ws = new WebSocketClient(Client4.getWebSocketUrl());
 
     const disconnect = () => {
         ws.close();
@@ -67,9 +64,7 @@ export async function newClient(channelID: string, closeCb: () => void, setScree
             audioTrack.enabled = false;
         }
         if (ws) {
-            ws.send(JSON.stringify({
-                type: 'mute',
-            }));
+            ws.send('mute');
         }
     };
 
@@ -78,28 +73,28 @@ export async function newClient(channelID: string, closeCb: () => void, setScree
             audioTrack.enabled = true;
         }
         if (ws) {
-            ws.send(JSON.stringify({
-                type: 'unmute',
-            }));
+            ws.send('unmute');
         }
     };
 
-    ws.onerror = (err) => console.log('WS ERROR', err); // eslint-disable-line no-console
+    ws.on('error', (err) => console.log('WS ERROR', err)); // eslint-disable-line no-console
 
-    ws.onopen = async () => {
+    ws.on('open', async () => {
+        ws.send('join', {
+            channelID,
+        });
+
         InCallManager.start({media: 'audio'});
         peer = new Peer(stream);
         peer.on('signal', (data: any) => {
             if (data.type === 'offer' || data.type === 'answer') {
-                ws.send(JSON.stringify({
-                    type: 'signal',
-                    data,
-                }));
+                ws.send('sdp', {
+                    data: deflate(JSON.stringify(data)),
+                }, true);
             } else if (data.type === 'candidate') {
-                ws.send(JSON.stringify({
-                    type: 'ice',
-                    data,
-                }));
+                ws.send('ice', {
+                    data: JSON.stringify(data.candidate),
+                });
             }
         });
 
@@ -112,13 +107,13 @@ export async function newClient(channelID: string, closeCb: () => void, setScree
 
         peer.on('error', (err: any) => console.log('PEER ERROR', err)); // eslint-disable-line no-console
 
-        ws.onmessage = ({data}) => {
+        ws.on('message', ({data}) => {
             const msg = JSON.parse(data);
             if (msg.type === 'answer' || msg.type === 'offer') {
                 peer.signal(data);
             }
-        };
-    };
+        });
+    });
 
     const waitForReady = () => {
         const waitForReadyImpl = (callback: () => void, fail: () => void, timeout: number) => {
@@ -127,7 +122,7 @@ export async function newClient(channelID: string, closeCb: () => void, setScree
                 return;
             }
             setTimeout(() => {
-                if (ws.readyState === WebSocket.OPEN) {
+                if (ws.state() === WebSocket.OPEN) {
                     callback();
                 } else {
                     waitForReadyImpl(callback, fail, timeout - 10);

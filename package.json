@@ -8,6 +8,7 @@
   "private": true,
   "dependencies": {
     "@mattermost/react-native-paste-input": "0.3.4",
+    "@msgpack/msgpack": "2.7.1",
     "@react-native-async-storage/async-storage": "1.15.13",
     "@react-native-community/cameraroll": "4.1.2",
     "@react-native-community/clipboard": "1.5.1",
@@ -35,6 +36,7 @@
     "jail-monkey": "2.6.0",
     "mime-db": "1.51.0",
     "moment-timezone": "0.5.34",
+    "pako": "2.0.4",
     "prop-types": "15.7.2",
     "react": "17.0.2",
     "react-intl": "2.8.0",
