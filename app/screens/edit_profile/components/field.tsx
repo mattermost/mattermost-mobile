@@ -74,9 +74,9 @@ const Field = ({
     const optionalText = isOptional ? intl.formatMessage({
         id: 'channel_modal.optional',
         defaultMessage: '(optional)',
-    }) : ' *';
+    }) : '*';
 
-    const formattedLabel = label + optionalText;
+    const formattedLabel = `${label} ${optionalText}`;
 
     return (
         <View

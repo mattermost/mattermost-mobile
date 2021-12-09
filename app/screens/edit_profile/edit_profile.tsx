@@ -217,7 +217,7 @@ const EditProfile = ({
         setUpdating(false);
         enableSaveButton(true);
         scrollViewRef.current?.scrollToPosition(0, 0, true);
-    }, []);
+    }, [enableSaveButton]);
 
     const updateField = useCallback((fieldKey: string, name: string) => {
         const update = {...userInfo};
@@ -228,7 +228,7 @@ const EditProfile = ({
         const currentValue = currentUser[fieldKey];
         const didChange = currentValue !== name;
         enableSaveButton(didChange);
-    }, [userInfo]);
+    }, [userInfo, currentUser, enableSaveButton]);
 
     const includesSsoService = (sso: string) => ['gitlab', 'google', 'office365'].includes(sso);
     const isSAMLOrLDAP = (protocol: string) => ['ldap', 'saml'].includes(protocol);

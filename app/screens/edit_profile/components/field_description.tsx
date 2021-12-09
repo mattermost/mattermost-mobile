@@ -13,19 +13,6 @@ type HelpContentProps = {
     text?: string;
 };
 
-const Description = ({text}: HelpContentProps) => {
-    const theme = useTheme();
-    const intl = useIntl();
-
-    const style = getStyleSheet(theme);
-    const desc = text ?? intl.formatMessage({id: 'user.settings.general.field_handled_externally', defaultMessage: 'This field is handled through your login provider. If you want to change it, you need to do so through your login provider.'});
-    return (
-        <View style={style.container}>
-            <Text style={style.text}>{desc}</Text>
-        </View>
-    );
-};
-
 const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     return {
         container: {
@@ -37,5 +24,22 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         },
     };
 });
+
+const Description = ({text}: HelpContentProps) => {
+    const theme = useTheme();
+    const intl = useIntl();
+
+    const style = getStyleSheet(theme);
+    const desc = text ?? intl.formatMessage({
+        id: 'user.settings.general.field_handled_externally',
+        defaultMessage: 'This field is handled through your login provider. If you want to change it, you need to do so through your login provider.',
+    });
+
+    return (
+        <View style={style.container}>
+            <Text style={style.text}>{desc}</Text>
+        </View>
+    );
+};
 
 export default Description;
