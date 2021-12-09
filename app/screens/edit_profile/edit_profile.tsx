@@ -98,7 +98,6 @@ const EditProfile = ({
     const serverUrl = useServerUrl();
     const theme = useTheme();
     const keyboardAwareRef = useRef<KeyboardAwareScrollView>();
-
     const firstNameRef = useRef<FloatingTextInputRef>(null);
     const lastNameRef = useRef<FloatingTextInputRef>(null);
     const usernameRef = useRef<FloatingTextInputRef>(null);
@@ -121,14 +120,9 @@ const EditProfile = ({
     const scrollViewRef = useRef<KeyboardAwareScrollView>();
 
     const buttonText = intl.formatMessage({id: 'mobile.account.settings.save', defaultMessage: 'Save'});
-    const rightButton = isTablet ? null : {
-        id: 'update-profile',
-        enabled: false,
-        showAsAction: 'always' as const,
-        testID: 'edit_profile.save.button',
-        color: theme.sidebarHeaderTextColor,
-        text: buttonText,
-    };
+    const rightButton = useMemo(() => {
+        return isTablet ? null : {
+            id: 'update-profile',
             enabled: false,
             showAsAction: 'always' as const,
             testID: 'edit_profile.save.button',
@@ -279,19 +273,18 @@ const EditProfile = ({
 
             const remainingFields = fields.slice(searchIndex);
 
-                    const field = userProfileFields[f];
             const nextFieldIndex = remainingFields.findIndex((f: string) => {
                 const field = userProfileFields[f];
+                return !field.isDisabled;
             });
 
-                }
             if (nextFieldIndex === -1) {
                 return {isLastEnabledField: true, nextField: undefined};
             }
 
-                const fieldName = remainingFields[nextFieldIndex];
             const fieldName = remainingFields[nextFieldIndex];
             return {isLastEnabledField: false, nextField: userProfileFields[fieldName]};
+        };
 
         const next = findNextField();
         if (next?.isLastEnabledField && canSave) {
