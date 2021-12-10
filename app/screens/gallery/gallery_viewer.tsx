@@ -4,7 +4,7 @@
 import React, {useEffect, useMemo, useRef, useState} from 'react';
 import {Platform, StyleSheet, useWindowDimensions, View} from 'react-native';
 import {PanGestureHandler, PinchGestureHandler, State, TapGestureHandler, TapGestureHandlerStateChangeEvent} from 'react-native-gesture-handler';
-import Animated, {abs, add, and, call, clockRunning, cond, divide, eq, greaterOrEq, greaterThan, multiply, neq, not, onChange, set, sub, useCode, EasingNode, ceil} from 'react-native-reanimated';
+import Animated, {abs, add, and, call, clockRunning, cond, divide, eq, greaterOrEq, greaterThan, lessThan, multiply, neq, not, onChange, set, sub, useCode, EasingNode, ceil} from 'react-native-reanimated';
 import {clamp, snapPoint, timing, useClock, usePanGestureHandler, usePinchGestureHandler, useTapGestureHandler, useValue, vec} from 'react-native-redash/lib/module/v1';
 
 import {isImage, isVideo} from '@utils/file';
@@ -26,8 +26,13 @@ type GalleryStyle = {
 
 const itemTopStyle = (footerVisible: boolean, isLandscape: boolean): number => {
     if (Platform.OS === 'android') {
+<<<<<<< HEAD
         if (footerVisible) {
             return isLandscape ? -64 : -99;
+=======
+        if (props.headerVisible) {
+            return props.isLandscape ? -64 : -99;
+>>>>>>> ae5660184 (GalleryViewer: only pan on for more than 1 file)
         }
 
         return isLandscape ? -6 : -41;
@@ -208,7 +213,13 @@ const GalleryViewer = (props: GalleryProps) => {
         () => [
             onChange(
                 translationX,
-                cond(and(eq(pan.state, State.ACTIVE), greaterThan(files.length, 1)), [
+                cond(and(eq(pan.state, State.ACTIVE), and(neq(index, 0), greaterThan(translationX, 0))), [
+                    set(translateX, add(offsetX, translationX)),
+                ]),
+            ),
+            onChange(
+                translationX,
+                cond(and(eq(pan.state, State.ACTIVE), and(neq(index, files.length - 1), lessThan(translationX, 0))), [
                     set(translateX, add(offsetX, translationX)),
                 ]),
             ),
