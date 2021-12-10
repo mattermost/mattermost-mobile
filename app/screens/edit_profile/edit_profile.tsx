@@ -146,7 +146,7 @@ const EditProfile = ({
         return () => {
             unsubscribe.remove();
         };
-    }, [userInfo, isTablet, componentId, closeButtonId]);
+    }, [userInfo]);
 
     useEffect(() => {
         const backHandler = BackHandler.addEventListener('hardwareBackPress', close);
@@ -159,7 +159,7 @@ const EditProfile = ({
         if (!isTablet) {
             setButtons(componentId, {rightButtons: [rightButton!]});
         }
-    }, [componentId, rightButton]);
+    }, []);
 
     const service = currentUser.authService;
 
@@ -173,7 +173,7 @@ const EditProfile = ({
         }
 
         return true;
-    }, [isModal, isTablet, componentId]);
+    }, [isModal]);
 
     const enableSaveButton = useCallback((value: boolean) => {
         const buttons = {
