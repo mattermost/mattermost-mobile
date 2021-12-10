@@ -78,7 +78,7 @@ export const fetchPostsForChannel = async (serverUrl: string, channelId: string)
     return {posts: data.posts};
 };
 
-export const fetchPostsForUnreadChannels = async (serverUrl: string, channels: Channel[], memberships: MyChannelMembership[], excludeChannelId?: string) => {
+export const fetchPostsForUnreadChannels = async (serverUrl: string, channels: Channel[], memberships: ChannelMembership[], excludeChannelId?: string) => {
     const database = DatabaseManager.serverDatabases[serverUrl]?.database;
     if (!database) {
         return {error: `${serverUrl} database not found`};

@@ -81,7 +81,7 @@ async function doReconnect(serverUrl: string) {
     const {currentChannelId, currentUserId, currentTeamId, license} = system;
     const currentTeamMembership = teamMemberships?.find((tm) => tm.team_id === currentTeamId && tm.delete_at === 0);
 
-    let channelMemberships: MyChannelMembership[] | undefined;
+    let channelMemberships: ChannelMembership[] | undefined;
     if (currentTeamMembership) {
         const {memberships, channels, error} = await fetchMyChannelsForTeam(serverUrl, currentTeamMembership.team_id, true, lastDisconnectedAt, true);
         if (error) {

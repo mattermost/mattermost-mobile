@@ -129,7 +129,7 @@ export const transformPreferenceRecord = ({action, database, value}: Transformer
  * @returns {Promise<ChannelMembershipModel>}
  */
 export const transformMyChannelMembershipRecord = ({action, database, value}: TransformerArgs): Promise<ChannelMembershipModel> => {
-    const raw = value.raw as MyChannelMembership;
+    const raw = value.raw as ChannelMembership;
     const record = value.record as ChannelMembershipModel;
     const isCreateAction = action === OperationType.CREATE;
 

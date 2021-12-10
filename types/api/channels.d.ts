@@ -42,7 +42,7 @@ type ChannelWithTeamData = Channel & {
     team_name: string;
     team_update_at: number;
 }
-type MyChannelMembership = {
+type ChannelMembership = {
     id?: string;
     channel_id: string;
     user_id: string;
@@ -70,8 +70,8 @@ type ChannelsState = {
     currentChannelId: string;
     channels: IDMappedObjects<Channel>;
     channelsInTeam: RelationOneToMany<Team, Channel>;
-    myMembers: RelationOneToOne<Channel, MyChannelMembership>;
-    membersInChannel: RelationOneToOne<Channel, UserIDMappedObjects<MyChannelMembership>>;
+    myMembers: RelationOneToOne<Channel, ChannelMembership>;
+    membersInChannel: RelationOneToOne<Channel, UserIDMappedObjects<ChannelMembership>>;
     stats: RelationOneToOne<Channel, ChannelStats>;
     groupsAssociatedToChannel: any;
     totalCount: number;

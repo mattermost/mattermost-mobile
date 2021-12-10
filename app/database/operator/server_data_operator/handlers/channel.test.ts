@@ -70,7 +70,7 @@ describe('*** Operator: Channel Handlers tests ***', () => {
         expect.assertions(2);
 
         const spyOnHandleRecords = jest.spyOn(operator, 'handleRecords');
-        const settings: MyChannelMembership[] = [
+        const settings: ChannelMembership[] = [
             {
                 id: 'c',
                 user_id: 'me',
@@ -161,7 +161,7 @@ describe('*** Operator: Channel Handlers tests ***', () => {
             scheme_id: null,
             group_constrained: false,
         }];
-        const myChannels: MyChannelMembership[] = [
+        const myChannels: ChannelMembership[] = [
             {
                 id: 'c',
                 user_id: 'me',

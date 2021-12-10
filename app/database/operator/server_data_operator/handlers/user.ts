@@ -47,7 +47,7 @@ const UserHandler = (superclass: any) => class extends superclass {
     /**
      * handleChannelMembership: Handler responsible for the Create/Update operations occurring on the CHANNEL_MEMBERSHIP table from the 'Server' schema
      * @param {HandleChannelMembershipArgs} channelMembershipsArgs
-     * @param {MyChannelMembership[]} channelMembershipsArgs.channelMemberships
+     * @param {ChannelMembership[]} channelMembershipsArgs.channelMemberships
      * @param {boolean} channelMembershipsArgs.prepareRecordsOnly
      * @throws DataOperatorException
      * @returns {Promise<ChannelMembershipModel[]>}

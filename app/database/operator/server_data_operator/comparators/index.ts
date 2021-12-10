@@ -77,7 +77,7 @@ export const isRecordGroupMembershipEqualToRaw = (record: GroupMembershipModel, 
     return raw.user_id === record.userId && raw.group_id === record.groupId;
 };
 
-export const isRecordChannelMembershipEqualToRaw = (record: ChannelMembershipModel, raw: ChannelMembership) => {
+export const isRecordChannelMembershipEqualToRaw = (record: ChannelMembershipModel, raw: Pick<ChannelMembership, 'user_id' | 'channel_id'>) => {
     return raw.user_id === record.userId && raw.channel_id === record.channelId;
 };
 
@@ -117,7 +117,7 @@ export const isRecordChannelEqualToRaw = (record: ChannelModel, raw: Channel) =>
     return raw.id === record.id;
 };
 
-export const isRecordMyChannelSettingsEqualToRaw = (record: MyChannelSettingsModel, raw: MyChannelMembership) => {
+export const isRecordMyChannelSettingsEqualToRaw = (record: MyChannelSettingsModel, raw: ChannelMembership) => {
     return raw.channel_id === record.id;
 };
 
@@ -125,7 +125,7 @@ export const isRecordChannelInfoEqualToRaw = (record: ChannelInfoModel, raw: Cha
     return raw.id === record.id;
 };
 
-export const isRecordMyChannelEqualToRaw = (record: MyChannelModel, raw: MyChannelMembership) => {
+export const isRecordMyChannelEqualToRaw = (record: MyChannelModel, raw: ChannelMembership) => {
     return raw.channel_id === record.id;
 };
 

@@ -27,7 +27,7 @@ import type {Client} from '@client/rest';
 
 export type MyChannelsRequest = {
     channels?: Channel[];
-    memberships?: MyChannelMembership[];
+    memberships?: ChannelMembership[];
     error?: unknown;
 }
 
@@ -46,7 +46,7 @@ export const addMembersToChannel = async (serverUrl: string, channelId: string, 
 
     try {
         const promises = userIds.map((id) => client.addToChannel(id, channelId, postRootId));
-        const channelMemberships: MyChannelMembership[] = await Promise.all(promises);
+        const channelMemberships: ChannelMembership[] = await Promise.all(promises);
         await fetchUsersByIds(serverUrl, userIds, false);
 
         if (!fetchOnly) {
@@ -96,7 +96,7 @@ export const fetchMyChannelsForTeam = async (serverUrl: string, teamId: string, 
     }
 
     try {
-        let [channels, memberships]: [Channel[], MyChannelMembership[]] = await Promise.all([
+        let [channels, memberships]: [Channel[], ChannelMembership[]] = await Promise.all([
             client.getMyChannels(teamId, includeDeleted, since),
             client.getMyChannelMembers(teamId),
         ]);
@@ -106,7 +106,7 @@ export const fetchMyChannelsForTeam = async (serverUrl: string, teamId: string, 
         }
 
         const channelIds = new Set<string>(channels.map((c) => c.id));
-        memberships = memberships.reduce((result: MyChannelMembership[], m: MyChannelMembership) => {
+        memberships = memberships.reduce((result: ChannelMembership[], m: ChannelMembership) => {
             if (channelIds.has(m.channel_id)) {
                 result.push(m);
             }
@@ -241,7 +241,7 @@ export const joinChannel = async (serverUrl: string, userId: string, teamId: str
         return {error};
     }
 
-    let member: MyChannelMembership | undefined;
+    let member: ChannelMembership | undefined;
     let channel: Channel | undefined;
     try {
         if (channelId) {
@@ -307,7 +307,7 @@ export const switchToChannelByName = async (serverUrl: string, channelName: stri
     }
 
     try {
-        let myChannel: MyChannelModel | MyChannelMembership | undefined;
+        let myChannel: MyChannelModel | ChannelMembership | undefined;
         let team: TeamModel | Team | undefined;
         let myTeam: MyTeamModel | TeamMembership | undefined;
         let name = teamName;

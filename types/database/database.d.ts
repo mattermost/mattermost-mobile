@@ -173,7 +173,7 @@ export type HandleTOSArgs = PrepareOnly & {
 
 export type HandleMyChannelArgs = PrepareOnly & {
   channels: Channel[];
-  myChannels: MyChannelMembership[];
+  myChannels: ChannelMembership[];
 };
 
 export type HandleChannelInfoArgs = PrepareOnly &{
@@ -181,7 +181,7 @@ export type HandleChannelInfoArgs = PrepareOnly &{
 };
 
 export type HandleMyChannelSettingsArgs = PrepareOnly & {
-  settings: MyChannelMembership[];
+  settings: ChannelMembership[];
 };
 
 export type HandleChannelArgs = PrepareOnly & {
@@ -221,7 +221,7 @@ export type HandleGroupArgs = PrepareOnly & {
 };
 
 export type HandleChannelMembershipArgs = PrepareOnly & {
-  channelMemberships: ChannelMembership[];
+  channelMemberships: Array<Pick<ChannelMembership, 'user_id' | 'channel_id'>>;
 };
 
 export type HandleGroupMembershipArgs = PrepareOnly & {

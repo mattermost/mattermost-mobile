@@ -19,7 +19,7 @@ import type PostModel from '@typings/database/models/servers/post';
 
 const {SERVER: {CHANNEL, MY_CHANNEL, CHANNEL_MEMBERSHIP}} = MM_TABLES;
 
-export const prepareMyChannelsForTeam = async (operator: ServerDataOperator, teamId: string, channels: Channel[], channelMembers: MyChannelMembership[]) => {
+export const prepareMyChannelsForTeam = async (operator: ServerDataOperator, teamId: string, channels: Channel[], channelMembers: ChannelMembership[]) => {
     const allChannelsForTeam = await queryAllChannelsForTeam(operator.database, teamId);
     const channelInfos: ChannelInfo[] = [];
     const memberships = channelMembers.map((cm) => ({...cm, id: cm.channel_id}));

@@ -161,7 +161,7 @@ describe('*** Operator: User Handlers tests ***', () => {
 
     it('=> HandleChannelMembership: should write to the CHANNEL_MEMBERSHIP table', async () => {
         expect.assertions(2);
-        const channelMemberships: MyChannelMembership[] = [
+        const channelMemberships: ChannelMembership[] = [
             {
                 channel_id: '17bfnb1uwb8epewp4q3x3rx9go',
                 user_id: '9ciscaqbrpd6d8s68k76xb9bte',
