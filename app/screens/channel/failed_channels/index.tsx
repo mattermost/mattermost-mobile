@@ -11,6 +11,7 @@ import FailedAction from '@components/failed_action';
 import Loading from '@components/loading';
 import {MM_TABLES} from '@constants/database';
 import {useServerUrl} from '@context/server';
+import {useTheme} from '@context/theme';
 
 import type {WithDatabaseArgs} from '@typings/database/database';
 import type TeamModel from '@typings/database/models/servers/team';
@@ -22,6 +23,7 @@ type FailedChannelsProps = {
 const FailedChannels = ({team}: FailedChannelsProps) => {
     const intl = useIntl();
     const serverUrl = useServerUrl();
+    const theme = useTheme();
     const [loading, setLoading] = useState(false);
 
     const title = intl.formatMessage({id: 'failed_action.something_wrong', defaultMessage: 'Something went wrong'});
@@ -37,7 +39,16 @@ const FailedChannels = ({team}: FailedChannelsProps) => {
     }, []);
 
     if (loading) {
-        return <Loading/>;
+        return (
+            <Loading
+                containerStyle={{
+                    flex: 1,
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                }}
+                color={theme.buttonBg}
+            />
+        );
     }
 
     return (

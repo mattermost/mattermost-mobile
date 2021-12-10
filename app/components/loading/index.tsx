@@ -8,28 +8,24 @@ import {StyleSheet, View, ViewStyle} from 'react-native';
 type LoadingProps = {
     containerStyle?: ViewStyle;
     style?: ViewStyle;
+    color?: string;
 }
 
-const Loading = ({containerStyle, style}: LoadingProps) => {
+const Loading = ({containerStyle, style, color}: LoadingProps) => {
     return (
-        <View style={[styles.container, containerStyle]}>
+        <View style={containerStyle}>
             <LottieView
                 source={require('./spinner.json')}
                 autoPlay={true}
                 loop={true}
                 style={[styles.lottie, style]}
+                colorFilters={color ? [{color, keypath: 'Shape Layer 1'}] : undefined}
             />
         </View>
     );
 };
 
 const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        justifyContent: 'center',
-        padding: 20,
-        maxHeight: 40,
-    },
     lottie: {
         height: 32,
         width: 32,
