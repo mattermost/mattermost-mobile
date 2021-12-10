@@ -9,7 +9,7 @@ import {
     MediaStream,
     MediaStreamTrack,
     mediaDevices,
-} from 'react-native-webrtc2';
+} from 'react-native-webrtc';
 
 import {Client4} from '@client/rest';
 

@@ -18,7 +18,7 @@ import {
     RTCSessionDescriptionType,
     MessageEvent,
     RTCIceCandidateType,
-} from 'react-native-webrtc2';
+} from 'react-native-webrtc';
 import stream from 'readable-stream';
 
 const queueMicrotask = (callback: any) => {
@@ -332,7 +332,7 @@ export default class Peer extends stream.Duplex {
         const submap = this.senderMap.get(track) || new Map(); // nested Maps map [track, stream] to sender
         let sender = submap.get(s);
         if (!sender) {
-            sender = this.pc.addTrack(track);
+            sender = this.pc.addTransceiver(track, {direction: 'sendrecv'});
             submap.set(s, sender);
             this.senderMap.set(track, submap);
             this.needsNegotiation();

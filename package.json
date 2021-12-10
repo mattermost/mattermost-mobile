@@ -79,7 +79,7 @@
     "react-native-svg": "12.1.1",
     "react-native-vector-icons": "9.0.0",
     "react-native-video": "5.2.0",
-    "react-native-webrtc2": "1.84.5",
+    "react-native-webrtc": "github:streamer45/react-native-webrtc",
     "react-native-webview": "11.15.0",
     "react-native-youtube": "2.0.2",
     "react-redux": "7.2.6",

@@ -3,7 +3,7 @@
 
 import React, {useEffect, useCallback, useState} from 'react';
 import {Keyboard, View, Text, Platform, Pressable, SafeAreaView, ScrollView, useWindowDimensions} from 'react-native';
-import {RTCView} from 'react-native-webrtc2';
+import {RTCView} from 'react-native-webrtc';
 
 import {showModalOverCurrentContext, mergeNavigationOptions, popTopScreen, goToScreen} from '@actions/navigation';
 import CompassIcon from '@components/compass_icon';

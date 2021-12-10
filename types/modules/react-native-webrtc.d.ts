@@ -8,7 +8,7 @@
 // Definitions: https://github.com/DefinitelyTyped/DefinitelyTyped
 // TypeScript Version: 2.8
 
-declare module 'react-native-webrtc2' {
+declare module 'react-native-webrtc' {
     export const RTCView: any;
     export type RTCSignalingState =
         | 'stable'
