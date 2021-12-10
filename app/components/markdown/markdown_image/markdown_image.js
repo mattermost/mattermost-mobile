@@ -57,7 +57,7 @@ export default class MarkdownImage extends ImageViewPort {
             originalHeight: metadata?.height || 0,
             originalWidth: metadata?.width || 0,
             failed: isGifTooLarge(metadata),
-            format: metadata.format,
+            format: metadata?.format,
             uri: null,
         };
     }
