@@ -159,7 +159,7 @@ const EditProfile = ({
         if (!isTablet) {
             setButtons(componentId, {rightButtons: [rightButton!]});
         }
-    }, [componentId, rightButton]);
+    }, []);
 
     const service = currentUser.authService;
 
