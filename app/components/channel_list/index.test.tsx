@@ -9,7 +9,7 @@ import {TeamModel} from '@database/models/server';
 import {renderWithEverything} from '@test/intl-test-helper';
 import TestHelper from '@test/test_helper';
 
-import ChannelsList from './channel_list';
+import ChannelsList from './index';
 
 describe('components/channel_list', () => {
     let database: Database;
