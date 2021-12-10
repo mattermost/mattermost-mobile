@@ -84,8 +84,16 @@ export async function newClient(channelID: string, closeCb: () => void, setScree
             channelID,
         });
 
+        let config;
+        try {
+            config = await Client4.getCallsConfig();
+        } catch (err) {
+            console.log('ERROR FETCHING CONFIG:', err); // eslint-disable-line no-console
+            return;
+        }
+
         InCallManager.start({media: 'audio'});
-        peer = new Peer(stream);
+        peer = new Peer(stream, config.ICEServers);
         peer.on('signal', (data: any) => {
             if (data.type === 'offer' || data.type === 'answer') {
                 ws.send('sdp', {

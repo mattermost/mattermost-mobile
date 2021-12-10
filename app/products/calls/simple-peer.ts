@@ -94,7 +94,7 @@ export default class Peer extends stream.Duplex {
     private pc: RTCPeerConnection|null = null;
     private onFinishBound?: () => void;
 
-    constructor(localStream: MediaStream) {
+    constructor(localStream: MediaStream, iceServers?: string[]) {
         super({allowHalfOpen: false});
 
         this.streams = localStream ? [localStream] : [];
@@ -103,18 +103,24 @@ export default class Peer extends stream.Duplex {
             this.onFinish();
         };
 
+        const connConfig = {
+            iceServers: [
+                {
+                    urls: [
+                        'stun:stun.l.google.com:19302',
+                        'stun:global.stun.twilio.com:3478',
+                    ],
+                },
+            ],
+            sdpSemantics: 'unified-plan',
+        };
+
+        if (iceServers && iceServers.length > 0) {
+            connConfig.iceServers[0].urls = iceServers;
+        }
+
         try {
-            this.pc = new RTCPeerConnection({
-                iceServers: [
-                    {
-                        urls: [
-                            'stun:stun.l.google.com:19302',
-                            'stun:global.stun.twilio.com:3478',
-                        ],
-                    },
-                ],
-                sdpSemantics: 'unified-plan',
-            });
+            this.pc = new RTCPeerConnection(connConfig);
         } catch (err) {
             this.destroy(errCode(err, 'ERR_PC_CONSTRUCTOR'));
             return;
