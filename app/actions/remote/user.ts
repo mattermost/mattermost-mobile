@@ -374,40 +374,6 @@ export const updateUsersNoLongerVisible = async (serverUrl: string, prepareRecor
     return {models};
 };
 
-export const updateNewUsersVisible = async (serverUrl: string, fetchOnly = false): Promise<{error?: unknown; users?: UserProfile[]}> => {
-    const serverDatabase = DatabaseManager.serverDatabases[serverUrl];
-    if (!serverDatabase) {
-        return {error: `${serverUrl} database not found`};
-    }
-
-    let users: UserProfile[] = [];
-    try {
-        const client = NetworkManager.getClient(serverUrl);
-        const knownUsers = new Set(await client.getKnownUsers());
-        const currentUserId = await queryCurrentUserId(serverDatabase.database);
-        knownUsers.add(currentUserId);
-
-        const idsToFetch: string[] = [];
-        const allUsers = await queryAllUsers(serverDatabase.database);
-        for (const userId of knownUsers) {
-            if (!allUsers.find((v) => v.id === userId)) {
-                idsToFetch.push(userId);
-            }
-        }
-
-        if (idsToFetch.length) {
-            users = await client.getProfilesByIds(idsToFetch);
-            if (!fetchOnly) {
-                serverDatabase.operator.handleUsers({users, prepareRecordsOnly: false});
-            }
-        }
-    } catch (error) {
-        return {error};
-    }
-
-    return {users};
-};
-
 export const setStatus = async (serverUrl: string, status: UserStatus) => {
     let client: Client;
     try {

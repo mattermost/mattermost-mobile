@@ -19,7 +19,7 @@ import {prepareMyChannelsForTeam} from '@queries/servers/channel';
 import {queryCommonSystemValues, queryConfig, queryWebSocketLastDisconnected} from '@queries/servers/system';
 import {queryCurrentUser} from '@queries/servers/user';
 
-import {handleChannelDeletedEvent, handleUserAddedEvent, handleUserRemovedEvent} from './channel';
+import {handleChannelDeletedEvent, handleUserAddedToChannelEvent, handleUserRemovedFromChannelEvent} from './channel';
 import {handleLeaveTeamEvent} from './teams';
 import {handleUserUpdatedEvent} from './users';
 
@@ -122,7 +122,7 @@ async function doReconnect(serverUrl: string) {
             const viewArchivedChannels = config?.ExperimentalViewArchivedChannels === 'true';
 
             if (!stillMemberOfCurrentChannel) {
-                handleUserRemovedEvent(serverUrl, {data: {user_id: currentUserId, channel_id: currentChannelId}});
+                handleUserRemovedFromChannelEvent(serverUrl, {data: {user_id: currentUserId, channel_id: currentChannelId}});
             } else if (!channelStillExist ||
                 (!viewArchivedChannels && channelStillExist.delete_at !== 0)
             ) {
@@ -177,10 +177,10 @@ export async function handleEvent(serverUrl: string, msg: any) {
 
         // return dispatch(handleTeamAddedEvent(msg));
         case WebsocketEvents.USER_ADDED:
-            handleUserAddedEvent(serverUrl, msg);
+            handleUserAddedToChannelEvent(serverUrl, msg);
             break;
         case WebsocketEvents.USER_REMOVED:
-            handleUserRemovedEvent(serverUrl, msg);
+            handleUserRemovedFromChannelEvent(serverUrl, msg);
             break;
         case WebsocketEvents.USER_UPDATED:
             handleUserUpdatedEvent(serverUrl, msg);

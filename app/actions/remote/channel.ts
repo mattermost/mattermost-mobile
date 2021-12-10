@@ -9,7 +9,7 @@ import {General} from '@constants';
 import DatabaseManager from '@database/manager';
 import {privateChannelJoinPrompt} from '@helpers/api/channel';
 import NetworkManager from '@init/network_manager';
-import {prepareMyChannelsForTeam, queryChannelsById, queryMyChannel} from '@queries/servers/channel';
+import {prepareMyChannelsForTeam, queryMyChannel} from '@queries/servers/channel';
 import {queryCommonSystemValues} from '@queries/servers/system';
 import {prepareMyTeams, queryMyTeamById, queryTeamById, queryTeamByName} from '@queries/servers/team';
 import MyChannelModel from '@typings/database/models/servers/my_channel';
@@ -456,47 +456,6 @@ export const switchToChannelByName = async (serverUrl: string, channelName: stri
         return {error: undefined};
     } catch (error) {
         errorHandler(intl);
-        return {error};
-    }
-};
-
-export const fetchChannelInfo = async (serverUrl: string, channelId: string, fetchOnly = false) => {
-    const database = DatabaseManager.serverDatabases[serverUrl];
-    if (!database) {
-        return {error: `${serverUrl} database not found`};
-    }
-
-    let client: Client;
-    try {
-        client = NetworkManager.getClient(serverUrl);
-        const channels = await queryChannelsById(database.database, [channelId]);
-        let purpose = '';
-        let header = '';
-        const channelModel = channels?.[0];
-        if (channelModel) {
-            const oldInfo = await channelModel.info.fetch();
-            purpose = oldInfo.purpose;
-            header = oldInfo.header;
-        } else {
-            const channel = await client.getChannel(channelId);
-            purpose = channel.purpose;
-            header = channel.header;
-        }
-        const stat = await client.getChannelStats(channelId);
-        const channelInfo: ChannelInfo = {
-            id: stat.channel_id,
-            guest_count: stat.guest_count,
-            member_count: stat.member_count,
-            pinned_post_count: stat.pinnedpost_count,
-            purpose,
-            header,
-        };
-        if (!fetchOnly) {
-            database.operator.handleChannelInfo({channelInfos: [channelInfo], prepareRecordsOnly: false});
-        }
-
-        return {channelInfo};
-    } catch (error) {
         return {error};
     }
 };

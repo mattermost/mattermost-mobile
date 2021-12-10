@@ -12,7 +12,6 @@ import {queryCurrentTeamId} from '@queries/servers/system';
 import {queryLastTeam} from '@queries/servers/team';
 import {queryCurrentUser} from '@queries/servers/user';
 import {dismissAllModals, popToRoot} from '@screens/navigation';
-import {isGuest} from '@utils/user';
 
 export async function handleLeaveTeamEvent(serverUrl: string, msg: any) {
     const database = DatabaseManager.serverDatabases[serverUrl];
@@ -29,7 +28,7 @@ export async function handleLeaveTeamEvent(serverUrl: string, msg: any) {
     if (user.id === msg.data.user_id) {
         localRemoveUserFromTeam(serverUrl, msg.data.team_id);
 
-        if (isGuest(user.roles)) {
+        if (user.isGuest) {
             updateUsersNoLongerVisible(serverUrl);
         }
 

@@ -36,7 +36,7 @@ export const fetchPostsForCurrentChannel = async (serverUrl: string) => {
     return fetchPostsForChannel(serverUrl, currentChannelId);
 };
 
-export const fetchPostsForChannel = async (serverUrl: string, channelId: string) => {
+export const fetchPostsForChannel = async (serverUrl: string, channelId: string, fetchOnly = false) => {
     const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
     if (!operator) {
         return {error: `${serverUrl} database not found`};
@@ -59,23 +59,33 @@ export const fetchPostsForChannel = async (serverUrl: string, channelId: string)
         // Here we should emit an event that fetching posts failed.
     }
 
+    let authors: UserProfile[] = [];
     if (data.posts?.length && data.order?.length) {
         try {
-            await fetchPostAuthors(serverUrl, data.posts, false);
+            const {authors: fetchedAuthors} = await fetchPostAuthors(serverUrl, data.posts, false);
+            authors = fetchedAuthors || [];
         } catch (error) {
             // eslint-disable-next-line no-console
             console.log('FETCH AUTHORS ERROR', error);
         }
 
-        operator.handlePosts({
-            actionType,
-            order: data.order,
-            posts: data.posts,
-            previousPostId: data.previousPostId,
-        });
+        if (!fetchOnly) {
+            const models = await operator.handlePosts({
+                actionType,
+                order: data.order,
+                posts: data.posts,
+                previousPostId: data.previousPostId,
+                prepareRecordsOnly: true,
+            });
+            if (authors.length) {
+                models.push(...await operator.handleUsers({users: authors, prepareRecordsOnly: true}));
+            }
+
+            operator.batchRecords(models);
+        }
     }
 
-    return {posts: data.posts};
+    return {posts: data.posts, order: data.order, authors, actionType, previousPostId: data.previousPostId};
 };
 
 export const fetchPostsForUnreadChannels = async (serverUrl: string, channels: Channel[], memberships: ChannelMembership[], excludeChannelId?: string) => {
