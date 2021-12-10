@@ -139,6 +139,10 @@ export default class Gallery extends PureComponent {
 
         return (
             <>
+                <Header
+                    ref={this.header}
+                    file={files[index]}
+                />
                 <GalleryViewer
                     files={files}
                     headerVisible={headerVisible}
@@ -147,10 +151,6 @@ export default class Gallery extends PureComponent {
                     onPageSelected={this.handlePageSelected}
                     onTap={this.handleTapped}
                     theme={theme}
-                />
-                <Header
-                    ref={this.header}
-                    file={files[index]}
                 />
             </>
         );

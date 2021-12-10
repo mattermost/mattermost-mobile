@@ -15,7 +15,7 @@ import {getLocalPath} from '@utils/file';
 
 import type {GalleryItemProps} from '@mm-types/screens/gallery';
 
-const GalleryVideo = ({file, deviceHeight, deviceWidth, intl, isActive, showHideHeader}: GalleryItemProps) => {
+const GalleryVideo = ({file, deviceHeight, deviceWidth, intl, isActive, onTap}: GalleryItemProps) => {
     const statusBar = DeviceTypes.IS_IPHONE_WITH_INSETS ? 0 : 20;
     const width = deviceWidth;
     const height = deviceHeight - (2 * statusBar);
@@ -48,9 +48,7 @@ const GalleryVideo = ({file, deviceHeight, deviceWidth, intl, isActive, showHide
                     id: 'mobile.alert_dialog.alertCancel',
                     defaultMessage: 'Cancel',
                 }),
-                onPress: () => {
-                    showHideHeader?.(true);
-                },
+                onPress: onTap,
             }],
         );
     }, []);
@@ -83,11 +81,7 @@ const GalleryVideo = ({file, deviceHeight, deviceWidth, intl, isActive, showHide
                     paused={false}
                     controls={true}
                     onError={videoError}
-                    onTouchStart={
-                        () => {
-                            showHideHeader?.(true);
-                        }
-                    }
+                    onTouchStart={onTap}
                 />
             </View>
         </>

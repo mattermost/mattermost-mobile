@@ -76,7 +76,7 @@ export interface GalleryItemProps {
     deviceWidth: number;
     intl?: typeof intlShape;
     isActive?: boolean;
-    showHideHeader?(display: boolean): void;
+    onTap?(): void;
     style?: StyleProp<Animated.AnimateStyle>;
     theme?: Theme;
 }

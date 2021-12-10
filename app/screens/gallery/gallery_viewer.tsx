@@ -170,7 +170,7 @@ const GalleryViewer = (props: GalleryProps) => {
                 >
                     <GalleryVideo
                         isActive={currentIndex === i}
-                        showHideHeaderFooter={props.onTap}
+                        onTap={props.onTap}
                         {...itemProps}
                     />
                 </View>
