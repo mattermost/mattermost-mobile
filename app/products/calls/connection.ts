@@ -22,17 +22,18 @@ const websocketConnectTimeout = 3000;
 
 export async function newClient(channelID: string, closeCb: () => void, setScreenShareURL: (url: string) => void) {
     let peer: any = null;
+    let stream: MediaStream;
+    let voiceTrackAdded = false;
+    let voiceTrack: MediaStreamTrack | null = null;
     const streams: MediaStream[] = [];
 
-    let stream: MediaStream;
-    let audioTrack: any;
     try {
         stream = await mediaDevices.getUserMedia({
             video: false,
             audio: true,
         }) as MediaStream;
-        audioTrack = stream.getAudioTracks()[0];
-        audioTrack.enabled = false;
+        voiceTrack = stream.getAudioTracks()[0];
+        voiceTrack.enabled = false;
         streams.push(stream);
     } catch (err) {
         console.log('Unable to get media device:', err); // eslint-disable-line no-console
@@ -60,8 +61,14 @@ export async function newClient(channelID: string, closeCb: () => void, setScree
     };
 
     const mute = () => {
-        if (audioTrack) {
-            audioTrack.enabled = false;
+        if (!peer) {
+            return;
+        }
+        if (voiceTrackAdded) {
+            peer.replaceTrack(voiceTrack, null, stream);
+        }
+        if (voiceTrack) {
+            voiceTrack.enabled = false;
         }
         if (ws) {
             ws.send('mute');
@@ -69,9 +76,16 @@ export async function newClient(channelID: string, closeCb: () => void, setScree
     };
 
     const unmute = () => {
-        if (audioTrack) {
-            audioTrack.enabled = true;
+        if (!peer || !voiceTrack) {
+            return;
         }
+        if (voiceTrackAdded) {
+            peer.replaceTrack(voiceTrack, voiceTrack, stream);
+        } else {
+            peer.addStream(stream);
+            voiceTrackAdded = true;
+        }
+        voiceTrack.enabled = true;
         if (ws) {
             ws.send('unmute');
         }
@@ -93,7 +107,7 @@ export async function newClient(channelID: string, closeCb: () => void, setScree
         }
 
         InCallManager.start({media: 'audio'});
-        peer = new Peer(stream, config.ICEServers);
+        peer = new Peer(null, config.ICEServers);
         peer.on('signal', (data: any) => {
             if (data.type === 'offer' || data.type === 'answer') {
                 ws.send('sdp', {
