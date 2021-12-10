@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {MM_TABLES, SYSTEM_IDENTIFIERS} from '@constants/database';
+import {SYSTEM_IDENTIFIERS} from '@constants/database';
 import General from '@constants/general';
 import DatabaseManager from '@database/manager';
 import {queryRecentCustomStatuses} from '@queries/servers/system';
@@ -107,7 +107,7 @@ export const updateRecentCustomStatuses = async (serverUrl: string, customStatus
 
 export const updateLocalUser = async (
     serverUrl: string,
-    userDetails: Partial<UserProfile> & { id: string; status?: string},
+    userDetails: Partial<UserProfile> & { status?: string},
 ) => {
     const database = DatabaseManager.serverDatabases[serverUrl]?.database;
     if (!database) {
@@ -115,25 +115,27 @@ export const updateLocalUser = async (
     }
 
     try {
-        const user = await database.get(MM_TABLES.SERVER.USER).find(userDetails.id) as UserModel;
-        await database.write(async () => {
-            await user.update((userRecord: UserModel) => {
-                userRecord.authService = userDetails.auth_service ?? user.authService;
-                userRecord.email = userDetails.email ?? user.email;
-                userRecord.firstName = userDetails.first_name ?? user.firstName;
-                userRecord.lastName = userDetails.last_name ?? user.lastName;
-                userRecord.lastPictureUpdate = userDetails.last_picture_update ?? user.lastPictureUpdate;
-                userRecord.locale = userDetails.locale ?? user.locale;
-                userRecord.nickname = userDetails.nickname ?? user.nickname;
-                userRecord.notifyProps = userDetails.notify_props ?? user.notifyProps;
-                userRecord.position = userDetails?.position ?? user.position;
-                userRecord.props = userDetails.props ?? user.props;
-                userRecord.roles = userDetails.roles ?? user.roles;
-                userRecord.status = userDetails?.status ?? user.status;
-                userRecord.timezone = userDetails.timezone ?? user.timezone;
-                userRecord.username = userDetails.username ?? user.username;
+        const user = await queryCurrentUser(database);
+        if (user) {
+            await database.write(async () => {
+                await user.update((userRecord: UserModel) => {
+                    userRecord.authService = userDetails.auth_service ?? user.authService;
+                    userRecord.email = userDetails.email ?? user.email;
+                    userRecord.firstName = userDetails.first_name ?? user.firstName;
+                    userRecord.lastName = userDetails.last_name ?? user.lastName;
+                    userRecord.lastPictureUpdate = userDetails.last_picture_update ?? user.lastPictureUpdate;
+                    userRecord.locale = userDetails.locale ?? user.locale;
+                    userRecord.nickname = userDetails.nickname ?? user.nickname;
+                    userRecord.notifyProps = userDetails.notify_props ?? user.notifyProps;
+                    userRecord.position = userDetails?.position ?? user.position;
+                    userRecord.props = userDetails.props ?? user.props;
+                    userRecord.roles = userDetails.roles ?? user.roles;
+                    userRecord.status = userDetails?.status ?? user.status;
+                    userRecord.timezone = userDetails.timezone ?? user.timezone;
+                    userRecord.username = userDetails.username ?? user.username;
+                });
             });
-        });
+        }
     } catch (error) {
         return {error};
     }

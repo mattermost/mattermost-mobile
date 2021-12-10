@@ -101,7 +101,7 @@ const UserStatus = ({currentUser, style, theme}: Props) => {
             last_activity_at: Date.now(),
         };
 
-        setStatus(serverUrl, userStatus, currentUser.id);
+        setStatus(serverUrl, userStatus);
     }, []);
 
     const setUserStatus = useCallback((status: string) => {

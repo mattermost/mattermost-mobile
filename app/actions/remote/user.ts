@@ -374,7 +374,7 @@ export const updateUsersNoLongerVisible = async (serverUrl: string): Promise<{er
     return {};
 };
 
-export const setStatus = async (serverUrl: string, status: UserStatus, userId: string) => {
+export const setStatus = async (serverUrl: string, status: UserStatus) => {
     let client: Client;
     try {
         client = NetworkManager.getClient(serverUrl);
@@ -384,7 +384,7 @@ export const setStatus = async (serverUrl: string, status: UserStatus, userId: s
 
     try {
         const data = await client.updateStatus(status);
-        await updateLocalUser(serverUrl, {status: status.status, id: userId});
+        await updateLocalUser(serverUrl, {status: status.status});
 
         return {
             data,
