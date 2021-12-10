@@ -130,7 +130,7 @@
   "edit_post.save": "Salvează",
   "file_upload.fileAbove": "Fișierele trebuie să fie mai mici de {max}",
   "gallery.download_file": "Descărcare fișier",
-  "gallery.footer.channel_name": "Distribuit în {channelName}",
+  "gallery.header.channel_name": "Distribuit în {channelName}",
   "gallery.open_file": "Deschide fișierul",
   "gallery.unsuppored": "Previzualizarea nu este acceptată pentru acest tip de fișier",
   "get_post_link_modal.title": "Copiază link",

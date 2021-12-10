@@ -180,7 +180,7 @@
   "friendly_date.yearsAgo": "{count} {count, plural, one {год} few{года} other {лет}} назад",
   "friendly_date.yesterday": "Вчера",
   "gallery.download_file": "Скачать файл",
-  "gallery.footer.channel_name": "Поделились в {channelName}",
+  "gallery.header.channel_name": "Поделились в {channelName}",
   "gallery.open_file": "Открыть файл",
   "gallery.unsuppored": "Предварительный просмотр не поддерживается для этого типа файлов",
   "get_post_link_modal.title": "Скопировать ссылку",

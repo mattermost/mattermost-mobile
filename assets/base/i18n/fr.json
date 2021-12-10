@@ -186,7 +186,7 @@
   "friendly_date.yearsAgo": "il y a {count} {count, plural, one {an} other {ans}}",
   "friendly_date.yesterday": "Hier",
   "gallery.download_file": "Télécharger le fichier",
-  "gallery.footer.channel_name": "Partagé dans {channelName}",
+  "gallery.header.channel_name": "Partagé dans {channelName}",
   "gallery.open_file": "Ouvrir le fichier",
   "gallery.unsuppored": "L'aperçu n'est pas pris en charge pour ce type de fichier",
   "get_post_link_modal.title": "Copier le lien",

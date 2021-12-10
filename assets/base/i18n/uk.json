@@ -91,7 +91,7 @@
   "edit_post.save": "Зберегти",
   "file_upload.fileAbove": "Не можна завантажити файл більше {max} МВ: {filename}",
   "gallery.download_file": "Завантажити файл",
-  "gallery.footer.channel_name": "Поділилися в {channelName}",
+  "gallery.header.channel_name": "Поділилися в {channelName}",
   "gallery.open_file": "Відкрити файл",
   "gallery.unsuppored": "Попередній перегляд не підтримується для цього типу файлу",
   "get_post_link_modal.title": "Скопіювати посилання",

@@ -18,17 +18,18 @@ import PrepareFile from './prepare_file';
 import Summary from './summary';
 import Toast from './toast';
 
-import type {CallbackFunctionWithoutArguments, PrepareFileRef, FooterProps, FooterRef, ShowToast, ToastRef} from '@mm-types/screens/gallery';
+import type {CallbackFunctionWithoutArguments, PrepareFileRef, HeaderProps, HeaderRef, ShowToast, ToastRef} from '@mm-types/screens/gallery';
 
 const styles = StyleSheet.create({
-    footer: {
+    header: {
         position: 'absolute',
         top: 0,
         width: '100%',
+        elevation: 10,
     },
 });
 
-const Footer = forwardRef<FooterRef, FooterProps>((props: FooterProps, ref) => {
+const Header = forwardRef<HeaderRef, HeaderProps>((props: HeaderProps, ref) => {
     const [visible, setVisible] = useState(true);
     const [downloading, setDownloading] = useState(false);
     const opacity = useRef(new Animated.Value(1)).current;
@@ -141,7 +142,7 @@ const Footer = forwardRef<FooterRef, FooterProps>((props: FooterProps, ref) => {
     return (
         <>
 
-            <Animated.View style={[{opacity}, styles.footer]}>
+            <Animated.View style={[{opacity}, styles.header]}>
                 <Summary
                     copyPublicLink={copyPublicLink}
                     dowloadFile={dowloadFile}
@@ -149,7 +150,7 @@ const Footer = forwardRef<FooterRef, FooterProps>((props: FooterProps, ref) => {
                 />
                 <Toast ref={toastRef}/>
             </Animated.View>
-            <Animated.View style={[{opacity: downloadingOpacitity}, styles.footer]}>
+            <Animated.View style={[{opacity: downloadingOpacitity}, styles.header]}>
                 <PrepareFile
                     ref={prepareRef}
                     intl={props.intl}
@@ -159,6 +160,6 @@ const Footer = forwardRef<FooterRef, FooterProps>((props: FooterProps, ref) => {
     );
 });
 
-Footer.displayName = 'Footer';
+Header.displayName = 'Header';
 
-export default injectIntl(Footer, {withRef: true});
+export default injectIntl(Header, {withRef: true});

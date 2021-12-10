@@ -209,7 +209,7 @@
   "friendly_date.yearsAgo": "{count} {count, plural, one {évvel} other {évvel}} ezelőtt",
   "friendly_date.yesterday": "Tegnap",
   "gallery.download_file": "File letöltése",
-  "gallery.footer.channel_name": "Megosztva a {channelName} beszélgetésben",
+  "gallery.header.channel_name": "Megosztva a {channelName} beszélgetésben",
   "gallery.open_file": "File megnyitása",
   "gallery.unsuppored": "Az előnézet nem elérhető ennél a file típusnál",
   "get_post_link_modal.title": "Link másolása",

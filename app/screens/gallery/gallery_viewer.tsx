@@ -26,13 +26,8 @@ type GalleryStyle = {
 
 const itemTopStyle = (headerVisible: boolean, isLandscape: boolean): number => {
     if (Platform.OS === 'android') {
-        if (headerVisible) {
-            return isLandscape ? -64 : -99;
-        }
-
         return isLandscape ? -6 : -41;
     }
-
     return 0;
 };
 
@@ -65,7 +60,7 @@ const GalleryViewer = (props: GalleryProps) => {
     const [currentIndex, setCurrentIndex] = useState(initialIndex);
     const {height, width} = useWindowDimensions();
     const styles = getStyles({width, height, count: files.length});
-    const topValue = itemTopStyle(props.footerVisible, width > height);
+    const topValue = itemTopStyle(props.headerVisible, width > height);
     const top = useRef(useValue(topValue)).current;
 
     const canvas = useMemo(() => vec.create(width, height), [width]);

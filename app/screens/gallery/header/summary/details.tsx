@@ -70,7 +70,7 @@ const Details = ({channel, isDirect, ownPost, user}: DetailsProps) => {
         <View style={styles.container}>
             {userElement}
             <FormattedText
-                id='gallery.footer.channel_name'
+                id='gallery.header.channel_name'
                 defaultMessage='Shared in {channelName}'
                 ellipsizeMode='tail'
                 numberOfLines={1}

@@ -134,7 +134,7 @@
   "file_upload.fileAbove": "Arquivos devem ter menos de {max}",
   "friendly_date.yesterday": "Ontem",
   "gallery.download_file": "Baixar arquivo",
-  "gallery.footer.channel_name": "Compartilhado em {channelName}",
+  "gallery.header.channel_name": "Compartilhado em {channelName}",
   "gallery.open_file": "Abrir arquivo",
   "gallery.unsuppored": "A visualização não é compatível com este tipo de arquivo",
   "get_post_link_modal.title": "Copiar Link",

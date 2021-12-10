@@ -186,7 +186,7 @@
   "friendly_date.yearsAgo": "hace {count} {count, plural, one {año} other {años}}",
   "friendly_date.yesterday": "Ayer",
   "gallery.download_file": "Descargar archivo",
-  "gallery.footer.channel_name": "Compartido en {channelName}",
+  "gallery.header.channel_name": "Compartido en {channelName}",
   "gallery.open_file": "Abrir archivo",
   "gallery.unsuppored": "La vista preview no está disponible para este tipo de archivo",
   "get_post_link_modal.title": "Copiar Enlace",

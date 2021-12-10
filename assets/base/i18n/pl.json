@@ -209,7 +209,7 @@
   "friendly_date.yearsAgo": "{count} {count, plural, one {rok} other {lat}} temu",
   "friendly_date.yesterday": "Wczoraj",
   "gallery.download_file": "Pobierz plik",
-  "gallery.footer.channel_name": "Współdzielone w {channelName}",
+  "gallery.header.channel_name": "Współdzielone w {channelName}",
   "gallery.open_file": "Otwórz plik",
   "gallery.unsuppored": "Podgląd nie jest obsługiwany dla tego typu pliku",
   "get_post_link_modal.title": "Kopiuj odnośnik",

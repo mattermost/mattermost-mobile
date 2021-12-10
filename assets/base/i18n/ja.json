@@ -209,7 +209,7 @@
   "friendly_date.yearsAgo": "{count} {count, plural, one {年} other {年}} 前",
   "friendly_date.yesterday": "昨日",
   "gallery.download_file": "ファイルをダウンロードする",
-  "gallery.footer.channel_name": "{channelName}に共有されました",
+  "gallery.header.channel_name": "{channelName}に共有されました",
   "gallery.open_file": "ファイルを開く",
   "gallery.unsuppored": "このファイル形式のプレビューはサポートされていません",
   "get_post_link_modal.title": "リンクをコピーする",

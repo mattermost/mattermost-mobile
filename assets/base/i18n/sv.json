@@ -209,7 +209,7 @@
   "friendly_date.yearsAgo": "för {count} {count, plural, one {år} other {år}} sedan",
   "friendly_date.yesterday": "Igår",
   "gallery.download_file": "Ladda ner fil",
-  "gallery.footer.channel_name": "Delad i {channelName}",
+  "gallery.header.channel_name": "Delad i {channelName}",
   "gallery.open_file": "Öppna fil",
   "gallery.unsuppored": "Förhandsgranskning är inte tillgänglig för denna filtyp",
   "get_post_link_modal.title": "Kopiera länk",

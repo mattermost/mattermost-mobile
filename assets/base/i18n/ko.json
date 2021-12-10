@@ -195,7 +195,7 @@
   "friendly_date.yearsAgo": "{count} {count, plural, one {년} other {년}} 전",
   "friendly_date.yesterday": "어제",
   "gallery.download_file": "파일 다운로드",
-  "gallery.footer.channel_name": "{channelName}에서 공유",
+  "gallery.header.channel_name": "{channelName}에서 공유",
   "gallery.open_file": "파일 열기",
   "gallery.unsuppored": "이 파일 유형에 대한 미리보기는 지원하지 않습니다",
   "get_post_link_modal.title": "링크 복사",

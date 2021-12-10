@@ -209,7 +209,7 @@
   "friendly_date.yearsAgo": "vor {count} {count, plural, one {Jahr} other {Jahren}}",
   "friendly_date.yesterday": "Gestern",
   "gallery.download_file": "Datei herunterladen",
-  "gallery.footer.channel_name": "Geteilt in {channelName}",
+  "gallery.header.channel_name": "Geteilt in {channelName}",
   "gallery.open_file": "Datei öffnen",
   "gallery.unsuppored": "Vorschau wird bei diesem Dateityp nicht unterstützt",
   "get_post_link_modal.title": "Link kopieren",

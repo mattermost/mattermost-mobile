@@ -209,7 +209,7 @@
   "friendly_date.yearsAgo": "{count} {count, plural, one {jaar} other {jaren}} geleden",
   "friendly_date.yesterday": "Gisteren",
   "gallery.download_file": "Bestand downloaden",
-  "gallery.footer.channel_name": "Gedeeld in {channelName}",
+  "gallery.header.channel_name": "Gedeeld in {channelName}",
   "gallery.open_file": "Bestand openen",
   "gallery.unsuppored": "Voorvertoning wordt niet ondersteund voor dit bestandstype",
   "get_post_link_modal.title": "Kopieer link",

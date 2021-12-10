@@ -180,7 +180,7 @@
   "friendly_date.yearsAgo": "преди {count} {count, plural, one {година} other {години}}",
   "friendly_date.yesterday": "Вчера",
   "gallery.download_file": "Свали файла",
-  "gallery.footer.channel_name": "Споделено в {channelName}",
+  "gallery.header.channel_name": "Споделено в {channelName}",
   "gallery.open_file": "Отвори файла",
   "gallery.unsuppored": "Прегледът не се поддържа за този тип файл",
   "get_post_link_modal.title": "Копирай връзка",

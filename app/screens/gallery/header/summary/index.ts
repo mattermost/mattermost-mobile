@@ -17,9 +17,9 @@ import {isLandscape} from '@selectors/device';
 import Summary from './summary';
 
 import type {GlobalState} from '@mm-redux/types/store';
-import type {FooterProps} from '@mm-types/screens/gallery';
+import type {HeaderProps} from '@mm-types/screens/gallery';
 
-function mapStateToProps(state: GlobalState, ownProps: FooterProps) {
+function mapStateToProps(state: GlobalState, ownProps: HeaderProps) {
     const config = getConfig(state);
     const currentUserId = getCurrentUserId(state);
     const post = getPost(state, ownProps.file.post_id);

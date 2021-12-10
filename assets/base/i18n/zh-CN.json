@@ -186,7 +186,7 @@
   "friendly_date.yearsAgo": "{count} 年前",
   "friendly_date.yesterday": "昨天",
   "gallery.download_file": "下载文件",
-  "gallery.footer.channel_name": "在 {channelName} 中共享",
+  "gallery.header.channel_name": "在 {channelName} 中共享",
   "gallery.open_file": "打开文件",
   "gallery.unsuppored": "此文件类型不支持预览",
   "get_post_link_modal.title": "复制链接",

@@ -209,7 +209,7 @@
   "friendly_date.yearsAgo": "{count} {count, plural, one {yıl} other {yıl}} önce",
   "friendly_date.yesterday": "Dün",
   "gallery.download_file": "Dosyayı indir",
-  "gallery.footer.channel_name": "{channelName} kanalında paylaşılmış",
+  "gallery.header.channel_name": "{channelName} kanalında paylaşılmış",
   "gallery.open_file": "Dosyayı aç",
   "gallery.unsuppored": "Bu dosya türü ön izlenemiyor",
   "get_post_link_modal.title": "Bağlantıyı kopyala",

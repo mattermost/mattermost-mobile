@@ -15,7 +15,7 @@ import {getLocalPath} from '@utils/file';
 
 import type {GalleryItemProps} from '@mm-types/screens/gallery';
 
-const GalleryVideo = ({file, deviceHeight, deviceWidth, intl, isActive, showHideHeaderFooter}: GalleryItemProps) => {
+const GalleryVideo = ({file, deviceHeight, deviceWidth, intl, isActive, showHideHeader}: GalleryItemProps) => {
     const statusBar = DeviceTypes.IS_IPHONE_WITH_INSETS ? 0 : 20;
     const width = deviceWidth;
     const height = deviceHeight - (2 * statusBar);
@@ -49,7 +49,7 @@ const GalleryVideo = ({file, deviceHeight, deviceWidth, intl, isActive, showHide
                     defaultMessage: 'Cancel',
                 }),
                 onPress: () => {
-                    showHideHeaderFooter?.(true);
+                    showHideHeader?.(true);
                 },
             }],
         );
@@ -85,7 +85,7 @@ const GalleryVideo = ({file, deviceHeight, deviceWidth, intl, isActive, showHide
                     onError={videoError}
                     onTouchStart={
                         () => {
-                            showHideHeaderFooter?.(true);
+                            showHideHeader?.(true);
                         }
                     }
                 />

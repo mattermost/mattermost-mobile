@@ -209,7 +209,7 @@
   "friendly_date.yearsAgo": "{count} {count, plural, one {year} other {years}} ago",
   "friendly_date.yesterday": "Yesterday",
   "gallery.download_file": "Download file",
-  "gallery.footer.channel_name": "Shared in {channelName}",
+  "gallery.header.channel_name": "Shared in {channelName}",
   "gallery.open_file": "Open file",
   "gallery.unsuppored": "Preview is not supported for this file type",
   "get_post_link_modal.title": "Copy Link",
