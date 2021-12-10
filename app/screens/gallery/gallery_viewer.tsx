@@ -208,7 +208,7 @@ const GalleryViewer = (props: GalleryProps) => {
         () => [
             onChange(
                 translationX,
-                cond(eq(pan.state, State.ACTIVE), [
+                cond(and(eq(pan.state, State.ACTIVE), greaterThan(files.length, 1)), [
                     set(translateX, add(offsetX, translationX)),
                 ]),
             ),
