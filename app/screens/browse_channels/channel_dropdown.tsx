@@ -7,12 +7,9 @@ import {View, Text} from 'react-native';
 
 import CompassIcon from '@components/compass_icon';
 import {useTheme} from '@context/theme';
-import {
-    makeStyleSheetFromTheme,
-} from '@utils/theme';
+import {showModalOverCurrentContext} from '@screens/navigation';
+import {makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
-
-import {showModalOverCurrentContext} from '../navigation';
 
 import {PUBLIC, SHARED} from './constants';
 import DropdownSlideup from './dropdown_slideup';
@@ -81,21 +78,21 @@ export function ChannelDropdown({
 
     let channelDropdownText;
     if (typeOfChannels === PUBLIC) {
-        channelDropdownText = intl.formatMessage({id: 'more_channels.showPublicChannels', defaultMessage: 'Show: Public Channels'});
+        channelDropdownText = intl.formatMessage({id: 'browse_channels.showPublicChannels', defaultMessage: 'Show: Public Channels'});
     } else if (typeOfChannels === SHARED) {
-        channelDropdownText = intl.formatMessage({id: 'more_channels.showSharedChannels', defaultMessage: 'Show: Shared Channels'});
+        channelDropdownText = intl.formatMessage({id: 'browse_channels.showSharedChannels', defaultMessage: 'Show: Shared Channels'});
     } else {
-        channelDropdownText = intl.formatMessage({id: 'more_channels.showArchivedChannels', defaultMessage: 'Show: Archived Channels'});
+        channelDropdownText = intl.formatMessage({id: 'browse_channels.showArchivedChannels', defaultMessage: 'Show: Archived Channels'});
     }
     return (
         <View
-            testID='more_channels.channel.dropdown'
+            testID='browse_channels.channel.dropdown'
         >
             <Text
                 accessibilityRole={'button'}
                 style={style.channelDropdown}
                 onPress={handleDropdownClick}
-                testID={`more_channels.channel.dropdown.${typeOfChannels}`}
+                testID={`browse_channels.channel.dropdown.${typeOfChannels}`}
             >
                 {channelDropdownText}
                 {'  '}

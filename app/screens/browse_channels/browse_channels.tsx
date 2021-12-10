@@ -16,14 +16,13 @@ import SearchBar from '@components/search_bar';
 import {General} from '@constants';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
+import {dismissModal, goToScreen, setButtons} from '@screens/navigation';
 import {alertErrorWithFallback} from '@utils/draft';
 import {
     changeOpacity,
     makeStyleSheetFromTheme,
     getKeyboardAppearanceFromTheme,
 } from '@utils/theme';
-
-import {dismissModal, goToScreen, setButtons} from '../navigation';
 
 import {ChannelDropdown} from './channel_dropdown';
 import ChannelListRow from './channel_list_row';
@@ -43,9 +42,12 @@ type Props = {
     currentUserId: string;
     currentTeamId: string;
     joinedChannels?: MyChannelModel[];
-    sharedChannelsEnabled?: boolean;
+    sharedChannelsEnabled: boolean;
     canShowArchivedChannels: boolean;
 }
+
+const CLOSE_BUTTON_ID = 'close-browse-channels';
+const CREATE_BUTTON_ID = 'create-pub-channel';
 
 const filterChannelsByTerm = (channels: Channel[], term: string) => {
     const lowerCasedTerm = term.toLowerCase();
@@ -61,19 +63,19 @@ const filterJoinedChannels = (joinedChannels: MyChannelModel[], allChannels: Cha
 
 const makeLeftButton = (icon: ImageResource): OptionsTopBarButton => {
     return {
-        id: 'close-more-channels',
+        id: CLOSE_BUTTON_ID,
         icon,
-        testID: 'close.more_channels.button',
+        testID: 'close.browse_channels.button',
     };
 };
 
 const makeRightButton = (theme: Theme, formatMessage: IntlShape['formatMessage']): OptionsTopBarButton => {
     return {
         color: theme.sidebarHeaderTextColor,
-        id: 'create-pub-channel',
+        id: CREATE_BUTTON_ID,
         text: formatMessage({id: 'mobile.create_channel', defaultMessage: 'Create'}),
         showAsAction: 'always',
-        testID: 'more_channels.create.button',
+        testID: 'browse_channels.create.button',
     };
 };
 
@@ -127,13 +129,13 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme: Theme) => {
 
 export default function BrowseChannels({
     componentId,
-    canCreateChannels = false,
+    canCreateChannels,
     joinedChannels = [],
-    sharedChannelsEnabled = false,
+    sharedChannelsEnabled,
     closeButton,
     currentUserId,
     currentTeamId,
-    canShowArchivedChannels = false,
+    canShowArchivedChannels,
     categoryId,
 }: Props) {
     const intl = useIntl();
@@ -325,7 +327,7 @@ export default function BrowseChannels({
         return (
             <ChannelListRow
                 channel={item}
-                testID='more_channels.custom_list.channel_item'
+                testID='browse_channels.custom_list.channel_item'
                 onPress={onSelectChannel}
             />
         );
@@ -361,7 +363,7 @@ export default function BrowseChannels({
         return (
             <View style={style.noResultContainer}>
                 <FormattedText
-                    id='more_channels.noMore'
+                    id='browse_channels.noMore'
                     defaultMessage='No more channels to join'
                     style={style.noResultText}
                 />
@@ -391,10 +393,10 @@ export default function BrowseChannels({
         const unsubscribe = Navigation.events().registerComponentListener({
             navigationButtonPressed: ({buttonId}: { buttonId: string }) => {
                 switch (buttonId) {
-                    case 'close-more-channels':
+                    case CLOSE_BUTTON_ID:
                         close();
                         break;
-                    case 'create-pub-channel': {
+                    case CREATE_BUTTON_ID: {
                         // TODO part of https://mattermost.atlassian.net/browse/MM-39733
                         // Update this to use the proper constant and the proper props.
                         const screen = 'CreateChannel';
@@ -455,11 +457,11 @@ export default function BrowseChannels({
         content = (
             <>
                 <View
-                    testID='more_channels.screen'
+                    testID='browse_channels.screen'
                     style={style.searchBar}
                 >
                     <SearchBar
-                        testID='more_channels.search_bar'
+                        testID='browse_channels.search_bar'
                         placeholder={intl.formatMessage({id: 'search_bar.search', defaultMessage: 'Search'})}
                         cancelTitle={intl.formatMessage({id: 'mobile.post.cancel', defaultMessage: 'Cancel'})}
                         backgroundColor='transparent'
@@ -481,7 +483,7 @@ export default function BrowseChannels({
                 <FlatList
                     data={visibleChannels}
                     renderItem={renderItem}
-                    testID='more_channels.flat_list'
+                    testID='browse_channels.flat_list'
                     ListEmptyComponent={loading ? renderLoading : renderNoResults}
                     onEndReached={doGetChannels}
                     ListFooterComponent={loading && visibleChannels.length ? renderLoading : null}

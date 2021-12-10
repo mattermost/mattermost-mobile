@@ -19,6 +19,34 @@ type Props = {
     testID?: string;
 }
 
+const getStyleFromTheme = makeStyleSheetFromTheme((theme: Theme) => {
+    return {
+        titleContainer: {
+            marginLeft: 16,
+            flexDirection: 'column',
+        },
+        displayName: {
+            color: theme.centerChannelColor,
+            ...typography('Body', 200),
+        },
+        icon: {
+            padding: 2,
+            color: changeOpacity(theme.centerChannelColor, 0.56),
+        },
+        container: {
+            flex: 1,
+            flexDirection: 'row',
+        },
+        outerContainer: {
+            paddingVertical: 9,
+        },
+        purpose: {
+            color: changeOpacity(theme.centerChannelColor, 0.64),
+            ...typography('Body', 75),
+        },
+    };
+});
+
 export default function ChannelListRow({
     channel,
     onPress,
@@ -82,31 +110,3 @@ export default function ChannelListRow({
         </View>
     );
 }
-
-const getStyleFromTheme = makeStyleSheetFromTheme((theme: Theme) => {
-    return {
-        titleContainer: {
-            marginLeft: 16,
-            flexDirection: 'column',
-        },
-        displayName: {
-            color: theme.centerChannelColor,
-            ...typography('Body', 200),
-        },
-        icon: {
-            padding: 2,
-            color: changeOpacity(theme.centerChannelColor, 0.56),
-        },
-        container: {
-            flex: 1,
-            flexDirection: 'row',
-        },
-        outerContainer: {
-            paddingVertical: 9,
-        },
-        purpose: {
-            color: changeOpacity(theme.centerChannelColor, 0.64),
-            ...typography('Body', 75),
-        },
-    };
-});

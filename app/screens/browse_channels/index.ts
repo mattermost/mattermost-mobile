@@ -43,8 +43,8 @@ const enhanced = withObservables([], ({database}: WithDatabaseArgs) => {
 
     const joinedChannels = database.get<MyChannelModel>(MY_CHANNEL).query().observe();
 
-    const currentUser = database.get<SystemModel>(SYSTEM).findAndObserve(SYSTEM_IDENTIFIERS.CURRENT_USER_ID).pipe(
-        switchMap(({value}) => database.get<UserModel>(USER).findAndObserve(value)),
+    const currentUser = currentUserId.pipe(
+        switchMap((id) => database.get<UserModel>(USER).findAndObserve(id)),
     );
     const rolesArray = currentUser.pipe(
         switchMap((u) => of$(u.roles.split(' '))),

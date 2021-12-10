@@ -8,12 +8,11 @@ import {DeviceEventEmitter} from 'react-native';
 import SlideUpPanelItem from '@components/slide_up_panel_item';
 import NavigationConstants from '@constants/navigation';
 import {useTheme} from '@context/theme';
+import BottomSheetContent from '@screens/bottom_sheet/content';
 import {
     makeStyleSheetFromTheme,
 
 } from '@utils/theme';
-
-import BottomSheetContent from '../bottom_sheet/content';
 
 import {ARCHIVED, PUBLIC, SHARED} from './constants';
 
@@ -50,15 +49,15 @@ export default function DropdownSlideup({
         <BottomSheetContent
             showButton={false}
             showTitle={true}
-            title={intl.formatMessage({id: 'more_channels.dropdownTitle', defaultMessage: 'Show'})}
+            title={intl.formatMessage({id: 'browse_channels.dropdownTitle', defaultMessage: 'Show'})}
         >
             <SlideUpPanelItem
                 onPress={() => {
                     DeviceEventEmitter.emit(NavigationConstants.NAVIGATION_CLOSE_MODAL);
                     onPress(PUBLIC);
                 }}
-                testID='more_channels.dropdownTitle.public'
-                text={intl.formatMessage({id: 'more_channels.publicChannels', defaultMessage: 'Public Channels'})}
+                testID='browse_channels.dropdownTitle.public'
+                text={intl.formatMessage({id: 'browse_channels.publicChannels', defaultMessage: 'Public Channels'})}
                 icon={selected === PUBLIC ? 'check' : undefined}
                 {...commonProps}
             />
@@ -68,8 +67,8 @@ export default function DropdownSlideup({
                         DeviceEventEmitter.emit(NavigationConstants.NAVIGATION_CLOSE_MODAL);
                         onPress(ARCHIVED);
                     }}
-                    testID='more_channels.dropdownTitle.public'
-                    text={intl.formatMessage({id: 'more_channels.archivedChannels', defaultMessage: 'Archived Channels'})}
+                    testID='browse_channels.dropdownTitle.public'
+                    text={intl.formatMessage({id: 'browse_channels.archivedChannels', defaultMessage: 'Archived Channels'})}
                     icon={selected === ARCHIVED ? 'check' : undefined}
                     {...commonProps}
                 />
@@ -80,8 +79,8 @@ export default function DropdownSlideup({
                         DeviceEventEmitter.emit(NavigationConstants.NAVIGATION_CLOSE_MODAL);
                         onPress(SHARED);
                     }}
-                    testID='more_channels.dropdownTitle.public'
-                    text={intl.formatMessage({id: 'more_channels.sharedChannels', defaultMessage: 'Shared Channels'})}
+                    testID='browse_channels.dropdownTitle.public'
+                    text={intl.formatMessage({id: 'browse_channels.sharedChannels', defaultMessage: 'Shared Channels'})}
                     icon={selected === SHARED ? 'check' : undefined}
                     {...commonProps}
                 />
@@ -92,8 +91,8 @@ export default function DropdownSlideup({
                 onPress={() => {
                     DeviceEventEmitter.emit(NavigationConstants.NAVIGATION_CLOSE_MODAL);
                 }}
-                testID='more_channels.dropdownTitle.cancel'
-                text={intl.formatMessage({id: 'more_channels.cancel', defaultMessage: 'Cancel'})}
+                testID='browse_channels.dropdownTitle.cancel'
+                text={intl.formatMessage({id: 'browse_channels.cancel', defaultMessage: 'Cancel'})}
             />
         </BottomSheetContent>
     );

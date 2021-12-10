@@ -89,7 +89,7 @@ const ChannelListHeader = ({displayName, iconPad}: Props) => {
                         style={styles.plusIcon}
                         name={'plus'}
                         onPress={async () => {
-                            const title = intl.formatMessage({id: 'more_channels.title', defaultMessage: 'More Channels'});
+                            const title = intl.formatMessage({id: 'browse_channels.title', defaultMessage: 'More Channels'});
                             const closeButton = await CompassIcon.getImageSource('close', 24, theme.sidebarHeaderTextColor);
                             showModal(Screens.BROWSE_CHANNELS, title, {
                                 closeButton,
