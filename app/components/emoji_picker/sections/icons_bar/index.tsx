@@ -3,7 +3,7 @@
 
 import React from 'react';
 import {View} from 'react-native';
-import KeyboardTrackingView from 'react-native-keyboard-tracking-view';
+import {KeyboardTrackingView} from 'react-native-keyboard-tracking-view';
 
 import {useTheme} from '@context/theme';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
@@ -51,8 +51,8 @@ const EmojiSectionBar = ({currentIndex, sections, scrollToIndex}: Props) => {
     return (
         <KeyboardTrackingView
             scrollViewNativeID={SCROLLVIEW_NATIVE_ID}
+            normalList={true}
             style={styles.container}
-            inverted={false}
         >
             <View style={styles.background}>
                 <View style={styles.pane}>

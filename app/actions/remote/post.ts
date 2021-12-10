@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {removePostById} from '@actions/local/post';
+import {removePost} from '@actions/local/post';
 import {ActionType, General} from '@constants';
 import {SYSTEM_IDENTIFIERS} from '@constants/database';
 import DatabaseManager from '@database/manager';
@@ -96,7 +96,7 @@ export const createPost = async (serverUrl: string, post: Partial<Post>, files: 
             error.server_error_id === 'api.post.create_post.town_square_read_only' ||
             error.server_error_id === 'plugin.message_will_be_posted.dismiss_post'
         ) {
-            await removePostById(serverUrl, databasePost.id);
+            await removePost(serverUrl, databasePost);
         } else {
             await operator.handlePosts({
                 actionType: ActionType.POSTS.RECEIVED_NEW,

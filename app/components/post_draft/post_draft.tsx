@@ -3,10 +3,9 @@
 
 import React, {useCallback, useEffect, useRef} from 'react';
 import {DeviceEventEmitter, Platform} from 'react-native';
-import KeyboardTrackingView, {KeyboardTrackingViewRef} from 'react-native-keyboard-tracking-view';
+import {KeyboardTrackingView, KeyboardTrackingViewRef} from 'react-native-keyboard-tracking-view';
 
 import {UPDATE_NATIVE_SCROLLVIEW} from '@constants/post_draft';
-import {useIsTablet} from '@hooks/device';
 
 import Archived from './archived';
 import DraftHandler from './draft_handler';
@@ -39,8 +38,6 @@ export default function PostDraft({
 }: Props) {
     const keyboardTracker = useRef<KeyboardTrackingViewRef>(null);
     const resetScrollViewAnimationFrame = useRef<number>();
-
-    const isTablet = useIsTablet();
 
     const updateNativeScrollView = useCallback((scrollViewNativeIDToUpdate: string) => {
         if (keyboardTracker?.current && scrollViewNativeID === scrollViewNativeIDToUpdate) {
@@ -103,7 +100,6 @@ export default function PostDraft({
             accessoriesContainerID={accessoriesContainerID}
             ref={keyboardTracker}
             scrollViewNativeID={scrollViewNativeID}
-            inverted={isTablet}
         >
             {draftHandler}
         </KeyboardTrackingView>

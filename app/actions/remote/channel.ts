@@ -16,6 +16,7 @@ import {getDirectChannelName} from '@utils/channel';
 import {PERMALINK_GENERIC_TEAM_NAME_REDIRECT} from '@utils/url';
 import {displayGroupMessageName, displayUsername} from '@utils/user';
 
+import {fetchPostsForChannel} from './post';
 import {fetchRolesIfNeeded} from './role';
 import {forceLogoutIfNecessary} from './session';
 import {addUserToTeam, fetchTeamByName, removeUserFromTeam} from './team';
@@ -500,14 +501,12 @@ export async function getOrCreateDirectChannel(serverUrl: string, otherUserId: s
             const newChannel = await client.createDirectChannel([currentUserId, otherUserId]);
             result = {channel: newChannel};
 
-            const member = await client.getChannelMember(newChannel.id, 'me');
+            const member = await client.getMyChannelMember(newChannel.id);
 
             const modelPromises: Array<Promise<Model[]>> = [];
             const prepare = await prepareMyChannelsForTeam(operator, '', [newChannel], [member]);
-            if (prepare) {
+            if (prepare?.length) {
                 modelPromises.push(...prepare);
-            }
-            if (modelPromises.length) {
                 const models = await Promise.all(modelPromises);
                 const flattenedModels = models.flat() as Model[];
                 if (flattenedModels?.length > 0) {
@@ -525,8 +524,18 @@ export async function getOrCreateDirectChannel(serverUrl: string, otherUserId: s
     }
 
     if (shouldSwitchToChannel) {
-        switchToChannel(serverUrl, result.channel.id);
+        fetchPostsAndSwitchToChannel(serverUrl, result.channel.id);
     }
 
     return result;
 }
+
+export const fetchPostsAndSwitchToChannel = async (serverUrl: string, channelId: string, teamId?: string) => {
+    try {
+        fetchPostsForChannel(serverUrl, channelId); // Do not await for this, keep handling the switch
+        return switchToChannel(serverUrl, channelId, teamId);
+    } catch (error) {
+        forceLogoutIfNecessary(serverUrl, error as ClientErrorProps);
+        return {error};
+    }
+};

@@ -3,17 +3,17 @@
 
 import {ClientResponse, ClientResponseError} from '@mattermost/react-native-network-client';
 
-import {Client} from '@app/client/rest';
-import ClientError from '@app/client/rest/error';
+import {Client} from '@client/rest';
+import ClientError from '@client/rest/error';
 import NetworkManager from '@init/network_manager';
 
 export const uploadFile = (
     serverUrl: string,
     file: FileInfo,
     channelId: string,
-    onProgress: (fractionCompleted: number) => void,
-    onComplete: (response: ClientResponse) => void,
-    onError: (response: ClientResponseError) => void,
+    onProgress: (fractionCompleted: number) => void = () => {/*Do Nothing*/},
+    onComplete: (response: ClientResponse) => void = () => {/*Do Nothing*/},
+    onError: (response: ClientResponseError) => void = () => {/*Do Nothing*/},
 ) => {
     let client: Client;
     try {

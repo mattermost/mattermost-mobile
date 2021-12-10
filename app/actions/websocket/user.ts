@@ -4,12 +4,11 @@
 import {DeviceEventEmitter} from 'react-native';
 
 import {fetchUsersByIds} from '@actions/remote/user';
-import {queryPreferencesByCategoryAndName} from '@app/queries/servers/preference';
 import {Events, Preferences} from '@constants';
 import DatabaseManager from '@database/manager';
 import {getTeammateNameDisplaySetting} from '@helpers/api/preference';
 import WebsocketManager from '@init/websocket_manager';
-import {queryActiveServer} from '@queries/app/servers';
+import {queryPreferencesByCategoryAndName} from '@queries/servers/preference';
 import {queryCommonSystemValues} from '@queries/servers/system';
 import {queryCurrentUser, queryUserById} from '@queries/servers/user';
 import {displayUsername} from '@utils/user';
@@ -17,8 +16,8 @@ import {displayUsername} from '@utils/user';
 import type UserModel from '@typings/database/models/servers/user';
 
 export async function handleUserTypingEvent(serverUrl: string, msg: any) {
-    const currentServer = await queryActiveServer(DatabaseManager.appDatabase!.database);
-    if (currentServer?.url === serverUrl) {
+    const currentServerUrl = await DatabaseManager.getActiveServerUrl();
+    if (currentServerUrl === serverUrl) {
         const database = DatabaseManager.serverDatabases[serverUrl];
         if (!database) {
             return;
@@ -52,5 +51,5 @@ export async function handleUserTypingEvent(serverUrl: string, msg: any) {
 
 export const userTyping = async (serverUrl: string, channelId: string, rootId?: string) => {
     const client = WebsocketManager.getClient(serverUrl);
-    client.sendUserTypingEvent(channelId, rootId);
+    client?.sendUserTypingEvent(channelId, rootId);
 };

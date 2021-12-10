@@ -10,7 +10,7 @@ import {
 } from 'react-native';
 import Animated, {useAnimatedStyle, useSharedValue, withTiming} from 'react-native-reanimated';
 
-import {useTheme} from '@app/context/theme';
+import {useTheme} from '@context/theme';
 import {openGalleryAtIndex} from '@utils/gallery';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 

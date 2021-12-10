@@ -101,7 +101,7 @@ export const sendEphemeralPost = async (serverUrl: string, message: string, chan
     return {post};
 };
 
-export const removePost = async (serverUrl: string, post: PostModel) => {
+export const removePost = async (serverUrl: string, post: PostModel | Post) => {
     const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
     if (!operator) {
         return {error: `${serverUrl} database not found`};
@@ -124,20 +124,6 @@ export const removePost = async (serverUrl: string, post: PostModel) => {
                 await postModel.destroyPermanently();
             });
         }
-    }
-
-    return {post};
-};
-
-export const removePostById = async (serverUrl: string, postId: string) => {
-    const database = DatabaseManager.serverDatabases[serverUrl]?.database;
-    if (!database) {
-        return {error: `${serverUrl} database not found`};
-    }
-
-    const post = await queryPostById(database, postId);
-    if (post) {
-        return removePost(serverUrl, post);
     }
 
     return {post};

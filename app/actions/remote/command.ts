@@ -4,7 +4,6 @@
 import {IntlShape} from 'react-intl';
 import {Alert} from 'react-native';
 
-import {switchToChannel} from '@actions/local/channel';
 import {showPermalink} from '@actions/local/permalink';
 import {Client} from '@client/rest';
 import ClientError from '@client/rest/error';
@@ -19,7 +18,7 @@ import {showModal} from '@screens/navigation';
 import * as DraftUtils from '@utils/draft';
 import {matchDeepLink, tryOpenURL} from '@utils/url';
 
-import {getOrCreateDirectChannel, switchToChannelByName} from './channel';
+import {fetchPostsAndSwitchToChannel, getOrCreateDirectChannel, switchToChannelByName} from './channel';
 
 import type {DeepLinkChannel, DeepLinkPermalink, DeepLinkDM, DeepLinkGM, DeepLinkPlugin} from '@typings/launch';
 
@@ -175,7 +174,7 @@ export const handleGotoLocation = async (serverUrl: string, intl: IntlShape, loc
                     return {data: false};
                 }
 
-                switchToChannel(data.serverUrl, data.channelId);
+                fetchPostsAndSwitchToChannel(data.serverUrl, data.channelId);
                 break;
             }
             case DeepLinkTypes.PLUGIN: {

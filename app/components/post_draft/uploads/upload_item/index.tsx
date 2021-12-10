@@ -4,10 +4,10 @@
 import React, {useCallback} from 'react';
 import {StyleSheet, TouchableOpacity, View} from 'react-native';
 
-import {useTheme} from '@app/context/theme';
 import FileIcon from '@components//post_list/post/body/files/file_icon';
 import ImageFile from '@components/post_list/post/body/files/image_file';
 import ProgressBar from '@components/progress_bar';
+import {useTheme} from '@context/theme';
 import {isImage} from '@utils/file';
 import {changeOpacity} from '@utils/theme';
 

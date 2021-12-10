@@ -181,7 +181,7 @@ class WebsocketManager {
         this.closeAll();
     };
 
-    public getClient = (serverUrl: string) => {
+    public getClient = (serverUrl: string): WebSocketClient | undefined => {
         return this.clients[serverUrl];
     };
 }

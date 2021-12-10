@@ -4,9 +4,9 @@
 import React, {memo} from 'react';
 import {View} from 'react-native';
 
-import {useTheme} from '@app/context/theme';
 import CompassIcon from '@components/compass_icon';
 import TouchableWithFeedback from '@components/touchable_with_feedback';
+import {useTheme} from '@context/theme';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 type Props = {
