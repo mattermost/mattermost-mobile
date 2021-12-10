@@ -4,8 +4,7 @@
 import React, {useCallback, useEffect, useRef, useState} from 'react';
 import {injectIntl} from 'react-intl';
 import {Alert, Platform, View} from 'react-native';
-import {TapGestureHandler, State, TapGestureHandlerStateChangeEvent} from 'react-native-gesture-handler';
-import Video, {OnLoadData, OnProgressData} from 'react-native-video';
+import Video from 'react-native-video';
 import RNFetchBlob from 'rn-fetch-blob';
 
 import {Client4} from '@client/rest';
@@ -14,44 +13,15 @@ import {ATTACHMENT_DOWNLOAD} from '@constants/attachment';
 import EventEmitter from '@mm-redux/utils/event_emitter';
 import {getLocalPath} from '@utils/file';
 
-import VideoControls, {VideoControlsRef} from './video_controls';
-
 import type {GalleryItemProps} from '@mm-types/screens/gallery';
 
-const GalleryVideo = ({file, deviceHeight, deviceWidth, intl, isActive, showHideHeaderFooter, theme}: GalleryItemProps) => {
+const GalleryVideo = ({file, deviceHeight, deviceWidth, intl, isActive, showHideHeaderFooter}: GalleryItemProps) => {
     const statusBar = DeviceTypes.IS_IPHONE_WITH_INSETS ? 0 : 20;
     const width = deviceWidth;
-    const height = deviceHeight - statusBar;
+    const height = deviceHeight - (2 * statusBar);
 
     const [uri, setUri] = useState(file.localPath);
-    const [paused, setPaused] = useState(true);
     const videoRef = useRef<Video>(null);
-    const controlsRef = useRef<VideoControlsRef>(null);
-    const onPlayPause = () => {
-        setPaused(!paused);
-    };
-
-    const onSeek = (seek: number) => {
-        videoRef.current?.seek(seek);
-        controlsRef.current?.showControls(!paused);
-    };
-
-    const singleTap = (e: TapGestureHandlerStateChangeEvent) => {
-        if (e.nativeEvent.state === State.ACTIVE) {
-            controlsRef.current?.showControls(!paused);
-        }
-    };
-
-    const videoEnded = () => {
-        setPaused(true);
-        controlsRef.current?.showControls(false);
-        showHideHeaderFooter?.(true);
-        const requested = requestAnimationFrame(() => {
-            videoRef.current?.seek(0);
-            controlsRef.current?.videoProgress(0);
-            cancelAnimationFrame(requested);
-        });
-    };
 
     const videoError = useCallback(() => {
         Alert.alert(
@@ -69,11 +39,8 @@ const GalleryVideo = ({file, deviceHeight, deviceWidth, intl, isActive, showHide
                     defaultMessage: 'Download Video',
                 }),
                 onPress: () => {
-                    setPaused(true);
-                    controlsRef.current?.showControls(false);
                     EventEmitter.emit(ATTACHMENT_DOWNLOAD, false, (path: string) => {
                         setUri(path);
-                        controlsRef.current?.showControls(false);
                     });
                 },
             }, {
@@ -82,27 +49,11 @@ const GalleryVideo = ({file, deviceHeight, deviceWidth, intl, isActive, showHide
                     defaultMessage: 'Cancel',
                 }),
                 onPress: () => {
-                    setPaused(true);
                     showHideHeaderFooter?.(true);
-                    controlsRef.current?.showControls(false);
                 },
             }],
         );
     }, []);
-
-    const videoLoaded = (data: OnLoadData) => {
-        controlsRef.current?.videoDuration(data.duration);
-    };
-
-    const videoProgress = (data: OnProgressData | number) => {
-        let progress: number;
-        if (typeof data === 'object') {
-            progress = data.currentTime;
-        } else {
-            progress = data;
-        }
-        controlsRef.current?.videoProgress(progress);
-    };
 
     useEffect(() => {
         const getUriFromFile = async () => {
@@ -117,47 +68,23 @@ const GalleryVideo = ({file, deviceHeight, deviceWidth, intl, isActive, showHide
         getUriFromFile();
     }, []);
 
-    useEffect(() => {
-        if (!isActive) {
-            setPaused(true);
-        }
-    }, [isActive]);
-
     if (!uri || !isActive) {
         return null;
     }
-
     return (
         <>
-            <TapGestureHandler
-                numberOfTaps={1}
-                onHandlerStateChange={singleTap}
-            >
-                <View>
-                    <Video
-                        ref={videoRef}
-                        style={{width, height}}
-                        resizeMode='contain'
-                        source={{uri}}
-                        volume={1.0}
-                        paused={paused}
-                        controls={false}
-                        onEnd={videoEnded}
-                        onLoad={videoLoaded}
-                        onProgress={videoProgress}
-                        onError={videoError}
-                    />
-                </View>
-            </TapGestureHandler>
-            <VideoControls
-                ref={controlsRef}
-                mainColor={theme?.buttonBg}
-                isLandscape={width > height}
-                paused={paused}
-                onPlayPause={onPlayPause}
-                onSeek={onSeek}
-                showHideHeaderFooter={showHideHeaderFooter}
-            />
+            <View>
+                <Video
+                    ref={videoRef}
+                    style={{width, height}}
+                    resizeMode='contain'
+                    source={{uri}}
+                    volume={1.0}
+                    paused={false}
+                    controls={true}
+                    onError={videoError}
+                />
+            </View>
         </>
     );
 };
