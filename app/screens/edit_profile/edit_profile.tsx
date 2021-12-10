@@ -326,7 +326,6 @@ const EditProfile = ({
                     enableAutomaticScroll={true}
                     enableOnAndroid={true}
                     enableResetScrollToCoords={true}
-                    extraScrollHeight={25}
                     extraScrollHeight={45}
                     keyboardOpeningTime={0}
                     keyboardDismissMode='on-drag'
