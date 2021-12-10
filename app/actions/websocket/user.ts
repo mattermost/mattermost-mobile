@@ -26,7 +26,7 @@ export async function handleUserTypingEvent(serverUrl: string, msg: any) {
         const {config, license} = await queryCommonSystemValues(database.database);
 
         let user: UserModel | UserProfile | undefined = await queryUserById(database.database, msg.data.user_id);
-        if (user) {
+        if (!user) {
             const {users} = await fetchUsersByIds(serverUrl, [msg.data.user_id]);
             user = users?.[0];
         }
