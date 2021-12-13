@@ -175,7 +175,7 @@ class DatabaseManager {
                 });
             });
         }
-    }
+    };
 
     public updateServerDisplayName = async (serverUrl: string, displayName: string) => {
         const appDatabase = this.appDatabase?.database;
@@ -187,7 +187,7 @@ class DatabaseManager {
                 });
             });
         }
-    }
+    };
 
     private isServerPresent = async (serverUrl: string): Promise<boolean> => {
         if (this.appDatabase?.database) {
@@ -196,7 +196,7 @@ class DatabaseManager {
         }
 
         return false;
-    }
+    };
 
     public getActiveServerUrl = async (): Promise<string|null|undefined> => {
         const database = this.appDatabase?.database;
@@ -206,7 +206,7 @@ class DatabaseManager {
         }
 
         return null;
-    }
+    };
 
     public getServerUrlFromIdentifier = async (identifier: string): Promise<string|undefined> => {
         const database = this.appDatabase?.database;
@@ -216,7 +216,7 @@ class DatabaseManager {
         }
 
         return undefined;
-    }
+    };
 
     public getActiveServerDatabase = async (): Promise<Database|undefined> => {
         const database = this.appDatabase?.database;
@@ -228,7 +228,7 @@ class DatabaseManager {
         }
 
         return undefined;
-    }
+    };
 
     public setActiveServerDatabase = async (serverUrl: string): Promise<void> => {
         if (this.appDatabase?.database) {
@@ -260,7 +260,7 @@ class DatabaseManager {
                 this.deleteServerDatabaseFiles(serverUrl);
             }
         }
-    }
+    };
 
     public destroyServerDatabase = async (serverUrl: string): Promise<void> => {
         if (this.appDatabase?.database) {
@@ -275,7 +275,7 @@ class DatabaseManager {
                 this.deleteServerDatabaseFiles(serverUrl);
             }
         }
-    }
+    };
 
     private deleteServerDatabaseFiles = async (serverUrl: string): Promise<void> => {
         const databaseName = hashCode(serverUrl);
@@ -293,7 +293,7 @@ class DatabaseManager {
 
         await FileSystem.deleteAsync(databaseFile);
         await FileSystem.deleteAsync(databaseJournal);
-    }
+    };
 
     factoryReset = async (shouldRemoveDirectory: boolean): Promise<boolean> => {
         try {

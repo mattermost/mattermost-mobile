@@ -144,7 +144,7 @@ const InAppNotification = ({componentId, serverName, serverUrl, notification}: I
     return (
         <PanGestureHandler
             onGestureEvent={animateDismissOverlay}
-            minOffsetY={-20}
+            activeOffsetY={-20}
         >
             <Animated.View
                 style={[styles.container, isTablet ? styles.tablet : undefined, animatedStyle]}

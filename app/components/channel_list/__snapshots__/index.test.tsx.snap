@@ -22,6 +22,7 @@ exports[`components/channel_list should match snapshot 1`] = `
 >
   <RNGestureHandlerButton
     collapsable={false}
+    exclusive={true}
     onGestureEvent={[Function]}
     onGestureHandlerEvent={[Function]}
     onGestureHandlerStateChange={[Function]}
@@ -38,7 +39,21 @@ exports[`components/channel_list should match snapshot 1`] = `
         }
       }
     >
-      <View>
+      <View
+        animatedStyle={
+          Object {
+            "value": Object {
+              "marginLeft": 0,
+            },
+          }
+        }
+        collapsable={false}
+        style={
+          Object {
+            "marginLeft": 0,
+          }
+        }
+      >
         <View
           style={
             Object {

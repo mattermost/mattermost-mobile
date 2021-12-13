@@ -1,7 +1,21 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`components/channel_list/header Channel List Header Component should match snapshot 1`] = `
-<View>
+<View
+  animatedStyle={
+    Object {
+      "value": Object {
+        "marginLeft": 0,
+      },
+    }
+  }
+  collapsable={false}
+  style={
+    Object {
+      "marginLeft": 0,
+    }
+  }
+>
   <View
     style={
       Object {

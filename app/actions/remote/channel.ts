@@ -96,7 +96,7 @@ export const fetchMyChannelsForTeam = async (serverUrl: string, teamId: string, 
     }
 
     try {
-        let [channels, memberships] = await Promise.all<Channel[], ChannelMembership[]>([
+        let [channels, memberships]: [Channel[], ChannelMembership[]] = await Promise.all([
             client.getMyChannels(teamId, includeDeleted, since),
             client.getMyChannelMembers(teamId),
         ]);
