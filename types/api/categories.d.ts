@@ -4,6 +4,9 @@
 type CategorySorting = '' | 'alpha' | 'manual' | 'recent'
 type CategoryType = 'channels' | 'direct_messages' | 'favorites' | 'custom'
 
+type CategoryOrder = string[]
+type CategoryChannelOrder = string[]
+
 type CategoryChannel = {
     id?: string;
     user_id: string;
@@ -24,10 +27,10 @@ type Category = {
 }
 
 type CategoryWithChannels = Category & {
-    channels: string[];
+    channels: CategoryChannelOrder;
 }
 
 type CategoriesWithOrder = {
     categories: CategoryWithChannels[];
-    order: string[];
+    order: CategoryOrder;
 }
