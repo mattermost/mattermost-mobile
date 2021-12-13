@@ -5,17 +5,20 @@ import {Model} from '@nozbe/watermelondb';
 import {IntlShape} from 'react-intl';
 
 import {switchToChannel} from '@actions/local/channel';
+import {generateId} from '@utils/general';
 import {General} from '@constants';
 import DatabaseManager from '@database/manager';
 import {privateChannelJoinPrompt} from '@helpers/api/channel';
 import NetworkManager from '@init/network_manager';
 import {prepareMyChannelsForTeam, queryMyChannel} from '@queries/servers/channel';
+import {queryCurrentUserId, queryCurrentTeamId} from '@queries/servers/system';
 import {queryCommonSystemValues} from '@queries/servers/system';
 import {prepareMyTeams, queryMyTeamById, queryTeamById, queryTeamByName} from '@queries/servers/team';
 import MyChannelModel from '@typings/database/models/servers/my_channel';
 import MyTeamModel from '@typings/database/models/servers/my_team';
 import TeamModel from '@typings/database/models/servers/team';
 import {PERMALINK_GENERIC_TEAM_NAME_REDIRECT} from '@utils/url';
+import {cleanUpUrlable} from '@utils/channel';
 import {displayGroupMessageName, displayUsername} from '@utils/user';
 
 import {fetchRolesIfNeeded} from './role';
@@ -86,6 +89,56 @@ export const fetchChannelByName = async (serverUrl: string, teamId: string, chan
         return {error};
     }
 };
+
+export function generateChannelNameFromDisplayName(displayName: string) {
+    let name = cleanUpUrlable(displayName);
+
+    if (name === '') {
+        name = generateId();
+    }
+
+    return name;
+}
+
+export const handleCreateChannel = async (serverUrl: string, displayName: string, purpose: string, header: string, type: ChannelType) => {
+    const database = DatabaseManager.serverDatabases[serverUrl]?.database;
+    if (!database) {
+        return {error: `${serverUrl} database not found`};
+    }
+
+    let client: Client;
+    try {
+        client = NetworkManager.getClient(serverUrl);
+    } catch (error) {
+        return {error};
+    }
+
+    try {
+        const currentUserId = await queryCurrentUserId(database);
+        const currentTeamId = await queryCurrentTeamId(database);
+        const channel = {
+            creator_id: currentUserId,
+            team_id: currentTeamId,
+            display_name: displayName,
+            header: header,
+            name: generateChannelNameFromDisplayName(displayName),
+            purpose: purpose,
+            type: type, 
+        } as Channel
+
+        const channelData = await client.createChannel(channel)
+        if (channelData?.id) {
+
+            // TODO: select the channel
+            // dispatch(setChannelDisplayName(displayName));
+            // dispatch(handleSelectChannel(data.id));
+        }
+        return {channel: channelData}
+    } catch (error) {
+        console.log('error', error)
+        return {error};
+    }
+}
 
 export const fetchMyChannelsForTeam = async (serverUrl: string, teamId: string, includeDeleted = true, since = 0, fetchOnly = false, excludeDirect = false): Promise<MyChannelsRequest> => {
     let client: Client;

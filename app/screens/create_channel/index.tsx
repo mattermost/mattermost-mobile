@@ -13,14 +13,14 @@ import {Navigation} from 'react-native-navigation';
 
 import {popTopScreen, dismissModal, setButtons} from '@screens/navigation';
 import EditChannelInfo from '@components/edit_channel_info';
+import {handleCreateChannel} from '@actions/remote/channel'
 
 type Props = {
-        handleCreateChannel: PropTypes.func.isRequired,
         componentId: string,
         categoryId: string,
-        channelType: string,
+        channelType: ChannelType,
         closeButton: object,
-        createChannelRequest: object,
+        // createChannelRequest: object,
 }
 
 const CreateChannel = ({actions, componentId, categoryId, channelType, closeButton, createChannelRequest}: Props) => {
@@ -31,7 +31,7 @@ const CreateChannel = ({actions, componentId, categoryId, channelType, closeButt
     const [displayName, setDisplayName] = useState<string>('');
     const [purpose, setPurpose] = useState<string>('');
     const [header, setHeader] = useState<string>('');
-    const [type, setType] = useState<string>(channelType || General.OPEN_CHANNEL);
+    const [type, setType] = useState<ChannelType>(channelType || General.OPEN_CHANNEL);
 
     const leftButton = {
         id: 'close-new-channel',
@@ -125,38 +125,25 @@ const CreateChannel = ({actions, componentId, categoryId, channelType, closeButt
         }
     };
 
+    useEffect(() => {
+        const create = Navigation.events().registerComponentListener({
+            navigationButtonPressed: ({buttonId}: { buttonId: string }) => {
+                switch (buttonId) {
+                    case 'close-new-channel':
+                        close(!closeButton);
+                        break;
+                    case 'create-channel':
+                        onCreateChannel();
+                        break;
+                }
+            },
+        }, componentId);
 
-    // useEffect(() => {
-    //     const unsubscribe = Navigation.events().registerComponentListener({
-    //         navigationButtonPressed: ({buttonId}: { buttonId: string }) => {
-    //             console.log('buttonId', buttonId)
-    //             switch (buttonId) {
-    //                 case 'close-new-channel':
-    //                     close(!closeButton);
-    //                     break;
-    //                 case 'create-channel':
-    //                     onCreateChannel();
-    //                     break;
-    //             }
-    //         },
-    //     }, componentId);
-    //
-    //     return () => {
-    //         unsubscribe.remove();
-    //     }
-    //
-    // }, []);
+        return () => {
+            create.remove();
+        }
 
-    // navigationButtonPressed({buttonId}) {
-    //     switch (buttonId) {
-    //         case 'close-new-channel':
-    //             close(!closeButton);
-    //             break;
-    //         case 'create-channel':
-    //             onCreateChannel();
-    //             break;
-    //     }
-    // }
+    }, [type, displayName, header, purpose]);
 
     const onDisplayNameChange = (displayName: string) => {
         setDisplayName(displayName);
@@ -170,7 +157,7 @@ const CreateChannel = ({actions, componentId, categoryId, channelType, closeButt
         setHeader(header);
     };
 
-    const onTypeChange = (type: string) => {
+    const onTypeChange = (type: ChannelType) => {
         setType(type);
     }
 
