@@ -1,6 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+export {default as CategoryModel} from './category';
+export {default as CategoryChannelModel} from './category_channel';
 export {default as ChannelInfoModel} from './channel_info';
 export {default as ChannelMembershipModel} from './channel_membership';
 export {default as ChannelModel} from './channel';
