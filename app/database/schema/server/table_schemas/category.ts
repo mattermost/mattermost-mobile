@@ -12,7 +12,7 @@ export default tableSchema({
     columns: [
         {name: 'display_name', type: 'string'},
         {name: 'type', type: 'string'},
-        {name: 'sortOrder', type: 'number'},
+        {name: 'sort_order', type: 'number'},
         {name: 'sorting', type: 'string'},
         {name: 'muted', type: 'boolean'},
         {name: 'collapsed', type: 'boolean'},

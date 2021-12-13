@@ -5,6 +5,7 @@ import {Model} from '@nozbe/watermelondb';
 import {IntlShape} from 'react-intl';
 
 import {switchToChannel} from '@actions/local/channel';
+import {prepareCategories, prepareCategoryChannels} from '@app/queries/servers/categories';
 import {General} from '@constants';
 import DatabaseManager from '@database/manager';
 import {privateChannelJoinPrompt} from '@helpers/api/channel';
@@ -96,10 +97,14 @@ export const fetchMyChannelsForTeam = async (serverUrl: string, teamId: string, 
     }
 
     try {
-        let [channels, memberships]: [Channel[], ChannelMembership[]] = await Promise.all([
+        // eslint-disable-next-line prefer-const
+        let [categories, channels, memberships]: [CategoriesWithOrder, Channel[], ChannelMembership[]] = await Promise.all([
+            client.getCategories('me', teamId),
             client.getMyChannels(teamId, includeDeleted, since),
             client.getMyChannelMembers(teamId),
         ]);
+
+        console.log(' --- > CATEGORIES');
 
         if (excludeDirect) {
             channels = channels.filter((c) => c.type !== General.GM_CHANNEL && c.type !== General.DM_CHANNEL);
@@ -113,14 +118,27 @@ export const fetchMyChannelsForTeam = async (serverUrl: string, teamId: string, 
             return result;
         }, []);
 
-        if (!fetchOnly) {
+        // if (!fetchOnly) {
+        if (true) {
             const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
             const modelPromises: Array<Promise<Model[]>> = [];
             if (operator) {
-                const prepare = await prepareMyChannelsForTeam(operator, teamId, channels, memberships);
-                if (prepare) {
-                    modelPromises.push(...prepare);
+                const prepareChannelModels = await prepareMyChannelsForTeam(operator, teamId, channels, memberships);
+                if (prepareChannelModels) {
+                    modelPromises.push(...prepareChannelModels);
                 }
+
+                const prepareCategoryModels = await prepareCategories(operator, categories.categories);
+
+                if (prepareCategoryModels) {
+                    modelPromises.push(...prepareCategoryModels);
+                }
+
+                const prepareCategoryChannelModels = await prepareCategoryChannels(operator, categories.categories);
+                if (prepareCategoryChannelModels) {
+                    modelPromises.push(...prepareCategoryChannelModels);
+                }
+
                 if (modelPromises.length) {
                     const models = await Promise.all(modelPromises);
                     const flattenedModels = models.flat() as Model[];

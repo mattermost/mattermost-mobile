@@ -40,8 +40,11 @@ export default class CategoryChannelModel extends Model {
     /** channel_id : The foreign key to the related Channel record */
     @field('channel_id') channelId!: string;
 
-    /* user_id: The foreign key to the related User record*/
+    /* user_id: The foreign key to the related User record */
     @field('user_id') userId!: string;
+
+    /* sort_order: The sort order for the channel in category */
+    @field('sort_order') sortOrder!: string;
 
     /** user: The related user */
     @immutableRelation(USER, 'user_id') user!: Relation<UserModel>;

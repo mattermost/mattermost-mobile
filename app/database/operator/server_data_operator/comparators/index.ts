@@ -35,12 +35,13 @@ import type UserModel from '@typings/database/models/servers/user';
  *  'record' and the 'raw'
  */
 
-export const isRecordCategoryEqualToRaw = (record: CategoryModel, raw: Role) => {
+export const isRecordCategoryEqualToRaw = (record: CategoryModel, raw: Category) => {
     return raw.id === record.id;
 };
 
-export const isRecordCategoryChannelEqualToRaw = (record: CategoryChannelModel, raw: Role) => {
-    return raw.id === record.id;
+// @to-do: Look into updates for category-channels
+export const isRecordCategoryChannelEqualToRaw = (record: CategoryChannelModel, raw: CategoryChannel) => {
+    return (record.id === raw.id);
 };
 
 export const isRecordRoleEqualToRaw = (record: RoleModel, raw: Role) => {

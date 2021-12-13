@@ -22,12 +22,13 @@ type Category = {
     display_name: string;
     sort_order: number;
     sorting: CategorySorting;
+    type: CategoryType;
     muted: boolean;
     collapsed: boolean;
 }
 
 type CategoryWithChannels = Category & {
-    channels: CategoryChannelOrder;
+    channel_ids: CategoryChannelOrder;
 }
 
 type CategoriesWithOrder = {

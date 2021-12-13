@@ -9,7 +9,7 @@ import Model, {Associations} from '@nozbe/watermelondb/Model';
  * categories (relationship type N:N)
  */
 export default class CategoryChannelModel extends Model {
-    /** table (name) : TeamMembership */
+    /** table (name) : CategoryChannel */
     static table: string;
 
     /** associations : Describes every relationship to this table. */
