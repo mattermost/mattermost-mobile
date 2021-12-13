@@ -138,7 +138,7 @@ type Props = {
         type?: string;
 }
 
-const EditChannelInfo = ({ channelType, channelURL, displayName, editing = false, enableRightButton, error, header, onDisplayNameChange, onHeaderChange, onPurposeChange, onTypeChange, oldChannelURL, oldDisplayName, oldHeader, oldPurpose, purpose, saving, testID, type, }: Props) => {
+const EditChannelInfo = ({channelType, channelURL, displayName, editing = false, enableRightButton, error, header, onDisplayNameChange, onHeaderChange, onPurposeChange, onTypeChange, oldChannelURL, oldDisplayName, oldHeader, oldPurpose, purpose, saving, testID, type}: Props) => {
 
     const theme = useTheme();
 

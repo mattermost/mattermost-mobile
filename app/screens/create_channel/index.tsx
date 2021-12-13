@@ -16,14 +16,14 @@ import EditChannelInfo from '@components/edit_channel_info';
 import {handleCreateChannel} from '@actions/remote/channel'
 
 type Props = {
+        serverUrl: string,
         componentId: string,
         categoryId: string,
         channelType: ChannelType,
         closeButton: object,
-        // createChannelRequest: object,
 }
 
-const CreateChannel = ({actions, componentId, categoryId, channelType, closeButton, createChannelRequest}: Props) => {
+const CreateChannel = ({serverUrl, componentId, channelType, closeButton}: Props) => {
     const intl = useIntl();
     const theme = useTheme();
     const [error, setError] = useState<string>('');
@@ -87,33 +87,30 @@ const CreateChannel = ({actions, componentId, categoryId, channelType, closeButt
         // setButtons(componentId, buttons);
     };
 
-    // componentDidUpdate(prevProps) {
-    //     if (createChannelRequest !== prevProps.createChannelRequest) {
-    //         switch (createChannelRequest.status) {
-    //             case RequestStatus.STARTED:
-    //                 emitCreating(true);
-    //                 onRequestStart();
-    //                 break;
-    //             case RequestStatus.SUCCESS:
-    //                 DeviceEventEmitter.emit(NavigationTypes.CLOSE_MAIN_SIDEBAR);
-    //                 InteractionManager.runAfterInteractions(() => {
-    //                     emitCreating(false);
-    //                     setError('');
-    //                     setCreating(false);
-    //                     close(false);
-    //                 });
-    //                 break;
-    //             case RequestStatus.FAILURE:
-    //                 emitCreating(false);
-    //                 onRequestFailure(createChannelRequest.error);
-    //                 break;
-    //         }
-    //     }
-    // }
+    const onCreateChannel = async () => {
+        emitCreating(true);
+        onRequestStart();
 
-    const onCreateChannel = () => {
         Keyboard.dismiss();
-        actions.handleCreateChannel(displayName, purpose, header, type, categoryId);
+        const channel = await handleCreateChannel(serverUrl, displayName, purpose, header, type)
+        if (channel.error) {
+            emitCreating(false);
+            onRequestFailure(channel.error as string);
+            return
+        }
+
+        emitCreating(false);
+        setError('');
+        setCreating(false);
+        close(false);
+
+        // DeviceEventEmitter.emit(NavigationTypes.CLOSE_MAIN_SIDEBAR);
+        // InteractionManager.runAfterInteractions(() => {
+        //     emitCreating(false);
+        //     setError('');
+        //     setCreating(false);
+        //     close(false);
+        // });
     };
 
     const close = (goBack = false) => {

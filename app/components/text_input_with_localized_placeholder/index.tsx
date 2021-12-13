@@ -6,7 +6,6 @@ import {useIntl} from 'react-intl';
 import {TextInput, TextInputProps} from 'react-native';
 import {changeOpacity} from '@utils/theme';
 
-
 type Props = TextInputProps & {
     defaultMessage: string; 
     id: string; 
@@ -22,7 +21,7 @@ const TextInputWithLocalizedPlaceholder = forwardRef((props: Props, ref) => {
     if (placeholder?.id) {
         placeholderString = formatMessage(placeholder);
     }
-    //
+
     return (
         <TextInput
             ref={ref}

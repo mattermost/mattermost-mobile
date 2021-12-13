@@ -79,7 +79,7 @@ export const fetchChannelByName = async (serverUrl: string, teamId: string, chan
         if (!fetchOnly) {
             const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
             if (operator) {
-                await operator.handleChannel({channels: [channel], prepareRecordsOnly: false});
+            await operator.handleChannel({channels: [channel], prepareRecordsOnly: false});
             }
         }
 
