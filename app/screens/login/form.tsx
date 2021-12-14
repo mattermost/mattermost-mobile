@@ -64,7 +64,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         marginRight: 10,
         padding: 0,
         top: -2,
-        flex: undefined,
     },
     loginButton: {
         marginTop: 25,
