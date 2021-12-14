@@ -24,6 +24,7 @@ import {preventDoubleTap} from '@utils/tap';
 
 import EmailField from './components/email_field';
 import Field from './components/field';
+import Description from './components/field_description';
 import ProfileError from './components/profile_error';
 
 import type {MessageDescriptor} from '@formatjs/intl/src/types';
@@ -53,6 +54,10 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         justifyContent: 'center',
         zIndex: 1000,
+    },
+    description: {
+        alignSelf: 'center',
+        marginBottom: 24,
     },
 });
 
@@ -103,8 +108,6 @@ const EditProfile = ({
     const emailRef = useRef<FloatingTextInputRef>(null);
     const nicknameRef = useRef<FloatingTextInputRef>(null);
     const positionRef = useRef<FloatingTextInputRef>(null);
-
-    //todo: check if compRef returns the same id under isModal/isTablet  const compRef = useRef(generateId());
 
     const [userInfo, setUserInfo] = useState<UserInfo>({
         email: currentUser.email,
@@ -188,7 +191,7 @@ const EditProfile = ({
         }
 
         return true;
-    }, [isModal]);
+    }, []);
 
     const enableSaveButton = useCallback((value: boolean) => {
         if (!isTablet) {
@@ -325,6 +328,8 @@ const EditProfile = ({
         returnKeyType: 'next',
     };
 
+    const descriptionStyle = [styles.description, {paddingHorizontal: isTablet ? 42 : 20}];
+
     return (
         <>
             {isTablet &&
@@ -375,6 +380,9 @@ const EditProfile = ({
                             showStatus={false}
                         />
                     </View>
+                    <Description
+                        containerStyle={descriptionStyle}
+                    />
                     <Field
                         fieldKey='firstName'
                         fieldRef={firstNameRef}

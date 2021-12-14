@@ -106,7 +106,7 @@ const Field = ({
                     textInputStyle={textInputStyle}
                     {...props}
                 />
-                {isDisabled && (
+                {isDisabled && fieldDescription && (
                     <FieldDescription
                         text={fieldDescription}
                     />

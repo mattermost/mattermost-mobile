@@ -3,14 +3,15 @@
 
 import React from 'react';
 import {useIntl} from 'react-intl';
-import {Text, View} from 'react-native';
+import {StyleProp, Text, View, ViewStyle} from 'react-native';
 
 import {useTheme} from '@context/theme';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
-type HelpContentProps = {
+type DescriptionProps = {
     text?: string;
+    containerStyle?: StyleProp<ViewStyle>;
 };
 
 const getStyleSheet = makeStyleSheetFromTheme((theme) => {
@@ -25,19 +26,27 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     };
 });
 
-const Description = ({text}: HelpContentProps) => {
+const Description = ({text, containerStyle}: DescriptionProps) => {
     const theme = useTheme();
     const intl = useIntl();
 
     const style = getStyleSheet(theme);
-    const desc = text ?? intl.formatMessage({
+
+    const defaultText = intl.formatMessage({
         id: 'user.settings.general.field_handled_externally',
-        defaultMessage: 'This field is handled through your login provider. If you want to change it, you need to do so through your login provider.',
+        defaultMessage: 'Some fields below are handled through your login provider. If you want to change them, you’ll need to do so through your login provider.',
     });
 
+    const viewStyles = [
+        style.container,
+        containerStyle,
+    ];
+
     return (
-        <View style={style.container}>
-            <Text style={style.text}>{desc}</Text>
+        <View
+            style={viewStyles}
+        >
+            <Text style={style.text}>{text ?? defaultText}</Text>
         </View>
     );
 };
