@@ -1,26 +1,26 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {General} from '@constants';
-import {useIntl} from 'react-intl';
 import React, {useEffect, useState} from 'react';
-import {useTheme} from '@context/theme';
+import {useIntl} from 'react-intl';
 import {
     InteractionManager,
     Keyboard,
 } from 'react-native';
 import {Navigation} from 'react-native-navigation';
 
-import {popTopScreen, dismissModal, setButtons} from '@screens/navigation';
+import {handleCreateChannel} from '@actions/remote/channel';
 import EditChannelInfo from '@components/edit_channel_info';
-import {handleCreateChannel} from '@actions/remote/channel'
+import {General} from '@constants';
+import {useTheme} from '@context/theme';
+import {popTopScreen, dismissModal, setButtons} from '@screens/navigation';
 
 type Props = {
-        serverUrl: string,
-        componentId: string,
-        categoryId: string,
-        channelType: ChannelType,
-        closeButton: object,
+        serverUrl: string;
+        componentId: string;
+        categoryId: string;
+        channelType: ChannelType;
+        closeButton: object;
 }
 
 const CreateChannel = ({serverUrl, componentId, channelType, closeButton}: Props) => {
@@ -49,28 +49,28 @@ const CreateChannel = ({serverUrl, componentId, channelType, closeButton}: Props
     };
 
     const emitCanSaveChannel = (enabled: boolean) => {
-        const rightButtons = [{...rightButton, enabled}] as never[]
-        let leftButtons: never[] = []
+        const rightButtons = [{...rightButton, enabled}] as never[];
+        let leftButtons: never[] = [];
 
         if (closeButton) {
             leftButtons = [leftButton] as never[];
         }
 
         setButtons(componentId, {
-            leftButtons, 
-            rightButtons
+            leftButtons,
+            rightButtons,
         });
     };
 
-    const onRequestStart = ()  => {
-        setError('')
-        setSaving(true)
-    }
+    const onRequestStart = () => {
+        setError('');
+        setSaving(true);
+    };
 
-    const onRequestFailure = (error: string) => {
-        setError(error);
+    const onRequestFailure = (errorText: string) => {
+        setError(errorText);
         setSaving(false);
-    }
+    };
 
     const emitSaving = (loading: boolean) => {
         const buttons = {
@@ -90,11 +90,11 @@ const CreateChannel = ({serverUrl, componentId, channelType, closeButton}: Props
 
         Keyboard.dismiss();
 
-        const channel = await handleCreateChannel(serverUrl, displayName, purpose, header, type)
+        const channel = await handleCreateChannel(serverUrl, displayName, purpose, header, type);
         if (channel.error) {
             emitSaving(false);
             onRequestFailure(channel.error as string);
-            return
+            return;
         }
 
         // DeviceEventEmitter.emit(NavigationTypes.CLOSE_MAIN_SIDEBAR);
@@ -131,25 +131,24 @@ const CreateChannel = ({serverUrl, componentId, channelType, closeButton}: Props
 
         return () => {
             create.remove();
-        }
-
+        };
     }, [type, displayName, header, purpose]);
 
-    const onDisplayNameChange = (displayName: string) => {
-        setDisplayName(displayName);
+    const onDisplayNameChange = (displayNameText: string) => {
+        setDisplayName(displayNameText);
     };
 
-    const onPurposeChange = (purpose: string) => {
-        setPurpose(purpose);
+    const onPurposeChange = (purposeText: string) => {
+        setPurpose(purposeText);
     };
 
-    const onHeaderChange = (header: string) => {
-        setHeader(header);
+    const onHeaderChange = (headerText: string) => {
+        setHeader(headerText);
     };
 
-    const onTypeChange = (type: ChannelType) => {
-        setType(type);
-    }
+    const onTypeChange = (typeText: ChannelType) => {
+        setType(typeText);
+    };
 
     return (
         <EditChannelInfo
@@ -167,6 +166,6 @@ const CreateChannel = ({serverUrl, componentId, channelType, closeButton}: Props
             type={type}
         />
     );
-}
+};
 
-export default CreateChannel
+export default CreateChannel;
