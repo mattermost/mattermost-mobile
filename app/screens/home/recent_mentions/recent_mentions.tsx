@@ -9,13 +9,13 @@ import Animated, {useAnimatedStyle, useSharedValue, withTiming} from 'react-nati
 import {SafeAreaView, Edge} from 'react-native-safe-area-context';
 
 import {getRecentMentions} from '@actions/remote/search';
-import DateSeparator from '@app/components/post_list/date_separator';
-import {UserModel} from '@app/database/models/server';
-import {getDateForDateLine, isDateLine, selectOrderedPosts} from '@app/utils/post_list';
 import NavigationHeader from '@components/navigation_header';
+import DateSeparator from '@components/post_list/date_separator';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
+import {UserModel} from '@database/models/server';
 import {useCollapsibleHeader} from '@hooks/header';
+import {getDateForDateLine, isDateLine, selectOrderedPosts} from '@utils/post_list';
 
 import EmptyState from './components/empty';
 import Mention from './components/mention';
@@ -72,7 +72,7 @@ const RecentMentionsScreen = ({mentions, currentUser, currentTimezone, isTimezon
 
     const {scrollPaddingTop, scrollRef, scrollValue, onScroll} = useCollapsibleHeader<FlatList<string>>(isLargeTitle, Boolean(subtitle), false);
 
-    const paddingTop = useMemo(() => ({paddingTop: scrollPaddingTop, paddingBottom: 10}), [scrollPaddingTop]);
+    const paddingTop = useMemo(() => ({paddingTop: scrollPaddingTop}), [scrollPaddingTop]);
 
     const posts = useMemo(() => selectOrderedPosts(mentions, 0, false, '', false, isTimezoneEnabled, currentTimezone, false).reverse(), [mentions]);
 

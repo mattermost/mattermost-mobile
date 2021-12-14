@@ -53,52 +53,57 @@ export async function getRecentMentions(serverUrl: string): Promise<PostSearchRe
         posts = data.posts || {};
         order = data.order || [];
 
-        const models: Model[] = [];
-        let postModels: Model[] = [];
-        let userModels: Model[] = [];
-        let channelModelsArray: Model[][] = [[]];
-
+        const promises: Array<Promise<Model[]>> = [];
         postsArray = order.map((id) => posts[id]);
-
-        if (postsArray.length) {
-            const {authors} = await fetchPostAuthors(serverUrl, postsArray, true);
-            const {channels, channelMemberships} = await getMissingChannelsFromPosts(serverUrl, postsArray, true) as {channels: Channel[]; channelMemberships: ChannelMembership[]};
-
-            if (authors?.length) {
-                userModels = await operator.handleUsers({
-                    users: authors,
-                    prepareRecordsOnly: true,
-                });
-            }
-
-            if (channels?.length && channelMemberships?.length) {
-                const promises = prepareMissingChannelsForAllTeams(operator, channels, channelMemberships) as Array<Promise<Model[]>>;
-                channelModelsArray = await Promise.all(promises);
-            }
-
-            postModels = await operator.handlePosts({
-                actionType: '',
-                order: [],
-                posts: postsArray,
-                previousPostId: '',
-                prepareRecordsOnly: true,
-            });
-        }
 
         const mentions: IdValue = {
             id: SYSTEM_IDENTIFIERS.RECENT_MENTIONS,
             value: JSON.stringify(order),
         };
 
-        const mentionModels = await operator.handleSystem({
+        promises.push(operator.handleSystem({
             systems: [mentions],
             prepareRecordsOnly: true,
-        });
+        }));
 
-        models.push(...userModels);
-        models.push(...postModels);
-        models.push(...channelModelsArray.flat());
-        models.push(...mentionModels);
+        if (postsArray.length) {
+            const {authors} = await fetchPostAuthors(serverUrl, postsArray, true);
+            const {channels, channelMemberships} = await getMissingChannelsFromPosts(serverUrl, postsArray, true) as {channels: Channel[]; channelMemberships: ChannelMembership[]};
+
+            if (authors?.length) {
+                promises.push(
+                    operator.handleUsers({
+                        users: authors,
+                        prepareRecordsOnly: true,
+                    }),
+                );
+            }
+
+            if (channels?.length && channelMemberships?.length) {
+                const channelPromises = prepareMissingChannelsForAllTeams(operator, channels, channelMemberships) as Array<Promise<Model[]>>;
+                if (channelPromises && channelPromises.length) {
+                    promises.push(...channelPromises);
+                }
+            }
+
+            promises.push(
+                operator.handlePosts({
+                    actionType: '',
+                    order: [],
+                    posts: postsArray,
+                    previousPostId: '',
+                    prepareRecordsOnly: true,
+                }),
+            );
+        }
+
+        const modelArrays = await Promise.all(promises);
+        const models = modelArrays.flatMap((mdls) => {
+            if (!mdls || !mdls.length) {
+                return [];
+            }
+            return mdls;
+        });
 
         if (models.length) {
             await operator.batchRecords(models);

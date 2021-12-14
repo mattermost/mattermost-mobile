@@ -1,5 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
+//
+import Model from '@nozbe/watermelondb/Model';
 
 import {processPostsFetched} from '@actions/local/post';
 import {ActionType, General} from '@constants';
@@ -7,7 +9,7 @@ import {SYSTEM_IDENTIFIERS} from '@constants/database';
 import DatabaseManager from '@database/manager';
 import {getNeededAtMentionedUsernames} from '@helpers/api/user';
 import NetworkManager from '@init/network_manager';
-import {queryAllMyChannelIds} from '@queries/servers/channel';
+import {prepareMissingChannelsForAllTeams, queryAllMyChannelIds} from '@queries/servers/channel';
 import {queryRecentPostsInChannel} from '@queries/servers/post';
 import {queryCurrentUserId, queryCurrentChannelId} from '@queries/servers/system';
 import {queryAllUsers} from '@queries/servers/user';
@@ -251,32 +253,38 @@ export async function getMissingChannelsFromPosts(serverUrl: string, posts: Post
     }
 
     const channelIds = await queryAllMyChannelIds(operator.database);
-    const currentUserId = await queryCurrentUserId(operator.database);
-    const promises1: Array<Promise<Channel>> = [];
-    const promises2: Array<Promise<ChannelMembership>> = [];
+    const channelPromises: Array<Promise<Channel>> = [];
+    const userPromises: Array<Promise<ChannelMembership>> = [];
 
     posts.forEach((post) => {
         const id = post.channel_id;
 
         if (channelIds.indexOf(id) === -1) {
-            promises1.push(client.getChannel(id));
-            promises2.push(client.getChannelMember(id, currentUserId));
+            channelPromises.push(client.getChannel(id));
+            userPromises.push(client.getMyChannelMember(id));
         }
     });
 
-    const channels = await Promise.all(promises1);
-    const channelMemberships = await Promise.all(promises2);
+    const channels = await Promise.all(channelPromises);
+    const channelMemberships = await Promise.all(userPromises);
 
-    if (!fetchOnly) {
-        await operator.handleChannel({
-            channels,
-            prepareRecordsOnly: false,
-        });
+    if (!fetchOnly && channels.length && channelMemberships.length) {
+        const modelPromises = prepareMissingChannelsForAllTeams(operator, channels, channelMemberships) as Array<Promise<Model[]>>;
+        if (modelPromises && modelPromises.length) {
+            const channelModelsArray = await Promise.all(modelPromises);
+            if (channelModelsArray.length) {
+                const models = channelModelsArray.flatMap((mdls) => {
+                    if (!mdls || mdls.length) {
+                        return [];
+                    }
+                    return mdls;
+                });
 
-        await operator.handleChannelMembership({
-            channelMemberships,
-            prepareRecordsOnly: false,
-        });
+                if (models) {
+                    operator.batchRecords(models);
+                }
+            }
+        }
     }
 
     return {
