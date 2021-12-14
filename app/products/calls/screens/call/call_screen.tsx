@@ -7,7 +7,6 @@ import {RTCView} from 'react-native-webrtc';
 
 import {showModalOverCurrentContext, mergeNavigationOptions, popTopScreen, goToScreen} from '@actions/navigation';
 import CompassIcon from '@components/compass_icon';
-import FormattedText from '@components/formatted_text';
 import {THREAD} from '@constants/screen';
 import {GenericAction} from '@mm-redux/types/actions';
 import {displayUsername} from '@mm-redux/utils/user_utils';
@@ -277,12 +276,9 @@ const CallScreen = (props: Props) => {
                     streamURL={props.screenShareURL}
                     style={style.screenShareImage}
                 />
-                <FormattedText
-                    id='call.screen_share_user'
-                    defaultMessage='You are seing {userDisplayName} screen'
-                    values={{userDisplayName: displayUsername(props.users[props.call.screenOn], props.teammateNameDisplay)}}
+                <Text
                     style={style.screenShareText}
-                />
+                >{`You are seing ${displayUsername(props.users[props.call.screenOn], props.teammateNameDisplay)} screen`}</Text>
             </Pressable>
         );
     }
@@ -354,17 +350,13 @@ const CallScreen = (props: Props) => {
                                 style={style.muteIcon}
                             />
                             {props.currentParticipant?.muted &&
-                                <FormattedText
+                                <Text
                                     style={style.buttonText}
-                                    id='call.unmute'
-                                    defaultMessage='Unmute'
-                                />}
+                                >{'Unmute'}</Text>}
                             {!props.currentParticipant?.muted &&
-                                <FormattedText
+                                <Text
                                     style={style.buttonText}
-                                    id='call.mute'
-                                    defaultMessage='Mute'
-                                />}
+                                >{'Mute'}</Text>}
                         </Pressable>}
                     <View style={style.otherButtons}>
                         <Pressable
@@ -377,11 +369,9 @@ const CallScreen = (props: Props) => {
                                 size={24}
                                 style={{...style.buttonIcon, ...style.hangUpIcon}}
                             />
-                            <FormattedText
+                            <Text
                                 style={style.buttonText}
-                                id='call.leave'
-                                defaultMessage='Leave'
-                            />
+                            >{'Leave'}</Text>
                         </Pressable>
                         <Pressable
                             style={style.button}
@@ -392,11 +382,9 @@ const CallScreen = (props: Props) => {
                                 size={24}
                                 style={style.buttonIcon}
                             />
-                            <FormattedText
+                            <Text
                                 style={style.buttonText}
-                                id='call.chat_thread'
-                                defaultMessage='Chat thread'
-                            />
+                            >{'Chat thread'}</Text>
                         </Pressable>
                         <Pressable
                             style={style.button}
@@ -406,11 +394,9 @@ const CallScreen = (props: Props) => {
                                 size={24}
                                 style={style.buttonIcon}
                             />
-                            <FormattedText
+                            <Text
                                 style={style.buttonText}
-                                id='call.settings'
-                                defaultMessage='Settings'
-                            />
+                            >{'Settings'}</Text>
                         </Pressable>
                         <Pressable
                             style={style.button}
@@ -421,11 +407,9 @@ const CallScreen = (props: Props) => {
                                 size={24}
                                 style={style.buttonIcon}
                             />
-                            <FormattedText
+                            <Text
                                 style={style.buttonText}
-                                id='call.more'
-                                defaultMessage='More'
-                            />
+                            >{'More'}</Text>
                         </Pressable>
                         {isLandscape &&
                             <Pressable
@@ -439,17 +423,13 @@ const CallScreen = (props: Props) => {
                                     style={{...style.buttonIcon, ...style.muteIconLandscape}}
                                 />
                                 {props.currentParticipant?.muted &&
-                                    <FormattedText
+                                    <Text
                                         style={style.buttonText}
-                                        id='call.unmute'
-                                        defaultMessage='Unmute'
-                                    />}
+                                    >{'Unmute'}</Text>}
                                 {!props.currentParticipant?.muted &&
-                                    <FormattedText
+                                    <Text
                                         style={style.buttonText}
-                                        id='call.mute'
-                                        defaultMessage='Mute'
-                                    />}
+                                    >{'Mute'}</Text>}
                             </Pressable>}
                     </View>
                 </View>

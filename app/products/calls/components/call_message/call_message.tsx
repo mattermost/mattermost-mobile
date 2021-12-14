@@ -8,7 +8,6 @@ import {View, TouchableOpacity, Text} from 'react-native';
 
 import CompassIcon from '@components/compass_icon';
 import FormattedRelativeTime from '@components/formatted_relative_time';
-import FormattedText from '@components/formatted_text';
 import FormattedTime from '@components/formatted_time';
 import {displayUsername} from '@mm-redux/utils/user_utils';
 import leaveAndJoinWithAlert from '@mmproducts/calls/components/leave_and_join_alert';
@@ -117,37 +116,26 @@ const CallMessage = ({post, user, teammateNameDisplay, confirmToJoin, alreadyInT
                     style={style.phoneHangupIcon}
                 />
                 <View style={style.messageText}>
-                    <FormattedText
-                        id='call_message.call_ended'
-                        defaultMessage='Call ended'
+                    <Text
                         style={style.startedText}
-                    />
+                    >{'Call ended'}</Text>
                     <View
                         style={style.endCallInfo}
                     >
-                        <FormattedText
-                            id='call_message.call_ended_at'
-                            defaultMessage='Ended at {time}'
+                        <Text
                             style={style.timeText}
-                            values={{
-                                time: (
-                                    <FormattedTime
-                                        value={post.props.end_at}
-                                        isMilitaryTime={isMilitaryTime}
-                                        timezone={userTimezone}
-                                    />
-                                ),
-                            }}
-                        />
+                        >{'Ended at '}</Text>
+                        {
+                            <FormattedTime
+                                value={post.props.end_at}
+                                isMilitaryTime={isMilitaryTime}
+                                timezone={userTimezone}
+                            />
+                        }
                         <Text style={style.separator}>{'•'}</Text>
-                        <FormattedText
+                        <Text
                             style={style.timeText}
-                            id='call_message.call_lasted'
-                            defaultMessage='Lasted {duration}'
-                            values={{
-                                duration: moment.duration(post.props.end_at - post.props.start_at).humanize(false),
-                            }}
-                        />
+                        >{`Lasted ${moment.duration(post.props.end_at - post.props.start_at).humanize(false)}`}</Text>
                     </View>
                 </View>
             </View>
@@ -162,12 +150,9 @@ const CallMessage = ({post, user, teammateNameDisplay, confirmToJoin, alreadyInT
                 style={style.joinCallIcon}
             />
             <View style={style.messageText}>
-                <FormattedText
-                    id='call_message.started_a_call'
-                    defaultMessage='{user} started a call'
-                    values={{user: displayUsername(user, teammateNameDisplay)}}
+                <Text
                     style={style.startedText}
-                />
+                >{`${displayUsername(user, teammateNameDisplay)} started a call`}</Text>
                 <FormattedRelativeTime
                     value={post.props.start_at}
                     updateIntervalInSeconds={1}
@@ -185,17 +170,13 @@ const CallMessage = ({post, user, teammateNameDisplay, confirmToJoin, alreadyInT
                     style={style.joinCallButtonIcon}
                 />
                 {alreadyInTheCall &&
-                    <FormattedText
-                        id='call_message.current_call'
-                        defaultMessage='Current Call'
+                    <Text
                         style={style.joinCallButtonText}
-                    />}
+                    >{'Current call'}</Text>}
                 {!alreadyInTheCall &&
-                    <FormattedText
-                        id='call_message.join_call'
-                        defaultMessage='Join Call'
+                    <Text
                         style={style.joinCallButtonText}
-                    />}
+                    >{'Join call'}</Text>}
             </TouchableOpacity>
         </View>
     );

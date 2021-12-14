@@ -7,7 +7,6 @@ import {Options} from 'react-native-navigation';
 
 import {goToScreen} from '@actions/navigation';
 import CompassIcon from '@components/compass_icon';
-import FormattedText from '@components/formatted_text';
 import ViewTypes, {CURRENT_CALL_BAR_HEIGHT} from '@constants/view';
 import {GenericAction} from '@mm-redux/types/actions';
 import EventEmitter from '@mm-redux/utils/event_emitter';
@@ -134,18 +133,10 @@ const CurrentCall = (props: Props) => {
                 />
                 <View style={style.userInfo}>
                     <Text style={style.speakingUser}>
-                        <FormattedText
-                            id='current_call.user-is-speaking'
-                            defaultMessage='{username} is speaking'
-                            values={{username: displayUsername(props.speakerUser, props.teammateNameDisplay)}}
-                        />
+                        {`${displayUsername(props.speakerUser, props.teammateNameDisplay)} is speaking`}
                     </Text>
                     <Text style={style.currentChannel}>
-                        <FormattedText
-                            id='current_call.channel-name'
-                            defaultMessage='~{channelName}'
-                            values={{channelName: props.channel.display_name}}
-                        />
+                        {`~${props.channel.display_name}`}
                     </Text>
                 </View>
                 <Pressable
