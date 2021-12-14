@@ -2,7 +2,20 @@
 
 exports[`@components/app_version should match snapshot 1`] = `
 <View
+  animatedStyle={
+    Object {
+      "value": Object {
+        "opacity": 1,
+      },
+    }
+  }
+  collapsable={false}
   pointerEvents="none"
+  style={
+    Object {
+      "opacity": 1,
+    }
+  }
 >
   <View
     style={

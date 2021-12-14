@@ -1,19 +1,7 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`Loading  should match snapshot 1`] = `
-<View
-  style={
-    Array [
-      Object {
-        "flex": 1,
-        "justifyContent": "center",
-        "maxHeight": 40,
-        "padding": 20,
-      },
-      undefined,
-    ]
-  }
->
+<View>
   <View
     style={
       Array [
