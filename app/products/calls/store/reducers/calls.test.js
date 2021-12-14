@@ -179,44 +179,6 @@ describe('Reducers.calls.calls', () => {
         state = callsReducer(initialState, testAction);
         assert.deepEqual(state.calls, initialState.calls);
     });
-
-    it('RECEIVED_VOICE_ON_USER_CALL', async () => {
-        const initialState = {calls: {'channel-1': call1, 'channel-2': call2}};
-        const testAction = {
-            type: CallsTypes.RECEIVED_VOICE_ON_USER_CALL,
-            data: {channelId: 'channel-1', userId: 'user-1'},
-        };
-        let state = callsReducer(initialState, testAction);
-        assert.equal(state.calls['channel-1'].participants['user-1'].isTalking, true);
-        assert.deepEqual(state.calls['channel-1'].speakers, ['user-1', 'user-2']);
-
-        testAction.data = {channelId: 'channel-1', userId: 'invalidUser'};
-        state = callsReducer(initialState, testAction);
-        assert.deepEqual(state.calls, initialState.calls);
-
-        testAction.data = {channelId: 'invalid-channel', userId: 'user-2'};
-        state = callsReducer(initialState, testAction);
-        assert.deepEqual(state.calls, initialState.calls);
-    });
-
-    it('RECEIVED_VOICE_OFF_USER_CALL', async () => {
-        const initialState = {calls: {'channel-1': call1, 'channel-2': call2}};
-        const testAction = {
-            type: CallsTypes.RECEIVED_VOICE_OFF_USER_CALL,
-            data: {channelId: 'channel-1', userId: 'user-2'},
-        };
-        let state = callsReducer(initialState, testAction);
-        assert.equal(state.calls['channel-1'].participants['user-2'].isTalking, false);
-        assert.deepEqual(state.calls['channel-1'].speakers, []);
-
-        testAction.data = {channelId: 'channel-1', userId: 'invalidUser'};
-        state = callsReducer(initialState, testAction);
-        assert.deepEqual(state.calls, initialState.calls);
-
-        testAction.data = {channelId: 'invalid-channel', userId: 'user-2'};
-        state = callsReducer(initialState, testAction);
-        assert.deepEqual(state.calls, initialState.calls);
-    });
     it('RECEIVED_CHANNEL_CALL_SCREEN_ON', async () => {
         const initialState = {calls: {'channel-1': call1, 'channel-2': call2}};
         const testAction = {

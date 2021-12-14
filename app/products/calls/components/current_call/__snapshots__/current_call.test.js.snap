@@ -22,8 +22,8 @@ exports[`CurrentCall should match snapshot muted 1`] = `
     }
   >
     <CallAvatar
-      userId="user-1-id"
-      volume={0.5}
+      userId=""
+      volume={0}
     />
     <View
       style={
@@ -41,7 +41,7 @@ exports[`CurrentCall should match snapshot muted 1`] = `
           }
         }
       >
-        User 1 is speaking
+        No one is talking
       </Text>
       <Text
         style={
@@ -133,8 +133,8 @@ exports[`CurrentCall should match snapshot unmuted 1`] = `
     }
   >
     <CallAvatar
-      userId="user-1-id"
-      volume={0.5}
+      userId=""
+      volume={0}
     />
     <View
       style={
@@ -152,7 +152,7 @@ exports[`CurrentCall should match snapshot unmuted 1`] = `
           }
         }
       >
-        User 1 is speaking
+        No one is talking
       </Text>
       <Text
         style={

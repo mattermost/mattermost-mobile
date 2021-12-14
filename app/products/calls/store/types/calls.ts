@@ -44,3 +44,8 @@ export type ServerCallState = {
     thread_id: string;
     screen_sharing_id: string;
 }
+
+export type VoiceEventData = {
+    channelId: string;
+    userId: string;
+}

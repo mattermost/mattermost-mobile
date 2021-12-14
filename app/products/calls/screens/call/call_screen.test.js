@@ -35,7 +35,7 @@ describe('CallScreen', () => {
             screenOn: false,
             threadId: false,
         },
-        users: {
+        profiles: {
             'user-1-id': {
                 id: 'user-1-id',
                 username: 'user-1-username',

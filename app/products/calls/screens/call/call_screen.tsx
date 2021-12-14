@@ -2,11 +2,12 @@
 // See LICENSE.txt for license information.
 
 import React, {useEffect, useCallback, useState} from 'react';
-import {Keyboard, View, Text, Platform, Pressable, SafeAreaView, ScrollView, useWindowDimensions} from 'react-native';
+import {Keyboard, View, Text, Platform, Pressable, SafeAreaView, ScrollView, useWindowDimensions, DeviceEventEmitter} from 'react-native';
 import {RTCView} from 'react-native-webrtc';
 
 import {showModalOverCurrentContext, mergeNavigationOptions, popTopScreen, goToScreen} from '@actions/navigation';
 import CompassIcon from '@components/compass_icon';
+import {WebsocketEvents} from '@constants';
 import {THREAD} from '@constants/screen';
 import {GenericAction} from '@mm-redux/types/actions';
 import {displayUsername} from '@mm-redux/utils/user_utils';
@@ -17,7 +18,7 @@ import {makeStyleSheetFromTheme} from '@utils/theme';
 import type {Theme} from '@mm-redux/types/theme';
 import type {UserProfile} from '@mm-redux/types/users';
 import type {IDMappedObjects} from '@mm-redux/types/utilities';
-import type {Call, CallParticipant} from '@mmproducts/calls/store/types/calls';
+import type {Call, CallParticipant, VoiceEventData} from '@mmproducts/calls/store/types/calls';
 
 type Props = {
     actions: {
@@ -27,7 +28,7 @@ type Props = {
     };
     theme: Theme;
     call: Call|null;
-    users: IDMappedObjects<UserProfile>;
+    profiles: IDMappedObjects<UserProfile>;
     currentParticipant: CallParticipant;
     teammateNameDisplay: string;
     screenShareURL: string;
@@ -203,9 +204,6 @@ const getStyleSheet = makeStyleSheetFromTheme((props: any) => {
 });
 
 const CallScreen = (props: Props) => {
-    if (!props.call) {
-        return null;
-    }
     const {width, height} = useWindowDimensions();
     const isLandscape = width > height;
 
@@ -222,6 +220,27 @@ const CallScreen = (props: Props) => {
             },
         });
     }, []);
+
+    const [speaker, setSpeaker] = useState<UserProfile|null>(null);
+    const handleVoiceOn = (data: VoiceEventData) => {
+        if (data.channelId === props.call?.channelId) {
+            setSpeaker(props.profiles[data.userId]);
+        }
+    };
+    const handleVoiceOff = (data: VoiceEventData) => {
+        if (data.channelId === props.call?.channelId && ((speaker?.id === data.userId) || !speaker)) {
+            setSpeaker(null);
+        }
+    };
+
+    useEffect(() => {
+        const onVoiceOn = DeviceEventEmitter.addListener(WebsocketEvents.CALLS_USER_VOICE_ON, handleVoiceOn);
+        const onVoiceOff = DeviceEventEmitter.addListener(WebsocketEvents.CALLS_USER_VOICE_OFF, handleVoiceOff);
+        return () => {
+            onVoiceOn.remove();
+            onVoiceOff.remove();
+        };
+    }, [props.call]);
 
     const showOtherActions = () => {
         const screen = 'CallOtherActions';
@@ -258,11 +277,15 @@ const CallScreen = (props: Props) => {
                 props.actions.muteMyself(props.call.channelId);
             }
         }
-    }, [props.call.channelId, props.currentParticipant]);
+    }, [props.call?.channelId, props.currentParticipant]);
 
     const toggleControlsInLandscape = useCallback(() => {
         setShowControlsInLandscape(!showControlsInLandscape);
     }, [showControlsInLandscape]);
+
+    if (!props.call) {
+        return null;
+    }
 
     let screenShareView = null;
     if (props.screenShareURL && props.call.screenOn) {
@@ -278,7 +301,7 @@ const CallScreen = (props: Props) => {
                 />
                 <Text
                     style={style.screenShareText}
-                >{`You are seing ${displayUsername(props.users[props.call.screenOn], props.teammateNameDisplay)} screen`}</Text>
+                >{`You are seeing ${displayUsername(props.profiles[props.call.screenOn], props.teammateNameDisplay)} screen`}</Text>
             </Pressable>
         );
     }
@@ -303,11 +326,11 @@ const CallScreen = (props: Props) => {
                             >
                                 <CallAvatar
                                     userId={user.id}
-                                    volume={user.isTalking ? 1 : 0}
+                                    volume={speaker && speaker.id === user.id ? 1 : 0}
                                     muted={user.muted}
                                     size={props.call?.screenOn ? 'm' : 'l'}
                                 />
-                                <Text style={style.username}>{displayUsername(props.users[user.id], props.teammateNameDisplay)}</Text>
+                                <Text style={style.username}>{displayUsername(props.profiles[user.id], props.teammateNameDisplay)}</Text>
                             </View>
                         );
                     })}

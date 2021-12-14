@@ -454,9 +454,11 @@ function handleEvent(msg: WebSocketMessage) {
             case WebsocketEvents.CALLS_USER_UNMUTED:
                 return dispatch(handleCallUserUnmuted(msg));
             case WebsocketEvents.CALLS_USER_VOICE_ON:
-                return dispatch(handleCallUserVoiceOn(msg));
+                handleCallUserVoiceOn(msg);
+                break;
             case WebsocketEvents.CALLS_USER_VOICE_OFF:
-                return dispatch(handleCallUserVoiceOff(msg));
+                handleCallUserVoiceOff(msg);
+                break;
             case WebsocketEvents.CALLS_CALL_START:
                 return dispatch(handleCallStarted(msg));
             case WebsocketEvents.CALLS_SCREEN_ON:

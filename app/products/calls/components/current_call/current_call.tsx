@@ -1,12 +1,13 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback, useEffect} from 'react';
-import {View, Text, TouchableOpacity, Pressable, Platform} from 'react-native';
+import React, {useCallback, useEffect, useState} from 'react';
+import {View, Text, TouchableOpacity, Pressable, Platform, DeviceEventEmitter} from 'react-native';
 import {Options} from 'react-native-navigation';
 
 import {goToScreen} from '@actions/navigation';
 import CompassIcon from '@components/compass_icon';
+import {WebsocketEvents} from '@constants';
 import ViewTypes, {CURRENT_CALL_BAR_HEIGHT} from '@constants/view';
 import {GenericAction} from '@mm-redux/types/actions';
 import EventEmitter from '@mm-redux/utils/event_emitter';
@@ -17,7 +18,8 @@ import {makeStyleSheetFromTheme} from '@utils/theme';
 import type {Channel} from '@mm-redux/types/channels';
 import type {Theme} from '@mm-redux/types/theme';
 import type {UserProfile} from '@mm-redux/types/users';
-import type {Call, CallParticipant} from '@mmproducts/calls/store/types/calls';
+import type {IDMappedObjects} from '@mm-redux/types/utilities';
+import type {Call, CallParticipant, VoiceEventData} from '@mmproducts/calls/store/types/calls';
 
 type Props = {
     actions: {
@@ -26,9 +28,8 @@ type Props = {
     };
     theme: Theme;
     channel: Channel;
-    speaker: CallParticipant;
-    speakerUser: UserProfile;
     call: Call;
+    profiles: IDMappedObjects<UserProfile>;
     currentParticipant: CallParticipant;
     teammateNameDisplay: string;
 }
@@ -87,10 +88,26 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
 });
 
 const CurrentCall = (props: Props) => {
+    const [speaker, setSpeaker] = useState<UserProfile|null>(null);
+    const handleVoiceOn = (data: VoiceEventData) => {
+        if (data.channelId === props.call?.channelId) {
+            setSpeaker(props.profiles[data.userId]);
+        }
+    };
+    const handleVoiceOff = (data: VoiceEventData) => {
+        if (data.channelId === props.call?.channelId && ((speaker?.id === data.userId) || !speaker)) {
+            setSpeaker(null);
+        }
+    };
+
     useEffect(() => {
+        const onVoiceOn = DeviceEventEmitter.addListener(WebsocketEvents.CALLS_USER_VOICE_ON, handleVoiceOn);
+        const onVoiceOff = DeviceEventEmitter.addListener(WebsocketEvents.CALLS_USER_VOICE_OFF, handleVoiceOff);
         EventEmitter.emit(ViewTypes.CURRENT_CALL_BAR_VISIBLE, Boolean(props.call));
         return () => {
             EventEmitter.emit(ViewTypes.CURRENT_CALL_BAR_VISIBLE, Boolean(false));
+            onVoiceOn.remove();
+            onVoiceOff.remove();
         };
     }, [props.call]);
 
@@ -128,12 +145,13 @@ const CurrentCall = (props: Props) => {
         <View style={style.wrapper}>
             <View style={style.container}>
                 <CallAvatar
-                    userId={props.speaker?.id}
-                    volume={props.speaker?.isTalking ? 0.5 : 0}
+                    userId={speaker ? speaker.id : ''}
+                    volume={speaker && speaker.id ? 0.5 : 0}
                 />
                 <View style={style.userInfo}>
                     <Text style={style.speakingUser}>
-                        {`${displayUsername(props.speakerUser, props.teammateNameDisplay)} is speaking`}
+                        {speaker && `${displayUsername(speaker, props.teammateNameDisplay)} is talking`}
+                        {!speaker && 'No one is talking'}
                     </Text>
                     <Text style={style.currentChannel}>
                         {`~${props.channel.display_name}`}
