@@ -187,7 +187,7 @@ const ForgotPassword = ({serverUrl, theme}: Props) => {
                 bounces={false}
                 contentContainerStyle={styles.innerContainer}
                 enableAutomaticScroll={Platform.OS === 'android'}
-                enableOnAndroid={true}
+                enableOnAndroid={false}
                 enableResetScrollToCoords={true}
                 extraScrollHeight={0}
                 keyboardDismissMode='on-drag'

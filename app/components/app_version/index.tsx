@@ -1,9 +1,10 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React from 'react';
-import {StyleSheet, TextStyle, View} from 'react-native';
+import React, {useEffect} from 'react';
+import {Keyboard, StyleSheet, TextStyle, View} from 'react-native';
 import DeviceInfo from 'react-native-device-info';
+import Animated, {useAnimatedStyle, useSharedValue, withTiming} from 'react-native-reanimated';
 
 import FormattedText from '@components/formatted_text';
 import {t} from '@i18n';
@@ -26,6 +27,27 @@ type AppVersionProps = {
 }
 
 const AppVersion = ({isWrapped = true, textStyle = {}}: AppVersionProps) => {
+    const opacity = useSharedValue(1);
+    const animatedStyle = useAnimatedStyle(() => {
+        return {
+            opacity: withTiming(opacity.value, {duration: 250}),
+        };
+    });
+
+    useEffect(() => {
+        const willHide = Keyboard.addListener('keyboardDidHide', () => {
+            opacity.value = 1;
+        });
+        const willShow = Keyboard.addListener('keyboardDidShow', () => {
+            opacity.value = 0;
+        });
+
+        return () => {
+            willHide.remove();
+            willShow.remove();
+        };
+    }, []);
+
     const appVersion = (
         <FormattedText
             id={t('mobile.about.appVersion')}
@@ -43,11 +65,14 @@ const AppVersion = ({isWrapped = true, textStyle = {}}: AppVersionProps) => {
     }
 
     return (
-        <View pointerEvents='none'>
+        <Animated.View
+            pointerEvents='none'
+            style={animatedStyle}
+        >
             <View style={style.info}>
                 {appVersion}
             </View>
-        </View>
+        </Animated.View>
     );
 };
 
