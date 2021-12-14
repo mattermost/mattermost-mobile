@@ -73,15 +73,17 @@ const CreateChannel = ({serverUrl, componentId, channelType, closeButton}: Props
     };
 
     const emitSaving = (loading: boolean) => {
-        const buttons = {
-            rightButtons: [{...rightButton, enabled: !loading}],
-        };
+        const rightButtons = [{...rightButton, enabled: !loading}] as never[];
+        const leftButtons: never[] = [];
 
         // if (this.left) {
         //     buttons.leftButtons = [this.left];
         // }
         //
-        // setButtons(componentId, buttons);
+        setButtons(componentId, {
+            leftButtons,
+            rightButtons,
+        });
     };
 
     const onCreateChannel = async () => {
@@ -132,7 +134,7 @@ const CreateChannel = ({serverUrl, componentId, channelType, closeButton}: Props
         return () => {
             create.remove();
         };
-    }, [type, displayName, header, purpose]);
+    }, [displayName, header, purpose, type]);
 
     const onDisplayNameChange = (displayNameText: string) => {
         setDisplayName(displayNameText);

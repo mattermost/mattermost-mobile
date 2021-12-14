@@ -23,7 +23,6 @@ import Loading from '@components/loading';
 import {General, Channel} from '@constants';
 import {useTheme} from '@context/theme';
 import {t} from '@i18n';
-import {popTopScreen, dismissModal} from '@screens/navigation';
 import {
     changeOpacity,
     makeStyleSheetFromTheme,

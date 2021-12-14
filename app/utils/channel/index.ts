@@ -34,11 +34,3 @@ export function sortChannelsByDisplayName(locale: string, a: Channel, b: Channel
 
     return a.name.toLowerCase().localeCompare(b.name.toLowerCase(), locale, {numeric: true});
 }
-
-export function cleanUpUrlable(input: string): string {
-    let cleaned = input.trim().replace(/-/g, ' ').replace(/[^\w\s]/gi, '').toLowerCase().replace(/\s/g, '-');
-    cleaned = cleaned.replace(/-{2,}/, '-');
-    cleaned = cleaned.replace(/^-+/, '');
-    cleaned = cleaned.replace(/-+$/, '');
-    return cleaned;
-}

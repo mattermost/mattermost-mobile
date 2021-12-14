@@ -15,7 +15,7 @@ import {prepareMyTeams, queryMyTeamById, queryTeamById, queryTeamByName} from '@
 import MyChannelModel from '@typings/database/models/servers/my_channel';
 import MyTeamModel from '@typings/database/models/servers/my_team';
 import TeamModel from '@typings/database/models/servers/team';
-import {cleanUpUrlable} from '@utils/channel';
+import {cleanUpUrlable} from '@utils/url';
 import {generateId} from '@utils/general';
 import {PERMALINK_GENERIC_TEAM_NAME_REDIRECT} from '@utils/url';
 import {displayGroupMessageName, displayUsername} from '@utils/user';
@@ -91,11 +91,9 @@ export const fetchChannelByName = async (serverUrl: string, teamId: string, chan
 
 export function generateChannelNameFromDisplayName(displayName: string) {
     let name = cleanUpUrlable(displayName);
-
     if (name === '') {
         name = generateId();
     }
-
     return name;
 }
 
@@ -134,7 +132,6 @@ export const handleCreateChannel = async (serverUrl: string, displayName: string
         }
         return {channel: channelData};
     } catch (error) {
-        console.log('error', error);
         return {error};
     }
 };
