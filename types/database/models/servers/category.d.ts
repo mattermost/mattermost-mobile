@@ -33,7 +33,7 @@ export default class CategoryModel extends Model {
     collapsed: boolean;
 
     /** channels : All the channels associated with this category */
-    channels: Query<CategoryChannelModel>;
+    channels: Query<ChannelModel>;
 
     /** user_id : The user who created this category */
     userId: string;

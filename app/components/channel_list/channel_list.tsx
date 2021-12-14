@@ -16,17 +16,6 @@ import SearchField from './search';
 
 // import Loading from '@components/loading';
 
-const channels: TempoChannel[] = [
-    {id: '1', name: 'Just a channel'},
-    {id: '2', name: 'A Highlighted Channel!!!', highlight: true},
-    {id: '3', name: 'And a longer channel name.'},
-];
-
-const categories: TempoCategory[] = [
-    {id: '1', title: 'My first Category', channels},
-    {id: '2', title: 'Another Cat', channels},
-];
-
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     container: {
         flex: 1,
@@ -41,9 +30,11 @@ type ChannelListProps = {
     iconPad?: boolean;
     isTablet: boolean;
     teamsCount: number;
+    currentTeamId: string;
+    currentUserId: string;
 }
 
-const ChannelList = ({iconPad, isTablet, teamsCount}: ChannelListProps) => {
+const ChannelList = ({iconPad, isTablet, teamsCount, currentTeamId, currentUserId}: ChannelListProps) => {
     const theme = useTheme();
     const styles = getStyleSheet(theme);
     const tabletWidth = useSharedValue(TABLET_SIDEBAR_WIDTH);
@@ -76,7 +67,10 @@ const ChannelList = ({iconPad, isTablet, teamsCount}: ChannelListProps) => {
             {showCats && (
                 <>
                     <SearchField/>
-                    <Categories categories={categories}/>
+                    <Categories
+                        currentTeamId={currentTeamId}
+                        currentUserId={currentUserId}
+                    />
                 </>
             )}
             {/* <Loading/> */}

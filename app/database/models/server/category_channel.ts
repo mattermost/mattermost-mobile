@@ -1,8 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {Q, Query, Relation} from '@nozbe/watermelondb';
-import {field, immutableRelation, lazy} from '@nozbe/watermelondb/decorators';
+import {Relation} from '@nozbe/watermelondb';
+import {field, immutableRelation} from '@nozbe/watermelondb/decorators';
 import Model, {Associations} from '@nozbe/watermelondb/Model';
 
 import {MM_TABLES} from '@constants/database';
@@ -55,9 +55,4 @@ export default class CategoryChannelModel extends Model implements CategoryChann
 
     /** channel : The related channel */
     @immutableRelation(CATEGORY, 'category_id') channel!: Relation<ChannelModel>;
-
-    /**
-     * getAllChannelsInCategory - Retrieves all the channels who are part of this category
-     */
-    @lazy getAllChannelsInCategory = this.collections.get(CHANNEL).query(Q.on(CATEGORY, 'id', this.categoryId)) as Query<ChannelModel>;
 }

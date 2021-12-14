@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {Query, Relation} from '@nozbe/watermelondb';
+import {Relation} from '@nozbe/watermelondb';
 import Model, {Associations} from '@nozbe/watermelondb/Model';
 
 /**
@@ -35,9 +35,4 @@ export default class CategoryChannelModel extends Model {
 
     /** team : The related team of users */
     channel: Relation<ChannelModel>;
-
-    /**
-     * getAllChannelsInCategory - Retrieves all the channels that are in this category
-     */
-    getAllChannelsInCategory: Query<ChannelModel>;
 }

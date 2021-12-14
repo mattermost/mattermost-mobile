@@ -1,8 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {Relation, Query} from '@nozbe/watermelondb';
-import {children, field, immutableRelation} from '@nozbe/watermelondb/decorators';
+import {Relation, Query, Q} from '@nozbe/watermelondb';
+import {children, field, immutableRelation, lazy} from '@nozbe/watermelondb/decorators';
 import Model, {Associations} from '@nozbe/watermelondb/Model';
 
 import {MM_TABLES} from '@constants/database';
@@ -15,6 +15,7 @@ import type UserModel from '@typings/database/models/servers/user';
 const {
     CATEGORY,
     CATEGORY_CHANNEL,
+    CHANNEL,
     TEAM,
     USER,
 } = MM_TABLES.SERVER;
@@ -62,11 +63,18 @@ export default class CategoryModel extends Model implements CategoryInterface {
     @field('team_id') teamId!: string;
 
     /** channels : All the channels associated with this team */
-    @children(CATEGORY_CHANNEL) channels!: Query<CategoryChannelModel>;
+    @children(CATEGORY_CHANNEL) categoryChannels!: Query<CategoryChannelModel>;
 
     /** team : Retrieves information about the team that this category is a part of. */
     @immutableRelation(TEAM, 'id') team!: Relation<TeamModel>;
 
     /** team : Retrieves information about the user that this category belongs to. */
     @immutableRelation(USER, 'id') user!: Relation<UserModel>;
+
+    /**
+     * getAllChannelsInCategory - Retrieves all the channels who are part of this category
+     */
+     @lazy channels = this.collections.
+         get(CHANNEL).
+         query(Q.on(CATEGORY_CHANNEL, 'category_id', this.id));
 }
