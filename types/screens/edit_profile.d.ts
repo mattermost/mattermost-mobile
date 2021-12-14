@@ -17,7 +17,6 @@ interface UserInfo extends Record<string, string | undefined | null| boolean> {
 }
 
 type EditProfileProps = {
-    closeButtonId?: string;
     componentId: string;
     currentUser: UserModel;
     isModal?: boolean;

@@ -8,7 +8,7 @@ import {Platform, StyleSheet, TextInputProps, View} from 'react-native';
 import FloatingTextInput, {FloatingTextInputRef} from '@components/floating_text_input_label';
 import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
-import {getKeyboardAppearanceFromTheme} from '@utils/theme';
+import {changeOpacity, getKeyboardAppearanceFromTheme, makeStyleSheetFromTheme} from '@utils/theme';
 
 import FieldDescription from './field_description';
 
@@ -26,7 +26,7 @@ export type FieldProps = TextInputProps & {
     onFocusNextField: (fieldKey: string) => void;
 };
 
-const getStyleSheet = (isTablet: boolean) => {
+const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     return StyleSheet.create({
         viewContainer: {
             marginVertical: 7,
@@ -35,10 +35,12 @@ const getStyleSheet = (isTablet: boolean) => {
         },
         subContainer: {
             width: '100%',
-            paddingHorizontal: isTablet ? 42 : 20,
+        },
+        disabledStyle: {
+            backgroundColor: changeOpacity(theme.centerChannelColor, 0.04),
         },
     });
-};
+});
 
 const Field = ({
     autoCapitalize = 'none',
@@ -67,23 +69,25 @@ const Field = ({
         onFocusNextField(fieldKey);
     }, [fieldKey, onFocusNextField]);
 
-    const style = getStyleSheet(isTablet);
+    const style = getStyleSheet(theme);
 
     const keyboard = (Platform.OS === 'android' && keyboardType === 'url') ? 'default' : keyboardType;
 
-    const optionalText = isOptional ? intl.formatMessage({
-        id: 'channel_modal.optional',
-        defaultMessage: '(optional)',
-    }) : '*';
+    const optionalText = intl.formatMessage({id: 'channel_modal.optional', defaultMessage: '(optional)'});
 
-    const formattedLabel = `${label} ${optionalText}`;
+    const formattedLabel = isOptional ? `${label} ${optionalText}` : label;
+
+    const textInputStyle = isDisabled ? style.disabledStyle : undefined;
+    const subContainer = [style.subContainer, {paddingHorizontal: isTablet ? 42 : 20}];
 
     return (
         <View
             testID={testID}
             style={style.viewContainer}
         >
-            <View style={style.subContainer}>
+            <View
+                style={subContainer}
+            >
                 <FloatingTextInput
                     autoCapitalize={autoCapitalize}
                     autoCorrect={autoCorrect}
@@ -99,6 +103,7 @@ const Field = ({
                     value={value}
                     ref={fieldRef}
                     onSubmitEditing={onSubmitEditing}
+                    textInputStyle={textInputStyle}
                     {...props}
                 />
                 {isDisabled && (

@@ -9,6 +9,7 @@ import {Navigation} from 'react-native-navigation';
 import {Edge, SafeAreaView} from 'react-native-safe-area-context';
 
 import {updateMe} from '@actions/remote/user';
+import CompassIcon from '@components/compass_icon';
 import {FloatingTextInputRef} from '@components/floating_text_input_label';
 import Loading, {SPINNER_LAYERS} from '@components/loading';
 import ProfilePicture from '@components/profile_picture';
@@ -16,6 +17,7 @@ import TabletTitle from '@components/tablet_title';
 import {Events} from '@constants';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
+import {t} from '@i18n';
 import {dismissModal, popTopScreen, setButtons} from '@screens/navigation';
 import {EditProfileProps, FieldConfig, FieldSequence, UserInfo} from '@typings/screens/edit_profile';
 import {preventDoubleTap} from '@utils/tap';
@@ -56,33 +58,32 @@ const styles = StyleSheet.create({
 
 const FIELDS: { [id: string]: MessageDescriptor } = {
     firstName: {
-        id: 'user.settings.general.firstName',
+        id: t('user.settings.general.firstName'),
         defaultMessage: 'First Name',
     },
     lastName: {
-        id: 'user.settings.general.lastName',
+        id: t('user.settings.general.lastName'),
         defaultMessage: 'Last Name',
     },
     username: {
-        id: 'user.settings.general.username',
+        id: t('user.settings.general.username'),
         defaultMessage: 'Username',
     },
     nickname: {
-        id: 'user.settings.general.nickname',
+        id: t('user.settings.general.nickname'),
         defaultMessage: 'Nickname',
     },
     position: {
-        id: 'user.settings.general.position',
+        id: t('user.settings.general.position'),
         defaultMessage: 'Position',
     },
     email: {
-        id: 'user.settings.general.email',
+        id: t('user.settings.general.email'),
         defaultMessage: 'Email',
     },
 };
 
 const EditProfile = ({
-    closeButtonId,
     componentId,
     currentUser,
     isModal,
@@ -102,6 +103,8 @@ const EditProfile = ({
     const emailRef = useRef<FloatingTextInputRef>(null);
     const nicknameRef = useRef<FloatingTextInputRef>(null);
     const positionRef = useRef<FloatingTextInputRef>(null);
+
+    //todo: check if compRef returns the same id under isModal/isTablet  const compRef = useRef(generateId());
 
     const [userInfo, setUserInfo] = useState<UserInfo>({
         email: currentUser.email,
@@ -126,6 +129,17 @@ const EditProfile = ({
             testID: 'edit_profile.save.button',
             color: theme.sidebarHeaderTextColor,
             text: buttonText,
+        };
+    }, [isTablet, theme.sidebarHeaderTextColor]);
+
+    const closeButtonId = 'close-edit-profile';
+    const service = currentUser.authService;
+
+    const leftButton = useMemo(() => {
+        return isTablet ? null : {
+            id: closeButtonId,
+            icon: CompassIcon.getImageSourceSync('close', 24, theme.centerChannelColor),
+            testID: closeButtonId,
         };
     }, [isTablet, theme.sidebarHeaderTextColor]);
 
@@ -157,11 +171,12 @@ const EditProfile = ({
 
     useEffect(() => {
         if (!isTablet) {
-            setButtons(componentId, {rightButtons: [rightButton!]});
+            setButtons(componentId, {
+                rightButtons: [rightButton!],
+                leftButtons: [leftButton!],
+            });
         }
     }, []);
-
-    const service = currentUser.authService;
 
     const close = useCallback(() => {
         if (isModal) {
@@ -176,11 +191,16 @@ const EditProfile = ({
     }, [isModal]);
 
     const enableSaveButton = useCallback((value: boolean) => {
-        const buttons = {
-            rightButtons: [{...rightButton!, enabled: value}],
-        };
+        if (!isTablet) {
+            const buttons = {
+                rightButtons: [{
+                    ...rightButton!,
+                    enabled: value,
+                }],
+            };
+            setButtons(componentId, buttons);
+        }
         setCanSave(value);
-        setButtons(componentId, buttons);
     }, [componentId, rightButton]);
 
     const submitUser = useCallback(preventDoubleTap(async () => {

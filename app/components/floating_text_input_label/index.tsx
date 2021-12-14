@@ -95,7 +95,7 @@ export type FloatingTextInputRef = {
 type FloatingTextInputProps = TextInputProps & {
     containerStyle?: ViewStyle;
     textInputStyle?: TextStyle;
-    animatedTextStyle?: TextStyle;
+    labelTextStyle?: TextStyle;
     editable?: boolean;
     error?: string;
     errorIcon?: string;
@@ -123,7 +123,7 @@ const FloatingTextInput = forwardRef<FloatingTextInputRef, FloatingTextInputProp
     theme,
     value = '',
     textInputStyle,
-    animatedTextStyle,
+    labelTextStyle,
     ...props
 }: FloatingTextInputProps, ref) => {
     const [focusedLabel, setIsFocusLabel] = useState<boolean | undefined>();
@@ -223,7 +223,7 @@ const FloatingTextInput = forwardRef<FloatingTextInputRef, FloatingTextInputProp
         height: DEFAULT_INPUT_HEIGHT + ((focusedLabel ? BORDER_FOCUSED_WIDTH : BORDER_DEFAULT_WIDTH) * 2),
     };
     const combinedTextInputStyle = [styles.textInput, textInputBorder, textInputColorStyles, textInputStyle];
-    const textAnimatedTextStyle = [styles.label, focusStyle, labelColorStyles, animatedTextStyle];
+    const textAnimatedTextStyle = [styles.label, focusStyle, labelColorStyles, labelTextStyle];
 
     if (error && !focused) {
         textAnimatedTextStyle.push({color: theme.errorTextColor});

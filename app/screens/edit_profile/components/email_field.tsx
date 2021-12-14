@@ -5,7 +5,6 @@ import React, {RefObject} from 'react';
 import {useIntl} from 'react-intl';
 
 import {FloatingTextInputRef} from '@components/floating_text_input_label';
-import {t} from '@i18n';
 
 import Field from './field';
 
@@ -19,6 +18,14 @@ type EmailSettingsProps = {
     label: string;
 }
 
+const services: Record<string, string> = {
+    gitlab: 'GitLab',
+    google: 'Google Apps',
+    office365: 'Office 365',
+    ldap: 'AD/LDAP',
+    saml: 'SAML',
+};
+
 const EmailField = ({
     authService,
     email,
@@ -29,33 +36,25 @@ const EmailField = ({
     label,
 }: EmailSettingsProps) => {
     const intl = useIntl();
-
-    const services: Record<string, string> = {
-        gitlab: 'GitLab',
-        google: 'Google Apps',
-        office365: 'Office 365',
-        ldap: 'AD/LDAP',
-        saml: 'SAML',
-    };
-
     const service = services[authService];
 
-    let defaultMessage: string;
-    let id: string;
+    let fieldDescription: string;
 
     if (service) {
-        id = t('user.edit_profile.email.auth_service');
-        defaultMessage = 'Login occurs through {service}. Email cannot be updated. Email address used for notifications is {email}.';
+        fieldDescription = intl.formatMessage({
+            id: 'user.edit_profile.email.auth_service',
+            defaultMessage: 'Login occurs through {service}. Email cannot be updated. Email address used for notifications is {email}.'}, {email, service});
     } else {
-        id = t('user.edit_profile.email.web_client');
-        defaultMessage = 'Email must be updated using a web client or desktop application.';
+        fieldDescription = intl.formatMessage({
+            id: 'user.edit_profile.email.web_client',
+            defaultMessage: 'Email must be updated using a web client or desktop application.'}, {email, service});
     }
 
     return (
         <Field
             blurOnSubmit={false}
             enablesReturnKeyAutomatically={true}
-            fieldDescription={intl.formatMessage({id, defaultMessage}, {email, service})}
+            fieldDescription={fieldDescription}
             fieldKey='email'
             fieldRef={fieldRef}
             isDisabled={isDisabled}
