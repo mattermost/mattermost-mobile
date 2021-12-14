@@ -11,7 +11,7 @@ import {Edge, SafeAreaView} from 'react-native-safe-area-context';
 import {updateMe} from '@actions/remote/user';
 import CompassIcon from '@components/compass_icon';
 import {FloatingTextInputRef} from '@components/floating_text_input_label';
-import Loading, {SPINNER_LAYERS} from '@components/loading';
+import Loading from '@components/loading';
 import ProfilePicture from '@components/profile_picture';
 import TabletTitle from '@components/tablet_title';
 import {Events} from '@constants';
@@ -367,7 +367,7 @@ const EditProfile = ({
                             style={styles.spinner}
                         >
                             <Loading
-                                colorFilters={[{keypath: SPINNER_LAYERS.layerOne, color: theme.buttonBg}]}
+                                color={theme.buttonBg}
                             />
                         </View>
 
