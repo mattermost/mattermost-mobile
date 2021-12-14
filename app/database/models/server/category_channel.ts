@@ -8,6 +8,7 @@ import Model, {Associations} from '@nozbe/watermelondb/Model';
 import {MM_TABLES} from '@constants/database';
 
 import type CategoryModel from '@typings/database/models/servers/category';
+import type CategoryChannelInterface from '@typings/database/models/servers/category_channel';
 import type ChannelModel from '@typings/database/models/servers/channel';
 import type UserModel from '@typings/database/models/servers/user';
 
@@ -17,7 +18,7 @@ const {CATEGORY_CHANNEL, CATEGORY, CHANNEL, USER} = MM_TABLES.SERVER;
  * The CategoryChannel model represents the 'association table' where many categories have channels and many channels are in
  * categories (relationship type N:N)
  */
-export default class CategoryChannelModel extends Model {
+export default class CategoryChannelModel extends Model implements CategoryChannelInterface {
     /** table (name) : CategoryChannel */
     static table = CATEGORY_CHANNEL;
 
@@ -44,7 +45,7 @@ export default class CategoryChannelModel extends Model {
     @field('user_id') userId!: string;
 
     /* sort_order: The sort order for the channel in category */
-    @field('sort_order') sortOrder!: string;
+    @field('sort_order') sortOrder!: number;
 
     /** user: The related user */
     @immutableRelation(USER, 'user_id') user!: Relation<UserModel>;

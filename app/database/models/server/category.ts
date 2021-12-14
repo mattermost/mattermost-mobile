@@ -1,12 +1,13 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {Relation} from '@nozbe/watermelondb';
+import {Relation, Query} from '@nozbe/watermelondb';
 import {children, field, immutableRelation} from '@nozbe/watermelondb/decorators';
 import Model, {Associations} from '@nozbe/watermelondb/Model';
 
 import {MM_TABLES} from '@constants/database';
 
+import type CategoryInterface from '@typings/database/models/servers/category';
 import type CategoryChannelModel from '@typings/database/models/servers/category_channel';
 import type TeamModel from '@typings/database/models/servers/team';
 import type UserModel from '@typings/database/models/servers/user';
@@ -21,7 +22,7 @@ const {
 /**
  * A Category holds channels for a given user in a team
  */
-export default class CategoryModel extends Model {
+export default class CategoryModel extends Model implements CategoryInterface {
     /** table (name) : Category */
     static table = CATEGORY;
 
@@ -56,8 +57,12 @@ export default class CategoryModel extends Model {
     /** muted : Boolean flag indicating if the category is muted */
     @field('muted') muted!: boolean;
 
+    @field('user_id') userId!: string;
+
+    @field('team_id') teamId!: string;
+
     /** channels : All the channels associated with this team */
-    @children(CATEGORY_CHANNEL) channels!: CategoryChannelModel[];
+    @children(CATEGORY_CHANNEL) channels!: Query<CategoryChannelModel>;
 
     /** team : Retrieves information about the team that this category is a part of. */
     @immutableRelation(TEAM, 'id') team!: Relation<TeamModel>;
