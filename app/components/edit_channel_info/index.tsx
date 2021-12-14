@@ -22,7 +22,7 @@ import ErrorText from '@components/error_text';
 import FormattedText from '@components/formatted_text';
 import Loading from '@components/loading';
 import DEVICE from '@constants/device';
-import {General} from '@constants';
+import {General, Channel} from '@constants';
 import {t} from '@i18n';
 import {
     changeOpacity,
@@ -392,7 +392,7 @@ const EditChannelInfo = ({channelType, channelURL, displayName, editing = false,
                                             placeholderTextColor={changeOpacity(theme.centerChannelColor, 0.5)}
                                             underlineColorAndroid='transparent'
                                             disableFullscreenUI={true}
-                                            maxLength={64}
+                                            maxLength={Channel.MAX_CHANNELNAME_LENGTH}
                                             keyboardAppearance={getKeyboardAppearanceFromTheme(theme)}
                                         />
                                     </View>

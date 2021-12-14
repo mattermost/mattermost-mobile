@@ -2,11 +2,11 @@
 // See LICENSE.txt for license information.
 
 import {General} from '@constants';
-import {DeviceEventEmitter} from 'react-native';
 import {useIntl} from 'react-intl';
 import React, {useEffect, useState} from 'react';
 import {useTheme} from '@context/theme';
 import {
+    InteractionManager,
     Keyboard,
 } from 'react-native';
 import {Navigation} from 'react-native-navigation';
@@ -25,9 +25,10 @@ type Props = {
 
 const CreateChannel = ({serverUrl, componentId, channelType, closeButton}: Props) => {
     const intl = useIntl();
+    const {formatMessage} = intl;
     const theme = useTheme();
     const [error, setError] = useState<string>('');
-    const [creating, setCreating] = useState<boolean>(false);
+    const [saving, setSaving] = useState<boolean>(false);
     const [displayName, setDisplayName] = useState<string>('');
     const [purpose, setPurpose] = useState<string>('');
     const [header, setHeader] = useState<string>('');
@@ -43,11 +44,11 @@ const CreateChannel = ({serverUrl, componentId, channelType, closeButton}: Props
         id: 'create-channel',
         enabled: false,
         showAsAction: 'always',
-        text: intl.formatMessage({id: 'mobile.create_channel', defaultMessage: 'Create'}),
+        text: formatMessage({id: 'mobile.create_channel', defaultMessage: 'Create'}),
         color: theme.sidebarHeaderTextColor,
     };
 
-    const emitCanCreateChannel = (enabled: boolean) => {
+    const emitCanSaveChannel = (enabled: boolean) => {
         const rightButtons = [{...rightButton, enabled}] as never[]
         let leftButtons: never[] = []
 
@@ -61,21 +62,17 @@ const CreateChannel = ({serverUrl, componentId, channelType, closeButton}: Props
         });
     };
 
-    useEffect(() => {
-        emitCanCreateChannel(false);
-    }, []);
-
     const onRequestStart = ()  => {
         setError('')
-        setCreating(true)
+        setSaving(true)
     }
 
     const onRequestFailure = (error: string) => {
         setError(error);
-        setCreating(false);
+        setSaving(false);
     }
 
-    const emitCreating = (loading: boolean) => {
+    const emitSaving = (loading: boolean) => {
         const buttons = {
             rightButtons: [{...rightButton, enabled: !loading}],
         };
@@ -88,29 +85,25 @@ const CreateChannel = ({serverUrl, componentId, channelType, closeButton}: Props
     };
 
     const onCreateChannel = async () => {
-        emitCreating(true);
+        emitSaving(true);
         onRequestStart();
 
         Keyboard.dismiss();
+
         const channel = await handleCreateChannel(serverUrl, displayName, purpose, header, type)
         if (channel.error) {
-            emitCreating(false);
+            emitSaving(false);
             onRequestFailure(channel.error as string);
             return
         }
 
-        emitCreating(false);
-        setError('');
-        setCreating(false);
-        close(false);
-
         // DeviceEventEmitter.emit(NavigationTypes.CLOSE_MAIN_SIDEBAR);
-        // InteractionManager.runAfterInteractions(() => {
-        //     emitCreating(false);
-        //     setError('');
-        //     setCreating(false);
-        //     close(false);
-        // });
+        InteractionManager.runAfterInteractions(() => {
+            emitSaving(false);
+            setError('');
+            setSaving(false);
+            close(false);
+        });
     };
 
     const close = (goBack = false) => {
@@ -161,9 +154,9 @@ const CreateChannel = ({serverUrl, componentId, channelType, closeButton}: Props
     return (
         <EditChannelInfo
             testID='create_channel.screen'
-            enableRightButton={emitCanCreateChannel}
+            enableRightButton={emitCanSaveChannel}
             error={error}
-            saving={creating}
+            saving={saving}
             onDisplayNameChange={onDisplayNameChange}
             onPurposeChange={onPurposeChange}
             onHeaderChange={onHeaderChange}

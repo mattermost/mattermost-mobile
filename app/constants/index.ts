@@ -4,6 +4,7 @@
 import ActionType from './action_type';
 import Apps from './apps';
 import {CustomStatusDuration} from './custom_status';
+import Channel from './channel';
 import Database from './database';
 import DeepLink from './deep_linking';
 import Device from './device';
@@ -26,6 +27,7 @@ export {
     ActionType,
     Apps,
     CustomStatusDuration,
+    Channel,
     Database,
     DeepLink,
     Device,
