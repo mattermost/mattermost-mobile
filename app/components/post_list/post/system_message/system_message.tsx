@@ -267,4 +267,4 @@ export const SystemMessage = ({post, author}: SystemMessageProps) => {
     return renderer({post, author, styles, intl, theme});
 };
 
-export default React.memo(SystemMessage);
+export default SystemMessage;

@@ -122,7 +122,7 @@ class PushNotifications {
         const serverUrl = await this.getServerUrlFromNotification(notification);
 
         if (serverUrl && payload?.channel_id) {
-            markChannelAsViewed(serverUrl, payload?.channel_id, false);
+            markChannelAsViewed(serverUrl, payload?.channel_id, undefined, false);
         }
     };
 

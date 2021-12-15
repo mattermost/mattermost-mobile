@@ -176,4 +176,4 @@ const withPost = withObservables(['post'], ({database, post}: {post: PostModel} 
     };
 });
 
-export default withDatabase(withPost(React.memo(Avatar)));
+export default withDatabase(withPost(Avatar));

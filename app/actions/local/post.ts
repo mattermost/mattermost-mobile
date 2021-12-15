@@ -100,7 +100,7 @@ export const sendEphemeralPost = async (serverUrl: string, message: string, chan
     return {post};
 };
 
-export const removePost = async (serverUrl: string, post: PostModel) => {
+export const removePost = async (serverUrl: string, post: PostModel | Post) => {
     const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
     if (!operator) {
         return {error: `${serverUrl} database not found`};
@@ -128,20 +128,29 @@ export const removePost = async (serverUrl: string, post: PostModel) => {
     return {post};
 };
 
-export const removePostById = async (serverUrl: string, postId: string): Promise<{post?: PostModel; error?: string}> => {
+export const selectAttachmentMenuAction = (serverUrl: string, postId: string, actionId: string, selectedOption: string) => {
+    return postActionWithCookie(serverUrl, postId, actionId, '', selectedOption);
+};
+
+export const markPostAsDeleted = async (serverUrl: string, post: Post) => {
     const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
     if (!operator) {
         return {error: `${serverUrl} database not found`};
     }
 
-    const post = await queryPostById(operator.database, postId);
-    if (!post) {
+    const dbPost = await queryPostById(operator.database, post.id);
+    if (!dbPost) {
         return {};
     }
 
-    return removePost(serverUrl, post);
-};
+    dbPost.prepareUpdate((p) => {
+        p.deleteAt = Date.now();
+        p.message = '';
+        p.metadata = null;
+        p.props = undefined;
+    });
 
-export const selectAttachmentMenuAction = (serverUrl: string, postId: string, actionId: string, selectedOption: string) => {
-    return postActionWithCookie(serverUrl, postId, actionId, '', selectedOption);
+    operator.batchRecords([dbPost]);
+
+    return {post: dbPost};
 };

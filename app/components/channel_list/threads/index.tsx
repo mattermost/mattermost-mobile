@@ -4,11 +4,11 @@
 import React from 'react';
 import {StyleSheet, Text, View} from 'react-native';
 
+import {switchToDefault} from '@actions/local/channel';
 import CompassIcon from '@components/compass_icon';
 import TouchableWithFeedback from '@components/touchable_with_feedback';
-import {Screens} from '@constants';
+import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
-import {goToScreen} from '@screens/navigation';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
@@ -33,6 +33,7 @@ const textStyle = StyleSheet.create([typography('Body', 200, 'SemiBold')]);
 const ThreadsButton = () => {
     const theme = useTheme();
     const styles = getStyleSheet(theme);
+    const serverUrl = useServerUrl();
 
     /*
      * @to-do:
@@ -41,7 +42,7 @@ const ThreadsButton = () => {
      * - Add right-side number badge
      */
     return (
-        <TouchableWithFeedback onPress={() => goToScreen(Screens.CHANNEL, 'Channel', {}, {topBar: {visible: false}})} >
+        <TouchableWithFeedback onPress={() => switchToDefault(serverUrl)}>
             <View style={styles.container}>
                 <CompassIcon
                     name='message-text-outline'

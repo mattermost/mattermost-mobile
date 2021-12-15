@@ -1,14 +1,15 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {Model} from '@nozbe/watermelondb';
+import {Model, Q} from '@nozbe/watermelondb';
 import {DeviceEventEmitter} from 'react-native';
 
-import {localMyChannels, markChannelAsUnread, markChannelAsViewed} from '@actions/local/channel';
-import {removePostById} from '@actions/local/post';
+import {storeMyChannelsForTeam, markChannelAsUnread, markChannelAsViewed, updateLastPostAt} from '@actions/local/channel';
+import {markPostAsDeleted} from '@actions/local/post';
 import {fetchMyChannel, markChannelAsRead} from '@actions/remote/channel';
-import {fetchPostAuthors} from '@actions/remote/post';
-import {ActionType, Events, WebsocketEvents} from '@constants';
+import {fetchPostAuthors, fetchPostById} from '@actions/remote/post';
+import {ActionType, Events} from '@constants';
+import {MM_TABLES} from '@constants/database';
 import DatabaseManager from '@database/manager';
 import {queryMyChannel} from '@queries/servers/channel';
 import {queryPostById} from '@queries/servers/post';
@@ -17,18 +18,16 @@ import {isFromWebhook, isSystemMessage, shouldIgnorePost} from '@utils/post';
 
 import type {WebSocketMessage} from '@typings/api/websocket';
 
+const {SERVER: {POST}} = MM_TABLES;
+
 export async function handleNewPostEvent(serverUrl: string, msg: WebSocketMessage) {
     const database = DatabaseManager.serverDatabases[serverUrl];
     if (!database) {
         return;
     }
 
-    const postFromData = JSON.parse(msg.data.post);
+    const post: Post = JSON.parse(msg.data.post);
     const currentUserId = await queryCurrentUserId(database.database);
-    const post: Post = {
-        ...postFromData,
-        ownPost: postFromData.user_id === currentUserId,
-    };
 
     const existing = await queryPostById(database.database, post.pending_post_id);
 
@@ -42,35 +41,38 @@ export async function handleNewPostEvent(serverUrl: string, msg: WebSocketMessag
         posts: [post],
     });
 
-    const currentChannelId = await queryCurrentChannelId(database.database);
-    if (currentChannelId === post.channel_id) {
-        DeviceEventEmitter.emit(WebsocketEvents.INCREASE_POST_VISIBILITY_BY_ONE);
-    }
-
     const models: Model[] = [];
-    const myChannel = await queryMyChannel(database.database, post.channel_id);
+
+    // Ensure the channel membership
+    let myChannel = await queryMyChannel(database.database, post.channel_id);
     if (!myChannel) {
         const myChannelRequest = await fetchMyChannel(serverUrl, '', post.channel_id, true);
-        if (!myChannelRequest.error) {
-            const myChannelModels = await localMyChannels(serverUrl, '', myChannelRequest.channels!, myChannelRequest.memberships!, true);
-            if (myChannelModels.models) {
-                models.push(...myChannelModels.models);
-            }
+        if (myChannelRequest.error) {
+            return;
+        }
+
+        // We want to have this on the database so we can make any needed update later
+        const myChannelModels = await storeMyChannelsForTeam(serverUrl, '', myChannelRequest.channels!, myChannelRequest.memberships!, false);
+        if (myChannelModels.error) {
+            return;
+        }
+
+        myChannel = await queryMyChannel(database.database, post.channel_id);
+        if (!myChannel) {
+            return;
         }
     }
 
-    // If we don't have the thread for this post, fetch it from the server
-    // and include the actions in the batch
+    // If we don't have the root post for this post, fetch it from the server
     if (post.root_id) {
         const rootPost = await queryPostById(database.database, post.root_id);
 
         if (!rootPost) {
-            // const thread: any = await dispatch(getPostThread(post.root_id, true));
-            // if (thread.data?.length) {
-            //     actions.push(...thread.data);
-            // }
+            fetchPostById(serverUrl, post.root_id);
         }
     }
+
+    const currentChannelId = await queryCurrentChannelId(database.database);
 
     if (post.channel_id === currentChannelId) {
         const data = {
@@ -83,60 +85,51 @@ export async function handleNewPostEvent(serverUrl: string, msg: WebSocketMessag
         DeviceEventEmitter.emit(Events.USER_STOP_TYPING, data);
     }
 
-    // Fetch and batch additional post data
-    // TODO: Currently seems we are not fetching this. Am I missing something?
-    // const additional: any = await dispatch(getPostsAdditionalDataBatch([post]));
-    // if (additional.data.length) {
-    //     actions.push(...additional.data);
-    // }
-
-    // TODO: Needed?
-    // if (msg.data.channel_type === General.DM_CHANNEL) {
-    //     const otherUserId = getUserIdFromChannelName(currentUserId, msg.data.channel_name);
-    //     const dmAction = makeDirectChannelVisibleIfNecessary(state, otherUserId);
-    //     if (dmAction) {
-    //         actions.push(dmAction);
-    //     }
-    // } else if (msg.data.channel_type === General.GM_CHANNEL) {
-    //     const gmActions = await makeGroupMessageVisibleIfNecessary(state, post.channel_id);
-    //     if (gmActions) {
-    //         actions.push(...gmActions);
-    //     }
-    // }
+    fetchPostAuthors(serverUrl, [post]);
 
     //const viewingGlobalThreads = getViewingGlobalThreads(state);
     // const collapsedThreadsEnabled = isCollapsedThreadsEnabled(state);
     // actions.push(receivedNewPost(post, collapsedThreadsEnabled));
-    if (!shouldIgnorePost(post)) {
+    if (shouldIgnorePost(post)) {
+        const {member} = await updateLastPostAt(serverUrl, post.channel_id, post.create_at, true);
+        if (member) {
+            models.push(member);
+        }
+    } else {
+        let markAsViewed = false;
         let markAsRead = false;
-        let markAsReadOnServer = false;
 
-        if (!myChannel?.manuallyUnread) {
+        if (!myChannel.manuallyUnread) {
             if (
                 post.user_id === currentUserId &&
                 !isSystemMessage(post) &&
                 !isFromWebhook(post)
             ) {
-                markAsRead = true;
-                markAsReadOnServer = false;
+                markAsViewed = true;
+                markAsRead = false;
             } else if ((post.channel_id === currentChannelId)) { // TODO: THREADS && !viewingGlobalThreads) {
                 // Don't mark as read if we're in global threads screen
                 // the currentChannelId still refers to previously viewed channel
+                markAsViewed = false;
                 markAsRead = true;
-                markAsReadOnServer = true;
             }
         }
 
-        if (markAsRead && markAsReadOnServer) {
+        if (markAsRead) {
             markChannelAsRead(serverUrl, post.channel_id);
-        } else if (markAsRead) {
-            const viewedAt = await markChannelAsViewed(serverUrl, post.channel_id, true);
-            if (viewedAt instanceof Model) {
+            const {member} = await updateLastPostAt(serverUrl, post.channel_id, post.create_at, true);
+            if (member) {
+                models.push(member);
+            }
+        } else if (markAsViewed) {
+            const {member: viewedAt} = await markChannelAsViewed(serverUrl, post.channel_id, post.create_at, true);
+            if (viewedAt) {
                 models.push(viewedAt);
             }
         } else {
-            const unreadAt = markChannelAsUnread(serverUrl, post.channel_id, 1, msg.data.mentions, false, true);
-            if (unreadAt instanceof Model) {
+            const hasMentions = msg.data.mentions.includes(currentUserId);
+            const {member: unreadAt} = await markChannelAsUnread(serverUrl, post.channel_id, myChannel.messageCount + 1, myChannel.mentionsCount + (hasMentions ? 1 : 0), false, post.create_at, undefined, true);
+            if (unreadAt) {
                 models.push(unreadAt);
             }
         }
@@ -150,12 +143,8 @@ export async function handlePostEdited(serverUrl: string, msg: WebSocketMessage)
     if (!database) {
         return;
     }
-    const currentUserId = await queryCurrentUserId(database.database);
-    const data = JSON.parse(msg.data.post);
-    const post = {
-        ...data,
-        ownPost: data.user_id === currentUserId,
-    };
+
+    const post: Post = JSON.parse(msg.data.post);
 
     try {
         fetchPostAuthors(serverUrl, [post]);
@@ -171,9 +160,9 @@ export async function handlePostEdited(serverUrl: string, msg: WebSocketMessage)
 }
 
 export function handlePostDeleted(serverUrl: string, msg: WebSocketMessage) {
-    const data = JSON.parse(msg.data.post);
+    const data: Post = JSON.parse(msg.data.post);
 
-    removePostById(serverUrl, data.id);
+    markPostAsDeleted(serverUrl, data);
 }
 
 export async function handlePostUnread(serverUrl: string, msg: WebSocketMessage) {
@@ -182,10 +171,7 @@ export async function handlePostUnread(serverUrl: string, msg: WebSocketMessage)
         return;
     }
 
-    const myChannel = await queryMyChannel(database.database, msg.broadcast.channel_id);
-
-    if (!myChannel?.manuallyUnread) {
-        const delta = myChannel ? myChannel.messageCount - msg.data.msg_count : msg.data.msg_count;
-        markChannelAsUnread(serverUrl, msg.broadcast.channel_id, delta, msg.data.mention_count, true);
-    }
+    const postNumber = await database.database.get(POST).query(Q.where('channel_id', msg.broadcast.channel_id)).fetchCount();
+    const delta = postNumber - msg.data.msg_count;
+    markChannelAsUnread(serverUrl, msg.broadcast.channel_id, delta, msg.data.mention_count, true, undefined, msg.data.last_viewed_at);
 }

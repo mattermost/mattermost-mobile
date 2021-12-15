@@ -4,7 +4,7 @@
 import {Model} from '@nozbe/watermelondb';
 import {IntlShape} from 'react-intl';
 
-import {localMyChannels, switchToChannel} from '@actions/local/channel';
+import {storeMyChannelsForTeam, switchToChannel} from '@actions/local/channel';
 import {General} from '@constants';
 import DatabaseManager from '@database/manager';
 import {privateChannelJoinPrompt} from '@helpers/api/channel';
@@ -114,7 +114,7 @@ export const fetchMyChannelsForTeam = async (serverUrl: string, teamId: string, 
         }, []);
 
         if (!fetchOnly) {
-            localMyChannels(serverUrl, teamId, channels, memberships);
+            storeMyChannelsForTeam(serverUrl, teamId, channels, memberships);
         }
 
         return {channels, memberships};
@@ -139,7 +139,7 @@ export const fetchMyChannel = async (serverUrl: string, teamId: string, channelI
         ]);
 
         if (!fetchOnly) {
-            localMyChannels(serverUrl, channel.team_id || teamId, [channel], [member]);
+            storeMyChannelsForTeam(serverUrl, channel.team_id || teamId, [channel], [member]);
         }
 
         return {

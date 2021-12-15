@@ -8,7 +8,7 @@ import {Navigation as NavigationConstants, Screens} from '@constants';
 import DatabaseManager from '@database/manager';
 import {prepareDeleteChannel, prepareMyChannelsForTeam, queryAllMyChannelIds, queryChannelsById, queryMyChannel} from '@queries/servers/channel';
 import {prepareCommonSystemValues, PrepareCommonSystemValuesArgs, queryCommonSystemValues, queryCurrentTeamId} from '@queries/servers/system';
-import {addChannelToTeamHistory, addTeamToTeamHistory, removeChannelFromTeamHistory} from '@queries/servers/team';
+import {addChannelToTeamHistory, addTeamToTeamHistory, queryLastChannelFromTeam, removeChannelFromTeamHistory} from '@queries/servers/team';
 import {dismissAllModalsAndPopToRoot, dismissAllModalsAndPopToScreen} from '@screens/navigation';
 import {isTablet} from '@utils/helpers';
 
@@ -48,8 +48,8 @@ export const switchToChannel = async (serverUrl: string, channelId: string, team
                 models.push(...history);
             }
 
-            const viewedAt = await markChannelAsViewed(serverUrl, channelId, true);
-            if (viewedAt instanceof Model) {
+            const {member: viewedAt} = await markChannelAsViewed(serverUrl, channelId, undefined, true);
+            if (viewedAt) {
                 models.push(viewedAt);
             }
 
@@ -71,6 +71,20 @@ export const switchToChannel = async (serverUrl: string, channelId: string, team
     }
 
     return {error: undefined};
+};
+
+//Used for testing purposes
+export const switchToDefault = async (serverUrl: string) => {
+    const serverDatabase = DatabaseManager.serverDatabases[serverUrl];
+    if (!serverDatabase) {
+        return;
+    }
+
+    const currentTeamId = await queryCurrentTeamId(serverDatabase.database);
+    const channelToJumpTo = await queryLastChannelFromTeam(serverDatabase.database, currentTeamId);
+    if (channelToJumpTo) {
+        switchToChannel(serverUrl, channelToJumpTo);
+    }
 };
 
 export const localRemoveUserFromChannel = async (serverUrl: string, channelId: string) => {
@@ -139,66 +153,97 @@ export const selectAllMyChannelIds = async (serverUrl: string) => {
     return queryAllMyChannelIds(database);
 };
 
-export const markChannelAsViewed = async (serverUrl: string, channelId: string, prepareRecordsOnly = false) => {
-    const database = DatabaseManager.serverDatabases[serverUrl]?.database;
-    if (!database) {
+export const markChannelAsViewed = async (serverUrl: string, channelId: string, newLastPostAt?: number, prepareRecordsOnly = false) => {
+    const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
+    if (!operator) {
         return {error: `${serverUrl} database not found`};
     }
 
-    const member = await queryMyChannel(database, channelId);
+    const member = await queryMyChannel(operator.database, channelId);
     if (!member) {
         return {error: 'not a member'};
     }
 
+    const lastPostAt = newLastPostAt != null && newLastPostAt > member.lastPostAt ? newLastPostAt : member.lastPostAt;
     member.prepareUpdate((m) => {
         m.messageCount = 0;
         m.mentionsCount = 0;
         m.manuallyUnread = false;
         m.viewedAt = member.lastViewedAt;
+        m.lastViewedAt = lastPostAt + 1;
+        m.lastPostAt = lastPostAt;
     });
 
     try {
         if (!prepareRecordsOnly) {
-            const {operator} = DatabaseManager.serverDatabases[serverUrl];
             await operator.batchRecords([member]);
         }
 
-        return member;
+        return {member};
     } catch (error) {
         return {error};
     }
 };
 
-export const markChannelAsUnread = async (serverUrl: string, channelId: string, messageCount: number, mentionsCount: number, manuallyUnread: boolean, prepareRecordsOnly = false) => {
-    const database = DatabaseManager.serverDatabases[serverUrl]?.database;
-    if (!database) {
+export const markChannelAsUnread = async (serverUrl: string, channelId: string, messageCount: number, mentionsCount: number, manuallyUnread: boolean, newLastPostAt?: number, lastViewed?: number, prepareRecordsOnly = false) => {
+    const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
+    if (!operator) {
         return {error: `${serverUrl} database not found`};
     }
 
-    const member = await queryMyChannel(database, channelId);
+    const member = await queryMyChannel(operator.database, channelId);
+    if (!member) {
+        return {error: 'not a member'};
+    }
+
+    const lastPostAt = newLastPostAt != null && newLastPostAt > member.lastPostAt ? newLastPostAt : member.lastPostAt;
+    member.prepareUpdate((m) => {
+        m.viewedAt = lastViewed == null ? m.lastViewedAt : lastViewed;
+        m.lastViewedAt = lastViewed == null ? m.lastViewedAt : lastViewed;
+        m.messageCount = messageCount;
+        m.mentionsCount = mentionsCount;
+        m.manuallyUnread = manuallyUnread;
+        m.lastPostAt = lastPostAt;
+    });
+
+    try {
+        if (!prepareRecordsOnly) {
+            await operator.batchRecords([member]);
+        }
+
+        return {member};
+    } catch (error) {
+        return {error};
+    }
+};
+
+export const updateLastPostAt = async (serverUrl: string, channelId: string, lastPostAt: number, prepareRecordsOnly = false) => {
+    const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
+    if (!operator) {
+        return {error: `${serverUrl} database not found`};
+    }
+
+    const member = await queryMyChannel(operator.database, channelId);
     if (!member) {
         return {error: 'not a member'};
     }
 
     member.prepareUpdate((m) => {
-        m.messageCount += messageCount;
-        m.mentionsCount += mentionsCount;
-        m.manuallyUnread = manuallyUnread;
+        m.lastPostAt = lastPostAt > member.lastPostAt ? lastPostAt : member.lastPostAt;
     });
 
     try {
         if (!prepareRecordsOnly) {
-            const {operator} = DatabaseManager.serverDatabases[serverUrl];
             await operator.batchRecords([member]);
         }
 
-        return member;
+        return {member};
     } catch (error) {
         return {error};
     }
 };
 
-export const localMyChannels = async (serverUrl: string, teamId: string, channels: Channel[], memberships: ChannelMembership[], prepareRecordsOnly = false) => {
+export const storeMyChannelsForTeam = async (serverUrl: string, teamId: string, channels: Channel[], memberships: ChannelMembership[], prepareRecordsOnly = false) => {
     const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
     if (!operator) {
         return {error: `${serverUrl} database not found`};

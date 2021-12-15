@@ -252,7 +252,6 @@ const withPosts = withObservables(['channelId', 'forceQueryAfterAppState'], ({da
                 const {earliest, latest} = postsInChannel[0];
                 return database.get<PostModel>(POST).query(
                     Q.and(
-                        Q.where('delete_at', 0),
                         Q.where('channel_id', channelId),
                         Q.where('create_at', Q.between(earliest, latest)),
                     ),

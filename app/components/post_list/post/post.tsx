@@ -285,4 +285,4 @@ const Post = ({
     );
 };
 
-export default React.memo(Post);
+export default Post;

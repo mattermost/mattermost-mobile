@@ -141,4 +141,4 @@ const withTeamId = withObservables(['post'], ({post}: {post: PostModel}) => ({
     ),
 }));
 
-export default withTeamId(React.memo(ButtonBinding));
+export default withTeamId(ButtonBinding);

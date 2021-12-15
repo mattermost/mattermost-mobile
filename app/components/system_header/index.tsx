@@ -105,4 +105,4 @@ const enhanced = withObservables([], ({database}: WithDatabaseArgs) => {
     };
 });
 
-export default withDatabase(enhanced(React.memo(SystemHeader)));
+export default withDatabase(enhanced(SystemHeader));

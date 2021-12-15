@@ -258,3 +258,29 @@ const processPostsFetched = (serverUrl: string, actionType: string, data: {order
         previousPostId,
     };
 };
+
+export const fetchPostById = async (serverUrl: string, postId: string, fetchOnly = false) => {
+    const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
+    if (!operator) {
+        return {error: `${serverUrl} database not found`};
+    }
+
+    let client: Client;
+    try {
+        client = NetworkManager.getClient(serverUrl);
+    } catch (error) {
+        return {error};
+    }
+
+    try {
+        const post = await client.getPost(postId);
+        if (!fetchOnly) {
+            operator.handlePosts({actionType: ActionType.POSTS.RECEIVED_NEW, order: [post.id], posts: [post]});
+        }
+
+        return {post};
+    } catch (error) {
+        forceLogoutIfNecessary(serverUrl, error as ClientErrorProps);
+        return {error};
+    }
+};
