@@ -20,7 +20,9 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     actionContainer: {
         alignItems: 'flex-end',
         justifyContent: 'center',
-        marginRight: 20,
+        right: 20,
+        bottom: 7,
+        position: 'absolute',
     },
     action: {
         color: changeOpacity(theme.centerChannelColor, 0.7),
@@ -35,6 +37,8 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         flexDirection: 'row',
         height: 34,
         width: '100%',
+        alignItems: 'center',
+        paddingBottom: 5,
     },
     enabled: {
         color: theme.buttonBg,

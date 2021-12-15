@@ -22,7 +22,7 @@ const services: Record<string, string> = {
 const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     return {
         container: {
-            marginTop: 8,
+            marginTop: 2,
         },
         text: {
             ...typography('Body', 75),

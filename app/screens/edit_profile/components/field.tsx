@@ -26,11 +26,8 @@ export type FieldProps = TextInputProps & {
 const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     return StyleSheet.create({
         viewContainer: {
-            marginTop: 24,
+            marginVertical: 8,
             alignItems: 'center',
-            width: '100%',
-        },
-        subContainer: {
             width: '100%',
         },
         disabledStyle: {
@@ -74,35 +71,31 @@ const Field = ({
     const formattedLabel = isOptional ? `${label} ${optionalText}` : label;
 
     const textInputStyle = isDisabled ? style.disabledStyle : undefined;
-    const subContainer = [style.subContainer, {paddingHorizontal: isTablet ? 42 : 20}];
+    const subContainer = [style.viewContainer, {paddingHorizontal: isTablet ? 42 : 20}];
 
     return (
         <View
             testID={testID}
-            style={style.viewContainer}
+            style={subContainer}
         >
-            <View
-                style={subContainer}
-            >
-                <FloatingTextInput
-                    autoCapitalize={autoCapitalize}
-                    autoCorrect={autoCorrect}
-                    disableFullscreenUI={true}
-                    editable={!isDisabled}
-                    keyboardAppearance={getKeyboardAppearanceFromTheme(theme)}
-                    keyboardType={keyboard}
-                    label={formattedLabel}
-                    maxLength={maxLength}
-                    onChangeText={onChangeText}
-                    testID={`${testID}.input`}
-                    theme={theme}
-                    value={value}
-                    ref={fieldRef}
-                    onSubmitEditing={onSubmitEditing}
-                    textInputStyle={textInputStyle}
-                    {...props}
-                />
-            </View>
+            <FloatingTextInput
+                autoCapitalize={autoCapitalize}
+                autoCorrect={autoCorrect}
+                disableFullscreenUI={true}
+                editable={!isDisabled}
+                keyboardAppearance={getKeyboardAppearanceFromTheme(theme)}
+                keyboardType={keyboard}
+                label={formattedLabel}
+                maxLength={maxLength}
+                onChangeText={onChangeText}
+                testID={`${testID}.input`}
+                theme={theme}
+                value={value}
+                ref={fieldRef}
+                onSubmitEditing={onSubmitEditing}
+                textInputStyle={textInputStyle}
+                {...props}
+            />
         </View>
     );
 };
