@@ -1,30 +1,22 @@
 diff --git a/node_modules/react-native-navigation/lib/android/app/src/main/java/com/reactnativenavigation/react/NavigationModule.java b/node_modules/react-native-navigation/lib/android/app/src/main/java/com/reactnativenavigation/react/NavigationModule.java
-index 3eb6609..68a68bf 100644
+index 2e8acc0..71da101 100644
 --- a/node_modules/react-native-navigation/lib/android/app/src/main/java/com/reactnativenavigation/react/NavigationModule.java
 +++ b/node_modules/react-native-navigation/lib/android/app/src/main/java/com/reactnativenavigation/react/NavigationModule.java
-@@ -33,6 +33,8 @@ import java.util.ArrayList;
- 
- import static com.reactnativenavigation.utils.UiUtils.pxToDp;
- 
-+import android.app.Activity;
-+
- public class NavigationModule extends ReactContextBaseJavaModule {
-     private static final String NAME = "RNNBridgeModule";
- 
-@@ -56,20 +58,30 @@ public class NavigationModule extends ReactContextBaseJavaModule {
+@@ -59,20 +59,31 @@ public class NavigationModule extends ReactContextBaseJavaModule {
              @Override
              public void onHostPause() {
                  super.onHostPause();
 -                navigator().onHostPause();
 +                Navigator navigator = navigator();
 +                if (navigator != null) {
-+                    navigator().onHostPause();
++                    navigator.onHostPause();
 +                }
              }
  
              @Override
              public void onHostResume() {
--                eventEmitter = new EventEmitter(reactContext);
++                try {
+                 eventEmitter = new EventEmitter(reactContext);
 -                navigator().setEventEmitter(eventEmitter);
 -                layoutFactory.init(
 -                        activity(),
@@ -33,26 +25,25 @@ index 3eb6609..68a68bf 100644
 -                        ((NavigationApplication) activity().getApplication()).getExternalComponents()
 -                );
 -                navigator().onHostResume();
-+                try {
-+                    eventEmitter = new EventEmitter(reactContext);
-+                    Navigator navigator = navigator();
-+                    if (navigator != null) {
-+                        navigator().setEventEmitter(eventEmitter);
-+                        layoutFactory.init(
-+                                activity(),
-+                                eventEmitter,
-+                                navigator().getChildRegistry(),
-+                                ((NavigationApplication) activity().getApplication()).getExternalComponents()
-+                        );
-+                        navigator().onHostResume();
-+                    }
++                Navigator navigator = navigator();
++                if (navigator != null) {
++                    navigator.setEventEmitter(eventEmitter);
++                    layoutFactory.init(
++                            activity(),
++                            eventEmitter,
++                            navigator().getChildRegistry(),
++                            ((NavigationApplication) activity().getApplication()).getExternalComponents()
++                    );
++                    navigator.onHostResume();
++                }
 +                } catch (ClassCastException e) {
 +                    // The most current activity is not a NavigationActivity
 +                }
++
              }
          });
      }
-@@ -206,7 +218,11 @@ public class NavigationModule extends ReactContextBaseJavaModule {
+@@ -210,7 +221,11 @@ public class NavigationModule extends ReactContextBaseJavaModule {
      }
  
      private Navigator navigator() {
@@ -65,7 +56,7 @@ index 3eb6609..68a68bf 100644
      }
  
      private Options parse(@Nullable ReadableMap mergeOptions) {
-@@ -217,21 +233,26 @@ public class NavigationModule extends ReactContextBaseJavaModule {
+@@ -221,21 +236,26 @@ public class NavigationModule extends ReactContextBaseJavaModule {
  
      protected void handle(Runnable task) {
          UiThread.post(() -> {
@@ -100,7 +91,7 @@ index 3eb6609..68a68bf 100644
          super.onCatalystInstanceDestroy();
      }
 diff --git a/node_modules/react-native-navigation/lib/android/app/src/main/java/com/reactnativenavigation/viewcontrollers/component/ComponentViewController.java b/node_modules/react-native-navigation/lib/android/app/src/main/java/com/reactnativenavigation/viewcontrollers/component/ComponentViewController.java
-index 51837db..14a5828 100644
+index c2fbac7..97473b8 100644
 --- a/node_modules/react-native-navigation/lib/android/app/src/main/java/com/reactnativenavigation/viewcontrollers/component/ComponentViewController.java
 +++ b/node_modules/react-native-navigation/lib/android/app/src/main/java/com/reactnativenavigation/viewcontrollers/component/ComponentViewController.java
 @@ -4,6 +4,7 @@ import android.app.Activity;
@@ -108,10 +99,10 @@ index 51837db..14a5828 100644
  import android.view.View;
  
 +import com.reactnativenavigation.options.params.NullBool;
+ import com.reactnativenavigation.utils.LogKt;
  import com.reactnativenavigation.viewcontrollers.viewcontroller.ScrollEventListener;
  import com.reactnativenavigation.options.Options;
- import com.reactnativenavigation.viewcontrollers.viewcontroller.Presenter;
-@@ -148,7 +149,7 @@ public class ComponentViewController extends ChildController<ComponentLayout> {
+@@ -156,7 +157,7 @@ public class ComponentViewController extends ChildController<ComponentLayout> {
  
      @Override
      public void destroy() {

@@ -25,7 +25,6 @@ if (__DEV__) {
         'Require cycle: node_modules/react-native/Libraries/Network/fetch.js',
         'Warning: Cannot update a component from inside the function body of a different component',
     ]);
-    require('storybook/mattermost_storybook.ts');
 }
 
 const setFontFamily = () => {
