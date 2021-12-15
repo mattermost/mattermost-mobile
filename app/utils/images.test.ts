@@ -15,7 +15,7 @@ describe('Images calculateDimensions', () => {
         falsyHeights.forEach((falsyHeight) => {
             const {height, width} = calculateDimensions(falsyHeight as number, 20, PORTRAIT_VIEWPORT);
             expect(height).toEqual(0);
-            expect(width).toEqual(0);
+            expect(width).toEqual(PORTRAIT_VIEWPORT);
         });
     });
 
@@ -24,7 +24,7 @@ describe('Images calculateDimensions', () => {
         falsyWidths.forEach((falsyWidth) => {
             const {height, width} = calculateDimensions(20, falsyWidth as number, PORTRAIT_VIEWPORT);
             expect(height).toEqual(0);
-            expect(width).toEqual(0);
+            expect(width).toEqual(PORTRAIT_VIEWPORT);
         });
     });
 
