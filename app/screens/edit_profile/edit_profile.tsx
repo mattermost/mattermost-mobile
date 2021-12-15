@@ -3,7 +3,7 @@
 
 import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
-import {BackHandler, DeviceEventEmitter, Keyboard, StyleSheet, View} from 'react-native';
+import {BackHandler, DeviceEventEmitter, Keyboard, Text, View} from 'react-native';
 import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
 import {Navigation} from 'react-native-navigation';
 import {Edge, SafeAreaView} from 'react-native-safe-area-context';
@@ -21,44 +21,51 @@ import {t} from '@i18n';
 import {dismissModal, popTopScreen, setButtons} from '@screens/navigation';
 import {EditProfileProps, FieldConfig, FieldSequence, UserInfo} from '@typings/screens/edit_profile';
 import {preventDoubleTap} from '@utils/tap';
+import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
+import {typography} from '@utils/typography';
 
 import EmailField from './components/email_field';
 import Field from './components/field';
-import Description from './components/field_description';
 import ProfileError from './components/profile_error';
 
 import type {MessageDescriptor} from '@formatjs/intl/src/types';
 
 const edges: Edge[] = ['bottom', 'left', 'right'];
 
-const styles = StyleSheet.create({
-    flex: {
-        flex: 1,
-    },
-    top: {
-        padding: 25,
-        alignItems: 'center',
-        justifyContent: 'center',
-    },
-    separator: {
-        height: 15,
-    },
-    footer: {
-        height: 40,
-        width: '100%',
-    },
-    spinner: {
-        position: 'absolute',
-        width: '100%',
-        height: '100%',
-        alignItems: 'center',
-        justifyContent: 'center',
-        zIndex: 1000,
-    },
-    description: {
-        alignSelf: 'center',
-        marginBottom: 24,
-    },
+const getStyleSheet = makeStyleSheetFromTheme((theme) => {
+    return {
+        flex: {
+            flex: 1,
+        },
+        top: {
+            marginVertical: 32,
+            alignItems: 'center',
+            justifyContent: 'center',
+        },
+        separator: {
+            height: 15,
+        },
+        footer: {
+            height: 40,
+            width: '100%',
+        },
+        spinner: {
+            position: 'absolute',
+            width: '100%',
+            height: '100%',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 1000,
+        },
+        description: {
+            alignSelf: 'center',
+            marginBottom: 24,
+        },
+        text: {
+            ...typography('Body', 75),
+            color: changeOpacity(theme.centerChannelColor, 0.5),
+        },
+    };
 });
 
 const FIELDS: { [id: string]: MessageDescriptor } = {
@@ -109,6 +116,7 @@ const EditProfile = ({
     const nicknameRef = useRef<FloatingTextInputRef>(null);
     const positionRef = useRef<FloatingTextInputRef>(null);
 
+    const styles = getStyleSheet(theme);
     const [userInfo, setUserInfo] = useState<UserInfo>({
         email: currentUser.email,
         firstName: currentUser.firstName,
@@ -328,8 +336,6 @@ const EditProfile = ({
         returnKeyType: 'next',
     };
 
-    const descriptionStyle = [styles.description, {paddingHorizontal: isTablet ? 42 : 20}];
-
     return (
         <>
             {isTablet &&
@@ -380,9 +386,18 @@ const EditProfile = ({
                             showStatus={false}
                         />
                     </View>
-                    <Description
-                        containerStyle={descriptionStyle}
-                    />
+                    <View
+                        style={{
+                            paddingHorizontal: isTablet ? 42 : 20,
+                        }}
+                    >
+                        <Text style={styles.text}>
+                            {intl.formatMessage({
+                                id: 'user.settings.general.field_handled_externally',
+                                defaultMessage: 'Some fields below are handled through your login provider. If you want to change them, you’ll need to do so through your login provider.',
+                            })}
+                        </Text>
+                    </View>
                     <Field
                         fieldKey='firstName'
                         fieldRef={firstNameRef}
@@ -423,6 +438,8 @@ const EditProfile = ({
                             fieldRef={emailRef}
                             onChange={updateField}
                             onFocusNextField={onFocusNextField}
+                            theme={theme}
+                            isTablet={Boolean(isTablet)}
                         />
                     )}
                     <View style={styles.separator}/>

@@ -10,11 +10,8 @@ import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
 import {changeOpacity, getKeyboardAppearanceFromTheme, makeStyleSheetFromTheme} from '@utils/theme';
 
-import FieldDescription from './field_description';
-
 export type FieldProps = TextInputProps & {
     isDisabled?: boolean;
-    fieldDescription?: string;
     fieldKey: string;
     label: string;
     maxLength?: number;
@@ -29,7 +26,7 @@ export type FieldProps = TextInputProps & {
 const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     return StyleSheet.create({
         viewContainer: {
-            marginVertical: 7,
+            marginTop: 24,
             alignItems: 'center',
             width: '100%',
         },
@@ -45,7 +42,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
 const Field = ({
     autoCapitalize = 'none',
     autoCorrect = false,
-    fieldDescription,
     fieldKey,
     isDisabled = false,
     isOptional = false,
@@ -106,11 +102,6 @@ const Field = ({
                     textInputStyle={textInputStyle}
                     {...props}
                 />
-                {isDisabled && fieldDescription && (
-                    <FieldDescription
-                        text={fieldDescription}
-                    />
-                )}
             </View>
         </View>
     );
