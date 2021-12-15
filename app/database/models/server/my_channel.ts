@@ -34,8 +34,8 @@ export default class MyChannelModel extends Model {
     /** mentions_count : The number of mentions on this channel */
     @field('mentions_count') mentionsCount!: number;
 
-    /** message_count : The derived number of unread messages on this channel */
-    @field('message_count') messageCount!: number;
+    /** has_unreads : Whether the channel has unread messages */
+    @field('has_unreads') hasUnreads!: boolean;
 
     /** roles : The user's privileges on this channel */
     @field('roles') roles!: string;

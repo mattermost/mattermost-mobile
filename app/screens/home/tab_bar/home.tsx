@@ -23,7 +23,7 @@ type Props = {
 
 type UnreadMessages = {
     mentions: number;
-    messages: number;
+    messages: boolean;
 };
 
 type UnreadSubscription = UnreadMessages & {
@@ -52,13 +52,13 @@ const style = StyleSheet.create({
 
 const Home = ({isFocused, theme}: Props) => {
     const db = DatabaseManager.appDatabase?.database;
-    const [total, setTotal] = useState<UnreadMessages>({mentions: 0, messages: 0});
+    const [total, setTotal] = useState<UnreadMessages>({mentions: 0, messages: false});
 
     const updateTotal = () => {
-        let messages = 0;
+        let messages = false;
         let mentions = 0;
         subscriptions.forEach((value) => {
-            messages += value.messages;
+            messages = messages || value.messages;
             mentions += value.mentions;
         });
         setTotal({mentions, messages});
@@ -68,10 +68,10 @@ const Home = ({isFocused, theme}: Props) => {
         const unreads = subscriptions.get(serverUrl);
         if (unreads) {
             let mentions = 0;
-            let messages = 0;
+            let messages = false;
             myChannels.forEach((myChannel) => {
                 mentions += myChannel.mentionsCount;
-                messages += myChannel.messageCount;
+                messages = messages || myChannel.hasUnreads;
             });
 
             unreads.mentions = mentions;
@@ -90,13 +90,13 @@ const Home = ({isFocused, theme}: Props) => {
                     if (!subscriptions.has(serverUrl)) {
                         const unreads: UnreadSubscription = {
                             mentions: 0,
-                            messages: 0,
+                            messages: false,
                         };
                         subscriptions.set(serverUrl, unreads);
                         unreads.subscription = sdb.database.
                             get(MY_CHANNEL).
                             query(Q.on(CHANNEL, Q.where('delete_at', Q.eq(0)))).
-                            observeWithColumns(['mentions_count', 'message_count']).
+                            observeWithColumns(['mentions_count', 'has_unreads']).
                             subscribe(unreadsSubscription.bind(undefined, serverUrl));
                     }
                 }
@@ -150,7 +150,7 @@ const Home = ({isFocused, theme}: Props) => {
                 style={unreadStyle}
                 visible={!isFocused && Boolean(unreadStyle)}
                 type='Small'
-                value={total.mentions || (total.messages * -1)}
+                value={total.mentions || (total.messages ? -1: 0)}
             />
         </View>
     );

@@ -124,7 +124,7 @@ export const transformMyChannelRecord = ({action, database, value}: TransformerA
     const fieldsMapper = (myChannel: MyChannelModel) => {
         myChannel._raw.id = isCreateAction ? (raw.channel_id || myChannel.id) : record.id;
         myChannel.roles = raw.roles;
-        myChannel.messageCount = raw.msg_count;
+        myChannel.hasUnreads = Boolean(raw.has_unreads);
         myChannel.mentionsCount = raw.mention_count;
         myChannel.lastPostAt = raw.last_post_at || 0;
         myChannel.lastViewedAt = raw.last_viewed_at;

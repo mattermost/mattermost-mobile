@@ -32,14 +32,14 @@ type WithTeamsArgs = WithDatabaseArgs & {
 }
 
 const withTeams = withObservables(['myTeam'], ({myTeam, database}: WithTeamsArgs) => {
-    const myChannels = database.get<MyChannelModel>(MY_CHANNEL).query(Q.on(CHANNEL, Q.and(Q.where('delete_at', Q.eq(0)), Q.where('team_id', Q.eq(myTeam.id))))).observeWithColumns(['mentions_count', 'message_count']);
+    const myChannels = database.get<MyChannelModel>(MY_CHANNEL).query(Q.on(CHANNEL, Q.and(Q.where('delete_at', Q.eq(0)), Q.where('team_id', Q.eq(myTeam.id))))).observeWithColumns(['mentions_count', 'has_unreads']);
     const mentionCount = myChannels.pipe(
         // eslint-disable-next-line max-nested-callbacks
         switchMap((val) => of$(val.reduce((acc, v) => acc + v.mentionsCount, 0))),
     );
     const hasUnreads = myChannels.pipe(
         // eslint-disable-next-line max-nested-callbacks
-        switchMap((val) => of$(val.reduce((acc, v) => acc + v.messageCount, 0) > 0)),
+        switchMap((val) => of$(val.reduce((acc, v) => acc || v.hasUnreads, false))),
     );
     return {
         team: myTeam.team.observe(),
