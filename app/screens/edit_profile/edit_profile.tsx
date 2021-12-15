@@ -290,6 +290,8 @@ const EditProfile = ({
         },
     };
 
+    const hasDisabledFields = Object.values(userProfileFields).filter((field) => field.isDisabled);
+
     const onFocusNextField = useCallback(((fieldKey: string) => {
         const findNextField = () => {
             const fields = Object.keys(userProfileFields);
@@ -386,18 +388,21 @@ const EditProfile = ({
                             showStatus={false}
                         />
                     </View>
-                    <View
-                        style={{
-                            paddingHorizontal: isTablet ? 42 : 20,
-                        }}
-                    >
-                        <Text style={styles.text}>
-                            {intl.formatMessage({
-                                id: 'user.settings.general.field_handled_externally',
-                                defaultMessage: 'Some fields below are handled through your login provider. If you want to change them, you’ll need to do so through your login provider.',
-                            })}
-                        </Text>
-                    </View>
+                    {hasDisabledFields.length > 0 && (
+                        <View
+                            style={{
+                                paddingHorizontal: isTablet ? 42 : 20,
+                                marginBottom: 16,
+                            }}
+                        >
+                            <Text style={styles.text}>
+                                {intl.formatMessage({
+                                    id: 'user.settings.general.field_handled_externally',
+                                    defaultMessage: 'Some fields below are handled through your login provider. If you want to change them, you’ll need to do so through your login provider.',
+                                })}
+                            </Text>
+                        </View>
+                    )}
                     <Field
                         fieldKey='firstName'
                         fieldRef={firstNameRef}
