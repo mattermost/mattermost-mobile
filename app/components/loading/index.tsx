@@ -19,7 +19,7 @@ const Loading = ({containerStyle, style, color}: LoadingProps) => {
                 autoPlay={true}
                 loop={true}
                 style={[styles.lottie, style]}
-                colorFilters={color ? [{color, keypath: 'Shape Layer 1'}, {color, keypath: 'Shape Layer 2'}] : []}
+                colorFilters={color ? [{color, keypath: 'Shape Layer 1'}] : undefined}
             />
         </View>
     );
