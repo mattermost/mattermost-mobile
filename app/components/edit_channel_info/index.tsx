@@ -125,13 +125,13 @@ type Props = {
         channelURL?: string;
         displayName?: string;
         editing?: boolean;
-        enableRightButton: (val: boolean) => void;
+        enableRightButton: (enable: boolean) => void;
         error?: string | object;
         header?: string;
-        onDisplayNameChange: (val: string) => void;
-        onHeaderChange: (val: string) => void;
-        onPurposeChange: (val: string) => void;
-        onTypeChange: (val: string) => void;
+        onDisplayNameChange: (displayName: string) => void;
+        onHeaderChange: (header: string) => void;
+        onPurposeChange: (purpose: string) => void;
+        onTypeChange: (type: string) => void;
         oldChannelURL?: string;
         oldDisplayName?: string;
         oldHeader?: string;
@@ -142,7 +142,27 @@ type Props = {
         type?: string;
 }
 
-const EditChannelInfo = ({channelType, channelURL, displayName, editing = false, enableRightButton, error, header, onDisplayNameChange, onHeaderChange, onPurposeChange, onTypeChange, oldChannelURL, oldDisplayName, oldHeader, oldPurpose, purpose, saving, testID, type}: Props) => {
+export default function EditChannelInfo ({
+    channelType, 
+    channelURL, 
+    displayName, 
+    editing = false, 
+    enableRightButton, 
+    error, 
+    header, 
+    onDisplayNameChange, 
+    onHeaderChange, 
+    onPurposeChange, 
+    onTypeChange, 
+    oldChannelURL, 
+    oldDisplayName, 
+    oldHeader, 
+    oldPurpose, 
+    purpose, 
+    saving, 
+    testID, 
+    type
+}: Props) {
     const theme = useTheme();
     const intl = useIntl();
 
@@ -501,5 +521,3 @@ const EditChannelInfo = ({channelType, channelURL, displayName, editing = false,
         </SafeAreaView>
     );
 };
-
-export default EditChannelInfo;

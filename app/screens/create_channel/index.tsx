@@ -23,6 +23,9 @@ type Props = {
         closeButton: object;
 }
 
+const CLOSE_NEW_CHANNEL_ID = 'close-new-channel'
+const CREATE_CHANNEL_ID = 'create-channel'
+
 const CreateChannel = ({serverUrl, componentId, channelType, closeButton}: Props) => {
     const intl = useIntl();
     const {formatMessage} = intl;
@@ -35,13 +38,13 @@ const CreateChannel = ({serverUrl, componentId, channelType, closeButton}: Props
     const [type, setType] = useState<ChannelType>(channelType || General.OPEN_CHANNEL);
 
     const leftButton = {
-        id: 'close-new-channel',
+        id: CLOSE_NEW_CHANNEL_ID,
         icon: closeButton,
     };
 
     const rightButton = {
         testID: 'create_channel.create.button',
-        id: 'create-channel',
+        id: CREATE_CHANNEL_ID,
         enabled: false,
         showAsAction: 'always',
         text: formatMessage({id: 'mobile.create_channel', defaultMessage: 'Create'}),
@@ -121,10 +124,10 @@ const CreateChannel = ({serverUrl, componentId, channelType, closeButton}: Props
         const create = Navigation.events().registerComponentListener({
             navigationButtonPressed: ({buttonId}: { buttonId: string }) => {
                 switch (buttonId) {
-                    case 'close-new-channel':
+                    case CLOSE_NEW_CHANNEL_ID:
                         close(!closeButton);
                         break;
-                    case 'create-channel':
+                    case CREATE_CHANNEL_ID:
                         onCreateChannel();
                         break;
                 }
