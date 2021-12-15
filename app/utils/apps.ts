@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 import {AppBindingLocations, AppCallResponseTypes, AppFieldTypes} from '@mm-redux/constants/apps';
 import {getConfig} from '@mm-redux/selectors/entities/general';
-import {AppBinding, AppCall, AppCallRequest, AppCallValues, AppContext, AppExpand, AppField, AppForm, AppSelectOption} from '@mm-redux/types/apps';
+import {AppBinding, AppCall, AppCallRequest, AppCallResponse, AppCallValues, AppContext, AppExpand, AppField, AppForm, AppSelectOption} from '@mm-redux/types/apps';
 import {Config} from '@mm-redux/types/config';
 import {GlobalState} from '@mm-redux/types/store';
 
@@ -247,10 +247,10 @@ export function createCallRequest(
     };
 }
 
-export const makeCallErrorResponse = (errMessage: string) => {
+export const makeCallErrorResponse = (errMessage: string): AppCallResponse<any> => {
     return {
         type: AppCallResponseTypes.ERROR,
-        error: errMessage,
+        text: errMessage,
     };
 };
 
