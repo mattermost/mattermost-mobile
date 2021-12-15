@@ -23,7 +23,6 @@ exports[`Loading  should match snapshot 1`] = `
       autoPlay={true}
       cacheComposition={true}
       collapsable={false}
-      colorFilters={Array []}
       enableMergePathsAndroidForKitKatAndAbove={false}
       forwardedRef={[Function]}
       loop={true}
