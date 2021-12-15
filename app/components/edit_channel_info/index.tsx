@@ -97,6 +97,12 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => ({
     headerHelpText: {
         zIndex: -1,
     },
+    divider: {
+        borderBottomColor: changeOpacity(theme.centerChannelColor, 0.1),
+        borderBottomWidth: 1,
+        marginHorizontal: 15,
+        height: 0,
+    },
     touchable: {
         flex: 1,
         flexDirection: 'row',
@@ -356,18 +362,13 @@ export default function EditChannelInfo ({
                                         {type === General.OPEN_CHANNEL &&
                                         <CompassIcon
                                             style={styles.touchableIcon}
-                                            color='#166de0'
+                                            color={theme.buttonBg}
                                             name='check'
                                             size={24}
                                         />
                                         }
                                     </TouchableOpacity>
-                                    <View
-                                        style={{borderBottomColor: '#ebebec',
-                                            borderBottomWidth: 1,
-                                            marginHorizontal: 15,
-                                            height: 0}}
-                                    />
+                                    <View style={styles.divider} />
                                     <TouchableOpacity
                                         style={styles.touchable}
                                         onPress={() => {
@@ -383,7 +384,7 @@ export default function EditChannelInfo ({
                                         {type === General.PRIVATE_CHANNEL &&
                                         <CompassIcon
                                             style={styles.touchableIcon}
-                                            color='#166de0'
+                                            color={theme.buttonBg}
                                             name='check'
                                             size={24}
                                         />
