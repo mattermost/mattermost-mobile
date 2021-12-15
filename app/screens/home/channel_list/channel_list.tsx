@@ -1,6 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {useManagedConfig} from '@mattermost/react-native-emm';
 import {useIsFocused, useRoute} from '@react-navigation/native';
 import React from 'react';
 import {View} from 'react-native';
@@ -18,6 +19,7 @@ import {makeStyleSheetFromTheme} from '@utils/theme';
 import type {LaunchProps} from '@typings/launch';
 
 type ChannelProps = LaunchProps & {
+    teamsCount: number;
     time?: number;
 };
 
@@ -43,12 +45,14 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
 const ChannelListScreen = (props: ChannelProps) => {
     const theme = useTheme();
     const styles = getStyleSheet(theme);
+    const managedConfig = useManagedConfig();
 
     const isTablet = useIsTablet();
     const route = useRoute();
     const isFocused = useIsFocused();
     const insets = useSafeAreaInsets();
     const params = route.params as {direction: string};
+    const canAddOtherServers = managedConfig?.allowOtherServers !== 'false';
 
     const animated = useAnimatedStyle(() => {
         if (!isFocused) {
@@ -74,17 +78,18 @@ const ChannelListScreen = (props: ChannelProps) => {
                 style={styles.content}
                 edges={['bottom', 'left', 'right']}
             >
-                <ServerIcon/>
+                {canAddOtherServers && <ServerIcon/>}
                 <Animated.View
                     style={[styles.content, animated]}
                 >
-                    {/* @to-do: Server Icon requires padding in the team and channel components:
-                      * https://mattermost.atlassian.net/browse/MM-39702
-                      */}
-                    <TeamSidebar iconPad={true}/>
+                    <TeamSidebar
+                        iconPad={canAddOtherServers}
+                        teamsCount={props.teamsCount}
+                    />
                     <ChannelList
-                        iconPad={false}
+                        iconPad={canAddOtherServers && props.teamsCount <= 1}
                         isTablet={isTablet}
+                        teamsCount={props.teamsCount}
                     />
                     {isTablet &&
                         <Channel {...props}/>
