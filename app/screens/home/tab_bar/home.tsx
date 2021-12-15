@@ -150,7 +150,7 @@ const Home = ({isFocused, theme}: Props) => {
                 style={unreadStyle}
                 visible={!isFocused && Boolean(unreadStyle)}
                 type='Small'
-                value={total.mentions || (total.messages ? -1: 0)}
+                value={total.mentions || (total.messages ? -1 : 0)}
             />
         </View>
     );
