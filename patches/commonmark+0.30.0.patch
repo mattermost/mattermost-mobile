@@ -6791,7 +6791,7 @@ index 298e9b0..cf27955 100644
          return encode(uri);
      } catch (err) {
 diff --git a/node_modules/commonmark/lib/inlines.js b/node_modules/commonmark/lib/inlines.js
-index 5d2a545..f5c0d6f 100644
+index 5d2a545..86b0197 100644
 --- a/node_modules/commonmark/lib/inlines.js
 +++ b/node_modules/commonmark/lib/inlines.js
 @@ -4,6 +4,7 @@ import Node from "./node.js";
@@ -6887,18 +6887,18 @@ index 5d2a545..f5c0d6f 100644
          this.pos += m.index + m[0].length;
 -        return m[0];
 +        return m;
-+    }
-+};
-+
+     }
+ };
+ 
 +var tryMatch = function(re) {
 +    var m = re.exec(this.subject.slice(this.pos));
 +    if (m === null) {
 +        return null;
 +    } else {
 +        return m;
-     }
- };
- 
++    }
++};
++
 +var acceptMatch = function(m) {
 +    this.pos += m.index + m[0].length;
 +};
@@ -7051,7 +7051,7 @@ index 5d2a545..f5c0d6f 100644
  
          var tmp, next;
          tmp = opener.node._next;
-@@ -776,6 +905,262 @@ var parseEntity = function(block) {
+@@ -776,6 +905,267 @@ var parseEntity = function(block) {
      }
  };
  
@@ -7292,6 +7292,11 @@ index 5d2a545..f5c0d6f 100644
 +        return false;
 +    }
 +
++    if (this.delimiters) {
++        return false;
++    }
++
++
 +    var m;
 +    if ((m = this.tryMatch(reInlineLatex, true))) {
 +        //Only allow for inline latex if the dollarsign was present after a non-word character
@@ -7314,7 +7319,7 @@ index 5d2a545..f5c0d6f 100644
  // Parse a run of ordinary characters, or a single character with
  // a special meaning in markdown, as a plain string.
  var parseString = function(block) {
-@@ -959,18 +1344,48 @@ var parseInline = function(block) {
+@@ -959,18 +1349,48 @@ var parseInline = function(block) {
              res = this.parseCloseBracket(block);
              break;
          case C_LESSTHAN:
@@ -7368,7 +7373,7 @@ index 5d2a545..f5c0d6f 100644
      }
  
      return true;
-@@ -997,6 +1412,9 @@ function InlineParser(options) {
+@@ -997,6 +1417,9 @@ function InlineParser(options) {
          pos: 0,
          refmap: {},
          match: match,
@@ -7378,7 +7383,7 @@ index 5d2a545..f5c0d6f 100644
          peek: peek,
          spnl: spnl,
          parseBackticks: parseBackticks,
-@@ -1005,6 +1423,7 @@ function InlineParser(options) {
+@@ -1005,6 +1428,7 @@ function InlineParser(options) {
          parseHtmlTag: parseHtmlTag,
          scanDelims: scanDelims,
          handleDelim: handleDelim,
@@ -7386,7 +7391,7 @@ index 5d2a545..f5c0d6f 100644
          parseLinkTitle: parseLinkTitle,
          parseLinkDestination: parseLinkDestination,
          parseLinkLabel: parseLinkLabel,
-@@ -1014,6 +1433,14 @@ function InlineParser(options) {
+@@ -1014,6 +1438,14 @@ function InlineParser(options) {
          addBracket: addBracket,
          removeBracket: removeBracket,
          parseEntity: parseEntity,
