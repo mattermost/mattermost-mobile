@@ -65,7 +65,7 @@ export const getMentionKeysForPost = (user: UserModel, post: PostModel, groups: 
 
     if (groups?.length) {
         for (const group of groups) {
-            if (group.name.trim()) {
+            if (group.name && group.name.trim()) {
                 keys.push({key: `@${group.name}`});
             }
         }
