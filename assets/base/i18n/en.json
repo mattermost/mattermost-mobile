@@ -296,6 +296,8 @@
   "post_info.system": "System",
   "post_message_view.edited": "(edited)",
   "posts_view.newMsg": "New Messages",
+  "screen.mentions.subtitle": "Messages you've been mentioned in",
+  "screen.mentions.title": "Recent Mentions",
   "screen.search.placeholder": "Search messages & files",
   "search_bar.search": "Search",
   "status_dropdown.set_away": "Away",

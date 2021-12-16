@@ -12,7 +12,6 @@ import {toTitleCase} from '@utils/helpers';
 
 import type GroupModel from '@typings/database/models/servers/group';
 import type GroupMembershipModel from '@typings/database/models/servers/group_membership';
-import type {UserMentionKey} from '@typings/global/markdown';
 import type {IntlShape} from 'react-intl';
 
 export function displayUsername(user?: UserProfile | UserModel, locale?: string, teammateDisplayNameSetting?: string, useFallbackUsername = true) {
@@ -105,33 +104,7 @@ export const getUsersByUsername = (users: UserModel[]) => {
 };
 
 export const getUserMentionKeys = (user: UserModel, groups: GroupModel[], userGroups: GroupMembershipModel[]) => {
-    const keys: UserMentionKey[] = [];
-
-    if (!user.notifyProps) {
-        return keys;
-    }
-
-    if (user.notifyProps.mention_keys) {
-        const mentions = user.notifyProps.mention_keys.split(',').map((key) => ({key}));
-        keys.push(...mentions);
-    }
-
-    if (user.notifyProps.first_name === 'true' && user.firstName) {
-        keys.push({key: user.firstName, caseSensitive: true});
-    }
-
-    if (user.notifyProps.channel === 'true') {
-        keys.push(
-            {key: '@channel'},
-            {key: '@all'},
-            {key: '@here'},
-        );
-    }
-
-    const usernameKey = `@${user.username}`;
-    if (keys.findIndex((item) => item.key === usernameKey) === -1) {
-        keys.push({key: usernameKey});
-    }
+    const keys = user.mentionKeys;
 
     if (groups.length && userGroups.length) {
         const groupMentions = userGroups.reduce((result: Array<{key: string}>, ug: GroupMembershipModel) => {
