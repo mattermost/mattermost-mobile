@@ -85,15 +85,6 @@ export default function DropdownSlideup({
                     {...commonProps}
                 />
             )}
-            <SlideUpPanelItem
-                destructive={true}
-                icon='cancel'
-                onPress={() => {
-                    DeviceEventEmitter.emit(NavigationConstants.NAVIGATION_CLOSE_MODAL);
-                }}
-                testID='browse_channels.dropdownTitle.cancel'
-                text={intl.formatMessage({id: 'browse_channels.cancel', defaultMessage: 'Cancel'})}
-            />
         </BottomSheetContent>
     );
 }

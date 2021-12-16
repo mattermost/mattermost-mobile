@@ -6,7 +6,10 @@ import {useIntl} from 'react-intl';
 import {View, Text} from 'react-native';
 
 import CompassIcon from '@components/compass_icon';
+import {ITEM_HEIGHT} from '@components/slide_up_panel_item';
+import Screens from '@constants/screens';
 import {useTheme} from '@context/theme';
+import {TITLE_HEIGHT} from '@screens/bottom_sheet/content';
 import {showModalOverCurrentContext} from '@screens/navigation';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
@@ -37,7 +40,7 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme: Theme) => {
     };
 });
 
-const ITEM_HEIGHT = 100;
+const BOTTOM_SHEET_HEIGHT_BASE = 55; // Magic number
 
 export function ChannelDropdown({
     typeOfChannels,
@@ -62,7 +65,7 @@ export function ChannelDropdown({
             );
         };
 
-        let items = 2;
+        let items = 1;
         if (canShowArchivedChannels) {
             items += 1;
         }
@@ -70,9 +73,9 @@ export function ChannelDropdown({
             items += 1;
         }
 
-        showModalOverCurrentContext('BottomSheet', {
+        showModalOverCurrentContext(Screens.BOTTOM_SHEET, {
             renderContent,
-            snapPoints: [items * ITEM_HEIGHT, 10],
+            snapPoints: [(items * ITEM_HEIGHT) + TITLE_HEIGHT + BOTTOM_SHEET_HEIGHT_BASE, 10],
         });
     };
 
