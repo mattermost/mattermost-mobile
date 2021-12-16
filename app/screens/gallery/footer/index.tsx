@@ -23,8 +23,8 @@ import type {CallbackFunctionWithoutArguments, PrepareFileRef, FooterProps, Foot
 const styles = StyleSheet.create({
     footer: {
         position: 'absolute',
+        top: 0,
         width: '100%',
-        bottom: 0,
     },
 });
 
@@ -138,19 +138,10 @@ const Footer = forwardRef<FooterRef, FooterProps>((props: FooterProps, ref) => {
         toggle,
     }), [visible]);
 
-    const translateY = opacity.interpolate({
-        inputRange: [0, 1],
-        outputRange: [99, 0],
-    });
-
-    const downloadingY = downloadingOpacitity.interpolate({
-        inputRange: [0, 1],
-        outputRange: [99, 0],
-    });
-
     return (
         <>
-            <Animated.View style={[{transform: [{translateY}], opacity}, styles.footer]}>
+
+            <Animated.View style={[{opacity}, styles.footer]}>
                 <Summary
                     copyPublicLink={copyPublicLink}
                     dowloadFile={dowloadFile}
@@ -158,7 +149,7 @@ const Footer = forwardRef<FooterRef, FooterProps>((props: FooterProps, ref) => {
                 />
                 <Toast ref={toastRef}/>
             </Animated.View>
-            <Animated.View style={[{transform: [{translateY: downloadingY}], opacity: downloadingOpacitity}, styles.footer]}>
+            <Animated.View style={[{opacity: downloadingOpacitity}, styles.footer]}>
                 <PrepareFile
                     ref={prepareRef}
                     intl={props.intl}

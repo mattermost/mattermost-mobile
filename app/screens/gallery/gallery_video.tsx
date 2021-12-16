@@ -83,6 +83,11 @@ const GalleryVideo = ({file, deviceHeight, deviceWidth, intl, isActive, showHide
                     paused={false}
                     controls={true}
                     onError={videoError}
+                    onTouchStart={
+                        () => {
+                            showHideHeaderFooter?.(true);
+                        }
+                    }
                 />
             </View>
         </>

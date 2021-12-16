@@ -47,12 +47,12 @@ export interface PrepareFileRef {
     start(file: FileInfo, share?: boolean): Promise<string | undefined>;
 }
 
-export interface FooterProps {
+export interface HeaderProps {
     intl?: typeof intlShape;
     file: FileInfo;
 }
 
-export interface FooterRef {
+export interface HeaderRef {
     toggle(): boolean;
     isVisible(): boolean;
     setVisible(visible: boolean): void;
@@ -60,7 +60,8 @@ export interface FooterRef {
 
 export interface GalleryProps {
     files: Array<FileInfo>;
-    footerVisible: boolean;
+    headerVisible: boolean;
+    height: number;
     initialIndex: number;
     isLandscape: boolean;
     onClose: CallbackFunctionWithoutArguments;
@@ -75,7 +76,7 @@ export interface GalleryItemProps {
     deviceWidth: number;
     intl?: typeof intlShape;
     isActive?: boolean;
-    showHideHeaderFooter?(display: boolean): void;
+    showHideHeader?(display: boolean): void;
     style?: StyleProp<Animated.AnimateStyle>;
     theme?: Theme;
 }

@@ -10,8 +10,8 @@ import {mergeNavigationOptions, popTopScreen} from '@actions/navigation';
 import CompassIcon from '@components/compass_icon';
 import {isImage} from '@utils/file';
 
-import Footer from './footer';
 import GalleryViewer from './gallery_viewer';
+import Header from './header';
 
 export default class Gallery extends PureComponent {
     static propTypes = {
@@ -34,10 +34,10 @@ export default class Gallery extends PureComponent {
 
         this.state = {
             index: props.index,
-            footerVisible: true,
+            headerVisible: true,
         };
 
-        this.footer = React.createRef();
+        this.header = React.createRef();
     }
 
     componentDidMount() {
@@ -79,7 +79,7 @@ export default class Gallery extends PureComponent {
         }
         const options = {
             topBar: {
-                visible: this.footer.current?.getWrappedInstance().isVisible(),
+                visible: this.header.current?.getWrappedInstance().isVisible(),
                 background: {
                     color: '#000',
                 },
@@ -125,28 +125,12 @@ export default class Gallery extends PureComponent {
         this.setState({index}, this.initHeader);
     };
 
-    handleTapped = (display) => {
-        let visible;
-        if (display === undefined) {
-            visible = this.footer.current?.getWrappedInstance()?.toggle();
-        } else {
-            visible = display;
-            this.footer.current?.getWrappedInstance()?.setVisible(display);
-        }
-
-        const options = {
-            topBar: {
-                background: {
-                    color: '#000',
-                },
-                visible,
-            },
-        };
+    handleTapped = () => {
+        const visible = this.header.current?.getWrappedInstance()?.toggle();
         if (Platform.OS === 'ios') {
             StatusBar.setHidden(!visible, 'fade');
         }
-        this.setState({footerVisible: visible});
-        mergeNavigationOptions(this.props.componentId, options);
+        this.setState({headerVisible: visible});
     };
 
     render() {
@@ -164,8 +148,8 @@ export default class Gallery extends PureComponent {
                     onTap={this.handleTapped}
                     theme={theme}
                 />
-                <Footer
-                    ref={this.footer}
+                <Header
+                    ref={this.header}
                     file={files[index]}
                 />
             </>

@@ -24,15 +24,10 @@ type GalleryStyle = {
     width: number;
 }
 
-const itemTopStyle = (footerVisible: boolean, isLandscape: boolean): number => {
+const itemTopStyle = (headerVisible: boolean, isLandscape: boolean): number => {
     if (Platform.OS === 'android') {
-<<<<<<< HEAD
-        if (footerVisible) {
+        if (headerVisible) {
             return isLandscape ? -64 : -99;
-=======
-        if (props.headerVisible) {
-            return props.isLandscape ? -64 : -99;
->>>>>>> ae5660184 (GalleryViewer: only pan on for more than 1 file)
         }
 
         return isLandscape ? -6 : -41;
@@ -268,10 +263,6 @@ const GalleryViewer = (props: GalleryProps) => {
             ]),
         ]),
     ], []);
-
-    useCode(() => [
-        set(top, timing({from: top, to: topValue})),
-    ], [topValue]);
 
     return (
         <PinchGestureHandler
