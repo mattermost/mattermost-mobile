@@ -82,6 +82,10 @@ export function isEmail(email: string): boolean {
     return (/^[^ ,@]+@[^ ,@]+$/).test(email);
 }
 
+export function identity<T>(arg: T): T {
+    return arg;
+}
+
 export function safeParseJSON(rawJson: string | Record<string, unknown> | unknown[]) {
     let data = rawJson;
     try {

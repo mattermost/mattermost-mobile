@@ -19,6 +19,34 @@ import type PostModel from '@typings/database/models/servers/post';
 
 const {SERVER: {CHANNEL, MY_CHANNEL, CHANNEL_MEMBERSHIP}} = MM_TABLES;
 
+export function prepareMissingChannelsForAllTeams(operator: ServerDataOperator, channels: Channel[], channelMembers: ChannelMembership[]): Array<Promise<Model[]>> | undefined {
+    const channelInfos: ChannelInfo[] = [];
+    const memberships = channelMembers.map((cm) => ({...cm, id: cm.channel_id}));
+
+    for (const c of channels) {
+        channelInfos.push({
+            id: c.id,
+            header: c.header,
+            purpose: c.purpose,
+            guest_count: 0,
+            member_count: 0,
+            pinned_post_count: 0,
+        });
+    }
+
+    try {
+        const channelRecords: Promise<Model[]> = operator.handleChannel({channels, prepareRecordsOnly: true});
+        const channelInfoRecords: Promise<Model[]> = operator.handleChannelInfo({channelInfos, prepareRecordsOnly: true});
+        const membershipRecords: Promise<Model[]> = operator.handleChannelMembership({channelMemberships: memberships, prepareRecordsOnly: true});
+        const myChannelRecords: Promise<Model[]> = operator.handleMyChannel({channels, myChannels: memberships, prepareRecordsOnly: true});
+        const myChannelSettingsRecords: Promise<Model[]> = operator.handleMyChannelSettings({settings: memberships, prepareRecordsOnly: true});
+
+        return [channelRecords, channelInfoRecords, membershipRecords, myChannelRecords, myChannelSettingsRecords];
+    } catch {
+        return undefined;
+    }
+}
+
 export const prepareMyChannelsForTeam = async (operator: ServerDataOperator, teamId: string, channels: Channel[], channelMembers: ChannelMembership[]) => {
     const allChannelsForTeam = await queryAllChannelsForTeam(operator.database, teamId);
     const channelInfos: ChannelInfo[] = [];
@@ -189,4 +217,8 @@ export const deleteChannelMembership = async (operator: ServerDataOperator, user
     } catch (error) {
         return {error};
     }
+};
+
+export const queryAllMyChannelMembershipIds = async (database: Database, userId: string) => {
+    return database.get(CHANNEL_MEMBERSHIP).query(Q.where('user_id', Q.eq(userId))).fetchIds();
 };

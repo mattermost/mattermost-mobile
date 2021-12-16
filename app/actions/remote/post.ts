@@ -1,11 +1,15 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
+//
+import Model from '@nozbe/watermelondb/Model';
 
+import {processPostsFetched} from '@actions/local/post';
 import {ActionType, General} from '@constants';
 import {SYSTEM_IDENTIFIERS} from '@constants/database';
 import DatabaseManager from '@database/manager';
 import {getNeededAtMentionedUsernames} from '@helpers/api/user';
 import NetworkManager from '@init/network_manager';
+import {prepareMissingChannelsForAllTeams, queryAllMyChannelIds} from '@queries/servers/channel';
 import {queryRecentPostsInChannel} from '@queries/servers/post';
 import {queryCurrentUserId, queryCurrentChannelId} from '@queries/servers/system';
 import {queryAllUsers} from '@queries/servers/user';
@@ -235,26 +239,56 @@ export const postActionWithCookie = async (serverUrl: string, postId: string, ac
     }
 };
 
-const processPostsFetched = (serverUrl: string, actionType: string, data: {order: string[]; posts: Post[]; prev_post_id?: string}, fetchOnly = false) => {
-    const order = data.order;
-    const posts = Object.values(data.posts) as Post[];
-    const previousPostId = data.prev_post_id;
+export async function getMissingChannelsFromPosts(serverUrl: string, posts: Post[], fetchOnly = false) {
+    const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
+    if (!operator) {
+        return {error: `${serverUrl} database not found`};
+    }
 
-    if (!fetchOnly) {
-        const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
-        if (operator) {
-            operator.handlePosts({
-                actionType,
-                order,
-                posts,
-                previousPostId,
-            });
+    let client: Client;
+    try {
+        client = NetworkManager.getClient(serverUrl);
+    } catch (error) {
+        return {error};
+    }
+
+    const channelIds = await queryAllMyChannelIds(operator.database);
+    const channelPromises: Array<Promise<Channel>> = [];
+    const userPromises: Array<Promise<ChannelMembership>> = [];
+
+    posts.forEach((post) => {
+        const id = post.channel_id;
+
+        if (channelIds.indexOf(id) === -1) {
+            channelPromises.push(client.getChannel(id));
+            userPromises.push(client.getMyChannelMember(id));
+        }
+    });
+
+    const channels = await Promise.all(channelPromises);
+    const channelMemberships = await Promise.all(userPromises);
+
+    if (!fetchOnly && channels.length && channelMemberships.length) {
+        const modelPromises = prepareMissingChannelsForAllTeams(operator, channels, channelMemberships) as Array<Promise<Model[]>>;
+        if (modelPromises && modelPromises.length) {
+            const channelModelsArray = await Promise.all(modelPromises);
+            if (channelModelsArray.length) {
+                const models = channelModelsArray.flatMap((mdls) => {
+                    if (!mdls || mdls.length) {
+                        return [];
+                    }
+                    return mdls;
+                });
+
+                if (models) {
+                    operator.batchRecords(models);
+                }
+            }
         }
     }
 
     return {
-        posts,
-        order,
-        previousPostId,
+        channels,
+        channelMemberships,
     };
-};
+}
