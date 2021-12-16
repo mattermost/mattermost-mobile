@@ -140,7 +140,9 @@ const ChannelHandler = (superclass: any) => class extends superclass {
         myChannels.forEach((my) => {
             const channel = channels.find((c) => c.id === my.channel_id);
             if (channel) {
-                my.has_unreads = channel.total_msg_count - my.msg_count > 0;
+                const msgCount = channel.total_msg_count - my.msg_count;
+                my.msg_count = msgCount;
+                my.has_unreads = msgCount > 0;
             }
         });
 
