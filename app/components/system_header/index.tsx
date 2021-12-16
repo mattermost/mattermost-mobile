@@ -14,6 +14,7 @@ import {Preferences} from '@constants';
 import {MM_TABLES, SYSTEM_IDENTIFIERS} from '@constants/database';
 import {getPreferenceAsBool} from '@helpers/api/preference';
 import {makeStyleSheetFromTheme} from '@utils/theme';
+import {typography} from '@utils/typography';
 import {getUserTimezone} from '@utils/user';
 
 import type {WithDatabaseArgs} from '@typings/database/database';
@@ -35,26 +36,24 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     return {
         displayName: {
             color: theme.centerChannelColor,
-            fontSize: 15,
-            fontFamily: 'OpenSans-Semibold',
             flexGrow: 1,
-            paddingVertical: 2,
+            ...typography('Body', 200, 'SemiBold'),
         },
         displayNameContainer: {
             maxWidth: '60%',
             marginRight: 5,
-            marginBottom: 3,
         },
         header: {
             flex: 1,
             flexDirection: 'row',
+            marginTop: 10,
         },
         time: {
             color: theme.centerChannelColor,
-            fontSize: 12,
             marginTop: 5,
             opacity: 0.5,
             flex: 1,
+            ...typography('Body', 75, 'Regular'),
         },
     };
 });
@@ -104,4 +103,4 @@ const enhanced = withObservables([], ({database}: WithDatabaseArgs) => {
     };
 });
 
-export default withDatabase(enhanced(React.memo(SystemHeader)));
+export default withDatabase(enhanced(SystemHeader));
