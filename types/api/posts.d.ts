@@ -140,3 +140,8 @@ type MessageAttachmentField = {
     value: any;
     short: boolean;
 }
+
+type PostSearchParams = {
+    terms: string;
+    is_or_search: boolean;
+};

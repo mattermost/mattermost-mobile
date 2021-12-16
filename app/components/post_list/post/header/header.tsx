@@ -80,7 +80,7 @@ const Header = (props: HeaderProps) => {
     const pendingPostStyle = isPendingOrFailed ? style.pendingPost : undefined;
     const isReplyPost = Boolean(post.rootId && !isEphemeral);
     const showReply = !isReplyPost && (location !== THREAD) && (shouldRenderReplyButton || (!rootPostAuthor && commentCount > 0));
-    const displayName = enablePostUsernameOverride ? postUserDisplayName(post, author, teammateNameDisplay, enablePostUsernameOverride) : '';
+    const displayName = postUserDisplayName(post, author, teammateNameDisplay, enablePostUsernameOverride);
     const rootAuthorDisplayName = rootPostAuthor ? displayUsername(rootPostAuthor, currentUser.locale, teammateNameDisplay, true) : undefined;
     const customStatus = getUserCustomStatus(author);
     const customStatusExpired = isCustomStatusExpired(author);

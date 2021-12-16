@@ -21,6 +21,7 @@ export const SERVER = 'Server';
 export const SETTINGS_SIDEBAR = 'SettingsSidebar';
 export const SSO = 'SSO';
 export const THREAD = 'Thread';
+export const MENTIONS = 'Mentions';
 
 export default {
     ABOUT,
@@ -43,4 +44,5 @@ export default {
     SETTINGS_SIDEBAR,
     SSO,
     THREAD,
+    MENTIONS,
 };

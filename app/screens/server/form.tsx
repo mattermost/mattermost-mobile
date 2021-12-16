@@ -67,7 +67,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         marginRight: 10,
         padding: 0,
         top: -2,
-        flex: undefined,
     },
     loading: {
         height: 20,
