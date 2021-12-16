@@ -95,6 +95,12 @@ const FIELDS: { [id: string]: MessageDescriptor } = {
     },
 };
 
+const CLOSE_BUTTON_ID = 'close-edit-profile';
+const UPDATE_BUTTON_ID = 'update-profile';
+
+const includesSsoService = (sso: string) => ['gitlab', 'google', 'office365'].includes(sso);
+const isSAMLOrLDAP = (protocol: string) => ['ldap', 'saml'].includes(protocol);
+
 const EditProfile = ({
     componentId,
     currentUser,
@@ -143,14 +149,13 @@ const EditProfile = ({
         };
     }, [isTablet, theme.sidebarHeaderTextColor]);
 
-    const closeButtonId = 'close-edit-profile';
     const service = currentUser.authService;
 
     const leftButton = useMemo(() => {
         return isTablet ? null : {
-            id: closeButtonId,
+            id: CLOSE_BUTTON_ID,
             icon: CompassIcon.getImageSourceSync('close', 24, theme.centerChannelColor),
-            testID: closeButtonId,
+            testID: CLOSE_BUTTON_ID,
         };
     }, [isTablet, theme.sidebarHeaderTextColor]);
 
@@ -158,10 +163,10 @@ const EditProfile = ({
         const unsubscribe = Navigation.events().registerComponentListener({
             navigationButtonPressed: ({buttonId}: { buttonId: string }) => {
                 switch (buttonId) {
-                    case 'update-profile':
+                    case UPDATE_BUTTON_ID:
                         submitUser();
                         break;
-                    case closeButtonId:
+                    case CLOSE_BUTTON_ID:
                         close();
                         break;
                 }
@@ -260,9 +265,6 @@ const EditProfile = ({
         enableSaveButton(didChange);
     }, [userInfo, currentUser]);
 
-    const includesSsoService = (sso: string) => ['gitlab', 'google', 'office365'].includes(sso);
-    const isSAMLOrLDAP = (protocol: string) => ['ldap', 'saml'].includes(protocol);
-
     const userProfileFields: FieldSequence = {
         firstName: {
             ref: firstNameRef,
@@ -290,7 +292,7 @@ const EditProfile = ({
         },
     };
 
-    const hasDisabledFields = Object.values(userProfileFields).filter((field) => field.isDisabled);
+    const hasDisabledFields = Object.values(userProfileFields).filter((field) => field.isDisabled).length > 0;
 
     const onFocusNextField = useCallback(((fieldKey: string) => {
         const findNextField = () => {
@@ -328,7 +330,7 @@ const EditProfile = ({
         } else {
             Keyboard.dismiss();
         }
-    }), [canSave]);
+    }), [canSave, userProfileFields]);
 
     const fieldConfig: FieldConfig = {
         blurOnSubmit: false,
@@ -388,7 +390,7 @@ const EditProfile = ({
                             showStatus={false}
                         />
                     </View>
-                    {hasDisabledFields.length > 0 && (
+                    {hasDisabledFields && (
                         <View
                             style={{
                                 paddingHorizontal: isTablet ? 42 : 20,

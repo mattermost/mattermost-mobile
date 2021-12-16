@@ -59,6 +59,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
 const TabletTitle = ({action, enabled = true, onPress, testID, title}: Props) => {
     const theme = useTheme();
     const styles = getStyleSheet(theme);
+    const textStyle = [styles.action, enabled && styles.enabled];
 
     return (
         <>
@@ -75,7 +76,7 @@ const TabletTitle = ({action, enabled = true, onPress, testID, title}: Props) =>
                         testID={testID}
                         underlayColor={changeOpacity(theme.centerChannelColor, 0.1)}
                     >
-                        <Text style={[styles.action, enabled ? styles.enabled : undefined]}>{action}</Text>
+                        <Text style={textStyle}>{action}</Text>
                     </TouchableWithFeedback>
                 </View>
                 }
