@@ -122,6 +122,11 @@ export const fetchPosts = async (serverUrl: string, channelId: string, page = 0,
 };
 
 export const fetchPostsBefore = async (serverUrl: string, channelId: string, postId: string, perPage = General.POST_CHUNK_SIZE, fetchOnly = false) => {
+    const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
+    if (!operator) {
+        return {error: `${serverUrl} database not found`};
+    }
+
     let client: Client;
     try {
         client = NetworkManager.getClient(serverUrl);
@@ -136,15 +141,29 @@ export const fetchPostsBefore = async (serverUrl: string, channelId: string, pos
             DeviceEventEmitter.emit(Events.LOADING_CHANNEL_POSTS, true);
         }
         const data = await client.getPostsBefore(channelId, postId, 0, perPage);
-        const result = await processPostsFetched(serverUrl, ActionType.POSTS.RECEIVED_BEFORE, data, fetchOnly);
+        const result = await processPostsFetched(serverUrl, ActionType.POSTS.RECEIVED_BEFORE, data, true);
 
         if (activeServerUrl === serverUrl) {
             DeviceEventEmitter.emit(Events.LOADING_CHANNEL_POSTS, false);
         }
 
-        if (result.posts.length) {
+        if (result.posts.length && !fetchOnly) {
             try {
-                await fetchPostAuthors(serverUrl, result.posts, false);
+                const models = await operator.handlePosts({
+                    actionType: ActionType.POSTS.RECEIVED_BEFORE,
+                    ...result,
+                    prepareRecordsOnly: true,
+                });
+                const {authors} = await fetchPostAuthors(serverUrl, result.posts, true);
+                if (authors?.length) {
+                    const userModels = await operator.handleUsers({
+                        users: authors,
+                        prepareRecordsOnly: true,
+                    });
+                    models.push(...userModels);
+                }
+
+                await operator.batchRecords(models);
             } catch (error) {
                 // eslint-disable-next-line no-console
                 console.log('FETCH AUTHORS ERROR', error);
