@@ -48,7 +48,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
         header: {
             flex: 1,
             flexDirection: 'row',
-            marginTop: 10,
         },
         time: {
             color: theme.centerChannelColor,
