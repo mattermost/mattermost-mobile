@@ -1,10 +1,10 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useMemo} from 'react';
-import {ActivityIndicator, Platform, StyleSheet, View} from 'react-native';
+import React, {useEffect, useMemo, useState} from 'react';
+import {ActivityIndicator, DeviceEventEmitter, Platform, StyleSheet, View} from 'react-native';
 
-import {General} from '@constants';
+import {Events, General} from '@constants';
 import {useTheme} from '@context/theme';
 
 import DirectChannel from './direct_channel';
@@ -33,6 +33,7 @@ const styles = StyleSheet.create({
 });
 
 const Intro = ({channel, loading = false, roles}: Props) => {
+    const [fetching, setFetching] = useState(false);
     const theme = useTheme();
     const element = useMemo(() => {
         if (channel.type === General.OPEN_CHANNEL && channel.name === General.DEFAULT_CHANNEL) {
@@ -66,7 +67,15 @@ const Intro = ({channel, loading = false, roles}: Props) => {
         }
     }, [channel, roles, theme]);
 
-    if (loading) {
+    useEffect(() => {
+        const listener = DeviceEventEmitter.addListener(Events.LOADING_CHANNEL_POSTS, (value: boolean) => {
+            setFetching(value);
+        });
+
+        return () => listener.remove();
+    }, []);
+
+    if (loading || fetching) {
         return (
             <ActivityIndicator
                 size='small'
