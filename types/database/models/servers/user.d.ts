@@ -93,4 +93,10 @@ export default class UserModel extends Model {
 
     /**  prepareStatus: Prepare the model to update the user status in a batch operation */
     prepareStatus: (status: string) => void;
+
+    /* user mentions keys may include @channel, @all, @here depending on notify_props */
+    mentionKeys: UserMentionKey[];
+
+    /* user mentions keys always excluding @channel, @all, @here */
+    userMentionKeys: UserMentionKey[];
 }

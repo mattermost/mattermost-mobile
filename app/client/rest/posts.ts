@@ -25,7 +25,7 @@ export interface ClientPostsMix {
     addReaction: (userId: string, postId: string, emojiName: string) => Promise<Reaction>;
     removeReaction: (userId: string, postId: string, emojiName: string) => Promise<any>;
     getReactionsForPost: (postId: string) => Promise<any>;
-    searchPostsWithParams: (teamId: string, params: any) => Promise<any>;
+    searchPostsWithParams: (teamId: string, params: PostSearchParams) => Promise<any>;
     searchPosts: (teamId: string, terms: string, isOrSearch: boolean) => Promise<any>;
     doPostAction: (postId: string, actionId: string, selectedOption?: string) => Promise<any>;
     doPostActionWithCookie: (postId: string, actionId: string, actionCookie: string, selectedOption?: string) => Promise<any>;
@@ -194,13 +194,10 @@ const ClientPosts = (superclass: any) => class extends superclass {
         );
     };
 
-    searchPostsWithParams = async (teamId: string, params: any) => {
-        this.analytics.trackAPI('api_posts_search', {team_id: teamId});
-
-        return this.doFetch(
-            `${this.getTeamRoute(teamId)}/posts/search`,
-            {method: 'post', body: params},
-        );
+    searchPostsWithParams = async (teamId: string, params: PostSearchParams) => {
+        this.analytics.trackAPI('api_posts_search');
+        const endpoint = teamId ? `${this.getTeamRoute(teamId)}/posts/search` : `${this.getPostsRoute()}/search`;
+        return this.doFetch(endpoint, {method: 'post', body: params});
     };
 
     searchPosts = async (teamId: string, terms: string, isOrSearch: boolean) => {

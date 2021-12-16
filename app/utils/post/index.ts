@@ -61,37 +61,13 @@ export function postUserDisplayName(post: PostModel, author?: UserModel, teammat
 }
 
 export const getMentionKeysForPost = (user: UserModel, post: PostModel, groups: GroupModel[] | null) => {
-    const keys: UserMentionKey[] = [];
-
-    if (!user.notifyProps) {
-        return keys;
-    }
-
-    if (user.notifyProps.mention_keys) {
-        const mentions = user.notifyProps.mention_keys.split(',').map((key) => ({key}));
-        keys.push(...mentions);
-    }
-
-    if (user.notifyProps.first_name === 'true' && user.firstName) {
-        keys.push({key: user.firstName, caseSensitive: true});
-    }
-
-    if (user.notifyProps.channel === 'true' && !post.props?.mentionHighlightDisabled) {
-        keys.push(
-            {key: '@channel'},
-            {key: '@all'},
-            {key: '@here'},
-        );
-    }
-
-    const usernameKey = `@${user.username}`;
-    if (keys.findIndex((item) => item.key === usernameKey) === -1) {
-        keys.push({key: usernameKey});
-    }
+    const keys: UserMentionKey[] = user.mentionKeys;
 
     if (groups?.length) {
         for (const group of groups) {
-            keys.push({key: `@${group.name}`});
+            if (group.name && group.name.trim()) {
+                keys.push({key: `@${group.name}`});
+            }
         }
     }
 
