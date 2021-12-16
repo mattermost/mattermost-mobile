@@ -192,7 +192,6 @@ const ServerForm = ({
                     autoCapitalize={'none'}
                     enablesReturnKeyAutomatically={true}
                     error={displayNameError}
-                    keyboardType='url'
                     label={formatMessage({
                         id: 'mobile.components.select_server_view.displayName',
                         defaultMessage: 'Display Name',
