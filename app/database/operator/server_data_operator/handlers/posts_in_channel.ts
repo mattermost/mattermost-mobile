@@ -167,7 +167,49 @@ const PostsInChannelHandler = (superclass: any) => class extends superclass {
     };
 
     handleReceivedPostsInChannelBefore = async (posts: Post[], prepareRecordsOnly = false): Promise<PostsInChannelModel[]> => {
-        throw new Error(`handleReceivedPostsInChannelBefore Not implemented yet. posts count${posts.length} prepareRecordsOnly=${prepareRecordsOnly}`);
+        if (!posts.length) {
+            return [];
+        }
+
+        const {firstPost} = getPostListEdges(posts);
+
+        // Channel Id for this chain of posts
+        const channelId = firstPost.channel_id;
+
+        // Find smallest 'create_at' value in chain
+        const earliest = firstPost.create_at;
+
+        // Find the records in the PostsInChannel table that have a matching channel_id
+        const chunks = (await this.database.get(POSTS_IN_CHANNEL).query(
+            Q.where('channel_id', channelId),
+            Q.sortBy('latest', Q.desc),
+        ).fetch()) as PostsInChannelModel[];
+
+        if (chunks.length === 0) {
+            // No chunks found, previous posts in this block not found
+            return [];
+        }
+
+        let targetChunk = chunks[0];
+        if (targetChunk) {
+            // If the chunk was found, Update the chunk and return
+            if (prepareRecordsOnly) {
+                targetChunk.prepareUpdate((record) => {
+                    record.earliest = Math.min(record.earliest, earliest);
+                });
+                return [targetChunk];
+            }
+
+            targetChunk = await this.database.write(async () => {
+                return targetChunk!.update((record) => {
+                    record.earliest = Math.min(record.earliest, earliest);
+                });
+            });
+
+            return [targetChunk!];
+        }
+
+        return targetChunk;
     };
 
     handleReceivedPostsInChannelAfter = async (posts: Post[], prepareRecordsOnly = false): Promise<PostsInChannelModel[]> => {
