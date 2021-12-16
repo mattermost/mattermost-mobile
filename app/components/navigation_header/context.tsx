@@ -51,7 +51,7 @@ const NavigationHeaderContext = ({
         }
 
         return {marginTop: Math.max((-scrollValue.value + largeHeight + searchHeight), normal)};
-    }, [defaultHeight, largeHeight, isLargeTitle, hasSearch, top]);
+    }, [defaultHeight, largeHeight, isLargeTitle, hasSearch]);
 
     return (
         <Animated.View style={[styles.container, marginTop]}>

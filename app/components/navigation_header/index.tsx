@@ -24,11 +24,13 @@ type Props = SearchProps & {
     isLargeTitle?: boolean;
     leftComponent?: React.ReactElement;
     onBackPress?: () => void;
+    onTitlePress?: () => void;
     rightButtons?: HeaderRightButton[];
     scrollValue: Animated.SharedValue<number>;
     showBackButton?: boolean;
     showHeaderInContext?: boolean;
     subtitle?: string;
+    subtitleCompanion?: React.ReactElement;
     title?: string;
 }
 
@@ -47,11 +49,13 @@ const NavigationHeader = ({
     isLargeTitle = false,
     leftComponent,
     onBackPress,
+    onTitlePress,
     rightButtons,
     scrollValue,
     showBackButton,
     showHeaderInContext = true,
     subtitle,
+    subtitleCompanion,
     title = '',
     ...searchProps
 }: Props) => {
@@ -64,7 +68,7 @@ const NavigationHeader = ({
         const normal = defaultHeight + insets.top;
         const calculated = -(insets.top + scrollValue.value);
         return {height: Math.max((normal + calculated), normal)};
-    }, [defaultHeight, insets.top]);
+    }, []);
 
     return (
         <>
@@ -76,10 +80,12 @@ const NavigationHeader = ({
                     largeHeight={largeHeight}
                     leftComponent={leftComponent}
                     onBackPress={onBackPress}
+                    onTitlePress={onTitlePress}
                     rightButtons={rightButtons}
                     scrollValue={scrollValue}
                     showBackButton={showBackButton}
                     subtitle={subtitle}
+                    subtitleCompanion={subtitleCompanion}
                     theme={theme}
                     title={title}
                     top={insets.top}
