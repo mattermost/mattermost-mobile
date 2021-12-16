@@ -151,13 +151,13 @@ export default class Gallery extends PureComponent {
 
     render() {
         const {files, theme} = this.props;
-        const {index, footerVisible} = this.state;
+        const {index, headerVisible} = this.state;
 
         return (
             <>
                 <GalleryViewer
                     files={files}
-                    footerVisible={footerVisible}
+                    headerVisible={headerVisible}
                     initialIndex={index}
                     onClose={this.close}
                     onPageSelected={this.handlePageSelected}
