@@ -291,7 +291,7 @@ export async function getMissingChannelsFromPosts(serverUrl: string, posts: Post
         channels,
         channelMemberships,
     };
-};
+}
 
 export const fetchPostById = async (serverUrl: string, postId: string, fetchOnly = false) => {
     const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
