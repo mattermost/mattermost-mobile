@@ -76,5 +76,7 @@ export default class CategoryModel extends Model implements CategoryInterface {
      */
      @lazy channels = this.collections.
          get(CHANNEL).
-         query(Q.on(CATEGORY_CHANNEL, 'category_id', this.id));
+         query(
+             Q.on(CATEGORY_CHANNEL, Q.where('category_id', this.id)),
+         );
 }

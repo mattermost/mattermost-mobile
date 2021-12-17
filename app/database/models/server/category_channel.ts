@@ -54,5 +54,5 @@ export default class CategoryChannelModel extends Model implements CategoryChann
     @immutableRelation(CATEGORY, 'category_id') category!: Relation<CategoryModel>;
 
     /** channel : The related channel */
-    @immutableRelation(CATEGORY, 'category_id') channel!: Relation<ChannelModel>;
+    @immutableRelation(CHANNEL, 'channel_id') channel!: Relation<ChannelModel>;
 }

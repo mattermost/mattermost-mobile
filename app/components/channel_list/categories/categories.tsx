@@ -22,8 +22,6 @@ const styles = StyleSheet.create({
 });
 
 const renderCategory = (data: {item: CategoryModel}) => {
-    // console.log('--- Category Channels', data.item.channels);
-
     return (
         <>
             <CategoryHeader heading={data.item.displayName}/>
@@ -35,7 +33,7 @@ const renderCategory = (data: {item: CategoryModel}) => {
 const Categories = (props: Props) => {
     return (
         <FlatList
-            data={props.categories}
+            data={props.categories.sort((a, b) => a.sortOrder - b.sortOrder)}
             renderItem={renderCategory}
             ListHeaderComponent={ThreadsButton}
             style={styles.flex}

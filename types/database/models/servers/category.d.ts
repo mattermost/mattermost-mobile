@@ -32,6 +32,9 @@ export default class CategoryModel extends Model {
     /** collapsed : If the category is collapsed (visible channels) */
     collapsed: boolean;
 
+    /** categoryChannels : The join table for channels */
+    categoryChannels: Query<CategoryChannelModel>;
+
     /** channels : All the channels associated with this category */
     channels: Query<ChannelModel>;
 
