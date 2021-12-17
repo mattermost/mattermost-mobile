@@ -102,7 +102,9 @@ export const mapGroupMentions = (channelMemberCountsByGroup: ChannelMemberCountB
                 memberNotifyCount = mappedValue.channel_member_count;
                 channelTimezoneCount = mappedValue.channel_member_timezones_count;
             }
-            groupMentionsSet.add(`@${group.name}`);
+            if (group.name) {
+                groupMentionsSet.add(`@${group.name}`);
+            }
         });
     return {groupMentionsSet, memberNotifyCount, channelTimezoneCount};
 };
