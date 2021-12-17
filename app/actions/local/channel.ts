@@ -73,7 +73,7 @@ export const switchToChannel = async (serverUrl: string, channelId: string, team
     return {models};
 };
 
-export const localRemoveCurrentUserFromChannel = async (serverUrl: string, channelId: string, prepareRecordsOnly = false) => {
+export const removeCurrentUserFromChannel = async (serverUrl: string, channelId: string, prepareRecordsOnly = false) => {
     const serverDatabase = DatabaseManager.serverDatabases[serverUrl];
     if (!serverDatabase) {
         return {error: `${serverUrl} database not found`};
@@ -106,7 +106,7 @@ export const localRemoveCurrentUserFromChannel = async (serverUrl: string, chann
     return {models};
 };
 
-export const localSetChannelDeleteAt = async (serverUrl: string, channelId: string, deleteAt: number) => {
+export const setChannelDeleteAt = async (serverUrl: string, channelId: string, deleteAt: number) => {
     const serverDatabase = DatabaseManager.serverDatabases[serverUrl];
     if (!serverDatabase) {
         return;

@@ -4,7 +4,7 @@
 import {Model} from '@nozbe/watermelondb';
 import {DeviceEventEmitter} from 'react-native';
 
-import {localRemoveCurrentUserFromChannel as removeCurrentUserFromChannel, localSetChannelDeleteAt, switchToChannel} from '@actions/local/channel';
+import {removeCurrentUserFromChannel, setChannelDeleteAt, switchToChannel} from '@actions/local/channel';
 import {fetchMyChannel} from '@actions/remote/channel';
 import {fetchPostsForChannel} from '@actions/remote/post';
 import {fetchUsersByIds, updateUsersNoLongerVisible} from '@actions/remote/user';
@@ -24,9 +24,7 @@ export async function handleUserAddedToChannelEvent(serverUrl: string, msg: any)
         return;
     }
     const currentUser = await queryCurrentUser(database.database);
-    const teamId = msg.data.team_id;
-    const channelId = msg.data.channel_id;
-    const userId = msg.data.user_id;
+    const {team_id: teamId, channel_id: channelId, user_id: userId} = msg.data;
 
     const models: Model[] = [];
 
@@ -160,7 +158,7 @@ export async function handleChannelDeletedEvent(serverUrl: string, msg: any) {
 
     const config = await queryConfig(database.database);
 
-    await localSetChannelDeleteAt(serverUrl, msg.data.channel_id, msg.data.delete_at);
+    await setChannelDeleteAt(serverUrl, msg.data.channel_id, msg.data.delete_at);
 
     if (user.isGuest) {
         updateUsersNoLongerVisible(serverUrl);

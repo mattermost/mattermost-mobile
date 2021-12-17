@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {
-    transformMyChannelMembershipRecord,
+    transformChannelMembershipRecord,
     transformPreferenceRecord,
     transformReactionRecord,
     transformUserRecord,
@@ -17,7 +17,7 @@ describe('*** USER Prepare Records Test ***', () => {
         const database = await createTestConnection({databaseName: 'user_prepare_records', setActive: true});
         expect(database).toBeTruthy();
 
-        const preparedRecords = await transformMyChannelMembershipRecord({
+        const preparedRecords = await transformChannelMembershipRecord({
             action: OperationType.CREATE,
             database: database!,
             value: {

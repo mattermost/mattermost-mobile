@@ -9,7 +9,7 @@ import {
     isRecordUserEqualToRaw,
 } from '@database/operator/server_data_operator/comparators';
 import {
-    transformMyChannelMembershipRecord,
+    transformChannelMembershipRecord,
     transformPreferenceRecord,
     transformReactionRecord,
     transformUserRecord,
@@ -64,7 +64,7 @@ const UserHandler = (superclass: any) => class extends superclass {
         return this.handleRecords({
             fieldName: 'user_id',
             findMatchingRecordBy: isRecordChannelMembershipEqualToRaw,
-            transformer: transformMyChannelMembershipRecord,
+            transformer: transformChannelMembershipRecord,
             prepareRecordsOnly,
             createOrUpdateRawValues,
             tableName: CHANNEL_MEMBERSHIP,

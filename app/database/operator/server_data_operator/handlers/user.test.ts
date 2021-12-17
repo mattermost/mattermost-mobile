@@ -9,7 +9,7 @@ import {
     isRecordUserEqualToRaw,
 } from '@database/operator/server_data_operator/comparators';
 import {
-    transformMyChannelMembershipRecord,
+    transformChannelMembershipRecord,
     transformPreferenceRecord,
     transformUserRecord,
 } from '@database/operator/server_data_operator/transformers/user';
@@ -214,7 +214,7 @@ describe('*** Operator: User Handlers tests ***', () => {
             tableName: 'ChannelMembership',
             prepareRecordsOnly: false,
             findMatchingRecordBy: isRecordChannelMembershipEqualToRaw,
-            transformer: transformMyChannelMembershipRecord,
+            transformer: transformChannelMembershipRecord,
         });
     });
 });
