@@ -136,6 +136,33 @@ export const handleCreateChannel = async (serverUrl: string, displayName: string
     }
 };
 
+export const handlePatchChannel = async (serverUrl: string, channelPatch: Partial<Channel>) => {
+    const database = DatabaseManager.serverDatabases[serverUrl]?.database;
+    if (!database) {
+        return {error: `${serverUrl} database not found`};
+    }
+
+    let client: Client;
+    try {
+        client = NetworkManager.getClient(serverUrl);
+    } catch (error) {
+        return {error};
+    }
+
+    try {
+        const channelData = await client.patchChannel(channelPatch.id, channelPatch);
+        if (channelData?.id) {
+
+            // TODO: select the channel
+            // dispatch(setChannelDisplayName(displayName));
+            // dispatch(handleSelectChannel(data.id));
+        }
+        return {channel: channelData};
+    } catch (error) {
+        return {error};
+    }
+};
+
 export const fetchMyChannelsForTeam = async (serverUrl: string, teamId: string, includeDeleted = true, since = 0, fetchOnly = false, excludeDirect = false): Promise<MyChannelsRequest> => {
     let client: Client;
     try {
