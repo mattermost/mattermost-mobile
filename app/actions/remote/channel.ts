@@ -15,8 +15,8 @@ import {prepareMyTeams, queryMyTeamById, queryTeamById, queryTeamByName} from '@
 import MyChannelModel from '@typings/database/models/servers/my_channel';
 import MyTeamModel from '@typings/database/models/servers/my_team';
 import TeamModel from '@typings/database/models/servers/team';
-import {cleanUpUrlable} from '@utils/url';
 import {generateId} from '@utils/general';
+import {cleanUpUrlable} from '@utils/url';
 import {PERMALINK_GENERIC_TEAM_NAME_REDIRECT} from '@utils/url';
 import {displayGroupMessageName, displayUsername} from '@utils/user';
 

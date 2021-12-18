@@ -148,26 +148,26 @@ type Props = {
         type?: string;
 }
 
-export default function EditChannelInfo ({
-    channelType, 
-    channelURL, 
-    displayName, 
-    editing = false, 
-    enableRightButton, 
-    error, 
-    header, 
-    onDisplayNameChange, 
-    onHeaderChange, 
-    onPurposeChange, 
-    onTypeChange, 
-    oldChannelURL, 
-    oldDisplayName, 
-    oldHeader, 
-    oldPurpose, 
-    purpose, 
-    saving, 
-    testID, 
-    type
+export default function EditChannelInfo({
+    channelType,
+    channelURL,
+    displayName,
+    editing = false,
+    enableRightButton,
+    error,
+    header,
+    onDisplayNameChange,
+    onHeaderChange,
+    onPurposeChange,
+    onTypeChange,
+    oldChannelURL,
+    oldDisplayName,
+    oldHeader,
+    oldPurpose,
+    purpose,
+    saving,
+    testID,
+    type,
 }: Props) {
     const theme = useTheme();
     const intl = useIntl();
@@ -368,7 +368,7 @@ export default function EditChannelInfo ({
                                         />
                                         }
                                     </TouchableOpacity>
-                                    <View style={styles.divider} />
+                                    <View style={styles.divider}/>
                                     <TouchableOpacity
                                         style={styles.touchable}
                                         onPress={() => {
@@ -521,4 +521,4 @@ export default function EditChannelInfo ({
             {/* </View> */}
         </SafeAreaView>
     );
-};
+}

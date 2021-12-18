@@ -23,15 +23,16 @@ type Props = {
         closeButton: object;
 }
 
-const CLOSE_NEW_CHANNEL_ID = 'close-new-channel'
-const CREATE_CHANNEL_ID = 'create-channel'
+const CLOSE_NEW_CHANNEL_ID = 'close-new-channel';
+const CREATE_CHANNEL_ID = 'create-channel';
 
 const CreateChannel = ({serverUrl, componentId, channelType, closeButton}: Props) => {
     const intl = useIntl();
     const {formatMessage} = intl;
     const theme = useTheme();
+
     const [error, setError] = useState<string>('');
-    const [saving, setSaving] = useState<boolean>(false);
+    const [creating, setCreating] = useState<boolean>(false);
     const [displayName, setDisplayName] = useState<string>('');
     const [purpose, setPurpose] = useState<string>('');
     const [header, setHeader] = useState<string>('');
@@ -47,8 +48,8 @@ const CreateChannel = ({serverUrl, componentId, channelType, closeButton}: Props
         id: CREATE_CHANNEL_ID,
         enabled: false,
         showAsAction: 'always',
-        text: formatMessage({id: 'mobile.create_channel', defaultMessage: 'Create'}),
         color: theme.sidebarHeaderTextColor,
+        text: formatMessage({id: 'mobile.create_channel', defaultMessage: 'Create'}),
     };
 
     const emitCanSaveChannel = (enabled: boolean) => {
@@ -65,17 +66,26 @@ const CreateChannel = ({serverUrl, componentId, channelType, closeButton}: Props
         });
     };
 
+    useEffect(() => {
+        const rightButtons = [{...rightButton, enabled: false}] as never[];
+        const leftButtons: never[] = [];
+        setButtons(componentId, {
+            leftButtons,
+            rightButtons,
+        });
+    }, []);
+
     const onRequestStart = () => {
         setError('');
-        setSaving(true);
+        setCreating(true);
     };
 
     const onRequestFailure = (errorText: string) => {
         setError(errorText);
-        setSaving(false);
+        setCreating(false);
     };
 
-    const emitSaving = (loading: boolean) => {
+    const emitCreating = (loading: boolean) => {
         const rightButtons = [{...rightButton, enabled: !loading}] as never[];
         const leftButtons: never[] = [];
 
@@ -90,23 +100,23 @@ const CreateChannel = ({serverUrl, componentId, channelType, closeButton}: Props
     };
 
     const onCreateChannel = async () => {
-        emitSaving(true);
+        emitCreating(true);
         onRequestStart();
 
         Keyboard.dismiss();
 
         const channel = await handleCreateChannel(serverUrl, displayName, purpose, header, type);
         if (channel.error) {
-            emitSaving(false);
+            emitCreating(false);
             onRequestFailure(channel.error as string);
             return;
         }
 
         // DeviceEventEmitter.emit(NavigationTypes.CLOSE_MAIN_SIDEBAR);
         InteractionManager.runAfterInteractions(() => {
-            emitSaving(false);
+            emitCreating(false);
             setError('');
-            setSaving(false);
+            setCreating(false);
             close(false);
         });
     };
@@ -160,7 +170,7 @@ const CreateChannel = ({serverUrl, componentId, channelType, closeButton}: Props
             testID='create_channel.screen'
             enableRightButton={emitCanSaveChannel}
             error={error}
-            saving={saving}
+            saving={creating}
             onDisplayNameChange={onDisplayNameChange}
             onPurposeChange={onPurposeChange}
             onHeaderChange={onHeaderChange}

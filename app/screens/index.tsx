@@ -99,9 +99,9 @@ Navigation.setLazyComponentRegistrator((screenName) => {
     // case 'DisplaySettings':
     //     screen = require('@screens/settings/display_settings').default;
     //     break;
-    // case 'EditChannel':
-    //     screen = require('@screens/edit_channel').default;
-    //     break;
+    case Screens.EDIT_CHANNEL:
+        screen = withIntl(require('@screens/edit_channel').default);
+        break;
     // case 'EditPost':
     //     screen = require('@screens/edit_post').default;
     //     break;
