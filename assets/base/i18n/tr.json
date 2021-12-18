@@ -27,7 +27,7 @@
   "apps.error.form.submit.pretext": "Üste açılan pencere gönderilirken bir sorun çıktı. Uygulama geliştiricisi ile görüşün. Ayrıntılar: {details}",
   "apps.error.lookup.error_preparing_request": "Arama isteği hazırlanırken sorun çıktı: {errorMessage}",
   "apps.error.parser": "İşleme sorunu: {error}",
-  "apps.error.parser.empty_value": "boş bırakılamaz",
+  "apps.error.parser.empty_value": "boş değerlere izin verilmiyor",
   "apps.error.parser.execute_non_leaf": "Bir alt komut seçmelisiniz.",
   "apps.error.parser.missing_call": "İlgili çağrı eksik.",
   "apps.error.parser.missing_field_value": "Alan değeri eksik.",
