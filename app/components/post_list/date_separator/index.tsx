@@ -20,11 +20,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
         container: {
             alignItems: 'center',
             flexDirection: 'row',
-            height: 28,
-            marginTop: 8,
-        },
-        dateContainer: {
-            marginHorizontal: 15,
+            marginVertical: 8,
         },
         line: {
             flex: 1,
@@ -94,12 +90,10 @@ const DateSeparator = (props: DateSeparatorProps) => {
     return (
         <View style={[styles.container, props.style]}>
             <View style={styles.line}/>
-            <View style={styles.dateContainer}>
-                <RecentDate
-                    {...props}
-                    style={styles.date}
-                />
-            </View>
+            <RecentDate
+                {...props}
+                style={styles.date}
+            />
             <View style={styles.line}/>
         </View>
     );
