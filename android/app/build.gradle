@@ -131,7 +131,6 @@ android {
         applicationId "com.mattermost.rnbeta"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        missingDimensionStrategy "RNNotifications.reactNativeVersion", "reactNative60"
         versionCode 381
         versionName "1.48.1"
         multiDexEnabled = true
@@ -198,6 +197,11 @@ android {
 
     packagingOptions {
         pickFirst '**/*.so'
+    }
+
+    lintOptions {
+        checkReleaseBuilds false
+        abortOnError false
     }
 
 }
