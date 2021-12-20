@@ -19,6 +19,11 @@ export function setCustomStatus(customStatus: UserCustomStatus): ActionFunc {
         user.props.customStatus = JSON.stringify(customStatus);
         dispatch({type: UserTypes.RECEIVED_ME, data: user});
 
+        // Server does not like empty 'expires_at' string.
+        if (!customStatus.expires_at) {
+            delete customStatus.expires_at;
+        }
+
         try {
             await Client4.updateCustomStatus(customStatus);
         } catch (error) {
