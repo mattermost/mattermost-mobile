@@ -244,7 +244,7 @@ const EditProfile = ({
         } catch (e) {
             resetScreen(e as Error);
         }
-    }), [userInfo]);
+    }), [userInfo, enableSaveButton]);
 
     const resetScreen = useCallback((resetError: Error) => {
         setError(resetError?.message);
