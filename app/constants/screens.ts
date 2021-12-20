@@ -13,7 +13,6 @@ export const HOME = 'Home';
 export const INTEGRATION_SELECTOR = 'IntegrationSelector';
 export const IN_APP_NOTIFICATION = 'InAppNotification';
 export const LOGIN = 'Login';
-export const LOGIN_OPTIONS = 'LoginOptions';
 export const MAIN_SIDEBAR = 'MainSidebar';
 export const MFA = 'MFA';
 export const PERMALINK = 'Permalink';
@@ -22,6 +21,7 @@ export const SERVER = 'Server';
 export const SETTINGS_SIDEBAR = 'SettingsSidebar';
 export const SSO = 'SSO';
 export const THREAD = 'Thread';
+export const MENTIONS = 'Mentions';
 
 export default {
     ABOUT,
@@ -36,7 +36,6 @@ export default {
     INTEGRATION_SELECTOR,
     IN_APP_NOTIFICATION,
     LOGIN,
-    LOGIN_OPTIONS,
     MAIN_SIDEBAR,
     MFA,
     PERMALINK,
@@ -45,4 +44,5 @@ export default {
     SETTINGS_SIDEBAR,
     SSO,
     THREAD,
+    MENTIONS,
 };

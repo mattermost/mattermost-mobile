@@ -13,7 +13,7 @@ import ProgressBar from '@components/progress_bar';
 import TouchableWithFeedback from '@components/touchable_with_feedback';
 import {Device} from '@constants';
 import {DOWNLOAD_TIMEOUT} from '@constants/network';
-import {useServerUrl} from '@context/server_url';
+import {useServerUrl} from '@context/server';
 import NetworkManager from '@init/network_manager';
 import {alertDownloadDocumentDisabled, alertDownloadFailed, alertFailedToOpenDocument} from '@utils/document';
 import {getLocalFilePathFromFile} from '@utils/file';
@@ -199,5 +199,7 @@ const DocumentFile = forwardRef<DocumentFileRef, DocumentFileProps>(({background
         </TouchableWithFeedback>
     );
 });
+
+DocumentFile.displayName = 'DocumentFile';
 
 export default DocumentFile;

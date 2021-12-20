@@ -31,7 +31,7 @@ export default function ServerIcon() {
             <CompassIcon
                 size={24}
                 name='server-variant'
-                color={changeOpacity(theme.buttonColor, 0.56)}
+                color={changeOpacity(theme.sidebarHeaderTextColor, 0.56)}
             />
         </View>
     );

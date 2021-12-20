@@ -1,13 +1,12 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useState} from 'react';
-import {View} from 'react-native';
+import React, {useEffect, useState} from 'react';
 import {TouchableOpacity} from 'react-native-gesture-handler';
+import Animated, {useAnimatedStyle, useSharedValue, withTiming} from 'react-native-reanimated';
 
-import TABLET from '@constants/view';
+import {TABLET_SIDEBAR_WIDTH, TEAM_SIDEBAR_WIDTH} from '@constants/view';
 import {useTheme} from '@context/theme';
-import {useIsTablet} from '@hooks/device';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 
 import Categories from './categories';
@@ -15,7 +14,7 @@ import ChannelListHeader from './header';
 import LoadingError from './loading_error';
 import SearchField from './search';
 
-// import Loading from './loading';
+// import Loading from '@components/loading';
 
 const channels: TempoChannel[] = [
     {id: '1', name: 'Just a channel'},
@@ -35,31 +34,41 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         paddingHorizontal: 20,
         paddingVertical: 10,
     },
-    maxW: {
-        maxWidth: TABLET.TABLET_SIDEBAR_WIDTH,
-    },
 
 }));
 
 type ChannelListProps = {
     iconPad?: boolean;
+    isTablet: boolean;
+    teamsCount: number;
 }
 
-const ChannelList = ({iconPad}: ChannelListProps) => {
+const ChannelList = ({iconPad, isTablet, teamsCount}: ChannelListProps) => {
     const theme = useTheme();
     const styles = getStyleSheet(theme);
+    const tabletWidth = useSharedValue(TABLET_SIDEBAR_WIDTH);
+    const tabletStyle = useAnimatedStyle(() => {
+        if (!isTablet) {
+            return {
+                maxWidth: undefined,
+            };
+        }
 
-    // @to-do; remove after testing
+        return {maxWidth: withTiming(tabletWidth.value, {duration: 350})};
+    }, []);
+
+    useEffect(() => {
+        if (isTablet) {
+            tabletWidth.value = TABLET_SIDEBAR_WIDTH - (teamsCount > 1 ? TEAM_SIDEBAR_WIDTH : 0);
+        }
+    }, [isTablet, teamsCount]);
+
     const [showCats, setShowCats] = useState<boolean>(true);
 
-    const isTablet = useIsTablet();
-
     return (
-        <View style={[styles.container, isTablet && styles.maxW]}>
+        <Animated.View style={[styles.container, tabletStyle]}>
             <TouchableOpacity onPress={() => setShowCats(!showCats)}>
                 <ChannelListHeader
-                    heading='Contributors'
-                    subheading='Community TEST'
                     iconPad={iconPad}
                 />
             </TouchableOpacity>
@@ -72,7 +81,7 @@ const ChannelList = ({iconPad}: ChannelListProps) => {
             )}
             {/* <Loading/> */}
             {!showCats && (<LoadingError/>)}
-        </View>
+        </Animated.View>
     );
 };
 

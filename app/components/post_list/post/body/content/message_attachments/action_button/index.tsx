@@ -5,7 +5,7 @@ import React, {useCallback, useRef} from 'react';
 import Button from 'react-native-button';
 
 import {postActionWithCookie} from '@actions/remote/post';
-import {useServerUrl} from '@context/server_url';
+import {useServerUrl} from '@context/server';
 import {getStatusColors} from '@utils/message_attachment_colors';
 import {preventDoubleTap} from '@utils/tap';
 import {makeStyleSheetFromTheme, changeOpacity} from '@utils/theme';
