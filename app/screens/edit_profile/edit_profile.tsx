@@ -265,32 +265,34 @@ const EditProfile = ({
         enableSaveButton(didChange);
     }, [userInfo, currentUser]);
 
-    const userProfileFields: FieldSequence = {
-        firstName: {
-            ref: firstNameRef,
-            isDisabled: (isSAMLOrLDAP(service) && lockedFirstName) || includesSsoService(service),
-        },
-        lastName: {
-            ref: lastNameRef,
-            isDisabled: (isSAMLOrLDAP(service) && lockedLastName) || includesSsoService(service),
-        },
-        username: {
-            ref: usernameRef,
-            isDisabled: service !== '',
-        },
-        email: {
-            ref: emailRef,
-            isDisabled: true,
-        },
-        nickname: {
-            ref: nicknameRef,
-            isDisabled: isSAMLOrLDAP(service) && lockedNickname,
-        },
-        position: {
-            ref: positionRef,
-            isDisabled: isSAMLOrLDAP(service) && lockedPosition,
-        },
-    };
+    const userProfileFields: FieldSequence = useMemo(() => {
+        return {
+            firstName: {
+                ref: firstNameRef,
+                isDisabled: (isSAMLOrLDAP(service) && lockedFirstName) || includesSsoService(service),
+            },
+            lastName: {
+                ref: lastNameRef,
+                isDisabled: (isSAMLOrLDAP(service) && lockedLastName) || includesSsoService(service),
+            },
+            username: {
+                ref: usernameRef,
+                isDisabled: service !== '',
+            },
+            email: {
+                ref: emailRef,
+                isDisabled: true,
+            },
+            nickname: {
+                ref: nicknameRef,
+                isDisabled: isSAMLOrLDAP(service) && lockedNickname,
+            },
+            position: {
+                ref: positionRef,
+                isDisabled: isSAMLOrLDAP(service) && lockedPosition,
+            },
+        };
+    }, [lockedFirstName, lockedLastName, lockedNickname, lockedPosition, currentUser.authService]);
 
     const hasDisabledFields = Object.values(userProfileFields).filter((field) => field.isDisabled).length > 0;
 
