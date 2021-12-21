@@ -5,7 +5,6 @@ import React from 'react';
 import {FlatList, StyleSheet} from 'react-native';
 
 import ThreadsButton from '../threads';
-
 import CategoryBody from './body';
 import CategoryHeader from './header';
 
@@ -24,7 +23,7 @@ const styles = StyleSheet.create({
 const renderCategory = (data: {item: CategoryModel}) => {
     return (
         <>
-            <CategoryHeader heading={data.item.displayName}/>
+            <CategoryHeader category={data.item}/>
             <CategoryBody category={data.item}/>
         </>
     );

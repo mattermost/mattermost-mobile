@@ -3,28 +3,24 @@
 
 import withObservables from '@nozbe/with-observables';
 
-// import * as _ from 'lodash';
 import React from 'react';
 import {FlatList} from 'react-native';
-import {of as of$} from 'rxjs';
-import {switchMap} from 'rxjs/operators';
 
 import ChannelListItem from './channel';
 
 import type CategoryModel from '@typings/database/models/servers/category';
 import type CategoryChannelModel from '@typings/database/models/servers/category_channel';
 import type ChannelModel from '@typings/database/models/servers/channel';
-import type MyChannelModel from '@typings/database/models/servers/my_channel';
 
-const sortChannels = (sortType: CategorySorting, channels: ChannelModel[]) => {
+const sortChannels = (sortType: CategorySorting, channels: ChannelModel[], manualSortOrder: string[]) => {
     switch (sortType) {
         case 'alpha':
             return channels.sort((a, b) => a.displayName.localeCompare(b.displayName));
         case 'manual':
+            return manualSortOrder.map((channelId) => channels.find(c => c.id === channelId)!);
+        default:
         case 'recent':
-            return channels.sort(async (a, b) => {
-                const c = await a.membership.observe();
-            });
+            return channels.sort((a, b) => a.lastPostAt - b.lastPostAt);
     }
 };
 
@@ -45,18 +41,14 @@ type Props = {
     categoryChannels: CategoryChannelModel[];
 };
 
-const withChannel = withObservables(['channel'], ({channel}: {channel: ChannelModel}) => ({
-    channel,
-    membership: channel.membership,
-}));
-
 const CategoryBody = ({category, channels, categoryChannels}: Props) => {
     // What is our sort type?
-    const sortedChannels: ChannelModel[] = [];
+    const sortedChannels = categoryChannels.sort((a,b) => a.sortOrder - b.sortOrder).map(c => c.channelId);
+    const c = sortChannels(category.sorting, channels, sortedChannels);
 
     return (
         <FlatList
-            data={sortedChannels}
+            data={c}
             renderItem={renderChannelItem}
         />
     );
@@ -65,19 +57,7 @@ const CategoryBody = ({category, channels, categoryChannels}: Props) => {
 const withCategory = withObservables(['category'], ({category}: {category: CategoryModel}) => ({
     category,
     categoryChannels: category.categoryChannels.observeWithColumns(['sort_order']),
-    channels: category.channels.observe().pipe(
-        switchMap((channels) => {
-            if (!channels.length) {
-                return of$([]);
-            }
-
-            const cs = channels.map((c) => {
-                return c;
-            });
-
-            return cs;
-        }),
-    ),
+    channels: category.channels
 }));
 
 export default withCategory(CategoryBody);

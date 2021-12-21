@@ -3,10 +3,13 @@
 
 import React from 'react';
 import {Text, View} from 'react-native';
+import withObservables from '@nozbe/with-observables';
 
 import {useTheme} from '@context/theme';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
+
+import type CategoryModel from '@typings/database/models/servers/category';
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     container: {
@@ -20,20 +23,31 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
 }));
 
 type Props = {
-    heading: string;
+    category: CategoryModel;
+    hasChannels: boolean;
 }
 
-const CategoryHeader = (props: Props) => {
+const CategoryHeader = ({category, hasChannels}: Props) => {
     const theme = useTheme();
     const styles = getStyleSheet(theme);
+
+    // Hide favs if empty
+    if(!hasChannels && category.type === 'favorites'){
+        return (<></>)
+    }
 
     return (
         <View style={styles.container}>
             <Text style={styles.heading}>
-                {props.heading.toUpperCase()}
+                {category.displayName.toUpperCase()}
             </Text>
         </View>
     );
 };
 
-export default CategoryHeader;
+const withCategory = withObservables(['category'], ({category}: {category: CategoryModel}) => ({
+    category,
+    hasChannels: category.hasChannels
+}));
+
+export default withCategory(CategoryHeader);

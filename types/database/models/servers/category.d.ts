@@ -3,6 +3,7 @@
 
 import {Query, Relation} from '@nozbe/watermelondb';
 import Model, {Associations} from '@nozbe/watermelondb/Model';
+import { Observable } from 'rxjs';
 
 /**
  * A Category groups together channels for a user in a team.
@@ -24,7 +25,7 @@ export default class CategoryModel extends Model {
     sortOrder: number;
 
     /** sorting : One of manual, alphabetical, or recent.  */
-    sorting: string;
+    sorting: CategorySorting;
 
     /** muted : If the category is muted */
     muted: boolean;
@@ -37,6 +38,8 @@ export default class CategoryModel extends Model {
 
     /** channels : All the channels associated with this category */
     channels: Query<ChannelModel>;
+
+    hasChannels: Observable<boolean>;
 
     /** user_id : The user who created this category */
     userId: string;

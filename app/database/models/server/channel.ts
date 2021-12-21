@@ -2,8 +2,9 @@
 // See LICENSE.txt for license information.
 
 import {Relation} from '@nozbe/watermelondb';
-import {children, field, immutableRelation} from '@nozbe/watermelondb/decorators';
+import {children, lazy, field, immutableRelation} from '@nozbe/watermelondb/decorators';
 import Model, {Associations} from '@nozbe/watermelondb/Model';
+import { switchMap, map, of, distinctUntilChanged } from 'rxjs';
 
 import {MM_TABLES} from '@constants/database';
 
@@ -134,6 +135,24 @@ export default class ChannelModel extends Model {
 
     /** settings: User specific settings/preferences for this channel */
     @immutableRelation(MY_CHANNEL_SETTINGS, 'id') settings!: Relation<MyChannelSettingsModel>;
+
+    /** Experimental Ideas */
+
+    // Has it got unread messages
+    @lazy isUnread = this.membership.observe().pipe(
+        switchMap(membership => of(membership!.mentionsCount > 0)),
+        distinctUntilChanged()
+    )
+
+    // What should the badge count be
+    @lazy badgeCount = this.membership.observe().pipe(
+        switchMap((membership) => of(membership!.mentionsCount))
+    )
+
+    // When the last post was posted
+    @lazy lastPostAt = this.membership.observe().pipe(
+        switchMap((membership) => of(membership!.lastPostAt))
+    )
 
     toApi = (): Channel => {
         return {

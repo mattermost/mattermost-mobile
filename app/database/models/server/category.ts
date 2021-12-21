@@ -4,6 +4,7 @@
 import {Relation, Query, Q} from '@nozbe/watermelondb';
 import {children, field, immutableRelation, lazy} from '@nozbe/watermelondb/decorators';
 import Model, {Associations} from '@nozbe/watermelondb/Model';
+import { map, of, distinctUntilChanged } from 'rxjs';
 
 import {MM_TABLES} from '@constants/database';
 
@@ -11,6 +12,7 @@ import type CategoryInterface from '@typings/database/models/servers/category';
 import type CategoryChannelModel from '@typings/database/models/servers/category_channel';
 import type TeamModel from '@typings/database/models/servers/team';
 import type UserModel from '@typings/database/models/servers/user';
+
 
 const {
     CATEGORY,
@@ -50,7 +52,7 @@ export default class CategoryModel extends Model implements CategoryInterface {
     @field('sort_order') sortOrder!: number;
 
     /** sorting : The type of sorting applied to the category channels */
-    @field('sorting') sorting!: string;
+    @field('sorting') sorting!: CategorySorting;
 
     /** collapsed : Boolean flag indicating if the category is collapsed */
     @field('collapsed') collapsed!: boolean;
@@ -74,9 +76,15 @@ export default class CategoryModel extends Model implements CategoryInterface {
     /**
      * getAllChannelsInCategory - Retrieves all the channels who are part of this category
      */
-     @lazy channels = this.collections.
-         get(CHANNEL).
-         query(
-             Q.on(CATEGORY_CHANNEL, Q.where('category_id', this.id)),
-         );
+    @lazy channels = this.collections.
+        get(CHANNEL).
+        query(
+            Q.on(CATEGORY_CHANNEL, Q.where('category_id', this.id)),
+        );
+    
+    @lazy hasChannels = this.categoryChannels.observeCount().pipe(
+        map(c => c > 0),
+        distinctUntilChanged()
+    )
+
 }

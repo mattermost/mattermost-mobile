@@ -74,5 +74,9 @@ export default class ChannelModel extends Model {
     /** settings: User specific settings/preferences for this channel */
     settings: Relation<MyChannelSettingsModel>;
 
+    isUnread: boolean;
+    lastPostAt: number;
+    badgeCount: number;
+
     toApi = () => Channel;
 }
