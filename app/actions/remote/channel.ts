@@ -563,9 +563,9 @@ export const switchToChannelById = async (serverUrl: string, channelId: string, 
         return {error: `${serverUrl} database not found`};
     }
 
-    await fetchPostsForChannel(serverUrl, channelId);
-    markChannelAsRead(serverUrl, channelId);
+    fetchPostsForChannel(serverUrl, channelId);
     await switchToChannel(serverUrl, channelId, teamId);
+    markChannelAsRead(serverUrl, channelId);
     fetchChannelStats(serverUrl, channelId);
 
     return {};
