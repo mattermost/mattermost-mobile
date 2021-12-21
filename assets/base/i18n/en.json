@@ -308,6 +308,8 @@
   "post_info.system": "System",
   "post_message_view.edited": "(edited)",
   "posts_view.newMsg": "New Messages",
+  "screen.mentions.subtitle": "Messages you've been mentioned in",
+  "screen.mentions.title": "Recent Mentions",
   "screen.search.placeholder": "Search messages & files",
   "screens.channel_details": "Channel Details",
   "screens.channel_edit": "Edit Channel",

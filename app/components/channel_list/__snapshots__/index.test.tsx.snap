@@ -22,6 +22,7 @@ exports[`components/channel_list should match snapshot 1`] = `
 >
   <RNGestureHandlerButton
     collapsable={false}
+    exclusive={true}
     onGestureEvent={[Function]}
     onGestureHandlerEvent={[Function]}
     onGestureHandlerStateChange={[Function]}
