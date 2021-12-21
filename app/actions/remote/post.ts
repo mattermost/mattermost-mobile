@@ -66,19 +66,38 @@ export const fetchPostsForChannel = async (serverUrl: string, channelId: string)
     }
 
     if (data.posts?.length && data.order?.length) {
+        const models: Model[] = [];
         try {
-            await fetchPostAuthors(serverUrl, data.posts, false);
+            const {authors} = await fetchPostAuthors(serverUrl, data.posts, true);
+            if (authors?.length) {
+                const users = await operator.handleUsers({
+                    users: authors,
+                    prepareRecordsOnly: true,
+                });
+                if (users.length) {
+                    models.push(...users);
+                }
+            }
         } catch (error) {
             // eslint-disable-next-line no-console
             console.log('FETCH AUTHORS ERROR', error);
         }
 
-        operator.handlePosts({
+        const postModels = await operator.handlePosts({
             actionType,
             order: data.order,
             posts: data.posts,
             previousPostId: data.previousPostId,
+            prepareRecordsOnly: true,
         });
+
+        if (postModels.length) {
+            models.push(...postModels);
+        }
+
+        if (models.length) {
+            await operator.batchRecords(models);
+        }
     }
 
     return {posts: data.posts};
