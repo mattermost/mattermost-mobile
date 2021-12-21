@@ -18,6 +18,7 @@ import TeamModel from '@typings/database/models/servers/team';
 import {PERMALINK_GENERIC_TEAM_NAME_REDIRECT} from '@utils/url';
 import {displayGroupMessageName, displayUsername} from '@utils/user';
 
+import {fetchPostsForChannel} from './post';
 import {fetchRolesIfNeeded} from './role';
 import {forceLogoutIfNecessary} from './session';
 import {addUserToTeam, fetchTeamByName, removeUserFromTeam} from './team';
@@ -542,7 +543,7 @@ export const switchToChannelByName = async (serverUrl: string, channelName: stri
         }
 
         if (teamId && channelId) {
-            await switchToChannel(serverUrl, channelId, teamId);
+            await switchToChannelById(serverUrl, channelId, teamId);
         }
 
         if (roles.length) {
@@ -554,4 +555,18 @@ export const switchToChannelByName = async (serverUrl: string, channelName: stri
         errorHandler(intl);
         return {error};
     }
+};
+
+export const switchToChannelById = async (serverUrl: string, channelId: string, teamId?: string) => {
+    const database = DatabaseManager.serverDatabases[serverUrl]?.database;
+    if (!database) {
+        return {error: `${serverUrl} database not found`};
+    }
+
+    await fetchPostsForChannel(serverUrl, channelId);
+    markChannelAsRead(serverUrl, channelId);
+    await switchToChannel(serverUrl, channelId, teamId);
+    fetchChannelStats(serverUrl, channelId);
+
+    return {};
 };
