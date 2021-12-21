@@ -21,7 +21,7 @@ export const SCROLL_POSITION_CONFIG = {
     autoscrollToTopThreshold: 60,
 };
 export const VIEWABILITY_CONFIG = {
-    itemVisiblePercentThreshold: 1,
+    itemVisiblePercentThreshold: 50,
     minimumViewTime: 100,
 };
 
