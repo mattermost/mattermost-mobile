@@ -3,7 +3,7 @@
 
 import React, {useCallback, useEffect, useMemo} from 'react';
 import {useIntl} from 'react-intl';
-import {DeviceEventEmitter, FlatList, Keyboard, Platform} from 'react-native';
+import {DeviceEventEmitter, Keyboard, Platform, View} from 'react-native';
 import {Edge, SafeAreaView} from 'react-native-safe-area-context';
 
 import {fetchChannelStats} from '@actions/remote/channel';
@@ -13,7 +13,7 @@ import {Navigation} from '@constants';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {useAppState, useIsTablet} from '@hooks/device';
-import {useCollapsibleHeader} from '@hooks/header';
+import {useDefaultHeaderHeight} from '@hooks/header';
 import {popTopScreen} from '@screens/navigation';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
@@ -58,8 +58,7 @@ const Channel = ({channelId, componentId, displayName, isOwnDirectMessage, membe
     const theme = useTheme();
     const serverUrl = useServerUrl();
     const styles = getStyleSheet(theme);
-    const {scrollPaddingTop, scrollValue} = useCollapsibleHeader<FlatList<string>>(false, true, false);
-    const padding = useMemo(() => ({paddingBottom: scrollPaddingTop * (isTablet ? 2 : 1)}), [scrollPaddingTop, isTablet]);
+    const defaultHeight = useDefaultHeaderHeight();
     const rightButtons: HeaderRightButton[] = useMemo(() => ([{
         iconName: 'magnify',
         onPress: () => {
@@ -132,17 +131,17 @@ const Channel = ({channelId, componentId, displayName, isOwnDirectMessage, membe
                     onBackPress={onBackPress}
                     onTitlePress={onTitlePress}
                     rightButtons={rightButtons}
-                    scrollValue={scrollValue}
                     showBackButton={!isTablet}
                     subtitle={formatMessage({id: 'channel', defaultMessage: '{count, plural, one {# member} other {# members}}'}, {count: memberCount})}
                     subtitleCompanion={subtitleCompanion}
                     title={title}
                 />
-                <ChannelPostList
-                    channelId={channelId}
-                    contentContainerStyle={padding}
-                    forceQueryAfterAppState={appState}
-                />
+                <View style={{marginTop: defaultHeight, flex: 1}}>
+                    <ChannelPostList
+                        channelId={channelId}
+                        forceQueryAfterAppState={appState}
+                    />
+                </View>
             </SafeAreaView>
         </>
     );

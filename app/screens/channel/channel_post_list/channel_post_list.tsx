@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
+import React, {useCallback, useEffect, useMemo, useRef} from 'react';
 import {StyleProp, ViewStyle} from 'react-native';
 
 import {fetchPostsBefore, fetchPostsForChannel} from '@actions/remote/post';
@@ -27,17 +27,13 @@ type Props = {
 }
 
 const ChannelPostList = ({channelId, contentContainerStyle, currentTimezone, currentUsername, isTimezoneEnabled, lastViewedAt, posts, shouldShowJoinLeaveMessages}: Props) => {
-    const [loading, setLoading] = useState(false);
     const serverUrl = useServerUrl();
     const canLoadPosts = useRef(true);
     const fetchingPosts = useRef(false);
 
     useEffect(() => {
         canLoadPosts.current = true;
-        setLoading(true);
-        fetchPostsForChannel(serverUrl, channelId).then(() => {
-            setLoading(false);
-        });
+        fetchPostsForChannel(serverUrl, channelId);
     }, [channelId]);
 
     const onEndReached = useCallback(debounce(async () => {
@@ -51,11 +47,8 @@ const ChannelPostList = ({channelId, contentContainerStyle, currentTimezone, cur
     }, 500), [channelId, posts]);
 
     const intro = useMemo(() => (
-        <Intro
-            channelId={channelId}
-            loading={loading}
-        />
-    ), [channelId, loading]);
+        <Intro channelId={channelId}/>
+    ), [channelId]);
 
     return (
         <PostList
@@ -71,6 +64,7 @@ const ChannelPostList = ({channelId, contentContainerStyle, currentTimezone, cur
             onEndReached={onEndReached}
             posts={posts}
             shouldShowJoinLeaveMessages={shouldShowJoinLeaveMessages}
+            showMoreMessages={true}
             testID='channel.post_list'
         />
     );

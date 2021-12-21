@@ -12,9 +12,10 @@ import NewMessagesLine from '@components/post_list/new_message_line';
 import Post from '@components/post_list/post';
 import {Screens} from '@constants';
 import {useTheme} from '@context/theme';
-import {getDateForDateLine, isCombinedUserActivityPost, isDateLine, isStartOfNewMessages, preparePostList} from '@utils/post_list';
+import {getDateForDateLine, isCombinedUserActivityPost, isDateLine, isStartOfNewMessages, preparePostList, START_OF_NEW_MESSAGES} from '@utils/post_list';
 
 import {INITIAL_BATCH_TO_RENDER, SCROLL_POSITION_CONFIG, VIEWABILITY_CONFIG} from './config';
+import MoreMessages from './more_messages';
 import PostListRefreshControl from './refresh_control';
 
 import type PostModel from '@typings/database/models/servers/post';
@@ -34,6 +35,7 @@ type Props = {
     rootId?: string;
     shouldRenderReplyButton?: boolean;
     shouldShowJoinLeaveMessages: boolean;
+    showMoreMessages?: boolean;
     showNewMessageLine?: boolean;
     footer?: ReactElement;
     testID: string;
@@ -89,6 +91,7 @@ const PostList = ({
     rootId,
     shouldRenderReplyButton = true,
     shouldShowJoinLeaveMessages,
+    showMoreMessages,
     showNewMessageLine = true,
     testID,
 }: Props) => {
@@ -101,6 +104,10 @@ const PostList = ({
     const orderedPosts = useMemo(() => {
         return preparePostList(posts, lastViewedAt, showNewMessageLine, currentUsername, shouldShowJoinLeaveMessages, isTimezoneEnabled, currentTimezone, location === Screens.THREAD);
     }, [posts, lastViewedAt, showNewMessageLine, currentTimezone, currentUsername, shouldShowJoinLeaveMessages, isTimezoneEnabled, location]);
+
+    const initialIndex = useMemo(() => {
+        return orderedPosts.indexOf(START_OF_NEW_MESSAGES);
+    }, [orderedPosts]);
 
     useEffect(() => {
         listRef.current?.scrollToOffset({offset: 0, animated: false});
@@ -145,14 +152,11 @@ const PostList = ({
     }, [offsetY]);
 
     const onScrollToIndexFailed = useCallback((info: ScrollIndexFailed) => {
-        const animationFrameIndexFailed = requestAnimationFrame(() => {
-            const index = Math.min(info.highestMeasuredFrameIndex, info.index);
-            if (onScrollEndIndexListener.current) {
-                onScrollEndIndexListener.current(index);
-            }
-            scrollToIndex(index);
-            cancelAnimationFrame(animationFrameIndexFailed);
-        });
+        const index = Math.min(info.highestMeasuredFrameIndex, info.index);
+        if (onScrollEndIndexListener.current) {
+            onScrollEndIndexListener.current(index);
+        }
+        scrollToIndex(index);
     }, []);
 
     const onViewableItemsChanged = useCallback(({viewableItems}: ViewableItemsChanged) => {
@@ -174,23 +178,23 @@ const PostList = ({
         }
     }, []);
 
-    // const registerScrollEndIndexListener = useCallback((listener) => {
-    //     onScrollEndIndexListener.current = listener;
-    //     const removeListener = () => {
-    //         onScrollEndIndexListener.current = undefined;
-    //     };
+    const registerScrollEndIndexListener = useCallback((listener) => {
+        onScrollEndIndexListener.current = listener;
+        const removeListener = () => {
+            onScrollEndIndexListener.current = undefined;
+        };
 
-    //     return removeListener;
-    // }, []);
+        return removeListener;
+    }, []);
 
-    // const registerViewableItemsListener = useCallback((listener) => {
-    //     onViewableItemsChangedListener.current = listener;
-    //     const removeListener = () => {
-    //         onViewableItemsChangedListener.current = undefined;
-    //     };
+    const registerViewableItemsListener = useCallback((listener) => {
+        onViewableItemsChangedListener.current = listener;
+        const removeListener = () => {
+            onViewableItemsChangedListener.current = undefined;
+        };
 
-    //     return removeListener;
-    // }, []);
+        return removeListener;
+    }, []);
 
     const renderItem = useCallback(({item, index}) => {
         if (typeof item === 'string') {
@@ -284,38 +288,52 @@ const PostList = ({
     }, []);
 
     return (
-        <PostListRefreshControl
-            enabled={offsetY === 0}
-            refreshing={refreshing}
-            onRefresh={onRefresh}
-            style={styles.container}
-        >
-            <AnimatedFlatList
-                contentContainerStyle={contentContainerStyle}
-                data={orderedPosts}
-                keyboardDismissMode='interactive'
-                keyboardShouldPersistTaps='handled'
-                keyExtractor={keyExtractor}
-                initialNumToRender={INITIAL_BATCH_TO_RENDER + 5}
-                listKey={`postList-${channelId}`}
-                ListFooterComponent={footer}
-                maintainVisibleContentPosition={SCROLL_POSITION_CONFIG}
-                maxToRenderPerBatch={10}
-                nativeID={nativeID}
-                onEndReached={onEndReached}
-                onEndReachedThreshold={2}
-                onScroll={onScroll}
-                onScrollToIndexFailed={onScrollToIndexFailed}
-                onViewableItemsChanged={onViewableItemsChanged}
-                ref={listRef}
-                removeClippedSubviews={true}
-                renderItem={renderItem}
-                scrollEventThrottle={60}
-                style={styles.flex}
-                viewabilityConfig={VIEWABILITY_CONFIG}
-                testID={testID}
+        <>
+            <PostListRefreshControl
+                enabled={offsetY === 0}
+                refreshing={refreshing}
+                onRefresh={onRefresh}
+                style={styles.container}
+            >
+                <AnimatedFlatList
+                    contentContainerStyle={contentContainerStyle}
+                    data={orderedPosts}
+                    keyboardDismissMode='interactive'
+                    keyboardShouldPersistTaps='handled'
+                    keyExtractor={keyExtractor}
+                    initialNumToRender={INITIAL_BATCH_TO_RENDER + 5}
+                    listKey={`postList-${channelId}`}
+                    ListFooterComponent={footer}
+                    maintainVisibleContentPosition={SCROLL_POSITION_CONFIG}
+                    maxToRenderPerBatch={10}
+                    nativeID={nativeID}
+                    onEndReached={onEndReached}
+                    onEndReachedThreshold={2}
+                    onScroll={onScroll}
+                    onScrollToIndexFailed={onScrollToIndexFailed}
+                    onViewableItemsChanged={onViewableItemsChanged}
+                    ref={listRef}
+                    removeClippedSubviews={true}
+                    renderItem={renderItem}
+                    scrollEventThrottle={60}
+                    style={styles.flex}
+                    viewabilityConfig={VIEWABILITY_CONFIG}
+                    testID={testID}
+                />
+            </PostListRefreshControl>
+            {showMoreMessages &&
+            <MoreMessages
+                channelId={channelId}
+                newMessageLineIndex={initialIndex}
+                posts={orderedPosts}
+                registerScrollEndIndexListener={registerScrollEndIndexListener}
+                registerViewableItemsListener={registerViewableItemsListener}
+                scrollToIndex={scrollToIndex}
+                theme={theme}
+                testID={`${testID}.more_messages_button`}
             />
-        </PostListRefreshControl>
+            }
+        </>
     );
 };
 
