@@ -22,6 +22,41 @@ type Props = {
     currentTeamId: string;
 }
 
+const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
+    return {
+        container: {
+            height: 54,
+            width: 54,
+            flex: 0,
+            padding: 3,
+            borderRadius: 10,
+            marginVertical: 3,
+            overflow: 'hidden',
+        },
+        containerSelected: {
+            borderWidth: 3,
+            borderRadius: 12,
+            borderColor: theme.sidebarTextActiveBorder,
+        },
+        unread: {
+            left: 40,
+            top: 3,
+        },
+        mentionsOneDigit: {
+            top: 1,
+            left: 28,
+        },
+        mentionsTwoDigits: {
+            top: 1,
+            left: 26,
+        },
+        mentionsThreeDigits: {
+            top: 1,
+            left: 23,
+        },
+    };
+});
+
 export default function TeamItem({team, hasUnreads, mentionCount, currentTeamId}: Props) {
     const theme = useTheme();
     const styles = getStyleSheet(theme);
@@ -64,45 +99,10 @@ export default function TeamItem({team, hasUnreads, mentionCount, currentTeamId}
             </View>
             <Badge
                 borderColor={theme.sidebarTeamBarBg}
-                visible={hasBadge}
+                visible={hasBadge && !selected}
                 style={badgeStyle}
                 value={value}
             />
         </>
     );
 }
-
-const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
-    return {
-        container: {
-            height: 54,
-            width: 54,
-            flex: 0,
-            padding: 3,
-            borderRadius: 10,
-            marginVertical: 3,
-            overflow: 'hidden',
-        },
-        containerSelected: {
-            borderWidth: 3,
-            borderRadius: 12,
-            borderColor: theme.sidebarTextActiveBorder,
-        },
-        unread: {
-            left: 40,
-            top: 3,
-        },
-        mentionsOneDigit: {
-            top: 1,
-            left: 28,
-        },
-        mentionsTwoDigits: {
-            top: 1,
-            left: 26,
-        },
-        mentionsThreeDigits: {
-            top: 1,
-            left: 23,
-        },
-    };
-});
