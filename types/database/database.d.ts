@@ -222,7 +222,7 @@ export type HandleGroupArgs = PrepareOnly & {
 };
 
 export type HandleChannelMembershipArgs = PrepareOnly & {
-  channelMemberships: ChannelMembership[];
+  channelMemberships: ChannelMember[];
 };
 
 export type HandleGroupMembershipArgs = PrepareOnly & {

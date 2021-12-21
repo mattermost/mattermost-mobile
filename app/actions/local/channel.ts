@@ -44,7 +44,7 @@ export const switchToChannel = async (serverUrl: string, channelId: string, team
             }
 
             if (system.currentChannelId !== channelId) {
-                const history = await addChannelToTeamHistory(operator, system.currentTeamId, channelId, true);
+                const history = await addChannelToTeamHistory(operator, channel.teamId || system.currentTeamId, channelId, true);
                 models.push(...history);
             }
 
