@@ -26,7 +26,7 @@ type Props = SearchProps & {
     onBackPress?: () => void;
     onTitlePress?: () => void;
     rightButtons?: HeaderRightButton[];
-    scrollValue: Animated.SharedValue<number>;
+    scrollValue?: Animated.SharedValue<number>;
     showBackButton?: boolean;
     showHeaderInContext?: boolean;
     subtitle?: string;
@@ -66,7 +66,7 @@ const NavigationHeader = ({
     const {largeHeight, defaultHeight} = useHeaderHeight(isLargeTitle, Boolean(subtitle), hasSearch);
     const containerHeight = useAnimatedStyle(() => {
         const normal = defaultHeight + insets.top;
-        const calculated = -(insets.top + scrollValue.value);
+        const calculated = -(insets.top + (scrollValue?.value || 0));
         return {height: Math.max((normal + calculated), normal)};
     }, []);
 

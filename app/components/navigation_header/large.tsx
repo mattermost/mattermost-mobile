@@ -12,7 +12,7 @@ type Props = {
     defaultHeight: number;
     hasSearch: boolean;
     largeHeight: number;
-    scrollValue: Animated.SharedValue<number>;
+    scrollValue?: Animated.SharedValue<number>;
     subtitle?: string;
     theme: Theme;
     title: string;
@@ -48,7 +48,7 @@ const NavigationHeaderLargeTitle = ({
 
     const transform = useAnimatedStyle(() => {
         return {
-            transform: [{translateY: -(top + scrollValue.value)}],
+            transform: [{translateY: -(top + (scrollValue?.value || 0))}],
         };
     }, [top]);
 

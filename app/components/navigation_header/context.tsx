@@ -11,7 +11,7 @@ type Props = {
     hasSearch: boolean;
     isLargeTitle: boolean;
     largeHeight: number;
-    scrollValue: Animated.SharedValue<number>;
+    scrollValue?: Animated.SharedValue<number>;
     theme: Theme;
     top: number;
 }
@@ -44,13 +44,13 @@ const NavigationHeaderContext = ({
 
     const marginTop = useAnimatedStyle(() => {
         const normal = defaultHeight + top;
-        const calculated = -(top + scrollValue.value);
+        const calculated = -(top + (scrollValue?.value || 0));
         const searchHeight = hasSearch ? defaultHeight + 9 : 0;
         if (!isLargeTitle) {
             return {marginTop: Math.max((normal + calculated), normal)};
         }
 
-        return {marginTop: Math.max((-scrollValue.value + largeHeight + searchHeight), normal)};
+        return {marginTop: Math.max((-(scrollValue?.value || 0) + largeHeight + searchHeight), normal)};
     }, [defaultHeight, largeHeight, isLargeTitle, hasSearch]);
 
     return (

@@ -29,7 +29,7 @@ type Props = {
     onBackPress?: () => void;
     onTitlePress?: () => void;
     rightButtons?: HeaderRightButton[];
-    scrollValue: Animated.SharedValue<number>;
+    scrollValue?: Animated.SharedValue<number>;
     showBackButton?: boolean;
     subtitle?: string;
     subtitleCompanion?: React.ReactElement;
@@ -116,7 +116,7 @@ const Header = ({
         }
 
         const barHeight = Platform.OS === 'ios' ? (largeHeight - defaultHeight - (top / 2)) : largeHeight - defaultHeight;
-        const val = (top + scrollValue.value);
+        const val = (top + (scrollValue?.value ?? 0));
         return {
             opacity: val >= barHeight ? withTiming(1, {duration: 250}) : 0,
         };
