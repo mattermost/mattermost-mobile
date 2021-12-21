@@ -101,8 +101,8 @@ const MoreMessages = ({
     theme,
 }: Props) => {
     const serverUrl = useServerUrl();
-    const endIndex = useRef<number|null>(null);
     const pressed = useRef(false);
+    const resetting = useRef(false);
     const [loading, setLoading] = useState(false);
     const [remaining, setRemaining] = useState(0);
     const underlayColor = useMemo(() => `hsl(${hexToHue(theme.buttonBg)}, 50%, 38%)`, [theme]);
@@ -130,22 +130,33 @@ const MoreMessages = ({
         }],
     }), []);
 
+    const resetCount = async () => {
+        if (resetting.current) {
+            return;
+        }
+
+        resetting.current = true;
+        await resetMessageCount(serverUrl, channelId);
+        resetting.current = false;
+    };
+
     const onViewableItemsChanged = (viewableItems: ViewToken[]) => {
         pressed.current = false;
 
-        if (newMessageLineIndex <= 0 || viewableItems.length === 0 || isManualUnread) {
-            top.value = 0;
+        if (newMessageLineIndex <= 0 || viewableItems.length === 0 || isManualUnread || resetting.current) {
             return;
         }
 
         const lastViewableIndex = viewableItems.filter((v) => v.isViewable)[viewableItems.length - 1]?.index || 0;
-        const nextViewableIndex = lastViewableIndex + 2;
+        const nextViewableIndex = lastViewableIndex + 1;
         if (viewableItems[0].index === 0 && nextViewableIndex > newMessageLineIndex) {
             // Auto scroll if the first post is viewable and
             // * the new message line is viewable OR
             // * the new message line will be the first next viewable item
             scrollToIndex(newMessageLineIndex, true);
-            resetMessageCount(serverUrl, channelId);
+            resetCount().then(() => {
+                resetting.current = true;
+            });
             top.value = 0;
             return;
         }
@@ -153,17 +164,16 @@ const MoreMessages = ({
         const readCount = posts.slice(0, lastViewableIndex).filter((v) => typeof v !== 'string').length;
         const totalUnread = unreadCount - readCount;
         if (lastViewableIndex >= newMessageLineIndex) {
-            resetMessageCount(serverUrl, channelId);
+            resetCount();
             top.value = 0;
         } else if (totalUnread > 0) {
-            setRemaining(unreadCount - readCount);
+            setRemaining(totalUnread);
             top.value = 1;
         }
     };
 
-    const onScrollEndIndex = (index: number) => {
+    const onScrollEndIndex = () => {
         pressed.current = false;
-        endIndex.current = index;
     };
 
     const onCancel = useCallback(() => {
@@ -200,7 +210,11 @@ const MoreMessages = ({
         const unregister = registerViewableItemsListener(onViewableItemsChanged);
 
         return () => unregister();
-    }, [unreadCount, newMessageLineIndex, posts]);
+    }, [channelId, unreadCount, newMessageLineIndex, posts]);
+
+    useEffect(() => {
+        resetting.current = false;
+    }, [channelId]);
 
     return (
         <Animated.View style={[styles.animatedContainer, styles.roundBorder, animatedStyle]}>
