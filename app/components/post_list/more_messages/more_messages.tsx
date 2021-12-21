@@ -29,7 +29,7 @@ type Props = {
     testID: string;
 }
 
-const HIDDEN_TOP = -400;
+const HIDDEN_TOP = -60;
 const SHOWN_TOP = 0;
 const MIN_INPUT = 0;
 const MAX_INPUT = 1;
@@ -134,7 +134,6 @@ const MoreMessages = ({
         pressed.current = false;
 
         if (newMessageLineIndex <= 0 || viewableItems.length === 0 || isManualUnread) {
-            resetMessageCount(serverUrl, channelId);
             top.value = 0;
             return;
         }

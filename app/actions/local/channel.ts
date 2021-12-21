@@ -169,12 +169,12 @@ export const markChannelAsViewed = async (serverUrl: string, channelId: string, 
 };
 
 export const resetMessageCount = async (serverUrl: string, channelId: string) => {
-    const database = DatabaseManager.serverDatabases[serverUrl]?.database;
-    if (!database) {
+    const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
+    if (!operator) {
         return {error: `${serverUrl} database not found`};
     }
 
-    const member = await queryMyChannel(database, channelId);
+    const member = await queryMyChannel(operator.database, channelId);
     if (!member) {
         return {error: 'not a member'};
     }
@@ -184,7 +184,6 @@ export const resetMessageCount = async (serverUrl: string, channelId: string) =>
             m.messageCount = 0;
             m.mentionsCount = 0;
         });
-        const {operator} = DatabaseManager.serverDatabases[serverUrl];
         await operator.batchRecords([member]);
 
         return member;

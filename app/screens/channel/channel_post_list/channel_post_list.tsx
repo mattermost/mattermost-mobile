@@ -1,10 +1,10 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback, useEffect, useMemo, useRef} from 'react';
+import React, {useCallback, useMemo, useRef} from 'react';
 import {StyleProp, ViewStyle} from 'react-native';
 
-import {fetchPostsBefore, fetchPostsForChannel} from '@actions/remote/post';
+import {fetchPostsBefore} from '@actions/remote/post';
 import PostList from '@components/post_list';
 import {Screens} from '@constants';
 import {useServerUrl} from '@context/server';
@@ -30,11 +30,6 @@ const ChannelPostList = ({channelId, contentContainerStyle, currentTimezone, cur
     const serverUrl = useServerUrl();
     const canLoadPosts = useRef(true);
     const fetchingPosts = useRef(false);
-
-    useEffect(() => {
-        canLoadPosts.current = true;
-        fetchPostsForChannel(serverUrl, channelId);
-    }, [channelId]);
 
     const onEndReached = useCallback(debounce(async () => {
         if (!fetchingPosts.current && canLoadPosts.current && posts.length) {

@@ -1,16 +1,14 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback, useEffect, useMemo} from 'react';
+import React, {useCallback, useMemo} from 'react';
 import {useIntl} from 'react-intl';
 import {DeviceEventEmitter, Keyboard, Platform, View} from 'react-native';
-import {Edge, SafeAreaView} from 'react-native-safe-area-context';
+import {Edge, SafeAreaView, useSafeAreaInsets} from 'react-native-safe-area-context';
 
-import {fetchChannelStats} from '@actions/remote/channel';
 import CompassIcon from '@components/compass_icon';
 import NavigationHeader from '@components/navigation_header';
 import {Navigation} from '@constants';
-import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {useAppState, useIsTablet} from '@hooks/device';
 import {useDefaultHeaderHeight} from '@hooks/header';
@@ -55,8 +53,8 @@ const Channel = ({channelId, componentId, displayName, isOwnDirectMessage, membe
     const {formatMessage} = useIntl();
     const appState = useAppState();
     const isTablet = useIsTablet();
+    const insets = useSafeAreaInsets();
     const theme = useTheme();
-    const serverUrl = useServerUrl();
     const styles = getStyleSheet(theme);
     const defaultHeight = useDefaultHeaderHeight();
     const rightButtons: HeaderRightButton[] = useMemo(() => ([{
@@ -89,12 +87,6 @@ const Channel = ({channelId, componentId, displayName, isOwnDirectMessage, membe
         />
     ), []);
 
-    useEffect(() => {
-        if (channelId) {
-            fetchChannelStats(serverUrl, channelId);
-        }
-    }, [channelId]);
-
     const onBackPress = useCallback(() => {
         Keyboard.dismiss();
         popTopScreen(componentId);
@@ -118,6 +110,8 @@ const Channel = ({channelId, componentId, displayName, isOwnDirectMessage, membe
         title = formatMessage({id: 'channel_header.directchannel.you', defaultMessage: '{displayName} (you)'}, {displayName});
     }
 
+    const marginTop = defaultHeight + (isTablet ? insets.top : 0);
+
     return (
         <>
             <SafeAreaView
@@ -136,7 +130,7 @@ const Channel = ({channelId, componentId, displayName, isOwnDirectMessage, membe
                     subtitleCompanion={subtitleCompanion}
                     title={title}
                 />
-                <View style={{marginTop: defaultHeight, flex: 1}}>
+                <View style={[styles.flex, {marginTop}]}>
                     <ChannelPostList
                         channelId={channelId}
                         forceQueryAfterAppState={appState}
