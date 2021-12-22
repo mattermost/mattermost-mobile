@@ -606,6 +606,8 @@ platform :android do
     build_android
     move_apk_to_root
     upload_file_to_s3({:os_type => "android"})
+    build_android_bundle
+    move_aab_to_root
   end
 
   desc 'Build an unsigned apk'
@@ -745,6 +747,25 @@ platform :android do
           'universalApk' => ENV["SEPARATE_APKS"] || false,
         }
     )
+  end
+
+  def build_android_bundle
+    config_mode = ENV['BUILD_FOR_RELEASE'] == 'true' ? 'Release' : 'Debug'
+
+    gradle(
+        task: 'app:bundle',
+        build_type: config_mode,
+        project_dir: 'android/',
+    )
+  end
+
+  def move_aab_to_root
+    app_name =  ENV['APP_NAME'] || 'Mattermost Beta'
+    app_name_sub = app_name.gsub(" ", "_")
+    aab = lane_context[SharedValues::GRADLE_AAB_OUTPUT_PATH]
+    new_aab_path = "#{Pathname.new(File.expand_path(File.dirname(__FILE__))).parent.to_s}/#{app_name_sub}.aab"
+    sh "mv #{aab} #{new_aab_path}"
+    UI.message("AAB PATH \"#{new_aab_path}\"")
   end
 
   def move_apk_to_root
