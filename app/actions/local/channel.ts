@@ -156,6 +156,7 @@ export const markChannelAsViewed = async (serverUrl: string, channelId: string, 
     }
 
     member.prepareUpdate((m) => {
+        m.isUnread = false;
         m.mentionsCount = 0;
         m.manuallyUnread = false;
         m.viewedAt = member.lastViewedAt;
