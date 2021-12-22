@@ -23,7 +23,7 @@ type Props = {
 
 type UnreadMessages = {
     mentions: number;
-    messages: boolean;
+    unread: boolean;
 };
 
 type UnreadSubscription = UnreadMessages & {
@@ -52,30 +52,30 @@ const style = StyleSheet.create({
 
 const Home = ({isFocused, theme}: Props) => {
     const db = DatabaseManager.appDatabase?.database;
-    const [total, setTotal] = useState<UnreadMessages>({mentions: 0, messages: false});
+    const [total, setTotal] = useState<UnreadMessages>({mentions: 0, unread: false});
 
     const updateTotal = () => {
-        let messages = false;
+        let unread = false;
         let mentions = 0;
         subscriptions.forEach((value) => {
-            messages = messages || value.messages;
+            unread = unread || value.unread;
             mentions += value.mentions;
         });
-        setTotal({mentions, messages});
+        setTotal({mentions, unread});
     };
 
     const unreadsSubscription = (serverUrl: string, myChannels: MyChannelModel[]) => {
         const unreads = subscriptions.get(serverUrl);
         if (unreads) {
             let mentions = 0;
-            let messages = false;
+            let unread = false;
             myChannels.forEach((myChannel) => {
                 mentions += myChannel.mentionsCount;
-                messages = messages || myChannel.hasUnreads;
+                unread = unread || myChannel.isUnread;
             });
 
             unreads.mentions = mentions;
-            unreads.messages = messages;
+            unreads.unread = unread;
             subscriptions.set(serverUrl, unreads);
             updateTotal();
         }
@@ -90,7 +90,7 @@ const Home = ({isFocused, theme}: Props) => {
                     if (!subscriptions.has(serverUrl)) {
                         const unreads: UnreadSubscription = {
                             mentions: 0,
-                            messages: false,
+                            unread: false,
                         };
                         subscriptions.set(serverUrl, unreads);
                         unreads.subscription = sdb.database.
@@ -132,7 +132,7 @@ const Home = ({isFocused, theme}: Props) => {
         } else if (total.mentions > 99) {
             unreadStyle = style.mentionsThreeDigits;
         }
-    } else if (total.messages) {
+    } else if (total.unread) {
         unreadStyle = style.unread;
     }
 
@@ -150,7 +150,7 @@ const Home = ({isFocused, theme}: Props) => {
                 style={unreadStyle}
                 visible={!isFocused && Boolean(unreadStyle)}
                 type='Small'
-                value={total.mentions || (total.messages ? -1 : 0)}
+                value={total.mentions || (total.unread ? -1 : 0)}
             />
         </View>
     );
