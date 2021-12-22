@@ -6,11 +6,13 @@ import React, {ReactElement, useCallback, useEffect, useMemo, useRef, useState} 
 import {DeviceEventEmitter, NativeScrollEvent, NativeSyntheticEvent, Platform, StyleProp, StyleSheet, ViewStyle, ViewToken} from 'react-native';
 import Animated from 'react-native-reanimated';
 
+import {fetchPosts} from '@actions/remote/post';
 import CombinedUserActivity from '@components/post_list/combined_user_activity';
 import DateSeparator from '@components/post_list/date_separator';
 import NewMessagesLine from '@components/post_list/new_message_line';
 import Post from '@components/post_list/post';
 import {Screens} from '@constants';
+import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {getDateForDateLine, isCombinedUserActivityPost, isDateLine, isStartOfNewMessages, preparePostList, START_OF_NEW_MESSAGES} from '@utils/post_list';
 
@@ -101,6 +103,7 @@ const PostList = ({
     const [offsetY, setOffsetY] = useState(0);
     const [refreshing, setRefreshing] = useState(false);
     const theme = useTheme();
+    const serverUrl = useServerUrl();
     const orderedPosts = useMemo(() => {
         return preparePostList(posts, lastViewedAt, showNewMessageLine, currentUsername, shouldShowJoinLeaveMessages, isTimezoneEnabled, currentTimezone, location === Screens.THREAD);
     }, [posts, lastViewedAt, showNewMessageLine, currentTimezone, currentUsername, shouldShowJoinLeaveMessages, isTimezoneEnabled, location]);
@@ -133,7 +136,7 @@ const PostList = ({
     const onRefresh = useCallback(async () => {
         setRefreshing(true);
         if (location === Screens.CHANNEL && channelId) {
-            // await refreshChannelWithRetry(channelId);
+            await fetchPosts(serverUrl, channelId);
         } else if (location === Screens.THREAD && rootId) {
             // await getPostThread(rootId);
         }
