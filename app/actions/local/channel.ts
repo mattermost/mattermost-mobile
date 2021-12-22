@@ -188,7 +188,6 @@ export const resetMessageCount = async (serverUrl: string, channelId: string) =>
     try {
         member.prepareUpdate((m) => {
             m.messageCount = 0;
-            m.mentionsCount = 0;
         });
         await operator.batchRecords([member]);
 
