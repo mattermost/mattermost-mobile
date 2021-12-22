@@ -23,7 +23,7 @@ type WithTeamsArgs = WithDatabaseArgs & {
 }
 
 const enhance = withObservables(['myTeam'], ({myTeam, database}: WithTeamsArgs) => {
-    const myChannels = database.get<MyChannelModel>(MY_CHANNEL).query(Q.on(CHANNEL, Q.and(Q.where('delete_at', Q.eq(0)), Q.where('team_id', Q.eq(myTeam.id))))).observeWithColumns(['mentions_count', 'has_unreads']);
+    const myChannels = database.get<MyChannelModel>(MY_CHANNEL).query(Q.on(CHANNEL, Q.and(Q.where('delete_at', Q.eq(0)), Q.where('team_id', Q.eq(myTeam.id))))).observeWithColumns(['mentions_count', 'is_unread']);
     const mentionCount = myChannels.pipe(
         // eslint-disable-next-line max-nested-callbacks
         switchMap((val) => of$(val.reduce((acc, v) => acc + v.mentionsCount, 0))),
