@@ -91,7 +91,7 @@ export async function newClient(channelID: string, closeCb: () => void, setScree
         }
     };
 
-    ws.on('error', (err) => console.log('WS ERROR', err)); // eslint-disable-line no-console
+    ws.on('error', (err) => console.log('WS (CALLS) ERROR', err)); // eslint-disable-line no-console
 
     ws.on('open', async () => {
         ws.send('join', {
@@ -102,7 +102,7 @@ export async function newClient(channelID: string, closeCb: () => void, setScree
         try {
             config = await Client4.getCallsConfig();
         } catch (err) {
-            console.log('ERROR FETCHING CONFIG:', err); // eslint-disable-line no-console
+            console.log('ERROR FETCHING CALLS CONFIG:', err); // eslint-disable-line no-console
             return;
         }
 

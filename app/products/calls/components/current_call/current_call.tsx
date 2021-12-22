@@ -145,8 +145,8 @@ const CurrentCall = (props: Props) => {
         <View style={style.wrapper}>
             <View style={style.container}>
                 <CallAvatar
-                    userId={speaker ? speaker.id : ''}
-                    volume={speaker && speaker.id ? 0.5 : 0}
+                    userId={speaker?.id ?? ''}
+                    volume={speaker?.id ? 0.5 : 0}
                 />
                 <View style={style.userInfo}>
                     <Text style={style.speakingUser}>
