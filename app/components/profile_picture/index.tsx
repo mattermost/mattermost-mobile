@@ -80,7 +80,7 @@ const ProfilePicture = ({
     }
 
     useEffect(() => {
-        if (author && showStatus) {
+        if (author && !author.status && showStatus) {
             fetchStatusInBatch(serverUrl, author.id);
         }
     }, []);
