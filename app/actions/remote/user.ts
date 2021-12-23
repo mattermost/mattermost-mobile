@@ -3,7 +3,7 @@
 
 import {Model, Q} from '@nozbe/watermelondb';
 
-import {updateRecentCustomStatuses, updateUserPresence} from '@actions/local/user';
+import {updateRecentCustomStatuses, updateLocalUser} from '@actions/local/user';
 import {fetchRolesIfNeeded} from '@actions/remote/role';
 import {Database, General} from '@constants';
 import DatabaseManager from '@database/manager';
@@ -143,7 +143,7 @@ export const fetchProfilesPerChannels = async (serverUrl: string, channelIds: st
     }
 };
 
-export const updateMe = async (serverUrl: string, user: UserModel) => {
+export const updateMe = async (serverUrl: string, user: Partial<UserProfile>) => {
     const database = DatabaseManager.serverDatabases[serverUrl]?.database;
     const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
     if (!database) {
@@ -159,7 +159,7 @@ export const updateMe = async (serverUrl: string, user: UserModel) => {
 
     let data: UserProfile;
     try {
-        data = await client.patchMe(user._raw);
+        data = await client.patchMe(user);
     } catch (e) {
         forceLogoutIfNecessary(serverUrl, e as ClientError);
         return {error: e};
@@ -396,6 +396,7 @@ export const updateUsersNoLongerVisible = async (serverUrl: string): Promise<{er
 
     return {};
 };
+
 export const setStatus = async (serverUrl: string, status: UserStatus) => {
     let client: Client;
     try {
@@ -406,13 +407,13 @@ export const setStatus = async (serverUrl: string, status: UserStatus) => {
 
     try {
         const data = await client.updateStatus(status);
-        updateUserPresence(serverUrl, status);
+        await updateLocalUser(serverUrl, {status: status.status});
 
         return {
             data,
         };
-    } catch (error: any) {
-        forceLogoutIfNecessary(serverUrl, error);
+    } catch (error) {
+        forceLogoutIfNecessary(serverUrl, error as ClientErrorProps);
         return {error};
     }
 };

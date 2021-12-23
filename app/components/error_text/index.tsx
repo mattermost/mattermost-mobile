@@ -8,7 +8,7 @@ import FormattedText from '@components/formatted_text';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 
 type ErrorProps = {
-    error: Partial<ClientErrorProps> | string;
+    error: ErrorText;
     testID?: string;
     textStyle?: StyleProp<ViewStyle> | StyleProp<TextStyle>;
     theme: Theme;
