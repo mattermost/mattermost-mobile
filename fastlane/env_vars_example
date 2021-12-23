@@ -12,6 +12,8 @@ export APP_SCHEME=mattermost
 #export VERSION_NUMBER=
 ## This sets the version number ex: 210 if not set it uses the one in the code base (this one should increment always by 1 and will only update if INCREMENT_BUILD_NUMBER is true
 #export BUILD_NUMBER=
+## This sets the build type for the Android. Possible values are: both, apk, aab. If not set, it uses "both" value.
+#export ANDROID_BUILD_TYPE=both
 
 ############ MAKE GIT RESTORE THE BRANCH STATE ONCE BUILD FINISHES ############
 export COMMIT_CHANGES_TO_GIT=true

@@ -180,14 +180,16 @@ end
 desc 'Upload file to s3'
 lane :upload_file_to_s3 do |options|
   os_type = options[:os_type].downcase
-  extension = os_type == "android" ? "*.apk" : "*.ipa"
+  extensions = os_type == "android" ? ["*.apk", "*.aab"] : ["*.ipa"]
   build_folder_path = Dir[File.expand_path('..')].first
   files = []
   
   unless options[:file].nil? || options[:file].empty?
     files.push("#{build_folder_path}/#{options[:file]}")
   else
-    files = Dir.glob("#{build_folder_path}/#{extension}").select { |f| File.file? f}
+    extensions.each do |extension|
+      files.push(Dir.glob("#{build_folder_path}/#{extension}").select { |f| File.file? f}.first)
+    end
   end
 
   unless ENV['AWS_BUCKET_NAME'].nil? || ENV['AWS_BUCKET_NAME'].empty? || ENV['AWS_REGION'].nil? || ENV['AWS_REGION'].empty? || files.length == 0
@@ -603,11 +605,18 @@ platform :android do
     update_identifiers
     replace_assets
     link_sentry_android
-    build_android
-    move_apk_to_root
+
+    build_type = ENV['ANDROID_BUILD_TYPE'].nil? || ENV['ANDROID_BUILD_TYPE'].empty? ? 'both' : ENV['ANDROID_BUILD_TYPE']
+
+    if build_type == 'apk' || build_type == 'both'
+      build_android_apk
+      move_apk_to_root
+    end
+    if build_type == 'aab' || build_type == 'both'
+      build_android_bundle
+      move_aab_to_root
+    end
     upload_file_to_s3({:os_type => "android"})
-    build_android_bundle
-    move_aab_to_root
   end
 
   desc 'Build an unsigned apk'
@@ -735,7 +744,7 @@ platform :android do
                               })
   end
 
-  def build_android
+  def build_android_apk
     config_mode = ENV['BUILD_FOR_RELEASE'] == 'true' ? 'Release' : 'Debug'
 
     gradle(
