@@ -3,7 +3,7 @@
 
 import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
-import {BackHandler, DeviceEventEmitter, Keyboard, Text, View} from 'react-native';
+import {BackHandler, DeviceEventEmitter, Keyboard, Platform, Text, View} from 'react-native';
 import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
 import {Navigation} from 'react-native-navigation';
 import {Edge, SafeAreaView} from 'react-native-safe-area-context';
@@ -363,7 +363,7 @@ const EditProfile = ({
                     enableAutomaticScroll={true}
                     enableOnAndroid={true}
                     enableResetScrollToCoords={true}
-                    extraScrollHeight={45}
+                    extraScrollHeight={Platform.select({ios: 45})}
                     keyboardOpeningTime={0}
                     keyboardDismissMode='on-drag'
                     keyboardShouldPersistTaps='handled'
