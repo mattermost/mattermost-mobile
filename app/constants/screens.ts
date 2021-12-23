@@ -11,6 +11,7 @@ export const CHANNEL_DETAILS = 'ChannelDetails';
 export const CHANNEL_EDIT = 'ChannelEdit';
 export const CUSTOM_STATUS_CLEAR_AFTER = 'CustomStatusClearAfter';
 export const CUSTOM_STATUS = 'CustomStatus';
+export const EDIT_PROFILE = 'EditProfile';
 export const FORGOT_PASSWORD = 'ForgotPassword';
 export const HOME = 'Home';
 export const INTEGRATION_SELECTOR = 'IntegrationSelector';
@@ -38,6 +39,7 @@ export default {
     CHANNEL_DETAILS,
     CUSTOM_STATUS_CLEAR_AFTER,
     CUSTOM_STATUS,
+    EDIT_PROFILE,
     FORGOT_PASSWORD,
     HOME,
     INTEGRATION_SELECTOR,

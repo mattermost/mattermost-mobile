@@ -150,6 +150,7 @@
   "mobile.about.powered_by": "{site} is powered by Mattermost",
   "mobile.about.serverVersion": "Server Version: {version} (Build {number})",
   "mobile.about.serverVersionNoBuild": "Server Version: {version}",
+  "mobile.account.settings.save": "Save",
   "mobile.action_menu.select": "Select an option",
   "mobile.add_team.create_team": "Create a New Team",
   "mobile.add_team.join_team": "Join Another Team",
@@ -239,6 +240,7 @@
   "mobile.routes.custom_status": "Set a Status",
   "mobile.routes.table": "Table",
   "mobile.routes.user_profile": "Profile",
+  "mobile.screen.your_profile": "Your Profile",
   "mobile.server_identifier.exists": "You are already connected to this server.",
   "mobile.server_link.unreachable_channel.error": "This link belongs to a deleted channel or to a channel to which you do not have access.",
   "mobile.server_link.unreachable_team.error": "This link belongs to a deleted team or to a team to which you do not have access.",
@@ -320,5 +322,8 @@
   "status_dropdown.set_online": "Online",
   "status_dropdown.set_ooo": "Out Of Office",
   "team_list.no_other_teams.description": "To join another team, ask a Team Admin for an invitation, or create your own team.",
-  "team_list.no_other_teams.title": "No additional teams to join"
+  "team_list.no_other_teams.title": "No additional teams to join",
+  "user.edit_profile.email.auth_service": "Login occurs through {service}. Email cannot be updated. Email address used for notifications is {email}.",
+  "user.edit_profile.email.web_client": "Email must be updated using a web client or desktop application.",
+  "user.settings.general.field_handled_externally": "Some fields below are handled through your login provider. If you want to change them, you’ll need to do so through your login provider."
 }
