@@ -69,7 +69,7 @@ exports[`CallScreen Landscape should match snapshot 1`] = `
     <ScrollView
       alwaysBounceVertical={false}
       contentContainerStyle={Object {}}
-      horizontal={true}
+      horizontal={false}
     >
       <Pressable
         onPress={[Function]}
@@ -453,7 +453,7 @@ exports[`CallScreen Landscape should match snapshot with screenshare 1`] = `
           }
         }
       >
-        You are seeing Someone screen
+        You are seeing User 2 screen
       </Text>
     </Pressable>
     <View
@@ -731,7 +731,7 @@ exports[`CallScreen Portrait should match snapshot 1`] = `
     <ScrollView
       alwaysBounceVertical={false}
       contentContainerStyle={Object {}}
-      horizontal={true}
+      horizontal={false}
     >
       <Pressable
         onPress={[Function]}
@@ -1187,7 +1187,7 @@ exports[`CallScreen Portrait should match snapshot with screenshare 1`] = `
           }
         }
       >
-        You are seeing Someone screen
+        You are seeing User 2 screen
       </Text>
     </Pressable>
     <View
@@ -1493,7 +1493,7 @@ exports[`CallScreen should show controls in landscape view on click the screen s
           }
         }
       >
-        You are seeing Someone screen
+        You are seeing User 2 screen
       </Text>
     </Pressable>
     <View
@@ -1775,7 +1775,7 @@ exports[`CallScreen should show controls in landscape view on click the users li
     <ScrollView
       alwaysBounceVertical={false}
       contentContainerStyle={Object {}}
-      horizontal={true}
+      horizontal={false}
     >
       <Pressable
         onPress={[Function]}

@@ -10,8 +10,8 @@ import callsReducer from './calls';
 describe('Reducers.calls.calls', () => {
     const call1 = {
         participants: {
-            'user-1': {id: 'user-1', muted: false, isTalking: false},
-            'user-2': {id: 'user-2', muted: true, isTalking: true},
+            'user-1': {id: 'user-1', muted: false, isTalking: false, profile: {id: 'user-1'}},
+            'user-2': {id: 'user-2', muted: true, isTalking: true, profile: {id: 'user-2'}},
         },
         channelId: 'channel-1',
         startTime: 123,
@@ -21,8 +21,8 @@ describe('Reducers.calls.calls', () => {
     };
     const call2 = {
         participants: {
-            'user-3': {id: 'user-3', muted: false, isTalking: false},
-            'user-4': {id: 'user-4', muted: true, isTalking: true},
+            'user-3': {id: 'user-3', muted: false, isTalking: false, profile: {id: 'user-3'}},
+            'user-4': {id: 'user-4', muted: true, isTalking: true, profile: {id: 'user-4'}},
         },
         channelId: 'channel-2',
         startTime: 123,
@@ -32,8 +32,8 @@ describe('Reducers.calls.calls', () => {
     };
     const call3 = {
         participants: {
-            'user-5': {id: 'user-5', muted: false, isTalking: false},
-            'user-6': {id: 'user-6', muted: true, isTalking: true},
+            'user-5': {id: 'user-5', muted: false, isTalking: false, profile: {id: 'user-5'}},
+            'user-6': {id: 'user-6', muted: true, isTalking: true, profile: {id: 'user-6'}},
         },
         channelId: 'channel-3',
         startTime: 123,
@@ -71,7 +71,7 @@ describe('Reducers.calls.calls', () => {
             {
                 'channel-1': {
                     participants: {
-                        'user-2': {id: 'user-2', muted: true, isTalking: true},
+                        'user-2': {id: 'user-2', muted: true, isTalking: true, profile: {id: 'user-2'}},
                     },
                     channelId: 'channel-1',
                     startTime: 123,
@@ -97,7 +97,7 @@ describe('Reducers.calls.calls', () => {
         const initialState = {calls: {'channel-1': call1}};
         const testAction = {
             type: CallsTypes.RECEIVED_JOINED_CALL,
-            data: {channelId: 'channel-1', userId: 'user-3'},
+            data: {channelId: 'channel-1', userId: 'user-3', profile: {id: 'user-3'}},
         };
         let state = callsReducer(initialState, testAction);
         assert.deepEqual(
@@ -105,9 +105,9 @@ describe('Reducers.calls.calls', () => {
             {
                 'channel-1': {
                     participants: {
-                        'user-1': {id: 'user-1', muted: false, isTalking: false},
-                        'user-2': {id: 'user-2', muted: true, isTalking: true},
-                        'user-3': {id: 'user-3', muted: true, isTalking: false},
+                        'user-1': {id: 'user-1', muted: false, isTalking: false, profile: {id: 'user-1'}},
+                        'user-2': {id: 'user-2', muted: true, isTalking: true, profile: {id: 'user-2'}},
+                        'user-3': {id: 'user-3', muted: true, isTalking: false, profile: {id: 'user-3'}},
                     },
                     channelId: 'channel-1',
                     startTime: 123,
@@ -118,7 +118,7 @@ describe('Reducers.calls.calls', () => {
             },
         );
 
-        testAction.data = {channelId: 'invalid-channel', userId: 'user-1'};
+        testAction.data = {channelId: 'invalid-channel', userId: 'user-1', profile: {id: 'user-1'}};
 
         state = callsReducer(initialState, testAction);
         assert.deepEqual(state.calls, {'channel-1': call1});
