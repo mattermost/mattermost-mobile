@@ -31,7 +31,7 @@ function calls(state: Dictionary<Call> = {}, action: GenericAction) {
         return nextState;
     }
     case CallsTypes.RECEIVED_JOINED_CALL: {
-        const {channelId, userId} = action.data;
+        const {channelId, userId, profile} = action.data;
         if (!state[channelId]) {
             return state;
         }
@@ -40,6 +40,7 @@ function calls(state: Dictionary<Call> = {}, action: GenericAction) {
             id: userId,
             muted: true,
             isTalking: false,
+            profile,
         };
         const nextState = {...state};
         nextState[channelId] = channelUpdate;

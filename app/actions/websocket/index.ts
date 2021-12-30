@@ -446,7 +446,8 @@ function handleEvent(msg: WebSocketMessage) {
             case WebsocketEvents.CALLS_CHANNEL_DISABLED:
                 return dispatch(handleCallChannelDisabled(msg));
             case WebsocketEvents.CALLS_USER_CONNECTED:
-                return dispatch(handleCallUserConnected(msg));
+                handleCallUserConnected(dispatch, getState, msg);
+                break;
             case WebsocketEvents.CALLS_USER_DISCONNECTED:
                 return dispatch(handleCallUserDisconnected(msg));
             case WebsocketEvents.CALLS_USER_MUTED:

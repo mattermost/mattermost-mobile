@@ -17,7 +17,6 @@ import {makeStyleSheetFromTheme} from '@utils/theme';
 
 import type {Theme} from '@mm-redux/types/theme';
 import type {UserProfile} from '@mm-redux/types/users';
-import type {IDMappedObjects} from '@mm-redux/types/utilities';
 import type {Call, CallParticipant, VoiceEventData} from '@mmproducts/calls/store/types/calls';
 
 type Props = {
@@ -28,7 +27,6 @@ type Props = {
     };
     theme: Theme;
     call: Call|null;
-    profiles: IDMappedObjects<UserProfile>;
     currentParticipant: CallParticipant;
     teammateNameDisplay: string;
     screenShareURL: string;
@@ -224,7 +222,7 @@ const CallScreen = (props: Props) => {
     const [speaker, setSpeaker] = useState<UserProfile|null>(null);
     const handleVoiceOn = (data: VoiceEventData) => {
         if (data.channelId === props.call?.channelId) {
-            setSpeaker(props.profiles[data.userId]);
+            setSpeaker(props.call.participants[data.userId].profile);
         }
     };
     const handleVoiceOff = (data: VoiceEventData) => {
@@ -301,7 +299,7 @@ const CallScreen = (props: Props) => {
                 />
                 <Text
                     style={style.screenShareText}
-                >{`You are seeing ${displayUsername(props.profiles[props.call.screenOn], props.teammateNameDisplay)} screen`}</Text>
+                >{`You are seeing ${displayUsername(props.call.participants[props.call.screenOn].profile, props.teammateNameDisplay)} screen`}</Text>
             </Pressable>
         );
     }
@@ -330,7 +328,7 @@ const CallScreen = (props: Props) => {
                                     muted={user.muted}
                                     size={props.call?.screenOn ? 'm' : 'l'}
                                 />
-                                <Text style={style.username}>{displayUsername(props.profiles[user.id], props.teammateNameDisplay)}</Text>
+                                <Text style={style.username}>{displayUsername(props.call?.participants[user.id].profile, props.teammateNameDisplay)}</Text>
                             </View>
                         );
                     })}

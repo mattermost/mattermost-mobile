@@ -1,6 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {UserProfile} from '@mm-redux/types/users';
 import {Dictionary} from '@mm-redux/types/utilities';
 
 export type CallsState = {
@@ -23,6 +24,7 @@ export type CallParticipant = {
     id: string;
     muted: boolean;
     isTalking: boolean;
+    profile: UserProfile;
 }
 
 export type ServerChannelState = {

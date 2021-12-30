@@ -18,7 +18,6 @@ import {makeStyleSheetFromTheme} from '@utils/theme';
 import type {Channel} from '@mm-redux/types/channels';
 import type {Theme} from '@mm-redux/types/theme';
 import type {UserProfile} from '@mm-redux/types/users';
-import type {IDMappedObjects} from '@mm-redux/types/utilities';
 import type {Call, CallParticipant, VoiceEventData} from '@mmproducts/calls/store/types/calls';
 
 type Props = {
@@ -29,7 +28,6 @@ type Props = {
     theme: Theme;
     channel: Channel;
     call: Call;
-    profiles: IDMappedObjects<UserProfile>;
     currentParticipant: CallParticipant;
     teammateNameDisplay: string;
 }
@@ -91,7 +89,7 @@ const CurrentCall = (props: Props) => {
     const [speaker, setSpeaker] = useState<UserProfile|null>(null);
     const handleVoiceOn = (data: VoiceEventData) => {
         if (data.channelId === props.call?.channelId) {
-            setSpeaker(props.profiles[data.userId]);
+            setSpeaker(props.call.participants[data.userId].profile);
         }
     };
     const handleVoiceOff = (data: VoiceEventData) => {

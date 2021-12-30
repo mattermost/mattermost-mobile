@@ -19,7 +19,6 @@ function mapStateToProps(state: GlobalState) {
         theme: getTheme(state),
         call: currentCall,
         teammateNameDisplay: getTeammateNameDisplaySetting(state),
-        profiles: state.entities.users.profiles,
         currentParticipant: currentCall && currentCall.participants[currentUserId],
         screenShareURL: getScreenShareURL(state),
     };

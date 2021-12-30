@@ -21,7 +21,6 @@ function mapStateToProps(state: GlobalState) {
     return {
         theme: getTheme(state),
         call: currentCall,
-        profiles: state.entities.users.profiles,
         channel: getChannel(state, currentCall?.channelId || ''),
         currentParticipant,
         teammateNameDisplay: getTeammateNameDisplaySetting(state),
