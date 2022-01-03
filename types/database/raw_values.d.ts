@@ -73,6 +73,11 @@ type IdValue = {
     value: unknown;
 };
 
+type ParticipantsPerThread = {
+    thread_id: string;
+    participants: ThreadParticipant[];
+};
+
 type TeamChannelHistory = {
     id: string;
     channel_ids: string[];
@@ -121,4 +126,6 @@ type RawValue =
   | TeamMembership
   | TeamSearchHistory
   | TermsOfService
+  | Thread
+  | ThreadParticipant
   | UserProfile

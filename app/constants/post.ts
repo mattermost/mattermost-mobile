@@ -35,6 +35,7 @@ export const PostTypes: Record<string, string> = {
 
 export default {
     POST_COLLAPSE_TIMEOUT: 1000 * 60 * 5,
+    POST_DELETED: 'DELETED',
     POST_TYPES: PostTypes,
     USER_ACTIVITY_POST_TYPES: [
         PostTypes.ADD_TO_CHANNEL,

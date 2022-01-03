@@ -176,6 +176,10 @@ export default class ClientBase {
         return `${this.urlVersion}/redirect_location`;
     }
 
+    getThreadsRoute(userID: string, teamID: string): string {
+        return `${this.getUserRoute(userID)}/teams/${teamID}/threads`;
+    }
+
     getAppsProxyRoute() {
         return '/plugins/com.mattermost.apps';
     }

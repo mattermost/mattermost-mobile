@@ -41,7 +41,7 @@ const ThreadsButton = () => {
      * - Add right-side number badge
      */
     return (
-        <TouchableWithFeedback onPress={() => goToScreen(Screens.CHANNEL, 'Channel', {}, {topBar: {visible: false}})} >
+        <TouchableWithFeedback onPress={() => goToScreen(Screens.GLOBAL_THREADS, 'Threads', {}, {topBar: {visible: false}})} >
             <View style={styles.container}>
                 <CompassIcon
                     name='message-text-outline'

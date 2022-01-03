@@ -13,6 +13,7 @@ export const CUSTOM_STATUS_CLEAR_AFTER = 'CustomStatusClearAfter';
 export const CUSTOM_STATUS = 'CustomStatus';
 export const EDIT_PROFILE = 'EditProfile';
 export const FORGOT_PASSWORD = 'ForgotPassword';
+export const GLOBAL_THREADS = 'GlobalThreads';
 export const HOME = 'Home';
 export const INTEGRATION_SELECTOR = 'IntegrationSelector';
 export const IN_APP_NOTIFICATION = 'InAppNotification';
@@ -41,6 +42,7 @@ export default {
     CUSTOM_STATUS,
     EDIT_PROFILE,
     FORGOT_PASSWORD,
+    GLOBAL_THREADS,
     HOME,
     INTEGRATION_SELECTOR,
     IN_APP_NOTIFICATION,

@@ -15,10 +15,10 @@ export default class ThreadModel extends Model {
     static associations: Associations;
 
     /** last_reply_at : The timestamp of when user last replied to the thread. */
-    last_reply_at: number;
+    lastReplyAt: number;
 
     /** last_viewed_at : The timestamp of when user last viewed the thread. */
-    last_viewed_at: number;
+    lastViewedAt: number;
 
     /** participants: All the participants of the thread */
     participants: Query<ThreadParticipantsModel>;
@@ -27,11 +27,11 @@ export default class ThreadModel extends Model {
     post: Relation<Post>;
 
     /** reply_count : The total replies to the thread by all the participants. */
-    reply_count: number;
+    replyCount: number;
 
     /** unread_replies : The number of replies that are not read by the user. */
-    unread_replies: number;
+    unreadReplies: number;
 
     /** unread_mentions : The number of mentions that are not read by the user. */
-    unread_mentions: number;
+    unreadMentions: number;
 }
