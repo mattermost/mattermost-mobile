@@ -11,11 +11,12 @@ import {queryCurrentTeamId} from './system';
 import type ServerDataOperator from '@database/operator/server_data_operator';
 import type PreferenceModel from '@typings/database/models/servers/preference';
 
-export const prepareMyPreferences = (operator: ServerDataOperator, preferences: PreferenceType[]) => {
+export const prepareMyPreferences = (operator: ServerDataOperator, preferences: PreferenceType[], sync = false) => {
     try {
         return operator.handlePreferences({
             prepareRecordsOnly: true,
             preferences,
+            sync,
         });
     } catch {
         return undefined;

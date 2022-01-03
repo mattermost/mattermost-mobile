@@ -140,6 +140,15 @@ export const queryMyChannel = async (database: Database, channelId: string) => {
     }
 };
 
+export const queryChannelById = async (database: Database, channelId: string) => {
+    try {
+        const channel = await database.get<ChannelModel>(CHANNEL).find(channelId);
+        return channel;
+    } catch {
+        return undefined;
+    }
+};
+
 export const queryChannelByName = async (database: Database, channelName: string) => {
     try {
         const channels = await database.get(CHANNEL).query(Q.where('name', channelName)).fetch() as ChannelModel[];
