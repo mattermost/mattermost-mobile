@@ -49,7 +49,7 @@ type Button = {
     text: string;
 };
 
-const EditChannel = ({serverUrl, componentId, channel, channelInfo}: Props) => {
+const CreateOrEditChannel = ({serverUrl, componentId, channel, channelInfo}: Props) => {
     const intl = useIntl();
     const {formatMessage} = intl;
     const theme = useTheme();
@@ -211,6 +211,7 @@ const EditChannel = ({serverUrl, componentId, channel, channelInfo}: Props) => {
     const onTypeChange = (typeText: ChannelType) => {
         setType(typeText);
     };
+    // console.log('channel.type', channel.type)
 
     return (
         <EditChannelInfo
@@ -257,4 +258,4 @@ function useFormInput(initialValue?: string) {
     }
 }
 
-export default EditChannel;
+export default CreateOrEditChannel;
