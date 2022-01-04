@@ -2,6 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {processPostsFetched} from '@actions/local/post';
+import {processThreadsFetched} from '@actions/local/thread';
 import {ActionType, General} from '@constants';
 import DatabaseManager from '@database/manager';
 import NetworkManager from '@init/network_manager';
@@ -49,6 +50,8 @@ export const getThreads = async (serverUrl: string, teamId: $ID<Team>, before?: 
             order: [],
             posts,
         });
+
+        await processThreadsFetched(serverUrl, data.threads);
 
         return data;
     } catch (error) {

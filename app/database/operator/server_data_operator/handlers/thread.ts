@@ -82,8 +82,8 @@ const ThreadHandler = (superclass: any) => class extends superclass {
         const batch: Model[] = [...preparedThreads];
 
         // calls handler for Thread Participants
-        const postReactions = (await this.handleThreadParticipants({threadsParticipants, prepareRecordsOnly: true})) as ThreadParticipantsModel[];
-        batch.push(...postReactions);
+        const threadParticipants = (await this.handleThreadParticipants({threadsParticipants, prepareRecordsOnly: true})) as ThreadParticipantsModel[];
+        batch.push(...threadParticipants);
 
         if (batch.length && !prepareRecordsOnly) {
             await this.batchRecords(batch);
