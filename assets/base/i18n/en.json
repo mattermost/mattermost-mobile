@@ -326,5 +326,11 @@
   "team_list.no_other_teams.title": "No additional teams to join",
   "user.edit_profile.email.auth_service": "Login occurs through {service}. Email cannot be updated. Email address used for notifications is {email}.",
   "user.edit_profile.email.web_client": "Email must be updated using a web client or desktop application.",
-  "user.settings.general.field_handled_externally": "Some fields below are handled through your login provider. If you want to change them, you’ll need to do so through your login provider."
+  "user.settings.general.email": "Email",
+  "user.settings.general.field_handled_externally": "Some fields below are handled through your login provider. If you want to change them, you’ll need to do so through your login provider.",
+  "user.settings.general.firstName": "First Name",
+  "user.settings.general.lastName": "Last Name",
+  "user.settings.general.nickname": "Nickname",
+  "user.settings.general.position": "Position",
+  "user.settings.general.username": "Username"
 }
