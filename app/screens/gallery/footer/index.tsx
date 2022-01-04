@@ -18,10 +18,10 @@ import PrepareFile from './prepare_file';
 import Summary from './summary';
 import Toast from './toast';
 
-import type {CallbackFunctionWithoutArguments, PrepareFileRef, HeaderProps, HeaderRef, ShowToast, ToastRef} from '@mm-types/screens/gallery';
+import type {CallbackFunctionWithoutArguments, PrepareFileRef, FooterProps, FooterRef, ShowToast, ToastRef} from '@mm-types/screens/gallery';
 
 const styles = StyleSheet.create({
-    header: {
+    footer: {
         position: 'absolute',
         bottom: 0,
         height: 70,
@@ -30,7 +30,7 @@ const styles = StyleSheet.create({
     },
 });
 
-const Header = forwardRef<HeaderRef, HeaderProps>((props: HeaderProps, ref) => {
+const Footer = forwardRef<FooterRef, FooterProps>((props: FooterProps, ref) => {
     const [visible, setVisible] = useState(true);
     const [downloading, setDownloading] = useState(false);
     const opacity = useRef(new Animated.Value(1)).current;
@@ -143,7 +143,7 @@ const Header = forwardRef<HeaderRef, HeaderProps>((props: HeaderProps, ref) => {
     return (
         <>
 
-            <Animated.View style={[{opacity}, styles.header]}>
+            <Animated.View style={[{opacity}, styles.footer]}>
                 <Summary
                     copyPublicLink={copyPublicLink}
                     dowloadFile={dowloadFile}
@@ -151,7 +151,7 @@ const Header = forwardRef<HeaderRef, HeaderProps>((props: HeaderProps, ref) => {
                 />
                 <Toast ref={toastRef}/>
             </Animated.View>
-            <Animated.View style={[{opacity: downloadingOpacitity}, styles.header]}>
+            <Animated.View style={[{opacity: downloadingOpacitity}, styles.footer]}>
                 <PrepareFile
                     ref={prepareRef}
                     intl={props.intl}
@@ -161,6 +161,6 @@ const Header = forwardRef<HeaderRef, HeaderProps>((props: HeaderProps, ref) => {
     );
 });
 
-Header.displayName = 'Header';
+Footer.displayName = 'Footer';
 
-export default injectIntl(Header, {withRef: true});
+export default injectIntl(Footer, {withRef: true});

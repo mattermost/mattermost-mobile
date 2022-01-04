@@ -47,12 +47,12 @@ export interface PrepareFileRef {
     start(file: FileInfo, share?: boolean): Promise<string | undefined>;
 }
 
-export interface HeaderProps {
+export interface FooterProps {
     intl?: typeof intlShape;
     file: FileInfo;
 }
 
-export interface HeaderRef {
+export interface FooterRef {
     toggle(): boolean;
     isVisible(): boolean;
     setVisible(visible: boolean): void;
@@ -60,7 +60,7 @@ export interface HeaderRef {
 
 export interface GalleryProps {
     files: Array<FileInfo>;
-    headerVisible: boolean;
+    footerVisible: boolean;
     height: number;
     initialIndex: number;
     isLandscape: boolean;

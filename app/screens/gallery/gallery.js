@@ -10,8 +10,8 @@ import {mergeNavigationOptions, popTopScreen} from '@actions/navigation';
 import CompassIcon from '@components/compass_icon';
 import {isImage} from '@utils/file';
 
+import Footer from './footer';
 import GalleryViewer from './gallery_viewer';
-import Header from './header';
 
 export default class Gallery extends PureComponent {
     static propTypes = {
@@ -139,10 +139,6 @@ export default class Gallery extends PureComponent {
 
         return (
             <>
-                <Header
-                    ref={this.header}
-                    file={files[index]}
-                />
                 <GalleryViewer
                     files={files}
                     headerVisible={headerVisible}
@@ -151,6 +147,10 @@ export default class Gallery extends PureComponent {
                     onPageSelected={this.handlePageSelected}
                     onTap={this.handleTapped}
                     theme={theme}
+                />
+                <Footer
+                    ref={this.header}
+                    file={files[index]}
                 />
             </>
         );
