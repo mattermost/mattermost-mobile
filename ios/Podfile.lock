@@ -1,16 +1,15 @@
 PODS:
-  - Alamofire (5.4.4)
+  - Alamofire (5.5.0)
   - boost (1.76.0)
   - BVLinearGradient (2.5.6):
     - React
   - DoubleConversion (1.1.6)
-  - EXFileSystem (13.1.0):
+  - EXFileSystem (13.0.3):
     - ExpoModulesCore
-  - Expo (44.0.3):
+  - Expo (43.0.4):
     - ExpoModulesCore
-  - ExpoModulesCore (0.6.3):
+  - ExpoModulesCore (0.4.9):
     - React-Core
-    - ReactCommon/turbomodule/core
   - FBLazyVector (0.66.4)
   - FBReactNativeSpec (0.66.4):
     - RCT-Folly (= 2021.06.28.00-v2)
@@ -443,7 +442,7 @@ PODS:
     - React
   - RNVectorIcons (9.0.0):
     - React-Core
-  - Rudder (1.2.1)
+  - Rudder (1.2.2)
   - SDWebImage (5.11.1):
     - SDWebImage/Core (= 5.11.1)
   - SDWebImage/Core (5.11.1)
@@ -735,13 +734,13 @@ CHECKOUT OPTIONS:
     :git: https://github.com/mattermost/Starscream.git
 
 SPEC CHECKSUMS:
-  Alamofire: f3b09a368f1582ab751b3fff5460276e0d2cf5c9
+  Alamofire: 1c4fb5369c3fe93d2857c780d8bbe09f06f97e7c
   boost: a7c83b31436843459a1961bfd74b96033dc77234
   BVLinearGradient: e3aad03778a456d77928f594a649e96995f1c872
   DoubleConversion: 831926d9b8bf8166fd87886c4abab286c2422662
-  EXFileSystem: 7d1309ba6b38b82ef7fc9e80174de3f9184ac8b4
-  Expo: 5f9812539b12998a813315ea8036971c9b56a9e7
-  ExpoModulesCore: d04e519b3e8e21523b195bb21a40144e30f1e163
+  EXFileSystem: 99aac7962c11c680681819dd9cbca24e20e5b1e7
+  Expo: 363a3f3c60d5a1d4f8badb29a869005487f2d9e4
+  ExpoModulesCore: e41ed0b72daeac74731816ad7997d639f0115a9d
   FBLazyVector: e5569e42a1c79ca00521846c223173a57aca1fe1
   FBReactNativeSpec: fe08c1cd7e2e205718d77ad14b34957cce949b58
   fmt: ff9d55029c625d3757ed641535fd4a75fedc7ce9
@@ -816,7 +815,7 @@ SPEC CHECKSUMS:
   RNShare: d76b8c9c6e6ffb38fc18f40b4338c9d867592ed3
   RNSVG: 551acb6562324b1d52a4e0758f7ca0ec234e278f
   RNVectorIcons: 4143ba35feebab8fdbe6bc43d1e776b393d47ac8
-  Rudder: db8cfa8e5757599dfec74a1bdd04dc17b3859789
+  Rudder: 5569284198eaddd1763fb5faff8e076d4ac2c858
   SDWebImage: a7f831e1a65eb5e285e3fb046a23fcfbf08e696d
   SDWebImageWebPCoder: f93010f3f6c031e2f8fb3081ca4ee6966c539815
   Sentry: e58e062056a061ae1145e22ad3dff6e506bff177
