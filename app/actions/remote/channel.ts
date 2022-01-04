@@ -113,12 +113,13 @@ export const handleCreateChannel = async (serverUrl: string, displayName: string
     try {
         const currentUserId = await queryCurrentUserId(database);
         const currentTeamId = await queryCurrentTeamId(database);
+        const name =  generateChannelNameFromDisplayName(displayName)
         const channel = {
             creator_id: currentUserId,
             team_id: currentTeamId,
             display_name: displayName,
             header,
-            name: generateChannelNameFromDisplayName(displayName),
+            name,
             purpose,
             type,
         } as Channel;

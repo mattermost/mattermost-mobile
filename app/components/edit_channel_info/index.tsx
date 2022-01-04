@@ -137,7 +137,7 @@ type Props = {
         onDisplayNameChange: (displayName: string) => void;
         onHeaderChange: (header: string) => void;
         onPurposeChange: (purpose: string) => void;
-        onTypeChange: (type: string) => void;
+        onTypeChange: (type: ChannelType) => void | undefined;
         oldChannelURL?: string;
         oldDisplayName?: string;
         oldHeader?: string;
@@ -236,7 +236,7 @@ export default function EditChannelInfo({
         }
     };
 
-    const onTypeSelect = (typeText: string) => {
+    const onTypeSelect = (typeText: ChannelType) => {
         onTypeChange(typeText);
     };
 

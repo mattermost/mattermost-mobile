@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useState, useEffect} from 'react';
+import React, {ChangeEvent, useState, useEffect} from 'react';
 import {useIntl} from 'react-intl';
 import {
     Keyboard,
@@ -9,24 +9,21 @@ import {
 } from 'react-native';
 import {Navigation} from 'react-native-navigation';
 
-import {handlePatchChannel} from '@actions/remote/channel';
+import {handlePatchChannel, handleCreateChannel} from '@actions/remote/channel';
 import EditChannelInfo from '@components/edit_channel_info';
 import {General} from '@constants';
 import {useTheme} from '@context/theme';
-import {popTopScreen, setButtons} from '@screens/navigation';
+import {popTopScreen, dismissModal, setButtons} from '@screens/navigation';
 
 import type ChannelModel from '@typings/database/models/servers/channel';
 import type ChannelInfoModel from '@typings/database/models/servers/channel_info';
-
-// import {validateChannelURL, validateDisplayName} from '@utils/channel';
 
 type Props = {
         serverUrl: string;
         componentId: string;
         categoryId: string;
-        channel: ChannelModel;
-        channelInfo: ChannelInfoModel;
-        closeButton: object;
+        channel?: ChannelModel;
+        channelInfo?: ChannelInfoModel;
 }
 
 // static propTypes = {
@@ -39,115 +36,131 @@ type Props = {
 //     updateChannelRequest: PropTypes.object.isRequired,
 // };
 
-const CLOSE_EDIT_CHANNEL_ID = 'close-edit-channel';
-const EDIT_CHANNEL_ID = 'edit-channel';
+const CLOSE_CHANNEL_ID = 'close-channel';
+const EDIT_CHANNEL_ID = 'update-channel';
+const CREATE_CHANNEL_ID = 'create-channel';
 
-const EditChannel = ({serverUrl, componentId, closeButton, channel, channelInfo}: Props) => {
+type Button = {
+    testID: string;
+    id: string;
+    enabled: boolean;
+    showAsAction: string;
+    color: string;
+    text: string;
+};
+
+const EditChannel = ({serverUrl, componentId, channel, channelInfo}: Props) => {
     const intl = useIntl();
     const {formatMessage} = intl;
     const theme = useTheme();
 
     const [error, setError] = useState<string>('');
-    const [updating, setUpdating] = useState<boolean>(false);
-    const [displayName, setDisplayName] = useState<string>(channel?.displayName || '');
-    const [channelUrl, setChannelUrl] = useState<string>('');
-    const [purpose, setPurpose] = useState<string>(channelInfo?.purpose || '');
-    const [header, setHeader] = useState<string>(channelInfo?.header || '');
+    const [saving, setSaving] = useState<boolean>(false);
+    const [type, setType] = useState<ChannelType>(channel?.type || General.OPEN_CHANNEL);
+    const [rightButton, setRightButton] = useState<Button>();
 
-    const rightButton = {
-        testID: 'edit_channel.save.button',
-        id: EDIT_CHANNEL_ID,
-        enabled: false,
-        showAsAction: 'always',
-        color: theme.sidebarHeaderTextColor,
-        text: formatMessage({id: 'mobile.edit_channel', defaultMessage: 'Save'}),
-    };
-
-    const emitCanUpdateChannel = (enabled: boolean) => {
-        const rightButtons = [{...rightButton, enabled}] as never[];
-        const leftButtons: never[] = [];
-
-        setButtons(componentId, {
-            leftButtons,
-            rightButtons,
-        });
-    };
+    // const [channelUrl, setChannelUrl] = useState<string>('');
+    const displayName = useFormInput(channel?.displayName);
+    const purpose = useFormInput(channelInfo?.purpose);
+    const header = useFormInput(channelInfo?.header);
 
     useEffect(() => {
-        const rightButtons = [{...rightButton, enabled: false}] as never[];
-        const leftButtons: never[] = [];
+        const rightButton = {
+            testID: 'edit_channel.save.button',
+            id: EDIT_CHANNEL_ID,
+            enabled: false,
+            showAsAction: 'always',
+            color: theme.sidebarHeaderTextColor,
+            text: formatMessage({id: 'mobile.edit_channel', defaultMessage: 'Save'}),
+        };
+
+        if (!channel) {
+            rightButton.id = CREATE_CHANNEL_ID,
+            rightButton.text =  formatMessage({id: 'mobile.create_channel', defaultMessage: 'Create'})
+            setRightButton(rightButton)
+        } else {
+            setRightButton(rightButton)
+        }
         setButtons(componentId, {
-            leftButtons,
-            rightButtons,
+            leftButtons: [],
+            rightButtons: [{...rightButton, enabled: false}] as never[],
         });
     }, []);
 
+    const emitCanSaveChannel = (enabled: boolean) => {
+        setButtons(componentId, {
+            leftButtons: [],
+            rightButtons: [{...rightButton, enabled}] as never[],
+        });
+    };
+
     const onRequestStart = () => {
+        emitSaving(true);
         setError('');
-        setUpdating(true);
+        setSaving(true);
+        Keyboard.dismiss();
     };
 
     const onRequestFailure = (errorText: string) => {
         setError(errorText);
-        setUpdating(false);
+        setSaving(false);
     };
 
-    const emitUpdating = (loading: boolean) => {
-        const rightButtons = [{...rightButton, enabled: !loading}] as never[];
-        const leftButtons: never[] = [];
+    const onRequestComplete = () => {
+        InteractionManager.runAfterInteractions(() => {
+            // EventEmitter.emit(NavigationTypes.CLOSE_MAIN_SIDEBAR);
+            emitSaving(false);
+            setError('');
+            setSaving(false);
+            close(true);
+        });
+    };
+
+    const emitSaving = (loading: boolean) => {
         setButtons(componentId, {
-            leftButtons,
-            rightButtons,
+            leftButtons: [],
+            rightButtons: [{...rightButton, enabled: !loading}] as never[],
         });
     };
 
     const isDirect = (): boolean => {
-        return channel.type === General.DM_CHANNEL || channel.type === General.GM_CHANNEL;
+        return channel?.type === General.DM_CHANNEL || channel?.type === General.GM_CHANNEL;
+    };
+
+    const onCreateChannel = async () => {
+        onRequestStart();
+        const channel = await handleCreateChannel(serverUrl, displayName.value, purpose.value, header.value, type);
+        if (channel.error) {
+            emitSaving(false);
+            onRequestFailure(channel.error as string);
+            return;
+        }
+
+        onRequestComplete()
+        // console.log('channel.channel.id', channel.channel.id)
+        // switchToChannel(serverUrl, channel.channel.id)
     };
 
     const onUpdateChannel = async () => {
-        emitUpdating(true);
         onRequestStart();
-
-        Keyboard.dismiss();
-
         const patchChannel = {
             id: channel.id,
             type: channel.type,
-            display_name: isDirect() ? '' : displayName,
+            display_name: isDirect() ? '' : displayName.value,
 
             // name: channelURL,
-            purpose,
-            header,
+            purpose: purpose.value,
+            header: header.value,
         } as Channel;
-
-        // if (!isDirect) {
-        //     let error = validateDisplayName(displayName.trim());
-        //     if (error) {
-        //         setError(error);
-        //         return;
-        //     }
-        //
-        //     error = validateChannelURL(channelURL.trim());
-        //     if (error) {
-        //         setError(error);
-        //         return;
-        //     }
-        // }
 
         const patchedChannel = await handlePatchChannel(serverUrl, patchChannel);
         if (patchedChannel.error) {
-            emitUpdating(false);
+            emitSaving(false);
             onRequestFailure(patchedChannel.error as string);
             return;
         }
 
-        InteractionManager.runAfterInteractions(() => {
-            emitUpdating(false);
-            setError('');
-            setUpdating(false);
-            close(false);
-        });
+        onRequestComplete()
 
         // const data = await this.props.actions.patchChannel(id, channel);
         // if (data.error && data.error.server_error_id === 'store.sql_channel.update.archived_channel.app_error') {
@@ -155,20 +168,29 @@ const EditChannel = ({serverUrl, componentId, closeButton, channel, channelInfo}
         // }
     };
 
-    const close = () => {
+
+    const close = (goBack = false) => {
+        Keyboard.dismiss();
         if (!isDirect()) {
         //     this.props.actions.setChannelDisplayName(this.state.displayName);
         }
 
-        popTopScreen();
+        if (goBack) {
+            popTopScreen();
+        } else {
+            dismissModal();
+        }
     };
 
     useEffect(() => {
         const update = Navigation.events().registerComponentListener({
             navigationButtonPressed: ({buttonId}: {buttonId: string}) => {
                 switch (buttonId) {
-                    case CLOSE_EDIT_CHANNEL_ID:
-                        close();
+                    case CLOSE_CHANNEL_ID:
+                        close(true);
+                        break;
+                    case CREATE_CHANNEL_ID:
+                        onCreateChannel();
                         break;
                     case EDIT_CHANNEL_ID:
                         onUpdateChannel();
@@ -182,86 +204,35 @@ const EditChannel = ({serverUrl, componentId, closeButton, channel, channelInfo}
         };
     }, [displayName, header, purpose]);
 
-    const onDisplayNameChange = (displayNameText: string) => {
-        setDisplayName(displayNameText);
-    };
-
     const onChannelURLChange = (channelURLText: string) => {
         setChannelUrl(channelURLText);
     };
 
-    const onPurposeChange = (purposeText: string) => {
-        setPurpose(purposeText);
+    const onTypeChange = (typeText: ChannelType) => {
+        setType(typeText);
     };
-
-    const onHeaderChange = (headerText: string) => {
-        setHeader(headerText);
-    };
-
-    // static getDerivedStateFromProps(nextProps, state) {
-    //     const {updateChannelRequest} = nextProps;
-    //
-    //     if (state.updateChannelRequest !== updateChannelRequest) {
-    //         const newState = {
-    //             error: null,
-    //             updating: true,
-    //             updateChannelRequest,
-    //         };
-    //
-    //         switch (updateChannelRequest.status) {
-    //         case RequestStatus.SUCCESS:
-    //             newState.updating = false;
-    //             break;
-    //         case RequestStatus.FAILURE:
-    //             newState.error = updateChannelRequest.error;
-    //             newState.updating = false;
-    //             break;
-    //         }
-    //
-    //         return newState;
-    //     }
-    //     return null;
-    // }
-
-    // componentDidUpdate(prevProps) {
-    //     if (prevProps.updateChannelRequest !== this.props.updateChannelRequest) {
-    //         switch (this.props.updateChannelRequest.status) {
-    //         case RequestStatus.STARTED:
-    //             emitUpdating(true);
-    //             break;
-    //         case RequestStatus.SUCCESS:
-    //             EventEmitter.emit(NavigationTypes.CLOSE_MAIN_SIDEBAR);
-    //             InteractionManager.runAfterInteractions(() => {
-    //                 emitUpdating(false);
-    //                 this.close();
-    //             });
-    //             break;
-    //         case RequestStatus.FAILURE:
-    //             emitUpdating(false);
-    //             break;
-    //         }
-    //     }
-    // }
 
     return (
         <EditChannelInfo
-            testID='edit_channel.screen'
-            enableRightButton={emitCanUpdateChannel}
+            testID='create_or_edit_channel.screen'
+            enableRightButton={emitCanSaveChannel}
             error={error}
-            saving={updating}
-            channelType={channel.type}
+            saving={saving}
+            channelType={channel?.type}
 
+            onTypeChange={channel?.type ? undefined : onTypeChange}
+            type={type}
             //  currentTeamUrl={currentTeamUrl}
-            onDisplayNameChange={onDisplayNameChange}
+            onDisplayNameChange={displayName.onChange}
 
             //  onChannelURLChange={onChannelURLChange}
-            onPurposeChange={onPurposeChange}
-            onHeaderChange={onHeaderChange}
-            displayName={displayName}
+            onPurposeChange={purpose.onChange}
+            onHeaderChange={header.onChange}
+            displayName={displayName.value}
 
             //  channelURL={channelURL}
-            header={header}
-            purpose={purpose}
+            header={header.value}
+            purpose={purpose.value}
             editing={true}
             oldDisplayName={channel?.displayName || ''}
 
@@ -271,5 +242,19 @@ const EditChannel = ({serverUrl, componentId, closeButton, channel, channelInfo}
         />
     );
 };
+
+
+function useFormInput(initialValue?: string) {
+    const [value, setValue] = useState<string>(initialValue || '')
+
+    function handleChange (value: string) {
+        setValue(value)
+    }
+
+    return {
+        value,
+        onChange: handleChange
+    }
+}
 
 export default EditChannel;
