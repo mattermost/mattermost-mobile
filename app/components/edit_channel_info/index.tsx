@@ -126,23 +126,26 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => ({
     },
 }));
 
+
+type FormInput = {
+    value: string;
+    onChange: (value: string) => void;
+}
+
 type Props = {
         channelType?: string;
         channelURL?: string;
-        displayName?: string;
+        displayName?: FormInput;
         editing?: boolean;
         enableRightButton: (enable: boolean) => void;
         error?: string | object;
-        header?: string;
-        onDisplayNameChange: (displayName: string) => void;
-        onHeaderChange: (header: string) => void;
-        onPurposeChange: (purpose: string) => void;
+        header?: FormInput;
         onTypeChange: (type: ChannelType) => void | undefined;
         oldChannelURL?: string;
         oldDisplayName?: string;
         oldHeader?: string;
         oldPurpose?: string;
-        purpose?: string;
+        purpose?: FormInput;
         saving: boolean;
         testID?: string;
         type?: string;
@@ -156,9 +159,6 @@ export default function EditChannelInfo({
     enableRightButton,
     error,
     header,
-    onDisplayNameChange,
-    onHeaderChange,
-    onPurposeChange,
     onTypeChange,
     oldChannelURL,
     oldDisplayName,
@@ -207,12 +207,12 @@ export default function EditChannelInfo({
     };
 
     const canUpdate = () => {
-        return displayName !== oldDisplayName || channelURL !== oldChannelURL ||
-            purpose !== oldPurpose || header !== oldHeader;
+        return displayName?.value !== oldDisplayName || channelURL !== oldChannelURL ||
+            purpose?.value !== oldPurpose || header?.value !== oldHeader;
     };
 
     const onDisplayNameChangeText = (displayNameText: string) => {
-        onDisplayNameChange(displayNameText);
+        displayName?.onChange(displayNameText);
         if (editing) {
             enableRightButton(canUpdate());
             return;
@@ -223,14 +223,14 @@ export default function EditChannelInfo({
     };
 
     const onPurposeChangeText = (purposeText: string) => {
-        onPurposeChange(purposeText);
+        purpose?.onChange(purposeText);
         if (editing) {
             enableRightButton(canUpdate());
         }
     };
 
     const onHeaderChangeText = (headerText: string) => {
-        onHeaderChange(headerText);
+        header?.onChange(headerText);
         if (editing) {
             enableRightButton(canUpdate());
         }
@@ -404,7 +404,7 @@ export default function EditChannelInfo({
                                 </View>
                                 <View style={styles.inputContainer}>
                                     <TextInput
-                                        value={displayName}
+                                        value={displayName?.value}
                                         onChangeText={onDisplayNameChangeText}
                                         style={styles.input}
                                         autoCapitalize='none'
@@ -435,7 +435,7 @@ export default function EditChannelInfo({
                                         allowFontScaling={true}
                                         testID='edit_channel_info.purpose.input'
                                         ref={purposeInput}
-                                        value={purpose}
+                                        value={purpose?.value}
                                         onChangeText={onPurposeChangeText}
                                         style={[styles.input, {height: 110}]}
                                         autoCapitalize='none'
@@ -479,7 +479,7 @@ export default function EditChannelInfo({
                                 allowFontScaling={true}
                                 testID='edit_channel_info.header.input'
                                 ref={headerInput}
-                                value={header}
+                                value={header?.value}
                                 onChangeText={onHeaderChangeText}
                                 style={[styles.input, {height: 110}]}
                                 autoCapitalize='none'

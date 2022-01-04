@@ -224,16 +224,12 @@ const CreateOrEditChannel = ({serverUrl, componentId, channel, channelInfo}: Pro
             onTypeChange={channel?.type ? undefined : onTypeChange}
             type={type}
             //  currentTeamUrl={currentTeamUrl}
-            onDisplayNameChange={displayName.onChange}
-
             //  onChannelURLChange={onChannelURLChange}
-            onPurposeChange={purpose.onChange}
-            onHeaderChange={header.onChange}
-            displayName={displayName.value}
 
             //  channelURL={channelURL}
-            header={header.value}
-            purpose={purpose.value}
+            displayName={displayName}
+            header={header}
+            purpose={purpose}
             editing={true}
             oldDisplayName={channel?.displayName || ''}
 
