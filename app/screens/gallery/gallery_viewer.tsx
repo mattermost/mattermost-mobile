@@ -166,7 +166,7 @@ const GalleryViewer = (props: GalleryProps) => {
             return (
                 <View
                     key={file.id}
-                    style={styles.item}
+                    style={[styles.item, {bottom: 80}]}
                 >
                     <GalleryVideo
                         isActive={currentIndex === i}

@@ -23,7 +23,8 @@ import type {CallbackFunctionWithoutArguments, PrepareFileRef, HeaderProps, Head
 const styles = StyleSheet.create({
     header: {
         position: 'absolute',
-        top: 0,
+        bottom: 0,
+        height: 70,
         width: '100%',
         elevation: 10,
     },
