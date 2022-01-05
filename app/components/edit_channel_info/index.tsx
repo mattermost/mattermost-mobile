@@ -126,7 +126,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => ({
     },
 }));
 
-
 type FormInput = {
     value: string;
     onChange: (value: string) => void;
