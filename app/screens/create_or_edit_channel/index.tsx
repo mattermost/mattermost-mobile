@@ -14,6 +14,7 @@ import EditChannelInfo from '@components/edit_channel_info';
 import {General} from '@constants';
 import {useTheme} from '@context/theme';
 import {popTopScreen, dismissModal, setButtons} from '@screens/navigation';
+import {validateDisplayName} from '@utils/channel';
 
 import type ChannelModel from '@typings/database/models/servers/channel';
 import type ChannelInfoModel from '@typings/database/models/servers/channel_info';
@@ -125,8 +126,25 @@ const CreateOrEditChannel = ({serverUrl, componentId, channel, channelInfo}: Pro
         return channel?.type === General.DM_CHANNEL || channel?.type === General.GM_CHANNEL;
     };
 
+    const isValidDisplayName = (): boolean => {
+        if (!isDirect()) {
+            const dName = displayName.value || '';
+            const result = validateDisplayName(intl, dName);
+            if (result) {
+                setError(result);
+                setSaving(false);
+                return false;
+            }
+        }
+        return true;
+    };
+
     const onCreateChannel = async () => {
         onRequestStart();
+        if (!isValidDisplayName()) {
+            return;
+        }
+
         const createdChannel = await handleCreateChannel(serverUrl, displayName.value, purpose.value, header.value, type);
         if (createdChannel.error) {
             emitSaving(false);
@@ -142,6 +160,10 @@ const CreateOrEditChannel = ({serverUrl, componentId, channel, channelInfo}: Pro
 
     const onUpdateChannel = async () => {
         onRequestStart();
+        if (!isValidDisplayName()) {
+            return;
+        }
+
         const patchChannel = {
             id: channel!.id,
             type: channel!.type,

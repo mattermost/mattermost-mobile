@@ -1,15 +1,9 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
-
-import {useIntl} from 'react-intl';
-
 import {Channel, General, Permissions} from '@constants';
 import {t, DEFAULT_LOCALE} from '@i18n';
 import {hasPermission} from '@utils/role';
 import {cleanUpUrlable} from '@utils/url';
-
-const intl = useIntl();
-const {formatMessage} = intl;
 
 export function selectDefaultChannelForTeam(channels: Channel[], memberships: ChannelMembership[], teamId: string, roles?: Role[], locale = DEFAULT_LOCALE) {
     let channel: Channel|undefined;
@@ -72,19 +66,19 @@ const messages = {
     },
 };
 
-export const validateDisplayName = (displayName: string) => {
+export const validateDisplayName = (intl: any, displayName: string) => {
     let errorMessage;
     switch (true) {
         case !displayName:
-            errorMessage = formatMessage(messages.display_name_required);
+            errorMessage = intl.formatMessage(messages.display_name_required);
             break;
         case displayName.length > Channel.MAX_CHANNELNAME_LENGTH:
-            errorMessage = formatMessage(
+            errorMessage = intl.formatMessage(
                 messages.display_name_maxLength,
                 {maxLength: Channel.MAX_CHANNELNAME_LENGTH});
             break;
         case displayName.length < Channel.MIN_CHANNELNAME_LENGTH:
-            errorMessage = formatMessage(
+            errorMessage = intl.formatMessage(
                 messages.display_name_minLength,
                 {minLength: Channel.MIN_CHANNELNAME_LENGTH});
             break;
@@ -95,14 +89,14 @@ export const validateDisplayName = (displayName: string) => {
     return errorMessage;
 };
 
-export const validateChannelURL = (channelURL: string) => {
+export const validateChannelURL = (intl: any, channelURL: string) => {
     let errorMessage;
     switch (true) {
         case !channelURL:
-            errorMessage = formatMessage(messages.name_required);
+            errorMessage = intl.formatMessage(messages.name_required);
             break;
         case channelURL.length > Channel.MAX_CHANNELNAME_LENGTH:
-            errorMessage = formatMessage(
+            errorMessage = intl.formatMessage(
                 messages.name_maxLength,
                 {maxLength: Channel.MAX_CHANNELNAME_LENGTH},
             );
@@ -120,6 +114,6 @@ export const validateChannelURL = (channelURL: string) => {
         return '';
     }
 
-    return formatMessage(messages.name_lowercase);
+    return intl.formatMessage(messages.name_lowercase);
 };
 
