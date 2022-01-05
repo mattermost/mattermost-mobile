@@ -75,12 +75,11 @@ const CreateOrEditChannel = ({serverUrl, componentId, channel, channelInfo}: Pro
         };
 
         if (!channel) {
-            rightButton.id = CREATE_CHANNEL_ID,
-            rightButton.text =  formatMessage({id: 'mobile.create_channel', defaultMessage: 'Create'})
-            setRightButton(rightButton)
-        } else {
-            setRightButton(rightButton)
+            rightButton.id = CREATE_CHANNEL_ID;
+            rightButton.text = formatMessage({id: 'mobile.create_channel', defaultMessage: 'Create'});
         }
+
+        setRightButton(rightButton);
         setButtons(componentId, {
             leftButtons: [],
             rightButtons: [{...rightButton, enabled: false}] as never[],
@@ -129,14 +128,15 @@ const CreateOrEditChannel = ({serverUrl, componentId, channel, channelInfo}: Pro
 
     const onCreateChannel = async () => {
         onRequestStart();
-        const channel = await handleCreateChannel(serverUrl, displayName.value, purpose.value, header.value, type);
-        if (channel.error) {
+        const createdChannel = await handleCreateChannel(serverUrl, displayName.value, purpose.value, header.value, type);
+        if (createdChannel.error) {
             emitSaving(false);
-            onRequestFailure(channel.error as string);
+            onRequestFailure(createdChannel.error as string);
             return;
         }
 
-        onRequestComplete()
+        onRequestComplete();
+
         // console.log('channel.channel.id', channel.channel.id)
         // switchToChannel(serverUrl, channel.channel.id)
     };
@@ -160,14 +160,13 @@ const CreateOrEditChannel = ({serverUrl, componentId, channel, channelInfo}: Pro
             return;
         }
 
-        onRequestComplete()
+        onRequestComplete();
 
         // const data = await this.props.actions.patchChannel(id, channel);
         // if (data.error && data.error.server_error_id === 'store.sql_channel.update.archived_channel.app_error') {
         //     this.props.actions.getChannel(id);
         // }
     };
-
 
     const close = (goBack = false) => {
         Keyboard.dismiss();
@@ -211,7 +210,6 @@ const CreateOrEditChannel = ({serverUrl, componentId, channel, channelInfo}: Pro
     const onTypeChange = (typeText: ChannelType) => {
         setType(typeText);
     };
-    // console.log('channel.type', channel.type)
 
     return (
         <EditChannelInfo
@@ -220,12 +218,11 @@ const CreateOrEditChannel = ({serverUrl, componentId, channel, channelInfo}: Pro
             error={error}
             saving={saving}
             channelType={channel?.type}
-
             onTypeChange={channel?.type ? undefined : onTypeChange}
             type={type}
+
             //  currentTeamUrl={currentTeamUrl}
             //  onChannelURLChange={onChannelURLChange}
-
             //  channelURL={channelURL}
             displayName={displayName}
             header={header}
@@ -240,18 +237,17 @@ const CreateOrEditChannel = ({serverUrl, componentId, channel, channelInfo}: Pro
     );
 };
 
-
 function useFormInput(initialValue?: string) {
-    const [value, setValue] = useState<string>(initialValue || '')
+    const [value, setValue] = useState<string>(initialValue || '');
 
-    function handleChange (value: string) {
-        setValue(value)
+    function handleChange(text: string) {
+        setValue(text);
     }
 
     return {
         value,
-        onChange: handleChange
-    }
+        onChange: handleChange,
+    };
 }
 
 export default CreateOrEditChannel;

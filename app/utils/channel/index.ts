@@ -3,10 +3,8 @@
 
 import {useIntl} from 'react-intl';
 
-import {General, Permissions} from '@constants';
-import {Channel} from '@constants';
-import {DEFAULT_LOCALE} from '@i18n';
-import {t} from '@i18n';
+import {Channel, General, Permissions} from '@constants';
+import {t, DEFAULT_LOCALE} from '@i18n';
 import {hasPermission} from '@utils/role';
 import {cleanUpUrlable} from '@utils/url';
 

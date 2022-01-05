@@ -16,8 +16,7 @@ import MyChannelModel from '@typings/database/models/servers/my_channel';
 import MyTeamModel from '@typings/database/models/servers/my_team';
 import TeamModel from '@typings/database/models/servers/team';
 import {generateId} from '@utils/general';
-import {cleanUpUrlable} from '@utils/url';
-import {PERMALINK_GENERIC_TEAM_NAME_REDIRECT} from '@utils/url';
+import {cleanUpUrlable, PERMALINK_GENERIC_TEAM_NAME_REDIRECT} from '@utils/url';
 import {displayGroupMessageName, displayUsername} from '@utils/user';
 
 import {fetchRolesIfNeeded} from './role';
@@ -113,7 +112,7 @@ export const handleCreateChannel = async (serverUrl: string, displayName: string
     try {
         const currentUserId = await queryCurrentUserId(database);
         const currentTeamId = await queryCurrentTeamId(database);
-        const name =  generateChannelNameFromDisplayName(displayName)
+        const name = generateChannelNameFromDisplayName(displayName);
         const channel = {
             creator_id: currentUserId,
             team_id: currentTeamId,
