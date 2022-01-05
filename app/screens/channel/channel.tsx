@@ -32,7 +32,7 @@ type ChannelProps = {
     teamId: string;
 };
 
-const edges: Edge[] = ['bottom', 'left', 'right'];
+const edges: Edge[] = ['left', 'right'];
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     flex: {
