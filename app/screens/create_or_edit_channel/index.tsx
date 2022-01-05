@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {ChangeEvent, useState, useEffect} from 'react';
+import React, {useState, useEffect} from 'react';
 import {useIntl} from 'react-intl';
 import {
     Keyboard,
@@ -32,7 +32,6 @@ type Props = {
 //         getChannel: PropTypes.func.isRequired,
 //         setChannelDisplayName: PropTypes.func.isRequired,
 //     }),
-//     currentTeamUrl: PropTypes.string.isRequired,
 //     updateChannelRequest: PropTypes.object.isRequired,
 // };
 
@@ -65,7 +64,7 @@ const CreateOrEditChannel = ({serverUrl, componentId, channel, channelInfo}: Pro
     const header = useFormInput(channelInfo?.header);
 
     useEffect(() => {
-        const rightButton = {
+        const button = {
             testID: 'edit_channel.save.button',
             id: EDIT_CHANNEL_ID,
             enabled: false,
@@ -75,14 +74,14 @@ const CreateOrEditChannel = ({serverUrl, componentId, channel, channelInfo}: Pro
         };
 
         if (!channel) {
-            rightButton.id = CREATE_CHANNEL_ID;
-            rightButton.text = formatMessage({id: 'mobile.create_channel', defaultMessage: 'Create'});
+            button.id = CREATE_CHANNEL_ID;
+            button.text = formatMessage({id: 'mobile.create_channel', defaultMessage: 'Create'});
         }
 
-        setRightButton(rightButton);
+        setRightButton(button);
         setButtons(componentId, {
             leftButtons: [],
-            rightButtons: [{...rightButton, enabled: false}] as never[],
+            rightButtons: [{...button, enabled: false}] as never[],
         });
     }, []);
 
@@ -144,8 +143,8 @@ const CreateOrEditChannel = ({serverUrl, componentId, channel, channelInfo}: Pro
     const onUpdateChannel = async () => {
         onRequestStart();
         const patchChannel = {
-            id: channel.id,
-            type: channel.type,
+            id: channel!.id,
+            type: channel!.type,
             display_name: isDirect() ? '' : displayName.value,
 
             // name: channelURL,
