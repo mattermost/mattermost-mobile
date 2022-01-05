@@ -8,7 +8,7 @@ export type FormInput = {
     onChange: (value: string) => void;
 }
 
-export function useFormInput(initialValue?: string): FormInput {
+export const useFormInput = (initialValue?: string): FormInput => {
     const [value, setValue] = useState<string>(initialValue || '');
 
     function handleChange(text: string) {

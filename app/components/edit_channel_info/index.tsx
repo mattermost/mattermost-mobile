@@ -14,7 +14,6 @@ import {
     View,
 } from 'react-native';
 import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
-import {FormInput} from '@hooks/forms'
 import {SafeAreaView} from 'react-native-safe-area-context';
 
 import CompassIcon from '@components/compass_icon';
@@ -23,6 +22,7 @@ import FormattedText from '@components/formatted_text';
 import Loading from '@components/loading';
 import {General, Channel} from '@constants';
 import {useTheme} from '@context/theme';
+import {FormInput} from '@hooks/forms';
 import {t} from '@i18n';
 import {
     changeOpacity,
@@ -206,26 +206,26 @@ export default function EditChannelInfo({
             purpose?.value !== oldPurpose || header?.value !== oldHeader;
     };
 
-    const onDisplayNameChangeText = (displayNameText: string) => {
-        displayName?.onChange(displayNameText);
+    const onDisplayNameChangeText = (text: string) => {
+        displayName?.onChange(text);
         if (editing) {
             enableRightButton(canUpdate());
             return;
         }
 
-        const displayNameExists = displayNameText && displayNameText.length >= 2;
+        const displayNameExists = text && text.length >= 2;
         enableRightButton(Boolean(displayNameExists));
     };
 
-    const onPurposeChangeText = (purposeText: string) => {
-        purpose?.onChange(purposeText);
+    const onPurposeChangeText = (text: string) => {
+        purpose?.onChange(text);
         if (editing) {
             enableRightButton(canUpdate());
         }
     };
 
-    const onHeaderChangeText = (headerText: string) => {
-        header?.onChange(headerText);
+    const onHeaderChangeText = (text: string) => {
+        header?.onChange(text);
         if (editing) {
             enableRightButton(canUpdate());
         }

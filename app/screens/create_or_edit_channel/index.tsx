@@ -13,7 +13,7 @@ import {handlePatchChannel, handleCreateChannel} from '@actions/remote/channel';
 import EditChannelInfo from '@components/edit_channel_info';
 import {General} from '@constants';
 import {useTheme} from '@context/theme';
-import {useFormInput, FormInput} from '@hooks/forms';
+import {useFormInput} from '@hooks/forms';
 import {popTopScreen, dismissModal, setButtons} from '@screens/navigation';
 import {validateDisplayName} from '@utils/channel';
 
