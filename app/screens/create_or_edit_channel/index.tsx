@@ -13,6 +13,7 @@ import {handlePatchChannel, handleCreateChannel} from '@actions/remote/channel';
 import EditChannelInfo from '@components/edit_channel_info';
 import {General} from '@constants';
 import {useTheme} from '@context/theme';
+import {useFormInput, FormInput} from '@hooks/forms';
 import {popTopScreen, dismissModal, setButtons} from '@screens/navigation';
 import {validateDisplayName} from '@utils/channel';
 
@@ -189,7 +190,7 @@ const CreateOrEditChannel = ({serverUrl, componentId, channel, channelInfo}: Pro
         // }
     };
 
-    const close = (goBack = false) => {
+    const close = (goBack = false): void => {
         Keyboard.dismiss();
         if (!isDirect()) {
         //     this.props.actions.setChannelDisplayName(this.state.displayName);
@@ -257,18 +258,5 @@ const CreateOrEditChannel = ({serverUrl, componentId, channel, channelInfo}: Pro
         />
     );
 };
-
-function useFormInput(initialValue?: string) {
-    const [value, setValue] = useState<string>(initialValue || '');
-
-    function handleChange(text: string) {
-        setValue(text);
-    }
-
-    return {
-        value,
-        onChange: handleChange,
-    };
-}
 
 export default CreateOrEditChannel;

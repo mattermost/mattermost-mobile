@@ -14,6 +14,7 @@ import {
     View,
 } from 'react-native';
 import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
+import {FormInput} from '@hooks/forms'
 import {SafeAreaView} from 'react-native-safe-area-context';
 
 import CompassIcon from '@components/compass_icon';
@@ -125,11 +126,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => ({
         textAlign: 'right',
     },
 }));
-
-type FormInput = {
-    value: string;
-    onChange: (value: string) => void;
-}
 
 type Props = {
         channelType?: string;
