@@ -131,7 +131,6 @@ type Props = {
         channelType?: string;
         channelURL?: string;
         displayName?: FormInput;
-        editing?: boolean;
         enableRightButton: (enable: boolean) => void;
         error?: string | object;
         header?: FormInput;
@@ -150,7 +149,6 @@ export default function EditChannelInfo({
     channelType,
     channelURL,
     displayName,
-    editing = false,
     enableRightButton,
     error,
     header,
@@ -208,27 +206,18 @@ export default function EditChannelInfo({
 
     const onDisplayNameChangeText = (text: string) => {
         displayName?.onChange(text);
-        if (editing) {
-            enableRightButton(canUpdate());
-            return;
-        }
-
         const displayNameExists = text && text.length >= 2;
-        enableRightButton(Boolean(displayNameExists));
+        enableRightButton(canUpdate() && Boolean(displayNameExists));
     };
 
     const onPurposeChangeText = (text: string) => {
         purpose?.onChange(text);
-        if (editing) {
-            enableRightButton(canUpdate());
-        }
+        enableRightButton(canUpdate());
     };
 
     const onHeaderChangeText = (text: string) => {
         header?.onChange(text);
-        if (editing) {
-            enableRightButton(canUpdate());
-        }
+        enableRightButton(canUpdate());
     };
 
     const onTypeSelect = (typeText: ChannelType) => {

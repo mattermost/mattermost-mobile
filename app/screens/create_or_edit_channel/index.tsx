@@ -249,7 +249,6 @@ const CreateOrEditChannel = ({serverUrl, componentId, channel, channelInfo}: Pro
             displayName={displayName}
             header={header}
             purpose={purpose}
-            editing={true}
             oldDisplayName={channel?.displayName || ''}
 
             //oldChannelURL={oldChannelURL}
