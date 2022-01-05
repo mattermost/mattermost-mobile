@@ -129,13 +129,11 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => ({
 
 type Props = {
         channelType?: string;
-        channelURL?: string;
         displayName?: FormInput;
         enableRightButton: (enable: boolean) => void;
         error?: string | object;
         header?: FormInput;
         onTypeChange: (type: ChannelType) => void | undefined;
-        oldChannelURL?: string;
         oldDisplayName?: string;
         oldHeader?: string;
         oldPurpose?: string;
@@ -147,13 +145,11 @@ type Props = {
 
 export default function EditChannelInfo({
     channelType,
-    channelURL,
     displayName,
     enableRightButton,
     error,
     header,
     onTypeChange,
-    oldChannelURL,
     oldDisplayName,
     oldHeader,
     oldPurpose,
@@ -200,7 +196,7 @@ export default function EditChannelInfo({
     };
 
     const canUpdate = () => {
-        return displayName?.value !== oldDisplayName || channelURL !== oldChannelURL ||
+        return displayName?.value !== oldDisplayName ||
             purpose?.value !== oldPurpose || header?.value !== oldHeader;
     };
 

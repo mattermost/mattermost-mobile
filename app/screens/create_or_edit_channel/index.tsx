@@ -60,7 +60,6 @@ const CreateOrEditChannel = ({serverUrl, componentId, channel, channelInfo}: Pro
     const [type, setType] = useState<ChannelType>(channel?.type || General.OPEN_CHANNEL);
     const [rightButton, setRightButton] = useState<Button>();
 
-    // const [channelUrl, setChannelUrl] = useState<string>('');
     const displayName = useFormInput(channel?.displayName);
     const purpose = useFormInput(channelInfo?.purpose);
     const header = useFormInput(channelInfo?.header);
@@ -169,8 +168,6 @@ const CreateOrEditChannel = ({serverUrl, componentId, channel, channelInfo}: Pro
             id: channel!.id,
             type: channel!.type,
             display_name: isDirect() ? '' : displayName.value,
-
-            // name: channelURL,
             purpose: purpose.value,
             header: header.value,
         } as Channel;
@@ -225,10 +222,6 @@ const CreateOrEditChannel = ({serverUrl, componentId, channel, channelInfo}: Pro
         };
     }, [displayName, header, purpose]);
 
-    const onChannelURLChange = (channelURLText: string) => {
-        setChannelUrl(channelURLText);
-    };
-
     const onTypeChange = (typeText: ChannelType) => {
         setType(typeText);
     };
@@ -242,16 +235,10 @@ const CreateOrEditChannel = ({serverUrl, componentId, channel, channelInfo}: Pro
             channelType={channel?.type}
             onTypeChange={channel?.type ? undefined : onTypeChange}
             type={type}
-
-            //  currentTeamUrl={currentTeamUrl}
-            //  onChannelURLChange={onChannelURLChange}
-            //  channelURL={channelURL}
             displayName={displayName}
             header={header}
             purpose={purpose}
             oldDisplayName={channel?.displayName || ''}
-
-            //oldChannelURL={oldChannelURL}
             oldPurpose={channelInfo?.purpose || ''}
             oldHeader={channelInfo?.header || ''}
         />
