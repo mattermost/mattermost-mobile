@@ -23,6 +23,7 @@ type Props = {
 const styles = StyleSheet.create({
     container: {
         marginVertical: 12,
+        paddingTop: 50,
         overflow: 'hidden',
         ...Platform.select({
             android: {
