@@ -57,7 +57,7 @@ const CreateOrEditChannel = ({serverUrl, componentId, channel, channelInfo}: Pro
 
     const [error, setError] = useState<string>('');
     const [saving, setSaving] = useState<boolean>(false);
-    const [type, setType] = useState<ChannelType>(channel?.type || General.OPEN_CHANNEL);
+    const [type, setType] = useState<ChannelType>(channel?.type as ChannelType || General.OPEN_CHANNEL);
     const [rightButton, setRightButton] = useState<Button>();
 
     const displayName = useFormInput(channel?.displayName);
@@ -237,7 +237,7 @@ const CreateOrEditChannel = ({serverUrl, componentId, channel, channelInfo}: Pro
             saving={saving}
             channelType={channel?.type}
             editing={editing}
-            onTypeChange={channel?.type ? undefined : onTypeChange}
+            onTypeChange={onTypeChange}
             type={type}
             displayName={displayName}
             header={header}

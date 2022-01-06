@@ -134,7 +134,7 @@ type Props = {
         enableRightButton: (enable: boolean) => void;
         error?: string | object;
         header?: FormInput;
-        onTypeChange: (type: ChannelType) => void | undefined;
+        onTypeChange: (type: ChannelType) => void;
         oldDisplayName?: string;
         oldHeader?: string;
         oldPurpose?: string;
@@ -164,8 +164,6 @@ export default function EditChannelInfo({
     const intl = useIntl();
 
     const nameInput = useRef<TextInput>(null);
-
-    // const urlInput = React.createRef();
     const purposeInput = useRef<TextInput>(null);
     const headerInput = useRef<TextInput>(null);
     const scroll = useRef();
@@ -278,7 +276,7 @@ export default function EditChannelInfo({
     const styles = getStyleSheet(theme);
 
     const displayHeaderOnly = channelType === General.DM_CHANNEL || channelType === General.GM_CHANNEL;
-    const showSelector = !displayHeaderOnly && onTypeChange;
+    const showSelector = !displayHeaderOnly && !editing;
 
     if (saving) {
         return (
@@ -340,7 +338,7 @@ export default function EditChannelInfo({
                                     <TouchableOpacity
                                         style={styles.touchable}
                                         onPress={() => {
-                                            onTypeSelect(General.OPEN_CHANNEL);
+                                            onTypeSelect(General.OPEN_CHANNEL as ChannelType);
                                         }}
                                         testID='edit_channel_info.type.public.action'
                                     >
@@ -362,7 +360,7 @@ export default function EditChannelInfo({
                                     <TouchableOpacity
                                         style={styles.touchable}
                                         onPress={() => {
-                                            onTypeSelect(General.PRIVATE_CHANNEL);
+                                            onTypeSelect(General.PRIVATE_CHANNEL as ChannelType);
                                         }}
                                         testID='edit_channel_info.type.private.action'
                                     >
