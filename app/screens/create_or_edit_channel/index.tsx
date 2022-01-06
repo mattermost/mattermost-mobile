@@ -226,6 +226,9 @@ const CreateOrEditChannel = ({serverUrl, componentId, channel, channelInfo}: Pro
         setType(typeText);
     };
 
+    // if a channel was provided, we are editing a channel
+    const editing = Boolean(channel)
+
     return (
         <EditChannelInfo
             testID='create_or_edit_channel.screen'
@@ -233,6 +236,7 @@ const CreateOrEditChannel = ({serverUrl, componentId, channel, channelInfo}: Pro
             error={error}
             saving={saving}
             channelType={channel?.type}
+            editing={editing}
             onTypeChange={channel?.type ? undefined : onTypeChange}
             type={type}
             displayName={displayName}

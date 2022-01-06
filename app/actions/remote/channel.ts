@@ -173,7 +173,6 @@ export const handlePatchChannel = async (serverUrl: string, channelPatch: Partia
     }
 };
 
-
 export const fetchChannelCreator = async (serverUrl: string, channelId: string, fetchOnly = false) => {
     const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
     if (!operator) {

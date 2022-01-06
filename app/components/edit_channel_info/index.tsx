@@ -130,6 +130,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => ({
 type Props = {
         channelType?: string;
         displayName?: FormInput;
+        editing: boolean;
         enableRightButton: (enable: boolean) => void;
         error?: string | object;
         header?: FormInput;
@@ -146,6 +147,7 @@ type Props = {
 export default function EditChannelInfo({
     channelType,
     displayName,
+    editing,
     enableRightButton,
     error,
     header,
@@ -195,25 +197,33 @@ export default function EditChannelInfo({
         }
     };
 
-    const canUpdate = () => {
-        return displayName?.value !== oldDisplayName ||
-            purpose?.value !== oldPurpose || header?.value !== oldHeader;
+    const canUpdate = (displayName?: string, purpose?: string, header?: string) => {
+        return displayName !== oldDisplayName ||
+            purpose !== oldPurpose || header !== oldHeader;
     };
 
     const onDisplayNameChangeText = (text: string) => {
         displayName?.onChange(text);
-        const displayNameExists = text && text.length >= 2;
-        enableRightButton(canUpdate() && Boolean(displayNameExists));
+        if (editing) {
+            enableRightButton(canUpdate(text, purpose?.value, header?.value));
+            return
+        } 
+        const displayNameExists = text?.length >= 2;
+        enableRightButton(displayNameExists);
     };
 
     const onPurposeChangeText = (text: string) => {
         purpose?.onChange(text);
-        enableRightButton(canUpdate());
+        if (editing) {
+            enableRightButton(canUpdate(displayName?.value, text, header?.value));
+        }
     };
 
     const onHeaderChangeText = (text: string) => {
         header?.onChange(text);
-        enableRightButton(canUpdate());
+        if (editing) {
+            enableRightButton(canUpdate(displayName?.value, purpose?.value, text));
+        }
     };
 
     const onTypeSelect = (typeText: ChannelType) => {
