@@ -19,4 +19,4 @@ export const useFormInput = (initialValue?: string): FormInput => {
         value,
         onChange: handleChange,
     };
-}
+};

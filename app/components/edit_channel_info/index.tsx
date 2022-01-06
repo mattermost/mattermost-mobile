@@ -197,17 +197,17 @@ export default function EditChannelInfo({
         }
     };
 
-    const canUpdate = (displayName?: string, purpose?: string, header?: string) => {
-        return displayName !== oldDisplayName ||
-            purpose !== oldPurpose || header !== oldHeader;
+    const canUpdate = (currentDisplayName?: string, currentPurpose?: string, currentHeader?: string) => {
+        return currentDisplayName !== oldDisplayName ||
+            currentPurpose !== oldPurpose || currentHeader !== oldHeader;
     };
 
     const onDisplayNameChangeText = (text: string) => {
         displayName?.onChange(text);
         if (editing) {
             enableRightButton(canUpdate(text, purpose?.value, header?.value));
-            return
-        } 
+            return;
+        }
         const displayNameExists = text?.length >= 2;
         enableRightButton(displayNameExists);
     };

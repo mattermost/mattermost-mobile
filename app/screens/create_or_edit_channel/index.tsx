@@ -227,7 +227,7 @@ const CreateOrEditChannel = ({serverUrl, componentId, channel, channelInfo}: Pro
     };
 
     // if a channel was provided, we are editing a channel
-    const editing = Boolean(channel)
+    const editing = Boolean(channel);
 
     return (
         <EditChannelInfo
