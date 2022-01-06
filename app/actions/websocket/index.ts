@@ -73,8 +73,8 @@ async function doReconnect(serverUrl: string) {
     const lastDisconnectedAt = await queryWebSocketLastDisconnected(database.database);
 
     // TODO consider fetch only and batch all the results.
-    fetchMe(serverUrl);
-    fetchMyPreferences(serverUrl);
+    await fetchMe(serverUrl);
+    await fetchMyPreferences(serverUrl);
     const {config} = await fetchConfigAndLicense(serverUrl);
     const {memberships: teamMemberships, error: teamMembershipsError} = await fetchMyTeams(serverUrl);
     const {currentChannelId, currentUserId, currentTeamId, license} = system;
@@ -82,7 +82,7 @@ async function doReconnect(serverUrl: string) {
 
     let channelMemberships: ChannelMembership[] | undefined;
     if (currentTeamMembership) {
-        const {memberships, channels, error} = await fetchMyChannelsForTeam(serverUrl, currentTeamMembership.team_id, true, lastDisconnectedAt, true);
+        const {memberships, channels, error} = await fetchMyChannelsForTeam(serverUrl, currentTeamMembership.team_id, true, lastDisconnectedAt);
         if (error) {
             DeviceEventEmitter.emit(Events.TEAM_LOAD_ERROR, serverUrl, error);
             return;
@@ -92,7 +92,7 @@ async function doReconnect(serverUrl: string) {
         const teammateDisplayNameSetting = getTeammateNameDisplaySetting(preferences || [], system.config, license);
         const directChannels = channels?.filter((c) => c.type === General.DM_CHANNEL || c.type === General.GM_CHANNEL);
         if (directChannels?.length) {
-            await fetchMissingSidebarInfo(serverUrl, directChannels, currentUser?.locale, teammateDisplayNameSetting, currentUserId, true);
+            await fetchMissingSidebarInfo(serverUrl, directChannels, currentUser?.locale, teammateDisplayNameSetting, currentUserId);
         }
 
         const modelPromises: Array<Promise<Model[]>> = [];

@@ -151,9 +151,8 @@ describe('*** Operator: User Handlers tests ***', () => {
         expect(spyOnHandleRecords).toHaveBeenCalledWith({
             fieldName: 'user_id',
             createOrUpdateRawValues: preferences,
-            deleteRawValues: [],
             tableName: 'Preference',
-            prepareRecordsOnly: false,
+            prepareRecordsOnly: true,
             findMatchingRecordBy: isRecordPreferenceEqualToRaw,
             transformer: transformPreferenceRecord,
         });
@@ -163,6 +162,7 @@ describe('*** Operator: User Handlers tests ***', () => {
         expect.assertions(2);
         const channelMemberships: ChannelMembership[] = [
             {
+                id: '17bfnb1uwb8epewp4q3x3rx9go-9ciscaqbrpd6d8s68k76xb9bte',
                 channel_id: '17bfnb1uwb8epewp4q3x3rx9go',
                 user_id: '9ciscaqbrpd6d8s68k76xb9bte',
                 roles: 'wqyby5r5pinxxdqhoaomtacdhc',
@@ -181,6 +181,7 @@ describe('*** Operator: User Handlers tests ***', () => {
                 scheme_admin: false,
             },
             {
+                id: '1yw6gxfr4bn1jbyp9nr7d53yew-9ciscaqbrpd6d8s68k76xb9bte',
                 channel_id: '1yw6gxfr4bn1jbyp9nr7d53yew',
                 user_id: '9ciscaqbrpd6d8s68k76xb9bte',
                 roles: 'channel_user',

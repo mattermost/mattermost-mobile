@@ -14,6 +14,7 @@ import type PostModel from '@typings/database/models/servers/post';
 import type PreferenceModel from '@typings/database/models/servers/preference';
 import type ReactionModel from '@typings/database/models/servers/reaction';
 import type TeamMembershipModel from '@typings/database/models/servers/team_membership';
+import type {UserMentionKey} from '@typings/global/markdown';
 
 const {
     CHANNEL,
@@ -141,4 +142,45 @@ export default class UserModel extends Model {
             u.status = status;
         });
     };
+
+    get mentionKeys() {
+        let keys: UserMentionKey[] = [];
+
+        if (!this.notifyProps) {
+            return keys;
+        }
+
+        if (this.notifyProps.mention_keys) {
+            keys = keys.concat(this.notifyProps.mention_keys.split(',').map((key) => {
+                return {key};
+            }));
+        }
+
+        if (this.notifyProps.first_name === 'true' && this.firstName) {
+            keys.push({key: this.firstName, caseSensitive: true});
+        }
+
+        if (this.notifyProps.channel === 'true') {
+            keys.push({key: '@channel'});
+            keys.push({key: '@all'});
+            keys.push({key: '@here'});
+        }
+
+        const usernameKey = '@' + this.username;
+        if (keys.findIndex((key) => key.key === usernameKey) === -1) {
+            keys.push({key: usernameKey});
+        }
+
+        return keys;
+    }
+
+    get userMentionKeys() {
+        const mentionKeys = this.mentionKeys;
+
+        return mentionKeys.filter((m) => (
+            m.key !== '@all' &&
+            m.key !== '@channel' &&
+            m.key !== '@here'
+        ));
+    }
 }

@@ -133,6 +133,11 @@ android {
         targetCompatibility JavaVersion.VERSION_1_8
     }
 
+    lintOptions {
+        checkReleaseBuilds false
+        abortOnError false
+    }
+
     packagingOptions {
         pickFirst '**/libc++_shared.so'
     }
@@ -141,7 +146,6 @@ android {
         applicationId "com.mattermost.rnbeta"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        missingDimensionStrategy "RNNotifications.reactNativeVersion", "reactNative60"
         versionCode 333
         versionName "2.0.0"
         testBuildType System.getProperty('testBuildType', 'debug')

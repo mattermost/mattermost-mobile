@@ -3,7 +3,7 @@
 
 import {Model, Q} from '@nozbe/watermelondb';
 
-import {updateRecentCustomStatuses, updateUserPresence} from '@actions/local/user';
+import {updateRecentCustomStatuses, updateLocalUser} from '@actions/local/user';
 import {fetchRolesIfNeeded} from '@actions/remote/role';
 import {Database, General} from '@constants';
 import DatabaseManager from '@database/manager';
@@ -48,7 +48,7 @@ export const fetchMe = async (serverUrl: string, fetchOnly = false): Promise<MyU
         if (!fetchOnly) {
             const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
             if (operator) {
-                operator.handleUsers({users: [user], prepareRecordsOnly: false});
+                await operator.handleUsers({users: [user], prepareRecordsOnly: false});
             }
         }
 
@@ -70,20 +70,32 @@ export const fetchProfilesInChannel = async (serverUrl: string, channelId: strin
     try {
         const users = await client.getProfilesInChannel(channelId);
         const uniqueUsers = Array.from(new Set(users));
+        const filteredUsers = uniqueUsers.filter((u) => u.id !== excludeUserId);
         if (!fetchOnly) {
             const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
-            if (operator) {
-                const prepare = prepareUsers(operator, uniqueUsers.filter((u) => u.id !== excludeUserId));
+            if (operator && filteredUsers.length) {
+                const modelPromises: Array<Promise<Model[]>> = [];
+                const membership = filteredUsers.map((u) => ({
+                    channel_id: channelId,
+                    user_id: u.id,
+                }));
+                modelPromises.push(operator.handleChannelMembership({
+                    channelMemberships: membership,
+                    prepareRecordsOnly: true,
+                }));
+                const prepare = prepareUsers(operator, filteredUsers);
                 if (prepare) {
-                    const models = await prepare;
-                    if (models.length) {
-                        await operator.batchRecords(models);
-                    }
+                    modelPromises.push(prepare);
+                }
+
+                if (modelPromises.length) {
+                    const models = await Promise.all(modelPromises);
+                    await operator.batchRecords(models.flat());
                 }
             }
         }
 
-        return {channelId, users: uniqueUsers};
+        return {channelId, users: filteredUsers};
     } catch (error) {
         forceLogoutIfNecessary(serverUrl, error as ClientError);
         return {channelId, error};
@@ -98,18 +110,29 @@ export const fetchProfilesPerChannels = async (serverUrl: string, channelIds: st
         if (!fetchOnly) {
             const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
             if (operator) {
+                const modelPromises: Array<Promise<Model[]>> = [];
                 const users = new Set<UserProfile>();
+                const memberships: Array<{channel_id: string; user_id: string}> = [];
                 for (const item of data) {
                     if (item.users?.length) {
-                        item.users.forEach(users.add, users);
+                        item.users.forEach((u) => {
+                            users.add(u);
+                            memberships.push({channel_id: item.channelId, user_id: u.id});
+                        });
                     }
                 }
+                modelPromises.push(operator.handleChannelMembership({
+                    channelMemberships: memberships,
+                    prepareRecordsOnly: true,
+                }));
                 const prepare = prepareUsers(operator, Array.from(users).filter((u) => u.id !== excludeUserId));
                 if (prepare) {
-                    const models = await prepare;
-                    if (models.length) {
-                        await operator.batchRecords(models);
-                    }
+                    modelPromises.push(prepare);
+                }
+
+                if (modelPromises.length) {
+                    const models = await Promise.all(modelPromises);
+                    await operator.batchRecords(models.flat());
                 }
             }
         }
@@ -120,7 +143,7 @@ export const fetchProfilesPerChannels = async (serverUrl: string, channelIds: st
     }
 };
 
-export const updateMe = async (serverUrl: string, user: UserModel) => {
+export const updateMe = async (serverUrl: string, user: Partial<UserProfile>) => {
     const database = DatabaseManager.serverDatabases[serverUrl]?.database;
     const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
     if (!database) {
@@ -136,7 +159,7 @@ export const updateMe = async (serverUrl: string, user: UserModel) => {
 
     let data: UserProfile;
     try {
-        data = await client.patchMe(user._raw);
+        data = await client.patchMe(user);
     } catch (e) {
         forceLogoutIfNecessary(serverUrl, e as ClientError);
         return {error: e};
@@ -373,6 +396,7 @@ export const updateUsersNoLongerVisible = async (serverUrl: string): Promise<{er
 
     return {};
 };
+
 export const setStatus = async (serverUrl: string, status: UserStatus) => {
     let client: Client;
     try {
@@ -383,13 +407,13 @@ export const setStatus = async (serverUrl: string, status: UserStatus) => {
 
     try {
         const data = await client.updateStatus(status);
-        updateUserPresence(serverUrl, status);
+        await updateLocalUser(serverUrl, {status: status.status});
 
         return {
             data,
         };
-    } catch (error: any) {
-        forceLogoutIfNecessary(serverUrl, error);
+    } catch (error) {
+        forceLogoutIfNecessary(serverUrl, error as ClientErrorProps);
         return {error};
     }
 };

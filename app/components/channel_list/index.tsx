@@ -50,12 +50,12 @@ const ChannelList = ({iconPad, isTablet, teamsCount}: ChannelListProps) => {
     const tabletStyle = useAnimatedStyle(() => {
         if (!isTablet) {
             return {
-                maxWidth: undefined,
+                maxWidth: '100%',
             };
         }
 
         return {maxWidth: withTiming(tabletWidth.value, {duration: 350})};
-    }, []);
+    }, [isTablet]);
 
     useEffect(() => {
         if (isTablet) {
@@ -64,7 +64,6 @@ const ChannelList = ({iconPad, isTablet, teamsCount}: ChannelListProps) => {
     }, [isTablet, teamsCount]);
 
     const [showCats, setShowCats] = useState<boolean>(true);
-
     return (
         <Animated.View style={[styles.container, tabletStyle]}>
             <TouchableOpacity onPress={() => setShowCats(!showCats)}>

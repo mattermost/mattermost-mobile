@@ -44,7 +44,7 @@ export const switchToChannel = async (serverUrl: string, channelId: string, team
             }
 
             if (system.currentChannelId !== channelId) {
-                const history = await addChannelToTeamHistory(operator, system.currentTeamId, channelId, true);
+                const history = await addChannelToTeamHistory(operator, channel.teamId || system.currentTeamId, channelId, true);
                 models.push(...history);
             }
 
@@ -151,7 +151,7 @@ export const markChannelAsViewed = async (serverUrl: string, channelId: string, 
     }
 
     member.prepareUpdate((m) => {
-        m.messageCount = 0;
+        m.isUnread = false;
         m.mentionsCount = 0;
         m.manuallyUnread = false;
         m.viewedAt = member.lastViewedAt;

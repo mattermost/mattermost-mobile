@@ -61,7 +61,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
         consecutivePostContainer: {
             marginBottom: 10,
             marginRight: 10,
-            marginLeft: 47,
+            marginLeft: 27,
             marginTop: 10,
         },
         container: {flexDirection: 'row'},
@@ -76,6 +76,11 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             overflow: 'hidden',
             flex: 1,
         },
+        profilePictureContainer: {
+            marginBottom: 5,
+            marginRight: 10,
+            marginTop: 10,
+        },
         replyBar: {
             backgroundColor: theme.centerChannelColor,
             opacity: 0.1,
@@ -89,7 +94,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
         rightColumn: {
             flex: 1,
             flexDirection: 'column',
-            marginRight: 12,
         },
         rightColumnPadding: {paddingBottom: 3},
     };
@@ -186,15 +190,18 @@ const Post = ({
         consecutiveStyle = styles.consective;
         postAvatar = <View style={styles.consecutivePostContainer}/>;
     } else {
-        postAvatar = isAutoResponder ? (
-            <SystemAvatar theme={theme}/>
-        ) : (
-            <Avatar
-                isAutoReponse={isAutoResponder}
-                isSystemPost={isSystemPost}
-                pendingPostStyle={pendingPostStyle}
-                post={post}
-            />
+        postAvatar = (
+            <View style={[styles.profilePictureContainer, pendingPostStyle]}>
+                {isAutoResponder ? (
+                    <SystemAvatar theme={theme}/>
+                ) : (
+                    <Avatar
+                        isAutoReponse={isAutoResponder}
+                        isSystemPost={isSystemPost}
+                        post={post}
+                    />
+                )}
+            </View>
         );
 
         if (isSystemPost && !isAutoResponder) {
