@@ -166,10 +166,12 @@ export default function EditChannelInfo({
     const nameInput = useRef<TextInput>(null);
     const purposeInput = useRef<TextInput>(null);
     const headerInput = useRef<TextInput>(null);
-    const scroll = useRef();
 
+    const scrollViewRef = useRef<KeyboardAwareScrollView>();
+
+    // const [keyboardPosition, setKeyBoardPosition] = useState<number>(0);
     const [keyboardVisible, setKeyBoardVisible] = useState<boolean>(false);
-    const [keyboardPosition, setKeyBoardPosition] = useState<number>(0);
+
     const [headerHasFocus, setHeaderHasFocus] = useState<boolean>(false);
     const [headerPosition, setHeaderPosition] = useState<number>();
 
@@ -190,8 +192,8 @@ export default function EditChannelInfo({
             headerInput.current.blur();
         }
 
-        if (scroll?.current) {
-            scroll.current.scrollTo({x: 0, y: 0, animated: true});
+        if (scrollViewRef?.current) {
+            scrollViewRef.current?.scrollToPosition(0, 0, true);
         }
     };
 
@@ -233,8 +235,8 @@ export default function EditChannelInfo({
     };
 
     const scrollHeaderToTop = () => {
-        if (scroll.current) {
-            scroll.current.scrollTo({x: 0, y: headerPosition});
+        if (scrollViewRef?.current) {
+            scrollViewRef.current?.scrollToPosition(0, headerPosition as number);
         }
     };
 
@@ -315,7 +317,9 @@ export default function EditChannelInfo({
             <StatusBar/>
             <KeyboardAwareScrollView
                 testID={testID}
-                ref={scroll}
+                
+                // @ts-expect-error legacy ref
+                ref={scrollViewRef}
                 style={styles.container}
                 keyboardShouldPersistTaps={'always'}
                 onKeyboardDidShow={onKeyboardDidShow}
