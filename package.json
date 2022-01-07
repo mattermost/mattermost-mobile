@@ -182,7 +182,7 @@
     "fix": "npm run lint -- --fix",
     "lint": "eslint --ignore-path .gitignore --ignore-pattern node_modules --quiet .",
     "pod-install": "cd ios && bundle exec pod install",
-    "postinstall": "patch-package && ./scripts/postinstall.sh",
+    "postinstall": "patch-package && sh ./scripts/postinstall.sh",
     "tsc": "NODE_OPTIONS=--max_old_space_size=12000 tsc --noEmit",
     "test": "jest --forceExit --runInBand",
     "test:watch": "npm test -- --watch",
