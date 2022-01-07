@@ -146,7 +146,7 @@ export const handleCreateChannel = async (serverUrl: string, displayName: string
     }
 };
 
-export const handlePatchChannel = async (serverUrl: string, channelPatch: Partial<Channel>) => {
+export const handlePatchChannel = async (serverUrl: string, channelPatch: Partial<Channel> & {id: string}) => {
     const database = DatabaseManager.serverDatabases[serverUrl]?.database;
     if (!database) {
         return {error: `${serverUrl} database not found`};
