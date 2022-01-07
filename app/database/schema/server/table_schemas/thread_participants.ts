@@ -11,6 +11,6 @@ export default tableSchema({
     name: THREAD_PARTICIPANTS,
     columns: [
         {name: 'thread_id', type: 'string', isIndexed: true},
-        {name: 'user_id', type: 'string'},
+        {name: 'user_id', type: 'string', isIndexed: true},
     ],
 });

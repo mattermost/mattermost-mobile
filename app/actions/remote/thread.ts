@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {processPostsFetched} from '@actions/local/post';
-import {processThreadsFetched} from '@actions/local/thread';
+import {processThreadsWithPostsFetched} from '@actions/local/thread';
 import {ActionType, General} from '@constants';
 import DatabaseManager from '@database/manager';
 import NetworkManager from '@init/network_manager';
@@ -40,18 +40,7 @@ export const getThreads = async (serverUrl: string, teamId: $ID<Team>, before?: 
 
         const data = await client.getThreads(config.Version, currentUser.id, teamId, before, after, perPage, deleted, unread, since);
 
-        const posts = [];
-        for (let i = 0; i < data.threads.length; i++) {
-            const {post} = data.threads[i];
-            posts.push(post);
-        }
-
-        await processPostsFetched(serverUrl, ActionType.POSTS.RECEIVED_IN_CHANNEL, {
-            order: [],
-            posts,
-        });
-
-        await processThreadsFetched(serverUrl, data.threads);
+        await processThreadsWithPostsFetched(serverUrl, data.threads);
 
         return data;
     } catch (error) {

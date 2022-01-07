@@ -33,7 +33,7 @@ export default class ThreadParticipantsModel extends Model {
     @field('thread_id') threadId!: string;
 
     /** user_id : user id of the participant. */
-    @field('userId') userId!: number;
+    @field('user_id') userId!: number;
 
     /** thread : The related record to the Thread model */
     @immutableRelation(THREAD, 'thread_id') thread!: Relation<ThreadModel>;
