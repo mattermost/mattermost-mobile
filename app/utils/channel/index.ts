@@ -3,7 +3,6 @@
 import {Channel, General, Permissions} from '@constants';
 import {t, DEFAULT_LOCALE} from '@i18n';
 import {hasPermission} from '@utils/role';
-import {cleanUpUrlable} from '@utils/url';
 
 export function selectDefaultChannelForTeam(channels: Channel[], memberships: ChannelMembership[], teamId: string, roles?: Role[], locale = DEFAULT_LOCALE) {
     let channel: Channel|undefined;
@@ -48,22 +47,6 @@ const messages = {
         id: t('mobile.rename_channel.display_name_minLength'),
         defaultMessage: 'Channel name must be {minLength, number} or more characters',
     },
-    name_required: {
-        id: t('mobile.rename_channel.name_required'),
-        defaultMessage: 'URL is required',
-    },
-    name_maxLength: {
-        id: t('mobile.rename_channel.name_maxLength'),
-        defaultMessage: 'URL must be less than {maxLength, number} characters',
-    },
-    name_minLength: {
-        id: t('mobile.rename_channel.name_minLength'),
-        defaultMessage: 'URL must be {minLength, number} or more characters',
-    },
-    name_lowercase: {
-        id: t('mobile.rename_channel.name_lowercase'),
-        defaultMessage: 'URL be lowercase alphanumeric characters',
-    },
 };
 
 export const validateDisplayName = (intl: any, displayName: string) => {
@@ -88,32 +71,3 @@ export const validateDisplayName = (intl: any, displayName: string) => {
     }
     return errorMessage;
 };
-
-export const validateChannelURL = (intl: any, channelURL: string) => {
-    let errorMessage;
-    switch (true) {
-        case !channelURL:
-            errorMessage = intl.formatMessage(messages.name_required);
-            break;
-        case channelURL.length > Channel.MAX_CHANNELNAME_LENGTH:
-            errorMessage = intl.formatMessage(
-                messages.name_maxLength,
-                {maxLength: Channel.MAX_CHANNELNAME_LENGTH},
-            );
-            break;
-
-        default:
-    }
-
-    if (errorMessage) {
-        return errorMessage;
-    }
-
-    const cleanedName = cleanUpUrlable(channelURL);
-    if (cleanedName === channelURL) {
-        return '';
-    }
-
-    return intl.formatMessage(messages.name_lowercase);
-};
-

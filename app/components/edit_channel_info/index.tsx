@@ -181,11 +181,6 @@ export default function EditChannelInfo({
             nameInput.current.blur();
         }
 
-        // TODO: uncomment below once the channel URL field is added
-        // if (this.urlInput?.current) {
-        //     this.urlInput.current.blur();
-        // }
-
         if (purposeInput?.current) {
             purposeInput.current.blur();
         }
@@ -227,8 +222,8 @@ export default function EditChannelInfo({
         }
     };
 
-    const onTypeSelect = (typeText: ChannelType) => {
-        onTypeChange(typeText);
+    const onTypeSelect = (text: ChannelType) => {
+        onTypeChange(text);
     };
 
     const onHeaderLayout = ({nativeEvent}: LayoutChangeEvent) => {
