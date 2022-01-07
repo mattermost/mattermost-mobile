@@ -6,7 +6,8 @@ import React, {useState, useRef} from 'react';
 import {useIntl} from 'react-intl';
 import {
     LayoutChangeEvent,
-    Platform,
+
+    //    Platform,
     TextInput,
     TouchableOpacity,
     TouchableWithoutFeedback,
@@ -317,7 +318,7 @@ export default function EditChannelInfo({
             <StatusBar/>
             <KeyboardAwareScrollView
                 testID={testID}
-                
+
                 // @ts-expect-error legacy ref
                 ref={scrollViewRef}
                 style={styles.container}
