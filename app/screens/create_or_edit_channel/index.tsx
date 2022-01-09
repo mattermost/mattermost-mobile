@@ -50,6 +50,23 @@ type Button = {
     text: string;
 };
 
+enum RequestActions {
+  START = 'Start',
+  COMPLETE = 'Complete',
+  FAILURE = 'Failure',
+}
+
+interface RequestState {
+    error: string;
+    saving: boolean;
+    type: ChannelType;
+}
+
+interface RequestAction {
+    type: RequestActions;
+    error?: string;
+}
+
 const CreateOrEditChannel = ({serverUrl, componentId, channel, channelInfo}: Props) => {
     const intl = useIntl();
     const {formatMessage} = intl;
@@ -61,23 +78,6 @@ const CreateOrEditChannel = ({serverUrl, componentId, channel, channelInfo}: Pro
     const displayName = useFormInput(channel?.displayName);
     const purpose = useFormInput(channelInfo?.purpose);
     const header = useFormInput(channelInfo?.header);
-
-    enum RequestActions {
-      START = 'Start',
-      COMPLETE = 'Complete',
-      FAILURE = 'Failure',
-    }
-
-    interface RequestState {
-        error: string;
-        saving: boolean;
-        type: ChannelType;
-    }
-
-    interface RequestAction {
-        type: RequestActions;
-        error?: string;
-    }
 
     const emitCanSaveChannel = (enabled: boolean) => {
         setButtons(componentId, {
@@ -122,6 +122,7 @@ const CreateOrEditChannel = ({serverUrl, componentId, channel, channelInfo}: Pro
                     saving: false,
                 };
             case RequestActions.FAILURE:
+                emitCanSaveChannel(false);
                 return {
                     ...state,
                     error: action.error,
@@ -161,6 +162,36 @@ const CreateOrEditChannel = ({serverUrl, componentId, channel, channelInfo}: Pro
         });
     }, []);
 
+    useEffect(() => {
+        const update = Navigation.events().registerComponentListener({
+            navigationButtonPressed: ({buttonId}: {buttonId: string}) => {
+                switch (buttonId) {
+                    case CLOSE_CHANNEL_ID:
+                        close(true);
+                        break;
+                    case CREATE_CHANNEL_ID:
+                        onCreateChannel();
+                        break;
+                    case EDIT_CHANNEL_ID:
+                        onUpdateChannel();
+                        break;
+                }
+            },
+        }, componentId);
+
+        return () => {
+            update.remove();
+        };
+    }, [displayName, header, purpose]);
+
+    const onTypeChange = (typeText: ChannelType) => {
+        setType(typeText);
+    };
+
+    // if a channel was provided, we are editing a channel
+    const editing = Boolean(channel);
+
+
     const isValidDisplayName = (): boolean => {
         if (isDirect()) {
             return true;
@@ -187,7 +218,6 @@ const CreateOrEditChannel = ({serverUrl, componentId, channel, channelInfo}: Pro
 
         const createdChannel = await handleCreateChannel(serverUrl, displayName.value, purpose.value, header.value, type);
         if (createdChannel.error) {
-            emitCanSaveChannel(false);
             dispatch({
                 type: RequestActions.FAILURE,
                 error: createdChannel.error as string,
@@ -219,7 +249,6 @@ const CreateOrEditChannel = ({serverUrl, componentId, channel, channelInfo}: Pro
 
         const patchedChannel = await handlePatchChannel(serverUrl, patchChannel);
         if (patchedChannel.error) {
-            emitCanSaveChannel(false);
             dispatch({
                 type: RequestActions.FAILURE,
                 error: patchedChannel.error as string,
@@ -236,35 +265,6 @@ const CreateOrEditChannel = ({serverUrl, componentId, channel, channelInfo}: Pro
         //     this.props.actions.getChannel(id);
         // }
     };
-
-    useEffect(() => {
-        const update = Navigation.events().registerComponentListener({
-            navigationButtonPressed: ({buttonId}: {buttonId: string}) => {
-                switch (buttonId) {
-                    case CLOSE_CHANNEL_ID:
-                        close(true);
-                        break;
-                    case CREATE_CHANNEL_ID:
-                        onCreateChannel();
-                        break;
-                    case EDIT_CHANNEL_ID:
-                        onUpdateChannel();
-                        break;
-                }
-            },
-        }, componentId);
-
-        return () => {
-            update.remove();
-        };
-    }, [displayName, header, purpose]);
-
-    const onTypeChange = (typeText: ChannelType) => {
-        setType(typeText);
-    };
-
-    // if a channel was provided, we are editing a channel
-    const editing = Boolean(channel);
 
     return (
         <EditChannelInfo
