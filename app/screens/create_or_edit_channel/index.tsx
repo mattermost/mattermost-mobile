@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useState, useEffect} from 'react';
+import React, {useState, useEffect, useReducer} from 'react';
 import {useIntl} from 'react-intl';
 import {
     Keyboard,
@@ -55,14 +55,89 @@ const CreateOrEditChannel = ({serverUrl, componentId, channel, channelInfo}: Pro
     const {formatMessage} = intl;
     const theme = useTheme();
 
-    const [error, setError] = useState<string>('');
-    const [saving, setSaving] = useState<boolean>(false);
     const [type, setType] = useState<ChannelType>(channel?.type as ChannelType || General.OPEN_CHANNEL);
     const [rightButton, setRightButton] = useState<Button>();
 
     const displayName = useFormInput(channel?.displayName);
     const purpose = useFormInput(channelInfo?.purpose);
     const header = useFormInput(channelInfo?.header);
+
+    enum RequestActions {
+      START = 'Start',
+      COMPLETE = 'Complete',
+      FAILURE = 'Failure',
+    }
+
+    interface RequestState {
+        error: string;
+        saving: boolean;
+        type: ChannelType;
+    }
+
+    interface RequestAction {
+        type: RequestActions;
+        error?: string;
+    }
+
+    const emitCanSaveChannel = (enabled: boolean) => {
+        setButtons(componentId, {
+            leftButtons: [],
+            rightButtons: [{...rightButton, enabled}] as never[],
+        });
+    };
+
+    const isDirect = (): boolean => {
+        return channel?.type === General.DM_CHANNEL || channel?.type === General.GM_CHANNEL;
+    };
+
+    const close = (goBack = false): void => {
+        Keyboard.dismiss();
+        if (!isDirect()) {
+        //     this.props.actions.setChannelDisplayName(this.state.displayName);
+        }
+
+        if (goBack) {
+            popTopScreen();
+        } else {
+            dismissModal();
+        }
+    };
+
+    const [appState, dispatch] = useReducer((state: RequestState, action: RequestAction) => {
+        switch (action.type) {
+            case RequestActions.START:
+                emitCanSaveChannel(true);
+                Keyboard.dismiss();
+                return {
+                    ...state,
+                    error: '',
+                    saving: true,
+                };
+            case RequestActions.COMPLETE:
+                emitCanSaveChannel(false);
+                close(true);
+                return {
+                    ...state,
+                    error: '',
+                    saving: false,
+                };
+            case RequestActions.FAILURE:
+                return {
+                    ...state,
+                    error: action.error,
+                    saving: false,
+                };
+
+            default:
+                return {
+                    ...state,
+                };
+        }
+    }, {
+        error: '',
+        saving: false,
+        type: channel?.type as ChannelType || General.OPEN_CHANNEL,
+    });
 
     useEffect(() => {
         const button = {
@@ -86,80 +161,50 @@ const CreateOrEditChannel = ({serverUrl, componentId, channel, channelInfo}: Pro
         });
     }, []);
 
-    const emitCanSaveChannel = (enabled: boolean) => {
-        setButtons(componentId, {
-            leftButtons: [],
-            rightButtons: [{...rightButton, enabled}] as never[],
-        });
-    };
-
-    const onRequestStart = () => {
-        emitSaving(true);
-        setError('');
-        setSaving(true);
-        Keyboard.dismiss();
-    };
-
-    const onRequestFailure = (errorText: string) => {
-        setError(errorText);
-        setSaving(false);
-    };
-
-    const onRequestComplete = () => {
-        InteractionManager.runAfterInteractions(() => {
-            // EventEmitter.emit(NavigationTypes.CLOSE_MAIN_SIDEBAR);
-            emitSaving(false);
-            setError('');
-            setSaving(false);
-            close(true);
-        });
-    };
-
-    const emitSaving = (loading: boolean) => {
-        setButtons(componentId, {
-            leftButtons: [],
-            rightButtons: [{...rightButton, enabled: !loading}] as never[],
-        });
-    };
-
-    const isDirect = (): boolean => {
-        return channel?.type === General.DM_CHANNEL || channel?.type === General.GM_CHANNEL;
-    };
-
     const isValidDisplayName = (): boolean => {
-        if (!isDirect()) {
-            const dName = displayName.value || '';
-            const result = validateDisplayName(intl, dName);
-            if (result) {
-                setError(result);
-                setSaving(false);
-                return false;
-            }
+        if (isDirect()) {
+            return true;
         }
-        return true;
+
+        const dName = displayName.value || '';
+        const result = validateDisplayName(intl, dName);
+        if (!result.error) {
+            return true;
+        }
+
+        dispatch({
+            type: RequestActions.FAILURE,
+            error: result.error,
+        });
+        return false;
     };
 
     const onCreateChannel = async () => {
-        onRequestStart();
+        dispatch({type: RequestActions.START});
         if (!isValidDisplayName()) {
             return;
         }
 
         const createdChannel = await handleCreateChannel(serverUrl, displayName.value, purpose.value, header.value, type);
         if (createdChannel.error) {
-            emitSaving(false);
-            onRequestFailure(createdChannel.error as string);
+            emitCanSaveChannel(false);
+            dispatch({
+                type: RequestActions.FAILURE,
+                error: createdChannel.error as string,
+            });
             return;
         }
 
-        onRequestComplete();
+        InteractionManager.runAfterInteractions(() => {
+            dispatch({type: RequestActions.COMPLETE});
+        });
 
         // console.log('channel.channel.id', channel.channel.id)
         // switchToChannel(serverUrl, channel.channel.id)
     };
 
     const onUpdateChannel = async () => {
-        onRequestStart();
+        dispatch({type: RequestActions.START});
         if (!isValidDisplayName()) {
             return;
         }
@@ -174,30 +219,22 @@ const CreateOrEditChannel = ({serverUrl, componentId, channel, channelInfo}: Pro
 
         const patchedChannel = await handlePatchChannel(serverUrl, patchChannel);
         if (patchedChannel.error) {
-            emitSaving(false);
-            onRequestFailure(patchedChannel.error as string);
+            emitCanSaveChannel(false);
+            dispatch({
+                type: RequestActions.FAILURE,
+                error: patchedChannel.error as string,
+            });
             return;
         }
 
-        onRequestComplete();
+        InteractionManager.runAfterInteractions(() => {
+            dispatch({type: RequestActions.COMPLETE});
+        });
 
         // const data = await this.props.actions.patchChannel(id, channel);
         // if (data.error && data.error.server_error_id === 'store.sql_channel.update.archived_channel.app_error') {
         //     this.props.actions.getChannel(id);
         // }
-    };
-
-    const close = (goBack = false): void => {
-        Keyboard.dismiss();
-        if (!isDirect()) {
-        //     this.props.actions.setChannelDisplayName(this.state.displayName);
-        }
-
-        if (goBack) {
-            popTopScreen();
-        } else {
-            dismissModal();
-        }
     };
 
     useEffect(() => {
@@ -233,8 +270,8 @@ const CreateOrEditChannel = ({serverUrl, componentId, channel, channelInfo}: Pro
         <EditChannelInfo
             testID='create_or_edit_channel.screen'
             enableRightButton={emitCanSaveChannel}
-            error={error}
-            saving={saving}
+            error={appState.error}
+            saving={appState.saving}
             channelType={channel?.type}
             editing={editing}
             onTypeChange={onTypeChange}

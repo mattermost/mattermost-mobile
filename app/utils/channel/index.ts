@@ -49,7 +49,7 @@ const messages = {
     },
 };
 
-export const validateDisplayName = (intl: any, displayName: string) => {
+export const validateDisplayName = (intl: any, displayName: string): {error: string} => {
     let errorMessage;
     switch (true) {
         case !displayName:
@@ -67,7 +67,7 @@ export const validateDisplayName = (intl: any, displayName: string) => {
             break;
 
         default:
-            return '';
+            errorMessage = null;
     }
-    return errorMessage;
+    return {error: errorMessage};
 };
