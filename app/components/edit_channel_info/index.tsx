@@ -117,7 +117,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => ({
         flexGrow: 1,
         fontSize: 16,
         lineHeight: 24,
-        color: '#3d3c40',
+        color: theme.centerChannelColor,
         paddingVertical: 10,
         marginLeft: 15,
     },
