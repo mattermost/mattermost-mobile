@@ -29,6 +29,7 @@
   "apps.error.parser": "Błąd składni: {error}",
   "apps.error.parser.empty_value": "puste wartości nie są dozwolone",
   "apps.error.parser.execute_non_leaf": "Musisz wybrać podpolecenie.",
+  "apps.error.parser.missing_binding": "Brakujące nawiązania poleceń.",
   "apps.error.parser.missing_call": "Nieodebrane połączenia.",
   "apps.error.parser.missing_field_value": "Brakująca wartość pola.",
   "apps.error.parser.missing_quote": "Oczekiwany podwójny cudzysłów przed zakończeniem wprowadzania danych.",
