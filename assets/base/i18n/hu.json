@@ -29,6 +29,7 @@
   "apps.error.parser": "Feldolgozási hiba: {error}",
   "apps.error.parser.empty_value": "üres értékek nem megengedettek",
   "apps.error.parser.execute_non_leaf": "Ki kell választania egy alparancsot.",
+  "apps.error.parser.missing_binding": "Hiányzó parancs hozzárendelés.",
   "apps.error.parser.missing_call": "Hiányzó kapcsolat kiépítő hívás.",
   "apps.error.parser.missing_field_value": "Mező értéke hiányzik.",
   "apps.error.parser.missing_quote": "Egyező idézőjel elvárt a bemenet vége előtt.",
