@@ -9,6 +9,7 @@ import {
 } from 'react-native';
 import {Navigation} from 'react-native-navigation';
 
+import {switchToChannel} from '@actions/local/channel';
 import {handlePatchChannel, handleCreateChannel} from '@actions/remote/channel';
 import EditChannelInfo from '@components/edit_channel_info';
 import {General} from '@constants';
@@ -27,15 +28,6 @@ type Props = {
         channel?: ChannelModel;
         channelInfo?: ChannelInfoModel;
 }
-
-// static propTypes = {
-//     actions: PropTypes.shape({
-//         patchChannel: PropTypes.func.isRequired,
-//         getChannel: PropTypes.func.isRequired,
-//         setChannelDisplayName: PropTypes.func.isRequired,
-//     }),
-//     updateChannelRequest: PropTypes.object.isRequired,
-// };
 
 const CLOSE_CHANNEL_ID = 'close-channel';
 const EDIT_CHANNEL_ID = 'update-channel';
@@ -116,6 +108,8 @@ const CreateOrEditChannel = ({serverUrl, componentId, channel, channelInfo}: Pro
             case RequestActions.COMPLETE:
                 emitCanSaveChannel(false);
                 close(true);
+
+                // TODO: setChannelDisplayName
                 return {
                     ...state,
                     error: '',
@@ -198,15 +192,14 @@ const CreateOrEditChannel = ({serverUrl, componentId, channel, channelInfo}: Pro
 
         const dName = displayName.value || '';
         const result = validateDisplayName(intl, dName);
-        if (!result.error) {
-            return true;
+        if (result.error) {
+            dispatch({
+                type: RequestActions.FAILURE,
+                error: result.error,
+            });
+            return false;
         }
-
-        dispatch({
-            type: RequestActions.FAILURE,
-            error: result.error,
-        });
-        return false;
+        return true;
     };
 
     const onCreateChannel = async () => {
@@ -226,10 +219,10 @@ const CreateOrEditChannel = ({serverUrl, componentId, channel, channelInfo}: Pro
 
         InteractionManager.runAfterInteractions(() => {
             dispatch({type: RequestActions.COMPLETE});
-        });
 
-        // console.log('channel.channel.id', channel.channel.id)
-        // switchToChannel(serverUrl, channel.channel.id)
+            // TODO: verify this works after the channel view is created
+            switchToChannel(serverUrl, createdChannel!.channel!.id);
+        });
     };
 
     const onUpdateChannel = async () => {
