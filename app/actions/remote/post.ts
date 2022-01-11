@@ -4,7 +4,7 @@
 import Model from '@nozbe/watermelondb/Model';
 
 import {processPostsFetched, removePost} from '@actions/local/post';
-import {ActionType, General} from '@constants';
+import {ActionType, General, ServerErrors} from '@constants';
 import {SYSTEM_IDENTIFIERS} from '@constants/database';
 import DatabaseManager from '@database/manager';
 import {getNeededAtMentionedUsernames} from '@helpers/api/user';
@@ -95,9 +95,9 @@ export const createPost = async (serverUrl: string, post: Partial<Post>, files: 
 
         // If the failure was because: the root post was deleted or
         // TownSquareIsReadOnly=true then remove the post
-        if (error.server_error_id === 'api.post.create_post.root_id.app_error' ||
-            error.server_error_id === 'api.post.create_post.town_square_read_only' ||
-            error.server_error_id === 'plugin.message_will_be_posted.dismiss_post'
+        if (error.server_error_id === ServerErrors.DELETED_ROOT_POST_ERROR ||
+            error.server_error_id === ServerErrors.TOWN_SQUARE_READ_ONLY_ERROR ||
+            error.server_error_id === ServerErrors.PLUGIN_DISMISSED_POST_ERROR
         ) {
             await removePost(serverUrl, databasePost);
         } else {

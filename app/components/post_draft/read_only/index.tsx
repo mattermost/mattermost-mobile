@@ -14,6 +14,32 @@ interface ReadOnlyProps {
     testID?: string;
 }
 
+const getStyle = makeStyleSheetFromTheme((theme: Theme) => ({
+    background: {
+        backgroundColor: changeOpacity(theme.centerChannelColor, 0.04),
+    },
+    container: {
+        alignItems: 'center',
+        borderTopColor: changeOpacity(theme.centerChannelColor, 0.20),
+        borderTopWidth: 1,
+        flexDirection: 'row',
+        height: 50,
+        paddingHorizontal: 12,
+    },
+    icon: {
+        fontSize: 20,
+        lineHeight: 22,
+        opacity: 0.56,
+    },
+    text: {
+        color: theme.centerChannelColor,
+        fontSize: 15,
+        lineHeight: 20,
+        marginLeft: 9,
+        opacity: 0.56,
+    },
+}));
+
 const ReadOnlyChannnel = ({testID}: ReadOnlyProps) => {
     const theme = useTheme();
     const style = getStyle(theme);
@@ -40,31 +66,5 @@ const ReadOnlyChannnel = ({testID}: ReadOnlyProps) => {
         </SafeAreaView>
     );
 };
-
-const getStyle = makeStyleSheetFromTheme((theme: Theme) => ({
-    background: {
-        backgroundColor: changeOpacity(theme.centerChannelColor, 0.04),
-    },
-    container: {
-        alignItems: 'center',
-        borderTopColor: changeOpacity(theme.centerChannelColor, 0.20),
-        borderTopWidth: 1,
-        flexDirection: 'row',
-        height: 50,
-        paddingHorizontal: 12,
-    },
-    icon: {
-        fontSize: 20,
-        lineHeight: 22,
-        opacity: 0.56,
-    },
-    text: {
-        color: theme.centerChannelColor,
-        fontSize: 15,
-        lineHeight: 20,
-        marginLeft: 9,
-        opacity: 0.56,
-    },
-}));
 
 export default ReadOnlyChannnel;

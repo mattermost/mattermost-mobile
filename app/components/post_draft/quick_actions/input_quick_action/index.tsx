@@ -16,6 +16,20 @@ type Props = {
     onTextChange: (value: string) => void;
     value: string;
 }
+
+const getStyleSheet = makeStyleSheetFromTheme((theme) => {
+    return {
+        disabled: {
+            tintColor: changeOpacity(theme.centerChannelColor, 0.16),
+        },
+        icon: {
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: 10,
+        },
+    };
+});
+
 export default function InputQuickAction({
     testID,
     disabled,
@@ -58,16 +72,3 @@ export default function InputQuickAction({
         </TouchableWithFeedback>
     );
 }
-
-const getStyleSheet = makeStyleSheetFromTheme((theme) => {
-    return {
-        disabled: {
-            tintColor: changeOpacity(theme.centerChannelColor, 0.16),
-        },
-        icon: {
-            alignItems: 'center',
-            justifyContent: 'center',
-            padding: 10,
-        },
-    };
-});

@@ -216,37 +216,24 @@ export function buildChannelWideMentionMessage(intl: IntlShape, membersCount: nu
 }
 
 export function alertChannelWideMention(intl: IntlShape, notifyAllMessage: string, accept: AlertCallback, cancel: AlertCallback) {
-    Alert.alert(
-        intl.formatMessage({
-            id: 'mobile.post_textbox.entire_channel.title',
-            defaultMessage: 'Confirm sending notifications to entire channel',
-        }),
-        notifyAllMessage,
-        [
-            {
-                text: intl.formatMessage({
-                    id: 'mobile.post_textbox.entire_channel.cancel',
-                    defaultMessage: 'Cancel',
-                }),
-                onPress: cancel,
-            },
-            {
-                text: intl.formatMessage({
-                    id: 'mobile.post_textbox.entire_channel.confirm',
-                    defaultMessage: 'Confirm',
-                }),
-                onPress: accept,
-            },
-        ],
-    );
+    const message = intl.formatMessage({
+        id: 'mobile.post_textbox.entire_channel.title',
+        defaultMessage: 'Confirm sending notifications to entire channel',
+    });
+    alertMessage(intl, message, notifyAllMessage, accept, cancel);
 }
 
 export function alertSendToGroups(intl: IntlShape, notifyAllMessage: string, accept: AlertCallback, cancel: AlertCallback) {
+    const message = intl.formatMessage({
+        id: 'mobile.post_textbox.groups.title',
+        defaultMessage: 'Confirm sending notifications to groups',
+    });
+    alertMessage(intl, message, notifyAllMessage, accept, cancel);
+}
+
+function alertMessage(intl: IntlShape, message: string, notifyAllMessage: string, accept: AlertCallback, cancel: AlertCallback) {
     Alert.alert(
-        intl.formatMessage({
-            id: 'mobile.post_textbox.groups.title',
-            defaultMessage: 'Confirm sending notifications to groups',
-        }),
+        message,
         notifyAllMessage,
         [
             {
@@ -270,11 +257,7 @@ export function alertSendToGroups(intl: IntlShape, notifyAllMessage: string, acc
 export const getStatusFromSlashCommand = (message: string) => {
     const tokens = message.split(' ');
     const command = tokens[0]?.substring(1);
-    if (command === General.ONLINE || command === General.AWAY ||
-        command === General.DND || command === General.OFFLINE) {
-        return command;
-    }
-    return '';
+    return General.STATUS_COMMANDS.includes(command) ? command : '';
 };
 
 export function alertSlashCommandFailed(intl: IntlShape, error: string) {

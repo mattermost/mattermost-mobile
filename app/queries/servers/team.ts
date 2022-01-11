@@ -61,11 +61,13 @@ export const queryLastChannelFromTeam = async (database: Database, teamId: strin
         } else {
             throw new Error('no nth channel, falling back to default');
         }
-    } catch {
-        // No channel history for the team
-        const channel = await queryDefaultChannelForTeam(database, teamId);
-        if (channel) {
-            channelId = channel.id;
+    } finally {
+        if (!channelId) {
+            // No channel history for the team
+            const channel = await queryDefaultChannelForTeam(database, teamId);
+            if (channel) {
+                channelId = channel.id;
+            }
         }
     }
 

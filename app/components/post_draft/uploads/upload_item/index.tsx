@@ -1,10 +1,10 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback} from 'react';
+import React, {useCallback, useMemo} from 'react';
 import {StyleSheet, TouchableOpacity, View} from 'react-native';
 
-import FileIcon from '@components//post_list/post/body/files/file_icon';
+import FileIcon from '@components/post_list/post/body/files/file_icon';
 import ImageFile from '@components/post_list/post/body/files/image_file';
 import ProgressBar from '@components/progress_bar';
 import {useTheme} from '@context/theme';
@@ -19,85 +19,6 @@ type Props = {
     removeFile: (file: FileInfo) => void;
     openGallery: (file: FileInfo) => void;
     retryFileUpload: (file: FileInfo) => void;
-}
-
-export default function UploadItem({
-    file,
-    removeFile,
-    openGallery,
-    retryFileUpload,
-}: Props) {
-    const theme = useTheme();
-
-    const handlePress = useCallback(() => {
-        openGallery(file);
-    }, [openGallery, file]);
-
-    const handleRetryFileUpload = useCallback(() => {
-        if (!file.failed) {
-            return;
-        }
-
-        retryFileUpload(file);
-    }, [retryFileUpload, file]);
-
-    const handleRemoveFile = useCallback(() => {
-        removeFile(file);
-    }, [removeFile, file]);
-
-    let filePreviewComponent;
-
-    if (isImage(file)) {
-        filePreviewComponent = (
-            <TouchableOpacity onPress={handlePress}>
-                <View style={styles.filePreview}>
-                    <ImageFile
-                        file={file}
-                        resizeMode='cover'
-                    />
-                </View>
-            </TouchableOpacity>
-        );
-    } else {
-        filePreviewComponent = (
-            <TouchableOpacity onPress={handlePress}>
-                <View style={styles.filePreview}>
-                    <FileIcon
-                        backgroundColor={changeOpacity(theme.centerChannelColor, 0.08)}
-                        iconSize={60}
-                        file={file}
-                    />
-                </View>
-            </TouchableOpacity>
-        );
-    }
-
-    return (
-        <View
-            key={file.clientId}
-            style={styles.preview}
-        >
-            <View style={styles.previewContainer}>
-                {filePreviewComponent}
-                {file.failed &&
-                <UploadRetry
-                    onPress={handleRetryFileUpload}
-                />
-                }
-                {file.loading && !file.failed &&
-                <View style={styles.progress}>
-                    <ProgressBar
-                        progress={file.progress || 0}
-                        color={theme.buttonBg}
-                    />
-                </View>
-                }
-            </View>
-            <UploadRemove
-                onPress={handleRemoveFile}
-            />
-        </View>
-    );
 }
 
 const styles = StyleSheet.create({
@@ -125,3 +46,78 @@ const styles = StyleSheet.create({
         height: 56,
     },
 });
+
+export default function UploadItem({
+    file,
+    removeFile,
+    openGallery,
+    retryFileUpload,
+}: Props) {
+    const theme = useTheme();
+
+    const handlePress = useCallback(() => {
+        openGallery(file);
+    }, [openGallery, file]);
+
+    const handleRetryFileUpload = useCallback(() => {
+        if (!file.failed) {
+            return;
+        }
+
+        retryFileUpload(file);
+    }, [retryFileUpload, file]);
+
+    const handleRemoveFile = useCallback(() => {
+        removeFile(file);
+    }, [removeFile, file]);
+
+    const filePreviewComponent = useMemo(() => {
+        if (isImage(file)) {
+            return (
+                <ImageFile
+                    file={file}
+                    resizeMode='cover'
+                />
+            );
+        }
+        return (
+            <FileIcon
+                backgroundColor={changeOpacity(theme.centerChannelColor, 0.08)}
+                iconSize={60}
+                file={file}
+            />
+        );
+    }, [file]);
+
+    return (
+        <View
+            key={file.clientId}
+            style={styles.preview}
+        >
+            <View style={styles.previewContainer}>
+                <TouchableOpacity onPress={handlePress}>
+                    <View style={styles.filePreview}>
+                        {filePreviewComponent}
+                    </View>
+                </TouchableOpacity>
+                {file.failed &&
+                <UploadRetry
+                    onPress={handleRetryFileUpload}
+                />
+                }
+                {file.loading && !file.failed &&
+                <View style={styles.progress}>
+                    <ProgressBar
+                        progress={file.progress || 0}
+                        color={theme.buttonBg}
+                    />
+                </View>
+                }
+            </View>
+            <UploadRemove
+                onPress={handleRemoveFile}
+            />
+        </View>
+    );
+}
+

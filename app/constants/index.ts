@@ -17,6 +17,7 @@ import Permissions from './permissions';
 import Post from './post';
 import Preferences from './preferences';
 import Screens from './screens';
+import ServerErrors from './server_errors';
 import Sso from './sso';
 import SupportedServer from './supported_server';
 import View from './view';
@@ -39,6 +40,7 @@ export {
     Post,
     Preferences,
     Screens,
+    ServerErrors,
     SupportedServer,
     Sso,
     View,

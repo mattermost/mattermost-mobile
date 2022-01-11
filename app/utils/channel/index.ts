@@ -64,7 +64,12 @@ export function sortChannelsByDisplayName(locale: string, a: Channel, b: Channel
     return a.name.toLowerCase().localeCompare(b.name.toLowerCase(), locale, {numeric: true});
 }
 
-export function selectDefaultChannelForTeamFromModel(channels: ChannelModel[], memberships: ChannelMembershipModel[], roles?: RoleModel[], locale = DEFAULT_LOCALE) {
+export function selectDefaultChannelForTeamFromModel(
+    channels: ChannelModel[],
+    memberships: ChannelMembershipModel[],
+    roles?: RoleModel[],
+    locale = DEFAULT_LOCALE,
+) {
     let channel: ChannelModel|undefined;
     let canIJoinPublicChannelsInTeam = false;
 

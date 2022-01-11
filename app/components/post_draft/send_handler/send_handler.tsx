@@ -25,7 +25,6 @@ type Props = {
     testID?: string;
     channelId: string;
     rootId: string;
-    screenId: string;
 
     // From database
     currentUserId: string;
@@ -59,7 +58,6 @@ export default function SendHandler({
     maxMessageLength,
     membersCount = 0,
     rootId,
-    screenId,
     useChannelMentions,
     userIsOutOfOffice,
     value,
@@ -287,7 +285,6 @@ export default function SendHandler({
             testID={testID}
             channelId={channelId}
             rootId={rootId}
-            screenId={screenId}
 
             value={value}
             files={files}

@@ -94,7 +94,6 @@ const Channel = ({currentChannelId, currentTeamId}: ChannelProps) => {
             />
             <PostDraft
                 channelId={currentChannelId}
-                screenId={''}
                 scrollViewNativeID={currentChannelId}
                 accessoriesContainerID={ACCESSORIES_CONTAINER_NATIVE_ID}
             />

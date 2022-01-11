@@ -9,7 +9,6 @@ type Props = {
     testID?: string;
     channelId: string;
     rootId: string;
-    screenId: string;
 
     // Send Handler
     sendMessage: () => void;

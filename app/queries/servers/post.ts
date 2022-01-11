@@ -4,10 +4,10 @@
 import {Database, Model, Q, Query, Relation} from '@nozbe/watermelondb';
 
 import {MM_TABLES} from '@constants/database';
-import {PostsInThreadModel} from '@database/models/server';
 
 import type PostModel from '@typings/database/models/servers/post';
 import type PostInChannelModel from '@typings/database/models/servers/posts_in_channel';
+import type PostsInThreadModel from '@typings/database/models/servers/posts_in_thread';
 
 const {SERVER: {POST, POSTS_IN_CHANNEL, POSTS_IN_THREAD}} = MM_TABLES;
 

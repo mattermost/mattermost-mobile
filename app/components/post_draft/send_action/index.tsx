@@ -14,6 +14,27 @@ type Props = {
     disabled: boolean;
     sendMessage: () => void;
 }
+
+const getStyleSheet = makeStyleSheetFromTheme((theme) => {
+    return {
+        disableButton: {
+            backgroundColor: changeOpacity(theme.buttonBg, 0.3),
+        },
+        sendButtonContainer: {
+            justifyContent: 'flex-end',
+            paddingRight: 8,
+        },
+        sendButton: {
+            backgroundColor: theme.buttonBg,
+            borderRadius: 4,
+            height: 32,
+            width: 80,
+            alignItems: 'center',
+            justifyContent: 'center',
+        },
+    };
+});
+
 function SendButton({
     testID,
     disabled,
@@ -58,25 +79,5 @@ function SendButton({
         </TouchableWithFeedback>
     );
 }
-
-const getStyleSheet = makeStyleSheetFromTheme((theme) => {
-    return {
-        disableButton: {
-            backgroundColor: changeOpacity(theme.buttonBg, 0.3),
-        },
-        sendButtonContainer: {
-            justifyContent: 'flex-end',
-            paddingRight: 8,
-        },
-        sendButton: {
-            backgroundColor: theme.buttonBg,
-            borderRadius: 4,
-            height: 32,
-            width: 80,
-            alignItems: 'center',
-            justifyContent: 'center',
-        },
-    };
-});
 
 export default memo(SendButton);

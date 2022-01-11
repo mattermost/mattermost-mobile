@@ -12,6 +12,7 @@ export default {
     AWAY: 'away',
     ONLINE: 'online',
     DND: 'dnd',
+    STATUS_COMMANDS: ['offline', 'away', 'online', 'dnd'],
     DEFAULT_CHANNEL: 'town-square',
     DM_CHANNEL: 'D',
     OPEN_CHANNEL: 'O',

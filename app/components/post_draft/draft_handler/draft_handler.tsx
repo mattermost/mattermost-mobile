@@ -17,7 +17,6 @@ type Props = {
     testID?: string;
     channelId: string;
     rootId?: string;
-    screenId: string;
     drafts: DraftModel[];
     maxFileSize: number;
     maxFileCount: number;
@@ -87,7 +86,6 @@ export default function DraftHandler(props: Props) {
         testID,
         channelId,
         rootId = '',
-        screenId,
         drafts,
         maxFileSize,
         maxFileCount,
@@ -281,7 +279,6 @@ export default function DraftHandler(props: Props) {
             testID={testID}
             channelId={channelId}
             rootId={rootId}
-            screenId={screenId}
 
             value={currentValue}
             files={currentFiles}

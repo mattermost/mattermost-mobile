@@ -22,10 +22,8 @@ type Props = {
 
 const getStyleSheet = makeStyleSheetFromTheme((theme) => ({
     archivedWrapper: {
-        paddingLeft: 20,
-        paddingRight: 20,
-        paddingTop: 10,
-        paddingBottom: 10,
+        paddingHorizontal: 20,
+        paddingVertical: 10,
         borderTopWidth: 1,
         backgroundColor: theme.centerChannelBg,
         borderTopColor: changeOpacity(theme.centerChannelColor, 0.20),
@@ -37,8 +35,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => ({
     closeButton: {
         backgroundColor: theme.buttonBg,
         alignItems: 'center',
-        paddingTop: 5,
-        paddingBottom: 5,
+        paddingVertical: 5,
         borderRadius: 4,
         marginTop: 10,
         height: 40,

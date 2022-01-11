@@ -20,7 +20,6 @@ type Props = {
     channelIsReadOnly: boolean;
     deactivatedChannel: boolean;
     rootId?: string;
-    screenId: string;
     scrollViewNativeID?: string;
 }
 
@@ -33,7 +32,6 @@ export default function PostDraft({
     channelIsReadOnly,
     deactivatedChannel,
     rootId,
-    screenId,
     scrollViewNativeID,
 }: Props) {
     const keyboardTracker = useRef<KeyboardTrackingViewRef>(null);
@@ -87,7 +85,6 @@ export default function PostDraft({
             testID={testID}
             channelId={channelId}
             rootId={rootId}
-            screenId={screenId}
         />
     );
 

@@ -75,20 +75,18 @@ export default function CameraQuickAction({
     const color = disabled ? changeOpacity(theme.centerChannelColor, 0.16) : changeOpacity(theme.centerChannelColor, 0.64);
 
     return (
-        <>
-            <TouchableWithFeedback
-                testID={actionTestID}
-                disabled={disabled}
-                onPress={openSelectorModal}
-                style={style.icon}
-                type={'opacity'}
-            >
-                <CompassIcon
-                    color={color}
-                    name='camera-outline'
-                    size={ICON_SIZE}
-                />
-            </TouchableWithFeedback>
-        </>
+        <TouchableWithFeedback
+            testID={actionTestID}
+            disabled={disabled}
+            onPress={openSelectorModal}
+            style={style.icon}
+            type={'opacity'}
+        >
+            <CompassIcon
+                color={color}
+                name='camera-outline'
+                size={ICON_SIZE}
+            />
+        </TouchableWithFeedback>
     );
 }

@@ -137,17 +137,19 @@ export default function Uploads({
                     {buildFilePreviews()}
                 </ScrollView>
             </Animated.View>
+            {Boolean(uploadFileError) &&
             <Animated.View
                 style={[style.errorContainer, errorAnimatedStyle]}
             >
                 <View style={style.errorTextContainer}>
-                    {Boolean(uploadFileError) &&
-                        <Text style={style.warning}>
-                            {uploadFileError}
-                        </Text>
-                    }
+
+                    <Text style={style.warning}>
+                        {uploadFileError}
+                    </Text>
+
                 </View>
             </Animated.View>
+            }
         </View>
     );
 }
