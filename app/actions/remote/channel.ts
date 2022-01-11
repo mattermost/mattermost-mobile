@@ -9,7 +9,7 @@ import {General} from '@constants';
 import DatabaseManager from '@database/manager';
 import {privateChannelJoinPrompt} from '@helpers/api/channel';
 import NetworkManager from '@init/network_manager';
-import {prepareMyChannelsForTeam, queryChannelByName, queryMyChannel} from '@queries/servers/channel';
+import {prepareMyChannelsForTeam, queryChannelById, queryChannelByName, queryMyChannel} from '@queries/servers/channel';
 import {queryCommonSystemValues, queryCurrentUserId} from '@queries/servers/system';
 import {prepareMyTeams, queryMyTeamById, queryTeamById, queryTeamByName} from '@queries/servers/team';
 import {getDirectChannelName} from '@utils/channel';
@@ -49,13 +49,23 @@ export const addMembersToChannel = async (serverUrl: string, channelId: string, 
     try {
         const promises = userIds.map((id) => client.addToChannel(id, channelId, postRootId));
         const channelMemberships: ChannelMembership[] = await Promise.all(promises);
-        await fetchUsersByIds(serverUrl, userIds, false);
+        const {users} = await fetchUsersByIds(serverUrl, userIds, true);
 
         if (!fetchOnly) {
-            await operator.handleChannelMembership({
+            const modelPromises: Array<Promise<Model[]>> = [];
+            if (users) {
+                modelPromises.push(operator.handleUsers({
+                    users,
+                    prepareRecordsOnly: true,
+                }));
+            }
+            modelPromises.push(operator.handleChannelMembership({
                 channelMemberships,
-                prepareRecordsOnly: false,
-            });
+                prepareRecordsOnly: true,
+            }));
+
+            const models = await Promise.all(modelPromises);
+            await operator.batchRecords(models.flat());
         }
         return {channelMemberships};
     } catch (error) {
@@ -83,6 +93,53 @@ export const fetchChannelByName = async (serverUrl: string, teamId: string, chan
         }
 
         return {channel};
+    } catch (error) {
+        forceLogoutIfNecessary(serverUrl, error as ClientErrorProps);
+        return {error};
+    }
+};
+
+export const fetchChannelCreator = async (serverUrl: string, channelId: string, fetchOnly = false) => {
+    const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
+    if (!operator) {
+        return {error: `${serverUrl} database not found`};
+    }
+
+    let client: Client;
+    try {
+        client = NetworkManager.getClient(serverUrl);
+    } catch (error) {
+        return {error};
+    }
+
+    try {
+        const currentUserId = await queryCurrentUserId(operator.database);
+        const channel = await queryChannelById(operator.database, channelId);
+        if (channel && channel.creatorId) {
+            const user = await client.getUser(channel.creatorId);
+
+            if (!fetchOnly) {
+                const modelPromises: Array<Promise<Model[]>> = [];
+                if (user.id !== currentUserId) {
+                    modelPromises.push(operator.handleUsers({
+                        users: [user],
+                        prepareRecordsOnly: true,
+                    }));
+                }
+
+                modelPromises.push(operator.handleChannelMembership({
+                    channelMemberships: [{channel_id: channelId, user_id: channel.creatorId}],
+                    prepareRecordsOnly: true,
+                }));
+
+                const models = await Promise.all(modelPromises);
+                await operator.batchRecords(models.flat());
+            }
+
+            return {user};
+        }
+
+        return {user: undefined};
     } catch (error) {
         forceLogoutIfNecessary(serverUrl, error as ClientErrorProps);
         return {error};

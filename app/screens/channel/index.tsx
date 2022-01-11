@@ -3,15 +3,16 @@
 
 import {withDatabase} from '@nozbe/watermelondb/DatabaseProvider';
 import withObservables from '@nozbe/with-observables';
-import React, {useMemo} from 'react';
+import React, {useEffect, useState} from 'react';
 import {SafeAreaView} from 'react-native-safe-area-context';
 import {map} from 'rxjs/operators';
 
-import PostDraft from '@components/post_draft';
+import {fetchPostsForChannel} from '@actions/remote/post';
+import PostDraft from '@app/components/post_draft';
+import {ACCESSORIES_CONTAINER_NATIVE_ID} from '@app/constants/post_draft';
 import PostList from '@components/post_list';
-import ServerVersion from '@components/server_version';
 import {Database} from '@constants';
-import {ACCESSORIES_CONTAINER_NATIVE_ID} from '@constants/post_draft';
+import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {useAppState} from '@hooks/device';
 import {makeStyleSheetFromTheme} from '@utils/theme';
@@ -19,6 +20,7 @@ import {makeStyleSheetFromTheme} from '@utils/theme';
 import ChannelNavBar from './channel_nav_bar';
 import FailedChannels from './failed_channels';
 import FailedTeams from './failed_teams';
+import Intro from './intro';
 
 import type {WithDatabaseArgs} from '@typings/database/database';
 import type SystemModel from '@typings/database/models/servers/system';
@@ -27,7 +29,6 @@ import type {LaunchProps} from '@typings/launch';
 type ChannelProps = LaunchProps & {
     currentChannelId: string;
     currentTeamId: string;
-    time?: number;
 };
 
 const {MM_TABLES, SYSTEM_IDENTIFIERS} = Database;
@@ -49,62 +50,54 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
 }));
 
 const Channel = ({currentChannelId, currentTeamId}: ChannelProps) => {
-    // TODO: If we have LaunchProps, ensure we load the correct channel/post/modal.
-    // TODO: If LaunchProps.error is true, use the LaunchProps.launchType to determine which
-    // error message to display. For example:
-    // if (props.launchError) {
-    //     let erroMessage;
-    //     if (props.launchType === LaunchType.DeepLink) {
-    //         errorMessage = intl.formatMessage({id: 'mobile.launchError.deepLink', defaultMessage: 'Did not find a server for this deep link'});
-    //     } else if (props.launchType === LaunchType.Notification) {
-    //         errorMessage = intl.formatMessage({id: 'mobile.launchError.notification', defaultMessage: 'Did not find a server for this notification'});
-    //     }
-    // }
-
-    //todo: https://mattermost.atlassian.net/browse/MM-37266
-
+    const appState = useAppState();
+    const [loading, setLoading] = useState(false);
+    const serverUrl = useServerUrl();
     const theme = useTheme();
     const styles = getStyleSheet(theme);
-    const appState = useAppState();
 
-    const renderComponent = useMemo(() => {
-        if (!currentTeamId) {
-            return <FailedTeams/>;
-        }
+    useEffect(() => {
+        setLoading(true);
+        fetchPostsForChannel(serverUrl, currentChannelId).then(() => {
+            setLoading(false);
+        });
+    }, [currentChannelId]);
 
-        if (!currentChannelId) {
-            return <FailedChannels teamId={currentTeamId}/>;
-        }
+    if (!currentTeamId) {
+        return <FailedTeams/>;
+    }
 
-        return (
-            <>
-                <ChannelNavBar
-                    channelId={currentChannelId}
-                    onPress={() => null}
-                />
-                <PostList
-                    channelId={currentChannelId}
-                    testID='channel.post_list'
-                    forceQueryAfterAppState={appState}
-                />
-                <PostDraft
-                    channelId={currentChannelId}
-                    screenId={''}
-                    scrollViewNativeID={currentChannelId}
-                    accessoriesContainerID={ACCESSORIES_CONTAINER_NATIVE_ID}
-                />
-            </>
-        );
-    }, [currentTeamId, currentChannelId, theme, appState]);
+    if (!currentChannelId) {
+        return <FailedChannels teamId={currentTeamId}/>;
+    }
 
     return (
         <SafeAreaView
             style={styles.flex}
             mode='margin'
-            edges={['left', 'right', 'bottom']}
+            edges={['left', 'right']}
         >
-            <ServerVersion/>
-            {renderComponent}
+            <ChannelNavBar
+                channelId={currentChannelId}
+                onPress={() => null}
+            />
+            <PostList
+                channelId={currentChannelId}
+                footer={(
+                    <Intro
+                        channelId={currentChannelId}
+                        loading={loading}
+                    />
+                )}
+                forceQueryAfterAppState={appState}
+                testID='channel.post_list'
+            />
+            <PostDraft
+                channelId={currentChannelId}
+                screenId={''}
+                scrollViewNativeID={currentChannelId}
+                accessoriesContainerID={ACCESSORIES_CONTAINER_NATIVE_ID}
+            />
         </SafeAreaView>
     );
 };

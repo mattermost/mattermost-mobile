@@ -12,6 +12,7 @@ import CompassIcon from '@components/compass_icon';
 import {Device, Preferences, Screens} from '@constants';
 import NavigationConstants from '@constants/navigation';
 import EphemeralStore from '@store/ephemeral_store';
+import {NavButtons} from '@typings/screens/navigation';
 import {changeOpacity, setNavigatorStyles} from '@utils/theme';
 
 import type {LaunchProps} from '@typings/launch';
@@ -464,12 +465,12 @@ export function showSearchModal(initialValue = '') {
     showModal(name, title, passProps, options);
 }
 
-export async function dismissModal(options = {}) {
+export async function dismissModal(options?: Options & { componentId: string}) {
     if (!EphemeralStore.hasModalsOpened()) {
         return;
     }
 
-    const componentId = EphemeralStore.getNavigationTopModalId();
+    const componentId = options?.componentId || EphemeralStore.getNavigationTopModalId();
     if (componentId) {
         try {
             await Navigation.dismissModal(componentId, options);
@@ -481,7 +482,7 @@ export async function dismissModal(options = {}) {
     }
 }
 
-export async function dismissAllModals(options = {}) {
+export async function dismissAllModals(options: Options = {}) {
     if (!EphemeralStore.hasModalsOpened()) {
         return;
     }
@@ -495,7 +496,7 @@ export async function dismissAllModals(options = {}) {
     }
 }
 
-export function setButtons(componentId: string, buttons = {leftButtons: [], rightButtons: []}) {
+export function setButtons(componentId: string, buttons: NavButtons = {leftButtons: [], rightButtons: []}) {
     const options = {
         topBar: {
             ...buttons,

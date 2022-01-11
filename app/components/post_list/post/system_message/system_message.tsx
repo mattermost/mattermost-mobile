@@ -11,6 +11,7 @@ import {useTheme} from '@context/theme';
 import {t} from '@i18n';
 import {getMarkdownTextStyles} from '@utils/markdown';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
+import {typography} from '@utils/typography';
 
 import type PostModel from '@typings/database/models/servers/post';
 import type UserModel from '@typings/database/models/servers/user';
@@ -46,8 +47,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     return {
         systemMessage: {
             color: changeOpacity(theme.centerChannelColor, 0.6),
-            fontSize: 16,
-            lineHeight: 20,
+            ...typography('Body', 200, 'Regular'),
         },
     };
 });

@@ -5,7 +5,7 @@
 
 import {debounce} from 'lodash';
 import React, {useState, useEffect, useRef, useImperativeHandle, forwardRef} from 'react';
-import {View, TextInput, TouchableWithoutFeedback, Text, Platform, TextStyle, NativeSyntheticEvent, TextInputFocusEventData, TextInputProps, GestureResponderEvent, TargetedEvent} from 'react-native';
+import {GestureResponderEvent, NativeSyntheticEvent, Platform, TargetedEvent, Text, TextInput, TextInputFocusEventData, TextInputProps, TextStyle, TouchableWithoutFeedback, View, ViewStyle} from 'react-native';
 import Animated, {useCode, interpolateNode, EasingNode, Value, set, Clock} from 'react-native-reanimated';
 
 import CompassIcon from '@components/compass_icon';
@@ -93,7 +93,9 @@ export type FloatingTextInputRef = {
 }
 
 type FloatingTextInputProps = TextInputProps & {
-    containerStyle?: TextStyle;
+    containerStyle?: ViewStyle;
+    textInputStyle?: TextStyle;
+    labelTextStyle?: TextStyle;
     editable?: boolean;
     error?: string;
     errorIcon?: string;
@@ -120,6 +122,8 @@ const FloatingTextInput = forwardRef<FloatingTextInputRef, FloatingTextInputProp
     showErrorIcon = true,
     theme,
     value = '',
+    textInputStyle,
+    labelTextStyle,
     ...props
 }: FloatingTextInputProps, ref) => {
     const [focusedLabel, setIsFocusLabel] = useState<boolean | undefined>();
@@ -218,8 +222,8 @@ const FloatingTextInput = forwardRef<FloatingTextInputRef, FloatingTextInputProp
         borderWidth: focusedLabel ? BORDER_FOCUSED_WIDTH : BORDER_DEFAULT_WIDTH,
         height: DEFAULT_INPUT_HEIGHT + ((focusedLabel ? BORDER_FOCUSED_WIDTH : BORDER_DEFAULT_WIDTH) * 2),
     };
-    const combinedTextInputStyle = [styles.textInput, textInputBorder, textInputColorStyles];
-    const textAnimatedTextStyle = [styles.label, focusStyle, labelColorStyles];
+    const combinedTextInputStyle = [styles.textInput, textInputBorder, textInputColorStyles, textInputStyle];
+    const textAnimatedTextStyle = [styles.label, focusStyle, labelColorStyles, labelTextStyle];
 
     if (error && !focused) {
         textAnimatedTextStyle.push({color: theme.errorTextColor});
