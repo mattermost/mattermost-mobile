@@ -24,3 +24,42 @@ index ca31e20..b45c753 100644
              } else {
                  // On some systems there is some kind of lock on `/databases` folder ¯\_(ツ)_/¯
                  context.getDatabasePath("$name.db").path.replace("/databases", "")
+diff --git a/node_modules/@nozbe/watermelondb/native/shared/Database.cpp b/node_modules/@nozbe/watermelondb/native/shared/Database.cpp
+index a2bd410..44e1a58 100644
+--- a/node_modules/@nozbe/watermelondb/native/shared/Database.cpp
++++ b/node_modules/@nozbe/watermelondb/native/shared/Database.cpp
+@@ -54,6 +54,7 @@ void Database::destroy() {
+     const std::lock_guard<std::mutex> lock(mutex_);
+     
+     if (isDestroyed_) {
++        db_->markAsDestroyed();
+         return;
+     }
+     isDestroyed_ = true;
+diff --git a/node_modules/@nozbe/watermelondb/native/shared/Sqlite.cpp b/node_modules/@nozbe/watermelondb/native/shared/Sqlite.cpp
+index 4108e6c..0fa554c 100644
+--- a/node_modules/@nozbe/watermelondb/native/shared/Sqlite.cpp
++++ b/node_modules/@nozbe/watermelondb/native/shared/Sqlite.cpp
+@@ -69,6 +69,10 @@ void SqliteDb::destroy() {
+     }
+ }
+ 
++void SqliteDb::markAsDestroyed() {
++    isDestroyed_ = true;
++}
++
+ SqliteDb::~SqliteDb() {
+     destroy();
+ }
+diff --git a/node_modules/@nozbe/watermelondb/native/shared/Sqlite.h b/node_modules/@nozbe/watermelondb/native/shared/Sqlite.h
+index 22cffa7..4b74a7f 100644
+--- a/node_modules/@nozbe/watermelondb/native/shared/Sqlite.h
++++ b/node_modules/@nozbe/watermelondb/native/shared/Sqlite.h
+@@ -11,6 +11,7 @@ public:
+     SqliteDb(std::string path);
+     ~SqliteDb();
+     void destroy();
++    void markAsDestroyed();
+ 
+     sqlite3 *sqlite;
+ 
