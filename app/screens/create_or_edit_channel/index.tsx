@@ -24,7 +24,6 @@ import type ChannelInfoModel from '@typings/database/models/servers/channel_info
 type Props = {
         serverUrl: string;
         componentId: string;
-        categoryId: string;
         channel?: ChannelModel;
         channelInfo?: ChannelInfoModel;
 }

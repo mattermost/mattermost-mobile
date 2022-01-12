@@ -1,17 +1,9 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {render} from '@testing-library/react-native';
 import React from 'react';
-import {IntlProvider} from 'react-intl';
 
-export const IntlWrapper: React.FC = ({children}) => (
-    <IntlProvider
-        locale='en'
-    >
-        {children}
-    </IntlProvider>
-);
+import {renderWithIntl} from '@test/intl-test-helper';
 
 import EditChannelInfo from './index';
 
@@ -42,9 +34,8 @@ describe('EditChannelInfo', () => {
     };
 
     test('should match snapshot, create channel', () => {
-        const {queryByText, toJSON} = render(
+        const {queryByText, toJSON} = renderWithIntl(
             <EditChannelInfo {...baseProps}/>,
-            {wrapper: IntlWrapper},
         );
         expect(queryByText('Public Channel')).toBeTruthy();
         expect(queryByText('Private Channel')).toBeTruthy();
@@ -52,13 +43,22 @@ describe('EditChannelInfo', () => {
     });
 
     test('should match snapshot, edit channel', () => {
-        baseProps.editing = true;
-        const {queryByText, toJSON} = render(
-            <EditChannelInfo {...baseProps}/>,
-            {wrapper: IntlWrapper},
+        const {queryByText, toJSON} = renderWithIntl(
+            <EditChannelInfo
+                {...baseProps}
+                editing={true}
+            />,
         );
         expect(queryByText('Public Channel')).toBeFalsy();
         expect(queryByText('Private Channel')).toBeFalsy();
         expect(toJSON()).toMatchSnapshot();
+    });
+
+    test('error displayed', () => {
+        baseProps.error = 'this is an error';
+        const {queryByText} = renderWithIntl(
+            <EditChannelInfo {...baseProps}/>,
+        );
+        expect(queryByText('this is an error')).toBeTruthy();
     });
 });

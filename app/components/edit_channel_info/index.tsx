@@ -392,6 +392,7 @@ export default function EditChannelInfo({
                                 </View>
                                 <View style={styles.inputContainer}>
                                     <TextInput
+                                        testID='edit_channel_info.displayname.input'
                                         value={displayName?.value}
                                         onChangeText={onDisplayNameChangeText}
                                         style={styles.input}
