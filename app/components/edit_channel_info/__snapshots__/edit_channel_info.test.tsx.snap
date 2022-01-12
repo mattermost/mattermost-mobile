@@ -232,6 +232,7 @@ exports[`EditChannelInfo should match snapshot, create channel 1`] = `
                   "paddingHorizontal": 15,
                 }
               }
+              testID="edit_channel_info.displayname.input"
               underlineColorAndroid="transparent"
               value="display_name"
             />
@@ -535,6 +536,7 @@ exports[`EditChannelInfo should match snapshot, edit channel 1`] = `
                   "paddingHorizontal": 15,
                 }
               }
+              testID="edit_channel_info.displayname.input"
               underlineColorAndroid="transparent"
               value="display_name"
             />
