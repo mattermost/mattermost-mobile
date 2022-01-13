@@ -7,15 +7,12 @@ import {encode} from '@msgpack/msgpack/dist';
 export default class WebSocketClient extends EventEmitter {
     private ws: WebSocket | null;
     private seqNo = 0;
+    private connID = '';
     private eventPrefix = 'custom_com.mattermost.calls';
 
     constructor(connURL: string) {
         super();
         this.ws = new WebSocket(connURL);
-
-        this.ws.onopen = () => {
-            this.emit('open');
-        };
 
         this.ws.onerror = (err) => {
             this.emit('error', err);
@@ -43,11 +40,29 @@ export default class WebSocketClient extends EventEmitter {
                 return;
             }
 
-            if (msg.event !== this.eventPrefix + '_signal') {
+            if (msg.event === 'hello') {
+                this.connID = msg.data.connection_id;
+                this.emit('open');
+                return;
+            } else if (!this.connID) {
                 return;
             }
 
-            this.emit('message', msg.data);
+            if (msg.data.connID !== this.connID) {
+                return;
+            }
+
+            if (msg.event === this.eventPrefix + '_join') {
+                this.emit('join');
+            }
+
+            if (msg.event === this.eventPrefix + '_error') {
+                this.emit('error', msg.data);
+            }
+
+            if (msg.event === this.eventPrefix + '_signal') {
+                this.emit('message', msg.data);
+            }
         };
     }
 
@@ -72,6 +87,7 @@ export default class WebSocketClient extends EventEmitter {
             this.ws = null;
         }
         this.seqNo = 0;
+        this.connID = '';
         this.emit('close');
     }
 

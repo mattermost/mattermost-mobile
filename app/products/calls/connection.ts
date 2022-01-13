@@ -25,6 +25,7 @@ export async function newClient(channelID: string, closeCb: () => void, setScree
     let stream: MediaStream;
     let voiceTrackAdded = false;
     let voiceTrack: MediaStreamTrack | null = null;
+    let isClosed = false;
     const streams: MediaStream[] = [];
 
     try {
@@ -42,7 +43,9 @@ export async function newClient(channelID: string, closeCb: () => void, setScree
     const ws = new WebSocketClient(Client4.getWebSocketUrl());
 
     const disconnect = () => {
-        ws.close();
+        if (!isClosed) {
+            ws.close();
+        }
 
         streams.forEach((s) => {
             s.getTracks().forEach((track: MediaStreamTrack) => {
@@ -91,13 +94,17 @@ export async function newClient(channelID: string, closeCb: () => void, setScree
         }
     };
 
-    ws.on('error', (err) => console.log('WS (CALLS) ERROR', err)); // eslint-disable-line no-console
+    ws.on('error', (err) => {
+        console.log('WS (CALLS) ERROR', err); // eslint-disable-line no-console
+        ws.close();
+    });
 
-    ws.on('open', async () => {
-        ws.send('join', {
-            channelID,
-        });
+    ws.on('close', () => {
+        isClosed = true;
+        disconnect();
+    });
 
+    ws.on('join', async () => {
         let config;
         try {
             config = await Client4.getCallsConfig();
@@ -127,14 +134,22 @@ export async function newClient(channelID: string, closeCb: () => void, setScree
             }
         });
 
-        peer.on('error', (err: any) => console.log('PEER ERROR', err)); // eslint-disable-line no-console
-
-        ws.on('message', ({data}) => {
-            const msg = JSON.parse(data);
-            if (msg.type === 'answer' || msg.type === 'offer') {
-                peer.signal(data);
-            }
+        peer.on('error', (err: any) => {
+            console.log('PEER ERROR', err); // eslint-disable-line no-console
         });
+    });
+
+    ws.on('open', async () => {
+        ws.send('join', {
+            channelID,
+        });
+    });
+
+    ws.on('message', ({data}) => {
+        const msg = JSON.parse(data);
+        if (msg.type === 'answer' || msg.type === 'offer') {
+            peer.signal(data);
+        }
     });
 
     const waitForReady = () => {
