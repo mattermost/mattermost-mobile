@@ -65,6 +65,7 @@ describe('EditChannelInfo', () => {
     });
 
     test('edit - button enabling and disabling', () => {
+        const {displayName, enableRightButton, oldDisplayName} = baseProps;
         const {getByTestId} = renderWithIntl(
             <EditChannelInfo
                 {...baseProps}
@@ -72,23 +73,25 @@ describe('EditChannelInfo', () => {
             />,
         );
 
+        const displayInput = getByTestId('edit_channel_info.displayname.input');
+
         // right button disabled
-        expect(baseProps.enableRightButton).not.toHaveBeenCalled();
+        expect(enableRightButton).not.toHaveBeenCalled();
 
         // displayName value initialized with value from channel
-        expect(getByTestId('edit_channel_info.displayname.input').props.value).toEqual(baseProps.oldDisplayName);
+        expect(displayInput.props.value).toEqual(oldDisplayName);
 
         // change display name value. calls enableRightButton with true
-        fireEvent(getByTestId('edit_channel_info.displayname.input'), 'onChangeText', 'new display name');
-        expect(baseProps.displayName.onChange).toHaveBeenCalledWith('new display name');
-        expect(baseProps.enableRightButton.mock.calls[0][0]).toEqual(true);
+        fireEvent(displayInput, 'onChangeText', 'new display name');
+        expect(displayName.onChange).toHaveBeenCalledWith('new display name');
+        expect(enableRightButton.mock.calls[0][0]).toEqual(true);
 
         // change display name back to original. call enableRightButton again
         // with false because values are the same as original values
-        fireEvent(getByTestId('edit_channel_info.displayname.input'), 'onChangeText', baseProps.displayName.value);
-        expect(baseProps.enableRightButton.mock.calls[1][0]).toEqual(false);
+        fireEvent(displayInput, 'onChangeText', displayName.value);
+        expect(enableRightButton.mock.calls[1][0]).toEqual(false);
 
-        fireEvent(getByTestId('edit_channel_info.displayname.input'), 'onChangeText', baseProps.displayName.value + 'e');
-        expect(baseProps.enableRightButton.mock.calls[2][0]).toEqual(true);
+        fireEvent(displayInput, 'onChangeText', displayName.value + 'e');
+        expect(enableRightButton.mock.calls[2][0]).toEqual(true);
     });
 });
