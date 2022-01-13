@@ -1,6 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`EditChannelInfo should match snapshot, create channel 1`] = `
+exports[`EditChannelInfo create - should match snapshot 1`] = `
 <RNCSafeAreaView
   edges={
     Array [
@@ -234,7 +234,7 @@ exports[`EditChannelInfo should match snapshot, create channel 1`] = `
               }
               testID="edit_channel_info.displayname.input"
               underlineColorAndroid="transparent"
-              value="display_name"
+              value="orig_display_name"
             />
           </View>
           <View
@@ -303,7 +303,7 @@ exports[`EditChannelInfo should match snapshot, create channel 1`] = `
               testID="edit_channel_info.purpose.input"
               textAlignVertical="top"
               underlineColorAndroid="transparent"
-              value="purpose"
+              value="orig_purpose"
             />
           </View>
           <View>
@@ -389,7 +389,7 @@ exports[`EditChannelInfo should match snapshot, create channel 1`] = `
             testID="edit_channel_info.header.input"
             textAlignVertical="top"
             underlineColorAndroid="transparent"
-            value="header"
+            value="orig_header"
           />
         </View>
         <View
@@ -418,7 +418,7 @@ exports[`EditChannelInfo should match snapshot, create channel 1`] = `
 </RNCSafeAreaView>
 `;
 
-exports[`EditChannelInfo should match snapshot, edit channel 1`] = `
+exports[`EditChannelInfo edit - should match snapshot 1`] = `
 <RNCSafeAreaView
   edges={
     Array [
@@ -538,7 +538,7 @@ exports[`EditChannelInfo should match snapshot, edit channel 1`] = `
               }
               testID="edit_channel_info.displayname.input"
               underlineColorAndroid="transparent"
-              value="display_name"
+              value="orig_display_name"
             />
           </View>
           <View
@@ -607,7 +607,7 @@ exports[`EditChannelInfo should match snapshot, edit channel 1`] = `
               testID="edit_channel_info.purpose.input"
               textAlignVertical="top"
               underlineColorAndroid="transparent"
-              value="purpose"
+              value="orig_purpose"
             />
           </View>
           <View>
@@ -693,7 +693,7 @@ exports[`EditChannelInfo should match snapshot, edit channel 1`] = `
             testID="edit_channel_info.header.input"
             textAlignVertical="top"
             underlineColorAndroid="transparent"
-            value="header"
+            value="orig_header"
           />
         </View>
         <View

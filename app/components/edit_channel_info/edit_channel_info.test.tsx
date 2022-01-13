@@ -3,7 +3,7 @@
 
 import React from 'react';
 
-import {renderWithIntl} from '@test/intl-test-helper';
+import {renderWithIntl, fireEvent} from '@test/intl-test-helper';
 
 import EditChannelInfo from './index';
 
@@ -16,24 +16,24 @@ describe('EditChannelInfo', () => {
         editing: false,
         error: '',
         displayName: {
-            value: 'display_name',
+            value: 'orig_display_name',
             onChange: jest.fn(),
         },
         purpose: {
-            value: 'purpose',
+            value: 'orig_purpose',
             onChange: jest.fn(),
         },
         header: {
-            value: 'header',
+            value: 'orig_header',
             onChange: jest.fn(),
         },
         onTypeChange: jest.fn(),
-        oldDisplayName: 'old_display_name',
-        oldHeader: 'old_header',
-        oldPurpose: 'old_purpose',
+        oldDisplayName: 'orig_display_name',
+        oldHeader: 'orig_header',
+        oldPurpose: 'orig_purpose',
     };
 
-    test('should match snapshot, create channel', () => {
+    test('create - should match snapshot', () => {
         const {queryByText, toJSON} = renderWithIntl(
             <EditChannelInfo {...baseProps}/>,
         );
@@ -42,7 +42,7 @@ describe('EditChannelInfo', () => {
         expect(toJSON()).toMatchSnapshot();
     });
 
-    test('should match snapshot, edit channel', () => {
+    test('edit - should match snapshot', () => {
         const {queryByText, toJSON} = renderWithIntl(
             <EditChannelInfo
                 {...baseProps}
@@ -54,11 +54,41 @@ describe('EditChannelInfo', () => {
         expect(toJSON()).toMatchSnapshot();
     });
 
-    test('error displayed', () => {
-        baseProps.error = 'this is an error';
+    test('create - error displayed', () => {
         const {queryByText} = renderWithIntl(
-            <EditChannelInfo {...baseProps}/>,
+            <EditChannelInfo
+                {...baseProps}
+                error='this is an error'
+            />,
         );
         expect(queryByText('this is an error')).toBeTruthy();
+    });
+
+    test('edit - button enabling and disabling', () => {
+        const {getByTestId} = renderWithIntl(
+            <EditChannelInfo
+                {...baseProps}
+                editing={true}
+            />,
+        );
+
+        // right button disabled
+        expect(baseProps.enableRightButton).not.toHaveBeenCalled();
+
+        // displayName value initialized with value from channel
+        expect(getByTestId('edit_channel_info.displayname.input').props.value).toEqual(baseProps.oldDisplayName);
+
+        // change display name value. calls enableRightButton with true
+        fireEvent(getByTestId('edit_channel_info.displayname.input'), 'onChangeText', 'new display name');
+        expect(baseProps.displayName.onChange).toHaveBeenCalledWith('new display name');
+        expect(baseProps.enableRightButton.mock.calls[0][0]).toEqual(true);
+
+        // change display name back to original. call enableRightButton again
+        // with false because values are the same as original values
+        fireEvent(getByTestId('edit_channel_info.displayname.input'), 'onChangeText', baseProps.displayName.value);
+        expect(baseProps.enableRightButton.mock.calls[1][0]).toEqual(false);
+
+        fireEvent(getByTestId('edit_channel_info.displayname.input'), 'onChangeText', baseProps.displayName.value + 'e');
+        expect(baseProps.enableRightButton.mock.calls[2][0]).toEqual(true);
     });
 });
