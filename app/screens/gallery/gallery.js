@@ -16,8 +16,6 @@ import GalleryViewer from './gallery_viewer';
 export default class Gallery extends PureComponent {
     static propTypes = {
         componentId: PropTypes.string.isRequired,
-        deviceHeight: PropTypes.number.isRequired,
-        deviceWidth: PropTypes.number.isRequired,
         files: PropTypes.array,
         index: PropTypes.number.isRequired,
         theme: PropTypes.object.isRequired,
@@ -152,19 +150,15 @@ export default class Gallery extends PureComponent {
     };
 
     render() {
-        const {deviceHeight, deviceWidth, files, theme} = this.props;
+        const {files, theme} = this.props;
         const {index, footerVisible} = this.state;
 
         return (
             <>
                 <GalleryViewer
-                    key={`gallery-${deviceWidth}`}
                     files={files}
                     footerVisible={footerVisible}
-                    width={deviceWidth}
-                    height={deviceHeight}
                     initialIndex={index}
-                    isLandscape={deviceWidth > deviceHeight}
                     onClose={this.close}
                     onPageSelected={this.handlePageSelected}
                     onTap={this.handleTapped}

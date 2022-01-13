@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React, {useEffect, useMemo, useRef, useState} from 'react';
-import {Platform, StyleSheet, View} from 'react-native';
+import {Platform, StyleSheet, useWindowDimensions, View} from 'react-native';
 import {PanGestureHandler, PinchGestureHandler, State, TapGestureHandler, TapGestureHandlerStateChangeEvent} from 'react-native-gesture-handler';
 import Animated, {abs, add, and, call, clockRunning, cond, divide, eq, greaterOrEq, greaterThan, multiply, neq, not, onChange, set, sub, useCode, EasingNode, ceil} from 'react-native-reanimated';
 import {clamp, snapPoint, timing, useClock, usePanGestureHandler, usePinchGestureHandler, useTapGestureHandler, useValue, vec} from 'react-native-redash/lib/module/v1';
@@ -18,34 +18,40 @@ import GalleryVideo from './gallery_video';
 
 import type {GalleryProps} from '@mm-types/screens/gallery';
 
-const itemTopStyle = (props: GalleryProps): number => {
+type GalleryStyle = {
+    count: number;
+    height: number;
+    width: number;
+}
+
+const itemTopStyle = (footerVisible: boolean, isLandscape: boolean): number => {
     if (Platform.OS === 'android') {
-        if (props.footerVisible) {
-            return props.isLandscape ? -64 : -99;
+        if (footerVisible) {
+            return isLandscape ? -64 : -99;
         }
 
-        return props.isLandscape ? -6 : -41;
+        return isLandscape ? -6 : -41;
     }
 
     return 0;
 };
 
-const getStyles = makeStyleSheetFromTheme((props: GalleryProps) => ({
+const getStyles = makeStyleSheetFromTheme(({count, width, height}: GalleryStyle) => ({
     container: {
         ...StyleSheet.absoluteFillObject,
     },
     items: {
-        width: (props.width * props.files.length),
-        height: props.height,
+        width: (width * count),
+        height,
         flexDirection: 'row',
         alignItems: 'center',
     },
     item: {
         alignItems: 'center',
-        height: props.height,
+        height,
         justifyContent: 'center',
         overflow: 'hidden',
-        width: props.width,
+        width,
     },
     center: {
         justifyContent: 'center',
@@ -53,12 +59,13 @@ const getStyles = makeStyleSheetFromTheme((props: GalleryProps) => ({
 }));
 
 const GalleryViewer = (props: GalleryProps) => {
-    const {files, height, initialIndex, width} = props;
+    const {files, initialIndex} = props;
     const [enabled, setEnabled] = useState(false);
     const [tapEnabled, setTapEnabled] = useState(true);
     const [currentIndex, setCurrentIndex] = useState(initialIndex);
-    const styles = getStyles(props);
-    const topValue = itemTopStyle(props);
+    const {height, width} = useWindowDimensions();
+    const styles = getStyles({width, height, count: files.length});
+    const topValue = itemTopStyle(props.footerVisible, width > height);
     const top = useRef(useValue(topValue)).current;
 
     const canvas = useMemo(() => vec.create(width, height), [width]);

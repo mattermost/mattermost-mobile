@@ -64,7 +64,7 @@ describe('SelectorScreen', () => {
         theme: Preferences.THEMES.denim,
     };
 
-    beforeAll(() => {
+    beforeEach(() => {
         jest.useFakeTimers();
     });
 
@@ -126,7 +126,7 @@ describe('SelectorScreen', () => {
         expect(wrapper.getElement()).toMatchSnapshot();
     });
 
-    test('should call getDynamicOptions if data source is dynamic', async () => {
+    test('should call getDynamicOptions if data source is dynamic', () => {
         const getDynamicOptions = jest.fn(async (term) => {
             if (term) {
                 return {data: [{text: 'With Query Text', value: 'with_query'}]};
@@ -148,6 +148,7 @@ describe('SelectorScreen', () => {
 
         jest.runAllTimers();
         setTimeout(() => {
+            console.log('HERE');
             expect(props.getDynamicOptions).toHaveBeenCalledWith('');
             expect(wrapper.state().data).toEqual([
                 {text: 'Without Query Text', value: 'without_query'},

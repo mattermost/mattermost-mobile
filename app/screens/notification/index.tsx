@@ -126,7 +126,7 @@ const Notification = ({componentId, notification}: NotificationProps) => {
     return (
         <PanGestureHandler
             onGestureEvent={animateDismissOverlay}
-            minOffsetY={-20}
+            activeOffsetY={-20}
         >
             <Animatable.View
                 duration={250}
