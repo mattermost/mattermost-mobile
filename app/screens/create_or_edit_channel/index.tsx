@@ -22,10 +22,10 @@ import type ChannelModel from '@typings/database/models/servers/channel';
 import type ChannelInfoModel from '@typings/database/models/servers/channel_info';
 
 type Props = {
-        serverUrl: string;
-        componentId: string;
-        channel?: ChannelModel;
-        channelInfo?: ChannelInfoModel;
+    serverUrl: string;
+    componentId: string;
+    channel?: ChannelModel;
+    channelInfo?: ChannelInfoModel;
 }
 
 const CLOSE_CHANNEL_ID = 'close-channel';
@@ -42,9 +42,9 @@ type Button = {
 };
 
 enum RequestActions {
-  START = 'Start',
-  COMPLETE = 'Complete',
-  FAILURE = 'Failure',
+    START = 'Start',
+    COMPLETE = 'Complete',
+    FAILURE = 'Failure',
 }
 
 interface RequestState {

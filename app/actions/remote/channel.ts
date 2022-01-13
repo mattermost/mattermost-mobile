@@ -10,7 +10,7 @@ import DatabaseManager from '@database/manager';
 import {privateChannelJoinPrompt} from '@helpers/api/channel';
 import NetworkManager from '@init/network_manager';
 import {prepareMyChannelsForTeam, queryChannelById, queryMyChannel} from '@queries/servers/channel';
-import {queryCommonSystemValues, queryCurrentTeamId, queryCurrentUserId} from '@queries/servers/system';
+import {queryCommonSystemValues, queryCurrentUserId} from '@queries/servers/system';
 import {prepareMyTeams, queryMyTeamById, queryTeamById, queryTeamByName} from '@queries/servers/team';
 import MyChannelModel from '@typings/database/models/servers/my_channel';
 import MyTeamModel from '@typings/database/models/servers/my_team';
@@ -120,8 +120,7 @@ export const handleCreateChannel = async (serverUrl: string, displayName: string
     }
 
     try {
-        const currentUserId = await queryCurrentUserId(database);
-        const currentTeamId = await queryCurrentTeamId(database);
+        const {currentUserId, currentTeamId} = await queryCommonSystemValues(database);
         const name = generateChannelNameFromDisplayName(displayName);
         const channel = {
             creator_id: currentUserId,
