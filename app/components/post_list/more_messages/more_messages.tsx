@@ -154,9 +154,7 @@ const MoreMessages = ({
             // * the new message line is viewable OR
             // * the new message line will be the first next viewable item
             scrollToIndex(newMessageLineIndex, true);
-            resetCount().then(() => {
-                resetting.current = true;
-            });
+            resetCount();
             top.value = 0;
             return;
         }
