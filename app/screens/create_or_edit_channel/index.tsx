@@ -82,10 +82,6 @@ const CreateOrEditChannel = ({serverUrl, componentId, channel, channelInfo}: Pro
 
     const close = (goBack = false): void => {
         Keyboard.dismiss();
-        if (!isDirect()) {
-        //     this.props.actions.setChannelDisplayName(this.state.displayName);
-        }
-
         if (goBack) {
             popTopScreen();
         } else {
