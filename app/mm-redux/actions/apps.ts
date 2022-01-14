@@ -10,7 +10,7 @@ import {ActionFunc, DispatchFunc, GetStateFunc} from '@mm-redux/types/actions';
 
 import {bindClientFunc} from './helpers';
 
-export function refreshAppBindings(userID: string, channelID: string): ActionFunc {
+export function refreshAppBindings(): ActionFunc {
     return (dispatch: DispatchFunc, getState: GetStateFunc) => {
         const state = getState();
 

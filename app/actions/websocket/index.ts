@@ -7,6 +7,7 @@ import {loadMe} from '@actions/views/user';
 import {Client4} from '@client/rest';
 import {WebsocketEvents} from '@constants';
 import {ChannelTypes, GeneralTypes, PreferenceTypes, TeamTypes, UserTypes, RoleTypes} from '@mm-redux/action_types';
+import {refreshAppBindings} from '@mm-redux/actions/apps';
 import {getThreads} from '@mm-redux/actions/threads';
 import {getProfilesByIds, getStatusesByIds} from '@mm-redux/actions/users';
 import {General} from '@mm-redux/constants';
@@ -23,7 +24,6 @@ import {TeamMembership} from '@mm-redux/types/teams';
 import {WebSocketMessage} from '@mm-redux/types/websocket';
 import EventEmitter from '@mm-redux/utils/event_emitter';
 import {removeUserFromList} from '@mm-redux/utils/user_utils';
-import {appsConfiguredAsEnabled} from '@utils/apps';
 import {loadCalls} from '@mmproducts/calls/store/actions/calls';
 import {
     handleCallStarted,
@@ -38,6 +38,7 @@ import {
     handleCallScreenOn,
     handleCallScreenOff,
 } from '@mmproducts/calls/store/actions/websockets';
+import {appsConfiguredAsEnabled} from '@utils/apps';
 import {getChannelSinceValue} from '@utils/channels';
 import websocketClient from '@websocket';
 
@@ -65,7 +66,6 @@ import {handleRoleAddedEvent, handleRoleRemovedEvent, handleRoleUpdatedEvent} fr
 import {handleLeaveTeamEvent, handleUpdateTeamEvent, handleTeamAddedEvent} from './teams';
 import {handleThreadUpdated, handleThreadReadChanged, handleThreadFollowChanged} from './threads';
 import {handleStatusChangedEvent, handleUserAddedEvent, handleUserRemovedEvent, handleUserRoleUpdated, handleUserUpdatedEvent} from './users';
-import {refreshAppBindings} from '@mm-redux/actions/apps';
 
 export function init(additionalOptions: any = {}) {
     return async (dispatch: DispatchFunc, getState: GetStateFunc) => {
@@ -160,7 +160,7 @@ export function doReconnect(now: number) {
         ], 'BATCH_WS_SUCCESS'));
 
         if (appsConfiguredAsEnabled(state)) {
-            dispatch(refreshAppBindings(currentUserId, currentChannelId));
+            dispatch(refreshAppBindings());
         }
 
         try {
