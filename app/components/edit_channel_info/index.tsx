@@ -19,11 +19,11 @@ import {SafeAreaView} from 'react-native-safe-area-context';
 
 import CompassIcon from '@components/compass_icon';
 import ErrorText from '@components/error_text';
+import FloatingTextInput from '@components/floating_text_input_label';
 import FormattedText from '@components/formatted_text';
 import Loading from '@components/loading';
 import {General, Channel} from '@constants';
 import {useTheme} from '@context/theme';
-import {FormInput} from '@hooks/forms';
 import {t} from '@i18n';
 import {
     changeOpacity,
@@ -264,19 +264,6 @@ export default function EditChannelInfo({
         }
     };
 
-    // TODO: autocomplete
-    // const onKeyboardOffsetChanged = () => {
-    //     setKeyBoardPosition(keyboardPosition);
-    // };
-
-    // TODO: autocomplete
-    // const bottomStyle = {
-    //     bottom: Platform.select({
-    //         ios: keyboardPosition,
-    //         android: 0,
-    //     }),
-    // };
-
     const styles = getStyleSheet(theme);
 
     const displayHeaderOnly = channelType === General.DM_CHANNEL || channelType === General.GM_CHANNEL;
@@ -333,13 +320,6 @@ export default function EditChannelInfo({
                     <View style={styles.scrollView}>
                         {showSelector && (
                             <View>
-                                <View>
-                                    <FormattedText
-                                        style={styles.title}
-                                        id='channel_modal.channelType'
-                                        defaultMessage='Type'
-                                    />
-                                </View>
                                 <View style={styles.inputContainer}>
                                     <TouchableOpacity
                                         style={styles.touchable}
@@ -389,62 +369,45 @@ export default function EditChannelInfo({
                         )}
                         {!displayHeaderOnly && (
                             <View>
-                                <View style={styles.titleContainer30}>
-                                    <FormattedText
-                                        style={styles.title}
-                                        id='channel_modal.name'
-                                        defaultMessage='Name'
-                                    />
-                                </View>
-                                <View style={styles.inputContainer}>
-                                    <TextInput
-                                        testID='edit_channel_info.displayname.input'
-                                        value={displayName?.value}
-                                        onChangeText={onDisplayNameChangeText}
-                                        style={styles.input}
-                                        autoCapitalize='none'
-                                        autoCorrect={false}
-                                        placeholder={intl.formatMessage({id: t('channel_modal.nameEx'), defaultMessage: 'E.g.: "Bugs", "Marketing", "客户支持"'})}
-                                        placeholderTextColor={changeOpacity(theme.centerChannelColor, 0.5)}
-                                        underlineColorAndroid='transparent'
-                                        disableFullscreenUI={true}
-                                        maxLength={Channel.MAX_CHANNELNAME_LENGTH}
-                                        keyboardAppearance={getKeyboardAppearanceFromTheme(theme)}
-                                    />
-                                </View>
+                                <View style={styles.titleContainer30}/>
+                                <FloatingTextInput
+                                    autoCorrect={false}
+                                    autoCapitalize={'none'}
+                                    blurOnSubmit={false}
+                                    disableFullscreenUI={true}
+                                    enablesReturnKeyAutomatically={true}
+                                    label='Name'
+                                    placeholder={intl.formatMessage({id: t('channel_modal.nameEx'), defaultMessage: 'E.g.: "Bugs", "Marketing", "客户支持"'})}
+                                    onChangeText={onDisplayNameChangeText}
+                                    maxLength={Channel.MAX_CHANNELNAME_LENGTH}
+                                    keyboardAppearance={getKeyboardAppearanceFromTheme(theme)}
+                                    returnKeyType='next'
+                                    showErrorIcon={false}
+                                    spellCheck={false}
+                                    testID='edit_channel_info.displayname.input'
+                                    theme={theme}
+                                    value={displayName}
+                                />
+                                <View style={styles.titleContainer30}/>
 
-                                <View style={styles.titleContainer30}>
-                                    <FormattedText
-                                        style={styles.title}
-                                        id='channel_modal.purpose'
-                                        defaultMessage='Purpose'
-                                    />
-                                    <FormattedText
-                                        style={styles.optional}
-                                        id='channel_modal.optional'
-                                        defaultMessage='(optional)'
-                                    />
-                                </View>
-                                <View style={styles.inputContainer}>
-                                    <TextInput
-                                        allowFontScaling={true}
-                                        testID='edit_channel_info.purpose.input'
-                                        ref={purposeInput}
-                                        value={purpose?.value}
-                                        onChangeText={onPurposeChangeText}
-                                        style={[styles.input, {height: 110}]}
-                                        autoCapitalize='none'
-                                        autoCorrect={false}
-                                        placeholder={intl.formatMessage({id: t('channel_modal.purposeEx'), defaultMessage: 'E.g.: "A channel to file bugs and improvements"'})}
-                                        placeholderTextColor={changeOpacity(theme.centerChannelColor, 0.5)}
-                                        multiline={true}
-                                        blurOnSubmit={false}
-                                        textAlignVertical='top'
-                                        underlineColorAndroid='transparent'
-                                        disableFullscreenUI={true}
-                                        keyboardAppearance={getKeyboardAppearanceFromTheme(theme)}
-                                    />
-                                </View>
+                                <FloatingTextInput
+                                    autoCorrect={false}
+                                    autoCapitalize={'none'}
+                                    blurOnSubmit={false}
+                                    disableFullscreenUI={true}
+                                    enablesReturnKeyAutomatically={true}
+                                    label='Purpose (optional)'
+                                    placeholder={intl.formatMessage({id: t('channel_modal.purposeEx'), defaultMessage: 'E.g.: "A channel to file bugs and improvements"'})}
+                                    onChangeText={onPurposeChangeText}
+                                    maxLength={Channel.MAX_CHANNELNAME_LENGTH}
+                                    keyboardAppearance={getKeyboardAppearanceFromTheme(theme)}
+                                    returnKeyType='next'
+                                    showErrorIcon={false}
+                                    spellCheck={false}
+                                    testID='edit_channel_info.purpose.input'
+                                    theme={theme}
+                                    value={purpose}
+                                />
                                 <View>
                                     <FormattedText
                                         style={styles.helpText}
@@ -456,38 +419,27 @@ export default function EditChannelInfo({
                         )}
                         <View
                             onLayout={onHeaderLayout}
-                            style={styles.titleContainer15}
+                            style={styles.titleContainer30}
                         >
-                            <FormattedText
-                                style={styles.title}
-                                id='channel_modal.header'
-                                defaultMessage='Header'
-                            />
-                            <FormattedText
-                                style={styles.optional}
-                                id='channel_modal.optional'
-                                defaultMessage='(optional)'
-                            />
-                        </View>
-                        <View style={styles.inputContainer}>
-                            <TextInput
-                                allowFontScaling={true}
-                                testID='edit_channel_info.header.input'
-                                ref={headerInput}
-                                value={header?.value}
-                                onChangeText={onHeaderChangeText}
-                                style={[styles.input, {height: 110}]}
-                                autoCapitalize='none'
+                            <FloatingTextInput
                                 autoCorrect={false}
-                                placeholder={intl.formatMessage({id: t('channel_modal.headerEx'), defaultMessage: 'E.g.: "[Link Title](http://example.com)"'})}
-                                placeholderTextColor={changeOpacity(theme.centerChannelColor, 0.5)}
-                                multiline={true}
+                                autoCapitalize={'none'}
                                 blurOnSubmit={false}
-                                onFocus={onHeaderFocus}
-                                textAlignVertical='top'
-                                underlineColorAndroid='transparent'
                                 disableFullscreenUI={true}
+                                enablesReturnKeyAutomatically={true}
+                                label='Header (optional)'
+                                placeholder={intl.formatMessage({id: t('channel_modal.headerEx'), defaultMessage: 'E.g.: "[Link Title](http://example.com)"'})}
+                                onChangeText={onHeaderChangeText}
+                                maxLength={Channel.MAX_CHANNELNAME_LENGTH}
+                                multiline={true}
                                 keyboardAppearance={getKeyboardAppearanceFromTheme(theme)}
+                                returnKeyType='next'
+                                showErrorIcon={false}
+                                style={styles.input}
+                                spellCheck={false}
+                                testID='edit_channel_info.header.input'
+                                theme={theme}
+                                value={header}
                             />
                         </View>
                         <View style={styles.headerHelpText}>
@@ -500,20 +452,6 @@ export default function EditChannelInfo({
                     </View>
                 </TouchableWithoutFeedback>
             </KeyboardAwareScrollView>
-
-            {/* TODO add autocomplete */}
-            {/* <View style={[styles.autocompleteContainer, bottomStyle]}> */}
-            {/*     <Autocomplete */}
-            {/*         cursorPosition={header.length} */}
-            {/*         maxHeight={DEVICE.AUTOCOMPLETE_MAX_HEIGHT} */}
-            {/*         onChangeText={onHeaderChangeText} */}
-            {/*         value={header} */}
-            {/*         nestedScrollEnabled={true} */}
-            {/*         onKeyboardOffsetChanged={onKeyboardOffsetChanged} */}
-            {/*         offsetY={8} */}
-            {/*         style={styles.autocomplete} */}
-            {/*     /> */}
-            {/* </View> */}
         </SafeAreaView>
     );
 }

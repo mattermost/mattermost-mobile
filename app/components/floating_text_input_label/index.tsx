@@ -101,9 +101,11 @@ type FloatingTextInputProps = TextInputProps & {
     errorIcon?: string;
     isKeyboardInput?: boolean;
     label: string;
+    multiline: boolean;
     onBlur?: (event: NativeSyntheticEvent<TargetedEvent>) => void;
     onFocus?: (e: NativeSyntheticEvent<TargetedEvent>) => void;
     onPress?: (e: GestureResponderEvent) => void;
+    placeholder?: string;
     showErrorIcon?: boolean;
     theme: Theme;
     value: string;
@@ -121,6 +123,8 @@ const FloatingTextInput = forwardRef<FloatingTextInputRef, FloatingTextInputProp
     onBlur,
     showErrorIcon = true,
     theme,
+    placeholder,
+    multiline,
     value = '',
     textInputStyle,
     labelTextStyle,
@@ -169,19 +173,35 @@ const FloatingTextInput = forwardRef<FloatingTextInputRef, FloatingTextInputProp
         [value],
     );
 
-    const focusStyle = {
-        top: interpolateNode(animation, {
+    const getTopStyle = () => {
+        if (placeholder) {
+            return getLabelPositions(styles.textInput, styles.label, styles.smallLabel)[1];
+        }
+
+        return interpolateNode(animation, {
             inputRange: [0, 1],
             outputRange: [...getLabelPositions(styles.textInput, styles.label, styles.smallLabel)],
-        }),
-        fontSize: interpolateNode(animation, {
+        });
+    };
+
+    const getFontSize = () => {
+        if (placeholder) {
+            return styles.smallLabel.fontSize;
+        }
+
+        return interpolateNode(animation, {
             inputRange: [0, 1],
             outputRange: [styles.textInput.fontSize, styles.smallLabel.fontSize],
-        }),
+        });
+    };
+
+    const focusStyle = {
+        top: getTopStyle(),
+        fontSize: getFontSize(),
         backgroundColor: (
-            focusedLabel ? theme.centerChannelBg : 'transparent'
+            focusedLabel || placeholder ? theme.centerChannelBg : 'transparent'
         ),
-        paddingHorizontal: focusedLabel ? 4 : 0,
+        paddingHorizontal: focusedLabel || placeholder ? 4 : 0,
         color: styles.label.color,
     };
 
@@ -225,6 +245,10 @@ const FloatingTextInput = forwardRef<FloatingTextInputRef, FloatingTextInputProp
     const combinedTextInputStyle = [styles.textInput, textInputBorder, textInputColorStyles, textInputStyle];
     const textAnimatedTextStyle = [styles.label, focusStyle, labelColorStyles, labelTextStyle];
 
+    if (multiline) {
+        combinedTextInputStyle.push({height: 100});
+    }
+
     if (error && !focused) {
         textAnimatedTextStyle.push({color: theme.errorTextColor});
     }
@@ -247,8 +271,8 @@ const FloatingTextInput = forwardRef<FloatingTextInputRef, FloatingTextInputProp
                     {...props}
                     editable={isKeyboardInput && editable}
                     style={combinedTextInputStyle}
-                    placeholder=''
-                    placeholderTextColor='transparent'
+                    placeholder={placeholder}
+                    multiline={true}
                     value={value}
                     pointerEvents={isKeyboardInput ? 'auto' : 'none'}
                     onFocus={onTextInputFocus}
