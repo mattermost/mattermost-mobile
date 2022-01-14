@@ -5,7 +5,6 @@ import React, {useState, useEffect, useReducer} from 'react';
 import {useIntl} from 'react-intl';
 import {
     Keyboard,
-    InteractionManager,
 } from 'react-native';
 import {Navigation} from 'react-native-navigation';
 
@@ -208,13 +207,8 @@ const CreateOrEditChannel = ({serverUrl, componentId, channel, channelInfo}: Pro
             });
             return;
         }
-
-        InteractionManager.runAfterInteractions(() => {
-            dispatch({type: RequestActions.COMPLETE});
-
-            // TODO: verify this works after the channel view is created
-            switchToChannel(serverUrl, createdChannel!.channel!.id);
-        });
+        dispatch({type: RequestActions.COMPLETE});
+        switchToChannel(serverUrl, createdChannel!.channel!.id);
     };
 
     const onUpdateChannel = async () => {
@@ -239,15 +233,7 @@ const CreateOrEditChannel = ({serverUrl, componentId, channel, channelInfo}: Pro
             });
             return;
         }
-
-        InteractionManager.runAfterInteractions(() => {
-            dispatch({type: RequestActions.COMPLETE});
-        });
-
-        // const data = await this.props.actions.patchChannel(id, channel);
-        // if (data.error && data.error.server_error_id === 'store.sql_channel.update.archived_channel.app_error') {
-        //     this.props.actions.getChannel(id);
-        // }
+        dispatch({type: RequestActions.COMPLETE});
     };
 
     return (

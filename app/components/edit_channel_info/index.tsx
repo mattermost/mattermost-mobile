@@ -1,13 +1,10 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-/* eslint-disable max-lines */
 import React, {useState, useRef} from 'react';
 import {useIntl} from 'react-intl';
 import {
     LayoutChangeEvent,
-
-    //    Platform,
     TextInput,
     TouchableOpacity,
     TouchableWithoutFeedback,
@@ -141,7 +138,7 @@ type Props = {
         oldDisplayName?: string;
         oldHeader?: string;
         oldPurpose?: string;
-        purpose?: FormInput;
+        purpose: string;
         onPurposeChange: (text: string) => void;
         saving: boolean;
         testID?: string;

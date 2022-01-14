@@ -101,7 +101,7 @@ type FloatingTextInputProps = TextInputProps & {
     errorIcon?: string;
     isKeyboardInput?: boolean;
     label: string;
-    multiline: boolean;
+    multiline?: boolean;
     onBlur?: (event: NativeSyntheticEvent<TargetedEvent>) => void;
     onFocus?: (e: NativeSyntheticEvent<TargetedEvent>) => void;
     onPress?: (e: GestureResponderEvent) => void;
