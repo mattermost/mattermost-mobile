@@ -57,8 +57,9 @@ const ImagePicker = ({
     const intl = useIntl();
     const theme = useTheme();
     const serverUrl = useServerUrl();
-    const pictureUtils = useMemo(() => new PickerUtil(intl, uploadFiles), []);
+    const pictureUtils = useMemo(() => new PickerUtil(intl, uploadFiles), [uploadFiles]);
     const styles = getStyleSheet(theme);
+
     const showFileAttachmentOptions = useCallback(() => {
         const canRemovePicture = pictureUtils.hasPictureUrl(user, serverUrl);
 
@@ -68,21 +69,19 @@ const ImagePicker = ({
                     takePhoto: {
                         icon: 'camera-outline',
                         onPress: () => pictureUtils.attachFileFromCamera(),
-                        testID: 'attachment.canTakePhoto',
+                        testID: 'attachment.takePhoto',
                         text: intl.formatMessage({id: 'mobile.file_upload.camera_photo', defaultMessage: 'Take Photo'}),
                     },
                     browsePhotoLibrary: {
                         icon: 'file-generic-outline',
                         onPress: () => pictureUtils.attachFileFromPhotoGallery(),
-                        testID: 'attachment.canBrowsePhotoLibrary',
+                        testID: 'attachment.browsePhotoLibrary',
                         text: intl.formatMessage({id: 'mobile.file_upload.library', defaultMessage: 'Photo Library'}),
                     },
-
-                    //fixme: to use document picker library instead
                     browseFiles: {
                         icon: 'file-multiple-outline',
                         onPress: () => pictureUtils.attachFileFromFiles(browseFileType),
-                        testID: 'attachment.canBrowseFiles',
+                        testID: 'attachment.browseFiles',
                         text: intl.formatMessage({id: 'mobile.file_upload.browse', defaultMessage: 'Browse Files'}),
                     },
                     removeProfilePicture: {
@@ -129,7 +128,7 @@ const ImagePicker = ({
             title: '',
             theme,
         });
-    }, []);//fixme:  verify dependencies here
+    }, [user, onRemoveProfileImage]);
 
     return (
         <TouchableOpacity
