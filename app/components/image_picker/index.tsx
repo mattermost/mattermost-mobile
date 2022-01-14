@@ -140,7 +140,6 @@ const ImagePicker = ({
                 name='camera-outline'
                 size={24}
                 color={changeOpacity(theme.centerChannelColor, 0.6)}
-
             />
         </TouchableOpacity>
 

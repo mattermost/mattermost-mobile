@@ -35,7 +35,7 @@ const styles = StyleSheet.create({
     },
 });
 
-const ChangeProfilePicture = ({user, onUpdatedProfilePicture}: ChangeProfilePictureProps) => {
+const EditProfilePicture = ({user, onUpdatedProfilePicture}: ChangeProfilePictureProps) => {
     const [pictureUrl, setPictureUrl] = useState<string|undefined>();
     const theme = useTheme();
     const serverUrl = useServerUrl();
@@ -107,7 +107,7 @@ const ChangeProfilePicture = ({user, onUpdatedProfilePicture}: ChangeProfilePict
                     borderRadius: SIZE / 2,
                 },
             ]}
-            testID={`${ChangeProfilePicture}.${user.id}`}
+            testID={`${EditProfilePicture}.${user.id}`}
         >
             <ProfileImage
                 size={SIZE}
@@ -129,4 +129,4 @@ const ChangeProfilePicture = ({user, onUpdatedProfilePicture}: ChangeProfilePict
     );
 };
 
-export default ChangeProfilePicture;
+export default EditProfilePicture;

@@ -26,7 +26,7 @@ import {preventDoubleTap} from '@utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
-import ChangeProfilePicture from './components/change_profile_picture';
+import EditProfilePicture from './components/edit_profile_picture';
 import EmailField from './components/email_field';
 import Field from './components/field';
 import ProfileError from './components/profile_error';
@@ -399,7 +399,7 @@ const EditProfile = ({
         if (!currentUser.isBot) {
             return (
                 <View style={styles.top}>
-                    <ChangeProfilePicture
+                    <EditProfilePicture
                         onUpdatedProfilePicture={onUpdatedProfilePicture}
                         user={currentUser}
                     />
