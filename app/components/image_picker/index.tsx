@@ -20,6 +20,8 @@ import type {ExtractedFileInfo} from '@typings/utils';
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     return {
         touchable: {
+            alignItems: 'center',
+            justifyContent: 'center',
             borderWidth: 1,
             borderColor: theme.centerChannelBg,
             borderRadius: 36 / 2,

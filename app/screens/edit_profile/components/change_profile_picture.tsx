@@ -30,8 +30,6 @@ const styles = StyleSheet.create({
     camera: {
         position: 'absolute',
         overflow: 'hidden',
-        alignItems: 'center',
-        justifyContent: 'center',
         height: '100%',
         width: '100%',
     },
