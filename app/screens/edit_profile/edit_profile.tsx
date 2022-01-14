@@ -225,16 +225,14 @@ const EditProfile = ({
         setCanSave(value);
     }, [componentId, rightButton]);
 
-    const onUpdatedProfilePicture = useCallback((newImage: NewProfileImage) => {
-        //todo:  do we need the isRemoved property here?
-        changedProfilePicture.current = newImage;
+    const onUpdatedProfilePicture = useCallback((newProfileImage: NewProfileImage) => {
+        changedProfilePicture.current = newProfileImage;
         enableSaveButton(true);
     }, []);
 
     const uploadProfileImage = useCallback(async () => {
         try {
             const client = NetworkManager.getClient(serverUrl);
-
             const endpoint = `${client.getUserRoute(currentUser.id)}/image`;
             const newImage = changedProfilePicture.current?.localPath;
             if (newImage) {
@@ -250,7 +248,7 @@ const EditProfile = ({
             return resetScreen(e as Error);
         }
         return null;
-    }, []);//fixme: verify depencdencies
+    }, [changedProfilePicture.current]);
 
     const submitUser = useCallback(preventDoubleTap(async () => {
         enableSaveButton(false);
@@ -266,7 +264,6 @@ const EditProfile = ({
                 username: userInfo.username,
             };
 
-            //todo: complete the below
             if (changedProfilePicture.current?.localPath) {
                 const now = Date.now();
                 await uploadProfileImage();
