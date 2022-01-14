@@ -5,6 +5,7 @@ import {Model, Q} from '@nozbe/watermelondb';
 
 import {updateRecentCustomStatuses, updateLocalUser} from '@actions/local/user';
 import {fetchRolesIfNeeded} from '@actions/remote/role';
+import {removeUserFromList} from '@app/utils/user';
 import {Database, General} from '@constants';
 import DatabaseManager from '@database/manager';
 import {debounce} from '@helpers/api/general';
@@ -288,6 +289,103 @@ export const fetchUsersByUsernames = async (serverUrl: string, usernames: string
         }
 
         return {users};
+    } catch (error) {
+        forceLogoutIfNecessary(serverUrl, error as ClientError);
+        return {error};
+    }
+};
+
+export const fetchProfiles = async (serverUrl: string, page = 0, perPage: number = General.PROFILE_CHUNK_SIZE, options: any = {}, fetchOnly = false) => {
+    let client: Client;
+    try {
+        client = NetworkManager.getClient(serverUrl);
+    } catch (error) {
+        return {error};
+    }
+
+    const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
+    if (!operator) {
+        return {error: `${serverUrl} database not found`};
+    }
+
+    try {
+        const users = await client.getProfiles(page, perPage, options);
+
+        if (!fetchOnly) {
+            const currentUserId = await queryCurrentUserId(operator.database);
+            const toStore = removeUserFromList(currentUserId, users);
+            await operator.handleUsers({
+                users: toStore,
+                prepareRecordsOnly: false,
+            });
+        }
+
+        return {users};
+    } catch (error) {
+        forceLogoutIfNecessary(serverUrl, error as ClientError);
+        return {error};
+    }
+};
+
+export const fetchProfilesInTeam = async (serverUrl: string, teamId: string, page = 0, perPage: number = General.PROFILE_CHUNK_SIZE, sort = '', options: any = {}, fetchOnly = false) => {
+    let client: Client;
+    try {
+        client = NetworkManager.getClient(serverUrl);
+    } catch (error) {
+        return {error};
+    }
+
+    const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
+    if (!operator) {
+        return {error: `${serverUrl} database not found`};
+    }
+
+    try {
+        const users = await client.getProfilesInTeam(teamId, page, perPage, sort, options);
+
+        if (!fetchOnly) {
+            const currentUserId = await queryCurrentUserId(operator.database);
+            const toStore = removeUserFromList(currentUserId, users);
+
+            await operator.handleUsers({
+                users: toStore,
+                prepareRecordsOnly: false,
+            });
+        }
+
+        return {users};
+    } catch (error) {
+        forceLogoutIfNecessary(serverUrl, error as ClientError);
+        return {error};
+    }
+};
+
+export const searchProfiles = async (serverUrl: string, term: string, options: any = {}, fetchOnly = false) => {
+    let client: Client;
+    try {
+        client = NetworkManager.getClient(serverUrl);
+    } catch (error) {
+        return {error};
+    }
+
+    const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
+    if (!operator) {
+        return {error: `${serverUrl} database not found`};
+    }
+
+    try {
+        const currentUserId = await queryCurrentUserId(operator.database);
+        const users = await client.searchUsers(term, options);
+
+        if (!fetchOnly) {
+            const toStore = removeUserFromList(currentUserId, users);
+            await operator.handleUsers({
+                users: toStore,
+                prepareRecordsOnly: false,
+            });
+        }
+
+        return {data: users};
     } catch (error) {
         forceLogoutIfNecessary(serverUrl, error as ClientError);
         return {error};

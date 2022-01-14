@@ -5,18 +5,19 @@ import {Model} from '@nozbe/watermelondb';
 import {IntlShape} from 'react-intl';
 
 import {switchToChannel} from '@actions/local/channel';
-import {General} from '@constants';
+import {General, Preferences} from '@constants';
 import DatabaseManager from '@database/manager';
 import {privateChannelJoinPrompt} from '@helpers/api/channel';
 import NetworkManager from '@init/network_manager';
-import {prepareMyChannelsForTeam, queryChannelById, queryMyChannel} from '@queries/servers/channel';
+import {prepareMyChannelsForTeam, queryChannelById, queryChannelByName, queryMyChannel} from '@queries/servers/channel';
 import {queryCommonSystemValues, queryCurrentUserId} from '@queries/servers/system';
 import {prepareMyTeams, queryMyTeamById, queryTeamById, queryTeamByName} from '@queries/servers/team';
+import ChannelModel from '@typings/database/models/servers/channel';
 import MyChannelModel from '@typings/database/models/servers/my_channel';
 import MyTeamModel from '@typings/database/models/servers/my_team';
 import TeamModel from '@typings/database/models/servers/team';
 import {PERMALINK_GENERIC_TEAM_NAME_REDIRECT} from '@utils/url';
-import {displayGroupMessageName, displayUsername} from '@utils/user';
+import {displayGroupMessageName, displayUsername, getDirectChannelName} from '@utils/user';
 
 import {fetchRolesIfNeeded} from './role';
 import {forceLogoutIfNecessary} from './session';
@@ -513,6 +514,173 @@ export const switchToChannelByName = async (serverUrl: string, channelName: stri
         return {error: undefined};
     } catch (error) {
         errorHandler(intl);
+        return {error};
+    }
+};
+
+export const createDirectChannel = async (serverUrl: string, userId: string) => {
+    const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
+    if (!operator) {
+        return {error: `${serverUrl} database not found`};
+    }
+
+    let client: Client;
+    try {
+        client = NetworkManager.getClient(serverUrl);
+    } catch (error) {
+        return {error};
+    }
+
+    try {
+        const currentUserId = await queryCurrentUserId(operator.database);
+        const created = await client.createDirectChannel([userId, currentUserId]);
+
+        const member = {
+            channel_id: created.id,
+            user_id: currentUserId,
+            roles: `${General.CHANNEL_USER_ROLE}`,
+            last_viewed_at: 0,
+            msg_count: 0,
+            mention_count: 0,
+            msg_count_root: 0,
+            mention_count_root: 0,
+            notify_props: {desktop: 'default' as const, mark_unread: 'all' as const},
+            last_update_at: created.create_at,
+        };
+
+        const preferences = [
+            {user_id: currentUserId, category: Preferences.CATEGORY_DIRECT_CHANNEL_SHOW, name: userId, value: 'true'},
+            {user_id: currentUserId, category: Preferences.CATEGORY_CHANNEL_OPEN_TIME, name: created.id, value: new Date().getTime().toString()},
+        ];
+
+        const models = [];
+        const prefModels = await operator.handlePreferences({preferences, prepareRecordsOnly: true});
+        if (prefModels) {
+            models.push(...prefModels);
+        }
+        const channelPromises = await prepareMyChannelsForTeam(operator, '', [created], [member, {...member, user_id: userId}]);
+        if (channelPromises) {
+            const channelModels = await Promise.all(channelPromises);
+            const flattenedChannelModels = channelModels.flat();
+            if (flattenedChannelModels.length) {
+                models.push(...flattenedChannelModels);
+            }
+        }
+        if (models.length) {
+            await operator.batchRecords(models);
+        }
+        fetchRolesIfNeeded(serverUrl, member.roles.split(' '));
+        return {data: created};
+    } catch (error) {
+        forceLogoutIfNecessary(serverUrl, error as ClientErrorProps);
+        return {error};
+    }
+};
+
+export const makeDirectChannel = async (serverUrl: string, userId: string, shouldSwitchToChannel = true) => {
+    const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
+    if (!operator) {
+        return {error: `${serverUrl} database not found`};
+    }
+
+    try {
+        const currentUserId = await queryCurrentUserId(operator.database);
+        const channelName = getDirectChannelName(userId, currentUserId);
+        let channel: Channel|ChannelModel|undefined = await queryChannelByName(operator.database, channelName);
+        let result: {data?: Channel|ChannelModel; error?: any};
+        if (channel) {
+            result = {data: channel};
+
+            // dispatch(toggleDMChannel(otherUserId, 'true', channel.id));
+        } else {
+            result = await createDirectChannel(serverUrl, userId);
+            channel = result.data;
+        }
+
+        if (channel && shouldSwitchToChannel) {
+            switchToChannel(serverUrl, channel.id);
+        }
+
+        return result;
+    } catch (error) {
+        return {error};
+    }
+};
+
+export const createGroupChannel = async (serverUrl: string, userIds: string[]) => {
+    const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
+    if (!operator) {
+        return {error: `${serverUrl} database not found`};
+    }
+
+    let client: Client;
+    try {
+        client = NetworkManager.getClient(serverUrl);
+    } catch (error) {
+        return {error};
+    }
+
+    try {
+        const created = await client.createGroupChannel(userIds);
+
+        // Check the channel previous existency: if the channel already have
+        // posts is because it existed before.
+        if (created.total_msg_count > 0) {
+            return {data: created};
+        }
+
+        // dispatch(markGroupChannelOpen(created.id));
+
+        const member = {
+            channel_id: created.id,
+            user_id: '',
+            roles: `${General.CHANNEL_USER_ROLE}`,
+            last_viewed_at: 0,
+            msg_count: 0,
+            mention_count: 0,
+            msg_count_root: 0,
+            mention_count_root: 0,
+            notify_props: {desktop: 'default' as const, mark_unread: 'all' as const},
+            last_update_at: created.create_at,
+        };
+
+        const members = userIds.map((id) => {
+            return {...member, user_id: id};
+        });
+        const channelPromises = await prepareMyChannelsForTeam(operator, '', [created], members);
+        if (channelPromises) {
+            const channelModels = await Promise.all(channelPromises);
+            const flattenedChannelModels = channelModels.flat();
+            if (flattenedChannelModels.length) {
+                operator.batchRecords(flattenedChannelModels);
+            }
+        }
+        fetchRolesIfNeeded(serverUrl, member.roles.split(' '));
+        return {data: created};
+    } catch (error) {
+        forceLogoutIfNecessary(serverUrl, error as ClientErrorProps);
+        return {error};
+    }
+};
+
+export const makeGroupChannel = async (serverUrl: string, userIds: string[], shouldSwitchToChannel = true) => {
+    const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
+    if (!operator) {
+        return {error: `${serverUrl} database not found`};
+    }
+
+    try {
+        const currentUserId = await queryCurrentUserId(operator.database);
+        const result = await createGroupChannel(serverUrl, [currentUserId, ...userIds]);
+        const channel = result.data;
+
+        if (channel && shouldSwitchToChannel) {
+            //dispatch(toggleGMChannel(channel.id, 'true'));
+            switchToChannel(serverUrl, channel.id);
+        }
+
+        return result;
+    } catch (error) {
         return {error};
     }
 };

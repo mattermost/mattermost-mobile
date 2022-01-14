@@ -27,6 +27,7 @@ export const SSO = 'SSO';
 export const THREAD = 'Thread';
 export const USER_PROFILE = 'UserProfile';
 export const MENTIONS = 'Mentions';
+export const MORE_DMS = 'MoreDirectMessages';
 
 export default {
     ABOUT,
@@ -55,4 +56,5 @@ export default {
     THREAD,
     USER_PROFILE,
     MENTIONS,
+    MORE_DMS,
 };

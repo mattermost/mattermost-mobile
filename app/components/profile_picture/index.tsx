@@ -22,7 +22,7 @@ const STATUS_BUFFER = Platform.select({
 });
 
 type ProfilePictureProps = {
-    author?: UserModel;
+    author?: UserModel | UserProfile;
     iconSize?: number;
     showStatus?: boolean;
     size: number;
@@ -73,6 +73,8 @@ const ProfilePicture = ({
     const buffer = showStatus ? (STATUS_BUFFER || 0) : 0;
     let client: Client | undefined;
 
+    const isBot = author && (('isBot' in author) ? author.isBot : author.is_bot);
+
     try {
         client = NetworkManager.getClient(serverUrl);
     } catch {
@@ -91,7 +93,7 @@ const ProfilePicture = ({
         height: size + buffer,
     };
 
-    if (author?.status && !author.isBot && showStatus) {
+    if (author?.status && !isBot && showStatus) {
         statusIcon = (
             <View style={[style.statusWrapper, statusStyle, {borderRadius: statusSize / 2}]}>
                 <UserStatus
@@ -104,7 +106,8 @@ const ProfilePicture = ({
 
     let image;
     if (author && client) {
-        const pictureUrl = client.getProfilePictureUrl(author.id, author.lastPictureUpdate);
+        const lastPictureUpdate = ('lastPictureUpdate' in author) ? author.lastPictureUpdate : author.last_picture_update;
+        const pictureUrl = client.getProfilePictureUrl(author.id, lastPictureUpdate);
         image = (
             <FastImage
                 key={pictureUrl}
