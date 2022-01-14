@@ -62,7 +62,7 @@ const FileInfo = ({file, onPress, theme}: FileInfoProps) => {
                         ellipsizeMode='tail'
                         style={style.fileInfo}
                     >
-                        {`${getFormattedFileSize(file)}`}
+                        {`${getFormattedFileSize(file.size)}`}
                     </Text>
                 </View>
             </>

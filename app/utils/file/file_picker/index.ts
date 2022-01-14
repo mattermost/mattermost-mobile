@@ -12,6 +12,7 @@ import Permissions from 'react-native-permissions';
 import {Client} from '@client/rest';
 import {Navigation} from '@constants';
 import NetworkManager from '@init/network_manager';
+import {ExtractedFileInfo} from '@typings/utils';
 import {extractFileInfos, lookupMimeType} from '@utils/file';
 
 import type UserModel from '@typings/database/models/servers/user';
@@ -21,7 +22,7 @@ const ShareExtension = NativeModules.MattermostShare;
 type PermissionSource = 'camera' | 'storage' | 'denied_android' | 'denied_ios' | 'photo';
 
 export default class FilePickerUtil {
-    private readonly uploadFiles: (files: FileInfo[]) => void;
+    private readonly uploadFiles: (files: ExtractedFileInfo[]) => void;
     private readonly intl: IntlShape;
 
     constructor(

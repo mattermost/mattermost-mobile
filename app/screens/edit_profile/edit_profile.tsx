@@ -8,7 +8,8 @@ import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
 import {Navigation} from 'react-native-navigation';
 import {Edge, SafeAreaView} from 'react-native-safe-area-context';
 
-import {updateMe} from '@actions/remote/user';
+import {updateLocalUser} from '@actions/local/user';
+import {setDefaultProfileImage, updateMe} from '@actions/remote/user';
 import CompassIcon from '@components/compass_icon';
 import {FloatingTextInputRef} from '@components/floating_text_input_label';
 import Loading from '@components/loading';
@@ -18,17 +19,20 @@ import {Events} from '@constants';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {t} from '@i18n';
+import NetworkManager from '@init/network_manager';
 import {dismissModal, popTopScreen, setButtons} from '@screens/navigation';
-import {EditProfileProps, FieldConfig, FieldSequence, UserInfo} from '@typings/screens/edit_profile';
+import {EditProfileProps, FieldConfig, FieldSequence, NewProfileImage, UserInfo} from '@typings/screens/edit_profile';
 import {preventDoubleTap} from '@utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
+import ChangeProfilePicture from './components/change_profile_picture';
 import EmailField from './components/email_field';
 import Field from './components/field';
 import ProfileError from './components/profile_error';
 
 import type {MessageDescriptor} from '@formatjs/intl/src/types';
+import type {ErrorText} from '@typings/utils';
 
 const edges: Edge[] = ['bottom', 'left', 'right'];
 
@@ -110,6 +114,7 @@ const EditProfile = ({
     lockedLastName,
     lockedNickname,
     lockedPosition,
+    lockedPicture,
 }: EditProfileProps) => {
     const intl = useIntl();
     const serverUrl = useServerUrl();
@@ -121,6 +126,7 @@ const EditProfile = ({
     const emailRef = useRef<FloatingTextInputRef>(null);
     const nicknameRef = useRef<FloatingTextInputRef>(null);
     const positionRef = useRef<FloatingTextInputRef>(null);
+    const changedProfilePicture = useRef<NewProfileImage | undefined>(undefined);
 
     const styles = getStyleSheet(theme);
     const [userInfo, setUserInfo] = useState<UserInfo>({
@@ -219,6 +225,33 @@ const EditProfile = ({
         setCanSave(value);
     }, [componentId, rightButton]);
 
+    const onUpdatedProfilePicture = useCallback((newImage: NewProfileImage) => {
+        //todo:  do we need the isRemoved property here?
+        changedProfilePicture.current = newImage;
+        enableSaveButton(true);
+    }, []);
+
+    const uploadProfileImage = useCallback(async () => {
+        try {
+            const client = NetworkManager.getClient(serverUrl);
+
+            const endpoint = `${client.getUserRoute(currentUser.id)}/image`;
+            const newImage = changedProfilePicture.current?.localPath;
+            if (newImage) {
+                await client.apiClient.upload(endpoint, newImage, {
+                    skipBytes: 0,
+                    method: 'POST',
+                    multipart: {
+                        fileKey: 'image',
+                    },
+                });
+            }
+        } catch (e) {
+            return resetScreen(e as Error);
+        }
+        return null;
+    }, []);//fixme: verify depencdencies
+
     const submitUser = useCallback(preventDoubleTap(async () => {
         enableSaveButton(false);
         setError(undefined);
@@ -232,6 +265,17 @@ const EditProfile = ({
                 position: userInfo.position,
                 username: userInfo.username,
             };
+
+            //todo: complete the below
+            if (changedProfilePicture.current?.localPath) {
+                const now = Date.now();
+                await uploadProfileImage();
+                updateLocalUser(serverUrl, {last_picture_update: now});
+            }
+
+            if (changedProfilePicture.current?.isRemoved) {
+                await setDefaultProfileImage(serverUrl, currentUser.id);
+            }
 
             const {error: reqError} = await updateMe(serverUrl, partialUser);
 
@@ -342,6 +386,33 @@ const EditProfile = ({
         returnKeyType: 'next',
     };
 
+    const renderProfilePicture = useCallback(() => {
+        if (lockedPicture) {
+            return (
+                <View style={styles.top}>
+                    <ProfilePicture
+                        author={currentUser}
+                        size={153}
+                        showStatus={false}
+                    />
+                </View>
+            );
+        }
+
+        if (!currentUser.isBot) {
+            return (
+                <View style={styles.top}>
+                    <ChangeProfilePicture
+                        onUpdatedProfilePicture={onUpdatedProfilePicture}
+                        user={currentUser}
+                    />
+                </View>
+            );
+        }
+
+        return null;
+    }, []);
+
     return (
         <>
             {isTablet &&
@@ -385,13 +456,7 @@ const EditProfile = ({
 
                     )}
                     {Boolean(error) && <ProfileError error={error!}/>}
-                    <View style={styles.top}>
-                        <ProfilePicture
-                            author={currentUser}
-                            size={153}
-                            showStatus={false}
-                        />
-                    </View>
+                    {renderProfilePicture()}
                     {hasDisabledFields && (
                         <View
                             style={{

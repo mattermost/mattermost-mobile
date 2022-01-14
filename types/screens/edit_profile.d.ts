@@ -28,9 +28,39 @@ type EditProfileProps = {
     lockedPicture: boolean;
 };
 
+type NewProfileImage = { localPath?: string; isRemoved?: boolean };
+
 type FieldSequence = Record<string, {
     ref: RefObject<FloatingTextInputRef>;
     isDisabled: boolean;
 }>
 
 type FieldConfig = Pick<FieldProps, 'blurOnSubmit' | 'enablesReturnKeyAutomatically' | 'onFocusNextField' | 'onTextChange' | 'returnKeyType'>
+
+export type FileResponse = {
+    assets?: File[];
+    didCancel?: boolean;
+    error?: Error;
+};
+
+export type File = {
+    fileName?: string;
+    fileSize?: number;
+    height?: number;
+    name?: string;
+    path?: string;
+    type: typeof VALID_MIME_TYPES[number];
+    uri: string;
+    width?: number;
+};
+
+export type ExtraOptions = {
+    action: () => void;
+    text: {
+        id: string;
+        defaultMessage: string;
+    };
+    textStyle: TextStyle;
+    icon: string;
+    iconStyle: TextStyle;
+}

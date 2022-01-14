@@ -1,17 +1,24 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {PastedFile} from '@mattermost/react-native-paste-input';
 import Model from '@nozbe/watermelondb/Model';
 import * as FileSystem from 'expo-file-system';
 import mimeDB from 'mime-db';
+import {IntlShape} from 'react-intl';
 import {Platform} from 'react-native';
+import {DocumentPickerResponse} from 'react-native-document-picker';
+import {Asset} from 'react-native-image-picker';
 
 import {Files} from '@constants';
 import {deleteEntititesFile, getIOSAppGroupDetails} from '@utils/mattermost_managed';
 import {hashCode} from '@utils/security';
 import {removeProtocol} from '@utils/url';
 
+import {generateId} from '../general';
+
 import type FileModel from '@typings/database/models/servers/file';
+import type {ExtractedFileInfo} from '@typings/utils';
 
 const EXTRACT_TYPE_REGEXP = /^\s*([^;\s]*)(?:;|\s|$)/;
 const CONTENT_DISPOSITION_REGEXP = /inline;filename=".*\.([a-z]+)";/i;
@@ -288,8 +295,7 @@ export const isVideo = (file?: FileInfo | FileModel) => {
     return SUPPORTED_VIDEO_FORMAT!.includes(mime);
 };
 
-export function getFormattedFileSize(file: FileInfo): string {
-    const bytes = file.size;
+export function getFormattedFileSize(bytes: number): string {
     const fileSizes = [
         ['TB', 1024 * 1024 * 1024 * 1024],
         ['GB', 1024 * 1024 * 1024],
@@ -364,4 +370,72 @@ export function getLocalFilePathFromFile(dir: string, serverUrl: string, file: F
     }
 
     return undefined;
+}
+
+export async function extractFileInfos(files: Array<Asset | DocumentPickerResponse | PastedFile>) {
+    const out: ExtractedFileInfo[] = [];
+
+    await Promise.all(files.map(async (file) => {
+        if (!file) {
+            return;
+        }
+
+        const outFile = {
+            progress: 0,
+            localPath: file.uri,
+            clientId: generateId(),
+            loading: true,
+        } as unknown as ExtractedFileInfo;
+
+        if (file.hasOwnProperty('fileSize')) {
+            outFile.size = (file as (Asset | PastedFile)).fileSize || 0;
+            outFile.name = (file as (Asset | PastedFile)).fileName || '';
+        } else {
+            const path = Platform.select({
+                ios: (file.uri || '').replace('file://', ''),
+                default: file.uri || '',
+            });
+
+            const fileInfo = await FileSystem.getInfoAsync(path);
+            const uri = fileInfo.uri;
+
+            outFile.size = fileInfo.size || 0;
+            outFile.name = uri.substr(uri.lastIndexOf('/') + 1);
+        }
+
+        if (file.type) {
+            outFile.mime_type = file.type;
+        } else {
+            outFile.mime_type = lookupMimeType(outFile.name);
+        }
+
+        out.push(outFile);
+    }));
+
+    return out;
+}
+
+export function fileSizeWarning(intl: IntlShape, maxFileSize: number) {
+    return intl.formatMessage({
+        id: 'file_upload.fileAbove',
+        defaultMessage: 'Files must be less than {max}',
+    }, {
+        max: getFormattedFileSize(maxFileSize),
+    });
+}
+
+export function fileMaxWarning(intl: IntlShape, maxFileCount: number) {
+    return intl.formatMessage({
+        id: 'mobile.file_upload.max_warning',
+        defaultMessage: 'Uploads limited to {count} files maximum.',
+    }, {
+        count: maxFileCount,
+    });
+}
+
+export function uploadDisabledWarning(intl: IntlShape) {
+    return intl.formatMessage({
+        id: 'mobile.file_upload.disabled2',
+        defaultMessage: 'File uploads from mobile are disabled.',
+    });
 }

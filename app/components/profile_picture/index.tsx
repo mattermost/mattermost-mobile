@@ -29,6 +29,7 @@ type ProfilePictureProps = {
     statusSize?: number;
     statusStyle?: StyleProp<ViewProps>;
     testID?: string;
+    source?: { uri: string };
 };
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
@@ -66,6 +67,7 @@ const ProfilePicture = ({
     statusSize = 14,
     statusStyle,
     testID,
+    source,
 }: ProfilePictureProps) => {
     const theme = useTheme();
     const serverUrl = useServerUrl();
@@ -101,15 +103,15 @@ const ProfilePicture = ({
             </View>
         );
     }
-
     let image;
     if (author && client) {
         const pictureUrl = client.getProfilePictureUrl(author.id, author.lastPictureUpdate);
+        const imgSource = source ?? {uri: `${serverUrl}${pictureUrl}`};
         image = (
             <FastImage
                 key={pictureUrl}
                 style={{width: size, height: size, borderRadius: (size / 2)}}
-                source={{uri: `${serverUrl}${pictureUrl}`}}
+                source={imgSource}
             />
         );
     } else {
