@@ -153,6 +153,7 @@ const state = {
             lastTeamId: '',
         },
         threads: {
+            lastViewedAt: {},
             viewingGlobalThreads: false,
             viewingGlobalThreadsUnreads: false,
         },

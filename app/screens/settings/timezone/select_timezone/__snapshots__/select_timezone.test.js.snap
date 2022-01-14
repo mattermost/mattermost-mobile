@@ -73,7 +73,6 @@ exports[`Settings SelectTimezone should match snapshot 1`] = `
     keyboardDismissMode="on-drag"
     keyboardShouldPersistTaps="always"
     maxToRenderPerBatch={15}
-    numColumns={1}
     removeClippedSubviews={true}
     renderItem={[Function]}
     viewabilityConfig={

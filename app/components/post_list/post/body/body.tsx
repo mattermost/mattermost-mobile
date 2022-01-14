@@ -178,6 +178,8 @@ const Body = ({
             {body}
             {post.failed &&
             <Failed
+                // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                // @ts-ignore
                 post={post}
                 theme={theme}
             />

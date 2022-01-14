@@ -59,7 +59,7 @@ describe('Mark As Read', () => {
         // * Verify message is read
         await openMainSidebar();
         await expect(element(by.text('UNREADS'))).not.toBeVisible();
-        await expect(element(by.text('PUBLIC CHANNELS'))).toBeVisible();
+        await expect(element(by.text('CHANNELS'))).toBeVisible();
         await hasChannelDisplayNameAtIndex(0, testChannel.display_name);
 
         // # Go back to channel

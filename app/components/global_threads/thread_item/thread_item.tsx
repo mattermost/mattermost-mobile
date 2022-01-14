@@ -3,29 +3,28 @@
 
 import React from 'react';
 import {injectIntl, intlShape} from 'react-intl';
-import {View, Text, TouchableHighlight} from 'react-native';
+import {Keyboard, Text, TouchableHighlight, View} from 'react-native';
 
-import {goToScreen} from '@actions/navigation';
+import {showModalOverCurrentContext} from '@actions/navigation';
 import FriendlyDate from '@components/friendly_date';
 import RemoveMarkdown from '@components/remove_markdown';
-import {GLOBAL_THREADS, THREAD} from '@constants/screen';
+import {GLOBAL_THREADS} from '@constants/screen';
 import {Posts, Preferences} from '@mm-redux/constants';
-import {Channel} from '@mm-redux/types/channels';
-import {Post} from '@mm-redux/types/posts';
-import {UserThread} from '@mm-redux/types/threads';
-import {UserProfile} from '@mm-redux/types/users';
+import EventEmitter from '@mm-redux/utils/event_emitter';
 import {displayUsername} from '@mm-redux/utils/user_utils';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 import ThreadFooter from '../thread_footer';
 
+import type {Channel} from '@mm-redux/types/channels';
+import type {Post} from '@mm-redux/types/posts';
 import type {Theme} from '@mm-redux/types/theme';
+import type {UserThread} from '@mm-redux/types/threads';
+import type {UserProfile} from '@mm-redux/types/users';
 
 export type DispatchProps = {
     actions: {
         getPost: (postId: string) => void;
-        getPostThread: (postId: string) => void;
-        selectPost: (postId: string) => void;
     };
 }
 
@@ -66,13 +65,18 @@ function ThreadItem({actions, channel, intl, post, threadId, testID, theme, thre
     const threadStarterName = displayUsername(threadStarter, Preferences.DISPLAY_PREFER_FULL_NAME);
 
     const showThread = () => {
-        actions.getPostThread(postItem.id);
-        actions.selectPost(postItem.id);
+        EventEmitter.emit('goToThread', postItem);
+    };
+
+    const showThreadOptions = () => {
+        const screen = 'GlobalThreadOptions';
         const passProps = {
-            channelId: postItem.channel_id,
-            rootId: postItem.id,
+            rootId: post.id,
         };
-        goToScreen(THREAD, '', passProps);
+        Keyboard.dismiss();
+        requestAnimationFrame(() => {
+            showModalOverCurrentContext(screen, passProps);
+        });
     };
 
     const testIDPrefix = `${testID}.${postItem?.id}`;
@@ -134,6 +138,7 @@ function ThreadItem({actions, channel, intl, post, threadId, testID, theme, thre
     return (
         <TouchableHighlight
             underlayColor={changeOpacity(theme.buttonBg, 0.08)}
+            onLongPress={showThreadOptions}
             onPress={showThread}
             testID={`${testIDPrefix}.item`}
         >

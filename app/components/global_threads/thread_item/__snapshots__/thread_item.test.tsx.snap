@@ -2,6 +2,7 @@
 
 exports[`Global Thread Item Should render thread item with unread messages dot 1`] = `
 <TouchableHighlight
+  onLongPress={[Function]}
   onPress={[Function]}
   testID="thread_item.post1.item"
   underlayColor="rgba(28,88,217,0.08)"
@@ -185,6 +186,7 @@ exports[`Global Thread Item Should render thread item with unread messages dot 1
 
 exports[`Global Thread Item Should show unread mentions count 1`] = `
 <TouchableHighlight
+  onLongPress={[Function]}
   onPress={[Function]}
   testID="thread_item.post1.item"
   underlayColor="rgba(28,88,217,0.08)"

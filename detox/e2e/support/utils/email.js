@@ -30,7 +30,7 @@ export const getEmailResetEmailTemplate = (userEmail) => {
         `Your email address for Mattermost has been changed to ${userEmail}.`,
         'If you did not make this change, please contact the system administrator.',
         '',
-        'To change your notification preferences, log in to your team site and go to Account Settings > Notifications.',
+        'To change your notification preferences, log in to your team site and go to Settings > Notifications.',
     ];
 };
 
@@ -80,13 +80,12 @@ export const getMentionEmailTemplate = (sender, message, postId, siteName, teamN
         '',
         `@${sender}`,
         '<skip-local-time-check>',
-        '',
         channelDisplayName,
         '',
         message,
         '',
         'Want to change your notifications settings?',
-        `Login to ${siteName} ( ${baseUrl} ) and go to Account Settings > Notifications`,
+        `Login to ${siteName} ( ${baseUrl} ) and go to Settings > Notifications`,
         '',
         '© 2021 Mattermost, Inc. 530 Lytton Avenue, Second floor, Palo Alto, CA, 94301',
     ];

@@ -430,7 +430,6 @@ export default class MoreChannels extends PureComponent {
 
         BottomSheet.showBottomSheetWithOptions({
             options,
-            cancelButtonIndex: 3,
             title: titleText,
         }, (value) => {
             let typeOfChannels;

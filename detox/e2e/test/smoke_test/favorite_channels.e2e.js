@@ -58,7 +58,7 @@ describe('Favorite Channels', () => {
         // * Verify channel appears in favorite channels list
         await ChannelInfoScreen.close();
         await openMainSidebar();
-        await expect(element(by.text('FAVORITE CHANNELS'))).toBeVisible();
+        await expect(element(by.text('FAVORITES'))).toBeVisible();
         await hasChannelDisplayNameAtIndex(0, testChannel.display_name);
 
         // # Close main sidebar
@@ -84,7 +84,7 @@ describe('Favorite Channels', () => {
         // * Verify channel does not appear in favorite channels list
         await ChannelInfoScreen.close();
         await openMainSidebar();
-        await expect(element(by.text('FAVORITE CHANNELS'))).not.toBeVisible();
+        await expect(element(by.text('FAVORITES'))).not.toBeVisible();
         await hasChannelDisplayNameAtIndex(0, testChannel.display_name);
 
         // # Close main sidebar

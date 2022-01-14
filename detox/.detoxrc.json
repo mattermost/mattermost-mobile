@@ -6,7 +6,7 @@
       "binaryPath": "../ios/Build/Products/Debug-iphonesimulator/Mattermost.app",
       "type": "ios.simulator",
       "device": {
-        "type": "iPhone 12"
+        "type": "iPhone 13"
       }
     },
     "ios.sim.release": {
@@ -14,13 +14,13 @@
       "binaryPath": "../ios/Build/Products/Release-iphonesimulator/Mattermost.app",
       "build": "cd ../fastlane && NODE_ENV=production bundle exec fastlane ios simulator && cd ../detox",
       "device": {
-        "type": "iPhone 12"
+        "type": "iPhone 13"
       }
     },
     "android.emu.debug": {
       "type": "android.emulator",
       "binaryPath": "../android/app/build/outputs/apk/debug/app-debug.apk",
-      "build": "cd .. && ./node_modules/.bin/jetify && cd android && ./gradlew clean assembleDebug assembleAndroidTest -DtestBuildType=debug && cd ../detox",
+      "build": "cd .. && ./node_modules/.bin/jetify && cd android && ./gradlew clean && ./gradlew assembleDebug assembleAndroidTest -DtestBuildType=debug && cd ../detox",
       "device": {
         "avdName": "detox_pixel_4_xl_api_30"
       }

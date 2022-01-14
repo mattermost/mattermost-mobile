@@ -69,6 +69,7 @@ class NotificationSettingsMentionsAndroid extends NotificationSettingsMentionsBa
                                 />
                             </View>
                             <TextInputWithLocalizedPlaceholder
+                                allowFontScaling={true}
                                 autoFocus={true}
                                 value={this.state.androidKeywords}
                                 blurOnSubmit={true}

@@ -3,16 +3,15 @@
 
 import * as reselect from 'reselect';
 
+import {General, Preferences} from '@mm-redux/constants';
+import {getCurrentTeamId} from '@mm-redux/selectors/entities/common';
 import {getConfig, getFeatureFlagValue, getLicense} from '@mm-redux/selectors/entities/general';
-import {getCurrentTeamId} from '@mm-redux/selectors/entities/teams';
 import {PreferenceType} from '@mm-redux/types/preferences';
 import {GlobalState} from '@mm-redux/types/store';
 import {Theme} from '@mm-redux/types/theme';
 import {createShallowSelector, isMinimumServerVersion} from '@mm-redux/utils/helpers';
 import {getPreferenceKey} from '@mm-redux/utils/preference_utils';
 import {setThemeDefaults} from '@mm-redux/utils/theme_utils';
-
-import {General, Preferences} from '../../constants';
 
 export function getMyPreferences(state: GlobalState) {
     return state.entities.preferences.myPreferences;

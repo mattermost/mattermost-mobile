@@ -438,6 +438,7 @@ export default class SelectServer extends PureComponent {
                 <FormattedText
                     id='mobile.components.select_server_view.connecting'
                     defaultMessage='Connecting...'
+                    testID='mobile.components.select_server_view.connecting'
                 />
             );
         } else {
@@ -445,6 +446,7 @@ export default class SelectServer extends PureComponent {
                 <FormattedText
                     id='mobile.components.select_server_view.connect'
                     defaultMessage='Connect'
+                    testID='mobile.components.select_server_view.connect'
                 />
             );
         }
@@ -490,6 +492,7 @@ export default class SelectServer extends PureComponent {
                                 />
                             </View>
                             <TextInput
+                                allowFontScaling={true}
                                 testID='select_server.server_url.input'
                                 ref={this.inputRef}
                                 value={url}

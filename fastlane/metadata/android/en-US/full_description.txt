@@ -2,18 +2,20 @@ Requires Mattermost Server v5.37+. Older servers may not be able to connect or h
 
 -------
 
-Mattermost is secure workplace messaging from behind your firewall.
+Mattermost is an open source platform for secure collaboration across the entire software development lifecycle.
 
-- Discuss topics in private groups, one-to-one or team-wide
-- Easily share and view image files 
-- Connect in-house systems with webhooks and Slack-compatible integrations
+- Keep all of your team communications in one place.
+- Orchestrate work across your tools and teams.
+- Plan projects and hit milestones.
+- Unite your entire technology stack through a single point of collaboration.
+- Meet the strictest security, privacy, and compliance requirements.
 
 To use this app, you need a URL for a Mattermost server. 
 
 -------
 
-Host your own server: https://about.mattermost.com/download 
+Deploy your own server: https://docs.mattermost.com/guides/deployment.html
 
-Terms of Service: http://about.mattermost.com/terms/ 
+Terms of Service: https://mattermost.com/terms-of-service/ 
 
 Contribute to the project: https://github.com/mattermost/mattermost-mobile

@@ -153,6 +153,7 @@ const NotificationSettingsAutoResponder = ({currentUser, currentUserStatus, intl
                     >
                         <View style={style.inputContainer}>
                             <TextInputWithLocalizedPlaceholder
+                                allowFontScaling={true}
                                 ref={autoresponderRef}
                                 value={autoResponderMessage}
                                 blurOnSubmit={true}

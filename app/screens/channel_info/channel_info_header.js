@@ -101,7 +101,6 @@ export default class ChannelInfoHeader extends React.PureComponent {
 
             BottomSheet.showBottomSheetWithOptions({
                 options: [actionText, cancelText],
-                cancelButtonIndex: 1,
             }, (value) => {
                 if (value === 0) {
                     this.handleCopy(text);

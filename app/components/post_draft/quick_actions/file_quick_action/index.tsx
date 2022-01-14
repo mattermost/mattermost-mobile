@@ -83,7 +83,7 @@ const FileQuickAction = ({disabled, fileCount = 0, intl, maxFileCount, onUploadF
         >
             <CompassIcon
                 color={color}
-                name='file-document-outline'
+                name='file-text-outline'
                 size={ICON_SIZE}
             />
         </TouchableWithFeedback>

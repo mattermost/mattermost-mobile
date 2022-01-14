@@ -213,10 +213,16 @@ export default class Uploads extends PureComponent {
 
         let exceed = false;
 
+        const uploadFiles = [];
         const totalFiles = files.length;
         let i = 0;
         while (i < totalFiles) {
             const file = files[i];
+            if (file.error) {
+                i++;
+                continue;
+            }
+
             if (!file.fileSize | !file.fileName) {
                 const path = (file.path || file.uri).replace('file://', '');
                 // eslint-disable-next-line no-await-in-loop
@@ -229,6 +235,7 @@ export default class Uploads extends PureComponent {
                 exceed = true;
                 break;
             }
+            uploadFiles.push(file);
 
             i++;
         }
@@ -236,7 +243,7 @@ export default class Uploads extends PureComponent {
         if (exceed) {
             this.handleFileSizeWarning();
         } else {
-            this.props.initUploadFiles(files, this.props.rootId);
+            this.props.initUploadFiles(uploadFiles, this.props.rootId);
             this.hideError();
         }
     };

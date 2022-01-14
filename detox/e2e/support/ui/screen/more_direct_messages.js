@@ -74,7 +74,7 @@ class MoreDirectMessagesScreen {
 
     open = async () => {
         // # Open more direct messages screen
-        await MainSidebar.openMoreDirectMessagesButton.tap();
+        await MainSidebar.directMessagesActionButton.tap();
 
         return this.toBeVisible();
     }

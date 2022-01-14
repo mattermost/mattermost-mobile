@@ -279,6 +279,7 @@ export default class EditChannelInfo extends PureComponent {
                                             onPress={() => {
                                                 this.onTypeSelect(General.OPEN_CHANNEL);
                                             }}
+                                            testID='edit_channel_info.type.public.action'
                                         >
                                             <FormattedText
                                                 style={style.touchableText}
@@ -305,6 +306,7 @@ export default class EditChannelInfo extends PureComponent {
                                             onPress={() => {
                                                 this.onTypeSelect(General.PRIVATE_CHANNEL);
                                             }}
+                                            testID='edit_channel_info.type.private.action'
                                         >
                                             <FormattedText
                                                 style={style.touchableText}
@@ -334,6 +336,7 @@ export default class EditChannelInfo extends PureComponent {
                                     </View>
                                     <View style={style.inputContainer}>
                                         <TextInputWithLocalizedPlaceholder
+                                            allowFontScaling={true}
                                             testID='edit_channel_info.name.input'
                                             ref={this.nameInput}
                                             value={displayName}
@@ -364,6 +367,7 @@ export default class EditChannelInfo extends PureComponent {
                                     </View>
                                     <View style={style.inputContainer}>
                                         <TextInputWithLocalizedPlaceholder
+                                            allowFontScaling={true}
                                             testID='edit_channel_info.purpose.input'
                                             ref={this.purposeInput}
                                             value={purpose}
@@ -407,6 +411,7 @@ export default class EditChannelInfo extends PureComponent {
                             </View>
                             <View style={style.inputContainer}>
                                 <TextInputWithLocalizedPlaceholder
+                                    allowFontScaling={true}
                                     testID='edit_channel_info.header.input'
                                     ref={this.headerInput}
                                     value={header}

@@ -24,6 +24,7 @@ export default class ThreadAndroid extends ThreadBase {
             postIds,
             rootId,
             channelIsArchived,
+            collapsedThreadsEnabled,
             theme,
         } = this.props;
 
@@ -38,7 +39,7 @@ export default class ThreadAndroid extends ThreadBase {
                         <PostList
                             testID='thread.post_list'
                             renderFooter={this.renderFooter()}
-                            indicateNewMessages={false}
+                            indicateNewMessages={collapsedThreadsEnabled}
                             postIds={postIds}
                             currentUserId={myMember && myMember.user_id}
                             lastViewedAt={this.state.lastViewedAt}

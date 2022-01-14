@@ -15,8 +15,9 @@ require('isomorphic-fetch');
 configure({adapter: new Adapter()});
 
 const mockImpl = new MockAsyncStorage();
-jest.mock('@react-native-community/async-storage', () => mockImpl);
-global.window = {};
+jest.mock('@react-native-async-storage/async-storage', () => mockImpl);
+
+// global.window = {};
 
 /* eslint-disable no-console */
 
@@ -273,8 +274,6 @@ jest.mock('react-native-notifications', () => {
 jest.mock('react-native-share', () => ({
     default: jest.fn(),
 }));
-
-jest.mock('react-native-dev-menu');
 
 jest.mock('app/actions/navigation', () => ({
     resetToChannel: jest.fn(),

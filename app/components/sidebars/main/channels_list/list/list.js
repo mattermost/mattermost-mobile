@@ -56,6 +56,7 @@ export default class List extends PureComponent {
         showLegacySidebar: PropTypes.bool.isRequired,
         unreadsOnTop: PropTypes.bool.isRequired,
         currentChannelId: PropTypes.string,
+        currentTeamId: PropTypes.string,
     };
 
     static contextTypes = {
@@ -113,10 +114,9 @@ export default class List extends PureComponent {
             this.props.orderedChannelIds !== orderedChannelIds) {
                 this.setSections(this.buildSections(this.props));
             }
-        } else if (
+        } else if ( // Rebuild sections only if categories or unreads have changed
             !isEqual(this.props.categories, categories) ||
-            this.props.unreadChannelIds !== unreadChannelIds) {
-            // Rebuild sections only if categories or unreads have changed
+            !isEqual(this.props.unreadChannelIds, unreadChannelIds)) {
             this.setCategorySections(this.buildCategorySections());
         }
 
@@ -213,7 +213,7 @@ export default class List extends PureComponent {
         const moreChannelsText = formatMessage({id: 'more_channels.title', defaultMessage: 'Browse for a Channel'});
         const newChannelText = formatMessage({id: 'mobile.create_channel', defaultMessage: 'Create a new Channel'});
         const newDirectChannelText = formatMessage({id: 'mobile.more_dms.title', defaultMessage: 'Add a Conversation'});
-        const cancelText = formatMessage({id: 'mobile.post.cancel', defaultMessage: 'Cancel'});
+
         const options = [];
         const actions = [];
 
@@ -229,20 +229,14 @@ export default class List extends PureComponent {
 
         actions.push(this.goToDirectMessages);
         options.push({text: newDirectChannelText, icon: 'account-plus-outline'});
-        options.push(cancelText);
-
-        const cancelButtonIndex = options.length - 1;
 
         BottomSheet.showBottomSheetWithOptions({
             anchor: this.combinedActionsRef?.current ? findNodeHandle(this.combinedActionsRef.current) : null,
             options,
             title: 'Add Channels',
             subtitle: `To the ${category.display_name} category`,
-            cancelButtonIndex,
         }, (value) => {
-            if (value !== cancelButtonIndex) {
-                actions[value]();
-            }
+            actions[value]();
         });
     };
 
@@ -426,6 +420,21 @@ export default class List extends PureComponent {
             }
         };
 
+        const categoryId = () => {
+            switch (type) {
+            case CategoryTypes.UNREADS:
+                return CategoryTypes.UNREADS.toLowerCase();
+            case CategoryTypes.FAVORITES:
+                return CategoryTypes.FAVORITES.toLowerCase();
+            case CategoryTypes.CHANNELS:
+                return CategoryTypes.CHANNELS.toLowerCase();
+            case CategoryTypes.DIRECT_MESSAGES:
+                return CategoryTypes.DIRECT_MESSAGES.toLowerCase();
+            default:
+                return name.replace(/ /g, '_').toLowerCase();
+            }
+        };
+
         const header = (
             <View style={styles.titleContainer}>
                 {(type !== CategoryTypes.UNREADS && data.length > 0) &&
@@ -441,7 +450,7 @@ export default class List extends PureComponent {
                 <View style={styles.separatorContainer}>
                     <Text> </Text>
                 </View>
-                {action && this.renderSectionAction(styles, action, anchor, id)}
+                {action && this.renderSectionAction(styles, action, anchor, categoryId())}
             </View>
         );
 
@@ -472,6 +481,9 @@ export default class List extends PureComponent {
         // Add the rest
         if (this.props.categories) {
             this.props.categories.reduce((prev, cat) => {
+                if (cat.type === 'favorites' && !cat.channel_ids.length) {
+                    return prev;
+                }
                 prev.push({
                     name: cat.display_name,
                     action: cat.type === 'direct_messages' ? this.goToDirectMessages : () => this.showCreateChannelOptions(cat),
@@ -536,7 +548,7 @@ export default class List extends PureComponent {
     };
 
     render() {
-        const {testID, styles, theme, showLegacySidebar, collapsedThreadsEnabled} = this.props;
+        const {testID, styles, theme, showLegacySidebar, collapsedThreadsEnabled, currentTeamId} = this.props;
         const {sections, categorySections, showIndicator} = this.state;
 
         const paddingBottom = this.listContentPadding();
@@ -549,6 +561,7 @@ export default class List extends PureComponent {
             <View
                 style={styles.container}
                 onLayout={this.onLayout}
+                key={currentTeamId}
             >
                 {collapsedThreadsEnabled && (
                     <ThreadsSidebarEntry/>
@@ -557,7 +570,6 @@ export default class List extends PureComponent {
                     ref={this.setListRef}
                     sections={showLegacySidebar ? sections : categorySections}
                     contentContainerStyle={{paddingBottom}}
-                    removeClippedSubviews={Platform.OS === 'android'}
                     renderItem={showLegacySidebar ? this.renderItem : this.renderCategoryItem}
                     renderSectionHeader={showLegacySidebar ? this.renderSectionHeader : this.renderCategoryHeader}
                     keyboardShouldPersistTaps={'always'}

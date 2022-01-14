@@ -197,6 +197,7 @@ NotificationSettingsMentionsKeywords {
             }
           >
             <TextInputWithLocalizedPlaceholder
+              allowFontScaling={true}
               autoCapitalize="none"
               autoCorrect={false}
               blurOnSubmit={true}

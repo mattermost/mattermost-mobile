@@ -1,0 +1,9 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`CallDuration should match snapshot 1`] = `
+<Text
+  style={Object {}}
+>
+  00:15
+</Text>
+`;

@@ -323,6 +323,7 @@ export default class Search extends PureComponent {
                     ]}
                 >
                     <SearchBar
+                        allowFontScaling={true}
                         testID={searchInputTestID}
                         autoCapitalize={this.props.autoCapitalize}
                         autoCorrect={false}

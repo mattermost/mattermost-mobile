@@ -74,6 +74,7 @@ exports[`EditChannelInfo should match snapshot 1`] = `
             }
           >
             <TextInputWithLocalizedPlaceholder
+              allowFontScaling={true}
               autoCapitalize="none"
               autoCorrect={false}
               disableFullscreenUI={true}
@@ -140,6 +141,7 @@ exports[`EditChannelInfo should match snapshot 1`] = `
             }
           >
             <TextInputWithLocalizedPlaceholder
+              allowFontScaling={true}
               autoCapitalize="none"
               autoCorrect={false}
               blurOnSubmit={false}
@@ -229,6 +231,7 @@ exports[`EditChannelInfo should match snapshot 1`] = `
           }
         >
           <TextInputWithLocalizedPlaceholder
+            allowFontScaling={true}
             autoCapitalize="none"
             autoCorrect={false}
             blurOnSubmit={false}

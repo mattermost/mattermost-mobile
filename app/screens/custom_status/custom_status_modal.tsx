@@ -404,6 +404,7 @@ class CustomStatusModal extends NavigationComponent<Props, State> {
         const customStatusInput = (
             <View style={style.inputContainer}>
                 <TextInput
+                    allowFontScaling={true}
                     testID='custom_status.input'
                     autoCapitalize='none'
                     autoCorrect={false}

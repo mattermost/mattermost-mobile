@@ -3,6 +3,7 @@
 import * as reselect from 'reselect';
 
 import {Permissions, Preferences} from '@mm-redux/constants';
+import {getCurrentTeamId} from '@mm-redux/selectors/entities/common';
 import {getConfig, getCurrentUrl} from '@mm-redux/selectors/entities/general';
 import {get as getPreference} from '@mm-redux/selectors/entities/preferences';
 import {haveISystemPermission} from '@mm-redux/selectors/entities/roles_helpers';
@@ -15,9 +16,7 @@ import {isTeamAdmin} from '@mm-redux/utils/user_utils';
 
 import {isCollapsedThreadsEnabled} from './preferences';
 
-export function getCurrentTeamId(state: GlobalState) {
-    return state.entities.teams.currentTeamId;
-}
+export {getCurrentTeamId};
 
 export const getTeamByName = reselect.createSelector(getTeams, (state: GlobalState, name: string) => name, (teams: IDMappedObjects<Team>, name: string): Team|undefined => {
     return Object.values(teams).find((team: Team) => team.name === name);

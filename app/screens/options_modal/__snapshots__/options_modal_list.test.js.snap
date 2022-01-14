@@ -5,8 +5,10 @@ exports[`OptionModalList should match snapshot 1`] = `
   style={
     Object {
       "alignItems": "center",
-      "flex": 1,
+      "bottom": 0,
+      "height": "100%",
       "justifyContent": "flex-end",
+      "width": "100%",
     }
   }
 >
@@ -27,7 +29,7 @@ exports[`OptionModalList should match snapshot 1`] = `
             "borderTopLeftRadius": 12,
             "borderTopRightRadius": 12,
             "paddingBottom": 25,
-            "paddingVertical": 10,
+            "paddingTop": 10,
           },
         ]
       }
