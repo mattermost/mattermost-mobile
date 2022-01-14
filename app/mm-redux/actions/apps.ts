@@ -3,10 +3,27 @@
 
 import {Client4} from '@client/rest';
 import {AppsTypes} from '@mm-redux/action_types';
+import {getThreadAppsBindingsChannelId} from '@mm-redux/selectors/entities/apps';
 import {getChannel} from '@mm-redux/selectors/entities/channels';
+import {getCurrentChannelId, getCurrentUserId} from '@mm-redux/selectors/entities/common';
 import {ActionFunc, DispatchFunc, GetStateFunc} from '@mm-redux/types/actions';
 
 import {bindClientFunc} from './helpers';
+
+export function refreshAppBindings(userID: string, channelID: string): ActionFunc {
+    return (dispatch: DispatchFunc, getState: GetStateFunc) => {
+        const state = getState();
+
+        dispatch(fetchAppBindings(getCurrentUserId(state), getCurrentChannelId(state)));
+
+        const threadChannelID = getThreadAppsBindingsChannelId(state);
+        if (threadChannelID) {
+            dispatch(fetchThreadAppBindings(getCurrentUserId(state), threadChannelID));
+        }
+
+        return {data: true};
+    };
+}
 
 export function fetchAppBindings(userID: string, channelID: string): ActionFunc {
     return async (dispatch: DispatchFunc, getState: GetStateFunc) => {

@@ -41,7 +41,7 @@ import {
 import {getChannelSinceValue} from '@utils/channels';
 import websocketClient from '@websocket';
 
-import {handleAppsPluginDisabled, handleAppsPluginEnabled, handleRefreshAppsBindings, pingAppsPlugin} from './apps';
+import {handleAppsPluginDisabled, handleAppsPluginEnabled, handleRefreshAppsBindings} from './apps';
 import {handleSidebarCategoryCreated, handleSidebarCategoryDeleted, handleSidebarCategoryOrderUpdated, handleSidebarCategoryUpdated} from './categories';
 import {
     handleChannelConvertedEvent,
@@ -65,6 +65,7 @@ import {handleRoleAddedEvent, handleRoleRemovedEvent, handleRoleUpdatedEvent} fr
 import {handleLeaveTeamEvent, handleUpdateTeamEvent, handleTeamAddedEvent} from './teams';
 import {handleThreadUpdated, handleThreadReadChanged, handleThreadFollowChanged} from './threads';
 import {handleStatusChangedEvent, handleUserAddedEvent, handleUserRemovedEvent, handleUserRoleUpdated, handleUserUpdatedEvent} from './users';
+import {refreshAppBindings} from '@mm-redux/actions/apps';
 
 export function init(additionalOptions: any = {}) {
     return async (dispatch: DispatchFunc, getState: GetStateFunc) => {
@@ -158,8 +159,8 @@ export function doReconnect(now: number) {
             setChannelRetryFailed(false),
         ], 'BATCH_WS_SUCCESS'));
 
-        if (appsConfiguredAsEnabled(getState())) {
-            dispatch(pingAppsPlugin());
+        if (appsConfiguredAsEnabled(state)) {
+            dispatch(refreshAppBindings(currentUserId, currentChannelId));
         }
 
         try {
