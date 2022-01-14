@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback, useEffect, useMemo, useState} from 'react';
+import React, {useCallback, useEffect, useState} from 'react';
 import {Platform, View} from 'react-native';
 import DocumentPicker from 'react-native-document-picker';
 
@@ -49,7 +49,6 @@ const ChangeProfilePicture = ({user, onUpdatedProfilePicture}: ChangeProfilePict
     const [pictureUrl, setPictureUrl] = useState<string|undefined>();
     const theme = useTheme();
     const serverUrl = useServerUrl();
-    const userId = useMemo(() => user.id, [user]);
     const styles = getStyleSheet(theme);
     let client: Client | undefined;
 
@@ -61,15 +60,15 @@ const ChangeProfilePicture = ({user, onUpdatedProfilePicture}: ChangeProfilePict
 
     useEffect(() => {
         // sets initial picture url
-        setPictureUrl(client?.getProfilePictureUrl(userId, user.lastPictureUpdate));
+        setPictureUrl(client?.getProfilePictureUrl(user.id, user.lastPictureUpdate));
     }, []);
 
     useDidUpdate(() => {
-        const url = userId && client ? client.getProfilePictureUrl(userId, user.lastPictureUpdate) : undefined;
+        const url = user.id && client ? client.getProfilePictureUrl(user.id, user.lastPictureUpdate) : undefined;
         if (url !== pictureUrl) {
             setPictureUrl(url);
         }
-    }, [userId, user.lastPictureUpdate]);
+    }, [user.id, user.lastPictureUpdate]);
 
     const handleUploadProfileImage = useCallback((images: FileInfo[]) => {
         //fixme: review this part properly
@@ -81,14 +80,16 @@ const ChangeProfilePicture = ({user, onUpdatedProfilePicture}: ChangeProfilePict
     }, []);
 
     const handleRemoveProfileImage = useCallback(() => {
-        setPictureUrl(undefined);
+        setPictureUrl('account-outline');
         onUpdatedProfilePicture({isRemoved: true, localPath: undefined},
         );
     }, []);
 
     let source;
 
-    if (pictureUrl) {
+    if (pictureUrl === 'account-outline') {
+        source = 'account-outline';
+    } else if (pictureUrl) {
         let prefix = '';
         if (Platform.OS === 'android' &&
             !pictureUrl.startsWith('content://') &&
@@ -118,16 +119,14 @@ const ChangeProfilePicture = ({user, onUpdatedProfilePicture}: ChangeProfilePict
                     borderRadius: SIZE / 2,
                 },
             ]}
-            testID={`${ChangeProfilePicture}.${userId}`}
+            testID={`${ChangeProfilePicture}.${user.id}`}
         >
-            {source && (
-                <ProfileImage
-                    size={SIZE}
-                    source={source}
-                    author={user}
-                    showStatus={false}
-                />)
-            }
+            <ProfileImage
+                size={SIZE}
+                source={source}
+                author={user}
+                showStatus={false}
+            />
             <View
                 style={styles.camera}
             >

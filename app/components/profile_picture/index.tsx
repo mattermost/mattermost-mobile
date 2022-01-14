@@ -3,7 +3,7 @@
 
 import React, {useEffect} from 'react';
 import {Platform, StyleProp, View, ViewProps, ViewStyle} from 'react-native';
-import FastImage from 'react-native-fast-image';
+import FastImage, {Source} from 'react-native-fast-image';
 
 import {fetchStatusInBatch} from '@actions/remote/user';
 import CompassIcon from '@components/compass_icon';
@@ -29,7 +29,7 @@ type ProfilePictureProps = {
     statusSize?: number;
     statusStyle?: StyleProp<ViewProps>;
     testID?: string;
-    source?: { uri: string };
+    source?: { uri: string } | string;
 };
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
@@ -104,16 +104,28 @@ const ProfilePicture = ({
         );
     }
     let image;
+
     if (author && client) {
         const pictureUrl = client.getProfilePictureUrl(author.id, author.lastPictureUpdate);
         const imgSource = source ?? {uri: `${serverUrl}${pictureUrl}`};
-        image = (
-            <FastImage
-                key={pictureUrl}
-                style={{width: size, height: size, borderRadius: (size / 2)}}
-                source={imgSource}
-            />
-        );
+
+        if (source === 'account-outline') {
+            image = (
+                <CompassIcon
+                    name='account-outline'
+                    size={iconSize || size}
+                    style={style.icon}
+                />
+            );
+        } else {
+            image = (
+                <FastImage
+                    key={pictureUrl}
+                    style={{width: size, height: size, borderRadius: (size / 2)}}
+                    source={imgSource as Source}
+                />
+            );
+        }
     } else {
         containerStyle = {
             width: size + (buffer - 1),
