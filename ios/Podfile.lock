@@ -272,7 +272,7 @@ PODS:
     - React
   - react-native-image-picker (4.7.0):
     - React-Core
-  - react-native-netinfo (7.1.5):
+  - react-native-netinfo (7.1.7):
     - React-Core
   - react-native-network-client (0.1.0):
     - Alamofire (~> 5.4)
@@ -779,7 +779,7 @@ SPEC CHECKSUMS:
   react-native-emm: a326f295d2bd3444178cf36a9e2d9307e0dc0dcc
   react-native-hw-keyboard-event: b517cefb8d5c659a38049c582de85ff43337dc53
   react-native-image-picker: 4b090b73077c3a71b91fddc739a594feebd00184
-  react-native-netinfo: a3ece35948490a9507da0c56694da525b83357df
+  react-native-netinfo: 27f287f2d191693f3b9d01a4273137fcf91c3b5d
   react-native-network-client: 30ab97e7e6c8d6f2d2b10cc1ebad0cbf9c894c6e
   react-native-notifications: 805108822ceff3440644d5701944f0cda35f5b4b
   react-native-paste-input: 80c06e2c5c65afd696f9bd43cfd371141d8b3a1b
