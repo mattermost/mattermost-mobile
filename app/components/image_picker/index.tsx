@@ -3,7 +3,7 @@
 
 import React, {useCallback, useMemo} from 'react';
 import {useIntl} from 'react-intl';
-import {DeviceEventEmitter} from 'react-native';
+import {DeviceEventEmitter, TouchableOpacity} from 'react-native';
 
 import CompassIcon from '@components/compass_icon';
 import SlideUpPanelItem, {ITEM_HEIGHT} from '@components/slide_up_panel_item';
@@ -12,10 +12,26 @@ import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {bottomSheet} from '@screens/navigation';
 import PickerUtil from '@utils/file/file_picker';
-import {changeOpacity} from '@utils/theme';
+import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 import type UserModel from '@typings/database/models/servers/user';
 import type {ExtractedFileInfo} from '@typings/utils';
+
+const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
+    return {
+        touchable: {
+            borderWidth: 1,
+            borderColor: theme.centerChannelBg,
+            borderRadius: 36 / 2,
+            height: 36,
+            width: 36,
+            position: 'absolute',
+            bottom: 0,
+            right: 0,
+            backgroundColor: theme.centerChannelBg,
+        },
+    };
+});
 
 type ImagePickerProps = {
     browseFileType?: string;
@@ -40,7 +56,7 @@ const ImagePicker = ({
     const theme = useTheme();
     const serverUrl = useServerUrl();
     const pictureUtils = useMemo(() => new PickerUtil(intl, uploadFiles), []);
-
+    const styles = getStyleSheet(theme);
     const showFileAttachmentOptions = useCallback(() => {
         const canRemovePicture = pictureUtils.hasPictureUrl(user, serverUrl);
 
@@ -114,12 +130,19 @@ const ImagePicker = ({
     }, []);//fixme:  verify dependencies here
 
     return (
-        <CompassIcon
-            name='camera-outline'
-            size={24}
-            color={changeOpacity(theme.centerChannelColor, 0.6)}
+        <TouchableOpacity
             onPress={showFileAttachmentOptions}
-        />
+            hitSlop={{top: 100, bottom: 20, right: 20, left: 100}}
+            style={styles.touchable}
+        >
+            <CompassIcon
+                name='camera-outline'
+                size={24}
+                color={changeOpacity(theme.centerChannelColor, 0.6)}
+
+            />
+        </TouchableOpacity>
+
     );
 };
 

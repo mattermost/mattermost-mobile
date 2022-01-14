@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback, useEffect, useState} from 'react';
-import {Platform, View} from 'react-native';
+import {Platform, StyleSheet, View} from 'react-native';
 import DocumentPicker from 'react-native-document-picker';
 
 import {Client} from '@client/rest';
@@ -13,7 +13,7 @@ import {useTheme} from '@context/theme';
 import useDidUpdate from '@hooks/did_update';
 import NetworkManager from '@init/network_manager';
 import UserModel from '@typings/database/models/servers/user';
-import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
+import {changeOpacity} from '@utils/theme';
 
 type ChangeProfilePictureProps = {
     user: UserModel;
@@ -22,36 +22,27 @@ type ChangeProfilePictureProps = {
 
 const SIZE = 128;
 
-const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
-    return {
-        container: {
-            justifyContent: 'center',
-            alignItems: 'center',
-        },
-        camera: {
-            position: 'absolute',
-            bottom: 0,
-            right: 0,
-            overflow: 'hidden',
-            alignItems: 'center',
-            justifyContent: 'center',
-            backgroundColor: theme.centerChannelBg,
-            borderWidth: 1,
-            borderColor: theme.centerChannelBg,
-            borderRadius: 36 / 2,
-            height: 36,
-            width: 36,
-        },
-    };
+const styles = StyleSheet.create({
+    container: {
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    camera: {
+        position: 'absolute',
+        overflow: 'hidden',
+        alignItems: 'center',
+        justifyContent: 'center',
+        height: '100%',
+        width: '100%',
+    },
 });
 
 const ChangeProfilePicture = ({user, onUpdatedProfilePicture}: ChangeProfilePictureProps) => {
     const [pictureUrl, setPictureUrl] = useState<string|undefined>();
     const theme = useTheme();
     const serverUrl = useServerUrl();
-    const styles = getStyleSheet(theme);
-    let client: Client | undefined;
 
+    let client: Client | undefined;
     try {
         client = NetworkManager.getClient(serverUrl);
     } catch {
@@ -71,7 +62,6 @@ const ChangeProfilePicture = ({user, onUpdatedProfilePicture}: ChangeProfilePict
     }, [user.id, user.lastPictureUpdate]);
 
     const handleUploadProfileImage = useCallback((images: FileInfo[]) => {
-        //fixme: review this part properly
         const newImage = images?.[0]?.localPath;
         if (newImage) {
             setPictureUrl(newImage);
