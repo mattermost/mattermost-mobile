@@ -130,16 +130,19 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => ({
 
 type Props = {
         channelType?: string;
-        displayName?: FormInput;
+        displayName: string;
+        onDisplayNameChange: (text: string) => void;
         editing: boolean;
         enableRightButton: (enable: boolean) => void;
         error?: string | object;
-        header?: FormInput;
+        header: string;
+        onHeaderChange: (text: string) => void;
         onTypeChange: (type: ChannelType) => void;
         oldDisplayName?: string;
         oldHeader?: string;
         oldPurpose?: string;
         purpose?: FormInput;
+        onPurposeChange: (text: string) => void;
         saving: boolean;
         testID?: string;
         type?: string;
@@ -148,15 +151,18 @@ type Props = {
 export default function EditChannelInfo({
     channelType,
     displayName,
+    onDisplayNameChange,
     editing,
     enableRightButton,
     error,
     header,
+    onHeaderChange,
     onTypeChange,
     oldDisplayName,
     oldHeader,
     oldPurpose,
     purpose,
+    onPurposeChange,
     saving,
     testID,
     type,
@@ -199,9 +205,9 @@ export default function EditChannelInfo({
     };
 
     const onDisplayNameChangeText = (text: string) => {
-        displayName?.onChange(text);
+        onDisplayNameChange(text);
         if (editing) {
-            enableRightButton(canUpdate(text, purpose?.value, header?.value));
+            enableRightButton(canUpdate(text, purpose, header));
             return;
         }
         const displayNameExists = text?.length >= 2;
@@ -209,16 +215,16 @@ export default function EditChannelInfo({
     };
 
     const onPurposeChangeText = (text: string) => {
-        purpose?.onChange(text);
+        onPurposeChange(text);
         if (editing) {
-            enableRightButton(canUpdate(displayName?.value, text, header?.value));
+            enableRightButton(canUpdate(displayName, text, header));
         }
     };
 
     const onHeaderChangeText = (text: string) => {
-        header?.onChange(text);
+        onHeaderChange(text);
         if (editing) {
-            enableRightButton(canUpdate(displayName?.value, purpose?.value, text));
+            enableRightButton(canUpdate(displayName, purpose, text));
         }
     };
 

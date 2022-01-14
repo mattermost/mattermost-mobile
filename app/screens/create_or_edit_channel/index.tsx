@@ -14,7 +14,6 @@ import {handlePatchChannel, handleCreateChannel} from '@actions/remote/channel';
 import EditChannelInfo from '@components/edit_channel_info';
 import {General} from '@constants';
 import {useTheme} from '@context/theme';
-import {useFormInput} from '@hooks/forms';
 import {popTopScreen, dismissModal, setButtons} from '@screens/navigation';
 import {validateDisplayName} from '@utils/channel';
 
@@ -66,9 +65,9 @@ const CreateOrEditChannel = ({serverUrl, componentId, channel, channelInfo}: Pro
     const [type, setType] = useState<ChannelType>(channel?.type as ChannelType || General.OPEN_CHANNEL);
     const [rightButton, setRightButton] = useState<Button>();
 
-    const displayName = useFormInput(channel?.displayName);
-    const purpose = useFormInput(channelInfo?.purpose);
-    const header = useFormInput(channelInfo?.header);
+    const [displayName, setDisplayName] = useState<string>(channel?.displayName || '');
+    const [purpose, setPurpose] = useState<string>(channelInfo?.purpose || '');
+    const [header, setHeader] = useState<string>(channelInfo?.header || '');
 
     const emitCanSaveChannel = (enabled: boolean) => {
         setButtons(componentId, {
@@ -123,9 +122,7 @@ const CreateOrEditChannel = ({serverUrl, componentId, channel, channelInfo}: Pro
                 };
 
             default:
-                return {
-                    ...state,
-                };
+                return state;
         }
     }, {
         error: '',
@@ -189,7 +186,7 @@ const CreateOrEditChannel = ({serverUrl, componentId, channel, channelInfo}: Pro
             return true;
         }
 
-        const dName = displayName.value || '';
+        const dName = displayName || '';
         const result = validateDisplayName(intl, dName);
         if (result.error) {
             dispatch({
@@ -207,7 +204,7 @@ const CreateOrEditChannel = ({serverUrl, componentId, channel, channelInfo}: Pro
             return;
         }
 
-        const createdChannel = await handleCreateChannel(serverUrl, displayName.value, purpose.value, header.value, type);
+        const createdChannel = await handleCreateChannel(serverUrl, displayName, purpose, header, type);
         if (createdChannel.error) {
             dispatch({
                 type: RequestActions.FAILURE,
@@ -233,9 +230,9 @@ const CreateOrEditChannel = ({serverUrl, componentId, channel, channelInfo}: Pro
         const patchChannel = {
             id: channel!.id,
             type: channel!.type,
-            display_name: isDirect() ? '' : displayName.value,
-            purpose: purpose.value,
-            header: header.value,
+            display_name: isDirect() ? '' : displayName,
+            purpose,
+            header,
         } as Channel;
 
         const patchedChannel = await handlePatchChannel(serverUrl, patchChannel);
@@ -268,8 +265,11 @@ const CreateOrEditChannel = ({serverUrl, componentId, channel, channelInfo}: Pro
             onTypeChange={onTypeChange}
             type={type}
             displayName={displayName}
+            onDisplayNameChange={(text: string) => setDisplayName(text)}
             header={header}
+            onHeaderChange={(text: string) => setHeader(text)}
             purpose={purpose}
+            onPurposeChange={(text: string) => setPurpose(text)}
             oldDisplayName={channel?.displayName || ''}
             oldPurpose={channelInfo?.purpose || ''}
             oldHeader={channelInfo?.header || ''}
