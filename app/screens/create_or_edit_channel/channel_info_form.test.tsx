@@ -5,9 +5,9 @@ import React from 'react';
 
 import {renderWithIntl, fireEvent} from '@test/intl-test-helper';
 
-import EditChannelInfo from './index';
+import ChannelInfoForm from './channel_info_form';
 
-describe('EditChannelInfo', () => {
+describe('ChannelInfoForm', () => {
     const baseProps = {
         testID: 'edit_channel_info',
         channelType: 'O',
@@ -15,18 +15,12 @@ describe('EditChannelInfo', () => {
         saving: false,
         editing: false,
         error: '',
-        displayName: {
-            value: 'orig_display_name',
-            onChange: jest.fn(),
-        },
-        purpose: {
-            value: 'orig_purpose',
-            onChange: jest.fn(),
-        },
-        header: {
-            value: 'orig_header',
-            onChange: jest.fn(),
-        },
+        displayName: 'orig_display_name',
+        onDisplayNameChange: jest.fn(),
+        purpose: 'orig_purpose',
+        onPurposeChange: jest.fn(),
+        header: 'orig_header',
+        onHeaderChange: jest.fn(),
         onTypeChange: jest.fn(),
         oldDisplayName: 'orig_display_name',
         oldHeader: 'orig_header',
@@ -35,7 +29,7 @@ describe('EditChannelInfo', () => {
 
     test('create - should match snapshot', () => {
         const {queryByText, toJSON} = renderWithIntl(
-            <EditChannelInfo {...baseProps}/>,
+            <ChannelInfoForm {...baseProps}/>,
         );
         expect(queryByText('Public Channel')).toBeTruthy();
         expect(queryByText('Private Channel')).toBeTruthy();
@@ -44,7 +38,7 @@ describe('EditChannelInfo', () => {
 
     test('edit - should match snapshot', () => {
         const {queryByText, toJSON} = renderWithIntl(
-            <EditChannelInfo
+            <ChannelInfoForm
                 {...baseProps}
                 editing={true}
             />,
@@ -56,7 +50,7 @@ describe('EditChannelInfo', () => {
 
     test('create - error displayed', () => {
         const {queryByText} = renderWithIntl(
-            <EditChannelInfo
+            <ChannelInfoForm
                 {...baseProps}
                 error='this is an error'
             />,
@@ -65,9 +59,9 @@ describe('EditChannelInfo', () => {
     });
 
     test('edit - button enabling and disabling', () => {
-        const {displayName, enableRightButton, oldDisplayName} = baseProps;
+        const {displayName, onDisplayNameChange, enableRightButton, oldDisplayName} = baseProps;
         const {getByTestId} = renderWithIntl(
-            <EditChannelInfo
+            <ChannelInfoForm
                 {...baseProps}
                 editing={true}
             />,
@@ -83,15 +77,15 @@ describe('EditChannelInfo', () => {
 
         // change display name value. calls enableRightButton with true
         fireEvent(displayInput, 'onChangeText', 'new display name');
-        expect(displayName.onChange).toHaveBeenCalledWith('new display name');
+        expect(onDisplayNameChange).toHaveBeenCalledWith('new display name');
         expect(enableRightButton.mock.calls[0][0]).toEqual(true);
 
         // change display name back to original. call enableRightButton again
         // with false because values are the same as original values
-        fireEvent(displayInput, 'onChangeText', displayName.value);
+        fireEvent(displayInput, 'onChangeText', displayName);
         expect(enableRightButton.mock.calls[1][0]).toEqual(false);
 
-        fireEvent(displayInput, 'onChangeText', displayName.value + 'e');
+        fireEvent(displayInput, 'onChangeText', displayName + 'e');
         expect(enableRightButton.mock.calls[2][0]).toEqual(true);
     });
 });

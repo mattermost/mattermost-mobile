@@ -10,7 +10,7 @@ import {Navigation} from 'react-native-navigation';
 
 import {switchToChannel} from '@actions/local/channel';
 import {handlePatchChannel, handleCreateChannel} from '@actions/remote/channel';
-import EditChannelInfo from '@components/edit_channel_info';
+import ChannelInfoForm from '@app/screens/create_or_edit_channel/channel_form';
 import {General} from '@constants';
 import {useTheme} from '@context/theme';
 import {popTopScreen, dismissModal, setButtons} from '@screens/navigation';
@@ -237,7 +237,7 @@ const CreateOrEditChannel = ({serverUrl, componentId, channel, channelInfo}: Pro
     };
 
     return (
-        <EditChannelInfo
+        <ChannelInfoForm
             testID='create_or_edit_channel.screen'
             enableRightButton={emitCanSaveChannel}
             error={appState.error}

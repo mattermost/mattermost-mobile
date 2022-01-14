@@ -145,7 +145,7 @@ type Props = {
         type?: string;
 }
 
-export default function EditChannelInfo({
+export default function ChannelInfoForm({
     channelType,
     displayName,
     onDisplayNameChange,
