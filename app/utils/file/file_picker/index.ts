@@ -7,7 +7,7 @@ import AndroidOpenSettings from 'react-native-android-open-settings';
 import DeviceInfo from 'react-native-device-info';
 import DocumentPicker, {DocumentPickerResponse} from 'react-native-document-picker';
 import {Asset, CameraOptions, ImageLibraryOptions, ImagePickerResponse, launchCamera, launchImageLibrary} from 'react-native-image-picker';
-import Permissions from 'react-native-permissions';
+import Permissions, {AndroidPermission, IOSPermission} from 'react-native-permissions';
 
 import {Client} from '@client/rest';
 import {Navigation} from '@constants';
@@ -149,12 +149,13 @@ export default class FilePickerUtil {
     };
 
     private hasPhotoPermission = async (source: PermissionSource) => {
+        let permissionRequest;
+        let targetSource: AndroidPermission | IOSPermission = source === 'camera' ? Permissions.PERMISSIONS.IOS.CAMERA : Permissions.PERMISSIONS.IOS.PHOTO_LIBRARY;
+
         if (Platform.OS === 'android') {
-            return true;
+            targetSource = Permissions.PERMISSIONS.ANDROID.CAMERA;
         }
 
-        let permissionRequest;
-        const targetSource = source === 'camera' ? Permissions.PERMISSIONS.IOS.CAMERA : Permissions.PERMISSIONS.IOS.PHOTO_LIBRARY;
         const hasPhotoLibraryPermission = await Permissions.check(targetSource);
 
         switch (hasPhotoLibraryPermission) {
