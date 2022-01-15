@@ -1,0 +1,151 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`EnableDisableCalls should match snapshot if calls are disabled 1`] = `
+<React.Fragment>
+  <Separator
+    theme={
+      Object {
+        "awayIndicator": "#ffbc1f",
+        "buttonBg": "#1c58d9",
+        "buttonColor": "#ffffff",
+        "centerChannelBg": "#ffffff",
+        "centerChannelColor": "#3f4350",
+        "codeTheme": "github",
+        "dndIndicator": "#d24b4e",
+        "errorTextColor": "#d24b4e",
+        "linkColor": "#386fe5",
+        "mentionBg": "#ffffff",
+        "mentionColor": "#1e325c",
+        "mentionHighlightBg": "#ffd470",
+        "mentionHighlightLink": "#1b1d22",
+        "newMessageSeparator": "#cc8f00",
+        "onlineIndicator": "#3db887",
+        "sidebarBg": "#1e325c",
+        "sidebarHeaderBg": "#192a4d",
+        "sidebarHeaderTextColor": "#ffffff",
+        "sidebarTeamBarBg": "#14213e",
+        "sidebarText": "#ffffff",
+        "sidebarTextActiveBorder": "#5d89ea",
+        "sidebarTextActiveColor": "#ffffff",
+        "sidebarTextHoverBg": "#28427b",
+        "sidebarUnreadText": "#ffffff",
+        "type": "Denim",
+      }
+    }
+  />
+  <channelInfoRow
+    action={[Function]}
+    defaultMessage="Enable Calls"
+    icon="phone-outline"
+    rightArrow={false}
+    shouldRender={true}
+    testID="test-id"
+    textId="mobile.channel_info.enable_calls"
+    theme={
+      Object {
+        "awayIndicator": "#ffbc1f",
+        "buttonBg": "#1c58d9",
+        "buttonColor": "#ffffff",
+        "centerChannelBg": "#ffffff",
+        "centerChannelColor": "#3f4350",
+        "codeTheme": "github",
+        "dndIndicator": "#d24b4e",
+        "errorTextColor": "#d24b4e",
+        "linkColor": "#386fe5",
+        "mentionBg": "#ffffff",
+        "mentionColor": "#1e325c",
+        "mentionHighlightBg": "#ffd470",
+        "mentionHighlightLink": "#1b1d22",
+        "newMessageSeparator": "#cc8f00",
+        "onlineIndicator": "#3db887",
+        "sidebarBg": "#1e325c",
+        "sidebarHeaderBg": "#192a4d",
+        "sidebarHeaderTextColor": "#ffffff",
+        "sidebarTeamBarBg": "#14213e",
+        "sidebarText": "#ffffff",
+        "sidebarTextActiveBorder": "#5d89ea",
+        "sidebarTextActiveColor": "#ffffff",
+        "sidebarTextHoverBg": "#28427b",
+        "sidebarUnreadText": "#ffffff",
+        "type": "Denim",
+      }
+    }
+    togglable={false}
+  />
+</React.Fragment>
+`;
+
+exports[`EnableDisableCalls should match snapshot if calls are enabled 1`] = `
+<React.Fragment>
+  <Separator
+    theme={
+      Object {
+        "awayIndicator": "#ffbc1f",
+        "buttonBg": "#1c58d9",
+        "buttonColor": "#ffffff",
+        "centerChannelBg": "#ffffff",
+        "centerChannelColor": "#3f4350",
+        "codeTheme": "github",
+        "dndIndicator": "#d24b4e",
+        "errorTextColor": "#d24b4e",
+        "linkColor": "#386fe5",
+        "mentionBg": "#ffffff",
+        "mentionColor": "#1e325c",
+        "mentionHighlightBg": "#ffd470",
+        "mentionHighlightLink": "#1b1d22",
+        "newMessageSeparator": "#cc8f00",
+        "onlineIndicator": "#3db887",
+        "sidebarBg": "#1e325c",
+        "sidebarHeaderBg": "#192a4d",
+        "sidebarHeaderTextColor": "#ffffff",
+        "sidebarTeamBarBg": "#14213e",
+        "sidebarText": "#ffffff",
+        "sidebarTextActiveBorder": "#5d89ea",
+        "sidebarTextActiveColor": "#ffffff",
+        "sidebarTextHoverBg": "#28427b",
+        "sidebarUnreadText": "#ffffff",
+        "type": "Denim",
+      }
+    }
+  />
+  <channelInfoRow
+    action={[Function]}
+    defaultMessage="Disable Calls"
+    icon="phone-outline"
+    rightArrow={false}
+    shouldRender={true}
+    testID="test-id"
+    textId="mobile.channel_info.disable_calls"
+    theme={
+      Object {
+        "awayIndicator": "#ffbc1f",
+        "buttonBg": "#1c58d9",
+        "buttonColor": "#ffffff",
+        "centerChannelBg": "#ffffff",
+        "centerChannelColor": "#3f4350",
+        "codeTheme": "github",
+        "dndIndicator": "#d24b4e",
+        "errorTextColor": "#d24b4e",
+        "linkColor": "#386fe5",
+        "mentionBg": "#ffffff",
+        "mentionColor": "#1e325c",
+        "mentionHighlightBg": "#ffd470",
+        "mentionHighlightLink": "#1b1d22",
+        "newMessageSeparator": "#cc8f00",
+        "onlineIndicator": "#3db887",
+        "sidebarBg": "#1e325c",
+        "sidebarHeaderBg": "#192a4d",
+        "sidebarHeaderTextColor": "#ffffff",
+        "sidebarTeamBarBg": "#14213e",
+        "sidebarText": "#ffffff",
+        "sidebarTextActiveBorder": "#5d89ea",
+        "sidebarTextActiveColor": "#ffffff",
+        "sidebarTextHoverBg": "#28427b",
+        "sidebarUnreadText": "#ffffff",
+        "type": "Denim",
+      }
+    }
+    togglable={false}
+  />
+</React.Fragment>
+`;

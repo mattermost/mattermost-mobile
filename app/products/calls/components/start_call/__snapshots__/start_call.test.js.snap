@@ -1,0 +1,151 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`StartCall should match snapshot 1`] = `
+<React.Fragment>
+  <Separator
+    theme={
+      Object {
+        "awayIndicator": "#ffbc1f",
+        "buttonBg": "#1c58d9",
+        "buttonColor": "#ffffff",
+        "centerChannelBg": "#ffffff",
+        "centerChannelColor": "#3f4350",
+        "codeTheme": "github",
+        "dndIndicator": "#d24b4e",
+        "errorTextColor": "#d24b4e",
+        "linkColor": "#386fe5",
+        "mentionBg": "#ffffff",
+        "mentionColor": "#1e325c",
+        "mentionHighlightBg": "#ffd470",
+        "mentionHighlightLink": "#1b1d22",
+        "newMessageSeparator": "#cc8f00",
+        "onlineIndicator": "#3db887",
+        "sidebarBg": "#1e325c",
+        "sidebarHeaderBg": "#192a4d",
+        "sidebarHeaderTextColor": "#ffffff",
+        "sidebarTeamBarBg": "#14213e",
+        "sidebarText": "#ffffff",
+        "sidebarTextActiveBorder": "#5d89ea",
+        "sidebarTextActiveColor": "#ffffff",
+        "sidebarTextHoverBg": "#28427b",
+        "sidebarUnreadText": "#ffffff",
+        "type": "Denim",
+      }
+    }
+  />
+  <channelInfoRow
+    action={[Function]}
+    defaultMessage="Start Call"
+    icon="phone-in-talk"
+    rightArrow={false}
+    shouldRender={true}
+    testID="test-id"
+    textId="mobile.channel_info.start_call"
+    theme={
+      Object {
+        "awayIndicator": "#ffbc1f",
+        "buttonBg": "#1c58d9",
+        "buttonColor": "#ffffff",
+        "centerChannelBg": "#ffffff",
+        "centerChannelColor": "#3f4350",
+        "codeTheme": "github",
+        "dndIndicator": "#d24b4e",
+        "errorTextColor": "#d24b4e",
+        "linkColor": "#386fe5",
+        "mentionBg": "#ffffff",
+        "mentionColor": "#1e325c",
+        "mentionHighlightBg": "#ffd470",
+        "mentionHighlightLink": "#1b1d22",
+        "newMessageSeparator": "#cc8f00",
+        "onlineIndicator": "#3db887",
+        "sidebarBg": "#1e325c",
+        "sidebarHeaderBg": "#192a4d",
+        "sidebarHeaderTextColor": "#ffffff",
+        "sidebarTeamBarBg": "#14213e",
+        "sidebarText": "#ffffff",
+        "sidebarTextActiveBorder": "#5d89ea",
+        "sidebarTextActiveColor": "#ffffff",
+        "sidebarTextHoverBg": "#28427b",
+        "sidebarUnreadText": "#ffffff",
+        "type": "Denim",
+      }
+    }
+    togglable={false}
+  />
+</React.Fragment>
+`;
+
+exports[`StartCall should match snapshot when there is already an ongoing call in the channel 1`] = `
+<React.Fragment>
+  <Separator
+    theme={
+      Object {
+        "awayIndicator": "#ffbc1f",
+        "buttonBg": "#1c58d9",
+        "buttonColor": "#ffffff",
+        "centerChannelBg": "#ffffff",
+        "centerChannelColor": "#3f4350",
+        "codeTheme": "github",
+        "dndIndicator": "#d24b4e",
+        "errorTextColor": "#d24b4e",
+        "linkColor": "#386fe5",
+        "mentionBg": "#ffffff",
+        "mentionColor": "#1e325c",
+        "mentionHighlightBg": "#ffd470",
+        "mentionHighlightLink": "#1b1d22",
+        "newMessageSeparator": "#cc8f00",
+        "onlineIndicator": "#3db887",
+        "sidebarBg": "#1e325c",
+        "sidebarHeaderBg": "#192a4d",
+        "sidebarHeaderTextColor": "#ffffff",
+        "sidebarTeamBarBg": "#14213e",
+        "sidebarText": "#ffffff",
+        "sidebarTextActiveBorder": "#5d89ea",
+        "sidebarTextActiveColor": "#ffffff",
+        "sidebarTextHoverBg": "#28427b",
+        "sidebarUnreadText": "#ffffff",
+        "type": "Denim",
+      }
+    }
+  />
+  <channelInfoRow
+    action={[Function]}
+    defaultMessage="Join Ongoing Call"
+    icon="phone-in-talk"
+    rightArrow={false}
+    shouldRender={true}
+    testID="test-id"
+    textId="mobile.channel_info.join_ongoing_call"
+    theme={
+      Object {
+        "awayIndicator": "#ffbc1f",
+        "buttonBg": "#1c58d9",
+        "buttonColor": "#ffffff",
+        "centerChannelBg": "#ffffff",
+        "centerChannelColor": "#3f4350",
+        "codeTheme": "github",
+        "dndIndicator": "#d24b4e",
+        "errorTextColor": "#d24b4e",
+        "linkColor": "#386fe5",
+        "mentionBg": "#ffffff",
+        "mentionColor": "#1e325c",
+        "mentionHighlightBg": "#ffd470",
+        "mentionHighlightLink": "#1b1d22",
+        "newMessageSeparator": "#cc8f00",
+        "onlineIndicator": "#3db887",
+        "sidebarBg": "#1e325c",
+        "sidebarHeaderBg": "#192a4d",
+        "sidebarHeaderTextColor": "#ffffff",
+        "sidebarTeamBarBg": "#14213e",
+        "sidebarText": "#ffffff",
+        "sidebarTextActiveBorder": "#5d89ea",
+        "sidebarTextActiveColor": "#ffffff",
+        "sidebarTextHoverBg": "#28427b",
+        "sidebarUnreadText": "#ffffff",
+        "type": "Denim",
+      }
+    }
+    togglable={false}
+  />
+</React.Fragment>
+`;

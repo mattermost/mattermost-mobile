@@ -40,11 +40,41 @@ describe('ChannelItem', () => {
         isSearchResult: false,
         isBot: false,
         customStatusEnabled: true,
+        channelHasCall: false,
+        callsFeatureEnabled: false,
     };
 
     test('should match snapshot', () => {
         const wrapper = shallowWithIntl(
             <ChannelItem {...baseProps}/>,
+        );
+
+        expect(wrapper.getElement()).toMatchSnapshot();
+    });
+
+    test('should match snapshot when there is a call and calls are enabled', () => {
+        const newProps = {
+            ...baseProps,
+            callsFeatureEnabled: true,
+            channelHasCall: true,
+        };
+
+        const wrapper = shallowWithIntl(
+            <ChannelItem {...newProps}/>,
+        );
+
+        expect(wrapper.getElement()).toMatchSnapshot();
+    });
+
+    test('should match snapshot when there is a call and but calls are disabled', () => {
+        const newProps = {
+            ...baseProps,
+            callsFeatureEnabled: false,
+            channelHasCall: true,
+        };
+
+        const wrapper = shallowWithIntl(
+            <ChannelItem {...newProps}/>,
         );
 
         expect(wrapper.getElement()).toMatchSnapshot();

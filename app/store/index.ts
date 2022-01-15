@@ -74,9 +74,9 @@ const viewsBlackListFilter = createBlacklistFilter(
     ['extension', 'root'],
 );
 
-const typingBlackListFilter = createBlacklistFilter(
+const entitiesBlackListFilter = createBlacklistFilter(
     'entities',
-    ['typing'],
+    ['typing', 'calls'],
 );
 
 const channelViewBlackList: any = {loading: true, refreshing: true, loadingPosts: true, retryFailed: true, loadMorePostsVisible: true};
@@ -174,7 +174,7 @@ export default function configureStore(storage: any, preloadedState: any = {}, o
         transforms: [
             setTransformer,
             viewsBlackListFilter,
-            typingBlackListFilter,
+            entitiesBlackListFilter,
             channelViewBlackListFilter,
             emojiBlackListFilter,
         ],

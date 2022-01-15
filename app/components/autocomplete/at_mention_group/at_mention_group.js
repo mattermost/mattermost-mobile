@@ -66,7 +66,7 @@ const GroupMentionItem = (props) => {
         >
             <View style={style.rowPicture}>
                 <CompassIcon
-                    name='account-group-outline'
+                    name='account-multiple-outline'
                     style={style.rowIcon}
                 />
             </View>

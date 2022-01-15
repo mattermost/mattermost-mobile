@@ -1,0 +1,292 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`CallMessage should match snapshot 1`] = `
+<View
+  style={
+    Object {
+      "color": "rgba(63,67,80,0.6)",
+      "flexDirection": "row",
+      "fontSize": 15,
+      "lineHeight": 20,
+      "paddingBottom": 5,
+      "paddingTop": 5,
+    }
+  }
+>
+  <CompassIcon
+    name="phone-in-talk"
+    size={16}
+    style={
+      Object {
+        "backgroundColor": "#339970",
+        "borderRadius": 8,
+        "color": "white",
+        "marginRight": 5,
+        "overflow": "hidden",
+        "padding": 12,
+      }
+    }
+  />
+  <View
+    style={
+      Object {
+        "flex": 1,
+      }
+    }
+  >
+    <InjectIntl(FormattedText)
+      defaultMessage="{user} started a call"
+      id="call_message.started_a_call"
+      style={
+        Object {
+          "color": "#3f4350",
+          "fontWeight": "bold",
+        }
+      }
+      values={
+        Object {
+          "user": "User 1",
+        }
+      }
+    />
+    <FormattedRelativeTime
+      style={
+        Object {
+          "color": "#3f4350",
+        }
+      }
+      updateIntervalInSeconds={1}
+      value={100}
+    />
+  </View>
+  <TouchableOpacity
+    onPress={[Function]}
+    style={
+      Object {
+        "alignContent": "center",
+        "alignItems": "center",
+        "backgroundColor": "#339970",
+        "borderRadius": 8,
+        "flexDirection": "row",
+        "padding": 12,
+      }
+    }
+  >
+    <CompassIcon
+      name="phone-outline"
+      size={16}
+      style={
+        Object {
+          "color": "white",
+          "marginRight": 5,
+        }
+      }
+    />
+    <InjectIntl(FormattedText)
+      defaultMessage="Join Call"
+      id="call_message.join_call"
+      style={
+        Object {
+          "color": "white",
+        }
+      }
+    />
+  </TouchableOpacity>
+</View>
+`;
+
+exports[`CallMessage should match snapshot for ended call 1`] = `
+<View
+  style={
+    Object {
+      "color": "rgba(63,67,80,0.6)",
+      "flexDirection": "row",
+      "fontSize": 15,
+      "lineHeight": 20,
+      "paddingBottom": 5,
+      "paddingTop": 5,
+    }
+  }
+>
+  <CompassIcon
+    name="phone-hangup"
+    size={16}
+    style={
+      Object {
+        "backgroundColor": "rgba(63,67,80,0.6)",
+        "borderRadius": 8,
+        "color": "white",
+        "marginRight": 5,
+        "overflow": "hidden",
+        "padding": 12,
+      }
+    }
+  />
+  <View
+    style={
+      Object {
+        "flex": 1,
+      }
+    }
+  >
+    <InjectIntl(FormattedText)
+      defaultMessage="Call ended"
+      id="call_message.call_ended"
+      style={
+        Object {
+          "color": "#3f4350",
+          "fontWeight": "bold",
+        }
+      }
+    />
+    <View
+      style={
+        Object {
+          "alignContent": "center",
+          "alignItems": "center",
+          "flexDirection": "row",
+        }
+      }
+    >
+      <InjectIntl(FormattedText)
+        defaultMessage="Ended at {time}"
+        id="call_message.call_ended_at"
+        style={
+          Object {
+            "color": "#3f4350",
+          }
+        }
+        values={
+          Object {
+            "time": <FormattedTime
+              isMilitaryTime={false}
+              timezone="utc"
+              value={200}
+            />,
+          }
+        }
+      />
+      <Text
+        style={
+          Object {
+            "color": "#3f4350",
+            "marginLeft": 5,
+            "marginRight": 5,
+          }
+        }
+      >
+        •
+      </Text>
+      <InjectIntl(FormattedText)
+        defaultMessage="Lasted {duration}"
+        id="call_message.call_lasted"
+        style={
+          Object {
+            "color": "#3f4350",
+          }
+        }
+        values={
+          Object {
+            "duration": "a few seconds",
+          }
+        }
+      />
+    </View>
+  </View>
+</View>
+`;
+
+exports[`CallMessage should match snapshot for the call already in the current channel 1`] = `
+<View
+  style={
+    Object {
+      "color": "rgba(63,67,80,0.6)",
+      "flexDirection": "row",
+      "fontSize": 15,
+      "lineHeight": 20,
+      "paddingBottom": 5,
+      "paddingTop": 5,
+    }
+  }
+>
+  <CompassIcon
+    name="phone-in-talk"
+    size={16}
+    style={
+      Object {
+        "backgroundColor": "#339970",
+        "borderRadius": 8,
+        "color": "white",
+        "marginRight": 5,
+        "overflow": "hidden",
+        "padding": 12,
+      }
+    }
+  />
+  <View
+    style={
+      Object {
+        "flex": 1,
+      }
+    }
+  >
+    <InjectIntl(FormattedText)
+      defaultMessage="{user} started a call"
+      id="call_message.started_a_call"
+      style={
+        Object {
+          "color": "#3f4350",
+          "fontWeight": "bold",
+        }
+      }
+      values={
+        Object {
+          "user": "User 1",
+        }
+      }
+    />
+    <FormattedRelativeTime
+      style={
+        Object {
+          "color": "#3f4350",
+        }
+      }
+      updateIntervalInSeconds={1}
+      value={100}
+    />
+  </View>
+  <TouchableOpacity
+    onPress={[Function]}
+    style={
+      Object {
+        "alignContent": "center",
+        "alignItems": "center",
+        "backgroundColor": "#339970",
+        "borderRadius": 8,
+        "flexDirection": "row",
+        "padding": 12,
+      }
+    }
+  >
+    <CompassIcon
+      name="phone-outline"
+      size={16}
+      style={
+        Object {
+          "color": "white",
+          "marginRight": 5,
+        }
+      }
+    />
+    <InjectIntl(FormattedText)
+      defaultMessage="Current Call"
+      id="call_message.current_call"
+      style={
+        Object {
+          "color": "white",
+        }
+      }
+    />
+  </TouchableOpacity>
+</View>
+`;

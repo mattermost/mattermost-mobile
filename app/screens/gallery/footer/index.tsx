@@ -1,6 +1,9 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+/* eslint-disable react/prop-types */
+// React prop validations are not recognized with forwardRef
+
 import Clipboard from '@react-native-community/clipboard';
 
 import React, {forwardRef, useEffect, useRef, useState, useImperativeHandle} from 'react';

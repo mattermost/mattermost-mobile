@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useEffect, useRef, useState} from 'react';
+import React, {useEffect, useMemo, useState} from 'react';
 import {DeviceEventEmitter, StyleProp, StyleSheet, View, ViewStyle} from 'react-native';
 
 import {Client4} from '@client/rest';
@@ -46,10 +46,10 @@ const Files = ({canDownloadFiles, failed, files, isReplyPost, postId, theme}: Fi
     const [inViewPort, setInViewPort] = useState(false);
     const permanentSidebar = usePermanentSidebar();
     const isSplitView = useSplitView();
-    const imageAttachments = useRef<FileInfo[]>([]).current;
-    const nonImageAttachments = useRef<FileInfo[]>([]).current;
+    const {imageAttachments, nonImageAttachments} = useMemo(() => {
+        const images: FileInfo[] = [];
+        const nonImages: FileInfo[] = [];
 
-    if (!imageAttachments.length && !nonImageAttachments.length) {
         files.reduce((info, file) => {
             if (isImage(file)) {
                 let uri;
@@ -58,15 +58,17 @@ const Files = ({canDownloadFiles, failed, files, isReplyPost, postId, theme}: Fi
                 } else {
                     uri = isGif(file) ? Client4.getFileUrl(file.id, 0) : Client4.getFilePreviewUrl(file.id, 0);
                 }
-                info.imageAttachments.push({...file, uri});
+                info.images.push({...file, uri});
             } else {
-                info.nonImageAttachments.push(file);
+                info.nonImages.push(file);
             }
             return info;
-        }, {imageAttachments, nonImageAttachments});
-    }
+        }, {images, nonImages});
 
-    const filesForGallery = useRef<FileInfo[]>(imageAttachments.concat(nonImageAttachments)).current;
+        return {imageAttachments: images, nonImageAttachments: nonImages};
+    }, [files]);
+
+    const filesForGallery = imageAttachments.concat(nonImageAttachments);
     const attachmentIndex = (fileId: string) => {
         return filesForGallery.findIndex((file) => file.id === fileId) || 0;
     };

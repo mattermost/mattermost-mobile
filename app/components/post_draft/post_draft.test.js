@@ -83,7 +83,7 @@ describe('PostDraft', () => {
         expect(queryByTestId('post_draft.post.input')).toBeNull();
 
         // Should match text description
-        expect(getByText('You are viewing an ')).toBeTruthy();
+        expect(getByText('You are viewing an')).toBeTruthy();
         expect(getByText('archived channel')).toBeTruthy();
         expect(getByText('. New messages cannot be posted.')).toBeTruthy();
         expect(getByText('Close Channel')).toBeTruthy();
@@ -104,7 +104,7 @@ describe('PostDraft', () => {
         expect(queryByTestId('post_draft.post.input')).toBeNull();
 
         // Should match text description
-        expect(getByText('You are viewing an ')).toBeTruthy();
+        expect(getByText('You are viewing an')).toBeTruthy();
         expect(getByText('archived channel')).toBeTruthy();
         expect(getByText('. New messages cannot be posted.')).toBeTruthy();
         expect(getByText('Close Channel')).toBeTruthy();

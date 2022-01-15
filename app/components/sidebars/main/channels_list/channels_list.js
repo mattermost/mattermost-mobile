@@ -146,7 +146,7 @@ export default class ChannelsList extends PureComponent {
                 <SearchBar
                     testID={searchBarTestID}
                     ref={this.setSearchBarRef}
-                    placeholder={intl.formatMessage({id: 'mobile.channel_drawer.search', defaultMessage: 'Jump to...'})}
+                    placeholder={intl.formatMessage({id: 'mobile.channel_drawer.search', defaultMessage: 'Find channel'})}
                     cancelTitle={intl.formatMessage({id: 'mobile.post.cancel', defaultMessage: 'Cancel'})}
                     backgroundColor='transparent'
                     inputHeight={36}

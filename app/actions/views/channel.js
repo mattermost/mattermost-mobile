@@ -390,7 +390,7 @@ export function markAsViewedAndReadBatch(state, channelId, prevChannelId = '', m
                 type: ChannelTypes.SET_UNREAD_MSG_COUNT,
                 data: {
                     channelId,
-                    count: unreadMessageCount,
+                    count: isCollapsedThreadsEnabled(state) ? unreadMessageCountRoot : unreadMessageCount,
                 },
             }, {
                 type: ChannelTypes.DECREMENT_UNREAD_MSG_COUNT,
