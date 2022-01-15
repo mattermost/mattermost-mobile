@@ -4,6 +4,8 @@ import {Channel, General, Permissions} from '@constants';
 import {t, DEFAULT_LOCALE} from '@i18n';
 import {hasPermission} from '@utils/role';
 
+import type {IntlShape} from 'react-intl';
+
 export function selectDefaultChannelForTeam(channels: Channel[], memberships: ChannelMembership[], teamId: string, roles?: Role[], locale = DEFAULT_LOCALE) {
     let channel: Channel|undefined;
     let canIJoinPublicChannelsInTeam = false;
@@ -49,7 +51,7 @@ const messages = {
     },
 };
 
-export const validateDisplayName = (intl: any, displayName: string): {error: string} => {
+export const validateDisplayName = (intl: IntlShape, displayName: string): {error: string} => {
     let errorMessage;
     switch (true) {
         case !displayName:
@@ -67,7 +69,7 @@ export const validateDisplayName = (intl: any, displayName: string): {error: str
             break;
 
         default:
-            errorMessage = null;
+            errorMessage = '';
     }
     return {error: errorMessage};
 };
