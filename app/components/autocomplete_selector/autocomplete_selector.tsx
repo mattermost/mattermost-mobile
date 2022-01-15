@@ -71,7 +71,15 @@ export default class AutocompleteSelector extends PureComponent<Props, State> {
     }
 
     static getDerivedStateFromProps(props: Props, state: State) {
-        if (!props.selected || props.selected === state.selected) {
+        if (props.selected === state.selected) {
+            return null;
+        }
+
+        if (!props.selected) {
+            if (state.selected) {
+                return {selected: props.selected};
+            }
+
             return null;
         }
 

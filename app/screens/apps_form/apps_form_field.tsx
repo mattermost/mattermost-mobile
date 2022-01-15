@@ -76,7 +76,7 @@ export default class AppsFormField extends React.PureComponent<Props, State> {
     handleClear = () => {
         const {field, onChange} = this.props;
 
-        const selected = field.multiselect ? [] : null;
+        const selected = null;
 
         this.setState({selected});
         onChange(field.name, selected);
