@@ -80,6 +80,9 @@ const CreateOrEditChannel = ({serverUrl, componentId, channel, channelInfo}: Pro
         return channel?.type === General.DM_CHANNEL || channel?.type === General.GM_CHANNEL;
     };
 
+    // if a channel was provided, we are editing a channel
+    const editing = Boolean(channel);
+
     const [appState, dispatch] = useReducer((state: RequestState, action: RequestAction) => {
         switch (action.type) {
             case RequestActions.START:
@@ -148,9 +151,6 @@ const CreateOrEditChannel = ({serverUrl, componentId, channel, channelInfo}: Pro
     const onTypeChange = (typeText: ChannelType) => {
         setType(typeText);
     };
-
-    // if a channel was provided, we are editing a channel
-    const editing = Boolean(channel);
 
     const isValidDisplayName = (): boolean => {
         if (isDirect()) {
