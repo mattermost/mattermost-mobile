@@ -48,7 +48,7 @@ enum RequestActions {
 interface RequestState {
     error: string;
     saving: boolean;
-    type: ChannelType;
+    rightButton: Button;
 }
 
 interface RequestAction {
@@ -56,60 +56,45 @@ interface RequestAction {
     error?: string;
 }
 
+const close = (goBack = false): void => {
+    Keyboard.dismiss();
+    if (goBack) {
+        popTopScreen();
+        return;
+    }
+    dismissModal();
+};
+
 const CreateOrEditChannel = ({serverUrl, componentId, channel, channelInfo}: Props) => {
     const intl = useIntl();
     const {formatMessage} = intl;
     const theme = useTheme();
 
     const [type, setType] = useState<ChannelType>(channel?.type as ChannelType || General.OPEN_CHANNEL);
-    const [rightButton, setRightButton] = useState<Button>();
 
     const [displayName, setDisplayName] = useState<string>(channel?.displayName || '');
     const [purpose, setPurpose] = useState<string>(channelInfo?.purpose || '');
     const [header, setHeader] = useState<string>(channelInfo?.header || '');
 
-    const emitCanSaveChannel = (enabled: boolean) => {
-        setButtons(componentId, {
-            leftButtons: [],
-            rightButtons: [{...rightButton, enabled}] as never[],
-        });
-    };
-
     const isDirect = (): boolean => {
         return channel?.type === General.DM_CHANNEL || channel?.type === General.GM_CHANNEL;
-    };
-
-    const close = (goBack = false): void => {
-        Keyboard.dismiss();
-        if (goBack) {
-            popTopScreen();
-        } else {
-            dismissModal();
-        }
     };
 
     const [appState, dispatch] = useReducer((state: RequestState, action: RequestAction) => {
         switch (action.type) {
             case RequestActions.START:
-                emitCanSaveChannel(true);
-                Keyboard.dismiss();
                 return {
                     ...state,
                     error: '',
                     saving: true,
                 };
             case RequestActions.COMPLETE:
-                emitCanSaveChannel(false);
-                close(true);
-
-                // TODO: setChannelDisplayName
                 return {
                     ...state,
                     error: '',
                     saving: false,
                 };
             case RequestActions.FAILURE:
-                emitCanSaveChannel(false);
                 return {
                     ...state,
                     error: action.error,
@@ -122,30 +107,21 @@ const CreateOrEditChannel = ({serverUrl, componentId, channel, channelInfo}: Pro
     }, {
         error: '',
         saving: false,
-        type: channel?.type as ChannelType || General.OPEN_CHANNEL,
-    });
-
-    useEffect(() => {
-        const button = {
+        rightButton: {
             testID: 'edit_channel.save.button',
-            id: EDIT_CHANNEL_ID,
+            id: channel ? EDIT_CHANNEL_ID : CREATE_CHANNEL_ID,
             enabled: false,
             showAsAction: 'always',
             color: theme.sidebarHeaderTextColor,
-            text: formatMessage({id: 'mobile.edit_channel', defaultMessage: 'Save'}),
-        };
+            text: channel ? formatMessage({id: 'mobile.edit_channel', defaultMessage: 'Save'}) : formatMessage({id: 'mobile.create_channel', defaultMessage: 'Create'}),
+        },
+    });
 
-        if (!channel) {
-            button.id = CREATE_CHANNEL_ID;
-            button.text = formatMessage({id: 'mobile.create_channel', defaultMessage: 'Create'});
-        }
-
-        setRightButton(button);
+    const emitCanSaveChannel = (enabled: boolean) => {
         setButtons(componentId, {
-            leftButtons: [],
-            rightButtons: [{...button, enabled: false}] as never[],
+            rightButtons: [{...appState.rightButton, enabled}] as never[],
         });
-    }, []);
+    };
 
     useEffect(() => {
         const update = Navigation.events().registerComponentListener({
@@ -188,6 +164,7 @@ const CreateOrEditChannel = ({serverUrl, componentId, channel, channelInfo}: Pro
                 type: RequestActions.FAILURE,
                 error: result.error,
             });
+            emitCanSaveChannel(false);
             return false;
         }
         return true;
@@ -195,6 +172,8 @@ const CreateOrEditChannel = ({serverUrl, componentId, channel, channelInfo}: Pro
 
     const onCreateChannel = async () => {
         dispatch({type: RequestActions.START});
+        Keyboard.dismiss();
+        emitCanSaveChannel(true);
         if (!isValidDisplayName()) {
             return;
         }
@@ -205,14 +184,19 @@ const CreateOrEditChannel = ({serverUrl, componentId, channel, channelInfo}: Pro
                 type: RequestActions.FAILURE,
                 error: createdChannel.error as string,
             });
+            emitCanSaveChannel(false);
             return;
         }
         dispatch({type: RequestActions.COMPLETE});
+        emitCanSaveChannel(false);
+        close(true);
         switchToChannel(serverUrl, createdChannel!.channel!.id);
     };
 
     const onUpdateChannel = async () => {
         dispatch({type: RequestActions.START});
+        Keyboard.dismiss();
+        emitCanSaveChannel(true);
         if (!isValidDisplayName()) {
             return;
         }
@@ -231,9 +215,12 @@ const CreateOrEditChannel = ({serverUrl, componentId, channel, channelInfo}: Pro
                 type: RequestActions.FAILURE,
                 error: patchedChannel.error as string,
             });
+            emitCanSaveChannel(false);
             return;
         }
         dispatch({type: RequestActions.COMPLETE});
+        emitCanSaveChannel(false);
+        close(true);
     };
 
     return (
