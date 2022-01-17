@@ -97,6 +97,7 @@ type RawValue =
   | AppInfo
   | Channel
   | ChannelInfo
+  | ChannelMember
   | ChannelMembership
   | CustomEmoji
   | Draft

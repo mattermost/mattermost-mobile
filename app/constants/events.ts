@@ -9,6 +9,7 @@ export default keyMirror({
     CONFIG_CHANGED: null,
     LEAVE_CHANNEL: null,
     LEAVE_TEAM: null,
+    LOADING_CHANNEL_POSTS: null,
     NOTIFICATION_ERROR: null,
     SERVER_LOGOUT: null,
     SERVER_VERSION_CHANGED: null,

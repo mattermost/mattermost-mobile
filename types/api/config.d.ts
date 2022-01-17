@@ -130,6 +130,7 @@ interface ClientConfig {
     LdapLoginButtonTextColor: string;
     LdapLoginFieldName: string;
     LdapNicknameAttributeSet: string;
+    LdapPictureAttributeSet: string;
     LdapPositionAttributeSet: string;
     LockTeammateNameDisplay: string;
     MaxFileSize: string;

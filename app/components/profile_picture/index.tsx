@@ -58,7 +58,15 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     };
 });
 
-const ProfilePicture = ({author, iconSize, showStatus = true, size = 64, statusSize = 14, statusStyle, testID}: ProfilePictureProps) => {
+const ProfilePicture = ({
+    author,
+    iconSize,
+    showStatus = true,
+    size = 64,
+    statusSize = 14,
+    statusStyle,
+    testID,
+}: ProfilePictureProps) => {
     const theme = useTheme();
     const serverUrl = useServerUrl();
     const style = getStyleSheet(theme);

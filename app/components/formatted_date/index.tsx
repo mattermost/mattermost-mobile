@@ -11,7 +11,7 @@ type FormattedDateProps = TextProps & {
     value: number | string | Date;
 }
 
-const FormattedDate = ({format = 'ddd, MMM DD, YYYY', timezone, value, ...props}: FormattedDateProps) => {
+const FormattedDate = ({format = 'MMM DD, YYYY', timezone, value, ...props}: FormattedDateProps) => {
     let formattedDate = moment(value).format(format);
     if (timezone) {
         let zone = timezone as string;

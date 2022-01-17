@@ -6,6 +6,7 @@ import {DeviceEventEmitter} from 'react-native';
 
 import {Events, Screens} from '@constants';
 import CustomStatus from '@screens/custom_status';
+import EditProfile from '@screens/edit_profile';
 
 type SelectedView = {
     id: string;
@@ -14,6 +15,7 @@ type SelectedView = {
 
 const TabletView: Record<string, React.ReactNode> = {
     [Screens.CUSTOM_STATUS]: CustomStatus,
+    [Screens.EDIT_PROFILE]: EditProfile,
 };
 
 const AccountTabletView = () => {

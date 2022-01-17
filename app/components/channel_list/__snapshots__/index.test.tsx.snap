@@ -5,7 +5,7 @@ exports[`components/channel_list should match snapshot 1`] = `
   animatedStyle={
     Object {
       "value": Object {
-        "maxWidth": undefined,
+        "maxWidth": "100%",
       },
     }
   }
@@ -14,7 +14,7 @@ exports[`components/channel_list should match snapshot 1`] = `
     Object {
       "backgroundColor": "#1e325c",
       "flex": 1,
-      "maxWidth": undefined,
+      "maxWidth": "100%",
       "paddingHorizontal": 20,
       "paddingVertical": 10,
     }
