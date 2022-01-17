@@ -7,9 +7,11 @@ export const BOTTOM_TAB_ICON_SIZE = 31.2;
 export const PROFILE_PICTURE_SIZE = 32;
 export const PROFILE_PICTURE_EMOJI_SIZE = 28;
 export const SEARCH_INPUT_HEIGHT = Platform.select({android: 40, ios: 36})!;
-export const TABLET_SIDEBAR_WIDTH = 320;
+
 export const TEAM_SIDEBAR_WIDTH = 72;
 export const TABLET_HEADER_HEIGHT = 44;
+export const TABLET_SIDEBAR_WIDTH = 320;
+
 export const IOS_DEFAULT_HEADER_HEIGHT = 50;
 export const ANDROID_DEFAULT_HEADER_HEIGHT = 56;
 export const LARGE_HEADER_TITLE = 60;
@@ -18,6 +20,8 @@ export const HEADER_WITH_SUBTITLE = 24;
 export const IOS_HEADER_SEARCH_INSET = 20;
 export const TABLET_HEADER_SEARCH_INSET = 28;
 export const ANDROID_HEADER_SEARCH_INSET = 11;
+
+export const INDICATOR_BAR_HEIGHT = 38;
 
 export default {
     BOTTOM_TAB_ICON_SIZE,
@@ -37,4 +41,5 @@ export default {
     IOS_HEADER_SEARCH_INSET,
     TABLET_HEADER_SEARCH_INSET,
     ANDROID_HEADER_SEARCH_INSET,
+    INDICATOR_BAR_HEIGHT,
 };

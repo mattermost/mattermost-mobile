@@ -54,7 +54,7 @@ const withTeams = withObservables([], ({database}: WithDatabaseArgs) => {
 
             return ts.sort((a, b) => {
                 if ((indexes[a.id] != null) || (indexes[b.id] != null)) {
-                    return (indexes[a.id] ?? -1) - (indexes[b.id] ?? -1);
+                    return (indexes[a.id] ?? tids.length) - (indexes[b.id] ?? tids.length);
                 }
                 return (originalIndexes[a.id] - originalIndexes[b.id]);
             });

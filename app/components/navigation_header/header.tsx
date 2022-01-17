@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React, {useMemo} from 'react';
-import {Platform, Text} from 'react-native';
+import {Platform, Text, View} from 'react-native';
 import Animated, {useAnimatedStyle, withTiming} from 'react-native-reanimated';
 
 import CompassIcon from '@components/compass_icon';
@@ -27,10 +27,12 @@ type Props = {
     largeHeight: number;
     leftComponent?: React.ReactElement;
     onBackPress?: () => void;
+    onTitlePress?: () => void;
     rightButtons?: HeaderRightButton[];
-    scrollValue: Animated.SharedValue<number>;
+    scrollValue?: Animated.SharedValue<number>;
     showBackButton?: boolean;
     subtitle?: string;
+    subtitleCompanion?: React.ReactElement;
     theme: Theme;
     title?: string;
     top: number;
@@ -44,6 +46,9 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         justifyContent: 'flex-start',
         paddingHorizontal: 16,
         zIndex: 10,
+    },
+    subtitleContainer: {
+        flexDirection: 'row',
     },
     subtitle: {
         color: changeOpacity(theme.sidebarHeaderTextColor, 0.72),
@@ -89,10 +94,12 @@ const Header = ({
     largeHeight,
     leftComponent,
     onBackPress,
+    onTitlePress,
     rightButtons,
     scrollValue,
     showBackButton = true,
     subtitle,
+    subtitleCompanion,
     theme,
     title,
     top,
@@ -109,15 +116,15 @@ const Header = ({
         }
 
         const barHeight = Platform.OS === 'ios' ? (largeHeight - defaultHeight - (top / 2)) : largeHeight - defaultHeight;
-        const val = (top + scrollValue.value);
+        const val = (top + (scrollValue?.value ?? 0));
         return {
             opacity: val >= barHeight ? withTiming(1, {duration: 250}) : 0,
         };
-    }, [defaultHeight, largeHeight, top, isLargeTitle, hasSearch]);
+    }, [defaultHeight, largeHeight, isLargeTitle, hasSearch]);
 
     const containerStyle = useMemo(() => {
         return [styles.container, {height: defaultHeight + top, paddingTop: top}];
-    }, [top, defaultHeight, theme]);
+    }, [defaultHeight, theme]);
 
     const additionalTitleStyle = useMemo(() => ({
         marginLeft: Platform.select({android: showBackButton && !leftComponent ? 20 : 0}),
@@ -144,26 +151,37 @@ const Header = ({
                 {leftComponent}
             </Animated.View>
             <Animated.View style={[styles.titleContainer, additionalTitleStyle]}>
-                {!hasSearch &&
-                <Animated.Text
-                    ellipsizeMode='tail'
-                    numberOfLines={1}
-                    style={[styles.title, opacity]}
-                    testID='navigation.header.title'
+                <TouchableWithFeedback
+                    disabled={!onTitlePress}
+                    onPress={onTitlePress}
+                    type='opacity'
                 >
-                    {title}
-                </Animated.Text>
-                }
-                {!isLargeTitle &&
-                <Text
-                    ellipsizeMode='tail'
-                    numberOfLines={1}
-                    style={styles.subtitle}
-                    testID='navigation.header.subtitle'
-                >
-                    {subtitle}
-                </Text>
-                }
+                    <>
+                        {!hasSearch &&
+                        <Animated.Text
+                            ellipsizeMode='tail'
+                            numberOfLines={1}
+                            style={[styles.title, opacity]}
+                            testID='navigation.header.title'
+                        >
+                            {title}
+                        </Animated.Text>
+                        }
+                        {!isLargeTitle &&
+                        <View style={styles.subtitleContainer}>
+                            <Text
+                                ellipsizeMode='tail'
+                                numberOfLines={1}
+                                style={styles.subtitle}
+                                testID='navigation.header.subtitle'
+                            >
+                                {subtitle}
+                            </Text>
+                            {subtitleCompanion}
+                        </View>
+                        }
+                    </>
+                </TouchableWithFeedback>
             </Animated.View>
             <Animated.View style={styles.rightContainer}>
                 {Boolean(rightButtons?.length) &&

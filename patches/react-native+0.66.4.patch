@@ -1,8 +1,8 @@
 diff --git a/node_modules/react-native/Libraries/Components/ScrollView/ScrollView.js b/node_modules/react-native/Libraries/Components/ScrollView/ScrollView.js
-index 8eca425..f0df04f 100644
+index e497288..5465e97 100644
 --- a/node_modules/react-native/Libraries/Components/ScrollView/ScrollView.js
 +++ b/node_modules/react-native/Libraries/Components/ScrollView/ScrollView.js
-@@ -1768,9 +1768,15 @@ class ScrollView extends React.Component<Props, State> {
+@@ -1776,9 +1776,15 @@ class ScrollView extends React.Component<Props, State> {
          // Note: we should split props.style on the inner and outer props
          // however, the ScrollView still needs the baseStyle to be scrollable
          const {outer, inner} = splitLayoutProps(flattenStyle(props.style));
@@ -20,7 +20,7 @@ index 8eca425..f0df04f 100644
              {...props}
              style={StyleSheet.compose(baseStyle, inner)}
 diff --git a/node_modules/react-native/Libraries/Lists/VirtualizedList.js b/node_modules/react-native/Libraries/Lists/VirtualizedList.js
-index a7c1567..1531a45 100644
+index 2648cc3..eee7c9a 100644
 --- a/node_modules/react-native/Libraries/Lists/VirtualizedList.js
 +++ b/node_modules/react-native/Libraries/Lists/VirtualizedList.js
 @@ -16,6 +16,7 @@ const ScrollView = require('../Components/ScrollView/ScrollView');
@@ -31,7 +31,158 @@ index a7c1567..1531a45 100644
  
  const flattenStyle = require('../StyleSheet/flattenStyle');
  const infoLog = require('../Utilities/infoLog');
-@@ -2122,7 +2123,14 @@ function describeNestedLists(childList: {
+@@ -514,29 +515,29 @@ class VirtualizedList extends React.PureComponent<Props, State> {
+    * Param `animated` (`true` by default) defines whether the list
+    * should do an animation while scrolling.
+    */
+-  scrollToOffset(params: {animated?: ?boolean, offset: number, ...}) {
+-    const {animated, offset} = params;
++scrollToOffset(params: {animated?: ?boolean, offset: number, ...}) {
++  const {animated, offset} = params;
+ 
+-    if (this._scrollRef == null) {
+-      return;
+-    }
+-
+-    if (this._scrollRef.scrollTo == null) {
+-      console.warn(
+-        'No scrollTo method provided. This may be because you have two nested ' +
+-          'VirtualizedLists with the same orientation, or because you are ' +
+-          'using a custom component that does not implement scrollTo.',
+-      );
+-      return;
+-    }
++  if (this._scrollRef == null) {
++    return;
++  }
+ 
+-    this._scrollRef.scrollTo(
+-      horizontalOrDefault(this.props.horizontal)
+-        ? {x: offset, animated}
+-        : {y: offset, animated},
++  if (this._scrollRef.scrollTo == null) {
++    console.warn(
++      'No scrollTo method provided. This may be because you have two nested ' +
++        'VirtualizedLists with the same orientation, or because you are ' +
++        'using a custom component that does not implement scrollTo.',
+     );
++    return;
+   }
+ 
++  this._scrollRef.scrollTo(
++    horizontalOrDefault(this.props.horizontal)
++      ? {x: offset, animated}
++      : {y: offset, animated},
++  );
++}
++
+   recordInteraction() {
+     this._nestedChildLists.forEach(childList => {
+       childList.ref && childList.ref.recordInteraction();
+@@ -1221,6 +1222,7 @@ class VirtualizedList extends React.PureComponent<Props, State> {
+   _totalCellsMeasured = 0;
+   _updateCellsToRenderBatcher: Batchinator;
+   _viewabilityTuples: Array<ViewabilityHelperCallbackTuple> = [];
++  _hasDoneFirstScroll = false;
+ 
+   _captureScrollRef = ref => {
+     this._scrollRef = ref;
+@@ -1495,31 +1497,40 @@ class VirtualizedList extends React.PureComponent<Props, State> {
+     return !horizontalOrDefault(this.props.horizontal) ? metrics.y : metrics.x;
+   }
+ 
+-  _maybeCallOnEndReached() {
+-    const {
+-      data,
+-      getItemCount,
+-      onEndReached,
+-      onEndReachedThreshold,
+-    } = this.props;
+-    const {contentLength, visibleLength, offset} = this._scrollMetrics;
+-    const distanceFromEnd = contentLength - visibleLength - offset;
+-    const threshold =
+-      onEndReachedThreshold != null ? onEndReachedThreshold * visibleLength : 2;
++  _maybeCallOnEndReached(hasShrunkContentLength: boolean = false) {
++    const {onEndReached, onEndReachedThreshold} = this.props;
++    if (!onEndReached) {
++      return;
++    }
++    const {contentLength, visibleLength, offset, dOffset} = this._scrollMetrics;
++    // If this is just after the initial rendering
+     if (
+-      onEndReached &&
+-      this.state.last === getItemCount(data) - 1 &&
+-      distanceFromEnd < threshold &&
+-      this._scrollMetrics.contentLength !== this._sentEndForContentLength
++      !hasShrunkContentLength &&
++      !this._hasDoneFirstScroll &&
++      offset === 0
+     ) {
+-      // Only call onEndReached once for a given content length
+-      this._sentEndForContentLength = this._scrollMetrics.contentLength;
+-      onEndReached({distanceFromEnd});
+-    } else if (distanceFromEnd > threshold) {
+-      // If the user scrolls away from the end and back again cause
+-      // an onEndReached to be triggered again
+-      this._sentEndForContentLength = 0;
++      return;
++    }
++    // If scrolled up in the vertical list
++    if (dOffset < 0) {
++      return;
++    }
++    // If contentLength has not changed
++    if (contentLength === this._sentEndForContentLength) {
++      return;
++    }
++    const distanceFromEnd = contentLength - visibleLength - offset;
++    // If the distance is so farther than the area shown on the screen
++    if (distanceFromEnd >= visibleLength * 1.5) {
++      return;
++    }
++    // $FlowFixMe
++    const minimumDistanceFromEnd = onEndReachedThreshold !== null ? onEndReachedThreshold * visibleLength : 2;
++    if (distanceFromEnd >= minimumDistanceFromEnd) {
++      return;
+     }
++    this._sentEndForContentLength = contentLength;
++    onEndReached({distanceFromEnd});
+   }
+ 
+   _onContentSizeChange = (width: number, height: number) => {
+@@ -1541,9 +1552,21 @@ class VirtualizedList extends React.PureComponent<Props, State> {
+     if (this.props.onContentSizeChange) {
+       this.props.onContentSizeChange(width, height);
+     }
+-    this._scrollMetrics.contentLength = this._selectLength({height, width});
++    const {contentLength: currentContentLength} = this._scrollMetrics;
++    const contentLength = this._selectLength({height, width});
++    this._scrollMetrics.contentLength = contentLength;
+     this._scheduleCellsToRenderUpdate();
+-    this._maybeCallOnEndReached();
++    const hasShrunkContentLength =
++      currentContentLength > 0 &&
++      contentLength > 0 &&
++      contentLength < currentContentLength;
++    if (
++      hasShrunkContentLength &&
++      this._sentEndForContentLength >= contentLength
++    ) {
++      this._sentEndForContentLength = 0;
++    }
++    this._maybeCallOnEndReached(hasShrunkContentLength);
+   };
+ 
+   /* Translates metrics from a scroll event in a parent VirtualizedList into
+@@ -1631,6 +1654,7 @@ class VirtualizedList extends React.PureComponent<Props, State> {
+     if (!this.props) {
+       return;
+     }
++    this._hasDoneFirstScroll = true;
+     this._maybeCallOnEndReached();
+     if (velocity !== 0) {
+       this._fillRateHelper.activate();
+@@ -2119,7 +2143,14 @@ function describeNestedLists(childList: {
  
  const styles = StyleSheet.create({
    verticallyInverted: {
@@ -48,7 +199,7 @@ index a7c1567..1531a45 100644
    horizontallyInverted: {
      transform: [{scaleX: -1}],
 diff --git a/node_modules/react-native/react.gradle b/node_modules/react-native/react.gradle
-index 84b1f60..0ffc592 100644
+index ff46476..90e66db 100644
 --- a/node_modules/react-native/react.gradle
 +++ b/node_modules/react-native/react.gradle
 @@ -151,7 +151,7 @@ afterEvaluate {
@@ -78,7 +229,7 @@ index 84b1f60..0ffc592 100644
          }
  
          // Expose a minimal interface on the application variant and the task itself:
-@@ -321,7 +321,7 @@ afterEvaluate {
+@@ -328,7 +328,7 @@ afterEvaluate {
          // This should really be done by packaging all Hermes related libs into
          // two separate HermesDebug and HermesRelease AARs, but until then we'll
          // kludge it by deleting the .so files out of the /transforms/ directory.

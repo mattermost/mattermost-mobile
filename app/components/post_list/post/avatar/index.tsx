@@ -5,7 +5,7 @@ import {withDatabase} from '@nozbe/watermelondb/DatabaseProvider';
 import withObservables from '@nozbe/with-observables';
 import React, {ReactNode, useRef} from 'react';
 import {useIntl} from 'react-intl';
-import {Keyboard, Platform, StyleProp, StyleSheet, View, ViewStyle} from 'react-native';
+import {Keyboard, Platform, StyleSheet, View} from 'react-native';
 import FastImage from 'react-native-fast-image';
 import {of as of$} from 'rxjs';
 import {switchMap} from 'rxjs/operators';
@@ -34,7 +34,6 @@ type AvatarProps = {
     enablePostIconOverride?: boolean;
     isAutoReponse: boolean;
     isSystemPost: boolean;
-    pendingPostStyle?: StyleProp<ViewStyle>;
     post: PostModel;
 }
 
@@ -42,14 +41,9 @@ const style = StyleSheet.create({
     buffer: {
         marginRight: Platform.select({android: 2, ios: 3}),
     },
-    profilePictureContainer: {
-        marginBottom: 5,
-        marginRight: 10,
-        marginTop: 10,
-    },
 });
 
-const Avatar = ({author, enablePostIconOverride, isAutoReponse, isSystemPost, pendingPostStyle, post}: AvatarProps) => {
+const Avatar = ({author, enablePostIconOverride, isAutoReponse, isSystemPost, post}: AvatarProps) => {
     const closeButton = useRef<ImageSource>();
     const intl = useIntl();
     const theme = useTheme();
@@ -96,19 +90,17 @@ const Avatar = ({author, enablePostIconOverride, isAutoReponse, isSystemPost, pe
         }
 
         return (
-            <View style={[style.profilePictureContainer, pendingPostStyle]}>
-                <View
-                    style={[{
-                        borderRadius,
-                        overflow: 'hidden',
-                        justifyContent: 'center',
-                        alignItems: 'center',
-                        height: frameSize,
-                        width: frameSize,
-                    }, style.buffer]}
-                >
-                    {iconComponent}
-                </View>
+            <View
+                style={[{
+                    borderRadius,
+                    overflow: 'hidden',
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    height: frameSize,
+                    width: frameSize,
+                }, style.buffer]}
+            >
+                {iconComponent}
             </View>
         );
     }
@@ -157,11 +149,7 @@ const Avatar = ({author, enablePostIconOverride, isAutoReponse, isSystemPost, pe
         );
     }
 
-    return (
-        <View style={[style.profilePictureContainer, pendingPostStyle]}>
-            {component}
-        </View>
-    );
+    return component;
 };
 
 const withPost = withObservables(['post'], ({database, post}: {post: PostModel} & WithDatabaseArgs) => {

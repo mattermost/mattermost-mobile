@@ -14,7 +14,7 @@ type Props = SearchProps & {
     defaultHeight: number;
     forwardedRef?: React.RefObject<ScrollView | FlatList | SectionList>;
     largeHeight: number;
-    scrollValue: Animated.SharedValue<number>;
+    scrollValue?: Animated.SharedValue<number>;
     theme: Theme;
     top: number;
 }
@@ -44,13 +44,13 @@ const NavigationSearch = ({
     const styles = getStyleSheet(theme);
 
     const searchTop = useAnimatedStyle(() => {
-        return {marginTop: Math.max((-scrollValue.value + largeHeight), top)};
+        return {marginTop: Math.max((-(scrollValue?.value || 0) + largeHeight), top)};
     }, [defaultHeight, largeHeight, top]);
 
     const onFocus = useCallback((e) => {
         const searchInset = isTablet ? TABLET_HEADER_SEARCH_INSET : IOS_HEADER_SEARCH_INSET;
         const offset = Platform.select({android: largeHeight + ANDROID_HEADER_SEARCH_INSET, default: defaultHeight + searchInset});
-        if (forwardedRef?.current && Math.abs(scrollValue.value) <= top) {
+        if (forwardedRef?.current && Math.abs((scrollValue?.value || 0)) <= top) {
             if ((forwardedRef.current as ScrollView).scrollTo) {
                 (forwardedRef.current as ScrollView).scrollTo({y: offset, animated: true});
             } else {

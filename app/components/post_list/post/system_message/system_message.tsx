@@ -11,6 +11,7 @@ import {useTheme} from '@context/theme';
 import {t} from '@i18n';
 import {getMarkdownTextStyles} from '@utils/markdown';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
+import {typography} from '@utils/typography';
 
 import type PostModel from '@typings/database/models/servers/post';
 import type UserModel from '@typings/database/models/servers/user';
@@ -46,8 +47,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     return {
         systemMessage: {
             color: changeOpacity(theme.centerChannelColor, 0.6),
-            fontSize: 16,
-            lineHeight: 20,
+            ...typography('Body', 200, 'Regular'),
         },
     };
 });
@@ -257,13 +257,24 @@ const systemMessageRenderers = {
 export const SystemMessage = ({post, author}: SystemMessageProps) => {
     const intl = useIntl();
     const theme = useTheme();
-    const renderer = systemMessageRenderers[post.type];
-    if (!renderer) {
-        return null;
-    }
     const style = getStyleSheet(theme);
     const textStyles = getMarkdownTextStyles(theme);
     const styles = {messageStyle: style.systemMessage, textStyles};
+
+    const renderer = systemMessageRenderers[post.type];
+    if (!renderer) {
+        return (
+            <Markdown
+                baseTextStyle={styles.messageStyle}
+                disableGallery={true}
+                textStyles={styles.textStyles}
+                value={post.message}
+                theme={theme}
+            />
+        );
+        return null;
+    }
+
     return renderer({post, author, styles, intl, theme});
 };
 

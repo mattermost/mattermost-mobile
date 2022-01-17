@@ -11,6 +11,7 @@ import TouchableWithFeedback from '@components/touchable_with_feedback';
 import {showModal} from '@screens/navigation';
 import {preventDoubleTap} from '@utils/tap';
 import {makeStyleSheetFromTheme} from '@utils/theme';
+import {typography} from '@utils/typography';
 
 import type {ImageSource} from 'react-native-vector-icons/Icon';
 
@@ -28,10 +29,8 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     return {
         displayName: {
             color: theme.centerChannelColor,
-            fontFamily: 'OpenSans-Semibold',
-            fontSize: 16,
-            lineHeight: 24,
             flexGrow: 1,
+            ...typography('Body', 200, 'SemiBold'),
         },
         displayNameContainer: {
             maxWidth: '60%',

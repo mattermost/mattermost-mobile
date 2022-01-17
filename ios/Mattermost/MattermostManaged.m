@@ -60,25 +60,33 @@ RCT_EXPORT_METHOD(isRunningInSplitView:(RCTPromiseResolveBlock)resolve rejecter:
 
 RCT_EXPORT_METHOD(deleteDatabaseDirectory: (NSString *)databaseName  shouldRemoveDirectory: (BOOL) shouldRemoveDirectory callback: (RCTResponseSenderBlock)callback){
   @try {
-      NSDictionary *appGroupDir = [self appGroupSharedDirectory];
-      NSString *databaseDir;
+    NSDictionary *appGroupDir = [self appGroupSharedDirectory];
+    NSString *databaseDir;
 
-      if(databaseName){
-        databaseDir = [NSString stringWithFormat:@"%@/%@%@", appGroupDir[@"databasePath"], databaseName , @".db"];
-      }
+    if(databaseName){
+      databaseDir = [NSString stringWithFormat:@"%@/%@%@", appGroupDir[@"databasePath"], databaseName , @".db"];
+    }
+  
+    if(shouldRemoveDirectory){
+      databaseDir = appGroupDir[@"databasePath"];
+    }
+
+
+    NSFileManager *fileManager = [NSFileManager defaultManager];
+    NSError *error = nil;
+
+    if (!shouldRemoveDirectory && [fileManager fileExistsAtPath:[NSString stringWithFormat:@"%@-wal", databaseDir]]) {
+      [fileManager removeItemAtPath:[NSString stringWithFormat:@"%@-wal", databaseDir] error:nil];
+    }
     
-      if(shouldRemoveDirectory){
-        databaseDir = appGroupDir[@"databasePath"];
-      }
+    if (!shouldRemoveDirectory && [fileManager fileExistsAtPath:[NSString stringWithFormat:@"%@-shm", databaseDir]]) {
+      [fileManager removeItemAtPath:[NSString stringWithFormat:@"%@-shm", databaseDir] error:nil];
+    }
+    
+    BOOL  successCode  = [fileManager removeItemAtPath:databaseDir error:&error];
+    NSNumber *success= [NSNumber numberWithBool:successCode];
 
-
-      NSFileManager *fileManager = [NSFileManager defaultManager];
-      NSError *error = nil;
-
-      BOOL  successCode  = [fileManager removeItemAtPath:databaseDir error:&error];
-      NSNumber *success= [NSNumber numberWithBool:successCode];
-
-      callback(@[(error ?: [NSNull null]), success]);
+    callback(@[(error ?: [NSNull null]), success]);
   }
   @catch (NSException *exception) {
       NSLog(@"%@", exception.reason);

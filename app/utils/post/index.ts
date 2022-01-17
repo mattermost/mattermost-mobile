@@ -19,12 +19,12 @@ export function areConsecutivePosts(post: PostModel, previousPost: PostModel) {
         const isFromSameUser = previousPost.userId === post.userId;
         const isNotSystemMessage = !isSystemMessage(post) && !isSystemMessage(previousPost);
         const isInTimeframe = (post.createAt - previousPost.createAt) <= Post.POST_COLLAPSE_TIMEOUT;
-        const isSameThread = (previousPost.rootId === post.rootId || previousPost.id === post.rootId);
 
         // Were the last post and this post made by the same user within some time?
-        consecutive = previousPost && (isFromSameUser || isInTimeframe) && !postFromWebhook &&
-        !prevPostFromWebhook && isNotSystemMessage && isSameThread;
+        consecutive = previousPost && isFromSameUser && isInTimeframe && !postFromWebhook &&
+        !prevPostFromWebhook && isNotSystemMessage;
     }
+
     return consecutive;
 }
 
@@ -77,3 +77,13 @@ export const getMentionKeysForPost = (user: UserModel, post: PostModel, groups: 
 export function shouldIgnorePost(post: Post): boolean {
     return Post.IGNORE_POST_TYPES.includes(post.type);
 }
+
+export const sortPostsByNewest = (posts: PostModel[]) => {
+    return posts.sort((a, b) => {
+        if (a.createAt > b.createAt) {
+            return 1;
+        }
+
+        return -1;
+    });
+};
