@@ -1,18 +1,26 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {Model} from '@nozbe/watermelondb';
+import {Model, Q} from '@nozbe/watermelondb';
 import {DeviceEventEmitter} from 'react-native';
 
-import {Navigation as NavigationConstants, Screens} from '@constants';
+import {General, Navigation as NavigationConstants, Preferences, Screens} from '@constants';
+import {MM_TABLES} from '@constants/database';
 import DatabaseManager from '@database/manager';
+import {getTeammateNameDisplaySetting} from '@helpers/api/preference';
 import {prepareDeleteChannel, queryAllMyChannelIds, queryChannelsById, queryMyChannel} from '@queries/servers/channel';
+import {queryPreferencesByCategoryAndName} from '@queries/servers/preference';
 import {prepareCommonSystemValues, PrepareCommonSystemValuesArgs, queryCommonSystemValues, queryCurrentTeamId, setCurrentChannelId} from '@queries/servers/system';
 import {addChannelToTeamHistory, addTeamToTeamHistory, removeChannelFromTeamHistory} from '@queries/servers/team';
+import {queryCurrentUser} from '@queries/servers/user';
 import {dismissAllModalsAndPopToRoot, dismissAllModalsAndPopToScreen} from '@screens/navigation';
 import {isTablet} from '@utils/helpers';
+import {displayGroupMessageName, displayUsername} from '@utils/user';
 
 import type ChannelModel from '@typings/database/models/servers/channel';
+import type UserModel from '@typings/database/models/servers/user';
+
+const {SERVER: {CHANNEL_MEMBERSHIP, USER}} = MM_TABLES;
 
 export const switchToChannel = async (serverUrl: string, channelId: string, teamId?: string, prepareRecordsOnly = false) => {
     const database = DatabaseManager.serverDatabases[serverUrl]?.database;
@@ -198,3 +206,43 @@ export const resetMessageCount = async (serverUrl: string, channelId: string) =>
         return {error};
     }
 };
+
+export async function updateChannelsDisplayName(serverUrl: string, channels: ChannelModel[], user: UserProfile, prepareRecordsOnly = false) {
+    const database = DatabaseManager.serverDatabases[serverUrl];
+    if (!database) {
+        return {};
+    }
+    const currentUser = await queryCurrentUser(database.database);
+    if (!currentUser) {
+        return {};
+    }
+
+    const {config, license} = await queryCommonSystemValues(database.database);
+    const preferences = await queryPreferencesByCategoryAndName(database.database, Preferences.CATEGORY_DISPLAY_SETTINGS, Preferences.NAME_NAME_FORMAT);
+    const displaySettings = getTeammateNameDisplaySetting(preferences, config, license);
+    const models: Model[] = [];
+    channels?.forEach(async (channel) => {
+        let newDisplayName = '';
+        if (channel.type === General.DM_CHANNEL) {
+            newDisplayName = displayUsername(user, currentUser.locale, displaySettings);
+        } else {
+            const dbProfiles = await database.database.get<UserModel>(USER).query(Q.on(CHANNEL_MEMBERSHIP, Q.where('channel_id', channel.id))).fetch();
+            const newProfiles: Array<UserModel|UserProfile> = dbProfiles.filter((u) => u.id !== user.id);
+            newProfiles.push(user);
+            newDisplayName = displayGroupMessageName(newProfiles, currentUser.locale, displaySettings, currentUser.id);
+        }
+
+        if (channel.displayName !== newDisplayName) {
+            channel.prepareUpdate((c) => {
+                c.displayName = newDisplayName;
+            });
+            models.push(channel);
+        }
+    });
+
+    if (models.length && !prepareRecordsOnly) {
+        database.operator.batchRecords(models);
+    }
+
+    return {models};
+}

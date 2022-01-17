@@ -68,7 +68,7 @@ export const fetchPostsForChannel = async (serverUrl: string, channelId: string,
     let authors: UserProfile[] = [];
     if (data.posts?.length && data.order?.length) {
         try {
-            const {authors: fetchedAuthors} = await fetchPostAuthors(serverUrl, data.posts, false);
+            const {authors: fetchedAuthors} = await fetchPostAuthors(serverUrl, data.posts, true);
             authors = fetchedAuthors || [];
         } catch (error) {
             // eslint-disable-next-line no-console

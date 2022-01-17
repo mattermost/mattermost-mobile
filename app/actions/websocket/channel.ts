@@ -51,7 +51,7 @@ export async function handleUserAddedToChannelEvent(serverUrl: string, msg: any)
                 }
             }
 
-            const {posts, order, authors, actionType, previousPostId} = await fetchPostsForChannel(serverUrl, channelId);
+            const {posts, order, authors, actionType, previousPostId} = await fetchPostsForChannel(serverUrl, channelId, true);
             if (posts?.length && order && actionType) {
                 models.push(...await database.operator.handlePosts({
                     actionType,
@@ -98,7 +98,7 @@ export async function handleUserRemovedFromChannelEvent(serverUrl: string, msg: 
     const models: Model[] = [];
 
     if (user.isGuest) {
-        const {models: updateVisibleModels} = await updateUsersNoLongerVisible(serverUrl);
+        const {models: updateVisibleModels} = await updateUsersNoLongerVisible(serverUrl, true);
         if (updateVisibleModels) {
             models.push(...updateVisibleModels);
         }

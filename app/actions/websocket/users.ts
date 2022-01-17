@@ -1,22 +1,18 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {Model, Q} from '@nozbe/watermelondb';
+import {Q} from '@nozbe/watermelondb';
 
+import {updateChannelsDisplayName} from '@actions/local/channel';
 import {fetchMe} from '@actions/remote/user';
-import {General, Preferences} from '@constants';
+import {General} from '@constants';
 import {MM_TABLES} from '@constants/database';
 import DatabaseManager from '@database/manager';
-import {getTeammateNameDisplaySetting} from '@helpers/api/preference';
-import {queryPreferencesByCategoryAndName} from '@queries/servers/preference';
-import {queryCommonSystemValues} from '@queries/servers/system';
 import {queryCurrentUser} from '@queries/servers/user';
-import {displayGroupMessageName, displayUsername} from '@utils/user';
 
 import type ChannelModel from '@typings/database/models/servers/channel';
-import type UserModel from '@typings/database/models/servers/user';
 
-const {SERVER: {CHANNEL, CHANNEL_MEMBERSHIP, USER}} = MM_TABLES;
+const {SERVER: {CHANNEL, CHANNEL_MEMBERSHIP}} = MM_TABLES;
 
 export async function handleUserUpdatedEvent(serverUrl: string, msg: any) {
     const database = DatabaseManager.serverDatabases[serverUrl];
@@ -41,23 +37,8 @@ export async function handleUserUpdatedEvent(serverUrl: string, msg: any) {
             if (user.locale !== currentUser.locale) {
                 const channels = await database.database.get<ChannelModel>(CHANNEL).query(
                     Q.where('type', Q.eq(General.GM_CHANNEL))).fetch();
-                const {config, license} = await queryCommonSystemValues(database.database);
-                const preferences = await queryPreferencesByCategoryAndName(database.database, Preferences.CATEGORY_DISPLAY_SETTINGS, Preferences.NAME_NAME_FORMAT);
-                const displaySettings = getTeammateNameDisplaySetting(preferences, config, license);
-                const models: Model[] = [];
-                channels.forEach(async (channel) => {
-                    const dbProfiles = await database.database.get<UserModel>(USER).query(Q.on(CHANNEL_MEMBERSHIP, Q.where('channel_id', channel.id))).fetch();
-                    const newProfiles: Array<UserModel|UserProfile> = dbProfiles.filter((u) => u.id === user.id);
-                    newProfiles.push(user);
-                    const newDisplayName = displayGroupMessageName(newProfiles, currentUser.locale, displaySettings, currentUser.id);
-                    if (channel.displayName !== newDisplayName) {
-                        channel.prepareUpdate((c) => {
-                            c.displayName = newDisplayName;
-                        });
-                    }
-                    models.push(channel);
-                });
-                if (models.length) {
+                const {models} = await updateChannelsDisplayName(serverUrl, channels, user, true);
+                if (models?.length) {
                     database.operator.batchRecords(models);
                 }
             }
@@ -72,30 +53,9 @@ export async function handleUserUpdatedEvent(serverUrl: string, msg: any) {
             return;
         }
 
-        const {config, license} = await queryCommonSystemValues(database.database);
-        const preferences = await queryPreferencesByCategoryAndName(database.database, Preferences.CATEGORY_DISPLAY_SETTINGS, Preferences.NAME_NAME_FORMAT);
-        const displaySettings = getTeammateNameDisplaySetting(preferences, config, license);
-        const models: Model[] = [];
-        channels?.forEach(async (channel) => {
-            let newDisplayName = '';
-            if (channel.type === General.DM_CHANNEL) {
-                newDisplayName = displayUsername(user, currentUser.locale, displaySettings);
-            } else {
-                const dbProfiles = await database.database.get<UserModel>(USER).query(Q.on(CHANNEL_MEMBERSHIP, Q.where('channel_id', channel.id))).fetch();
-                const newProfiles: Array<UserModel|UserProfile> = dbProfiles.filter((u) => u.id === user.id);
-                newProfiles.push(user);
-                newDisplayName = displayGroupMessageName(newProfiles, currentUser.locale, displaySettings, currentUser.id);
-            }
+        const {models} = await updateChannelsDisplayName(serverUrl, channels, user, true);
 
-            if (channel.displayName !== newDisplayName) {
-                channel.prepareUpdate((c) => {
-                    c.displayName = newDisplayName;
-                });
-                models.push(channel);
-            }
-        });
-
-        if (models.length) {
+        if (models?.length) {
             database.operator.batchRecords(models);
         }
     }
