@@ -76,13 +76,17 @@ export const fetchPostsForChannel = async (serverUrl: string, channelId: string,
         }
 
         if (!fetchOnly) {
-            const models = await operator.handlePosts({
+            const models = [];
+            const postModels = await operator.handlePosts({
                 actionType,
                 order: data.order,
                 posts: data.posts,
                 previousPostId: data.previousPostId,
                 prepareRecordsOnly: true,
             });
+            if (postModels) {
+                models.push(...postModels);
+            }
             if (authors.length) {
                 const userModels = await operator.handleUsers({users: authors, prepareRecordsOnly: true});
                 if (userModels.length) {

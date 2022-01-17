@@ -192,14 +192,14 @@ export const prepareCommonSystemValues = (
     }
 };
 
-export const setCurrentChannelId = async (operator: ServerDataOperator, channelId: string, prepareRecordsOnly = false) => {
+export const setCurrentChannelId = async (operator: ServerDataOperator, channelId: string) => {
     try {
         const models = await prepareCommonSystemValues(operator, {currentChannelId: channelId});
-        if (models && !prepareRecordsOnly) {
+        if (models) {
             await operator.batchRecords(models);
         }
 
-        return {currentChannelId: channelId, models};
+        return {currentChannelId: channelId};
     } catch (error) {
         return {error};
     }

@@ -12,7 +12,7 @@ import Events from '@constants/events';
 import DatabaseManager from '@database/manager';
 import {queryActiveServer} from '@queries/app/servers';
 import {deleteChannelMembership, prepareMyChannelsForTeam, queryChannelsById, queryCurrentChannel} from '@queries/servers/channel';
-import {queryConfig, setCurrentChannelId} from '@queries/servers/system';
+import {prepareCommonSystemValues, queryConfig, setCurrentChannelId} from '@queries/servers/system';
 import {queryLastChannelFromTeam} from '@queries/servers/team';
 import {queryCurrentUser, queryUserById} from '@queries/servers/user';
 import {dismissAllModals, popToRoot} from '@screens/navigation';
@@ -125,10 +125,10 @@ export async function handleUserRemovedFromChannelEvent(serverUrl: string, msg: 
                         if (switchChannelModels) {
                             models.push(...switchChannelModels);
                         }
-                    } // TODO else jump to "join a channel" screen
+                    } // TODO else jump to "join a channel" screen https://mattermost.atlassian.net/browse/MM-41051
                 } else {
-                    const {models: currentChannelModels} = await setCurrentChannelId(database.operator, '');
-                    if (currentChannelModels) {
+                    const currentChannelModels = await prepareCommonSystemValues(database.operator, {currentChannelId: ''});
+                    if (currentChannelModels?.length) {
                         models.push(...currentChannelModels);
                     }
                 }

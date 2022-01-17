@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {Q} from '@nozbe/watermelondb';
+import {Model, Q} from '@nozbe/watermelondb';
 
 import {fetchMe} from '@actions/remote/user';
 import {General, Preferences} from '@constants';
@@ -36,6 +36,31 @@ export async function handleUserUpdatedEvent(serverUrl: string, msg: any) {
             // websocket event
             // TODO Potential improvement https://mattermost.atlassian.net/browse/MM-40582
             fetchMe(serverUrl, false);
+
+            // Update GMs display name if locale has changed
+            if (user.locale !== currentUser.locale) {
+                const channels = await database.database.get<ChannelModel>(CHANNEL).query(
+                    Q.where('type', Q.eq(General.GM_CHANNEL))).fetch();
+                const {config, license} = await queryCommonSystemValues(database.database);
+                const preferences = await queryPreferencesByCategoryAndName(database.database, Preferences.CATEGORY_DISPLAY_SETTINGS, Preferences.NAME_NAME_FORMAT);
+                const displaySettings = getTeammateNameDisplaySetting(preferences, config, license);
+                const models: Model[] = [];
+                channels.forEach(async (channel) => {
+                    const dbProfiles = await database.database.get<UserModel>(USER).query(Q.on(CHANNEL_MEMBERSHIP, Q.where('channel_id', channel.id))).fetch();
+                    const newProfiles: Array<UserModel|UserProfile> = dbProfiles.filter((u) => u.id === user.id);
+                    newProfiles.push(user);
+                    const newDisplayName = displayGroupMessageName(newProfiles, currentUser.locale, displaySettings, currentUser.id);
+                    if (channel.displayName !== newDisplayName) {
+                        channel.prepareUpdate((c) => {
+                            c.displayName = newDisplayName;
+                        });
+                    }
+                    models.push(channel);
+                });
+                if (models.length) {
+                    database.operator.batchRecords(models);
+                }
+            }
         }
     } else {
         database.operator.handleUsers({users: [user], prepareRecordsOnly: false});
@@ -50,6 +75,7 @@ export async function handleUserUpdatedEvent(serverUrl: string, msg: any) {
         const {config, license} = await queryCommonSystemValues(database.database);
         const preferences = await queryPreferencesByCategoryAndName(database.database, Preferences.CATEGORY_DISPLAY_SETTINGS, Preferences.NAME_NAME_FORMAT);
         const displaySettings = getTeammateNameDisplaySetting(preferences, config, license);
+        const models: Model[] = [];
         channels?.forEach(async (channel) => {
             let newDisplayName = '';
             if (channel.type === General.DM_CHANNEL) {
@@ -65,8 +91,12 @@ export async function handleUserUpdatedEvent(serverUrl: string, msg: any) {
                 channel.prepareUpdate((c) => {
                     c.displayName = newDisplayName;
                 });
-                database.operator.batchRecords([channel]);
+                models.push(channel);
             }
         });
+
+        if (models.length) {
+            database.operator.batchRecords(models);
+        }
     }
 }
