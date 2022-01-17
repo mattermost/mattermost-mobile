@@ -34,7 +34,7 @@ type AccountScreenProps = {
 };
 
 const {SERVER: {SYSTEM, USER}} = MM_TABLES;
-const edges: Edge[] = ['bottom', 'left', 'right'];
+const edges: Edge[] = ['left', 'right'];
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     return {

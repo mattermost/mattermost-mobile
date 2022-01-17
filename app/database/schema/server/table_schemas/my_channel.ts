@@ -15,6 +15,7 @@ export default tableSchema({
         {name: 'manually_unread', type: 'boolean'},
         {name: 'mentions_count', type: 'number'},
         {name: 'message_count', type: 'number'},
+        {name: 'is_unread', type: 'boolean'},
         {name: 'roles', type: 'string'},
         {name: 'viewed_at', type: 'number'},
     ],

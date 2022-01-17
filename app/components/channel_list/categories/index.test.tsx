@@ -3,9 +3,12 @@
 
 import React from 'react';
 
-import {renderWithIntlAndTheme} from '@test/intl-test-helper';
+import {renderWithEverything} from '@test/intl-test-helper';
+import TestHelper from '@test/test_helper';
 
 import Category from './index';
+
+import type Database from '@nozbe/watermelondb/Database';
 
 const channels: TempoChannel[] = [
     {id: '1', name: 'Just a channel'},
@@ -17,10 +20,19 @@ const categories: TempoCategory[] = [
     {id: '2', title: 'Another cat', channels},
 ];
 
-test('Category List Component should match snapshot', () => {
-    const {toJSON} = renderWithIntlAndTheme(
-        <Category categories={categories}/>,
-    );
+describe('Category List Component ', () => {
+    let database: Database | undefined;
+    beforeAll(async () => {
+        const server = await TestHelper.setupServerDatabase();
+        database = server.database;
+    });
 
-    expect(toJSON()).toMatchSnapshot();
+    test('should match snapshot', () => {
+        const {toJSON} = renderWithEverything(
+            <Category categories={categories}/>,
+            {database},
+        );
+
+        expect(toJSON()).toMatchSnapshot();
+    });
 });

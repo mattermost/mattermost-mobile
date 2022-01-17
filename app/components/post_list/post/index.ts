@@ -70,6 +70,17 @@ async function shouldHighlightReplyBar(currentUser: UserModel, post: PostModel, 
 
     return false;
 }
+
+function isFirstReply(post: PostModel, previousPost?: PostModel) {
+    if (post.rootId) {
+        if (previousPost) {
+            return post.rootId !== previousPost.id && post.rootId !== previousPost.rootId;
+        }
+        return true;
+    }
+    return false;
+}
+
 const withSystem = withObservables([], ({database}: WithDatabaseArgs) => ({
     featureFlagAppsEnabled: database.get<SystemModel>(SYSTEM).findAndObserve(SYSTEM_IDENTIFIERS.CONFIG).pipe(
         switchMap((cfg) => of$(cfg.value.FeatureFlagAppsEnabled)),
@@ -82,17 +93,12 @@ const withSystem = withObservables([], ({database}: WithDatabaseArgs) => ({
 const withPost = withObservables(
     ['currentUser', 'post', 'previousPost', 'nextPost'],
     ({featureFlagAppsEnabled, currentUser, database, post, previousPost, nextPost}: PropsInput) => {
-        let isFirstReply = of$(true);
         let isJumboEmoji = of$(false);
         let isLastReply = of$(true);
         let isPostAddChannelMember = of$(false);
         const isOwner = currentUser.id === post.userId;
+        const author = post.author.observe();
         const canDelete = from$(hasPermissionForPost(post, currentUser, isOwner ? Permissions.DELETE_POST : Permissions.DELETE_OTHERS_POSTS, false));
-        const isConsecutivePost = post.author.observe().pipe(switchMap(
-            (user: UserModel) => {
-                return of$(Boolean(post && previousPost && !user.isBot && post.rootId && areConsecutivePosts(post, previousPost)));
-            },
-        ));
         const isEphemeral = of$(isPostEphemeral(post));
         const isFlagged = database.get<PreferenceModel>(PREFERENCE).query(
             Q.where('category', Preferences.CATEGORY_FLAGGED_POST),
@@ -114,7 +120,6 @@ const withPost = withObservables(
         let differentThreadSequence = true;
         if (post.rootId) {
             differentThreadSequence = previousPost?.rootId ? previousPost?.rootId !== post.rootId : previousPost?.id !== post.rootId;
-            isFirstReply = of$(differentThreadSequence || (previousPost?.id === post.rootId || previousPost?.rootId === post.rootId));
             isLastReply = of$(!(nextPost?.rootId === post.rootId));
         }
 
@@ -125,6 +130,10 @@ const withPost = withObservables(
                 ),
             );
         }
+        const hasReplies = from$(post.hasReplies());
+        const isConsecutivePost = author.pipe(
+            switchMap((user) => of$(Boolean(post && previousPost && !user.isBot && areConsecutivePosts(post, previousPost)))),
+        );
 
         const partialConfig: Partial<ClientConfig> = {
             FeatureFlagAppsEnabled: featureFlagAppsEnabled,
@@ -133,13 +142,13 @@ const withPost = withObservables(
         return {
             appsEnabled: of$(appsEnabled(partialConfig)),
             canDelete,
-            currentUser,
             differentThreadSequence: of$(differentThreadSequence),
             files: post.files.observe(),
+            hasReplies,
             highlightReplyBar,
             isConsecutivePost,
             isEphemeral,
-            isFirstReply,
+            isFirstReply: of$(isFirstReply(post, previousPost)),
             isFlagged,
             isJumboEmoji,
             isLastReply,

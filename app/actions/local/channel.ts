@@ -7,7 +7,7 @@ import {DeviceEventEmitter} from 'react-native';
 import {Navigation as NavigationConstants, Screens} from '@constants';
 import DatabaseManager from '@database/manager';
 import {prepareDeleteChannel, queryAllMyChannelIds, queryChannelsById, queryMyChannel} from '@queries/servers/channel';
-import {prepareCommonSystemValues, PrepareCommonSystemValuesArgs, queryCommonSystemValues, queryCurrentTeamId} from '@queries/servers/system';
+import {prepareCommonSystemValues, PrepareCommonSystemValuesArgs, queryCommonSystemValues, queryCurrentTeamId, setCurrentChannelId} from '@queries/servers/system';
 import {addChannelToTeamHistory, addTeamToTeamHistory, removeChannelFromTeamHistory} from '@queries/servers/team';
 import {dismissAllModalsAndPopToRoot, dismissAllModalsAndPopToScreen} from '@screens/navigation';
 import {isTablet} from '@utils/helpers';
@@ -31,6 +31,11 @@ export const switchToChannel = async (serverUrl: string, channelId: string, team
             const channel: ChannelModel = await member.channel.fetch();
             const {operator} = DatabaseManager.serverDatabases[serverUrl];
             const commonValues: PrepareCommonSystemValuesArgs = {currentChannelId: channelId};
+            if (isTabletDevice) {
+                // On tablet, the channel is being rendered, by setting the channel to empty first we speed up
+                // the switch by ~3x
+                await setCurrentChannelId(operator, '');
+            }
 
             if (teamId && system.currentTeamId !== teamId) {
                 commonValues.currentTeamId = teamId;
@@ -44,7 +49,7 @@ export const switchToChannel = async (serverUrl: string, channelId: string, team
             }
 
             if (system.currentChannelId !== channelId) {
-                const history = await addChannelToTeamHistory(operator, system.currentTeamId, channelId, true);
+                const history = await addChannelToTeamHistory(operator, channel.teamId || system.currentTeamId, channelId, true);
                 models.push(...history);
             }
 
@@ -153,7 +158,7 @@ export const markChannelAsViewed = async (serverUrl: string, channelId: string, 
     }
 
     member.prepareUpdate((m) => {
-        m.messageCount = 0;
+        m.isUnread = false;
         m.mentionsCount = 0;
         m.manuallyUnread = false;
         m.viewedAt = member.lastViewedAt;
@@ -164,6 +169,29 @@ export const markChannelAsViewed = async (serverUrl: string, channelId: string, 
             const {operator} = DatabaseManager.serverDatabases[serverUrl];
             await operator.batchRecords([member]);
         }
+
+        return member;
+    } catch (error) {
+        return {error};
+    }
+};
+
+export const resetMessageCount = async (serverUrl: string, channelId: string) => {
+    const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
+    if (!operator) {
+        return {error: `${serverUrl} database not found`};
+    }
+
+    const member = await queryMyChannel(operator.database, channelId);
+    if (!member) {
+        return {error: 'not a member'};
+    }
+
+    try {
+        member.prepareUpdate((m) => {
+            m.messageCount = 0;
+        });
+        await operator.batchRecords([member]);
 
         return member;
     } catch (error) {

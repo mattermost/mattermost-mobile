@@ -168,7 +168,7 @@ function isJoinLeavePostForUsername(post: PostModel, currentUsername: string): b
 }
 
 // are we going to do something with selectedPostId as in v1?
-function selectOrderedPosts(
+export function selectOrderedPosts(
     posts: PostModel[], lastViewedAt: number, indicateNewMessages: boolean, currentUsername: string, showJoinLeave: boolean,
     timezoneEnabled: boolean, currentTimezone: string | null, isThreadScreen = false) {
     if (posts.length === 0) {

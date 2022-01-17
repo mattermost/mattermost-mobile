@@ -90,7 +90,7 @@ export const fetchConfigAndLicense = async (serverUrl: string, fetchOnly = false
                 }
 
                 if (systems.length) {
-                    operator.handleSystem({systems, prepareRecordsOnly: false}).
+                    await operator.handleSystem({systems, prepareRecordsOnly: false}).
                         catch((error) => {
                             // eslint-disable-next-line no-console
                             console.log('An error ocurred while saving config & license', error);
