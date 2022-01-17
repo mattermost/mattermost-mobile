@@ -12,10 +12,10 @@ export interface ClientPostsMix {
     patchPost: (postPatch: Partial<Post> & {id: string}) => Promise<Post>;
     deletePost: (postId: string) => Promise<any>;
     getPostThread: (postId: string) => Promise<any>;
-    getPosts: (channelId: string, page?: number, perPage?: number) => Promise<any>;
-    getPostsSince: (channelId: string, since: number) => Promise<any>;
-    getPostsBefore: (channelId: string, postId: string, page?: number, perPage?: number) => Promise<any>;
-    getPostsAfter: (channelId: string, postId: string, page?: number, perPage?: number) => Promise<any>;
+    getPosts: (channelId: string, page?: number, perPage?: number) => Promise<PostResponse>;
+    getPostsSince: (channelId: string, since: number) => Promise<PostResponse>;
+    getPostsBefore: (channelId: string, postId: string, page?: number, perPage?: number) => Promise<PostResponse>;
+    getPostsAfter: (channelId: string, postId: string, page?: number, perPage?: number) => Promise<PostResponse>;
     getFileInfosForPost: (postId: string) => Promise<FileInfo[]>;
     getFlaggedPosts: (userId: string, channelId?: string, teamId?: string, page?: number, perPage?: number) => Promise<any>;
     getPinnedPosts: (channelId: string) => Promise<any>;

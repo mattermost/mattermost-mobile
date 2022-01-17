@@ -7,7 +7,7 @@ import {DeviceEventEmitter} from 'react-native';
 import {Navigation as NavigationConstants, Screens} from '@constants';
 import DatabaseManager from '@database/manager';
 import {prepareDeleteChannel, queryAllMyChannelIds, queryChannelsById, queryMyChannel} from '@queries/servers/channel';
-import {prepareCommonSystemValues, PrepareCommonSystemValuesArgs, queryCommonSystemValues, queryCurrentTeamId} from '@queries/servers/system';
+import {prepareCommonSystemValues, PrepareCommonSystemValuesArgs, queryCommonSystemValues, queryCurrentTeamId, setCurrentChannelId} from '@queries/servers/system';
 import {addChannelToTeamHistory, addTeamToTeamHistory, removeChannelFromTeamHistory} from '@queries/servers/team';
 import {dismissAllModalsAndPopToRoot, dismissAllModalsAndPopToScreen} from '@screens/navigation';
 import {isTablet} from '@utils/helpers';
@@ -31,6 +31,11 @@ export const switchToChannel = async (serverUrl: string, channelId: string, team
             const {operator} = DatabaseManager.serverDatabases[serverUrl];
             const models = [];
             const commonValues: PrepareCommonSystemValuesArgs = {currentChannelId: channelId};
+            if (isTabletDevice) {
+                // On tablet, the channel is being rendered, by setting the channel to empty first we speed up
+                // the switch by ~3x
+                await setCurrentChannelId(operator, '');
+            }
 
             if (teamId && system.currentTeamId !== teamId) {
                 commonValues.currentTeamId = teamId;
@@ -162,6 +167,29 @@ export const markChannelAsViewed = async (serverUrl: string, channelId: string, 
             const {operator} = DatabaseManager.serverDatabases[serverUrl];
             await operator.batchRecords([member]);
         }
+
+        return member;
+    } catch (error) {
+        return {error};
+    }
+};
+
+export const resetMessageCount = async (serverUrl: string, channelId: string) => {
+    const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
+    if (!operator) {
+        return {error: `${serverUrl} database not found`};
+    }
+
+    const member = await queryMyChannel(operator.database, channelId);
+    if (!member) {
+        return {error: 'not a member'};
+    }
+
+    try {
+        member.prepareUpdate((m) => {
+            m.messageCount = 0;
+        });
+        await operator.batchRecords([member]);
 
         return member;
     } catch (error) {

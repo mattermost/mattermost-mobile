@@ -1,8 +1,6 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import Model from '@nozbe/watermelondb/Model';
-
 import {processPostsFetched} from '@actions/local/post';
 import {prepareMissingChannelsForAllTeams} from '@app/queries/servers/channel';
 import {SYSTEM_IDENTIFIERS} from '@constants/database';
@@ -14,6 +12,7 @@ import {fetchPostAuthors, getMissingChannelsFromPosts} from './post';
 import {forceLogoutIfNecessary} from './session';
 
 import type {Client} from '@client/rest';
+import type Model from '@nozbe/watermelondb/Model';
 
 type PostSearchRequest = {
     error?: unknown;

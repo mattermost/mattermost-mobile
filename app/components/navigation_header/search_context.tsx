@@ -10,7 +10,7 @@ import {makeStyleSheetFromTheme} from '@utils/theme';
 type Props = {
     defaultHeight: number;
     largeHeight: number;
-    scrollValue: Animated.SharedValue<number>;
+    scrollValue?: Animated.SharedValue<number>;
     theme: Theme;
 }
 
@@ -32,7 +32,7 @@ const NavigationHeaderSearchContext = ({
     const styles = getStyleSheet(theme);
 
     const marginTop = useAnimatedStyle(() => {
-        return {marginTop: (-scrollValue.value + largeHeight + defaultHeight) - ANDROID_HEADER_SEARCH_INSET};
+        return {marginTop: (-(scrollValue?.value || 0) + largeHeight + defaultHeight) - ANDROID_HEADER_SEARCH_INSET};
     }, [defaultHeight, largeHeight]);
 
     return (
