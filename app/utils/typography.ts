@@ -5,7 +5,7 @@ import {StyleSheet, TextStyle} from 'react-native';
 
 // type FontFamilies = 'OpenSans' | 'Metropolis';
 type FontTypes = 'Heading' | 'Body';
-type FontStyles = 'SemiBold' | 'Regular' | 'Light';
+type FontStyles = 'Semibold' | 'Regular' | 'Light';
 type FontSizes = 25 | 50 | 75 | 100 | 200 | 300 | 400 | 500 | 600 | 700 | 800 | 900 | 1000;
 
 const fontFamily = StyleSheet.create({
@@ -18,7 +18,7 @@ const fontFamily = StyleSheet.create({
 });
 
 const fontStyle = StyleSheet.create({
-    SemiBold: {
+    Semibold: {
         fontWeight: '600',
     },
     Regular: {
@@ -97,7 +97,7 @@ export const typography = (
     // Style defaults
     if (!style) {
         // eslint-disable-next-line no-param-reassign
-        style = type === 'Heading' ? 'SemiBold' : 'Regular';
+        style = type === 'Heading' ? 'Semibold' : 'Regular';
     }
 
     const font = type === 'Heading' && size > 100 ? fontFamily.Metropolis : fontFamily.OpenSans;
@@ -109,7 +109,7 @@ export const typography = (
     };
 
     /*
-     * Use the appropriate font-file (i.e. OpenSans-SemiBold)
+     * Use the appropriate font-file (i.e. OpenSans-Semibold)
      * This switch statement can be removed when Android supports font-weight strings
      */
     switch (typeStyle.fontWeight) {

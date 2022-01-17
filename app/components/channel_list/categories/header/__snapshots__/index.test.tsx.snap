@@ -13,7 +13,7 @@ exports[`Category Header Component should match snapshot 1`] = `
     style={
       Object {
         "color": "rgba(255,255,255,0.64)",
-        "fontFamily": "OpenSans-SemiBold",
+        "fontFamily": "OpenSans-Semibold",
         "fontSize": 12,
         "fontWeight": "600",
         "lineHeight": 16,

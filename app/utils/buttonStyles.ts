@@ -390,7 +390,7 @@ export const buttonTextStyle = (
 
     const styles = StyleSheet.create({
         main: {
-            fontFamily: 'OpenSans-SemiBold',
+            fontFamily: 'OpenSans-Semibold',
             fontWeight: '600',
             textAlignVertical: 'center',
             alignItems: 'center',

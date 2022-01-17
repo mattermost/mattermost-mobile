@@ -49,7 +49,7 @@ exports[`Threads Component should match snapshot 1`] = `
           Array [
             Array [
               Object {
-                "fontFamily": "OpenSans-SemiBold",
+                "fontFamily": "OpenSans-Semibold",
                 "fontSize": 16,
                 "fontWeight": "600",
                 "lineHeight": 24,

@@ -58,10 +58,10 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         color: theme.centerChannelColor,
         marginTop: 16,
         textAlign: 'center',
-        ...typography('Heading', 700, 'SemiBold'),
+        ...typography('Heading', 700, 'Semibold'),
     },
     titleGroup: {
-        ...typography('Heading', 600, 'SemiBold'),
+        ...typography('Heading', 600, 'Semibold'),
     },
 }));
 

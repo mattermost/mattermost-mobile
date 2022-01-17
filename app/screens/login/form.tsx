@@ -58,7 +58,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         paddingVertical: 10,
         color: theme.buttonBg,
         fontSize: 14,
-        fontFamily: 'OpenSans-SemiBold',
+        fontFamily: 'OpenSans-Semibold',
     },
     loadingContainerStyle: {
         marginRight: 10,

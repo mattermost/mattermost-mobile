@@ -23,14 +23,14 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     welcome: {
         marginTop: 12,
         color: changeOpacity(theme.centerChannelColor, 0.64),
-        ...typography('Heading', 400, 'SemiBold'),
+        ...typography('Heading', 400, 'Semibold'),
     },
     connect: {
         width: 270,
         letterSpacing: -1,
         color: theme.mentionColor,
         marginVertical: 12,
-        ...typography('Heading', 1000, 'SemiBold'),
+        ...typography('Heading', 1000, 'Semibold'),
     },
     connectTablet: {
         width: undefined,

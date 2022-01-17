@@ -53,7 +53,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     header: {
         color: theme.mentionColor,
         marginBottom: 12,
-        ...typography('Heading', 1000, 'SemiBold'),
+        ...typography('Heading', 1000, 'Semibold'),
     },
     innerContainer: {
         alignItems: 'center',
@@ -77,7 +77,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     },
     successText: {
         color: changeOpacity(theme.centerChannelColor, 0.64),
-        ...typography('Body', 200, 'SemiBold'),
+        ...typography('Body', 200, 'Semibold'),
         textAlign: 'center',
     },
     successTitle: {

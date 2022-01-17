@@ -49,7 +49,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         color: theme.centerChannelColor,
         marginTop: 16,
         marginBottom: 8,
-        ...typography('Heading', 700, 'SemiBold'),
+        ...typography('Heading', 700, 'Semibold'),
     },
 }));
 

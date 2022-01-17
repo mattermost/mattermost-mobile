@@ -38,7 +38,7 @@ exports[`Loading Error should match snapshot 1`] = `
     style={
       Array [
         Object {
-          "fontFamily": "Metropolis-SemiBold",
+          "fontFamily": "Metropolis-Semibold",
           "fontSize": 20,
           "fontWeight": "600",
           "lineHeight": 28,
@@ -125,7 +125,7 @@ exports[`Loading Error should match snapshot 1`] = `
           Array [
             Object {
               "alignItems": "center",
-              "fontFamily": "OpenSans-SemiBold",
+              "fontFamily": "OpenSans-Semibold",
               "fontWeight": "600",
               "justifyContent": "center",
               "padding": 1,
