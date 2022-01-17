@@ -124,4 +124,17 @@ export default class PostModel extends Model {
         ).destroyAllPermanently();
         super.destroyPermanently();
     }
+
+    async hasReplies() {
+        if (!this.rootId) {
+            return (await this.postsInThread.fetch()).length > 0;
+        }
+
+        const root = await this.root.fetch();
+        if (root.length) {
+            return (await root[0].postsInThread.fetch()).length > 0;
+        }
+
+        return false;
+    }
 }

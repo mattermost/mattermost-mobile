@@ -18,12 +18,14 @@ import TeamModel from '@typings/database/models/servers/team';
 import {PERMALINK_GENERIC_TEAM_NAME_REDIRECT} from '@utils/url';
 import {displayGroupMessageName, displayUsername} from '@utils/user';
 
+import {fetchPostsForChannel} from './post';
 import {fetchRolesIfNeeded} from './role';
 import {forceLogoutIfNecessary} from './session';
 import {addUserToTeam, fetchTeamByName, removeUserFromTeam} from './team';
 import {fetchProfilesPerChannels, fetchUsersByIds} from './user';
 
 import type {Client} from '@client/rest';
+import type ChannelInfoModel from '@typings/database/models/servers/channel_info';
 
 export type MyChannelsRequest = {
     channels?: Channel[];
@@ -138,6 +140,44 @@ export const fetchChannelCreator = async (serverUrl: string, channelId: string, 
         }
 
         return {user: undefined};
+    } catch (error) {
+        forceLogoutIfNecessary(serverUrl, error as ClientErrorProps);
+        return {error};
+    }
+};
+
+export const fetchChannelStats = async (serverUrl: string, channelId: string, fetchOnly = false) => {
+    const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
+    if (!operator) {
+        return {error: `${serverUrl} database not found`};
+    }
+
+    let client: Client;
+    try {
+        client = NetworkManager.getClient(serverUrl);
+    } catch (error) {
+        return {error};
+    }
+
+    try {
+        const stats = await client.getChannelStats(channelId);
+        if (!fetchOnly) {
+            const channel = await queryChannelById(operator.database, channelId);
+            if (channel) {
+                const channelInfo = await channel.info.fetch() as ChannelInfoModel;
+                const channelInfos: ChannelInfo[] = [{
+                    guest_count: stats.guest_count,
+                    header: channelInfo.header,
+                    id: channelId,
+                    member_count: stats.member_count,
+                    pinned_post_count: stats.pinnedpost_count,
+                    purpose: channelInfo.purpose,
+                }];
+                await operator.handleChannelInfo({channelInfos, prepareRecordsOnly: false});
+            }
+        }
+
+        return {stats};
     } catch (error) {
         forceLogoutIfNecessary(serverUrl, error as ClientErrorProps);
         return {error};
@@ -503,7 +543,7 @@ export const switchToChannelByName = async (serverUrl: string, channelName: stri
         }
 
         if (teamId && channelId) {
-            await switchToChannel(serverUrl, channelId, teamId);
+            await switchToChannelById(serverUrl, channelId, teamId);
         }
 
         if (roles.length) {
@@ -515,4 +555,18 @@ export const switchToChannelByName = async (serverUrl: string, channelName: stri
         errorHandler(intl);
         return {error};
     }
+};
+
+export const switchToChannelById = async (serverUrl: string, channelId: string, teamId?: string) => {
+    const database = DatabaseManager.serverDatabases[serverUrl]?.database;
+    if (!database) {
+        return {error: `${serverUrl} database not found`};
+    }
+
+    fetchPostsForChannel(serverUrl, channelId);
+    await switchToChannel(serverUrl, channelId, teamId);
+    markChannelAsRead(serverUrl, channelId);
+    fetchChannelStats(serverUrl, channelId);
+
+    return {};
 };

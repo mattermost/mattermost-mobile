@@ -4,9 +4,8 @@
 import {useManagedConfig} from '@mattermost/react-native-emm';
 import {useIsFocused, useRoute} from '@react-navigation/native';
 import React from 'react';
-import {View} from 'react-native';
 import Animated, {useAnimatedStyle, withTiming} from 'react-native-reanimated';
-import {SafeAreaView, useSafeAreaInsets} from 'react-native-safe-area-context';
+import {Edge, SafeAreaView, useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import ChannelList from '@components/channel_list';
 import TeamSidebar from '@components/team_sidebar';
@@ -16,13 +15,12 @@ import Channel from '@screens/channel';
 import ServerIcon from '@screens/home/channel_list/server_icon/server_icon';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 
-import type {LaunchProps} from '@typings/launch';
-
-type ChannelProps = LaunchProps & {
+type ChannelProps = {
     teamsCount: number;
     time?: number;
 };
 
+const edges: Edge[] = ['bottom', 'left', 'right'];
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     flex: {
         flex: 1,
@@ -71,12 +69,16 @@ const ChannelListScreen = (props: ChannelProps) => {
         };
     }, [isFocused, params]);
 
+    const top = useAnimatedStyle(() => {
+        return {height: insets.top, backgroundColor: theme.sidebarBg};
+    }, [theme]);
+
     return (
         <>
-            {Boolean(insets.top) && <View style={{height: insets.top, backgroundColor: theme.sidebarBg}}/>}
+            {<Animated.View style={top}/>}
             <SafeAreaView
                 style={styles.content}
-                edges={['bottom', 'left', 'right']}
+                edges={edges}
             >
                 {canAddOtherServers && <ServerIcon/>}
                 <Animated.View
@@ -92,7 +94,7 @@ const ChannelListScreen = (props: ChannelProps) => {
                         teamsCount={props.teamsCount}
                     />
                     {isTablet &&
-                        <Channel {...props}/>
+                        <Channel/>
                     }
                 </Animated.View>
             </SafeAreaView>
