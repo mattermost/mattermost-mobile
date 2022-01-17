@@ -4,7 +4,7 @@
 /* eslint-disable react/prop-types */
 // We disable the prop types check here as forwardRef & typescript has a bug
 
-import React, {forwardRef, useCallback, useImperativeHandle, useMemo, useRef, useState} from 'react';
+import React, {forwardRef, useCallback, useEffect, useImperativeHandle, useMemo, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
 import {ActivityIndicatorProps, Platform, StyleProp, TextInput, TextInputProps, TextStyle, TouchableOpacityProps, ViewStyle} from 'react-native';
 import {SearchBar} from 'react-native-elements';
@@ -73,7 +73,7 @@ const Search = forwardRef<SearchRef, SearchProps>((props: SearchProps, ref) => {
     const theme = useTheme();
     const styles = getStyleSheet(theme);
     const searchRef = useRef<TextInput>(null);
-    const [value, setValue] = useState(props.value || '');
+    const [value, setValue] = useState(props.defaultValue || props.value || '');
     const searchClearButtonTestID = `${props.testID}.search.clear.button`;
     const searchCancelButtonTestID = `${props.testID}.search.cancel.button`;
     const searchInputTestID = `${props.testID}.search.input`;
@@ -99,6 +99,10 @@ const Search = forwardRef<SearchRef, SearchProps>((props: SearchProps, ref) => {
             ...typography('Body', 100, 'Regular'),
         },
     }), [theme]);
+
+    useEffect(() => {
+        setValue(props.defaultValue || value || '');
+    }, [props.defaultValue]);
 
     const clearIcon = useMemo(() => {
         return (

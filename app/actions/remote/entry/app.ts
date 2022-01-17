@@ -1,12 +1,13 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {switchToChannelById} from '@actions/remote/channel';
 import {fetchRoles} from '@actions/remote/role';
 import {fetchConfigAndLicense} from '@actions/remote/systems';
 import DatabaseManager from '@database/manager';
 import {queryChannelsById, queryDefaultChannelForTeam} from '@queries/servers/channel';
 import {prepareModels} from '@queries/servers/entry';
-import {prepareCommonSystemValues, queryCommonSystemValues, queryCurrentTeamId, setCurrentTeamAndChannelId} from '@queries/servers/system';
+import {prepareCommonSystemValues, queryCommonSystemValues, queryCurrentChannelId, queryCurrentTeamId, setCurrentTeamAndChannelId} from '@queries/servers/system';
 import {deleteMyTeams, queryTeamsById} from '@queries/servers/team';
 import {queryCurrentUser} from '@queries/servers/user';
 import {deleteV1Data} from '@utils/file';
@@ -21,6 +22,7 @@ export const appEntry = async (serverUrl: string) => {
     }
     const {database} = operator;
 
+    const tabletDevice = await isTablet();
     const currentTeamId = await queryCurrentTeamId(database);
     const fetchedData = await fetchAppEntryData(serverUrl, currentTeamId);
     const fetchedError = (fetchedData as AppEntryError).error;
@@ -31,15 +33,31 @@ export const appEntry = async (serverUrl: string) => {
 
     const {initialTeamId, teamData, chData, prefData, meData, removeTeamIds, removeChannelIds} = fetchedData as AppEntryData;
 
-    if (initialTeamId !== currentTeamId) {
+    if (initialTeamId === currentTeamId) {
+        let cId = await queryCurrentChannelId(database);
+        if (tabletDevice) {
+            if (!cId) {
+                const channel = await queryDefaultChannelForTeam(database, initialTeamId);
+                if (channel) {
+                    cId = channel.id;
+                }
+            }
+
+            switchToChannelById(serverUrl, cId, initialTeamId);
+        }
+    } else {
         // Immediately set the new team as the current team in the database so that the UI
         // renders the correct team.
         let channelId = '';
-        if ((await isTablet())) {
+        if (tabletDevice) {
             const channel = await queryDefaultChannelForTeam(database, initialTeamId);
             channelId = channel?.id || '';
         }
-        setCurrentTeamAndChannelId(operator, initialTeamId, channelId);
+        if (channelId) {
+            switchToChannelById(serverUrl, channelId, initialTeamId);
+        } else {
+            setCurrentTeamAndChannelId(operator, initialTeamId, channelId);
+        }
     }
 
     let removeTeams;

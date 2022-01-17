@@ -120,7 +120,7 @@ const ServerForm = ({
     const onConnect = useCallback(() => {
         Keyboard.dismiss();
         handleConnect();
-    }, [buttonDisabled, connecting, theme]);
+    }, [buttonDisabled, connecting, displayName, theme, url]);
 
     const onFocus = useCallback(() => {
         focus();
@@ -192,7 +192,6 @@ const ServerForm = ({
                     autoCapitalize={'none'}
                     enablesReturnKeyAutomatically={true}
                     error={displayNameError}
-                    keyboardType='url'
                     label={formatMessage({
                         id: 'mobile.components.select_server_view.displayName',
                         defaultMessage: 'Display Name',

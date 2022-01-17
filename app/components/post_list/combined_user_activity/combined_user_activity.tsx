@@ -46,11 +46,13 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
         },
         container: {
             flexDirection: 'row',
+            paddingHorizontal: 20,
+            marginTop: 10,
         },
         content: {
             flex: 1,
             flexDirection: 'column',
-            marginRight: 12,
+            marginLeft: 12,
         },
     };
 });
@@ -83,7 +85,7 @@ const CombinedUserActivity = ({
         const you = intl.formatMessage({id: 'combined_system_message.you', defaultMessage: 'You'});
         const usernames = userIds.reduce((acc: string[], id: string) => {
             if (id !== currentUserId && id !== currentUsername) {
-                const name = usernamesById[id];
+                const name = usernamesById[id] ?? Object.values(usernamesById).find((n) => n === id);
                 acc.push(name ? `@${name}` : someone);
             }
             return acc;

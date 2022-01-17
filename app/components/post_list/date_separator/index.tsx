@@ -7,6 +7,7 @@ import {StyleProp, View, ViewStyle} from 'react-native';
 import FormattedDate from '@components/formatted_date';
 import FormattedText from '@components/formatted_text';
 import {makeStyleSheetFromTheme} from '@utils/theme';
+import {typography} from '@utils/typography';
 
 type DateSeparatorProps = {
     date: number | Date;
@@ -21,6 +22,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             alignItems: 'center',
             flexDirection: 'row',
             marginVertical: 8,
+            paddingHorizontal: 20,
         },
         line: {
             flex: 1,
@@ -30,15 +32,18 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
         },
         date: {
             color: theme.centerChannelColor,
-            fontFamily: 'OpenSans-Semibold',
-            fontSize: 12,
-            lineHeight: 16,
+            marginHorizontal: 4,
+            ...typography('Body', 75, 'SemiBold'),
         },
     };
 });
 
 export function isSameDay(a: Date, b: Date) {
     return a.getDate() === b.getDate() && a.getMonth() === b.getMonth() && a.getFullYear() === b.getFullYear();
+}
+
+export function isSameYear(a: Date, b: Date) {
+    return a.getFullYear() === b.getFullYear();
 }
 
 export function isToday(date: Date) {
@@ -76,9 +81,12 @@ const RecentDate = (props: DateSeparatorProps) => {
         );
     }
 
+    const format = isSameYear(when, new Date()) ? 'MMM DD' : 'MMM DD, YYYY';
+
     return (
         <FormattedDate
             {...otherProps}
+            format={format}
             value={date}
         />
     );

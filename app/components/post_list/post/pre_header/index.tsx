@@ -24,7 +24,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             flex: 1,
             flexDirection: 'row',
             height: 15,
-            marginLeft: 10,
             marginRight: 10,
             marginTop: 10,
         },
@@ -89,7 +88,7 @@ const PreHeader = ({isConsecutivePost, isFlagged, isPinned, skipFlaggedHeader, s
             <View style={style.iconsContainer}>
                 {isPinned && !skipPinnedHeader &&
                 <CompassIcon
-                    name='pin-outline'
+                    name='pin'
                     size={14}
                     style={style.icon}
                 />
@@ -99,7 +98,7 @@ const PreHeader = ({isConsecutivePost, isFlagged, isPinned, skipFlaggedHeader, s
                 }
                 {isFlagged && !skipFlaggedHeader &&
                 <CompassIcon
-                    name='bookmark-outline'
+                    name='bookmark'
                     size={14}
                     style={style.icon}
                 />
