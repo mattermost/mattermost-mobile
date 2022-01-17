@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React from 'react';
-import {StyleProp, View, ViewStyle} from 'react-native';
+import {StyleProp, TextStyle, View, ViewStyle} from 'react-native';
 
 import FormattedText from '@components/formatted_text';
 import {useTheme} from '@context/theme';
@@ -16,14 +16,15 @@ type TagProps = {
     show?: boolean;
     style?: StyleProp<ViewStyle>;
     testID?: string;
+    textStyle?: StyleProp<TextStyle>;
 }
 
 const getStyleFromTheme = makeStyleSheetFromTheme((theme: Theme) => {
     return {
         container: {
             alignSelf: 'center',
-            backgroundColor: changeOpacity(theme.centerChannelColor, 0.15),
-            borderRadius: 2,
+            backgroundColor: changeOpacity(theme.centerChannelColor, 0.08),
+            borderRadius: 4,
             marginRight: 2,
             marginBottom: 1,
             marginLeft: 2,
@@ -68,7 +69,7 @@ export function GuestTag(props: Omit<TagProps, 'id' | 'defaultMessage'>) {
     );
 }
 
-const Tag = ({id, defaultMessage, inTitle, show = true, style, testID}: TagProps) => {
+const Tag = ({id, defaultMessage, inTitle, show = true, style, testID, textStyle}: TagProps) => {
     const theme = useTheme();
 
     if (!show) {
@@ -82,7 +83,7 @@ const Tag = ({id, defaultMessage, inTitle, show = true, style, testID}: TagProps
             <FormattedText
                 id={id}
                 defaultMessage={defaultMessage}
-                style={[styles.text, inTitle ? styles.title : null]}
+                style={[styles.text, inTitle ? styles.title : null, textStyle]}
                 testID={testID}
             />
         </View>

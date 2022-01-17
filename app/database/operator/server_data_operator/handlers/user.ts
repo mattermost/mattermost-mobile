@@ -59,7 +59,12 @@ const UserHandler = (superclass: any) => class extends superclass {
             );
         }
 
-        const createOrUpdateRawValues = getUniqueRawsBy({raws: channelMemberships, key: 'channel_id'});
+        const memberships: ChannelMember[] = channelMemberships.map((m) => ({
+            id: `${m.channel_id}-${m.user_id}`,
+            ...m,
+        }));
+
+        const createOrUpdateRawValues = getUniqueRawsBy({raws: memberships, key: 'id'});
 
         return this.handleRecords({
             fieldName: 'user_id',
@@ -87,33 +92,36 @@ const UserHandler = (superclass: any) => class extends superclass {
         }
 
         // WE NEED TO SYNC THE PREFS FROM WHAT WE GOT AND WHAT WE HAVE
-        const deleteRawValues: PreferenceType[] = [];
+        const deleteValues: PreferenceModel[] = [];
         if (sync) {
-            const stored = await this.database.get(PREFERENCE).fetch() as PreferenceModel[];
+            const stored = await this.database.get(PREFERENCE).query().fetch() as PreferenceModel[];
             for (const pref of stored) {
                 const exists = preferences.findIndex((p) => p.category === pref.category && p.name === pref.name) > -1;
                 if (!exists) {
-                    deleteRawValues.push({
-                        category: pref.category,
-                        name: pref.name,
-                        user_id: pref.userId,
-                        value: pref.value,
-                    });
+                    pref.prepareDestroyPermanently();
+                    deleteValues.push(pref);
                 }
             }
         }
 
-        const createOrUpdateRawValues = getUniqueRawsBy({raws: preferences, key: 'name'});
-
-        return this.handleRecords({
+        const records: PreferenceModel[] = await this.handleRecords({
             fieldName: 'user_id',
             findMatchingRecordBy: isRecordPreferenceEqualToRaw,
             transformer: transformPreferenceRecord,
-            prepareRecordsOnly,
-            createOrUpdateRawValues,
-            deleteRawValues,
+            prepareRecordsOnly: true,
+            createOrUpdateRawValues: preferences,
             tableName: PREFERENCE,
         });
+
+        if (deleteValues.length) {
+            records.push(...deleteValues);
+        }
+
+        if (records.length && !prepareRecordsOnly) {
+            await this.batchRecords(records);
+        }
+
+        return records;
     };
 
     /**

@@ -6,8 +6,12 @@ export const EMOJI_PICKER = 'AddReaction';
 export const APP_FORM = 'AppForm';
 export const BOTTOM_SHEET = 'BottomSheet';
 export const CHANNEL = 'Channel';
+export const CHANNEL_ADD_PEOPLE = 'ChannelAddPeople';
+export const CHANNEL_DETAILS = 'ChannelDetails';
+export const CHANNEL_EDIT = 'ChannelEdit';
 export const CUSTOM_STATUS_CLEAR_AFTER = 'CustomStatusClearAfter';
 export const CUSTOM_STATUS = 'CustomStatus';
+export const EDIT_PROFILE = 'EditProfile';
 export const FORGOT_PASSWORD = 'ForgotPassword';
 export const HOME = 'Home';
 export const INTEGRATION_SELECTOR = 'IntegrationSelector';
@@ -21,6 +25,7 @@ export const SERVER = 'Server';
 export const SETTINGS_SIDEBAR = 'SettingsSidebar';
 export const SSO = 'SSO';
 export const THREAD = 'Thread';
+export const USER_PROFILE = 'UserProfile';
 export const MENTIONS = 'Mentions';
 
 export default {
@@ -29,8 +34,12 @@ export default {
     APP_FORM,
     BOTTOM_SHEET,
     CHANNEL,
+    CHANNEL_ADD_PEOPLE,
+    CHANNEL_EDIT,
+    CHANNEL_DETAILS,
     CUSTOM_STATUS_CLEAR_AFTER,
     CUSTOM_STATUS,
+    EDIT_PROFILE,
     FORGOT_PASSWORD,
     HOME,
     INTEGRATION_SELECTOR,
@@ -44,5 +53,6 @@ export default {
     SETTINGS_SIDEBAR,
     SSO,
     THREAD,
+    USER_PROFILE,
     MENTIONS,
 };

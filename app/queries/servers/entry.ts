@@ -57,7 +57,7 @@ export const prepareModels = async ({operator, initialTeamId, removeTeams, remov
     }
 
     if (prefData?.preferences?.length) {
-        const prefModel = prepareMyPreferences(operator, prefData.preferences);
+        const prefModel = prepareMyPreferences(operator, prefData.preferences, true);
         if (prefModel) {
             modelPromises.push(prefModel);
         }

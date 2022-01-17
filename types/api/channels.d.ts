@@ -41,6 +41,11 @@ type ChannelWithTeamData = Channel & {
     team_name: string;
     team_update_at: number;
 }
+type ChannelMember = {
+    id?: string;
+    channel_id: string;
+    user_id: string;
+}
 type ChannelMembership = {
     id?: string;
     channel_id: string;
@@ -55,6 +60,7 @@ type ChannelMembership = {
     scheme_user?: boolean;
     scheme_admin?: boolean;
     post_root_id?: string;
+    is_unread?: boolean;
 };
 type ChannelUnread = {
     channel_id: string;

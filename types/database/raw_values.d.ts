@@ -99,6 +99,7 @@ type RawValue =
   | CategoryChannel
   | Channel
   | ChannelInfo
+  | ChannelMember
   | ChannelMembership
   | CustomEmoji
   | Draft
