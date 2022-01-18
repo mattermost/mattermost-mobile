@@ -180,54 +180,14 @@ export default function ChannelInfoForm({
     const [headerHasFocus, setHeaderHasFocus] = useState<boolean>(false);
     const [headerPosition, setHeaderPosition] = useState<number>();
 
-    const labelDisplayName = useMemo(() => {
-        return formatMessage({
-            id: t('channel_modal.name'),
-            defaultMessage: 'Name'},
-        );
-    }, [intl.locale]);
+    const optionalText = formatMessage({id: t('channel_modal.optional'), defaultMessage: '(optional)'});
+    const labelDisplayName = formatMessage({id: t('channel_modal.name'), defaultMessage: 'Name'});
+    const labelPurpose = formatMessage({id: t('channel_modal.purpose'), defaultMessage: 'Purpose'}) + ' ' + optionalText;
+    const labelHeader = formatMessage({id: t('channel_modal.header'), defaultMessage: 'Header'}) + ' ' + optionalText;
 
-    const optionalText = useMemo(() => {
-        return formatMessage({
-            id: t('channel_modal.optional'),
-            defaultMessage: '(optional)'},
-        );
-    }, [intl.locale]);
-
-    const labelPurpose = useMemo(() => {
-        return formatMessage({
-            id: t('channel_modal.purpose'),
-            defaultMessage: 'Purpose'},
-        ) + ' ' + optionalText;
-    }, [intl.locale]);
-
-    const labelHeader = useMemo(() => {
-        return formatMessage({
-            id: t('channel_modal.header'),
-            defaultMessage: 'Header'},
-        ) + ' ' + optionalText;
-    }, [intl.locale]);
-
-    const placeholderDisplayName = useMemo(() => {
-        return formatMessage({
-            id: t('channel_modal.nameEx'),
-            defaultMessage: 'E.g.: "Bugs", "Marketing", "客户支持"'},
-        );
-    }, [intl.locale]);
-
-    const placeholderPurpose = useMemo(() => {
-        return formatMessage({
-            id: t('channel_modal.purposeEx'),
-            defaultMessage: 'E.g.: "A channel to file bugs and improvements"'},
-        );
-    }, [intl.locale]);
-
-    const placeholderHeader = useMemo(() => {
-        return formatMessage({
-            id: t('channel_modal.headerEx'),
-            defaultMessage: 'E.g.: "[Link Title](http://example.com)"'},
-        );
-    }, [intl.locale]);
+    const placeholderDisplayName = formatMessage({id: t('channel_modal.nameEx'), defaultMessage: 'E.g.: "Bugs", "Marketing", "客户支持"'});
+    const placeholderPurpose = formatMessage({id: t('channel_modal.purposeEx'), defaultMessage: 'E.g.: "A channel to file bugs and improvements"'});
+    const placeholderHeader = formatMessage({id: t('channel_modal.headerEx'), defaultMessage: 'E.g.: "[Link Title](http://example.com)"'});
 
     const styles = getStyleSheet(theme);
 
