@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useState, useEffect, useReducer} from 'react';
+import React, {useState, useEffect, useReducer, useCallback, useMemo} from 'react';
 import {useIntl} from 'react-intl';
 import {
     Keyboard,
@@ -48,7 +48,6 @@ enum RequestActions {
 interface RequestState {
     error: string;
     saving: boolean;
-    rightButton: Button;
 }
 
 interface RequestAction {
@@ -70,6 +69,20 @@ const CreateOrEditChannel = ({serverUrl, componentId, channel, channelInfo}: Pro
     const {formatMessage} = intl;
     const theme = useTheme();
 
+    // if a channel was provided, we are editing a channel
+    const editing = Boolean(channel);
+
+    const rightButton = useMemo(() => {
+        return {
+            testID: 'edit_channel.save.button',
+            id: editing ? EDIT_CHANNEL_ID : CREATE_CHANNEL_ID,
+            enabled: false,
+            showAsAction: 'always',
+            color: theme.sidebarHeaderTextColor,
+            text: editing ? formatMessage({id: 'mobile.edit_channel', defaultMessage: 'Save'}) : formatMessage({id: 'mobile.create_channel', defaultMessage: 'Create'}),
+        };
+    }, [editing, theme.sidebarHeaderTextColor, intl.locale]);
+
     const [type, setType] = useState<ChannelType>(channel?.type as ChannelType || General.OPEN_CHANNEL);
 
     const [displayName, setDisplayName] = useState<string>(channel?.displayName || '');
@@ -79,9 +92,6 @@ const CreateOrEditChannel = ({serverUrl, componentId, channel, channelInfo}: Pro
     const isDirect = (): boolean => {
         return channel?.type === General.DM_CHANNEL || channel?.type === General.GM_CHANNEL;
     };
-
-    // if a channel was provided, we are editing a channel
-    const editing = Boolean(channel);
 
     const [appState, dispatch] = useReducer((state: RequestState, action: RequestAction) => {
         switch (action.type) {
@@ -110,67 +120,15 @@ const CreateOrEditChannel = ({serverUrl, componentId, channel, channelInfo}: Pro
     }, {
         error: '',
         saving: false,
-        rightButton: {
-            testID: 'edit_channel.save.button',
-            id: channel ? EDIT_CHANNEL_ID : CREATE_CHANNEL_ID,
-            enabled: false,
-            showAsAction: 'always',
-            color: theme.sidebarHeaderTextColor,
-            text: channel ? formatMessage({id: 'mobile.edit_channel', defaultMessage: 'Save'}) : formatMessage({id: 'mobile.create_channel', defaultMessage: 'Create'}),
-        },
     });
 
-    const emitCanSaveChannel = (enabled: boolean) => {
+    const emitCanSaveChannel = useCallback((enabled: boolean) => {
         setButtons(componentId, {
-            rightButtons: [{...appState.rightButton, enabled}] as never[],
+            rightButtons: [{...rightButton, enabled}] as never[],
         });
-    };
+    }, [rightButton, componentId]);
 
-    useEffect(() => {
-        const update = Navigation.events().registerComponentListener({
-            navigationButtonPressed: ({buttonId}: {buttonId: string}) => {
-                switch (buttonId) {
-                    case CLOSE_CHANNEL_ID:
-                        close(true);
-                        break;
-                    case CREATE_CHANNEL_ID:
-                        onCreateChannel();
-                        break;
-                    case EDIT_CHANNEL_ID:
-                        onUpdateChannel();
-                        break;
-                }
-            },
-        }, componentId);
-
-        return () => {
-            update.remove();
-        };
-    }, [displayName, header, purpose]);
-
-    const onTypeChange = (typeText: ChannelType) => {
-        setType(typeText);
-    };
-
-    const isValidDisplayName = (): boolean => {
-        if (isDirect()) {
-            return true;
-        }
-
-        const dName = displayName || '';
-        const result = validateDisplayName(intl, dName);
-        if (result.error) {
-            dispatch({
-                type: RequestActions.FAILURE,
-                error: result.error,
-            });
-            emitCanSaveChannel(false);
-            return false;
-        }
-        return true;
-    };
-
-    const onCreateChannel = async () => {
+    const onCreateChannel = useCallback(async () => {
         dispatch({type: RequestActions.START});
         Keyboard.dismiss();
         emitCanSaveChannel(true);
@@ -191,9 +149,9 @@ const CreateOrEditChannel = ({serverUrl, componentId, channel, channelInfo}: Pro
         emitCanSaveChannel(false);
         close(true);
         switchToChannel(serverUrl, createdChannel!.channel!.id);
-    };
+    }, [emitCanSaveChannel, displayName, header, purpose]);
 
-    const onUpdateChannel = async () => {
+    const onUpdateChannel = useCallback(async () => {
         dispatch({type: RequestActions.START});
         Keyboard.dismiss();
         emitCanSaveChannel(true);
@@ -221,6 +179,50 @@ const CreateOrEditChannel = ({serverUrl, componentId, channel, channelInfo}: Pro
         dispatch({type: RequestActions.COMPLETE});
         emitCanSaveChannel(false);
         close(true);
+    }, [channel?.id, channel?.type, emitCanSaveChannel, displayName, header, purpose]);
+
+    useEffect(() => {
+        const update = Navigation.events().registerComponentListener({
+            navigationButtonPressed: ({buttonId}: {buttonId: string}) => {
+                switch (buttonId) {
+                    case CLOSE_CHANNEL_ID:
+                        close(true);
+                        break;
+                    case CREATE_CHANNEL_ID:
+                        onCreateChannel();
+                        break;
+                    case EDIT_CHANNEL_ID:
+                        onUpdateChannel();
+                        break;
+                }
+            },
+        }, componentId);
+
+        return () => {
+            update.remove();
+        };
+    }, [onCreateChannel, onUpdateChannel]);
+
+    const onTypeChange = useCallback((typeText: ChannelType) => {
+        setType(typeText);
+    }, []);
+
+    const isValidDisplayName = (): boolean => {
+        if (isDirect()) {
+            return true;
+        }
+
+        const dName = displayName || '';
+        const result = validateDisplayName(intl, dName);
+        if (result.error) {
+            dispatch({
+                type: RequestActions.FAILURE,
+                error: result.error,
+            });
+            emitCanSaveChannel(false);
+            return false;
+        }
+        return true;
     };
 
     return (
