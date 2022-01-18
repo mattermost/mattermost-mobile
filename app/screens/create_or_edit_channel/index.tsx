@@ -30,15 +30,6 @@ const CLOSE_CHANNEL_ID = 'close-channel';
 const EDIT_CHANNEL_ID = 'update-channel';
 const CREATE_CHANNEL_ID = 'create-channel';
 
-type Button = {
-    testID: string;
-    id: string;
-    enabled: boolean;
-    showAsAction: string;
-    color: string;
-    text: string;
-};
-
 enum RequestActions {
     START = 'Start',
     COMPLETE = 'Complete',
@@ -122,7 +113,7 @@ const CreateOrEditChannel = ({serverUrl, componentId, channel, channelInfo}: Pro
         saving: false,
     });
 
-    const emitCanSaveChannel = useCallback((enabled: boolean) => {
+    const enableRightButton = useCallback((enabled: boolean) => {
         setButtons(componentId, {
             rightButtons: [{...rightButton, enabled}] as never[],
         });
@@ -131,7 +122,7 @@ const CreateOrEditChannel = ({serverUrl, componentId, channel, channelInfo}: Pro
     const onCreateChannel = useCallback(async () => {
         dispatch({type: RequestActions.START});
         Keyboard.dismiss();
-        emitCanSaveChannel(true);
+        enableRightButton(true);
         if (!isValidDisplayName()) {
             return;
         }
@@ -142,19 +133,19 @@ const CreateOrEditChannel = ({serverUrl, componentId, channel, channelInfo}: Pro
                 type: RequestActions.FAILURE,
                 error: createdChannel.error as string,
             });
-            emitCanSaveChannel(false);
+            enableRightButton(false);
             return;
         }
         dispatch({type: RequestActions.COMPLETE});
-        emitCanSaveChannel(false);
+        enableRightButton(false);
         close(true);
         switchToChannel(serverUrl, createdChannel!.channel!.id);
-    }, [emitCanSaveChannel, displayName, header, purpose]);
+    }, [enableRightButton, displayName, header, purpose]);
 
     const onUpdateChannel = useCallback(async () => {
         dispatch({type: RequestActions.START});
         Keyboard.dismiss();
-        emitCanSaveChannel(true);
+        enableRightButton(true);
         if (!isValidDisplayName()) {
             return;
         }
@@ -173,13 +164,13 @@ const CreateOrEditChannel = ({serverUrl, componentId, channel, channelInfo}: Pro
                 type: RequestActions.FAILURE,
                 error: patchedChannel.error as string,
             });
-            emitCanSaveChannel(false);
+            enableRightButton(false);
             return;
         }
         dispatch({type: RequestActions.COMPLETE});
-        emitCanSaveChannel(false);
+        enableRightButton(false);
         close(true);
-    }, [channel?.id, channel?.type, emitCanSaveChannel, displayName, header, purpose]);
+    }, [channel?.id, channel?.type, enableRightButton, displayName, header, purpose]);
 
     useEffect(() => {
         const update = Navigation.events().registerComponentListener({
@@ -219,7 +210,7 @@ const CreateOrEditChannel = ({serverUrl, componentId, channel, channelInfo}: Pro
                 type: RequestActions.FAILURE,
                 error: result.error,
             });
-            emitCanSaveChannel(false);
+            enableRightButton(false);
             return false;
         }
         return true;
@@ -228,7 +219,7 @@ const CreateOrEditChannel = ({serverUrl, componentId, channel, channelInfo}: Pro
     return (
         <ChannelInfoForm
             testID='create_or_edit_channel.screen'
-            enableRightButton={emitCanSaveChannel}
+            enableRightButton={enableRightButton}
             error={appState.error}
             saving={appState.saving}
             channelType={channel?.type}

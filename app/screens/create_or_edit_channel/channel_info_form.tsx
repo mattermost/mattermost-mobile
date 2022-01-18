@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useState, useRef} from 'react';
+import React, {useState, useRef, useMemo, useCallback} from 'react';
 import {useIntl} from 'react-intl';
 import {
     LayoutChangeEvent,
@@ -166,6 +166,7 @@ export default function ChannelInfoForm({
 }: Props) {
     const theme = useTheme();
     const intl = useIntl();
+    const {formatMessage} = intl;
 
     const nameInput = useRef<TextInput>(null);
     const purposeInput = useRef<TextInput>(null);
@@ -178,6 +179,60 @@ export default function ChannelInfoForm({
 
     const [headerHasFocus, setHeaderHasFocus] = useState<boolean>(false);
     const [headerPosition, setHeaderPosition] = useState<number>();
+
+    const labelDisplayName = useMemo(() => {
+        return formatMessage({
+            id: t('channel_modal.name'),
+            defaultMessage: 'Name'},
+        );
+    }, [intl.locale]);
+
+    const optionalText = useMemo(() => {
+        return formatMessage({
+            id: t('channel_modal.optional'),
+            defaultMessage: '(optional)'},
+        );
+    }, [intl.locale]);
+
+    const labelPurpose = useMemo(() => {
+        return formatMessage({
+            id: t('channel_modal.purpose'),
+            defaultMessage: 'Purpose'},
+        ) + ' ' + optionalText;
+    }, [intl.locale]);
+
+    const labelHeader = useMemo(() => {
+        return formatMessage({
+            id: t('channel_modal.header'),
+            defaultMessage: 'Header'},
+        ) + ' ' + optionalText;
+    }, [intl.locale]);
+
+    const placeholderDisplayName = useMemo(() => {
+        return formatMessage({
+            id: t('channel_modal.nameEx'),
+            defaultMessage: 'E.g.: "Bugs", "Marketing", "客户支持"'},
+        );
+    }, [intl.locale]);
+
+    const placeholderPurpose = useMemo(() => {
+        return formatMessage({
+            id: t('channel_modal.purposeEx'),
+            defaultMessage: 'E.g.: "A channel to file bugs and improvements"'},
+        );
+    }, [intl.locale]);
+
+    const placeholderHeader = useMemo(() => {
+        return formatMessage({
+            id: t('channel_modal.headerEx'),
+            defaultMessage: 'E.g.: "[Link Title](http://example.com)"'},
+        );
+    }, [intl.locale]);
+
+    const styles = getStyleSheet(theme);
+
+    const displayHeaderOnly = channelType === General.DM_CHANNEL || channelType === General.GM_CHANNEL;
+    const showSelector = !displayHeaderOnly && !editing;
 
     const blur = () => {
         if (nameInput?.current) {
@@ -201,7 +256,7 @@ export default function ChannelInfoForm({
             currentPurpose !== oldPurpose || currentHeader !== oldHeader;
     };
 
-    const onDisplayNameChangeText = (text: string) => {
+    const onDisplayNameChangeText = useCallback((text: string) => {
         onDisplayNameChange(text);
         if (editing) {
             enableRightButton(canUpdate(text, purpose, header));
@@ -209,21 +264,21 @@ export default function ChannelInfoForm({
         }
         const displayNameExists = text?.length >= 2;
         enableRightButton(displayNameExists);
-    };
+    }, [purpose, header]);
 
-    const onPurposeChangeText = (text: string) => {
+    const onPurposeChangeText = useCallback((text: string) => {
         onPurposeChange(text);
         if (editing) {
             enableRightButton(canUpdate(displayName, text, header));
         }
-    };
+    }, [displayName, header]);
 
-    const onHeaderChangeText = (text: string) => {
+    const onHeaderChangeText = useCallback((text: string) => {
         onHeaderChange(text);
         if (editing) {
             enableRightButton(canUpdate(displayName, purpose, text));
         }
-    };
+    }, [displayName, purpose]);
 
     const onTypeSelect = (text: ChannelType) => {
         onTypeChange(text);
@@ -260,11 +315,6 @@ export default function ChannelInfoForm({
             setHeaderHasFocus(true);
         }
     };
-
-    const styles = getStyleSheet(theme);
-
-    const displayHeaderOnly = channelType === General.DM_CHANNEL || channelType === General.GM_CHANNEL;
-    const showSelector = !displayHeaderOnly && !editing;
 
     if (saving) {
         return (
@@ -373,8 +423,8 @@ export default function ChannelInfoForm({
                                     blurOnSubmit={false}
                                     disableFullscreenUI={true}
                                     enablesReturnKeyAutomatically={true}
-                                    label='Name'
-                                    placeholder={intl.formatMessage({id: t('channel_modal.nameEx'), defaultMessage: 'E.g.: "Bugs", "Marketing", "客户支持"'})}
+                                    label={labelDisplayName}
+                                    placeholder={placeholderDisplayName}
                                     onChangeText={onDisplayNameChangeText}
                                     maxLength={Channel.MAX_CHANNELNAME_LENGTH}
                                     keyboardAppearance={getKeyboardAppearanceFromTheme(theme)}
@@ -393,8 +443,8 @@ export default function ChannelInfoForm({
                                     blurOnSubmit={false}
                                     disableFullscreenUI={true}
                                     enablesReturnKeyAutomatically={true}
-                                    label='Purpose (optional)'
-                                    placeholder={intl.formatMessage({id: t('channel_modal.purposeEx'), defaultMessage: 'E.g.: "A channel to file bugs and improvements"'})}
+                                    label={labelPurpose}
+                                    placeholder={placeholderPurpose}
                                     onChangeText={onPurposeChangeText}
                                     maxLength={Channel.MAX_CHANNELNAME_LENGTH}
                                     keyboardAppearance={getKeyboardAppearanceFromTheme(theme)}
@@ -424,8 +474,8 @@ export default function ChannelInfoForm({
                                 blurOnSubmit={false}
                                 disableFullscreenUI={true}
                                 enablesReturnKeyAutomatically={true}
-                                label='Header (optional)'
-                                placeholder={intl.formatMessage({id: t('channel_modal.headerEx'), defaultMessage: 'E.g.: "[Link Title](http://example.com)"'})}
+                                label={labelHeader}
+                                placeholder={placeholderHeader}
                                 onChangeText={onHeaderChangeText}
                                 maxLength={Channel.MAX_CHANNELNAME_LENGTH}
                                 multiline={true}
