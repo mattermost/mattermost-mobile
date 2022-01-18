@@ -1,8 +1,10 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {Q} from '@nozbe/watermelondb';
 import Model from '@nozbe/watermelondb/Model';
 
+import {MyChannelModel} from '@app/database/models/server';
 import {ActionType, Database} from '@constants';
 import DataOperatorException from '@database/exceptions/data_operator_exception';
 import {isRecordDraftEqualToRaw, isRecordFileEqualToRaw, isRecordPostEqualToRaw} from '@database/operator/server_data_operator/comparators';
@@ -26,6 +28,7 @@ const {
     DRAFT,
     FILE,
     POST,
+    MY_CHANNEL,
 } = Database.MM_TABLES.SERVER;
 
 export interface PostHandlerMix {
@@ -194,6 +197,27 @@ const PostHandler = (superclass: any) => class extends superclass {
             const postsInThreads = await this.handlePostsInThread(postsInThread, actionType as never, true);
             if (postsInThreads.length) {
                 batch.push(...postsInThreads);
+            }
+        }
+
+        // Update all the lastPostAt neeeded
+        const channelsLastPostAt: {[id: string]: number} = {};
+        for (const post of posts) {
+            const lastPostAt = channelsLastPostAt[post.channel_id] || 0;
+            if (lastPostAt < post.create_at) {
+                channelsLastPostAt[post.channel_id] = post.create_at;
+            }
+        }
+        const members = (await this.database.get(MY_CHANNEL).query(
+            Q.where('channel_id', Q.oneOf(Object.keys(channelsLastPostAt))),
+        ).fetch()) as MyChannelModel[];
+        for (const member of members) {
+            const channelId = member.channel.id || '';
+            const lastPostAt = channelsLastPostAt[channelId];
+            if (member.lastPostAt < lastPostAt) {
+                batch.push(member.prepareUpdate((m) => {
+                    m.lastPostAt = lastPostAt;
+                }));
             }
         }
 

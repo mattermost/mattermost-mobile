@@ -1,15 +1,14 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {Model, Q} from '@nozbe/watermelondb';
+import {Model} from '@nozbe/watermelondb';
 import {DeviceEventEmitter} from 'react-native';
 
-import {storeMyChannelsForTeam, markChannelAsUnread, markChannelAsViewed, updateLastPostAt} from '@actions/local/channel';
+import {storeMyChannelsForTeam, markChannelAsUnread, markChannelAsViewed} from '@actions/local/channel';
 import {markPostAsDeleted} from '@actions/local/post';
 import {fetchMyChannel, markChannelAsRead} from '@actions/remote/channel';
 import {fetchPostAuthors, fetchPostById} from '@actions/remote/post';
 import {ActionType, Events} from '@constants';
-import {MM_TABLES} from '@constants/database';
 import DatabaseManager from '@database/manager';
 import {queryMyChannel} from '@queries/servers/channel';
 import {queryPostById} from '@queries/servers/post';
@@ -17,8 +16,6 @@ import {queryCurrentChannelId, queryCurrentUserId} from '@queries/servers/system
 import {isFromWebhook, isSystemMessage, shouldIgnorePost} from '@utils/post';
 
 import type {WebSocketMessage} from '@typings/api/websocket';
-
-const {SERVER: {POST}} = MM_TABLES;
 
 export async function handleNewPostEvent(serverUrl: string, msg: WebSocketMessage) {
     const database = DatabaseManager.serverDatabases[serverUrl];
@@ -35,7 +32,8 @@ export async function handleNewPostEvent(serverUrl: string, msg: WebSocketMessag
         return;
     }
 
-    database.operator.handlePosts({
+    // We need to await for this to make sure the channel membership has the correct lastPostAt
+    await database.operator.handlePosts({
         actionType: ActionType.POSTS.RECEIVED_NEW,
         order: [post.id],
         posts: [post],
@@ -79,23 +77,24 @@ export async function handleNewPostEvent(serverUrl: string, msg: WebSocketMessag
             channelId: post.channel_id,
             rootId: post.root_id,
             userId: post.user_id,
-            username: '',
             now: Date.now(),
         };
         DeviceEventEmitter.emit(Events.USER_STOP_TYPING, data);
     }
 
-    fetchPostAuthors(serverUrl, [post]);
+    const {authors} = await fetchPostAuthors(serverUrl, [post], true);
+    if (authors?.length) {
+        const authorsModels = await database.operator.handleUsers({users: authors, prepareRecordsOnly: true});
+        if (authorsModels.length) {
+            models.push(...authorsModels);
+        }
+    }
 
+    // TODO Thread related functionality: https://mattermost.atlassian.net/browse/MM-41084
     //const viewingGlobalThreads = getViewingGlobalThreads(state);
     // const collapsedThreadsEnabled = isCollapsedThreadsEnabled(state);
     // actions.push(receivedNewPost(post, collapsedThreadsEnabled));
-    if (shouldIgnorePost(post)) {
-        const {member} = await updateLastPostAt(serverUrl, post.channel_id, post.create_at, true);
-        if (member) {
-            models.push(member);
-        }
-    } else {
+    if (!shouldIgnorePost(post)) {
         let markAsViewed = false;
         let markAsRead = false;
 
@@ -117,18 +116,14 @@ export async function handleNewPostEvent(serverUrl: string, msg: WebSocketMessag
 
         if (markAsRead) {
             markChannelAsRead(serverUrl, post.channel_id);
-            const {member} = await updateLastPostAt(serverUrl, post.channel_id, post.create_at, true);
-            if (member) {
-                models.push(member);
-            }
         } else if (markAsViewed) {
-            const {member: viewedAt} = await markChannelAsViewed(serverUrl, post.channel_id, post.create_at, true);
+            const {member: viewedAt} = await markChannelAsViewed(serverUrl, post.channel_id, true);
             if (viewedAt) {
                 models.push(viewedAt);
             }
         } else {
             const hasMentions = msg.data.mentions.includes(currentUserId);
-            const {member: unreadAt} = await markChannelAsUnread(serverUrl, post.channel_id, myChannel.messageCount + 1, myChannel.mentionsCount + (hasMentions ? 1 : 0), false, post.create_at, undefined, true);
+            const {member: unreadAt} = await markChannelAsUnread(serverUrl, post.channel_id, myChannel.messageCount + 1, myChannel.mentionsCount + (hasMentions ? 1 : 0), false, myChannel.lastViewedAt, true);
             if (unreadAt) {
                 models.push(unreadAt);
             }
@@ -146,17 +141,32 @@ export async function handlePostEdited(serverUrl: string, msg: WebSocketMessage)
 
     const post: Post = JSON.parse(msg.data.post);
 
+    const models: Model[] = [];
     try {
-        fetchPostAuthors(serverUrl, [post]);
+        const {authors} = await fetchPostAuthors(serverUrl, [post], true);
+        if (authors?.length) {
+            const authorsModels = await database.operator.handleUsers({users: authors, prepareRecordsOnly: true});
+            if (authorsModels.length) {
+                models.push(...authorsModels);
+            }
+        }
     } catch {
         // Do nothing
     }
 
-    database.operator.handlePosts({
+    const postModels = await database.operator.handlePosts({
         actionType: ActionType.POSTS.RECEIVED_NEW,
         order: [post.id],
         posts: [post],
+        prepareRecordsOnly: true,
     });
+    if (postModels.length) {
+        models.push(...postModels);
+    }
+
+    if (models.length) {
+        database.operator.batchRecords(models);
+    }
 }
 
 export function handlePostDeleted(serverUrl: string, msg: WebSocketMessage) {
@@ -171,7 +181,9 @@ export async function handlePostUnread(serverUrl: string, msg: WebSocketMessage)
         return;
     }
 
-    const postNumber = await database.database.get(POST).query(Q.where('channel_id', msg.broadcast.channel_id)).fetchCount();
-    const delta = postNumber - msg.data.msg_count;
-    markChannelAsUnread(serverUrl, msg.broadcast.channel_id, delta, msg.data.mention_count, true, undefined, msg.data.last_viewed_at);
+    const {channels} = await fetchMyChannel(serverUrl, msg.broadcast.team_id, msg.broadcast.channel_id, true);
+    const channel = channels?.[0];
+    const postNumber = channel?.total_msg_count;
+    const delta = postNumber ? postNumber - msg.data.msg_count : msg.data.msg_count;
+    markChannelAsUnread(serverUrl, msg.broadcast.channel_id, delta, msg.data.mention_count, true, msg.data.last_viewed_at);
 }
