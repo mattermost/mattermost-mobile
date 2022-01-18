@@ -1,9 +1,9 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {ReactNode, useRef} from 'react';
+import React, {ReactNode, useMemo, useRef} from 'react';
 import {useIntl} from 'react-intl';
-import {DeviceEventEmitter, Keyboard, StyleProp, View, ViewStyle} from 'react-native';
+import {DeviceEventEmitter, Keyboard, Platform, StyleProp, View, ViewStyle} from 'react-native';
 
 import {showPermalink} from '@actions/local/permalink';
 import {removePost} from '@actions/local/post';
@@ -34,8 +34,9 @@ type PostProps = {
     currentUser: UserModel;
     differentThreadSequence: boolean;
     files: FileModel[];
+    hasReplies: boolean;
     highlight?: boolean;
-    highlightPinnedOrFlagged?: boolean;
+    highlightPinnedOrSaved?: boolean;
     highlightReplyBar: boolean;
     isConsecutivePost?: boolean;
     isEphemeral: boolean;
@@ -46,6 +47,7 @@ type PostProps = {
     isPostAddChannelMember: boolean;
     location: string;
     post: PostModel;
+    previousPost?: PostModel;
     reactionsCount: number;
     shouldRenderReplyButton?: boolean;
     showAddReaction?: boolean;
@@ -61,7 +63,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
         consecutivePostContainer: {
             marginBottom: 10,
             marginRight: 10,
-            marginLeft: 27,
+            marginLeft: Platform.select({ios: 35, android: 34}),
             marginTop: 10,
         },
         container: {flexDirection: 'row'},
@@ -70,27 +72,20 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             backgroundColor: theme.mentionHighlightBg,
             opacity: 1,
         },
-        highlightPinnedOrFlagged: {backgroundColor: changeOpacity(theme.mentionHighlightBg, 0.2)},
+        highlightPinnedOrSaved: {
+            backgroundColor: changeOpacity(theme.mentionHighlightBg, 0.2),
+        },
         pendingPost: {opacity: 0.5},
         postStyle: {
             overflow: 'hidden',
             flex: 1,
+            paddingHorizontal: 20,
         },
         profilePictureContainer: {
             marginBottom: 5,
             marginRight: 10,
             marginTop: 10,
         },
-        replyBar: {
-            backgroundColor: theme.centerChannelColor,
-            opacity: 0.1,
-            marginLeft: 1,
-            marginRight: 7,
-            width: 3,
-            flexBasis: 3,
-        },
-        replyBarFirst: {paddingTop: 10},
-        replyBarLast: {paddingBottom: 10},
         rightColumn: {
             flex: 1,
             flexDirection: 'column',
@@ -100,10 +95,10 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
 });
 
 const Post = ({
-    appsEnabled, canDelete, currentUser, differentThreadSequence, files, highlight, highlightPinnedOrFlagged = true, highlightReplyBar,
+    appsEnabled, canDelete, currentUser, differentThreadSequence, files, hasReplies, highlight, highlightPinnedOrSaved = true, highlightReplyBar,
     isConsecutivePost, isEphemeral, isFirstReply, isFlagged, isJumboEmoji, isLastReply, isPostAddChannelMember,
     location, post, reactionsCount, shouldRenderReplyButton, skipFlaggedHeader, skipPinnedHeader, showAddReaction = true, style,
-    testID,
+    testID, previousPost,
 }: PostProps) => {
     const pressDetected = useRef(false);
     const intl = useIntl();
@@ -114,6 +109,17 @@ const Post = ({
     const isPendingOrFailed = isPostPendingOrFailed(post);
     const isSystemPost = isSystemMessage(post);
     const isWebHook = isFromWebhook(post);
+    const hasSameRoot = useMemo(() => {
+        if (isFirstReply) {
+            return false;
+        } else if (!post.rootId && !previousPost?.rootId && isConsecutivePost) {
+            return true;
+        } else if (post.rootId) {
+            return true;
+        }
+
+        return false;
+    }, [isConsecutivePost, post, previousPost, isFirstReply]);
 
     const handlePress = preventDoubleTap(() => {
         pressDetected.current = true;
@@ -179,14 +185,15 @@ const Post = ({
     let highlightedStyle: StyleProp<ViewStyle>;
     if (highlight) {
         highlightedStyle = styles.highlight;
-    } else if ((highlightFlagged || hightlightPinned) && highlightPinnedOrFlagged) {
-        highlightedStyle = styles.highlightPinnedOrFlagged;
+    } else if ((highlightFlagged || hightlightPinned) && highlightPinnedOrSaved) {
+        highlightedStyle = styles.highlightPinnedOrSaved;
     }
 
     let header: ReactNode;
     let postAvatar: ReactNode;
     let consecutiveStyle: StyleProp<ViewStyle>;
-    if (isConsecutivePost) {
+    const sameSecuence = hasReplies ? (hasReplies && post.rootId) : !post.rootId;
+    if (hasSameRoot && isConsecutivePost && sameSecuence) {
         consecutiveStyle = styles.consective;
         postAvatar = <View style={styles.consecutivePostContainer}/>;
     } else {

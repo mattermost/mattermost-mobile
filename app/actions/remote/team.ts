@@ -2,16 +2,18 @@
 // See LICENSE.txt for license information.
 
 import {Model} from '@nozbe/watermelondb';
+import {DeviceEventEmitter} from 'react-native';
 
-import {localRemoveUserFromTeam} from '@actions/local/team';
+import {removeUserFromTeam as localRemoveUserFromTeam} from '@actions/local/team';
+import {Events} from '@constants';
 import DatabaseManager from '@database/manager';
 import NetworkManager from '@init/network_manager';
 import {prepareMyChannelsForTeam, queryDefaultChannelForTeam} from '@queries/servers/channel';
-import {queryWebSocketLastDisconnected} from '@queries/servers/system';
-import {prepareDeleteTeam, prepareMyTeams, queryTeamsById, syncTeamTable} from '@queries/servers/team';
+import {prepareCommonSystemValues, queryCurrentTeamId, queryWebSocketLastDisconnected} from '@queries/servers/system';
+import {addTeamToTeamHistory, prepareDeleteTeam, prepareMyTeams, queryLastChannelFromTeam, queryTeamsById, syncTeamTable} from '@queries/servers/team';
 import {isTablet} from '@utils/helpers';
 
-import {fetchMyChannelsForTeam} from './channel';
+import {fetchMyChannelsForTeam, switchToChannelById} from './channel';
 import {fetchPostsForChannel, fetchPostsForUnreadChannels} from './post';
 import {fetchRolesIfNeeded} from './role';
 import {forceLogoutIfNecessary} from './session';
@@ -250,11 +252,53 @@ export const removeUserFromTeam = async (serverUrl: string, teamId: string, user
 
         if (!fetchOnly) {
             localRemoveUserFromTeam(serverUrl, teamId);
+            fetchAllTeams(serverUrl);
         }
 
         return {error: undefined};
     } catch (error) {
         forceLogoutIfNecessary(serverUrl, error as ClientError);
         return {error};
+    }
+};
+
+export const handleTeamChange = async (serverUrl: string, teamId: string) => {
+    const {operator, database} = DatabaseManager.serverDatabases[serverUrl];
+    const currentTeamId = await queryCurrentTeamId(database);
+
+    if (currentTeamId === teamId) {
+        return;
+    }
+
+    let channelId = '';
+    if (await isTablet()) {
+        channelId = await queryLastChannelFromTeam(database, teamId);
+        if (channelId) {
+            await switchToChannelById(serverUrl, channelId, teamId);
+            return;
+        }
+    }
+
+    const models = [];
+    const system = await prepareCommonSystemValues(operator, {currentChannelId: channelId, currentTeamId: teamId});
+    if (system?.length) {
+        models.push(...system);
+    }
+    const history = await addTeamToTeamHistory(operator, teamId, true);
+    if (history.length) {
+        models.push(...history);
+    }
+
+    if (models.length) {
+        await operator.batchRecords(models);
+    }
+
+    const {channels, memberships, error} = await fetchMyChannelsForTeam(serverUrl, teamId);
+    if (error) {
+        DeviceEventEmitter.emit(Events.TEAM_LOAD_ERROR, serverUrl, error);
+    }
+
+    if (channels?.length && memberships?.length) {
+        fetchPostsForUnreadChannels(serverUrl, channels, memberships, channelId);
     }
 };

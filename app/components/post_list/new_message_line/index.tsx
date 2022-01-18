@@ -4,6 +4,7 @@
 import React from 'react';
 import {StyleProp, View, ViewStyle} from 'react-native';
 
+import {typography} from '@app/utils/typography';
 import FormattedText from '@components/formatted_text';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 
@@ -13,6 +14,30 @@ type NewMessagesLineProps = {
     theme: Theme;
     testID?: string;
 }
+
+const getStyleFromTheme = makeStyleSheetFromTheme((theme: Theme) => {
+    return {
+        container: {
+            alignItems: 'center',
+            flexDirection: 'row',
+            height: 28,
+            paddingHorizontal: 20,
+        },
+        textContainer: {
+            marginHorizontal: 15,
+        },
+        line: {
+            flex: 1,
+            height: 1,
+            backgroundColor: theme.newMessageSeparator,
+        },
+        text: {
+            color: theme.newMessageSeparator,
+            marginHorizontal: 4,
+            ...typography('Body', 75, 'SemiBold'),
+        },
+    };
+});
 
 function NewMessagesLine({moreMessages, style, testID, theme}: NewMessagesLineProps) {
     const styles = getStyleFromTheme(theme);
@@ -47,28 +72,5 @@ function NewMessagesLine({moreMessages, style, testID, theme}: NewMessagesLinePr
         </View>
     );
 }
-
-const getStyleFromTheme = makeStyleSheetFromTheme((theme: Theme) => {
-    return {
-        container: {
-            alignItems: 'center',
-            flexDirection: 'row',
-            height: 28,
-        },
-        textContainer: {
-            marginHorizontal: 15,
-        },
-        line: {
-            flex: 1,
-            height: 1,
-            backgroundColor: theme.newMessageSeparator,
-        },
-        text: {
-            lineHeight: 16,
-            fontSize: 12,
-            color: theme.newMessageSeparator,
-        },
-    };
-});
 
 export default NewMessagesLine;

@@ -32,13 +32,13 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         paddingBottom: 8,
     },
-    rightColumn: {
-        flex: 1,
-        flexDirection: 'column',
-        marginRight: 12,
-    },
     message: {
         flex: 1,
+    },
+    profilePictureContainer: {
+        marginBottom: 5,
+        marginRight: 10,
+        marginTop: 10,
     },
 });
 
@@ -50,14 +50,18 @@ function Mention({post, currentUser}: Props) {
     const isWebHook = isFromWebhook(post);
     const isEdited = postEdited(post);
 
-    const postAvatar = isAutoResponder ? (
-        <SystemAvatar theme={theme}/>
-    ) : (
-        <Avatar
-            isAutoReponse={isAutoResponder}
-            isSystemPost={isSystemPost}
-            post={post}
-        />
+    const postAvatar = (
+        <View style={[styles.profilePictureContainer]}>
+            {isAutoResponder ? (
+                <SystemAvatar theme={theme}/>
+            ) : (
+                <Avatar
+                    isAutoReponse={isAutoResponder}
+                    isSystemPost={isSystemPost}
+                    post={post}
+                />
+            )}
+        </View>
     );
 
     const header = isSystemPost && !isAutoResponder ? (
@@ -85,7 +89,7 @@ function Mention({post, currentUser}: Props) {
             <ChannelInfo post={post}/>
             <View style={styles.content}>
                 {postAvatar}
-                <View style={styles.rightColumn}>
+                <View>
                     {header}
                     <View style={styles.message}>
                         <Message

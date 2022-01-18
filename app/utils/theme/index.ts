@@ -93,6 +93,7 @@ export function concatStyles<T>(...styles: T[]) {
 }
 
 export function setNavigatorStyles(componentId: string, theme: Theme, additionalOptions: Options = {}, statusBarColor?: string) {
+    const isDark = tinyColor(statusBarColor || theme.sidebarBg).isDark();
     const options: Options = {
         topBar: {
             title: {
@@ -106,6 +107,7 @@ export function setNavigatorStyles(componentId: string, theme: Theme, additional
         },
         statusBar: {
             backgroundColor: theme.sidebarBg,
+            style: isDark ? 'light' : 'dark',
         },
         layout: {
             componentBackgroundColor: theme.centerChannelBg,
@@ -117,7 +119,6 @@ export function setNavigatorStyles(componentId: string, theme: Theme, additional
             color: theme.sidebarHeaderTextColor,
         };
     }
-    const isDark = tinyColor(statusBarColor || theme.sidebarBg).isDark();
     StatusBar.setBarStyle(isDark ? 'light-content' : 'dark-content');
 
     const mergeOptions = {
