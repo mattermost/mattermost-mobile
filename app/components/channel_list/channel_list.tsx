@@ -13,6 +13,7 @@ import Categories from './categories';
 import ChannelListHeader from './header';
 import LoadingError from './loading_error';
 import SearchField from './search';
+import Threads from './threads';
 
 // import Loading from '@components/loading';
 
@@ -66,6 +67,7 @@ const ChannelList = ({iconPad, isTablet, teamsCount, currentTeamId, currentUserI
             {showCats && (
                 <>
                     <SearchField/>
+                    <Threads/>
                     <Categories
                         currentTeamId={currentTeamId}
                         currentUserId={currentUserId}

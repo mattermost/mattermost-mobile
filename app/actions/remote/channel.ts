@@ -161,8 +161,6 @@ export const fetchMyChannelsForTeam = async (serverUrl: string, teamId: string, 
             client.getMyChannelMembers(teamId),
         ]);
 
-        console.log(' --- > CATEGORIES');
-
         if (excludeDirect) {
             channels = channels.filter((c) => c.type !== General.GM_CHANNEL && c.type !== General.DM_CHANNEL);
         }

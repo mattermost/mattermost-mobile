@@ -3,11 +3,17 @@
 
 import React from 'react';
 import {StyleSheet, Text, View} from 'react-native';
+import {TouchableOpacity} from 'react-native-gesture-handler';
 
+import {switchToChannel} from '@actions/local/channel';
+import ChannelIcon from '@app/components/channel_icon';
+import {useServerUrl} from '@app/context/server';
 import CompassIcon from '@components/compass_icon';
 import {useTheme} from '@context/theme';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
+
+import type ChannelModel from '@typings/database/models/servers/channel';
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     container: {
@@ -20,7 +26,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         color: changeOpacity(theme.sidebarText, 0.72),
     },
     text: {
-        marginTop: 1,
+        marginTop: -1,
         color: changeOpacity(theme.sidebarText, 0.72),
         paddingLeft: 12,
     },
@@ -35,40 +41,39 @@ const textStyle = StyleSheet.create({
 });
 
 type Props = {
-    unreadCount?: number;
-    highlight?: boolean;
-    name: string;
-    icon: string;
+    channel: ChannelModel;
 }
 
-const ChannelListItem = (props: Props) => {
+const ChannelListItem = ({channel}: Props) => {
     const theme = useTheme();
     const styles = getStyleSheet(theme);
+    const serverUrl = useServerUrl();
 
-    const {unreadCount, highlight, name, icon} = props;
+    // const {unreadCount, highlight, name, icon} = props;
 
     // Make it brighter if it's highlighted, or has unreads
-    const bright = highlight || (unreadCount && unreadCount > 0);
+    const bright = channel.isUnread;
 
     return (
-        <View style={styles.container}>
-            {icon && (
-                <CompassIcon
-                    name={icon}
-                    style={styles.icon}
+        <TouchableOpacity onPress={() => switchToChannel(serverUrl, channel.id)}>
+            <View style={styles.container}>
+                <ChannelIcon
+                    shared={false}
+                    type={channel.type}
+                    size={24}
                 />
-            )}
-            <Text
-                style={[
-                    bright ? textStyle.bright : textStyle.regular,
-                    styles.text,
-                    bright && styles.highlight,
-                ]}
-            >
-                {name}
-            </Text>
+                <Text
+                    style={[
+                        bright ? textStyle.bright : textStyle.regular,
+                        styles.text,
+                        bright && styles.highlight,
+                    ]}
+                >
+                    {channel.displayName}
+                </Text>
 
-        </View>
+            </View>
+        </TouchableOpacity>
     );
 };
 

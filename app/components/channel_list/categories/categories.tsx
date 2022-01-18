@@ -1,10 +1,10 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {sortBy} from 'lodash';
 import React from 'react';
 import {FlatList, StyleSheet} from 'react-native';
 
-import ThreadsButton from '../threads';
 import CategoryBody from './body';
 import CategoryHeader from './header';
 
@@ -30,12 +30,16 @@ const renderCategory = (data: {item: CategoryModel}) => {
 };
 
 const Categories = (props: Props) => {
+    // Sort Categories
+    const categories = sortBy(props.categories, (c) => c.sortOrder);
+
     return (
         <FlatList
-            data={props.categories.sort((a, b) => a.sortOrder - b.sortOrder)}
+            data={categories}
             renderItem={renderCategory}
-            ListHeaderComponent={ThreadsButton}
             style={styles.flex}
+            showsHorizontalScrollIndicator={false}
+            showsVerticalScrollIndicator={false}
         />
     );
 };
