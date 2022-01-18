@@ -131,7 +131,10 @@ export function setNavigatorStyles(componentId: string, theme: Theme, additional
 
 export function setNavigationStackStyles(theme: Theme) {
     EphemeralStore.allNavigationComponentIds.forEach((componentId) => {
-        if (componentId !== Screens.BOTTOM_SHEET) {
+        if (
+            componentId !== Screens.BOTTOM_SHEET &&
+            componentId !== Screens.PERMALINK
+        ) {
             setNavigatorStyles(componentId, theme);
         }
     });

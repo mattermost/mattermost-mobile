@@ -14,6 +14,7 @@ import {prepareMissingChannelsForAllTeams, queryAllMyChannelIds} from '@queries/
 import {queryRecentPostsInChannel} from '@queries/servers/post';
 import {queryCurrentUserId, queryCurrentChannelId} from '@queries/servers/system';
 import {queryAllUsers} from '@queries/servers/user';
+import PostModel from '@typings/database/models/servers/post';
 
 import {forceLogoutIfNecessary} from './session';
 
@@ -24,6 +25,13 @@ type PostsRequest = {
     error?: unknown;
     order?: string[];
     posts?: Post[];
+    previousPostId?: string;
+}
+
+type PostsObjectsRequest = {
+    error?: unknown;
+    order?: string[];
+    posts?: IDMappedObjects<Post>;
     previousPostId?: string;
 }
 
@@ -371,4 +379,106 @@ export async function getMissingChannelsFromPosts(serverUrl: string, posts: Post
         channels,
         channelMemberships,
     };
+}
+
+export async function fetchPostsAfter(
+    serverUrl: string,
+    channelId: string,
+    postId: string,
+    fetchOnly = false,
+    page?: number,
+    perPage?: number,
+): Promise<PostsRequest> {
+    let client: Client;
+    try {
+        client = NetworkManager.getClient(serverUrl);
+    } catch (error) {
+        return {error};
+    }
+
+    try {
+        const data = await client.getPostsAfter(channelId, postId, page, perPage);
+        return processPostsFetched(serverUrl, ActionType.POSTS.RECEIVED_BEFORE, data, fetchOnly);
+    } catch (error) {
+        forceLogoutIfNecessary(serverUrl, error as ClientErrorProps);
+        return {error};
+    }
+}
+
+export async function fetchPostThread(serverUrl: string, postId: string, fetchOnly = false) {
+    let client: Client;
+    try {
+        client = NetworkManager.getClient(serverUrl);
+    } catch (error) {
+        return {error};
+    }
+
+    try {
+        const data = await client.getPostThread(postId);
+        return processPostsFetched(serverUrl, ActionType.POSTS.RECEIVED_POST_THREAD, data, fetchOnly);
+    } catch (error) {
+        forceLogoutIfNecessary(serverUrl, error as ClientErrorProps);
+        return {error};
+    }
+}
+
+export async function fetchPostsAround(
+    serverUrl: string,
+    channelId: string,
+    postId: string,
+) {
+    let client: Client;
+    try {
+        client = NetworkManager.getClient(serverUrl);
+    } catch (error) {
+        return {error};
+    }
+
+    try {
+        const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
+
+        const [after, post, before] = await Promise.all<PostsObjectsRequest>([
+            client.getPostsAfter(channelId, postId, 0),
+            client.getPostThread(postId),
+            client.getPostsBefore(channelId, postId, 0),
+        ]);
+
+        const preData: PostResponse = {
+            posts: {
+                ...(after.posts || {}),
+                ...post.posts,
+                ...(before.posts || {}),
+            },
+            order: [
+                ...(after.order || []),
+                postId,
+                ...(before.order || []),
+            ],
+        };
+
+        const data = await processPostsFetched(serverUrl, ActionType.POSTS.RECEIVED_AROUND, preData, true);
+
+        let posts: PostModel[] = [];
+        if (data.posts?.length && data.order?.length) {
+            try {
+                await fetchPostAuthors(serverUrl, data.posts, false);
+            } catch (error) {
+                // eslint-disable-next-line no-console
+                console.error('FETCH AUTHORS ERROR', error);
+            }
+
+            posts = await operator.handlePosts({
+                actionType: ActionType.POSTS.RECEIVED_AROUND,
+                order: data.order,
+                posts: data.posts,
+            }) as PostModel[];
+        }
+
+        return {posts};
+    } catch (error) {
+        // eslint-disable-next-line no-console
+        console.error('FETCH POSTS AROUND ERROR', error);
+        forceLogoutIfNecessary(serverUrl, error as ClientErrorProps);
+        return {error};
+    }
 }

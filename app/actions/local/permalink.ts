@@ -57,7 +57,7 @@ export const showPermalink = async (serverUrl: string, teamName: string, postId:
         const screen = 'Permalink';
         const passProps = {
             isPermalink: openAsPermalink,
-            teamName,
+            teamName: team.name,
             postId,
         };
 

@@ -174,9 +174,9 @@ Navigation.setLazyComponentRegistrator((screenName) => {
     // case 'NotificationSettingsMobile':
     //     screen = require('@screens/settings/notification_settings_mobile').default;
     //     break;
-    // case 'Permalink':
-    //     screen = require('@screens/permalink').default;
-    //     break;
+    case Screens.PERMALINK:
+        screen = require('@screens/permalink').default;
+        break;
     // case 'PinnedPosts':
     //     screen = require('@screens/pinned_posts').default;
     //     break;
@@ -186,9 +186,9 @@ Navigation.setLazyComponentRegistrator((screenName) => {
     // case 'ReactionList':
     //     screen = require('@screens/reaction_list').default;
     //     break;
-    // case 'RecentMentions':
-    //     screen = require('@screens/recent_mentions').default;
-    //     break;
+    case Screens.MENTIONS:
+        screen = require('@screens/home/recent_mentions').default;
+        break;
     // case 'Search':
     //     screen = require('@screens/search').default;
     //     break;

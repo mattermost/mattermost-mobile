@@ -134,7 +134,7 @@ export const selectAttachmentMenuAction = (serverUrl: string, postId: string, ac
 
 export const processPostsFetched = async (serverUrl: string, actionType: string, data: PostResponse, fetchOnly = false) => {
     const order = data.order;
-    const posts = Object.values(data.posts) as Post[];
+    const posts = Object.values(data.posts);
     const previousPostId = data.prev_post_id;
 
     if (!fetchOnly) {
