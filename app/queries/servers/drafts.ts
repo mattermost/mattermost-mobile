@@ -4,7 +4,8 @@
 import {Database, Q} from '@nozbe/watermelondb';
 
 import {MM_TABLES} from '@constants/database';
-import DraftModel from '@typings/database/models/servers/draft';
+
+import type DraftModel from '@typings/database/models/servers/draft';
 
 const {SERVER: {DRAFT}} = MM_TABLES;
 

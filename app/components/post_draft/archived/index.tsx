@@ -5,7 +5,7 @@ import React, {useCallback} from 'react';
 import {View} from 'react-native';
 import Button from 'react-native-button';
 
-import {switchToPenultimateChannel} from '@actions/local/channel';
+import {switchToPenultimateChannel} from '@actions/remote/channel';
 import FormattedMarkdownText from '@components/formatted_markdown_text';
 import FormattedText from '@components/formatted_text';
 import {useServerUrl} from '@context/server';

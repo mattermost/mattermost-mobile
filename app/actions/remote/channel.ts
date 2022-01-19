@@ -10,8 +10,8 @@ import DatabaseManager from '@database/manager';
 import {privateChannelJoinPrompt} from '@helpers/api/channel';
 import NetworkManager from '@init/network_manager';
 import {prepareMyChannelsForTeam, queryChannelById, queryChannelByName, queryMyChannel} from '@queries/servers/channel';
-import {queryCommonSystemValues, queryCurrentUserId} from '@queries/servers/system';
-import {prepareMyTeams, queryMyTeamById, queryTeamById, queryTeamByName} from '@queries/servers/team';
+import {queryCommonSystemValues, queryCurrentTeamId, queryCurrentUserId} from '@queries/servers/system';
+import {prepareMyTeams, queryLastChannelFromTeam, queryMyTeamById, queryTeamById, queryTeamByName} from '@queries/servers/team';
 import {getDirectChannelName} from '@utils/channel';
 import {PERMALINK_GENERIC_TEAM_NAME_REDIRECT} from '@utils/url';
 import {displayGroupMessageName, displayUsername} from '@utils/user';
@@ -620,21 +620,11 @@ export async function getOrCreateDirectChannel(serverUrl: string, otherUserId: s
     }
 
     if (shouldSwitchToChannel) {
-        fetchPostsAndSwitchToChannel(serverUrl, result.channel.id);
+        switchToChannelById(serverUrl, result.channel.id);
     }
 
     return result;
 }
-
-export const fetchPostsAndSwitchToChannel = async (serverUrl: string, channelId: string, teamId?: string) => {
-    try {
-        fetchPostsForChannel(serverUrl, channelId); // Do not await for this, keep handling the switch
-        return switchToChannel(serverUrl, channelId, teamId);
-    } catch (error) {
-        forceLogoutIfNecessary(serverUrl, error as ClientErrorProps);
-        return {error};
-    }
-};
 
 export const switchToChannelById = async (serverUrl: string, channelId: string, teamId?: string) => {
     const database = DatabaseManager.serverDatabases[serverUrl]?.database;
@@ -648,4 +638,19 @@ export const switchToChannelById = async (serverUrl: string, channelId: string, 
     fetchChannelStats(serverUrl, channelId);
 
     return {};
+};
+
+export const switchToPenultimateChannel = async (serverUrl: string) => {
+    const database = DatabaseManager.serverDatabases[serverUrl]?.database;
+    if (!database) {
+        return {error: `${serverUrl} database not found`};
+    }
+
+    try {
+        const currentTeam = await queryCurrentTeamId(database);
+        const channelId = await queryLastChannelFromTeam(database, currentTeam, 1);
+        return switchToChannelById(serverUrl, channelId);
+    } catch (error) {
+        return {error};
+    }
 };

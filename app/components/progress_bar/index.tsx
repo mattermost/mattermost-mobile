@@ -32,8 +32,8 @@ const ProgressBar = ({color, progress, style}: ProgressBarProps) => {
     const progressAnimatedStyle = useAnimatedStyle(() => {
         return {
             transform: [
-                {translateX: withTiming(((progressValue.value * 0.5) - 0.5) * width)},
-                {scaleX: withTiming(progressValue.value ? progressValue.value : 0.0001)},
+                {translateX: withTiming(((progressValue.value * 0.5) - 0.5) * width, {duration: 200})},
+                {scaleX: withTiming(progressValue.value ? progressValue.value : 0.0001, {duration: 200})},
             ],
         };
     }, [width]);

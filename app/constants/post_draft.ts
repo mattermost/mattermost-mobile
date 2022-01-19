@@ -11,3 +11,4 @@ export const TYPING_HEIGHT = 26;
 export const ACCESSORIES_CONTAINER_NATIVE_ID = 'channelAccessoriesContainer';
 
 export const BLUR_POST_DRAFT_EVENT = 'BLUR_POST_DRAFT';
+export const NOTIFY_ALL_MEMBERS = 5;

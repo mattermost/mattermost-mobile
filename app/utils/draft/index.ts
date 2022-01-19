@@ -4,9 +4,9 @@
 import {MessageDescriptor} from '@formatjs/intl/src/types';
 import {Alert, AlertButton} from 'react-native';
 
+import {NOTIFY_ALL_MEMBERS} from '@app/constants/post_draft';
 import {General} from '@constants';
 import {AT_MENTION_REGEX_GLOBAL, CODE_REGEX} from '@constants/autocomplete';
-import {NOTIFY_ALL_MEMBERS} from '@constants/view';
 import {t} from '@i18n';
 
 import type {IntlShape} from 'react-intl';
@@ -25,7 +25,7 @@ export function errorBadChannel(intl: IntlShape) {
 export function errorBadUser(intl: IntlShape) {
     const message = {
         id: t('mobile.server_link.unreachable_user.error'),
-        defaultMessage: 'This link belongs to a deleted user.',
+        defaultMessage: 'We can\'t redirect you to the DM. The user specified is unknown.',
     };
 
     alertErrorWithFallback(intl, {}, message);
@@ -87,6 +87,9 @@ export const groupsMentionedInText = (groupsWithAllowReference: Group[], text: s
     return groupsWithAllowReference.filter((g) => mentions.includes(g.id));
 };
 
+// mapGroupMentions remove duplicates from the groupMentions, and if any of the
+// groups has more members than the NOTIFY_ALL_MEMBERS, return the highest
+// number of notifications and the timezones of that group.
 export const mapGroupMentions = (channelMemberCountsByGroup: ChannelMemberCountByGroup[], groupMentions: Group[]) => {
     let memberNotifyCount = 0;
     let channelTimezoneCount = 0;

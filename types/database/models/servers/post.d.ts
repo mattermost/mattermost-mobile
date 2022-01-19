@@ -58,9 +58,6 @@ export default class PostModel extends Model {
     /** user_id : The foreign key of the User who authored this post. */
     userId: string;
 
-    /** failed: Whether the post has failed */
-    failed: boolean;
-
     /** props : Additional attributes for this props */
     props: any;
 

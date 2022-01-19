@@ -18,7 +18,7 @@ import {showModal} from '@screens/navigation';
 import * as DraftUtils from '@utils/draft';
 import {matchDeepLink, tryOpenURL} from '@utils/url';
 
-import {fetchPostsAndSwitchToChannel, getOrCreateDirectChannel, switchToChannelByName} from './channel';
+import {getOrCreateDirectChannel, switchToChannelById, switchToChannelByName} from './channel';
 
 import type {DeepLinkChannel, DeepLinkPermalink, DeepLinkDM, DeepLinkGM, DeepLinkPlugin} from '@typings/launch';
 
@@ -174,7 +174,7 @@ export const handleGotoLocation = async (serverUrl: string, intl: IntlShape, loc
                     return {data: false};
                 }
 
-                fetchPostsAndSwitchToChannel(data.serverUrl, data.channelId);
+                switchToChannelById(data.serverUrl, data.channelId);
                 break;
             }
             case DeepLinkTypes.PLUGIN: {

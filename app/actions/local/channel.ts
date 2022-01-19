@@ -8,26 +8,11 @@ import {Navigation as NavigationConstants, Screens} from '@constants';
 import DatabaseManager from '@database/manager';
 import {prepareDeleteChannel, queryAllMyChannelIds, queryChannelsById, queryMyChannel} from '@queries/servers/channel';
 import {prepareCommonSystemValues, PrepareCommonSystemValuesArgs, queryCommonSystemValues, queryCurrentTeamId, setCurrentChannelId} from '@queries/servers/system';
-import {addChannelToTeamHistory, addTeamToTeamHistory, queryLastChannelFromTeam, removeChannelFromTeamHistory} from '@queries/servers/team';
+import {addChannelToTeamHistory, addTeamToTeamHistory, removeChannelFromTeamHistory} from '@queries/servers/team';
 import {dismissAllModalsAndPopToRoot, dismissAllModalsAndPopToScreen} from '@screens/navigation';
 import {isTablet} from '@utils/helpers';
 
 import type ChannelModel from '@typings/database/models/servers/channel';
-
-export const switchToPenultimateChannel = async (serverUrl: string) => {
-    const database = DatabaseManager.serverDatabases[serverUrl]?.database;
-    if (!database) {
-        return {error: `${serverUrl} database not found`};
-    }
-
-    try {
-        const currentTeam = await queryCurrentTeamId(database);
-        const channel = await queryLastChannelFromTeam(database, currentTeam, 1);
-        return switchToChannel(serverUrl, channel);
-    } catch (error) {
-        return {error};
-    }
-};
 
 export const switchToChannel = async (serverUrl: string, channelId: string, teamId?: string) => {
     const database = DatabaseManager.serverDatabases[serverUrl]?.database;

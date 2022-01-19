@@ -58,8 +58,6 @@ export const queryLastChannelFromTeam = async (database: Database, teamId: strin
         const teamChannelHistory = await database.get<TeamChannelHistoryModel>(TEAM_CHANNEL_HISTORY).find(teamId);
         if (teamChannelHistory.channelIds.length > n + 1) {
             channelId = teamChannelHistory.channelIds[n];
-        } else {
-            throw new Error('no nth channel, falling back to default');
         }
     } finally {
         if (!channelId) {

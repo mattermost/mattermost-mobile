@@ -41,7 +41,7 @@ export function isPostEphemeral(post: PostModel): boolean {
 }
 
 export function isPostPendingOrFailed(post: PostModel): boolean {
-    return post.pendingPostId === post.id || post.failed;
+    return post.pendingPostId === post.id || post.props.failed;
 }
 
 export function isSystemMessage(post: PostModel): boolean {

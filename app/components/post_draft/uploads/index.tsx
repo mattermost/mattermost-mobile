@@ -16,6 +16,11 @@ import {makeStyleSheetFromTheme} from '@utils/theme';
 
 import UploadItem from './upload_item';
 
+const CONTAINER_HEIGHT_MAX = 67;
+const CONATINER_HEIGHT_MIN = 0;
+const ERROR_HEIGHT_MAX = 20;
+const ERROR_HEIGHT_MIN = 0;
+
 type Props = {
     files: FileInfo[];
     uploadFileError: React.ReactNode;
@@ -69,8 +74,8 @@ export default function Uploads({
     const theme = useTheme();
     const style = getStyleSheet(theme);
 
-    const errorHeight = useSharedValue(0);
-    const containerHeight = useSharedValue(150);
+    const errorHeight = useSharedValue(ERROR_HEIGHT_MIN);
+    const containerHeight = useSharedValue(CONTAINER_HEIGHT_MAX);
 
     const errorAnimatedStyle = useAnimatedStyle(() => {
         return {
@@ -90,18 +95,18 @@ export default function Uploads({
 
     useEffect(() => {
         if (uploadFileError) {
-            errorHeight.value = 20;
+            errorHeight.value = ERROR_HEIGHT_MAX;
         } else {
-            errorHeight.value = 0;
+            errorHeight.value = ERROR_HEIGHT_MIN;
         }
     }, [uploadFileError]);
 
     useEffect(() => {
         if (files.length) {
-            containerHeight.value = 67;
+            containerHeight.value = CONTAINER_HEIGHT_MAX;
             return;
         }
-        containerHeight.value = 0;
+        containerHeight.value = CONATINER_HEIGHT_MIN;
     }, [files.length > 0]);
 
     const openGallery = useCallback((file: FileInfo) => {
@@ -137,10 +142,11 @@ export default function Uploads({
                     {buildFilePreviews()}
                 </ScrollView>
             </Animated.View>
-            {Boolean(uploadFileError) &&
+
             <Animated.View
                 style={[style.errorContainer, errorAnimatedStyle]}
             >
+                {Boolean(uploadFileError) &&
                 <View style={style.errorTextContainer}>
 
                     <Text style={style.warning}>
@@ -148,8 +154,8 @@ export default function Uploads({
                     </Text>
 
                 </View>
+                }
             </Animated.View>
-            }
         </View>
     );
 }

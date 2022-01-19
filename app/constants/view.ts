@@ -44,4 +44,3 @@ export default {
     INDICATOR_BAR_HEIGHT,
 };
 
-export const NOTIFY_ALL_MEMBERS = 5;
