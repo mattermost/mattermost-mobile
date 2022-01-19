@@ -109,7 +109,7 @@ export function generateChannelNameFromDisplayName(displayName: string) {
 }
 
 export const handleCreateChannel = async (serverUrl: string, displayName: string, purpose: string, header: string, type: ChannelType) => {
-    const database = DatabaseManager.serverDatabases[serverUrl]?.database;
+    const {database, operator} = DatabaseManager.serverDatabases[serverUrl];
     if (!database) {
         return {error: `${serverUrl} database not found`};
     }
@@ -134,12 +134,35 @@ export const handleCreateChannel = async (serverUrl: string, displayName: string
             type,
         } as Channel;
 
+        // create the channel on the server. returns a Channel Model
         const channelData = await client.createChannel(channel);
-        if (channelData?.id) {
 
-            // TODO: select the channel
-            // dispatch(setChannelDisplayName(displayName));
-            // dispatch(handleSelectChannel(data.id));
+        // add user to channel on the server. returns a ChannelMembership Model
+        const myChannelMembership = await client.addToChannel(currentUserId, channelData.id);
+
+        // successfully created channel on server
+        if (channelData?.id) {
+            const channelInfos: ChannelInfo[] = [];
+            channelInfos.push({
+                id: channelData.id,
+                header: channelData.header,
+                purpose: channelData.purpose,
+                guest_count: 0,
+                member_count: 0,
+                pinned_post_count: 0,
+            });
+
+            // add channelInfo to local database
+            await operator.handleChannelInfo({channelInfos, prepareRecordsOnly: false});
+            await operator.handleChannelMembership({channelMemberships: [myChannelMembership], prepareRecordsOnly: false});
+
+            const channelMemberships = await addMembersToChannel(serverUrl, channelData.id, [currentUserId], '', false);
+            const memberships = channelMemberships.channelMemberships!.map((cm) => ({...cm, id: cm.channel_id}));
+
+            await operator.handleMyChannel({channels: [channelData], myChannels: memberships, prepareRecordsOnly: false});
+            await operator.handleMyChannelSettings({settings: memberships, prepareRecordsOnly: false});
+
+            await switchToChannelById(serverUrl, channelData.id, channelData.team_id);
         }
         return {channel: channelData};
     } catch (error) {

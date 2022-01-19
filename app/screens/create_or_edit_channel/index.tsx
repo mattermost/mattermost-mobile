@@ -9,7 +9,7 @@ import {
 import {Navigation} from 'react-native-navigation';
 
 import {switchToChannel} from '@actions/local/channel';
-import {handlePatchChannel, handleCreateChannel} from '@actions/remote/channel';
+import {handlePatchChannel, handleCreateChannel, switchToChannelById} from '@actions/remote/channel';
 import ChannelInfoForm from '@app/screens/create_or_edit_channel/channel_info_form';
 import {General} from '@constants';
 import {useTheme} from '@context/theme';
@@ -139,7 +139,8 @@ const CreateOrEditChannel = ({serverUrl, componentId, channel, channelInfo}: Pro
         dispatch({type: RequestActions.COMPLETE});
         enableRightButton(false);
         close(true);
-        switchToChannel(serverUrl, createdChannel!.channel!.id);
+
+        // switchToChannelById(serverUrl, createdChannel!.channel!.id);
     }, [enableRightButton, displayName, header, purpose]);
 
     const onUpdateChannel = useCallback(async () => {
