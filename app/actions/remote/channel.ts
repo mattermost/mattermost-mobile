@@ -134,34 +134,16 @@ export const handleCreateChannel = async (serverUrl: string, displayName: string
             type,
         } as Channel;
 
-        // create the channel on the server. returns a Channel Model
         const channelData = await client.createChannel(channel);
+        await client.addToChannel(currentUserId, channelData.id);
 
-        // add user to channel on the server. returns a ChannelMembership Model
-        const myChannelMembership = await client.addToChannel(currentUserId, channelData.id);
-
-        // successfully created channel on server
         if (channelData?.id) {
-            const channelInfos: ChannelInfo[] = [];
-            channelInfos.push({
-                id: channelData.id,
-                header: channelData.header,
-                purpose: channelData.purpose,
-                guest_count: 0,
-                member_count: 0,
-                pinned_post_count: 0,
-            });
-
-            // add channelInfo to local database
-            await operator.handleChannelInfo({channelInfos, prepareRecordsOnly: false});
-            await operator.handleChannelMembership({channelMemberships: [myChannelMembership], prepareRecordsOnly: false});
-
-            const channelMemberships = await addMembersToChannel(serverUrl, channelData.id, [currentUserId], '', false);
-            const memberships = channelMemberships.channelMemberships!.map((cm) => ({...cm, id: cm.channel_id}));
-
-            await operator.handleMyChannel({channels: [channelData], myChannels: memberships, prepareRecordsOnly: false});
-            await operator.handleMyChannelSettings({settings: memberships, prepareRecordsOnly: false});
-
+            const chData = await fetchMyChannelsForTeam(serverUrl, currentTeamId, false, 0, false);
+            const channelModels = await prepareMyChannelsForTeam(operator, channelData.team_id, chData!.channels!, chData!.memberships!);
+            if (channelModels) {
+                const models = await Promise.all(channelModels);
+                await operator.batchRecords(models.flat());
+            }
             await switchToChannelById(serverUrl, channelData.id, channelData.team_id);
         }
         return {channel: channelData};
@@ -663,6 +645,7 @@ export const switchToChannelById = async (serverUrl: string, channelId: string, 
 
     fetchPostsForChannel(serverUrl, channelId);
     await switchToChannel(serverUrl, channelId, teamId);
+    console.log('3. IN HERE!');
     markChannelAsRead(serverUrl, channelId);
     fetchChannelStats(serverUrl, channelId);
 
