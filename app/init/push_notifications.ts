@@ -68,7 +68,7 @@ class PushNotifications {
             return AndroidNotificationPreferences.getDeliveredNotifications();
         }
         return Notifications.ios.getDeliveredNotifications() as Promise<NotificationWithChannel[]>;
-    }
+    };
 
     cancelAllLocalNotifications() {
         Notifications.cancelAllLocalNotifications();
@@ -132,7 +132,7 @@ class PushNotifications {
         } else {
             Notifications.ios.removeDeliveredNotifications(notificationIds);
         }
-    }
+    };
 
     setBadgeCountByMentions = (initialBadge = 0) => {
         let badgeCount = initialBadge;
@@ -148,7 +148,7 @@ class PushNotifications {
             badgeCount = badgeCount <= 0 ? 0 : badgeCount;
             Notifications.ios.setBadgeCount(badgeCount);
         }
-    }
+    };
 
     createReplyCategory = () => {
         const {getState} = Store.redux!;
@@ -164,7 +164,7 @@ class PushNotifications {
         };
         const replyAction = new NotificationAction(REPLY_ACTION, 'background', replyTitle, true, replyTextInput);
         return new NotificationCategory(CATEGORY, [replyAction]);
-    }
+    };
 
     getInitialNotification = async () => {
         const notification: NotificationWithData | undefined = await Notifications.getInitialNotification();
@@ -183,7 +183,7 @@ class PushNotifications {
                 }
             }, 500);
         }
-    }
+    };
 
     handleNotification = (notification: NotificationWithData, isInitialNotification = false) => {
         const {payload, foreground, userInteraction} = notification;
@@ -231,17 +231,17 @@ class PushNotifications {
                 }
             });
         }
-    }
+    };
 
     localNotification = (notification: Notification) => {
         Notifications.postLocalNotification(notification);
-    }
+    };
 
     onNotificationOpened = (notification: NotificationWithData, completion: () => void) => {
         notification.userInteraction = true;
         this.handleNotification(notification);
         completion();
-    }
+    };
 
     onNotificationReceivedBackground = (notification: NotificationWithData, completion: (response: NotificationBackgroundFetchResult) => void) => {
         this.handleNotification(notification);

@@ -59,7 +59,7 @@ export default class Leave extends PureComponent<LeaveProps> {
                 onPress: onPressAction,
             }],
         );
-    }
+    };
 
     handleClose = preventDoubleTap(() => {
         const {close, currentChannel, isDirectMessage, isFavorite} = this.props;

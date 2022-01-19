@@ -43,7 +43,7 @@ export function handleNewPostEvent(msg: WebSocketMessage) {
             ownPost: data.user_id === currentUserId,
         };
 
-        const actions: Array<GenericAction> = [];
+        const actions: GenericAction[] = [];
 
         const exists = selectPost(state, post.pending_post_id);
 

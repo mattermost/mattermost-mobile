@@ -169,7 +169,7 @@ export default class NotificationSettings extends PureComponent {
         Reflect.deleteProperty(sanitized, 'user_id');
 
         return sanitized;
-    }
+    };
 
     /**
      * shouldSaveAutoResponder

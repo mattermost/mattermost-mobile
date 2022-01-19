@@ -12,7 +12,7 @@ class CreateChannelScreen {
         createChannelScreen: 'create_channel.screen',
         createButton: 'create_channel.create.button',
         backButton: 'screen.back.button',
-    }
+    };
 
     createChannelScreen = element(by.id(this.testID.createChannelScreen));
     createButton = element(by.id(this.testID.createButton));
@@ -29,7 +29,7 @@ class CreateChannelScreen {
         await expect(this.createChannelScreen).toBeVisible();
 
         return this.createChannelScreen;
-    }
+    };
 
     open = async () => {
         // # Open create channel screen
@@ -37,12 +37,12 @@ class CreateChannelScreen {
         await BottomSheet.createOption.tap();
 
         return this.toBeVisible();
-    }
+    };
 
     back = async () => {
         await this.backButton.tap();
         await expect(this.createChannelScreen).not.toBeVisible();
-    }
+    };
 }
 
 const createChannelScreen = new CreateChannelScreen();

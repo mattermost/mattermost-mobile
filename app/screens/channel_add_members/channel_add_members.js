@@ -107,7 +107,7 @@ export default class ChannelAddMembers extends PureComponent {
 
     setSearchBarRef = (ref) => {
         this.searchBarRef = ref;
-    }
+    };
 
     clearSearch = () => {
         this.setState({term: '', searchResults: []});

@@ -24,7 +24,7 @@ class EditProfileScreen {
         positionLabel: 'edit_profile.text_setting.position.label',
         usernameInput: 'edit_profile.text_setting.username.input',
         usernameLabel: 'edit_profile.text_setting.username.label',
-    }
+    };
 
     editProfileScreen = element(by.id(this.testID.editProfileScreen));
     editProfileScrollView = element(by.id(this.testID.editProfileScrollView));
@@ -47,25 +47,25 @@ class EditProfileScreen {
     getProfilePicture = (userId) => {
         const profilePictureItemMatcher = ProfilePicture.getProfilePictureItemMatcher(this.testID.editProfilePicturePrefix, userId);
         return element(profilePictureItemMatcher);
-    }
+    };
 
     toBeVisible = async () => {
         await expect(this.editProfileScreen).toBeVisible();
 
         return this.editProfileScreen;
-    }
+    };
 
     open = async () => {
         // # Open edit profile screen
         await UserProfileScreen.editButton.tap();
 
         return this.toBeVisible();
-    }
+    };
 
     back = async () => {
         await this.backButton.tap();
         await expect(this.editProfileScreen).not.toBeVisible();
-    }
+    };
 }
 
 const editProfileScreen = new EditProfileScreen();

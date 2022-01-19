@@ -68,7 +68,7 @@ export default class Peer extends stream.Duplex {
     isConnected = false;
     id = generateId().slice(0, 7);
     channelName = generateId();
-    streams: MediaStream[]
+    streams: MediaStream[];
 
     private pcReady = false;
     private channelReady = false;

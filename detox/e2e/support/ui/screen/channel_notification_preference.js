@@ -7,7 +7,7 @@ class ChannelNotificationPreferenceScreen {
     testID = {
         channelNotificationPreferenceScreen: 'channel_notification_preference.screen',
         backButton: 'screen.back.button',
-    }
+    };
 
     channelNotificationPreferenceScreen = element(by.id(this.testID.channelNotificationPreferenceScreen));
     backButton = element(by.id(this.testID.backButton));
@@ -23,19 +23,19 @@ class ChannelNotificationPreferenceScreen {
         await expect(this.channelNotificationPreferenceScreen).toBeVisible();
 
         return this.channelNotificationPreferenceScreen;
-    }
+    };
 
     open = async () => {
         // # Open channel notification preference screen
         await ChannelInfoScreen.notificationPreferenceAction.tap();
 
         return this.toBeVisible();
-    }
+    };
 
     back = async () => {
         await this.backButton.tap();
         await expect(this.channelNotificationPreferenceScreen).not.toBeVisible();
-    }
+    };
 }
 
 const channelNotificationPreferenceScreen = new ChannelNotificationPreferenceScreen();

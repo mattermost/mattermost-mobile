@@ -64,7 +64,7 @@ export default class ChannelInfo extends PureComponent {
 
     static defaultProps = {
         currentChannelGuestCount: 0,
-    }
+    };
 
     static contextTypes = {
         intl: intlShape.isRequired,
@@ -95,7 +95,7 @@ export default class ChannelInfo extends PureComponent {
     startCallHandler = (channelId) => {
         this.props.actions.joinCall(channelId);
         this.close();
-    }
+    };
 
     toggleCalls = () => {
         if (this.props.isCallsEnabled) {
@@ -103,7 +103,7 @@ export default class ChannelInfo extends PureComponent {
         } else {
             this.props.actions.enableChannelCalls(this.props.currentChannel.id);
         }
-    }
+    };
 
     permalinkBadTeam = () => {
         const {intl} = this.context;

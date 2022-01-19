@@ -93,7 +93,7 @@ export default class PostOptions extends PureComponent {
                 theme={theme}
             />
         );
-    }
+    };
 
     getReplyOption = () => {
         const {canReply} = this.props;
@@ -108,7 +108,7 @@ export default class PostOptions extends PureComponent {
         }
 
         return null;
-    }
+    };
 
     getFollowThreadOption = () => {
         const {location, thread} = this.props;
@@ -135,7 +135,7 @@ export default class PostOptions extends PureComponent {
         }
         const onPress = this.handleToggleFollow;
         return this.getOption(key, icon, message, onPress);
-    }
+    };
 
     getCopyPermalink = () => {
         const {canCopyPermalink} = this.props;
@@ -276,7 +276,7 @@ export default class PostOptions extends PureComponent {
                 closeWithAnimation={this.closeWithAnimation}
             />
         );
-    }
+    };
 
     getPostOptions = () => {
         const actions = [
@@ -375,7 +375,7 @@ export default class PostOptions extends PureComponent {
         requestAnimationFrame(() => {
             actions.setUnreadPost(currentUserId, post.id, location);
         });
-    }
+    };
 
     handlePostDelete = () => {
         const {formatMessage} = this.context.intl;

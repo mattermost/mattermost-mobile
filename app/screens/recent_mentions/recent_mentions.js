@@ -62,7 +62,7 @@ export default class RecentMentions extends PureComponent {
             isLoading: false,
             didFail: Boolean(error),
         });
-    }
+    };
 
     componentDidMount() {
         this.navigationEventListener = Navigation.events().bindComponent(this);
@@ -72,7 +72,7 @@ export default class RecentMentions extends PureComponent {
 
     setListRef = (ref) => {
         this.listRef = ref;
-    }
+    };
 
     keyExtractor = (item) => item;
 

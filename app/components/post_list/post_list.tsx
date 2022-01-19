@@ -59,8 +59,8 @@ type PostListProps = {
 }
 
 type ViewableItemsChanged = {
-    viewableItems: Array<ViewToken>;
-    changed: Array<ViewToken>;
+    viewableItems: ViewToken[];
+    changed: ViewToken[];
 }
 
 type onScrollEndIndexListenerEvent = (endIndex: number) => void;

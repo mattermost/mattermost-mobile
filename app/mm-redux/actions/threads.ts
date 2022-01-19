@@ -63,7 +63,7 @@ export function getThreads(userId: string, teamId: string, before = '', after = 
                 });
             });
 
-            const getThreadsActions: Array<GenericAction> = [
+            const getThreadsActions: GenericAction[] = [
                 {
                     type: ThreadTypes.RECEIVED_THREADS,
                     data: {

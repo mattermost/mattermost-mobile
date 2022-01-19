@@ -7,23 +7,23 @@ class PostDraft {
         postDraftArchivedSuffix: 'post_draft.archived',
         postDraftReadOnlySuffix: 'post_draft.read_only',
         postInputSuffix: 'post_draft.post.input',
-    }
+    };
 
     getPostDraft = (screenPrefix) => {
         return element(by.id(`${screenPrefix}${this.testID.postDraftSuffix}`));
-    }
+    };
 
     getPostDraftArchived = (screenPrefix) => {
         return element(by.id(`${screenPrefix}${this.testID.postDraftArchivedSuffix}`));
-    }
+    };
 
     getPostDraftReadOnly = (screenPrefix) => {
         return element(by.id(`${screenPrefix}${this.testID.postDraftReadOnlySuffix}`));
-    }
+    };
 
     getPostInput = (screenPrefix) => {
         return element(by.id(`${screenPrefix}${this.testID.postInputSuffix}`));
-    }
+    };
 }
 
 const postDraft = new PostDraft();

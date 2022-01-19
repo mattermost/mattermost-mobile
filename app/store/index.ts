@@ -44,7 +44,7 @@ type ClientOptions = {
 }
 
 type V4Store = {
-    storeKeys: Array<string>;
+    storeKeys: string[];
     restoredState: any;
 }
 
@@ -83,7 +83,7 @@ const channelViewBlackList: any = {loading: true, refreshing: true, loadingPosts
 const channelViewBlackListFilter = createTransform(
     (inboundState: any) => {
         const channel: any = {};
-        const keys: Array<string> = inboundState.channel ? Object.keys(inboundState.channel) : [];
+        const keys: string[] = inboundState.channel ? Object.keys(inboundState.channel) : [];
 
         for (const channelKey of keys) {
             if (!channelViewBlackList[channelKey]) {
@@ -104,7 +104,7 @@ const emojiBlackList: any = {nonExistentEmoji: true};
 const emojiBlackListFilter = createTransform(
     (inboundState: any) => {
         const emojis: any = {};
-        const keys: Array<string> = inboundState.emojis ? Object.keys(inboundState.emojis) : [];
+        const keys: string[] = inboundState.emojis ? Object.keys(inboundState.emojis) : [];
 
         for (const emojiKey of keys) {
             if (!emojiBlackList[emojiKey]) {

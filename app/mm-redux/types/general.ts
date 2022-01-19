@@ -19,7 +19,7 @@ export type GeneralState = {
     deviceToken: string;
     license: any;
     serverVersion: string;
-    timezones: Array<string>;
+    timezones: string[];
 };
 
 export type FormattedMsg = {
