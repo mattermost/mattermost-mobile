@@ -4,6 +4,7 @@
 
 import {DeviceEventEmitter} from 'react-native';
 
+import {updateLastPostAt} from '@actions/local/channel';
 import {processPostsFetched} from '@actions/local/post';
 import {ActionType, Events, General} from '@constants';
 import {SYSTEM_IDENTIFIERS} from '@constants/database';
@@ -93,6 +94,15 @@ export const fetchPostsForChannel = async (serverUrl: string, channelId: string)
 
         if (postModels.length) {
             models.push(...postModels);
+        }
+
+        let lastPostAt = 0;
+        for (const post of data.posts) {
+            lastPostAt = post.create_at > lastPostAt ? post.create_at : lastPostAt;
+        }
+        const {models: memberModels} = await updateLastPostAt(serverUrl, channelId, lastPostAt, true);
+        if (memberModels?.length) {
+            models.push(...memberModels);
         }
 
         if (models.length) {

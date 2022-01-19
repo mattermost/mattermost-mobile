@@ -174,7 +174,7 @@ export const markChannelAsViewed = async (serverUrl: string, channelId: string, 
         m.mentionsCount = 0;
         m.manuallyUnread = false;
         m.viewedAt = member.lastViewedAt;
-        m.lastViewedAt = member.lastPostAt + 1;
+        m.lastViewedAt = Date.now();
     });
 
     try {
@@ -270,4 +270,34 @@ export const storeMyChannelsForTeam = async (serverUrl: string, teamId: string, 
     }
 
     return {models: flattenedModels};
+};
+
+export const updateLastPostAt = async (serverUrl: string, channelId: string, lastPostAt: number, prepareRecordsOnly = false) => {
+    const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
+    if (!operator) {
+        return {error: `${serverUrl} database not found`};
+    }
+
+    const member = await queryMyChannel(operator.database, channelId);
+    if (!member) {
+        return {error: 'not a member'};
+    }
+
+    const models: Model[] = [];
+    if (lastPostAt > member.lastPostAt) {
+        member.prepareUpdate((m) => {
+            m.lastPostAt = lastPostAt;
+        });
+        models.push();
+    }
+
+    try {
+        if (!prepareRecordsOnly && models.length) {
+            await operator.batchRecords([member]);
+        }
+    } catch (error) {
+        return {error};
+    }
+
+    return {models};
 };

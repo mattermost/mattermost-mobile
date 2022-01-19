@@ -4,7 +4,7 @@
 import {Model} from '@nozbe/watermelondb';
 import {DeviceEventEmitter} from 'react-native';
 
-import {storeMyChannelsForTeam, markChannelAsUnread, markChannelAsViewed} from '@actions/local/channel';
+import {storeMyChannelsForTeam, markChannelAsUnread, markChannelAsViewed, updateLastPostAt} from '@actions/local/channel';
 import {markPostAsDeleted} from '@actions/local/post';
 import {fetchMyChannel, markChannelAsRead} from '@actions/remote/channel';
 import {fetchPostAuthors, fetchPostById} from '@actions/remote/post';
@@ -32,14 +32,18 @@ export async function handleNewPostEvent(serverUrl: string, msg: WebSocketMessag
         return;
     }
 
-    // We need to await for this to make sure the channel membership has the correct lastPostAt
-    await database.operator.handlePosts({
+    const models: Model[] = [];
+
+    const postModels = await database.operator.handlePosts({
         actionType: ActionType.POSTS.RECEIVED_NEW,
         order: [post.id],
         posts: [post],
+        prepareRecordsOnly: true,
     });
 
-    const models: Model[] = [];
+    if (postModels?.length) {
+        models.push(...postModels);
+    }
 
     // Ensure the channel membership
     let myChannel = await queryMyChannel(database.database, post.channel_id);
@@ -60,6 +64,9 @@ export async function handleNewPostEvent(serverUrl: string, msg: WebSocketMessag
             return;
         }
     }
+
+    // Do not batch lastPostAt update since we may be modifying the member later for unreads
+    await updateLastPostAt(serverUrl, post.channel_id, post.create_at, false);
 
     // If we don't have the root post for this post, fetch it from the server
     if (post.root_id) {
@@ -123,7 +130,15 @@ export async function handleNewPostEvent(serverUrl: string, msg: WebSocketMessag
             }
         } else {
             const hasMentions = msg.data.mentions.includes(currentUserId);
-            const {member: unreadAt} = await markChannelAsUnread(serverUrl, post.channel_id, myChannel.messageCount + 1, myChannel.mentionsCount + (hasMentions ? 1 : 0), false, myChannel.lastViewedAt, true);
+            const {member: unreadAt} = await markChannelAsUnread(
+                serverUrl,
+                post.channel_id,
+                myChannel.messageCount + 1,
+                myChannel.mentionsCount + (hasMentions ? 1 : 0),
+                false,
+                myChannel.lastViewedAt,
+                true,
+            );
             if (unreadAt) {
                 models.push(unreadAt);
             }
