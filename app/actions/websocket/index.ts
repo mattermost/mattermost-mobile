@@ -19,6 +19,7 @@ import {prepareMyChannelsForTeam} from '@queries/servers/channel';
 import {queryCommonSystemValues, queryConfig, queryWebSocketLastDisconnected} from '@queries/servers/system';
 import {queryCurrentUser} from '@queries/servers/user';
 
+import {handleCategoryCreatedEvent, handleCategoryDeletedEvent, handleCategoryOrderUpdatedEvent, handleCategoryUpdatedEvent} from './category';
 import {handleChannelDeletedEvent, handleUserRemovedEvent} from './channel';
 import {handleLeaveTeamEvent} from './teams';
 
@@ -146,6 +147,8 @@ async function doReconnect(serverUrl: string) {
 }
 
 export async function handleEvent(serverUrl: string, msg: any) {
+    console.log('websocket msg for ' + msg.event, msg);
+
     switch (msg.event) {
         case WebsocketEvents.POSTED:
         case WebsocketEvents.EPHEMERAL_MESSAGE:
@@ -309,6 +312,18 @@ export async function handleEvent(serverUrl: string, msg: any) {
         case WebsocketEvents.APPS_FRAMEWORK_REFRESH_BINDINGS:
             break;
 
-        // return dispatch(handleRefreshAppsBindings());
+            // return dispatch(handleRefreshAppsBindings());
+        case WebsocketEvents.CATEGORY_CREATED:
+            handleCategoryCreatedEvent(serverUrl, msg);
+            break;
+        case WebsocketEvents.CATEGORY_UPDATED:
+            handleCategoryUpdatedEvent(serverUrl, msg);
+            break;
+        case WebsocketEvents.CATEGORY_ORDER_UPDATED:
+            handleCategoryOrderUpdatedEvent(serverUrl, msg);
+            break;
+        case WebsocketEvents.CATEGORY_DELETED:
+            handleCategoryDeletedEvent(serverUrl, msg);
+            break;
     }
 }

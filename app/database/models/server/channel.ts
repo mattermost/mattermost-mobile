@@ -4,7 +4,7 @@
 import {Relation} from '@nozbe/watermelondb';
 import {children, lazy, field, immutableRelation} from '@nozbe/watermelondb/decorators';
 import Model, {Associations} from '@nozbe/watermelondb/Model';
-import { switchMap, map, of, distinctUntilChanged } from 'rxjs';
+import {switchMap, of, distinctUntilChanged} from 'rxjs';
 
 import {MM_TABLES} from '@constants/database';
 
@@ -140,19 +140,19 @@ export default class ChannelModel extends Model {
 
     // Has it got unread messages
     @lazy isUnread = this.membership.observe().pipe(
-        switchMap(membership => of(membership!.mentionsCount > 0)),
-        distinctUntilChanged()
-    )
+        switchMap((membership) => of(membership!.mentionsCount > 0)),
+        distinctUntilChanged(),
+    );
 
     // What should the badge count be
     @lazy badgeCount = this.membership.observe().pipe(
-        switchMap((membership) => of(membership!.mentionsCount))
-    )
+        switchMap((membership) => of(membership!.mentionsCount)),
+    );
 
     // When the last post was posted
     @lazy lastPostAt = this.membership.observe().pipe(
-        switchMap((membership) => of(membership!.lastPostAt))
-    )
+        switchMap((membership) => of(membership!.lastPostAt)),
+    );
 
     toApi = (): Channel => {
         return {

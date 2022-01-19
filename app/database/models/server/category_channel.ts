@@ -2,8 +2,9 @@
 // See LICENSE.txt for license information.
 
 import {Relation} from '@nozbe/watermelondb';
-import {field, immutableRelation} from '@nozbe/watermelondb/decorators';
+import {field, immutableRelation, lazy} from '@nozbe/watermelondb/decorators';
 import Model, {Associations} from '@nozbe/watermelondb/Model';
+import {switchMap, map, of, distinctUntilChanged} from 'rxjs';
 
 import {MM_TABLES} from '@constants/database';
 
@@ -55,4 +56,14 @@ export default class CategoryChannelModel extends Model implements CategoryChann
 
     /** channel : The related channel */
     @immutableRelation(CHANNEL, 'channel_id') channel!: Relation<ChannelModel>;
+
+    // Display Name for the associated channel
+    @lazy channelDisplayName = this.channel.observe().pipe(
+        switchMap((c) => of(c!.displayName)),
+    );
+
+    // Last Post for associated channel
+    @lazy channelLastPostAt = this.channel.observe().pipe(
+        switchMap((c) => of(c!.lastPostAt)),
+    );
 }

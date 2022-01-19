@@ -4,7 +4,7 @@
 import {Relation, Query, Q} from '@nozbe/watermelondb';
 import {children, field, immutableRelation, lazy} from '@nozbe/watermelondb/decorators';
 import Model, {Associations} from '@nozbe/watermelondb/Model';
-import { map, of, distinctUntilChanged } from 'rxjs';
+import {map, of, distinctUntilChanged} from 'rxjs';
 
 import {MM_TABLES} from '@constants/database';
 
@@ -12,7 +12,6 @@ import type CategoryInterface from '@typings/database/models/servers/category';
 import type CategoryChannelModel from '@typings/database/models/servers/category_channel';
 import type TeamModel from '@typings/database/models/servers/team';
 import type UserModel from '@typings/database/models/servers/user';
-
 
 const {
     CATEGORY,
@@ -80,11 +79,11 @@ export default class CategoryModel extends Model implements CategoryInterface {
         get(CHANNEL).
         query(
             Q.on(CATEGORY_CHANNEL, Q.where('category_id', this.id)),
+            Q.sortBy('display_name'),
         );
-    
-    @lazy hasChannels = this.categoryChannels.observeCount().pipe(
-        map(c => c > 0),
-        distinctUntilChanged()
-    )
 
+    @lazy hasChannels = this.categoryChannels.observeCount().pipe(
+        map((c) => c > 0),
+        distinctUntilChanged(),
+    );
 }

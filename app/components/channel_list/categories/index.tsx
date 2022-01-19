@@ -21,7 +21,7 @@ const withCategories = withObservables(
         const categories = database.get<CategoryModel>(CATEGORY).query(
             Q.where('team_id', currentTeamId),
             Q.where('user_id', currentUserId),
-        );
+        ).observeWithColumns(['sort_order']);
 
         return {
             categories,

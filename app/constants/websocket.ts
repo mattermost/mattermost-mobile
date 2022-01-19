@@ -47,5 +47,9 @@ const WebsocketEvents = {
     THREAD_FOLLOW_CHANGED: 'thread_follow_changed',
     THREAD_READ_CHANGED: 'thread_read_changed',
     APPS_FRAMEWORK_REFRESH_BINDINGS: 'custom_com.mattermost.apps_refresh_bindings',
+    CATEGORY_CREATED: 'sidebar_category_created',
+    CATEGORY_UPDATED: 'sidebar_category_updated',
+    CATEGORY_DELETED: 'sidebar_category_deleted',
+    CATEGORY_ORDER_UPDATED: 'sidebar_category_order_updated',
 };
 export default WebsocketEvents;

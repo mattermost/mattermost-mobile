@@ -30,9 +30,15 @@ export default class CategoryChannelModel extends Model {
     /** user: The related user in the category */
     user: Relation<UserModel>;
 
-    /** team : The related team of users */
+    /** team : The related category */
     category: Relation<CategoryModel>;
 
-    /** team : The related team of users */
+    /** channel : The related channel */
     channel: Relation<ChannelModel>;
+
+    /** @lazy channelDisplayName : The associated channel's display name */
+    channelDisplayName: Observable<string>;
+
+    /** @lazy channelLastPostAt : The associated channel's last post at */
+    channelLastPostAt: Observable<number>;
 }

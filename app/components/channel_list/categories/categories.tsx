@@ -31,11 +31,11 @@ const renderCategory = (data: {item: CategoryModel}) => {
 
 const Categories = (props: Props) => {
     // Sort Categories
-    const categories = sortBy(props.categories, (c) => c.sortOrder);
+    props.categories.sort((a, b) => a.sortOrder - b.sortOrder);
 
     return (
         <FlatList
-            data={categories}
+            data={props.categories}
             renderItem={renderCategory}
             style={styles.flex}
             showsHorizontalScrollIndicator={false}

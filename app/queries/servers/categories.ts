@@ -103,7 +103,7 @@ export const prepareCategoryChannels = (
         categories.forEach((category) => {
             category.channel_ids.forEach((channelId, index) => {
                 categoryChannels.push({
-                    id: `${category.team_id}_${category.id}_${channelId}`,
+                    id: `${category.team_id}_${channelId}`,
                     category_id: category.id,
                     channel_id: channelId,
                     user_id: category.user_id,
@@ -113,6 +113,7 @@ export const prepareCategoryChannels = (
         });
 
         const categoryChannelRecords = operator.handleCategoryChannels({categoryChannels, prepareRecordsOnly: true});
+
         return [categoryChannelRecords];
     } catch (e) {
         return undefined;

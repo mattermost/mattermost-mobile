@@ -3,7 +3,7 @@
 
 import {Query, Relation} from '@nozbe/watermelondb';
 import Model, {Associations} from '@nozbe/watermelondb/Model';
-import { Observable } from 'rxjs';
+import {Observable} from 'rxjs';
 
 /**
  * A Category groups together channels for a user in a team.

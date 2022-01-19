@@ -173,8 +173,7 @@ export const fetchMyChannelsForTeam = async (serverUrl: string, teamId: string, 
             return result;
         }, []);
 
-        // if (!fetchOnly) {
-        if (true) {
+        if (!fetchOnly) {
             const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
             const modelPromises: Array<Promise<Model[]>> = [];
             if (operator) {

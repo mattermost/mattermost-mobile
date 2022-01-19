@@ -1,9 +1,9 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import withObservables from '@nozbe/with-observables';
 import React from 'react';
 import {Text, View} from 'react-native';
-import withObservables from '@nozbe/with-observables';
 
 import {useTheme} from '@context/theme';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
@@ -32,8 +32,8 @@ const CategoryHeader = ({category, hasChannels}: Props) => {
     const styles = getStyleSheet(theme);
 
     // Hide favs if empty
-    if(!hasChannels && category.type === 'favorites'){
-        return (<></>)
+    if (!hasChannels && category.type === 'favorites') {
+        return (<></>);
     }
 
     return (
@@ -47,7 +47,7 @@ const CategoryHeader = ({category, hasChannels}: Props) => {
 
 const withCategory = withObservables(['category'], ({category}: {category: CategoryModel}) => ({
     category,
-    hasChannels: category.hasChannels
+    hasChannels: category.hasChannels,
 }));
 
 export default withCategory(CategoryHeader);
