@@ -225,10 +225,10 @@ const EditProfile = ({
         setCanSave(value);
     }, [componentId, rightButton]);
 
-    const onUpdatedProfilePicture = useCallback((newProfileImage: NewProfileImage) => {
+    const onUpdateProfilePicture = useCallback((newProfileImage: NewProfileImage) => {
         changedProfilePicture.current = newProfileImage;
         enableSaveButton(true);
-    }, []);
+    }, [enableSaveButton]);
 
     const uploadProfileImage = useCallback(async () => {
         try {
@@ -400,7 +400,7 @@ const EditProfile = ({
             return (
                 <View style={styles.top}>
                     <EditProfilePicture
-                        onUpdatedProfilePicture={onUpdatedProfilePicture}
+                        onUpdateProfilePicture={onUpdateProfilePicture}
                         user={currentUser}
                     />
                 </View>

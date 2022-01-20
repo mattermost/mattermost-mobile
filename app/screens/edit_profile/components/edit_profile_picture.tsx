@@ -17,7 +17,7 @@ import type UserModel from '@typings/database/models/servers/user';
 
 type ChangeProfilePictureProps = {
     user: UserModel;
-    onUpdatedProfilePicture: (info: { localPath?: string; isRemoved?: boolean }) => void;
+    onUpdateProfilePicture: (info: { localPath?: string; isRemoved?: boolean }) => void;
 };
 
 const SIZE = 128;
@@ -43,7 +43,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     };
 });
 
-const EditProfilePicture = ({user, onUpdatedProfilePicture}: ChangeProfilePictureProps) => {
+const EditProfilePicture = ({user, onUpdateProfilePicture}: ChangeProfilePictureProps) => {
     const [pictureUrl, setPictureUrl] = useState<string|undefined>();
     const theme = useTheme();
     const serverUrl = useServerUrl();
@@ -82,13 +82,13 @@ const EditProfilePicture = ({user, onUpdatedProfilePicture}: ChangeProfilePictur
         }
 
         setPictureUrl(pUrl);
-        onUpdatedProfilePicture({isRemoved, localPath});
-    }, []);
+        onUpdateProfilePicture({isRemoved, localPath});
+    }, [onUpdateProfilePicture]);
 
     let source;
 
     if (pictureUrl === 'account-outline') {
-        source = 'account-outline';
+        source = pictureUrl;
     } else if (pictureUrl) {
         let prefix = '';
         if (Platform.OS === 'android' &&
