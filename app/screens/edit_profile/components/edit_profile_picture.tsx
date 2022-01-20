@@ -2,11 +2,12 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback, useEffect, useState} from 'react';
-import {Platform, View} from 'react-native';
+import {DeviceEventEmitter, Platform, View} from 'react-native';
 
 import {Client} from '@client/rest';
 import ImagePicker from '@components/image_picker';
 import ProfileImage from '@components/profile_picture';
+import {Navigation} from '@constants';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import useDidUpdate from '@hooks/did_update';
@@ -79,6 +80,8 @@ const EditProfilePicture = ({user, onUpdateProfilePicture}: ChangeProfilePicture
             isRemoved = false;
             localPath = newImage;
             pUrl = newImage;
+        } else {
+            DeviceEventEmitter.emit(Navigation.NAVIGATION_CLOSE_MODAL);
         }
 
         setPictureUrl(pUrl);

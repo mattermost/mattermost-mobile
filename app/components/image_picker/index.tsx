@@ -3,12 +3,11 @@
 
 import React, {useCallback, useMemo} from 'react';
 import {useIntl} from 'react-intl';
-import {DeviceEventEmitter, TouchableOpacity} from 'react-native';
+import {TouchableOpacity} from 'react-native';
 import DocumentPicker from 'react-native-document-picker';
 
 import CompassIcon from '@components/compass_icon';
 import SlideUpPanelItem, {ITEM_HEIGHT} from '@components/slide_up_panel_item';
-import {Navigation} from '@constants';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {bottomSheet} from '@screens/navigation';
@@ -87,7 +86,6 @@ const ImagePicker = ({
                         icon: 'trash-can-outline',
                         isDestructive: true,
                         onPress: () => {
-                            DeviceEventEmitter.emit(Navigation.NAVIGATION_CLOSE_MODAL);
                             return onRemoveProfileImage();
                         },
                         testID: 'attachment.removeImage',
