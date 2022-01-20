@@ -33,7 +33,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
         date: {
             color: theme.centerChannelColor,
             marginHorizontal: 4,
-            ...typography('Body', 75, 'Semibold'),
+            ...typography('Body', 75, 'SemiBold'),
         },
     };
 });

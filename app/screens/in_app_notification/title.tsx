@@ -25,7 +25,7 @@ const styles = StyleSheet.create({
     title: {
         color: '#FFFFFF',
         fontSize: 14,
-        fontFamily: 'OpenSans-Semibold',
+        fontFamily: 'OpenSans-SemiBold',
     },
 });
 

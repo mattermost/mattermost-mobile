@@ -38,7 +38,7 @@ exports[`components/channel_list/header Channel List Header Component should mat
         style={
           Object {
             "color": "#ffffff",
-            "fontFamily": "Metropolis-Semibold",
+            "fontFamily": "Metropolis-SemiBold",
             "fontSize": 28,
             "fontWeight": "600",
             "lineHeight": 36,
@@ -140,7 +140,7 @@ exports[`components/channel_list/header Channel List Header Component should mat
     style={
       Object {
         "color": "rgba(255,255,255,0.64)",
-        "fontFamily": "OpenSans-Semibold",
+        "fontFamily": "OpenSans-SemiBold",
         "fontSize": 11,
         "fontWeight": "600",
         "lineHeight": 16,

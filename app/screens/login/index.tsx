@@ -52,7 +52,7 @@ const getStyles = makeStyleSheetFromTheme((theme: Theme) => ({
     header: {
         color: theme.mentionColor,
         marginBottom: 12,
-        ...typography('Heading', 1000, 'Semibold'),
+        ...typography('Heading', 1000, 'SemiBold'),
     },
     innerContainer: {
         alignItems: 'center',

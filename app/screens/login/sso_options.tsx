@@ -157,7 +157,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     },
     buttonText: {
         color: theme.centerChannelColor,
-        fontFamily: 'OpenSans-Semibold',
+        fontFamily: 'OpenSans-SemiBold',
         fontSize: 16,
         lineHeight: 18,
         top: 2,

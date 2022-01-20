@@ -39,7 +39,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     },
 }));
 
-const textStyle = StyleSheet.create([typography('Body', 200, 'Semibold')]);
+const textStyle = StyleSheet.create([typography('Body', 200, 'SemiBold')]);
 
 const ThreadsButton = ({channelId}: {channelId?: string}) => {
     const theme = useTheme();

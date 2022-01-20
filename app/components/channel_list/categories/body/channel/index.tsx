@@ -30,7 +30,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
 }));
 
 const textStyle = StyleSheet.create({
-    bright: typography('Body', 200, 'Semibold'),
+    bright: typography('Body', 200, 'SemiBold'),
     regular: typography('Body', 200, 'Regular'),
 });
 

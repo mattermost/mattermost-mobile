@@ -110,7 +110,7 @@ exports[`Category List Component  should match snapshot 1`] = `
                 Array [
                   Array [
                     Object {
-                      "fontFamily": "OpenSans-Semibold",
+                      "fontFamily": "OpenSans-SemiBold",
                       "fontSize": 16,
                       "fontWeight": "600",
                       "lineHeight": 24,
@@ -145,7 +145,7 @@ exports[`Category List Component  should match snapshot 1`] = `
           style={
             Object {
               "color": "rgba(255,255,255,0.64)",
-              "fontFamily": "OpenSans-Semibold",
+              "fontFamily": "OpenSans-SemiBold",
               "fontSize": 12,
               "fontWeight": "600",
               "lineHeight": 16,
@@ -255,7 +255,7 @@ exports[`Category List Component  should match snapshot 1`] = `
               style={
                 Array [
                   Object {
-                    "fontFamily": "OpenSans-Semibold",
+                    "fontFamily": "OpenSans-SemiBold",
                     "fontSize": 16,
                     "fontWeight": "600",
                     "lineHeight": 24,
@@ -293,7 +293,7 @@ exports[`Category List Component  should match snapshot 1`] = `
           style={
             Object {
               "color": "rgba(255,255,255,0.64)",
-              "fontFamily": "OpenSans-Semibold",
+              "fontFamily": "OpenSans-SemiBold",
               "fontSize": 12,
               "fontWeight": "600",
               "lineHeight": 16,
@@ -403,7 +403,7 @@ exports[`Category List Component  should match snapshot 1`] = `
               style={
                 Array [
                   Object {
-                    "fontFamily": "OpenSans-Semibold",
+                    "fontFamily": "OpenSans-SemiBold",
                     "fontSize": 16,
                     "fontWeight": "600",
                     "lineHeight": 24,

@@ -83,7 +83,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
         },
         text: {
             color: theme.buttonColor,
-            ...typography('Body', 200, 'Semibold'),
+            ...typography('Body', 200, 'SemiBold'),
         },
     };
 });

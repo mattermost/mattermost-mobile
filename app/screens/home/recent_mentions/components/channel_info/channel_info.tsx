@@ -19,7 +19,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         marginVertical: 8,
     },
     channel: {
-        ...typography('Body', 75, 'Semibold'),
+        ...typography('Body', 75, 'SemiBold'),
         color: theme.centerChannelColor,
         marginRight: 5,
     },

@@ -34,7 +34,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             fontSize: 28,
             lineHeight: 36,
             color: theme.sidebarText,
-            fontFamily: 'Metropolis-Semibold',
+            fontFamily: 'Metropolis-SemiBold',
             marginTop: 16,
         },
         textUserName: {

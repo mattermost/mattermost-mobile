@@ -102,7 +102,7 @@ exports[`Category Body Component should match snapshot 1`] = `
           style={
             Array [
               Object {
-                "fontFamily": "OpenSans-Semibold",
+                "fontFamily": "OpenSans-SemiBold",
                 "fontSize": 16,
                 "fontWeight": "600",
                 "lineHeight": 24,

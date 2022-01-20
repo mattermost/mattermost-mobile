@@ -33,7 +33,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     },
     label: {
         marginTop: 6,
-        ...typography('Body', 50, 'Semibold'),
+        ...typography('Body', 50, 'SemiBold'),
     },
     margin: {
         marginRight: 8,

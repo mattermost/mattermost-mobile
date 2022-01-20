@@ -34,7 +34,7 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme: Theme) => {
         text: {
             color: theme.newMessageSeparator,
             marginHorizontal: 4,
-            ...typography('Body', 75, 'Semibold'),
+            ...typography('Body', 75, 'SemiBold'),
         },
     };
 });

@@ -30,7 +30,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
         displayName: {
             color: theme.centerChannelColor,
             flexGrow: 1,
-            ...typography('Body', 200, 'Semibold'),
+            ...typography('Body', 200, 'SemiBold'),
         },
         displayNameContainer: {
             maxWidth: '60%',
