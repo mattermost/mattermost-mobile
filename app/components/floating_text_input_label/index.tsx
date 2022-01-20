@@ -272,6 +272,7 @@ const FloatingTextInput = forwardRef<FloatingTextInputRef, FloatingTextInputProp
                     editable={isKeyboardInput && editable}
                     style={combinedTextInputStyle}
                     placeholder={placeholder}
+                    placeholderTextColor={styles.label.color}
                     multiline={true}
                     value={value}
                     pointerEvents={isKeyboardInput ? 'auto' : 'none'}
