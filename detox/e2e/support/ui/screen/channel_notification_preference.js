@@ -2,6 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {ChannelInfoScreen} from '@support/ui/screen';
+import {timeouts} from '@support/utils';
 
 class ChannelNotificationPreferenceScreen {
     testID = {
@@ -20,7 +21,7 @@ class ChannelNotificationPreferenceScreen {
     optionNeverText = 'Never';
 
     toBeVisible = async () => {
-        await expect(this.channelNotificationPreferenceScreen).toBeVisible();
+        await waitFor(this.channelNotificationPreferenceScreen).toBeVisible().withTimeout(timeouts.TEN_SEC);
 
         return this.channelNotificationPreferenceScreen;
     }

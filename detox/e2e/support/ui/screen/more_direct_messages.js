@@ -5,6 +5,7 @@ import {
     MainSidebar,
     SearchBar,
 } from '@support/ui/component';
+import {timeouts} from '@support/utils';
 
 class MoreDirectMessagesScreen {
     testID = {
@@ -67,7 +68,7 @@ class MoreDirectMessagesScreen {
     }
 
     toBeVisible = async () => {
-        await expect(this.moreDirectMessagesScreen).toBeVisible();
+        await waitFor(this.moreDirectMessagesScreen).toBeVisible().withTimeout(timeouts.TEN_SEC);
 
         return this.moreDirectMessagesScreen;
     }

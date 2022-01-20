@@ -2,6 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {PostList} from '@support/ui/component';
+import {timeouts} from '@support/utils';
 
 class PermalinkScreen {
     testID = {
@@ -26,7 +27,7 @@ class PermalinkScreen {
     }
 
     toBeVisible = async () => {
-        await expect(this.permalinkScreen).toBeVisible();
+        await waitFor(this.permalinkScreen).toBeVisible().withTimeout(timeouts.TEN_SEC);
 
         return this.permalinkScreen;
     }

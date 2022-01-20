@@ -1,6 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {timeouts} from '@support/utils';
+
 class ReactionListScreen {
     testID = {
         reactionRowPrefix: 'reaction_row.',
@@ -10,7 +12,7 @@ class ReactionListScreen {
     reactionListScreen = element(by.id(this.testID.reactionListScreen));
 
     toBeVisible = async () => {
-        await expect(this.reactionListScreen).toExist();
+        await waitFor(this.reactionListScreen).toExist().withTimeout(timeouts.TEN_SEC);
 
         return reactionListScreen;
     }

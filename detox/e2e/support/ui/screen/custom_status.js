@@ -2,6 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {SettingsSidebar} from '@support/ui/component';
+import {timeouts} from '@support/utils';
 
 class CustomStatusScreen {
     testID = {
@@ -42,7 +43,7 @@ class CustomStatusScreen {
     }
 
     toBeVisible = async () => {
-        await expect(this.customStatusScreen).toBeVisible();
+        await waitFor(this.customStatusScreen).toBeVisible().withTimeout(timeouts.TEN_SEC);
 
         return this.customStatusScreen;
     }

@@ -4,6 +4,7 @@
 import moment from 'moment-timezone';
 
 import {CustomStatusScreen} from '@support/ui/screen';
+import {timeouts} from '@support/utils';
 
 class ClearAfterScreen {
     testID = {
@@ -25,7 +26,7 @@ class ClearAfterScreen {
     }
 
     toBeVisible = async () => {
-        await expect(this.clearAfterScreen).toBeVisible();
+        await waitFor(this.clearAfterScreen).toBeVisible().withTimeout(timeouts.TEN_SEC);
 
         return this.clearAfterScreen;
     }

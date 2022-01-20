@@ -96,6 +96,11 @@ mattermost-license.txt
 *.mattermost-license
 detox/artifacts
 detox/detox_pixel_4_xl_api_30
+bitbar/android
+bitbar/ios
+bitbar/detox
+bitbar/run-tests.sh*
+bitbar/*-test-files.zip
 
 # Bundle artifact
 *.jsbundle

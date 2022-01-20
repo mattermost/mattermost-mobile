@@ -5,6 +5,7 @@ import {
     ProfilePicture,
     SettingsSidebar,
 } from '@support/ui/component';
+import {timeouts} from '@support/utils';
 
 class UserProfileScreen {
     testID = {
@@ -64,7 +65,7 @@ class UserProfileScreen {
     }
 
     toBeVisible = async () => {
-        await expect(this.userProfileScreen).toBeVisible();
+        await waitFor(this.userProfileScreen).toBeVisible().withTimeout(timeouts.TEN_SEC);
 
         return this.userProfileScreen;
     }

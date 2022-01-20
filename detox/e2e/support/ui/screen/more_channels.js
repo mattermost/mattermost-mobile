@@ -6,6 +6,7 @@ import {
     MainSidebar,
     SearchBar,
 } from '@support/ui/component';
+import {timeouts} from '@support/utils';
 
 class MoreChannelsScreen {
     testID = {
@@ -59,7 +60,7 @@ class MoreChannelsScreen {
     }
 
     toBeVisible = async () => {
-        await expect(this.moreChannelsScreen).toBeVisible();
+        await waitFor(this.moreChannelsScreen).toBeVisible().withTimeout(timeouts.TEN_SEC);
 
         return this.moreChannelsScreen;
     }

@@ -5,6 +5,7 @@ import {
     MainSidebar,
     SearchBar,
 } from '@support/ui/component';
+import {timeouts} from '@support/utils';
 
 class ChannelAddMembersScreen {
     testID = {
@@ -53,7 +54,7 @@ class ChannelAddMembersScreen {
     }
 
     toBeVisible = async () => {
-        await expect(this.channelAddMembersScreen).toBeVisible();
+        await waitFor(this.channelAddMembersScreen).toBeVisible().withTimeout(timeouts.TEN_SEC);
 
         return this.channelAddMembersScreen;
     }

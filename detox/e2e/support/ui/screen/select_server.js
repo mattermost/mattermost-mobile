@@ -20,7 +20,7 @@ class SelectServerScreen {
     errorText = element(by.id(this.testID.errorText));
 
     toBeVisible = async () => {
-        await waitFor(this.selectServerScreen).toBeVisible().withTimeout(timeouts.FOUR_SEC);
+        await waitFor(this.selectServerScreen).toBeVisible().withTimeout(timeouts.TEN_SEC);
 
         return this.selectServerScreen;
     }

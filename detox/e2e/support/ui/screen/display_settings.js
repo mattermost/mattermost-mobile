@@ -2,6 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {GeneralSettingsScreen} from '@support/ui/screen';
+import {timeouts} from '@support/utils';
 
 class DisplaySettingsScreen {
     testID = {
@@ -19,7 +20,7 @@ class DisplaySettingsScreen {
     timezoneAction = element(by.id(this.testID.timezoneAction));
 
     toBeVisible = async () => {
-        await expect(this.displaySettingsScreen).toBeVisible();
+        await waitFor(this.displaySettingsScreen).toBeVisible().withTimeout(timeouts.TEN_SEC);
 
         return this.displaySettingsScreen;
     }

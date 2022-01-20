@@ -5,6 +5,7 @@ import {
     ChannelInfoScreen,
     SearchResultPostScreen,
 } from '@support/ui/screen';
+import {timeouts} from '@support/utils';
 
 class PinnedMessagesScreen {
     testID = {
@@ -20,7 +21,7 @@ class PinnedMessagesScreen {
     }
 
     toBeVisible = async () => {
-        await expect(this.pinnedMessagesScreen).toBeVisible();
+        await waitFor(this.pinnedMessagesScreen).toBeVisible().withTimeout(timeouts.TEN_SEC);
 
         return this.pinnedMessagesScreen;
     }

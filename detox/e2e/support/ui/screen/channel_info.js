@@ -60,8 +60,7 @@ class ChannelInfoScreen {
     archiveAction = element(by.id(this.testID.archiveAction));
 
     toBeVisible = async () => {
-        await wait(timeouts.TWO_SEC);
-        await expect(this.channelInfoScreen).toBeVisible();
+        await waitFor(this.channelInfoScreen).toBeVisible().withTimeout(timeouts.TEN_SEC);
 
         return this.channelInfoScreen;
     }

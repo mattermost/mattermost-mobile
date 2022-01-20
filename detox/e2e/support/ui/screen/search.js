@@ -10,6 +10,7 @@ import {
     ChannelScreen,
     SearchResultPostScreen,
 } from '@support/ui/screen';
+import {timeouts} from '@support/utils';
 
 class SearchScreen {
     testID = {
@@ -56,7 +57,7 @@ class SearchScreen {
     }
 
     toBeVisible = async () => {
-        await expect(this.searchScreen).toBeVisible();
+        await waitFor(this.searchScreen).toBeVisible().withTimeout(timeouts.TEN_SEC);
 
         return this.searchScreen;
     }

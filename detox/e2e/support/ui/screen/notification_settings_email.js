@@ -2,6 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {NotificationSettingsScreen} from '@support/ui/screen';
+import {timeouts} from '@support/utils';
 
 class NotificationSettingsEmailScreen {
     testID = {
@@ -48,7 +49,7 @@ class NotificationSettingsEmailScreen {
     }
 
     toBeVisible = async () => {
-        await expect(this.notificationSettingsEmailScreen).toBeVisible();
+        await waitFor(this.notificationSettingsEmailScreen).toBeVisible().withTimeout(timeouts.TEN_SEC);
 
         return this.notificationSettingsEmailScreen;
     }

@@ -2,6 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {SettingsSidebar} from '@support/ui/component';
+import {timeouts} from '@support/utils';
 
 class GeneralSettingsScreen {
     testID = {
@@ -27,7 +28,7 @@ class GeneralSettingsScreen {
     reportAction = element(by.id(this.testID.reportAction));
 
     toBeVisible = async () => {
-        await expect(this.generalSettingsScreen).toBeVisible();
+        await waitFor(this.generalSettingsScreen).toBeVisible().withTimeout(timeouts.TEN_SEC);
 
         return this.generalSettingsScreen;
     }

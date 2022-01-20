@@ -5,6 +5,7 @@ import {
     PostOptions,
     SearchBar,
 } from '@support/ui/component';
+import {timeouts} from '@support/utils';
 
 class AddReactionScreen {
     testID = {
@@ -23,7 +24,7 @@ class AddReactionScreen {
     clearButton = SearchBar.getClearButton(this.testID.addReactionEmojiPickerPrefix);
 
     toBeVisible = async () => {
-        await expect(this.addReactionScreen).toBeVisible();
+        await waitFor(this.addReactionScreen).toBeVisible().withTimeout(timeouts.TEN_SEC);
 
         return this.addReactionScreen;
     }

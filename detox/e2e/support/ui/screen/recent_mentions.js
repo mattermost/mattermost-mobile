@@ -6,6 +6,7 @@ import {
     SettingsSidebar,
 } from '@support/ui/component';
 import {SearchResultPostScreen} from '@support/ui/screen';
+import {timeouts} from '@support/utils';
 
 class RecentMentionsScreen {
     testID = {
@@ -21,7 +22,7 @@ class RecentMentionsScreen {
     }
 
     toBeVisible = async () => {
-        await expect(this.recentMentionsScreen).toBeVisible();
+        await waitFor(this.recentMentionsScreen).toBeVisible().withTimeout(timeouts.TEN_SEC);
 
         return this.recentMentionsScreen;
     }

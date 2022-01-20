@@ -19,7 +19,7 @@ class AdvancedSettingsScreen {
     deleteDocumentsAndDataAction = element(by.id(this.testID.deleteDocumentsAndDataAction));
 
     toBeVisible = async () => {
-        await expect(this.advancedSettingsScreen).toBeVisible();
+        await waitFor(this.advancedSettingsScreen).toBeVisible().withTimeout(timeouts.TEN_SEC);
 
         return this.advancedSettingsScreen;
     }

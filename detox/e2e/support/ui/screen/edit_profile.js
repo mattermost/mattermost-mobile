@@ -3,6 +3,7 @@
 
 import {ProfilePicture} from '@support/ui/component';
 import {UserProfileScreen} from '@support/ui/screen';
+import {timeouts} from '@support/utils';
 
 class EditProfileScreen {
     testID = {
@@ -50,7 +51,7 @@ class EditProfileScreen {
     }
 
     toBeVisible = async () => {
-        await expect(this.editProfileScreen).toBeVisible();
+        await waitFor(this.editProfileScreen).toBeVisible().withTimeout(timeouts.TEN_SEC);
 
         return this.editProfileScreen;
     }

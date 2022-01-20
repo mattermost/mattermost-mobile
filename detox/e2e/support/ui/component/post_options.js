@@ -44,7 +44,7 @@ class PostOptions {
     }
 
     toBeVisible = async () => {
-        await expect(this.postOptions).toExist();
+        await waitFor(this.postOptions).toExist().withTimeout(timeouts.TEN_SEC);
 
         return postOptions;
     }

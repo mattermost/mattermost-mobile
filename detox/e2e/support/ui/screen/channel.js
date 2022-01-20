@@ -19,7 +19,7 @@ import {
     SelectServerScreen,
     ThreadScreen,
 } from '@support/ui/screen';
-import {isAndroid} from '@support/utils';
+import {isAndroid, timeouts} from '@support/utils';
 
 class ChannelScreen {
     testID = {
@@ -92,7 +92,7 @@ class ChannelScreen {
     }
 
     toBeVisible = async () => {
-        await expect(this.channelScreen).toBeVisible();
+        await waitFor(this.channelScreen).toBeVisible().withTimeout(timeouts.TEN_SEC);
 
         return this.channelScreen;
     }

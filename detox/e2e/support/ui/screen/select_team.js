@@ -1,6 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {timeouts} from '@support/utils';
+
 class SelectTeamScreen {
     testID = {
         selectTeamScreen: 'select_team.screen',
@@ -17,7 +19,7 @@ class SelectTeamScreen {
     teamsList = element(by.id(this.testID.teamsList));
 
     toBeVisible = async () => {
-        await expect(this.selectTeamScreen).toBeVisible();
+        await waitFor(this.selectTeamScreen).toBeVisible().withTimeout(timeouts.TEN_SEC);
 
         return this.selectTeamScreen;
     }

@@ -17,6 +17,18 @@
         "type": "iPhone 13"
       }
     },
+    "android.attached.debug": {
+      "type": "android.attached",
+      "binaryPath": "../android/app/build/outputs/apk/debug/app-debug.apk",
+      "build": "cd .. && ./node_modules/.bin/jetify && cd android && ./gradlew clean && ./gradlew assembleDebug assembleAndroidTest -DtestBuildType=debug && cd ../detox",
+      "session": {
+        "server": "ws://localhost:8099",
+        "sessionId": "test"
+      },
+      "device": {
+        "adbName": "ADD_DEVICE_ID_HERE"
+      }
+    },
     "android.emu.debug": {
       "type": "android.emulator",
       "binaryPath": "../android/app/build/outputs/apk/debug/app-debug.apk",
@@ -25,10 +37,22 @@
         "avdName": "detox_pixel_4_xl_api_30"
       }
     },
+    "android.attached.release": {
+      "type": "android.attached",
+      "binaryPath": "../android/app/build/outputs/apk/release/app-release.apk",
+      "build": "cd .. && ./node_modules/.bin/jetify && cd android && ./gradlew clean && ./gradlew assembleRelease assembleAndroidTest -DtestBuildType=release && cd ../detox",
+      "session": {
+        "server": "ws://localhost:8099",
+        "sessionId": "test"
+      },
+      "device": {
+        "adbName": "ADD_DEVICE_ID_HERE"
+      }
+    },
     "android.emu.release": {
       "type": "android.emulator",
       "binaryPath": "../android/app/build/outputs/apk/release/app-release.apk",
-      "build": "cd .. && ./node_modules/.bin/jetify && cd android && ./gradlew clean assembleRelease assembleAndroidTest -DtestBuildType=release && cd ../detox",
+      "build": "cd .. && ./node_modules/.bin/jetify && cd android && ./gradlew clean && ./gradlew assembleRelease assembleAndroidTest -DtestBuildType=release && cd ../detox",
       "device": {
         "avdName": "detox_pixel_4_xl_api_30"
       }

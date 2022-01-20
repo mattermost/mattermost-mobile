@@ -3,6 +3,7 @@
 
 import {EditChannelInfo} from '@support/ui/component';
 import {ChannelInfoScreen} from '@support/ui/screen';
+import {timeouts} from '@support/utils';
 
 class EditChannelScreen {
     testID = {
@@ -21,7 +22,7 @@ class EditChannelScreen {
     headerInput = EditChannelInfo.headerInput;
 
     toBeVisible = async () => {
-        await expect(this.editChannelScreen).toBeVisible();
+        await waitFor(this.editChannelScreen).toBeVisible().withTimeout(timeouts.TEN_SEC);
 
         return this.editChannelScreen;
     }

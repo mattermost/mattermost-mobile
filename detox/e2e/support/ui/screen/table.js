@@ -1,6 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {timeouts} from '@support/utils';
+
 class TableScreen {
     testID = {
         tableScreen: 'table.screen',
@@ -13,7 +15,7 @@ class TableScreen {
     backButton = element(by.id(this.testID.backButton));
 
     toBeVisible = async () => {
-        await expect(this.tableScreen).toBeVisible();
+        await waitFor(this.tableScreen).toBeVisible().withTimeout(timeouts.TEN_SEC);
 
         return this.tableScreen;
     }

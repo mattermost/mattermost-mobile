@@ -3,6 +3,7 @@
 
 import ChannelsList from './channels_list';
 import TeamsList from './teams_list';
+import {timeouts} from '@support/utils';
 
 class MainSidebar {
     testID = {
@@ -76,7 +77,7 @@ class MainSidebar {
     }
 
     toBeVisible = async () => {
-        await expect(this.mainSidebar).toBeVisible();
+        await waitFor(this.mainSidebar).toBeVisible().withTimeout(timeouts.TEN_SEC);
 
         return this.mainSidebar;
     }

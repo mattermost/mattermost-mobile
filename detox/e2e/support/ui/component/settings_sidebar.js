@@ -2,6 +2,7 @@
 // See LICENSE.txt for license information.
 
 import BottomSheet from './bottom_sheet';
+import {timeouts} from '@support/utils';
 
 class SettingsSidebar {
     testID = {
@@ -41,7 +42,7 @@ class SettingsSidebar {
     }
 
     toBeVisible = async () => {
-        await expect(this.settingsSidebar).toBeVisible();
+        await waitFor(this.settingsSidebar).toBeVisible().withTimeout(timeouts.TEN_SEC);
 
         return this.settingsSidebar;
     }

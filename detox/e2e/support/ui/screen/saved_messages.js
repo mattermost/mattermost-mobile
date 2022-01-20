@@ -6,6 +6,7 @@ import {
     SettingsSidebar,
 } from '@support/ui/component';
 import {SearchResultPostScreen} from '@support/ui/screen';
+import {timeouts} from '@support/utils';
 
 class SavedMessagesScreen {
     testID = {
@@ -21,7 +22,7 @@ class SavedMessagesScreen {
     }
 
     toBeVisible = async () => {
-        await expect(this.savedMessagesScreen).toBeVisible();
+        await waitFor(this.savedMessagesScreen).toBeVisible().withTimeout(timeouts.TEN_SEC);
 
         return this.savedMessagesScreen;
     }

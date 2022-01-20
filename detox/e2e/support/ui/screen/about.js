@@ -2,6 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {GeneralSettingsScreen} from '@support/ui/screen';
+import {timeouts} from '@support/utils';
 
 class AboutScreen {
     testID = {
@@ -57,7 +58,7 @@ class AboutScreen {
     aboutTitle = element(by.id(this.testID.aboutTitle));
 
     toBeVisible = async () => {
-        await expect(this.aboutScreen).toBeVisible();
+        await waitFor(this.aboutScreen).toBeVisible().withTimeout(timeouts.TEN_SEC);
 
         return this.aboutScreen;
     }

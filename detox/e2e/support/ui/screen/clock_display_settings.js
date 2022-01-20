@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {DisplaySettingsScreen} from '@support/ui/screen';
-import {isAndroid} from '@support/utils';
+import {isAndroid, timeouts} from '@support/utils';
 
 class ClockDisplaySettingsScreen {
     testID = {
@@ -40,11 +40,11 @@ class ClockDisplaySettingsScreen {
 
     toBeVisible = async () => {
         if (isAndroid()) {
-            await expect(this.clockModal).toBeVisible();
+            await waitFor(this.clockModal).toBeVisible().withTimeout(timeouts.TEN_SEC);
             return this.clockModal;
         }
 
-        await expect(this.clockDisplaySettingsScreen).toBeVisible();
+        await waitFor(this.clockDisplaySettingsScreen).toBeVisible().withTimeout(timeouts.TEN_SEC);
         return this.clockDisplaySettingsScreen;
     }
 

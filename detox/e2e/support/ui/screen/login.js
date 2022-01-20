@@ -2,6 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {SelectServerScreen} from '@support/ui/screen';
+import {timeouts} from '@support/utils';
 
 class LoginScreen {
     testID = {
@@ -21,7 +22,7 @@ class LoginScreen {
     errorText = element(by.id(this.testID.errorText));
 
     toBeVisible = async () => {
-        await expect(this.loginScreen).toBeVisible();
+        await waitFor(this.loginScreen).toBeVisible().withTimeout(timeouts.TEN_SEC);
 
         return this.loginScreen;
     }

@@ -55,7 +55,7 @@ class ChannelMembersScreen {
     }
 
     toBeVisible = async () => {
-        await expect(this.channelMembersScreen).toBeVisible();
+        await waitFor(this.channelMembersScreen).toBeVisible().withTimeout(timeouts.TEN_SEC);
 
         return this.channelMembersScreen;
     }

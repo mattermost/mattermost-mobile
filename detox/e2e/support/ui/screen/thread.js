@@ -11,7 +11,7 @@ import {
     PostOptions,
     SendButton,
 } from '@support/ui/component';
-import {timeouts, wait} from '@support/utils';
+import {timeouts} from '@support/utils';
 
 class ThreadScreen {
     testID = {
@@ -54,8 +54,7 @@ class ThreadScreen {
     }
 
     toBeVisible = async () => {
-        await wait(timeouts.HALF_SEC);
-        await expect(this.threadScreen).toBeVisible();
+        await waitFor(this.threadScreen).toBeVisible().withTimeout(timeouts.TEN_SEC);
 
         return this.threadScreen;
     }

@@ -2,6 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {GeneralSettingsScreen} from '@support/ui/screen';
+import {timeouts} from '@support/utils';
 
 class NotificationSettingsScreen {
     testID = {
@@ -19,7 +20,7 @@ class NotificationSettingsScreen {
     mobileAction = element(by.id(this.testID.mobileAction));
 
     toBeVisible = async () => {
-        await expect(this.notificationSettingsScreen).toBeVisible();
+        await waitFor(this.notificationSettingsScreen).toBeVisible().withTimeout(timeouts.TEN_SEC);
 
         return this.notificationSettingsScreen;
     }

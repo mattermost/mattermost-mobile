@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {PostOptions} from '@support/ui/component';
-import {isAndroid} from '@support/utils';
+import {isAndroid, timeouts} from '@support/utils';
 
 class EditPostScreen {
     testID = {
@@ -19,9 +19,9 @@ class EditPostScreen {
 
     toBeVisible = async () => {
         if (isAndroid()) {
-            await expect(this.editPostScreen).toBeVisible();
+            await waitFor(this.editPostScreen).toBeVisible().withTimeout(timeouts.TEN_SEC);
         } else {
-            await expect(this.editPostScreen).toExist();
+            await waitFor(this.editPostScreen).toExist().withTimeout(timeouts.TEN_SEC);
         }
 
         return this.editPostScreen;
