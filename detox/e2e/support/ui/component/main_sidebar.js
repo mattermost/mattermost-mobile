@@ -1,9 +1,10 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {timeouts} from '@support/utils';
+
 import ChannelsList from './channels_list';
 import TeamsList from './teams_list';
-import {timeouts} from '@support/utils';
 
 class MainSidebar {
     testID = {
