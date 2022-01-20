@@ -27,6 +27,9 @@ if (__DEV__) {
         'scaleY',
     ]);
     LogBox.ignoreLogs(['Require cycle: node_modules/zod/lib/src/index.js']);
+    LogBox.ignoreLogs([
+        "[react-native-gesture-handler] Seems like you're using an old API with gesture components, check out new Gestures system!",
+    ]);
 }
 
 setFontFamily();
