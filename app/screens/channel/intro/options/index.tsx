@@ -6,7 +6,7 @@ import {useIntl} from 'react-intl';
 import {StyleSheet, View} from 'react-native';
 
 import {Screens} from '@constants';
-import {showModal} from '@screens/navigation';
+import {showModal, goToScreen} from '@screens/navigation';
 
 import IntroFavorite from './favorite';
 import OptionItem from './item';
@@ -39,7 +39,7 @@ const IntroOptions = ({channelId, header, favorite, people, theme}: Props) => {
 
     const onSetHeader = useCallback(() => {
         const title = formatMessage({id: 'screens.channel_edit', defaultMessage: 'Edit Channel'});
-        showModal(Screens.CHANNEL_EDIT, title, {channelId});
+        goToScreen(Screens.CREATE_OR_EDIT_CHANNEL, title, {channelId});
     }, []);
 
     const onDetails = useCallback(() => {

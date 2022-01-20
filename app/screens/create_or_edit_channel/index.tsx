@@ -8,11 +8,13 @@ import {
 } from 'react-native';
 import {Navigation} from 'react-native-navigation';
 
-import {switchToChannel} from '@actions/local/channel';
-import {handlePatchChannel, handleCreateChannel, switchToChannelById} from '@actions/remote/channel';
+import {handlePatchChannel, handleCreateChannel} from '@actions/remote/channel';
 import ChannelInfoForm from '@app/screens/create_or_edit_channel/channel_info_form';
 import {General} from '@constants';
 import {useTheme} from '@context/theme';
+import DatabaseManager from '@database/manager';
+import {getActiveServerUrl} from '@init/credentials';
+import {queryCurrentChannel, queryCurrentChannelInfo} from '@queries/servers/channel';
 import {popTopScreen, dismissModal, setButtons} from '@screens/navigation';
 import {validateDisplayName} from '@utils/channel';
 
@@ -20,10 +22,8 @@ import type ChannelModel from '@typings/database/models/servers/channel';
 import type ChannelInfoModel from '@typings/database/models/servers/channel_info';
 
 type Props = {
-    serverUrl: string;
     componentId: string;
-    channel?: ChannelModel;
-    channelInfo?: ChannelInfoModel;
+    channelId?: string;
 }
 
 const CLOSE_CHANNEL_ID = 'close-channel';
@@ -55,13 +55,12 @@ const close = (goBack = false): void => {
     dismissModal();
 };
 
-const CreateOrEditChannel = ({serverUrl, componentId, channel, channelInfo}: Props) => {
+const CreateOrEditChannel = ({componentId, channelId}: Props) => {
     const intl = useIntl();
     const {formatMessage} = intl;
     const theme = useTheme();
 
-    // if a channel was provided, we are editing a channel
-    const editing = Boolean(channel);
+    const editing = Boolean(channelId);
 
     const rightButton = useMemo(() => {
         return {
@@ -74,8 +73,12 @@ const CreateOrEditChannel = ({serverUrl, componentId, channel, channelInfo}: Pro
         };
     }, [editing, theme.sidebarHeaderTextColor, intl.locale]);
 
-    const [type, setType] = useState<ChannelType>(channel?.type as ChannelType || General.OPEN_CHANNEL);
+    // const [type, setType] = useState<ChannelType>(channel?.type as ChannelType || General.OPEN_CHANNEL);
+    const [type, setType] = useState<ChannelType>(General.OPEN_CHANNEL as ChannelType);
 
+    const [serverUrl, setServerUrL] = useState<string>('jasonf.ngrok.io');
+    const [channel, setChannel] = useState<ChannelModel>();
+    const [channelInfo, setChannelInfo] = useState<ChannelInfoModel>();
     const [displayName, setDisplayName] = useState<string>(channel?.displayName || '');
     const [purpose, setPurpose] = useState<string>(channelInfo?.purpose || '');
     const [header, setHeader] = useState<string>(channelInfo?.header || '');
@@ -83,6 +86,45 @@ const CreateOrEditChannel = ({serverUrl, componentId, channel, channelInfo}: Pro
     const isDirect = (): boolean => {
         return channel?.type === General.DM_CHANNEL || channel?.type === General.GM_CHANNEL;
     };
+
+    console.log('channel.displayName', channel?.displayName);
+    console.log('displayName', displayName);
+
+    // console.log('channelInfo.header', channelInfo?.header);
+    // console.log('channelInfo.purpose', channelInfo?.purpose);
+    const getChannel = async (): Promise<void> => {
+        // const database = DatabaseManager.serverDatabases[serverUrl];
+        const database = DatabaseManager.serverDatabases['https://jasonf.ngrok.io'];
+        if (!database) {
+            return;
+        }
+        console.log('serverUrl', serverUrl);
+
+        const currentChannel = await queryCurrentChannel(database.database);
+        if (currentChannel) {
+            setDisplayName(currentChannel.displayName);
+            setChannel(currentChannel);
+        }
+
+        const currentChannelInfo = await queryCurrentChannelInfo(database.database);
+        if (currentChannelInfo) {
+            setHeader(currentChannelInfo.header);
+            setPurpose(currentChannelInfo.purpose);
+            setChannelInfo(currentChannelInfo);
+        }
+    };
+
+    const getServerUrl = async () => {
+        const url = await getActiveServerUrl();
+        setServerUrL(url);
+    };
+
+    useEffect(() => {
+        getServerUrl();
+        if (channelId) {
+            getChannel();
+        }
+    }, []);
 
     const [appState, dispatch] = useReducer((state: RequestState, action: RequestAction) => {
         switch (action.type) {
@@ -134,13 +176,12 @@ const CreateOrEditChannel = ({serverUrl, componentId, channel, channelInfo}: Pro
                 error: createdChannel.error as string,
             });
             enableRightButton(false);
-            return;
         }
-        dispatch({type: RequestActions.COMPLETE});
-        enableRightButton(false);
-        close(true);
 
-        // switchToChannelById(serverUrl, createdChannel!.channel!.id);
+        // dispatch({type: RequestActions.COMPLETE});
+        enableRightButton(false);
+
+        // close(true);
     }, [enableRightButton, displayName, header, purpose]);
 
     const onUpdateChannel = useCallback(async () => {

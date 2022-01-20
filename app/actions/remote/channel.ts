@@ -167,12 +167,6 @@ export const handlePatchChannel = async (serverUrl: string, channelPatch: Partia
 
     try {
         const channelData = await client.patchChannel(channelPatch.id, channelPatch);
-        if (channelData?.id) {
-
-            // TODO: select the channel
-            // dispatch(setChannelDisplayName(displayName));
-            // dispatch(handleSelectChannel(data.id));
-        }
         return {channel: channelData};
     } catch (error) {
         return {error};
@@ -645,7 +639,6 @@ export const switchToChannelById = async (serverUrl: string, channelId: string, 
 
     fetchPostsForChannel(serverUrl, channelId);
     await switchToChannel(serverUrl, channelId, teamId);
-    console.log('3. IN HERE!');
     markChannelAsRead(serverUrl, channelId);
     fetchChannelStats(serverUrl, channelId);
 

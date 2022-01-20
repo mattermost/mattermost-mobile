@@ -17,7 +17,7 @@ import type ChannelInfoModel from '@typings/database/models/servers/channel_info
 import type MyChannelModel from '@typings/database/models/servers/my_channel';
 import type PostModel from '@typings/database/models/servers/post';
 
-const {SERVER: {CHANNEL, MY_CHANNEL, CHANNEL_MEMBERSHIP}} = MM_TABLES;
+const {SERVER: {CHANNEL, CHANNEL_INFO, MY_CHANNEL, CHANNEL_MEMBERSHIP}} = MM_TABLES;
 
 export function prepareMissingChannelsForAllTeams(operator: ServerDataOperator, channels: Channel[], channelMembers: ChannelMembership[]): Array<Promise<Model[]>> | undefined {
     const channelInfos: ChannelInfo[] = [];
@@ -171,6 +171,15 @@ export const queryChannelsById = async (database: Database, channelIds: string[]
     }
 };
 
+export const queryChannelsInfoById = async (database: Database, channelIds: string[]): Promise<ChannelInfoModel[]|undefined> => {
+    try {
+        const channels = (await database.get(CHANNEL_INFO).query(Q.where('id', Q.oneOf(channelIds))).fetch()) as ChannelInfoModel[];
+        return channels;
+    } catch {
+        return undefined;
+    }
+};
+
 export const queryDefaultChannelForTeam = async (database: Database, teamId: string) => {
     let channel: ChannelModel|undefined;
     let canIJoinPublicChannelsInTeam = false;
@@ -208,6 +217,18 @@ export const queryCurrentChannel = async (database: Database) => {
         const channels = await queryChannelsById(database, [currentChannelId]);
         if (channels?.length) {
             return channels[0];
+        }
+    }
+
+    return undefined;
+};
+
+export const queryCurrentChannelInfo = async (database: Database) => {
+    const currentChannelId = await queryCurrentChannelId(database);
+    if (currentChannelId) {
+        const channelInfos = await queryChannelsInfoById(database, [currentChannelId]);
+        if (channelInfos?.length) {
+            return channelInfos[0];
         }
     }
 

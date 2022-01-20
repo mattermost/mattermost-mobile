@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useState, useRef, useMemo, useCallback} from 'react';
+import React, {useState, useRef, useCallback} from 'react';
 import {useIntl} from 'react-intl';
 import {
     LayoutChangeEvent,
@@ -19,6 +19,7 @@ import ErrorText from '@components/error_text';
 import FloatingTextInput from '@components/floating_text_input_label';
 import FormattedText from '@components/formatted_text';
 import Loading from '@components/loading';
+import SectionItem from '@components/section_item';
 import {General, Channel} from '@constants';
 import {useTheme} from '@context/theme';
 import {t} from '@i18n';
@@ -179,20 +180,27 @@ export default function ChannelInfoForm({
 
     const [headerHasFocus, setHeaderHasFocus] = useState<boolean>(false);
     const [headerPosition, setHeaderPosition] = useState<number>();
+    const [isPrivate, setIsPrivate] = useState<boolean>(false);
 
     const optionalText = formatMessage({id: t('channel_modal.optional'), defaultMessage: '(optional)'});
     const labelDisplayName = formatMessage({id: t('channel_modal.name'), defaultMessage: 'Name'});
     const labelPurpose = formatMessage({id: t('channel_modal.purpose'), defaultMessage: 'Purpose'}) + ' ' + optionalText;
     const labelHeader = formatMessage({id: t('channel_modal.header'), defaultMessage: 'Header'}) + ' ' + optionalText;
 
-    const placeholderDisplayName = formatMessage({id: t('channel_modal.nameEx'), defaultMessage: 'E.g.: "Bugs", "Marketing", "客户支持"'});
-    const placeholderPurpose = formatMessage({id: t('channel_modal.purposeEx'), defaultMessage: 'E.g.: "A channel to file bugs and improvements"'});
-    const placeholderHeader = formatMessage({id: t('channel_modal.headerEx'), defaultMessage: 'E.g.: "[Link Title](http://example.com)"'});
+    const placeholderDisplayName = formatMessage({id: t('channel_modal.nameEx'), defaultMessage: 'Bugs, Marketing'});
+    const placeholderPurpose = formatMessage({id: t('channel_modal.purposeEx'), defaultMessage: 'A channel to file bugs and improvements'});
+    const placeholderHeader = formatMessage({id: t('channel_modal.headerEx'), defaultMessage: 'Use Markdown to format header text'});
 
     const styles = getStyleSheet(theme);
 
     const displayHeaderOnly = channelType === General.DM_CHANNEL || channelType === General.GM_CHANNEL;
     const showSelector = !displayHeaderOnly && !editing;
+
+    const handlePress = () => {
+        setIsPrivate(!isPrivate);
+        const chtype = isPrivate ? General.OPEN_CHANNEL : General.PRIVATE_CHANNEL;
+        onTypeSelect(chtype as ChannelType);
+    };
 
     const blur = () => {
         if (nameInput?.current) {
@@ -327,51 +335,23 @@ export default function ChannelInfoForm({
                     <View style={styles.scrollView}>
                         {showSelector && (
                             <View>
-                                <View style={styles.inputContainer}>
-                                    <TouchableOpacity
-                                        style={styles.touchable}
-                                        onPress={() => {
-                                            onTypeSelect(General.OPEN_CHANNEL as ChannelType);
-                                        }}
-                                        testID='edit_channel_info.type.public.action'
-                                    >
+                                <SectionItem
+                                    label={(
                                         <FormattedText
-                                            style={styles.touchableText}
-                                            id='channel_modal.type.public'
-                                            defaultMessage='Public Channel'
+                                            id='channel_modal.makePrivate.'
+                                            defaultMessage={'Make Private'}
                                         />
-                                        {type === General.OPEN_CHANNEL &&
-                                        <CompassIcon
-                                            style={styles.touchableIcon}
-                                            color={theme.buttonBg}
-                                            name='check'
-                                            size={24}
-                                        />
-                                        }
-                                    </TouchableOpacity>
-                                    <View style={styles.divider}/>
-                                    <TouchableOpacity
-                                        style={styles.touchable}
-                                        onPress={() => {
-                                            onTypeSelect(General.PRIVATE_CHANNEL as ChannelType);
-                                        }}
-                                        testID='edit_channel_info.type.private.action'
-                                    >
+                                    )}
+                                    description={(
                                         <FormattedText
-                                            style={styles.touchableText}
-                                            id='channel_modal.type.private'
-                                            defaultMessage='Private Channel'
+                                            id='channel_modal.makePrivate.description'
+                                            defaultMessage={'When a channel is set to private, only invited team members can access and participate in that channel'}
                                         />
-                                        {type === General.PRIVATE_CHANNEL &&
-                                        <CompassIcon
-                                            style={styles.touchableIcon}
-                                            color={theme.buttonBg}
-                                            name='check'
-                                            size={24}
-                                        />
-                                        }
-                                    </TouchableOpacity>
-                                </View>
+                                    )}
+                                    action={handlePress}
+                                    actionType={'toggle'}
+                                    selected={isPrivate}
+                                />
                             </View>
                         )}
                         {!displayHeaderOnly && (
@@ -453,7 +433,7 @@ export default function ChannelInfoForm({
                             <FormattedText
                                 style={styles.helpText}
                                 id='channel_modal.headerHelp'
-                                defaultMessage={'Set text that will appear in the header of the channel beside the channel name. For example, include frequently used links by typing [Link Title](http://example.com).'}
+                                defaultMessage={'Specify text to appear in the channel header beside the channel name. For example, include frequently used links by typing link text [Link Title](http://example.com).'}
                             />
                         </View>
                     </View>

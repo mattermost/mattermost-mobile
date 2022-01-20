@@ -2,13 +2,16 @@
 // See LICENSE.txt for license information.
 
 import React, {useEffect} from 'react';
+import {useIntl} from 'react-intl';
 import {Text, View} from 'react-native';
 import Animated, {useAnimatedStyle, useSharedValue, withTiming} from 'react-native-reanimated';
 
 import CompassIcon from '@components/compass_icon';
 import TouchableWithFeedback from '@components/touchable_with_feedback';
+import {Screens} from '@constants';
 import {useServerDisplayName} from '@context/server';
 import {useTheme} from '@context/theme';
+import {goToScreen} from '@screens/navigation';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
@@ -54,6 +57,7 @@ const getStyles = makeStyleSheetFromTheme((theme: Theme) => ({
 
 const ChannelListHeader = ({displayName, iconPad}: Props) => {
     const theme = useTheme();
+    const intl = useIntl();
     const serverDisplayName = useServerDisplayName();
     const marginLeft = useSharedValue(iconPad ? 44 : 0);
     const styles = getStyles(theme);
@@ -64,6 +68,19 @@ const ChannelListHeader = ({displayName, iconPad}: Props) => {
     useEffect(() => {
         marginLeft.value = iconPad ? 44 : 0;
     }, [iconPad]);
+
+    const title = intl.formatMessage({
+        id: 'mobile.create_channel.title',
+        defaultMessage: 'New channel',
+    });
+    const passProps = {
+        componentId: Screens.CREATE_OR_EDIT_CHANNEL,
+        channelId: '',
+    };
+
+    const callGotoCreateScreen = () => {
+        goToScreen(Screens.CREATE_OR_EDIT_CHANNEL, title, passProps);
+    };
 
     return (
         <Animated.View style={animatedStyle}>
@@ -83,6 +100,7 @@ const ChannelListHeader = ({displayName, iconPad}: Props) => {
                     <CompassIcon
                         style={styles.plusIcon}
                         name={'plus'}
+                        onPress={callGotoCreateScreen}
                     />
                 </TouchableWithFeedback>
             </View>
