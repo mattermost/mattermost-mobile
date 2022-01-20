@@ -19,12 +19,12 @@ export function areConsecutivePosts(post: PostModel, previousPost: PostModel) {
         const isFromSameUser = previousPost.userId === post.userId;
         const isNotSystemMessage = !isSystemMessage(post) && !isSystemMessage(previousPost);
         const isInTimeframe = (post.createAt - previousPost.createAt) <= Post.POST_COLLAPSE_TIMEOUT;
-        const isSameThread = (previousPost.rootId === post.rootId || previousPost.id === post.rootId);
 
         // Were the last post and this post made by the same user within some time?
-        consecutive = previousPost && (isFromSameUser || isInTimeframe) && !postFromWebhook &&
-        !prevPostFromWebhook && isNotSystemMessage && isSameThread;
+        consecutive = previousPost && isFromSameUser && isInTimeframe && !postFromWebhook &&
+        !prevPostFromWebhook && isNotSystemMessage;
     }
+
     return consecutive;
 }
 
@@ -61,39 +61,25 @@ export function postUserDisplayName(post: PostModel, author?: UserModel, teammat
 }
 
 export const getMentionKeysForPost = (user: UserModel, post: PostModel, groups: GroupModel[] | null) => {
-    const keys: UserMentionKey[] = [];
-
-    if (!user.notifyProps) {
-        return keys;
-    }
-
-    if (user.notifyProps.mention_keys) {
-        const mentions = user.notifyProps.mention_keys.split(',').map((key) => ({key}));
-        keys.push(...mentions);
-    }
-
-    if (user.notifyProps.first_name === 'true' && user.firstName) {
-        keys.push({key: user.firstName, caseSensitive: true});
-    }
-
-    if (user.notifyProps.channel === 'true' && !post.props?.mentionHighlightDisabled) {
-        keys.push(
-            {key: '@channel'},
-            {key: '@all'},
-            {key: '@here'},
-        );
-    }
-
-    const usernameKey = `@${user.username}`;
-    if (keys.findIndex((item) => item.key === usernameKey) === -1) {
-        keys.push({key: usernameKey});
-    }
+    const keys: UserMentionKey[] = user.mentionKeys;
 
     if (groups?.length) {
         for (const group of groups) {
-            keys.push({key: `@${group.name}`});
+            if (group.name && group.name.trim()) {
+                keys.push({key: `@${group.name}`});
+            }
         }
     }
 
     return keys;
+};
+
+export const sortPostsByNewest = (posts: PostModel[]) => {
+    return posts.sort((a, b) => {
+        if (a.createAt > b.createAt) {
+            return 1;
+        }
+
+        return -1;
+    });
 };

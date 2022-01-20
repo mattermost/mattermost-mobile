@@ -64,14 +64,14 @@ const ClientUsers = (superclass: any) => class extends superclass {
             `${this.getUsersRoute()}${buildQueryString(queryParams)}`,
             {method: 'post', body: user},
         );
-    }
+    };
 
     patchMe = async (userPatch: Partial<UserProfile>) => {
         return this.doFetch(
             `${this.getUserRoute('me')}/patch`,
             {method: 'put', body: userPatch},
         );
-    }
+    };
 
     patchUser = async (userPatch: Partial<UserProfile> & {id: string}) => {
         this.analytics.trackAPI('api_users_patch');
@@ -80,7 +80,7 @@ const ClientUsers = (superclass: any) => class extends superclass {
             `${this.getUserRoute(userPatch.id)}/patch`,
             {method: 'put', body: userPatch},
         );
-    }
+    };
 
     updateUser = async (user: UserProfile) => {
         this.analytics.trackAPI('api_users_update');
@@ -89,7 +89,7 @@ const ClientUsers = (superclass: any) => class extends superclass {
             `${this.getUserRoute(user.id)}`,
             {method: 'put', body: user},
         );
-    }
+    };
 
     demoteUserToGuest = async (userId: string) => {
         this.analytics.trackAPI('api_users_demote_user_to_guest');
@@ -98,7 +98,7 @@ const ClientUsers = (superclass: any) => class extends superclass {
             `${this.getUserRoute(userId)}/demote`,
             {method: 'post'},
         );
-    }
+    };
 
     getKnownUsers = async () => {
         this.analytics.trackAPI('api_get_known_users');
@@ -107,7 +107,7 @@ const ClientUsers = (superclass: any) => class extends superclass {
             `${this.getUsersRoute()}/known`,
             {method: 'get'},
         );
-    }
+    };
 
     sendPasswordResetEmail = async (email: string) => {
         this.analytics.trackAPI('api_users_send_password_reset');
@@ -116,7 +116,7 @@ const ClientUsers = (superclass: any) => class extends superclass {
             `${this.getUsersRoute()}/password/reset/send`,
             {method: 'post', body: {email}},
         );
-    }
+    };
 
     setDefaultProfileImage = async (userId: string) => {
         this.analytics.trackAPI('api_users_set_default_profile_picture');

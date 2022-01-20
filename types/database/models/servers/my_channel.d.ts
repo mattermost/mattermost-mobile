@@ -26,6 +26,9 @@ export default class MyChannelModel extends Model {
     /** message_count : The derived number of unread messages on this channel */
     messageCount: number;
 
+    /** is_unread : Whether the channel has unread posts */
+    isUnread: boolean;
+
     /** roles : The user's privileges on this channel */
     roles: string;
 

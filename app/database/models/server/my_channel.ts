@@ -31,11 +31,14 @@ export default class MyChannelModel extends Model {
     /** manually_unread : Determine if the user marked a post as unread */
     @field('manually_unread') manuallyUnread!: boolean;
 
+    /** message_count : The derived number of unread messages on this channel */
+    @field('message_count') messageCount!: number;
+
     /** mentions_count : The number of mentions on this channel */
     @field('mentions_count') mentionsCount!: number;
 
-    /** message_count : The derived number of unread messages on this channel */
-    @field('message_count') messageCount!: number;
+    /** is_unread : Whether the channel has unread messages */
+    @field('is_unread') isUnread!: boolean;
 
     /** roles : The user's privileges on this channel */
     @field('roles') roles!: string;

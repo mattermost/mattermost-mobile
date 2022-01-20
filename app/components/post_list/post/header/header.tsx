@@ -4,6 +4,7 @@
 import React from 'react';
 import {View} from 'react-native';
 
+import {typography} from '@app/utils/typography';
 import CustomStatusEmoji from '@components/custom_status/custom_status_emoji';
 import FormattedTime from '@components/formatted_time';
 import {CHANNEL, THREAD} from '@constants/screens';
@@ -55,11 +56,10 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
         },
         time: {
             color: theme.centerChannelColor,
-            fontSize: 12,
-            lineHeight: 16,
             marginTop: 5,
             opacity: 0.5,
             flex: 1,
+            ...typography('Body', 75, 'Regular'),
         },
         customStatusEmoji: {
             color: theme.centerChannelColor,
@@ -80,7 +80,7 @@ const Header = (props: HeaderProps) => {
     const pendingPostStyle = isPendingOrFailed ? style.pendingPost : undefined;
     const isReplyPost = Boolean(post.rootId && !isEphemeral);
     const showReply = !isReplyPost && (location !== THREAD) && (shouldRenderReplyButton || (!rootPostAuthor && commentCount > 0));
-    const displayName = enablePostUsernameOverride ? postUserDisplayName(post, author, teammateNameDisplay, enablePostUsernameOverride) : '';
+    const displayName = postUserDisplayName(post, author, teammateNameDisplay, enablePostUsernameOverride);
     const rootAuthorDisplayName = rootPostAuthor ? displayUsername(rootPostAuthor, currentUser.locale, teammateNameDisplay, true) : undefined;
     const customStatus = getUserCustomStatus(author);
     const customStatusExpired = isCustomStatusExpired(author);

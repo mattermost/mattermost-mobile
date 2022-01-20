@@ -97,7 +97,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         footerTitleText: {
             color: changeOpacity(theme.centerChannelColor, 0.5),
             fontSize: 11,
-            fontFamily: 'OpenSans-Semibold',
+            fontFamily: 'OpenSans-SemiBold',
             lineHeight: 13,
         },
         footerText: {

@@ -24,6 +24,7 @@ const SearchScreen = () => {
     const intl = useIntl();
     const searchScreenIndex = 1;
     const stateIndex = nav.getState().index;
+    const {searchTerm} = nav.getState().routes[stateIndex].params;
 
     const animated = useAnimatedStyle(() => {
         if (isFocused) {
@@ -113,6 +114,7 @@ const SearchScreen = () => {
                 }}
                 blurOnSubmit={true}
                 placeholder={intl.formatMessage({id: 'screen.search.placeholder', defaultMessage: 'Search messages & files'})}
+                defaultValue={searchTerm}
             />
             <SafeAreaView
                 style={{flex: 1}}

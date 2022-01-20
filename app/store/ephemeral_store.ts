@@ -6,7 +6,7 @@ class EphemeralStore {
     navigationComponentIdStack: string[] = [];
     navigationModalStack: string[] = [];
     theme: Theme | undefined;
-    visibleTab = 'Home'
+    visibleTab = 'Home';
 
     addNavigationComponentId = (componentId: string) => {
         this.addToNavigationComponentIdStack(componentId);
@@ -17,7 +17,7 @@ class EphemeralStore {
         if (!this.allNavigationComponentIds.includes(componentId)) {
             this.allNavigationComponentIds.unshift(componentId);
         }
-    }
+    };
 
     addToNavigationComponentIdStack = (componentId: string) => {
         const index = this.navigationComponentIdStack.indexOf(componentId);
@@ -26,11 +26,11 @@ class EphemeralStore {
         }
 
         this.navigationComponentIdStack.unshift(componentId);
-    }
+    };
 
     addNavigationModal = (componentId: string) => {
         this.navigationModalStack.unshift(componentId);
-    }
+    };
 
     clearNavigationComponents = () => {
         this.navigationComponentIdStack = [];
@@ -40,21 +40,21 @@ class EphemeralStore {
 
     clearNavigationModals = () => {
         this.navigationModalStack = [];
-    }
+    };
 
     getAllNavigationComponents = () => this.allNavigationComponentIds;
 
     getNavigationTopComponentId = () => {
         return this.navigationComponentIdStack[0];
-    }
+    };
 
     getNavigationTopModalId = () => {
         return this.navigationModalStack[0];
-    }
+    };
 
     getNavigationComponents = () => {
         return this.navigationComponentIdStack;
-    }
+    };
 
     getVisibleTab = () => this.visibleTab;
 
@@ -65,7 +65,7 @@ class EphemeralStore {
         if (index >= 0) {
             this.navigationComponentIdStack.splice(index, 1);
         }
-    }
+    };
 
     removeNavigationModal = (componentId: string) => {
         const index = this.navigationModalStack.indexOf(componentId);
@@ -73,11 +73,11 @@ class EphemeralStore {
         if (index >= 0) {
             this.navigationModalStack.splice(index, 1);
         }
-    }
+    };
 
     setVisibleTap = (tab: string) => {
         this.visibleTab = tab;
-    }
+    };
 
     /**
      * Waits until a screen has been mounted and is part of the stack.
@@ -94,7 +94,7 @@ class EphemeralStore {
 
             found = this.navigationComponentIdStack.includes(componentId);
         }
-    }
+    };
 
     /**
      * Waits until a screen has been removed as part of the stack.
@@ -111,7 +111,7 @@ class EphemeralStore {
 
             found = !this.navigationComponentIdStack.includes(componentId);
         }
-    }
+    };
 }
 
 export default new EphemeralStore();

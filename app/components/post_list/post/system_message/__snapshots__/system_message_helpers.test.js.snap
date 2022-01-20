@@ -18,8 +18,10 @@ exports[`renderSystemMessage uses renderer for Channel Display Name update 1`] =
         Array [
           Object {
             "color": "rgba(63,67,80,0.6)",
+            "fontFamily": "OpenSans",
             "fontSize": 16,
-            "lineHeight": 20,
+            "fontWeight": "400",
+            "lineHeight": 24,
           },
           Object {
             "opacity": 1,
@@ -37,8 +39,10 @@ exports[`renderSystemMessage uses renderer for Channel Display Name update 1`] =
       style={
         Object {
           "color": "rgba(63,67,80,0.6)",
+          "fontFamily": "OpenSans",
           "fontSize": 16,
-          "lineHeight": 20,
+          "fontWeight": "400",
+          "lineHeight": 24,
         }
       }
       testID="markdown_text"
@@ -67,8 +71,10 @@ exports[`renderSystemMessage uses renderer for Channel Header update 1`] = `
         Array [
           Object {
             "color": "rgba(63,67,80,0.6)",
+            "fontFamily": "OpenSans",
             "fontSize": 16,
-            "lineHeight": 20,
+            "fontWeight": "400",
+            "lineHeight": 24,
           },
           Object {
             "opacity": 1,
@@ -86,8 +92,10 @@ exports[`renderSystemMessage uses renderer for Channel Header update 1`] = `
       style={
         Object {
           "color": "rgba(63,67,80,0.6)",
+          "fontFamily": "OpenSans",
           "fontSize": 16,
-          "lineHeight": 20,
+          "fontWeight": "400",
+          "lineHeight": 24,
         }
       }
       testID="markdown_text"
@@ -103,8 +111,10 @@ exports[`renderSystemMessage uses renderer for Channel Purpose update 1`] = `
   style={
     Object {
       "color": "rgba(63,67,80,0.6)",
+      "fontFamily": "OpenSans",
       "fontSize": 16,
-      "lineHeight": 20,
+      "fontWeight": "400",
+      "lineHeight": 24,
     }
   }
 >
@@ -130,8 +140,10 @@ exports[`renderSystemMessage uses renderer for Guest added and join to channel 1
         Array [
           Object {
             "color": "rgba(63,67,80,0.6)",
+            "fontFamily": "OpenSans",
             "fontSize": 16,
-            "lineHeight": 20,
+            "fontWeight": "400",
+            "lineHeight": 24,
           },
           Object {
             "opacity": 1,
@@ -149,8 +161,10 @@ exports[`renderSystemMessage uses renderer for Guest added and join to channel 1
       style={
         Object {
           "color": "rgba(63,67,80,0.6)",
+          "fontFamily": "OpenSans",
           "fontSize": 16,
-          "lineHeight": 20,
+          "fontWeight": "400",
+          "lineHeight": 24,
         }
       }
       testID="markdown_text"
@@ -179,8 +193,10 @@ exports[`renderSystemMessage uses renderer for Guest added and join to channel 2
         Array [
           Object {
             "color": "rgba(63,67,80,0.6)",
+            "fontFamily": "OpenSans",
             "fontSize": 16,
-            "lineHeight": 20,
+            "fontWeight": "400",
+            "lineHeight": 24,
           },
           Object {
             "opacity": 1,
@@ -198,8 +214,10 @@ exports[`renderSystemMessage uses renderer for Guest added and join to channel 2
       style={
         Object {
           "color": "rgba(63,67,80,0.6)",
+          "fontFamily": "OpenSans",
           "fontSize": 16,
-          "lineHeight": 20,
+          "fontWeight": "400",
+          "lineHeight": 24,
         }
       }
       testID="markdown_text"
@@ -211,8 +229,10 @@ exports[`renderSystemMessage uses renderer for Guest added and join to channel 2
         Array [
           Object {
             "color": "rgba(63,67,80,0.6)",
+            "fontFamily": "OpenSans",
             "fontSize": 16,
-            "lineHeight": 20,
+            "fontWeight": "400",
+            "lineHeight": 24,
           },
           Object {
             "opacity": 1,
@@ -247,8 +267,10 @@ exports[`renderSystemMessage uses renderer for OLD archived channel without a us
       style={
         Object {
           "color": "rgba(63,67,80,0.6)",
+          "fontFamily": "OpenSans",
           "fontSize": 16,
-          "lineHeight": 20,
+          "fontWeight": "400",
+          "lineHeight": 24,
         }
       }
       testID="markdown_text"
@@ -277,8 +299,10 @@ exports[`renderSystemMessage uses renderer for archived channel 1`] = `
         Array [
           Object {
             "color": "rgba(63,67,80,0.6)",
+            "fontFamily": "OpenSans",
             "fontSize": 16,
-            "lineHeight": 20,
+            "fontWeight": "400",
+            "lineHeight": 24,
           },
           Object {
             "opacity": 1,
@@ -296,8 +320,10 @@ exports[`renderSystemMessage uses renderer for archived channel 1`] = `
       style={
         Object {
           "color": "rgba(63,67,80,0.6)",
+          "fontFamily": "OpenSans",
           "fontSize": 16,
-          "lineHeight": 20,
+          "fontWeight": "400",
+          "lineHeight": 24,
         }
       }
       testID="markdown_text"
@@ -326,8 +352,10 @@ exports[`renderSystemMessage uses renderer for unarchived channel 1`] = `
         Array [
           Object {
             "color": "rgba(63,67,80,0.6)",
+            "fontFamily": "OpenSans",
             "fontSize": 16,
-            "lineHeight": 20,
+            "fontWeight": "400",
+            "lineHeight": 24,
           },
           Object {
             "opacity": 1,
@@ -345,8 +373,10 @@ exports[`renderSystemMessage uses renderer for unarchived channel 1`] = `
       style={
         Object {
           "color": "rgba(63,67,80,0.6)",
+          "fontFamily": "OpenSans",
           "fontSize": 16,
-          "lineHeight": 20,
+          "fontWeight": "400",
+          "lineHeight": 24,
         }
       }
       testID="markdown_text"

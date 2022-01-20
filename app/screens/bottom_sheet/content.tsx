@@ -32,7 +32,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             color: theme.centerChannelColor,
             lineHeight: 30,
             fontSize: 25,
-            fontFamily: 'OpenSans-Semibold',
+            fontFamily: 'OpenSans-SemiBold',
         },
         separator: {
             height: 1,

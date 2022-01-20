@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		02860A1AC3334896837E96B7 /* OpenSans-SemiBoldItalic.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 0DB14DFDF6E04FA69FE769DC /* OpenSans-SemiBoldItalic.ttf */; };
 		13B07FBC1A68108700A75B9A /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 13B07FB01A68108700A75B9A /* AppDelegate.m */; };
 		13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB51A68108700A75B9A /* Images.xcassets */; };
 		13B07FC11A68108700A75B9A /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 13B07FB71A68108700A75B9A /* main.m */; };
@@ -17,6 +18,7 @@
 		49B4C050230C981C006E919E /* libUploadAttachments.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 7FABE04522137F2A00D0F595 /* libUploadAttachments.a */; };
 		531BEBC72513E93C00BC05B1 /* compass-icons.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 531BEBC52513E93C00BC05B1 /* compass-icons.ttf */; };
 		536CC6C323E79287002C478C /* RNNotificationEventHandler+HandleReplyAction.m in Sources */ = {isa = PBXBuildFile; fileRef = 536CC6C123E79287002C478C /* RNNotificationEventHandler+HandleReplyAction.m */; };
+		58495E36BF1A4EAB93609E57 /* Metropolis-SemiBold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 54956DEFEBB74EF78C3A6AE5 /* Metropolis-SemiBold.ttf */; };
 		6C9B1EFD6561083917AF06CF /* libPods-Mattermost.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 8DEEFB3ED6175724A2653247 /* libPods-Mattermost.a */; };
 		7F0F4B0A24BA173900E14C60 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 7F0F4B0924BA173900E14C60 /* LaunchScreen.storyboard */; };
 		7F151D3E221B062700FAD8F3 /* RuntimeUtils.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7F151D3D221B062700FAD8F3 /* RuntimeUtils.swift */; };
@@ -37,7 +39,6 @@
 		7FABE0562213884700D0F595 /* libUploadAttachments.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 7FABE04522137F2A00D0F595 /* libUploadAttachments.a */; };
 		7FB31F812710995B0032E2E5 /* Metropolis-Light.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 7F25B626270F666D00F32373 /* Metropolis-Light.ttf */; };
 		7FB31F822710996D0032E2E5 /* Metropolis-Regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 7F25B628270F666D00F32373 /* Metropolis-Regular.ttf */; };
-		7FB31F832710996D0032E2E5 /* Metropolis-Semibold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 7F25B631270F824E00F32373 /* Metropolis-Semibold.ttf */; };
 		7FB31F842710996D0032E2E5 /* OpenSans-Bold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = D4B1B363C2414DA19C1AC521 /* OpenSans-Bold.ttf */; };
 		7FB31F852710996D0032E2E5 /* OpenSans-BoldItalic.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 32AC3D4EA79E44738A6E9766 /* OpenSans-BoldItalic.ttf */; };
 		7FB31F862710996D0032E2E5 /* OpenSans-ExtraBold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 3647DF63D6764CF093375861 /* OpenSans-ExtraBold.ttf */; };
@@ -46,13 +47,12 @@
 		7FB31F892710996D0032E2E5 /* OpenSans-Light.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 6561AEAC21CC40B8A72ABB93 /* OpenSans-Light.ttf */; };
 		7FB31F8A2710996D0032E2E5 /* OpenSans-LightItalic.ttf in Resources */ = {isa = PBXBuildFile; fileRef = BE17F630DB5D41FD93F32D22 /* OpenSans-LightItalic.ttf */; };
 		7FB31F8B2710996D0032E2E5 /* OpenSans-Regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = BC977883E2624E05975CA65B /* OpenSans-Regular.ttf */; };
-		7FB31F8C2710996D0032E2E5 /* OpenSans-Semibold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = C78A387124874496AD2C1466 /* OpenSans-Semibold.ttf */; };
-		7FB31F8D2710996D0032E2E5 /* OpenSans-SemiboldItalic.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 0E617BF0F36D4E738F51D169 /* OpenSans-SemiboldItalic.ttf */; };
 		7FB31F8E2710996D0032E2E5 /* compass-icons.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 531BEBC52513E93C00BC05B1 /* compass-icons.ttf */; };
 		7FCEFB9326B7934F006DC1DE /* SDWebImageDownloaderOperation+Swizzle.m in Sources */ = {isa = PBXBuildFile; fileRef = 7FCEFB9226B7934F006DC1DE /* SDWebImageDownloaderOperation+Swizzle.m */; };
 		7FEB109D1F61019C0039A015 /* MattermostManaged.m in Sources */ = {isa = PBXBuildFile; fileRef = 7FEB109A1F61019C0039A015 /* MattermostManaged.m */; };
 		84E3264B229834C30055068A /* Config.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84E325FF229834C30055068A /* Config.swift */; };
 		88F091443F8214E333C1742C /* ExpoModulesProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 491398A1DE9F082851AB1A77 /* ExpoModulesProvider.swift */; };
+		A94508A396424B2DB778AFE9 /* OpenSans-SemiBold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = E5C16B14E1CE4868886A1A00 /* OpenSans-SemiBold.ttf */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -128,7 +128,7 @@
 /* Begin PBXFileReference section */
 		00E356F11AD99517003FC87E /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		00E356F21AD99517003FC87E /* MattermostTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = MattermostTests.m; sourceTree = "<group>"; };
-		0E617BF0F36D4E738F51D169 /* OpenSans-SemiboldItalic.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "OpenSans-SemiboldItalic.ttf"; path = "../assets/fonts/OpenSans-SemiboldItalic.ttf"; sourceTree = "<group>"; };
+		0DB14DFDF6E04FA69FE769DC /* OpenSans-SemiBoldItalic.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "OpenSans-SemiBoldItalic.ttf"; path = "../assets/fonts/OpenSans-SemiBoldItalic.ttf"; sourceTree = "<group>"; };
 		13B07F961A680F5B00A75B9A /* Mattermost.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Mattermost.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		13B07FAF1A68108700A75B9A /* AppDelegate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = AppDelegate.h; path = Mattermost/AppDelegate.h; sourceTree = "<group>"; };
 		13B07FB01A68108700A75B9A /* AppDelegate.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = AppDelegate.m; path = Mattermost/AppDelegate.m; sourceTree = "<group>"; };
@@ -152,6 +152,7 @@
 		531BEBC52513E93C00BC05B1 /* compass-icons.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; name = "compass-icons.ttf"; path = "../assets/fonts/compass-icons.ttf"; sourceTree = "<group>"; };
 		536CC6C123E79287002C478C /* RNNotificationEventHandler+HandleReplyAction.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = "RNNotificationEventHandler+HandleReplyAction.m"; path = "Mattermost/RNNotificationEventHandler+HandleReplyAction.m"; sourceTree = "<group>"; };
 		536CC6C223E79287002C478C /* RNNotificationEventHandler+HandleReplyAction.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = "RNNotificationEventHandler+HandleReplyAction.h"; path = "Mattermost/RNNotificationEventHandler+HandleReplyAction.h"; sourceTree = "<group>"; };
+		54956DEFEBB74EF78C3A6AE5 /* Metropolis-SemiBold.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "Metropolis-SemiBold.ttf"; path = "../assets/fonts/Metropolis-SemiBold.ttf"; sourceTree = "<group>"; };
 		57CB4735B7E57B50D0B50E16 /* Pods-MattermostTests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-MattermostTests.debug.xcconfig"; path = "Target Support Files/Pods-MattermostTests/Pods-MattermostTests.debug.xcconfig"; sourceTree = "<group>"; };
 		6561AEAC21CC40B8A72ABB93 /* OpenSans-Light.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "OpenSans-Light.ttf"; path = "../assets/fonts/OpenSans-Light.ttf"; sourceTree = "<group>"; };
 		6BAF8296411D4657B5A0E8F8 /* libRNReactNativeDocViewer.a */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = archive.ar; path = libRNReactNativeDocViewer.a; sourceTree = "<group>"; };
@@ -168,7 +169,6 @@
 		7F240ADC220E094A00637665 /* TeamsViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TeamsViewController.swift; sourceTree = "<group>"; };
 		7F25B626270F666D00F32373 /* Metropolis-Light.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; name = "Metropolis-Light.ttf"; path = "../assets/fonts/Metropolis-Light.ttf"; sourceTree = "<group>"; };
 		7F25B628270F666D00F32373 /* Metropolis-Regular.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; name = "Metropolis-Regular.ttf"; path = "../assets/fonts/Metropolis-Regular.ttf"; sourceTree = "<group>"; };
-		7F25B631270F824E00F32373 /* Metropolis-Semibold.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; name = "Metropolis-Semibold.ttf"; path = "../assets/fonts/Metropolis-Semibold.ttf"; sourceTree = "<group>"; };
 		7F292A701E8AB73400A450A3 /* SplashScreenResource */ = {isa = PBXFileReference; lastKnownFileType = folder; path = SplashScreenResource; sourceTree = "<group>"; };
 		7F325D6DAAF1047EB948EFF7 /* Pods-Mattermost-MattermostTests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Mattermost-MattermostTests.debug.xcconfig"; path = "Target Support Files/Pods-Mattermost-MattermostTests/Pods-Mattermost-MattermostTests.debug.xcconfig"; sourceTree = "<group>"; };
 		7F43D6051F6BF9EB001FC614 /* libPods-Mattermost.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = "libPods-Mattermost.a"; path = "../../../../../../../Library/Developer/Xcode/DerivedData/Mattermost-czlinsdviifujheezzjvmisotjrm/Build/Products/Debug-iphonesimulator/libPods-Mattermost.a"; sourceTree = "<group>"; };
@@ -203,8 +203,8 @@
 		8DEEFB3ED6175724A2653247 /* libPods-Mattermost.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-Mattermost.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		BC977883E2624E05975CA65B /* OpenSans-Regular.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "OpenSans-Regular.ttf"; path = "../assets/fonts/OpenSans-Regular.ttf"; sourceTree = "<group>"; };
 		BE17F630DB5D41FD93F32D22 /* OpenSans-LightItalic.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "OpenSans-LightItalic.ttf"; path = "../assets/fonts/OpenSans-LightItalic.ttf"; sourceTree = "<group>"; };
-		C78A387124874496AD2C1466 /* OpenSans-Semibold.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "OpenSans-Semibold.ttf"; path = "../assets/fonts/OpenSans-Semibold.ttf"; sourceTree = "<group>"; };
 		D4B1B363C2414DA19C1AC521 /* OpenSans-Bold.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "OpenSans-Bold.ttf"; path = "../assets/fonts/OpenSans-Bold.ttf"; sourceTree = "<group>"; };
+		E5C16B14E1CE4868886A1A00 /* OpenSans-SemiBold.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "OpenSans-SemiBold.ttf"; path = "../assets/fonts/OpenSans-SemiBold.ttf"; sourceTree = "<group>"; };
 		EB4F0DF36537B0B21BE962FB /* Pods-Mattermost.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Mattermost.debug.xcconfig"; path = "Target Support Files/Pods-Mattermost/Pods-Mattermost.debug.xcconfig"; sourceTree = "<group>"; };
 		F41672974C2907F74BB59B16 /* libPods-Mattermost-MattermostTests.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-Mattermost-MattermostTests.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		FBBEC29EE2D3418D9AC33BD5 /* OpenSans-ExtraBoldItalic.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "OpenSans-ExtraBoldItalic.ttf"; path = "../assets/fonts/OpenSans-ExtraBoldItalic.ttf"; sourceTree = "<group>"; };
@@ -262,9 +262,10 @@
 		0156F464626F49C2977D7982 /* Resources */ = {
 			isa = PBXGroup;
 			children = (
+				531BEBC52513E93C00BC05B1 /* compass-icons.ttf */,
 				7F25B626270F666D00F32373 /* Metropolis-Light.ttf */,
 				7F25B628270F666D00F32373 /* Metropolis-Regular.ttf */,
-				7F25B631270F824E00F32373 /* Metropolis-Semibold.ttf */,
+				54956DEFEBB74EF78C3A6AE5 /* Metropolis-SemiBold.ttf */,
 				D4B1B363C2414DA19C1AC521 /* OpenSans-Bold.ttf */,
 				32AC3D4EA79E44738A6E9766 /* OpenSans-BoldItalic.ttf */,
 				3647DF63D6764CF093375861 /* OpenSans-ExtraBold.ttf */,
@@ -273,9 +274,8 @@
 				6561AEAC21CC40B8A72ABB93 /* OpenSans-Light.ttf */,
 				BE17F630DB5D41FD93F32D22 /* OpenSans-LightItalic.ttf */,
 				BC977883E2624E05975CA65B /* OpenSans-Regular.ttf */,
-				C78A387124874496AD2C1466 /* OpenSans-Semibold.ttf */,
-				0E617BF0F36D4E738F51D169 /* OpenSans-SemiboldItalic.ttf */,
-				531BEBC52513E93C00BC05B1 /* compass-icons.ttf */,
+				E5C16B14E1CE4868886A1A00 /* OpenSans-SemiBold.ttf */,
+				0DB14DFDF6E04FA69FE769DC /* OpenSans-SemiBoldItalic.ttf */,
 			);
 			name = Resources;
 			sourceTree = "<group>";
@@ -628,7 +628,6 @@
 				7F292A711E8AB73400A450A3 /* SplashScreenResource in Resources */,
 				7FB31F812710995B0032E2E5 /* Metropolis-Light.ttf in Resources */,
 				7FB31F822710996D0032E2E5 /* Metropolis-Regular.ttf in Resources */,
-				7FB31F832710996D0032E2E5 /* Metropolis-Semibold.ttf in Resources */,
 				7FB31F842710996D0032E2E5 /* OpenSans-Bold.ttf in Resources */,
 				7FB31F852710996D0032E2E5 /* OpenSans-BoldItalic.ttf in Resources */,
 				7FB31F862710996D0032E2E5 /* OpenSans-ExtraBold.ttf in Resources */,
@@ -637,9 +636,10 @@
 				7FB31F892710996D0032E2E5 /* OpenSans-Light.ttf in Resources */,
 				7FB31F8A2710996D0032E2E5 /* OpenSans-LightItalic.ttf in Resources */,
 				7FB31F8B2710996D0032E2E5 /* OpenSans-Regular.ttf in Resources */,
-				7FB31F8C2710996D0032E2E5 /* OpenSans-Semibold.ttf in Resources */,
-				7FB31F8D2710996D0032E2E5 /* OpenSans-SemiboldItalic.ttf in Resources */,
 				7FB31F8E2710996D0032E2E5 /* compass-icons.ttf in Resources */,
+				58495E36BF1A4EAB93609E57 /* Metropolis-SemiBold.ttf in Resources */,
+				A94508A396424B2DB778AFE9 /* OpenSans-SemiBold.ttf in Resources */,
+				02860A1AC3334896837E96B7 /* OpenSans-SemiBoldItalic.ttf in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -707,7 +707,7 @@
 			);
 			inputPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-Mattermost/Pods-Mattermost-frameworks.sh",
-				"${PODS_XCFRAMEWORKS_BUILD_DIR}/hermes/hermes.framework/hermes",
+				"${PODS_XCFRAMEWORKS_BUILD_DIR}/hermes-engine/hermes.framework/hermes",
 			);
 			name = "[CP] Embed Pods Frameworks";
 			outputPaths = (
@@ -739,43 +739,11 @@
 			);
 			inputPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-Mattermost/Pods-Mattermost-resources.sh",
-				"${PODS_ROOT}/../../node_modules/react-native-vector-icons/Fonts/AntDesign.ttf",
-				"${PODS_ROOT}/../../node_modules/react-native-vector-icons/Fonts/Entypo.ttf",
-				"${PODS_ROOT}/../../node_modules/react-native-vector-icons/Fonts/EvilIcons.ttf",
-				"${PODS_ROOT}/../../node_modules/react-native-vector-icons/Fonts/Feather.ttf",
-				"${PODS_ROOT}/../../node_modules/react-native-vector-icons/Fonts/FontAwesome.ttf",
-				"${PODS_ROOT}/../../node_modules/react-native-vector-icons/Fonts/FontAwesome5_Brands.ttf",
-				"${PODS_ROOT}/../../node_modules/react-native-vector-icons/Fonts/FontAwesome5_Regular.ttf",
-				"${PODS_ROOT}/../../node_modules/react-native-vector-icons/Fonts/FontAwesome5_Solid.ttf",
-				"${PODS_ROOT}/../../node_modules/react-native-vector-icons/Fonts/Fontisto.ttf",
-				"${PODS_ROOT}/../../node_modules/react-native-vector-icons/Fonts/Foundation.ttf",
-				"${PODS_ROOT}/../../node_modules/react-native-vector-icons/Fonts/Ionicons.ttf",
-				"${PODS_ROOT}/../../node_modules/react-native-vector-icons/Fonts/MaterialCommunityIcons.ttf",
-				"${PODS_ROOT}/../../node_modules/react-native-vector-icons/Fonts/MaterialIcons.ttf",
-				"${PODS_ROOT}/../../node_modules/react-native-vector-icons/Fonts/Octicons.ttf",
-				"${PODS_ROOT}/../../node_modules/react-native-vector-icons/Fonts/SimpleLineIcons.ttf",
-				"${PODS_ROOT}/../../node_modules/react-native-vector-icons/Fonts/Zocial.ttf",
 				"${PODS_CONFIGURATION_BUILD_DIR}/React-Core/AccessibilityResources.bundle",
 				"${PODS_ROOT}/YoutubePlayer-in-WKWebView/WKYTPlayerView/WKYTPlayerView.bundle",
 			);
 			name = "[CP] Copy Pods Resources";
 			outputPaths = (
-				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/AntDesign.ttf",
-				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/Entypo.ttf",
-				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/EvilIcons.ttf",
-				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/Feather.ttf",
-				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/FontAwesome.ttf",
-				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/FontAwesome5_Brands.ttf",
-				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/FontAwesome5_Regular.ttf",
-				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/FontAwesome5_Solid.ttf",
-				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/Fontisto.ttf",
-				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/Foundation.ttf",
-				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/Ionicons.ttf",
-				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/MaterialCommunityIcons.ttf",
-				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/MaterialIcons.ttf",
-				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/Octicons.ttf",
-				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/SimpleLineIcons.ttf",
-				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/Zocial.ttf",
 				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/AccessibilityResources.bundle",
 				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/WKYTPlayerView.bundle",
 			);
