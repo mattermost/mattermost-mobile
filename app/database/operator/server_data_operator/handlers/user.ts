@@ -129,7 +129,7 @@ const UserHandler = (superclass: any) => class extends superclass {
      * @param {HandleReactionsArgs} handleReactions
      * @param {ReactionsPerPost[]} handleReactions.reactions
      * @param {boolean} handleReactions.prepareRecordsOnly
-     * * @param {boolean} handleReactions.skipSync
+     * @param {boolean} handleReactions.skipSync
      * @throws DataOperatorException
      * @returns {Promise<Array<(ReactionModel | CustomEmojiModel)>>}
      */

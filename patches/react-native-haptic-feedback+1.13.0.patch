@@ -11,19 +11,3 @@ index 167118f..e7b8fc4 100644
          vibrateMap.put("impactMedium", new VibrateWithDuration(new long[]{0, 40}));
          vibrateMap.put("impactHeavy", new VibrateWithDuration(new long[]{0, 60}));
          vibrateMap.put("notificationSuccess", new VibrateWithDuration(new long[]{0, 40 ,60, 20}));
-diff --git a/node_modules/react-native-haptic-feedback/ios/RNReactNativeHapticFeedback.h b/node_modules/react-native-haptic-feedback/ios/RNReactNativeHapticFeedback.h
-index e9c7fd4..2171296 100644
---- a/node_modules/react-native-haptic-feedback/ios/RNReactNativeHapticFeedback.h
-+++ b/node_modules/react-native-haptic-feedback/ios/RNReactNativeHapticFeedback.h
-@@ -1,11 +1,7 @@
- 
- #import <Foundation/Foundation.h>
- #import <UIKit/UIKit.h>
--#if __has_include("RCTBridgeModule.h")
--#import "RCTBridgeModule.h"
--#else
- #import <React/RCTBridgeModule.h>
--#endif
- 
- @interface RNReactNativeHapticFeedback : NSObject <RCTBridgeModule>
- 
