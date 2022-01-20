@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback, useEffect, useState} from 'react';
+import React, {useCallback, useState} from 'react';
 import {DeviceEventEmitter, Platform, View} from 'react-native';
 
 import {Client} from '@client/rest';
@@ -45,11 +45,9 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
 });
 
 const EditProfilePicture = ({user, onUpdateProfilePicture}: ChangeProfilePictureProps) => {
-    const [pictureUrl, setPictureUrl] = useState<string|undefined>();
-    const theme = useTheme();
     const serverUrl = useServerUrl();
+    const theme = useTheme();
 
-    const styles = getStyleSheet(theme);
     let client: Client | undefined;
 
     try {
@@ -58,10 +56,9 @@ const EditProfilePicture = ({user, onUpdateProfilePicture}: ChangeProfilePicture
         // does nothing
     }
 
-    useEffect(() => {
-        // sets initial picture url
-        setPictureUrl(client?.getProfilePictureUrl(user.id, user.lastPictureUpdate));
-    }, []);
+    const [pictureUrl, setPictureUrl] = useState<string|undefined>(client?.getProfilePictureUrl(user.id, user.lastPictureUpdate));
+
+    const styles = getStyleSheet(theme);
 
     useDidUpdate(() => {
         const url = user.id && client ? client.getProfilePictureUrl(user.id, user.lastPictureUpdate) : undefined;

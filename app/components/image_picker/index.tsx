@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback, useMemo} from 'react';
+import React, {useMemo} from 'react';
 import {useIntl} from 'react-intl';
 import {TouchableOpacity} from 'react-native';
 import DocumentPicker from 'react-native-document-picker';
@@ -38,18 +38,12 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
 });
 
 type ImagePickerProps = {
-    canBrowseFiles?: boolean;
-    canBrowsePhotoLibrary?: boolean;
-    canTakePhoto?: boolean;
     onRemoveProfileImage: UploadExtractedFile;
     uploadFiles: UploadExtractedFile;
     user: UserModel;
 };
 
 const ImagePicker = ({
-    canBrowseFiles = true,
-    canBrowsePhotoLibrary = true,
-    canTakePhoto = true,
     onRemoveProfileImage,
     uploadFiles,
     user,
@@ -60,7 +54,7 @@ const ImagePicker = ({
     const pictureUtils = useMemo(() => new PickerUtil(intl, uploadFiles), [uploadFiles]);
     const styles = getStyleSheet(theme);
 
-    const showFileAttachmentOptions = useCallback(() => {
+    const showFileAttachmentOptions = () => {
         const canRemovePicture = pictureUtils.hasPictureUrl(user, serverUrl);
 
         const renderContent = () => {
@@ -110,9 +104,9 @@ const ImagePicker = ({
 
             return (
                 <>
-                    {canTakePhoto && renderPanelItems('takePhoto')}
-                    {canBrowsePhotoLibrary && renderPanelItems('browsePhotoLibrary')}
-                    {canBrowseFiles && renderPanelItems('browseFiles')}
+                    { renderPanelItems('takePhoto')}
+                    { renderPanelItems('browsePhotoLibrary')}
+                    {renderPanelItems('browseFiles')}
                     {canRemovePicture && renderPanelItems('removeProfilePicture')}
                 </>
             );
@@ -127,7 +121,7 @@ const ImagePicker = ({
             title: '',
             theme,
         });
-    }, [user, onRemoveProfileImage]);
+    };
 
     return (
         <TouchableOpacity
