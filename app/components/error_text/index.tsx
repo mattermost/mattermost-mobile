@@ -7,7 +7,7 @@ import {StyleProp, Text, TextStyle, ViewStyle} from 'react-native';
 import FormattedText from '@components/formatted_text';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 
-import type {ErrorText as ErrorType} from '@typings/utils';
+import type {ErrorText as ErrorType} from '@typings/utils/file';
 
 type ErrorProps = {
     error: ErrorType;

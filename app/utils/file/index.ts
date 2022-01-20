@@ -18,7 +18,7 @@ import {removeProtocol} from '@utils/url';
 import {generateId} from '../general';
 
 import type FileModel from '@typings/database/models/servers/file';
-import type {ExtractedFileInfo} from '@typings/utils';
+import type {ExtractedFileInfo} from '@typings/utils/file';
 
 const EXTRACT_TYPE_REGEXP = /^\s*([^;\s]*)(?:;|\s|$)/;
 const CONTENT_DISPOSITION_REGEXP = /inline;filename=".*\.([a-z]+)";/i;

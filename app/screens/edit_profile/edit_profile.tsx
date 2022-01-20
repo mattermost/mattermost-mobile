@@ -21,7 +21,6 @@ import {useTheme} from '@context/theme';
 import {t} from '@i18n';
 import NetworkManager from '@init/network_manager';
 import {dismissModal, popTopScreen, setButtons} from '@screens/navigation';
-import {EditProfileProps, FieldConfig, FieldSequence, NewProfileImage, UserInfo} from '@typings/screens/edit_profile';
 import {preventDoubleTap} from '@utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
@@ -32,7 +31,8 @@ import Field from './components/field';
 import ProfileError from './components/profile_error';
 
 import type {MessageDescriptor} from '@formatjs/intl/src/types';
-import type {ErrorText} from '@typings/utils';
+import type {EditProfileProps, FieldConfig, FieldSequence, NewProfileImage, UserInfo} from '@typings/screens/edit_profile';
+import type {ErrorText} from '@typings/utils/file';
 
 const edges: Edge[] = ['bottom', 'left', 'right'];
 

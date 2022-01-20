@@ -4,6 +4,7 @@
 import React, {useCallback, useMemo} from 'react';
 import {useIntl} from 'react-intl';
 import {DeviceEventEmitter, TouchableOpacity} from 'react-native';
+import DocumentPicker from 'react-native-document-picker';
 
 import CompassIcon from '@components/compass_icon';
 import SlideUpPanelItem, {ITEM_HEIGHT} from '@components/slide_up_panel_item';
@@ -15,7 +16,7 @@ import PickerUtil from '@utils/file/file_picker';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 import type UserModel from '@typings/database/models/servers/user';
-import type {ExtractedFileInfo} from '@typings/utils';
+import type {UploadExtractedFile} from '@typings/utils/file';
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     return {
@@ -24,7 +25,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             justifyContent: 'center',
             borderWidth: 1,
             borderColor: theme.centerChannelBg,
-            borderRadius: 36 / 2,
+            borderRadius: 18,
             height: 36,
             width: 36,
             position: 'absolute',
@@ -36,17 +37,15 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
 });
 
 type ImagePickerProps = {
-    browseFileType?: string;
     canBrowseFiles?: boolean;
     canBrowsePhotoLibrary?: boolean;
     canTakePhoto?: boolean;
-    onRemoveProfileImage: () => void;
-    uploadFiles: (files: ExtractedFileInfo[]) => void;
+    onRemoveProfileImage: UploadExtractedFile;
+    uploadFiles: UploadExtractedFile;
     user: UserModel;
 };
 
 const ImagePicker = ({
-    browseFileType,
     canBrowseFiles = true,
     canBrowsePhotoLibrary = true,
     canTakePhoto = true,
@@ -80,7 +79,7 @@ const ImagePicker = ({
                     },
                     browseFiles: {
                         icon: 'file-multiple-outline',
-                        onPress: () => pictureUtils.attachFileFromFiles(browseFileType),
+                        onPress: () => pictureUtils.attachFileFromFiles(DocumentPicker.types.images),
                         testID: 'attachment.browseFiles',
                         text: intl.formatMessage({id: 'mobile.file_upload.browse', defaultMessage: 'Browse Files'}),
                     },

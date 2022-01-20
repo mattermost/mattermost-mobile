@@ -12,10 +12,10 @@ import Permissions, {AndroidPermission, IOSPermission} from 'react-native-permis
 import {Client} from '@client/rest';
 import {Navigation} from '@constants';
 import NetworkManager from '@init/network_manager';
-import {ExtractedFileInfo} from '@typings/utils';
 import {extractFileInfos, lookupMimeType} from '@utils/file';
 
 import type UserModel from '@typings/database/models/servers/user';
+import type {ExtractedFileInfo} from '@typings/utils/file';
 
 const ShareExtension = NativeModules.MattermostShare;
 
@@ -25,10 +25,7 @@ export default class FilePickerUtil {
     private readonly uploadFiles: (files: ExtractedFileInfo[]) => void;
     private readonly intl: IntlShape;
 
-    constructor(
-        intl: IntlShape,
-        uploadFiles: (files: FileInfo[]) => void,
-    ) {
+    constructor(intl: IntlShape, uploadFiles: (files: ExtractedFileInfo[]) => void) {
         this.intl = intl;
         this.uploadFiles = uploadFiles;
     }

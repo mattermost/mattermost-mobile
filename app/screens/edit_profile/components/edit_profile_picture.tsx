@@ -2,8 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback, useEffect, useState} from 'react';
-import {Platform, StyleSheet, View} from 'react-native';
-import DocumentPicker from 'react-native-document-picker';
+import {Platform, View} from 'react-native';
 
 import {Client} from '@client/rest';
 import ImagePicker from '@components/image_picker';
@@ -12,8 +11,9 @@ import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import useDidUpdate from '@hooks/did_update';
 import NetworkManager from '@init/network_manager';
-import UserModel from '@typings/database/models/servers/user';
-import {changeOpacity} from '@utils/theme';
+import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
+
+import type UserModel from '@typings/database/models/servers/user';
 
 type ChangeProfilePictureProps = {
     user: UserModel;
@@ -22,17 +22,25 @@ type ChangeProfilePictureProps = {
 
 const SIZE = 128;
 
-const styles = StyleSheet.create({
-    container: {
-        justifyContent: 'center',
-        alignItems: 'center',
-    },
-    camera: {
-        position: 'absolute',
-        overflow: 'hidden',
-        height: '100%',
-        width: '100%',
-    },
+const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
+    return {
+        container: {
+            justifyContent: 'center',
+            alignItems: 'center',
+        },
+        camera: {
+            position: 'absolute',
+            overflow: 'hidden',
+            height: '100%',
+            width: '100%',
+        },
+        subContainer: {
+            backgroundColor: changeOpacity(theme.centerChannelColor, 0.08),
+            height: SIZE,
+            width: SIZE,
+            borderRadius: SIZE / 2,
+        },
+    };
 });
 
 const EditProfilePicture = ({user, onUpdatedProfilePicture}: ChangeProfilePictureProps) => {
@@ -40,7 +48,9 @@ const EditProfilePicture = ({user, onUpdatedProfilePicture}: ChangeProfilePictur
     const theme = useTheme();
     const serverUrl = useServerUrl();
 
+    const styles = getStyleSheet(theme);
     let client: Client | undefined;
+
     try {
         client = NetworkManager.getClient(serverUrl);
     } catch {
@@ -59,18 +69,20 @@ const EditProfilePicture = ({user, onUpdatedProfilePicture}: ChangeProfilePictur
         }
     }, [user.id, user.lastPictureUpdate]);
 
-    const handleUploadProfileImage = useCallback((images: FileInfo[]) => {
+    const handleProfileImage = useCallback((images?: FileInfo[]) => {
+        let isRemoved = true;
+        let localPath;
+        let pUrl = 'account-outline';
+
         const newImage = images?.[0]?.localPath;
         if (newImage) {
-            setPictureUrl(newImage);
-            onUpdatedProfilePicture({isRemoved: false, localPath: newImage});
+            isRemoved = false;
+            localPath = newImage;
+            pUrl = newImage;
         }
-    }, []);
 
-    const handleRemoveProfileImage = useCallback(() => {
-        setPictureUrl('account-outline');
-        onUpdatedProfilePicture({isRemoved: true, localPath: undefined},
-        );
+        setPictureUrl(pUrl);
+        onUpdatedProfilePicture({isRemoved, localPath});
     }, []);
 
     let source;
@@ -100,12 +112,7 @@ const EditProfilePicture = ({user, onUpdatedProfilePicture}: ChangeProfilePictur
         <View
             style={[
                 styles.container,
-                {
-                    backgroundColor: changeOpacity(theme.centerChannelColor, 0.08),
-                    height: SIZE,
-                    width: SIZE,
-                    borderRadius: SIZE / 2,
-                },
+                styles.subContainer,
             ]}
             testID={`${EditProfilePicture}.${user.id}`}
         >
@@ -119,9 +126,8 @@ const EditProfilePicture = ({user, onUpdatedProfilePicture}: ChangeProfilePictur
                 style={styles.camera}
             >
                 <ImagePicker
-                    browseFileType={DocumentPicker.types.images}
-                    onRemoveProfileImage={handleRemoveProfileImage}
-                    uploadFiles={handleUploadProfileImage}
+                    onRemoveProfileImage={handleProfileImage}
+                    uploadFiles={handleProfileImage}
                     user={user}
                 />
             </View>

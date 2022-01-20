@@ -118,10 +118,11 @@ const ProfilePicture = ({
                 />
             );
         } else {
+            const fIStyle = {width: size, height: size, borderRadius: (size / 2)};
             image = (
                 <FastImage
                     key={pictureUrl}
-                    style={{width: size, height: size, borderRadius: (size / 2)}}
+                    style={fIStyle}
                     source={imgSource as Source}
                 />
             );
