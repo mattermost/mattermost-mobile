@@ -29,7 +29,7 @@ type ProfilePictureProps = {
     statusSize?: number;
     statusStyle?: StyleProp<ViewProps>;
     testID?: string;
-    source?: { uri: string } | string;
+    source?: Source | string;
 };
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
@@ -82,7 +82,7 @@ const ProfilePicture = ({
     }
 
     useEffect(() => {
-        if (author && showStatus) {
+        if (author && !author.status && showStatus) {
             fetchStatusInBatch(serverUrl, author.id);
         }
     }, []);
@@ -109,10 +109,10 @@ const ProfilePicture = ({
         const pictureUrl = client.getProfilePictureUrl(author.id, author.lastPictureUpdate);
         const imgSource = source ?? {uri: `${serverUrl}${pictureUrl}`};
 
-        if (source === 'account-outline') {
+        if (typeof source === 'string') {
             image = (
                 <CompassIcon
-                    name='account-outline'
+                    name={source}
                     size={iconSize || size}
                     style={style.icon}
                 />
