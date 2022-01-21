@@ -3,7 +3,7 @@
 
 import React, {useMemo} from 'react';
 import {useIntl} from 'react-intl';
-import {TouchableOpacity} from 'react-native';
+import {Platform, TouchableOpacity} from 'react-native';
 import DocumentPicker from 'react-native-document-picker';
 
 import CompassIcon from '@components/compass_icon';
@@ -18,6 +18,7 @@ import type UserModel from '@typings/database/models/servers/user';
 import type {UploadExtractedFile} from '@typings/utils/file';
 
 const hitSlop = {top: 100, bottom: 20, right: 20, left: 100};
+const snapPoints = Platform.select({android: 4, ios: 5});
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     return {
@@ -104,20 +105,18 @@ const ImagePicker = ({
 
             return (
                 <>
-                    { renderPanelItems('takePhoto')}
-                    { renderPanelItems('browsePhotoLibrary')}
+                    {renderPanelItems('takePhoto')}
+                    {renderPanelItems('browsePhotoLibrary')}
                     {renderPanelItems('browseFiles')}
                     {canRemovePicture && renderPanelItems('removeProfilePicture')}
                 </>
             );
         };
 
-        const snapPoints = canRemovePicture ? 5 : 4;
-
         return bottomSheet({
             closeButtonId: 'close-edit-profile',
             renderContent,
-            snapPoints: [(snapPoints * ITEM_HEIGHT), 10],
+            snapPoints: [(snapPoints! * ITEM_HEIGHT), 10],
             title: '',
             theme,
         });
