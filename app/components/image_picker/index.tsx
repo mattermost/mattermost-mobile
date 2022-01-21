@@ -104,8 +104,8 @@ const ImagePicker = ({
 
             return (
                 <>
-                    { renderPanelItems('takePhoto')}
-                    { renderPanelItems('browsePhotoLibrary')}
+                    {renderPanelItems('takePhoto')}
+                    {renderPanelItems('browsePhotoLibrary')}
                     {renderPanelItems('browseFiles')}
                     {canRemovePicture && renderPanelItems('removeProfilePicture')}
                 </>

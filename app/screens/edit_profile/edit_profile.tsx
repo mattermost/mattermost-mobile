@@ -100,6 +100,7 @@ const FIELDS: { [id: string]: MessageDescriptor } = {
 
 const CLOSE_BUTTON_ID = 'close-edit-profile';
 const UPDATE_BUTTON_ID = 'update-profile';
+const PROFILE_PICTURE_SIZE = 153;
 
 const includesSsoService = (sso: string) => ['gitlab', 'google', 'office365'].includes(sso);
 const isSAMLOrLDAP = (protocol: string) => ['ldap', 'saml'].includes(protocol);
@@ -370,7 +371,7 @@ const EditProfile = ({
                 <View style={styles.top}>
                     <ProfilePicture
                         author={currentUser}
-                        size={153}
+                        size={PROFILE_PICTURE_SIZE}
                         showStatus={false}
                     />
                 </View>
