@@ -377,18 +377,14 @@ const EditProfile = ({
             );
         }
 
-        if (!currentUser.isBot) {
-            return (
-                <View style={styles.top}>
-                    <EditProfilePicture
-                        onUpdateProfilePicture={onUpdateProfilePicture}
-                        user={currentUser}
-                    />
-                </View>
-            );
-        }
-
-        return null;
+        return (
+            <View style={styles.top}>
+                <EditProfilePicture
+                    onUpdateProfilePicture={onUpdateProfilePicture}
+                    user={currentUser}
+                />
+            </View>
+        );
     }, [currentUser, lockedPicture, onUpdateProfilePicture]);
 
     return (
