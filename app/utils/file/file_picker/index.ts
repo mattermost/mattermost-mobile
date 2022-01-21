@@ -262,7 +262,7 @@ export default class FilePickerUtil {
 
         if (hasPermission) {
             try {
-                const res = (await DocumentPicker.pickSingle({type: [fileType]}));// as unknown as File;
+                const res = (await DocumentPicker.pickSingle({type: [fileType]}));
 
                 if (Platform.OS === 'android') {
                     // For android we need to retrieve the realPath in case the file being imported is from the cloud
