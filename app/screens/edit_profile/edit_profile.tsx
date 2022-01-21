@@ -29,6 +29,7 @@ import Field from './components/field';
 import ProfileError from './components/profile_error';
 
 import type {MessageDescriptor} from '@formatjs/intl/src/types';
+import type UserModel from '@typings/database/models/servers/user';
 import type {EditProfileProps, FieldConfig, FieldSequence, NewProfileImage, UserInfo} from '@typings/screens/edit_profile';
 import type {ErrorText} from '@typings/utils/file';
 
@@ -103,6 +104,17 @@ const UPDATE_BUTTON_ID = 'update-profile';
 const includesSsoService = (sso: string) => ['gitlab', 'google', 'office365'].includes(sso);
 const isSAMLOrLDAP = (protocol: string) => ['ldap', 'saml'].includes(protocol);
 
+const getUserInfo = (user: UserModel) => {
+    return {
+        email: user.email,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        nickname: user.nickname,
+        position: user.position,
+        username: user.username,
+    };
+};
+
 const EditProfile = ({
     componentId,
     currentUser,
@@ -125,21 +137,16 @@ const EditProfile = ({
     const nicknameRef = useRef<FloatingTextInputRef>(null);
     const positionRef = useRef<FloatingTextInputRef>(null);
     const changedProfilePicture = useRef<NewProfileImage | undefined>(undefined);
+    const scrollViewRef = useRef<KeyboardAwareScrollView>();
 
-    const styles = getStyleSheet(theme);
-    const [userInfo, setUserInfo] = useState<UserInfo>({
-        email: currentUser.email,
-        firstName: currentUser.firstName,
-        lastName: currentUser.lastName,
-        nickname: currentUser.nickname,
-        position: currentUser.position,
-        username: currentUser.username,
-    });
+    const userInfos = getUserInfo(currentUser);
+    const hasUpdateUserInfo = useRef<boolean>(false);
+    const [userInfo, setUserInfo] = useState<UserInfo>(userInfos);
     const [canSave, setCanSave] = useState(false);
     const [error, setError] = useState<ErrorText | undefined>();
     const [updating, setUpdating] = useState(false);
 
-    const scrollViewRef = useRef<KeyboardAwareScrollView>();
+    const styles = getStyleSheet(theme);
 
     const buttonText = intl.formatMessage({id: 'mobile.account.settings.save', defaultMessage: 'Save'});
     const rightButton = useMemo(() => {
@@ -228,12 +235,24 @@ const EditProfile = ({
         enableSaveButton(true);
     }, [enableSaveButton]);
 
+    const onUpdateField = useCallback((fieldKey: string, name: string) => {
+        const update = {...userInfo};
+        update[fieldKey] = name;
+        setUserInfo(update);
+
+        // @ts-expect-error access object property by string key
+        const currentValue = currentUser[fieldKey];
+        const didChange = currentValue !== name;
+        hasUpdateUserInfo.current = currentValue !== name;
+        enableSaveButton(didChange);
+    }, [userInfo, currentUser, enableSaveButton]);
+
     const submitUser = useCallback(preventDoubleTap(async () => {
         enableSaveButton(false);
         setError(undefined);
         setUpdating(true);
         try {
-            const partialUser: Partial<UserProfile> = {
+            const newUserInfo: Partial<UserProfile> = {
                 email: userInfo.email,
                 first_name: userInfo.firstName,
                 last_name: userInfo.lastName,
@@ -254,11 +273,12 @@ const EditProfile = ({
                 await setDefaultProfileImage(serverUrl, currentUser.id);
             }
 
-            const {error: reqError} = await updateMe(serverUrl, partialUser);
-
-            if (reqError) {
-                resetScreen(reqError as Error);
-                return null;
+            if (hasUpdateUserInfo.current) {
+                const {error: reqError} = await updateMe(serverUrl, newUserInfo);
+                if (reqError) {
+                    resetScreen(reqError as Error);
+                    return null;
+                }
             }
 
             return close();
@@ -274,17 +294,6 @@ const EditProfile = ({
         enableSaveButton(true);
         scrollViewRef.current?.scrollToPosition(0, 0, true);
     }, [enableSaveButton]);
-
-    const updateField = useCallback((fieldKey: string, name: string) => {
-        const update = {...userInfo};
-        update[fieldKey] = name;
-        setUserInfo(update);
-
-        // @ts-expect-error access object property by string key
-        const currentValue = currentUser[fieldKey];
-        const didChange = currentValue !== name;
-        enableSaveButton(didChange);
-    }, [userInfo, currentUser, enableSaveButton]);
 
     const userProfileFields: FieldSequence = useMemo(() => {
         return {
@@ -359,7 +368,7 @@ const EditProfile = ({
         blurOnSubmit: false,
         enablesReturnKeyAutomatically: true,
         onFocusNextField,
-        onTextChange: updateField,
+        onTextChange: onUpdateField,
         returnKeyType: 'next',
     };
 
@@ -466,7 +475,7 @@ const EditProfile = ({
                             email={userInfo.email}
                             label={intl.formatMessage(FIELDS.email)}
                             fieldRef={emailRef}
-                            onChange={updateField}
+                            onChange={onUpdateField}
                             onFocusNextField={onFocusNextField}
                             theme={theme}
                             isTablet={Boolean(isTablet)}
