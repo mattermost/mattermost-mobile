@@ -4,10 +4,10 @@
 import {Model} from '@nozbe/watermelondb';
 import {DeviceEventEmitter} from 'react-native';
 
-import {Navigation as NavigationConstants, Screens} from '@constants';
+import {Navigation as NavigationConstants, Preferences, Screens} from '@constants';
 import DatabaseManager from '@database/manager';
 import {prepareDeleteChannel, queryAllMyChannelIds, queryChannelsById, queryMyChannel} from '@queries/servers/channel';
-import {prepareCommonSystemValues, PrepareCommonSystemValuesArgs, queryCommonSystemValues, queryCurrentTeamId, setCurrentChannelId} from '@queries/servers/system';
+import {prepareCommonSystemValues, PrepareCommonSystemValuesArgs, queryCommonSystemValues, queryCurrentTeamId, queryCurrentUserId, setCurrentChannelId} from '@queries/servers/system';
 import {addChannelToTeamHistory, addTeamToTeamHistory, removeChannelFromTeamHistory} from '@queries/servers/team';
 import {dismissAllModalsAndPopToRoot, dismissAllModalsAndPopToScreen} from '@screens/navigation';
 import {isTablet} from '@utils/helpers';
@@ -192,6 +192,46 @@ export const resetMessageCount = async (serverUrl: string, channelId: string) =>
         await operator.batchRecords([member]);
 
         return member;
+    } catch (error) {
+        return {error};
+    }
+};
+
+export const toggleDMChannel = async (serverUrl: string, otherUserId: string, visible: boolean, channelId: string, prepareRecordsOnly = false) => {
+    const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
+    if (!operator) {
+        return {error: `${serverUrl} database not found`};
+    }
+
+    const currentUserId = await queryCurrentUserId(operator.database);
+    try {
+        const preferences = [
+            {user_id: currentUserId, category: Preferences.CATEGORY_DIRECT_CHANNEL_SHOW, name: otherUserId, value: visible ? 'true' : 'false'},
+            {user_id: currentUserId, category: Preferences.CATEGORY_CHANNEL_OPEN_TIME, name: channelId, value: Date.now().toString()},
+        ];
+
+        const prefModels = await operator.handlePreferences({preferences, prepareRecordsOnly});
+        return {models: prefModels};
+    } catch (error) {
+        return {error};
+    }
+};
+
+export const toggleGMChannel = async (serverUrl: string, visible: boolean, channelId: string, prepareRecordsOnly = false) => {
+    const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
+    if (!operator) {
+        return {error: `${serverUrl} database not found`};
+    }
+
+    const currentUserId = await queryCurrentUserId(operator.database);
+    try {
+        const preferences = [
+            {user_id: currentUserId, category: Preferences.CATEGORY_GROUP_CHANNEL_SHOW, name: channelId, value: visible ? 'true' : 'false'},
+            {user_id: currentUserId, category: Preferences.CATEGORY_CHANNEL_OPEN_TIME, name: channelId, value: new Date().getTime().toString()},
+        ];
+
+        const prefModels = await operator.handlePreferences({preferences, prepareRecordsOnly});
+        return {models: prefModels};
     } catch (error) {
         return {error};
     }

@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useEffect} from 'react';
+import React, {useCallback, useEffect} from 'react';
 import {useIntl} from 'react-intl';
 import {Text, View} from 'react-native';
 import Animated, {useAnimatedStyle, useSharedValue, withTiming} from 'react-native-reanimated';
@@ -66,6 +66,14 @@ const ChannelListHeader = ({displayName, iconPad}: Props) => {
 
     const intl = useIntl();
 
+    const handlePress = useCallback(async () => {
+        const title = intl.formatMessage({id: 'more_dms.title', defaultMessage: 'Create Direct Message'});
+        const closeButton = await CompassIcon.getImageSource('close', 24, theme.sidebarHeaderTextColor);
+        showModal(Screens.MORE_DMS, title, {
+            closeButton,
+        });
+    }, [intl.locale, theme]);
+
     useEffect(() => {
         marginLeft.value = iconPad ? 44 : 0;
     }, [iconPad]);
@@ -88,13 +96,7 @@ const ChannelListHeader = ({displayName, iconPad}: Props) => {
                     <CompassIcon
                         style={styles.plusIcon}
                         name={'plus'}
-                        onPress={async () => {
-                            const title = intl.formatMessage({id: 'more_dms.title', defaultMessage: 'Create Direct Message'});
-                            const closeButton = await CompassIcon.getImageSource('close', 24, theme.sidebarHeaderTextColor);
-                            showModal(Screens.MORE_DMS, title, {
-                                closeButton,
-                            });
-                        }}
+                        onPress={handlePress}
                     />
                 </TouchableWithFeedback>
             </View>

@@ -150,7 +150,7 @@ Navigation.setLazyComponentRegistrator((screenName) => {
     //     screen = require('@screens/more_channels').default;
     //     break;
     case 'MoreDirectMessages':
-        screen = withIntl(withServerDatabase((require('@screens/more_dms').default)));
+        screen = withServerDatabase((require('@screens/more_dms').default));
         break;
     // case 'Notification':
     //     extraStyles = Platform.select({android: {flex: undefined, height: 100}});

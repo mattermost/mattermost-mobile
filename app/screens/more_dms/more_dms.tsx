@@ -107,6 +107,8 @@ export default function MoreDirectMessages({
     const [selectedIds, setSelectedIds] = useState<{[id: string]: UserProfile}>({});
     const selectedCount = Object.keys(selectedIds).length;
 
+    const isSearch = Boolean(term);
+
     const addToProfiles = useRef((newProfiles: UserProfile[]) => setProfiles([...profiles, ...newProfiles]));
     useEffect(() => {
         addToProfiles.current = (newProfiles: UserProfile[]) => setProfiles([...profiles, ...newProfiles]);
@@ -140,7 +142,7 @@ export default function MoreDirectMessages({
                 fetchProfiles(serverUrl, page.current + 1, General.PROFILE_CHUNK_SIZE).then(loadedProfiles);
             }
         }
-    }, 100), [loading, Boolean(term), restrictDirectMessage, serverUrl, currentTeamId]);
+    }, 100), [loading, isSearch, restrictDirectMessage, serverUrl, currentTeamId]);
 
     const handleRemoveProfile = useCallback((id: string) => {
         const newSelectedIds = Object.assign({}, selectedIds);
@@ -232,7 +234,7 @@ export default function MoreDirectMessages({
         } else {
             const wasSelected = selectedIds[user.id];
 
-            if (!wasSelected && Object.keys(selectedIds).length >= General.MAX_USERS_IN_GM - 1) {
+            if (!wasSelected && selectedCount >= General.MAX_USERS_IN_GM - 1) {
                 return;
             }
 
@@ -299,7 +301,7 @@ export default function MoreDirectMessages({
                 testID: 'more_direct_messages.start.button',
             }],
         });
-    }, [intl.locale, theme, componentId]);
+    }, [intl.locale, theme]);
 
     useEffect(() => {
         const unsubscribe = Navigation.events().registerComponentListener({navigationButtonPressed: ({buttonId}) => {
@@ -326,7 +328,7 @@ export default function MoreDirectMessages({
     useEffect(() => {
         const canStart = selectedCount > 0 && !startingConversation;
         updateNavigationButtons(canStart);
-    }, [selectedCount, startingConversation, updateNavigationButtons]);
+    }, [selectedCount > 0, startingConversation, updateNavigationButtons]);
 
     const data = useMemo(() => {
         if (term) {
@@ -348,7 +350,7 @@ export default function MoreDirectMessages({
             return [...exactMatches, ...results];
         }
         return profiles;
-    }, [term, Boolean(term) && selectedCount, searchResults, profiles]);
+    }, [term, isSearch && selectedCount, isSearch && searchResults, profiles]);
 
     if (startingConversation) {
         return (
@@ -380,6 +382,7 @@ export default function MoreDirectMessages({
                     value={term}
                 />
             </View>
+            {selectedCount > 0 &&
             <SelectedUsers
                 selectedIds={selectedIds}
                 warnCount={5}
@@ -387,10 +390,11 @@ export default function MoreDirectMessages({
                 onRemove={handleRemoveProfile}
                 teammateNameDisplay={teammateNameDisplay}
             />
+            }
             <UserList
                 currentUserId={currentUserId}
                 handleSelectProfile={handleSelectProfile}
-                isSearch={Boolean(term)}
+                isSearch={isSearch}
                 loading={loading}
                 profiles={data}
                 selectedIds={selectedIds}

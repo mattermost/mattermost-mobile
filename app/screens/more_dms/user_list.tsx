@@ -14,6 +14,7 @@ import {
 } from '@utils/theme';
 
 const INITIAL_BATCH_TO_RENDER = 15;
+const SCROLL_EVENT_THROTTLE = 60;
 
 const keyboardDismissProp = Platform.select({
     android: {
@@ -182,7 +183,7 @@ export default function UserList({
                 />
             </View>
         );
-    }, [loading, style]);
+    }, [loading && style]);
 
     const renderNoResults = useCallback(() => {
         if (!showNoResults) {
@@ -198,7 +199,7 @@ export default function UserList({
                 />
             </View>
         );
-    }, [style, showNoResults]);
+    }, [showNoResults && style]);
 
     const renderSectionHeader = useCallback(({section}: {section: SectionListData<UserProfile>}) => {
         return (
@@ -232,7 +233,7 @@ export default function UserList({
                 maxToRenderPerBatch={INITIAL_BATCH_TO_RENDER + 1}
                 removeClippedSubviews={true}
                 renderItem={renderItem}
-                scrollEventThrottle={60}
+                scrollEventThrottle={SCROLL_EVENT_THROTTLE}
                 style={style.list}
                 testID={testID}
             />
@@ -255,7 +256,7 @@ export default function UserList({
                 removeClippedSubviews={true}
                 renderItem={renderItem}
                 renderSectionHeader={renderSectionHeader}
-                scrollEventThrottle={60}
+                scrollEventThrottle={SCROLL_EVENT_THROTTLE}
                 sections={data}
                 style={style.list}
                 stickySectionHeadersEnabled={false}

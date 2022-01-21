@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React from 'react';
+import React, {useMemo} from 'react';
 import {View} from 'react-native';
 
 import FormattedText from '@components/formatted_text';
@@ -47,48 +47,49 @@ export default function SelectedUsers({
     const theme = useTheme();
     const style = getStyleFromTheme(theme);
 
-    const users = [];
-    for (const id of Object.keys(selectedIds)) {
-        if (!selectedIds[id]) {
-            continue;
+    const users = useMemo(() => {
+        const u = [];
+        for (const id of Object.keys(selectedIds)) {
+            if (!selectedIds[id]) {
+                continue;
+            }
+
+            u.push(
+                <SelectedUser
+                    key={id}
+                    user={selectedIds[id]}
+                    teammateNameDisplay={teammateNameDisplay}
+                    onRemove={onRemove}
+                    testID='more_direct_messages.selected_user'
+                />,
+            );
         }
+        return u;
+    }, [selectedIds, teammateNameDisplay, onRemove]);
 
-        users.push(
-            <SelectedUser
-                key={id}
-                user={selectedIds[id]}
-                teammateNameDisplay={teammateNameDisplay}
-                onRemove={onRemove}
-                testID='more_direct_messages.selected_user'
-            />,
-        );
-    }
+    const showWarn = users.length >= warnCount && users.length < maxCount;
 
-    if (users.length === 0) {
-        return null;
-    }
-
-    let message = null;
-    if (users.length >= maxCount) {
-        message = (
-            <FormattedText
-                style={style.message}
-                id='mobile.more_dms.cannot_add_more'
-                defaultMessage='You cannot add more users'
-            />
-        );
-    } else if (users.length >= warnCount) {
-        const remaining = maxCount - users.length;
-        if (remaining === 1) {
-            message = (
+    const message = useMemo(() => {
+        if (users.length >= maxCount) {
+            return (
                 <FormattedText
                     style={style.message}
-                    id='mobile.more_dms.one_more'
-                    defaultMessage='You can add 1 more user'
+                    id='mobile.more_dms.cannot_add_more'
+                    defaultMessage='You cannot add more users'
                 />
             );
-        } else {
-            message = (
+        } else if (users.length >= warnCount) {
+            const remaining = maxCount - users.length;
+            if (remaining === 1) {
+                return (
+                    <FormattedText
+                        style={style.message}
+                        id='mobile.more_dms.one_more'
+                        defaultMessage='You can add 1 more user'
+                    />
+                );
+            }
+            return (
                 <FormattedText
                     style={style.message}
                     id='mobile.more_dms.add_more'
@@ -99,7 +100,9 @@ export default function SelectedUsers({
                 />
             );
         }
-    }
+
+        return null;
+    }, [users.length >= maxCount, showWarn && users.length, theme, maxCount]);
 
     return (
         <View style={style.container}>

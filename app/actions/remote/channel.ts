@@ -4,8 +4,8 @@
 import {Model} from '@nozbe/watermelondb';
 import {IntlShape} from 'react-intl';
 
-import {switchToChannel} from '@actions/local/channel';
-import {General, Preferences} from '@constants';
+import {switchToChannel, toggleDMChannel, toggleGMChannel} from '@actions/local/channel';
+import {General} from '@constants';
 import DatabaseManager from '@database/manager';
 import {privateChannelJoinPrompt} from '@helpers/api/channel';
 import NetworkManager from '@init/network_manager';
@@ -588,16 +588,13 @@ export const createDirectChannel = async (serverUrl: string, userId: string) => 
             last_update_at: created.create_at,
         };
 
-        const preferences = [
-            {user_id: currentUserId, category: Preferences.CATEGORY_DIRECT_CHANNEL_SHOW, name: userId, value: 'true'},
-            {user_id: currentUserId, category: Preferences.CATEGORY_CHANNEL_OPEN_TIME, name: created.id, value: new Date().getTime().toString()},
-        ];
-
         const models = [];
-        const prefModels = await operator.handlePreferences({preferences, prepareRecordsOnly: true});
+
+        const {models: prefModels} = await toggleDMChannel(serverUrl, userId, true, created.id);
         if (prefModels) {
             models.push(...prefModels);
         }
+
         const channelPromises = await prepareMyChannelsForTeam(operator, '', [created], [member, {...member, user_id: userId}]);
         if (channelPromises) {
             const channelModels = await Promise.all(channelPromises);
@@ -606,6 +603,7 @@ export const createDirectChannel = async (serverUrl: string, userId: string) => 
                 models.push(...flattenedChannelModels);
             }
         }
+
         if (models.length) {
             await operator.batchRecords(models);
         }
@@ -630,8 +628,7 @@ export const makeDirectChannel = async (serverUrl: string, userId: string, shoul
         let result: {data?: Channel|ChannelModel; error?: any};
         if (channel) {
             result = {data: channel};
-
-            // dispatch(toggleDMChannel(otherUserId, 'true', channel.id));
+            toggleDMChannel(serverUrl, userId, true, channel.id);
         } else {
             result = await createDirectChannel(serverUrl, userId);
             channel = result.data;
@@ -669,7 +666,7 @@ export const createGroupChannel = async (serverUrl: string, userIds: string[]) =
             return {data: created};
         }
 
-        // dispatch(markGroupChannelOpen(created.id));
+        toggleGMChannel(serverUrl, true, created.id);
 
         const member = {
             channel_id: created.id,
@@ -715,7 +712,6 @@ export const makeGroupChannel = async (serverUrl: string, userIds: string[], sho
         const channel = result.data;
 
         if (channel && shouldSwitchToChannel) {
-            //dispatch(toggleGMChannel(channel.id, 'true'));
             switchToChannel(serverUrl, channel.id);
         }
 
