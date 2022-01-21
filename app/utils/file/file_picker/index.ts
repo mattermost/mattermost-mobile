@@ -125,7 +125,9 @@ export default class FilePickerUtil {
         const files: Asset[] = [];
 
         await Promise.all((response.assets.map(async (file) => {
-            if (Platform.OS === 'android') {
+            if (Platform.OS === 'ios') {
+                files.push(file);
+            } else {
                 // For android we need to retrieve the realPath in case the file being imported is from the cloud
                 const uri = (await ShareExtension.getFilePath(file.uri)).filePath;
                 const type = file.type || lookupMimeType(uri);
@@ -137,8 +139,6 @@ export default class FilePickerUtil {
                 if (uri) {
                     files.push({...file, fileName, uri, type});
                 }
-            } else {
-                files.push(file);
             }
         })));
 
