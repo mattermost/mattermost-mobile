@@ -32,7 +32,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             flexDirection: 'column',
             flexWrap: 'wrap',
             fontSize: 14,
-            fontFamily: 'OpenSans-Semibold',
+            fontFamily: 'OpenSans-SemiBold',
             color: theme.centerChannelColor,
             paddingRight: 10,
         },

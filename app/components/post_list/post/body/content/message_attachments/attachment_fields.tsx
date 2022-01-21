@@ -35,7 +35,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
         },
         heading: {
             color: theme.centerChannelColor,
-            fontFamily: 'OpenSans-Semibold',
+            fontFamily: 'OpenSans-SemiBold',
         },
         table: {
             flex: 1,
