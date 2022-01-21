@@ -13,18 +13,17 @@ import {setDefaultProfileImage, updateMe, uploadUserProfileImage} from '@actions
 import CompassIcon from '@components/compass_icon';
 import {FloatingTextInputRef} from '@components/floating_text_input_label';
 import Loading from '@components/loading';
-import ProfilePicture from '@components/profile_picture';
 import TabletTitle from '@components/tablet_title';
 import {Events} from '@constants';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {t} from '@i18n';
+import UserProfilePicture from '@screens/edit_profile/components/user_profile_picture';
 import {dismissModal, popTopScreen, setButtons} from '@screens/navigation';
 import {preventDoubleTap} from '@utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
-import EditProfilePicture from './components/edit_profile_picture';
 import EmailField from './components/email_field';
 import Field from './components/field';
 import ProfileError from './components/profile_error';
@@ -100,7 +99,6 @@ const FIELDS: { [id: string]: MessageDescriptor } = {
 
 const CLOSE_BUTTON_ID = 'close-edit-profile';
 const UPDATE_BUTTON_ID = 'update-profile';
-const PROFILE_PICTURE_SIZE = 153;
 
 const includesSsoService = (sso: string) => ['gitlab', 'google', 'office365'].includes(sso);
 const isSAMLOrLDAP = (protocol: string) => ['ldap', 'saml'].includes(protocol);
@@ -365,29 +363,6 @@ const EditProfile = ({
         returnKeyType: 'next',
     };
 
-    const renderProfilePicture = useCallback(() => {
-        if (lockedPicture) {
-            return (
-                <View style={styles.top}>
-                    <ProfilePicture
-                        author={currentUser}
-                        size={PROFILE_PICTURE_SIZE}
-                        showStatus={false}
-                    />
-                </View>
-            );
-        }
-
-        return (
-            <View style={styles.top}>
-                <EditProfilePicture
-                    onUpdateProfilePicture={onUpdateProfilePicture}
-                    user={currentUser}
-                />
-            </View>
-        );
-    }, [currentUser, lockedPicture, onUpdateProfilePicture, styles.top]);
-
     return (
         <>
             {isTablet &&
@@ -431,7 +406,13 @@ const EditProfile = ({
 
                     )}
                     {Boolean(error) && <ProfileError error={error!}/>}
-                    {renderProfilePicture()}
+                    <View style={styles.top}>
+                        <UserProfilePicture
+                            currentUser={currentUser}
+                            lockedPicture={lockedPicture}
+                            onUpdateProfilePicture={onUpdateProfilePicture}
+                        />
+                    </View>
                     {hasDisabledFields && (
                         <View
                             style={{
