@@ -1,6 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {deletePreferences} from '@app/queries/servers/preference';
 import DatabaseManager from '@database/manager';
 import {WebSocketMessage} from '@typings/api/websocket';
 
@@ -54,15 +55,8 @@ export async function handlePreferencesDeletedEvent(serverUrl: string, msg: WebS
 
     try {
         const preferences = JSON.parse(msg.data.preferences) as PreferenceType[];
-        const operator = database?.operator;
-        if (operator) {
-            operator.handlePreferences({
-                prepareRecordsOnly: false,
-                preferences,
-                sync: true,
-            });
-        }
-    } catch (error) {
+        deletePreferences(database, preferences);
+    } catch {
         // Do nothing
     }
 }
