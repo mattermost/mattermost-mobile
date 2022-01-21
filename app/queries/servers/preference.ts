@@ -49,13 +49,19 @@ export const queryThemeForCurrentTeam = async (database: Database) => {
 };
 
 export const deletePreferences = async (database: ServerDatabase, preferences: PreferenceType[]) => {
-    const preparedModels: Model[] = [];
-    for await (const pref of preferences) {
-        const myPrefs = await queryPreferencesByCategoryAndName(database.database, pref.category, pref.name);
-        for (const p of myPrefs) {
-            preparedModels.push(p.prepareDestroyPermanently());
+    try {
+        const preparedModels: Model[] = [];
+        for await (const pref of preferences) {
+            const myPrefs = await queryPreferencesByCategoryAndName(database.database, pref.category, pref.name);
+            for (const p of myPrefs) {
+                preparedModels.push(p.prepareDestroyPermanently());
+            }
         }
+        if (preparedModels.length) {
+            await database.operator.batchRecords(preparedModels);
+        }
+    } catch (error) {
+        // Record not found, do nothing
     }
-    await database.operator.batchRecords(preparedModels);
     return {};
 };
