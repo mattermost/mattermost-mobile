@@ -91,15 +91,9 @@ const EditProfilePicture = ({user, onUpdateProfilePicture}: ChangeProfilePicture
         source = pictureUrl;
     } else if (pictureUrl) {
         let prefix = '';
-        if (Platform.OS === 'android' &&
-            !pictureUrl.startsWith('content://') &&
-            !pictureUrl.startsWith('http://') &&
-            !pictureUrl.startsWith('https://')
-        ) {
+        if (Platform.OS === 'android' && !pictureUrl.startsWith('content://') && !pictureUrl.startsWith('http://') && !pictureUrl.startsWith('https://')) {
             prefix = 'file://';
-        }
-
-        if (pictureUrl.includes('/api/')) {
+        } else if (pictureUrl.includes('/api/')) {
             prefix = serverUrl;
         }
 
