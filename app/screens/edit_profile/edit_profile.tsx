@@ -243,6 +243,7 @@ const EditProfile = ({
                 username: userInfo.username,
             };
             const localPath = changedProfilePicture.current?.localPath;
+            const profileImageRemoved = changedProfilePicture.current?.isRemoved;
             if (localPath) {
                 const now = Date.now();
                 const {error: uploadError} = await uploadUserProfileImage(serverUrl, localPath);
@@ -250,9 +251,7 @@ const EditProfile = ({
                     return resetScreen(uploadError as Error);
                 }
                 updateLocalUser(serverUrl, {last_picture_update: now});
-            }
-
-            if (changedProfilePicture.current?.isRemoved) {
+            } else if (profileImageRemoved) {
                 await setDefaultProfileImage(serverUrl, currentUser.id);
             }
 
