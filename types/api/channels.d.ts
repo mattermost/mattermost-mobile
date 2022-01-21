@@ -3,6 +3,7 @@
 type ChannelType = 'O' | 'P' | 'D' | 'G';
 type ChannelStats = {
     channel_id: string;
+    guest_count: number;
     member_count: number;
     pinnedpost_count: number;
 };

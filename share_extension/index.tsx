@@ -86,7 +86,7 @@ const styles = StyleSheet.create({
     },
     sectionTitle: {
         fontSize: 24,
-        fontFamily: 'OpenSans-Semibold',
+        fontFamily: 'OpenSans-SemiBold',
         color: Colors.black,
     },
     sectionDescription: {

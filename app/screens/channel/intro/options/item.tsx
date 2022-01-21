@@ -55,23 +55,32 @@ const IntroItem = ({applyMargin, color, iconName, label, onPress, theme}: Props)
         return style;
     }, [applyMargin, theme]);
 
+    const renderPressableChildren = ({pressed}: PressableStateCallbackType) => {
+        let pressedColor = color || changeOpacity(theme.centerChannelColor, 0.56);
+        if (pressed) {
+            pressedColor = theme.linkColor;
+        }
+
+        return (
+            <>
+                <CompassIcon
+                    name={iconName}
+                    color={pressedColor}
+                    size={24}
+                />
+                <Text style={[styles.label, {color: pressedColor}]}>
+                    {label}
+                </Text>
+            </>
+        );
+    };
+
     return (
         <Pressable
             onPress={onPress}
             style={pressedStyle}
         >
-            {({pressed}) => (
-                <>
-                    <CompassIcon
-                        name={iconName}
-                        color={pressed ? theme.linkColor : color || changeOpacity(theme.centerChannelColor, 0.56)}
-                        size={24}
-                    />
-                    <Text style={[styles.label, {color: pressed ? theme.linkColor : color || changeOpacity(theme.centerChannelColor, 0.56)}]}>
-                        {label}
-                    </Text>
-                </>
-            )}
+            {renderPressableChildren}
         </Pressable>
     );
 };

@@ -81,7 +81,7 @@ export const fetchAppEntryData = async (serverUrl: string, initialTeamId: string
         removeTeamIds,
     };
 
-    if (teamData.teams?.length === 0) {
+    if (teamData.teams?.length === 0 && !teamData.error) {
         // User is no longer a member of any team
         const myTeams = await queryMyTeams(database);
         removeTeamIds.push(...(myTeams?.map((myTeam) => myTeam.id) || []));
@@ -95,7 +95,7 @@ export const fetchAppEntryData = async (serverUrl: string, initialTeamId: string
 
     const inTeam = teamData.teams?.find((t) => t.id === initialTeamId);
     const chError = chData?.error as ClientError | undefined;
-    if (!inTeam || chError?.status_code === 403) {
+    if ((!inTeam && !teamData.error) || chError?.status_code === 403) {
         // User is no longer a member of the current team
         if (!removeTeamIds.includes(initialTeamId)) {
             removeTeamIds.push(initialTeamId);

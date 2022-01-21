@@ -2,6 +2,7 @@
 // See LICENSE.txt for license information.
 
 export const ABOUT = 'About';
+export const ACCOUNT = 'Account';
 export const EMOJI_PICKER = 'AddReaction';
 export const APP_FORM = 'AppForm';
 export const BOTTOM_SHEET = 'BottomSheet';
@@ -17,8 +18,9 @@ export const HOME = 'Home';
 export const INTEGRATION_SELECTOR = 'IntegrationSelector';
 export const IN_APP_NOTIFICATION = 'InAppNotification';
 export const LOGIN = 'Login';
-export const MAIN_SIDEBAR = 'MainSidebar';
+export const MENTIONS = 'Mentions';
 export const MFA = 'MFA';
+export const MORE_DMS = 'MoreDirectMessages';
 export const PERMALINK = 'Permalink';
 export const SEARCH = 'Search';
 export const SERVER = 'Server';
@@ -26,11 +28,10 @@ export const SETTINGS_SIDEBAR = 'SettingsSidebar';
 export const SSO = 'SSO';
 export const THREAD = 'Thread';
 export const USER_PROFILE = 'UserProfile';
-export const MENTIONS = 'Mentions';
-export const MORE_DMS = 'MoreDirectMessages';
 
 export default {
     ABOUT,
+    ACCOUNT,
     EMOJI_PICKER,
     APP_FORM,
     BOTTOM_SHEET,
@@ -46,8 +47,9 @@ export default {
     INTEGRATION_SELECTOR,
     IN_APP_NOTIFICATION,
     LOGIN,
-    MAIN_SIDEBAR,
+    MENTIONS,
     MFA,
+    MORE_DMS,
     PERMALINK,
     SEARCH,
     SERVER,
@@ -55,6 +57,4 @@ export default {
     SSO,
     THREAD,
     USER_PROFILE,
-    MENTIONS,
-    MORE_DMS,
 };

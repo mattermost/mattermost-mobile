@@ -132,7 +132,7 @@ export const selectAttachmentMenuAction = (serverUrl: string, postId: string, ac
     return postActionWithCookie(serverUrl, postId, actionId, '', selectedOption);
 };
 
-export const processPostsFetched = async (serverUrl: string, actionType: string, data: {order: string[]; posts: Post[]; prev_post_id?: string}, fetchOnly = false) => {
+export const processPostsFetched = async (serverUrl: string, actionType: string, data: PostResponse, fetchOnly = false) => {
     const order = data.order;
     const posts = Object.values(data.posts) as Post[];
     const previousPostId = data.prev_post_id;

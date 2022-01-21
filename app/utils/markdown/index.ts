@@ -17,7 +17,7 @@ export const getMarkdownTextStyles = makeStyleSheetFromTheme((theme: Theme) => {
             fontFamily: 'OpenSans-Italic',
         },
         strong: {
-            fontFamily: 'OpenSans-Semibold',
+            fontFamily: 'OpenSans-SemiBold',
         },
         del: {
             textDecorationLine: 'line-through',

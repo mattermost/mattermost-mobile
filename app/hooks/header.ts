@@ -129,6 +129,8 @@ export const useCollapsibleHeader = <T>(isLargeTitle: boolean, hasSubtitle: bool
     }
 
     return {
+        defaultHeight,
+        largeHeight,
         scrollPaddingTop: (isLargeTitle ? largeHeight : defaultHeight) + searchPadding,
         scrollRef: animatedRef as unknown as React.RefObject<T>,
         scrollValue,
