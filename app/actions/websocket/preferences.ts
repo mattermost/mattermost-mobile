@@ -12,11 +12,13 @@ export async function handlePreferenceChangedEvent(serverUrl: string, msg: WebSo
 
     try {
         const preferences = JSON.parse(msg.data.preferences) as PreferenceType[];
+        const preference = JSON.parse(msg.data.preference) as PreferenceType;
         const operator = database?.operator;
         if (operator) {
             operator.handlePreferences({
                 prepareRecordsOnly: false,
-                preferences,
+                preferences: [preference],
+                sync: true,
             });
         }
     } catch (error) {
@@ -37,6 +39,7 @@ export async function handlePreferencesChangedEvent(serverUrl: string, msg: WebS
             operator.handlePreferences({
                 prepareRecordsOnly: false,
                 preferences,
+                sync: true,
             });
         }
     } catch (error) {
@@ -57,6 +60,7 @@ export async function handlePreferencesDeletedEvent(serverUrl: string, msg: WebS
             operator.handlePreferences({
                 prepareRecordsOnly: false,
                 preferences,
+                sync: true,
             });
         }
     } catch (error) {
