@@ -385,7 +385,7 @@ const EditProfile = ({
                 />
             </View>
         );
-    }, [currentUser, lockedPicture, onUpdateProfilePicture]);
+    }, [currentUser, lockedPicture, onUpdateProfilePicture, styles.top]);
 
     return (
         <>
