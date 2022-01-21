@@ -4,3 +4,9 @@
 export const PUBLIC = 'public';
 export const SHARED = 'shared';
 export const ARCHIVED = 'archived';
+
+export default {
+    PUBLIC,
+    SHARED,
+    ARCHIVED,
+};

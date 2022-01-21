@@ -3,6 +3,7 @@
 
 import ActionType from './action_type';
 import Apps from './apps';
+import BrowseChannels from './browse_channels';
 import {CustomStatusDuration} from './custom_status';
 import Database from './database';
 import DeepLink from './deep_linking';
@@ -43,4 +44,5 @@ export {
     Sso,
     View,
     WebsocketEvents,
+    BrowseChannels,
 };

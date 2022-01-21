@@ -3,17 +3,17 @@
 
 import React, {useCallback, useEffect, useRef, useState} from 'react';
 import {IntlShape, useIntl} from 'react-intl';
-import {Keyboard, View, FlatList} from 'react-native';
+import {Keyboard, View} from 'react-native';
 import {ImageResource, Navigation, OptionsTopBarButton} from 'react-native-navigation';
 import {SafeAreaView} from 'react-native-safe-area-context';
 
 import {switchToChannel} from '@actions/local/channel';
 import {fetchArchivedChannels, fetchChannels, fetchSharedChannels, joinChannel} from '@actions/remote/channel';
 import useDidUpdate from '@app/hooks/did_update';
-import FormattedText from '@components/formatted_text';
 import Loading from '@components/loading';
 import SearchBar from '@components/search_bar';
 import {General} from '@constants';
+import {ARCHIVED, PUBLIC, SHARED} from '@constants/browse_channels';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {dismissModal, goToScreen, setButtons} from '@screens/navigation';
@@ -25,8 +25,7 @@ import {
 } from '@utils/theme';
 
 import {ChannelDropdown} from './channel_dropdown';
-import ChannelListRow from './channel_list_row';
-import {ARCHIVED, PUBLIC, SHARED} from './constants';
+import ChannelList from './channel_list';
 
 import type MyChannelModel from '@typings/database/models/servers/my_channel';
 
@@ -84,9 +83,6 @@ const close = () => {
     dismissModal();
 };
 
-const channelKeyExtractor = (channel: Channel) => {
-    return channel.id;
-};
 const getStyleFromTheme = makeStyleSheetFromTheme((theme: Theme) => {
     return {
         container: {
@@ -98,31 +94,18 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme: Theme) => {
             marginTop: 12,
             backgroundColor: changeOpacity(theme.centerChannelColor, 0.08),
         },
-        noResultContainer: {
-            flexGrow: 1,
-            alignItems: 'center',
-            justifyContent: 'center',
-        },
-        noResultText: {
-            fontSize: 26,
-            color: changeOpacity(theme.centerChannelColor, 0.5),
-        },
         searchBarInput: {
             color: theme.centerChannelColor,
         },
         loadingContainer: {
             flex: 1,
-            justifyContent: 'center',
-            alignItems: 'center',
+            justifyContent: 'center' as const,
+            alignItems: 'center' as const,
         },
         loading: {
             height: 32,
             width: 32,
-            justifyContent: 'center',
-        },
-        listContainer: {
-            paddingHorizontal: 20,
-            flexGrow: 1,
+            justifyContent: 'center' as const,
         },
     };
 });
@@ -163,7 +146,7 @@ export default function BrowseChannels({
     const nextShared = useRef(true);
     const nextArchived = useRef(true);
 
-    const setHeaderButtons = (createEnabled: boolean) => {
+    const setHeaderButtons = useCallback((createEnabled: boolean) => {
         const buttons = {
             leftButtons: [makeLeftButton(closeButton)],
             rightButtons: [] as OptionsTopBarButton[],
@@ -174,9 +157,9 @@ export default function BrowseChannels({
         }
 
         setButtons(componentId, buttons);
-    };
+    }, [closeButton, canCreateChannels, intl.locale, theme, componentId]);
 
-    const onSelectChannel = async (channel: Channel) => {
+    const onSelectChannel = useCallback(async (channel: Channel) => {
         setHeaderButtons(false);
         setAdding(true);
 
@@ -200,7 +183,7 @@ export default function BrowseChannels({
             close();
             switchToChannel(serverUrl, channel.id, currentTeamId);
         }
-    };
+    }, [setHeaderButtons, serverUrl, currentUserId, currentTeamId, intl.locale]);
 
     const doGetChannels = useCallback(() => {
         if (!loading && mounted.current) {
@@ -285,7 +268,7 @@ export default function BrowseChannels({
                     break;
             }
         }
-    }, [loading, typeOfChannels, joinedChannels, archivedChannels, channels, sharedChannels]);
+    }, [loading, typeOfChannels, joinedChannels, archivedChannels, channels, sharedChannels, serverUrl, currentTeamId]);
 
     const selectActiveChannels = useCallback(() => {
         switch (typeOfChannels) {
@@ -317,23 +300,11 @@ export default function BrowseChannels({
         } else {
             stopSearch();
         }
-    }, [selectActiveChannels, visibleChannels]);
+    }, [selectActiveChannels, visibleChannels, stopSearch]);
 
     const onPressDropdownElement = useCallback((channelType: string) => {
         setTypeOfChannels(channelType);
     }, []);
-
-    const renderItem = useCallback(({item}: {item: Channel}) => {
-        return (
-            <ChannelListRow
-                channel={item}
-                testID='browse_channels.custom_list.channel_item'
-                onPress={onSelectChannel}
-            />
-        );
-
-    // All dependencies derived from onSelectChannel
-    }, [theme, canCreateChannels, currentUserId, currentTeamId]);
 
     const renderLoading = useCallback(() => {
         return (
@@ -344,42 +315,8 @@ export default function BrowseChannels({
             />
         );
 
-    //Style is covered by the team
+    //Style is covered by the theme
     }, [theme]);
-
-    const renderNoResults = useCallback(() => {
-        if (term) {
-            return (
-                <View style={style.noResultContainer}>
-                    <FormattedText
-                        id='mobile.custom_list.no_results'
-                        defaultMessage='No Results'
-                        style={style.noResultText}
-                    />
-                </View>
-            );
-        }
-
-        return (
-            <View style={style.noResultContainer}>
-                <FormattedText
-                    id='browse_channels.noMore'
-                    defaultMessage='No more channels to join'
-                    style={style.noResultText}
-                />
-            </View>
-        );
-    }, [style, term]);
-
-    const renderSeparator = useCallback(() => (
-        <View
-            style={{
-                height: 1,
-                backgroundColor: changeOpacity(theme.centerChannelColor, 0.08),
-                width: '100%',
-            }}
-        />
-    ), [theme]);
 
     useEffect(() => {
         mounted.current = true;
@@ -416,7 +353,7 @@ export default function BrowseChannels({
         return () => {
             unsubscribe.remove();
         };
-    }, []);
+    }, [intl.locale, categoryId]);
 
     useDidUpdate(() => {
         doGetChannels();
@@ -480,16 +417,12 @@ export default function BrowseChannels({
                     />
                 </View>
                 {channelDropdown}
-                <FlatList
-                    data={visibleChannels}
-                    renderItem={renderItem}
-                    testID='browse_channels.flat_list'
-                    ListEmptyComponent={loading ? renderLoading : renderNoResults}
-                    onEndReached={doGetChannels}
-                    ListFooterComponent={loading && visibleChannels.length ? renderLoading : null}
-                    contentContainerStyle={style.listContainer}
-                    ItemSeparatorComponent={renderSeparator}
-                    keyExtractor={channelKeyExtractor}
+                <ChannelList
+                    channels={visibleChannels}
+                    doGetChannels={doGetChannels}
+                    isSearch={Boolean(term)}
+                    loading={loading}
+                    onSelectChannel={onSelectChannel}
                 />
             </>
         );
