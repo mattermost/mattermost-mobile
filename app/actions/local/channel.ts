@@ -8,7 +8,7 @@ import {Navigation as NavigationConstants, Screens} from '@constants';
 import DatabaseManager from '@database/manager';
 import {prepareDeleteChannel, prepareMyChannelsForTeam, queryAllMyChannelIds, queryChannelsById, queryMyChannel} from '@queries/servers/channel';
 import {prepareCommonSystemValues, PrepareCommonSystemValuesArgs, queryCommonSystemValues, queryCurrentTeamId, setCurrentChannelId} from '@queries/servers/system';
-import {addChannelToTeamHistory, addTeamToTeamHistory, queryLastChannelFromTeam, removeChannelFromTeamHistory} from '@queries/servers/team';
+import {addChannelToTeamHistory, addTeamToTeamHistory, removeChannelFromTeamHistory} from '@queries/servers/team';
 import {dismissAllModalsAndPopToRoot, dismissAllModalsAndPopToScreen} from '@screens/navigation';
 import {isTablet} from '@utils/helpers';
 
@@ -76,20 +76,6 @@ export const switchToChannel = async (serverUrl: string, channelId: string, team
     }
 
     return {error: undefined};
-};
-
-//Used for testing purposes
-export const switchToDefault = async (serverUrl: string) => {
-    const serverDatabase = DatabaseManager.serverDatabases[serverUrl];
-    if (!serverDatabase) {
-        return;
-    }
-
-    const currentTeamId = await queryCurrentTeamId(serverDatabase.database);
-    const channelToJumpTo = await queryLastChannelFromTeam(serverDatabase.database, currentTeamId);
-    if (channelToJumpTo) {
-        switchToChannel(serverUrl, channelToJumpTo);
-    }
 };
 
 export const localRemoveUserFromChannel = async (serverUrl: string, channelId: string) => {

@@ -23,7 +23,12 @@ export async function handleNewPostEvent(serverUrl: string, msg: WebSocketMessag
         return;
     }
 
-    const post: Post = JSON.parse(msg.data.post);
+    let post: Post;
+    try {
+        post = JSON.parse(msg.data.post);
+    } catch {
+        return;
+    }
     const currentUserId = await queryCurrentUserId(database.database);
 
     const existing = await queryPostById(database.database, post.pending_post_id);
@@ -47,7 +52,10 @@ export async function handleNewPostEvent(serverUrl: string, msg: WebSocketMessag
 
     // Ensure the channel membership
     let myChannel = await queryMyChannel(database.database, post.channel_id);
-    if (!myChannel) {
+    if (myChannel) {
+        // Do not batch lastPostAt update since we may be modifying the member later for unreads
+        await updateLastPostAt(serverUrl, post.channel_id, post.create_at, false);
+    } else {
         const myChannelRequest = await fetchMyChannel(serverUrl, '', post.channel_id, true);
         if (myChannelRequest.error) {
             return;
@@ -64,9 +72,6 @@ export async function handleNewPostEvent(serverUrl: string, msg: WebSocketMessag
             return;
         }
     }
-
-    // Do not batch lastPostAt update since we may be modifying the member later for unreads
-    await updateLastPostAt(serverUrl, post.channel_id, post.create_at, false);
 
     // If we don't have the root post for this post, fetch it from the server
     if (post.root_id) {
@@ -154,19 +159,21 @@ export async function handlePostEdited(serverUrl: string, msg: WebSocketMessage)
         return;
     }
 
-    const post: Post = JSON.parse(msg.data.post);
+    let post: Post;
+    try {
+        post = JSON.parse(msg.data.post);
+    } catch {
+        return;
+    }
 
     const models: Model[] = [];
-    try {
-        const {authors} = await fetchPostAuthors(serverUrl, [post], true);
-        if (authors?.length) {
-            const authorsModels = await database.operator.handleUsers({users: authors, prepareRecordsOnly: true});
-            if (authorsModels.length) {
-                models.push(...authorsModels);
-            }
+
+    const {authors} = await fetchPostAuthors(serverUrl, [post], true);
+    if (authors?.length) {
+        const authorsModels = await database.operator.handleUsers({users: authors, prepareRecordsOnly: true});
+        if (authorsModels.length) {
+            models.push(...authorsModels);
         }
-    } catch {
-        // Do nothing
     }
 
     const postModels = await database.operator.handlePosts({
@@ -185,9 +192,12 @@ export async function handlePostEdited(serverUrl: string, msg: WebSocketMessage)
 }
 
 export function handlePostDeleted(serverUrl: string, msg: WebSocketMessage) {
-    const data: Post = JSON.parse(msg.data.post);
-
-    markPostAsDeleted(serverUrl, data);
+    try {
+        const data: Post = JSON.parse(msg.data.post);
+        markPostAsDeleted(serverUrl, data);
+    } catch {
+        // Do nothing
+    }
 }
 
 export async function handlePostUnread(serverUrl: string, msg: WebSocketMessage) {
