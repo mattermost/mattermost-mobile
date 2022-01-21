@@ -6,7 +6,6 @@ import {useIntl} from 'react-intl';
 import {DeviceEventEmitter} from 'react-native';
 
 import SlideUpPanelItem from '@components/slide_up_panel_item';
-import {ARCHIVED, PUBLIC, SHARED} from '@constants/browse_channels';
 import NavigationConstants from '@constants/navigation';
 import {useTheme} from '@context/theme';
 import BottomSheetContent from '@screens/bottom_sheet/content';
@@ -14,6 +13,8 @@ import {
     makeStyleSheetFromTheme,
 
 } from '@utils/theme';
+
+import {ARCHIVED, PUBLIC, SHARED} from './browse_channels';
 
 type Props = {
     onPress: (channelType: string) => void;

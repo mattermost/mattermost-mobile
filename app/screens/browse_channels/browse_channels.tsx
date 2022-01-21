@@ -1,19 +1,17 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback, useEffect, useRef, useState} from 'react';
+import React, {useCallback, useEffect, useReducer, useRef, useState} from 'react';
 import {IntlShape, useIntl} from 'react-intl';
 import {Keyboard, View} from 'react-native';
 import {ImageResource, Navigation, OptionsTopBarButton} from 'react-native-navigation';
 import {SafeAreaView} from 'react-native-safe-area-context';
 
-import {switchToChannel} from '@actions/local/channel';
-import {fetchArchivedChannels, fetchChannels, fetchSharedChannels, joinChannel} from '@actions/remote/channel';
+import {fetchArchivedChannels, fetchChannels, fetchSharedChannels, joinChannel, switchToChannelById} from '@actions/remote/channel';
 import useDidUpdate from '@app/hooks/did_update';
 import Loading from '@components/loading';
 import SearchBar from '@components/search_bar';
 import {General} from '@constants';
-import {ARCHIVED, PUBLIC, SHARED} from '@constants/browse_channels';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {dismissModal, goToScreen, setButtons} from '@screens/navigation';
@@ -24,7 +22,7 @@ import {
     getKeyboardAppearanceFromTheme,
 } from '@utils/theme';
 
-import {ChannelDropdown} from './channel_dropdown';
+import ChannelDropdown from './channel_dropdown';
 import ChannelList from './channel_list';
 
 import type MyChannelModel from '@typings/database/models/servers/my_channel';
@@ -36,10 +34,12 @@ type Props = {
     categoryId?: string;
     closeButton: ImageResource;
 
-    // Calculated Props
-    canCreateChannels: boolean;
+    // Properties not changing during the lifetime of the screen)
     currentUserId: string;
     currentTeamId: string;
+
+    // Calculated Props
+    canCreateChannels: boolean;
     joinedChannels?: MyChannelModel[];
     sharedChannelsEnabled: boolean;
     canShowArchivedChannels: boolean;
@@ -47,6 +47,12 @@ type Props = {
 
 const CLOSE_BUTTON_ID = 'close-browse-channels';
 const CREATE_BUTTON_ID = 'create-pub-channel';
+
+export const PUBLIC = 'public';
+export const SHARED = 'shared';
+export const ARCHIVED = 'archived';
+const LOAD = 'load';
+const STOP = 'stop';
 
 const filterChannelsByTerm = (channels: Channel[], term: string) => {
     const lowerCasedTerm = term.toLowerCase();
@@ -110,41 +116,93 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme: Theme) => {
     };
 });
 
-export default function BrowseChannels({
-    componentId,
-    canCreateChannels,
-    joinedChannels = [],
-    sharedChannelsEnabled,
-    closeButton,
-    currentUserId,
-    currentTeamId,
-    canShowArchivedChannels,
-    categoryId,
-}: Props) {
+type State = {
+    channels: Channel[];
+    archivedChannels: Channel[];
+    sharedChannels: Channel[];
+    loading: boolean;
+}
+
+type Action = {
+    type: string;
+    data: Channel[];
+}
+
+const LoadAction: Action = {type: LOAD, data: []};
+const StopAction: Action = {type: STOP, data: []};
+const addAction = (t: string, data: Channel[]) => {
+    return {type: t, data};
+};
+
+const reducer = (state: State, action: Action) => {
+    switch (action.type) {
+        case PUBLIC:
+            return {
+                ...state,
+                channels: [...state.channels, ...action.data],
+                loading: false,
+            };
+        case ARCHIVED:
+            return {
+                ...state,
+                archivedChannels: [...state.archivedChannels, ...action.data],
+                loading: false,
+            };
+        case SHARED:
+            return {
+                ...state,
+                sharedChannels: [...state.sharedChannels, ...action.data],
+                loading: false,
+            };
+        case LOAD:
+            return {
+                ...state,
+                loading: true,
+            };
+        case STOP:
+            return {
+                ...state,
+                loading: false,
+            };
+        default:
+            return state;
+    }
+};
+
+const initialState = {channels: [], archivedChannels: [], sharedChannels: [], loading: false};
+
+export default function BrowseChannels(props: Props) {
+    const {
+        componentId,
+        canCreateChannels,
+        joinedChannels = [],
+        sharedChannelsEnabled,
+        closeButton,
+        currentUserId,
+        currentTeamId,
+        canShowArchivedChannels,
+        categoryId,
+    } = props;
     const intl = useIntl();
     const theme = useTheme();
     const style = getStyleFromTheme(theme);
     const serverUrl = useServerUrl();
 
-    const [channels, setChannels] = useState<Channel[]>([]);
-    const [archivedChannels, setArchivedChannels] = useState<Channel[]>([]);
-    const [sharedChannels, setSharedChannels] = useState<Channel[]>([]);
+    const [{channels, archivedChannels, sharedChannels, loading}, dispatch] = useReducer(reducer, initialState);
 
     const [visibleChannels, setVisibleChannels] = useState<Channel[]>([]);
-    const [typeOfChannels, setTypeOfChannels] = useState(PUBLIC);
-
     const [term, setTerm] = useState('');
 
+    const [typeOfChannels, setTypeOfChannels] = useState(PUBLIC);
     const [adding, setAdding] = useState(false);
-    const [loading, setLoading] = useState(false);
 
-    const mounted = useRef(false);
     const publicPage = useRef(-1);
     const sharedPage = useRef(-1);
     const archivedPage = useRef(-1);
     const nextPublic = useRef(true);
     const nextShared = useRef(true);
     const nextArchived = useRef(true);
+    const loadedChannels = useRef<(data: Channel[] | undefined, typeOfChannels: string) => Promise<void>>(async () => {/* Do nothing */});
 
     const setHeaderButtons = useCallback((createEnabled: boolean) => {
         const buttons = {
@@ -171,125 +229,82 @@ export default function BrowseChannels({
                 result.error,
                 {
                     id: 'mobile.join_channel.error',
-                    defaultMessage: "We couldn't join the channel {displayName}. Please check your connection and try again.",
+                    defaultMessage: "We couldn't join the channel {displayName}.",
                 },
                 {
-                    displayName: channel ? channel.display_name : '',
+                    displayName: channel.display_name,
                 },
             );
             setHeaderButtons(true);
             setAdding(false);
         } else {
+            switchToChannelById(serverUrl, channel.id, currentTeamId);
             close();
-            switchToChannel(serverUrl, channel.id, currentTeamId);
         }
-    }, [setHeaderButtons, serverUrl, currentUserId, currentTeamId, intl.locale]);
+    }, [setHeaderButtons, intl.locale]);
 
-    const doGetChannels = useCallback(() => {
-        if (!loading && mounted.current) {
-            const loadedChannels = async (data: Channel[] | undefined) => {
-                if (mounted.current) {
-                    switch (typeOfChannels) {
-                        case PUBLIC: {
-                            publicPage.current += 1;
-                            nextPublic.current = Boolean(data?.length);
-                            const filtered = filterJoinedChannels(joinedChannels, data);
-                            if (filtered?.length) {
-                                setChannels([...channels, ...filtered]);
-                            }
-                            if (data?.length && !filtered?.length) {
-                                doGetChannels();
-                            } else {
-                                setLoading(false);
-                            }
-                            break;
-                        }
-                        case SHARED: {
-                            sharedPage.current += 1;
-                            nextShared.current = Boolean(data?.length);
-                            const filtered = filterJoinedChannels(joinedChannels, data);
-                            if (filtered?.length) {
-                                setSharedChannels([...sharedChannels, ...filtered]);
-                            }
-                            if (data?.length && !filtered?.length) {
-                                doGetChannels();
-                            } else {
-                                setLoading(false);
-                            }
-                            break;
-                        }
-                        case ARCHIVED:
-                        default:
-                            archivedPage.current += 1;
-                            nextArchived.current = Boolean(data?.length);
-                            if (data?.length) {
-                                setArchivedChannels([...archivedChannels, ...data]);
-                            }
-                            setLoading(false);
-
-                            break;
-                    }
-                }
-            };
-            switch (typeOfChannels) {
+    const doGetChannels = useCallback((t?: string) => {
+        if (t || !loading) {
+            const typeToUse = t || typeOfChannels;
+            switch (typeToUse) {
                 case PUBLIC:
                     if (nextPublic.current) {
-                        setLoading(true);
+                        dispatch(LoadAction);
                         fetchChannels(
                             serverUrl,
                             currentTeamId,
                             publicPage.current + 1,
                             General.CHANNELS_CHUNK_SIZE,
-                        ).then(({channels: receivedChannels}) => loadedChannels(receivedChannels || [])); // Handle error?
+                        ).then(({channels: receivedChannels}) => loadedChannels.current(receivedChannels || [], typeToUse)); // Handle error?
                     }
                     break;
                 case SHARED:
                     if (nextShared.current) {
-                        setLoading(true);
+                        dispatch(LoadAction);
                         fetchSharedChannels(
                             serverUrl,
                             currentTeamId,
                             sharedPage.current + 1,
                             General.CHANNELS_CHUNK_SIZE,
-                        ).then(({channels: receivedChannels}) => loadedChannels(receivedChannels || []));
+                        ).then(({channels: receivedChannels}) => loadedChannels.current(receivedChannels || [], typeToUse));
                     }
                     break;
                 case ARCHIVED:
                 default:
                     if (canShowArchivedChannels && nextArchived.current) {
-                        setLoading(true);
+                        dispatch(LoadAction);
                         fetchArchivedChannels(
                             serverUrl,
                             currentTeamId,
                             archivedPage.current + 1,
                             General.CHANNELS_CHUNK_SIZE,
-                        ).then(({channels: receivedChannels}) => loadedChannels(receivedChannels || []));
+                        ).then(({channels: receivedChannels}) => loadedChannels.current(receivedChannels || [], typeToUse));
                     }
                     break;
             }
         }
-    }, [loading, typeOfChannels, joinedChannels, archivedChannels, channels, sharedChannels, serverUrl, currentTeamId]);
+    }, [loading, typeOfChannels]);
 
-    const selectActiveChannels = useCallback(() => {
-        switch (typeOfChannels) {
-            case ARCHIVED:
-                return archivedChannels;
-            case SHARED:
-                return sharedChannels;
-            default:
-                return channels;
-        }
-    }, [archivedChannels, channels, sharedChannels, typeOfChannels]);
+    let activeChannels: Channel[];
+    switch (typeOfChannels) {
+        case ARCHIVED:
+            activeChannels = archivedChannels;
+            break;
+        case SHARED:
+            activeChannels = sharedChannels;
+            break;
+        default:
+            activeChannels = channels;
+    }
 
     const stopSearch = useCallback(() => {
-        setVisibleChannels(selectActiveChannels());
+        setVisibleChannels(activeChannels);
         setTerm('');
-    }, [selectActiveChannels]);
+    }, [activeChannels]);
 
     const searchChannels = useCallback((text: string) => {
         if (text) {
-            const active = selectActiveChannels();
-            const filtered = filterChannelsByTerm(active, text);
+            const filtered = filterChannelsByTerm(activeChannels, text);
             setTerm(text);
             if (
                 filtered.length !== visibleChannels.length ||
@@ -300,31 +315,56 @@ export default function BrowseChannels({
         } else {
             stopSearch();
         }
-    }, [selectActiveChannels, visibleChannels, stopSearch]);
+    }, [activeChannels, visibleChannels, stopSearch]);
 
     const onPressDropdownElement = useCallback((channelType: string) => {
         setTypeOfChannels(channelType);
     }, []);
 
-    const renderLoading = useCallback(() => {
-        return (
-            <Loading
-                containerStyle={style.loadingContainer}
-                style={style.loading}
-                color={theme.buttonBg}
-            />
-        );
-
-    //Style is covered by the theme
-    }, [theme]);
-
     useEffect(() => {
-        mounted.current = true;
-        doGetChannels();
-        return () => {
-            mounted.current = false;
+        loadedChannels.current = async (data: Channel[] | undefined, t: string) => {
+            switch (t) {
+                case PUBLIC: {
+                    publicPage.current += 1;
+                    nextPublic.current = Boolean(data?.length);
+                    const filtered = filterJoinedChannels(joinedChannels, data);
+                    if (filtered?.length) {
+                        dispatch(addAction(t, filtered));
+                    } else if (data?.length) {
+                        doGetChannels(t);
+                    } else {
+                        dispatch(StopAction);
+                    }
+                    break;
+                }
+                case SHARED: {
+                    sharedPage.current += 1;
+                    nextShared.current = Boolean(data?.length);
+                    const filtered = filterJoinedChannels(joinedChannels, data);
+                    if (filtered?.length) {
+                        dispatch(addAction(t, filtered));
+                    } else if (data?.length && !filtered?.length) {
+                        doGetChannels(t);
+                    }
+                    break;
+                }
+                case ARCHIVED:
+                default:
+                    archivedPage.current += 1;
+                    nextArchived.current = Boolean(data?.length);
+                    if (data?.length) {
+                        dispatch(addAction(t, data));
+                    } else {
+                        dispatch(StopAction);
+                    }
+
+                    break;
+            }
         };
-    }, []);
+        return () => {
+            loadedChannels.current = async () => {/* Do nothing */};
+        };
+    }, [joinedChannels]);
 
     useEffect(() => {
         const unsubscribe = Navigation.events().registerComponentListener({
@@ -343,7 +383,6 @@ export default function BrowseChannels({
                             categoryId,
                         };
 
-                        // Go to or show modal?
                         goToScreen(screen, title, passProps);
                         break;
                     }
@@ -355,20 +394,19 @@ export default function BrowseChannels({
         };
     }, [intl.locale, categoryId]);
 
-    useDidUpdate(() => {
+    useEffect(() => {
         doGetChannels();
 
         // Since doGetChannels also depends on typeOfChannels, it should be up to date when reaching this effect.
     }, [typeOfChannels]);
 
     useDidUpdate(() => {
-        const active = selectActiveChannels();
         if (term) {
-            setVisibleChannels(filterChannelsByTerm(active, term));
+            setVisibleChannels(filterChannelsByTerm(activeChannels, term));
         } else {
-            setVisibleChannels(active);
+            setVisibleChannels(activeChannels);
         }
-    }, [selectActiveChannels]);
+    }, [activeChannels]);
 
     useEffect(() => {
         // Update header buttons in case anything related to the header changes
@@ -377,7 +415,13 @@ export default function BrowseChannels({
 
     let content;
     if (adding) {
-        content = renderLoading();
+        content = (
+            <Loading
+                containerStyle={style.loadingContainer}
+                style={style.loading}
+                color={theme.buttonBg}
+            />
+        );
     } else {
         let channelDropdown;
         if (canShowArchivedChannels || sharedChannelsEnabled) {

@@ -7,7 +7,6 @@ import {View, Text} from 'react-native';
 
 import CompassIcon from '@components/compass_icon';
 import {ITEM_HEIGHT} from '@components/slide_up_panel_item';
-import {PUBLIC, SHARED} from '@constants/browse_channels';
 import Screens from '@constants/screens';
 import {useTheme} from '@context/theme';
 import {TITLE_HEIGHT} from '@screens/bottom_sheet/content';
@@ -15,6 +14,7 @@ import {showModalOverCurrentContext} from '@screens/navigation';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
+import {PUBLIC, SHARED} from './browse_channels';
 import DropdownSlideup from './dropdown_slideup';
 
 type Props = {
@@ -42,7 +42,7 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme: Theme) => {
 
 const BOTTOM_SHEET_HEIGHT_BASE = 55; // Magic number
 
-export function ChannelDropdown({
+export default function ChannelDropdown({
     typeOfChannels,
     onPress,
     canShowArchivedChannels,
