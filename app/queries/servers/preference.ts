@@ -48,7 +48,7 @@ export const queryThemeForCurrentTeam = async (database: Database) => {
     return undefined;
 };
 
-export const deletePreferences = async (database: ServerDatabase, preferences: PreferenceType[]) => {
+export const deletePreferences = async (database: ServerDatabase, preferences: PreferenceType[]): Promise<Boolean> => {
     try {
         const preparedModels: Model[] = [];
         for await (const pref of preferences) {
@@ -60,8 +60,8 @@ export const deletePreferences = async (database: ServerDatabase, preferences: P
         if (preparedModels.length) {
             await database.operator.batchRecords(preparedModels);
         }
+        return true;
     } catch (error) {
-        // Record not found, do nothing
+        return false;
     }
-    return {};
 };
