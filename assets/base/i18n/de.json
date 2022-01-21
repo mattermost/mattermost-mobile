@@ -756,7 +756,7 @@
   "threads": "Unterhaltungen",
   "threads.deleted": "Ursprüngliche Nachricht gelöscht",
   "threads.follow": "Folgen",
-  "threads.followMessage": "Meldung folgen",
+  "threads.followMessage": "Nachricht folgen",
   "threads.followThread": "Unterhaltung folgen",
   "threads.following": "Gefolgt",
   "threads.newReplies": "{count} neue {count, plural, one {Antwort} other {Antworten}}",
