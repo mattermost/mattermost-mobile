@@ -72,7 +72,7 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
             height: 28,
             width: 28,
             borderRadius: 14,
-            borderWidth: 1,
+            borderWidth: 3,
             borderColor: 'rgba(61, 60, 64, 0.32)',
             alignItems: 'center',
             justifyContent: 'center',

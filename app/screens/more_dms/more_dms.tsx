@@ -51,8 +51,14 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
             flex: 1,
         },
         searchBar: {
-            marginVertical: 5,
-            height: 38,
+            marginHorizontal: 12,
+            borderRadius: 8,
+            marginTop: 12,
+            marginBottom: 5,
+            backgroundColor: changeOpacity(theme.centerChannelColor, 0.08),
+        },
+        searchBarInput: {
+            color: theme.centerChannelColor,
         },
         loadingContainer: {
             alignItems: 'center',
@@ -72,11 +78,6 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
         noResultText: {
             fontSize: 26,
             color: changeOpacity(theme.centerChannelColor, 0.5),
-        },
-        searchBarInput: {
-            backgroundColor: changeOpacity(theme.centerChannelColor, 0.2),
-            color: theme.centerChannelColor,
-            fontSize: 15,
         },
     };
 });

@@ -9,6 +9,7 @@ import {
     View,
 } from 'react-native';
 
+import {typography} from '@app/utils/typography';
 import CompassIcon from '@components/compass_icon';
 import {useTheme} from '@context/theme';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
@@ -42,19 +43,21 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
         container: {
             alignItems: 'center',
             flexDirection: 'row',
-            height: 27,
-            borderRadius: 3,
-            backgroundColor: changeOpacity(theme.centerChannelColor, 0.2),
-            marginBottom: 4,
+            height: 32,
+            borderRadius: 16,
+            backgroundColor: changeOpacity(theme.centerChannelColor, 0.08),
+            marginBottom: 8,
             marginRight: 10,
-            paddingLeft: 10,
+            paddingLeft: 12,
+            paddingVertical: 8,
+            paddingRight: 7,
         },
         remove: {
-            paddingHorizontal: 10,
+            marginLeft: 7,
         },
         text: {
             color: theme.centerChannelColor,
-            fontSize: 13,
+            ...typography('Body', 100, 'SemiBold'),
         },
     };
 });
@@ -90,9 +93,9 @@ export default function SelectedUser({
                 testID={`${testID}.${user.id}.remove.button`}
             >
                 <CompassIcon
-                    name='close'
-                    size={14}
-                    color={theme.centerChannelColor}
+                    name='close-circle'
+                    size={17}
+                    color={changeOpacity(theme.centerChannelColor, 0.32)}
                 />
             </TouchableOpacity>
         </View>

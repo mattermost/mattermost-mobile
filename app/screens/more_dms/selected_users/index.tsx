@@ -37,6 +37,27 @@ type Props = {
          */
     onRemove: (id: string) => void;
 }
+
+const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
+    return {
+        container: {
+            marginHorizontal: 12,
+        },
+        users: {
+            alignItems: 'flex-start',
+            flexDirection: 'row',
+            flexWrap: 'wrap',
+        },
+        message: {
+            color: changeOpacity(theme.centerChannelColor, 0.6),
+            fontSize: 12,
+            marginRight: 5,
+            marginTop: 10,
+            marginBottom: 2,
+        },
+    };
+});
+
 export default function SelectedUsers({
     selectedIds,
     teammateNameDisplay,
@@ -114,23 +135,3 @@ export default function SelectedUsers({
     );
 }
 
-const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
-    return {
-        container: {
-            marginLeft: 5,
-            marginBottom: 5,
-        },
-        users: {
-            alignItems: 'flex-start',
-            flexDirection: 'row',
-            flexWrap: 'wrap',
-        },
-        message: {
-            color: changeOpacity(theme.centerChannelColor, 0.6),
-            fontSize: 12,
-            marginRight: 5,
-            marginTop: 10,
-            marginBottom: 2,
-        },
-    };
-});

@@ -4,6 +4,7 @@
 import React, {useCallback, useMemo} from 'react';
 import {FlatList, Keyboard, ListRenderItemInfo, Platform, SectionList, SectionListData, Text, View} from 'react-native';
 
+import {typography} from '@app/utils/typography';
 import FormattedText from '@components/formatted_text';
 import UserListRow from '@components/user_list_row';
 import {General} from '@constants';
@@ -96,16 +97,17 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
             width: '100%',
         },
         sectionContainer: {
-            backgroundColor: changeOpacity(theme.centerChannelColor, 0.07),
+            backgroundColor: changeOpacity(theme.centerChannelColor, 0.08),
             paddingLeft: 10,
             paddingVertical: 2,
+            height: 28,
         },
         sectionWrapper: {
             backgroundColor: theme.centerChannelBg,
         },
         sectionText: {
-            fontWeight: '600',
             color: theme.centerChannelColor,
+            ...typography('Body', 300, 'SemiBold'),
         },
         noResultContainer: {
             flex: 1,
@@ -211,12 +213,6 @@ export default function UserList({
         );
     }, [style]);
 
-    const renderSeparator = useCallback(() => {
-        return (
-            <View style={style.separator}/>
-        );
-    }, [style]);
-
     const renderFlatList = (data: UserProfile[]) => {
         return (
             <FlatList
@@ -227,7 +223,6 @@ export default function UserList({
                 {...keyboardDismissProp}
                 keyExtractor={keyExtractor}
                 initialNumToRender={INITIAL_BATCH_TO_RENDER}
-                ItemSeparatorComponent={renderSeparator}
                 ListEmptyComponent={renderNoResults}
                 ListFooterComponent={renderLoading}
                 maxToRenderPerBatch={INITIAL_BATCH_TO_RENDER + 1}
@@ -249,7 +244,6 @@ export default function UserList({
                 {...keyboardDismissProp}
                 keyExtractor={keyExtractor}
                 initialNumToRender={INITIAL_BATCH_TO_RENDER}
-                ItemSeparatorComponent={renderSeparator}
                 ListEmptyComponent={renderNoResults}
                 ListFooterComponent={renderLoading}
                 maxToRenderPerBatch={INITIAL_BATCH_TO_RENDER + 1}
