@@ -372,7 +372,7 @@ export function getLocalFilePathFromFile(dir: string, serverUrl: string, file: F
     return undefined;
 }
 
-export async function extractFileInfos(files: Array<Asset | DocumentPickerResponse | PastedFile>) {
+export async function extractFileInfo(files: Array<Asset | DocumentPickerResponse | PastedFile>) {
     const out: ExtractedFileInfo[] = [];
 
     await Promise.all(files.map(async (file) => {
@@ -387,7 +387,7 @@ export async function extractFileInfos(files: Array<Asset | DocumentPickerRespon
             loading: true,
         } as unknown as ExtractedFileInfo;
 
-        if (file.hasOwnProperty('fileSize')) {
+        if ('fileSize' in file) {
             outFile.size = (file as (Asset | PastedFile)).fileSize || 0;
             outFile.name = (file as (Asset | PastedFile)).fileName || '';
         } else {
@@ -395,12 +395,15 @@ export async function extractFileInfos(files: Array<Asset | DocumentPickerRespon
                 ios: (file.uri || '').replace('file://', ''),
                 default: file.uri || '',
             });
-
-            const fileInfo = await FileSystem.getInfoAsync(path);
-            const uri = fileInfo.uri;
-
-            outFile.size = fileInfo.size || 0;
-            outFile.name = uri.substr(uri.lastIndexOf('/') + 1);
+            let fileInfo;
+            try {
+                fileInfo = await FileSystem.getInfoAsync(path);
+                const uri = fileInfo.uri;
+                outFile.size = fileInfo.size || 0;
+                outFile.name = uri.substring(uri.lastIndexOf('/') + 1);
+            } catch (e) {
+                return;
+            }
         }
 
         if (file.type) {

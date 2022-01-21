@@ -12,7 +12,7 @@ import Permissions, {AndroidPermission, IOSPermission} from 'react-native-permis
 import {Client} from '@client/rest';
 import {Navigation} from '@constants';
 import NetworkManager from '@init/network_manager';
-import {extractFileInfos, lookupMimeType} from '@utils/file';
+import {extractFileInfo, lookupMimeType} from '@utils/file';
 
 import type UserModel from '@typings/database/models/servers/user';
 import type {ExtractedFileInfo} from '@typings/utils/file';
@@ -101,7 +101,7 @@ export default class FilePickerUtil {
     };
 
     private prepareFileUpload = async (files: Array<Asset | DocumentPickerResponse>) => {
-        const out = await extractFileInfos(files);
+        const out = await extractFileInfo(files);
 
         if (out.length > 0) {
             DeviceEventEmitter.emit(Navigation.NAVIGATION_CLOSE_MODAL);
