@@ -147,11 +147,11 @@ export default class FilePickerUtil {
 
     private hasPhotoPermission = async (source: PermissionSource) => {
         let permissionRequest;
-        let targetSource: AndroidPermission | IOSPermission = source === 'camera' ? Permissions.PERMISSIONS.IOS.CAMERA : Permissions.PERMISSIONS.IOS.PHOTO_LIBRARY;
 
-        if (Platform.OS === 'android') {
-            targetSource = Permissions.PERMISSIONS.ANDROID.CAMERA;
-        }
+        const targetSource = Platform.select({
+            ios: source === 'camera' ? Permissions.PERMISSIONS.IOS.CAMERA : Permissions.PERMISSIONS.IOS.PHOTO_LIBRARY,
+            android: Permissions.PERMISSIONS.ANDROID.CAMERA,
+        }) as AndroidPermission | IOSPermission;
 
         const hasPhotoLibraryPermission = await Permissions.check(targetSource);
 
