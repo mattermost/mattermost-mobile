@@ -11,7 +11,6 @@ export async function handlePreferenceChangedEvent(serverUrl: string, msg: WebSo
     }
 
     try {
-        const preferences = JSON.parse(msg.data.preferences) as PreferenceType[];
         const preference = JSON.parse(msg.data.preference) as PreferenceType;
         const operator = database?.operator;
         if (operator) {
