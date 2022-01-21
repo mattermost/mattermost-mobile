@@ -494,3 +494,35 @@ export const setDefaultProfileImage = async (serverUrl: string, userId: string) 
 
     return {data: true};
 };
+
+export const uploadUserProfileImage = async (serverUrl: string, localPath: string) => {
+    const database = DatabaseManager.serverDatabases[serverUrl]?.database;
+    if (!database) {
+        return {error: `${serverUrl} database not found`};
+    }
+
+    let client: Client;
+    try {
+        client = NetworkManager.getClient(serverUrl);
+    } catch (error) {
+        return {error};
+    }
+
+    try {
+        const currentUser = await queryCurrentUser(database);
+        if (currentUser) {
+            const endpoint = `${client.getUserRoute(currentUser.id)}/image`;
+
+            await client.apiClient.upload(endpoint, localPath, {
+                skipBytes: 0,
+                method: 'POST',
+                multipart: {
+                    fileKey: 'image',
+                },
+            });
+        }
+    } catch (e) {
+        return {error: e};
+    }
+    return {error: undefined};
+};

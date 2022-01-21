@@ -9,7 +9,7 @@ import {Navigation} from 'react-native-navigation';
 import {Edge, SafeAreaView} from 'react-native-safe-area-context';
 
 import {updateLocalUser} from '@actions/local/user';
-import {setDefaultProfileImage, updateMe} from '@actions/remote/user';
+import {setDefaultProfileImage, updateMe, uploadUserProfileImage} from '@actions/remote/user';
 import CompassIcon from '@components/compass_icon';
 import {FloatingTextInputRef} from '@components/floating_text_input_label';
 import Loading from '@components/loading';
@@ -19,7 +19,6 @@ import {Events} from '@constants';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {t} from '@i18n';
-import NetworkManager from '@init/network_manager';
 import {dismissModal, popTopScreen, setButtons} from '@screens/navigation';
 import {preventDoubleTap} from '@utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
@@ -163,7 +162,7 @@ const EditProfile = ({
             icon: CompassIcon.getImageSourceSync('close', 24, theme.centerChannelColor),
             testID: CLOSE_BUTTON_ID,
         };
-    }, [isTablet, theme.sidebarHeaderTextColor]);
+    }, [isTablet, theme.centerChannelColor]);
 
     useEffect(() => {
         const unsubscribe = Navigation.events().registerComponentListener({
@@ -230,26 +229,6 @@ const EditProfile = ({
         enableSaveButton(true);
     }, [enableSaveButton]);
 
-    const uploadProfileImage = useCallback(async () => {
-        try {
-            const client = NetworkManager.getClient(serverUrl);
-            const endpoint = `${client.getUserRoute(currentUser.id)}/image`;
-            const newImage = changedProfilePicture.current?.localPath;
-            if (newImage) {
-                await client.apiClient.upload(endpoint, newImage, {
-                    skipBytes: 0,
-                    method: 'POST',
-                    multipart: {
-                        fileKey: 'image',
-                    },
-                });
-            }
-        } catch (e) {
-            return resetScreen(e as Error);
-        }
-        return null;
-    }, [changedProfilePicture.current]);
-
     const submitUser = useCallback(preventDoubleTap(async () => {
         enableSaveButton(false);
         setError(undefined);
@@ -263,10 +242,13 @@ const EditProfile = ({
                 position: userInfo.position,
                 username: userInfo.username,
             };
-
-            if (changedProfilePicture.current?.localPath) {
+            const localPath = changedProfilePicture.current?.localPath;
+            if (localPath) {
                 const now = Date.now();
-                await uploadProfileImage();
+                const {error: uploadError} = await uploadUserProfileImage(serverUrl, localPath);
+                if (uploadError) {
+                    return resetScreen(uploadError as Error);
+                }
                 updateLocalUser(serverUrl, {last_picture_update: now});
             }
 
@@ -278,12 +260,12 @@ const EditProfile = ({
 
             if (reqError) {
                 resetScreen(reqError as Error);
-                return;
+                return null;
             }
 
-            close();
+            return close();
         } catch (e) {
-            resetScreen(e as Error);
+            return resetScreen(e as Error);
         }
     }), [userInfo, enableSaveButton]);
 
@@ -304,7 +286,7 @@ const EditProfile = ({
         const currentValue = currentUser[fieldKey];
         const didChange = currentValue !== name;
         enableSaveButton(didChange);
-    }, [userInfo, currentUser]);
+    }, [userInfo, currentUser, enableSaveButton]);
 
     const userProfileFields: FieldSequence = useMemo(() => {
         return {
@@ -408,7 +390,7 @@ const EditProfile = ({
         }
 
         return null;
-    }, []);
+    }, [currentUser, lockedPicture, onUpdateProfilePicture]);
 
     return (
         <>
