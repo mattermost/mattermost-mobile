@@ -7,7 +7,7 @@
 import {inspect} from 'util';
 
 import DatabaseManager from '@database/manager';
-import {WebSocketMessage} from '@typings/api/websockets';
+import {WebSocketMessage} from '@typings/api/websocket';
 
 export async function handleRoleAddedEvent(serverUrl: string, msg: WebSocketMessage): Promise<void> {
     const database = DatabaseManager.serverDatabases[serverUrl];
