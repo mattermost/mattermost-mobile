@@ -120,7 +120,7 @@ class ClearAfterModal extends NavigationComponent<Props, State> {
         }
 
         return true;
-    }
+    };
 
     onDone = () => {
         const {handleClearAfterClick, isModal} = this.props;

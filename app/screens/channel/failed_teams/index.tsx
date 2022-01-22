@@ -8,10 +8,12 @@ import {retryInitialTeamAndChannel} from '@actions/remote/retry';
 import FailedAction from '@components/failed_action';
 import Loading from '@components/loading';
 import {useServerUrl} from '@context/server';
+import {useTheme} from '@context/theme';
 
 const FailedTeams = () => {
     const intl = useIntl();
     const serverUrl = useServerUrl();
+    const theme = useTheme();
     const [loading, setLoading] = useState(false);
 
     const title = intl.formatMessage({id: 'failed_action.something_wrong', defaultMessage: 'Something went wrong'});
@@ -27,7 +29,16 @@ const FailedTeams = () => {
     }, []);
 
     if (loading) {
-        return <Loading/>;
+        return (
+            <Loading
+                containerStyle={{
+                    flex: 1,
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                }}
+                color={theme.buttonBg}
+            />
+        );
     }
 
     return (

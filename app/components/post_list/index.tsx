@@ -1,48 +1,45 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {Q} from '@nozbe/watermelondb';
-import {withDatabase} from '@nozbe/watermelondb/DatabaseProvider';
-import withObservables from '@nozbe/with-observables';
-import React, {ReactElement, useCallback} from 'react';
-import {AppStateStatus, DeviceEventEmitter, FlatList, Platform, RefreshControl, StyleSheet, ViewToken} from 'react-native';
-import {of as of$} from 'rxjs';
-import {switchMap} from 'rxjs/operators';
+import {FlatList} from '@stream-io/flat-list-mvcp';
+import React, {ReactElement, useCallback, useEffect, useMemo, useRef, useState} from 'react';
+import {DeviceEventEmitter, NativeScrollEvent, NativeSyntheticEvent, Platform, StyleProp, StyleSheet, ViewStyle, ViewToken} from 'react-native';
+import Animated from 'react-native-reanimated';
 
+import {fetchPosts} from '@actions/remote/post';
 import CombinedUserActivity from '@components/post_list/combined_user_activity';
 import DateSeparator from '@components/post_list/date_separator';
 import NewMessagesLine from '@components/post_list/new_message_line';
 import Post from '@components/post_list/post';
-import {Preferences} from '@constants';
-import {MM_TABLES, SYSTEM_IDENTIFIERS} from '@constants/database';
+import {Screens} from '@constants';
+import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
-import {getPreferenceAsBool} from '@helpers/api/preference';
-import {emptyFunction} from '@utils/general';
-import {getDateForDateLine, isCombinedUserActivityPost, isDateLine, isStartOfNewMessages, preparePostList} from '@utils/post_list';
-import {getTimezone} from '@utils/user';
+import {getDateForDateLine, isCombinedUserActivityPost, isDateLine, isStartOfNewMessages, preparePostList, START_OF_NEW_MESSAGES} from '@utils/post_list';
 
-import type {WithDatabaseArgs} from '@typings/database/database';
-import type MyChannelModel from '@typings/database/models/servers/my_channel';
+import {INITIAL_BATCH_TO_RENDER, SCROLL_POSITION_CONFIG, VIEWABILITY_CONFIG} from './config';
+import MoreMessages from './more_messages';
+import PostListRefreshControl from './refresh_control';
+
 import type PostModel from '@typings/database/models/servers/post';
-import type PostsInChannelModel from '@typings/database/models/servers/posts_in_channel';
-import type PreferenceModel from '@typings/database/models/servers/preference';
-import type SystemModel from '@typings/database/models/servers/system';
-import type UserModel from '@typings/database/models/servers/user';
-
-type RefreshProps = {
-    children: ReactElement;
-    enabled: boolean;
-    onRefresh: () => void;
-    refreshing: boolean;
-}
 
 type Props = {
+    channelId: string;
+    contentContainerStyle?: StyleProp<ViewStyle>;
     currentTimezone: string | null;
     currentUsername: string;
+    highlightPinnedOrSaved?: boolean;
     isTimezoneEnabled: boolean;
     lastViewedAt: number;
+    location: string;
+    nativeID: string;
+    onEndReached?: () => void;
     posts: PostModel[];
+    rootId?: string;
+    shouldRenderReplyButton?: boolean;
     shouldShowJoinLeaveMessages: boolean;
+    showMoreMessages?: boolean;
+    showNewMessageLine?: boolean;
+    footer?: ReactElement;
     testID: string;
 }
 
@@ -51,7 +48,22 @@ type ViewableItemsChanged = {
     changed: ViewToken[];
 }
 
-const style = StyleSheet.create({
+type onScrollEndIndexListenerEvent = (endIndex: number) => void;
+type ViewableItemsChangedListenerEvent = (viewableItms: ViewToken[]) => void;
+
+type ScrollIndexFailed = {
+    index: number;
+    highestMeasuredFrameIndex: number;
+    averageItemLength: number;
+};
+
+const AnimatedFlatList = Animated.createAnimatedComponent(FlatList);
+const keyExtractor = (item: string | PostModel) => (typeof item === 'string' ? item : item.id);
+
+const styles = StyleSheet.create({
+    flex: {
+        flex: 1,
+    },
     container: {
         flex: 1,
         scaleY: -1,
@@ -65,42 +77,90 @@ const style = StyleSheet.create({
     },
 });
 
-const {SERVER: {MY_CHANNEL, POST, POSTS_IN_CHANNEL, PREFERENCE, SYSTEM, USER}} = MM_TABLES;
-
-export const VIEWABILITY_CONFIG = {
-    itemVisiblePercentThreshold: 1,
-    minimumViewTime: 100,
-};
-
-const PostListRefreshControl = ({children, enabled, onRefresh, refreshing}: RefreshProps) => {
-    const props = {
-        onRefresh,
-        refreshing,
-    };
-
-    if (Platform.OS === 'android') {
-        return (
-            <RefreshControl
-                {...props}
-                enabled={enabled}
-                style={style.container}
-            >
-                {children}
-            </RefreshControl>
-        );
-    }
-
-    const refreshControl = <RefreshControl {...props}/>;
-
-    return React.cloneElement(
-        children,
-        {refreshControl, inverted: true},
-    );
-};
-
-const PostList = ({currentTimezone, currentUsername, isTimezoneEnabled, lastViewedAt, posts, shouldShowJoinLeaveMessages, testID}: Props) => {
+const PostList = ({
+    channelId,
+    contentContainerStyle,
+    currentTimezone,
+    currentUsername,
+    footer,
+    highlightPinnedOrSaved = true,
+    isTimezoneEnabled,
+    lastViewedAt,
+    location,
+    nativeID,
+    onEndReached,
+    posts,
+    rootId,
+    shouldRenderReplyButton = true,
+    shouldShowJoinLeaveMessages,
+    showMoreMessages,
+    showNewMessageLine = true,
+    testID,
+}: Props) => {
+    const listRef = useRef<FlatList>(null);
+    const onScrollEndIndexListener = useRef<onScrollEndIndexListenerEvent>();
+    const onViewableItemsChangedListener = useRef<ViewableItemsChangedListenerEvent>();
+    const [offsetY, setOffsetY] = useState(0);
+    const [refreshing, setRefreshing] = useState(false);
     const theme = useTheme();
-    const orderedPosts = preparePostList(posts, lastViewedAt, true, currentUsername, shouldShowJoinLeaveMessages, isTimezoneEnabled, currentTimezone, false);
+    const serverUrl = useServerUrl();
+    const orderedPosts = useMemo(() => {
+        return preparePostList(posts, lastViewedAt, showNewMessageLine, currentUsername, shouldShowJoinLeaveMessages, isTimezoneEnabled, currentTimezone, location === Screens.THREAD);
+    }, [posts, lastViewedAt, showNewMessageLine, currentTimezone, currentUsername, shouldShowJoinLeaveMessages, isTimezoneEnabled, location]);
+
+    const initialIndex = useMemo(() => {
+        return orderedPosts.indexOf(START_OF_NEW_MESSAGES);
+    }, [orderedPosts]);
+
+    useEffect(() => {
+        listRef.current?.scrollToOffset({offset: 0, animated: false});
+    }, [channelId, listRef.current]);
+
+    useEffect(() => {
+        const scrollToBottom = (screen: string) => {
+            if (screen === location) {
+                const scrollToBottomTimer = setTimeout(() => {
+                    listRef.current?.scrollToOffset({offset: 0, animated: true});
+                    clearTimeout(scrollToBottomTimer);
+                }, 400);
+            }
+        };
+
+        const scrollBottomListener = DeviceEventEmitter.addListener('scroll-to-bottom', scrollToBottom);
+
+        return () => {
+            scrollBottomListener.remove();
+        };
+    }, []);
+
+    const onRefresh = useCallback(async () => {
+        setRefreshing(true);
+        if (location === Screens.CHANNEL && channelId) {
+            await fetchPosts(serverUrl, channelId);
+        } else if (location === Screens.THREAD && rootId) {
+            // await getPostThread(rootId);
+        }
+        setRefreshing(false);
+    }, [channelId, location, rootId]);
+
+    const onScroll = useCallback((event: NativeSyntheticEvent<NativeScrollEvent>) => {
+        if (Platform.OS === 'android') {
+            const {y} = event.nativeEvent.contentOffset;
+            if (y === 0) {
+                setOffsetY(y);
+            } else if (offsetY === 0 && y !== 0) {
+                setOffsetY(y);
+            }
+        }
+    }, [offsetY]);
+
+    const onScrollToIndexFailed = useCallback((info: ScrollIndexFailed) => {
+        const index = Math.min(info.highestMeasuredFrameIndex, info.index);
+        if (onScrollEndIndexListener.current) {
+            onScrollEndIndexListener.current(index);
+        }
+        scrollToIndex(index);
+    }, []);
 
     const onViewableItemsChanged = useCallback(({viewableItems}: ViewableItemsChanged) => {
         if (!viewableItems.length) {
@@ -115,6 +175,28 @@ const PostList = ({currentTimezone, currentUsername, isTimezoneEnabled, lastView
         }, {});
 
         DeviceEventEmitter.emit('scrolled', viewableItemsMap);
+
+        if (onViewableItemsChangedListener.current) {
+            onViewableItemsChangedListener.current(viewableItems);
+        }
+    }, []);
+
+    const registerScrollEndIndexListener = useCallback((listener) => {
+        onScrollEndIndexListener.current = listener;
+        const removeListener = () => {
+            onScrollEndIndexListener.current = undefined;
+        };
+
+        return removeListener;
+    }, []);
+
+    const registerViewableItemsListener = useCallback((listener) => {
+        onViewableItemsChangedListener.current = listener;
+        const removeListener = () => {
+            onViewableItemsChangedListener.current = undefined;
+        };
+
+        return removeListener;
     }, []);
 
     const renderItem = useCallback(({item, index}) => {
@@ -134,7 +216,7 @@ const PostList = ({currentTimezone, currentUsername, isTimezoneEnabled, lastView
                         theme={theme}
                         moreMessages={moreNewMessages && checkForPostId}
                         testID={`${testID}.new_messages_line`}
-                        style={style.scale}
+                        style={styles.scale}
                     />
                 );
             } else if (isDateLine(item)) {
@@ -142,7 +224,7 @@ const PostList = ({currentTimezone, currentUsername, isTimezoneEnabled, lastView
                     <DateSeparator
                         date={getDateForDateLine(item)}
                         theme={theme}
-                        style={style.scale}
+                        style={styles.scale}
                         timezone={isTimezoneEnabled ? currentTimezone : null}
                     />
                 );
@@ -152,7 +234,7 @@ const PostList = ({currentTimezone, currentUsername, isTimezoneEnabled, lastView
                 const postProps = {
                     currentUsername,
                     postId: item,
-                    style: Platform.OS === 'ios' ? style.scale : style.container,
+                    style: Platform.OS === 'ios' ? styles.scale : styles.container,
                     testID: `${testID}.combined_user_activity`,
                     showJoinLeave: shouldShowJoinLeaveMessages,
                     theme,
@@ -164,11 +246,9 @@ const PostList = ({currentTimezone, currentUsername, isTimezoneEnabled, lastView
 
         let previousPost: PostModel|undefined;
         let nextPost: PostModel|undefined;
-        if (index < posts.length - 1) {
-            const prev = orderedPosts.slice(index + 1).find((v) => typeof v !== 'string');
-            if (prev) {
-                previousPost = prev as PostModel;
-            }
+        const prev = orderedPosts.slice(index + 1).find((v) => typeof v !== 'string');
+        if (prev) {
+            previousPost = prev as PostModel;
         }
 
         if (index > 0) {
@@ -183,90 +263,81 @@ const PostList = ({currentTimezone, currentUsername, isTimezoneEnabled, lastView
         }
 
         const postProps = {
-            highlightPinnedOrFlagged: true,
-            location: 'Channel',
+            highlightPinnedOrSaved,
+            location,
             nextPost,
             previousPost,
-            shouldRenderReplyButton: true,
+            shouldRenderReplyButton,
         };
 
         return (
             <Post
                 key={item.id}
                 post={item}
-                style={style.scale}
+                style={styles.scale}
                 testID={`${testID}.post`}
                 {...postProps}
             />
         );
-    }, [orderedPosts, theme]);
+    }, [currentTimezone, highlightPinnedOrSaved, isTimezoneEnabled, orderedPosts, shouldRenderReplyButton, theme]);
+
+    const scrollToIndex = useCallback((index: number, animated = true) => {
+        listRef.current?.scrollToIndex({
+            animated,
+            index,
+            viewOffset: 0,
+            viewPosition: 1, // 0 is at bottom
+        });
+    }, []);
 
     return (
-        <PostListRefreshControl
-            enabled={false}
-            refreshing={false}
-            onRefresh={emptyFunction}
-        >
-            <FlatList
-                data={orderedPosts}
-                renderItem={renderItem}
-                keyboardDismissMode='interactive'
-                keyboardShouldPersistTaps='handled'
-                keyExtractor={(item) => (typeof item === 'string' ? item : item.id)}
-                style={{flex: 1}}
-                contentContainerStyle={{paddingTop: 5}}
-                initialNumToRender={10}
-                maxToRenderPerBatch={10}
-                removeClippedSubviews={true}
-                onViewableItemsChanged={onViewableItemsChanged}
-                viewabilityConfig={VIEWABILITY_CONFIG}
-                scrollEventThrottle={60}
+        <>
+            <PostListRefreshControl
+                enabled={offsetY === 0}
+                refreshing={refreshing}
+                onRefresh={onRefresh}
+                style={styles.container}
+            >
+                <AnimatedFlatList
+                    contentContainerStyle={contentContainerStyle}
+                    data={orderedPosts}
+                    keyboardDismissMode='interactive'
+                    keyboardShouldPersistTaps='handled'
+                    keyExtractor={keyExtractor}
+                    initialNumToRender={INITIAL_BATCH_TO_RENDER + 5}
+                    listKey={`postList-${channelId}`}
+                    ListFooterComponent={footer}
+                    maintainVisibleContentPosition={SCROLL_POSITION_CONFIG}
+                    maxToRenderPerBatch={10}
+                    nativeID={nativeID}
+                    onEndReached={onEndReached}
+                    onEndReachedThreshold={2}
+                    onScroll={onScroll}
+                    onScrollToIndexFailed={onScrollToIndexFailed}
+                    onViewableItemsChanged={onViewableItemsChanged}
+                    ref={listRef}
+                    removeClippedSubviews={true}
+                    renderItem={renderItem}
+                    scrollEventThrottle={60}
+                    style={styles.flex}
+                    viewabilityConfig={VIEWABILITY_CONFIG}
+                    testID={testID}
+                />
+            </PostListRefreshControl>
+            {showMoreMessages &&
+            <MoreMessages
+                channelId={channelId}
+                newMessageLineIndex={initialIndex}
+                posts={orderedPosts}
+                registerScrollEndIndexListener={registerScrollEndIndexListener}
+                registerViewableItemsListener={registerViewableItemsListener}
+                scrollToIndex={scrollToIndex}
+                theme={theme}
+                testID={`${testID}.more_messages_button`}
             />
-        </PostListRefreshControl>
+            }
+        </>
     );
 };
 
-const withPosts = withObservables(['channelId', 'forceQueryAfterAppState'], ({database, channelId}: {channelId: string; forceQueryAfterAppState: AppStateStatus} & WithDatabaseArgs) => {
-    const currentUser = database.get<SystemModel>(SYSTEM).findAndObserve(SYSTEM_IDENTIFIERS.CURRENT_USER_ID).pipe(
-        switchMap((currentUserId) => database.get<UserModel>(USER).findAndObserve(currentUserId.value)),
-    );
-
-    return {
-        currentTimezone: currentUser.pipe((switchMap((user) => of$(getTimezone(user.timezone))))),
-        currentUsername: currentUser.pipe((switchMap((user) => of$(user.username)))),
-        isTimezoneEnabled: database.get<SystemModel>(SYSTEM).findAndObserve(SYSTEM_IDENTIFIERS.CONFIG).pipe(
-            switchMap((config) => of$(config.value.ExperimentalTimezone === 'true')),
-        ),
-        lastViewedAt: database.get<MyChannelModel>(MY_CHANNEL).findAndObserve(channelId).pipe(
-            switchMap((myChannel) => of$(myChannel.viewedAt)),
-        ),
-        posts: database.get<PostsInChannelModel>(POSTS_IN_CHANNEL).query(
-            Q.where('channel_id', channelId),
-            Q.sortBy('latest', Q.desc),
-        ).observeWithColumns(['earliest', 'latest']).pipe(
-            switchMap((postsInChannel) => {
-                if (!postsInChannel.length) {
-                    return of$([]);
-                }
-
-                const {earliest, latest} = postsInChannel[0];
-                return database.get<PostModel>(POST).query(
-                    Q.and(
-                        Q.where('delete_at', 0),
-                        Q.where('channel_id', channelId),
-                        Q.where('create_at', Q.between(earliest, latest)),
-                    ),
-                    Q.sortBy('create_at', Q.desc),
-                ).observe();
-            }),
-        ),
-        shouldShowJoinLeaveMessages: database.get<PreferenceModel>(PREFERENCE).query(
-            Q.where('category', Preferences.CATEGORY_ADVANCED_SETTINGS),
-            Q.where('name', Preferences.ADVANCED_FILTER_JOIN_LEAVE),
-        ).observe().pipe(
-            switchMap((preferences) => of$(getPreferenceAsBool(preferences, Preferences.CATEGORY_ADVANCED_SETTINGS, Preferences.ADVANCED_FILTER_JOIN_LEAVE, true))),
-        ),
-    };
-});
-
-export default withDatabase(withPosts(PostList));
+export default PostList;

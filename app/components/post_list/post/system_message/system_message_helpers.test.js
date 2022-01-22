@@ -42,7 +42,7 @@ describe('renderSystemMessage', () => {
         );
         expect(toJSON()).toMatchSnapshot();
         expect(getByText('@username')).toBeTruthy();
-        expect(getByText(' updated the channel header from: old header to: new header')).toBeTruthy();
+        expect(getByText('updated the channel header from: old header to: new header')).toBeTruthy();
     });
 
     test('uses renderer for Channel Display Name update', () => {
@@ -63,7 +63,7 @@ describe('renderSystemMessage', () => {
         );
         expect(toJSON()).toMatchSnapshot();
         expect(getByText('@username')).toBeTruthy();
-        expect(getByText(' updated the channel display name from: old displayname to: new displayname')).toBeTruthy();
+        expect(getByText('updated the channel display name from: old displayname to: new displayname')).toBeTruthy();
     });
 
     test('uses renderer for Channel Purpose update', () => {
@@ -99,7 +99,7 @@ describe('renderSystemMessage', () => {
         );
         expect(toJSON()).toMatchSnapshot();
         expect(getByText('@username')).toBeTruthy();
-        expect(getByText(' archived the channel')).toBeTruthy();
+        expect(getByText('archived the channel')).toBeTruthy();
     });
 
     test('uses renderer for OLD archived channel without a username', () => {
@@ -134,7 +134,7 @@ describe('renderSystemMessage', () => {
         );
         expect(viewOne.toJSON()).toMatchSnapshot();
         expect(viewOne.getByText('@username')).toBeTruthy();
-        expect(viewOne.getByText(' unarchived the channel')).toBeTruthy();
+        expect(viewOne.getByText('unarchived the channel')).toBeTruthy();
 
         const viewTwo = renderWithEverything(
             <SystemMessage
@@ -179,7 +179,7 @@ describe('renderSystemMessage', () => {
         );
         expect(joined.toJSON()).toMatchSnapshot();
         expect(joined.getByText('@username')).toBeTruthy();
-        expect(joined.getByText(' joined the channel as a guest.')).toBeTruthy();
+        expect(joined.getByText('joined the channel as a guest.')).toBeTruthy();
 
         post.type = Post.POST_TYPES.ADD_GUEST_TO_CHANNEL;
         post.props = {
@@ -196,7 +196,7 @@ describe('renderSystemMessage', () => {
         );
         expect(added.toJSON()).toMatchSnapshot();
         expect(added.getByText('@other.user')).toBeTruthy();
-        expect(added.getByText(' added to the channel as a guest by ')).toBeTruthy();
+        expect(added.getByText('added to the channel as a guest by')).toBeTruthy();
         expect(added.getByText('@username.')).toBeTruthy();
     });
 });

@@ -119,7 +119,7 @@ const SSOWithWebView = ({completeUrlPath, doSSOLogin, loginError, loginUrl, serv
         }
     };
 
-    const extractCookie = (parsedUrl: urlParse) => {
+    const extractCookie = (parsedUrl: urlParse<string>) => {
         try {
             const original = urlParse(serverUrl);
 

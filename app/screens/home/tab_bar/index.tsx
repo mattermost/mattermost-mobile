@@ -82,6 +82,31 @@ function TabBar({state, descriptors, navigation, theme}: BottomTabBarProps & {th
         return () => listner.remove();
     });
 
+    useEffect(() => {
+        const listner = DeviceEventEmitter.addListener(NavigationConstants.NAVIGATE_TO_TAB, ({screen, params = {}}: {screen: string; params: any}) => {
+            const lastTab = state.history[state.history.length - 1];
+            // eslint-disable-next-line max-nested-callbacks
+            const routeIndex = state.routes.findIndex((r) => r.name === screen);
+            const route = state.routes[routeIndex];
+            // eslint-disable-next-line max-nested-callbacks
+            const lastIndex = state.routes.findIndex((r) => r.key === lastTab.key);
+            const direction = lastIndex < routeIndex ? 'right' : 'left';
+            const event = navigation.emit({
+                type: 'tabPress',
+                target: screen,
+                canPreventDefault: true,
+            });
+
+            if (!event.defaultPrevented) {
+                // The `merge: true` option makes sure that the params inside the tab screen are preserved
+                navigation.navigate({params: {direction, ...params}, name: route.name, merge: false});
+                EphemeralStore.setVisibleTap(route.name);
+            }
+        });
+
+        return () => listner.remove();
+    }, [state]);
+
     const transform = useAnimatedStyle(() => {
         const translateX = withTiming(state.index * tabWidth, {duration: 150});
         return {
@@ -140,7 +165,7 @@ function TabBar({state, descriptors, navigation, theme}: BottomTabBarProps & {th
 
                     if (!isFocused && !event.defaultPrevented) {
                         // The `merge: true` option makes sure that the params inside the tab screen are preserved
-                        navigation.navigate({params: {...route.params, direction}, name: route.name, merge: true});
+                        navigation.navigate({params: {direction}, name: route.name, merge: false});
                         EphemeralStore.setVisibleTap(route.name);
                     }
                 };

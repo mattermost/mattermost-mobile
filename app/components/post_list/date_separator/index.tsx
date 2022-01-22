@@ -7,6 +7,7 @@ import {StyleProp, View, ViewStyle} from 'react-native';
 import FormattedDate from '@components/formatted_date';
 import FormattedText from '@components/formatted_text';
 import {makeStyleSheetFromTheme} from '@utils/theme';
+import {typography} from '@utils/typography';
 
 type DateSeparatorProps = {
     date: number | Date;
@@ -20,11 +21,8 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
         container: {
             alignItems: 'center',
             flexDirection: 'row',
-            height: 28,
-            marginTop: 8,
-        },
-        dateContainer: {
-            marginHorizontal: 15,
+            marginVertical: 8,
+            paddingHorizontal: 20,
         },
         line: {
             flex: 1,
@@ -34,15 +32,18 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
         },
         date: {
             color: theme.centerChannelColor,
-            fontFamily: 'OpenSans-Semibold',
-            fontSize: 12,
-            lineHeight: 16,
+            marginHorizontal: 4,
+            ...typography('Body', 75, 'SemiBold'),
         },
     };
 });
 
 export function isSameDay(a: Date, b: Date) {
     return a.getDate() === b.getDate() && a.getMonth() === b.getMonth() && a.getFullYear() === b.getFullYear();
+}
+
+export function isSameYear(a: Date, b: Date) {
+    return a.getFullYear() === b.getFullYear();
 }
 
 export function isToday(date: Date) {
@@ -80,9 +81,12 @@ const RecentDate = (props: DateSeparatorProps) => {
         );
     }
 
+    const format = isSameYear(when, new Date()) ? 'MMM DD' : 'MMM DD, YYYY';
+
     return (
         <FormattedDate
             {...otherProps}
+            format={format}
             value={date}
         />
     );
@@ -94,12 +98,10 @@ const DateSeparator = (props: DateSeparatorProps) => {
     return (
         <View style={[styles.container, props.style]}>
             <View style={styles.line}/>
-            <View style={styles.dateContainer}>
-                <RecentDate
-                    {...props}
-                    style={styles.date}
-                />
-            </View>
+            <RecentDate
+                {...props}
+                style={styles.date}
+            />
             <View style={styles.line}/>
         </View>
     );

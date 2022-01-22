@@ -32,7 +32,7 @@ const RE_EMOTICON: Record<string, RegExp> = {
     broken_heart: /(^|\s)(<\/3|&lt;&#x2F;3)(?=$|\s)/g, // </3
 };
 
-const MAX_JUMBO_EMOJIS = 4;
+const MAX_JUMBO_EMOJIS = 8;
 
 function isEmoticon(text: string) {
     for (const emoticon of Object.keys(RE_EMOTICON)) {

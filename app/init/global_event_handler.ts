@@ -72,7 +72,7 @@ class GlobalEventHandler {
         } catch (error) {
             // Nothing to clear
         }
-    }
+    };
 
     clearCookiesForServer = async (serverUrl: string) => {
         this.clearCookies(serverUrl, false);
@@ -149,7 +149,7 @@ class GlobalEventHandler {
         } else {
             resetMomentLocale();
         }
-    }
+    };
 
     serverUpgradeNeeded = async (serverUrl: string) => {
         const credentials = await getServerCredentials(serverUrl);

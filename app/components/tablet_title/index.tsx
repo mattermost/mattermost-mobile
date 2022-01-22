@@ -10,6 +10,7 @@ import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 type Props = {
     action?: string;
+    enabled?: boolean;
     onPress: () => void;
     title: string;
     testID: string;
@@ -19,11 +20,13 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     actionContainer: {
         alignItems: 'flex-end',
         justifyContent: 'center',
-        marginRight: 20,
+        right: 20,
+        bottom: 7,
+        position: 'absolute',
     },
     action: {
-        color: theme.buttonBg,
-        fontFamily: 'OpenSans-Semibold',
+        color: changeOpacity(theme.centerChannelColor, 0.7),
+        fontFamily: 'OpenSans-SemiBold',
         fontSize: 16,
         lineHeight: 24,
     },
@@ -34,6 +37,11 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         flexDirection: 'row',
         height: 34,
         width: '100%',
+        alignItems: 'center',
+        paddingBottom: 5,
+    },
+    enabled: {
+        color: theme.buttonBg,
     },
     titleContainer: {
         alignItems: 'center',
@@ -42,15 +50,16 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     },
     title: {
         color: theme.centerChannelColor,
-        fontFamily: 'OpenSans-Semibold',
+        fontFamily: 'OpenSans-SemiBold',
         fontSize: 18,
         lineHeight: 24,
     },
 }));
 
-const TabletTitle = ({action, onPress, testID, title}: Props) => {
+const TabletTitle = ({action, enabled = true, onPress, testID, title}: Props) => {
     const theme = useTheme();
     const styles = getStyleSheet(theme);
+    const textStyle = [styles.action, enabled && styles.enabled];
 
     return (
         <>
@@ -61,12 +70,13 @@ const TabletTitle = ({action, onPress, testID, title}: Props) => {
                 {Boolean(action) &&
                 <View style={styles.actionContainer}>
                     <TouchableWithFeedback
+                        disabled={!enabled}
                         onPress={onPress}
                         type={Platform.select({android: 'native', ios: 'opacity'})}
                         testID={testID}
                         underlayColor={changeOpacity(theme.centerChannelColor, 0.1)}
                     >
-                        <Text style={styles.action}>{action}</Text>
+                        <Text style={textStyle}>{action}</Text>
                     </TouchableWithFeedback>
                 </View>
                 }

@@ -34,7 +34,7 @@ export const fetchGroupsForTeam = async (serverUrl: string, teamId: string) => {
             const groupsTeams: GroupTeamRelation[] = [];
             const groupMemberships: GroupMembership[] = [];
             if (team.isGroupConstrained) {
-                const [groupsAssociatedToChannelsInTeam, groupsAssociatedToTeam] = await Promise.all<{groups: Record<string, Group[]>}, {groups: Group[]; total_group_count: number}>([
+                const [groupsAssociatedToChannelsInTeam, groupsAssociatedToTeam]: [{groups: Record<string, Group[]>}, {groups: Group[]; total_group_count: number}] = await Promise.all([
                     client.getAllGroupsAssociatedToChannelsInTeam(teamId, true),
                     client.getAllGroupsAssociatedToTeam(teamId, true),
                 ]);
@@ -60,7 +60,7 @@ export const fetchGroupsForTeam = async (serverUrl: string, teamId: string) => {
                 }
             } else {
                 const since = await queryWebSocketLastDisconnected(database);
-                const [groupsAssociatedToChannelsInTeam, allGroups] = await Promise.all<{groups: Record<string, Group[]>}, Group[]>([
+                const [groupsAssociatedToChannelsInTeam, allGroups]: [{groups: Record<string, Group[]>}, Group[]] = await Promise.all([
                     client.getAllGroupsAssociatedToChannelsInTeam(teamId, true),
                     client.getGroups(true, 0, 0, since),
                 ]);
