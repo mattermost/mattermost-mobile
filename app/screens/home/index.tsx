@@ -8,7 +8,7 @@ import {useIntl} from 'react-intl';
 import {DeviceEventEmitter, Platform} from 'react-native';
 import {enableScreens} from 'react-native-screens';
 
-import {Events} from '@constants';
+import {Events, Screens} from '@constants';
 import {useTheme} from '@context/theme';
 import {notificationError} from '@utils/notification';
 
@@ -66,22 +66,22 @@ export default function HomeScreen(props: HomeProps) {
                     />)}
             >
                 <Tab.Screen
-                    name='Home'
+                    name={Screens.HOME}
                     options={{title: 'Channel', unmountOnBlur: false}}
                 >
                     {() => <ChannelList {...props}/>}
                 </Tab.Screen>
                 <Tab.Screen
-                    name='Search'
+                    name={Screens.SEARCH}
                     component={Search}
                     options={{unmountOnBlur: false}}
                 />
                 <Tab.Screen
-                    name='Mentions'
+                    name={Screens.MENTIONS}
                     component={RecentMentions}
                 />
                 <Tab.Screen
-                    name='Account'
+                    name={Screens.ACCOUNT}
                     component={Account}
                 />
             </Tab.Navigator>

@@ -31,7 +31,7 @@ const {
 export interface PostHandlerMix {
     handleDraft: ({drafts, prepareRecordsOnly}: HandleDraftArgs) => Promise<DraftModel[]>;
     handleFiles: ({files, prepareRecordsOnly}: HandleFilesArgs) => Promise<FileModel[]>;
-    handlePosts: ({actionType, order, posts, previousPostId}: HandlePostsArgs) => Promise<void>;
+    handlePosts: ({actionType, order, posts, previousPostId, prepareRecordsOnly}: HandlePostsArgs) => Promise<Model[]>;
     handlePostsInChannel: (posts: Post[]) => Promise<void>;
     handlePostsInThread: (rootPosts: PostsInThread[]) => Promise<void>;
 }
@@ -73,12 +73,12 @@ const PostHandler = (superclass: any) => class extends superclass {
      * @param {string | undefined} handlePosts.previousPostId
      * @returns {Promise<void>}
      */
-    handlePosts = async ({actionType, order, posts, previousPostId = ''}: HandlePostsArgs): Promise<void> => {
+    handlePosts = async ({actionType, order, posts, previousPostId = '', prepareRecordsOnly = false}: HandlePostsArgs): Promise<Model[]> => {
         const tableName = POST;
 
         // We rely on the posts array; if it is empty, we stop processing
         if (!posts.length) {
-            return;
+            return [];
         }
 
         const emojis: CustomEmoji[] = [];
@@ -197,10 +197,12 @@ const PostHandler = (superclass: any) => class extends superclass {
             }
         }
 
-        if (batch.length) {
+        if (batch.length && !prepareRecordsOnly) {
             await this.batchRecords(batch);
         }
-    }
+
+        return batch;
+    };
 
     /**
      * handleFiles: Handler responsible for the Create/Update operations occurring on the File table from the 'Server' schema

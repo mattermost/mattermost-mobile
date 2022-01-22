@@ -5,7 +5,7 @@ exports[`components/channel_list should match snapshot 1`] = `
   animatedStyle={
     Object {
       "value": Object {
-        "maxWidth": undefined,
+        "maxWidth": "100%",
       },
     }
   }
@@ -14,7 +14,7 @@ exports[`components/channel_list should match snapshot 1`] = `
     Object {
       "backgroundColor": "#1e325c",
       "flex": 1,
-      "maxWidth": undefined,
+      "maxWidth": "100%",
       "paddingHorizontal": 20,
       "paddingVertical": 10,
     }
@@ -22,6 +22,7 @@ exports[`components/channel_list should match snapshot 1`] = `
 >
   <RNGestureHandlerButton
     collapsable={false}
+    exclusive={true}
     onGestureEvent={[Function]}
     onGestureHandlerEvent={[Function]}
     onGestureHandlerStateChange={[Function]}
@@ -31,14 +32,27 @@ exports[`components/channel_list should match snapshot 1`] = `
     <View
       accessible={true}
       collapsable={false}
-      nativeID="animatedComponent"
       style={
         Object {
           "opacity": 1,
         }
       }
     >
-      <View>
+      <View
+        animatedStyle={
+          Object {
+            "value": Object {
+              "marginLeft": 0,
+            },
+          }
+        }
+        collapsable={false}
+        style={
+          Object {
+            "marginLeft": 0,
+          }
+        }
+      >
         <View
           style={
             Object {
@@ -203,9 +217,6 @@ exports[`components/channel_list should match snapshot 1`] = `
       }
     />
     <TextInput
-      collapsable={false}
-      onGestureHandlerEvent={[Function]}
-      onGestureHandlerStateChange={[Function]}
       placeholder="Find Channels"
       placeholderTextColor="rgba(255,255,255,0.72)"
       style={

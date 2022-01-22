@@ -1,11 +1,16 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
+//
 
-import {ActionType, General} from '@constants';
+import {DeviceEventEmitter} from 'react-native';
+
+import {processPostsFetched} from '@actions/local/post';
+import {ActionType, Events, General} from '@constants';
 import {SYSTEM_IDENTIFIERS} from '@constants/database';
 import DatabaseManager from '@database/manager';
 import {getNeededAtMentionedUsernames} from '@helpers/api/user';
 import NetworkManager from '@init/network_manager';
+import {prepareMissingChannelsForAllTeams, queryAllMyChannelIds} from '@queries/servers/channel';
 import {queryRecentPostsInChannel} from '@queries/servers/post';
 import {queryCurrentUserId, queryCurrentChannelId} from '@queries/servers/system';
 import {queryAllUsers} from '@queries/servers/user';
@@ -13,6 +18,7 @@ import {queryAllUsers} from '@queries/servers/user';
 import {forceLogoutIfNecessary} from './session';
 
 import type {Client} from '@client/rest';
+import type Model from '@nozbe/watermelondb/Model';
 
 type PostsRequest = {
     error?: unknown;
@@ -60,19 +66,38 @@ export const fetchPostsForChannel = async (serverUrl: string, channelId: string)
     }
 
     if (data.posts?.length && data.order?.length) {
+        const models: Model[] = [];
         try {
-            await fetchPostAuthors(serverUrl, data.posts, false);
+            const {authors} = await fetchPostAuthors(serverUrl, data.posts, true);
+            if (authors?.length) {
+                const users = await operator.handleUsers({
+                    users: authors,
+                    prepareRecordsOnly: true,
+                });
+                if (users.length) {
+                    models.push(...users);
+                }
+            }
         } catch (error) {
             // eslint-disable-next-line no-console
             console.log('FETCH AUTHORS ERROR', error);
         }
 
-        operator.handlePosts({
+        const postModels = await operator.handlePosts({
             actionType,
             order: data.order,
             posts: data.posts,
             previousPostId: data.previousPostId,
+            prepareRecordsOnly: true,
         });
+
+        if (postModels.length) {
+            models.push(...postModels);
+        }
+
+        if (models.length) {
+            await operator.batchRecords(models);
+        }
     }
 
     return {posts: data.posts};
@@ -111,6 +136,65 @@ export const fetchPosts = async (serverUrl: string, channelId: string, page = 0,
         return processPostsFetched(serverUrl, ActionType.POSTS.RECEIVED_IN_CHANNEL, data, fetchOnly);
     } catch (error) {
         forceLogoutIfNecessary(serverUrl, error as ClientErrorProps);
+        return {error};
+    }
+};
+
+export const fetchPostsBefore = async (serverUrl: string, channelId: string, postId: string, perPage = General.POST_CHUNK_SIZE, fetchOnly = false) => {
+    const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
+    if (!operator) {
+        return {error: `${serverUrl} database not found`};
+    }
+
+    let client: Client;
+    try {
+        client = NetworkManager.getClient(serverUrl);
+    } catch (error) {
+        return {error};
+    }
+
+    const activeServerUrl = await DatabaseManager.getActiveServerUrl();
+
+    try {
+        if (activeServerUrl === serverUrl) {
+            DeviceEventEmitter.emit(Events.LOADING_CHANNEL_POSTS, true);
+        }
+        const data = await client.getPostsBefore(channelId, postId, 0, perPage);
+        const result = await processPostsFetched(serverUrl, ActionType.POSTS.RECEIVED_BEFORE, data, true);
+
+        if (activeServerUrl === serverUrl) {
+            DeviceEventEmitter.emit(Events.LOADING_CHANNEL_POSTS, false);
+        }
+
+        if (result.posts.length && !fetchOnly) {
+            try {
+                const models = await operator.handlePosts({
+                    actionType: ActionType.POSTS.RECEIVED_BEFORE,
+                    ...result,
+                    prepareRecordsOnly: true,
+                });
+                const {authors} = await fetchPostAuthors(serverUrl, result.posts, true);
+                if (authors?.length) {
+                    const userModels = await operator.handleUsers({
+                        users: authors,
+                        prepareRecordsOnly: true,
+                    });
+                    models.push(...userModels);
+                }
+
+                await operator.batchRecords(models);
+            } catch (error) {
+                // eslint-disable-next-line no-console
+                console.log('FETCH AUTHORS ERROR', error);
+            }
+        }
+
+        return result;
+    } catch (error) {
+        forceLogoutIfNecessary(serverUrl, error as ClientErrorProps);
+        if (activeServerUrl === serverUrl) {
+            DeviceEventEmitter.emit(Events.LOADING_CHANNEL_POSTS, true);
+        }
         return {error};
     }
 };
@@ -235,26 +319,56 @@ export const postActionWithCookie = async (serverUrl: string, postId: string, ac
     }
 };
 
-const processPostsFetched = (serverUrl: string, actionType: string, data: {order: string[]; posts: Post[]; prev_post_id?: string}, fetchOnly = false) => {
-    const order = data.order;
-    const posts = Object.values(data.posts) as Post[];
-    const previousPostId = data.prev_post_id;
+export async function getMissingChannelsFromPosts(serverUrl: string, posts: Post[], fetchOnly = false) {
+    const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
+    if (!operator) {
+        return {error: `${serverUrl} database not found`};
+    }
 
-    if (!fetchOnly) {
-        const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
-        if (operator) {
-            operator.handlePosts({
-                actionType,
-                order,
-                posts,
-                previousPostId,
-            });
+    let client: Client;
+    try {
+        client = NetworkManager.getClient(serverUrl);
+    } catch (error) {
+        return {error};
+    }
+
+    const channelIds = await queryAllMyChannelIds(operator.database);
+    const channelPromises: Array<Promise<Channel>> = [];
+    const userPromises: Array<Promise<ChannelMembership>> = [];
+
+    posts.forEach((post) => {
+        const id = post.channel_id;
+
+        if (channelIds.indexOf(id) === -1) {
+            channelPromises.push(client.getChannel(id));
+            userPromises.push(client.getMyChannelMember(id));
+        }
+    });
+
+    const channels = await Promise.all(channelPromises);
+    const channelMemberships = await Promise.all(userPromises);
+
+    if (!fetchOnly && channels.length && channelMemberships.length) {
+        const modelPromises = prepareMissingChannelsForAllTeams(operator, channels, channelMemberships) as Array<Promise<Model[]>>;
+        if (modelPromises && modelPromises.length) {
+            const channelModelsArray = await Promise.all(modelPromises);
+            if (channelModelsArray.length) {
+                const models = channelModelsArray.flatMap((mdls) => {
+                    if (!mdls || mdls.length) {
+                        return [];
+                    }
+                    return mdls;
+                });
+
+                if (models) {
+                    operator.batchRecords(models);
+                }
+            }
         }
     }
 
     return {
-        posts,
-        order,
-        previousPostId,
+        channels,
+        channelMemberships,
     };
-};
+}

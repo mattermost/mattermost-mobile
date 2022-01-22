@@ -72,6 +72,7 @@ export type CreateServerDatabaseArgs = {
 export type HandleReactionsArgs = {
   prepareRecordsOnly: boolean;
   postsReactions: ReactionsPerPost[];
+  skipSync?: boolean;
 };
 
 export type HandleFilesArgs = {
@@ -84,6 +85,7 @@ export type HandlePostsArgs = {
   order: string[];
   previousPostId?: string;
   posts: Post[];
+  prepareRecordsOnly?: boolean;
 };
 
 export type SanitizeReactionsArgs = {
@@ -221,7 +223,7 @@ export type HandleGroupArgs = PrepareOnly & {
 };
 
 export type HandleChannelMembershipArgs = PrepareOnly & {
-  channelMemberships: ChannelMembership[];
+  channelMemberships: ChannelMember[];
 };
 
 export type HandleGroupMembershipArgs = PrepareOnly & {

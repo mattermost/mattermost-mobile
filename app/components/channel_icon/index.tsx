@@ -59,7 +59,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
         group: {
             color: theme.sidebarText,
             fontSize: 10,
-            fontFamily: 'OpenSans-Semibold',
+            fontFamily: 'OpenSans-SemiBold',
         },
         groupActive: {
             color: theme.sidebarTextActiveColor,

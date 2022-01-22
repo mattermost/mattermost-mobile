@@ -9,11 +9,11 @@ import en from '@assets/i18n/en.json';
 import availableLanguages from './languages';
 
 const deviceLocale = getLocales()[0].languageTag;
-export const DEFAULT_LOCALE = deviceLocale;
+export const DEFAULT_LOCALE = getLocaleFromLanguage(deviceLocale);
 
 function loadTranslation(locale?: string) {
     try {
-        let translations;
+        let translations: Record<string, string>;
         let momentData;
 
         switch (locale) {
@@ -184,7 +184,7 @@ export function getLocalizedMessage(lang: string, id: string, defaultMessage?: s
     const locale = getLocaleFromLanguage(lang);
     const translations = getTranslations(locale);
 
-    return translations[id] || defaultMessage;
+    return translations[id] || defaultMessage || '';
 }
 
 export function t(v: string): string {

@@ -2,8 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React from 'react';
-import {ListRenderItemInfo, View} from 'react-native';
-import {FlatList} from 'react-native-gesture-handler';
+import {FlatList, ListRenderItemInfo, View} from 'react-native';
 
 import FormattedText from '@components/formatted_text';
 import {useTheme} from '@context/theme';

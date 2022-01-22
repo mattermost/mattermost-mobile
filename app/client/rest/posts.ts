@@ -12,10 +12,10 @@ export interface ClientPostsMix {
     patchPost: (postPatch: Partial<Post> & {id: string}) => Promise<Post>;
     deletePost: (postId: string) => Promise<any>;
     getPostThread: (postId: string) => Promise<any>;
-    getPosts: (channelId: string, page?: number, perPage?: number) => Promise<any>;
-    getPostsSince: (channelId: string, since: number) => Promise<any>;
-    getPostsBefore: (channelId: string, postId: string, page?: number, perPage?: number) => Promise<any>;
-    getPostsAfter: (channelId: string, postId: string, page?: number, perPage?: number) => Promise<any>;
+    getPosts: (channelId: string, page?: number, perPage?: number) => Promise<PostResponse>;
+    getPostsSince: (channelId: string, since: number) => Promise<PostResponse>;
+    getPostsBefore: (channelId: string, postId: string, page?: number, perPage?: number) => Promise<PostResponse>;
+    getPostsAfter: (channelId: string, postId: string, page?: number, perPage?: number) => Promise<PostResponse>;
     getFileInfosForPost: (postId: string) => Promise<FileInfo[]>;
     getFlaggedPosts: (userId: string, channelId?: string, teamId?: string, page?: number, perPage?: number) => Promise<any>;
     getPinnedPosts: (channelId: string) => Promise<any>;
@@ -25,7 +25,7 @@ export interface ClientPostsMix {
     addReaction: (userId: string, postId: string, emojiName: string) => Promise<Reaction>;
     removeReaction: (userId: string, postId: string, emojiName: string) => Promise<any>;
     getReactionsForPost: (postId: string) => Promise<any>;
-    searchPostsWithParams: (teamId: string, params: any) => Promise<any>;
+    searchPostsWithParams: (teamId: string, params: PostSearchParams) => Promise<any>;
     searchPosts: (teamId: string, terms: string, isOrSearch: boolean) => Promise<any>;
     doPostAction: (postId: string, actionId: string, selectedOption?: string) => Promise<any>;
     doPostActionWithCookie: (postId: string, actionId: string, actionCookie: string, selectedOption?: string) => Promise<any>;
@@ -149,7 +149,7 @@ const ClientPosts = (superclass: any) => class extends superclass {
             `${this.getUserRoute(userId)}/posts/${postId}/set_unread`,
             {method: 'post'},
         );
-    }
+    };
 
     pinPost = async (postId: string) => {
         this.analytics.trackAPI('api_posts_pin');
@@ -194,13 +194,10 @@ const ClientPosts = (superclass: any) => class extends superclass {
         );
     };
 
-    searchPostsWithParams = async (teamId: string, params: any) => {
-        this.analytics.trackAPI('api_posts_search', {team_id: teamId});
-
-        return this.doFetch(
-            `${this.getTeamRoute(teamId)}/posts/search`,
-            {method: 'post', body: params},
-        );
+    searchPostsWithParams = async (teamId: string, params: PostSearchParams) => {
+        this.analytics.trackAPI('api_posts_search');
+        const endpoint = teamId ? `${this.getTeamRoute(teamId)}/posts/search` : `${this.getPostsRoute()}/search`;
+        return this.doFetch(endpoint, {method: 'post', body: params});
     };
 
     searchPosts = async (teamId: string, terms: string, isOrSearch: boolean) => {

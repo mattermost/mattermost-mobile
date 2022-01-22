@@ -91,7 +91,7 @@ class PushNotifications {
                 Notifications.ios.setBadgeCount(badgeCount);
             }
         }
-    }
+    };
 
     createReplyCategory = () => {
         const replyTitle = getLocalizedMessage(DEFAULT_LOCALE, t('mobile.push_notification_reply.title'));
@@ -115,7 +115,7 @@ class PushNotifications {
         }
 
         return serverUrl;
-    }
+    };
 
     handleClearNotification = async (notification: NotificationWithData) => {
         const {payload} = notification;
@@ -124,7 +124,7 @@ class PushNotifications {
         if (serverUrl && payload?.channel_id) {
             markChannelAsViewed(serverUrl, payload?.channel_id, false);
         }
-    }
+    };
 
     handleInAppNotification = async (serverUrl: string, notification: NotificationWithData) => {
         const {payload} = notification;
@@ -178,7 +178,7 @@ class PushNotifications {
                 backgroundNotification(serverUrl, notification);
             }
         }
-    }
+    };
 
     handleSessionNotification = async (notification: NotificationWithData) => {
         // eslint-disable-next-line no-console
@@ -189,7 +189,7 @@ class PushNotifications {
         if (serverUrl) {
             DeviceEventEmitter.emit(Events.SERVER_LOGOUT, serverUrl);
         }
-    }
+    };
 
     processNotification = async (notification: NotificationWithData) => {
         const {payload} = notification;

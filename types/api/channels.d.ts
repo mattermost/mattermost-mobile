@@ -3,6 +3,7 @@
 type ChannelType = 'O' | 'P' | 'D' | 'G';
 type ChannelStats = {
     channel_id: string;
+    guest_count: number;
     member_count: number;
     pinnedpost_count: number;
 };
@@ -41,6 +42,11 @@ type ChannelWithTeamData = Channel & {
     team_name: string;
     team_update_at: number;
 }
+type ChannelMember = {
+    id?: string;
+    channel_id: string;
+    user_id: string;
+}
 type ChannelMembership = {
     id?: string;
     channel_id: string;
@@ -55,6 +61,7 @@ type ChannelMembership = {
     scheme_user?: boolean;
     scheme_admin?: boolean;
     post_root_id?: string;
+    is_unread?: boolean;
 };
 type ChannelUnread = {
     channel_id: string;

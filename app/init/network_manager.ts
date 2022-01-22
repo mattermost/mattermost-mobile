@@ -58,12 +58,12 @@ class NetworkManager {
                 console.log('NetworkManager init error', error); //eslint-disable-line no-console
             }
         }
-    }
+    };
 
     public invalidateClient = (serverUrl: string) => {
         this.clients[serverUrl]?.invalidate();
         delete this.clients[serverUrl];
-    }
+    };
 
     public getClient = (serverUrl: string) => {
         const client = this.clients[serverUrl];
@@ -72,7 +72,7 @@ class NetworkManager {
         }
 
         return client;
-    }
+    };
 
     public createClient = async (serverUrl: string, bearerToken?: string) => {
         const config = await this.buildConfig();
@@ -81,7 +81,7 @@ class NetworkManager {
         this.clients[serverUrl] = new Client(client, serverUrl, bearerToken, csrfToken);
 
         return this.clients[serverUrl];
-    }
+    };
 
     private buildConfig = async () => {
         const userAgent = await DeviceInfo.getUserAgent();
@@ -107,7 +107,7 @@ class NetworkManager {
         }
 
         return config;
-    }
+    };
 
     private clientErrorEventHandler: APIClientErrorEventHandler = (event: APIClientErrorEvent) => {
         if (CLIENT_CERTIFICATE_IMPORT_ERROR_CODES.includes(event.errorCode)) {

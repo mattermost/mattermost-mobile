@@ -41,8 +41,7 @@ type BodyProps = {
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     return {
         messageBody: {
-            paddingBottom: 2,
-            paddingTop: 2,
+            paddingVertical: 2,
             flex: 1,
         },
         messageContainer: {width: '100%'},

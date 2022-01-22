@@ -291,7 +291,7 @@ const Server = ({componentId, extra, launchType, launchError, theme}: ServerProp
                     bounces={false}
                     contentContainerStyle={styles.scrollContainer}
                     enableAutomaticScroll={Platform.OS === 'android'}
-                    enableOnAndroid={true}
+                    enableOnAndroid={false}
                     enableResetScrollToCoords={true}
                     extraScrollHeight={20}
                     keyboardDismissMode='on-drag'

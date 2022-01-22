@@ -3,9 +3,9 @@
 
 import {DeviceEventEmitter} from 'react-native';
 
-import {handleTeamChange, localRemoveUserFromTeam} from '@actions/local/team';
+import {removeUserFromTeam} from '@actions/local/team';
 import {fetchRolesIfNeeded} from '@actions/remote/role';
-import {fetchMyTeam} from '@actions/remote/team';
+import {fetchAllTeams, handleTeamChange, fetchMyTeam} from '@actions/remote/team';
 import {updateUsersNoLongerVisible} from '@actions/remote/user';
 import Events from '@constants/events';
 import DatabaseManager from '@database/manager';
@@ -31,7 +31,8 @@ export async function handleLeaveTeamEvent(serverUrl: string, msg: WebSocketMess
     }
 
     if (user.id === msg.data.user_id) {
-        localRemoveUserFromTeam(serverUrl, msg.data.team_id);
+        await removeUserFromTeam(serverUrl, msg.data.team_id);
+        fetchAllTeams(serverUrl);
 
         if (isGuest(user.roles)) {
             updateUsersNoLongerVisible(serverUrl);
