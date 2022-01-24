@@ -4,6 +4,7 @@
 
 import {DeviceEventEmitter} from 'react-native';
 
+import {updateLastPostAt} from '@actions/local/channel';
 import {processPostsFetched} from '@actions/local/post';
 import {ActionType, Events, General} from '@constants';
 import {SYSTEM_IDENTIFIERS} from '@constants/database';
@@ -94,8 +95,17 @@ export const fetchPostsForChannel = async (serverUrl: string, channelId: string,
                 }
             }
 
+            let lastPostAt = 0;
+            for (const post of data.posts) {
+                lastPostAt = post.create_at > lastPostAt ? post.create_at : lastPostAt;
+            }
+            const {models: memberModels} = await updateLastPostAt(serverUrl, channelId, lastPostAt, true);
+            if (memberModels?.length) {
+                models.push(...memberModels);
+            }
+
             if (models.length) {
-                operator.batchRecords(models);
+                await operator.batchRecords(models);
             }
         }
     }
@@ -372,3 +382,29 @@ export async function getMissingChannelsFromPosts(serverUrl: string, posts: Post
         channelMemberships,
     };
 }
+
+export const fetchPostById = async (serverUrl: string, postId: string, fetchOnly = false) => {
+    const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
+    if (!operator) {
+        return {error: `${serverUrl} database not found`};
+    }
+
+    let client: Client;
+    try {
+        client = NetworkManager.getClient(serverUrl);
+    } catch (error) {
+        return {error};
+    }
+
+    try {
+        const post = await client.getPost(postId);
+        if (!fetchOnly) {
+            operator.handlePosts({actionType: ActionType.POSTS.RECEIVED_NEW, order: [post.id], posts: [post]});
+        }
+
+        return {post};
+    } catch (error) {
+        forceLogoutIfNecessary(serverUrl, error as ClientErrorProps);
+        return {error};
+    }
+};

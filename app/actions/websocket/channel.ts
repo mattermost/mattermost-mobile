@@ -18,6 +18,8 @@ import {queryCurrentUser, queryUserById} from '@queries/servers/user';
 import {dismissAllModals, popToRoot} from '@screens/navigation';
 import {isTablet} from '@utils/helpers';
 
+import type {WebSocketMessage} from '@typings/api/websocket';
+
 export async function handleUserAddedToChannelEvent(serverUrl: string, msg: any) {
     const database = DatabaseManager.serverDatabases[serverUrl];
     if (!database) {
@@ -147,7 +149,7 @@ export async function handleUserRemovedFromChannelEvent(serverUrl: string, msg: 
     database.operator.batchRecords(models);
 }
 
-export async function handleChannelDeletedEvent(serverUrl: string, msg: any) {
+export async function handleChannelDeletedEvent(serverUrl: string, msg: WebSocketMessage) {
     const database = DatabaseManager.serverDatabases[serverUrl];
     if (!database) {
         return;

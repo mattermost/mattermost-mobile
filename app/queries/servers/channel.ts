@@ -65,6 +65,11 @@ export const prepareMyChannelsForTeam = async (operator: ServerDataOperator, tea
             pinned_post_count = storedInfo.pinnedPostCount;
         }
 
+        const member = memberships.find((m) => m.channel_id === c.id);
+        if (member) {
+            member.last_post_at = c.last_post_at;
+        }
+
         channelInfos.push({
             id: c.id,
             header: c.header,
