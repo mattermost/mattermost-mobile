@@ -1,0 +1,28 @@
+diff --git a/node_modules/expo-file-system/android/build.gradle b/node_modules/expo-file-system/android/build.gradle
+index a24e867..9d678ac 100644
+--- a/node_modules/expo-file-system/android/build.gradle
++++ b/node_modules/expo-file-system/android/build.gradle
+@@ -1,6 +1,6 @@
+ apply plugin: 'com.android.library'
+ apply plugin: 'kotlin-android'
+-apply plugin: 'maven'
++apply plugin: 'maven-publish'
+ 
+ group = 'host.exp.exponent'
+ version = '13.0.3'
+@@ -36,15 +36,6 @@ artifacts {
+   archives androidSourcesJar
+ }
+ 
+-uploadArchives {
+-  repositories {
+-    mavenDeployer {
+-      configuration = configurations.deployerJars
+-      repository(url: mavenLocal().url)
+-    }
+-  }
+-}
+-
+ android {
+   compileSdkVersion safeExtGet("compileSdkVersion", 30)
+ 

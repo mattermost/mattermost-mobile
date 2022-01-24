@@ -145,4 +145,4 @@ const Header = (props: HeaderProps) => {
     );
 };
 
-export default React.memo(Header);
+export default Header;

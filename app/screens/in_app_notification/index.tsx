@@ -3,9 +3,9 @@
 
 import React, {useEffect, useRef, useState} from 'react';
 import {DeviceEventEmitter, Platform, StyleSheet, Text, TouchableOpacity, View} from 'react-native';
-import {PanGestureHandler} from 'react-native-gesture-handler';
+import {GestureDetector, Gesture} from 'react-native-gesture-handler';
 import {Navigation} from 'react-native-navigation';
-import Animated, {useAnimatedStyle, useSharedValue, withTiming} from 'react-native-reanimated';
+import Animated, {runOnJS, useAnimatedStyle, useSharedValue, withTiming} from 'react-native-reanimated';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import {openNotification} from '@actions/remote/notifications';
@@ -140,12 +140,11 @@ const InAppNotification = ({componentId, serverName, serverUrl, notification}: I
     }, [animate, insets.top]);
 
     const message = notification.payload?.body || notification.payload?.message;
+    // eslint-disable-next-line new-cap
+    const gesture = Gesture.Pan().activeOffsetY(-20).onStart(() => runOnJS(animateDismissOverlay)());
 
     return (
-        <PanGestureHandler
-            onGestureEvent={animateDismissOverlay}
-            activeOffsetY={-20}
-        >
+        <GestureDetector gesture={gesture}>
             <Animated.View
                 style={[styles.container, isTablet ? styles.tablet : undefined, animatedStyle]}
                 testID='in_app_notification.screen'
@@ -181,7 +180,7 @@ const InAppNotification = ({componentId, serverName, serverUrl, notification}: I
                     </TouchableOpacity>
                 </View>
             </Animated.View>
-        </PanGestureHandler>
+        </GestureDetector>
     );
 };
 

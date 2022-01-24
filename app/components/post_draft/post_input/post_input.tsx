@@ -8,7 +8,7 @@ import {IntlShape, useIntl} from 'react-intl';
 import {Alert, DeviceEventEmitter, EmitterSubscription, findNodeHandle, Keyboard, KeyboardTypeOptions, NativeModules, NativeSyntheticEvent, Platform, TextInput, TextInputSelectionChangeEventData} from 'react-native';
 import HWKeyboardEvent from 'react-native-hw-keyboard-event';
 
-import {userTyping} from '@actions/websocket/user';
+import {userTyping} from '@actions/websocket/users';
 import {BLUR_POST_DRAFT_EVENT} from '@constants/post_draft';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';

@@ -77,7 +77,7 @@ export const isRecordGroupMembershipEqualToRaw = (record: GroupMembershipModel, 
     return raw.user_id === record.userId && raw.group_id === record.groupId;
 };
 
-export const isRecordChannelMembershipEqualToRaw = (record: ChannelMembershipModel, raw: ChannelMembership) => {
+export const isRecordChannelMembershipEqualToRaw = (record: ChannelMembershipModel, raw: Pick<ChannelMembership, 'user_id' | 'channel_id'>) => {
     return raw.user_id === record.userId && raw.channel_id === record.channelId;
 };
 

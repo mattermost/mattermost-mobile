@@ -5,6 +5,7 @@ type ChannelStats = {
     channel_id: string;
     guest_count: number;
     member_count: number;
+    guest_count: number;
     pinnedpost_count: number;
 };
 type ChannelNotifyProps = {

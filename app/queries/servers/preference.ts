@@ -1,10 +1,11 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {Database, Q} from '@nozbe/watermelondb';
+import {Database, Model, Q} from '@nozbe/watermelondb';
 
 import {Preferences} from '@constants';
 import {MM_TABLES} from '@constants/database';
+import {ServerDatabase} from '@typings/database/database';
 
 import {queryCurrentTeamId} from './system';
 
@@ -45,4 +46,22 @@ export const queryThemeForCurrentTeam = async (database: Database) => {
     }
 
     return undefined;
+};
+
+export const deletePreferences = async (database: ServerDatabase, preferences: PreferenceType[]): Promise<Boolean> => {
+    try {
+        const preparedModels: Model[] = [];
+        for await (const pref of preferences) {
+            const myPrefs = await queryPreferencesByCategoryAndName(database.database, pref.category, pref.name);
+            for (const p of myPrefs) {
+                preparedModels.push(p.prepareDestroyPermanently());
+            }
+        }
+        if (preparedModels.length) {
+            await database.operator.batchRecords(preparedModels);
+        }
+        return true;
+    } catch (error) {
+        return false;
+    }
 };

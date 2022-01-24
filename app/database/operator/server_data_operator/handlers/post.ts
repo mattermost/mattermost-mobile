@@ -71,6 +71,7 @@ const PostHandler = (superclass: any) => class extends superclass {
      * @param {string[]} handlePosts.orders
      * @param {RawPost[]} handlePosts.values
      * @param {string | undefined} handlePosts.previousPostId
+     * @param {boolean | undefined} handlePosts.prepareRecordsOnly
      * @returns {Promise<void>}
      */
     handlePosts = async ({actionType, order, posts, previousPostId = '', prepareRecordsOnly = false}: HandlePostsArgs): Promise<Model[]> => {

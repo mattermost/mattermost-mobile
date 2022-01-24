@@ -13,9 +13,10 @@ import {queryCurrentTeamId} from '@queries/servers/system';
 import {queryLastTeam} from '@queries/servers/team';
 import {queryCurrentUser} from '@queries/servers/user';
 import {dismissAllModals, popToRoot} from '@screens/navigation';
-import {isGuest} from '@utils/user';
 
-export async function handleLeaveTeamEvent(serverUrl: string, msg: any) {
+import type {WebSocketMessage} from '@typings/api/websocket';
+
+export async function handleLeaveTeamEvent(serverUrl: string, msg: WebSocketMessage) {
     const database = DatabaseManager.serverDatabases[serverUrl];
     if (!database) {
         return;
@@ -31,7 +32,7 @@ export async function handleLeaveTeamEvent(serverUrl: string, msg: any) {
         await removeUserFromTeam(serverUrl, msg.data.team_id);
         fetchAllTeams(serverUrl);
 
-        if (isGuest(user.roles)) {
+        if (user.isGuest) {
             updateUsersNoLongerVisible(serverUrl);
         }
 
