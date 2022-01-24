@@ -202,7 +202,7 @@ class DatabaseManager {
                         });
                     });
                 } else if (identifier) {
-                    await this.updateServerIdentifier(serverUrl, identifier);
+                    await this.updateServerIdentifier(serverUrl, identifier, displayName);
                 }
             }
         } catch (e) {
@@ -210,13 +210,16 @@ class DatabaseManager {
         }
     };
 
-    public updateServerIdentifier = async (serverUrl: string, identifier: string) => {
+    public updateServerIdentifier = async (serverUrl: string, identifier: string, displayName?: string) => {
         const appDatabase = this.appDatabase?.database;
         if (appDatabase) {
             const server = await queryServer(appDatabase, serverUrl);
             await appDatabase.write(async () => {
                 await server.update((record) => {
                     record.identifier = identifier;
+                    if (displayName) {
+                        record.displayName = displayName;
+                    }
                 });
             });
         }

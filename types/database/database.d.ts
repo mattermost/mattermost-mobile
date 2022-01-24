@@ -72,6 +72,7 @@ export type CreateServerDatabaseArgs = {
 export type HandleReactionsArgs = {
   prepareRecordsOnly: boolean;
   postsReactions: ReactionsPerPost[];
+  skipSync?: boolean;
 };
 
 export type HandleFilesArgs = {

@@ -37,6 +37,7 @@ export const addReaction = async (serverUrl: string, postId: string, emojiName: 
                 reactions: [reaction],
             }],
             prepareRecordsOnly: true,
+            skipSync: true, // this prevents the handler from deleting previous reactions
         });
         models.push(...reactions);
 

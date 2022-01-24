@@ -93,10 +93,10 @@
 		<string>OpenSans-Light.ttf</string>
 		<string>OpenSans-LightItalic.ttf</string>
 		<string>OpenSans-Regular.ttf</string>
-		<string>OpenSans-Semibold.ttf</string>
-		<string>OpenSans-SemiboldItalic.ttf</string>
+		<string>OpenSans-SemiBold.ttf</string>
+		<string>OpenSans-SemiBoldItalic.ttf</string>
 		<string>Metropolis-Regular.ttf</string>
-		<string>Metropolis-Semibold.ttf</string>
+		<string>Metropolis-SemiBold.ttf</string>
 		<string>Metropolis-Light.ttf</string>
 		<string>compass-icons.ttf</string>
 	</array>
