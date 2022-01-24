@@ -42,12 +42,6 @@ export default class CategoryModel extends Model {
     /** hasChannels : Wether the category has any channels */
     hasChannels: Observable<boolean>;
 
-    /** user_id : The user who created this category */
-    userId: string;
-
-    /** user : The user (owner) of this category */
-    user: Relation<UserModel>;
-
     /** team_id : The team in which this category resides */
     teamId: string;
 

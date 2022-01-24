@@ -17,6 +17,5 @@ export default tableSchema({
         {name: 'muted', type: 'boolean'},
         {name: 'collapsed', type: 'boolean'},
         {name: 'team_id', type: 'string', isIndexed: true},
-        {name: 'user_id', type: 'string', isIndexed: true},
     ],
 });

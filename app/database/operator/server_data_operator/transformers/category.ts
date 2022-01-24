@@ -35,7 +35,6 @@ export const transformCategoryRecord = ({action, database, value}: TransformerAr
         category.muted = raw.muted;
         category.collapsed = isCreateAction ? false : record.collapsed;
         category.type = raw.type;
-        category.userId = raw.user_id;
         category.teamId = raw.team_id;
     };
 
@@ -65,7 +64,6 @@ export const transformCategoryChannelRecord = ({action, database, value}: Transf
     const fieldsMapper = (categoryChannel: CategoryChannelModel) => {
         categoryChannel._raw.id = isCreateAction ? (raw?.id ?? categoryChannel.id) : record.id;
         categoryChannel.channelId = raw.channel_id;
-        categoryChannel.userId = raw.user_id;
         categoryChannel.categoryId = raw.category_id;
         categoryChannel.sortOrder = raw.sort_order;
     };

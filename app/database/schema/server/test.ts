@@ -55,7 +55,6 @@ describe('*** Test schema for SERVER database ***', () => {
                         muted: {name: 'muted', type: 'boolean'},
                         collapsed: {name: 'collapsed', type: 'boolean'},
                         team_id: {name: 'team_id', type: 'string', isIndexed: true},
-                        user_id: {name: 'user_id', type: 'string', isIndexed: true},
                     },
                     columnArray: [
                         {name: 'display_name', type: 'string'},
@@ -65,7 +64,6 @@ describe('*** Test schema for SERVER database ***', () => {
                         {name: 'muted', type: 'boolean'},
                         {name: 'collapsed', type: 'boolean'},
                         {name: 'team_id', type: 'string', isIndexed: true},
-                        {name: 'user_id', type: 'string', isIndexed: true},
                     ],
                 },
                 [CATEGORY_CHANNEL]: {
@@ -73,13 +71,11 @@ describe('*** Test schema for SERVER database ***', () => {
                     unsafeSql: undefined,
                     columns: {
                         category_id: {name: 'category_id', type: 'string', isIndexed: true},
-                        user_id: {name: 'user_id', type: 'string', isIndexed: true},
                         channel_id: {name: 'channel_id', type: 'string', isIndexed: true},
                         sort_order: {name: 'sort_order', type: 'number'},
                     },
                     columnArray: [
                         {name: 'category_id', type: 'string', isIndexed: true},
-                        {name: 'user_id', type: 'string', isIndexed: true},
                         {name: 'channel_id', type: 'string', isIndexed: true},
                         {name: 'sort_order', type: 'number'},
                     ],

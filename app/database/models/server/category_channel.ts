@@ -28,9 +28,6 @@ export default class CategoryChannelModel extends Model implements CategoryChann
         /** A CategoryChannel belongs to a CATEGORY */
         [CATEGORY]: {type: 'belongs_to', key: 'category_id'},
 
-        /** A CategoryChannel belongs to a USER */
-        [USER]: {type: 'belongs_to', key: 'user_id'},
-
         /** A CategoryChannel has a Channel */
         [CHANNEL]: {type: 'belongs_to', key: 'channel_id'},
     };
@@ -41,14 +38,8 @@ export default class CategoryChannelModel extends Model implements CategoryChann
     /** channel_id : The foreign key to the related Channel record */
     @field('channel_id') channelId!: string;
 
-    /* user_id: The foreign key to the related User record */
-    @field('user_id') userId!: string;
-
     /* sort_order: The sort order for the channel in category */
     @field('sort_order') sortOrder!: number;
-
-    /** user: The related user */
-    @immutableRelation(USER, 'user_id') user!: Relation<UserModel>;
 
     /** category : The related category */
     @immutableRelation(CATEGORY, 'category_id') category!: Relation<CategoryModel>;

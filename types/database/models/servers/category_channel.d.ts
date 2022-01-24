@@ -18,17 +18,11 @@ export default class CategoryChannelModel extends Model {
     /** category_id : The foreign key to the related Category record */
     categoryId: string;
 
-    /* user_id : The foreign key to the related User record*/
-    userId: string;
-
     /* channel_id : The foreign key to the related User record*/
     channelId: string;
 
     /* sort_order : The order in which the channel displays in the category, if the order is manually set */
     sortOrder: number;
-
-    /** user: The related user in the category */
-    user: Relation<UserModel>;
 
     /** team : The related category */
     category: Relation<CategoryModel>;

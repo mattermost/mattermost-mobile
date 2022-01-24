@@ -11,7 +11,6 @@ export default tableSchema({
     name: CATEGORY_CHANNEL,
     columns: [
         {name: 'category_id', type: 'string', isIndexed: true},
-        {name: 'user_id', type: 'string', isIndexed: true},
         {name: 'channel_id', type: 'string', isIndexed: true},
         {name: 'sort_order', type: 'number'},
     ],

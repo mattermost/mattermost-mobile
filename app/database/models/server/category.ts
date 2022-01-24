@@ -36,9 +36,6 @@ export default class CategoryModel extends Model implements CategoryInterface {
 
         /** A TEAM can be associated to CATEGORY (relationship is 1:N) */
         [TEAM]: {type: 'belongs_to', key: 'team_id'},
-
-        /** A USER can create multiple CATEGORY (relationship is 1:N) */
-        [USER]: {type: 'belongs_to', key: 'user_id'},
     };
 
     /** display_name : The display name for the category */
@@ -59,9 +56,6 @@ export default class CategoryModel extends Model implements CategoryInterface {
     /** muted : Boolean flag indicating if the category is muted */
     @field('muted') muted!: boolean;
 
-    /** userId : The user to whom this category belongs */
-    @field('user_id') userId!: string;
-
     /** userId : The team in which this category lives */
     @field('team_id') teamId!: string;
 
@@ -70,9 +64,6 @@ export default class CategoryModel extends Model implements CategoryInterface {
 
     /** team : Retrieves information about the team that this category is a part of. */
     @immutableRelation(TEAM, 'id') team!: Relation<TeamModel>;
-
-    /** user : Retrieves information about the user that this category belongs to. */
-    @immutableRelation(USER, 'id') user!: Relation<UserModel>;
 
     /** channels : Retrieves all the channels that are part of this category */
     @lazy channels = this.collections.
