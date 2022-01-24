@@ -16,8 +16,9 @@ import {prepareCommonSystemValues, queryConfig, setCurrentChannelId} from '@quer
 import {queryLastChannelFromTeam} from '@queries/servers/team';
 import {queryCurrentUser, queryUserById} from '@queries/servers/user';
 import {dismissAllModals, popToRoot} from '@screens/navigation';
-import {WebSocketMessage} from '@typings/api/websocket';
 import {isTablet} from '@utils/helpers';
+
+import type {WebSocketMessage} from '@typings/api/websocket';
 
 export async function handleUserAddedToChannelEvent(serverUrl: string, msg: any) {
     const database = DatabaseManager.serverDatabases[serverUrl];

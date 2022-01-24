@@ -18,8 +18,8 @@ import {isFromWebhook, isSystemMessage, shouldIgnorePost} from '@utils/post';
 import type {WebSocketMessage} from '@typings/api/websocket';
 
 export async function handleNewPostEvent(serverUrl: string, msg: WebSocketMessage) {
-    const database = DatabaseManager.serverDatabases[serverUrl];
-    if (!database) {
+    const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
+    if (!operator) {
         return;
     }
 
@@ -29,9 +29,9 @@ export async function handleNewPostEvent(serverUrl: string, msg: WebSocketMessag
     } catch {
         return;
     }
-    const currentUserId = await queryCurrentUserId(database.database);
+    const currentUserId = await queryCurrentUserId(operator.database);
 
-    const existing = await queryPostById(database.database, post.pending_post_id);
+    const existing = await queryPostById(operator.database, post.pending_post_id);
 
     if (existing) {
         return;
@@ -39,7 +39,7 @@ export async function handleNewPostEvent(serverUrl: string, msg: WebSocketMessag
 
     const models: Model[] = [];
 
-    const postModels = await database.operator.handlePosts({
+    const postModels = await operator.handlePosts({
         actionType: ActionType.POSTS.RECEIVED_NEW,
         order: [post.id],
         posts: [post],
@@ -51,7 +51,7 @@ export async function handleNewPostEvent(serverUrl: string, msg: WebSocketMessag
     }
 
     // Ensure the channel membership
-    let myChannel = await queryMyChannel(database.database, post.channel_id);
+    let myChannel = await queryMyChannel(operator.database, post.channel_id);
     if (myChannel) {
         // Do not batch lastPostAt update since we may be modifying the member later for unreads
         await updateLastPostAt(serverUrl, post.channel_id, post.create_at, false);
@@ -67,7 +67,7 @@ export async function handleNewPostEvent(serverUrl: string, msg: WebSocketMessag
             return;
         }
 
-        myChannel = await queryMyChannel(database.database, post.channel_id);
+        myChannel = await queryMyChannel(operator.database, post.channel_id);
         if (!myChannel) {
             return;
         }
@@ -75,14 +75,14 @@ export async function handleNewPostEvent(serverUrl: string, msg: WebSocketMessag
 
     // If we don't have the root post for this post, fetch it from the server
     if (post.root_id) {
-        const rootPost = await queryPostById(database.database, post.root_id);
+        const rootPost = await queryPostById(operator.database, post.root_id);
 
         if (!rootPost) {
             fetchPostById(serverUrl, post.root_id);
         }
     }
 
-    const currentChannelId = await queryCurrentChannelId(database.database);
+    const currentChannelId = await queryCurrentChannelId(operator.database);
 
     if (post.channel_id === currentChannelId) {
         const data = {
@@ -96,7 +96,7 @@ export async function handleNewPostEvent(serverUrl: string, msg: WebSocketMessag
 
     const {authors} = await fetchPostAuthors(serverUrl, [post], true);
     if (authors?.length) {
-        const authorsModels = await database.operator.handleUsers({users: authors, prepareRecordsOnly: true});
+        const authorsModels = await operator.handleUsers({users: authors, prepareRecordsOnly: true});
         if (authorsModels.length) {
             models.push(...authorsModels);
         }
@@ -150,12 +150,12 @@ export async function handleNewPostEvent(serverUrl: string, msg: WebSocketMessag
         }
     }
 
-    database.operator.batchRecords(models);
+    operator.batchRecords(models);
 }
 
 export async function handlePostEdited(serverUrl: string, msg: WebSocketMessage) {
-    const database = DatabaseManager.serverDatabases[serverUrl];
-    if (!database) {
+    const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
+    if (!operator) {
         return;
     }
 
@@ -170,13 +170,13 @@ export async function handlePostEdited(serverUrl: string, msg: WebSocketMessage)
 
     const {authors} = await fetchPostAuthors(serverUrl, [post], true);
     if (authors?.length) {
-        const authorsModels = await database.operator.handleUsers({users: authors, prepareRecordsOnly: true});
+        const authorsModels = await operator.handleUsers({users: authors, prepareRecordsOnly: true});
         if (authorsModels.length) {
             models.push(...authorsModels);
         }
     }
 
-    const postModels = await database.operator.handlePosts({
+    const postModels = await operator.handlePosts({
         actionType: ActionType.POSTS.RECEIVED_NEW,
         order: [post.id],
         posts: [post],
@@ -187,7 +187,7 @@ export async function handlePostEdited(serverUrl: string, msg: WebSocketMessage)
     }
 
     if (models.length) {
-        database.operator.batchRecords(models);
+        operator.batchRecords(models);
     }
 }
 
@@ -201,11 +201,6 @@ export function handlePostDeleted(serverUrl: string, msg: WebSocketMessage) {
 }
 
 export async function handlePostUnread(serverUrl: string, msg: WebSocketMessage) {
-    const database = DatabaseManager.serverDatabases[serverUrl];
-    if (!database) {
-        return;
-    }
-
     const {channels} = await fetchMyChannel(serverUrl, msg.broadcast.team_id, msg.broadcast.channel_id, true);
     const channel = channels?.[0];
     const postNumber = channel?.total_msg_count;

@@ -18,7 +18,6 @@ import {getTeammateNameDisplaySetting} from '@helpers/api/preference';
 import {prepareMyChannelsForTeam} from '@queries/servers/channel';
 import {queryCommonSystemValues, queryConfig, queryWebSocketLastDisconnected} from '@queries/servers/system';
 import {queryCurrentUser} from '@queries/servers/user';
-import {WebSocketMessage} from '@typings/api/websocket';
 
 import {handleChannelDeletedEvent, handleUserAddedToChannelEvent, handleUserRemovedFromChannelEvent} from './channel';
 import {handleNewPostEvent, handlePostDeleted, handlePostEdited, handlePostUnread} from './posts';
@@ -27,6 +26,7 @@ import {handleLeaveTeamEvent} from './teams';
 import {handleUserUpdatedEvent} from './users';
 
 import type {Model} from '@nozbe/watermelondb';
+import type {WebSocketMessage} from '@typings/api/websocket';
 
 export async function handleFirstConnect(serverUrl: string) {
     const database = DatabaseManager.serverDatabases[serverUrl]?.database;
