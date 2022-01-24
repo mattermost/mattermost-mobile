@@ -2,8 +2,9 @@
 // See LICENSE.txt for license information.
 
 import {Relation} from '@nozbe/watermelondb';
-import {children, field, immutableRelation} from '@nozbe/watermelondb/decorators';
+import {children, lazy, field, immutableRelation} from '@nozbe/watermelondb/decorators';
 import Model, {Associations} from '@nozbe/watermelondb/Model';
+import {switchMap, of, distinctUntilChanged} from 'rxjs';
 
 import {MM_TABLES} from '@constants/database';
 
@@ -19,6 +20,7 @@ import type TeamModel from '@typings/database/models/servers/team';
 import type UserModel from '@typings/database/models/servers/user';
 
 const {
+    CATEGORY_CHANNEL,
     CHANNEL,
     CHANNEL_INFO,
     CHANNEL_MEMBERSHIP,
@@ -44,6 +46,9 @@ export default class ChannelModel extends Model {
 
         /** A CHANNEL can be associated with multiple CHANNEL_MEMBERSHIP (relationship is 1:N) */
         [CHANNEL_MEMBERSHIP]: {type: 'has_many', foreignKey: 'channel_id'},
+
+        /** A CHANNEL can be associated with multiple CATEGORY_CHANNEL (relationship is 1:N) */
+        [CATEGORY_CHANNEL]: {type: 'has_many', foreignKey: 'channel_id'},
 
         /** A CHANNEL can be associated with multiple DRAFT (relationship is 1:N) */
         [DRAFT]: {type: 'has_many', foreignKey: 'channel_id'},
@@ -130,6 +135,23 @@ export default class ChannelModel extends Model {
 
     /** settings: User specific settings/preferences for this channel */
     @immutableRelation(MY_CHANNEL_SETTINGS, 'id') settings!: Relation<MyChannelSettingsModel>;
+
+    /** Experimental Ideas */
+    // Has it got unread messages
+    @lazy isUnread = this.membership.observe().pipe(
+        switchMap((membership) => of(membership!.mentionsCount > 0)),
+        distinctUntilChanged(),
+    );
+
+    // What should the badge count be
+    @lazy badgeCount = this.membership.observe().pipe(
+        switchMap((membership) => of(membership!.mentionsCount)),
+    );
+
+    // When the last post was posted
+    @lazy lastPostAt = this.membership.observe().pipe(
+        switchMap((membership) => of(membership!.lastPostAt)),
+    );
 
     toApi = (): Channel => {
         return {
