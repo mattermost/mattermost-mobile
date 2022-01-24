@@ -32,7 +32,6 @@ exports[`components/channel_list should match snapshot 1`] = `
     <View
       accessible={true}
       collapsable={false}
-      nativeID="animatedComponent"
       style={
         Object {
           "opacity": 1,
@@ -218,9 +217,6 @@ exports[`components/channel_list should match snapshot 1`] = `
       }
     />
     <TextInput
-      collapsable={false}
-      onGestureHandlerEvent={[Function]}
-      onGestureHandlerStateChange={[Function]}
       placeholder="Find Channels"
       placeholderTextColor="rgba(255,255,255,0.72)"
       style={
