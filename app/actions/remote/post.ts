@@ -42,7 +42,7 @@ export const fetchPostsForCurrentChannel = async (serverUrl: string) => {
     return fetchPostsForChannel(serverUrl, currentChannelId);
 };
 
-export const fetchPostsForChannel = async (serverUrl: string, channelId: string) => {
+export const fetchPostsForChannel = async (serverUrl: string, channelId: string, fetchOnly = false) => {
     const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
     if (!operator) {
         return {error: `${serverUrl} database not found`};
@@ -65,42 +65,42 @@ export const fetchPostsForChannel = async (serverUrl: string, channelId: string)
         // Here we should emit an event that fetching posts failed.
     }
 
+    let authors: UserProfile[] = [];
     if (data.posts?.length && data.order?.length) {
-        const models: Model[] = [];
         try {
-            const {authors} = await fetchPostAuthors(serverUrl, data.posts, true);
-            if (authors?.length) {
-                const users = await operator.handleUsers({
-                    users: authors,
-                    prepareRecordsOnly: true,
-                });
-                if (users.length) {
-                    models.push(...users);
-                }
-            }
+            const {authors: fetchedAuthors} = await fetchPostAuthors(serverUrl, data.posts, true);
+            authors = fetchedAuthors || [];
         } catch (error) {
             // eslint-disable-next-line no-console
             console.log('FETCH AUTHORS ERROR', error);
         }
 
-        const postModels = await operator.handlePosts({
-            actionType,
-            order: data.order,
-            posts: data.posts,
-            previousPostId: data.previousPostId,
-            prepareRecordsOnly: true,
-        });
+        if (!fetchOnly) {
+            const models = [];
+            const postModels = await operator.handlePosts({
+                actionType,
+                order: data.order,
+                posts: data.posts,
+                previousPostId: data.previousPostId,
+                prepareRecordsOnly: true,
+            });
+            if (postModels) {
+                models.push(...postModels);
+            }
+            if (authors.length) {
+                const userModels = await operator.handleUsers({users: authors, prepareRecordsOnly: true});
+                if (userModels.length) {
+                    models.push(...userModels);
+                }
+            }
 
-        if (postModels.length) {
-            models.push(...postModels);
-        }
-
-        if (models.length) {
-            await operator.batchRecords(models);
+            if (models.length) {
+                operator.batchRecords(models);
+            }
         }
     }
 
-    return {posts: data.posts};
+    return {posts: data.posts, order: data.order, authors, actionType, previousPostId: data.previousPostId};
 };
 
 export const fetchPostsForUnreadChannels = async (serverUrl: string, channels: Channel[], memberships: ChannelMembership[], excludeChannelId?: string) => {

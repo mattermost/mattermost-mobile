@@ -1,22 +1,89 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {Model} from '@nozbe/watermelondb';
 import {DeviceEventEmitter} from 'react-native';
 
-import {localRemoveUserFromChannel, localSetChannelDeleteAt, switchToChannel} from '@actions/local/channel';
-import {updateUsersNoLongerVisible} from '@actions/remote/user';
+import {removeCurrentUserFromChannel, setChannelDeleteAt, switchToChannel} from '@actions/local/channel';
+import {fetchMyChannel} from '@actions/remote/channel';
+import {fetchPostsForChannel} from '@actions/remote/post';
+import {fetchUsersByIds, updateUsersNoLongerVisible} from '@actions/remote/user';
 import Events from '@constants/events';
 import DatabaseManager from '@database/manager';
 import {queryActiveServer} from '@queries/app/servers';
-import {deleteChannelMembership, queryCurrentChannel} from '@queries/servers/channel';
-import {queryConfig, setCurrentChannelId} from '@queries/servers/system';
+import {deleteChannelMembership, prepareMyChannelsForTeam, queryChannelsById, queryCurrentChannel} from '@queries/servers/channel';
+import {prepareCommonSystemValues, queryConfig, setCurrentChannelId} from '@queries/servers/system';
 import {queryLastChannelFromTeam} from '@queries/servers/team';
-import {queryCurrentUser} from '@queries/servers/user';
+import {queryCurrentUser, queryUserById} from '@queries/servers/user';
 import {dismissAllModals, popToRoot} from '@screens/navigation';
 import {isTablet} from '@utils/helpers';
-import {isGuest} from '@utils/user';
 
-export async function handleUserRemovedEvent(serverUrl: string, msg: any) {
+export async function handleUserAddedToChannelEvent(serverUrl: string, msg: any) {
+    const database = DatabaseManager.serverDatabases[serverUrl];
+    if (!database) {
+        return;
+    }
+    const currentUser = await queryCurrentUser(database.database);
+    const {team_id: teamId, channel_id: channelId, user_id: userId} = msg.data;
+
+    const models: Model[] = [];
+
+    try {
+        const addedUser = queryUserById(database.database, userId);
+        if (!addedUser) {
+            // TODO Potential improvement https://mattermost.atlassian.net/browse/MM-40581
+            const {users} = await fetchUsersByIds(serverUrl, [userId], true);
+            if (users) {
+                models.push(...await database.operator.handleUsers({users, prepareRecordsOnly: true}));
+            }
+        }
+
+        if (userId === currentUser?.id) {
+            const {channels, memberships} = await fetchMyChannel(serverUrl, teamId, channelId, true);
+            if (channels && memberships) {
+                const prepare = await prepareMyChannelsForTeam(database.operator, teamId, channels, memberships);
+                if (prepare) {
+                    const prepareModels = await Promise.all(prepare);
+                    const flattenedModels = prepareModels.flat();
+                    if (flattenedModels?.length > 0) {
+                        models.push(...flattenedModels);
+                    }
+                }
+            }
+
+            const {posts, order, authors, actionType, previousPostId} = await fetchPostsForChannel(serverUrl, channelId, true);
+            if (posts?.length && order && actionType) {
+                models.push(...await database.operator.handlePosts({
+                    actionType,
+                    order,
+                    posts,
+                    previousPostId,
+                    prepareRecordsOnly: true,
+                }));
+            }
+
+            if (authors?.length) {
+                models.push(...await database.operator.handleUsers({users: authors, prepareRecordsOnly: true}));
+            }
+
+            database.operator.batchRecords(models);
+        } else {
+            const channels = await queryChannelsById(database.database, [channelId]);
+            if (channels?.[0]) {
+                models.push(...await database.operator.handleChannelMembership({
+                    channelMemberships: [{channel_id: channelId, user_id: userId}],
+                    prepareRecordsOnly: true,
+                }));
+            }
+        }
+    } catch {
+        // Do nothing
+    }
+
+    database.operator.batchRecords(models);
+}
+
+export async function handleUserRemovedFromChannelEvent(serverUrl: string, msg: any) {
     const database = DatabaseManager.serverDatabases[serverUrl];
     if (!database) {
         return;
@@ -28,14 +95,25 @@ export async function handleUserRemovedEvent(serverUrl: string, msg: any) {
         return;
     }
 
-    if (user.id === msg.data.user_id) {
-        localRemoveUserFromChannel(serverUrl, msg.data.channel_id);
+    const userId = msg.data.user_id;
+    const channelId = msg.data.channel_id;
 
-        if (isGuest(user.roles)) {
-            updateUsersNoLongerVisible(serverUrl);
+    const models: Model[] = [];
+
+    if (user.isGuest) {
+        const {models: updateVisibleModels} = await updateUsersNoLongerVisible(serverUrl, true);
+        if (updateVisibleModels) {
+            models.push(...updateVisibleModels);
+        }
+    }
+
+    if (user.id === userId) {
+        const {models: removeUserModels} = await removeCurrentUserFromChannel(serverUrl, channelId, true);
+        if (removeUserModels) {
+            models.push(...removeUserModels);
         }
 
-        if (channel && channel.id === msg.data.channel_id) {
+        if (channel && channel.id === channelId) {
             const currentServer = await queryActiveServer(DatabaseManager.appDatabase!.database);
 
             if (currentServer?.url === serverUrl) {
@@ -46,16 +124,27 @@ export async function handleUserRemovedEvent(serverUrl: string, msg: any) {
                 if (await isTablet()) {
                     const channelToJumpTo = await queryLastChannelFromTeam(database.database, channel?.teamId);
                     if (channelToJumpTo) {
-                        switchToChannel(serverUrl, channelToJumpTo);
-                    } // TODO else jump to "join a channel" screen
+                        const {models: switchChannelModels} = await switchToChannel(serverUrl, channelToJumpTo, '', true);
+                        if (switchChannelModels) {
+                            models.push(...switchChannelModels);
+                        }
+                    } // TODO else jump to "join a channel" screen https://mattermost.atlassian.net/browse/MM-41051
                 } else {
-                    setCurrentChannelId(database.operator, '');
+                    const currentChannelModels = await prepareCommonSystemValues(database.operator, {currentChannelId: ''});
+                    if (currentChannelModels?.length) {
+                        models.push(...currentChannelModels);
+                    }
                 }
             }
         }
     } else {
-        deleteChannelMembership(database.operator, msg.data.user_id, msg.data.channel_id);
+        const {models: deleteMemberModels} = await deleteChannelMembership(database.operator, userId, channelId, true);
+        if (deleteMemberModels) {
+            models.push(...deleteMemberModels);
+        }
     }
+
+    database.operator.batchRecords(models);
 }
 
 export async function handleChannelDeletedEvent(serverUrl: string, msg: any) {
@@ -72,14 +161,14 @@ export async function handleChannelDeletedEvent(serverUrl: string, msg: any) {
 
     const config = await queryConfig(database.database);
 
-    await localSetChannelDeleteAt(serverUrl, msg.data.channel_id, msg.data.delete_at);
+    await setChannelDeleteAt(serverUrl, msg.data.channel_id, msg.data.delete_at);
 
-    if (isGuest(user.roles)) {
+    if (user.isGuest) {
         updateUsersNoLongerVisible(serverUrl);
     }
 
     if (config?.ExperimentalViewArchivedChannels !== 'true') {
-        localRemoveUserFromChannel(serverUrl, msg.data.channel_id);
+        removeCurrentUserFromChannel(serverUrl, msg.data.channel_id);
 
         if (currentChannel && currentChannel.id === msg.data.channel_id) {
             const currentServer = await queryActiveServer(DatabaseManager.appDatabase!.database);

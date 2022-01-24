@@ -19,9 +19,10 @@ import {prepareMyChannelsForTeam} from '@queries/servers/channel';
 import {queryCommonSystemValues, queryConfig, queryWebSocketLastDisconnected} from '@queries/servers/system';
 import {queryCurrentUser} from '@queries/servers/user';
 
-import {handleChannelDeletedEvent, handleUserRemovedEvent} from './channel';
+import {handleChannelDeletedEvent, handleUserAddedToChannelEvent, handleUserRemovedFromChannelEvent} from './channel';
 import {handlePreferenceChangedEvent, handlePreferencesChangedEvent, handlePreferencesDeletedEvent} from './preferences';
 import {handleLeaveTeamEvent} from './teams';
+import {handleUserUpdatedEvent} from './users';
 
 import type {Model} from '@nozbe/watermelondb';
 
@@ -122,7 +123,7 @@ async function doReconnect(serverUrl: string) {
             const viewArchivedChannels = config?.ExperimentalViewArchivedChannels === 'true';
 
             if (!stillMemberOfCurrentChannel) {
-                handleUserRemovedEvent(serverUrl, {data: {user_id: currentUserId, channel_id: currentChannelId}});
+                handleUserRemovedFromChannelEvent(serverUrl, {data: {user_id: currentUserId, channel_id: currentChannelId}});
             } else if (!channelStillExist ||
                 (!viewArchivedChannels && channelStillExist.delete_at !== 0)
             ) {
@@ -177,16 +178,14 @@ export async function handleEvent(serverUrl: string, msg: any) {
 
         // return dispatch(handleTeamAddedEvent(msg));
         case WebsocketEvents.USER_ADDED:
+            handleUserAddedToChannelEvent(serverUrl, msg);
             break;
-
-        // return dispatch(handleUserAddedEvent(msg));
         case WebsocketEvents.USER_REMOVED:
-            handleUserRemovedEvent(serverUrl, msg);
+            handleUserRemovedFromChannelEvent(serverUrl, msg);
             break;
         case WebsocketEvents.USER_UPDATED:
+            handleUserUpdatedEvent(serverUrl, msg);
             break;
-
-        // return dispatch(handleUserUpdatedEvent(msg));
         case WebsocketEvents.ROLE_ADDED:
             break;
 
