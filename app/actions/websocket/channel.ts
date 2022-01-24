@@ -70,7 +70,10 @@ export async function handleUserAddedToChannelEvent(serverUrl: string, msg: any)
         } else {
             const channels = await queryChannelsById(database.database, [channelId]);
             if (channels?.[0]) {
-                models.push(...await database.operator.handleChannelMembership({channelMemberships: [{channel_id: channelId, user_id: userId}], prepareRecordsOnly: true}));
+                models.push(...await database.operator.handleChannelMembership({
+                    channelMemberships: [{channel_id: channelId, user_id: userId}],
+                    prepareRecordsOnly: true,
+                }));
             }
         }
     } catch {
