@@ -4,9 +4,9 @@
 import {MessageDescriptor} from '@formatjs/intl/src/types';
 import {Alert, AlertButton} from 'react-native';
 
-import {NOTIFY_ALL_MEMBERS} from '@app/constants/post_draft';
 import {General} from '@constants';
 import {AT_MENTION_REGEX_GLOBAL, CODE_REGEX} from '@constants/autocomplete';
+import {NOTIFY_ALL_MEMBERS} from '@constants/post_draft';
 import {t} from '@i18n';
 
 import type {IntlShape} from 'react-intl';

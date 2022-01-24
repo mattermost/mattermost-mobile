@@ -280,6 +280,7 @@ export default function DraftHandler(props: Props) {
             channelId={channelId}
             rootId={rootId}
 
+            // From draft handler
             value={currentValue}
             files={currentFiles}
             clearDraft={clearDraft}

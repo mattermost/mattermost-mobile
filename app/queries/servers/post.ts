@@ -76,9 +76,9 @@ export const queryRecentPostsInThread = async (database: Database, channelId: st
             const recent = chunks[0];
             return queryPostsChunk(database, channelId, recent.earliest, recent.latest);
         }
-        return Promise.resolve([] as PostModel[]);
+        return Promise.resolve([]);
     } catch {
-        return Promise.resolve([] as PostModel[]);
+        return Promise.resolve([]);
     }
 };
 
@@ -93,7 +93,7 @@ export const queryPostsChunk = (database: Database, channelId: string, earliest:
             Q.sortBy('create_at', Q.desc),
         ).fetch() as Promise<PostModel[]>;
     } catch {
-        return Promise.resolve([] as PostModel[]);
+        return Promise.resolve([]);
     }
 };
 
@@ -104,9 +104,9 @@ export const queryRecentPostsInChannel = async (database: Database, channelId: s
             const recent = chunks[0];
             return queryPostsChunk(database, channelId, recent.earliest, recent.latest);
         }
-        return Promise.resolve([] as PostModel[]);
+        return Promise.resolve([]);
     } catch {
-        return Promise.resolve([] as PostModel[]);
+        return Promise.resolve([]);
     }
 };
 

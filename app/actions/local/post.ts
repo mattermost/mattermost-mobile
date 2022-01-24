@@ -134,14 +134,14 @@ export const selectAttachmentMenuAction = (serverUrl: string, postId: string, ac
 };
 
 export const removeDraft = async (serverUrl: string, channelId: string, rootId = '') => {
-    const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
-    if (!operator) {
+    const database = DatabaseManager.serverDatabases[serverUrl]?.database;
+    if (!database) {
         return {error: `${serverUrl} database not found`};
     }
 
-    const draft = await queryDraft(operator.database, channelId, rootId);
+    const draft = await queryDraft(database, channelId, rootId);
     if (draft) {
-        await operator.database.write(async () => {
+        await database.write(async () => {
             await draft.destroyPermanently();
         });
     }

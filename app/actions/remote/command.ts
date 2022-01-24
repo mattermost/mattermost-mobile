@@ -35,6 +35,7 @@ export const executeCommand = async (serverUrl: string, intl: IntlShape, message
         return {error: error as ClientError};
     }
 
+    // TODO https://mattermost.atlassian.net/browse/MM-41234
     // const config = await queryConfig(operator.database)
     // if (config.FeatureFlagAppsEnabled) {
     //     const parser = new AppCommandParser(serverUrl, intl, channelId, rootId);
@@ -81,6 +82,7 @@ export const executeCommand = async (serverUrl: string, intl: IntlShape, message
     return {data};
 };
 
+// TODO https://mattermost.atlassian.net/browse/MM-41234
 // const executeAppCommand = (serverUrl: string, intl: IntlShape, parser: any) => {
 //     const {call, errorMessage} = await parser.composeCallFromCommand(msg);
 //     const createErrorMessage = (errMessage: string) => {

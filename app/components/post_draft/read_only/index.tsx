@@ -40,12 +40,14 @@ const getStyle = makeStyleSheetFromTheme((theme: Theme) => ({
     },
 }));
 
+const safeAreaEdges = ['bottom' as const];
+
 const ReadOnlyChannnel = ({testID}: ReadOnlyProps) => {
     const theme = useTheme();
     const style = getStyle(theme);
     return (
         <SafeAreaView
-            edges={['bottom']}
+            edges={safeAreaEdges}
             style={style.background}
         >
             <View

@@ -179,7 +179,7 @@ export default function SendHandler({
 
         clearDraft();
 
-        // TODO Apps related
+        // TODO Apps related https://mattermost.atlassian.net/browse/MM-41233
         // if (data?.form) {
         //     showAppForm(data.form, data.call, theme);
         // }
@@ -285,6 +285,7 @@ export default function SendHandler({
             channelId={channelId}
             rootId={rootId}
 
+            // From draft handler
             value={value}
             files={files}
             clearDraft={clearDraft}
@@ -294,6 +295,7 @@ export default function SendHandler({
             retryFileUpload={retryFileUpload}
             uploadFileError={uploadFileError}
 
+            // From send handler
             sendMessage={handleSendMessage}
             canSend={canSend()}
             maxMessageLength={maxMessageLength}

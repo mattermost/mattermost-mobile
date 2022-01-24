@@ -11,7 +11,7 @@ import {privateChannelJoinPrompt} from '@helpers/api/channel';
 import NetworkManager from '@init/network_manager';
 import {prepareMyChannelsForTeam, queryChannelById, queryChannelByName, queryMyChannel} from '@queries/servers/channel';
 import {queryCommonSystemValues, queryCurrentTeamId, queryCurrentUserId} from '@queries/servers/system';
-import {prepareMyTeams, queryLastChannelFromTeam, queryMyTeamById, queryTeamById, queryTeamByName} from '@queries/servers/team';
+import {prepareMyTeams, queryNthLastChannelFromTeam, queryMyTeamById, queryTeamById, queryTeamByName} from '@queries/servers/team';
 import {getDirectChannelName} from '@utils/channel';
 import {PERMALINK_GENERIC_TEAM_NAME_REDIRECT} from '@utils/url';
 import {displayGroupMessageName, displayUsername} from '@utils/user';
@@ -521,8 +521,14 @@ export const switchToChannelByName = async (serverUrl: string, channelName: stri
 };
 
 export async function getChannelMemberCountsByGroup(serverUrl: string, channelId: string, includeTimezones: boolean) {
+    let client: Client;
     try {
-        const client = NetworkManager.getClient(serverUrl);
+        client = NetworkManager.getClient(serverUrl);
+    } catch (error) {
+        return {error};
+    }
+
+    try {
         const channelMemberCountsByGroup = await client.getChannelMemberCountsByGroup(channelId, includeTimezones);
         return {channelMemberCountsByGroup};
     } catch (error) {
@@ -531,8 +537,14 @@ export async function getChannelMemberCountsByGroup(serverUrl: string, channelId
 }
 
 export async function getChannelTimezones(serverUrl: string, channelId: string) {
+    let client: Client;
     try {
-        const client = NetworkManager.getClient(serverUrl);
+        client = NetworkManager.getClient(serverUrl);
+    } catch (error) {
+        return {error};
+    }
+
+    try {
         const channelTimezones = await client.getChannelTimezones(channelId);
         return {channelTimezones};
     } catch (error) {
@@ -610,7 +622,7 @@ export const switchToPenultimateChannel = async (serverUrl: string) => {
 
     try {
         const currentTeam = await queryCurrentTeamId(database);
-        const channelId = await queryLastChannelFromTeam(database, currentTeam, 1);
+        const channelId = await queryNthLastChannelFromTeam(database, currentTeam, 1);
         return switchToChannelById(serverUrl, channelId);
     } catch (error) {
         return {error};

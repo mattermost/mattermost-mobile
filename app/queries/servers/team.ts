@@ -51,7 +51,7 @@ export const addChannelToTeamHistory = async (operator: ServerDataOperator, team
     return operator.handleTeamChannelHistory({teamChannelHistories: [tch], prepareRecordsOnly});
 };
 
-export const queryLastChannelFromTeam = async (database: Database, teamId: string, n = 0) => {
+export const queryNthLastChannelFromTeam = async (database: Database, teamId: string, n = 0) => {
     let channelId = '';
 
     try {
