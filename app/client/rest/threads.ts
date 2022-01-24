@@ -6,12 +6,13 @@ import {buildQueryString, isMinimumServerVersion} from '@utils/helpers';
 import {PER_PAGE_DEFAULT} from './constants';
 
 export interface ClientThreadsMix {
-    getThreads: (serverVersion: string, userId: $ID<UserProfile>, teamId: $ID<Team>, before?: $ID<Thread>, after?: $ID<Thread>, pageSize?: number, deleted?: boolean, unread?: boolean, since?: number) => Promise<any>;
+    getThreads: (serverVersion: string, userId: string, teamId: string, before?: string, after?: string, pageSize?: number, deleted?: boolean, unread?: boolean, since?: number) => Promise<any>;
 }
 
 const ClientThreads = (superclass: any) => class extends superclass {
-    getThreads = async (serverVersion: string, userId: $ID<UserProfile>, teamId: $ID<Team>, before = '', after = '', pageSize = PER_PAGE_DEFAULT, deleted = false, unread = false, since = 0) => {
+    getThreads = async (serverVersion: string, userId: string, teamId: string, before = '', after = '', pageSize = PER_PAGE_DEFAULT, deleted = false, unread = false, since = 0) => {
         const queryStringObj: Record<string, any> = {
+            extended: 'true',
             before,
             after,
             deleted,

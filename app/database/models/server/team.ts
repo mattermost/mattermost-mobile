@@ -14,6 +14,7 @@ import type SlashCommandModel from '@typings/database/models/servers/slash_comma
 import type TeamChannelHistoryModel from '@typings/database/models/servers/team_channel_history';
 import type TeamMembershipModel from '@typings/database/models/servers/team_membership';
 import type TeamSearchHistoryModel from '@typings/database/models/servers/team_search_history';
+import type ThreadModel from '@typings/database/models/servers/thread';
 
 const {
     CHANNEL,
@@ -24,6 +25,7 @@ const {
     TEAM_CHANNEL_HISTORY,
     TEAM_MEMBERSHIP,
     TEAM_SEARCH_HISTORY,
+    THREAD,
 } = MM_TABLES.SERVER;
 
 /**
@@ -53,6 +55,9 @@ export default class TeamModel extends Model {
 
         /** A TEAM has a 1:N relationship with TEAM_SEARCH_HISTORY. A TEAM can possess multiple search histories*/
         [TEAM_SEARCH_HISTORY]: {type: 'has_many', foreignKey: 'team_id'},
+
+        /** A TEAM can contain multiple THREAD (relationship is 1:N) */
+        [THREAD]: {type: 'has_many', foreignKey: 'team_id'},
     };
 
     /** is_allow_open_invite : Boolean flag indicating if this team is open to the public */
@@ -102,4 +107,7 @@ export default class TeamModel extends Model {
 
     /** teamSearchHistories : All the searches performed on this team */
     @children(TEAM_SEARCH_HISTORY) teamSearchHistories!: TeamSearchHistoryModel[];
+
+    /** threads : All threads made in that channel */
+    @children(THREAD) threads!: ThreadModel[];
 }

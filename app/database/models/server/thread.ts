@@ -10,7 +10,7 @@ import {MM_TABLES} from '@constants/database';
 import type PostModel from '@typings/database/models/servers/post';
 import type ThreadParticipantsModel from '@typings/database/models/servers/thread_participants';
 
-const {POST, THREAD, THREAD_PARTICIPANTS} = MM_TABLES.SERVER;
+const {POST, TEAM, THREAD, THREAD_PARTICIPANTS} = MM_TABLES.SERVER;
 
 /**
  * The Thread model contains thread information of a post.
@@ -27,6 +27,9 @@ export default class ThreadModel extends Model {
 
         /** A POST can have multiple THREAD_PARTICIPANTS. (relationship is 1:N)*/
         [THREAD_PARTICIPANTS]: {type: 'has_many', foreignKey: 'thread_id'},
+
+        /** A TEAM can have multiple THREAD. (relationship is 1:N) */
+        [TEAM]: {type: 'belongs_to', key: 'team_id'},
     };
 
     /** last_reply_at : The timestamp of when user last replied to the thread. */
@@ -37,6 +40,9 @@ export default class ThreadModel extends Model {
 
     /** reply_count : The total replies to the thread by all the participants. */
     @field('reply_count') replyCount!: number;
+
+    /** team_id : Team to which this thread belongs to. */
+    @field('team_id') teamId!: string;
 
     /** unread_replies : The number of replies that are not read by the user. */
     @field('unread_replies') unreadReplies!: number;

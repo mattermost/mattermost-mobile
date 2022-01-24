@@ -14,17 +14,20 @@ export default class ThreadModel extends Model {
     /** associations : Describes every relationship to this table. */
     static associations: Associations;
 
-    /** last_reply_at : The timestamp of when user last replied to the thread. */
+    /** lastReplyAt : The timestamp of when user last replied to the thread. */
     lastReplyAt: number;
 
-    /** last_viewed_at : The timestamp of when user last viewed the thread. */
+    /** lastViewedAt : The timestamp of when user last viewed the thread. */
     lastViewedAt: number;
+
+    /** teamId : Team to which this thread belongs to */
+    teamId: string;
 
     /** participants: All the participants of the thread */
     participants: Query<ThreadParticipantsModel>;
 
     /** post : Query returning the post data for the current thread */
-    post: Relation<Post>;
+    post: Relation<PostModel>;
 
     /** reply_count : The total replies to the thread by all the participants. */
     replyCount: number;

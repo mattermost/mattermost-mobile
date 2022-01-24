@@ -1,9 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {processPostsFetched} from '@actions/local/post';
 import {processThreadsWithPostsFetched} from '@actions/local/thread';
-import {ActionType, General} from '@constants';
+import {General} from '@constants';
 import DatabaseManager from '@database/manager';
 import NetworkManager from '@init/network_manager';
 import {queryCommonSystemValues} from '@queries/servers/system';
@@ -16,7 +15,7 @@ export type MyPreferencesRequest = {
     error?: unknown;
 }
 
-export const getThreads = async (serverUrl: string, teamId: $ID<Team>, before?: $ID<Post>, after?: $ID<Post>, perPage = General.CRT_CHUNK_SIZE, deleted = false, unread = false, since = 0): Promise<any> => {
+export const getThreads = async (serverUrl: string, teamId: string, before?: string, after?: string, perPage = General.CRT_CHUNK_SIZE, deleted = false, unread = false, since = 0): Promise<any> => {
     const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
 
     if (!operator) {
@@ -40,11 +39,10 @@ export const getThreads = async (serverUrl: string, teamId: $ID<Team>, before?: 
 
         const data = await client.getThreads(config.Version, currentUser.id, teamId, before, after, perPage, deleted, unread, since);
 
-        await processThreadsWithPostsFetched(serverUrl, data.threads);
+        await processThreadsWithPostsFetched(serverUrl, teamId, data.threads);
 
         return data;
     } catch (error) {
-        console.log(error);
         forceLogoutIfNecessary(serverUrl, error as ClientErrorProps);
         return {error};
     }

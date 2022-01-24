@@ -5,7 +5,8 @@ import {withDatabase} from '@nozbe/watermelondb/DatabaseProvider';
 import withObservables from '@nozbe/with-observables';
 import React, {useEffect, useMemo, useState} from 'react';
 import {SafeAreaView} from 'react-native-safe-area-context';
-import {map} from 'rxjs/operators';
+import {of as of$} from 'rxjs';
+import {map, switchMap} from 'rxjs/operators';
 
 import {getThreads} from '@actions/remote/thread';
 import ServerVersion from '@components/server_version';
@@ -16,7 +17,7 @@ import {useAppState} from '@hooks/device';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 
 import Header from './header';
-import List from './list';
+import ThreadsList from './threads_list';
 
 import type {WithDatabaseArgs} from '@typings/database/database';
 import type SystemModel from '@typings/database/models/servers/system';
@@ -40,6 +41,7 @@ const GlobalThreads = ({currentTeamId}: Props) => {
     const appState = useAppState();
     const serverUrl = useServerUrl();
 
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const [loading, setLoading] = useState(true);
     useEffect(() => {
         setLoading(true);
@@ -50,7 +52,12 @@ const GlobalThreads = ({currentTeamId}: Props) => {
         return (
             <>
                 <Header/>
-                <List theme={theme}/>
+                <ThreadsList
+                    forceQueryAfterAppState={appState}
+                    teamId={currentTeamId}
+                    testID={'undefined'}
+                    theme={theme}
+                />
             </>
         );
     }, [theme, appState, currentTeamId]);
@@ -71,6 +78,8 @@ const enhanced = withObservables([], ({database}: WithDatabaseArgs) => ({
     currentTeamId: database.collections.get<SystemModel>(SYSTEM).findAndObserve(SYSTEM_IDENTIFIERS.CURRENT_TEAM_ID).pipe(
         map(({value}: {value: string}) => value),
     ),
+    currentUserId: database.get<SystemModel>(SYSTEM).findAndObserve(SYSTEM_IDENTIFIERS.CURRENT_USER_ID).pipe(
+        switchMap((currentUserId) => of$(currentUserId.value))),
 }));
 
 export default withDatabase(enhanced(GlobalThreads));

@@ -18,7 +18,7 @@ export type Props = {
     viewingUnreads: boolean;
 };
 
-const ListHeader = ({haveUnreads, markAllAsRead, testID, theme, viewAllThreads, viewUnreadThreads, viewingUnreads}: Props) => {
+const Header = ({haveUnreads, markAllAsRead, testID, theme, viewAllThreads, viewUnreadThreads, viewingUnreads}: Props) => {
     const style = getStyle(theme);
     const intl = useIntl();
     return (
@@ -138,4 +138,4 @@ const getStyle = makeStyleSheetFromTheme((theme) => {
     };
 });
 
-export default ListHeader;
+export default Header;

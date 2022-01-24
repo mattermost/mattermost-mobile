@@ -32,6 +32,7 @@ export const transformThreadRecord = ({action, database, value}: TransformerArgs
         thread.lastReplyAt = raw.last_reply_at;
         thread.lastViewedAt = raw.last_viewed_at;
         thread.replyCount = raw.reply_count;
+        thread.teamId = raw.team_id;
         thread.unreadReplies = raw.unread_replies;
         thread.unreadMentions = raw.unread_mentions;
     };

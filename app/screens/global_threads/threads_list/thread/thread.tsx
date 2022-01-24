@@ -6,44 +6,32 @@ import {Text, TouchableHighlight, View} from 'react-native';
 
 import FormattedText from '@components/formatted_text';
 import FriendlyDate from '@components/friendly_date';
-import {Post} from '@constants';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
+import {displayUsername} from '@utils/user';
 
-import ListItemFooter from './list_item_footer';
+import ThreadFooter from './thread_footer';
+
+import type ChannelModel from '@typings/database/models/servers/channel';
+import type PostModel from '@typings/database/models/servers/post';
+import type ThreadModel from '@typings/database/models/servers/thread';
+import type UserModel from '@typings/database/models/servers/user';
 
 type Props = {
+    author: UserModel;
+    channel: ChannelModel | undefined;
+    currentUserId: string;
+    participants: UserModel[];
+    post: PostModel;
+    teammateNameDisplay: string;
     testID: string;
     theme: Theme;
+    thread: ThreadModel;
 };
 
-const ListItem = ({testID, theme}: Props) => {
+const Thread = ({author, channel, currentUserId, participants, post, teammateNameDisplay, testID, theme, thread}: Props) => {
     const style = getStyleSheet(theme);
 
-    const channel = {
-        id: '456',
-        name: 'CHANNEL NAME',
-    };
-
-    const thread = {
-        id: '123',
-        last_reply_at: Date.now() - 400000,
-        unread_mentions: 1,
-        unread_replies: 3,
-        participants: [],
-    };
-
-    const threadStarter = {
-        id: 'user1'
-    };
-
-    const post = {
-        id: '123',
-        message: 'POST MESSAGE',
-        state: 'active',
-    };
-
-    // const threadStarterName = displayUsername(threadStarter, Preferences.DISPLAY_PREFER_FULL_NAME);
-    const threadStarterName = 'Anurag Shivarathri';
+    const threadStarterName = displayUsername(author, undefined, teammateNameDisplay);
 
     const showThread = () => {
         //@todo
@@ -55,19 +43,19 @@ const ListItem = ({testID, theme}: Props) => {
 
     const testIDPrefix = `${testID}.${thread.id}`;
 
-    const needBadge = thread.unread_mentions || thread.unread_replies;
+    const needBadge = thread.unreadMentions || thread.unreadReplies;
     let badgeComponent;
     if (needBadge) {
-        if (thread.unread_mentions && thread.unread_mentions > 0) {
+        if (thread.unreadMentions && thread.unreadMentions > 0) {
             badgeComponent = (
                 <View
                     style={style.mentionBadge}
                     testID={`${testIDPrefix}.unread_mentions`}
                 >
-                    <Text style={style.mentionBadgeText}>{thread.unread_mentions > 99 ? '99+' : thread.unread_mentions}</Text>
+                    <Text style={style.mentionBadgeText}>{thread.unreadMentions > 99 ? '99+' : thread.unreadMentions}</Text>
                 </View>
             );
-        } else if (thread.unread_replies && thread.unread_replies > 0) {
+        } else if (thread.unreadReplies && thread.unreadReplies > 0) {
             badgeComponent = (
                 <View
                     style={style.unreadDot}
@@ -78,7 +66,7 @@ const ListItem = ({testID, theme}: Props) => {
     }
 
     let name;
-    if (post.state === Post.POST_DELETED) {
+    if (post?.deleteAt) {
         name = (
             <FormattedText
                 id={'threads.deleted'}
@@ -97,13 +85,13 @@ const ListItem = ({testID, theme}: Props) => {
     }
 
     let postBody;
-    if (post.state !== Post.POST_DELETED) {
+    if (!post?.deleteAt) {
         postBody = (
             <Text
                 style={style.message}
                 numberOfLines={2}
             >
-                {post.message}
+                {post?.message}
             </Text>
         );
     }
@@ -123,24 +111,29 @@ const ListItem = ({testID, theme}: Props) => {
                     <View style={style.header}>
                         <View style={style.headerInfoContainer}>
                             {name}
-                            <View style={style.channelNameContainer}>
-                                <Text
-                                    style={style.channelName}
-                                    numberOfLines={1}
-                                >{channel.name}</Text>
-                            </View>
+                            {threadStarterName !== channel?.displayName && (
+                                <View style={style.channelNameContainer}>
+                                    <Text
+                                        style={style.channelName}
+                                        numberOfLines={1}
+                                    >{channel?.displayName}</Text>
+                                </View>
+                            )}
                         </View>
                         <FriendlyDate
-                            value={thread.last_reply_at}
+                            value={thread.lastReplyAt}
                             style={style.date}
                         />
                     </View>
                     {postBody}
-                    <ListItemFooter
+                    <ThreadFooter
+                        author={author}
+                        currentUserId={currentUserId}
+                        participants={participants}
+                        teammateNameDisplay={teammateNameDisplay}
                         testID={`${testIDPrefix}.footer`}
                         thread={thread}
                         theme={theme}
-                        threadStarter={threadStarter}
                     />
                 </View>
             </View>
@@ -242,4 +235,4 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     };
 });
 
-export default ListItem;
+export default Thread;

@@ -9,10 +9,11 @@ import {StyleSheet, Text, View} from 'react-native';
 import {of as of$} from 'rxjs';
 import {switchMap} from 'rxjs/operators';
 
-import {switchToChannelById} from '@actions/remote/channel';
+// import {switchToChannelById} from '@actions/remote/channel';
+import {goToScreen} from '@app/screens/navigation';
 import CompassIcon from '@components/compass_icon';
 import TouchableWithFeedback from '@components/touchable_with_feedback';
-import {General} from '@constants';
+import {General, Screens} from '@constants';
 import {MM_TABLES, SYSTEM_IDENTIFIERS} from '@constants/database';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
@@ -53,7 +54,7 @@ const ThreadsButton = ({channelId}: {channelId?: string}) => {
      * - Add right-side number badge
      */
     return (
-        <TouchableWithFeedback onPress={() => (channelId ? switchToChannelById(serverUrl, channelId) : true)} >
+        <TouchableWithFeedback onPress={() => goToScreen(Screens.GLOBAL_THREADS, 'Threads', {channelId, serverUrl}, {topBar: {visible: false}})} >
             <View style={styles.container}>
                 <CompassIcon
                     name='message-text-outline'

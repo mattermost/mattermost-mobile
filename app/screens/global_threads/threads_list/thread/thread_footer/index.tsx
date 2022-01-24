@@ -2,25 +2,30 @@
 // See LICENSE.txt for license information.
 
 import React from 'react';
-import {Text, View} from 'react-native';
+import {View} from 'react-native';
 
 import AvatarsStack from '@app/components/avatars_stack';
 import FormattedText from '@components/formatted_text';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
+import type ThreadModel from '@typings/database/models/servers/thread';
+import type UserModel from '@typings/database/models/servers/user';
+
 export type Props = {
-    currentUserId: $ID<UserProfile>;
+    author: UserModel;
+    currentUserId: string;
+    participants: UserModel[];
+    teammateNameDisplay: string;
     testID: string;
-    thread: Thread;
-    threadStarter: UserProfile;
+    thread: ThreadModel;
     theme: Theme;
 };
 
-function ThreadFooter({testID, theme, thread, threadStarter}: Props) {
+const ThreadFooter = ({author, currentUserId, participants, teammateNameDisplay, testID, theme, thread}: Props) => {
     const style = getStyleSheet(theme);
 
     let repliesComponent;
-    if (thread.unread_replies) {
+    if (thread.unreadReplies) {
         repliesComponent = (
             <FormattedText
                 id={'threads.newReplies'}
@@ -28,11 +33,11 @@ function ThreadFooter({testID, theme, thread, threadStarter}: Props) {
                 style={style.unreadReplies}
                 testID={`${testID}.unread_replies`}
                 values={{
-                    count: thread.unread_replies,
+                    count: thread.unreadReplies,
                 }}
             />
         );
-    } else if (thread.reply_count) {
+    } else if (thread.replyCount) {
         repliesComponent = (
             <FormattedText
                 id={'threads.replies'}
@@ -40,28 +45,30 @@ function ThreadFooter({testID, theme, thread, threadStarter}: Props) {
                 style={style.replies}
                 testID={`${testID}.reply_count`}
                 values={{
-                    count: thread.reply_count,
+                    count: thread.replyCount,
                 }}
             />
         );
     }
 
     // threadstarter should be the first one in the avatars list
-    const participants = React.useMemo(() => {
-        if (thread.participants?.length) {
-            const participantIds = thread.participants.filter((participant) => participant.id !== threadStarter.id).reverse();
-            participantIds.unshift(threadStarter?.id);
-            return participantIds;
+    const participantsList = React.useMemo(() => {
+        if (participants?.length) {
+            const filteredParticipantsList = participants.filter((participant) => participant.id !== author.id).reverse();
+            filteredParticipantsList.unshift(author);
+            return filteredParticipantsList;
         }
         return [];
-    }, [thread.participants, threadStarter]);
+    }, [participants, author]);
 
     let avatars;
-    if (participants.length) {
+    if (participantsList.length) {
         avatars = (
             <AvatarsStack
+                currentUserId={currentUserId}
                 style={style.avatarsContainer}
-                userIds={participants}
+                teammateNameDisplay={teammateNameDisplay}
+                users={participantsList}
             />
         );
     }
