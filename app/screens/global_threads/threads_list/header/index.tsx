@@ -8,24 +8,27 @@ import {changeOpacity} from '@app/utils/theme';
 import CompassIcon from '@components/compass_icon';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 
+export type Tab = 'all' | 'unreads';
+
 export type Props = {
-    haveUnreads: boolean;
     markAllAsRead: () => void;
+    setTab: (tab: Tab) => void;
+    tab: Tab;
     testID: string;
     theme: Theme;
-    viewAllThreads: () => void;
-    viewUnreadThreads: () => void;
-    viewingUnreads: boolean;
+    unreadsCount: number;
 };
 
-const Header = ({haveUnreads, markAllAsRead, testID, theme, viewAllThreads, viewUnreadThreads, viewingUnreads}: Props) => {
+const Header = ({markAllAsRead, setTab, tab, testID, theme, unreadsCount}: Props) => {
     const style = getStyle(theme);
     const intl = useIntl();
+    const hasUnreads = unreadsCount > 0;
+    const viewingUnreads = tab === 'unreads';
     return (
         <View style={style.container}>
             <View style={style.menuContainer}>
                 <TouchableOpacity
-                    onPress={viewAllThreads}
+                    onPress={() => setTab('all')}
                     testID={`${testID}.all_threads`}
                 >
                     <View style={[style.menuItemContainer, viewingUnreads ? undefined : style.menuItemContainerSelected]}>
@@ -40,7 +43,7 @@ const Header = ({haveUnreads, markAllAsRead, testID, theme, viewAllThreads, view
                     </View>
                 </TouchableOpacity>
                 <TouchableOpacity
-                    onPress={viewUnreadThreads}
+                    onPress={() => setTab('unreads')}
                     testID={`${testID}.unread_threads`}
                 >
                     <View style={[style.menuItemContainer, viewingUnreads ? style.menuItemContainerSelected : undefined]}>
@@ -53,7 +56,7 @@ const Header = ({haveUnreads, markAllAsRead, testID, theme, viewAllThreads, view
                                     })
                                 }
                             </Text>
-                            {haveUnreads ? (
+                            {hasUnreads ? (
                                 <View
                                     style={style.unreadsDot}
                                     testID={`${testID}.unreads_dot`}
@@ -65,13 +68,13 @@ const Header = ({haveUnreads, markAllAsRead, testID, theme, viewAllThreads, view
             </View>
             <View style={style.markAllReadIconContainer}>
                 <TouchableOpacity
-                    disabled={haveUnreads}
+                    disabled={hasUnreads}
                     onPress={markAllAsRead}
                     testID={`${testID}.mark_all_read`}
                 >
                     <CompassIcon
                         name='playlist-check'
-                        style={[style.markAllReadIcon, haveUnreads ? undefined : style.markAllReadIconDisabled]}
+                        style={[style.markAllReadIcon, hasUnreads ? undefined : style.markAllReadIconDisabled]}
                     />
                 </TouchableOpacity>
             </View>

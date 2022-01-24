@@ -17,7 +17,7 @@ import {useAppState} from '@hooks/device';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 
 import Header from './header';
-import ThreadsList from './threads_list';
+import ThreadsList, {Tab} from './threads_list';
 
 import type {WithDatabaseArgs} from '@typings/database/database';
 import type SystemModel from '@typings/database/models/servers/system';
@@ -41,6 +41,8 @@ const GlobalThreads = ({currentTeamId}: Props) => {
     const appState = useAppState();
     const serverUrl = useServerUrl();
 
+    const [tab, setTab] = useState<Tab>('all');
+
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const [loading, setLoading] = useState(true);
     useEffect(() => {
@@ -54,13 +56,15 @@ const GlobalThreads = ({currentTeamId}: Props) => {
                 <Header/>
                 <ThreadsList
                     forceQueryAfterAppState={appState}
+                    setTab={setTab}
+                    tab={tab}
                     teamId={currentTeamId}
                     testID={'undefined'}
                     theme={theme}
                 />
             </>
         );
-    }, [theme, appState, currentTeamId]);
+    }, [tab, theme, appState, currentTeamId]);
 
     return (
         <SafeAreaView

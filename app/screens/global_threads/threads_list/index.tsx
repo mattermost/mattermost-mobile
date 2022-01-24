@@ -13,25 +13,50 @@ import {Preferences} from '@constants';
 import {MM_TABLES, SYSTEM_IDENTIFIERS} from '@constants/database';
 import {getTeammateNameDisplaySetting} from '@helpers/api/preference';
 
-import ThreadsList from './threads_list';
+import ThreadsList, {Tab} from './threads_list';
 
 import type {WithDatabaseArgs} from '@typings/database/database';
 import type PreferenceModel from '@typings/database/models/servers/preference';
 import type SystemModel from '@typings/database/models/servers/system';
 
-const {SERVER: {PREFERENCE, THREAD, SYSTEM}} = MM_TABLES;
+export type {Tab};
 
-const enhanced = withObservables(['teamId', 'forceQueryAfterAppState'], ({database, teamId}: {teamId: string; forceQueryAfterAppState: AppStateStatus} & WithDatabaseArgs) => {
+const {SERVER: {CHANNEL, PREFERENCE, POST, SYSTEM, THREAD}} = MM_TABLES;
+
+const enhanced = withObservables(['tab', 'teamId', 'forceQueryAfterAppState'], ({database, tab, teamId}: {tab: Tab; teamId: string; forceQueryAfterAppState: AppStateStatus} & WithDatabaseArgs) => {
     // Get current user
     const currentUserId = database.get<SystemModel>(SYSTEM).findAndObserve(SYSTEM_IDENTIFIERS.CURRENT_USER_ID).pipe(
         switchMap(({value}) => of$(value)),
     );
 
-    // Get threads
+    // Query: To map threads to teams/dm/gm
+    const threadsQuery: Q.Clause[] = [
+        Q.experimentalNestedJoin(POST, CHANNEL),
+        Q.on(
+            POST,
+            Q.on(
+                CHANNEL,
+                Q.or(
+                    Q.where('team_id', teamId),
+                    Q.where('team_id', ''),
+                ),
+            ),
+        ),
+    ];
+
+    // Query: Add additional clause for unread replies
+    const unreadThreadsQuery = threadsQuery.concat(Q.where('unread_replies', Q.gt(0)));
+
+    // Get all/unread threads
     const threads = database.get<ThreadModel>(THREAD).query(
-        Q.where('team_id', teamId),
+        ...(tab === 'all' ? threadsQuery : unreadThreadsQuery),
         Q.sortBy('last_reply_at', Q.desc),
     ).observe();
+
+    // Get unreads count
+    const unreadsCount = database.get<ThreadModel>(THREAD).query(
+        ...unreadThreadsQuery,
+    ).observeCount();
 
     // Get team name display setting
     const config = database.get<SystemModel>(SYSTEM).findAndObserve(SYSTEM_IDENTIFIERS.CONFIG);
@@ -45,6 +70,7 @@ const enhanced = withObservables(['teamId', 'forceQueryAfterAppState'], ({databa
 
     return {
         currentUserId,
+        unreadsCount,
         teammateNameDisplay,
         threads,
     };

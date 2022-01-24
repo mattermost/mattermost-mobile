@@ -39,7 +39,12 @@ export const getThreads = async (serverUrl: string, teamId: string, before?: str
 
         const data = await client.getThreads(config.Version, currentUser.id, teamId, before, after, perPage, deleted, unread, since);
 
-        await processThreadsWithPostsFetched(serverUrl, teamId, data.threads);
+        // Mark all fetched threads as following
+        data.threads.forEach((thread: Thread) => {
+            thread.is_following = true;
+        });
+
+        await processThreadsWithPostsFetched(serverUrl, data.threads);
 
         return data;
     } catch (error) {

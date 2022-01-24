@@ -23,7 +23,7 @@ const {
 } = Database.MM_TABLES.SERVER;
 
 export interface ThreadHandlerMix {
-    handleThreads: ({teamId, threads, prepareRecordsOnly}: HandleThreadsArgs) => Promise<Model[]>;
+    handleThreads: ({threads, prepareRecordsOnly}: HandleThreadsArgs) => Promise<Model[]>;
 }
 
 const ThreadHandler = (superclass: any) => class extends superclass {
@@ -34,7 +34,7 @@ const ThreadHandler = (superclass: any) => class extends superclass {
      * @param {boolean | undefined} handleThreads.prepareRecordsOnly
      * @returns {Promise<void>}
      */
-    handleThreads = async ({teamId, threads, prepareRecordsOnly = false}: HandleThreadsArgs): Promise<Model[]> => {
+    handleThreads = async ({threads, prepareRecordsOnly = false}: HandleThreadsArgs): Promise<Model[]> => {
         const tableName = THREAD;
 
         if (!threads.length) {
@@ -43,7 +43,7 @@ const ThreadHandler = (superclass: any) => class extends superclass {
 
         // Get unique threads in case they are duplicated
         const uniqueThreads = getUniqueRawsBy({
-            raws: threads.map((thread) => ({...thread, team_id: teamId})),
+            raws: threads,
             key: 'id',
         }) as Thread[];
 

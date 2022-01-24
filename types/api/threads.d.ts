@@ -8,10 +8,9 @@ type Thread = {
     last_viewed_at: number;
     participants: UserProfile[];
     post: Post;
-    team_id: $ID<Team>;
+    is_following?: boolean;
     unread_replies: number;
     unread_mentions: number;
-    is_following?: boolean;
 };
 
 type ThreadParticipant = {

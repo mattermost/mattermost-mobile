@@ -1,22 +1,23 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {MM_TABLES} from '@app/constants/database';
 import {ActionType} from '@constants';
 import DatabaseManager from '@database/manager';
 
 import type Model from '@nozbe/watermelondb/Model';
+import type ThreadModel from '@typings/database/models/servers/thread';
 
-export const processThreadsFetched = async (serverUrl: string, teamId: string, threads: Thread[]) => {
+export const processThreadsFetched = async (serverUrl: string, threads: Thread[]) => {
     const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
     if (operator) {
         await operator.handleThreads({
-            teamId,
             threads,
         });
     }
 };
 
-export const processThreadsWithPostsFetched = async (serverUrl: string, teamId: string, threads: Thread[]) => {
+export const processThreadsWithPostsFetched = async (serverUrl: string, threads: Thread[]) => {
     const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
     if (operator) {
         const posts: Post[] = [];
@@ -40,7 +41,6 @@ export const processThreadsWithPostsFetched = async (serverUrl: string, teamId: 
         }
 
         const threadModels = await operator.handleThreads({
-            teamId,
             threads,
             prepareRecordsOnly: true,
         });
@@ -61,5 +61,48 @@ export const processThreadsWithPostsFetched = async (serverUrl: string, teamId: 
         if (models.length) {
             await operator.batchRecords(models);
         }
+    }
+};
+
+export const updateThreadFollowing = async (serverUrl: string, threadId: string, state: boolean, replyCount: number) => {
+    const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
+    if (!operator) {
+        return {error: `${serverUrl} database not found`};
+    }
+
+    try {
+        const {database} = operator;
+        const thread = await database.get<ThreadModel>(MM_TABLES.SERVER.THREAD).find(threadId);
+        await operator.database.write(async () => {
+            await thread.update(() => {
+                thread.replyCount = replyCount;
+                thread.isFollowing = state;
+            });
+        });
+        return {};
+    } catch (error) {
+        return {error};
+    }
+};
+
+export const updateThreadReadChanged = async (serverUrl: string, threadId: string, lastViewedAt: number, unreadMentions: number, unreadReplies: number) => {
+    const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
+    if (!operator) {
+        return {error: `${serverUrl} database not found`};
+    }
+
+    try {
+        const {database} = operator;
+        const thread = await database.get<ThreadModel>(MM_TABLES.SERVER.THREAD).find(threadId);
+        await operator.database.write(async () => {
+            await thread.update(() => {
+                thread.lastViewedAt = lastViewedAt;
+                thread.unreadMentions = unreadMentions;
+                thread.unreadReplies = unreadReplies;
+            });
+        });
+        return {};
+    } catch (error) {
+        return {error};
     }
 };

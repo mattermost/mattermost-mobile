@@ -89,7 +89,6 @@ export type HandlePostsArgs = {
 };
 
 export type HandleThreadsArgs = {
-  teamId: $ID<Team>;
   threads: Thread[];
   prepareRecordsOnly?: boolean;
 };

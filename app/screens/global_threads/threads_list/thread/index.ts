@@ -39,6 +39,7 @@ const withPostAndParticipants = withObservables(
             }),
         ),
         post: thread.post.observe(),
+        thread: thread.observe(),
     }),
 );
 

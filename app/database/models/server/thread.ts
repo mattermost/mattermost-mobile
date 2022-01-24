@@ -41,8 +41,8 @@ export default class ThreadModel extends Model {
     /** reply_count : The total replies to the thread by all the participants. */
     @field('reply_count') replyCount!: number;
 
-    /** team_id : Team to which this thread belongs to. */
-    @field('team_id') teamId!: string;
+    /** is_following: If user is following the thread or not */
+    @field('is_following') isFollowing!: boolean;
 
     /** unread_replies : The number of replies that are not read by the user. */
     @field('unread_replies') unreadReplies!: number;

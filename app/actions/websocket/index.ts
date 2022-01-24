@@ -22,6 +22,7 @@ import {queryCurrentUser} from '@queries/servers/user';
 import {handleChannelDeletedEvent, handleUserRemovedEvent} from './channel';
 import {handlePreferenceChangedEvent, handlePreferencesChangedEvent, handlePreferencesDeletedEvent} from './preferences';
 import {handleLeaveTeamEvent} from './teams';
+import {handleThreadUpdatedEvent, handleThreadReadChangedEvent, handleThreadFollowChangedEvent} from './threads';
 
 import type {Model} from '@nozbe/watermelondb';
 
@@ -150,6 +151,7 @@ export async function handleEvent(serverUrl: string, msg: any) {
     switch (msg.event) {
         case WebsocketEvents.POSTED:
         case WebsocketEvents.EPHEMERAL_MESSAGE:
+            // console.log(msg)
             break;
 
         //return dispatch(handleNewPostEvent(msg));
@@ -296,14 +298,15 @@ export async function handleEvent(serverUrl: string, msg: any) {
 
         // return dispatch(handleGroupUpdatedEvent(msg));
         case WebsocketEvents.THREAD_UPDATED:
+            handleThreadUpdatedEvent(serverUrl, msg);
             break;
 
-        // return dispatch(handleThreadUpdated(msg));
         case WebsocketEvents.THREAD_READ_CHANGED:
+            handleThreadReadChangedEvent(serverUrl, msg);
             break;
 
-        // return dispatch(handleThreadReadChanged(msg));
         case WebsocketEvents.THREAD_FOLLOW_CHANGED:
+            handleThreadFollowChangedEvent(serverUrl, msg);
             break;
 
         // return dispatch(handleThreadFollowChanged(msg));

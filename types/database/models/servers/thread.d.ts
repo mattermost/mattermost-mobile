@@ -23,6 +23,9 @@ export default class ThreadModel extends Model {
     /** teamId : Team to which this thread belongs to */
     teamId: string;
 
+    /** isFollowing: If user is following this thread or not */
+    isFollowing: boolean;
+
     /** participants: All the participants of the thread */
     participants: Query<ThreadParticipantsModel>;
 

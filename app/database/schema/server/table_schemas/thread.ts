@@ -12,7 +12,7 @@ export default tableSchema({
     columns: [
         {name: 'last_reply_at', type: 'number'},
         {name: 'last_viewed_at', type: 'number'},
-        {name: 'team_id', type: 'string'},
+        {name: 'is_following', type: 'boolean'},
         {name: 'reply_count', type: 'number'},
         {name: 'unread_replies', type: 'number'},
         {name: 'unread_mentions', type: 'number'},
