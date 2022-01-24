@@ -49,7 +49,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
         text: {
             color: STATUS_COLORS.default,
             fontSize: 15,
-            fontFamily: 'OpenSans-Semibold',
+            fontFamily: 'OpenSans-SemiBold',
             lineHeight: 17,
         },
     };
