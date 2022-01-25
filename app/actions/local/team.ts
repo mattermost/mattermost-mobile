@@ -1,59 +1,12 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {DeviceEventEmitter} from 'react-native';
-
-import {fetchMyChannelsForTeam} from '@actions/remote/channel';
-import {fetchPostsForChannel, fetchPostsForUnreadChannels} from '@actions/remote/post';
-import {fetchAllTeams} from '@actions/remote/team';
-import Events from '@constants/events';
 import DatabaseManager from '@database/manager';
-import {prepareCommonSystemValues, queryCurrentTeamId} from '@queries/servers/system';
-import {prepareDeleteTeam, queryMyTeamById, removeTeamFromTeamHistory, queryLastChannelFromTeam, addTeamToTeamHistory} from '@queries/servers/team';
-import {isTablet} from '@utils/helpers';
+import {prepareDeleteTeam, queryMyTeamById, removeTeamFromTeamHistory} from '@queries/servers/team';
 
 import type TeamModel from '@typings/database/models/servers/team';
 
-export const handleTeamChange = async (serverUrl: string, teamId: string) => {
-    const {operator, database} = DatabaseManager.serverDatabases[serverUrl];
-    const currentTeamId = await queryCurrentTeamId(database);
-
-    if (currentTeamId === teamId) {
-        return;
-    }
-
-    let channelId = '';
-    if (await isTablet()) {
-        channelId = await queryLastChannelFromTeam(database, teamId);
-        if (channelId) {
-            fetchPostsForChannel(serverUrl, channelId);
-        }
-    }
-    const models = [];
-    const system = await prepareCommonSystemValues(operator, {currentChannelId: channelId, currentTeamId: teamId});
-    if (system?.length) {
-        models.push(...system);
-    }
-    const history = await addTeamToTeamHistory(operator, teamId, true);
-    if (history.length) {
-        models.push(...history);
-    }
-
-    if (models.length) {
-        operator.batchRecords(models);
-    }
-
-    const {channels, memberships, error} = await fetchMyChannelsForTeam(serverUrl, teamId);
-    if (error) {
-        DeviceEventEmitter.emit(Events.TEAM_LOAD_ERROR, serverUrl, error);
-    }
-
-    if (channels?.length && memberships?.length) {
-        fetchPostsForUnreadChannels(serverUrl, channels, memberships, channelId);
-    }
-};
-
-export const localRemoveUserFromTeam = async (serverUrl: string, teamId: string) => {
+export const removeUserFromTeam = async (serverUrl: string, teamId: string) => {
     const serverDatabase = DatabaseManager.serverDatabases[serverUrl];
     if (!serverDatabase) {
         return;
@@ -77,7 +30,5 @@ export const localRemoveUserFromTeam = async (serverUrl: string, teamId: string)
                 console.log('FAILED TO BATCH CHANGES FOR REMOVE USER FROM TEAM');
             }
         }
-
-        fetchAllTeams(serverUrl);
     }
 };

@@ -4,7 +4,7 @@
 import {Model} from '@nozbe/watermelondb';
 import {IntlShape} from 'react-intl';
 
-import {switchToChannel} from '@actions/local/channel';
+import {storeMyChannelsForTeam, switchToChannel} from '@actions/local/channel';
 import {General} from '@constants';
 import DatabaseManager from '@database/manager';
 import {privateChannelJoinPrompt} from '@helpers/api/channel';
@@ -18,12 +18,14 @@ import TeamModel from '@typings/database/models/servers/team';
 import {PERMALINK_GENERIC_TEAM_NAME_REDIRECT} from '@utils/url';
 import {displayGroupMessageName, displayUsername} from '@utils/user';
 
+import {fetchPostsForChannel} from './post';
 import {fetchRolesIfNeeded} from './role';
 import {forceLogoutIfNecessary} from './session';
 import {addUserToTeam, fetchTeamByName, removeUserFromTeam} from './team';
 import {fetchProfilesPerChannels, fetchUsersByIds} from './user';
 
 import type {Client} from '@client/rest';
+import type ChannelInfoModel from '@typings/database/models/servers/channel_info';
 
 export type MyChannelsRequest = {
     channels?: Channel[];
@@ -144,6 +146,44 @@ export const fetchChannelCreator = async (serverUrl: string, channelId: string, 
     }
 };
 
+export const fetchChannelStats = async (serverUrl: string, channelId: string, fetchOnly = false) => {
+    const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
+    if (!operator) {
+        return {error: `${serverUrl} database not found`};
+    }
+
+    let client: Client;
+    try {
+        client = NetworkManager.getClient(serverUrl);
+    } catch (error) {
+        return {error};
+    }
+
+    try {
+        const stats = await client.getChannelStats(channelId);
+        if (!fetchOnly) {
+            const channel = await queryChannelById(operator.database, channelId);
+            if (channel) {
+                const channelInfo = await channel.info.fetch() as ChannelInfoModel;
+                const channelInfos: ChannelInfo[] = [{
+                    guest_count: stats.guest_count,
+                    header: channelInfo.header,
+                    id: channelId,
+                    member_count: stats.member_count,
+                    pinned_post_count: stats.pinnedpost_count,
+                    purpose: channelInfo.purpose,
+                }];
+                await operator.handleChannelInfo({channelInfos, prepareRecordsOnly: false});
+            }
+        }
+
+        return {stats};
+    } catch (error) {
+        forceLogoutIfNecessary(serverUrl, error as ClientErrorProps);
+        return {error};
+    }
+};
+
 export const fetchMyChannelsForTeam = async (serverUrl: string, teamId: string, includeDeleted = true, since = 0, fetchOnly = false, excludeDirect = false): Promise<MyChannelsRequest> => {
     let client: Client;
     try {
@@ -171,26 +211,7 @@ export const fetchMyChannelsForTeam = async (serverUrl: string, teamId: string, 
         }, []);
 
         if (!fetchOnly) {
-            const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
-            const modelPromises: Array<Promise<Model[]>> = [];
-            if (operator) {
-                const prepare = await prepareMyChannelsForTeam(operator, teamId, channels, memberships);
-                if (prepare) {
-                    modelPromises.push(...prepare);
-                }
-                if (modelPromises.length) {
-                    const models = await Promise.all(modelPromises);
-                    const flattenedModels = models.flat() as Model[];
-                    if (flattenedModels?.length > 0) {
-                        try {
-                            await operator.batchRecords(flattenedModels);
-                        } catch {
-                            // eslint-disable-next-line no-console
-                            console.log('FAILED TO BATCH CHANNELS');
-                        }
-                    }
-                }
-            }
+            storeMyChannelsForTeam(serverUrl, teamId, channels, memberships);
         }
 
         return {channels, memberships};
@@ -215,26 +236,7 @@ export const fetchMyChannel = async (serverUrl: string, teamId: string, channelI
         ]);
 
         if (!fetchOnly) {
-            const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
-            const modelPromises: Array<Promise<Model[]>> = [];
-            if (operator) {
-                const prepare = await prepareMyChannelsForTeam(operator, teamId, [channel], [member]);
-                if (prepare) {
-                    modelPromises.push(...prepare);
-                }
-                if (modelPromises.length) {
-                    const models = await Promise.all(modelPromises);
-                    const flattenedModels = models.flat() as Model[];
-                    if (flattenedModels?.length > 0) {
-                        try {
-                            await operator.batchRecords(flattenedModels);
-                        } catch {
-                            // eslint-disable-next-line no-console
-                            console.log('FAILED TO BATCH CHANNELS');
-                        }
-                    }
-                }
-            }
+            storeMyChannelsForTeam(serverUrl, channel.team_id || teamId, [channel], [member]);
         }
 
         return {
@@ -503,7 +505,7 @@ export const switchToChannelByName = async (serverUrl: string, channelName: stri
         }
 
         if (teamId && channelId) {
-            await switchToChannel(serverUrl, channelId, teamId);
+            await switchToChannelById(serverUrl, channelId, teamId);
         }
 
         if (roles.length) {
@@ -515,4 +517,18 @@ export const switchToChannelByName = async (serverUrl: string, channelName: stri
         errorHandler(intl);
         return {error};
     }
+};
+
+export const switchToChannelById = async (serverUrl: string, channelId: string, teamId?: string) => {
+    const database = DatabaseManager.serverDatabases[serverUrl]?.database;
+    if (!database) {
+        return {error: `${serverUrl} database not found`};
+    }
+
+    fetchPostsForChannel(serverUrl, channelId);
+    await switchToChannel(serverUrl, channelId, teamId);
+    markChannelAsRead(serverUrl, channelId);
+    fetchChannelStats(serverUrl, channelId);
+
+    return {};
 };

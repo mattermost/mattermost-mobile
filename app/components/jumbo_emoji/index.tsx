@@ -70,7 +70,7 @@ const JumboEmoji = ({baseTextStyle, isEdited, value}: JumboEmojiProps) => {
     };
 
     const renderText = ({literal}: {literal: string}) => {
-        return <Text style={baseTextStyle}>{literal}</Text>;
+        return renderEmoji({emojiName: literal, literal, context: []});
     };
 
     const renderNewLine = () => {

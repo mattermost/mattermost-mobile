@@ -4,7 +4,7 @@
 import React from 'react';
 import {View} from 'react-native';
 
-import {handleTeamChange} from '@actions/local/team';
+import {handleTeamChange} from '@actions/remote/team';
 import Badge from '@components/badge';
 import TouchableWithFeedback from '@components/touchable_with_feedback';
 import {useServerUrl} from '@context/server';
@@ -21,6 +21,41 @@ type Props = {
     mentionCount: number;
     currentTeamId: string;
 }
+
+const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
+    return {
+        container: {
+            height: 54,
+            width: 54,
+            flex: 0,
+            padding: 3,
+            borderRadius: 10,
+            marginVertical: 3,
+            overflow: 'hidden',
+        },
+        containerSelected: {
+            borderWidth: 3,
+            borderRadius: 12,
+            borderColor: theme.sidebarTextActiveBorder,
+        },
+        unread: {
+            left: 40,
+            top: 3,
+        },
+        mentionsOneDigit: {
+            top: 1,
+            left: 28,
+        },
+        mentionsTwoDigits: {
+            top: 1,
+            left: 26,
+        },
+        mentionsThreeDigits: {
+            top: 1,
+            left: 23,
+        },
+    };
+});
 
 export default function TeamItem({team, hasUnreads, mentionCount, currentTeamId}: Props) {
     const theme = useTheme();
@@ -64,45 +99,10 @@ export default function TeamItem({team, hasUnreads, mentionCount, currentTeamId}
             </View>
             <Badge
                 borderColor={theme.sidebarTeamBarBg}
-                visible={hasBadge}
+                visible={hasBadge && !selected}
                 style={badgeStyle}
                 value={value}
             />
         </>
     );
 }
-
-const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
-    return {
-        container: {
-            height: 54,
-            width: 54,
-            flex: 0,
-            padding: 3,
-            borderRadius: 10,
-            marginVertical: 3,
-            overflow: 'hidden',
-        },
-        containerSelected: {
-            borderWidth: 3,
-            borderRadius: 12,
-            borderColor: theme.sidebarTextActiveBorder,
-        },
-        unread: {
-            left: 40,
-            top: 3,
-        },
-        mentionsOneDigit: {
-            top: 1,
-            left: 28,
-        },
-        mentionsTwoDigits: {
-            top: 1,
-            left: 26,
-        },
-        mentionsThreeDigits: {
-            top: 1,
-            left: 23,
-        },
-    };
-});

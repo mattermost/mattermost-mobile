@@ -65,6 +65,11 @@ export const prepareMyChannelsForTeam = async (operator: ServerDataOperator, tea
             pinned_post_count = storedInfo.pinnedPostCount;
         }
 
+        const member = memberships.find((m) => m.channel_id === c.id);
+        if (member) {
+            member.last_post_at = c.last_post_at;
+        }
+
         channelInfos.push({
             id: c.id,
             header: c.header,
@@ -214,14 +219,25 @@ export const queryCurrentChannel = async (database: Database) => {
     return undefined;
 };
 
-export const deleteChannelMembership = async (operator: ServerDataOperator, userId: string, channelId: string) => {
+export const deleteChannelMembership = async (operator: ServerDataOperator, userId: string, channelId: string, prepareRecordsOnly = false) => {
     try {
         const channelMembership = await operator.database.get(CHANNEL_MEMBERSHIP).query(Q.where('user_id', Q.eq(userId)), Q.where('channel_id', Q.eq(channelId))).fetch();
         const models: Model[] = [];
         for (const membership of channelMembership) {
             models.push(membership.prepareDestroyPermanently());
         }
-        await operator.batchRecords(models);
+        if (models.length && !prepareRecordsOnly) {
+            await operator.batchRecords(models);
+        }
+        return {models};
+    } catch (error) {
+        return {error};
+    }
+};
+
+export const addChannelMembership = async (operator: ServerDataOperator, userId: string, channelId: string) => {
+    try {
+        await operator.handleChannelMembership({channelMemberships: [{channel_id: channelId, user_id: userId}], prepareRecordsOnly: false});
         return {};
     } catch (error) {
         return {error};

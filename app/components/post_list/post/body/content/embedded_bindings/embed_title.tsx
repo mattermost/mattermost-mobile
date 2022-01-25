@@ -21,7 +21,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
         },
         title: {
             color: theme.centerChannelColor,
-            fontFamily: 'OpenSans-Semibold',
+            fontFamily: 'OpenSans-SemiBold',
             marginBottom: 5,
             fontSize: 14,
             lineHeight: 20,

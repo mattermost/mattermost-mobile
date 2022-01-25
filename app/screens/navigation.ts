@@ -92,7 +92,7 @@ Appearance.addChangeListener(() => {
     }
 });
 
-function getThemeFromState() {
+function getThemeFromState(): Theme {
     if (EphemeralStore.theme) {
         return EphemeralStore.theme;
     }
@@ -241,9 +241,10 @@ export function resetToTeams(name: string, title: string, passProps = {}, option
 
 export function goToScreen(name: string, title: string, passProps = {}, options = {}) {
     const theme = getThemeFromState();
+    const isDark = tinyColor(theme.sidebarBg).isDark();
     const componentId = EphemeralStore.getNavigationTopComponentId();
     DeviceEventEmitter.emit('tabBarVisible', false);
-    const defaultOptions = {
+    const defaultOptions: Options = {
         layout: {
             componentBackgroundColor: theme.centerChannelBg,
         },
@@ -251,6 +252,10 @@ export function goToScreen(name: string, title: string, passProps = {}, options 
         sideMenu: {
             left: {enabled: false},
             right: {enabled: false},
+        },
+        statusBar: {
+            backgroundColor: null,
+            style: isDark ? 'light' : 'dark',
         },
         topBar: {
             animate: true,

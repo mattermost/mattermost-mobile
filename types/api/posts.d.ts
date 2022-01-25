@@ -64,47 +64,8 @@ type Post = {
     failed?: boolean;
     user_activity_posts?: Post[];
     state?: 'DELETED';
-    ownPost?: boolean;
     prev_post_id?: string;
     participants: null|string[];
-};
-
-type PostWithFormatData = Post & {
-    isFirstReply: boolean;
-    isLastReply: boolean;
-    previousPostIsComment: boolean;
-    commentedOnPost?: Post;
-    consecutivePostByUser: boolean;
-    replyCount: number;
-    isCommentMention: boolean;
-    highlight: boolean;
-};
-
-type PostOrderBlock = {
-    order: string[];
-    recent?: boolean;
-    oldest?: boolean;
-};
-
-type MessageHistory = {
-    messages: string[];
-    index: {
-        post: number;
-        comment: number;
-    };
-};
-
-type PostsState = {
-    posts: IDMappedObjects<Post>;
-    postsInChannel: Dictionary<PostOrderBlock[]>;
-    postsInThread: RelationOneToMany<Post, Post>;
-    reactions: RelationOneToOne<Post, Dictionary<Reaction>>;
-    openGraph: RelationOneToOne<Post, any>;
-    pendingPostIds: string[];
-    selectedPostId: string;
-    currentFocusedPostId: string;
-    messagesHistory: MessageHistory;
-    expandedURLs: Dictionary<string>;
 };
 
 type PostProps = {
@@ -112,9 +73,17 @@ type PostProps = {
     mentionHighlightDisabled: boolean;
 };
 
-type PostResponse = PostOrderBlock & {
+type PostResponse = {
+    order: string[];
     posts: IDMappedObjects<Post>;
+    prev_post_id?: string;
 };
+
+type ProcessedPosts = {
+    order: string[];
+    posts: Post[];
+    previousPostId?: string;
+}
 
 type MessageAttachment = {
     id: number;

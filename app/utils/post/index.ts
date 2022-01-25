@@ -19,16 +19,16 @@ export function areConsecutivePosts(post: PostModel, previousPost: PostModel) {
         const isFromSameUser = previousPost.userId === post.userId;
         const isNotSystemMessage = !isSystemMessage(post) && !isSystemMessage(previousPost);
         const isInTimeframe = (post.createAt - previousPost.createAt) <= Post.POST_COLLAPSE_TIMEOUT;
-        const isSameThread = (previousPost.rootId === post.rootId || previousPost.id === post.rootId);
 
         // Were the last post and this post made by the same user within some time?
-        consecutive = previousPost && (isFromSameUser || isInTimeframe) && !postFromWebhook &&
-        !prevPostFromWebhook && isNotSystemMessage && isSameThread;
+        consecutive = previousPost && isFromSameUser && isInTimeframe && !postFromWebhook &&
+        !prevPostFromWebhook && isNotSystemMessage;
     }
+
     return consecutive;
 }
 
-export function isFromWebhook(post: PostModel): boolean {
+export function isFromWebhook(post: PostModel | Post): boolean {
     return post.props && post.props.from_webhook === 'true';
 }
 
@@ -41,10 +41,10 @@ export function isPostEphemeral(post: PostModel): boolean {
 }
 
 export function isPostPendingOrFailed(post: PostModel): boolean {
-    return post.pendingPostId === post.id || post.props.failed;
+    return post.pendingPostId === post.id || post.props?.failed;
 }
 
-export function isSystemMessage(post: PostModel): boolean {
+export function isSystemMessage(post: PostModel | Post): boolean {
     return Boolean(post.type && post.type?.startsWith(Post.POST_TYPES.SYSTEM_MESSAGE_PREFIX));
 }
 
@@ -72,4 +72,18 @@ export const getMentionKeysForPost = (user: UserModel, post: PostModel, groups: 
     }
 
     return keys;
+};
+
+export function shouldIgnorePost(post: Post): boolean {
+    return Post.IGNORE_POST_TYPES.includes(post.type);
+}
+
+export const sortPostsByNewest = (posts: PostModel[]) => {
+    return posts.sort((a, b) => {
+        if (a.createAt > b.createAt) {
+            return 1;
+        }
+
+        return -1;
+    });
 };

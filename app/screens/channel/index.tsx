@@ -1,106 +1,99 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {Q} from '@nozbe/watermelondb';
 import {withDatabase} from '@nozbe/watermelondb/DatabaseProvider';
 import withObservables from '@nozbe/with-observables';
-import React, {useEffect, useState} from 'react';
-import {SafeAreaView} from 'react-native-safe-area-context';
-import {map} from 'rxjs/operators';
+import {combineLatest, of as of$} from 'rxjs';
+import {switchMap} from 'rxjs/operators';
 
-import {fetchPostsForChannel} from '@actions/remote/post';
-import PostList from '@components/post_list';
-import {Database} from '@constants';
-import {useServerUrl} from '@context/server';
-import {useTheme} from '@context/theme';
-import {useAppState} from '@hooks/device';
-import {makeStyleSheetFromTheme} from '@utils/theme';
+import {getUserIdFromChannelName} from '@app/utils/user';
+import {Database, General} from '@constants';
 
-import ChannelNavBar from './channel_nav_bar';
-import FailedChannels from './failed_channels';
-import FailedTeams from './failed_teams';
-import Intro from './intro';
+import Channel from './channel';
 
 import type {WithDatabaseArgs} from '@typings/database/database';
+import type ChannelModel from '@typings/database/models/servers/channel';
+import type ChannelInfoModel from '@typings/database/models/servers/channel_info';
 import type SystemModel from '@typings/database/models/servers/system';
-import type {LaunchProps} from '@typings/launch';
-
-type ChannelProps = LaunchProps & {
-    currentChannelId: string;
-    currentTeamId: string;
-};
+import type UserModel from '@typings/database/models/servers/user';
 
 const {MM_TABLES, SYSTEM_IDENTIFIERS} = Database;
-const {SERVER: {SYSTEM}} = MM_TABLES;
+const {SERVER: {CHANNEL, CHANNEL_INFO, SYSTEM, USER}} = MM_TABLES;
 
-const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
-    flex: {
-        flex: 1,
-    },
-    sectionContainer: {
-        marginTop: 10,
-        paddingHorizontal: 24,
-    },
-    sectionTitle: {
-        fontSize: 16,
-        fontFamily: 'OpenSans-Semibold',
-        color: theme.centerChannelColor,
-    },
-}));
-
-const Channel = ({currentChannelId, currentTeamId}: ChannelProps) => {
-    const appState = useAppState();
-    const [loading, setLoading] = useState(false);
-    const serverUrl = useServerUrl();
-    const theme = useTheme();
-    const styles = getStyleSheet(theme);
-
-    useEffect(() => {
-        setLoading(true);
-        fetchPostsForChannel(serverUrl, currentChannelId).then(() => {
-            setLoading(false);
-        });
-    }, [currentChannelId]);
-
-    if (!currentTeamId) {
-        return <FailedTeams/>;
-    }
-
-    if (!currentChannelId) {
-        return <FailedChannels teamId={currentTeamId}/>;
-    }
-
-    return (
-        <SafeAreaView
-            style={styles.flex}
-            mode='margin'
-            edges={['left', 'right']}
-        >
-            <ChannelNavBar
-                channelId={currentChannelId}
-                onPress={() => null}
-            />
-            <PostList
-                channelId={currentChannelId}
-                footer={(
-                    <Intro
-                        channelId={currentChannelId}
-                        loading={loading}
-                    />
-                )}
-                forceQueryAfterAppState={appState}
-                testID='channel.post_list'
-            />
-        </SafeAreaView>
+const enhanced = withObservables([], ({database}: WithDatabaseArgs) => {
+    const currentUserId = database.collections.get<SystemModel>(SYSTEM).findAndObserve(SYSTEM_IDENTIFIERS.CURRENT_USER_ID).pipe(
+        switchMap(({value}: {value: string}) => of$(value)),
     );
-};
 
-const enhanced = withObservables([], ({database}: WithDatabaseArgs) => ({
-    currentChannelId: database.collections.get<SystemModel>(SYSTEM).findAndObserve(SYSTEM_IDENTIFIERS.CURRENT_CHANNEL_ID).pipe(
-        map(({value}: {value: string}) => value),
-    ),
-    currentTeamId: database.collections.get<SystemModel>(SYSTEM).findAndObserve(SYSTEM_IDENTIFIERS.CURRENT_TEAM_ID).pipe(
-        map(({value}: {value: string}) => value),
-    ),
-}));
+    const channelId = database.collections.get<SystemModel>(SYSTEM).findAndObserve(SYSTEM_IDENTIFIERS.CURRENT_CHANNEL_ID).pipe(
+        switchMap(({value}: {value: string}) => of$(value)),
+    );
+    const teamId = database.collections.get<SystemModel>(SYSTEM).findAndObserve(SYSTEM_IDENTIFIERS.CURRENT_TEAM_ID).pipe(
+        switchMap(({value}: {value: string}) => of$(value)),
+    );
+
+    const channel = channelId.pipe(
+        switchMap((id) => database.get<ChannelModel>(CHANNEL).query(Q.where('id', id)).observe().pipe(
+            // eslint-disable-next-line max-nested-callbacks
+            switchMap((channels) => {
+                if (channels.length) {
+                    return channels[0].observe();
+                }
+
+                return of$(null);
+            }),
+        )),
+    );
+
+    const channelInfo = channelId.pipe(
+        switchMap((id) => database.get<ChannelInfoModel>(CHANNEL_INFO).query(Q.where('id', id)).observe().pipe(
+            // eslint-disable-next-line max-nested-callbacks
+            switchMap((infos) => {
+                if (infos.length) {
+                    return infos[0].observe();
+                }
+
+                return of$(null);
+            }),
+        )),
+    );
+
+    const isOwnDirectMessage = combineLatest([currentUserId, channel]).pipe(
+        switchMap(([userId, ch]) => {
+            if (ch?.type === General.DM_CHANNEL) {
+                const teammateId = getUserIdFromChannelName(userId, ch.name);
+                return of$(userId === teammateId);
+            }
+
+            return of$(false);
+        }),
+    );
+
+    const displayName = channel.pipe(switchMap((c) => of$(c?.displayName)));
+    const name = combineLatest([currentUserId, channel]).pipe(switchMap(([userId, c]) => {
+        if (c?.type === General.DM_CHANNEL) {
+            const teammateId = getUserIdFromChannelName(userId, c.name);
+            return database.get<UserModel>(USER).findAndObserve(teammateId).pipe(
+                // eslint-disable-next-line max-nested-callbacks
+                switchMap((u) => of$(`@${u.username}`)),
+            );
+        } else if (c?.type === General.GM_CHANNEL) {
+            return of$(`@${c.name}`);
+        }
+
+        return of$(c?.name);
+    }));
+    const memberCount = channelInfo.pipe(switchMap((ci) => of$(ci?.memberCount || 0)));
+
+    return {
+        channelId,
+        displayName,
+        isOwnDirectMessage,
+        memberCount,
+        name,
+        teamId,
+    };
+});
 
 export default withDatabase(enhanced(Channel));

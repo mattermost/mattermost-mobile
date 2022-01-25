@@ -257,14 +257,25 @@ const systemMessageRenderers = {
 export const SystemMessage = ({post, author}: SystemMessageProps) => {
     const intl = useIntl();
     const theme = useTheme();
-    const renderer = systemMessageRenderers[post.type];
-    if (!renderer) {
-        return null;
-    }
     const style = getStyleSheet(theme);
     const textStyles = getMarkdownTextStyles(theme);
     const styles = {messageStyle: style.systemMessage, textStyles};
+
+    const renderer = systemMessageRenderers[post.type];
+    if (!renderer) {
+        return (
+            <Markdown
+                baseTextStyle={styles.messageStyle}
+                disableGallery={true}
+                textStyles={styles.textStyles}
+                value={post.message}
+                theme={theme}
+            />
+        );
+        return null;
+    }
+
     return renderer({post, author, styles, intl, theme});
 };
 
-export default React.memo(SystemMessage);
+export default SystemMessage;
