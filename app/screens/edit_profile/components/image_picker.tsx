@@ -12,6 +12,7 @@ import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {bottomSheet} from '@screens/navigation';
 import PickerUtil from '@utils/file/file_picker';
+import {preventDoubleTap} from '@utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 import type UserModel from '@typings/database/models/servers/user';
@@ -54,7 +55,7 @@ const ImagePicker = ({
     const pictureUtils = useMemo(() => new PickerUtil(intl, uploadFiles), [uploadFiles]);
     const styles = getStyleSheet(theme);
 
-    const showFileAttachmentOptions = () => {
+    const showFileAttachmentOptions = preventDoubleTap(() => {
         const canRemovePicture = pictureUtils.hasPictureUrl(user, serverUrl);
 
         const renderContent = () => {
@@ -121,7 +122,7 @@ const ImagePicker = ({
             title: '',
             theme,
         });
-    };
+    });
 
     return (
         <TouchableOpacity
