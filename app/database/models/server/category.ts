@@ -10,6 +10,7 @@ import {MM_TABLES} from '@constants/database';
 
 import type CategoryInterface from '@typings/database/models/servers/category';
 import type CategoryChannelModel from '@typings/database/models/servers/category_channel';
+import type ChannelModel from '@typings/database/models/servers/channel';
 import type TeamModel from '@typings/database/models/servers/team';
 
 const {
@@ -54,10 +55,10 @@ export default class CategoryModel extends Model implements CategoryInterface {
     /** muted : Boolean flag indicating if the category is muted */
     @field('muted') muted!: boolean;
 
-    /** userId : The team in which this category lives */
+    /** teamId : The team in which this category lives */
     @field('team_id') teamId!: string;
 
-    /** channels : All the channels associated with this team */
+    /** categoryChannels : All the CategoryChannels associated with this team */
     @children(CATEGORY_CHANNEL) categoryChannels!: Query<CategoryChannelModel>;
 
     /** team : Retrieves information about the team that this category is a part of. */
@@ -65,7 +66,7 @@ export default class CategoryModel extends Model implements CategoryInterface {
 
     /** channels : Retrieves all the channels that are part of this category */
     @lazy channels = this.collections.
-        get(CHANNEL).
+        get<ChannelModel>(CHANNEL).
         query(
             Q.on(CATEGORY_CHANNEL, Q.where('category_id', this.id)),
             Q.sortBy('display_name'),

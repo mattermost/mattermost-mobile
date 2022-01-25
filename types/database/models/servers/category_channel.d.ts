@@ -24,7 +24,7 @@ export default class CategoryChannelModel extends Model {
     /* sort_order : The order in which the channel displays in the category, if the order is manually set */
     sortOrder: number;
 
-    /** team : The related category */
+    /** category : The related category */
     category: Relation<CategoryModel>;
 
     /** channel : The related channel */

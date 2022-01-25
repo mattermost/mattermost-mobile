@@ -139,7 +139,7 @@ export default class ChannelModel extends Model {
     /** Experimental Ideas */
     // Has it got unread messages
     @lazy isUnread = this.membership.observe().pipe(
-        switchMap((membership) => of(membership!.mentionsCount > 0)),
+        switchMap((membership) => of(membership!.isUnread)),
         distinctUntilChanged(),
     );
 

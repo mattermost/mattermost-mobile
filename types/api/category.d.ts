@@ -9,7 +9,6 @@ type CategoryChannelOrder = string[]
 
 type CategoryChannel = {
     id?: string;
-    user_id: string;
     category_id: string;
     channel_id: string;
     sort_order: number;
@@ -17,7 +16,6 @@ type CategoryChannel = {
 
 type Category = {
     id: string;
-    user_id: string;
     team_id: string;
     display_name: string;
     sort_order: number;
