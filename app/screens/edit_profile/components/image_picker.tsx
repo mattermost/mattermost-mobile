@@ -7,7 +7,7 @@ import {TouchableOpacity} from 'react-native';
 import DocumentPicker from 'react-native-document-picker';
 
 import CompassIcon from '@components/compass_icon';
-import SlideUpPanelItem, {ITEM_HEIGHT} from '@components/slide_up_panel_item';
+import SlideUpPanelItem from '@components/slide_up_panel_item';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {bottomSheet} from '@screens/navigation';
@@ -18,7 +18,7 @@ import type UserModel from '@typings/database/models/servers/user';
 import type {UploadExtractedFile} from '@typings/utils/file';
 
 const hitSlop = {top: 100, bottom: 20, right: 20, left: 100};
-
+const ACTION_HEIGHT = 55;
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     return {
         touchable: {
@@ -117,7 +117,7 @@ const ImagePicker = ({
         return bottomSheet({
             closeButtonId: 'close-edit-profile',
             renderContent,
-            snapPoints: [(snapPoints * ITEM_HEIGHT), 10],
+            snapPoints: [(snapPoints * ACTION_HEIGHT), 10],
             title: '',
             theme,
         });

@@ -5,7 +5,6 @@ import React, {useCallback, useState} from 'react';
 import {DeviceEventEmitter, Platform, View} from 'react-native';
 
 import {Client} from '@client/rest';
-import ImagePicker from '@components/image_picker';
 import ProfileImage from '@components/profile_picture';
 import {Navigation} from '@constants';
 import {useServerUrl} from '@context/server';
@@ -13,6 +12,8 @@ import {useTheme} from '@context/theme';
 import useDidUpdate from '@hooks/did_update';
 import NetworkManager from '@init/network_manager';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
+
+import ImagePicker from './image_picker';
 
 import type UserModel from '@typings/database/models/servers/user';
 
