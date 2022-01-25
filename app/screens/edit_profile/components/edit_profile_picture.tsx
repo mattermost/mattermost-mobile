@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback, useState} from 'react';
+import React, {useCallback, useMemo, useState} from 'react';
 import {DeviceEventEmitter, Platform, View} from 'react-native';
 
 import {Client} from '@client/rest';
@@ -85,22 +85,23 @@ const EditProfilePicture = ({user, onUpdateProfilePicture}: ChangeProfilePicture
         DeviceEventEmitter.emit(Navigation.NAVIGATION_CLOSE_MODAL);
     }, [onUpdateProfilePicture]);
 
-    let source;
+    const pictureSource = useMemo(() => {
+        if (pictureUrl === 'account-outline') {
+            return pictureUrl;
+        } else if (pictureUrl) {
+            let prefix = '';
+            if (pictureUrl.includes('/api/')) {
+                prefix = serverUrl;
+            } else if (Platform.OS === 'android' && !pictureUrl.startsWith('content://') && !pictureUrl.startsWith('http://') && !pictureUrl.startsWith('https://')) {
+                prefix = 'file://';
+            }
 
-    if (pictureUrl === 'account-outline') {
-        source = pictureUrl;
-    } else if (pictureUrl) {
-        let prefix = '';
-        if (Platform.OS === 'android' && !pictureUrl.startsWith('content://') && !pictureUrl.startsWith('http://') && !pictureUrl.startsWith('https://')) {
-            prefix = 'file://';
-        } else if (pictureUrl.includes('/api/')) {
-            prefix = serverUrl;
+            return {
+                uri: `${prefix}${pictureUrl}`,
+            };
         }
-
-        source = {
-            uri: `${prefix}${pictureUrl}`,
-        };
-    }
+        return undefined;
+    }, [pictureUrl]);
 
     return (
         <View
@@ -112,7 +113,7 @@ const EditProfilePicture = ({user, onUpdateProfilePicture}: ChangeProfilePicture
         >
             <ProfileImage
                 size={SIZE}
-                source={source}
+                source={pictureSource}
                 author={user}
                 showStatus={false}
             />
