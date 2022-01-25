@@ -25,7 +25,9 @@ export default class FilePickerUtil {
     private readonly uploadFiles: (files: ExtractedFileInfo[]) => void;
     private readonly intl: IntlShape;
 
-    constructor(intl: IntlShape, uploadFiles: (files: ExtractedFileInfo[]) => void) {
+    constructor(
+        intl: IntlShape,
+        uploadFiles: (files: ExtractedFileInfo[]) => void) {
         this.intl = intl;
         this.uploadFiles = uploadFiles;
     }
@@ -230,6 +232,23 @@ export default class FilePickerUtil {
         return false;
     };
 
+    private buildUri = async (doc: DocumentPickerResponse) => {
+        let uri: string = doc.uri;
+
+        if (Platform.OS === 'android') {
+            // For android we need to retrieve the realPath in case the file being imported is from the cloud
+            const newUri = await ShareExtension.getFilePath(doc.uri);
+            uri = newUri?.filePath;
+            if (uri === undefined) {
+                return {doc: undefined};
+            }
+        }
+
+        // Decode file uri to get the actual path
+        doc.uri = decodeURIComponent(uri);
+        return {doc};
+    };
+
     attachFileFromCamera = async (customOptions?: CameraOptions) => {
         let options = customOptions;
         if (!options) {
@@ -262,22 +281,15 @@ export default class FilePickerUtil {
 
         if (hasPermission) {
             try {
-                const res = (await DocumentPicker.pickSingle({type: [fileType]}));
+                const docResponse = (await DocumentPicker.pickMultiple({type: [fileType]}));
+                const proDocs = docResponse.map(async (d: DocumentPickerResponse) => {
+                    const {doc} = await this.buildUri(d);
+                    return doc;
+                });
 
-                if (Platform.OS === 'android') {
-                    // For android we need to retrieve the realPath in case the file being imported is from the cloud
-                    const newUri = await ShareExtension.getFilePath(res.uri);
-                    if (newUri.filePath) {
-                        res.uri = newUri.filePath;
-                    } else {
-                        return;
-                    }
-                }
+                const docs = await Promise.all(proDocs) as unknown as DocumentPickerResponse[];
 
-                // Decode file uri to get the actual path
-                res.uri = decodeURIComponent(res.uri);
-
-                await this.prepareFileUpload([res]);
+                await this.prepareFileUpload(docs);
             } catch (error) {
                 // Do nothing
             }

@@ -78,12 +78,11 @@ const EditProfilePicture = ({user, onUpdateProfilePicture}: ChangeProfilePicture
             isRemoved = false;
             localPath = newImage;
             pUrl = newImage;
-        } else {
-            DeviceEventEmitter.emit(Navigation.NAVIGATION_CLOSE_MODAL);
         }
 
         setPictureUrl(pUrl);
         onUpdateProfilePicture({isRemoved, localPath});
+        DeviceEventEmitter.emit(Navigation.NAVIGATION_CLOSE_MODAL);
     }, [onUpdateProfilePicture]);
 
     let source;
