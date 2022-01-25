@@ -11,14 +11,12 @@ import {MM_TABLES} from '@constants/database';
 import type CategoryInterface from '@typings/database/models/servers/category';
 import type CategoryChannelModel from '@typings/database/models/servers/category_channel';
 import type TeamModel from '@typings/database/models/servers/team';
-import type UserModel from '@typings/database/models/servers/user';
 
 const {
     CATEGORY,
     CATEGORY_CHANNEL,
     CHANNEL,
     TEAM,
-    USER,
 } = MM_TABLES.SERVER;
 
 /**

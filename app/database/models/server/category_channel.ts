@@ -10,9 +10,8 @@ import {MM_TABLES} from '@constants/database';
 import type CategoryModel from '@typings/database/models/servers/category';
 import type CategoryChannelInterface from '@typings/database/models/servers/category_channel';
 import type ChannelModel from '@typings/database/models/servers/channel';
-import type UserModel from '@typings/database/models/servers/user';
 
-const {CATEGORY_CHANNEL, CATEGORY, CHANNEL, USER} = MM_TABLES.SERVER;
+const {CATEGORY_CHANNEL, CATEGORY, CHANNEL} = MM_TABLES.SERVER;
 
 /**
  * The CategoryChannel model represents the 'association table' where many categories have channels and many channels are in
