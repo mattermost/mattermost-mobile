@@ -3,7 +3,7 @@
 
 import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
-import {BackHandler, DeviceEventEmitter, Keyboard, Platform, Text, View} from 'react-native';
+import {Alert, BackHandler, DeviceEventEmitter, Keyboard, Platform, Text, View} from 'react-native';
 import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
 import {Navigation} from 'react-native-navigation';
 import {Edge, SafeAreaView} from 'react-native-safe-area-context';
@@ -207,13 +207,24 @@ const EditProfile = ({
 
     const close = useCallback(() => {
         if (isModal) {
-            dismissModal({componentId});
+            Alert.alert(
+                'Discard changes?',
+                'If you go back now, you will lose your changes.',
+                [
+                    {
+                        text: 'Discard changes',
+                        onPress: () => dismissModal({componentId}),
+                    },
+                    {
+                        text: 'Continue editing',
+                    },
+                ],
+            );
         } else if (isTablet) {
             DeviceEventEmitter.emit(Events.ACCOUNT_SELECT_TABLET_VIEW, '');
         } else {
             popTopScreen(componentId);
         }
-
         return true;
     }, []);
 
