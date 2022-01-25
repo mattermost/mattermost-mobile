@@ -42,4 +42,6 @@ const Files: Record<string, string[]> = {
     ZIP_TYPES: ['zip'],
 };
 
+export const PROGRESS_TIME_TO_STORE = 60000; // 60 * 1000 (60s)
+
 export default Files;
