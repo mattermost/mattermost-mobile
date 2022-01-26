@@ -3,7 +3,7 @@
 
 import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
-import {BackHandler, DeviceEventEmitter, Keyboard, Platform, Text, View} from 'react-native';
+import {BackHandler, DeviceEventEmitter, Keyboard, Platform, StyleSheet, View} from 'react-native';
 import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
 import {Navigation} from 'react-native-navigation';
 import {Edge, SafeAreaView} from 'react-native-safe-area-context';
@@ -11,119 +11,45 @@ import {Edge, SafeAreaView} from 'react-native-safe-area-context';
 import {updateLocalUser} from '@actions/local/user';
 import {setDefaultProfileImage, updateMe, uploadUserProfileImage} from '@actions/remote/user';
 import CompassIcon from '@components/compass_icon';
-import {FloatingTextInputRef} from '@components/floating_text_input_label';
-import Loading from '@components/loading';
 import TabletTitle from '@components/tablet_title';
 import {Events} from '@constants';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
-import {t} from '@i18n';
 import {dismissModal, popTopScreen, setButtons} from '@screens/navigation';
 import {preventDoubleTap} from '@utils/tap';
-import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
-import {typography} from '@utils/typography';
 
-import EmailField from './components/email_field';
-import Field from './components/field';
+import ProfileForm from './components/form';
 import ProfileError from './components/profile_error';
+import Updating from './components/updating';
 import UserProfilePicture from './components/user_profile_picture';
 
-import type {MessageDescriptor} from '@formatjs/intl/src/types';
-import type {EditProfileProps, FieldConfig, FieldSequence, NewProfileImage, UserInfo} from '@typings/screens/edit_profile';
+import type {EditProfileProps, NewProfileImage, UserInfo} from '@typings/screens/edit_profile';
 import type {ErrorText} from '@typings/utils/file';
 
 const edges: Edge[] = ['bottom', 'left', 'right'];
 
-const getStyleSheet = makeStyleSheetFromTheme((theme) => {
-    return {
-        flex: {
-            flex: 1,
-        },
-        top: {
-            marginVertical: 32,
-            alignItems: 'center',
-            justifyContent: 'center',
-        },
-        separator: {
-            height: 15,
-        },
-        footer: {
-            height: 40,
-            width: '100%',
-        },
-        spinner: {
-            position: 'absolute',
-            width: '100%',
-            height: '100%',
-            alignItems: 'center',
-            justifyContent: 'center',
-            zIndex: 1000,
-        },
-        description: {
-            alignSelf: 'center',
-            marginBottom: 24,
-        },
-        text: {
-            ...typography('Body', 75),
-            color: changeOpacity(theme.centerChannelColor, 0.5),
-        },
-    };
+const styles = StyleSheet.create({
+    flex: {
+        flex: 1,
+    },
+    top: {
+        marginVertical: 32,
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
 });
-
-const FIELDS: { [id: string]: MessageDescriptor } = {
-    firstName: {
-        id: t('user.settings.general.firstName'),
-        defaultMessage: 'First Name',
-    },
-    lastName: {
-        id: t('user.settings.general.lastName'),
-        defaultMessage: 'Last Name',
-    },
-    username: {
-        id: t('user.settings.general.username'),
-        defaultMessage: 'Username',
-    },
-    nickname: {
-        id: t('user.settings.general.nickname'),
-        defaultMessage: 'Nickname',
-    },
-    position: {
-        id: t('user.settings.general.position'),
-        defaultMessage: 'Position',
-    },
-    email: {
-        id: t('user.settings.general.email'),
-        defaultMessage: 'Email',
-    },
-};
 
 const CLOSE_BUTTON_ID = 'close-edit-profile';
 const UPDATE_BUTTON_ID = 'update-profile';
 
-const includesSsoService = (sso: string) => ['gitlab', 'google', 'office365'].includes(sso);
-const isSAMLOrLDAP = (protocol: string) => ['ldap', 'saml'].includes(protocol);
-
 const EditProfile = ({
-    componentId,
-    currentUser,
-    isModal,
-    isTablet,
-    lockedFirstName,
-    lockedLastName,
-    lockedNickname,
-    lockedPosition,
-    lockedPicture,
+    componentId, currentUser, isModal, isTablet,
+    lockedFirstName, lockedLastName, lockedNickname, lockedPosition, lockedPicture,
 }: EditProfileProps) => {
     const intl = useIntl();
     const serverUrl = useServerUrl();
     const theme = useTheme();
     const keyboardAwareRef = useRef<KeyboardAwareScrollView>();
-    const firstNameRef = useRef<FloatingTextInputRef>(null);
-    const lastNameRef = useRef<FloatingTextInputRef>(null);
-    const usernameRef = useRef<FloatingTextInputRef>(null);
-    const emailRef = useRef<FloatingTextInputRef>(null);
-    const nicknameRef = useRef<FloatingTextInputRef>(null);
-    const positionRef = useRef<FloatingTextInputRef>(null);
     const changedProfilePicture = useRef<NewProfileImage | undefined>(undefined);
     const scrollViewRef = useRef<KeyboardAwareScrollView>();
     const hasUpdateUserInfo = useRef<boolean>(false);
@@ -139,8 +65,6 @@ const EditProfile = ({
     const [error, setError] = useState<ErrorText | undefined>();
     const [updating, setUpdating] = useState(false);
 
-    const styles = getStyleSheet(theme);
-
     const buttonText = intl.formatMessage({id: 'mobile.account.settings.save', defaultMessage: 'Save'});
     const rightButton = useMemo(() => {
         return isTablet ? null : {
@@ -152,8 +76,6 @@ const EditProfile = ({
             text: buttonText,
         };
     }, [isTablet, theme.sidebarHeaderTextColor]);
-
-    const service = currentUser.authService;
 
     const leftButton = useMemo(() => {
         return isTablet ? null : {
@@ -290,83 +212,6 @@ const EditProfile = ({
         scrollViewRef.current?.scrollToPosition(0, 0, true);
     }, [enableSaveButton]);
 
-    const userProfileFields: FieldSequence = useMemo(() => {
-        return {
-            firstName: {
-                ref: firstNameRef,
-                isDisabled: (isSAMLOrLDAP(service) && lockedFirstName) || includesSsoService(service),
-            },
-            lastName: {
-                ref: lastNameRef,
-                isDisabled: (isSAMLOrLDAP(service) && lockedLastName) || includesSsoService(service),
-            },
-            username: {
-                ref: usernameRef,
-                isDisabled: service !== '',
-            },
-            email: {
-                ref: emailRef,
-                isDisabled: true,
-            },
-            nickname: {
-                ref: nicknameRef,
-                isDisabled: isSAMLOrLDAP(service) && lockedNickname,
-            },
-            position: {
-                ref: positionRef,
-                isDisabled: isSAMLOrLDAP(service) && lockedPosition,
-            },
-        };
-    }, [lockedFirstName, lockedLastName, lockedNickname, lockedPosition, currentUser.authService]);
-
-    const hasDisabledFields = Object.values(userProfileFields).filter((field) => field.isDisabled).length > 0;
-
-    const onFocusNextField = useCallback(((fieldKey: string) => {
-        const findNextField = () => {
-            const fields = Object.keys(userProfileFields);
-            const curIndex = fields.indexOf(fieldKey);
-            const searchIndex = curIndex + 1;
-
-            if (curIndex === -1 || searchIndex > fields.length) {
-                return undefined;
-            }
-
-            const remainingFields = fields.slice(searchIndex);
-
-            const nextFieldIndex = remainingFields.findIndex((f: string) => {
-                const field = userProfileFields[f];
-                return !field.isDisabled;
-            });
-
-            if (nextFieldIndex === -1) {
-                return {isLastEnabledField: true, nextField: undefined};
-            }
-
-            const fieldName = remainingFields[nextFieldIndex];
-
-            return {isLastEnabledField: false, nextField: userProfileFields[fieldName]};
-        };
-
-        const next = findNextField();
-        if (next?.isLastEnabledField && canSave) {
-            // performs form submission
-            Keyboard.dismiss();
-            submitUser();
-        } else if (next?.nextField) {
-            next?.nextField?.ref?.current?.focus();
-        } else {
-            Keyboard.dismiss();
-        }
-    }), [canSave, userProfileFields]);
-
-    const fieldConfig: FieldConfig = {
-        blurOnSubmit: false,
-        enablesReturnKeyAutomatically: true,
-        onFocusNextField,
-        onTextChange: onUpdateField,
-        returnKeyType: 'next',
-    };
-
     return (
         <>
             {isTablet &&
@@ -399,16 +244,7 @@ const EditProfile = ({
                     testID='edit_profile.scroll_view'
                     style={styles.flex}
                 >
-                    {updating && (
-                        <View
-                            style={styles.spinner}
-                        >
-                            <Loading
-                                color={theme.buttonBg}
-                            />
-                        </View>
-
-                    )}
+                    {updating && <Updating/>}
                     {Boolean(error) && <ProfileError error={error!}/>}
                     <View style={styles.top}>
                         <UserProfilePicture
@@ -417,90 +253,18 @@ const EditProfile = ({
                             onUpdateProfilePicture={onUpdateProfilePicture}
                         />
                     </View>
-                    {hasDisabledFields && (
-                        <View
-                            style={{
-                                paddingHorizontal: isTablet ? 42 : 20,
-                                marginBottom: 16,
-                            }}
-                        >
-                            <Text style={styles.text}>
-                                {intl.formatMessage({
-                                    id: 'user.settings.general.field_handled_externally',
-                                    defaultMessage: 'Some fields below are handled through your login provider. If you want to change them, you’ll need to do so through your login provider.',
-                                })}
-                            </Text>
-                        </View>
-                    )}
-                    <Field
-                        fieldKey='firstName'
-                        fieldRef={firstNameRef}
-                        isDisabled={userProfileFields.firstName.isDisabled}
-                        label={intl.formatMessage(FIELDS.firstName)}
-                        testID='edit_profile.text_setting.firstName'
-                        value={userInfo.firstName}
-                        {...fieldConfig}
+                    <ProfileForm
+                        canSave={canSave}
+                        currentUser={currentUser}
+                        isTablet={isTablet}
+                        lockedFirstName={lockedFirstName}
+                        lockedLastName={lockedLastName}
+                        lockedNickname={lockedNickname}
+                        lockedPosition={lockedPosition}
+                        onUpdateField={onUpdateField}
+                        userInfo={userInfo}
+                        submitUser={submitUser}
                     />
-                    <View style={styles.separator}/>
-                    <Field
-                        fieldKey='lastName'
-                        fieldRef={lastNameRef}
-                        isDisabled={userProfileFields.lastName.isDisabled}
-                        label={intl.formatMessage(FIELDS.lastName)}
-                        testID='edit_profile.text_setting.lastName'
-                        value={userInfo.lastName}
-                        {...fieldConfig}
-                    />
-                    <View style={styles.separator}/>
-                    <Field
-                        fieldKey='username'
-                        fieldRef={usernameRef}
-                        isDisabled={userProfileFields.username.isDisabled}
-                        label={intl.formatMessage(FIELDS.username)}
-                        maxLength={22}
-                        testID='edit_profile.text_setting.username'
-                        value={userInfo.username}
-                        {...fieldConfig}
-                    />
-                    <View style={styles.separator}/>
-                    {userInfo.email && (
-                        <EmailField
-                            authService={currentUser.authService}
-                            isDisabled={userProfileFields.email.isDisabled}
-                            email={userInfo.email}
-                            label={intl.formatMessage(FIELDS.email)}
-                            fieldRef={emailRef}
-                            onChange={onUpdateField}
-                            onFocusNextField={onFocusNextField}
-                            theme={theme}
-                            isTablet={Boolean(isTablet)}
-                        />
-                    )}
-                    <View style={styles.separator}/>
-                    <Field
-                        fieldKey='nickname'
-                        fieldRef={nicknameRef}
-                        isDisabled={userProfileFields.nickname.isDisabled}
-                        label={intl.formatMessage(FIELDS.nickname)}
-                        maxLength={22}
-                        testID='edit_profile.text_setting.nickname'
-                        value={userInfo.nickname}
-                        {...fieldConfig}
-                    />
-                    <View style={styles.separator}/>
-                    <Field
-                        fieldKey='position'
-                        fieldRef={positionRef}
-                        isDisabled={userProfileFields.position.isDisabled}
-                        isOptional={true}
-                        label={intl.formatMessage(FIELDS.position)}
-                        maxLength={128}
-                        {...fieldConfig}
-                        returnKeyType='done'
-                        testID='edit_profile.text_setting.position'
-                        value={userInfo.position}
-                    />
-                    <View style={styles.footer}/>
                 </KeyboardAwareScrollView>
             </SafeAreaView>
         </>
