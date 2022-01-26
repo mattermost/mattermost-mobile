@@ -21,7 +21,7 @@ import {queryCurrentUser} from '@queries/servers/user';
 
 import {handleChannelDeletedEvent, handleUserRemovedEvent} from './channel';
 import {handlePreferenceChangedEvent, handlePreferencesChangedEvent, handlePreferencesDeletedEvent} from './preferences';
-import {handleRoleAddedEvent, handleRoleRemovedEvent, handleRoleUpdatedEvent} from './roles';
+import {handleUserRoleUpdatedEvent, handleMemberRoleUpdatedEvent, handleRoleUpdatedEvent} from './roles';
 import {handleLeaveTeamEvent} from './teams';
 
 import type {Model} from '@nozbe/watermelondb';
@@ -187,27 +187,18 @@ export async function handleEvent(serverUrl: string, msg: any) {
         case WebsocketEvents.USER_UPDATED:
             break;
 
-        // return dispatch(handleUserUpdatedEvent(msg));
-        case WebsocketEvents.ROLE_ADDED:
-            handleRoleAddedEvent(serverUrl, msg);
-            break;
-
-        case WebsocketEvents.ROLE_REMOVED:
-            handleRoleRemovedEvent(serverUrl, msg);
-            break;
-
         case WebsocketEvents.ROLE_UPDATED:
             handleRoleUpdatedEvent(serverUrl, msg);
             break;
 
         case WebsocketEvents.USER_ROLE_UPDATED:
+            handleUserRoleUpdatedEvent(serverUrl, msg);
             break;
 
-        // return dispatch(handleUserRoleUpdated(msg));
         case WebsocketEvents.MEMBERROLE_UPDATED:
+            handleMemberRoleUpdatedEvent(serverUrl, msg);
             break;
 
-        // return dispatch(handleUpdateMemberRoleEvent(msg));
         case WebsocketEvents.CHANNEL_CREATED:
             break;
 
