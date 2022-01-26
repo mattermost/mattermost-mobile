@@ -300,10 +300,6 @@ export default class FilePickerUtil {
             includeBase64: false,
         };
 
-        if (Platform.OS === 'ios') {
-            options.mediaType = 'mixed';
-        }
-
         const hasPermission = await this.hasPhotoPermission('photo');
         if (hasPermission) {
             launchImageLibrary(options, async (response: ImagePickerResponse) => {
