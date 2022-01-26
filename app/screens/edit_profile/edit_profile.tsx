@@ -18,7 +18,7 @@ import {Events} from '@constants';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {t} from '@i18n';
-import UserProfilePicture from '@screens/edit_profile/components/user_profile_picture';
+import UserProfilePicture from './components/user_profile_picture';
 import {dismissModal, popTopScreen, setButtons} from '@screens/navigation';
 import {preventDoubleTap} from '@utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';

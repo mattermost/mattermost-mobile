@@ -15,7 +15,7 @@ import {deleteEntititesFile, getIOSAppGroupDetails} from '@utils/mattermost_mana
 import {hashCode} from '@utils/security';
 import {removeProtocol} from '@utils/url';
 
-import {generateId} from '../general';
+import {generateId} from '@utils/general';
 
 import type FileModel from '@typings/database/models/servers/file';
 import type {ExtractedFileInfo} from '@typings/utils/file';
