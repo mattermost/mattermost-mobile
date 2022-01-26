@@ -272,13 +272,13 @@ export default class FilePickerUtil {
         }
     };
 
-    attachFileFromFiles = async (browseFileType?: string) => {
+    attachFileFromFiles = async (browseFileType?: string, allowMultiSelection = false) => {
         const hasPermission = await this.hasStoragePermission();
         const fileType = browseFileType ?? Platform.select({ios: 'public.item', default: '*/*'});
 
         if (hasPermission) {
             try {
-                const docResponse = (await DocumentPicker.pickMultiple({type: [fileType]}));
+                const docResponse = (await DocumentPicker.pick({allowMultiSelection, type: [fileType]}));
                 const proDocs = docResponse.map(async (d: DocumentPickerResponse) => {
                     const {doc} = await this.buildUri(d);
                     return doc;
