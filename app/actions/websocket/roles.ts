@@ -66,10 +66,6 @@ export async function handleMemberRoleUpdatedEvent(serverUrl: string, msg: WebSo
         return;
     }
 
-    // return {
-    //     type: RoleTypes.RECEIVED_ROLE,
-    //     data: role,
-    // };
     const modelPromises: Array<Promise<Model[]>> = [];
     const newRoles = await fetchRolesIfNeeded(serverUrl, Array.from(member.roles), true);
     if (!(typeof newRoles.roles === 'string' && newRoles.roles === 'null')) {
@@ -81,7 +77,6 @@ export async function handleMemberRoleUpdatedEvent(serverUrl: string, msg: WebSo
     }
 
     const teamData = await fetchMyTeam(serverUrl, member.team_id, true);
-
     const prepare = prepareMyTeams(database.operator, teamData!.teams!, teamData!.memberships!);
     if (prepare) {
         modelPromises.push(...prepare);
