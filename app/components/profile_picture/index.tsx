@@ -1,8 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useEffect} from 'react';
-import {Platform, StyleProp, View, ViewProps, ViewStyle} from 'react-native';
+import React, {useEffect, useMemo} from 'react';
+import {Platform, StyleProp, View, ViewProps} from 'react-native';
 import FastImage, {Source} from 'react-native-fast-image';
 
 import {fetchStatusInBatch} from '@actions/remote/user';
@@ -71,6 +71,8 @@ const ProfilePicture = ({
 }: ProfilePictureProps) => {
     const theme = useTheme();
     const serverUrl = useServerUrl();
+    const fIStyle = useMemo(() => ({width: size, height: size, borderRadius: (size / 2)}), [size]);
+
     const style = getStyleSheet(theme);
     const buffer = showStatus ? (STATUS_BUFFER || 0) : 0;
     let client: Client | undefined;
@@ -87,39 +89,50 @@ const ProfilePicture = ({
         }
     }, []);
 
-    let statusIcon;
-    let containerStyle: StyleProp<ViewStyle> = {
-        width: size + buffer,
-        height: size + buffer,
-    };
+    const containerStyle = useMemo(() => {
+        if (author) {
+            return {
+                width: size + (buffer - 1),
+                height: size + (buffer - 1),
+                backgroundColor: changeOpacity(theme.centerChannelColor, 0.08),
+            };
+        }
 
-    if (author?.status && !author.isBot && showStatus) {
-        statusIcon = (
-            <View style={[style.statusWrapper, statusStyle, {borderRadius: statusSize / 2}]}>
-                <UserStatus
-                    size={statusSize}
-                    status={author.status}
-                />
-            </View>
-        );
-    }
-    let image;
+        return {
+            width: size + buffer,
+            height: size + buffer,
+        };
+    }, [author, size]);
 
-    if (author && client) {
-        const pictureUrl = client.getProfilePictureUrl(author.id, author.lastPictureUpdate);
-        const imgSource = source ?? {uri: `${serverUrl}${pictureUrl}`};
-
-        if (typeof source === 'string') {
-            image = (
-                <CompassIcon
-                    name={source}
-                    size={iconSize || size}
-                    style={style.icon}
-                />
+    const statusIcon = useMemo(() => {
+        if (author?.status && !author.isBot && showStatus) {
+            return (
+                <View style={[style.statusWrapper, statusStyle, {borderRadius: statusSize / 2}]}>
+                    <UserStatus
+                        size={statusSize}
+                        status={author.status}
+                    />
+                </View>
             );
-        } else {
-            const fIStyle = {width: size, height: size, borderRadius: (size / 2)};
-            image = (
+        }
+        return undefined;
+    }, [author?.status, showStatus]);
+
+    const image = useMemo(() => {
+        if (author && client) {
+            const pictureUrl = client.getProfilePictureUrl(author.id, author.lastPictureUpdate);
+            const imgSource = source ?? {uri: `${serverUrl}${pictureUrl}`};
+
+            if (typeof source === 'string') {
+                return (
+                    <CompassIcon
+                        name={source}
+                        size={iconSize || size}
+                        style={style.icon}
+                    />
+                );
+            }
+            return (
                 <FastImage
                     key={pictureUrl}
                     style={fIStyle}
@@ -127,20 +140,14 @@ const ProfilePicture = ({
                 />
             );
         }
-    } else {
-        containerStyle = {
-            width: size + (buffer - 1),
-            height: size + (buffer - 1),
-            backgroundColor: changeOpacity(theme.centerChannelColor, 0.08),
-        };
-        image = (
+        return (
             <CompassIcon
                 name='account-outline'
                 size={iconSize || size}
                 style={style.icon}
             />
         );
-    }
+    }, [author, client, size, iconSize]);
 
     return (
         <View
