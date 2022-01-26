@@ -260,7 +260,8 @@ const EditProfile = ({
                 const now = Date.now();
                 const {error: uploadError} = await uploadUserProfileImage(serverUrl, localPath);
                 if (uploadError) {
-                    return resetScreen(uploadError as Error);
+                    resetScreen(uploadError as Error);
+                    return;
                 }
                 updateLocalUser(serverUrl, {last_picture_update: now});
             } else if (profileImageRemoved) {
@@ -271,13 +272,14 @@ const EditProfile = ({
                 const {error: reqError} = await updateMe(serverUrl, newUserInfo);
                 if (reqError) {
                     resetScreen(reqError as Error);
-                    return null;
+                    return;
                 }
             }
 
-            return close();
+            close();
+            return;
         } catch (e) {
-            return resetScreen(e as Error);
+            resetScreen(e as Error);
         }
     }), [userInfo, enableSaveButton]);
 
