@@ -387,8 +387,8 @@ export async function extractFileInfo(files: Array<Asset | DocumentPickerRespons
         } as unknown as ExtractedFileInfo;
 
         if ('fileSize' in file) {
-            outFile.size = (file as (Asset | PastedFile)).fileSize || 0;
-            outFile.name = (file as (Asset | PastedFile)).fileName || '';
+            outFile.size = file.fileSize || 0;
+            outFile.name = file.fileName || '';
         } else {
             const path = Platform.select({
                 ios: (file.uri || '').replace('file://', ''),
