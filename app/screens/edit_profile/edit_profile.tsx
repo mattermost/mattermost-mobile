@@ -18,7 +18,6 @@ import {Events} from '@constants';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {t} from '@i18n';
-import UserProfilePicture from './components/user_profile_picture';
 import {dismissModal, popTopScreen, setButtons} from '@screens/navigation';
 import {preventDoubleTap} from '@utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
@@ -27,9 +26,9 @@ import {typography} from '@utils/typography';
 import EmailField from './components/email_field';
 import Field from './components/field';
 import ProfileError from './components/profile_error';
+import UserProfilePicture from './components/user_profile_picture';
 
 import type {MessageDescriptor} from '@formatjs/intl/src/types';
-import type UserModel from '@typings/database/models/servers/user';
 import type {EditProfileProps, FieldConfig, FieldSequence, NewProfileImage, UserInfo} from '@typings/screens/edit_profile';
 import type {ErrorText} from '@typings/utils/file';
 
@@ -104,17 +103,6 @@ const UPDATE_BUTTON_ID = 'update-profile';
 const includesSsoService = (sso: string) => ['gitlab', 'google', 'office365'].includes(sso);
 const isSAMLOrLDAP = (protocol: string) => ['ldap', 'saml'].includes(protocol);
 
-const getUserInfo = (user: UserModel) => {
-    return {
-        email: user.email,
-        firstName: user.firstName,
-        lastName: user.lastName,
-        nickname: user.nickname,
-        position: user.position,
-        username: user.username,
-    };
-};
-
 const EditProfile = ({
     componentId,
     currentUser,
@@ -139,9 +127,15 @@ const EditProfile = ({
     const changedProfilePicture = useRef<NewProfileImage | undefined>(undefined);
     const scrollViewRef = useRef<KeyboardAwareScrollView>();
 
-    const userInfos = getUserInfo(currentUser);
     const hasUpdateUserInfo = useRef<boolean>(false);
-    const [userInfo, setUserInfo] = useState<UserInfo>(userInfos);
+    const [userInfo, setUserInfo] = useState<UserInfo>({
+        email: currentUser.email,
+        firstName: currentUser.firstName,
+        lastName: currentUser.lastName,
+        nickname: currentUser.nickname,
+        position: currentUser.position,
+        username: currentUser.username,
+    });
     const [canSave, setCanSave] = useState(false);
     const [error, setError] = useState<ErrorText | undefined>();
     const [updating, setUpdating] = useState(false);
