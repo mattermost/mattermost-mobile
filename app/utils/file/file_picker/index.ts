@@ -46,7 +46,7 @@ export default class FilePickerUtil {
                 text: formatMessage({
                     id: 'mobile.camera_photo_permission_denied_description',
                     defaultMessage:
-                        'Take photos and upload them to your Mattermost instance or save them to your device. Open Settings to grant Mattermost Read and Write access to your camera.',
+                        'Take photos and upload them to your server or save them to your device. Open Settings to grant {applicationName} Read and Write access to your camera.',
                 }),
             },
             storage: {
@@ -61,7 +61,7 @@ export default class FilePickerUtil {
                 text: formatMessage({
                     id: 'mobile.storage_permission_denied_description',
                     defaultMessage:
-                        'Upload files to your Mattermost instance. Open Settings to grant Mattermost Read and Write access to files on this device.',
+                        'Upload files to your server. Open Settings to grant {applicationName} Read and Write access to files on this device.',
                 }),
             },
             denied_ios: {
@@ -76,7 +76,7 @@ export default class FilePickerUtil {
                 text: formatMessage({
                     id: 'mobile.ios.photos_permission_denied_description',
                     defaultMessage:
-                        'Upload photos and videos to your Mattermost instance or save them to your device. Open Settings to grant Mattermost Read and Write access to your photo and video library.',
+                        'Upload photos and videos to your server or save them to your device. Open Settings to grant {applicationName} Read and Write access to your photo and video library.',
                 }),
             },
             denied_android: {
@@ -91,7 +91,7 @@ export default class FilePickerUtil {
                 text: formatMessage({
                     id: 'mobile.android.photos_permission_denied_description',
                     defaultMessage:
-                        'Upload photos to your Mattermost instance or save them to your device. Open Settings to grant Mattermost Read and Write access to your photo library.',
+                        'Upload photos to your server or save them to your device. Open Settings to grant {applicationName} Read and Write access to your photo library.',
                 }),
             },
         };
@@ -274,7 +274,7 @@ export default class FilePickerUtil {
 
     attachFileFromFiles = async (browseFileType?: string) => {
         const hasPermission = await this.hasStoragePermission();
-        const fileType = browseFileType ?? Platform.select({ios: 'public.item', android: '*/*'})!;
+        const fileType = browseFileType ?? Platform.select({ios: 'public.item', default: '*/*'});
 
         if (hasPermission) {
             try {
