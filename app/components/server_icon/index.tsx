@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React from 'react';
+import React, {useMemo} from 'react';
 import {StyleProp, StyleSheet, View, ViewStyle} from 'react-native';
 
 import Badge from '@components/badge';
@@ -49,6 +49,9 @@ export default function ServerIcon({
     const theme = useTheme();
     const hasBadge = Boolean(mentionCount || hasUnreads);
     const count = mentionCount || (hasUnreads ? -1 : 0);
+    const memoizedStyle = useMemo(() => {
+        return [(badgeStyle || styles.badge), count > -1 ? undefined : (unreadStyle || styles.unread)];
+    }, [badgeStyle, count, unreadStyle]);
 
     return (
         <View style={style}>
@@ -67,7 +70,7 @@ export default function ServerIcon({
                     backgroundColor={badgeBackgroundColor}
                     color={badgeColor}
                     visible={hasBadge}
-                    style={[(badgeStyle || styles.badge), count > -1 ? undefined : (unreadStyle || styles.unread)]}
+                    style={memoizedStyle}
                     value={count}
                 />
             </TouchableWithFeedback>

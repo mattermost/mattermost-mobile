@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback, useEffect, useRef, useState} from 'react';
+import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
 import {DeviceEventEmitter, Text, View} from 'react-native';
 import {RectButton} from 'react-native-gesture-handler';
@@ -9,10 +9,9 @@ import Swipeable from 'react-native-gesture-handler/Swipeable';
 
 import CompassIcon from '@components/compass_icon';
 import ServerIcon from '@components/server_icon';
-import {Navigation} from '@constants';
-import {MM_TABLES} from '@constants/database';
+import {Events, Navigation} from '@constants';
 import {useTheme} from '@context/theme';
-import DatabaseManager from '@database/manager';
+import {subscribeServerUnreadAndMentions} from '@database/subscription/unreads';
 import WebsocketManager from '@init/websocket_manager';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
@@ -102,8 +101,7 @@ const ServerItem = ({isActive, server}: Props) => {
     const [badge, setBadge] = useState<BadgeValues>({isUnread: false, mentions: 0});
     const styles = getStyleSheet(theme);
     const swipeable = useRef<Swipeable>();
-    const activeStyle = isActive ? styles.active : undefined;
-    const offlineStyle = server.lastActiveAt ? undefined : styles.offline;
+    const subscription = useRef<Subscription|undefined>();
     const websocketError = server.lastActiveAt ? !WebsocketManager.isConnected(server.url) : false;
     let displayName = server.displayName;
     if (server.url === server.displayName) {
@@ -113,13 +111,31 @@ const ServerItem = ({isActive, server}: Props) => {
     const unreadsSubscription = (myChannels: MyChannelModel[]) => {
         let mentions = 0;
         let isUnread = false;
-        myChannels.forEach((myChannel) => {
+        for (const myChannel of myChannels) {
             mentions += myChannel.mentionsCount;
             isUnread = isUnread || myChannel.isUnread;
-        });
+        }
 
         setBadge({isUnread, mentions});
     };
+
+    const containerStyle = useMemo(() => {
+        const style = [styles.container];
+        if (isActive) {
+            style.push(styles.active);
+        }
+
+        return style;
+    }, [isActive]);
+
+    const serverStyle = useMemo(() => {
+        const style = [styles.row];
+        if (!server.lastActiveAt) {
+            style.push(styles.offline);
+        }
+
+        return style;
+    }, [server.lastActiveAt]);
 
     const onServerPressed = useCallback(() => {
         if (isActive) {
@@ -140,7 +156,7 @@ const ServerItem = ({isActive, server}: Props) => {
     }, [server]);
 
     const onSwipeableWillOpen = useCallback(() => {
-        DeviceEventEmitter.emit('swipeable', server.url);
+        DeviceEventEmitter.emit(Events.SWIPEABLE, server.url);
     }, [server]);
 
     const renderActions = useCallback((progress) => {
@@ -153,7 +169,7 @@ const ServerItem = ({isActive, server}: Props) => {
     }, [server]);
 
     useEffect(() => {
-        const listener = DeviceEventEmitter.addListener('swipeable', (url: string) => {
+        const listener = DeviceEventEmitter.addListener(Events.SWIPEABLE, (url: string) => {
             if (server.url !== url) {
                 swipeable.current?.close();
             }
@@ -163,21 +179,20 @@ const ServerItem = ({isActive, server}: Props) => {
     }, [server]);
 
     useEffect(() => {
-        const db = DatabaseManager.serverDatabases[server.url];
-        let subscription: Subscription|undefined;
-        if (server.lastActiveAt && db) {
-            const {database} = db;
-            subscription = database.get<MyChannelModel>(MM_TABLES.SERVER.MY_CHANNEL).
-                query().observeWithColumns(['is_unread', 'mentions_count']).
-                subscribe(unreadsSubscription);
+        if (!isActive) {
+            if (server.lastActiveAt && !subscription.current) {
+                subscription.current = subscribeServerUnreadAndMentions(server.url, unreadsSubscription);
+            } else if (!server.lastActiveAt && subscription.current) {
+                subscription.current.unsubscribe();
+                subscription.current = undefined;
+            }
         }
 
         return () => {
-            if (subscription) {
-                subscription.unsubscribe();
-            }
+            subscription.current?.unsubscribe();
+            subscription.current = undefined;
         };
-    }, []);
+    }, [server.lastActiveAt, isActive]);
 
     return (
         <Swipeable
@@ -190,7 +205,7 @@ const ServerItem = ({isActive, server}: Props) => {
             rightThreshold={40}
         >
             <View
-                style={[styles.container, activeStyle]}
+                style={containerStyle}
             >
                 <RectButton
                     onPress={onServerPressed}
@@ -206,7 +221,7 @@ const ServerItem = ({isActive, server}: Props) => {
                         />
                     </View>
                     }
-                    <View style={[styles.row, offlineStyle]}>
+                    <View style={serverStyle}>
                         <ServerIcon
                             badgeBackgroundColor={theme.mentionColor}
                             badgeBorderColor={theme.mentionBg}

@@ -52,27 +52,27 @@ const ServerOptions = ({progress, server}: Props) => {
                 color={changeOpacity(theme.centerChannelColor, 0.48)}
                 icon='pencil-outline'
                 onPress={onEdit}
+                positionX={OPTION_SIZE * 3}
                 progress={progress}
                 style={styles.left}
                 text={intl.formatMessage({id: 'servers.edit', defaultMessage: 'Edit'})}
-                x={OPTION_SIZE * 3}
             />
             <Option
                 color={theme.dndIndicator}
                 icon='trash-can-outline'
                 onPress={onRemove}
+                positionX={OPTION_SIZE * 2}
                 progress={progress}
                 text={intl.formatMessage({id: 'servers.remove', defaultMessage: 'Remove'})}
-                x={OPTION_SIZE * 2}
             />
             <Option
                 color={theme.newMessageSeparator}
                 icon='exit-to-app'
                 onPress={onLogout}
+                positionX={OPTION_SIZE}
                 progress={progress}
                 style={styles.right}
                 text={intl.formatMessage({id: 'servers.logout', defaultMessage: 'Log out'})}
-                x={OPTION_SIZE}
             />
         </View>
     );

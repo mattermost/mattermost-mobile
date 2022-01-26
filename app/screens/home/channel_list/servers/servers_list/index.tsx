@@ -46,7 +46,7 @@ const ServerList = ({servers}: Props) => {
                 server={t}
             />
         );
-    }, [servers]);
+    }, []);
 
     return (
         <BottomSheetContent
