@@ -1,6 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
-import React from 'react';
+
+import React, {useMemo} from 'react';
 import {Text, View} from 'react-native';
 
 import CompassIcon from '@components/compass_icon';
@@ -53,6 +54,9 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
 const LoadingError = ({loading, message, onRetry, title}: Props) => {
     const theme = useTheme();
     const styles = getStyleSheet(theme);
+    const buttonStyle = useMemo(() => {
+        return [{marginTop: 24}, buttonBackgroundStyle(theme, 'lg', 'primary', 'inverted')];
+    }, [theme]);
 
     if (loading) {
         return (
@@ -78,7 +82,7 @@ const LoadingError = ({loading, message, onRetry, title}: Props) => {
                 {message}
             </Text>
             <TouchableWithFeedback
-                style={[{marginTop: 24}, buttonBackgroundStyle(theme, 'lg', 'primary', 'inverted')]}
+                style={buttonStyle}
                 onPress={onRetry}
             >
                 <Text style={buttonTextStyle(theme, 'lg', 'primary', 'inverted')}>{'Retry'}</Text>

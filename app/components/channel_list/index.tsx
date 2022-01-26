@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useEffect, useMemo, useState} from 'react';
+import React, {useEffect, useState} from 'react';
 import {TouchableOpacity} from 'react-native-gesture-handler';
 import Animated, {useAnimatedStyle, useSharedValue, withTiming} from 'react-native-reanimated';
 
@@ -66,21 +66,20 @@ const ChannelList = ({currentTeamId, iconPad, isTablet, teamsCount}: ChannelList
     }, [isTablet, teamsCount]);
 
     const [showCats, setShowCats] = useState<boolean>(true);
-    const content = useMemo(() => {
-        if (currentTeamId) {
-            if (showCats) {
-                return (
-                    <>
-                        <SearchField/>
-                        <Categories categories={categories}/>
-                    </>
-                );
-            }
-            return (<LoadChannelsError teamId={currentTeamId}/>);
-        }
+    let content;
+    if (!currentTeamId) {
+        content = (<LoadTeamsError/>);
+    } else if (showCats) {
+        content = (
+            <>
+                <SearchField/>
+                <Categories categories={categories}/>
+            </>
+        );
+    } else {
+        content = (<LoadChannelsError teamId={currentTeamId}/>);
+    }
 
-        return (<LoadTeamsError/>);
-    }, [currentTeamId, showCats]);
     return (
         <Animated.View style={[styles.container, tabletStyle]}>
             <TouchableOpacity onPress={() => setShowCats(!showCats)}>
