@@ -50,7 +50,6 @@ const PanelItem = ({pickerAction, pictureUtils, onRemoveProfileImage}: PanelItem
         },
         removeProfilePicture: {
             icon: 'trash-can-outline',
-            isDestructive: true,
             onPress: () => {
                 return onRemoveProfileImage && onRemoveProfileImage();
             },
@@ -67,7 +66,7 @@ const PanelItem = ({pickerAction, pictureUtils, onRemoveProfileImage}: PanelItem
             onPress={item.onPress}
             testID={item.testID}
             text={intl.formatMessage(item.text)}
-            destructive={Boolean(item?.isDestructive)}
+            destructive={pickerAction === 'removeProfilePicture'}
         />
     );
 };
