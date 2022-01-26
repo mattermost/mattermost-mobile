@@ -10,6 +10,7 @@ import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import PanelItem from '@screens/edit_profile/components/panel_item';
 import {bottomSheet} from '@screens/navigation';
+import {hasPictureUrl} from '@utils/file';
 import PickerUtil from '@utils/file/file_picker';
 import {preventDoubleTap} from '@utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
@@ -57,7 +58,7 @@ const ImagePicker = ({
     const styles = getStyleSheet(theme);
 
     const showFileAttachmentOptions = preventDoubleTap(() => {
-        const canRemovePicture = pictureUtils.hasPictureUrl(user, serverUrl);
+        const canRemovePicture = hasPictureUrl(user, serverUrl);
 
         const renderContent = () => {
             return (

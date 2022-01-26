@@ -10,13 +10,16 @@ import {Platform} from 'react-native';
 import {DocumentPickerResponse} from 'react-native-document-picker';
 import {Asset} from 'react-native-image-picker';
 
+import {Client} from '@client/rest';
 import {Files} from '@constants';
+import NetworkManager from '@init/network_manager';
 import {generateId} from '@utils/general';
 import {deleteEntititesFile, getIOSAppGroupDetails} from '@utils/mattermost_managed';
 import {hashCode} from '@utils/security';
 import {removeProtocol} from '@utils/url';
 
 import type FileModel from '@typings/database/models/servers/file';
+import type UserModel from '@typings/database/models/servers/user';
 import type {ExtractedFileInfo} from '@typings/utils/file';
 
 const EXTRACT_TYPE_REGEXP = /^\s*([^;\s]*)(?:;|\s|$)/;
@@ -441,3 +444,20 @@ export function uploadDisabledWarning(intl: IntlShape) {
         defaultMessage: 'File uploads from mobile are disabled.',
     });
 }
+
+export const hasPictureUrl = (user: UserModel, serverUrl: string) => {
+    const {id, lastPictureUpdate} = user;
+
+    let client: Client | undefined;
+    let profileImageUrl: string | undefined;
+
+    try {
+        client = NetworkManager.getClient(serverUrl);
+        profileImageUrl = client.getProfilePictureUrl(id, lastPictureUpdate);
+    } catch {
+        return false;
+    }
+
+    // Check if image url includes query string for timestamp. If so, it means the image has been updated from the default, i.e. '.../image?_=1544159746868'
+    return Boolean(profileImageUrl?.includes('image?_'));
+};

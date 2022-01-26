@@ -9,12 +9,9 @@ import DocumentPicker, {DocumentPickerResponse} from 'react-native-document-pick
 import {Asset, CameraOptions, ImageLibraryOptions, ImagePickerResponse, launchCamera, launchImageLibrary} from 'react-native-image-picker';
 import Permissions, {AndroidPermission, IOSPermission} from 'react-native-permissions';
 
-import {Client} from '@client/rest';
 import {Navigation} from '@constants';
-import NetworkManager from '@init/network_manager';
 import {extractFileInfo, lookupMimeType} from '@utils/file';
 
-import type UserModel from '@typings/database/models/servers/user';
 import type {ExtractedFileInfo} from '@typings/utils/file';
 
 const ShareExtension = NativeModules.MattermostShare;
@@ -319,22 +316,5 @@ export default class FilePickerUtil {
                 await this.prepareFileUpload(files);
             });
         }
-    };
-
-    hasPictureUrl = (user: UserModel, serverUrl: string) => {
-        const {id, lastPictureUpdate} = user;
-
-        let client: Client | undefined;
-        let profileImageUrl: string | undefined;
-
-        try {
-            client = NetworkManager.getClient(serverUrl);
-            profileImageUrl = client.getProfilePictureUrl(id, lastPictureUpdate);
-        } catch {
-            return false;
-        }
-
-        // Check if image url includes query string for timestamp. If so, it means the image has been updated from the default, i.e. '.../image?_=1544159746868'
-        return Boolean(profileImageUrl?.includes('image?_'));
     };
 }
