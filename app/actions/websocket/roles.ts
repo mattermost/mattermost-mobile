@@ -18,7 +18,6 @@ export async function handleRoleUpdatedEvent(serverUrl: string, msg: WebSocketMe
     }
 
 
-    // database.operator.handleRole();
 }
 
 export async function handleUserRoleUpdatedEvent(serverUrl: string, msg: WebSocketMessage): Promise<void> {
@@ -32,8 +31,8 @@ export async function handleUserRoleUpdatedEvent(serverUrl: string, msg: WebSock
         return;
     }
 
+    // update Role Table if needed
     const modelPromises: Array<Promise<Model[]>> = [];
-
     const newRoles = await fetchRolesIfNeeded(serverUrl, Array.from(msg.data.roles), true);
     if (!(typeof newRoles.roles === 'string' && newRoles.roles === 'null')) {
         const preparedRolesModels = await database.operator.handleRole({
@@ -43,6 +42,7 @@ export async function handleUserRoleUpdatedEvent(serverUrl: string, msg: WebSock
         modelPromises.push(preparedRolesModels);
     }
 
+    // update User Table record
     const meData = await fetchMe(serverUrl, true);
     const userModels = prepareUsers(database.operator, [meData.user!]);
     modelPromises.push(userModels);
@@ -66,6 +66,7 @@ export async function handleMemberRoleUpdatedEvent(serverUrl: string, msg: WebSo
         return;
     }
 
+    // update Role Table if needed
     const modelPromises: Array<Promise<Model[]>> = [];
     const newRoles = await fetchRolesIfNeeded(serverUrl, Array.from(member.roles), true);
     if (!(typeof newRoles.roles === 'string' && newRoles.roles === 'null')) {
@@ -76,6 +77,7 @@ export async function handleMemberRoleUpdatedEvent(serverUrl: string, msg: WebSo
         modelPromises.push(preparedRolesModels);
     }
 
+    // update MyTeam Table
     const teamData = await fetchMyTeam(serverUrl, member.team_id, true);
     const prepare = prepareMyTeams(database.operator, teamData!.teams!, teamData!.memberships!);
     if (prepare) {
