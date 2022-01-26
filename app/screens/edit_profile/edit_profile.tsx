@@ -126,7 +126,6 @@ const EditProfile = ({
     const positionRef = useRef<FloatingTextInputRef>(null);
     const changedProfilePicture = useRef<NewProfileImage | undefined>(undefined);
     const scrollViewRef = useRef<KeyboardAwareScrollView>();
-
     const hasUpdateUserInfo = useRef<boolean>(false);
     const [userInfo, setUserInfo] = useState<UserInfo>({
         email: currentUser.email,
