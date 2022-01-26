@@ -4,13 +4,12 @@
 import React from 'react';
 
 import ProfilePicture from '@components/profile_picture';
+import {USER_PROFILE_PICTURE_SIZE} from '@constants/profile';
 
 import EditProfilePicture from './edit_profile_picture';
 
 import type UserModel from '@typings/database/models/servers/user';
 import type {NewProfileImage} from '@typings/screens/edit_profile';
-
-const PROFILE_PICTURE_SIZE = 153;
 
 type Props = {
     currentUser: UserModel;
@@ -23,7 +22,7 @@ const UserProfilePicture = ({currentUser, lockedPicture, onUpdateProfilePicture}
         return (
             <ProfilePicture
                 author={currentUser}
-                size={PROFILE_PICTURE_SIZE}
+                size={USER_PROFILE_PICTURE_SIZE}
                 showStatus={false}
             />
         );
