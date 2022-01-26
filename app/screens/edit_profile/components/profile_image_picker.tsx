@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useMemo} from 'react';
+import React, {useCallback, useMemo} from 'react';
 import {useIntl} from 'react-intl';
 import {TouchableOpacity} from 'react-native';
 
@@ -75,7 +75,7 @@ const ProfileImagePicker = ({
     const canRemovePicture = hasPictureUrl(user, serverUrl);
     const styles = getStyleSheet(theme);
 
-    const showFileAttachmentOptions = preventDoubleTap(() => {
+    const showFileAttachmentOptions = useCallback(preventDoubleTap(() => {
         const renderContent = () => {
             return (
                 <>
@@ -111,7 +111,7 @@ const ProfileImagePicker = ({
             title: '',
             theme,
         });
-    });
+    }), [canRemovePicture, onRemoveProfileImage, pictureUtils, theme]);
 
     return (
         <TouchableOpacity
