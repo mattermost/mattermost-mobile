@@ -7,6 +7,7 @@ import {DeviceEventEmitter, Platform, View} from 'react-native';
 import {Client} from '@client/rest';
 import ProfileImage from '@components/profile_picture';
 import {Navigation} from '@constants';
+import {ACCOUNT_OUTLINE_IMAGE} from '@constants/profile';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import useDidUpdate from '@hooks/did_update';
@@ -71,7 +72,7 @@ const EditProfilePicture = ({user, onUpdateProfilePicture}: ChangeProfilePicture
     const handleProfileImage = useCallback((images?: FileInfo[]) => {
         let isRemoved = true;
         let localPath;
-        let pUrl = 'account-outline';
+        let pUrl = ACCOUNT_OUTLINE_IMAGE;
 
         const newImage = images?.[0]?.localPath;
         if (newImage) {
@@ -86,7 +87,7 @@ const EditProfilePicture = ({user, onUpdateProfilePicture}: ChangeProfilePicture
     }, [onUpdateProfilePicture]);
 
     const pictureSource = useMemo(() => {
-        if (pictureUrl === 'account-outline') {
+        if (pictureUrl === ACCOUNT_OUTLINE_IMAGE) {
             return pictureUrl;
         } else if (pictureUrl) {
             let prefix = '';

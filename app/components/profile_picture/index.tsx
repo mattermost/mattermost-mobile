@@ -8,6 +8,7 @@ import FastImage, {Source} from 'react-native-fast-image';
 import {fetchStatusInBatch} from '@actions/remote/user';
 import CompassIcon from '@components/compass_icon';
 import UserStatus from '@components/user_status';
+import {ACCOUNT_OUTLINE_IMAGE} from '@constants/profile';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import NetworkManager from '@init/network_manager';
@@ -142,7 +143,7 @@ const ProfilePicture = ({
         }
         return (
             <CompassIcon
-                name='account-outline'
+                name={ACCOUNT_OUTLINE_IMAGE}
                 size={iconSize || size}
                 style={style.icon}
             />

@@ -20,6 +20,7 @@ import type {UploadExtractedFile} from '@typings/utils/file';
 
 const hitSlop = {top: 100, bottom: 20, right: 20, left: 100};
 const ACTION_HEIGHT = 55;
+
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     return {
         touchable: {
