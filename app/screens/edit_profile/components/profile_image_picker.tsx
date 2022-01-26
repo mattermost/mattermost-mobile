@@ -5,12 +5,13 @@ import React, {useMemo} from 'react';
 import {useIntl} from 'react-intl';
 import {TouchableOpacity} from 'react-native';
 
+import {Client} from '@client/rest';
 import CompassIcon from '@components/compass_icon';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
+import NetworkManager from '@init/network_manager';
 import PanelItem from '@screens/edit_profile/components/panel_item';
 import {bottomSheet} from '@screens/navigation';
-import {hasPictureUrl} from '@utils/file';
 import PickerUtil from '@utils/file/file_picker';
 import {preventDoubleTap} from '@utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
@@ -45,7 +46,24 @@ type ImagePickerProps = {
     user: UserModel;
 };
 
-const ImagePicker = ({
+const hasPictureUrl = (user: UserModel, serverUrl: string) => {
+    const {id, lastPictureUpdate} = user;
+
+    let client: Client | undefined;
+    let profileImageUrl: string | undefined;
+
+    try {
+        client = NetworkManager.getClient(serverUrl);
+        profileImageUrl = client.getProfilePictureUrl(id, lastPictureUpdate);
+    } catch {
+        return false;
+    }
+
+    // Check if image url includes query string for timestamp. If so, it means the image has been updated from the default, i.e. '.../image?_=1544159746868'
+    return Boolean(profileImageUrl?.includes('image?_'));
+};
+
+const ProfileImagePicker = ({
     onRemoveProfileImage,
     uploadFiles,
     user,
@@ -54,12 +72,10 @@ const ImagePicker = ({
     const intl = useIntl();
     const serverUrl = useServerUrl();
     const pictureUtils = useMemo(() => new PickerUtil(intl, uploadFiles), [uploadFiles]);
-
+    const canRemovePicture = hasPictureUrl(user, serverUrl);
     const styles = getStyleSheet(theme);
 
     const showFileAttachmentOptions = preventDoubleTap(() => {
-        const canRemovePicture = hasPictureUrl(user, serverUrl);
-
         const renderContent = () => {
             return (
                 <>
@@ -113,4 +129,4 @@ const ImagePicker = ({
     );
 };
 
-export default ImagePicker;
+export default ProfileImagePicker;

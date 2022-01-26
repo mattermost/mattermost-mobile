@@ -14,7 +14,7 @@ import useDidUpdate from '@hooks/did_update';
 import NetworkManager from '@init/network_manager';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
-import ImagePicker from './image_picker';
+import ProfileImagePicker from './profile_image_picker';
 
 import type UserModel from '@typings/database/models/servers/user';
 
@@ -121,7 +121,7 @@ const EditProfilePicture = ({user, onUpdateProfilePicture}: ChangeProfilePicture
             <View
                 style={styles.camera}
             >
-                <ImagePicker
+                <ProfileImagePicker
                     onRemoveProfileImage={handleProfileImage}
                     uploadFiles={handleProfileImage}
                     user={user}
