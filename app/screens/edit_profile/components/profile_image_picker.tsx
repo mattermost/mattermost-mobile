@@ -59,7 +59,8 @@ const hasPictureUrl = (user: UserModel, serverUrl: string) => {
         return false;
     }
 
-    // Check if image url includes query string for timestamp. If so, it means the image has been updated from the default, i.e. '.../image?_=1544159746868'
+    // Check if image url includes query string for timestamp. If so,
+    // it means the image has been updated from the default, i.e. '.../image?_=1544159746868'
     return Boolean(profileImageUrl?.includes('image?_'));
 };
 
