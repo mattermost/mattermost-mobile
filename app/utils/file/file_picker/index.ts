@@ -293,11 +293,12 @@ export default class FilePickerUtil {
         }
     };
 
-    attachFileFromPhotoGallery = async () => {
+    attachFileFromPhotoGallery = async (selectionLimit = 1) => {
         const options: ImageLibraryOptions = {
             quality: 1,
             mediaType: 'mixed',
             includeBase64: false,
+            selectionLimit,
         };
 
         const hasPermission = await this.hasPhotoPermission('photo');
