@@ -7,7 +7,7 @@
     "@babel/plugin-proposal-class-properties": "7.16.7",
     "@babel/plugin-transform-modules-commonjs": "7.16.8",
     "@babel/plugin-transform-runtime": "7.16.10",
-    "@babel/preset-env": "7.16.10",
+    "@babel/preset-env": "7.16.11",
     "axios": "0.25.0",
     "babel-jest": "27.4.6",
     "babel-plugin-module-resolver": "4.1.0",
@@ -18,7 +18,7 @@
     "jest": "27.4.7",
     "jest-circus": "27.4.6",
     "jest-cli": "27.4.7",
-    "jest-html-reporters": "3.0.4",
+    "jest-html-reporters": "3.0.5",
     "jest-junit": "13.0.0",
     "sanitize-filename": "1.6.3",
     "uuid": "8.3.2"
