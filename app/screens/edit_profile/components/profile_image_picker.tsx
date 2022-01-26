@@ -71,7 +71,7 @@ const ProfileImagePicker = ({
     const theme = useTheme();
     const intl = useIntl();
     const serverUrl = useServerUrl();
-    const pictureUtils = useMemo(() => new PickerUtil(intl, uploadFiles), [uploadFiles]);
+    const pictureUtils = useMemo(() => new PickerUtil(intl, uploadFiles), [uploadFiles, intl]);
     const canRemovePicture = hasPictureUrl(user, serverUrl);
     const styles = getStyleSheet(theme);
 
