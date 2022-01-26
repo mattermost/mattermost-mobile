@@ -11,11 +11,10 @@ import {DocumentPickerResponse} from 'react-native-document-picker';
 import {Asset} from 'react-native-image-picker';
 
 import {Files} from '@constants';
+import {generateId} from '@utils/general';
 import {deleteEntititesFile, getIOSAppGroupDetails} from '@utils/mattermost_managed';
 import {hashCode} from '@utils/security';
 import {removeProtocol} from '@utils/url';
-
-import {generateId} from '@utils/general';
 
 import type FileModel from '@typings/database/models/servers/file';
 import type {ExtractedFileInfo} from '@typings/utils/file';

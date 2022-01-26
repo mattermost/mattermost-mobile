@@ -4,11 +4,11 @@
 import React from 'react';
 
 import ProfilePicture from '@components/profile_picture';
-import type {NewProfileImage} from '@typings/screens/edit_profile';
 
 import EditProfilePicture from './edit_profile_picture';
 
 import type UserModel from '@typings/database/models/servers/user';
+import type {NewProfileImage} from '@typings/screens/edit_profile';
 
 const PROFILE_PICTURE_SIZE = 153;
 
