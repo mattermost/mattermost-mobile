@@ -28,20 +28,18 @@ const SIZE = 128;
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     return {
         container: {
-            justifyContent: 'center',
             alignItems: 'center',
+            backgroundColor: changeOpacity(theme.centerChannelColor, 0.08),
+            borderRadius: SIZE / 2,
+            height: SIZE,
+            justifyContent: 'center',
+            width: SIZE,
         },
         camera: {
             position: 'absolute',
             overflow: 'hidden',
             height: '100%',
             width: '100%',
-        },
-        subContainer: {
-            backgroundColor: changeOpacity(theme.centerChannelColor, 0.08),
-            height: SIZE,
-            width: SIZE,
-            borderRadius: SIZE / 2,
         },
     };
 });
@@ -106,10 +104,7 @@ const EditProfilePicture = ({user, onUpdateProfilePicture}: ChangeProfilePicture
 
     return (
         <View
-            style={[
-                styles.container,
-                styles.subContainer,
-            ]}
+            style={styles.container}
             testID={`${EditProfilePicture}.${user.id}`}
         >
             <ProfileImage
