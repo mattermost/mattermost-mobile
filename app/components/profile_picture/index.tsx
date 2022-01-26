@@ -72,10 +72,13 @@ const ProfilePicture = ({
 }: ProfilePictureProps) => {
     const theme = useTheme();
     const serverUrl = useServerUrl();
-    const fIStyle = useMemo(() => ({width: size, height: size, borderRadius: (size / 2)}), [size]);
+    const fIStyle = useMemo(
+        () => ({width: size, height: size, borderRadius: size / 2}),
+        [size],
+    );
 
     const style = getStyleSheet(theme);
-    const buffer = showStatus ? (STATUS_BUFFER || 0) : 0;
+    const buffer = showStatus ? STATUS_BUFFER || 0 : 0;
     let client: Client | undefined;
 
     try {
@@ -108,7 +111,13 @@ const ProfilePicture = ({
     const statusIcon = useMemo(() => {
         if (author?.status && !author.isBot && showStatus) {
             return (
-                <View style={[style.statusWrapper, statusStyle, {borderRadius: statusSize / 2}]}>
+                <View
+                    style={[
+                        style.statusWrapper,
+                        statusStyle,
+                        {borderRadius: statusSize / 2},
+                    ]}
+                >
                     <UserStatus
                         size={statusSize}
                         status={author.status}
@@ -148,7 +157,15 @@ const ProfilePicture = ({
                 style={style.icon}
             />
         );
-    }, [author, client, size, iconSize]);
+    }, [
+        author?.id,
+        author?.lastPictureUpdate,
+        client,
+        size,
+        iconSize,
+        fIStyle,
+        source,
+    ]);
 
     return (
         <View

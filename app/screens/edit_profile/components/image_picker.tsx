@@ -4,12 +4,11 @@
 import React, {useMemo} from 'react';
 import {useIntl} from 'react-intl';
 import {TouchableOpacity} from 'react-native';
-import DocumentPicker from 'react-native-document-picker';
 
 import CompassIcon from '@components/compass_icon';
-import SlideUpPanelItem from '@components/slide_up_panel_item';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
+import PanelItem from '@screens/edit_profile/components/panel_item';
 import {bottomSheet} from '@screens/navigation';
 import PickerUtil from '@utils/file/file_picker';
 import {preventDoubleTap} from '@utils/tap';
@@ -50,66 +49,38 @@ const ImagePicker = ({
     uploadFiles,
     user,
 }: ImagePickerProps) => {
-    const intl = useIntl();
     const theme = useTheme();
+    const intl = useIntl();
     const serverUrl = useServerUrl();
     const pictureUtils = useMemo(() => new PickerUtil(intl, uploadFiles), [uploadFiles]);
+
     const styles = getStyleSheet(theme);
 
     const showFileAttachmentOptions = preventDoubleTap(() => {
         const canRemovePicture = pictureUtils.hasPictureUrl(user, serverUrl);
 
         const renderContent = () => {
-            const renderPanelItems = (itemType: string) => {
-                const types = {
-                    takePhoto: {
-                        icon: 'camera-outline',
-                        onPress: () => pictureUtils.attachFileFromCamera(),
-                        testID: 'attachment.takePhoto',
-                        text: intl.formatMessage({id: 'mobile.file_upload.camera_photo', defaultMessage: 'Take Photo'}),
-                    },
-                    browsePhotoLibrary: {
-                        icon: 'file-generic-outline',
-                        onPress: () => pictureUtils.attachFileFromPhotoGallery(),
-                        testID: 'attachment.browsePhotoLibrary',
-                        text: intl.formatMessage({id: 'mobile.file_upload.library', defaultMessage: 'Photo Library'}),
-                    },
-                    browseFiles: {
-                        icon: 'file-multiple-outline',
-                        onPress: () => pictureUtils.attachFileFromFiles(DocumentPicker.types.images),
-                        testID: 'attachment.browseFiles',
-                        text: intl.formatMessage({id: 'mobile.file_upload.browse', defaultMessage: 'Browse Files'}),
-                    },
-                    removeProfilePicture: {
-                        icon: 'trash-can-outline',
-                        isDestructive: true,
-                        onPress: () => {
-                            return onRemoveProfileImage();
-                        },
-                        testID: 'attachment.removeImage',
-                        text: intl.formatMessage({id: 'mobile.edit_profile.remove_profile_photo', defaultMessage: 'Remove Photo'}),
-                    },
-                };
-
-                //@ts-expect-error object string index
-                const item = types[itemType];
-                return (
-                    <SlideUpPanelItem
-                        icon={item.icon}
-                        onPress={item.onPress}
-                        testID={item.testID}
-                        text={item.text}
-                        destructive={Boolean(item?.isDestructive)}
-                    />
-                );
-            };
-
             return (
                 <>
-                    {renderPanelItems('takePhoto')}
-                    {renderPanelItems('browsePhotoLibrary')}
-                    {renderPanelItems('browseFiles')}
-                    {canRemovePicture && renderPanelItems('removeProfilePicture')}
+                    <PanelItem
+                        pickerAction='takePhoto'
+                        pictureUtils={pictureUtils}
+                    />
+                    <PanelItem
+                        pickerAction='browsePhotoLibrary'
+                        pictureUtils={pictureUtils}
+                    />
+                    <PanelItem
+                        pickerAction='browseFiles'
+                        pictureUtils={pictureUtils}
+
+                    />
+                    {canRemovePicture && (
+                        <PanelItem
+                            pickerAction='removeProfilePicture'
+                            onRemoveProfileImage={onRemoveProfileImage}
+                        />
+                    )}
                 </>
             );
         };
