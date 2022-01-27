@@ -8,7 +8,6 @@ import {Theme} from '@mm-redux/types/theme';
 import leaveAndJoinWithAlert from '@mmproducts/calls/components/leave_and_join_alert';
 import ChannelInfoRow from '@screens/channel_info/channel_info_row';
 import Separator from '@screens/channel_info/separator';
-import {t} from '@utils/i18n';
 import {preventDoubleTap} from '@utils/tap';
 
 type Props = {
@@ -50,7 +49,6 @@ const StartCall = (props: Props) => {
                 action={handleStartCall}
                 defaultMessage={ongoingCall ? 'Join Ongoing Call' : 'Start Call'}
                 icon='phone-in-talk'
-                textId={ongoingCall ? t('mobile.channel_info.join_ongoing_call') : t('mobile.channel_info.start_call')}
                 theme={theme}
                 rightArrow={false}
             />
