@@ -11,7 +11,8 @@ import {makeStyleSheetFromTheme} from '@utils/theme';
 
 import Categories from './categories';
 import ChannelListHeader from './header';
-import LoadingError from './loading_error';
+import LoadChannelsError from './load_channels_error';
+import LoadTeamsError from './load_teams_error';
 import SearchField from './search';
 
 // import Loading from '@components/loading';
@@ -38,12 +39,13 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
 }));
 
 type ChannelListProps = {
+    currentTeamId?: string;
     iconPad?: boolean;
     isTablet: boolean;
     teamsCount: number;
 }
 
-const ChannelList = ({iconPad, isTablet, teamsCount}: ChannelListProps) => {
+const ChannelList = ({currentTeamId, iconPad, isTablet, teamsCount}: ChannelListProps) => {
     const theme = useTheme();
     const styles = getStyleSheet(theme);
     const tabletWidth = useSharedValue(TABLET_SIDEBAR_WIDTH);
@@ -64,6 +66,20 @@ const ChannelList = ({iconPad, isTablet, teamsCount}: ChannelListProps) => {
     }, [isTablet, teamsCount]);
 
     const [showCats, setShowCats] = useState<boolean>(true);
+    let content;
+    if (!currentTeamId) {
+        content = (<LoadTeamsError/>);
+    } else if (showCats) {
+        content = (
+            <>
+                <SearchField/>
+                <Categories categories={categories}/>
+            </>
+        );
+    } else {
+        content = (<LoadChannelsError teamId={currentTeamId}/>);
+    }
+
     return (
         <Animated.View style={[styles.container, tabletStyle]}>
             <TouchableOpacity onPress={() => setShowCats(!showCats)}>
@@ -71,15 +87,7 @@ const ChannelList = ({iconPad, isTablet, teamsCount}: ChannelListProps) => {
                     iconPad={iconPad}
                 />
             </TouchableOpacity>
-
-            {showCats && (
-                <>
-                    <SearchField/>
-                    <Categories categories={categories}/>
-                </>
-            )}
-            {/* <Loading/> */}
-            {!showCats && (<LoadingError/>)}
+            {content}
         </Animated.View>
     );
 };

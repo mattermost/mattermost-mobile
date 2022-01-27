@@ -9,7 +9,12 @@ import ErrorComponent from './index';
 
 test('Loading Error should match snapshot', () => {
     const {toJSON} = renderWithIntlAndTheme(
-        <ErrorComponent/>,
+        <ErrorComponent
+            loading={false}
+            message='Error description'
+            onRetry={() => true}
+            title='Error title'
+        />,
     );
 
     expect(toJSON()).toMatchSnapshot();
