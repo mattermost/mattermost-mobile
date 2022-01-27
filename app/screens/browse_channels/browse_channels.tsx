@@ -47,6 +47,7 @@ type Props = {
 
 const CLOSE_BUTTON_ID = 'close-browse-channels';
 const CREATE_BUTTON_ID = 'create-pub-channel';
+const MIN_CHANNELS_LOADED = 10;
 
 export const PUBLIC = 'public';
 export const SHARED = 'shared';
@@ -155,27 +156,34 @@ const reducer = (state: State, action: Action) => {
                 loading: false,
             };
         case LOAD:
+            if (state.loading) {
+                return state;
+            }
             return {
                 ...state,
                 loading: true,
             };
         case STOP:
-            return {
-                ...state,
-                loading: false,
-            };
+            if (state.loading) {
+                return {
+                    ...state,
+                    loading: false,
+                };
+            }
+            return state;
         default:
             return state;
     }
 };
 
 const initialState = {channels: [], archivedChannels: [], sharedChannels: [], loading: false};
+const defaultJoinedChannels: MyChannelModel[] = [];
 
 export default function BrowseChannels(props: Props) {
     const {
         componentId,
         canCreateChannels,
-        joinedChannels = [],
+        joinedChannels = defaultJoinedChannels,
         sharedChannelsEnabled,
         closeButton,
         currentUserId,
@@ -243,47 +251,61 @@ export default function BrowseChannels(props: Props) {
         }
     }, [setHeaderButtons, intl.locale]);
 
-    const doGetChannels = useCallback((t?: string) => {
-        if (t || !loading) {
-            const typeToUse = t || typeOfChannels;
-            switch (typeToUse) {
-                case PUBLIC:
-                    if (nextPublic.current) {
-                        dispatch(LoadAction);
-                        fetchChannels(
-                            serverUrl,
-                            currentTeamId,
-                            publicPage.current + 1,
-                            General.CHANNELS_CHUNK_SIZE,
-                        ).then(({channels: receivedChannels}) => loadedChannels.current(receivedChannels || [], typeToUse)); // Handle error?
-                    }
-                    break;
-                case SHARED:
-                    if (nextShared.current) {
-                        dispatch(LoadAction);
-                        fetchSharedChannels(
-                            serverUrl,
-                            currentTeamId,
-                            sharedPage.current + 1,
-                            General.CHANNELS_CHUNK_SIZE,
-                        ).then(({channels: receivedChannels}) => loadedChannels.current(receivedChannels || [], typeToUse));
-                    }
-                    break;
-                case ARCHIVED:
-                default:
-                    if (canShowArchivedChannels && nextArchived.current) {
-                        dispatch(LoadAction);
-                        fetchArchivedChannels(
-                            serverUrl,
-                            currentTeamId,
-                            archivedPage.current + 1,
-                            General.CHANNELS_CHUNK_SIZE,
-                        ).then(({channels: receivedChannels}) => loadedChannels.current(receivedChannels || [], typeToUse));
-                    }
-                    break;
-            }
+    const doGetChannels = (t: string) => {
+        switch (t) {
+            case PUBLIC:
+                if (nextPublic.current) {
+                    dispatch(LoadAction);
+                    fetchChannels(
+                        serverUrl,
+                        currentTeamId,
+                        publicPage.current + 1,
+                        General.CHANNELS_CHUNK_SIZE,
+                    ).then(
+                        ({channels: receivedChannels}) => loadedChannels.current(receivedChannels || [], t),
+                    ).catch(
+                        () => dispatch(StopAction),
+                    );
+                }
+                break;
+            case SHARED:
+                if (nextShared.current) {
+                    dispatch(LoadAction);
+                    fetchSharedChannels(
+                        serverUrl,
+                        currentTeamId,
+                        sharedPage.current + 1,
+                        General.CHANNELS_CHUNK_SIZE,
+                    ).then(
+                        ({channels: receivedChannels}) => loadedChannels.current(receivedChannels || [], t),
+                    ).catch(
+                        () => dispatch(StopAction),
+                    );
+                }
+                break;
+            case ARCHIVED:
+                if (canShowArchivedChannels && nextArchived.current) {
+                    dispatch(LoadAction);
+                    fetchArchivedChannels(
+                        serverUrl,
+                        currentTeamId,
+                        archivedPage.current + 1,
+                        General.CHANNELS_CHUNK_SIZE,
+                    ).then(
+                        ({channels: receivedChannels}) => loadedChannels.current(receivedChannels || [], t),
+                    ).catch(
+                        () => dispatch(StopAction),
+                    );
+                }
+                break;
         }
-    }, [loading, typeOfChannels]);
+    };
+
+    const onEndReached = useCallback(() => {
+        if (!loading) {
+            doGetChannels(typeOfChannels);
+        }
+    }, [typeOfChannels, loading]);
 
     let activeChannels: Channel[];
     switch (typeOfChannels) {
@@ -345,6 +367,8 @@ export default function BrowseChannels(props: Props) {
                         dispatch(addAction(t, filtered));
                     } else if (data?.length && !filtered?.length) {
                         doGetChannels(t);
+                    } else {
+                        dispatch(StopAction);
                     }
                     break;
                 }
@@ -395,9 +419,7 @@ export default function BrowseChannels(props: Props) {
     }, [intl.locale, categoryId]);
 
     useEffect(() => {
-        doGetChannels();
-
-        // Since doGetChannels also depends on typeOfChannels, it should be up to date when reaching this effect.
+        doGetChannels(typeOfChannels);
     }, [typeOfChannels]);
 
     useDidUpdate(() => {
@@ -412,6 +434,31 @@ export default function BrowseChannels(props: Props) {
         // Update header buttons in case anything related to the header changes
         setHeaderButtons(!adding);
     }, [theme, canCreateChannels]);
+
+    // Make sure enough channels are loaded to allow the FlatList to scroll,
+    // and let it call the onReachEnd function.
+    useDidUpdate(() => {
+        if (loading) {
+            return;
+        }
+        if (visibleChannels.length >= MIN_CHANNELS_LOADED) {
+            return;
+        }
+        let next;
+        switch (typeOfChannels) {
+            case PUBLIC:
+                next = nextPublic.current;
+                break;
+            case SHARED:
+                next = nextShared.current;
+                break;
+            default:
+                next = nextArchived.current;
+        }
+        if (next) {
+            doGetChannels(typeOfChannels);
+        }
+    }, [visibleChannels, loading]);
 
     let content;
     if (adding) {
@@ -463,7 +510,7 @@ export default function BrowseChannels(props: Props) {
                 {channelDropdown}
                 <ChannelList
                     channels={visibleChannels}
-                    doGetChannels={doGetChannels}
+                    onEndReached={onEndReached}
                     isSearch={Boolean(term)}
                     loading={loading}
                     onSelectChannel={onSelectChannel}

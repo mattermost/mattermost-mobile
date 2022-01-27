@@ -15,7 +15,7 @@ import {
 import ChannelListRow from './channel_list_row';
 
 type Props = {
-    doGetChannels: () => void;
+    onEndReached: () => void;
     loading: boolean;
     isSearch: boolean;
     channels: Channel[];
@@ -60,7 +60,7 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme: Theme) => {
 });
 
 export default function ChannelList({
-    doGetChannels,
+    onEndReached,
     onSelectChannel,
     loading,
     isSearch,
@@ -127,7 +127,7 @@ export default function ChannelList({
             renderItem={renderItem}
             testID='browse_channels.flat_list'
             ListEmptyComponent={loading ? renderLoading : renderNoResults}
-            onEndReached={doGetChannels}
+            onEndReached={onEndReached}
             ListFooterComponent={loading && channels.length ? renderLoading : null}
             contentContainerStyle={style.listContainer}
             ItemSeparatorComponent={renderSeparator}
