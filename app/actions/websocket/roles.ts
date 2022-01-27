@@ -5,6 +5,7 @@ import {fetchRolesIfNeeded} from '@actions/remote/role';
 import {fetchMyTeam} from '@actions/remote/team';
 import {fetchMe} from '@actions/remote/user';
 import DatabaseManager from '@database/manager';
+import {queryRoleById} from '@queries/servers/role';
 import {queryCurrentUserId} from '@queries/servers/system';
 import {prepareMyTeams} from '@queries/servers/team';
 import {prepareUsers} from '@queries/servers/user';
@@ -17,7 +18,19 @@ export async function handleRoleUpdatedEvent(serverUrl: string, msg: WebSocketMe
         return;
     }
 
+    const role = JSON.parse(msg.data.role);
 
+    // only update Role records that exist in the Role Table
+    const dbRole = await queryRoleById(database.database, role.id);
+    if (!dbRole) {
+        return;
+    }
+
+    await database.database.write(async () => {
+        await dbRole.update((roleRecord: RoleModel) => {
+            roleRecord.permissions = role.permissions;
+        });
+    });
 }
 
 export async function handleUserRoleUpdatedEvent(serverUrl: string, msg: WebSocketMessage): Promise<void> {
