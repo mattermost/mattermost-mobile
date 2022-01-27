@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {fetchRolesIfNeeded} from '@actions/remote/role';
+import {fetchRolesIfNeeded, RolesRequest} from '@actions/remote/role';
 import {fetchMyTeam} from '@actions/remote/team';
 import {fetchMe} from '@actions/remote/user';
 import DatabaseManager from '@database/manager';
@@ -12,15 +12,16 @@ import {prepareUsers} from '@queries/servers/user';
 import {WebSocketMessage} from '@typings/api/websocket';
 
 import type {Model} from '@nozbe/watermelondb';
+import type {ServerDatabase} from '@typings/database/database';
+import type RoleModel from '@typings/database/models/servers/role';
 export async function handleRoleUpdatedEvent(serverUrl: string, msg: WebSocketMessage): Promise<void> {
     const database = DatabaseManager.serverDatabases[serverUrl];
     if (!database) {
         return;
     }
 
-    const role = JSON.parse(msg.data.role);
-
     // only update Role records that exist in the Role Table
+    const role = JSON.parse(msg.data.role);
     const dbRole = await queryRoleById(database.database, role.id);
     if (!dbRole) {
         return;
@@ -44,21 +45,19 @@ export async function handleUserRoleUpdatedEvent(serverUrl: string, msg: WebSock
         return;
     }
 
-    // update Role Table if needed
     const modelPromises: Array<Promise<Model[]>> = [];
+
+    // update Role Table if needed
     const newRoles = await fetchRolesIfNeeded(serverUrl, Array.from(msg.data.roles), true);
-    if (!(typeof newRoles.roles === 'string' && newRoles.roles === 'null')) {
-        const preparedRolesModels = await database.operator.handleRole({
-            roles: newRoles.roles!,
-            prepareRecordsOnly: true,
-        });
-        modelPromises.push(preparedRolesModels);
-    }
+    const preparedRoleModels = getPreparedRoles(database, newRoles);
+    modelPromises.push(preparedRoleModels);
 
     // update User Table record
     const meData = await fetchMe(serverUrl, true);
     const userModels = prepareUsers(database.operator, [meData.user!]);
-    modelPromises.push(userModels);
+    if (userModels) {
+        modelPromises.push(userModels);
+    }
 
     const models = await Promise.all(modelPromises);
     const flattenedModels = models.flat() as Model[];
@@ -79,22 +78,18 @@ export async function handleMemberRoleUpdatedEvent(serverUrl: string, msg: WebSo
         return;
     }
 
-    // update Role Table if needed
     const modelPromises: Array<Promise<Model[]>> = [];
-    const newRoles = await fetchRolesIfNeeded(serverUrl, Array.from(member.roles), true);
-    if (!(typeof newRoles.roles === 'string' && newRoles.roles === 'null')) {
-        const preparedRolesModels = await database.operator.handleRole({
-            roles: newRoles.roles!,
-            prepareRecordsOnly: true,
-        });
-        modelPromises.push(preparedRolesModels);
-    }
+
+    // update Role Table if needed
+    const newRoles = await fetchRolesIfNeeded(serverUrl, Array.from(msg.data.roles), true);
+    const preparedRoleModels = getPreparedRoles(database, newRoles);
+    modelPromises.push(preparedRoleModels);
 
     // update MyTeam Table
     const teamData = await fetchMyTeam(serverUrl, member.team_id, true);
-    const prepare = prepareMyTeams(database.operator, teamData!.teams!, teamData!.memberships!);
-    if (prepare) {
-        modelPromises.push(...prepare);
+    const preparedTeams = prepareMyTeams(database.operator, teamData!.teams!, teamData!.memberships!);
+    if (preparedTeams) {
+        modelPromises.push(...preparedTeams);
     }
 
     const models = await Promise.all(modelPromises);
@@ -103,3 +98,15 @@ export async function handleMemberRoleUpdatedEvent(serverUrl: string, msg: WebSo
         await database.operator.batchRecords(flattenedModels);
     }
 }
+
+async function getPreparedRoles(database: ServerDatabase, roles: RolesRequest): Promise<Model[]> {
+    if (!(typeof roles.roles === 'string' && roles.roles === 'null')) {
+        const preparedRolesModels = await database.operator.handleRole({
+            roles: roles.roles!,
+            prepareRecordsOnly: true,
+        });
+        return preparedRolesModels;
+    }
+    return [];
+}
+
