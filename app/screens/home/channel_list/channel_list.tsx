@@ -16,6 +16,7 @@ import ServerIcon from '@screens/home/channel_list/server_icon/server_icon';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 
 type ChannelProps = {
+    currentTeamId?: string;
     teamsCount: number;
     time?: number;
 };
@@ -89,11 +90,12 @@ const ChannelListScreen = (props: ChannelProps) => {
                         teamsCount={props.teamsCount}
                     />
                     <ChannelList
+                        currentTeamId={props.currentTeamId}
                         iconPad={canAddOtherServers && props.teamsCount <= 1}
                         isTablet={isTablet}
                         teamsCount={props.teamsCount}
                     />
-                    {isTablet &&
+                    {isTablet && Boolean(props.currentTeamId) &&
                         <Channel/>
                     }
                 </Animated.View>

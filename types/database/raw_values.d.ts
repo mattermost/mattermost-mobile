@@ -122,3 +122,4 @@ type RawValue =
   | TeamSearchHistory
   | TermsOfService
   | UserProfile
+  | Pick<ChannelMembership, 'channel_id' | 'user_id'>

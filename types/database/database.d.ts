@@ -223,7 +223,7 @@ export type HandleGroupArgs = PrepareOnly & {
 };
 
 export type HandleChannelMembershipArgs = PrepareOnly & {
-  channelMemberships: ChannelMember[];
+  channelMemberships: Array<Pick<ChannelMembership, 'user_id' | 'channel_id'>>;
 };
 
 export type HandleGroupMembershipArgs = PrepareOnly & {
