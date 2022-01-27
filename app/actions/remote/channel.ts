@@ -4,7 +4,7 @@
 import {Model} from '@nozbe/watermelondb';
 import {IntlShape} from 'react-intl';
 
-import {switchToChannel} from '@actions/local/channel';
+import {storeMyChannelsForTeam, switchToChannel} from '@actions/local/channel';
 import {General} from '@constants';
 import DatabaseManager from '@database/manager';
 import {privateChannelJoinPrompt} from '@helpers/api/channel';
@@ -211,26 +211,7 @@ export const fetchMyChannelsForTeam = async (serverUrl: string, teamId: string, 
         }, []);
 
         if (!fetchOnly) {
-            const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
-            const modelPromises: Array<Promise<Model[]>> = [];
-            if (operator) {
-                const prepare = await prepareMyChannelsForTeam(operator, teamId, channels, memberships);
-                if (prepare) {
-                    modelPromises.push(...prepare);
-                }
-                if (modelPromises.length) {
-                    const models = await Promise.all(modelPromises);
-                    const flattenedModels = models.flat() as Model[];
-                    if (flattenedModels?.length > 0) {
-                        try {
-                            await operator.batchRecords(flattenedModels);
-                        } catch {
-                            // eslint-disable-next-line no-console
-                            console.log('FAILED TO BATCH CHANNELS');
-                        }
-                    }
-                }
-            }
+            storeMyChannelsForTeam(serverUrl, teamId, channels, memberships);
         }
 
         return {channels, memberships};
@@ -255,26 +236,7 @@ export const fetchMyChannel = async (serverUrl: string, teamId: string, channelI
         ]);
 
         if (!fetchOnly) {
-            const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
-            const modelPromises: Array<Promise<Model[]>> = [];
-            if (operator) {
-                const prepare = await prepareMyChannelsForTeam(operator, teamId, [channel], [member]);
-                if (prepare) {
-                    modelPromises.push(...prepare);
-                }
-                if (modelPromises.length) {
-                    const models = await Promise.all(modelPromises);
-                    const flattenedModels = models.flat() as Model[];
-                    if (flattenedModels?.length > 0) {
-                        try {
-                            await operator.batchRecords(flattenedModels);
-                        } catch {
-                            // eslint-disable-next-line no-console
-                            console.log('FAILED TO BATCH CHANNELS');
-                        }
-                    }
-                }
-            }
+            storeMyChannelsForTeam(serverUrl, channel.team_id || teamId, [channel], [member]);
         }
 
         return {

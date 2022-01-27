@@ -234,4 +234,4 @@ const withChannelType = withObservables(['post'], ({database, post}: WithDatabas
     ),
 }));
 
-export default withDatabase(withChannelType(React.memo(AddMembers)));
+export default withDatabase(withChannelType(AddMembers));
