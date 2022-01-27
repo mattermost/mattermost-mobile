@@ -29,6 +29,7 @@
   "apps.error.parser": "Fel vi tolkning: {error}",
   "apps.error.parser.empty_value": "tomma värden är inte tillåtet",
   "apps.error.parser.execute_non_leaf": "Du måste välja ett underkommando.",
+  "apps.error.parser.missing_binding": "Kommandokopplingar saknas.",
   "apps.error.parser.missing_call": "Saknar bindningsanrop.",
   "apps.error.parser.missing_field_value": "Fältvärde saknas.",
   "apps.error.parser.missing_quote": "Förväntade ett matchande dubbelt citattecken i slutet av inmatningen.",

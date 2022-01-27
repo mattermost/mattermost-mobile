@@ -40,7 +40,6 @@ exports[`EnableDisableCalls should match snapshot if calls are disabled 1`] = `
     rightArrow={false}
     shouldRender={true}
     testID="test-id"
-    textId="mobile.channel_info.enable_calls"
     theme={
       Object {
         "awayIndicator": "#ffbc1f",
@@ -115,7 +114,6 @@ exports[`EnableDisableCalls should match snapshot if calls are enabled 1`] = `
     rightArrow={false}
     shouldRender={true}
     testID="test-id"
-    textId="mobile.channel_info.disable_calls"
     theme={
       Object {
         "awayIndicator": "#ffbc1f",

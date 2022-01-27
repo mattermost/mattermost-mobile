@@ -22,35 +22,38 @@ describe('CallScreen', () => {
                     id: 'user-1-id',
                     muted: false,
                     isTalking: false,
+                    profile: {
+                        id: 'user-1-id',
+                        username: 'user-1-username',
+                        nickname: 'User 1',
+                    },
                 },
                 'user-2-id': {
                     id: 'user-2-id',
                     muted: true,
                     isTalking: true,
+                    profile: {
+                        id: 'user-2-id',
+                        username: 'user-2-username',
+                        nickname: 'User 2',
+                    },
                 },
             },
             channelId: 'channel-id',
             startTime: 100,
             speakers: 'user-2-id',
-            screenOn: false,
+            screenOn: '',
             threadId: false,
-        },
-        users: {
-            'user-1-id': {
-                id: 'user-1-id',
-                username: 'user-1-username',
-                nickname: 'User 1',
-            },
-            'user-2-id': {
-                id: 'user-2-id',
-                username: 'user-2-username',
-                nickname: 'User 2',
-            },
         },
         currentParticipant: {
             id: 'user-2-id',
             muted: true,
             isTalking: true,
+            profile: {
+                id: 'user-2-id',
+                username: 'user-2-username',
+                nickname: 'User 2',
+            },
         },
         teammateNameDisplay: Preferences.DISPLAY_PREFER_NICKNAME,
         screenShareURL: '',
@@ -67,14 +70,14 @@ describe('CallScreen', () => {
     });
 
     test('should show controls in landscape view on click the users list', () => {
-        const props = {...baseProps, call: {...baseProps.call, screenOn: false}};
+        const props = {...baseProps, call: {...baseProps.call, screenOn: ''}};
         const wrapper = shallow(<CallScreen {...props}/>);
         wrapper.find({testID: 'users-list'}).simulate('press');
         expect(wrapper.getElement()).toMatchSnapshot();
     });
 
     test('should show controls in landscape view on click the screen share', () => {
-        const props = {...baseProps, call: {...baseProps.call, screenOn: true}, screenShareURL: 'screen-share-url'};
+        const props = {...baseProps, call: {...baseProps.call, screenOn: 'user-2-id'}, screenShareURL: 'screen-share-url'};
         const wrapper = shallow(<CallScreen {...props}/>);
         wrapper.find({testID: 'screen-share-container'}).simulate('press');
         expect(wrapper.getElement()).toMatchSnapshot();
@@ -105,7 +108,7 @@ describe('CallScreen', () => {
             });
 
             test('should match snapshot with screenshare', () => {
-                const props = {...baseProps, call: {...baseProps.call, screenOn: true}, screenShareURL: 'screen-share-url'};
+                const props = {...baseProps, call: {...baseProps.call, screenOn: 'user-2-id'}, screenShareURL: 'screen-share-url'};
                 const wrapper = shallow(<CallScreen {...props}/>);
 
                 expect(wrapper.getElement()).toMatchSnapshot();

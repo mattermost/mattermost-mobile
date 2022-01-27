@@ -1,0 +1,44 @@
+diff --git a/node_modules/react-native-file-viewer/android/src/main/java/com/vinzscam/reactnativefileviewer/RNFileViewerModule.java b/node_modules/react-native-file-viewer/android/src/main/java/com/vinzscam/reactnativefileviewer/RNFileViewerModule.java
+index 93f7881..d81f609 100644
+--- a/node_modules/react-native-file-viewer/android/src/main/java/com/vinzscam/reactnativefileviewer/RNFileViewerModule.java
++++ b/node_modules/react-native-file-viewer/android/src/main/java/com/vinzscam/reactnativefileviewer/RNFileViewerModule.java
+@@ -6,6 +6,7 @@ import android.content.Intent;
+ import android.content.pm.PackageManager;
+ import android.net.Uri;
+ import androidx.core.content.FileProvider;
++import android.text.TextUtils;
+ import android.webkit.MimeTypeMap;
+ 
+ import com.facebook.react.bridge.ActivityEventListener;
+@@ -41,6 +42,21 @@ public class RNFileViewerModule extends ReactContextBaseJavaModule {
+     reactContext.addActivityEventListener(mActivityEventListener);
+   }
+ 
++  private static String getExtension(String uri) {
++    if (uri == null) {
++      return null;
++    }
++
++    int dot = uri.lastIndexOf(".");
++    if (dot >= 0) {
++      // exclude the dot
++      return uri.substring(dot + 1);
++    } else {
++      // No extension.
++      return "";
++    }
++  }
++
+   @ReactMethod
+   public void open(String path, Integer currentId, ReadableMap options) {
+     Uri contentUri = null;
+@@ -74,6 +90,9 @@ public class RNFileViewerModule extends ReactContextBaseJavaModule {
+     }
+ 
+     String extension = MimeTypeMap.getFileExtensionFromUrl(path).toLowerCase();
++    if (TextUtils.isEmpty(extension)) {
++      extension = getExtension(path);
++    }
+     String mimeType = MimeTypeMap.getSingleton().getMimeTypeFromExtension(extension);
+ 
+     Intent shareIntent = new Intent();
