@@ -4,9 +4,9 @@
 import React from 'react';
 import {StyleProp, View, ViewStyle} from 'react-native';
 
-import {typography} from '@app/utils/typography';
 import FormattedText from '@components/formatted_text';
 import {makeStyleSheetFromTheme} from '@utils/theme';
+import {typography} from '@utils/typography';
 
 type NewMessagesLineProps = {
     moreMessages: boolean;

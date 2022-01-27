@@ -1,14 +1,13 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback, useEffect, useReducer, useRef, useState} from 'react';
+import React, {useCallback, useEffect, useState} from 'react';
 import {IntlShape, useIntl} from 'react-intl';
 import {Keyboard, View} from 'react-native';
 import {ImageResource, Navigation, OptionsTopBarButton} from 'react-native-navigation';
 import {SafeAreaView} from 'react-native-safe-area-context';
 
-import {fetchArchivedChannels, fetchChannels, fetchSharedChannels, joinChannel, switchToChannelById} from '@actions/remote/channel';
-import useDidUpdate from '@app/hooks/did_update';
+import {joinChannel, switchToChannelById} from '@actions/remote/channel';
 import Loading from '@components/loading';
 import SearchBar from '@components/search_bar';
 import {General} from '@constants';
@@ -25,47 +24,12 @@ import {
 import ChannelDropdown from './channel_dropdown';
 import ChannelList from './channel_list';
 
-import type MyChannelModel from '@typings/database/models/servers/my_channel';
-
-type Props = {
-
-    // Screen Props (do not change during the lifetime of the screen)
-    componentId: string;
-    categoryId?: string;
-    closeButton: ImageResource;
-
-    // Properties not changing during the lifetime of the screen)
-    currentUserId: string;
-    currentTeamId: string;
-
-    // Calculated Props
-    canCreateChannels: boolean;
-    joinedChannels?: MyChannelModel[];
-    sharedChannelsEnabled: boolean;
-    canShowArchivedChannels: boolean;
-}
-
 const CLOSE_BUTTON_ID = 'close-browse-channels';
 const CREATE_BUTTON_ID = 'create-pub-channel';
-const MIN_CHANNELS_LOADED = 10;
 
 export const PUBLIC = 'public';
 export const SHARED = 'shared';
 export const ARCHIVED = 'archived';
-const LOAD = 'load';
-const STOP = 'stop';
-
-const filterChannelsByTerm = (channels: Channel[], term: string) => {
-    const lowerCasedTerm = term.toLowerCase();
-    return channels.filter((c) => {
-        return (c.name.toLowerCase().includes(lowerCasedTerm) || c.display_name.toLowerCase().includes(lowerCasedTerm));
-    });
-};
-
-const filterJoinedChannels = (joinedChannels: MyChannelModel[], allChannels: Channel[] | undefined) => {
-    const ids = joinedChannels.map((c) => c.id);
-    return allChannels?.filter((c) => !ids.includes(c.id));
-};
 
 const makeLeftButton = (icon: ImageResource): OptionsTopBarButton => {
     return {
@@ -117,100 +81,58 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme: Theme) => {
     };
 });
 
-type State = {
-    channels: Channel[];
-    archivedChannels: Channel[];
-    sharedChannels: Channel[];
+type Props = {
+
+    // Screen Props (do not change during the lifetime of the screen)
+    componentId: string;
+    categoryId?: string;
+    closeButton: ImageResource;
+
+    // Properties not changing during the lifetime of the screen)
+    currentUserId: string;
+    currentTeamId: string;
+
+    // Calculated Props
+    canCreateChannels: boolean;
+    sharedChannelsEnabled: boolean;
+    canShowArchivedChannels: boolean;
+
+    // SearchHandler Props
+    typeOfChannels: string;
+    changeChannelType: (channelType: string) => void;
+    term: string;
+    searchChannels: (term: string) => void;
+    stopSearch: () => void;
     loading: boolean;
+    onEndReached: () => void;
+    channels: Channel[];
 }
-
-type Action = {
-    type: string;
-    data: Channel[];
-}
-
-const LoadAction: Action = {type: LOAD, data: []};
-const StopAction: Action = {type: STOP, data: []};
-const addAction = (t: string, data: Channel[]) => {
-    return {type: t, data};
-};
-
-const reducer = (state: State, action: Action) => {
-    switch (action.type) {
-        case PUBLIC:
-            return {
-                ...state,
-                channels: [...state.channels, ...action.data],
-                loading: false,
-            };
-        case ARCHIVED:
-            return {
-                ...state,
-                archivedChannels: [...state.archivedChannels, ...action.data],
-                loading: false,
-            };
-        case SHARED:
-            return {
-                ...state,
-                sharedChannels: [...state.sharedChannels, ...action.data],
-                loading: false,
-            };
-        case LOAD:
-            if (state.loading) {
-                return state;
-            }
-            return {
-                ...state,
-                loading: true,
-            };
-        case STOP:
-            if (state.loading) {
-                return {
-                    ...state,
-                    loading: false,
-                };
-            }
-            return state;
-        default:
-            return state;
-    }
-};
-
-const initialState = {channels: [], archivedChannels: [], sharedChannels: [], loading: false};
-const defaultJoinedChannels: MyChannelModel[] = [];
 
 export default function BrowseChannels(props: Props) {
     const {
         componentId,
         canCreateChannels,
-        joinedChannels = defaultJoinedChannels,
         sharedChannelsEnabled,
         closeButton,
         currentUserId,
         currentTeamId,
         canShowArchivedChannels,
         categoryId,
+        typeOfChannels,
+        changeChannelType: changeTypeOfChannels,
+        term,
+        searchChannels,
+        stopSearch,
+        channels,
+        loading,
+        onEndReached,
     } = props;
     const intl = useIntl();
     const theme = useTheme();
     const style = getStyleFromTheme(theme);
     const serverUrl = useServerUrl();
 
-    const [{channels, archivedChannels, sharedChannels, loading}, dispatch] = useReducer(reducer, initialState);
-
-    const [visibleChannels, setVisibleChannels] = useState<Channel[]>([]);
-    const [term, setTerm] = useState('');
-
-    const [typeOfChannels, setTypeOfChannels] = useState(PUBLIC);
     const [adding, setAdding] = useState(false);
-
-    const publicPage = useRef(-1);
-    const sharedPage = useRef(-1);
-    const archivedPage = useRef(-1);
-    const nextPublic = useRef(true);
-    const nextShared = useRef(true);
-    const nextArchived = useRef(true);
-    const loadedChannels = useRef<(data: Channel[] | undefined, typeOfChannels: string) => Promise<void>>(async () => {/* Do nothing */});
 
     const setHeaderButtons = useCallback((createEnabled: boolean) => {
         const buttons = {
@@ -251,145 +173,6 @@ export default function BrowseChannels(props: Props) {
         }
     }, [setHeaderButtons, intl.locale]);
 
-    const doGetChannels = (t: string) => {
-        switch (t) {
-            case PUBLIC:
-                if (nextPublic.current) {
-                    dispatch(LoadAction);
-                    fetchChannels(
-                        serverUrl,
-                        currentTeamId,
-                        publicPage.current + 1,
-                        General.CHANNELS_CHUNK_SIZE,
-                    ).then(
-                        ({channels: receivedChannels}) => loadedChannels.current(receivedChannels || [], t),
-                    ).catch(
-                        () => dispatch(StopAction),
-                    );
-                }
-                break;
-            case SHARED:
-                if (nextShared.current) {
-                    dispatch(LoadAction);
-                    fetchSharedChannels(
-                        serverUrl,
-                        currentTeamId,
-                        sharedPage.current + 1,
-                        General.CHANNELS_CHUNK_SIZE,
-                    ).then(
-                        ({channels: receivedChannels}) => loadedChannels.current(receivedChannels || [], t),
-                    ).catch(
-                        () => dispatch(StopAction),
-                    );
-                }
-                break;
-            case ARCHIVED:
-                if (canShowArchivedChannels && nextArchived.current) {
-                    dispatch(LoadAction);
-                    fetchArchivedChannels(
-                        serverUrl,
-                        currentTeamId,
-                        archivedPage.current + 1,
-                        General.CHANNELS_CHUNK_SIZE,
-                    ).then(
-                        ({channels: receivedChannels}) => loadedChannels.current(receivedChannels || [], t),
-                    ).catch(
-                        () => dispatch(StopAction),
-                    );
-                }
-                break;
-        }
-    };
-
-    const onEndReached = useCallback(() => {
-        if (!loading) {
-            doGetChannels(typeOfChannels);
-        }
-    }, [typeOfChannels, loading]);
-
-    let activeChannels: Channel[];
-    switch (typeOfChannels) {
-        case ARCHIVED:
-            activeChannels = archivedChannels;
-            break;
-        case SHARED:
-            activeChannels = sharedChannels;
-            break;
-        default:
-            activeChannels = channels;
-    }
-
-    const stopSearch = useCallback(() => {
-        setVisibleChannels(activeChannels);
-        setTerm('');
-    }, [activeChannels]);
-
-    const searchChannels = useCallback((text: string) => {
-        if (text) {
-            const filtered = filterChannelsByTerm(activeChannels, text);
-            setTerm(text);
-            if (
-                filtered.length !== visibleChannels.length ||
-                filtered.reduce((shouldUpdate, c, i) => shouldUpdate || c.id !== visibleChannels[i].id, false)
-            ) {
-                setVisibleChannels(filtered);
-            }
-        } else {
-            stopSearch();
-        }
-    }, [activeChannels, visibleChannels, stopSearch]);
-
-    const onPressDropdownElement = useCallback((channelType: string) => {
-        setTypeOfChannels(channelType);
-    }, []);
-
-    useEffect(() => {
-        loadedChannels.current = async (data: Channel[] | undefined, t: string) => {
-            switch (t) {
-                case PUBLIC: {
-                    publicPage.current += 1;
-                    nextPublic.current = Boolean(data?.length);
-                    const filtered = filterJoinedChannels(joinedChannels, data);
-                    if (filtered?.length) {
-                        dispatch(addAction(t, filtered));
-                    } else if (data?.length) {
-                        doGetChannels(t);
-                    } else {
-                        dispatch(StopAction);
-                    }
-                    break;
-                }
-                case SHARED: {
-                    sharedPage.current += 1;
-                    nextShared.current = Boolean(data?.length);
-                    const filtered = filterJoinedChannels(joinedChannels, data);
-                    if (filtered?.length) {
-                        dispatch(addAction(t, filtered));
-                    } else if (data?.length && !filtered?.length) {
-                        doGetChannels(t);
-                    } else {
-                        dispatch(StopAction);
-                    }
-                    break;
-                }
-                case ARCHIVED:
-                default:
-                    archivedPage.current += 1;
-                    nextArchived.current = Boolean(data?.length);
-                    if (data?.length) {
-                        dispatch(addAction(t, data));
-                    } else {
-                        dispatch(StopAction);
-                    }
-
-                    break;
-            }
-        };
-        return () => {
-            loadedChannels.current = async () => {/* Do nothing */};
-        };
-    }, [joinedChannels]);
-
     useEffect(() => {
         const unsubscribe = Navigation.events().registerComponentListener({
             navigationButtonPressed: ({buttonId}: { buttonId: string }) => {
@@ -419,46 +202,9 @@ export default function BrowseChannels(props: Props) {
     }, [intl.locale, categoryId]);
 
     useEffect(() => {
-        doGetChannels(typeOfChannels);
-    }, [typeOfChannels]);
-
-    useDidUpdate(() => {
-        if (term) {
-            setVisibleChannels(filterChannelsByTerm(activeChannels, term));
-        } else {
-            setVisibleChannels(activeChannels);
-        }
-    }, [activeChannels]);
-
-    useEffect(() => {
         // Update header buttons in case anything related to the header changes
         setHeaderButtons(!adding);
     }, [theme, canCreateChannels]);
-
-    // Make sure enough channels are loaded to allow the FlatList to scroll,
-    // and let it call the onReachEnd function.
-    useDidUpdate(() => {
-        if (loading) {
-            return;
-        }
-        if (visibleChannels.length >= MIN_CHANNELS_LOADED) {
-            return;
-        }
-        let next;
-        switch (typeOfChannels) {
-            case PUBLIC:
-                next = nextPublic.current;
-                break;
-            case SHARED:
-                next = nextShared.current;
-                break;
-            default:
-                next = nextArchived.current;
-        }
-        if (next) {
-            doGetChannels(typeOfChannels);
-        }
-    }, [visibleChannels, loading]);
 
     let content;
     if (adding) {
@@ -474,7 +220,7 @@ export default function BrowseChannels(props: Props) {
         if (canShowArchivedChannels || sharedChannelsEnabled) {
             channelDropdown = (
                 <ChannelDropdown
-                    onPress={onPressDropdownElement}
+                    onPress={changeTypeOfChannels}
                     typeOfChannels={typeOfChannels}
                     canShowArchivedChannels={canShowArchivedChannels}
                     sharedChannelsEnabled={sharedChannelsEnabled}
@@ -509,7 +255,7 @@ export default function BrowseChannels(props: Props) {
                 </View>
                 {channelDropdown}
                 <ChannelList
-                    channels={visibleChannels}
+                    channels={channels}
                     onEndReached={onEndReached}
                     isSearch={Boolean(term)}
                     loading={loading}

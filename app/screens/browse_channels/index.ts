@@ -7,12 +7,12 @@ import withObservables from '@nozbe/with-observables';
 import {of as of$} from 'rxjs';
 import {switchMap} from 'rxjs/operators';
 
-import {MyChannelModel} from '@app/database/models/server';
 import {Permissions} from '@constants';
 import {MM_TABLES, SYSTEM_IDENTIFIERS} from '@constants/database';
+import {MyChannelModel} from '@database/models/server';
 import {hasPermission} from '@utils/role';
 
-import BrowseChannels from './browse_channels';
+import SearchHandler from './search_handler';
 
 import type {WithDatabaseArgs} from '@typings/database/database';
 import type RoleModel from '@typings/database/models/servers/role';
@@ -65,4 +65,4 @@ const enhanced = withObservables([], ({database}: WithDatabaseArgs) => {
     };
 });
 
-export default withDatabase(enhanced(BrowseChannels));
+export default withDatabase(enhanced(SearchHandler));
