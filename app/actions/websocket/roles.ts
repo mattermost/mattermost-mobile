@@ -2,7 +2,6 @@
 // See LICENSE.txt for license information.
 
 import {fetchRolesIfNeeded, RolesRequest} from '@actions/remote/role';
-import {fetchMyTeam} from '@actions/remote/team';
 import {fetchMe} from '@actions/remote/user';
 import DatabaseManager from '@database/manager';
 import {queryRoleById} from '@queries/servers/role';
@@ -50,7 +49,7 @@ export async function handleUserRoleUpdatedEvent(serverUrl: string, msg: WebSock
 
     // update Role Table if needed
     const newRoles = await fetchRolesIfNeeded(serverUrl, Array.from(msg.data.roles), true);
-    const preparedRoleModels = getPreparedRoles(database, newRoles);
+    const preparedRoleModels = getPreparedRoleModels(database, newRoles);
     modelPromises.push(preparedRoleModels);
 
     // update User Table record
@@ -82,15 +81,14 @@ export async function handleMemberRoleUpdatedEvent(serverUrl: string, msg: WebSo
     const modelPromises: Array<Promise<Model[]>> = [];
 
     // update Role Table if needed
-    const newRoles = await fetchRolesIfNeeded(serverUrl, Array.from(msg.data.roles), true);
-    const preparedRoleModels = getPreparedRoles(database, newRoles);
+    const newRoles = await fetchRolesIfNeeded(serverUrl, Array.from(member.roles), true);
+    const preparedRoleModels = getPreparedRoleModels(database, newRoles);
     modelPromises.push(preparedRoleModels);
 
     // update MyTeam Table
-    const teamData = await fetchMyTeam(serverUrl, member.team_id, true);
-    const preparedTeams = prepareMyTeams(database.operator, teamData!.teams!, teamData!.memberships!);
-    if (preparedTeams) {
-        modelPromises.push(...preparedTeams);
+    const preparedMyTeam = prepareMyTeams(database.operator, [], [member]);
+    if (preparedMyTeam) {
+        modelPromises.push(preparedMyTeam[2]);
     }
 
     const models = await Promise.all(modelPromises);
@@ -100,7 +98,7 @@ export async function handleMemberRoleUpdatedEvent(serverUrl: string, msg: WebSo
     }
 }
 
-async function getPreparedRoles(database: ServerDatabase, roles: RolesRequest): Promise<Model[]> {
+async function getPreparedRoleModels(database: ServerDatabase, roles: RolesRequest): Promise<Model[]> {
     if (!(typeof roles.roles === 'string' && roles.roles === 'null')) {
         const preparedRolesModels = await database.operator.handleRole({
             roles: roles.roles!,
