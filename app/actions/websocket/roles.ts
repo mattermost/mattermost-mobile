@@ -14,6 +14,7 @@ import {WebSocketMessage} from '@typings/api/websocket';
 import type {Model} from '@nozbe/watermelondb';
 import type {ServerDatabase} from '@typings/database/database';
 import type RoleModel from '@typings/database/models/servers/role';
+
 export async function handleRoleUpdatedEvent(serverUrl: string, msg: WebSocketMessage): Promise<void> {
     const database = DatabaseManager.serverDatabases[serverUrl];
     if (!database) {
