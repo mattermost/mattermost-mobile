@@ -36,6 +36,7 @@ export const transformCategoryRecord = ({action, database, value}: TransformerAr
         category.collapsed = isCreateAction ? false : record.collapsed;
         category.type = raw.type;
         category.teamId = raw.team_id;
+        category.userId = raw.user_id;
     };
 
     return prepareBaseRecord({

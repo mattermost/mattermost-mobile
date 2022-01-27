@@ -5,11 +5,17 @@ import React from 'react';
 
 import {renderWithIntlAndTheme} from '@test/intl-test-helper';
 
-import Threads from './index';
+import Category from './index';
 
-test('Threads Component should match snapshot', () => {
+const userId = 'myUser';
+const teamId = 'myTeam';
+
+test('Category List Component should match snapshot', () => {
     const {toJSON} = renderWithIntlAndTheme(
-        <Threads/>,
+        <Category
+            currentUserId={userId}
+            currentTeamId={teamId}
+        />,
     );
 
     expect(toJSON()).toMatchSnapshot();

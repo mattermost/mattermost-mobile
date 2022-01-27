@@ -1,40 +1,31 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React from 'react';
-import {FlatList, StyleSheet} from 'react-native';
+import {Q} from '@nozbe/watermelondb';
+import {withDatabase} from '@nozbe/watermelondb/DatabaseProvider';
+import withObservables from '@nozbe/with-observables';
 
-import ThreadsButton from '../threads';
+import {MM_TABLES} from '@constants/database';
 
-import CategoryBody from './body';
-import CategoryHeader from './header';
+const {SERVER: {CATEGORY}} = MM_TABLES;
+import Categories from './categories';
 
-type Props = {
-    categories: TempoCategory[];
-}
+import type {WithDatabaseArgs} from '@typings/database/database';
+import type CategoryModel from '@typings/database/models/servers/category';
 
-const styles = StyleSheet.create({
-    flex: {
-        flex: 1,
-    },
-});
+type WithDatabaseProps = {currentTeamId: string; currentUserId: string } & WithDatabaseArgs
 
-const renderCategory = (data: {item: TempoCategory}) => (
-    <>
-        <CategoryHeader heading={data.item.title}/>
-        <CategoryBody channels={data.item.channels}/>
-    </>
-);
+const withCategories = withObservables(
+    ['currentTeamId', 'currentUserId'],
+    ({currentTeamId, currentUserId, database}: WithDatabaseProps) => {
+        const categories = database.get<CategoryModel>(CATEGORY).query(
+            Q.where('team_id', currentTeamId),
+            Q.where('user_id', currentUserId),
+        ).observeWithColumns(['sort_order']);
 
-const Categories = (props: Props) => {
-    return (
-        <FlatList
-            data={props.categories}
-            renderItem={renderCategory}
-            ListHeaderComponent={ThreadsButton}
-            style={styles.flex}
-        />
-    );
-};
+        return {
+            categories,
+        };
+    });
 
-export default Categories;
+export default withDatabase(withCategories(Categories));

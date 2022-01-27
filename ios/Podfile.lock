@@ -744,7 +744,7 @@ SPEC CHECKSUMS:
   FBLazyVector: cf409c74423d3507bda74bda1dc41e903ec2cd5b
   FBReactNativeSpec: ef0ce762fdb37900abb01e008cce5f0ef2cce6b7
   fmt: ff9d55029c625d3757ed641535fd4a75fedc7ce9
-  glog: 85ecdd10ee8d8ec362ef519a6a45ff9aa27b2e85
+  glog: 5337263514dd6f09803962437687240c5dc39aa4
   hermes-engine: bf7577d12ac6ccf53ab8b5af3c6ccf0dd8458c5c
   HMSegmentedControl: 34c1f54d822d8308e7b24f5d901ec674dfa31352
   jail-monkey: 07b83767601a373db876e939b8dbf3f5eb15f073
@@ -754,7 +754,7 @@ SPEC CHECKSUMS:
   lottie-react-native: a029a86e1689c86a07169c520ae770e84348cd20
   Permission-Camera: 53efcbb755b0e8bdf253dbb27cc7559ccfce8480
   Permission-PhotoLibrary: 7bec836dcdd04a0bfb200c314f1aae06d4476357
-  RCT-Folly: 803a9cfd78114b2ec0f140cfa6fa2a6bafb2d685
+  RCT-Folly: a21c126816d8025b547704b777a2ba552f3d9fa9
   RCTRequired: e5dc0c44cb366fc93383a2bffbc190fe821e7293
   RCTTypeSafety: 6a4d0cfe070e7fd996e797f439b70878764a1ae0
   RCTYouTube: a8bb45705622a6fc9decf64be04128d3658ed411

@@ -47,4 +47,10 @@ export default class CategoryModel extends Model {
 
     /** team : The team in which this category resides */
     team: Relation<TeamModel>;
+
+    /** user_id : The user to whom this category belongs */
+    userId: string;
+
+    /** user : The user to whom this category belongs */
+    user: Relation<UserModel>;
 }

@@ -17,6 +17,7 @@ type CategoryChannel = {
 type Category = {
     id: string;
     team_id: string;
+    user_id: string;
     display_name: string;
     sort_order: number;
     sorting: CategorySorting;

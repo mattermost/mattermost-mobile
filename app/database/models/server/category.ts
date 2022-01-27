@@ -12,12 +12,14 @@ import type CategoryInterface from '@typings/database/models/servers/category';
 import type CategoryChannelModel from '@typings/database/models/servers/category_channel';
 import type ChannelModel from '@typings/database/models/servers/channel';
 import type TeamModel from '@typings/database/models/servers/team';
+import type UserModel from '@typings/database/models/servers/user';
 
 const {
     CATEGORY,
     CATEGORY_CHANNEL,
     CHANNEL,
     TEAM,
+    USER,
 } = MM_TABLES.SERVER;
 
 /**
@@ -35,6 +37,9 @@ export default class CategoryModel extends Model implements CategoryInterface {
 
         /** A TEAM can be associated to CATEGORY (relationship is 1:N) */
         [TEAM]: {type: 'belongs_to', key: 'team_id'},
+
+        /** A USER can be associated to CATEGORY (relationship is 1:N) */
+        [USER]: {type: 'belongs_to', key: 'user_id'},
     };
 
     /** display_name : The display name for the category */
@@ -58,11 +63,17 @@ export default class CategoryModel extends Model implements CategoryInterface {
     /** teamId : The team in which this category lives */
     @field('team_id') teamId!: string;
 
+    /** userId : The user to whom this category belongs */
+    @field('user_id') userId!: string;
+
     /** categoryChannels : All the CategoryChannels associated with this team */
     @children(CATEGORY_CHANNEL) categoryChannels!: Query<CategoryChannelModel>;
 
     /** team : Retrieves information about the team that this category is a part of. */
     @immutableRelation(TEAM, 'id') team!: Relation<TeamModel>;
+
+    /** team : Retrieves information about the team that this category is a part of. */
+    @immutableRelation(USER, 'id') user!: Relation<UserModel>;
 
     /** channels : Retrieves all the channels that are part of this category */
     @lazy channels = this.collections.
