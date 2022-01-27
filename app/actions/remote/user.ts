@@ -360,7 +360,7 @@ export const updateAllUsersSinceLastDisconnect = async (serverUrl: string) => {
     return {users: userUpdates};
 };
 
-export const updateUsersNoLongerVisible = async (serverUrl: string): Promise<{error?: unknown}> => {
+export const updateUsersNoLongerVisible = async (serverUrl: string, prepareRecordsOnly = false): Promise<{error?: unknown; models?: Model[]}> => {
     let client: Client;
     try {
         client = NetworkManager.getClient(serverUrl);
@@ -373,12 +373,12 @@ export const updateUsersNoLongerVisible = async (serverUrl: string): Promise<{er
         return {error: `${serverUrl} database not found`};
     }
 
+    const models: Model[] = [];
     try {
         const knownUsers = new Set(await client.getKnownUsers());
         const currentUserId = await queryCurrentUserId(serverDatabase.database);
         knownUsers.add(currentUserId);
 
-        const models: Model[] = [];
         const allUsers = await queryAllUsers(serverDatabase.database);
         for (const user of allUsers) {
             if (!knownUsers.has(user.id)) {
@@ -386,7 +386,7 @@ export const updateUsersNoLongerVisible = async (serverUrl: string): Promise<{er
                 models.push(user);
             }
         }
-        if (models.length) {
+        if (models.length && !prepareRecordsOnly) {
             serverDatabase.operator.batchRecords(models);
         }
     } catch (error) {
@@ -394,7 +394,7 @@ export const updateUsersNoLongerVisible = async (serverUrl: string): Promise<{er
         return {error};
     }
 
-    return {};
+    return {models};
 };
 
 export const setStatus = async (serverUrl: string, status: UserStatus) => {

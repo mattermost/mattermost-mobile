@@ -15,7 +15,6 @@ import {queryCurrentTeamId} from '@queries/servers/system';
 import {queryLastTeam, prepareMyTeams} from '@queries/servers/team';
 import {queryCurrentUser} from '@queries/servers/user';
 import {dismissAllModals, popToRoot} from '@screens/navigation';
-import {isGuest} from '@utils/user';
 
 import type {WebSocketMessage} from '@typings/api/websocket';
 
@@ -35,7 +34,7 @@ export async function handleLeaveTeamEvent(serverUrl: string, msg: WebSocketMess
         await removeUserFromTeam(serverUrl, msg.data.team_id);
         fetchAllTeams(serverUrl);
 
-        if (isGuest(user.roles)) {
+        if (user.isGuest) {
             updateUsersNoLongerVisible(serverUrl);
         }
 

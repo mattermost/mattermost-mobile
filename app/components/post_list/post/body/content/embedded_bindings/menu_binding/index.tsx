@@ -114,4 +114,4 @@ const withTeamId = withObservables(['post'], ({post}: {post: PostModel}) => ({
     ),
 }));
 
-export default withTeamId(React.memo(MenuBinding));
+export default withTeamId(MenuBinding);

@@ -110,4 +110,4 @@ const Message = ({currentUser, groupsForPosts, highlight, isEdited, isPendingOrF
     );
 };
 
-export default React.memo(Message);
+export default Message;
