@@ -1,6 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {Model} from '@nozbe/watermelondb';
 import {DeviceEventEmitter} from 'react-native';
 
 import {removeUserFromTeam} from '@actions/local/team';
@@ -11,7 +12,7 @@ import Events from '@constants/events';
 import DatabaseManager from '@database/manager';
 import {queryActiveServer} from '@queries/app/servers';
 import {queryCurrentTeamId} from '@queries/servers/system';
-import {queryLastTeam} from '@queries/servers/team';
+import {queryLastTeam, prepareMyTeams} from '@queries/servers/team';
 import {queryCurrentUser} from '@queries/servers/user';
 import {dismissAllModals, popToRoot} from '@screens/navigation';
 import {isGuest} from '@utils/user';
@@ -78,9 +79,9 @@ export async function handleTeamAddedEvent(serverUrl: string, msg: WebSocketMess
         return;
     }
 
-    const teamId = msg.data.team_id;
-    const {teams, memberships: teamMemberships} = await fetchMyTeam(serverUrl, teamId, false);
+    const {teams, memberships: teamMemberships} = await fetchMyTeam(serverUrl, msg.data.team_id, true);
 
+    const modelPromises: Array<Promise<Model[]>> = [];
     if (teams?.length) {
         if (teamMemberships?.length) {
             const myMember = teamMemberships[0];
@@ -89,8 +90,27 @@ export async function handleTeamAddedEvent(serverUrl: string, msg: WebSocketMess
                 for (const role of myMember.roles.split(' ')) {
                     rolesToLoad.add(role);
                 }
-                await fetchRolesIfNeeded(serverUrl, Array.from(rolesToLoad));
+                const serverRoles = await fetchRolesIfNeeded(serverUrl, Array.from(rolesToLoad), true);
+                if (serverRoles.roles!.length) {
+                    const preparedRoleModels = database.operator.handleRole({
+                        roles: serverRoles.roles!,
+                        prepareRecordsOnly: true,
+                    });
+                    modelPromises.push(preparedRoleModels);
+                }
             }
         }
+    }
+
+    if (teams && teamMemberships) {
+        const preparedTeamModels = prepareMyTeams(database.operator, teams, teamMemberships);
+        if (preparedTeamModels) {
+            modelPromises.push(...preparedTeamModels);
+        }
+    }
+
+    if (modelPromises.length) {
+        const models = await Promise.all(modelPromises);
+        await database.operator.batchRecords(models.flat());
     }
 }

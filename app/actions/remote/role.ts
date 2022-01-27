@@ -12,7 +12,7 @@ export type RolesRequest = {
     roles?: Role[];
 }
 
-export const fetchRolesIfNeeded = async (serverUrl: string, updatedRoles: string[]): Promise<RolesRequest> => {
+export const fetchRolesIfNeeded = async (serverUrl: string, updatedRoles: string[], fetchOnly = false): Promise<RolesRequest> => {
     if (!updatedRoles.length) {
         return {roles: []};
     }
@@ -43,11 +43,13 @@ export const fetchRolesIfNeeded = async (serverUrl: string, updatedRoles: string
     try {
         const roles = await client.getRolesByNames(newRoles);
 
-        if (roles.length) {
-            await operator.handleRole({
-                roles,
-                prepareRecordsOnly: false,
-            });
+        if (!fetchOnly) {
+            if (roles.length) {
+                await operator.handleRole({
+                    roles,
+                    prepareRecordsOnly: false,
+                });
+            }
         }
 
         return {roles};
