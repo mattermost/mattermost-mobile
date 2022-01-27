@@ -40,7 +40,6 @@ exports[`StartCall should match snapshot 1`] = `
     rightArrow={false}
     shouldRender={true}
     testID="test-id"
-    textId="mobile.channel_info.start_call"
     theme={
       Object {
         "awayIndicator": "#ffbc1f",
@@ -115,7 +114,6 @@ exports[`StartCall should match snapshot when there is already an ongoing call i
     rightArrow={false}
     shouldRender={true}
     testID="test-id"
-    textId="mobile.channel_info.join_ongoing_call"
     theme={
       Object {
         "awayIndicator": "#ffbc1f",

@@ -16,18 +16,18 @@ PODS:
   - HMSegmentedControl (1.5.6)
   - jail-monkey (2.6.0):
     - React-Core
-  - libwebp (1.2.0):
-    - libwebp/demux (= 1.2.0)
-    - libwebp/mux (= 1.2.0)
-    - libwebp/webp (= 1.2.0)
-  - libwebp/demux (1.2.0):
+  - libwebp (1.2.1):
+    - libwebp/demux (= 1.2.1)
+    - libwebp/mux (= 1.2.1)
+    - libwebp/webp (= 1.2.1)
+  - libwebp/demux (1.2.1):
     - libwebp/webp
-  - libwebp/mux (1.2.0):
+  - libwebp/mux (1.2.1):
     - libwebp/demux
-  - libwebp/webp (1.2.0)
+  - libwebp/webp (1.2.1)
   - MMKV (1.2.10):
     - MMKVCore (~> 1.2.10)
-  - MMKVCore (1.2.10)
+  - MMKVCore (1.2.12)
   - Permission-Camera (3.2.0):
     - RNPermissions
   - Permission-MediaLibrary (3.2.0):
@@ -256,7 +256,7 @@ PODS:
   - react-native-mmkv-storage (0.6.10):
     - MMKV (= 1.2.10)
     - React-Core
-  - react-native-netinfo (7.1.8):
+  - react-native-netinfo (7.1.9):
     - React-Core
   - react-native-notifications (4.1.3):
     - React-Core
@@ -276,7 +276,7 @@ PODS:
     - react-native-video/Video (= 5.2.0)
   - react-native-video/Video (5.2.0):
     - React-Core
-  - react-native-webrtc2 (1.84.5):
+  - react-native-webrtc (1.75.3):
     - React
   - react-native-webview (11.17.1):
     - React-Core
@@ -433,7 +433,7 @@ PODS:
     - React
   - RNVectorIcons (9.0.0):
     - React-Core
-  - Rudder (1.2.1)
+  - Rudder (1.5.0)
   - SDWebImage (5.11.1):
     - SDWebImage/Core (= 5.11.1)
   - SDWebImage/Core (5.11.1)
@@ -446,7 +446,7 @@ PODS:
   - Swime (3.0.6)
   - XCDYouTubeKit (2.15.2)
   - Yoga (1.14.0)
-  - YoutubePlayer-in-WKWebView (0.3.5)
+  - YoutubePlayer-in-WKWebView (0.3.8)
 
 DEPENDENCIES:
   - boost (from `../node_modules/react-native/third-party-podspecs/boost.podspec`)
@@ -492,7 +492,7 @@ DEPENDENCIES:
   - react-native-safe-area-context (from `../node_modules/react-native-safe-area-context`)
   - react-native-startup-time (from `../node_modules/react-native-startup-time`)
   - react-native-video (from `../node_modules/react-native-video`)
-  - react-native-webrtc2 (from `../node_modules/react-native-webrtc2`)
+  - react-native-webrtc (from `../node_modules/react-native-webrtc`)
   - react-native-webview (from `../node_modules/react-native-webview`)
   - React-perflogger (from `../node_modules/react-native/ReactCommon/reactperflogger`)
   - React-RCTActionSheet (from `../node_modules/react-native/Libraries/ActionSheetIOS`)
@@ -631,8 +631,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native-startup-time"
   react-native-video:
     :path: "../node_modules/react-native-video"
-  react-native-webrtc2:
-    :path: "../node_modules/react-native-webrtc2"
+  react-native-webrtc:
+    :path: "../node_modules/react-native-webrtc"
   react-native-webview:
     :path: "../node_modules/react-native-webview"
   React-perflogger:
@@ -716,7 +716,7 @@ EXTERNAL SOURCES:
 
 CHECKOUT OPTIONS:
   XCDYouTubeKit:
-    :commit: 7c5ea8fe159d096a8f2cdc88c29bb6e4ac79dcde
+    :commit: a5cbd0b864c399dcf425a91e2409a49712924295
     :git: https://github.com/KODIKAS-NL/XCDYouTubeKit.git
 
 SPEC CHECKSUMS:
@@ -729,9 +729,9 @@ SPEC CHECKSUMS:
   glog: 85ecdd10ee8d8ec362ef519a6a45ff9aa27b2e85
   HMSegmentedControl: 34c1f54d822d8308e7b24f5d901ec674dfa31352
   jail-monkey: 07b83767601a373db876e939b8dbf3f5eb15f073
-  libwebp: e90b9c01d99205d03b6bb8f2c8c415e5a4ef66f0
+  libwebp: 98a37e597e40bfdb4c911fc98f2c53d0b12d05fc
   MMKV: 76033b9ace2006623308910a3afcc0e25eba3140
-  MMKVCore: b00e7a09ec77a1b916aef336eedd3b99ec249978
+  MMKVCore: df0565f6b58463604731a68ba6cd89bc0b2d1d55
   Permission-Camera: 53efcbb755b0e8bdf253dbb27cc7559ccfce8480
   Permission-MediaLibrary: d35adbe2a069f2e16121fd79cf15959e86a3f74a
   Permission-Microphone: db557c64f7e9ad41bff6b3f6d93df3b67311855b
@@ -758,7 +758,7 @@ SPEC CHECKSUMS:
   react-native-image-picker: 5fe0a96bef4935bbdfb02f59b910bf40d5526109
   react-native-local-auth: 49d336dcf0cb0268a930100013a6525844093844
   react-native-mmkv-storage: 05c04200704214c12b8b7746a7899343d57c32cf
-  react-native-netinfo: ab3297da921cbd7b7ad30f9b8617d6f0996878cb
+  react-native-netinfo: 87e5bfaf21ea5c6c110941290aa481dd8e849f98
   react-native-notifications: 805108822ceff3440644d5701944f0cda35f5b4b
   react-native-passcode-status: e78f76b3c8db613e6ced6bd40b54aa4f53374173
   react-native-paste-input: 80c06e2c5c65afd696f9bd43cfd371141d8b3a1b
@@ -766,7 +766,7 @@ SPEC CHECKSUMS:
   react-native-safe-area-context: 584dc04881deb49474363f3be89e4ca0e854c057
   react-native-startup-time: 1a068b744ce5097a85ebe0fbff691b05961c324d
   react-native-video: a4c2635d0802f983594b7057e1bce8f442f0ad28
-  react-native-webrtc2: b3f1d5504c8bbd3aa4ce9b6c3ce0fbc47c7e146a
+  react-native-webrtc: 86d841823e66d68cc1f86712db1c2956056bf0c2
   react-native-webview: 162b6453d074e0b1c7025242bb7a939b6f72b9e7
   React-perflogger: 9a6172711d9c4c8c7ac0a426717317c3c6ecf85c
   React-RCTActionSheet: ed408b54b08278e6af8a75e08679675041da61ae
@@ -804,14 +804,14 @@ SPEC CHECKSUMS:
   RNShare: 3185c074441b7e8897014d95ba982434a0a024a1
   RNSVG: 551acb6562324b1d52a4e0758f7ca0ec234e278f
   RNVectorIcons: 4143ba35feebab8fdbe6bc43d1e776b393d47ac8
-  Rudder: db8cfa8e5757599dfec74a1bdd04dc17b3859789
+  Rudder: 95d023a3a4ec1e8d6bd15963e84f78707b13d9c3
   SDWebImage: a7f831e1a65eb5e285e3fb046a23fcfbf08e696d
   SDWebImageWebPCoder: f93010f3f6c031e2f8fb3081ca4ee6966c539815
   Sentry: 2f7e91f247cfb05b05bd01e0b5d0692557a7687b
   Swime: d7b2c277503b6cea317774aedc2dce05613f8b0b
   XCDYouTubeKit: b120aced3d8638ffb570c5450cddb5a1dac448c7
   Yoga: 5cbf25add73edb290e1067017690f7ebf56c5468
-  YoutubePlayer-in-WKWebView: cfbf46da51d7370662a695a8f351e5fa1d3e1008
+  YoutubePlayer-in-WKWebView: 4fca3b4f6f09940077bfbae7bddb771f2b43aacd
 
 PODFILE CHECKSUM: 8214414d5676358401d8ad51dff19e7fd8c71b5c
 

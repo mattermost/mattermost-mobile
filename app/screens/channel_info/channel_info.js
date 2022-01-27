@@ -51,6 +51,7 @@ export default class ChannelInfo extends PureComponent {
         currentUserId: PropTypes.string,
         isTeammateGuest: PropTypes.bool.isRequired,
         isDirectMessage: PropTypes.bool.isRequired,
+        isGroupMessage: PropTypes.bool.isRequired,
         teammateId: PropTypes.string,
         theme: PropTypes.object.isRequired,
         customStatus: PropTypes.object,
@@ -116,7 +117,7 @@ export default class ChannelInfo extends PureComponent {
     };
 
     actionsRows = (channelIsArchived) => {
-        const {currentChannel, currentUserId, isDirectMessage, theme, isCallsEnabled, callsFeatureEnabled, isChannelAdmin} = this.props;
+        const {currentChannel, currentUserId, isDirectMessage, isGroupMessage, theme, isCallsEnabled, callsFeatureEnabled, isChannelAdmin} = this.props;
 
         if (channelIsArchived) {
             return (
@@ -191,7 +192,7 @@ export default class ChannelInfo extends PureComponent {
                             testID='channel_info.start_call.action'
                             theme={theme}
                             onPress={this.toggleCalls}
-                            canEnableDisableCalls={isChannelAdmin}
+                            canEnableDisableCalls={isDirectMessage || isGroupMessage || isChannelAdmin}
                             enabled={isCallsEnabled}
                         />
                     </>}

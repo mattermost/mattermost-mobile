@@ -2795,14 +2795,12 @@ SOFTWARE.
 
 ---
 
-## react-native-webrtc2
+## react-native-webrtc
 
-This product contains a modified version of 'react-native-webrtc2' by juncocoa.
-
-React Native 的 WebRTC 模块
+This product contains a modified version of 'react-native-webrtc'.
 
 * HOMEPAGE:
-  * https://github.com/juncocoa/react-native-webrtc2
+  * https://github.com/react-native-webrtc/react-native-webrtc
 
 * LICENSE: MIT
 
