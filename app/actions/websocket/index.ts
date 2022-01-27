@@ -18,13 +18,11 @@ import {getTeammateNameDisplaySetting} from '@helpers/api/preference';
 import {prepareMyChannelsForTeam} from '@queries/servers/channel';
 import {queryCommonSystemValues, queryConfig, queryWebSocketLastDisconnected} from '@queries/servers/system';
 import {queryCurrentUser} from '@queries/servers/user';
-import {WebSocketMessage} from '@typings/api/websocket';
 
 import {handleChannelDeletedEvent, handleUserAddedToChannelEvent, handleUserRemovedFromChannelEvent} from './channel';
 import {handleNewPostEvent, handlePostDeleted, handlePostEdited, handlePostUnread} from './posts';
 import {handlePreferenceChangedEvent, handlePreferencesChangedEvent, handlePreferencesDeletedEvent} from './preferences';
 import {handleLeaveTeamEvent, handleTeamAddedEvent, handleUpdateTeamEvent} from './teams';
-import {handleLeaveTeamEvent} from './teams';
 import {handleUserUpdatedEvent} from './users';
 
 import type {Model} from '@nozbe/watermelondb';
