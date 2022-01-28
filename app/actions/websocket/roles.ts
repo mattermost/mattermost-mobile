@@ -3,6 +3,7 @@
 
 import {fetchRolesIfNeeded, RolesRequest} from '@actions/remote/role';
 import {fetchMe} from '@actions/remote/user';
+import {safeParseJSON} from '@app/utils/helpers';
 import DatabaseManager from '@database/manager';
 import {queryRoleById} from '@queries/servers/role';
 import {queryCurrentUserId} from '@queries/servers/system';
@@ -21,7 +22,7 @@ export async function handleRoleUpdatedEvent(serverUrl: string, msg: WebSocketMe
     }
 
     // only update Role records that exist in the Role Table
-    const role = JSON.parse(msg.data.role);
+    const role = safeParseJSON(msg.data.role) as Role;
     const dbRole = await queryRoleById(database.database, role.id);
     if (!dbRole) {
         return;
@@ -73,7 +74,8 @@ export async function handleMemberRoleUpdatedEvent(serverUrl: string, msg: WebSo
     }
 
     const currentUserId = await queryCurrentUserId(database.database);
-    const member = JSON.parse(msg.data.member);
+
+    const member = safeParseJSON(msg.data.member) as TeamMembership;
     if (currentUserId !== member.user_id) {
         return;
     }
