@@ -1,20 +1,19 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useEffect} from 'react';
-import {Platform, StyleProp, View, ViewProps, ViewStyle} from 'react-native';
-import FastImage from 'react-native-fast-image';
+import React, {useEffect, useMemo} from 'react';
+import {Platform, StyleProp, View, ViewProps} from 'react-native';
 
 import {fetchStatusInBatch} from '@actions/remote/user';
-import CompassIcon from '@components/compass_icon';
-import UserStatus from '@components/user_status';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
-import NetworkManager from '@init/network_manager';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
-import type {Client} from '@client/rest';
+import Image from './image';
+import Status from './status';
+
 import type UserModel from '@typings/database/models/servers/user';
+import type {Source} from 'react-native-fast-image';
 
 const STATUS_BUFFER = Platform.select({
     ios: 3,
@@ -29,6 +28,7 @@ type ProfilePictureProps = {
     statusSize?: number;
     statusStyle?: StyleProp<ViewProps>;
     testID?: string;
+    source?: Source | string;
 };
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
@@ -66,18 +66,13 @@ const ProfilePicture = ({
     statusSize = 14,
     statusStyle,
     testID,
+    source,
 }: ProfilePictureProps) => {
     const theme = useTheme();
     const serverUrl = useServerUrl();
-    const style = getStyleSheet(theme);
-    const buffer = showStatus ? (STATUS_BUFFER || 0) : 0;
-    let client: Client | undefined;
 
-    try {
-        client = NetworkManager.getClient(serverUrl);
-    } catch {
-        // handle below that the client is not set
-    }
+    const style = getStyleSheet(theme);
+    const buffer = showStatus ? STATUS_BUFFER || 0 : 0;
 
     useEffect(() => {
         if (author && !author.status && showStatus) {
@@ -85,55 +80,43 @@ const ProfilePicture = ({
         }
     }, []);
 
-    let statusIcon;
-    let containerStyle: StyleProp<ViewStyle> = {
-        width: size + buffer,
-        height: size + buffer,
-    };
+    const containerStyle = useMemo(() => {
+        if (author) {
+            return {
+                width: size + (buffer - 1),
+                height: size + (buffer - 1),
+                backgroundColor: changeOpacity(theme.centerChannelColor, 0.08),
+                borderRadius: (size + buffer) / 2,
+            };
+        }
 
-    if (author?.status && !author.isBot && showStatus) {
-        statusIcon = (
-            <View style={[style.statusWrapper, statusStyle, {borderRadius: statusSize / 2}]}>
-                <UserStatus
-                    size={statusSize}
-                    status={author.status}
-                />
-            </View>
-        );
-    }
-
-    let image;
-    if (author && client) {
-        const pictureUrl = client.getProfilePictureUrl(author.id, author.lastPictureUpdate);
-        image = (
-            <FastImage
-                key={pictureUrl}
-                style={{width: size, height: size, borderRadius: (size / 2)}}
-                source={{uri: `${serverUrl}${pictureUrl}`}}
-            />
-        );
-    } else {
-        containerStyle = {
-            width: size + (buffer - 1),
-            height: size + (buffer - 1),
-            backgroundColor: changeOpacity(theme.centerChannelColor, 0.08),
+        return {
+            ...style.container,
+            width: size + buffer,
+            height: size + buffer,
+            borderRadius: (size + buffer) / 2,
         };
-        image = (
-            <CompassIcon
-                name='account-outline'
-                size={iconSize || size}
-                style={style.icon}
-            />
-        );
-    }
+    }, [author, size]);
 
     return (
         <View
-            style={[style.container, containerStyle]}
+            style={containerStyle}
             testID={`${testID}.${author?.id}`}
         >
-            {image}
-            {statusIcon}
+            <Image
+                author={author}
+                iconSize={iconSize}
+                size={size}
+                source={source}
+            />
+            {showStatus &&
+            <Status
+                author={author}
+                statusSize={statusSize}
+                statusStyle={statusStyle}
+                theme={theme}
+            />
+            }
         </View>
     );
 };

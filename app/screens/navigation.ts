@@ -417,11 +417,10 @@ export function showModalOverCurrentContext(name: string, passProps = {}, option
         default:
             animations = {
                 showModal: {
-                    enter: {
-                        enabled: false,
-                    },
-                    exit: {
-                        enabled: false,
+                    alpha: {
+                        from: 0,
+                        to: 1,
+                        duration: 250,
                     },
                 },
                 dismissModal: {
