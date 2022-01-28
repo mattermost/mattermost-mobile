@@ -8,6 +8,7 @@ import {DeviceEventEmitter, TextStyle} from 'react-native';
 import DrawerItem from '@components/drawer_item';
 import FormattedText from '@components/formatted_text';
 import {Events, Screens} from '@constants';
+import {ACCOUNT_OUTLINE_IMAGE} from '@constants/profile';
 import {showModal} from '@screens/navigation';
 import {preventDoubleTap} from '@utils/tap';
 
@@ -40,7 +41,7 @@ const YourProfile = ({isTablet, style, theme}: Props) => {
                     style={style}
                 />
             }
-            iconName='account-outline'
+            iconName={ACCOUNT_OUTLINE_IMAGE}
             onPress={openProfile}
             separator={false}
             theme={theme}

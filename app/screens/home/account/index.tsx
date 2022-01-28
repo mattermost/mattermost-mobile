@@ -4,15 +4,17 @@
 import {withDatabase} from '@nozbe/watermelondb/DatabaseProvider';
 import withObservables from '@nozbe/with-observables';
 import {useRoute} from '@react-navigation/native';
-import React, {useCallback, useState} from 'react';
+import React, {useCallback, useEffect, useState} from 'react';
 import {ScrollView, View} from 'react-native';
 import Animated, {useAnimatedStyle, withTiming} from 'react-native-reanimated';
 import {Edge, SafeAreaView, useSafeAreaInsets} from 'react-native-safe-area-context';
 import {of as of$} from 'rxjs';
 import {switchMap} from 'rxjs/operators';
 
+import {fetchStatusInBatch} from '@actions/remote/user';
 import {View as ViewConstants} from '@constants';
 import {MM_TABLES, SYSTEM_IDENTIFIERS} from '@constants/database';
+import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
 import {isCustomStatusExpirySupported, isMinimumServerVersion} from '@utils/helpers';
@@ -71,6 +73,14 @@ const AccountScreen = ({currentUser, enableCustomUserStatuses, customStatusExpir
     const route = useRoute();
     const insets = useSafeAreaInsets();
     const isTablet = useIsTablet();
+    const serverUrl = useServerUrl();
+
+    useEffect(() => {
+        if (currentUser) {
+            fetchStatusInBatch(serverUrl, currentUser.id);
+        }
+    }, []);
+
     let tabletSidebarStyle;
     if (isTablet) {
         const {TABLET_SIDEBAR_WIDTH} = ViewConstants;
