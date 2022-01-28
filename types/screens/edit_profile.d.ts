@@ -5,7 +5,8 @@ import {RefObject} from 'react';
 
 import {FloatingTextInputRef} from '@components/floating_text_input_label';
 import {FieldProps} from '@screens/edit_profile/components/field';
-import UserModel from '@typings/database/models/servers/user';
+
+import type UserModel from '@typings/database/models/servers/user';
 
 interface UserInfo extends Record<string, string | undefined | null| boolean> {
     email: string;
@@ -28,9 +29,12 @@ type EditProfileProps = {
     lockedPicture: boolean;
 };
 
+type NewProfileImage = { localPath?: string; isRemoved?: boolean };
+
 type FieldSequence = Record<string, {
     ref: RefObject<FloatingTextInputRef>;
     isDisabled: boolean;
 }>
 
 type FieldConfig = Pick<FieldProps, 'blurOnSubmit' | 'enablesReturnKeyAutomatically' | 'onFocusNextField' | 'onTextChange' | 'returnKeyType'>
+
