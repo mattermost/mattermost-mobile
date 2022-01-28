@@ -16,4 +16,5 @@ export default keyMirror({
     TEAM_LOAD_ERROR: null,
     USER_TYPING: null,
     USER_STOP_TYPING: null,
+    SWIPEABLE: null,
 });
