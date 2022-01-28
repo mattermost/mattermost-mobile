@@ -12,7 +12,7 @@ export APP_SCHEME=mattermost
 #export VERSION_NUMBER=
 ## This sets the version number ex: 210 if not set it uses the one in the code base (this one should increment always by 1 and will only update if INCREMENT_BUILD_NUMBER is true
 #export BUILD_NUMBER=
-## This sets the build tasks for the Android. This is a comma-separated list of tasks that can have 2 values - 'assemble' and 'bundle'.
+## This sets the build tasks for Android. This is a comma-separated list of tasks that can have two values: 'assemble' and 'bundle'.
 ## If not set, it will use only the 'assemble' task. Add both values to the list if you want both apk and aab files. Example is given below
 #export ANDROID_BUILD_TASK=assemble, bundle
 
