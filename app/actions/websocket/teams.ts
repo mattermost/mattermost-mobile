@@ -72,7 +72,7 @@ export async function handleUpdateTeamEvent(serverUrl: string, msg: WebSocketMes
     }
 }
 
-export async function handleTeamAddedEvent(serverUrl: string, msg: WebSocketMessage) {
+export async function handleUserAddedToTeamEvent(serverUrl: string, msg: WebSocketMessage) {
     const database = DatabaseManager.serverDatabases[serverUrl];
     if (!database) {
         return;
@@ -81,22 +81,20 @@ export async function handleTeamAddedEvent(serverUrl: string, msg: WebSocketMess
     const {teams, memberships: teamMemberships} = await fetchMyTeam(serverUrl, msg.data.team_id, true);
 
     const modelPromises: Array<Promise<Model[]>> = [];
-    if (teams?.length) {
-        if (teamMemberships?.length) {
-            const myMember = teamMemberships[0];
-            if (myMember.roles) {
-                const rolesToLoad = new Set<string>();
-                for (const role of myMember.roles.split(' ')) {
-                    rolesToLoad.add(role);
-                }
-                const serverRoles = await fetchRolesIfNeeded(serverUrl, Array.from(rolesToLoad), true);
-                if (serverRoles.roles!.length) {
-                    const preparedRoleModels = database.operator.handleRole({
-                        roles: serverRoles.roles!,
-                        prepareRecordsOnly: true,
-                    });
-                    modelPromises.push(preparedRoleModels);
-                }
+    if (teams?.length && teamMemberships?.length) {
+        const myMember = teamMemberships[0];
+        if (myMember.roles) {
+            const rolesToLoad = new Set<string>();
+            for (const role of myMember.roles.split(' ')) {
+                rolesToLoad.add(role);
+            }
+            const serverRoles = await fetchRolesIfNeeded(serverUrl, Array.from(rolesToLoad), true);
+            if (serverRoles.roles!.length) {
+                const preparedRoleModels = database.operator.handleRole({
+                    roles: serverRoles.roles!,
+                    prepareRecordsOnly: true,
+                });
+                modelPromises.push(preparedRoleModels);
             }
         }
     }

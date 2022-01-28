@@ -43,13 +43,11 @@ export const fetchRolesIfNeeded = async (serverUrl: string, updatedRoles: string
     try {
         const roles = await client.getRolesByNames(newRoles);
 
-        if (!fetchOnly) {
-            if (roles.length) {
-                await operator.handleRole({
-                    roles,
-                    prepareRecordsOnly: false,
-                });
-            }
+        if (!fetchOnly && roles.length) {
+            await operator.handleRole({
+                roles,
+                prepareRecordsOnly: false,
+            });
         }
 
         return {roles};
