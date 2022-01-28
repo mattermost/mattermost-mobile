@@ -129,10 +129,11 @@ const UserHandler = (superclass: any) => class extends superclass {
      * @param {HandleReactionsArgs} handleReactions
      * @param {ReactionsPerPost[]} handleReactions.reactions
      * @param {boolean} handleReactions.prepareRecordsOnly
+     * @param {boolean} handleReactions.skipSync
      * @throws DataOperatorException
      * @returns {Promise<Array<(ReactionModel | CustomEmojiModel)>>}
      */
-    handleReactions = async ({postsReactions, prepareRecordsOnly}: HandleReactionsArgs): Promise<ReactionModel[]> => {
+    handleReactions = async ({postsReactions, prepareRecordsOnly, skipSync}: HandleReactionsArgs): Promise<ReactionModel[]> => {
         const batchRecords: ReactionModel[] = [];
 
         if (!postsReactions.length) {
@@ -163,7 +164,7 @@ const UserHandler = (superclass: any) => class extends superclass {
                 batchRecords.push(...reactionsRecords);
             }
 
-            if (deleteReactions?.length) {
+            if (deleteReactions?.length && !skipSync) {
                 batchRecords.push(...deleteReactions);
             }
         }

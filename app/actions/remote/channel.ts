@@ -4,7 +4,7 @@
 import {Model} from '@nozbe/watermelondb';
 import {IntlShape} from 'react-intl';
 
-import {switchToChannel, toggleDMChannel, toggleGMChannel} from '@actions/local/channel';
+import {storeMyChannelsForTeam, switchToChannel} from '@actions/local/channel';
 import {General} from '@constants';
 import DatabaseManager from '@database/manager';
 import {privateChannelJoinPrompt} from '@helpers/api/channel';
@@ -212,26 +212,7 @@ export const fetchMyChannelsForTeam = async (serverUrl: string, teamId: string, 
         }, []);
 
         if (!fetchOnly) {
-            const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
-            const modelPromises: Array<Promise<Model[]>> = [];
-            if (operator) {
-                const prepare = await prepareMyChannelsForTeam(operator, teamId, channels, memberships);
-                if (prepare) {
-                    modelPromises.push(...prepare);
-                }
-                if (modelPromises.length) {
-                    const models = await Promise.all(modelPromises);
-                    const flattenedModels = models.flat() as Model[];
-                    if (flattenedModels?.length > 0) {
-                        try {
-                            await operator.batchRecords(flattenedModels);
-                        } catch {
-                            // eslint-disable-next-line no-console
-                            console.log('FAILED TO BATCH CHANNELS');
-                        }
-                    }
-                }
-            }
+            storeMyChannelsForTeam(serverUrl, teamId, channels, memberships);
         }
 
         return {channels, memberships};
@@ -256,26 +237,7 @@ export const fetchMyChannel = async (serverUrl: string, teamId: string, channelI
         ]);
 
         if (!fetchOnly) {
-            const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
-            const modelPromises: Array<Promise<Model[]>> = [];
-            if (operator) {
-                const prepare = await prepareMyChannelsForTeam(operator, teamId, [channel], [member]);
-                if (prepare) {
-                    modelPromises.push(...prepare);
-                }
-                if (modelPromises.length) {
-                    const models = await Promise.all(modelPromises);
-                    const flattenedModels = models.flat() as Model[];
-                    if (flattenedModels?.length > 0) {
-                        try {
-                            await operator.batchRecords(flattenedModels);
-                        } catch {
-                            // eslint-disable-next-line no-console
-                            console.log('FAILED TO BATCH CHANNELS');
-                        }
-                    }
-                }
-            }
+            storeMyChannelsForTeam(serverUrl, channel.team_id || teamId, [channel], [member]);
         }
 
         return {
@@ -590,11 +552,6 @@ export const createDirectChannel = async (serverUrl: string, userId: string) => 
 
         const models = [];
 
-        const {models: prefModels} = await toggleDMChannel(serverUrl, userId, true, created.id);
-        if (prefModels) {
-            models.push(...prefModels);
-        }
-
         const channelPromises = await prepareMyChannelsForTeam(operator, '', [created], [member, {...member, user_id: userId}]);
         if (channelPromises) {
             const channelModels = await Promise.all(channelPromises);
@@ -628,7 +585,6 @@ export const makeDirectChannel = async (serverUrl: string, userId: string, shoul
         let result: {data?: Channel|ChannelModel; error?: any};
         if (channel) {
             result = {data: channel};
-            toggleDMChannel(serverUrl, userId, true, channel.id);
         } else {
             result = await createDirectChannel(serverUrl, userId);
             channel = result.data;
@@ -665,8 +621,6 @@ export const createGroupChannel = async (serverUrl: string, userIds: string[]) =
         if (created.total_msg_count > 0) {
             return {data: created};
         }
-
-        toggleGMChannel(serverUrl, true, created.id);
 
         const member = {
             channel_id: created.id,

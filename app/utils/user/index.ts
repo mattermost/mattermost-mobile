@@ -34,7 +34,7 @@ export function displayUsername(user?: UserProfile | UserModel, locale?: string,
     return name;
 }
 
-export function displayGroupMessageName(users: UserProfile[], locale?: string, teammateDisplayNameSetting?: string, excludeUserId?: string) {
+export function displayGroupMessageName(users: Array<UserProfile | UserModel>, locale?: string, teammateDisplayNameSetting?: string, excludeUserId?: string) {
     const names: string[] = [];
     const sortUsernames = (a: string, b: string) => {
         return a.localeCompare(b, locale || DEFAULT_LOCALE, {numeric: true});
