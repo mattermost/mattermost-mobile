@@ -4,7 +4,10 @@
 type CategorySorting = '' | 'alpha' | 'manual' | 'recent'
 type CategoryType = 'channels' | 'direct_messages' | 'favorites' | 'custom'
 
+// CategoryOrder is an array of sorted category_ids
 type CategoryOrder = string[]
+
+// CategoryChannelOrder is an array of sorted channel_ids
 type CategoryChannelOrder = string[]
 
 type CategoryChannel = {

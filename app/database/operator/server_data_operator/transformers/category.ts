@@ -31,7 +31,7 @@ export const transformCategoryRecord = ({action, database, value}: TransformerAr
         category._raw.id = isCreateAction ? (raw?.id ?? category.id) : record.id;
         category.displayName = raw.display_name;
         category.sorting = raw.sorting;
-        category.sortOrder = raw.sort_order / 10;
+        category.sortOrder = raw.sort_order / 10; // Sort order from server is in multiples of 10
         category.muted = raw.muted;
         category.collapsed = isCreateAction ? false : record.collapsed;
         category.type = raw.type;
@@ -57,7 +57,7 @@ export const transformCategoryRecord = ({action, database, value}: TransformerAr
 export const transformCategoryChannelRecord = ({action, database, value}: TransformerArgs): Promise<CategoryChannelModel> => {
     const raw = value.raw as CategoryChannel;
 
-    const record = value.record as CategoryModel;
+    const record = value.record as CategoryChannelModel;
     const isCreateAction = action === OperationType.CREATE;
 
     // If isCreateAction is true, we will use the id (API response) from the RAW, else we shall use the existing record id from the database

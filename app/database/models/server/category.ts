@@ -11,12 +11,14 @@ import {MM_TABLES} from '@constants/database';
 import type CategoryInterface from '@typings/database/models/servers/category';
 import type CategoryChannelModel from '@typings/database/models/servers/category_channel';
 import type ChannelModel from '@typings/database/models/servers/channel';
+import type MyChannelModel from '@typings/database/models/servers/my_channel';
 import type TeamModel from '@typings/database/models/servers/team';
 
 const {
     CATEGORY,
     CATEGORY_CHANNEL,
     CHANNEL,
+    MY_CHANNEL,
     TEAM,
 } = MM_TABLES.SERVER;
 
@@ -40,10 +42,10 @@ export default class CategoryModel extends Model implements CategoryInterface {
     /** display_name : The display name for the category */
     @field('display_name') displayName!: string;
 
-    /** type : The type of category */
-    @field('type') type!: string;
+    /** type : The type of category ('channels' | 'direct_messages' | 'favorites' | 'custom') */
+    @field('type') type!: CategoryType;
 
-    /** sort_order : The sort order for the category */
+    /** sort_order : The index on which to sort and display categories */
     @field('sort_order') sortOrder!: number;
 
     /** sorting : The type of sorting applied to the category channels (alpha, recent, manual) */
@@ -58,18 +60,41 @@ export default class CategoryModel extends Model implements CategoryInterface {
     /** teamId : The team in which this category lives */
     @field('team_id') teamId!: string;
 
+    /** team : Retrieves information about the team that this category is a part of. */
+    @immutableRelation(TEAM, 'id') team!: Relation<TeamModel>;
+
     /** categoryChannels : All the CategoryChannels associated with this team */
     @children(CATEGORY_CHANNEL) categoryChannels!: Query<CategoryChannelModel>;
 
-    /** team : Retrieves information about the team that this category is a part of. */
-    @immutableRelation(TEAM, 'id') team!: Relation<TeamModel>;
+    /** categoryChannelsBySortOrder : Retrieves assocated category channels sorted by sort_order */
+    @lazy categoryChannelsBySortOrder = this.categoryChannels.collection.query(Q.sortBy('sort_order', Q.asc));
 
     /** channels : Retrieves all the channels that are part of this category */
     @lazy channels = this.collections.
         get<ChannelModel>(CHANNEL).
         query(
-            Q.on(CATEGORY_CHANNEL, Q.where('category_id', this.id)),
+            Q.experimentalJoinTables([CHANNEL, CATEGORY_CHANNEL]),
+            Q.on(CATEGORY_CHANNEL,
+                Q.and(
+                    Q.on(CHANNEL, Q.where('delete_at', Q.eq(0))),
+                    Q.where('category_id', this.id),
+                ),
+            ),
             Q.sortBy('display_name'),
+        );
+
+    /** myChannels : Retrieves all myChannels that are part of this category */
+    @lazy myChannels = this.collections.
+        get<MyChannelModel>(MY_CHANNEL).
+        query(
+            Q.experimentalJoinTables([CHANNEL, CATEGORY_CHANNEL]),
+            Q.on(CATEGORY_CHANNEL,
+                Q.and(
+                    Q.on(CHANNEL, Q.where('delete_at', Q.eq(0))),
+                    Q.where('category_id', this.id),
+                ),
+            ),
+            Q.sortBy('last_post_at', Q.desc),
         );
 
     /** hasChannels : Returns a boolean indicating if the category has channels */

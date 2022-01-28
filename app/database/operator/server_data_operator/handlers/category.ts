@@ -34,7 +34,7 @@ const CategoryHandler = (superclass: any) => class extends superclass {
     /**
      * handleCategories: Handler responsible for the Create/Update operations occurring on the Category table from the 'Server' schema
      * @param {HandleCategoryArgs} categoriesArgs
-     * @param {Category[]} categoriesArgs.users
+     * @param {Category[]} categoriesArgs.categories
      * @param {boolean} categoriesArgs.prepareRecordsOnly
      * @throws DataOperatorException
      * @returns {Promise<CategoryModel[]>}
@@ -61,7 +61,7 @@ const CategoryHandler = (superclass: any) => class extends superclass {
     /**
      * handleCategoryChannels: Handler responsible for the Create/Update operations occurring on the CategoryChannel table from the 'Server' schema
      * @param {HandleCategoryChannelArgs} categoriesArgs
-     * @param {CategoryChannel[]} categoriesArgs.users
+     * @param {CategoryChannel[]} categoriesArgs.categorychannels
      * @param {boolean} categoriesArgs.prepareRecordsOnly
      * @throws DataOperatorException
      * @returns {Promise<CategoryChannelModel[]>}
