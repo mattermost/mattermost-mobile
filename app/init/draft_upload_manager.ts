@@ -70,7 +70,7 @@ class DraftUploadManager {
         cancel?.();
     };
 
-    public isLoading = (clientId: string) => {
+    public isUploading = (clientId: string) => {
         return Boolean(this.handlers[clientId]);
     };
 
@@ -119,7 +119,7 @@ class DraftUploadManager {
 
     private handleError = (errorMessage: string, clientId: string) => {
         const h = this.handlers[clientId];
-        delete this.handlers[clientId!];
+        delete this.handlers[clientId];
 
         DeviceEventEmitter.emit(`${Events.FILE_UPLOAD_ERROR}_${clientId}`, errorMessage);
 

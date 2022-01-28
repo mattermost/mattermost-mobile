@@ -1,14 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {Q} from '@nozbe/watermelondb';
-
-import {MM_TABLES} from '@constants/database';
+import {queryDraft} from '@app/queries/servers/drafts';
 import DatabaseManager from '@database/manager';
-
-import type DraftModel from '@typings/database/models/servers/draft';
-
-const {SERVER: {DRAFT}} = MM_TABLES;
 
 export const updateDraftFile = async (serverUrl: string, channelId: string, rootId: string, file: FileInfo, prepareRecordsOnly = false) => {
     const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
@@ -16,7 +10,7 @@ export const updateDraftFile = async (serverUrl: string, channelId: string, root
         return {error: `${serverUrl} database not found`};
     }
 
-    const draft = (await operator.database.get<DraftModel>(DRAFT).query(Q.where('channelId', channelId), Q.where('rootId', rootId)).fetch())[0];
+    const draft = await queryDraft(operator.database, channelId, rootId);
     if (!draft) {
         return {error: 'no draft'};
     }
