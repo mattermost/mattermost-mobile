@@ -13,11 +13,13 @@ import type CategoryChannelModel from '@typings/database/models/servers/category
 import type ChannelModel from '@typings/database/models/servers/channel';
 import type TeamModel from '@typings/database/models/servers/team';
 import type UserModel from '@typings/database/models/servers/user';
+import MyChannelModel from '@typings/database/models/servers/my_channel';
 
 const {
     CATEGORY,
     CATEGORY_CHANNEL,
     CHANNEL,
+    MY_CHANNEL,
     TEAM,
     USER,
 } = MM_TABLES.SERVER;
@@ -82,6 +84,21 @@ export default class CategoryModel extends Model implements CategoryInterface {
             Q.on(CATEGORY_CHANNEL, Q.where('category_id', this.id)),
             Q.sortBy('display_name'),
         );
+
+    @lazy myChannels = this.collections.
+        get<MyChannelModel>(MY_CHANNEL).
+        query(
+            Q.experimentalJoinTables([CHANNEL, CATEGORY_CHANNEL]),
+            Q.on(CATEGORY_CHANNEL,
+                Q.and(
+                    Q.on(CHANNEL, Q.where('delete_at', Q.eq(0))),
+                    Q.where('category_id', this.id),
+                ),
+            ),
+            Q.sortBy('last_post_at', Q.desc),
+        );
+
+    @lazy channelsManuallySorted = this.categoryChannels.collection.query(Q.sortBy('sort_order', Q.asc));
 
     /** hasChannels : Returns a boolean indicating if the category has channels */
     @lazy hasChannels = this.categoryChannels.observeCount().pipe(

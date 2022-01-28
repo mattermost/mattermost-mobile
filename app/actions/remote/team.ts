@@ -293,7 +293,7 @@ export const handleTeamChange = async (serverUrl: string, teamId: string) => {
         await operator.batchRecords(models);
     }
 
-    const {channels, memberships, error} = await fetchMyChannelsForTeam(serverUrl, teamId);
+    const {channels, memberships, error} = await fetchMyChannelsForTeam(serverUrl, teamId, true, 0, false, true);
     if (error) {
         DeviceEventEmitter.emit(Events.TEAM_LOAD_ERROR, serverUrl, error);
     }

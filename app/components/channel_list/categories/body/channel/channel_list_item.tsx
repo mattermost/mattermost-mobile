@@ -5,7 +5,7 @@ import React from 'react';
 import {StyleSheet, Text, View} from 'react-native';
 import {TouchableOpacity} from 'react-native-gesture-handler';
 
-import {switchToChannel} from '@actions/local/channel';
+import {switchToChannelById} from '@actions/remote/channel';
 import ChannelIcon from '@app/components/channel_icon';
 import {useServerUrl} from '@app/context/server';
 import {useTheme} from '@context/theme';
@@ -13,6 +13,7 @@ import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
 import type ChannelModel from '@typings/database/models/servers/channel';
+import type MyChannelModel from '@typings/database/models/servers/my_channel';
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     container: {
@@ -40,10 +41,11 @@ const textStyle = StyleSheet.create({
 });
 
 type Props = {
-    channel: ChannelModel;
+    channel: Pick<ChannelModel, 'displayName' | 'type'>;
+    myChannel: MyChannelModel;
 }
 
-const ChannelListItem = ({channel}: Props) => {
+const ChannelListItem = ({channel, myChannel}: Props) => {
     const theme = useTheme();
     const styles = getStyleSheet(theme);
     const serverUrl = useServerUrl();
@@ -54,7 +56,7 @@ const ChannelListItem = ({channel}: Props) => {
     const bright = false;
 
     return (
-        <TouchableOpacity onPress={() => switchToChannel(serverUrl, channel.id)}>
+        <TouchableOpacity onPress={() => switchToChannelById(serverUrl, myChannel.id)}>
             <View style={styles.container}>
                 <ChannelIcon
                     shared={false}

@@ -9,7 +9,8 @@ import type CategoryModel from '@typings/database/models/servers/category';
 
 const withCategory = withObservables(['category'], ({category}: {category: CategoryModel}) => ({
     category,
-    categoryChannels: category.categoryChannels.observeWithColumns(['sort_order']),
+    categoryChannels: category.channelsManuallySorted.observeWithColumns(['sort_order']),
+    myChannels: category.myChannels.observeWithColumns(['last_post_at']),
     channels: category.channels.observeWithColumns(['display_name']),
 }));
 

@@ -40,27 +40,27 @@ const {Consumer, Provider} = ThemeContext;
 
 const ThemeProvider = ({currentTeamId, children, themes}: Props) => {
     const getTheme = (): Theme => {
-        if (currentTeamId) {
-            const teamTheme = themes.find((t) => t.name === currentTeamId) || themes[0];
-            if (teamTheme?.value) {
-                try {
-                    const theme = setThemeDefaults(JSON.parse(teamTheme.value) as Theme);
-                    EphemeralStore.theme = theme;
-                    requestAnimationFrame(() => {
-                        setNavigationStackStyles(theme);
-                    });
-                    return theme;
-                } catch {
-                    // no theme change
-                }
-            }
-        }
+        // if (currentTeamId) {
+        //     const teamTheme = themes.find((t) => t.name === currentTeamId) || themes[0];
+        //     if (teamTheme?.value) {
+        //         try {
+        //             const theme = setThemeDefaults(JSON.parse(teamTheme.value) as Theme);
+        //             EphemeralStore.theme = theme;
+        //             requestAnimationFrame(() => {
+        //                 setNavigationStackStyles(theme);
+        //             });
+        //             return theme;
+        //         } catch {
+        //             // no theme change
+        //         }
+        //     }
+        // }
 
         const defaultTheme = getDefaultThemeByAppearance();
         EphemeralStore.theme = defaultTheme;
-        requestAnimationFrame(() => {
-            setNavigationStackStyles(defaultTheme);
-        });
+        // requestAnimationFrame(() => {
+        //     setNavigationStackStyles(defaultTheme);
+        // });
 
         return defaultTheme;
     };

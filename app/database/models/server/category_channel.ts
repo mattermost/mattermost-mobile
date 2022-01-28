@@ -11,7 +11,7 @@ import type CategoryModel from '@typings/database/models/servers/category';
 import type CategoryChannelInterface from '@typings/database/models/servers/category_channel';
 import type ChannelModel from '@typings/database/models/servers/channel';
 
-const {CATEGORY_CHANNEL, CATEGORY, CHANNEL} = MM_TABLES.SERVER;
+const {CATEGORY_CHANNEL, MY_CHANNEL, CATEGORY, CHANNEL} = MM_TABLES.SERVER;
 
 /**
  * The CategoryChannel model represents the 'association table' where many categories have channels and many channels are in
@@ -29,6 +29,8 @@ export default class CategoryChannelModel extends Model implements CategoryChann
 
         /** A CategoryChannel has a Channel */
         [CHANNEL]: {type: 'belongs_to', key: 'channel_id'},
+
+        [MY_CHANNEL]: {type: 'belongs_to', key: 'channel_id'},
     };
 
     /** category_id : The foreign key to the related Category record */

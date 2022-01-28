@@ -1,35 +1,37 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {Q} from '@nozbe/watermelondb';
 import {withDatabase} from '@nozbe/watermelondb/DatabaseProvider';
 import withObservables from '@nozbe/with-observables';
+import {of as of$} from 'rxjs';
+import {switchMap} from 'rxjs/operators';
 
 import {MM_TABLES} from '@constants/database';
 
-const {SERVER: {CHANNEL}} = MM_TABLES;
+const {SERVER: {MY_CHANNEL}} = MM_TABLES;
 
 import ChannelListItem from './channel_list_item';
 
 import type {WithDatabaseArgs} from '@typings/database/database';
 import type ChannelModel from '@typings/database/models/servers/channel';
+import type MyChannelModel from '@typings/database/models/servers/my_channel';
 
-type WithDatabaseProps = {channelId: string } & WithDatabaseArgs
+const enhance = withObservables(['channelId'], ({channelId, database}: {channelId: string} & WithDatabaseArgs) => {
+    const myChannel = database.get<MyChannelModel>(MY_CHANNEL).findAndObserve(channelId);
+    return {
+        myChannel,
+        channel: myChannel.pipe(
+            switchMap((my) => my.channel.observe().
+                pipe(
+                    // eslint-disable-next-line max-nested-callbacks
+                    switchMap((c: ChannelModel) => of$({
+                        displayName: c.displayName,
+                        type: c.type,
+                    })),
+                ),
+            ),
+        ),
+    };
+});
 
-// const withChannel = withObservables(
-//     ['channelId'],
-//     ({channelId, database}: WithDatabaseProps) => {
-//         const channel = database.get<ChannelModel>(CHANNEL).findAndObserve(channelId);
-
-//         return {
-//             channel,
-//         };
-//     });
-
-// export default withDatabase(withChannel(ChannelListItem));
-
-const withChannel = withObservables(['channel'], ({channel}: {channel: ChannelModel}) => ({
-    channel,
-}));
-
-export default withChannel(ChannelListItem);
+export default withDatabase(enhance(ChannelListItem));
