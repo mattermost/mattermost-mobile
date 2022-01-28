@@ -12,6 +12,7 @@ import {WebSocketMessage} from '@typings/api/websocket';
 
 import type {Model} from '@nozbe/watermelondb';
 import type {ServerDatabase} from '@typings/database/database';
+import type UserModel from '@typings/database/models/servers/user';
 
 export async function handleRoleUpdatedEvent(serverUrl: string, msg: WebSocketMessage): Promise<void> {
     const database = DatabaseManager.serverDatabases[serverUrl];
@@ -48,24 +49,27 @@ export async function handleUserRoleUpdatedEvent(serverUrl: string, msg: WebSock
     // update Role Table if needed
     const newRoles = await fetchRolesIfNeeded(serverUrl, Array.from(msg.data.roles), true);
     const preparedRoleModels = getPreparedRoleModels(database, newRoles);
-    modelPromises.push(preparedRoleModels);
+
+    if (preparedRoleModels) {
+        modelPromises.push(preparedRoleModels);
+    }
 
     // update User Table record
-    const user = await queryCurrentUser(database.database);
-    if (!user) {
-        return;
-    }
+    const getUpdatedUserModel = async (): Promise<UserModel[]> => {
+        const user = await queryCurrentUser(database.database);
+        if (!user) {
+            return [] as UserModel[];
+        }
 
-    user.prepareUpdate((u) => {
-        u.roles = msg.data.roles;
-    });
+        user!.prepareUpdate((u) => {
+            u.roles = msg.data.roles;
+        });
+        return [user] as UserModel[];
+    };
 
-    try {
-        await database.operator.batchRecords([user]);
-    } catch {
-        // eslint-disable-next-line no-console
-        console.log('FAILED TO BATCH CHANGES FOR USER ROLE UPDATED');
-    }
+    const getUserModelPromise = getUpdatedUserModel();
+    modelPromises.push(getUserModelPromise);
+
     const models = await Promise.all(modelPromises);
     const flattenedModels = models.flat() as Model[];
     if (flattenedModels?.length > 0) {
@@ -73,15 +77,15 @@ export async function handleUserRoleUpdatedEvent(serverUrl: string, msg: WebSock
     }
 }
 
-export async function handleMemberRoleUpdatedEvent(serverUrl: string, msg: WebSocketMessage): Promise<void> {
+export async function handleTeamMemberRoleUpdatedEvent(serverUrl: string, msg: WebSocketMessage): Promise<void> {
     const database = DatabaseManager.serverDatabases[serverUrl];
     if (!database) {
         return;
     }
 
-    const currentUserId = await queryCurrentUserId(database.database);
-
     const member = safeParseJSON(msg.data.member) as TeamMembership;
+
+    const currentUserId = await queryCurrentUserId(database.database);
     if (currentUserId !== member.user_id) {
         return;
     }

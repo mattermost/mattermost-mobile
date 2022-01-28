@@ -22,7 +22,7 @@ import {queryCurrentUser} from '@queries/servers/user';
 import {handleChannelDeletedEvent, handleUserAddedToChannelEvent, handleUserRemovedFromChannelEvent} from './channel';
 import {handleNewPostEvent, handlePostDeleted, handlePostEdited, handlePostUnread} from './posts';
 import {handlePreferenceChangedEvent, handlePreferencesChangedEvent, handlePreferencesDeletedEvent} from './preferences';
-import {handleUserRoleUpdatedEvent, handleMemberRoleUpdatedEvent, handleRoleUpdatedEvent} from './roles';
+import {handleUserRoleUpdatedEvent, handleTeamMemberRoleUpdatedEvent, handleRoleUpdatedEvent} from './roles';
 import {handleLeaveTeamEvent} from './teams';
 import {handleUserUpdatedEvent} from './users';
 
@@ -198,7 +198,7 @@ export async function handleEvent(serverUrl: string, msg: WebSocketMessage) {
             break;
 
         case WebsocketEvents.MEMBERROLE_UPDATED:
-            handleMemberRoleUpdatedEvent(serverUrl, msg);
+            handleTeamMemberRoleUpdatedEvent(serverUrl, msg);
             break;
 
         case WebsocketEvents.CHANNEL_CREATED:
