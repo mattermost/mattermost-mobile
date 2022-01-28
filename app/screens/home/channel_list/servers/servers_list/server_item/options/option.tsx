@@ -43,7 +43,7 @@ const ServerOption = ({color, icon, onPress, positionX, progress, style, text}: 
     const containerStyle = useMemo(() => {
         return [styles.container, {backgroundColor: color}, style];
     }, [color, style]);
-    const centererdStyle = useMemo(() => [styles.container, styles.centered], []);
+    const centeredStyle = useMemo(() => [styles.container, styles.centered], []);
 
     const trans = progress.interpolate({
         inputRange: [0, 1],
@@ -54,7 +54,7 @@ const ServerOption = ({color, icon, onPress, positionX, progress, style, text}: 
         <Animated.View style={{transform: [{translateX: trans}]}}>
             <View style={containerStyle}>
                 <RectButton
-                    style={centererdStyle}
+                    style={centeredStyle}
                     onPress={onPress}
                 >
                     <CompassIcon
