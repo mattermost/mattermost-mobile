@@ -2,13 +2,12 @@
 // See LICENSE.txt for license information.
 
 import {fetchRolesIfNeeded, RolesRequest} from '@actions/remote/role';
-import {fetchMe} from '@actions/remote/user';
 import {safeParseJSON} from '@app/utils/helpers';
 import DatabaseManager from '@database/manager';
 import {queryRoleById} from '@queries/servers/role';
 import {queryCurrentUserId} from '@queries/servers/system';
 import {prepareMyTeams} from '@queries/servers/team';
-import {prepareUsers} from '@queries/servers/user';
+import {queryCurrentUser} from '@queries/servers/user';
 import {WebSocketMessage} from '@typings/api/websocket';
 
 import type {Model} from '@nozbe/watermelondb';
@@ -52,12 +51,21 @@ export async function handleUserRoleUpdatedEvent(serverUrl: string, msg: WebSock
     modelPromises.push(preparedRoleModels);
 
     // update User Table record
-    const meData = await fetchMe(serverUrl, true);
-    const userModels = prepareUsers(database.operator, [meData.user!]);
-    if (userModels) {
-        modelPromises.push(userModels);
+    const user = await queryCurrentUser(database.database);
+    if (!user) {
+        return;
     }
 
+    user.prepareUpdate((u) => {
+        u.roles = msg.data.roles;
+    });
+
+    try {
+        await database.operator.batchRecords([user]);
+    } catch {
+        // eslint-disable-next-line no-console
+        console.log('FAILED TO BATCH CHANGES FOR USER ROLE UPDATED');
+    }
     const models = await Promise.all(modelPromises);
     const flattenedModels = models.flat() as Model[];
     if (flattenedModels?.length > 0) {
