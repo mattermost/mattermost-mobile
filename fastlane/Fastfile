@@ -605,17 +605,8 @@ platform :android do
     update_identifiers
     replace_assets
     link_sentry_android
-
-    build_type = ENV['ANDROID_BUILD_TYPE'].nil? || ENV['ANDROID_BUILD_TYPE'].empty? ? 'both' : ENV['ANDROID_BUILD_TYPE']
-
-    if build_type == 'apk' || build_type == 'both'
-      build_android_apk
-      move_apk_to_root
-    end
-    if build_type == 'aab' || build_type == 'both'
-      build_android_bundle
-      move_aab_to_root
-    end
+    build_android
+    move_android_to_root
     upload_file_to_s3({:os_type => "android"})
   end
 
@@ -744,70 +735,74 @@ platform :android do
                               })
   end
 
-  def build_android_apk
+  def build_android
     config_mode = ENV['BUILD_FOR_RELEASE'] == 'true' ? 'Release' : 'Debug'
-
-    gradle(
-        task: 'app:assemble',
-        build_type: config_mode,
-        project_dir: 'android/',
-        properties: {
-          'separateApk' => ENV["SEPARATE_APKS"] || false,
-          'universalApk' => ENV["SEPARATE_APKS"] || false,
-        }
-    )
-  end
-
-  def build_android_bundle
-    config_mode = ENV['BUILD_FOR_RELEASE'] == 'true' ? 'Release' : 'Debug'
-
-    gradle(
-        task: 'app:bundle',
-        build_type: config_mode,
-        project_dir: 'android/',
-    )
-  end
-
-  def move_aab_to_root
-    app_name =  ENV['APP_NAME'] || 'Mattermost Beta'
-    app_name_sub = app_name.gsub(" ", "_")
-    aab = lane_context[SharedValues::GRADLE_AAB_OUTPUT_PATH]
-    new_aab_path = "#{Pathname.new(File.expand_path(File.dirname(__FILE__))).parent.to_s}/#{app_name_sub}.aab"
-    sh "mv #{aab} #{new_aab_path}"
-    UI.message("AAB PATH \"#{new_aab_path}\"")
-  end
-
-  def move_apk_to_root
-    app_name =  ENV['APP_NAME'] || 'Mattermost Beta'
-    app_name_sub = app_name.gsub(" ", "_")
-    apks = lane_context[SharedValues::GRADLE_ALL_APK_OUTPUT_PATHS]
-    json_path = lane_context[SharedValues::GRADLE_OUTPUT_JSON_OUTPUT_PATH]
-
-    if json_path.nil? || json_path.empty?
-      dir_name = File.dirname(apks.first)
-      json_path = Dir.glob(File.join(dir_name, '*.json')).first
+    build_task = ENV['ANDROID_BUILD_TASK'].nil? || ENV['ANDROID_BUILD_TASK'].empty? ? 'assemble' : ENV['ANDROID_BUILD_TASK']
+    build_task = build_task.split(",")
+    if build_task.include?("assemble")
+      gradle(
+          task: 'app:assemble',
+          build_type: config_mode,
+          project_dir: 'android/',
+          properties: {
+            'separateApk' => ENV["SEPARATE_APKS"] || false,
+            'universalApk' => ENV["SEPARATE_APKS"] || false,
+          }
+      )
     end
 
-    UI.message("JSON PATH APK #{json_path}")
-    outputJson = load_config_json(json_path)
-    paths = []
-    apks.each do |apk|
-      filename = File.basename(apk)
-      output = outputJson["elements"].find { |o| o["outputFile"] == filename }
-      unless output.nil?
-        filterName = output["filters"].empty? ? '' : output["filters"].first["value"]
-        name = "#{app_name_sub}"
-        unless filterName.nil? || filterName.empty?
-          name += "-#{filterName}"
-        end
-        new_apk_path = "#{Pathname.new(File.expand_path(File.dirname(__FILE__))).parent.to_s}/#{name}.apk"
-        paths.push(new_apk_path)
-        sh "mv #{apk} #{new_apk_path}"
-        UI.message("APK PATH \"#{new_apk_path}\", #{filterName}")
+    if build_task.include?("bundle")
+      gradle(
+          task: 'app:bundle',
+          build_type: config_mode,
+          project_dir: 'android/',
+      )
+    end
+  end
+
+  def move_android_to_root
+    app_name =  ENV['APP_NAME'] || 'Mattermost Beta'
+    app_name_sub = app_name.gsub(" ", "_")
+    build_task = ENV['ANDROID_BUILD_TASK'].nil? || ENV['ANDROID_BUILD_TASK'].empty? ? 'assemble' : ENV['ANDROID_BUILD_TASK']
+    build_task = build_task.split(",")
+
+    if build_task.include?("assemble")
+      apks = lane_context[SharedValues::GRADLE_ALL_APK_OUTPUT_PATHS]
+      json_path = lane_context[SharedValues::GRADLE_OUTPUT_JSON_OUTPUT_PATH]
+  
+      if json_path.nil? || json_path.empty?
+        dir_name = File.dirname(apks.first)
+        json_path = Dir.glob(File.join(dir_name, '*.json')).first
       end
+  
+      UI.message("JSON PATH APK #{json_path}")
+      outputJson = load_config_json(json_path)
+      paths = []
+      apks.each do |apk|
+        filename = File.basename(apk)
+        output = outputJson["elements"].find { |o| o["outputFile"] == filename }
+        unless output.nil?
+          filterName = output["filters"].empty? ? '' : output["filters"].first["value"]
+          name = "#{app_name_sub}"
+          unless filterName.nil? || filterName.empty?
+            name += "-#{filterName}"
+          end
+          new_apk_path = "#{Pathname.new(File.expand_path(File.dirname(__FILE__))).parent.to_s}/#{name}.apk"
+          paths.push(new_apk_path)
+          sh "mv #{apk} #{new_apk_path}"
+          UI.message("APK PATH \"#{new_apk_path}\", #{filterName}")
+        end
+      end
+  
+      lane_context[SharedValues::GRADLE_ALL_APK_OUTPUT_PATHS] = paths
     end
 
-    lane_context[SharedValues::GRADLE_ALL_APK_OUTPUT_PATHS] = paths
+    if build_task.include?("bundle")
+      aab = lane_context[SharedValues::GRADLE_AAB_OUTPUT_PATH]
+      new_aab_path = "#{Pathname.new(File.expand_path(File.dirname(__FILE__))).parent.to_s}/#{app_name_sub}.aab"
+      sh "mv #{aab} #{new_aab_path}"
+      UI.message("AAB PATH \"#{new_aab_path}\"")
+    end
   end
 
   def link_sentry_android
