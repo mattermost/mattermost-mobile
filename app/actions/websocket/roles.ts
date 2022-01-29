@@ -5,7 +5,6 @@ import {fetchRolesIfNeeded} from '@actions/remote/role';
 import DatabaseManager from '@database/manager';
 import {queryRoleById} from '@queries/servers/role';
 import {queryCurrentUserId} from '@queries/servers/system';
-import {prepareMyTeams} from '@queries/servers/team';
 import {queryCurrentUser} from '@queries/servers/user';
 import {safeParseJSON} from '@utils/helpers';
 
@@ -71,40 +70,47 @@ export async function handleUserRoleUpdatedEvent(serverUrl: string, msg: WebSock
 }
 
 export async function handleTeamMemberRoleUpdatedEvent(serverUrl: string, msg: WebSocketMessage): Promise<void> {
-    const database = DatabaseManager.serverDatabases[serverUrl];
-    if (!database) {
+    const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
+    if (!operator) {
         return;
     }
 
-    const member = safeParseJSON(msg.data.member) as TeamMembership;
+    try {
+        const member = JSON.parse(msg.data.member);
 
-    const currentUserId = await queryCurrentUserId(database.database);
-    if (currentUserId !== member.user_id) {
-        return;
-    }
+        const currentUserId = await queryCurrentUserId(operator.database);
+        if (currentUserId !== member.user_id) {
+            return;
+        }
 
-    const modelPromises: Array<Promise<Model[]>> = [];
+        const models: Model[] = [];
 
-    // update Role Table if needed
-    const rolesArray = member.roles.split(' ');
-    const newRoles = await fetchRolesIfNeeded(serverUrl, rolesArray, true);
-    if (newRoles?.roles?.length) {
-        const preparedRoleModels = database.operator.handleRole({
-            roles: newRoles.roles!,
+        // update Role Table if needed
+        const rolesArray = member.roles.split(' ');
+        const newRoles = await fetchRolesIfNeeded(serverUrl, rolesArray, true);
+        if (newRoles?.roles?.length) {
+            const preparedRoleModels = await operator.handleRole({
+                roles: newRoles.roles!,
+                prepareRecordsOnly: true,
+            });
+            models.push(...preparedRoleModels);
+        }
+
+        // update MyTeam Table
+        const myTeams: MyTeam[] = [{id: member.team_id, roles: member.roles}];
+        const myTeamRecords = await operator.handleMyTeam({
             prepareRecordsOnly: true,
+            myTeams,
         });
-        modelPromises.push(preparedRoleModels);
-    }
 
-    // update MyTeam Table
-    const preparedMyTeam = prepareMyTeams(database.operator, [], [member]);
-    if (preparedMyTeam) {
-        modelPromises.push(preparedMyTeam[2]);
-    }
+        if (myTeamRecords.length) {
+            models.push(...myTeamRecords);
+        }
 
-    const models = await Promise.all(modelPromises);
-    const flattenedModels = models.flat() as Model[];
-    if (flattenedModels?.length > 0) {
-        await database.operator.batchRecords(flattenedModels);
+        if (models?.length) {
+            await operator.batchRecords(models);
+        }
+    } catch {
+        // do nothing
     }
 }
