@@ -53,7 +53,10 @@ export async function handleUserRoleUpdatedEvent(serverUrl: string, msg: WebSock
             roles: newRoles.roles!,
             prepareRecordsOnly: true,
         });
-        models.push(...preparedRoleModels);
+
+        if (preparedRoleModels.length) {
+            models.push(...preparedRoleModels);
+        }
     }
 
     // update User Table record
@@ -94,7 +97,9 @@ export async function handleTeamMemberRoleUpdatedEvent(serverUrl: string, msg: W
                 roles: newRoles.roles!,
                 prepareRecordsOnly: true,
             });
-            models.push(...preparedRoleModels);
+            if (preparedRoleModels.length) {
+                models.push(...preparedRoleModels);
+            }
         }
 
         // update MyTeam Table
