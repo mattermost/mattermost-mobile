@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {fetchRolesIfNeeded, RolesRequest} from '@actions/remote/role';
+import {fetchRolesIfNeeded} from '@actions/remote/role';
 import {safeParseJSON} from '@app/utils/helpers';
 import DatabaseManager from '@database/manager';
 import {queryRoleById} from '@queries/servers/role';
@@ -11,7 +11,6 @@ import {queryCurrentUser} from '@queries/servers/user';
 import {WebSocketMessage} from '@typings/api/websocket';
 
 import type {Model} from '@nozbe/watermelondb';
-import type {ServerDatabase} from '@typings/database/database';
 import type UserModel from '@typings/database/models/servers/user';
 
 export async function handleRoleUpdatedEvent(serverUrl: string, msg: WebSocketMessage): Promise<void> {
@@ -47,10 +46,13 @@ export async function handleUserRoleUpdatedEvent(serverUrl: string, msg: WebSock
     const modelPromises: Array<Promise<Model[]>> = [];
 
     // update Role Table if needed
-    const newRoles = await fetchRolesIfNeeded(serverUrl, Array.from(msg.data.roles), true);
-    const preparedRoleModels = getPreparedRoleModels(database, newRoles);
-
-    if (preparedRoleModels) {
+    const rolesArray = msg.data.roles.split(' ');
+    const newRoles = await fetchRolesIfNeeded(serverUrl, rolesArray, true);
+    if (newRoles?.roles?.length) {
+        const preparedRoleModels = database.operator.handleRole({
+            roles: newRoles.roles!,
+            prepareRecordsOnly: true,
+        });
         modelPromises.push(preparedRoleModels);
     }
 
@@ -93,9 +95,15 @@ export async function handleTeamMemberRoleUpdatedEvent(serverUrl: string, msg: W
     const modelPromises: Array<Promise<Model[]>> = [];
 
     // update Role Table if needed
-    const newRoles = await fetchRolesIfNeeded(serverUrl, Array.from(member.roles), true);
-    const preparedRoleModels = getPreparedRoleModels(database, newRoles);
-    modelPromises.push(preparedRoleModels);
+    const rolesArray = member.roles.split(' ');
+    const newRoles = await fetchRolesIfNeeded(serverUrl, rolesArray, true);
+    if (newRoles?.roles?.length) {
+        const preparedRoleModels = database.operator.handleRole({
+            roles: newRoles.roles!,
+            prepareRecordsOnly: true,
+        });
+        modelPromises.push(preparedRoleModels);
+    }
 
     // update MyTeam Table
     const preparedMyTeam = prepareMyTeams(database.operator, [], [member]);
@@ -109,15 +117,3 @@ export async function handleTeamMemberRoleUpdatedEvent(serverUrl: string, msg: W
         await database.operator.batchRecords(flattenedModels);
     }
 }
-
-async function getPreparedRoleModels(database: ServerDatabase, roles: RolesRequest): Promise<Model[]> {
-    if (!(typeof roles.roles === 'string' && roles.roles === 'null')) {
-        const preparedRolesModels = await database.operator.handleRole({
-            roles: roles.roles!,
-            prepareRecordsOnly: true,
-        });
-        return preparedRolesModels;
-    }
-    return [];
-}
-
