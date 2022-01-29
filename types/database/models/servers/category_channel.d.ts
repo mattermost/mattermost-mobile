@@ -30,6 +30,6 @@ export default class CategoryChannelModel extends Model {
     /** channel : The related channel */
     channel: Relation<ChannelModel>;
 
-    /** channel : The related channel */
+    /** myChannel : The related myChannel */
     myChannel: Relation<MyChannelModel>;
 }

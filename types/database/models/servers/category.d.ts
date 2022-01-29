@@ -43,13 +43,13 @@ export default class CategoryModel extends Model {
     /** categoryChannels : The join table for channels */
     categoryChannels: Query<CategoryChannelModel>;
 
-    /** categoryChannels : The sorted join table for channels */
+    /** categoryChannelsBySortOrder : The sorted join table for channels */
     @lazy categoryChannelsBySortOrder: Query<CategoryChannelModel>;
 
     /** channels : All the channels associated with this category */
     @lazy channels: Query<ChannelModel>;
 
-    /** channels : All the channels associated with this category */
+    /** myChannels : All the myChannels associated with this category */
     @lazy myChannels: Query<MyChannelModel>;
 
     /** hasChannels : Whether the category has any channels */

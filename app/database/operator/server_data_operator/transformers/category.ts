@@ -56,7 +56,6 @@ export const transformCategoryRecord = ({action, database, value}: TransformerAr
  */
 export const transformCategoryChannelRecord = ({action, database, value}: TransformerArgs): Promise<CategoryChannelModel> => {
     const raw = value.raw as CategoryChannel;
-
     const record = value.record as CategoryChannelModel;
     const isCreateAction = action === OperationType.CREATE;
 
