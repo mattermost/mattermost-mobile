@@ -3,7 +3,6 @@
 
 import {fetchChannelAndMyMember} from '@actions/helpers/channels';
 import {loadChannelsForTeam} from '@actions/views/channel';
-import {getMe} from '@actions/views/user';
 import {Client4} from '@client/rest';
 import {ChannelTypes, TeamTypes, UserTypes, RoleTypes} from '@mm-redux/action_types';
 import {notVisibleUsersActions} from '@mm-redux/actions/helpers';
@@ -182,15 +181,31 @@ export function handleUserRoleUpdated(msg: WebSocketMessage) {
 }
 
 export function handleUserUpdatedEvent(msg: WebSocketMessage) {
-    return (dispatch: DispatchFunc, getState: GetStateFunc): ActionResult => {
+    return async (dispatch: DispatchFunc, getState: GetStateFunc): Promise<ActionResult> => {
         const currentUser = getCurrentUser(getState());
         const user = msg.data.user;
 
         if (user.id === currentUser.id) {
             if (user.update_at > currentUser.update_at) {
-                // Need to request me to make sure we don't override with sanitized fields from the
-                // websocket event
-                dispatch(getMe());
+                // update unsanitized user received from websocket event
+                dispatch({
+                    type: UserTypes.RECEIVED_ME,
+                    data: user,
+                });
+
+                // update roles if user.roles and currentUser.roles are different
+                const actions = [];
+                if (user.roles !== currentUser.roles) {
+                    const roles = user.roles.split(' ');
+                    const nameRoles = await Client4.getRolesByNames(roles);
+                    if (nameRoles.length) {
+                        actions.push({
+                            type: RoleTypes.RECEIVED_ROLES,
+                            data: nameRoles,
+                        });
+                    }
+                    dispatch(batchActions(actions, 'BATCH_GET_ME'));
+                }
             }
         } else {
             dispatch({
