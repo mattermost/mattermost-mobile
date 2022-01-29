@@ -1,0 +1,166 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Server Icon Server Icon Component should match snapshot 1`] = `
+<View>
+  <View
+    accessibilityState={
+      Object {
+        "disabled": true,
+      }
+    }
+    accessible={true}
+    collapsable={false}
+    focusable={false}
+    onClick={[Function]}
+    onResponderGrant={[Function]}
+    onResponderMove={[Function]}
+    onResponderRelease={[Function]}
+    onResponderTerminate={[Function]}
+    onResponderTerminationRequest={[Function]}
+    onStartShouldSetResponder={[Function]}
+    style={
+      Object {
+        "opacity": 1,
+      }
+    }
+  >
+    <Icon
+      color="rgba(255,255,255,0.56)"
+      name="server-variant"
+      size={24}
+    />
+  </View>
+</View>
+`;
+
+exports[`Server Icon Server Icon Component should match snapshot with mentions 1`] = `
+<View>
+  <View
+    accessibilityState={
+      Object {
+        "disabled": true,
+      }
+    }
+    accessible={true}
+    collapsable={false}
+    focusable={false}
+    onClick={[Function]}
+    onResponderGrant={[Function]}
+    onResponderMove={[Function]}
+    onResponderRelease={[Function]}
+    onResponderTerminate={[Function]}
+    onResponderTerminationRequest={[Function]}
+    onStartShouldSetResponder={[Function]}
+    style={
+      Object {
+        "opacity": 1,
+      }
+    }
+  >
+    <Icon
+      color="rgba(255,255,255,0.56)"
+      name="server-variant"
+      size={24}
+    />
+    <Text
+      collapsable={false}
+      numberOfLines={1}
+      style={
+        Object {
+          "alignSelf": "flex-end",
+          "backgroundColor": "#ffffff",
+          "borderColor": "#14213e",
+          "borderRadius": 11,
+          "borderWidth": 2,
+          "color": "#1e325c",
+          "fontFamily": "OpenSans-Bold",
+          "fontSize": 12,
+          "height": 22,
+          "left": 25,
+          "lineHeight": 16.5,
+          "minWidth": 26,
+          "opacity": 1,
+          "overflow": "hidden",
+          "paddingHorizontal": 5,
+          "position": "absolute",
+          "textAlign": "center",
+          "top": -1,
+          "transform": Array [
+            Object {
+              "scale": 1,
+            },
+          ],
+        }
+      }
+    >
+      1
+    </Text>
+  </View>
+</View>
+`;
+
+exports[`Server Icon Server Icon Component should match snapshot with unreads 1`] = `
+<View>
+  <View
+    accessibilityState={
+      Object {
+        "disabled": true,
+      }
+    }
+    accessible={true}
+    collapsable={false}
+    focusable={false}
+    onClick={[Function]}
+    onResponderGrant={[Function]}
+    onResponderMove={[Function]}
+    onResponderRelease={[Function]}
+    onResponderTerminate={[Function]}
+    onResponderTerminationRequest={[Function]}
+    onStartShouldSetResponder={[Function]}
+    style={
+      Object {
+        "opacity": 1,
+      }
+    }
+  >
+    <Icon
+      color="rgba(255,255,255,0.56)"
+      name="server-variant"
+      size={24}
+    />
+    <Text
+      collapsable={false}
+      numberOfLines={1}
+      style={
+        Object {
+          "alignSelf": "flex-end",
+          "backgroundColor": "#ffffff",
+          "borderColor": "#14213e",
+          "borderRadius": 6,
+          "borderWidth": 2,
+          "color": "#1e325c",
+          "fontFamily": "OpenSans-Bold",
+          "fontSize": 12,
+          "height": 12,
+          "left": 25,
+          "lineHeight": 16.5,
+          "minWidth": 12,
+          "opacity": 1,
+          "overflow": "hidden",
+          "paddingHorizontal": 0,
+          "position": "absolute",
+          "textAlign": "center",
+          "top": 5,
+          "transform": Array [
+            Object {
+              "scale": 1,
+            },
+          ],
+        }
+      }
+    >
+      
+    </Text>
+  </View>
+</View>
+`;

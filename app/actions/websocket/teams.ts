@@ -16,8 +16,6 @@ import {queryLastTeam, prepareMyTeams} from '@queries/servers/team';
 import {queryCurrentUser} from '@queries/servers/user';
 import {dismissAllModals, popToRoot} from '@screens/navigation';
 
-import type {WebSocketMessage} from '@typings/api/websocket';
-
 export async function handleLeaveTeamEvent(serverUrl: string, msg: WebSocketMessage) {
     const database = DatabaseManager.serverDatabases[serverUrl];
     if (!database) {

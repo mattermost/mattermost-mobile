@@ -4,14 +4,12 @@
 import React, {useCallback} from 'react';
 import {useIntl} from 'react-intl';
 import {useWindowDimensions, View} from 'react-native';
-import {OptionsModalPresentationStyle} from 'react-native-navigation';
 
 import CompassIcon from '@components/compass_icon';
 import TouchableWithFeedback from '@components/touchable_with_feedback';
-import {Screens} from '@constants';
 import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
-import {showModal, showModalOverCurrentContext} from '@screens/navigation';
+import {bottomSheet} from '@screens/navigation';
 import {preventDoubleTap} from '@utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
@@ -52,37 +50,13 @@ export default function AddTeam({canCreateTeams, otherTeams}: Props) {
             height = Math.min(maxHeight, HEADER_HEIGHT + (otherTeams.length * ITEM_HEIGHT) + (canCreateTeams ? CREATE_HEIGHT : 0));
         }
 
-        if (isTablet) {
-            const closeButton = CompassIcon.getImageSourceSync('close', 24, theme.centerChannelColor);
-            const closeButtonId = 'close-join-team';
-            showModal(Screens.BOTTOM_SHEET, intl.formatMessage({id: 'mobile.add_team.join_team', defaultMessage: 'Join Another Team'}), {
-                closeButtonId,
-                renderContent,
-                snapPoints: [height, 10],
-            }, {
-                modalPresentationStyle: OptionsModalPresentationStyle.formSheet,
-                swipeToDismiss: true,
-                topBar: {
-                    leftButtons: [{
-                        id: closeButtonId,
-                        icon: closeButton,
-                        testID: closeButtonId,
-                    }],
-                    leftButtonColor: changeOpacity(theme.centerChannelColor, 0.56),
-                    background: {
-                        color: theme.centerChannelBg,
-                    },
-                    title: {
-                        color: theme.centerChannelColor,
-                    },
-                },
-            });
-        } else {
-            showModalOverCurrentContext(Screens.BOTTOM_SHEET, {
-                renderContent,
-                snapPoints: [height, 10],
-            }, {swipeToDismiss: true});
-        }
+        bottomSheet({
+            closeButtonId: 'close-join-team',
+            renderContent,
+            snapPoints: [height, 10],
+            theme,
+            title: intl.formatMessage({id: 'mobile.add_team.join_team', defaultMessage: 'Join Another Team'}),
+        });
     }), [canCreateTeams, otherTeams, isTablet, theme]);
 
     return (
