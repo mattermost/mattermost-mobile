@@ -10,7 +10,6 @@ import {queryCurrentUser} from '@queries/servers/user';
 import {safeParseJSON} from '@utils/helpers';
 
 import type {Model} from '@nozbe/watermelondb';
-import type UserModel from '@typings/database/models/servers/user';
 
 export async function handleRoleUpdatedEvent(serverUrl: string, msg: WebSocketMessage): Promise<void> {
     const database = DatabaseManager.serverDatabases[serverUrl];
@@ -56,20 +55,13 @@ export async function handleUserRoleUpdatedEvent(serverUrl: string, msg: WebSock
     }
 
     // update User Table record
-    const getUpdatedUserModel = async (): Promise<UserModel[]> => {
-        const user = await queryCurrentUser(database.database);
-        if (!user) {
-            return [] as UserModel[];
-        }
-
+    const user = await queryCurrentUser(database.database);
+    if (user) {
         user!.prepareUpdate((u) => {
             u.roles = msg.data.roles;
         });
-        return [user] as UserModel[];
-    };
-
-    const getUserModelPromise = getUpdatedUserModel();
-    modelPromises.push(getUserModelPromise);
+        modelPromises.push(Promise.resolve([user]));
+    }
 
     const models = await Promise.all(modelPromises);
     const flattenedModels = models.flat() as Model[];
