@@ -27,7 +27,6 @@ import {handleLeaveTeamEvent} from './teams';
 import {handleUserUpdatedEvent} from './users';
 
 import type {Model} from '@nozbe/watermelondb';
-import type {WebSocketMessage} from '@typings/api/websocket';
 
 export async function handleFirstConnect(serverUrl: string) {
     const database = DatabaseManager.serverDatabases[serverUrl]?.database;

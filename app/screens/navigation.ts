@@ -417,11 +417,10 @@ export function showModalOverCurrentContext(name: string, passProps = {}, option
         default:
             animations = {
                 showModal: {
-                    enter: {
-                        enabled: false,
-                    },
-                    exit: {
-                        enabled: false,
+                    alpha: {
+                        from: 0,
+                        to: 1,
+                        duration: 250,
                     },
                 },
                 dismissModal: {
@@ -546,13 +545,14 @@ export async function dismissOverlay(componentId: string) {
 
 type BottomSheetArgs = {
     closeButtonId: string;
+    initialSnapIndex?: number;
     renderContent: () => JSX.Element;
-    snapPoints: number[];
+    snapPoints: Array<number | string>;
     theme: Theme;
     title: string;
 }
 
-export async function bottomSheet({title, renderContent, snapPoints, theme, closeButtonId}: BottomSheetArgs) {
+export async function bottomSheet({title, renderContent, snapPoints, initialSnapIndex = 0, theme, closeButtonId}: BottomSheetArgs) {
     const {isSplitView} = await isRunningInSplitView();
     const isTablet = Device.IS_TABLET && !isSplitView;
 
@@ -560,6 +560,7 @@ export async function bottomSheet({title, renderContent, snapPoints, theme, clos
         const closeButton = CompassIcon.getImageSourceSync('close', 24, theme.centerChannelColor);
         showModal(Screens.BOTTOM_SHEET, title, {
             closeButtonId,
+            initialSnapIndex,
             renderContent,
             snapPoints,
         }, {
@@ -582,6 +583,7 @@ export async function bottomSheet({title, renderContent, snapPoints, theme, clos
         });
     } else {
         showModalOverCurrentContext(Screens.BOTTOM_SHEET, {
+            initialSnapIndex,
             renderContent,
             snapPoints,
         }, {swipeToDismiss: true});

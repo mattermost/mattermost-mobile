@@ -124,7 +124,7 @@ const BottomSheet = ({closeButtonId, initialSnapIndex = 0, renderContent, snapPo
                 borderRadius={10}
                 initialSnap={initialSnapIndex}
                 renderContent={renderContainerContent}
-                onCloseEnd={() => dismissModal()}
+                onCloseEnd={dismissModal}
                 enabledBottomInitialAnimation={true}
                 renderHeader={Indicator}
                 enabledContentTapInteraction={false}
