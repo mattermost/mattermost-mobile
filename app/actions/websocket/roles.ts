@@ -6,27 +6,30 @@ import DatabaseManager from '@database/manager';
 import {queryRoleById} from '@queries/servers/role';
 import {queryCurrentUserId} from '@queries/servers/system';
 import {queryCurrentUser} from '@queries/servers/user';
-import {safeParseJSON} from '@utils/helpers';
 
 import type {Model} from '@nozbe/watermelondb';
 
 export async function handleRoleUpdatedEvent(serverUrl: string, msg: WebSocketMessage): Promise<void> {
-    const database = DatabaseManager.serverDatabases[serverUrl];
-    if (!database) {
+    const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
+    if (!operator) {
         return;
     }
 
     // only update Role records that exist in the Role Table
-    const role = safeParseJSON(msg.data.role) as Role;
-    const dbRole = await queryRoleById(database.database, role.id);
-    if (!dbRole) {
-        return;
-    }
+    try {
+        const role = JSON.parse(msg.data.role) as Role;
+        const dbRole = await queryRoleById(operator.database, role.id);
+        if (!dbRole) {
+            return;
+        }
 
-    database.operator.handleRole({
-        roles: [role],
-        prepareRecordsOnly: false,
-    });
+        operator.handleRole({
+            roles: [role],
+            prepareRecordsOnly: false,
+        });
+    } catch {
+        // do nothing
+    }
 }
 
 export async function handleUserRoleUpdatedEvent(serverUrl: string, msg: WebSocketMessage): Promise<void> {
