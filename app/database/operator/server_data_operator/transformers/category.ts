@@ -31,8 +31,8 @@ export const transformCategoryRecord = ({action, database, value}: TransformerAr
         category._raw.id = isCreateAction ? (raw?.id ?? category.id) : record.id;
         category.displayName = raw.display_name;
         category.sorting = raw.sorting || 'recent';
-        category.sortOrder = raw.sort_order / 10; // Sort order from server is in multiples of 10
-        category.muted = raw.muted;
+        category.sortOrder = raw.sort_order === 0 ? 0 : raw.sort_order / 10; // Sort order from server is in multiples of 10
+        category.muted = raw.muted ?? false;
         category.collapsed = isCreateAction ? false : record.collapsed;
         category.type = raw.type;
         category.teamId = raw.team_id;
