@@ -2,12 +2,12 @@
 // See LICENSE.txt for license information.
 
 import {fetchRolesIfNeeded} from '@actions/remote/role';
-import {safeParseJSON} from '@app/utils/helpers';
 import DatabaseManager from '@database/manager';
 import {queryRoleById} from '@queries/servers/role';
 import {queryCurrentUserId} from '@queries/servers/system';
 import {prepareMyTeams} from '@queries/servers/team';
 import {queryCurrentUser} from '@queries/servers/user';
+import {safeParseJSON} from '@utils/helpers';
 
 import type {Model} from '@nozbe/watermelondb';
 import type UserModel from '@typings/database/models/servers/user';
