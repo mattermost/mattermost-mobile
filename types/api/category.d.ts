@@ -1,14 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-type CategorySorting = '' | 'alpha' | 'manual' | 'recent'
+type CategorySorting = 'alpha' | 'manual' | 'recent'
 type CategoryType = 'channels' | 'direct_messages' | 'favorites' | 'custom'
-
-// CategoryOrder is an array of sorted category_ids
-type CategoryOrder = string[]
-
-// CategoryChannelOrder is an array of sorted channel_ids
-type CategoryChannelOrder = string[]
 
 type CategoryChannel = {
     id?: string;
@@ -29,10 +23,10 @@ type Category = {
 }
 
 type CategoryWithChannels = Category & {
-    channel_ids: CategoryChannelOrder;
+    channel_ids: string[];
 }
 
 type CategoriesWithOrder = {
     categories: CategoryWithChannels[];
-    order: CategoryOrder;
+    order: string[];
 }
