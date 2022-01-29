@@ -33,42 +33,40 @@ export async function handleRoleUpdatedEvent(serverUrl: string, msg: WebSocketMe
 }
 
 export async function handleUserRoleUpdatedEvent(serverUrl: string, msg: WebSocketMessage): Promise<void> {
-    const database = DatabaseManager.serverDatabases[serverUrl];
-    if (!database) {
+    const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
+    if (!operator) {
         return;
     }
 
-    const currentUserId = await queryCurrentUserId(database.database);
+    const currentUserId = await queryCurrentUserId(operator.database);
     if (currentUserId !== msg.data.user_id) {
         return;
     }
 
-    const modelPromises: Array<Promise<Model[]>> = [];
+    const models: Model[] = [];
 
     // update Role Table if needed
     const rolesArray = msg.data.roles.split(' ');
     const newRoles = await fetchRolesIfNeeded(serverUrl, rolesArray, true);
     if (newRoles?.roles?.length) {
-        const preparedRoleModels = database.operator.handleRole({
+        const preparedRoleModels = await operator.handleRole({
             roles: newRoles.roles!,
             prepareRecordsOnly: true,
         });
-        modelPromises.push(preparedRoleModels);
+        models.push(...preparedRoleModels);
     }
 
     // update User Table record
-    const user = await queryCurrentUser(database.database);
+    const user = await queryCurrentUser(operator.database);
     if (user) {
         user!.prepareUpdate((u) => {
             u.roles = msg.data.roles;
         });
-        modelPromises.push(Promise.resolve([user]));
+        models.push(user);
     }
 
-    const models = await Promise.all(modelPromises);
-    const flattenedModels = models.flat() as Model[];
-    if (flattenedModels?.length > 0) {
-        await database.operator.batchRecords(flattenedModels);
+    if (models?.length) {
+        await operator.batchRecords(models);
     }
 }
 
