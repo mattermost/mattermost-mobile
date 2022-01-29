@@ -8,7 +8,6 @@ import {queryRoleById} from '@queries/servers/role';
 import {queryCurrentUserId} from '@queries/servers/system';
 import {prepareMyTeams} from '@queries/servers/team';
 import {queryCurrentUser} from '@queries/servers/user';
-import {WebSocketMessage} from '@typings/api/websocket';
 
 import type {Model} from '@nozbe/watermelondb';
 import type UserModel from '@typings/database/models/servers/user';
