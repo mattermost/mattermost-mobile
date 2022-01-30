@@ -360,7 +360,7 @@ export const updateAllUsersSinceLastDisconnect = async (serverUrl: string) => {
     return {users: userUpdates};
 };
 
-export const updateUsersNoLongerVisible = async (serverUrl: string): Promise<{error?: unknown}> => {
+export const updateUsersNoLongerVisible = async (serverUrl: string, prepareRecordsOnly = false): Promise<{error?: unknown; models?: Model[]}> => {
     let client: Client;
     try {
         client = NetworkManager.getClient(serverUrl);
@@ -373,12 +373,12 @@ export const updateUsersNoLongerVisible = async (serverUrl: string): Promise<{er
         return {error: `${serverUrl} database not found`};
     }
 
+    const models: Model[] = [];
     try {
         const knownUsers = new Set(await client.getKnownUsers());
         const currentUserId = await queryCurrentUserId(serverDatabase.database);
         knownUsers.add(currentUserId);
 
-        const models: Model[] = [];
         const allUsers = await queryAllUsers(serverDatabase.database);
         for (const user of allUsers) {
             if (!knownUsers.has(user.id)) {
@@ -386,7 +386,7 @@ export const updateUsersNoLongerVisible = async (serverUrl: string): Promise<{er
                 models.push(user);
             }
         }
-        if (models.length) {
+        if (models.length && !prepareRecordsOnly) {
             serverDatabase.operator.batchRecords(models);
         }
     } catch (error) {
@@ -394,7 +394,7 @@ export const updateUsersNoLongerVisible = async (serverUrl: string): Promise<{er
         return {error};
     }
 
-    return {};
+    return {models};
 };
 
 export const setStatus = async (serverUrl: string, status: UserStatus) => {
@@ -474,4 +474,55 @@ export const unsetCustomStatus = async (serverUrl: string) => {
     }
 
     return {data: true};
+};
+
+export const setDefaultProfileImage = async (serverUrl: string, userId: string) => {
+    let client: Client;
+
+    try {
+        client = NetworkManager.getClient(serverUrl);
+    } catch (error) {
+        return {error};
+    }
+
+    try {
+        await client.setDefaultProfileImage(userId);
+        updateLocalUser(serverUrl, {last_picture_update: Date.now()});
+    } catch (error) {
+        return {error};
+    }
+
+    return {data: true};
+};
+
+export const uploadUserProfileImage = async (serverUrl: string, localPath: string) => {
+    const database = DatabaseManager.serverDatabases[serverUrl]?.database;
+    if (!database) {
+        return {error: `${serverUrl} database not found`};
+    }
+
+    let client: Client;
+    try {
+        client = NetworkManager.getClient(serverUrl);
+    } catch (error) {
+        return {error};
+    }
+
+    try {
+        const currentUser = await queryCurrentUser(database);
+        if (currentUser) {
+            const endpoint = `${client.getUserRoute(currentUser.id)}/image`;
+
+            await client.apiClient.upload(endpoint, localPath, {
+                skipBytes: 0,
+                method: 'POST',
+                multipart: {
+                    fileKey: 'image',
+                },
+            });
+        }
+    } catch (e) {
+        return {error: e};
+    }
+    return {error: undefined};
 };

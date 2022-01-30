@@ -67,6 +67,7 @@ const ChannelListHeader = ({displayName, iconPad}: Props) => {
 
     return (
         <Animated.View style={animatedStyle}>
+            {Boolean(displayName) &&
             <View style={styles.headerRow}>
                 <View style={styles.headerRow}>
                     <Text style={styles.headingStyles}>
@@ -86,6 +87,7 @@ const ChannelListHeader = ({displayName, iconPad}: Props) => {
                     />
                 </TouchableWithFeedback>
             </View>
+            }
             <Text style={styles.subHeadingStyles}>
                 {serverDisplayName}
             </Text>

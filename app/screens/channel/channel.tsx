@@ -16,8 +16,6 @@ import {popTopScreen} from '@screens/navigation';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 import ChannelPostList from './channel_post_list';
-import FailedChannels from './failed_channels';
-import FailedTeams from './failed_teams';
 import OtherMentionsBadge from './other_mentions_badge';
 
 import type {HeaderRightButton} from '@components/navigation_header/header';
@@ -96,14 +94,6 @@ const Channel = ({channelId, componentId, displayName, isOwnDirectMessage, membe
         // eslint-disable-next-line no-console
         console.log('Title Press go to Channel Info', displayName);
     }, [channelId]);
-
-    if (!teamId) {
-        return <FailedTeams/>;
-    }
-
-    if (!channelId) {
-        return <FailedChannels teamId={teamId}/>;
-    }
 
     let title = displayName;
     if (isOwnDirectMessage) {

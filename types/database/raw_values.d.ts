@@ -129,3 +129,4 @@ type RawValue =
   | Thread
   | ThreadParticipant
   | UserProfile
+  | Pick<ChannelMembership, 'channel_id' | 'user_id'>

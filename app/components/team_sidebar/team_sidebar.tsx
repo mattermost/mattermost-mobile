@@ -10,7 +10,7 @@ import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 
-import AddTeam from './add_team/add_team';
+import AddTeam from './add_team';
 import TeamList from './team_list';
 
 import type TeamModel from '@typings/database/models/servers/team';
