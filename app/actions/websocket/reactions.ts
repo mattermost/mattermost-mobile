@@ -23,7 +23,7 @@ export async function handleAddEmoji(serverUrl: string, msg: WebSocketMessage): 
     }
 }
 
-export async function handleReactionAddedEvent(serverUrl: string, msg: WebSocketMessage): Promise<void> {
+export async function handleReactionAddedToPostEvent(serverUrl: string, msg: WebSocketMessage): Promise<void> {
     const database = DatabaseManager.serverDatabases[serverUrl];
     if (!database) {
         return;
@@ -47,8 +47,8 @@ export async function handleReactionAddedEvent(serverUrl: string, msg: WebSocket
     }
 }
 
-export async function handleReactionRemovedEvent(serverUrl: string, msg: WebSocketMessage): Promise<void> {
     console.log('<><> handleReactionRemovedEvent');
+export async function handleReactionRemovedFromPostEvent(serverUrl: string, msg: WebSocketMessage): Promise<void> {
     const database = DatabaseManager.serverDatabases[serverUrl];
     if (!database) {
         return;
