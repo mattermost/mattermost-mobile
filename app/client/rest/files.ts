@@ -8,10 +8,10 @@ export interface ClientFilesMix {
     getFileThumbnailUrl: (fileId: string, timestamp: number) => string;
     getFilePreviewUrl: (fileId: string, timestamp: number) => string;
     getFilePublicLink: (fileId: string) => Promise<any>;
-    uploadFile: (
+    uploadPostAttachment: (
         file: FileInfo,
         channelId: string,
-        onProgress: (fractionCompleted: number) => void,
+        onProgress: (fractionCompleted: number, bytesRead?: number | null | undefined) => void,
         onComplete: (response: ClientResponse) => void,
         onError: (response: ClientResponseError) => void,
         skipBytes?: number,
@@ -53,10 +53,10 @@ const ClientFiles = (superclass: any) => class extends superclass {
         );
     };
 
-    uploadFile = async (
+    uploadPostAttachment = async (
         file: FileInfo,
         channelId: string,
-        onProgress: (fractionCompleted: number) => void,
+        onProgress: (fractionCompleted: number, bytesRead?: number | null | undefined) => void,
         onComplete: (response: ClientResponse) => void,
         onError: (response: ClientResponseError) => void,
         skipBytes = 0,

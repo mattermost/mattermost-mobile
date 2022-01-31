@@ -11,7 +11,7 @@ export const uploadFile = (
     serverUrl: string,
     file: FileInfo,
     channelId: string,
-    onProgress: (fractionCompleted: number) => void = () => {/*Do Nothing*/},
+    onProgress: (fractionCompleted: number, bytesRead?: number | null | undefined) => void = () => {/*Do Nothing*/},
     onComplete: (response: ClientResponse) => void = () => {/*Do Nothing*/},
     onError: (response: ClientResponseError) => void = () => {/*Do Nothing*/},
     skipBytes = 0,
@@ -22,5 +22,5 @@ export const uploadFile = (
     } catch (error) {
         return {error: error as ClientError};
     }
-    return {cancel: client.uploadFile(file, channelId, onProgress, onComplete, onError, skipBytes)};
+    return {cancel: client.uploadPostAttachment(file, channelId, onProgress, onComplete, onError, skipBytes)};
 };

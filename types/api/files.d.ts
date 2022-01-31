@@ -17,6 +17,7 @@ type FileInfo = {
     name: string;
     post_id: string;
     progress?: number;
+    bytesRead?: number;
     size: number;
     update_at: number;
     uri?: string;

@@ -2,11 +2,10 @@
 // See LICENSE.txt for license information.
 
 import {ClientResponse, ClientResponseError} from '@mattermost/react-native-network-client';
-import {AppState, AppStateStatus, DeviceEventEmitter} from 'react-native';
+import {AppState, AppStateStatus} from 'react-native';
 
 import {updateDraftFile} from '@actions/local/draft';
 import {uploadFile} from '@actions/remote/file';
-import {Events} from '@constants';
 import {PROGRESS_TIME_TO_STORE} from '@constants/files';
 
 type FileHandler = {
@@ -17,6 +16,8 @@ type FileHandler = {
         channelId: string;
         rootId: string;
         lastTimeStored: number;
+        onError: Array<(msg: string) => void>;
+        onProgress: Array<(p: number, b: number) => void>;
     };
 }
 
@@ -42,10 +43,12 @@ class DraftUploadManager {
             channelId,
             rootId,
             lastTimeStored: 0,
+            onError: [],
+            onProgress: [],
         };
 
-        const onProgress = (progress: number) => {
-            this.handleProgress(file.clientId!, progress);
+        const onProgress = (progress: number, bytesRead?: number | null | undefined) => {
+            this.handleProgress(file.clientId!, progress, bytesRead || 0);
         };
 
         const onComplete = (response: ClientResponse) => {
@@ -74,15 +77,50 @@ class DraftUploadManager {
         return Boolean(this.handlers[clientId]);
     };
 
-    private handleProgress = (clientId: string, progress: number) => {
+    public registerProgressHandler = (clientId: string, callback: (progress: number, bytes: number) => void) => {
+        const h1 = this.handlers[clientId];
+        if (!h1) {
+            return null;
+        }
+
+        h1.onProgress.push(callback);
+        return () => {
+            const h2 = this.handlers[clientId];
+            if (!h2) {
+                return;
+            }
+
+            h2.onProgress = h2.onProgress.filter((v) => v !== callback);
+        };
+    };
+
+    public registerErrorHandler = (clientId: string, callback: (errMessage: string) => void) => {
+        const h1 = this.handlers[clientId];
+        if (!h1) {
+            return null;
+        }
+
+        h1.onError.push(callback);
+        return () => {
+            const h2 = this.handlers[clientId];
+            if (!h2) {
+                return;
+            }
+
+            h2.onError = h2.onError.filter((v) => v !== callback);
+        };
+    };
+
+    private handleProgress = (clientId: string, progress: number, bytes: number) => {
         const h = this.handlers[clientId];
         if (!h) {
             return;
         }
 
         h.fileInfo.progress = progress;
+        h.fileInfo.bytesRead = bytes;
 
-        DeviceEventEmitter.emit(`${Events.FILE_PROGRESS}_${clientId}`, progress);
+        h.onProgress.forEach((c) => c(progress, bytes));
         if (AppState.currentState !== 'active' && h.lastTimeStored + PROGRESS_TIME_TO_STORE < Date.now()) {
             updateDraftFile(h.serverUrl, h.channelId, h.rootId, this.handlers[clientId].fileInfo);
             h.lastTimeStored = Date.now();
@@ -121,7 +159,7 @@ class DraftUploadManager {
         const h = this.handlers[clientId];
         delete this.handlers[clientId];
 
-        DeviceEventEmitter.emit(`${Events.FILE_UPLOAD_ERROR}_${clientId}`, errorMessage);
+        h.onError.forEach((c) => c(errorMessage));
 
         const fileInfo = {...h.fileInfo};
         fileInfo.failed = true;
