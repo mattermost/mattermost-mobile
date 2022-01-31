@@ -26,7 +26,6 @@ exports[`Loading  should match snapshot 1`] = `
       enableMergePathsAndroidForKitKatAndAbove={false}
       forwardedRef={[Function]}
       loop={true}
-      nativeID="animatedComponent"
       onAnimationFinish={[Function]}
       onLayout={[Function]}
       progress={0}

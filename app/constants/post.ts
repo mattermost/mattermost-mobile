@@ -46,4 +46,18 @@ export default {
         PostTypes.LEAVE_TEAM,
         PostTypes.REMOVE_FROM_TEAM,
     ],
+    IGNORE_POST_TYPES: [
+        PostTypes.ADD_REMOVE,
+        PostTypes.ADD_TO_CHANNEL,
+        PostTypes.CHANNEL_DELETED,
+        PostTypes.CHANNEL_UNARCHIVED,
+        PostTypes.JOIN_LEAVE,
+        PostTypes.JOIN_CHANNEL,
+        PostTypes.LEAVE_CHANNEL,
+        PostTypes.REMOVE_FROM_CHANNEL,
+        PostTypes.JOIN_TEAM,
+        PostTypes.LEAVE_TEAM,
+        PostTypes.ADD_TO_TEAM,
+        PostTypes.REMOVE_FROM_TEAM,
+    ],
 };

@@ -19,8 +19,11 @@ import {prepareMyChannelsForTeam} from '@queries/servers/channel';
 import {queryCommonSystemValues, queryConfig, queryWebSocketLastDisconnected} from '@queries/servers/system';
 import {queryCurrentUser} from '@queries/servers/user';
 
-import {handleChannelDeletedEvent, handleUserRemovedEvent} from './channel';
+import {handleChannelDeletedEvent, handleUserAddedToChannelEvent, handleUserRemovedFromChannelEvent} from './channel';
+import {handleNewPostEvent, handlePostDeleted, handlePostEdited, handlePostUnread} from './posts';
+import {handlePreferenceChangedEvent, handlePreferencesChangedEvent, handlePreferencesDeletedEvent} from './preferences';
 import {handleLeaveTeamEvent} from './teams';
+import {handleUserUpdatedEvent} from './users';
 
 import type {Model} from '@nozbe/watermelondb';
 
@@ -121,11 +124,11 @@ async function doReconnect(serverUrl: string) {
             const viewArchivedChannels = config?.ExperimentalViewArchivedChannels === 'true';
 
             if (!stillMemberOfCurrentChannel) {
-                handleUserRemovedEvent(serverUrl, {data: {user_id: currentUserId, channel_id: currentChannelId}});
+                handleUserRemovedFromChannelEvent(serverUrl, {data: {user_id: currentUserId, channel_id: currentChannelId}});
             } else if (!channelStillExist ||
                 (!viewArchivedChannels && channelStillExist.delete_at !== 0)
             ) {
-                handleChannelDeletedEvent(serverUrl, {data: {user_id: currentUserId, channel_id: currentChannelId}});
+                handleChannelDeletedEvent(serverUrl, {data: {user_id: currentUserId, channel_id: currentChannelId}} as WebSocketMessage);
             } else {
                 // TODO Differentiate between post and thread, to fetch the thread posts
                 fetchPostsSince(serverUrl, currentChannelId, lastDisconnectedAt);
@@ -134,7 +137,7 @@ async function doReconnect(serverUrl: string) {
 
         // TODO Consider global thread screen to update global threads
     } else if (!teamMembershipsError) {
-        handleLeaveTeamEvent(serverUrl, {data: {user_id: currentUserId, team_id: currentTeamId}});
+        handleLeaveTeamEvent(serverUrl, {data: {user_id: currentUserId, team_id: currentTeamId}} as WebSocketMessage);
     }
 
     fetchRoles(serverUrl, teamMemberships, channelMemberships);
@@ -145,25 +148,25 @@ async function doReconnect(serverUrl: string) {
     updateAllUsersSinceLastDisconnect(serverUrl);
 }
 
-export async function handleEvent(serverUrl: string, msg: any) {
+export async function handleEvent(serverUrl: string, msg: WebSocketMessage) {
     switch (msg.event) {
         case WebsocketEvents.POSTED:
         case WebsocketEvents.EPHEMERAL_MESSAGE:
+            handleNewPostEvent(serverUrl, msg);
             break;
 
-        //return dispatch(handleNewPostEvent(msg));
         case WebsocketEvents.POST_EDITED:
+            handlePostEdited(serverUrl, msg);
             break;
 
-        //return dispatch(handlePostEdited(msg));
         case WebsocketEvents.POST_DELETED:
+            handlePostDeleted(serverUrl, msg);
             break;
 
-        // return dispatch(handlePostDeleted(msg));
         case WebsocketEvents.POST_UNREAD:
+            handlePostUnread(serverUrl, msg);
             break;
 
-        // return dispatch(handlePostUnread(msg));
         case WebsocketEvents.LEAVE_TEAM:
             handleLeaveTeamEvent(serverUrl, msg);
             break;
@@ -176,16 +179,14 @@ export async function handleEvent(serverUrl: string, msg: any) {
 
         // return dispatch(handleTeamAddedEvent(msg));
         case WebsocketEvents.USER_ADDED:
+            handleUserAddedToChannelEvent(serverUrl, msg);
             break;
-
-        // return dispatch(handleUserAddedEvent(msg));
         case WebsocketEvents.USER_REMOVED:
-            handleUserRemovedEvent(serverUrl, msg);
+            handleUserRemovedFromChannelEvent(serverUrl, msg);
             break;
         case WebsocketEvents.USER_UPDATED:
+            handleUserUpdatedEvent(serverUrl, msg);
             break;
-
-        // return dispatch(handleUserUpdatedEvent(msg));
         case WebsocketEvents.ROLE_ADDED:
             break;
 
@@ -242,17 +243,17 @@ export async function handleEvent(serverUrl: string, msg: any) {
 
         // return dispatch(handleDirectAddedEvent(msg));
         case WebsocketEvents.PREFERENCE_CHANGED:
+            handlePreferenceChangedEvent(serverUrl, msg);
             break;
 
-        // return dispatch(handlePreferenceChangedEvent(msg));
         case WebsocketEvents.PREFERENCES_CHANGED:
+            handlePreferencesChangedEvent(serverUrl, msg);
             break;
 
-        // return dispatch(handlePreferencesChangedEvent(msg));
         case WebsocketEvents.PREFERENCES_DELETED:
+            handlePreferencesDeletedEvent(serverUrl, msg);
             break;
 
-        // return dispatch(handlePreferencesDeletedEvent(msg));
         case WebsocketEvents.STATUS_CHANGED:
             break;
 

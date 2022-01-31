@@ -28,7 +28,7 @@ export function areConsecutivePosts(post: PostModel, previousPost: PostModel) {
     return consecutive;
 }
 
-export function isFromWebhook(post: PostModel): boolean {
+export function isFromWebhook(post: PostModel | Post): boolean {
     return post.props && post.props.from_webhook === 'true';
 }
 
@@ -41,10 +41,10 @@ export function isPostEphemeral(post: PostModel): boolean {
 }
 
 export function isPostPendingOrFailed(post: PostModel): boolean {
-    return post.pendingPostId === post.id || post.props.failed;
+    return post.pendingPostId === post.id || post.props?.failed;
 }
 
-export function isSystemMessage(post: PostModel): boolean {
+export function isSystemMessage(post: PostModel | Post): boolean {
     return Boolean(post.type && post.type?.startsWith(Post.POST_TYPES.SYSTEM_MESSAGE_PREFIX));
 }
 
@@ -73,6 +73,10 @@ export const getMentionKeysForPost = (user: UserModel, post: PostModel, groups: 
 
     return keys;
 };
+
+export function shouldIgnorePost(post: Post): boolean {
+    return Post.IGNORE_POST_TYPES.includes(post.type);
+}
 
 export const sortPostsByNewest = (posts: PostModel[]) => {
     return posts.sort((a, b) => {

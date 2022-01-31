@@ -5,8 +5,8 @@ import {withManagedConfig} from '@mattermost/react-native-emm';
 import React from 'react';
 import {IntlProvider} from 'react-intl';
 import {Platform, StyleProp, ViewStyle} from 'react-native';
-import {gestureHandlerRootHOC} from 'react-native-gesture-handler';
-import {Navigation, NavigationFunctionComponent} from 'react-native-navigation';
+import {GestureHandlerRootView} from 'react-native-gesture-handler';
+import {Navigation} from 'react-native-navigation';
 import {SafeAreaProvider} from 'react-native-safe-area-context';
 
 import {Screens} from '@constants';
@@ -16,12 +16,18 @@ import {DEFAULT_LOCALE, getTranslations} from '@i18n';
 // TODO: Remove this and uncomment screens as they get added
 /* eslint-disable */
 
-const withGestures = (screen: NavigationFunctionComponent, styles: StyleProp<ViewStyle>) => {
-    if (Platform.OS === 'android') {
-        return gestureHandlerRootHOC(screen, styles);
-    }
+const withGestures = (Screen: React.ComponentType, styles: StyleProp<ViewStyle>) => {
+    return function gestureHoc(props: any) {
+        if (Platform.OS === 'android') {
+            return (
+                <GestureHandlerRootView style={[{flex: 1}, styles]}>
+                    <Screen {...props}/>     
+                </GestureHandlerRootView>
+            )
+        }
 
-    return screen;
+        return <Screen {...props}/>;
+    }
 };
 
 const withIntl = (Screen: React.ComponentType) => {
@@ -123,7 +129,7 @@ Navigation.setLazyComponentRegistrator((screenName) => {
     case Screens.IN_APP_NOTIFICATION: {
         const notificationScreen = require('@screens/in_app_notification').default;
         Navigation.registerComponent(Screens.IN_APP_NOTIFICATION, () => Platform.select({
-            android: notificationScreen,
+            default: withGestures(notificationScreen, undefined),
             ios: withSafeAreaInsets(notificationScreen),
         }));
         return;

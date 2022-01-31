@@ -32,7 +32,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             flexDirection: 'column',
             flexWrap: 'wrap',
             fontSize: 14,
-            fontFamily: 'OpenSans-Semibold',
+            fontFamily: 'OpenSans-SemiBold',
             color: theme.centerChannelColor,
             paddingRight: 10,
         },
@@ -62,7 +62,7 @@ const FileInfo = ({file, onPress, theme}: FileInfoProps) => {
                         ellipsizeMode='tail'
                         style={style.fileInfo}
                     >
-                        {`${getFormattedFileSize(file)}`}
+                        {`${getFormattedFileSize(file.size)}`}
                     </Text>
                 </View>
             </>
