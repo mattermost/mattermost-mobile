@@ -22,6 +22,7 @@ import {queryCurrentUser} from '@queries/servers/user';
 import {handleChannelDeletedEvent, handleUserAddedToChannelEvent, handleUserRemovedFromChannelEvent} from './channel';
 import {handleNewPostEvent, handlePostDeleted, handlePostEdited, handlePostUnread} from './posts';
 import {handlePreferenceChangedEvent, handlePreferencesChangedEvent, handlePreferencesDeletedEvent} from './preferences';
+import {handleAddEmoji, handleReactionRemovedEvent, handleReactionAddedEvent} from './reactions';
 import {handleLeaveTeamEvent} from './teams';
 import {handleUserUpdatedEvent} from './users';
 
@@ -268,17 +269,17 @@ export async function handleEvent(serverUrl: string, msg: WebSocketMessage) {
         // handleHelloEvent(msg);
         // break;
         case WebsocketEvents.REACTION_ADDED:
+            handleReactionAddedEvent(serverUrl, msg);
             break;
 
-        // return dispatch(handleReactionAddedEvent(msg));
         case WebsocketEvents.REACTION_REMOVED:
+            handleReactionRemovedEvent(serverUrl, msg);
             break;
 
-        // return dispatch(handleReactionRemovedEvent(msg));
         case WebsocketEvents.EMOJI_ADDED:
+            handleAddEmoji(serverUrl, msg);
             break;
 
-        // return dispatch(handleAddEmoji(msg));
         case WebsocketEvents.LICENSE_CHANGED:
             break;
 
