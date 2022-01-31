@@ -18,4 +18,5 @@ export default keyMirror({
     USER_STOP_TYPING: null,
     FILE_PROGRESS: null,
     FILE_UPLOAD_ERROR: null,
+    SWIPEABLE: null,
 });

@@ -3,7 +3,6 @@
 
 import {deletePreferences} from '@app/queries/servers/preference';
 import DatabaseManager from '@database/manager';
-import {WebSocketMessage} from '@typings/api/websocket';
 
 export async function handlePreferenceChangedEvent(serverUrl: string, msg: WebSocketMessage): Promise<void> {
     const database = DatabaseManager.serverDatabases[serverUrl];
