@@ -23,7 +23,7 @@ import {handleChannelDeletedEvent, handleUserAddedToChannelEvent, handleUserRemo
 import {handleNewPostEvent, handlePostDeleted, handlePostEdited, handlePostUnread} from './posts';
 import {handlePreferenceChangedEvent, handlePreferencesChangedEvent, handlePreferencesDeletedEvent} from './preferences';
 import {handleUserRoleUpdatedEvent, handleTeamMemberRoleUpdatedEvent, handleRoleUpdatedEvent} from './roles';
-import {handleLeaveTeamEvent} from './teams';
+import {handleLeaveTeamEvent, handleUserAddedToTeamEvent, handleUpdateTeamEvent} from './teams';
 import {handleUserUpdatedEvent} from './users';
 
 import type {Model} from '@nozbe/watermelondb';
@@ -172,13 +172,12 @@ export async function handleEvent(serverUrl: string, msg: WebSocketMessage) {
             handleLeaveTeamEvent(serverUrl, msg);
             break;
         case WebsocketEvents.UPDATE_TEAM:
+            handleUpdateTeamEvent(serverUrl, msg);
             break;
-
-        // return dispatch(handleUpdateTeamEvent(msg));
         case WebsocketEvents.ADDED_TO_TEAM:
+            handleUserAddedToTeamEvent(serverUrl, msg);
             break;
 
-        // return dispatch(handleTeamAddedEvent(msg));
         case WebsocketEvents.USER_ADDED:
             handleUserAddedToChannelEvent(serverUrl, msg);
             break;
