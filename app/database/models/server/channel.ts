@@ -19,6 +19,7 @@ import type TeamModel from '@typings/database/models/servers/team';
 import type UserModel from '@typings/database/models/servers/user';
 
 const {
+    CATEGORY_CHANNEL,
     CHANNEL,
     CHANNEL_INFO,
     CHANNEL_MEMBERSHIP,
@@ -44,6 +45,9 @@ export default class ChannelModel extends Model {
 
         /** A CHANNEL can be associated with multiple CHANNEL_MEMBERSHIP (relationship is 1:N) */
         [CHANNEL_MEMBERSHIP]: {type: 'has_many', foreignKey: 'channel_id'},
+
+        /** A CHANNEL can be associated with multiple CATEGORY_CHANNEL (relationship is 1:N) */
+        [CATEGORY_CHANNEL]: {type: 'has_many', foreignKey: 'channel_id'},
 
         /** A CHANNEL can be associated with multiple DRAFT (relationship is 1:N) */
         [DRAFT]: {type: 'has_many', foreignKey: 'channel_id'},
