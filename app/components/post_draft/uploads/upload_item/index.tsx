@@ -5,12 +5,12 @@ import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {StyleSheet, TouchableOpacity, View} from 'react-native';
 
 import {updateDraftFile} from '@actions/local/draft';
-import useDidUpdate from '@app/hooks/did_update';
 import FileIcon from '@components/post_list/post/body/files/file_icon';
 import ImageFile from '@components/post_list/post/body/files/image_file';
 import ProgressBar from '@components/progress_bar';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
+import useDidUpdate from '@hooks/did_update';
 import DraftUploadManager from '@init/draft_upload_manager';
 import {isImage} from '@utils/file';
 import {changeOpacity} from '@utils/theme';

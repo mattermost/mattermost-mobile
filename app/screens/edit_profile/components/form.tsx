@@ -5,9 +5,9 @@ import React, {useCallback, useMemo, useRef} from 'react';
 import {MessageDescriptor, useIntl} from 'react-intl';
 import {Keyboard, StyleSheet, View} from 'react-native';
 
-import {FloatingTextInputRef} from '@app/components/floating_text_input_label';
-import {t} from '@app/i18n';
+import {FloatingTextInputRef} from '@components/floating_text_input_label';
 import {useTheme} from '@context/theme';
+import {t} from '@i18n';
 
 import DisabledFields from './disabled_fields';
 import EmailField from './email_field';
