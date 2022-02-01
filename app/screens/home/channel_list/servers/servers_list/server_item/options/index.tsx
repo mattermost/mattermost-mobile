@@ -31,6 +31,15 @@ const ServerOptions = ({progress, server}: Props) => {
     const intl = useIntl();
     const theme = useTheme();
     const isLoggedIn = server.lastActiveAt > 0;
+    const sessionColor = isLoggedIn ? '#F58B00' : theme.sidebarTextActiveBorder;
+    const sessionIcon = isLoggedIn ? 'logout-variant' : 'exit-to-app';
+    const sessionText = isLoggedIn ? intl.formatMessage({
+        id: 'servers.logout',
+        defaultMessage: 'Log out',
+    }) : intl.formatMessage({
+        id: 'servers.login',
+        defaultMessage: 'Log in',
+    });
 
     const onEdit = useCallback(() => {
         // eslint-disable-next-line no-console
@@ -52,33 +61,6 @@ const ServerOptions = ({progress, server}: Props) => {
         console.log('ON Remove');
     }, [server]);
 
-    let sessionComponent;
-    if (isLoggedIn) {
-        sessionComponent = (
-            <Option
-                color='#F58B00'
-                icon='logout-variant'
-                onPress={onLogout}
-                positionX={OPTION_SIZE}
-                progress={progress}
-                style={styles.right}
-                text={intl.formatMessage({id: 'servers.logout', defaultMessage: 'Log out'})}
-            />
-        );
-    } else {
-        sessionComponent = (
-            <Option
-                color={theme.sidebarTextActiveBorder}
-                icon='exit-to-app'
-                onPress={onLogin}
-                positionX={OPTION_SIZE}
-                progress={progress}
-                style={styles.right}
-                text={intl.formatMessage({id: 'servers.login', defaultMessage: 'Log in'})}
-            />
-        );
-    }
-
     return (
         <View style={styles.container}>
             <Option
@@ -98,7 +80,15 @@ const ServerOptions = ({progress, server}: Props) => {
                 progress={progress}
                 text={intl.formatMessage({id: 'servers.remove', defaultMessage: 'Remove'})}
             />
-            {sessionComponent}
+            <Option
+                color={sessionColor}
+                icon={sessionIcon}
+                onPress={isLoggedIn ? onLogout : onLogin}
+                positionX={OPTION_SIZE}
+                progress={progress}
+                style={styles.right}
+                text={sessionText}
+            />
         </View>
     );
 };
