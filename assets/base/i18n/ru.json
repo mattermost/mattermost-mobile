@@ -57,7 +57,6 @@
   "apps.suggestion.no_static": "Нет подходящих вариантов.",
   "apps.suggestion.no_suggestion": "Никаких подходящих предложений.",
   "archivedChannelMessage": "Вы просматриваете **архивированный канал**. Создание новых сообщений запрещено.",
-  "call_message.started_a_call": "{user} начал звонок",
   "camera_type.photo.option": "Сделать фото",
   "camera_type.title": "Выберите действие",
   "camera_type.video.option": "Записать видео",
