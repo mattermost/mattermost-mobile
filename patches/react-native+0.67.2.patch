@@ -47,21 +47,6 @@ index 2648cc3..e0c2c13 100644
    },
    horizontallyInverted: {
      transform: [{scaleX: -1}],
-diff --git a/node_modules/react-native/jest/setup.js b/node_modules/react-native/jest/setup.js
-index 7787788..6c60f47 100644
---- a/node_modules/react-native/jest/setup.js
-+++ b/node_modules/react-native/jest/setup.js
-@@ -111,9 +111,7 @@ jest
-     }),
-   )
-   .mock('../Libraries/Modal/Modal', () => {
--    const baseComponent = mockComponent('../Libraries/Modal/Modal');
--    const mockModal = jest.requireActual('./mockModal');
--    return mockModal(baseComponent);
-+    mockComponent('../Libraries/Modal/Modal');
-   })
-   .mock('../Libraries/Components/View/View', () =>
-     mockComponent('../Libraries/Components/View/View', MockNativeMethods),
 diff --git a/node_modules/react-native/react.gradle b/node_modules/react-native/react.gradle
 index d9e2714..bed8756 100644
 --- a/node_modules/react-native/react.gradle
