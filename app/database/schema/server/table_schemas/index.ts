@@ -1,6 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+export {default as CategorySchema} from './category';
+export {default as CategoryChannelSchema} from './category_channel';
 export {default as ChannelInfoSchema} from './channel_info';
 export {default as ChannelMembershipSchema} from './channel_membership';
 export {default as ChannelSchema} from './channel';
