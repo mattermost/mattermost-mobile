@@ -1,11 +1,21 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {ClientResponse, ClientResponseError, ProgressPromise, UploadRequestOptions} from '@mattermost/react-native-network-client';
+
 export interface ClientFilesMix {
     getFileUrl: (fileId: string, timestamp: number) => string;
     getFileThumbnailUrl: (fileId: string, timestamp: number) => string;
     getFilePreviewUrl: (fileId: string, timestamp: number) => string;
     getFilePublicLink: (fileId: string) => Promise<any>;
+    uploadPostAttachment: (
+        file: FileInfo,
+        channelId: string,
+        onProgress: (fractionCompleted: number, bytesRead?: number | null | undefined) => void,
+        onComplete: (response: ClientResponse) => void,
+        onError: (response: ClientResponseError) => void,
+        skipBytes?: number,
+    ) => () => void;
 }
 
 const ClientFiles = (superclass: any) => class extends superclass {
@@ -41,6 +51,29 @@ const ClientFiles = (superclass: any) => class extends superclass {
             `${this.getFileRoute(fileId)}/link`,
             {method: 'get'},
         );
+    };
+
+    uploadPostAttachment = async (
+        file: FileInfo,
+        channelId: string,
+        onProgress: (fractionCompleted: number, bytesRead?: number | null | undefined) => void,
+        onComplete: (response: ClientResponse) => void,
+        onError: (response: ClientResponseError) => void,
+        skipBytes = 0,
+    ) => {
+        const url = `${this.apiClient.baseUrl}${this.getFilesRoute()}`;
+        const options: UploadRequestOptions = {
+            skipBytes,
+            method: 'POST',
+            multipart: {
+                data: {
+                    channel_id: channelId,
+                },
+            },
+        };
+        const promise = this.apiClient.upload(url, file.localPath, options) as ProgressPromise<ClientResponse>;
+        promise.progress!(onProgress).then(onComplete).catch(onError);
+        return promise.cancel!;
     };
 };
 

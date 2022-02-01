@@ -7,6 +7,7 @@ type FileInfo = {
     create_at: number;
     delete_at: number;
     extension: string;
+    failed?: boolean;
     has_preview_image: boolean;
     height: number;
     loading?: boolean;
@@ -15,6 +16,8 @@ type FileInfo = {
     mini_preview?: string;
     name: string;
     post_id: string;
+    progress?: number;
+    bytesRead?: number;
     size: number;
     update_at: number;
     uri?: string;
