@@ -6,7 +6,6 @@ import {useIntl} from 'react-intl';
 
 import {addFilesToDraft, removeDraft} from '@actions/local/draft';
 import {useServerUrl} from '@context/server';
-import {DraftModel} from '@database/models/server';
 import DraftUploadManager from '@init/draft_upload_manager';
 import {fileMaxWarning, fileSizeWarning, uploadDisabledWarning} from '@utils/file';
 
@@ -16,7 +15,8 @@ type Props = {
     testID?: string;
     channelId: string;
     rootId?: string;
-    draft?: DraftModel;
+    files?: FileInfo[];
+    message?: string;
     maxFileSize: number;
     maxFileCount: number;
     canUploadFiles: boolean;
@@ -34,7 +34,8 @@ export default function DraftHandler(props: Props) {
         testID,
         channelId,
         rootId = '',
-        draft,
+        files,
+        message,
         maxFileSize,
         maxFileCount,
         canUploadFiles,
@@ -43,7 +44,7 @@ export default function DraftHandler(props: Props) {
     const serverUrl = useServerUrl();
     const intl = useIntl();
 
-    const [currentValue, setCurrentValue] = useState(draft?.message || '');
+    const [currentValue, setCurrentValue] = useState(message || '');
     const [uploadError, setUploadError] = useState<React.ReactNode>(null);
 
     const uploadErrorTimeout = useRef<NodeJS.Timeout>();
@@ -75,7 +76,7 @@ export default function DraftHandler(props: Props) {
             return;
         }
 
-        const currentFileCount = draft?.files.length || 0;
+        const currentFileCount = files?.length || 0;
         const availableCount = maxFileCount - currentFileCount;
         if (newFiles.length > availableCount) {
             newUploadError(fileMaxWarning(intl, maxFileCount));
@@ -96,14 +97,14 @@ export default function DraftHandler(props: Props) {
         }
 
         newUploadError(null);
-    }, [intl, newUploadError, maxFileCount, maxFileSize, serverUrl, draft?.files.length, channelId, rootId]);
+    }, [intl, newUploadError, maxFileCount, maxFileSize, serverUrl, files?.length, channelId, rootId]);
 
     // This effect mainly handles keeping clean the uploadErrorHandlers, and
     // reinstantiate them on component mount and file retry.
     useEffect(() => {
         let loadingFiles: FileInfo[] = [];
-        if (draft) {
-            loadingFiles = draft.files.filter((v) => v.clientId && DraftUploadManager.isUploading(v.clientId));
+        if (files) {
+            loadingFiles = files.filter((v) => v.clientId && DraftUploadManager.isUploading(v.clientId));
         }
 
         for (const key of Object.keys(uploadErrorHandlers.current)) {
@@ -118,7 +119,7 @@ export default function DraftHandler(props: Props) {
                 uploadErrorHandlers.current[file.clientId!] = DraftUploadManager.registerErrorHandler(file.clientId!, newUploadError);
             }
         }
-    }, [draft?.files]);
+    }, [files]);
 
     return (
         <SendHandler
@@ -128,7 +129,7 @@ export default function DraftHandler(props: Props) {
 
             // From draft handler
             value={currentValue}
-            files={draft?.files || emptyFileList}
+            files={files || emptyFileList}
             clearDraft={clearDraft}
             updateValue={setCurrentValue}
             addFiles={addFiles}

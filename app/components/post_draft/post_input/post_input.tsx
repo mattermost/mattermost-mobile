@@ -120,7 +120,6 @@ export default function PostInput({
 
     const blur = () => {
         input.current?.blur();
-        updateDraftMessage(serverUrl, channelId, rootId, value);
     };
 
     const handleAndroidKeyboard = () => {
@@ -138,6 +137,10 @@ export default function PostInput({
 
         return placeholder;
     };
+
+    const onBlur = useCallback(() => {
+        updateDraftMessage(serverUrl, channelId, rootId, value);
+    }, [channelId, rootId, value]);
 
     const checkMessageLength = useCallback((newValue: string) => {
         const valueLength = newValue.trim().length;
@@ -306,6 +309,7 @@ export default function PostInput({
             placeholder={intl.formatMessage(getPlaceHolder(), {channelDisplayName})}
             placeholderTextColor={changeOpacity(theme.centerChannelColor, 0.5)}
             multiline={true}
+            onBlur={onBlur}
             blurOnSubmit={false}
             underlineColorAndroid='transparent'
             keyboardType={keyboardType}

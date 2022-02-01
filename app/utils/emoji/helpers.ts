@@ -92,11 +92,7 @@ export function getValidEmojis(emojis: string[], customEmojis: CustomEmojiModel[
 export function getEmojiName(emoji: string, customEmojiNames: string[]) {
     if (doesMatchNamedEmoji(emoji)) {
         const emojiName = emoji.substring(1, emoji.length - 1);
-        if (EmojiIndicesByAlias.has(emojiName)) {
-            return emojiName;
-        }
-
-        if (customEmojiNames.includes(emojiName)) {
+        if (isValidNamedEmoji(emojiName, customEmojiNames)) {
             return emojiName;
         }
     }
@@ -125,15 +121,27 @@ export function isReactionMatch(value: string, customEmojis: CustomEmojiModel[])
     if (!match) {
         return null;
     }
-    const emoji = getEmojiName(match[2], customEmojiNames);
-    if (!emoji) {
+
+    if (!isValidNamedEmoji(match[2], customEmojiNames)) {
         return null;
     }
 
     return {
         add: match[1] === '+',
-        emoji,
+        emoji: match[2],
     };
+}
+
+export function isValidNamedEmoji(emojiName: string, customEmojiNames: string[]) {
+    if (EmojiIndicesByAlias.has(emojiName)) {
+        return true;
+    }
+
+    if (customEmojiNames.includes(emojiName)) {
+        return true;
+    }
+
+    return false;
 }
 
 export function hasJumboEmojiOnly(message: string, customEmojis: string[]) {

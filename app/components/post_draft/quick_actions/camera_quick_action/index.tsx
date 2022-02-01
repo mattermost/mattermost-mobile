@@ -13,7 +13,7 @@ import {ICON_SIZE} from '@constants/post_draft';
 import {useTheme} from '@context/theme';
 import {showModalOverCurrentContext} from '@screens/navigation';
 import {fileMaxWarning} from '@utils/file';
-import PickerUtil from '@utils/file/file_picker/file_picker';
+import PickerUtil from '@utils/file/file_picker';
 import {changeOpacity} from '@utils/theme';
 
 import CameraType from './camera_type';

@@ -91,7 +91,7 @@ const enhanced = withObservables([], (ownProps: WithDatabaseArgs & OwnProps) => 
     const groupsWithAllowReference = channel.pipe(switchMap(
         (c) => database.get<GroupModel>(GROUP).query(
             Q.experimentalJoinTables([GROUPS_TEAM, GROUPS_CHANNEL]),
-            Q.or(Q.on(GROUPS_TEAM, 'teamId', c.teamId), Q.on(GROUPS_CHANNEL, 'channelId', c.id)),
+            Q.or(Q.on(GROUPS_TEAM, 'team_id', c.teamId), Q.on(GROUPS_CHANNEL, 'channel_id', c.id)),
         ).observeWithColumns(['name'])),
     );
 

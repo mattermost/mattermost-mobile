@@ -21,7 +21,7 @@ export const updateDraftFile = async (serverUrl: string, channelId: string, root
     }
 
     // We create a new list to make sure we re-render the draft input.
-    const newFiles = {...draft.files};
+    const newFiles = [...draft.files];
     newFiles[i] = file;
     draft.prepareUpdate((d) => {
         d.files = newFiles;
@@ -81,7 +81,17 @@ export const updateDraftMessage = async (serverUrl: string, channelId: string, r
 
     const draft = await queryDraft(operator.database, channelId, rootId);
     if (!draft) {
-        return {error: 'no draft'};
+        if (!message) {
+            return {};
+        }
+
+        const newDraft: Draft = {
+            channel_id: channelId,
+            root_id: rootId,
+            message: '',
+        };
+
+        return operator.handleDraft({drafts: [newDraft], prepareRecordsOnly});
     }
 
     if (draft.message === message) {

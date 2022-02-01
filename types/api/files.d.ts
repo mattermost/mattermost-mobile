@@ -3,6 +3,7 @@
 
 type FileInfo = {
     id?: string;
+    bytesRead?: number;
     clientId?: string;
     create_at: number;
     delete_at: number;
@@ -10,19 +11,14 @@ type FileInfo = {
     failed?: boolean;
     has_preview_image: boolean;
     height: number;
-    loading?: boolean;
     localPath?: string;
     mime_type: string;
     mini_preview?: string;
     name: string;
     post_id: string;
-    progress?: number;
-    bytesRead?: number;
     size: number;
     update_at: number;
     uri?: string;
-    failed?: boolean;
-    bytesRead?: number;
     user_id: string;
     width: number;
 };

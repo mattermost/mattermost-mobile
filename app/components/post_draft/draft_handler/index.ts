@@ -27,7 +27,10 @@ const enhanced = withObservables([], ({database, channelId, rootId = ''}: WithDa
     const draft = database.get<DraftModel>(DRAFT).query(
         Q.where('channel_id', channelId),
         Q.where('root_id', rootId),
-    ).observe().pipe(switchMap((v) => of$(v[0])));
+    ).observeWithColumns(['message', 'files']).pipe(switchMap((v) => of$(v[0])));
+
+    const files = draft.pipe(switchMap((d) => of$(d?.files)));
+    const message = draft.pipe(switchMap((d) => of$(d?.message)));
 
     const config = database.get<SystemModel>(SYSTEM).findAndObserve(SYSTEM_IDENTIFIERS.CONFIG).pipe(
         switchMap(({value}) => of$(value as ClientConfig)),
@@ -54,7 +57,8 @@ const enhanced = withObservables([], ({database, channelId, rootId = ''}: WithDa
     );
 
     return {
-        draft,
+        files,
+        message,
         maxFileSize,
         maxFileCount,
         canUploadFiles,

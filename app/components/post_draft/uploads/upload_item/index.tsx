@@ -96,9 +96,9 @@ export default function UploadItem({
         const newFile = {...file};
         newFile.failed = false;
 
-        updateDraftFile(serverUrl, channelId, rootId, file);
-        DraftUploadManager.prepareUpload(serverUrl, file, channelId, rootId, file.bytesRead);
-        DraftUploadManager.registerProgressHandler(file.clientId!, setProgress);
+        updateDraftFile(serverUrl, channelId, rootId, newFile);
+        DraftUploadManager.prepareUpload(serverUrl, newFile, channelId, rootId, newFile.bytesRead);
+        DraftUploadManager.registerProgressHandler(newFile.clientId!, setProgress);
     }, [serverUrl, channelId, rootId, file]);
 
     const filePreviewComponent = useMemo(() => {

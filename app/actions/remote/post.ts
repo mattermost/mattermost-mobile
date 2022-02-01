@@ -73,6 +73,7 @@ export const createPost = async (serverUrl: string, post: Partial<Post>, files: 
         id: pendingPostId,
     };
 
+    operator.handleFiles({files, prepareRecordsOnly: false});
     await operator.handlePosts({
         actionType: ActionType.POSTS.RECEIVED_NEW,
         order: [databasePost.id],
