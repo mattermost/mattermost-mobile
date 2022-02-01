@@ -8,13 +8,11 @@ import java.util.Collections;
 import java.util.List;
 
 import com.swmansion.reanimated.ReanimatedJSIModulePackage;
-import com.ammarahmed.mmkv.RNMMKVModule;
 
 public class CustomMMKVJSIModulePackage extends ReanimatedJSIModulePackage {
     @Override
     public List<JSIModuleSpec> getJSIModules(ReactApplicationContext reactApplicationContext, JavaScriptContextHolder jsContext) {
         super.getJSIModules(reactApplicationContext, jsContext);
-        reactApplicationContext.getNativeModule(RNMMKVModule.class).installLib(jsContext, reactApplicationContext.getFilesDir().getAbsolutePath() + "/mmkv");
 
         return Collections.emptyList();
     }
