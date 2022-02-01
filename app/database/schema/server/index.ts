@@ -4,6 +4,8 @@
 import {AppSchema, appSchema} from '@nozbe/watermelondb';
 
 import {
+    CategorySchema,
+    CategoryChannelSchema,
     ChannelInfoSchema,
     ChannelMembershipSchema,
     ChannelSchema,
@@ -36,6 +38,8 @@ import {
 export const serverSchema: AppSchema = appSchema({
     version: 1,
     tables: [
+        CategorySchema,
+        CategoryChannelSchema,
         ChannelInfoSchema,
         ChannelMembershipSchema,
         ChannelSchema,
