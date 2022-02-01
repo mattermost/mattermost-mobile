@@ -121,10 +121,12 @@ const Channel = ({channelId, componentId, displayName, isOwnDirectMessage, membe
                     title={title}
                 />
                 <View style={[styles.flex, {marginTop}]}>
+                    {Boolean(channelId) &&
                     <ChannelPostList
                         channelId={channelId}
                         forceQueryAfterAppState={appState}
                     />
+                    }
                 </View>
             </SafeAreaView>
         </>
