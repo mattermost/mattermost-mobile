@@ -14,7 +14,7 @@ type ErrorProps = {
     theme: Theme;
 }
 
-const ErrorText = ({error, testID, textStyle, theme}: ErrorProps) => {
+const ErrorTextComponent = ({error, testID, textStyle, theme}: ErrorProps) => {
     const style = getStyleSheet(theme);
     const message = typeof (error) === 'string' ? error : error.message;
 
@@ -53,4 +53,4 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     };
 });
 
-export default ErrorText;
+export default ErrorTextComponent;

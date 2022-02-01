@@ -3,12 +3,22 @@
 
 import {Database} from '@nozbe/watermelondb';
 
-import {MM_TABLES} from '@constants/database';
-import Role from '@typings/database/models/servers/role';
+import {Database as DatabaseConstants} from '@constants';
 
-const {SERVER: {ROLE}} = MM_TABLES;
+import type RoleModel from '@typings/database/models/servers/role';
+
+const {ROLE} = DatabaseConstants.MM_TABLES.SERVER;
 
 export const queryRoles = async (database: Database) => {
-    const roles = await database.collections.get(ROLE).query().fetch() as Role[];
+    const roles = await database.collections.get<RoleModel>(ROLE).query().fetch();
     return roles;
+};
+
+export const queryRoleById = async (database: Database, roleId: string): Promise<RoleModel|undefined> => {
+    try {
+        const role = (await database.get<RoleModel>(ROLE).find(roleId));
+        return role;
+    } catch {
+        return undefined;
+    }
 };

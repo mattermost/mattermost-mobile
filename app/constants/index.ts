@@ -16,6 +16,7 @@ import Network from './network';
 import Permissions from './permissions';
 import Post from './post';
 import Preferences from './preferences';
+import Profile from './profile';
 import Screens from './screens';
 import ServerErrors from './server_errors';
 import Sso from './sso';
@@ -39,6 +40,7 @@ export {
     Permissions,
     Post,
     Preferences,
+    Profile,
     Screens,
     ServerErrors,
     SupportedServer,

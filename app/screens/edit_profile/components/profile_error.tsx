@@ -5,7 +5,7 @@ import React from 'react';
 import {View} from 'react-native';
 
 import CompassIcon from '@components/compass_icon';
-import ErrorText from '@components/error_text';
+import ErrorTextComponent from '@components/error_text';
 import {useTheme} from '@context/theme';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
@@ -47,7 +47,7 @@ const ProfileError = ({error}: DisplayErrorProps) => {
                 size={18}
                 name='alert-outline'
             />
-            <ErrorText
+            <ErrorTextComponent
                 theme={theme}
                 testID='edit_profile.error.text'
                 error={error}

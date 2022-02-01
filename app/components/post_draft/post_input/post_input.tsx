@@ -16,7 +16,7 @@ import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
 import useDidUpdate from '@hooks/did_update';
 import {t} from '@i18n';
-import {extractFileInfos} from '@utils/file';
+import {extractFileInfo} from '@utils/file';
 import {switchKeyboardForCodeBlocks} from '@utils/markdown';
 import {changeOpacity, makeStyleSheetFromTheme, getKeyboardAppearanceFromTheme} from '@utils/theme';
 
@@ -38,7 +38,7 @@ type Props = {
     membersInChannel: number;
     value: string;
     updateValue: (value: string) => void;
-    addFiles: (files: FileInfo[]) => void;
+    addFiles: (files: ExtractedFileInfo[]) => void;
     cursorPosition: number;
     updateCursorPosition: (pos: number) => void;
     sendMessage: () => void;
@@ -211,7 +211,7 @@ export default function PostInput({
             showPasteFilesErrorDialog(intl);
         }
 
-        addFiles(await extractFileInfos(files));
+        addFiles(await extractFileInfo(files));
     }, [addFiles, intl]);
 
     const handleHardwareEnterPress = useCallback((keyEvent: {pressedKey: string}) => {

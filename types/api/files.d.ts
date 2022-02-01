@@ -3,24 +3,28 @@
 
 type FileInfo = {
     id?: string;
-    user_id: string;
-    post_id: string;
-    create_at: number;
-    update_at: number;
-    delete_at: number;
-    name: string;
-    extension: string;
-    mini_preview?: string;
-    size: number;
-    mime_type: string;
-    width: number;
-    height: number;
-    has_preview_image: boolean;
     clientId?: string;
+    create_at: number;
+    delete_at: number;
+    extension: string;
+    failed?: boolean;
+    has_preview_image: boolean;
+    height: number;
+    loading?: boolean;
     localPath?: string;
+    mime_type: string;
+    mini_preview?: string;
+    name: string;
+    post_id: string;
+    progress?: number;
+    bytesRead?: number;
+    size: number;
+    update_at: number;
     uri?: string;
     failed?: boolean;
     bytesRead?: number;
+    user_id: string;
+    width: number;
 };
 
 type FilesState = {

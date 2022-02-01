@@ -11,11 +11,10 @@ import {DocumentPickerResponse} from 'react-native-document-picker';
 import {Asset} from 'react-native-image-picker';
 
 import {Files} from '@constants';
+import {generateId} from '@utils/general';
 import {deleteEntititesFile, getIOSAppGroupDetails} from '@utils/mattermost_managed';
 import {hashCode} from '@utils/security';
 import {removeProtocol} from '@utils/url';
-
-import {generateId} from '../general';
 
 import type FileModel from '@typings/database/models/servers/file';
 
@@ -371,8 +370,8 @@ export function getLocalFilePathFromFile(dir: string, serverUrl: string, file: F
     return undefined;
 }
 
-export async function extractFileInfos(files: Array<Asset | DocumentPickerResponse | PastedFile>) {
-    const out: FileInfo[] = [];
+export async function extractFileInfo(files: Array<Asset | DocumentPickerResponse | PastedFile>) {
+    const out: ExtractedFileInfo[] = [];
 
     await Promise.all(files.map(async (file) => {
         if (!file) {
@@ -380,24 +379,29 @@ export async function extractFileInfos(files: Array<Asset | DocumentPickerRespon
         }
 
         const outFile = {
+            progress: 0,
             localPath: file.uri,
             clientId: generateId(),
-        } as FileInfo;
+            loading: true,
+        } as unknown as ExtractedFileInfo;
 
-        if (file.hasOwnProperty('fileSize')) {
-            outFile.size = (file as (Asset | PastedFile)).fileSize || 0;
-            outFile.name = (file as (Asset | PastedFile)).fileName || '';
+        if ('fileSize' in file) {
+            outFile.size = file.fileSize || 0;
+            outFile.name = file.fileName || '';
         } else {
             const path = Platform.select({
                 ios: (file.uri || '').replace('file://', ''),
                 default: file.uri || '',
             });
-
-            const fileInfo = await FileSystem.getInfoAsync(path);
-            const uri = fileInfo.uri;
-
-            outFile.size = fileInfo.size || 0;
-            outFile.name = uri.substr(uri.lastIndexOf('/') + 1);
+            let fileInfo;
+            try {
+                fileInfo = await FileSystem.getInfoAsync(path);
+                const uri = fileInfo.uri;
+                outFile.size = fileInfo.size || 0;
+                outFile.name = uri.substring(uri.lastIndexOf('/') + 1);
+            } catch (e) {
+                return;
+            }
         }
 
         if (file.type) {

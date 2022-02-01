@@ -22,11 +22,11 @@ import {queryCurrentUser} from '@queries/servers/user';
 import {handleChannelDeletedEvent, handleUserAddedToChannelEvent, handleUserRemovedFromChannelEvent} from './channel';
 import {handleNewPostEvent, handlePostDeleted, handlePostEdited, handlePostUnread} from './posts';
 import {handlePreferenceChangedEvent, handlePreferencesChangedEvent, handlePreferencesDeletedEvent} from './preferences';
-import {handleLeaveTeamEvent} from './teams';
+import {handleUserRoleUpdatedEvent, handleTeamMemberRoleUpdatedEvent, handleRoleUpdatedEvent} from './roles';
+import {handleLeaveTeamEvent, handleUserAddedToTeamEvent, handleUpdateTeamEvent} from './teams';
 import {handleUserUpdatedEvent, handleUserTypingEvent} from './users';
 
 import type {Model} from '@nozbe/watermelondb';
-import type {WebSocketMessage} from '@typings/api/websocket';
 
 export async function handleFirstConnect(serverUrl: string) {
     const database = DatabaseManager.serverDatabases[serverUrl]?.database;
@@ -172,13 +172,12 @@ export async function handleEvent(serverUrl: string, msg: WebSocketMessage) {
             handleLeaveTeamEvent(serverUrl, msg);
             break;
         case WebsocketEvents.UPDATE_TEAM:
+            handleUpdateTeamEvent(serverUrl, msg);
             break;
-
-        // return dispatch(handleUpdateTeamEvent(msg));
         case WebsocketEvents.ADDED_TO_TEAM:
+            handleUserAddedToTeamEvent(serverUrl, msg);
             break;
 
-        // return dispatch(handleTeamAddedEvent(msg));
         case WebsocketEvents.USER_ADDED:
             handleUserAddedToChannelEvent(serverUrl, msg);
             break;
@@ -188,26 +187,18 @@ export async function handleEvent(serverUrl: string, msg: WebSocketMessage) {
         case WebsocketEvents.USER_UPDATED:
             handleUserUpdatedEvent(serverUrl, msg);
             break;
-        case WebsocketEvents.ROLE_ADDED:
-            break;
-
-        // return dispatch(handleRoleAddedEvent(msg));
-        case WebsocketEvents.ROLE_REMOVED:
-            break;
-
-        // return dispatch(handleRoleRemovedEvent(msg));
         case WebsocketEvents.ROLE_UPDATED:
+            handleRoleUpdatedEvent(serverUrl, msg);
             break;
 
-        // return dispatch(handleRoleUpdatedEvent(msg));
         case WebsocketEvents.USER_ROLE_UPDATED:
+            handleUserRoleUpdatedEvent(serverUrl, msg);
             break;
 
-        // return dispatch(handleUserRoleUpdated(msg));
         case WebsocketEvents.MEMBERROLE_UPDATED:
+            handleTeamMemberRoleUpdatedEvent(serverUrl, msg);
             break;
 
-        // return dispatch(handleUpdateMemberRoleEvent(msg));
         case WebsocketEvents.CHANNEL_CREATED:
             break;
 

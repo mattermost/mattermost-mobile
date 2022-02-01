@@ -59,7 +59,7 @@ export default function UploadItem({
 }: Props) {
     const theme = useTheme();
     const serverUrl = useServerUrl();
-    const removeCallback = useRef<() => void>();
+    const removeCallback = useRef<(() => void)|null>(null);
     const [progress, setProgress] = useState(0);
 
     const loading = DraftUploadManager.isUploading(file.clientId!);
@@ -74,7 +74,7 @@ export default function UploadItem({
         }
         return () => {
             removeCallback.current?.();
-            removeCallback.current = undefined;
+            removeCallback.current = null;
         };
     }, []);
 
@@ -84,7 +84,7 @@ export default function UploadItem({
         }
         return () => {
             removeCallback.current?.();
-            removeCallback.current = undefined;
+            removeCallback.current = null;
         };
     }, [file.failed, file.id]);
 

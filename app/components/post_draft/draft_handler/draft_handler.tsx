@@ -26,7 +26,7 @@ const emptyFileList: FileInfo[] = [];
 const UPLOAD_ERROR_SHOW_INTERVAL = 5000;
 
 type ErrorHandlers = {
-    [clientId: string]: () => void;
+    [clientId: string]: (() => void) | null;
 }
 
 export default function DraftHandler(props: Props) {
@@ -108,7 +108,7 @@ export default function DraftHandler(props: Props) {
 
         for (const key of Object.keys(uploadErrorHandlers.current)) {
             if (!loadingFiles.find((v) => v.clientId === key)) {
-                uploadErrorHandlers.current[key]();
+                uploadErrorHandlers.current[key]?.();
                 delete (uploadErrorHandlers.current[key]);
             }
         }
