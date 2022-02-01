@@ -57,7 +57,6 @@
   "apps.suggestion.no_static": "일치하는 옵션이 없습니다.",
   "apps.suggestion.no_suggestion": "일치하는 제안이 없습니다.",
   "archivedChannelMessage": "**보존 처리 된 채널**을 보고계십니다. 새 메시지를 게시 할 수 없습니다.",
-  "call_message.started_a_call": "{user}가 통화를 시작했습니다",
   "camera_type.photo.option": "사진 캡처",
   "camera_type.title": "작업 선택",
   "camera_type.video.option": "비디오 녹화",

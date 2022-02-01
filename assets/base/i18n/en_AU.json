@@ -57,7 +57,6 @@
   "apps.suggestion.no_static": "No matching options.",
   "apps.suggestion.no_suggestion": "No matching suggestions.",
   "archivedChannelMessage": "You are viewing an **archived channel**. New messages cannot be posted.",
-  "call_message.started_a_call": "{user} started a call",
   "camera_type.photo.option": "Capture Photo",
   "camera_type.title": "Choose an action",
   "camera_type.video.option": "Record Video",

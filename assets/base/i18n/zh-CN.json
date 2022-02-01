@@ -57,7 +57,6 @@
   "apps.suggestion.no_static": "没有匹配的选项。",
   "apps.suggestion.no_suggestion": "没有匹配的建议。",
   "archivedChannelMessage": "您正在查看**已归档的频道**。新消息无法被发送。",
-  "call_message.started_a_call": "{user}开始了通话",
   "camera_type.photo.option": "拍摄照片",
   "camera_type.title": "选择操作",
   "camera_type.video.option": "录视频",

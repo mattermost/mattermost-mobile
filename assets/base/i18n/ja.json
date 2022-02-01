@@ -57,7 +57,6 @@
   "apps.suggestion.no_static": "一致するオプションがありません。",
   "apps.suggestion.no_suggestion": "該当する提案はありません。",
   "archivedChannelMessage": "**アーカイブされたチャンネル**を閲覧しています。新しいメッセージは投稿できません。",
-  "call_message.started_a_call": "{user}が通話を開始しました",
   "camera_type.photo.option": "写真を撮る",
   "camera_type.title": "アクションを選択する",
   "camera_type.video.option": "動画を撮影する",
