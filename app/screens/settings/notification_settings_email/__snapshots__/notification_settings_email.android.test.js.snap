@@ -50,8 +50,9 @@ exports[`NotificationSettingsEmailAndroid should match snapshot 1`] = `
 `;
 
 exports[`NotificationSettingsEmailAndroid should match snapshot 2`] = `
-<UNDEFINED
+<Modal
   animationType="slide"
+  hardwareAccelerated={false}
   onRequestClose={[Function]}
   transparent={true}
   visible={false}
@@ -144,7 +145,7 @@ exports[`NotificationSettingsEmailAndroid should match snapshot 2`] = `
       </View>
     </View>
   </View>
-</UNDEFINED>
+</Modal>
 `;
 
 exports[`NotificationSettingsEmailAndroid should match snapshot, renderEmailThreadsSection 1`] = `
