@@ -3,22 +3,21 @@
 
 import DatabaseManager from '@database/manager';
 
-export async function handleAddEmoji(serverUrl: string, msg: WebSocketMessage): Promise<void> {
-    const database = DatabaseManager.serverDatabases[serverUrl];
-    if (!database) {
+export async function handleAddCustomEmoji(serverUrl: string, msg: WebSocketMessage): Promise<void> {
+    const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
+    if (!operator) {
         return;
     }
 
     try {
         const emoji = JSON.parse(msg.data.emoji) as CustomEmoji;
-        const operator = database?.operator;
         if (operator) {
             operator.handleCustomEmojis({
                 prepareRecordsOnly: false,
                 emojis: [emoji],
             });
         }
-    } catch (error) {
+    } catch {
         // Do nothing
     }
 }
@@ -47,7 +46,6 @@ export async function handleReactionAddedToPostEvent(serverUrl: string, msg: Web
     }
 }
 
-    console.log('<><> handleReactionRemovedEvent');
 export async function handleReactionRemovedFromPostEvent(serverUrl: string, msg: WebSocketMessage): Promise<void> {
     const database = DatabaseManager.serverDatabases[serverUrl];
     if (!database) {
