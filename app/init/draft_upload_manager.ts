@@ -78,36 +78,32 @@ class DraftUploadManager {
     };
 
     public registerProgressHandler = (clientId: string, callback: (progress: number, bytes: number) => void) => {
-        const h1 = this.handlers[clientId];
-        if (!h1) {
+        if (!this.handlers[clientId]) {
             return null;
         }
 
-        h1.onProgress.push(callback);
+        this.handlers[clientId].onProgress.push(callback);
         return () => {
-            const h2 = this.handlers[clientId];
-            if (!h2) {
+            if (!this.handlers[clientId]) {
                 return;
             }
 
-            h2.onProgress = h2.onProgress.filter((v) => v !== callback);
+            this.handlers[clientId].onProgress = this.handlers[clientId].onProgress.filter((v) => v !== callback);
         };
     };
 
     public registerErrorHandler = (clientId: string, callback: (errMessage: string) => void) => {
-        const h1 = this.handlers[clientId];
-        if (!h1) {
+        if (!this.handlers[clientId]) {
             return null;
         }
 
-        h1.onError.push(callback);
+        this.handlers[clientId].onError.push(callback);
         return () => {
-            const h2 = this.handlers[clientId];
-            if (!h2) {
+            if (!this.handlers[clientId]) {
                 return;
             }
 
-            h2.onError = h2.onError.filter((v) => v !== callback);
+            this.handlers[clientId].onError = this.handlers[clientId].onError.filter((v) => v !== callback);
         };
     };
 

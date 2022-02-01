@@ -15,10 +15,7 @@ export const queryDraft = async (database: Database, channelId: string, rootId =
             Q.where('channel_id', channelId),
             Q.where('root_id', rootId),
         ).fetch();
-        if (record.length) {
-            return record[0];
-        }
-        return undefined;
+        return record?.[0];
     } catch {
         return undefined;
     }

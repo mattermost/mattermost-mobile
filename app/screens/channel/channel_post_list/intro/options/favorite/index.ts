@@ -7,8 +7,8 @@ import withObservables from '@nozbe/with-observables';
 import {of as of$} from 'rxjs';
 import {switchMap} from 'rxjs/operators';
 
-import {MM_TABLES} from '@app/constants/database';
 import {Preferences} from '@constants';
+import {MM_TABLES} from '@constants/database';
 
 import FavoriteItem from './favorite';
 

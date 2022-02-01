@@ -2,10 +2,10 @@
 // See LICENSE.txt for license information.
 
 import {processPostsFetched} from '@actions/local/post';
-import {prepareMissingChannelsForAllTeams} from '@app/queries/servers/channel';
 import {SYSTEM_IDENTIFIERS} from '@constants/database';
 import DatabaseManager from '@database/manager';
 import NetworkManager from '@init/network_manager';
+import {prepareMissingChannelsForAllTeams} from '@queries/servers/channel';
 import {queryCurrentUser} from '@queries/servers/user';
 
 import {fetchPostAuthors, getMissingChannelsFromPosts} from './post';
