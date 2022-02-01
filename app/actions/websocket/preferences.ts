@@ -1,8 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {deletePreferences} from '@app/queries/servers/preference';
 import DatabaseManager from '@database/manager';
+import {deletePreferences} from '@queries/servers/preference';
 import {WebSocketMessage} from '@typings/api/websocket';
 
 export async function handlePreferenceChangedEvent(serverUrl: string, msg: WebSocketMessage): Promise<void> {

@@ -6,11 +6,11 @@ import {useIntl} from 'react-intl';
 import {DeviceEventEmitter, Keyboard, Platform, View} from 'react-native';
 import {Edge, SafeAreaView, useSafeAreaInsets} from 'react-native-safe-area-context';
 
-import PostDraft from '@app/components/post_draft';
-import {ACCESSORIES_CONTAINER_NATIVE_ID} from '@app/constants/post_draft';
 import CompassIcon from '@components/compass_icon';
 import NavigationHeader from '@components/navigation_header';
+import PostDraft from '@components/post_draft';
 import {Navigation} from '@constants';
+import {ACCESSORIES_CONTAINER_NATIVE_ID} from '@constants/post_draft';
 import {useTheme} from '@context/theme';
 import {useAppState, useIsTablet} from '@hooks/device';
 import {useDefaultHeaderHeight} from '@hooks/header';

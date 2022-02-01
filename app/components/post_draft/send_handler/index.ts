@@ -1,6 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {Q} from '@nozbe/watermelondb';
 import {withDatabase} from '@nozbe/watermelondb/DatabaseProvider';
 import withObservables from '@nozbe/with-observables';
 import {combineLatest, of as of$, from as from$} from 'rxjs';
@@ -15,10 +16,12 @@ import SendHandler from './send_handler';
 
 import type {WithDatabaseArgs} from '@typings/database/database';
 import type ChannelModel from '@typings/database/models/servers/channel';
+import type CustomEmojiModel from '@typings/database/models/servers/custom_emoji';
+import type GroupModel from '@typings/database/models/servers/group';
 import type SystemModel from '@typings/database/models/servers/system';
 import type UserModel from '@typings/database/models/servers/user';
 
-const {SERVER: {SYSTEM, USER, CHANNEL}} = MM_TABLES;
+const {SERVER: {SYSTEM, USER, CHANNEL, GROUP, GROUPS_TEAM, GROUPS_CHANNEL, CUSTOM_EMOJI}} = MM_TABLES;
 
 type OwnProps = {
     rootId: string;
@@ -67,7 +70,6 @@ const enhanced = withObservables([], (ownProps: WithDatabaseArgs & OwnProps) => 
                 return of$(true);
             }
 
-            // TODO: Check if this doesn't update in case of a role change
             return from$(hasPermissionForChannel(c, u, Permissions.USE_CHANNEL_MENTIONS, false));
         }),
     );
@@ -82,19 +84,15 @@ const enhanced = withObservables([], (ownProps: WithDatabaseArgs & OwnProps) => 
                 return of$(false);
             }
 
-            // TODO: Check if this doesn't update in case of a role change
             return from$(hasPermissionForChannel(c, u, Permissions.USE_GROUP_MENTIONS, true));
         }),
     );
 
-    // TODO
-    const groupsWithAllowReference = combineLatest([useGroupMentions, channel]).pipe(
-        switchMap(([gm, c]) => {
-            if (!c || !gm) {
-                return of$([]);
-            }
-            return of$([]);
-        }),
+    const groupsWithAllowReference = channel.pipe(switchMap(
+        (c) => database.get<GroupModel>(GROUP).query(
+            Q.experimentalJoinTables([GROUPS_TEAM, GROUPS_CHANNEL]),
+            Q.or(Q.on(GROUPS_TEAM, 'teamId', c.teamId), Q.on(GROUPS_CHANNEL, 'channelId', c.id)),
+        ).observeWithColumns(['name'])),
     );
 
     const membersCount = channel.pipe(
@@ -106,6 +104,8 @@ const enhanced = withObservables([], (ownProps: WithDatabaseArgs & OwnProps) => 
         }),
     );
 
+    const customEmojis = database.get<CustomEmojiModel>(CUSTOM_EMOJI).query().observe();
+
     return {
         currentUserId,
         enableConfirmNotificationsToChannel,
@@ -116,6 +116,7 @@ const enhanced = withObservables([], (ownProps: WithDatabaseArgs & OwnProps) => 
         useChannelMentions,
         useGroupMentions,
         groupsWithAllowReference,
+        customEmojis,
     };
 });
 

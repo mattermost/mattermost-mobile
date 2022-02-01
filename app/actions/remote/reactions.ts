@@ -43,7 +43,7 @@ export const addReaction = async (serverUrl: string, postId: string, emojiName: 
         });
         models.push(...reactions);
 
-        const recent = await addRecentReaction(serverUrl, emojiName, true);
+        const recent = await addRecentReaction(serverUrl, [emojiName], true);
         if (Array.isArray(recent)) {
             models.push(...recent);
         }
@@ -96,7 +96,7 @@ export const removeReaction = async (serverUrl: string, postId: string, emojiNam
     }
 };
 
-export const addReactionToLatestPost = async (serverUrl: string, emojiName: string, rootId?: string) => {
+export const handleReactionToLatestPost = async (serverUrl: string, emojiName: string, add: boolean, rootId?: string) => {
     const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
     if (!operator) {
         return {error: `${serverUrl} database not found`};
@@ -111,7 +111,10 @@ export const addReactionToLatestPost = async (serverUrl: string, emojiName: stri
             posts = await queryRecentPostsInChannel(operator.database, channelId);
         }
 
-        return addReaction(serverUrl, posts[0].id, emojiName);
+        if (add) {
+            return addReaction(serverUrl, posts[0].id, emojiName);
+        }
+        return removeReaction(serverUrl, posts[0].id, emojiName);
     } catch (error) {
         return {error};
     }

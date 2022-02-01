@@ -11,6 +11,7 @@ import {
 import Animated, {useAnimatedStyle, useSharedValue, withTiming} from 'react-native-reanimated';
 
 import {useTheme} from '@context/theme';
+import DraftUploadManager from '@init/draft_upload_manager';
 import {openGalleryAtIndex} from '@utils/gallery';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 
@@ -24,8 +25,8 @@ const ERROR_HEIGHT_MIN = 0;
 type Props = {
     files: FileInfo[];
     uploadFileError: React.ReactNode;
-    removeFile: (file: FileInfo) => void;
-    retryFileUpload: (file: FileInfo) => void;
+    channelId: string;
+    rootId: string;
 }
 
 const getStyleSheet = makeStyleSheetFromTheme((theme) => {
@@ -68,8 +69,8 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
 export default function Uploads({
     files,
     uploadFileError,
-    removeFile,
-    retryFileUpload,
+    channelId,
+    rootId,
 }: Props) {
     const theme = useTheme();
     const style = getStyleSheet(theme);
@@ -110,8 +111,9 @@ export default function Uploads({
     }, [files.length > 0]);
 
     const openGallery = useCallback((file: FileInfo) => {
-        const index = files.indexOf(file);
-        openGalleryAtIndex(index, files.filter((f) => !f.failed && !f.loading));
+        const galleryFiles = files.filter((f) => !f.failed && !DraftUploadManager.isUploading(f.clientId!));
+        const index = galleryFiles.indexOf(file);
+        openGalleryAtIndex(index, galleryFiles);
     }, [files]);
 
     const buildFilePreviews = () => {
@@ -121,8 +123,8 @@ export default function Uploads({
                     key={file.clientId}
                     file={file}
                     openGallery={openGallery}
-                    removeFile={removeFile}
-                    retryFileUpload={retryFileUpload}
+                    channelId={channelId}
+                    rootId={rootId}
                 />
             );
         });

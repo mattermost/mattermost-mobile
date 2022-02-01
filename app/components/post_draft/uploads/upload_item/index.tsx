@@ -1,13 +1,17 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback, useMemo} from 'react';
+import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {StyleSheet, TouchableOpacity, View} from 'react-native';
 
+import {updateDraftFile} from '@actions/local/draft';
+import useDidUpdate from '@app/hooks/did_update';
 import FileIcon from '@components/post_list/post/body/files/file_icon';
 import ImageFile from '@components/post_list/post/body/files/image_file';
 import ProgressBar from '@components/progress_bar';
+import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
+import DraftUploadManager from '@init/draft_upload_manager';
 import {isImage} from '@utils/file';
 import {changeOpacity} from '@utils/theme';
 
@@ -16,9 +20,9 @@ import UploadRetry from './upload_retry';
 
 type Props = {
     file: FileInfo;
-    removeFile: (file: FileInfo) => void;
+    channelId: string;
+    rootId: string;
     openGallery: (file: FileInfo) => void;
-    retryFileUpload: (file: FileInfo) => void;
 }
 
 const styles = StyleSheet.create({
@@ -49,27 +53,53 @@ const styles = StyleSheet.create({
 
 export default function UploadItem({
     file,
-    removeFile,
+    channelId,
+    rootId,
     openGallery,
-    retryFileUpload,
 }: Props) {
     const theme = useTheme();
+    const serverUrl = useServerUrl();
+    const removeCallback = useRef<() => void>();
+    const [progress, setProgress] = useState(0);
+
+    const loading = DraftUploadManager.isUploading(file.clientId!);
 
     const handlePress = useCallback(() => {
         openGallery(file);
     }, [openGallery, file]);
 
-    const handleRetryFileUpload = useCallback(() => {
+    useEffect(() => {
+        if (file.clientId) {
+            removeCallback.current = DraftUploadManager.registerProgressHandler(file.clientId, setProgress);
+        }
+        return () => {
+            removeCallback.current?.();
+            removeCallback.current = undefined;
+        };
+    }, []);
+
+    useDidUpdate(() => {
+        if (loading && file.clientId) {
+            removeCallback.current = DraftUploadManager.registerProgressHandler(file.clientId, setProgress);
+        }
+        return () => {
+            removeCallback.current?.();
+            removeCallback.current = undefined;
+        };
+    }, [file.failed, file.id]);
+
+    const retryFileUpload = useCallback(() => {
         if (!file.failed) {
             return;
         }
 
-        retryFileUpload(file);
-    }, [retryFileUpload, file]);
+        const newFile = {...file};
+        newFile.failed = false;
 
-    const handleRemoveFile = useCallback(() => {
-        removeFile(file);
-    }, [removeFile, file]);
+        updateDraftFile(serverUrl, channelId, rootId, file);
+        DraftUploadManager.prepareUpload(serverUrl, file, channelId, rootId, file.bytesRead);
+        DraftUploadManager.registerProgressHandler(file.clientId!, setProgress);
+    }, [serverUrl, channelId, rootId, file]);
 
     const filePreviewComponent = useMemo(() => {
         if (isImage(file)) {
@@ -102,20 +132,22 @@ export default function UploadItem({
                 </TouchableOpacity>
                 {file.failed &&
                 <UploadRetry
-                    onPress={handleRetryFileUpload}
+                    onPress={retryFileUpload}
                 />
                 }
-                {file.loading && !file.failed &&
+                {loading && !file.failed &&
                 <View style={styles.progress}>
                     <ProgressBar
-                        progress={file.progress || 0}
+                        progress={progress || 0}
                         color={theme.buttonBg}
                     />
                 </View>
                 }
             </View>
             <UploadRemove
-                onPress={handleRemoveFile}
+                clientId={file.clientId!}
+                channelId={channelId}
+                rootId={rootId}
             />
         </View>
     );

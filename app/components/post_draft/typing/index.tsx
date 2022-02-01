@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useEffect, useRef, useState} from 'react';
+import React, {useCallback, useEffect, useRef, useState} from 'react';
 import {
     DeviceEventEmitter,
     Platform,
@@ -52,50 +52,55 @@ export default function Typing({
     const theme = useTheme();
     const style = getStyleSheet(theme);
 
+    // This moves the list of post up. This may be rethought by UX in https://mattermost.atlassian.net/browse/MM-39681
     const typingAnimatedStyle = useAnimatedStyle(() => {
         return {
             height: withTiming(typingHeight.value),
         };
     });
 
+    const onUserStartTyping = useCallback((msg: any) => {
+        if (channelId !== msg.channelId) {
+            return;
+        }
+
+        const msgRootId = msg.parentId || '';
+        if (rootId !== msgRootId) {
+            return;
+        }
+
+        typing.current = typing.current.filter(({id}) => id !== msg.userId);
+        typing.current.push({id: msg.userId, now: msg.now, username: msg.username});
+        setRefresh(Date.now());
+    }, [channelId, rootId]);
+
+    const onUserStopTyping = useCallback((msg: any) => {
+        if (channelId !== msg.channelId) {
+            return;
+        }
+
+        const msgRootId = msg.parentId || '';
+        if (rootId !== msgRootId) {
+            return;
+        }
+
+        typing.current = typing.current.filter(({id, now}) => id !== msg.userId && now !== msg.now);
+        setRefresh(Date.now());
+    }, []);
+
     useEffect(() => {
-        const listener = DeviceEventEmitter.addListener(Events.USER_TYPING, (msg: any) => {
-            if (channelId !== msg.channelId) {
-                return;
-            }
-
-            const msgRootId = msg.parentId || '';
-            if (rootId !== msgRootId) {
-                return;
-            }
-
-            typing.current = typing.current.filter(({id}) => id !== msg.userId); //eslint-disable-line max-nested-callbacks
-            typing.current.push({id: msg.userId, now: msg.now, username: msg.username});
-            setRefresh(Date.now());
-        });
+        const listener = DeviceEventEmitter.addListener(Events.USER_TYPING, onUserStartTyping);
         return () => {
             listener.remove();
         };
-    }, [channelId, rootId]);
+    }, [onUserStartTyping]);
 
     useEffect(() => {
-        const listener = DeviceEventEmitter.addListener(Events.USER_STOP_TYPING, (msg: any) => {
-            if (channelId !== msg.channelId) {
-                return;
-            }
-
-            const msgRootId = msg.parentId || '';
-            if (rootId !== msgRootId) {
-                return;
-            }
-
-            typing.current = typing.current.filter(({id, now}) => id !== msg.userId && now !== msg.now);//eslint-disable-line max-nested-callbacks
-            setRefresh(Date.now());
-        });
+        const listener = DeviceEventEmitter.addListener(Events.USER_STOP_TYPING, onUserStopTyping);
         return () => {
             listener.remove();
         };
-    }, [channelId, rootId]);
+    }, [onUserStopTyping]);
 
     useEffect(() => {
         typingHeight.value = typing.current.length ? TYPING_HEIGHT : 0;
@@ -103,6 +108,10 @@ export default function Typing({
 
     const renderTyping = () => {
         const nextTyping = typing.current.map(({username}) => username);
+
+        // Max three names
+        nextTyping.splice(3);
+
         const numUsers = nextTyping.length;
 
         switch (numUsers) {

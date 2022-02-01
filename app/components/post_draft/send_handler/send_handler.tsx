@@ -5,20 +5,24 @@ import React, {useCallback, useEffect, useState} from 'react';
 import {useIntl} from 'react-intl';
 import {DeviceEventEmitter} from 'react-native';
 
-import {addRecentReaction} from '@actions/local/reactions';
 import {getChannelMemberCountsByGroup, getChannelTimezones} from '@actions/remote/channel';
 import {executeCommand, handleGotoLocation} from '@actions/remote/command';
 import {createPost} from '@actions/remote/post';
-import {addReactionToLatestPost} from '@actions/remote/reactions';
+import {handleReactionToLatestPost} from '@actions/remote/reactions';
 import {setStatus} from '@actions/remote/user';
-import {IS_REACTION_REGEX, NOTIFY_ALL_MEMBERS} from '@constants/post_draft';
+import {Events, Screens} from '@constants';
+import {NOTIFY_ALL_MEMBERS} from '@constants/post_draft';
 import {useServerUrl} from '@context/server';
-import EphemeralStore from '@store/ephemeral_store';
+import DraftUploadManager from '@init/draft_upload_manager';
 import * as DraftUtils from '@utils/draft';
+import {isReactionMatch} from '@utils/emoji/helpers';
 import {preventDoubleTap} from '@utils/tap';
 import {confirmOutOfOfficeDisabled} from '@utils/user';
 
 import CursorPositionHandler from '../cursor_position_handler';
+
+import type CustomEmojiModel from '@typings/database/models/servers/custom_emoji';
+import type GroupModel from '@typings/database/models/servers/group';
 
 type Props = {
     testID?: string;
@@ -34,7 +38,8 @@ type Props = {
     useChannelMentions: boolean;
     userIsOutOfOffice: boolean;
     useGroupMentions: boolean;
-    groupsWithAllowReference: Group[];
+    groupsWithAllowReference: GroupModel[];
+    customEmojis: CustomEmojiModel[];
 
     // DRAFT Handler
     value: string;
@@ -42,8 +47,6 @@ type Props = {
     clearDraft: () => void;
     updateValue: (message: string) => void;
     addFiles: (file: FileInfo[]) => void;
-    removeFiles: (file: FileInfo) => void;
-    retryFileUpload: (file: FileInfo) => void;
     uploadFileError: React.ReactNode;
 }
 
@@ -59,14 +62,13 @@ export default function SendHandler({
     rootId,
     useChannelMentions,
     userIsOutOfOffice,
+    customEmojis,
     value,
     useGroupMentions,
     groupsWithAllowReference,
     clearDraft,
     updateValue,
     addFiles,
-    removeFiles,
-    retryFileUpload,
     uploadFileError,
 }: Props) {
     const intl = useIntl();
@@ -88,15 +90,15 @@ export default function SendHandler({
         }
 
         if (files.length) {
-            const loadingComplete = !files.some((file) => file.loading);
+            const loadingComplete = !files.some((file) => DraftUploadManager.isUploading(file.clientId!));
             return loadingComplete;
         }
 
         return messageLength > 0;
     }, [sendingMessage, value, files, maxMessageLength]);
 
-    const sendReaction = useCallback((emoji: string) => {
-        addReactionToLatestPost(serverUrl, emoji, rootId);
+    const handleReaction = useCallback((emoji: string, add: boolean) => {
+        handleReactionToLatestPost(serverUrl, emoji, add, rootId);
         clearDraft();
         setSendingMessage(false);
     }, [serverUrl, rootId, clearDraft]);
@@ -110,28 +112,11 @@ export default function SendHandler({
             message: value,
         };
 
-        createPost(serverUrl, post, postFiles).then(({data}) => {
-            if (data) {
-                addRecentReaction(serverUrl, value);
-            }
-        });
+        createPost(serverUrl, post, postFiles);
 
         clearDraft();
         setSendingMessage(false);
-
-        // if (Platform.OS === 'android') {
-        //     // Fixes the issue where Android predictive text would prepend suggestions to the post draft when messages
-        //     // are typed successively without blurring the input
-        //     const nextState = {
-        //         keyboardType: 'email-address',
-        //     };
-
-        //     const callback = () => this.setState({keyboardType: 'default'});
-
-        //     this.setState(nextState, callback);
-        // }
-
-        DeviceEventEmitter.emit('scroll-to-bottom', EphemeralStore.getNavigationTopComponentId());
+        DeviceEventEmitter.emit(Events.POST_LIST_SCROLL_TO_BOTTOM, rootId ? Screens.THREAD : Screens.CHANNEL);
     }, [files, currentUserId, channelId, rootId, value, clearDraft]);
 
     const showSendToAllOrChannelOrHereAlert = useCallback((calculatedMembersCount: number, atHere: boolean) => {
@@ -235,10 +220,9 @@ export default function SendHandler({
 
         setSendingMessage(true);
 
-        const isReactionMatch = value.match(IS_REACTION_REGEX);
-        if (isReactionMatch) {
-            const emoji = isReactionMatch[2];
-            sendReaction(emoji);
+        const match = isReactionMatch(value, customEmojis);
+        if (match && !files.length) {
+            handleReaction(match.emoji, match.add);
             return;
         }
 
@@ -256,7 +240,7 @@ export default function SendHandler({
         } else {
             sendMessage();
         }
-    }), [canSend, value, sendReaction, files, sendMessage]);
+    }), [canSend, value, handleReaction, files, sendMessage, customEmojis]);
 
     useEffect(() => {
         if (useGroupMentions) {
@@ -291,8 +275,6 @@ export default function SendHandler({
             clearDraft={clearDraft}
             updateValue={updateValue}
             addFiles={addFiles}
-            removeFile={removeFiles}
-            retryFileUpload={retryFileUpload}
             uploadFileError={uploadFileError}
 
             // From send handler

@@ -9,6 +9,7 @@ import {AT_MENTION_REGEX_GLOBAL, CODE_REGEX} from '@constants/autocomplete';
 import {NOTIFY_ALL_MEMBERS} from '@constants/post_draft';
 import {t} from '@i18n';
 
+import type GroupModel from '@typings/database/models/servers/group';
 import type {IntlShape} from 'react-intl';
 
 type AlertCallback = (value?: string) => void;
@@ -78,7 +79,7 @@ export const textContainsAtHere = (text: string) => {
     return (/(?:\B|\b_+)@(here)(?!(\.|-|_)*[^\W_])/i).test(textWithoutCode);
 };
 
-export const groupsMentionedInText = (groupsWithAllowReference: Group[], text: string) => {
+export const groupsMentionedInText = (groupsWithAllowReference: GroupModel[], text: string) => {
     if (!groupsWithAllowReference.length) {
         return [];
     }
@@ -90,7 +91,7 @@ export const groupsMentionedInText = (groupsWithAllowReference: Group[], text: s
 // mapGroupMentions remove duplicates from the groupMentions, and if any of the
 // groups has more members than the NOTIFY_ALL_MEMBERS, return the highest
 // number of notifications and the timezones of that group.
-export const mapGroupMentions = (channelMemberCountsByGroup: ChannelMemberCountByGroup[], groupMentions: Group[]) => {
+export const mapGroupMentions = (channelMemberCountsByGroup: ChannelMemberCountByGroup[], groupMentions: GroupModel[]) => {
     let memberNotifyCount = 0;
     let channelTimezoneCount = 0;
     const groupMentionsSet = new Set<string>();

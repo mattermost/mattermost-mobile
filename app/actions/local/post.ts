@@ -2,7 +2,6 @@
 // See LICENSE.txt for license information.
 
 import {postActionWithCookie} from '@actions/remote/post';
-import {queryDraft} from '@app/queries/servers/drafts';
 import {ActionType, Post} from '@constants';
 import DatabaseManager from '@database/manager';
 import {queryPostById} from '@queries/servers/post';
@@ -131,32 +130,6 @@ export const removePost = async (serverUrl: string, post: PostModel | Post) => {
 
 export const selectAttachmentMenuAction = (serverUrl: string, postId: string, actionId: string, selectedOption: string) => {
     return postActionWithCookie(serverUrl, postId, actionId, '', selectedOption);
-};
-
-export const removeDraft = async (serverUrl: string, channelId: string, rootId = '') => {
-    const database = DatabaseManager.serverDatabases[serverUrl]?.database;
-    if (!database) {
-        return {error: `${serverUrl} database not found`};
-    }
-
-    const draft = await queryDraft(database, channelId, rootId);
-    if (draft) {
-        await database.write(async () => {
-            await draft.destroyPermanently();
-        });
-    }
-
-    return {draft};
-};
-
-export const updateDraft = async (serverUrl: string, draft: Draft) => {
-    const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
-    if (!operator) {
-        return {error: `${serverUrl} database not found`};
-    }
-
-    const drafts = await operator.handleDraft({drafts: [draft], prepareRecordsOnly: false});
-    return {draft: drafts[0]};
 };
 
 export const markPostAsDeleted = async (serverUrl: string, post: Post) => {

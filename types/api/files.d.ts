@@ -19,9 +19,8 @@ type FileInfo = {
     clientId?: string;
     localPath?: string;
     uri?: string;
-    loading?: boolean;
     failed?: boolean;
-    progress?: number;
+    bytesRead?: number;
 };
 
 type FilesState = {

@@ -6,8 +6,8 @@ import withObservables from '@nozbe/with-observables';
 import {of as of$} from 'rxjs';
 import {catchError, switchMap} from 'rxjs/operators';
 
-import {MM_TABLES, SYSTEM_IDENTIFIERS} from '@app/constants/database';
 import {General} from '@constants';
+import {MM_TABLES, SYSTEM_IDENTIFIERS} from '@constants/database';
 import {getUserIdFromChannelName} from '@utils/user';
 
 import DirectChannel from './direct_channel';

@@ -6,15 +6,18 @@ import {DeviceEventEmitter} from 'react-native';
 
 import {updateLastPostAt} from '@actions/local/channel';
 import {processPostsFetched, removePost} from '@actions/local/post';
+import {addRecentReaction} from '@actions/local/reactions';
 import {ActionType, Events, General, ServerErrors} from '@constants';
 import {SYSTEM_IDENTIFIERS} from '@constants/database';
 import DatabaseManager from '@database/manager';
 import {getNeededAtMentionedUsernames} from '@helpers/api/user';
 import NetworkManager from '@init/network_manager';
 import {prepareMissingChannelsForAllTeams, queryAllMyChannelIds} from '@queries/servers/channel';
+import {queryAllCustomEmojis} from '@queries/servers/custom_emoji';
 import {queryPostById, queryRecentPostsInChannel} from '@queries/servers/post';
 import {queryCurrentUserId, queryCurrentChannelId} from '@queries/servers/system';
 import {queryAllUsers} from '@queries/servers/user';
+import {getValidEmojis, matchEmoticons} from '@utils/emoji/helpers';
 
 import {forceLogoutIfNecessary} from './session';
 
@@ -75,6 +78,10 @@ export const createPost = async (serverUrl: string, post: Partial<Post>, files: 
         order: [databasePost.id],
         posts: [databasePost],
     });
+
+    const customEmojis = await queryAllCustomEmojis(operator.database);
+    const emojisInMessage = matchEmoticons(newPost.message);
+    addRecentReaction(serverUrl, getValidEmojis(emojisInMessage, customEmojis));
 
     try {
         const client = NetworkManager.getClient(serverUrl);

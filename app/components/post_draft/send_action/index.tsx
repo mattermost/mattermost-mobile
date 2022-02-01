@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {memo} from 'react';
+import React, {memo, useMemo} from 'react';
 import {View} from 'react-native';
 
 import CompassIcon from '@components/compass_icon';
@@ -42,25 +42,16 @@ function SendButton({
 }: Props) {
     const theme = useTheme();
     const sendButtonTestID = `${testID}.send.button`;
-    const sendButtonDisabledTestID = `${testID}.send.button.disabled`;
     const style = getStyleSheet(theme);
 
-    if (disabled) {
-        return (
-            <View
-                testID={sendButtonDisabledTestID}
-                style={style.sendButtonContainer}
-            >
-                <View style={[style.sendButton, style.disableButton]}>
-                    <CompassIcon
-                        name='send'
-                        size={24}
-                        color={changeOpacity(theme.buttonColor, 0.5)}
-                    />
-                </View>
-            </View>
-        );
-    }
+    const viewStyle = useMemo(() => {
+        if (disabled) {
+            return [style.sendButton, style.disableButton];
+        }
+        return style.sendButton;
+    }, [disabled, style]);
+
+    const buttonColor = disabled ? changeOpacity(theme.buttonColor, 0.5) : theme.buttonColor;
 
     return (
         <TouchableWithFeedback
@@ -68,12 +59,13 @@ function SendButton({
             onPress={sendMessage}
             style={style.sendButtonContainer}
             type={'opacity'}
+            disabled={disabled}
         >
-            <View style={style.sendButton}>
+            <View style={viewStyle}>
                 <CompassIcon
                     name='send'
                     size={24}
-                    color={theme.buttonColor}
+                    color={buttonColor}
                 />
             </View>
         </TouchableWithFeedback>

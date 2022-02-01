@@ -22,8 +22,6 @@ type Props = {
     clearDraft: () => void;
     updateValue: (value: string) => void;
     addFiles: (files: FileInfo[]) => void;
-    removeFile: (file: FileInfo) => void;
-    retryFileUpload: (file: FileInfo) => void;
 }
 
 export default function CursorPositionHandler(props: Props) {

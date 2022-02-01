@@ -22,8 +22,17 @@ type OwnProps = {
 }
 
 const enhanced = withObservables([], ({database, channelId, rootId}: WithDatabaseArgs & OwnProps) => {
-    const timeBetweenUserTypingUpdatesMilliseconds = database.get<SystemModel>(SYSTEM).findAndObserve(SYSTEM_IDENTIFIERS.CONFIG).pipe(
+    const config = database.get<SystemModel>(SYSTEM).findAndObserve(SYSTEM_IDENTIFIERS.CONFIG);
+    const timeBetweenUserTypingUpdatesMilliseconds = config.pipe(
         switchMap(({value}: {value: ClientConfig}) => of$(parseInt(value.TimeBetweenUserTypingUpdatesMilliseconds, 10))),
+    );
+
+    const enableUserTypingMessage = config.pipe(
+        switchMap(({value}: {value: ClientConfig}) => of$(value.EnableUserTypingMessages === 'true')),
+    );
+
+    const maxNotificationsPerChannel = config.pipe(
+        switchMap(({value}: {value: ClientConfig}) => of$(parseInt(value.MaxNotificationsPerChannel, 10))),
     );
 
     let channel;
@@ -39,9 +48,16 @@ const enhanced = withObservables([], ({database, channelId, rootId}: WithDatabas
         switchMap((c) => of$(c.displayName)),
     );
 
+    const membersInChannel = channel.pipe(
+        switchMap((c) => c.members.observeCount()),
+    );
+
     return {
         timeBetweenUserTypingUpdatesMilliseconds,
+        enableUserTypingMessage,
+        maxNotificationsPerChannel,
         channelDisplayName,
+        membersInChannel,
     };
 });
 

@@ -24,10 +24,10 @@ type OwnProps = {
     rootId?: string;
 }
 const enhanced = withObservables([], ({database, channelId, rootId = ''}: WithDatabaseArgs & OwnProps) => {
-    const drafts = database.get<DraftModel>(DRAFT).query(
+    const draft = database.get<DraftModel>(DRAFT).query(
         Q.where('channel_id', channelId),
         Q.where('root_id', rootId),
-    ).observe();
+    ).observe().pipe(switchMap((v) => of$(v[0])));
 
     const config = database.get<SystemModel>(SYSTEM).findAndObserve(SYSTEM_IDENTIFIERS.CONFIG).pipe(
         switchMap(({value}) => of$(value as ClientConfig)),
@@ -54,7 +54,7 @@ const enhanced = withObservables([], ({database, channelId, rootId = ''}: WithDa
     );
 
     return {
-        drafts,
+        draft,
         maxFileSize,
         maxFileCount,
         canUploadFiles,

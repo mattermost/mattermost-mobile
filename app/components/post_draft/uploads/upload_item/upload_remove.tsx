@@ -4,13 +4,18 @@
 import React from 'react';
 import {View, Platform} from 'react-native';
 
+import {removeDraftFile} from '@actions/local/draft';
 import CompassIcon from '@components/compass_icon';
 import TouchableWithFeedback from '@components/touchable_with_feedback';
+import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
+import DraftUploadManager from '@init/draft_upload_manager';
 import {makeStyleSheetFromTheme, changeOpacity} from '@utils/theme';
 
 type Props = {
-    onPress: () => void;
+    channelId: string;
+    rootId: string;
+    clientId: string;
 }
 
 const getStyleSheet = makeStyleSheetFromTheme((theme) => {
@@ -38,10 +43,18 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
 });
 
 export default function UploadRemove({
-    onPress,
+    channelId,
+    rootId,
+    clientId,
 }: Props) {
     const theme = useTheme();
     const style = getStyleSheet(theme);
+    const serverUrl = useServerUrl();
+
+    const onPress = () => {
+        DraftUploadManager.cancel(clientId);
+        removeDraftFile(serverUrl, channelId, rootId, clientId);
+    };
 
     return (
         <TouchableWithFeedback

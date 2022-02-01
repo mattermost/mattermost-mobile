@@ -5,16 +5,17 @@ import {useManagedConfig} from '@mattermost/react-native-emm';
 import PasteableTextInput, {PastedFile, PasteInputRef} from '@mattermost/react-native-paste-input';
 import React, {useCallback, useEffect, useRef, useState} from 'react';
 import {IntlShape, useIntl} from 'react-intl';
-import {Alert, DeviceEventEmitter, EmitterSubscription, findNodeHandle, Keyboard, KeyboardTypeOptions, NativeModules, NativeSyntheticEvent, Platform, TextInput, TextInputSelectionChangeEventData} from 'react-native';
+import {Alert, AppState, AppStateStatus, EmitterSubscription, findNodeHandle, Keyboard, KeyboardTypeOptions, NativeModules, NativeSyntheticEvent, Platform, TextInput, TextInputSelectionChangeEventData} from 'react-native';
 import HWKeyboardEvent from 'react-native-hw-keyboard-event';
 
+import {updateDraftMessage} from '@actions/local/draft';
 import {userTyping} from '@actions/websocket/users';
-import {BLUR_POST_DRAFT_EVENT} from '@constants/post_draft';
+import {Screens} from '@constants';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
+import useDidUpdate from '@hooks/did_update';
 import {t} from '@i18n';
-import EphemeralStore from '@store/ephemeral_store';
 import {extractFileInfos} from '@utils/file';
 import {switchKeyboardForCodeBlocks} from '@utils/markdown';
 import {changeOpacity, makeStyleSheetFromTheme, getKeyboardAppearanceFromTheme} from '@utils/theme';
@@ -32,6 +33,9 @@ type Props = {
     maxMessageLength: number;
     rootId: string;
     timeBetweenUserTypingUpdatesMilliseconds: number;
+    maxNotificationsPerChannel: number;
+    enableUserTypingMessage: boolean;
+    membersInChannel: number;
     value: string;
     updateValue: (value: string) => void;
     addFiles: (files: FileInfo[]) => void;
@@ -86,6 +90,9 @@ export default function PostInput({
     maxMessageLength,
     rootId,
     timeBetweenUserTypingUpdatesMilliseconds,
+    maxNotificationsPerChannel,
+    enableUserTypingMessage,
+    membersInChannel,
     value,
     updateValue,
     addFiles,
@@ -103,6 +110,7 @@ export default function PostInput({
     const lastTypingEventSent = useRef(0);
     const input = useRef<PasteInputRef>();
     const lastNativeValue = useRef('');
+    const previousAppState = useRef(AppState.currentState);
 
     const [keyboardType, setKeyboardType] = useState<KeyboardTypeOptions>('default');
     const [longMessageAlertShown, setLongMessageAlertShown] = useState(false);
@@ -112,6 +120,7 @@ export default function PostInput({
 
     const blur = () => {
         input.current?.blur();
+        updateDraftMessage(serverUrl, channelId, rootId, value);
     };
 
     const handleAndroidKeyboard = () => {
@@ -178,11 +187,24 @@ export default function PostInput({
             handlePostDraftSelectionChanged(null, true);
         }
 
-        if (newValue && lastTypingEventSent.current + timeBetweenUserTypingUpdatesMilliseconds < Date.now()) {
+        if (
+            newValue &&
+            lastTypingEventSent.current + timeBetweenUserTypingUpdatesMilliseconds < Date.now() &&
+            membersInChannel < maxNotificationsPerChannel &&
+            enableUserTypingMessage
+        ) {
             userTyping(serverUrl, channelId, rootId);
             lastTypingEventSent.current = Date.now();
         }
-    }, [updateValue, checkMessageLength, handlePostDraftSelectionChanged, timeBetweenUserTypingUpdatesMilliseconds, channelId, rootId]);
+    }, [
+        updateValue,
+        checkMessageLength,
+        handlePostDraftSelectionChanged,
+        timeBetweenUserTypingUpdatesMilliseconds,
+        channelId,
+        rootId,
+        (membersInChannel < maxNotificationsPerChannel) && enableUserTypingMessage,
+    ]);
 
     const onPaste = useCallback(async (error: string | null | undefined, files: PastedFile[]) => {
         if (error) {
@@ -193,7 +215,7 @@ export default function PostInput({
     }, [addFiles, intl]);
 
     const handleHardwareEnterPress = useCallback((keyEvent: {pressedKey: string}) => {
-        if (HW_EVENT_IN_SCREEN.includes(EphemeralStore.getNavigationTopComponentId())) {
+        if (HW_EVENT_IN_SCREEN.includes(rootId ? Screens.THREAD : Screens.CHANNEL)) {
             switch (keyEvent.pressedKey) {
                 case 'enter':
                     sendMessage();
@@ -207,21 +229,35 @@ export default function PostInput({
     }, [sendMessage, updateValue, value, cursorPosition]);
 
     useEffect(() => {
-        const blurListener = DeviceEventEmitter.addListener(BLUR_POST_DRAFT_EVENT, blur);
-
         let keyboardListener: EmitterSubscription | undefined;
         if (Platform.OS === 'android') {
             keyboardListener = Keyboard.addListener('keyboardDidHide', handleAndroidKeyboard);
         }
 
         return (() => {
-            blurListener.remove();
             keyboardListener?.remove();
         });
     }, []);
 
+    const onAppStateChange = useCallback((appState: AppStateStatus) => {
+        if (appState !== 'active' && previousAppState.current === 'active') {
+            updateDraftMessage(serverUrl, channelId, rootId, value);
+        }
+
+        previousAppState.current = appState;
+    }, [serverUrl, channelId, rootId, value]);
+
+    useEffect(() => {
+        const e = AppState.addEventListener('change', onAppStateChange);
+
+        return () => {
+            e.remove();
+        };
+    }, [onAppStateChange]);
+
     useEffect(() => {
         if (value !== lastNativeValue.current) {
+            // May change when we implement Fabric
             input.current?.setNativeProps({
                 text: value,
                 selection: {start: cursorPosition},
@@ -241,6 +277,22 @@ export default function PostInput({
             HWKeyboardEvent.removeOnHWKeyPressed();
         };
     }, [handleHardwareEnterPress]);
+
+    useDidUpdate(() => {
+        if (!value) {
+            if (Platform.OS === 'android') {
+                // Fixes the issue where Android predictive text would prepend suggestions to the post draft when messages
+                // are typed successively without blurring the input
+                setKeyboardType('email-address');
+            }
+        }
+    }, [value]);
+
+    useDidUpdate(() => {
+        if (Platform.OS === 'android' && keyboardType === 'email-address') {
+            setKeyboardType('default');
+        }
+    }, [keyboardType]);
 
     return (
         <PasteableTextInput

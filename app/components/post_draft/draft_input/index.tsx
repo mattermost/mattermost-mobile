@@ -34,8 +34,6 @@ type Props = {
     uploadFileError: React.ReactNode;
     updateValue: (value: string) => void;
     addFiles: (files: FileInfo[]) => void;
-    removeFile: (file: FileInfo) => void;
-    retryFileUpload: (file: FileInfo) => void;
 }
 
 const SAFE_AREA_VIEW_EDGES: Edge[] = ['left', 'right'];
@@ -89,8 +87,6 @@ export default function DraftInput({
     addFiles,
     updateCursorPosition,
     cursorPosition,
-    removeFile,
-    retryFileUpload,
 }: Props) {
     const theme = useTheme();
 
@@ -153,9 +149,9 @@ export default function DraftInput({
                     />
                     <Uploads
                         files={files}
-                        removeFile={removeFile}
-                        retryFileUpload={retryFileUpload}
                         uploadFileError={uploadFileError}
+                        channelId={channelId}
+                        rootId={rootId}
                     />
                     <View style={style.actionsContainer}>
                         <QuickActions

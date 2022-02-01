@@ -380,10 +380,8 @@ export async function extractFileInfos(files: Array<Asset | DocumentPickerRespon
         }
 
         const outFile = {
-            progress: 0,
             localPath: file.uri,
             clientId: generateId(),
-            loading: true,
         } as FileInfo;
 
         if (file.hasOwnProperty('fileSize')) {
