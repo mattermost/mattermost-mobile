@@ -272,7 +272,7 @@ export default function PostInput({
                 RNTextInputReset.resetKeyboardInput(findNodeHandle(input.current as TextInput));
             }
         }
-    }, [value, input.current]);
+    }, [value]);
 
     useEffect(() => {
         HWKeyboardEvent.onHWKeyPressed(handleHardwareEnterPress);

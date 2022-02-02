@@ -15,7 +15,7 @@
     "@formatjs/intl-relativetimeformat": "9.5.1",
     "@mattermost/react-native-emm": "1.1.8",
     "@mattermost/react-native-network-client": "github:mattermost/react-native-network-client",
-    "@mattermost/react-native-paste-input": "0.3.6",
+    "@mattermost/react-native-paste-input": "0.3.7",
     "@nozbe/watermelondb": "0.24.0",
     "@nozbe/with-observables": "1.4.0",
     "@react-native-async-storage/async-storage": "1.15.17",
