@@ -51,7 +51,7 @@ export default class Timezone extends PureComponent {
 
     setSearchBarRef = (ref) => {
         this.searchBarRef = ref;
-    }
+    };
 
     filteredTimezones = (timezonePrefix) => {
         if (timezonePrefix.length === 0) {

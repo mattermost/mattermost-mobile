@@ -4,7 +4,7 @@
 class DateTimePicker {
     testID = {
         dateTimePicker: 'clear_after.date_time_picker',
-    }
+    };
 
     changeTimeAndroid = async (hour, minute) => {
         const keyboardIconButton = element(
@@ -23,17 +23,17 @@ class DateTimePicker {
 
         await hourTextinput.replaceText(hour);
         await minuteTextinput.replaceText(minute);
-    }
+    };
 
     tapCancelButtonAndroid = async () => {
         await element(by.text('Cancel')).tap();
-    }
+    };
 
     tapOkButtonAndroid = async () => {
         await element(by.text('OK')).tap();
-    }
+    };
 
-    getDateTimePickerIOS = () => element(by.type('UIPickerView').withAncestor(by.id(this.testID.dateTimePicker)))
+    getDateTimePickerIOS = () => element(by.type('UIPickerView').withAncestor(by.id(this.testID.dateTimePicker)));
 }
 
 const dateTimePicker = new DateTimePicker();

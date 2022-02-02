@@ -10,16 +10,16 @@ export type Search = {
 
 export type SearchState = {
     current: any;
-    results: Array<string>;
-    flagged: Array<string>;
-    pinned: Dictionary<Array<string>>;
+    results: string[];
+    flagged: string[];
+    pinned: Dictionary<string[]>;
     isSearchingTerm: boolean;
     isSearchGettingMore: boolean;
     recent: {
-        [x: string]: Array<Search>;
+        [x: string]: Search[];
     };
     matches: {
-        [x: string]: Array<string>;
+        [x: string]: string[];
     };
 };
 

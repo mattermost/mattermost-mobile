@@ -314,7 +314,7 @@ class CustomStatusModal extends NavigationComponent<Props, State> {
     handleEmojiClick = (emoji: string) => {
         dismissModal();
         this.setState({emoji});
-    }
+    };
 
     handleClearAfterClick = (duration: CustomStatusDuration, expires_at: string) =>
         this.setState({

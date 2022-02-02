@@ -140,7 +140,7 @@ export default class EmojiSuggestion extends PureComponent {
         });
     };
 
-    getItemLayout = ({index}) => ({length: 40, offset: 40 * index, index})
+    getItemLayout = ({index}) => ({length: 40, offset: 40 * index, index});
 
     keyExtractor = (item) => item;
 
@@ -174,7 +174,7 @@ export default class EmojiSuggestion extends PureComponent {
         });
 
         this.props.onResultCountChange(0);
-    }
+    };
 
     searchEmojis = (searchTerm) => {
         const {emojis} = this.props;

@@ -12,7 +12,7 @@ import OtherFile from './other_file';
 import VideoFile from './video_file';
 
 interface FilesProps {
-    files: Array<ShareFileInfo>;
+    files: ShareFileInfo[];
 }
 
 const theme = Preferences.THEMES.denim;

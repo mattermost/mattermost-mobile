@@ -34,7 +34,7 @@ async function getProfilesAndStatusesForMembers(userIds: string[], dispatch: Dis
             statusesToLoad.push(userId);
         }
     });
-    const requests: Promise<ActionResult|ActionResult[]>[] = [];
+    const requests: Array<Promise<ActionResult|ActionResult[]>> = [];
 
     if (profilesToLoad.length) {
         requests.push(dispatch(getProfilesByIds(profilesToLoad)));
@@ -320,7 +320,7 @@ export function addUserToTeam(teamId: string, userId: string): ActionFunc {
             return {error};
         }
 
-        const actions: Array<Action> = [{
+        const actions: Action[] = [{
             type: UserTypes.RECEIVED_PROFILE_IN_TEAM,
             data: {id: teamId, user_id: userId},
         }, {
@@ -335,7 +335,8 @@ export function addUserToTeam(teamId: string, userId: string): ActionFunc {
             const state = getState();
             const currentRoles = getRoles(state);
             const rolesToLoad = new Set<string>();
-            for (const role of member.roles?.split(' ')) {
+            const memberRoles = member.roles?.split(' ') || [];
+            for (const role of memberRoles) {
                 if (!currentRoles[role] && role.trim() !== '') {
                     rolesToLoad.add(role);
                 }

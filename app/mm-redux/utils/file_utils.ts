@@ -92,7 +92,7 @@ export function getFilePreviewUrl(fileId: string): string {
     return `${Client4.getFileRoute(fileId)}/preview`;
 }
 
-export function sortFileInfos(fileInfos: Array<FileInfo> = [], locale: string = General.DEFAULT_LOCALE): Array<FileInfo> {
+export function sortFileInfos(fileInfos: FileInfo[] = [], locale: string = General.DEFAULT_LOCALE): FileInfo[] {
     return fileInfos.sort((a, b) => {
         if (a.create_at !== b.create_at) {
             return a.create_at - b.create_at;

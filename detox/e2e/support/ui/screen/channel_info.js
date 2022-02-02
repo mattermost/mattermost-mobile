@@ -32,7 +32,7 @@ class ChannelInfoScreen {
         editChannelAction: 'channel_info.edit_channel.action',
         leaveAction: 'channel_info.leave.action',
         archiveAction: 'channel_info.archive.action',
-    }
+    };
 
     channelInfoScreen = element(by.id(this.testID.channelInfoScreen));
     channelInfoScrollView = element(by.id(this.testID.channelInfoScrollView));
@@ -49,7 +49,6 @@ class ChannelInfoScreen {
     muteSwitchTrue = element(by.id(this.testID.muteSwitchTrue));
     ignoreMentionsPreferenceAction = element(by.id(this.testID.ignoreMentionsPreferenceAction));
     ignoreMentionsSwitchTrue = element(by.id(this.testID.ignoreMentionsSwitchTrue));
-    muteSwitchTrue = element(by.id(this.testID.muteSwitchTrue));
     notificationPreferenceAction = element(by.id(this.testID.notificationPreferenceAction));
     pinnedMessagesAction = element(by.id(this.testID.pinnedMessagesAction));
     manageMembersAction = element(by.id(this.testID.manageMembersAction));
@@ -64,20 +63,20 @@ class ChannelInfoScreen {
         await expect(this.channelInfoScreen).toBeVisible();
 
         return this.channelInfoScreen;
-    }
+    };
 
     open = async () => {
         // # Open channel info screen
         await ChannelScreen.channelTitleButton.tap();
 
         return this.toBeVisible();
-    }
+    };
 
     close = async () => {
         await wait(timeouts.TWO_SEC);
         await this.closeChannelInfoButton.tap();
         await expect(this.channelInfoScreen).not.toBeVisible();
-    }
+    };
 
     archiveChannel = async ({confirm = true, publicChannel = true, description = null} = {}) => {
         await this.channelInfoScrollView.scrollTo('bottom');
@@ -108,13 +107,13 @@ class ChannelInfoScreen {
             await wait(timeouts.ONE_SEC);
             await expect(this.channelInfoScreen).toBeVisible();
         }
-    }
+    };
 
     closeDirectOrGroupMessage = async () => {
         await this.channelInfoScrollView.scrollTo('bottom');
         await this.leaveAction.tap();
         await expect(this.channelInfoScreen).not.toBeVisible();
-    }
+    };
 
     leaveChannel = async ({confirm = true, publicChannel = true, description = null} = {}) => {
         await this.channelInfoScrollView.scrollTo('bottom');
@@ -145,7 +144,7 @@ class ChannelInfoScreen {
             await wait(timeouts.ONE_SEC);
             await expect(this.channelInfoScreen).toBeVisible();
         }
-    }
+    };
 }
 
 const channelInfoScreen = new ChannelInfoScreen();

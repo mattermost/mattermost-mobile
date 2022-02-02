@@ -10,7 +10,7 @@ class EditPostScreen {
         closeEditPostButton: 'close.edit_post.button',
         messageInput: 'edit_post.message.input',
         saveButton: 'edit_post.save.button',
-    }
+    };
 
     editPostScreen = element(by.id(this.testID.editPostScreen));
     closeEditPostButton = element(by.id(this.testID.closeEditPostButton));
@@ -25,7 +25,7 @@ class EditPostScreen {
         }
 
         return this.editPostScreen;
-    }
+    };
 
     open = async () => {
         // # Swipe up panel on Android
@@ -37,12 +37,12 @@ class EditPostScreen {
         await PostOptions.editAction.tap();
 
         return this.toBeVisible();
-    }
+    };
 
     close = async () => {
         await this.closeEditPostButton.tap();
         await expect(this.editPostScreen).not.toBeVisible();
-    }
+    };
 }
 
 const editPostScreen = new EditPostScreen();

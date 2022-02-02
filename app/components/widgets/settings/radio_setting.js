@@ -32,7 +32,7 @@ export default class RadioSetting extends PureComponent {
         const {onChange, id} = this.props;
         onChange(id, item);
         this.setState({value: item});
-    }
+    };
 
     renderCheckMark = (value, style) => {
         if (value === this.state.value) {
@@ -44,7 +44,7 @@ export default class RadioSetting extends PureComponent {
             );
         }
         return null;
-    }
+    };
 
     renderRowSeparator = (idx, separatorStyle) => {
         const {options} = this.props;
@@ -52,7 +52,7 @@ export default class RadioSetting extends PureComponent {
             return null;
         }
         return <View style={separatorStyle}/>;
-    }
+    };
 
     render() {
         const {

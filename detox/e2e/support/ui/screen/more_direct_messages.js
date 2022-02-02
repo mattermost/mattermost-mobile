@@ -16,7 +16,7 @@ class MoreDirectMessagesScreen {
         usersList: 'more_direct_messages.custom_list',
         userItem: 'more_direct_messages.custom_list.user_item',
         userItemDisplayUsername: 'more_direct_messages.custom_list.user_item.display_username',
-    }
+    };
 
     moreDirectMessagesScreen = element(by.id(this.testID.moreDirectMessagesScreen));
     closeMoreDirectMessagesButton = element(by.id(this.testID.closeMoreDirectMessagesButton));
@@ -40,7 +40,7 @@ class MoreDirectMessagesScreen {
             selectedUserDisplayUsername: element(selectedUserDisplayUsernameMatcher),
             selectedUserRemoveButton: element(selectedUserRemoveButtonMatcher),
         };
-    }
+    };
 
     getUser = (userId, diplayUsername) => {
         const userItemTestID = `${this.testID.userItem}.${userId}`;
@@ -52,38 +52,38 @@ class MoreDirectMessagesScreen {
             userItem: element(userItemMatcher),
             userItemDisplayUsername: element(userItemDisplayUsernameMatcher),
         };
-    }
+    };
 
     getUserAtIndex = (index) => {
         return element(by.id(this.testID.userItem).withAncestor(by.id(this.testID.usersList))).atIndex(index);
-    }
+    };
 
     getUserByDisplayUsername = (displayUsername) => {
         return element(by.text(displayUsername).withAncestor(by.id(this.testID.usersList)));
-    }
+    };
 
     getDisplayUsernameAtIndex = (index) => {
         return element(by.id(this.testID.userItemDisplayUsername)).atIndex(index);
-    }
+    };
 
     toBeVisible = async () => {
         await expect(this.moreDirectMessagesScreen).toBeVisible();
 
         return this.moreDirectMessagesScreen;
-    }
+    };
 
     open = async () => {
         // # Open more direct messages screen
         await MainSidebar.directMessagesActionButton.tap();
 
         return this.toBeVisible();
-    }
+    };
 
     hasUserDisplayUsernameAtIndex = async (index, displayUsername) => {
         await expect(
             this.getDisplayUsernameAtIndex(index),
         ).toHaveText(displayUsername);
-    }
+    };
 }
 
 const moreDirectMessagesScreen = new MoreDirectMessagesScreen();

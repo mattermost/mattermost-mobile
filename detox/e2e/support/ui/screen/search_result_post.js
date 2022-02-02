@@ -6,7 +6,7 @@ import {Post} from '@support/ui/component';
 class SearchResultPostScreen {
     testID = {
         searchResultPostItem: 'search_result_post.post',
-    }
+    };
 
     getPost = (postId, postMessage, postProfileOptions = {}) => {
         const {
@@ -48,11 +48,11 @@ class SearchResultPostScreen {
             searchResultPostItemTableExpandButton: postItemTableExpandButton,
             searchResultPostItemThematicBreak: postItemThematicBreak,
         };
-    }
+    };
 
     getPostMessageAtIndex = (index) => {
         return Post.getPostMessage(this.testID.searchResultPostItem).atIndex(index);
-    }
+    };
 }
 
 const searchResultPostScreen = new SearchResultPostScreen();

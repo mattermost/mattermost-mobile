@@ -58,7 +58,7 @@ export default class MarkdownTable extends React.PureComponent {
     setMaxPreviewColumns = ({window}) => {
         const maxPreviewColumns = Math.floor(window.width / CELL_MIN_WIDTH);
         this.setState({maxPreviewColumns});
-    }
+    };
 
     getTableWidth = (isFullView = false) => {
         const maxPreviewColumns = this.state.maxPreviewColumns || MAX_PREVIEW_COLUMNS;
@@ -97,7 +97,7 @@ export default class MarkdownTable extends React.PureComponent {
 
     renderPreviewRows = (isFullView = false) => {
         return this.renderRows(isFullView, true);
-    }
+    };
 
     shouldRenderAsFlex = (isFullView = false) => {
         const {numColumns} = this.props;
@@ -123,7 +123,7 @@ export default class MarkdownTable extends React.PureComponent {
         }
 
         return false;
-    }
+    };
 
     getTableStyle = (isFullView) => {
         const {theme} = this.props;
@@ -138,7 +138,7 @@ export default class MarkdownTable extends React.PureComponent {
 
         tableStyle.push({width: this.getTableWidth(isFullView)});
         return tableStyle;
-    }
+    };
 
     renderRows = (isFullView = false, isPreview = false) => {
         const tableStyle = this.getTableStyle(isFullView);
@@ -180,7 +180,7 @@ export default class MarkdownTable extends React.PureComponent {
                 {rows}
             </View>
         );
-    }
+    };
 
     render() {
         const {containerWidth, contentHeight} = this.state;

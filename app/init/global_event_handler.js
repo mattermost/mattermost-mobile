@@ -302,7 +302,7 @@ class GlobalEventHandler {
             // clear error
             return e;
         }
-    }
+    };
 
     serverUpgradeNeeded = async () => {
         const {dispatch} = Store.redux;
@@ -322,12 +322,12 @@ class GlobalEventHandler {
             this.pushNotificationListener = true;
             EventEmitter.on(ViewTypes.NOTIFICATION_IN_APP, this.handleInAppNotification);
         }
-    }
+    };
 
     turnOffInAppNotificationHandling = () => {
         this.pushNotificationListener = false;
         EventEmitter.off(ViewTypes.NOTIFICATION_IN_APP, this.handleInAppNotification);
-    }
+    };
 
     handleInAppNotification = (notification) => {
         const {payload} = notification;

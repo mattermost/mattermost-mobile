@@ -17,7 +17,7 @@ class ChannelMembersScreen {
         usersList: 'channel_members.custom_list',
         userItem: 'channel_members.custom_list.user_item',
         userItemDisplayUsername: 'channel_members.custom_list.user_item.display_username',
-    }
+    };
 
     channelMembersScreen = element(by.id(this.testID.channelMembersScreen));
     removeButton = element(by.id(this.testID.removeButton));
@@ -40,37 +40,37 @@ class ChannelMembersScreen {
             userItem: element(userItemMatcher),
             userItemDisplayUsername: element(userItemDisplayUsernameMatcher),
         };
-    }
+    };
 
     getUserAtIndex = (index) => {
         return element(by.id(this.testID.userItem).withAncestor(by.id(this.testID.usersList))).atIndex(index);
-    }
+    };
 
     getUserByDisplayUsername = (displayUsername) => {
         return element(by.text(displayUsername).withAncestor(by.id(this.testID.usersList)));
-    }
+    };
 
     getDisplayUsernameAtIndex = (index) => {
         return element(by.id(this.testID.userItemDisplayUsername)).atIndex(index);
-    }
+    };
 
     toBeVisible = async () => {
         await expect(this.channelMembersScreen).toBeVisible();
 
         return this.channelMembersScreen;
-    }
+    };
 
     open = async () => {
         // # Open more direct messages screen
         await MainSidebar.openChannelMembersButton.tap();
 
         return this.toBeVisible();
-    }
+    };
 
     back = async () => {
         await this.backButton.tap();
         await expect(this.channelMembersScreen).not.toBeVisible();
-    }
+    };
 
     removeMembers = async (displayUsernameList, {confirm = true} = {}) => {
         displayUsernameList.forEach(async (displayUsername) => {
@@ -95,13 +95,13 @@ class ChannelMembersScreen {
             await wait(timeouts.ONE_SEC);
             await expect(this.channelMembersScreen).toBeVisible();
         }
-    }
+    };
 
     hasUserDisplayUsernameAtIndex = async (index, displayUsername) => {
         await expect(
             this.getDisplayUsernameAtIndex(index),
         ).toHaveText(displayUsername);
-    }
+    };
 }
 
 const channelMembersScreen = new ChannelMembersScreen();

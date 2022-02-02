@@ -52,7 +52,7 @@ export default class DialogElement extends PureComponent {
             newValue = parseInt(value, 10);
         }
         onChange(name, newValue);
-    }
+    };
 
     handleAutocompleteSelect = (selected) => {
         if (!selected) {
@@ -63,7 +63,7 @@ export default class DialogElement extends PureComponent {
 
         const {name, onChange} = this.props;
         onChange(name, selected.value);
-    }
+    };
 
     render() {
         const {

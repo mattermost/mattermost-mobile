@@ -12,7 +12,7 @@ class TeamsList {
         teamItemDisplayName: 'main.sidebar.teams_list.flat_list.teams_list_item.display_name',
         teamItemIcon: 'main.sidebar.teams_list.flat_list.teams_list_item.team_icon',
         teamItemIconContent: 'main.sidebar.teams_list.flat_list.teams_list_item.team_icon.content',
-    }
+    };
 
     teamsList = element(by.id(this.testID.teamsList));
 
@@ -38,23 +38,23 @@ class TeamsList {
             teamItemIcon: element(teamItemIconMatcher),
             teamItemIconContent: element(teamItemIconContentMatcher),
         };
-    }
+    };
 
     getTeamByDisplayName = (displayName) => {
         return element(by.text(displayName).withAncestor(by.id(this.testID.teamsList)));
-    }
+    };
 
     getTeamBadgeUnreadCountAtIndex = (index) => {
         return element(by.id(this.testID.teamItemBadgeUnreadCount)).atIndex(index);
-    }
+    };
 
     getTeamDisplayNameAtIndex = (index) => {
         return element(by.id(this.testID.teamItemDisplayName)).atIndex(index);
-    }
+    };
 
     getTeamIconContentAtIndex = (index) => {
         return element(by.id(this.testID.teamItemIconContent)).atIndex(index);
-    }
+    };
 }
 
 const teamsList = new TeamsList();

@@ -55,7 +55,7 @@ export default class ProgressiveImage extends PureComponent {
         this.setState({
             showHighResImage: true,
         });
-    }
+    };
 
     onLoadImageEnd = () => {
         Animated.timing(this.state.intensity, {
@@ -63,7 +63,7 @@ export default class ProgressiveImage extends PureComponent {
             toValue: 100,
             useNativeDriver: true,
         }).start();
-    }
+    };
 
     render() {
         const {

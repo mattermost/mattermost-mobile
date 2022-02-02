@@ -19,7 +19,7 @@ export function handleLeaveTeamEvent(msg: Partial<WebSocketMessage>) {
         const currentUser = getCurrentUser(state);
 
         if (currentUser.id === msg.data.user_id) {
-            const actions: Array<GenericAction> = [{type: TeamTypes.LEAVE_TEAM, data: teams[msg.data.team_id]}];
+            const actions: GenericAction[] = [{type: TeamTypes.LEAVE_TEAM, data: teams[msg.data.team_id]}];
             if (isGuest(currentUser.roles)) {
                 const notVisible = await notVisibleUsersActions(state);
                 if (notVisible.length) {

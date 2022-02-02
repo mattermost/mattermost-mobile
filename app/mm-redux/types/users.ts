@@ -51,7 +51,7 @@ export type UserProfile = {
 export type UsersState = {
     currentUserId: string;
     isManualStatus: RelationOneToOne<UserProfile, boolean>;
-    mySessions: Array<any>;
+    mySessions: any[];
     profiles: IDMappedObjects<UserProfile>;
     profilesInTeam: RelationOneToMany<Team, UserProfile>;
     profilesNotInTeam: RelationOneToMany<Team, UserProfile>;

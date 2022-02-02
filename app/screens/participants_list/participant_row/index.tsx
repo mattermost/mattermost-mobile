@@ -100,7 +100,7 @@ const ParticipantRow = ({currentUserId, teammateNameDisplay, theme, user, intl}:
     );
 };
 
-const getStyleSheet = makeStyleSheetFromTheme((theme:Theme) => {
+const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     return {
         container: {
             flexDirection: 'row',
