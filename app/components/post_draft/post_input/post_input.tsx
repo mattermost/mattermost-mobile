@@ -231,6 +231,14 @@ export default function PostInput({
         }
     }, [sendMessage, updateValue, value, cursorPosition]);
 
+    const onAppStateChange = useCallback((appState: AppStateStatus) => {
+        if (appState !== 'active' && previousAppState.current === 'active') {
+            updateDraftMessage(serverUrl, channelId, rootId, value);
+        }
+
+        previousAppState.current = appState;
+    }, [serverUrl, channelId, rootId, value]);
+
     useEffect(() => {
         let keyboardListener: EmitterSubscription | undefined;
         if (Platform.OS === 'android') {
@@ -242,19 +250,11 @@ export default function PostInput({
         });
     }, []);
 
-    const onAppStateChange = useCallback((appState: AppStateStatus) => {
-        if (appState !== 'active' && previousAppState.current === 'active') {
-            updateDraftMessage(serverUrl, channelId, rootId, value);
-        }
-
-        previousAppState.current = appState;
-    }, [serverUrl, channelId, rootId, value]);
-
     useEffect(() => {
-        const e = AppState.addEventListener('change', onAppStateChange);
+        const listener = AppState.addEventListener('change', onAppStateChange);
 
         return () => {
-            e.remove();
+            listener.remove();
         };
     }, [onAppStateChange]);
 
