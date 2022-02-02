@@ -23,7 +23,6 @@ import {extractFileInfo} from '@utils/file';
 import {switchKeyboardForCodeBlocks} from '@utils/markdown';
 import {changeOpacity, makeStyleSheetFromTheme, getKeyboardAppearanceFromTheme} from '@utils/theme';
 
-const INPUT_LINE_HEIGHT = 20;
 const HW_SHIFT_ENTER_TEXT = Platform.OS === 'ios' ? '\n' : '';
 const HW_EVENT_IN_SCREEN = ['Channel', 'Thread'];
 
@@ -70,7 +69,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     input: {
         color: theme.centerChannelColor,
         fontSize: 15,
-        lineHeight: INPUT_LINE_HEIGHT,
+        lineHeight: 20,
         paddingHorizontal: 12,
         paddingTop: Platform.select({
             ios: 6,
