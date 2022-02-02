@@ -224,7 +224,7 @@ export default function PostInput({
                     sendMessage();
                     break;
                 case 'shift-enter':
-                    updateValue(value.substr(0, cursorPosition) + HW_SHIFT_ENTER_TEXT + value.substr(cursorPosition));
+                    updateValue(value.substring(0, cursorPosition) + HW_SHIFT_ENTER_TEXT + value.substring(cursorPosition));
                     updateCursorPosition(cursorPosition + 1);
                     break;
             }
