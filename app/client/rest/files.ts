@@ -61,7 +61,7 @@ const ClientFiles = (superclass: any) => class extends superclass {
         onError: (response: ClientResponseError) => void,
         skipBytes = 0,
     ) => {
-        const url = `${this.apiClient.baseUrl}${this.getFilesRoute()}`;
+        const url = this.getFilesRoute();
         const options: UploadRequestOptions = {
             skipBytes,
             method: 'POST',
