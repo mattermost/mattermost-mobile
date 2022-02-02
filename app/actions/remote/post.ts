@@ -73,16 +73,31 @@ export const createPost = async (serverUrl: string, post: Partial<Post>, files: 
         id: pendingPostId,
     };
 
-    operator.handleFiles({files, prepareRecordsOnly: false});
-    await operator.handlePosts({
+    const initialPostModels: Model[] = [];
+
+    const filesModels = await operator.handleFiles({files, prepareRecordsOnly: true});
+    if (filesModels.length) {
+        initialPostModels.push(...filesModels);
+    }
+
+    const postModels = await operator.handlePosts({
         actionType: ActionType.POSTS.RECEIVED_NEW,
         order: [databasePost.id],
         posts: [databasePost],
+        prepareRecordsOnly: true,
     });
+    if (postModels.length) {
+        initialPostModels.push(...postModels);
+    }
 
     const customEmojis = await queryAllCustomEmojis(operator.database);
     const emojisInMessage = matchEmoticons(newPost.message);
-    addRecentReaction(serverUrl, getValidEmojis(emojisInMessage, customEmojis));
+    const reactionModels = await addRecentReaction(serverUrl, getValidEmojis(emojisInMessage, customEmojis), true);
+    if (!('error' in reactionModels) && reactionModels.length) {
+        initialPostModels.push(...reactionModels);
+    }
+
+    operator.batchRecords(initialPostModels);
 
     try {
         const client = NetworkManager.getClient(serverUrl);

@@ -88,7 +88,7 @@ export const updateDraftMessage = async (serverUrl: string, channelId: string, r
         const newDraft: Draft = {
             channel_id: channelId,
             root_id: rootId,
-            message: '',
+            message,
         };
 
         return operator.handleDraft({drafts: [newDraft], prepareRecordsOnly});
