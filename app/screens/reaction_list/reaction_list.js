@@ -118,7 +118,7 @@ export default class ReactionList extends PureComponent {
                 this.props.actions.getMissingProfilesByIds(missingUserIds);
             }
         }
-    }
+    };
 
     handleOnSelectReaction = (emoji) => {
         this.setState({selected: emoji});

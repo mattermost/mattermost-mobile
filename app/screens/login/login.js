@@ -158,7 +158,7 @@ export default class Login extends PureComponent {
         const title = intl.formatMessage({id: 'password_form.title', defaultMessage: 'Password Reset'});
 
         goToScreen(screen, title);
-    }
+    };
 
     getLoginErrorMessage = (error) => {
         return (
@@ -293,7 +293,7 @@ export default class Login extends PureComponent {
             this.loginRef.current.setNativeProps({text: managedConfig.username});
             this.loginId = managedConfig.username;
         }
-    }
+    };
 
     signIn = async () => {
         const {actions} = this.props;

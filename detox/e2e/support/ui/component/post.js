@@ -23,7 +23,7 @@ class Post {
         table: 'markdown_table',
         tableExpandButton: 'markdown_table.expand.button',
         thematicBreak: 'markdown_thematic_break',
-    }
+    };
 
     getPost = (postItemSourceTestID, postId, postMessage, postProfileOptions = {}) => {
         const postItemMatcher = this.getPostItemMatcher(postItemSourceTestID, postId, postMessage);
@@ -53,7 +53,7 @@ class Post {
             ...this.getPostHeader(postItemMatcher),
             ...this.getPostProfilePicture(postItemMatcher, postProfileOptions),
         };
-    }
+    };
 
     getPostHeader = (postItemMatcher) => {
         const postItemHeaderCommentedOnMatcher = by.id(this.testID.postHeaderCommentedOn).withAncestor(postItemMatcher);
@@ -73,17 +73,17 @@ class Post {
             postItemHeaderReply: element(postItemHeaderReplyMatcher),
             postItemHeaderReplyCount: element(postItemHeaderReplyCountMatcher),
         };
-    }
+    };
 
     getPostItemMatcher = (postItemSourceTestID, postId, postMessage) => {
         const postTestID = `${postItemSourceTestID}.${postId}`;
         const baseMatcher = by.id(postTestID);
         return postMessage ? baseMatcher.withDescendant(by.text(postMessage)) : baseMatcher;
-    }
+    };
 
     getPostMessage = (postItemSourceTestID) => {
         return element(by.id(this.testID.message).withAncestor(by.id(postItemSourceTestID)));
-    }
+    };
 
     getPostProfilePicture = (postItemMatcher, postProfileOptions = {userId: null, userStatus: 'online'}) => {
         if (Object.keys(postProfileOptions).length === 0 || !postProfileOptions.userId) {
@@ -102,7 +102,7 @@ class Post {
             postItemProfilePicture: element(postItemProfilePictureMatcher),
             postItemProfilePictureUserStatus: element(postItemProfilePictureUserStatusMatcher),
         };
-    }
+    };
 }
 
 const post = new Post();

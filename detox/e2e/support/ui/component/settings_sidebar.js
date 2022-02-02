@@ -17,7 +17,7 @@ class SettingsSidebar {
         logoutAction: 'settings.sidebar.logout.action',
         customStatusAction: 'settings.sidebar.custom_status.action',
         customStatusClearButton: 'settings.sidebar.custom_status.action.clear',
-    }
+    };
 
     settingsSidebar = element(by.id(this.testID.settingsSidebar));
     userInfoAction = element(by.id(this.testID.userInfoAction));
@@ -44,7 +44,7 @@ class SettingsSidebar {
         await expect(this.settingsSidebar).toBeVisible();
 
         return this.settingsSidebar;
-    }
+    };
 
     setUserStatusTo = async (userStatus) => {
         const {
@@ -77,17 +77,17 @@ class SettingsSidebar {
         const {userStatusIcon, userStatusLabel} = this.getUserStatus(userStatus);
         await expect(userStatusIcon).toBeVisible();
         await expect(userStatusLabel).toBeVisible();
-    }
+    };
 
     tapLogoutAction = async () => {
         await this.logoutAction.tap();
         await expect(this.settingsSidebar).not.toBeVisible();
-    }
+    };
 
     tapCustomStatusAction = async () => {
         await this.customStatusAction.tap();
         await expect(this.settingsSidebar).not.toBeVisible();
-    }
+    };
 }
 
 const settingsSidebar = new SettingsSidebar();

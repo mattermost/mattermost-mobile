@@ -15,7 +15,7 @@ class Autocomplete {
         dateSuggestion: 'autocomplete.date_suggestion',
         emojiSuggestionList: 'emoji_suggestion.list',
         slashSuggestionList: 'slash_suggestion.list',
-    }
+    };
 
     autocomplete = element(by.id(this.testID.autocomplete));
     atMentionSuggestionList = element(by.id(this.testID.atMentionSuggestionList));
@@ -34,11 +34,11 @@ class Autocomplete {
             atMentionItemProfilePicture: element(atMentionItemProfilePictureMatcher),
             atMentionItemText: element(atMentionItemTextMatcher),
         };
-    }
+    };
 
     getChannelMentionItem = (channelId) => {
         return element(by.id(`${this.testID.channelMentionItemPrefix}${channelId}`));
-    }
+    };
 
     toBeVisible = async (isVisible = true) => {
         if (isVisible) {
@@ -48,7 +48,7 @@ class Autocomplete {
 
         await expect(this.autocomplete).not.toBeVisible();
         return null;
-    }
+    };
 }
 
 const autocomplete = new Autocomplete();

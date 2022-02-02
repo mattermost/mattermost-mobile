@@ -9,7 +9,7 @@ class EditChannelScreen {
         editChannelScreen: 'edit_channel.screen',
         saveButton: 'edit_channel.save.button',
         backButton: 'screen.back.button',
-    }
+    };
 
     editChannelScreen = element(by.id(this.testID.editChannelScreen));
     saveButton = element(by.id(this.testID.saveButton));
@@ -24,7 +24,7 @@ class EditChannelScreen {
         await expect(this.editChannelScreen).toBeVisible();
 
         return this.editChannelScreen;
-    }
+    };
 
     open = async () => {
         // # Open edit channel screen
@@ -32,12 +32,12 @@ class EditChannelScreen {
         await ChannelInfoScreen.editChannelAction.tap();
 
         return this.toBeVisible();
-    }
+    };
 
     back = async () => {
         await this.backButton.tap();
         await expect(this.editChannelScreen).not.toBeVisible();
-    }
+    };
 }
 
 const editChannelScreen = new EditChannelScreen();

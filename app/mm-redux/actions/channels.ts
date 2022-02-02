@@ -159,7 +159,7 @@ export function markGroupChannelOpen(channelId: string): ActionFunc {
     return async (dispatch: DispatchFunc, getState: GetStateFunc) => {
         const {currentUserId} = getState().entities.users;
 
-        const preferences: Array<PreferenceType> = [
+        const preferences: PreferenceType[] = [
             {user_id: currentUserId, category: Preferences.CATEGORY_GROUP_CHANNEL_SHOW, name: channelId, value: 'true'},
             {user_id: currentUserId, category: Preferences.CATEGORY_CHANNEL_OPEN_TIME, name: channelId, value: new Date().getTime().toString()},
         ];
@@ -168,7 +168,7 @@ export function markGroupChannelOpen(channelId: string): ActionFunc {
     };
 }
 
-export function createGroupChannel(userIds: Array<string>): ActionFunc {
+export function createGroupChannel(userIds: string[]): ActionFunc {
     return async (dispatch: DispatchFunc, getState: GetStateFunc) => {
         dispatch({type: ChannelTypes.CREATE_CHANNEL_REQUEST, data: null});
 
@@ -1357,7 +1357,7 @@ export function markChannelAsRead(channelId: string, prevChannelId?: string, upd
 
 // Increments the number of posts in the channel by 1 and marks it as unread if necessary
 
-export function markChannelAsUnread(teamId: string, channelId: string, mentions: Array<string>): ActionFunc {
+export function markChannelAsUnread(teamId: string, channelId: string, mentions: string[]): ActionFunc {
     return async (dispatch: DispatchFunc, getState: GetStateFunc) => {
         const state = getState();
         const {myMembers} = state.entities.channels;
@@ -1397,7 +1397,7 @@ export function markChannelAsUnread(teamId: string, channelId: string, mentions:
     };
 }
 
-export function getChannelMembersByIds(channelId: string, userIds: Array<string>) {
+export function getChannelMembersByIds(channelId: string, userIds: string[]) {
     return bindClientFunc({
         clientFunc: Client4.getChannelMembersByIds,
         onSuccess: ChannelTypes.RECEIVED_CHANNEL_MEMBERS,

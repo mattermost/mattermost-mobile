@@ -5,7 +5,7 @@ class RecentItem {
     testID = {
         recentSearchItemPrefix: 'search.recent_item.',
         recentSearchItemRemoveButtonSuffix: '.remove.button',
-    }
+    };
 
     getRecentSearchItem = (searchTerms) => {
         const recentSearchItemTestID = `${this.testID.recentSearchItemPrefix}${searchTerms}`;
@@ -15,7 +15,7 @@ class RecentItem {
             recentSearchItem: element(by.id(recentSearchItemTestID)),
             recentSearchItemRemoveButton: element(by.id(recentSearchItemRemoveButtonTestID)),
         };
-    }
+    };
 }
 
 const recentItem = new RecentItem();

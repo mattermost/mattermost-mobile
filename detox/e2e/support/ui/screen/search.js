@@ -21,7 +21,7 @@ class SearchScreen {
         searchAfterSection: 'search.after_section',
         searchBeforeSection: 'search.before_section',
         searchResultsList: 'search.results_list',
-    }
+    };
 
     searchScreen = element(by.id(this.testID.searchScreen));
     searchFromSection = element(by.id(this.testID.searchFromSection));
@@ -45,38 +45,38 @@ class SearchScreen {
 
     getRecentSearchItem = (searchTerms) => {
         return RecentItem.getRecentSearchItem(searchTerms);
-    }
+    };
 
     getSearchResultPostItem = (postId, text, postProfileOptions = {}) => {
         return SearchResultPostScreen.getPost(postId, text, postProfileOptions);
-    }
+    };
 
     getSearchResultPostMessageAtIndex = (index) => {
         return SearchResultPostScreen.getPostMessageAtIndex(index);
-    }
+    };
 
     toBeVisible = async () => {
         await expect(this.searchScreen).toBeVisible();
 
         return this.searchScreen;
-    }
+    };
 
     open = async () => {
         // # Open search screen
         await ChannelScreen.channelSearchButton.tap();
 
         return this.toBeVisible();
-    }
+    };
 
     cancel = async () => {
         await this.cancelButton.tap();
         await expect(this.searchScreen).not.toBeVisible();
-    }
+    };
 
     clear = async () => {
         await this.clearButton.tap();
         await expect(this.clearButton).not.toExist();
-    }
+    };
 
     openPostOptionsFor = async (postId, text) => {
         const {searchResultPostItem} = await this.getSearchResultPostItem(postId, text);
@@ -85,13 +85,13 @@ class SearchScreen {
         // # Open post options
         await searchResultPostItem.longPress();
         await PostOptions.toBeVisible();
-    }
+    };
 
     hasSearchResultPostMessageAtIndex = async (index, postMessage) => {
         await expect(
             this.getSearchResultPostMessageAtIndex(index),
         ).toHaveText(postMessage);
-    }
+    };
 }
 
 const searchScreen = new SearchScreen();

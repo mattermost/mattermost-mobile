@@ -10,7 +10,7 @@ class DisplaySettingsScreen {
         clockDisplayAction: 'display_settings.clock_display.action',
         themeAction: 'display_settings.theme.action',
         timezoneAction: 'display_settings.timezone.action',
-    }
+    };
 
     displaySettingsScreen = element(by.id(this.testID.displaySettingsScreen));
     backButton = element(by.id(this.testID.backButton));
@@ -22,19 +22,19 @@ class DisplaySettingsScreen {
         await expect(this.displaySettingsScreen).toBeVisible();
 
         return this.displaySettingsScreen;
-    }
+    };
 
     open = async () => {
         // # Open display settings screen
         await GeneralSettingsScreen.displayAction.tap();
 
         return this.toBeVisible();
-    }
+    };
 
     back = async () => {
         await this.backButton.tap();
         await expect(this.displaySettingsScreen).not.toBeVisible();
-    }
+    };
 }
 
 const displaySettingsScreen = new DisplaySettingsScreen();

@@ -120,7 +120,7 @@ function completeLogin(data: UserProfile): ActionFunc {
         let teamMembers;
 
         try {
-            const membersRequest: Promise<Array<TeamMembership>> = Client4.getMyTeamMembers();
+            const membersRequest: Promise<TeamMembership[]> = Client4.getMyTeamMembers();
             const unreadsRequest = Client4.getMyTeamUnreads();
 
             teamMembers = await membersRequest;
@@ -209,7 +209,7 @@ export function getProfiles(page = 0, perPage: number = General.PROFILE_CHUNK_SI
     };
 }
 
-export function getMissingProfilesByIds(userIds: Array<string>): ActionFunc {
+export function getMissingProfilesByIds(userIds: string[]): ActionFunc {
     return async (dispatch: DispatchFunc, getState: GetStateFunc) => {
         const {profiles} = getState().entities.users;
         const missingIds: string[] = [];
@@ -228,7 +228,7 @@ export function getMissingProfilesByIds(userIds: Array<string>): ActionFunc {
     };
 }
 
-export function getMissingProfilesByUsernames(usernames: Array<string>): ActionFunc {
+export function getMissingProfilesByUsernames(usernames: string[]): ActionFunc {
     return async (dispatch: DispatchFunc, getState: GetStateFunc) => {
         const {profiles} = getState().entities.users;
 
@@ -251,7 +251,7 @@ export function getMissingProfilesByUsernames(usernames: Array<string>): ActionF
     };
 }
 
-export function getProfilesByIds(userIds: Array<string>, options?: any): ActionFunc {
+export function getProfilesByIds(userIds: string[], options?: any): ActionFunc {
     return async (dispatch: DispatchFunc, getState: GetStateFunc) => {
         const {currentUserId} = getState().entities.users;
         let profiles: UserProfile[];
@@ -273,7 +273,7 @@ export function getProfilesByIds(userIds: Array<string>, options?: any): ActionF
     };
 }
 
-export function getProfilesByUsernames(usernames: Array<string>): ActionFunc {
+export function getProfilesByUsernames(usernames: string[]): ActionFunc {
     return async (dispatch: DispatchFunc, getState: GetStateFunc) => {
         const {currentUserId} = getState().entities.users;
         let profiles;
@@ -410,7 +410,7 @@ export function getProfilesInChannel(channelId: string, page: number, perPage: n
     };
 }
 
-export function getProfilesInGroupChannels(channelsIds: Array<string>): ActionFunc {
+export function getProfilesInGroupChannels(channelsIds: string[]): ActionFunc {
     return async (dispatch: DispatchFunc, getState: GetStateFunc) => {
         const {currentUserId} = getState().entities.users;
         let channelProfiles;
@@ -581,7 +581,7 @@ export function getUserByEmail(email: string): ActionFunc {
 // the array. Helps with performance because instead of making 75 different calls for
 // statuses, we are only making one call for 75 ids.
 // We could maybe clean it up somewhat by storing the array of ids in redux state possbily?
-let ids: Array<string> = [];
+let ids: string[] = [];
 const debouncedGetStatusesByIds = debounce(async (dispatch: DispatchFunc) => {
     dispatch(getStatusesByIds([...new Set(ids)]));
 }, 20, false, () => {
@@ -592,7 +592,7 @@ export function getStatusesByIdsBatchedDebounced(id: string) {
     return debouncedGetStatusesByIds;
 }
 
-export function getStatusesByIds(userIds: Array<string>): ActionFunc {
+export function getStatusesByIds(userIds: string[]): ActionFunc {
     return bindClientFunc({
         clientFunc: Client4.getStatusesByIds,
         onSuccess: UserTypes.RECEIVED_STATUSES,

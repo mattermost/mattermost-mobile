@@ -29,7 +29,7 @@ export default class MarkdownEmoji extends PureComponent {
 
     createParser = () => {
         return new Parser();
-    }
+    };
 
     createRenderer = () => {
         return new Renderer({
@@ -80,7 +80,7 @@ export default class MarkdownEmoji extends PureComponent {
     renderNewLine = ({context}) => {
         const style = this.computeTextStyle(this.props.baseTextStyle, context);
         return <Text style={style}>{'\n'}</Text>;
-    }
+    };
 
     renderEditedIndicator = ({context}) => {
         let spacer = '';

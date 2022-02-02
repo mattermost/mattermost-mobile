@@ -15,7 +15,7 @@ class ClockDisplaySettingsScreen {
         clockModal: 'clock_display_settings.clock.modal',
         clockModalCancelButton: 'clock_display_settings.clock_modal_cancel.button',
         clockModalSaveButton: 'clock_display_settings.clock_modal_save.button',
-    }
+    };
 
     clockDisplaySettingsScreen = element(by.id(this.testID.clockDisplaySettingsScreen));
     backButton = element(by.id(this.testID.backButton));
@@ -36,7 +36,7 @@ class ClockDisplaySettingsScreen {
         default:
             throw new Error('Not a valid clock option: ' + clockKey);
         }
-    }
+    };
 
     toBeVisible = async () => {
         if (isAndroid()) {
@@ -46,19 +46,19 @@ class ClockDisplaySettingsScreen {
 
         await expect(this.clockDisplaySettingsScreen).toBeVisible();
         return this.clockDisplaySettingsScreen;
-    }
+    };
 
     open = async () => {
         // # Open clock display settings screen
         await DisplaySettingsScreen.clockDisplayAction.tap();
 
         return this.toBeVisible();
-    }
+    };
 
     back = async () => {
         await this.backButton.tap();
         await expect(this.clockDisplaySettingsScreen).not.toBeVisible();
-    }
+    };
 }
 
 const clockDisplaySettingsScreen = new ClockDisplaySettingsScreen();

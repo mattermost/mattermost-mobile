@@ -21,7 +21,7 @@ type Props = {
     theme: Theme;
 }
 
-const getStyleSheet = makeStyleSheetFromTheme((theme:Theme) => {
+const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     return {
         container: {
             borderBottomColor: changeOpacity(theme.centerChannelColor, 0.15),

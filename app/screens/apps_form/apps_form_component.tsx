@@ -186,7 +186,7 @@ export default class AppsFormComponent extends PureComponent<Props, State> {
             }));
             this.submitting = false;
         }
-    }
+    };
 
     handleSubmit = preventDoubleTap(this.doSubmit);
 
@@ -221,7 +221,7 @@ export default class AppsFormComponent extends PureComponent<Props, State> {
             }
         }
         return hasErrors;
-    }
+    };
 
     performLookup = async (name: string, userInput: string): Promise<AppSelectOption[]> => {
         const intl = this.context.intl;
@@ -287,11 +287,11 @@ export default class AppsFormComponent extends PureComponent<Props, State> {
             return [];
         }
         }
-    }
+    };
 
     handleHide = async () => {
         await dismissModal();
-    }
+    };
 
     onChange = (name: string, value: any) => {
         const field = this.props.form.fields.find((f) => f.name === name);

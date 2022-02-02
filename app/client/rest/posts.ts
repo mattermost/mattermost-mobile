@@ -202,7 +202,7 @@ const ClientPosts = (superclass: any) => class extends superclass {
             `${this.getUserRoute(userId)}/posts/${postId}/set_unread`,
             {method: 'post', body: JSON.stringify({collapsed_threads_supported: true})},
         );
-    }
+    };
 
     pinPost = async (postId: string) => {
         analytics.trackAPI('api_posts_pin');

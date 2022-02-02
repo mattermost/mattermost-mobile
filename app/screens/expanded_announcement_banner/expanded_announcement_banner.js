@@ -21,7 +21,7 @@ export default class ExpandedAnnouncementBanner extends React.PureComponent {
         allowDismissal: PropTypes.bool.isRequired,
         bannerText: PropTypes.string.isRequired,
         theme: PropTypes.object.isRequired,
-    }
+    };
 
     close = () => {
         popTopScreen();
