@@ -24,7 +24,6 @@ export async function handleAddCustomEmoji(serverUrl: string, msg: WebSocketMess
 }
 
 export async function handleReactionAddedToPostEvent(serverUrl: string, msg: WebSocketMessage): Promise<void> {
-    console.log('\n<><> 2. handleReactionAddedToPostEvent');
     const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
     if (!operator) {
         return;
