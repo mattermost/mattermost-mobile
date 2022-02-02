@@ -14,36 +14,32 @@ export async function handleAddCustomEmoji(serverUrl: string, msg: WebSocketMess
 
     try {
         const emoji = JSON.parse(msg.data.emoji) as CustomEmoji;
-        if (operator) {
-            operator.handleCustomEmojis({
-                prepareRecordsOnly: false,
-                emojis: [emoji],
-            });
-        }
+        await operator.handleCustomEmojis({
+            prepareRecordsOnly: false,
+            emojis: [emoji],
+        });
     } catch {
         // Do nothing
     }
 }
 
 export async function handleReactionAddedToPostEvent(serverUrl: string, msg: WebSocketMessage): Promise<void> {
-    const database = DatabaseManager.serverDatabases[serverUrl];
-    if (!database) {
+    console.log('\n<><> 2. handleReactionAddedToPostEvent');
+    const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
+    if (!operator) {
         return;
     }
 
     try {
         const reaction = JSON.parse(msg.data.reaction) as Reaction;
-        const operator = database?.operator;
-        if (operator) {
-            await operator.handleReactions({
-                prepareRecordsOnly: false,
-                skipSync: true,
-                postsReactions: [{
-                    post_id: reaction.post_id,
-                    reactions: [reaction],
-                }],
-            });
-        }
+        await operator.handleReactions({
+            prepareRecordsOnly: false,
+            skipSync: true,
+            postsReactions: [{
+                post_id: reaction.post_id,
+                reactions: [reaction],
+            }],
+        });
     } catch {
         // Do nothing
     }
