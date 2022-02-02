@@ -65,6 +65,18 @@ const showPasteFilesErrorDialog = (intl: IntlShape) => {
     );
 };
 
+const getPlaceHolder = (rootId?: string) => {
+    let placeholder;
+
+    if (rootId) {
+        placeholder = {id: t('create_comment.addComment'), defaultMessage: 'Add a comment...'};
+    } else {
+        placeholder = {id: t('create_post.write'), defaultMessage: 'Write to {channelDisplayName}'};
+    }
+
+    return placeholder;
+};
+
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     input: {
         color: theme.centerChannelColor,
@@ -124,18 +136,6 @@ export default function PostInput({
 
     const handleAndroidKeyboard = () => {
         blur();
-    };
-
-    const getPlaceHolder = () => {
-        let placeholder;
-
-        if (rootId) {
-            placeholder = {id: t('create_comment.addComment'), defaultMessage: 'Add a comment...'};
-        } else {
-            placeholder = {id: t('create_post.write'), defaultMessage: 'Write to {channelDisplayName}'};
-        }
-
-        return placeholder;
     };
 
     const onBlur = useCallback(() => {
@@ -301,7 +301,7 @@ export default function PostInput({
             style={{...style.input, maxHeight}}
             onChangeText={handleTextChange}
             onSelectionChange={handlePostDraftSelectionChanged}
-            placeholder={intl.formatMessage(getPlaceHolder(), {channelDisplayName})}
+            placeholder={intl.formatMessage(getPlaceHolder(rootId), {channelDisplayName})}
             placeholderTextColor={changeOpacity(theme.centerChannelColor, 0.5)}
             multiline={true}
             onBlur={onBlur}
