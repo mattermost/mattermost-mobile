@@ -8,7 +8,7 @@ class EditChannelInfo {
         nameInput: 'edit_channel_info.name.input',
         purposeInput: 'edit_channel_info.purpose.input',
         headerInput: 'edit_channel_info.header.input',
-    }
+    };
 
     publicChannelTypeAction = element(by.id(this.testID.publicChannelTypeAction));
     privateChannelTypeAction = element(by.id(this.testID.privateChannelTypeAction));

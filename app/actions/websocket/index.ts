@@ -111,7 +111,7 @@ export function doFirstConnect(now: number) {
     return async (dispatch: DispatchFunc, getState: GetStateFunc): Promise<ActionResult> => {
         const state = getState();
         const {lastDisconnectAt} = state.websocket;
-        const actions: Array<GenericAction> = [wsConnected(now)];
+        const actions: GenericAction[] = [wsConnected(now)];
 
         if (lastDisconnectAt) {
             const currentUserId = getCurrentUserId(state);
@@ -150,7 +150,7 @@ export function doReconnect(now: number) {
         const currentUserId = getCurrentUserId(state);
         const users = getUsers(state);
         const {lastDisconnectAt} = state.websocket;
-        const actions: Array<GenericAction> = [];
+        const actions: GenericAction[] = [];
 
         dispatch(batchActions([
             wsConnected(now),

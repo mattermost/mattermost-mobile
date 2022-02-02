@@ -6,7 +6,7 @@ class TableScreen {
         tableScreen: 'table.screen',
         tableScrollView: 'table.scroll_view',
         backButton: 'screen.back.button',
-    }
+    };
 
     tableScreen = element(by.id(this.testID.tableScreen));
     tableScrollView = element(by.id(this.testID.tableScrollView));
@@ -16,12 +16,12 @@ class TableScreen {
         await expect(this.tableScreen).toBeVisible();
 
         return this.tableScreen;
-    }
+    };
 
     back = async () => {
         await this.backButton.tap();
         await expect(this.tableScreen).not.toBeVisible();
-    }
+    };
 }
 
 const tableScreen = new TableScreen();

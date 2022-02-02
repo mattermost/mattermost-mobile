@@ -20,10 +20,10 @@ export function createReducer(...reducers: Reducer[]) {
 
 export async function getStoredState() {
     const restoredState: Record<string, any> = {};
-    let storeKeys: Array<string> = [];
+    let storeKeys: string[] = [];
 
     try {
-        const allKeys: Array<string> = await AsyncStorage.getAllKeys();
+        const allKeys: string[] = await AsyncStorage.getAllKeys();
         storeKeys = allKeys.filter((key) => key.includes(KEY_PREFIX));
 
         const values = await AsyncStorage.multiGet(storeKeys);

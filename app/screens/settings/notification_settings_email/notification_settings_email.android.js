@@ -29,7 +29,7 @@ class NotificationSettingsEmailAndroid extends NotificationSettingsEmailBase {
             newInterval: this.state.emailInterval,
             showEmailNotificationsModal: false,
         });
-    }
+    };
 
     handleSaveEmailNotification = () => {
         this.setState({showEmailNotificationsModal: false});

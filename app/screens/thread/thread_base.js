@@ -229,13 +229,13 @@ export default class ThreadBase extends PureComponent {
         };
 
         return removeAnimation;
-    }
+    };
 
     runTypingAnimations = (typingVisible) => {
         Animated.parallel(
             this.typingAnimations.map((animation) => animation(typingVisible)),
         ).start();
-    }
+    };
 
     bottomPaddingAnimation = (visible) => {
         const [padding, duration] = visible ? [TYPING_HEIGHT, 200] : [0, 400];
@@ -245,5 +245,5 @@ export default class ThreadBase extends PureComponent {
             duration,
             useNativeDriver: false,
         });
-    }
+    };
 }

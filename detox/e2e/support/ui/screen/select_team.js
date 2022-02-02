@@ -10,7 +10,7 @@ class SelectTeamScreen {
         teamItemDisplayName: 'select_team.custom_list.team_item.display_name',
         teamItemIcon: 'select_team.custom_list.team_item.team_icon',
         teamItemIconContent: 'select_team.custom_list.team_item.team_icon.content',
-    }
+    };
 
     selectTeamScreen = element(by.id(this.testID.selectTeamScreen));
     noTeams = element(by.id(this.testID.noTeams));
@@ -20,7 +20,7 @@ class SelectTeamScreen {
         await expect(this.selectTeamScreen).toBeVisible();
 
         return this.selectTeamScreen;
-    }
+    };
 
     getTeamItem = (teamId, displayName) => {
         const teamItemTestID = `${this.testID.teamItem}.${teamId}`;
@@ -36,31 +36,31 @@ class SelectTeamScreen {
             teamItemIcon: element(teamItemIconMatcher),
             teamItemIconContent: element(teamItemIconContentMatcher),
         };
-    }
+    };
 
     getTeamByDisplayName = (displayName) => {
         return element(by.text(displayName).withAncestor(by.id(this.testID.teamsList)));
-    }
+    };
 
     getTeamDisplayNameAtIndex = (index) => {
         return element(by.id(this.testID.teamItemDisplayName)).atIndex(index);
-    }
+    };
 
     getTeamIconContentAtIndex = (index) => {
         return element(by.id(this.testID.teamItemIconContent)).atIndex(index);
-    }
+    };
 
     hasTeamDisplayNameAtIndex = async (index, teamDisplayName) => {
         await expect(
             this.getTeamDisplayNameAtIndex(index),
         ).toHaveText(teamDisplayName);
-    }
+    };
 
     hasTeamIconContentAtIndex = async (index, teamIconContent) => {
         await expect(
             this.getTeamIconContentAtIndex(index),
         ).toHaveText(teamIconContent);
-    }
+    };
 }
 
 const selectTeamScreen = new SelectTeamScreen();

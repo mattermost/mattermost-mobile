@@ -232,7 +232,7 @@ export default class UserProfile extends PureComponent {
                 </View>
             </View>
         );
-    }
+    };
 
     buildCustomStatusBlock = () => {
         const {formatMessage} = this.context.intl;
@@ -291,7 +291,7 @@ export default class UserProfile extends PureComponent {
                 </View>
             </View>
         );
-    }
+    };
 
     buildTimezoneBlock = () => {
         const {theme, user, isMilitaryTime} = this.props;
@@ -450,7 +450,7 @@ export default class UserProfile extends PureComponent {
                 {this.props.enableTimezone && this.buildTimezoneBlock()}
             </View>
         );
-    }
+    };
 
     render() {
         const {theme, user} = this.props;

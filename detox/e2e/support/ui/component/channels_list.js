@@ -17,7 +17,7 @@ class ChannelsList {
         switchTeamsButtonBadge: 'main.sidebar.channels_list.switch_teams.button.badge',
         switchTeamsButtonBadgeUnreadCount: 'main.sidebar.channels_list.switch_teams.button.badge.unread_count',
         switchTeamsButtonBadgeUnreadIndicator: 'main.sidebar.channels_list.switch_teams.button.badge.unread_indicator',
-    }
+    };
 
     channelsList = element(by.id(this.testID.channelsList));
     channelsListUnreadIndicator = element(by.id(this.testID.channelsListUnreadIndicator));
@@ -43,15 +43,15 @@ class ChannelsList {
             channelItem: element(channelItemMatcher),
             channelItemDisplayName: element(channelItemDisplayNameMatcher),
         };
-    }
+    };
 
     getChannelByDisplayName = (displayName) => {
         return element(by.text(displayName).withAncestor(by.id(this.testID.channelsList)));
-    }
+    };
 
     getChannelDisplayNameAtIndex = (index) => {
         return element(by.id(this.testID.channelItemDisplayName)).atIndex(index);
-    }
+    };
 
     getFilteredChannelItem = (channelId, displayName) => {
         const filteredChannelItemTestID = `${this.testID.filteredChannelItem}.${channelId}`;
@@ -63,15 +63,15 @@ class ChannelsList {
             channelItem: element(filteredChannelItemMatcher),
             channelItemDisplayName: element(filteredChannelItemDisplayNameMatcher),
         };
-    }
+    };
 
     getFilteredChannelByDisplayName = (displayName) => {
         return element(by.text(displayName).withAncestor(by.id(this.testID.filteredChannelsList)));
-    }
+    };
 
     getFilteredChannelDisplayNameAtIndex = (index) => {
         return element(by.id(this.testID.filteredChannelItemDisplayName)).atIndex(index);
-    }
+    };
 }
 
 const channelsList = new ChannelsList();

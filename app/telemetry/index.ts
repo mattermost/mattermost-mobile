@@ -29,7 +29,7 @@ class Telemetry {
 
     getMetrics = () => {
         return this.metrics;
-    }
+    };
 
     reset() {
         this.currentMetrics = {};

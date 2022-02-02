@@ -144,13 +144,13 @@ export default class SlashSuggestion extends PureComponent<Props, State> {
         });
 
         this.updateSuggestions(matches);
-    }
+    };
 
     getAppBaseCommandSuggestions = (pretext: string, channelID: string, teamID = '', rootID?: string): AutocompleteSuggestion[] => {
         this.appCommandParser.setChannelContext(channelID, teamID, rootID);
         const suggestions = this.appCommandParser.getSuggestionsBase(pretext);
         return suggestions;
-    }
+    };
 
     updateSuggestions = (matches: AutocompleteSuggestion[]) => {
         this.setState({
@@ -158,7 +158,7 @@ export default class SlashSuggestion extends PureComponent<Props, State> {
             dataSource: matches,
         });
         this.props.onResultCountChange(matches.length);
-    }
+    };
 
     filterCommands = (matchTerm: string, commands: Command[]): AutocompleteSuggestion[] => {
         const data = commands.filter((command) => {
@@ -179,11 +179,11 @@ export default class SlashSuggestion extends PureComponent<Props, State> {
                 IconData: item.icon_url || item.autocomplete_icon_data || '',
             };
         });
-    }
+    };
 
     contains = (matches: AutocompleteSuggestion[], complete: string): boolean => {
         return matches.findIndex((match) => match.Complete === complete) !== -1;
-    }
+    };
 
     completeSuggestion = (command: string) => {
         const {onChangeText} = this.props;
@@ -219,7 +219,7 @@ export default class SlashSuggestion extends PureComponent<Props, State> {
             complete={item.Complete}
             icon={item.IconData}
         />
-    )
+    );
 
     render() {
         const {maxListHeight, theme, nestedScrollEnabled} = this.props;

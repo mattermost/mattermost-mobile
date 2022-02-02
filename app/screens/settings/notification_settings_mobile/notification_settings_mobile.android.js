@@ -36,11 +36,11 @@ class NotificationSettingsMobileAndroid extends NotificationSettingsMobileBase {
         ...NotificationSettingsMobileBase.propTypes,
         teammateNameDisplay: string,
         updateMeRequest: PropTypes.object.isRequired,
-    }
+    };
 
     static defaultProps = {
         currentUser: {},
-    }
+    };
 
     cancelMobilePushModal = () => {
         this.setState({

@@ -51,7 +51,7 @@ type MoreMessagesButtonProps = {
     newMessageLineIndex: number;
     postIds: string[];
     registerScrollEndIndexListener: (fn: (endIndex: number) => void) => () => void;
-    registerViewableItemsListener: (fn: (viewableItems: ViewToken[]) => void) => () =>void;
+    registerViewableItemsListener: (fn: (viewableItems: ViewToken[]) => void) => () => void;
     resetUnreadMessageCount: (channelId: string) => void;
     scrollToIndex: (index: number, animated?: boolean) => void;
     theme: Theme;
@@ -146,22 +146,22 @@ export default class MoreMessageButton extends React.PureComponent<MoreMessagesB
         if (!isActive && channelId) {
             this.props.resetUnreadMessageCount(channelId);
         }
-    }
+    };
 
     onIndicatorBarVisible = (indicatorVisible: boolean) => {
         this.indicatorBarVisible = indicatorVisible;
         this.animateButton();
-    }
+    };
 
     onCurrentCallBarVisible = (currentCallVisible: boolean) => {
         this.currentCallBarVisible = currentCallVisible;
         this.animateButton();
-    }
+    };
 
     onJoinCallBarVisible = (joinCallVisible: boolean) => {
         this.joinCallBarVisible = joinCallVisible;
         this.animateButton();
-    }
+    };
 
     animateButton = () => {
         if (this.buttonVisible) {
@@ -171,7 +171,7 @@ export default class MoreMessageButton extends React.PureComponent<MoreMessagesB
                 useNativeDriver: true,
             }).start();
         }
-    }
+    };
 
     reset = () => {
         if (this.autoCancelTimer) {
@@ -184,14 +184,14 @@ export default class MoreMessageButton extends React.PureComponent<MoreMessagesB
         this.pressed = false;
         this.canceled = false;
         this.disableViewableItems = false;
-    }
+    };
 
     show = () => {
         if (!this.buttonVisible && this.state.moreText && !this.props.deepLinkURL && !this.canceled && this.props.unreadCount > 0) {
             this.buttonVisible = true;
             this.animateButton();
         }
-    }
+    };
 
     getBarsFactor = () => {
         return Math.abs((
@@ -199,7 +199,7 @@ export default class MoreMessageButton extends React.PureComponent<MoreMessagesB
             (this.joinCallBarVisible ? 0 : JOIN_CALL_BAR_HEIGHT) +
             (this.currentCallBarVisible ? 0 : CURRENT_CALL_BAR_HEIGHT)
         ) / (HIDDEN_TOP - SHOWN_TOP));
-    }
+    };
 
     hide = () => {
         if (this.buttonVisible) {
@@ -210,7 +210,7 @@ export default class MoreMessageButton extends React.PureComponent<MoreMessagesB
                 useNativeDriver: true,
             }).start();
         }
-    }
+    };
 
     cancel = (force = false) => {
         if (!force && (this.indicatorBarVisible || this.props.loadingPosts)) {
@@ -228,7 +228,7 @@ export default class MoreMessageButton extends React.PureComponent<MoreMessagesB
         this.canceled = true;
         this.disableViewableItems = true;
         this.hide();
-    }
+    };
 
     uncancel = () => {
         if (this.autoCancelTimer) {
@@ -237,7 +237,7 @@ export default class MoreMessageButton extends React.PureComponent<MoreMessagesB
         }
         this.canceled = false;
         this.disableViewableItems = false;
-    }
+    };
 
     onMoreMessagesPress = () => {
         if (this.pressed) {
@@ -249,7 +249,7 @@ export default class MoreMessageButton extends React.PureComponent<MoreMessagesB
         const {newMessageLineIndex, scrollToIndex} = this.props;
         this.pressed = true;
         scrollToIndex(newMessageLineIndex, true);
-    }
+    };
 
     onViewableItemsChanged = (viewableItems: ViewToken[]) => {
         this.viewableItems = viewableItems;
@@ -295,7 +295,7 @@ export default class MoreMessageButton extends React.PureComponent<MoreMessagesB
             readCount = 0;
             this.showMoreText(readCount);
         }
-    }
+    };
 
     showMoreText = (readCount: number) => {
         const moreCount = this.props.unreadCount - readCount;
@@ -304,7 +304,7 @@ export default class MoreMessageButton extends React.PureComponent<MoreMessagesB
             const moreText = this.moreText(moreCount);
             this.setState({moreText}, this.show);
         }
-    }
+    };
 
     getReadCount = (lastViewableIndex: number) => {
         const {postIds} = this.props;
@@ -313,7 +313,7 @@ export default class MoreMessageButton extends React.PureComponent<MoreMessagesB
         const readCount = messageCount(viewedPostIds);
 
         return readCount;
-    }
+    };
 
     moreText = (count: number) => {
         const {unreadCount} = this.props;
@@ -324,12 +324,12 @@ export default class MoreMessageButton extends React.PureComponent<MoreMessagesB
             id: t('mobile.more_messages_button.text'),
             defaultMessage: '{count} {isInitialMessage, select, true {new} other {more new}} {count, plural, one {message} other {messages}}',
         }, {isInitialMessage, count});
-    }
+    };
 
     onScrollEndIndex = (endIndex: number) => {
         this.pressed = false;
         this.endIndex = endIndex;
-    }
+    };
 
     render() {
         const {theme, loadingPosts, testID} = this.props;

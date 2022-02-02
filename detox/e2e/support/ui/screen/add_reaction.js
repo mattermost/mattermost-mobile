@@ -11,7 +11,7 @@ class AddReactionScreen {
         addReactionScreen: 'add_reaction.screen',
         addReactionEmojiPickerPrefix: 'add_reaction.emoji_picker.',
         closeAddReactionButton: 'close.add_reaction.button',
-    }
+    };
 
     addReactionScreen = element(by.id(this.testID.addReactionScreen));
     closeAddReactionButton = element(by.id(this.testID.closeAddReactionButton));
@@ -26,19 +26,19 @@ class AddReactionScreen {
         await expect(this.addReactionScreen).toBeVisible();
 
         return this.addReactionScreen;
-    }
+    };
 
     open = async () => {
         // # Open add reaction screen
         await PostOptions.openAddReactionButton.tap();
 
         return this.toBeVisible();
-    }
+    };
 
     close = async () => {
         await this.closeAddReactionButton.tap();
         await expect(this.addReactionScreen).not.toBeVisible();
-    }
+    };
 }
 
 const addReactionScreen = new AddReactionScreen();

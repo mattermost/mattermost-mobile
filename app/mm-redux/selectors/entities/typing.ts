@@ -10,7 +10,7 @@ import {UserProfile} from '@mm-redux/types/users';
 import {IDMappedObjects} from '@mm-redux/types/utilities';
 import {displayUsername} from '@mm-redux/utils/user_utils';
 
-const getUsersTypingImpl = (profiles: IDMappedObjects<UserProfile>, teammateNameDisplay: string, channelId: string, parentPostId: string, typing: Typing): Array<string> => {
+const getUsersTypingImpl = (profiles: IDMappedObjects<UserProfile>, teammateNameDisplay: string, channelId: string, parentPostId: string, typing: Typing): string[] => {
     const id = channelId + parentPostId;
 
     if (typing[id]) {
@@ -36,10 +36,10 @@ export const makeGetUsersTypingByChannelAndPost = () => {
     }): string => options.postId, (state: GlobalState): Typing => state.entities.typing, getUsersTypingImpl) as (state: GlobalState, a: {
         channelId: string;
         postId: string;
-    }) => Array<string>);
+    }) => string[]);
 };
 
-export const getUsersTyping: (state: GlobalState) => Array<string> = createSelector(
+export const getUsersTyping: (state: GlobalState) => string[] = createSelector(
     getUsers,
     getTeammateNameDisplaySetting,
     getCurrentChannelId,

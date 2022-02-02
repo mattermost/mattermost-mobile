@@ -10,7 +10,7 @@ export type Role = {
     create_at: number;
     update_at: number;
     delete_at: number;
-    permissions: Array<string>;
+    permissions: string[];
     scheme_managed: boolean;
     built_in: boolean;
 };

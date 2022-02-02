@@ -138,7 +138,7 @@ export default class InteractiveDialog extends PureComponent {
         if (!hasErrors) {
             this.handleHide();
         }
-    }
+    };
 
     notifyOnCancelIfNeeded = () => {
         if (this.submitted) {
@@ -159,16 +159,16 @@ export default class InteractiveDialog extends PureComponent {
         };
 
         this.props.actions.submitInteractiveDialog(dialog);
-    }
+    };
 
     handleHide = () => {
         dismissModal();
-    }
+    };
 
     onChange = (name, value) => {
         const values = {...this.state.values, [name]: value};
         this.setState({values});
-    }
+    };
 
     render() {
         const {introductionText, elements, theme} = this.props;
