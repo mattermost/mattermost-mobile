@@ -12,6 +12,7 @@ import PostInput from './post_input';
 
 import type {WithDatabaseArgs} from '@typings/database/database';
 import type ChannelModel from '@typings/database/models/servers/channel';
+import type ChannelInfoModel from '@typings/database/models/servers/channel_info';
 import type SystemModel from '@typings/database/models/servers/system';
 
 const {SERVER: {SYSTEM, CHANNEL}} = MM_TABLES;
@@ -49,7 +50,10 @@ const enhanced = withObservables([], ({database, channelId, rootId}: WithDatabas
     );
 
     const membersInChannel = channel.pipe(
-        switchMap((c) => c.members.observeCount()),
+        switchMap((c) => c.info.observe().pipe(
+            // eslint-disable-next-line max-nested-callbacks
+            switchMap((i: ChannelInfoModel) => of$(i.memberCount)),
+        )),
     );
 
     return {
