@@ -46,7 +46,7 @@ export async function handleReactionAddedToPostEvent(serverUrl: string, msg: Web
 }
 
 export async function handleReactionRemovedFromPostEvent(serverUrl: string, msg: WebSocketMessage): Promise<void> {
-    const database = DatabaseManager.serverDatabases[serverUrl].database;
+    const database = DatabaseManager.serverDatabases[serverUrl]?.database;
     if (!database) {
         return;
     }
