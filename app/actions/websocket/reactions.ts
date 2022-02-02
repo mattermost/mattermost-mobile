@@ -3,7 +3,7 @@
 
 import {Model, Q} from '@nozbe/watermelondb';
 
-import {MM_TABLES, SYSTEM_IDENTIFIERS} from '@constants/database';
+import {MM_TABLES} from '@constants/database';
 import DatabaseManager from '@database/manager';
 
 export async function handleAddCustomEmoji(serverUrl: string, msg: WebSocketMessage): Promise<void> {
@@ -35,7 +35,7 @@ export async function handleReactionAddedToPostEvent(serverUrl: string, msg: Web
         const reaction = JSON.parse(msg.data.reaction) as Reaction;
         const operator = database?.operator;
         if (operator) {
-            operator.handleReactions({
+            await operator.handleReactions({
                 prepareRecordsOnly: false,
                 skipSync: true,
                 postsReactions: [{
@@ -44,7 +44,7 @@ export async function handleReactionAddedToPostEvent(serverUrl: string, msg: Web
                 }],
             });
         }
-    } catch (error) {
+    } catch {
         // Do nothing
     }
 }
