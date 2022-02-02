@@ -8,10 +8,9 @@ import {CameraOptions} from 'react-native-image-picker';
 
 import CompassIcon from '@components/compass_icon';
 import TouchableWithFeedback from '@components/touchable_with_feedback';
-import {Screens} from '@constants';
 import {ICON_SIZE} from '@constants/post_draft';
 import {useTheme} from '@context/theme';
-import {showModalOverCurrentContext} from '@screens/navigation';
+import {bottomSheet} from '@screens/navigation';
 import {fileMaxWarning} from '@utils/file';
 import PickerUtil from '@utils/file/file_picker';
 import {changeOpacity} from '@utils/theme';
@@ -65,11 +64,14 @@ export default function CameraQuickAction({
             return;
         }
 
-        showModalOverCurrentContext(Screens.BOTTOM_SHEET, {
+        bottomSheet({
+            title: intl.formatMessage({id: 'camera_type.title', defaultMessage: 'Choose an action'}),
             renderContent,
             snapPoints: [200, 10],
-        }, {swipeToDismiss: true});
-    }, [renderContent, maxFilesReached, maxFileCount]);
+            theme,
+            closeButtonId: 'camera-close-id',
+        });
+    }, [intl, theme, renderContent, maxFilesReached, maxFileCount]);
 
     const actionTestID = disabled ? `${testID}.disabled` : testID;
     const color = disabled ? changeOpacity(theme.centerChannelColor, 0.16) : changeOpacity(theme.centerChannelColor, 0.64);

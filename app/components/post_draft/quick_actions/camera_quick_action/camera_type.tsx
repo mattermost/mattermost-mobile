@@ -10,6 +10,7 @@ import FormattedText from '@components/formatted_text';
 import TouchableWithFeedback from '@components/touchable_with_feedback';
 import {Navigation} from '@constants';
 import {useTheme} from '@context/theme';
+import {useIsTablet} from '@hooks/device';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 
 type Props = {
@@ -35,7 +36,7 @@ const getStyle = makeStyleSheetFromTheme((theme: Theme) => ({
         flexDirection: 'row',
         justifyContent: 'space-evenly',
         width: '100%',
-        marginBottom: 20,
+        marginBottom: 50,
     },
     optionContainer: {
         alignItems: 'flex-start',
@@ -53,6 +54,7 @@ const getStyle = makeStyleSheetFromTheme((theme: Theme) => ({
 
 const CameraType = ({onPress}: Props) => {
     const theme = useTheme();
+    const isTablet = useIsTablet();
     const style = getStyle(theme);
 
     const onPhoto = () => {
@@ -79,11 +81,13 @@ const CameraType = ({onPress}: Props) => {
 
     return (
         <View style={style.container}>
+            {!isTablet &&
             <FormattedText
                 id='camera_type.title'
                 defaultMessage='Choose an action'
                 style={style.title}
             />
+            }
             <View style={style.options}>
                 <View style={style.flex}>
                     <TouchableWithFeedback
