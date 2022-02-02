@@ -166,7 +166,7 @@ const UserHandler = (superclass: any) => class extends superclass {
             }
 
             if (deleteReactions?.length && !skipSync) {
-                deleteReactions.map((outCast) => outCast.prepareDestroyPermanently());
+                deleteReactions.forEach((outCast) => outCast.prepareDestroyPermanently());
                 batchRecords.push(...deleteReactions);
             }
         }
