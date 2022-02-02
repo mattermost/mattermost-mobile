@@ -15,6 +15,7 @@ import Navigation from './navigation';
 import Network from './network';
 import Permissions from './permissions';
 import Post from './post';
+import PostDraft from './post_draft';
 import Preferences from './preferences';
 import Profile from './profile';
 import Screens from './screens';
@@ -39,6 +40,7 @@ export {
     Network,
     Permissions,
     Post,
+    PostDraft,
     Preferences,
     Profile,
     Screens,

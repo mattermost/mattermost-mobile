@@ -10,8 +10,9 @@ declare module 'react-native-keyboard-tracking-view' {
 
     interface KeyboardTrackingViewProps extends ViewProps{
         accessoriesContainerID?: string;
-        scrollViewNativeID?: string;
         normalList?: boolean;
+        scrollViewNativeID?: string;
+        viewInitialOffsetY?: number;
     }
     export const KeyboardTrackingView: React.ForwardRefExoticComponent<KeyboardTrackingViewProps & React.RefAttributes<KeyboardTrackingViewRef>>;
 }

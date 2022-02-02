@@ -103,6 +103,7 @@ const Channel = ({channelId, componentId, displayName, isOwnDirectMessage, membe
     }
 
     const marginTop = defaultHeight + (isTablet ? insets.top : 0);
+    const channelIsSet = Boolean(channelId);
 
     return (
         <>
@@ -122,17 +123,22 @@ const Channel = ({channelId, componentId, displayName, isOwnDirectMessage, membe
                     subtitleCompanion={subtitleCompanion}
                     title={title}
                 />
-                <View style={[styles.flex, {marginTop}]}>
-                    <ChannelPostList
+                {channelIsSet &&
+                <>
+                    <View style={[styles.flex, {marginTop}]}>
+                        <ChannelPostList
+                            channelId={channelId}
+                            forceQueryAfterAppState={appState}
+                            nativeID={channelId}
+                        />
+                    </View>
+                    <PostDraft
                         channelId={channelId}
-                        forceQueryAfterAppState={appState}
+                        scrollViewNativeID={channelId}
+                        accessoriesContainerID={ACCESSORIES_CONTAINER_NATIVE_ID}
                     />
-                </View>
-                <PostDraft
-                    channelId={channelId}
-                    scrollViewNativeID={channelId}
-                    accessoriesContainerID={ACCESSORIES_CONTAINER_NATIVE_ID}
-                />
+                </>
+                }
             </SafeAreaView>
         </>
     );
