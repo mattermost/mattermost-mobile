@@ -5,7 +5,10 @@ import {useManagedConfig} from '@mattermost/react-native-emm';
 import PasteableTextInput, {PastedFile, PasteInputRef} from '@mattermost/react-native-paste-input';
 import React, {useCallback, useEffect, useRef, useState} from 'react';
 import {IntlShape, useIntl} from 'react-intl';
-import {Alert, AppState, AppStateStatus, EmitterSubscription, findNodeHandle, Keyboard, KeyboardTypeOptions, NativeModules, NativeSyntheticEvent, Platform, TextInput, TextInputSelectionChangeEventData} from 'react-native';
+import {
+    Alert, AppState, AppStateStatus, EmitterSubscription, Keyboard,
+    KeyboardTypeOptions, NativeSyntheticEvent, Platform, TextInputSelectionChangeEventData,
+} from 'react-native';
 import HWKeyboardEvent from 'react-native-hw-keyboard-event';
 
 import {updateDraftMessage} from '@actions/local/draft';
@@ -20,9 +23,7 @@ import {extractFileInfo} from '@utils/file';
 import {switchKeyboardForCodeBlocks} from '@utils/markdown';
 import {changeOpacity, makeStyleSheetFromTheme, getKeyboardAppearanceFromTheme} from '@utils/theme';
 
-const {RNTextInputReset} = NativeModules;
 const INPUT_LINE_HEIGHT = 20;
-
 const HW_SHIFT_ENTER_TEXT = Platform.OS === 'ios' ? '\n' : '';
 const HW_EVENT_IN_SCREEN = ['Channel', 'Thread'];
 
@@ -266,11 +267,6 @@ export default function PostInput({
                 selection: {start: cursorPosition},
             });
             lastNativeValue.current = value;
-
-            // Workaround for some Android keyboards that don't play well with cursors (e.g. Samsung keyboards)
-            if (input?.current && Platform.OS === 'android') {
-                RNTextInputReset.resetKeyboardInput(findNodeHandle(input.current as TextInput));
-            }
         }
     }, [value]);
 
