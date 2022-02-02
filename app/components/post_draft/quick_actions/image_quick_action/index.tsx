@@ -25,6 +25,7 @@ const style = StyleSheet.create({
 
 export default function ImageQuickAction({
     disabled,
+    fileCount = 0,
     onUploadFiles,
     maxFilesReached,
     maxFileCount,
@@ -48,8 +49,8 @@ export default function ImageQuickAction({
         const picker = new PickerUtil(intl,
             onUploadFiles);
 
-        picker.attachFileFromPhotoGallery();
-    }, [onUploadFiles]);
+        picker.attachFileFromPhotoGallery(maxFileCount - fileCount);
+    }, [onUploadFiles, fileCount, maxFileCount]);
 
     const actionTestID = disabled ? `${testID}.disabled` : testID;
     const color = disabled ? changeOpacity(theme.centerChannelColor, 0.16) : changeOpacity(theme.centerChannelColor, 0.64);

@@ -59,9 +59,10 @@ export default function QuickActions({
 
     const uploadProps = {
         disabled: !canUploadFiles,
-        onUploadFiles: addFiles,
-        maxFilesReached: fileCount >= maxFileCount,
+        fileCount,
         maxFileCount,
+        maxFilesReached: fileCount >= maxFileCount,
+        onUploadFiles: addFiles,
     };
 
     return (

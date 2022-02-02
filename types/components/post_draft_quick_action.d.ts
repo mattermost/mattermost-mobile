@@ -5,8 +5,9 @@ import {Asset} from 'react-native-image-picker';
 
 export interface QuickActionAttachmentProps {
     disabled: boolean;
-    onUploadFiles: (files: Asset[]) => void;
+    fileCount?: number;
     maxFilesReached: boolean;
     maxFileCount: number;
+    onUploadFiles: (files: Asset[]) => void;
     testID?: string;
 }
