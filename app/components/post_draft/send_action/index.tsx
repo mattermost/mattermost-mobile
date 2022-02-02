@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {memo, useMemo} from 'react';
+import React, {useMemo} from 'react';
 import {View} from 'react-native';
 
 import CompassIcon from '@components/compass_icon';
@@ -72,4 +72,4 @@ function SendButton({
     );
 }
 
-export default memo(SendButton);
+export default SendButton;
