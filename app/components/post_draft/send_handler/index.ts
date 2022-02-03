@@ -96,16 +96,9 @@ const enhanced = withObservables([], (ownProps: WithDatabaseArgs & OwnProps) => 
         ).observeWithColumns(['name'])),
     );
 
-    const membersCount = channel.pipe(
-        switchMap((c) => {
-            if (!c) {
-                return of$(0);
-            }
-            return c.info.observe().pipe(
-                // eslint-disable-next-line max-nested-callbacks
-                switchMap((i: ChannelInfoModel) => of$(i.memberCount)),
-            );
-        }),
+    const channelInfo = channel.pipe(switchMap((c) => c.info.observe()));
+    const membersCount = channelInfo.pipe(
+        switchMap((i: ChannelInfoModel) => of$(i.memberCount)),
     );
 
     const customEmojis = database.get<CustomEmojiModel>(CUSTOM_EMOJI).query().observe();

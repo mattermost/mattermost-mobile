@@ -49,11 +49,10 @@ const enhanced = withObservables([], ({database, channelId, rootId}: WithDatabas
         switchMap((c) => of$(c.displayName)),
     );
 
-    const membersInChannel = channel.pipe(
-        switchMap((c) => c.info.observe().pipe(
-            // eslint-disable-next-line max-nested-callbacks
-            switchMap((i: ChannelInfoModel) => of$(i.memberCount)),
-        )),
+    const channelInfo = channel.pipe(switchMap((c) => c.info.observe()));
+
+    const membersInChannel = channelInfo.pipe(
+        switchMap((i: ChannelInfoModel) => of$(i.memberCount)),
     );
 
     return {
