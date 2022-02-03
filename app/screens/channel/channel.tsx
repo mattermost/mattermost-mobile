@@ -8,7 +8,9 @@ import {Edge, SafeAreaView, useSafeAreaInsets} from 'react-native-safe-area-cont
 
 import CompassIcon from '@components/compass_icon';
 import NavigationHeader from '@components/navigation_header';
+import PostDraft from '@components/post_draft';
 import {Navigation} from '@constants';
+import {ACCESSORIES_CONTAINER_NATIVE_ID} from '@constants/post_draft';
 import {useTheme} from '@context/theme';
 import {useAppState, useIsTablet} from '@hooks/device';
 import {useDefaultHeaderHeight} from '@hooks/header';
@@ -101,6 +103,7 @@ const Channel = ({channelId, componentId, displayName, isOwnDirectMessage, membe
     }
 
     const marginTop = defaultHeight + (isTablet ? insets.top : 0);
+    const channelIsSet = Boolean(channelId);
 
     return (
         <>
@@ -120,12 +123,22 @@ const Channel = ({channelId, componentId, displayName, isOwnDirectMessage, membe
                     subtitleCompanion={subtitleCompanion}
                     title={title}
                 />
-                <View style={[styles.flex, {marginTop}]}>
-                    <ChannelPostList
+                {channelIsSet &&
+                <>
+                    <View style={[styles.flex, {marginTop}]}>
+                        <ChannelPostList
+                            channelId={channelId}
+                            forceQueryAfterAppState={appState}
+                            nativeID={channelId}
+                        />
+                    </View>
+                    <PostDraft
                         channelId={channelId}
-                        forceQueryAfterAppState={appState}
+                        scrollViewNativeID={channelId}
+                        accessoriesContainerID={ACCESSORIES_CONTAINER_NATIVE_ID}
                     />
-                </View>
+                </>
+                }
             </SafeAreaView>
         </>
     );

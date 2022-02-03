@@ -76,7 +76,6 @@ const File = ({
                     wrapperWidth={wrapperWidth}
                     isSingleImage={isSingleImage}
                     resizeMode={'cover'}
-                    theme={theme}
                 />
                 {Boolean(nonVisibleImagesCount) &&
                 <ImageFileOverlay
@@ -117,7 +116,6 @@ const File = ({
                 >
                     <FileIcon
                         file={file}
-                        theme={theme}
                     />
                 </TouchableWithFeedback>
             </View>

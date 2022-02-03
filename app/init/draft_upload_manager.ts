@@ -56,7 +56,8 @@ class DraftUploadManager {
         };
 
         const onError = (response: ClientResponseError) => {
-            this.handleError(response.message, file.clientId!);
+            const message = response.message || 'Unkown error';
+            this.handleError(message, file.clientId!);
         };
 
         const {error, cancel} = uploadFile(serverUrl, file, channelId, onProgress, onComplete, onError, skipBytes);
@@ -68,9 +69,9 @@ class DraftUploadManager {
     };
 
     public cancel = (clientId: string) => {
-        const {cancel} = this.handlers[clientId];
+        const h = this.handlers[clientId];
         delete this.handlers[clientId];
-        cancel?.();
+        h?.cancel?.();
     };
 
     public isUploading = (clientId: string) => {
@@ -113,7 +114,6 @@ class DraftUploadManager {
             return;
         }
 
-        h.fileInfo.progress = progress;
         h.fileInfo.bytesRead = bytes;
 
         h.onProgress.forEach((c) => c(progress, bytes));
@@ -142,24 +142,28 @@ class DraftUploadManager {
             return;
         }
 
-        delete this.handlers[clientId!];
+        delete this.handlers[clientId];
 
         const fileInfo = data[0];
         fileInfo.clientId = h.fileInfo.clientId;
         fileInfo.localPath = h.fileInfo.localPath;
 
-        updateDraftFile(h.serverUrl, h.channelId, h.rootId, this.handlers[clientId].fileInfo);
+        updateDraftFile(h.serverUrl, h.channelId, h.rootId, fileInfo);
     };
 
     private handleError = (errorMessage: string, clientId: string) => {
         const h = this.handlers[clientId];
+        if (!h) {
+            return;
+        }
+
         delete this.handlers[clientId];
 
         h.onError.forEach((c) => c(errorMessage));
 
         const fileInfo = {...h.fileInfo};
         fileInfo.failed = true;
-        updateDraftFile(h.serverUrl, h.channelId, h.rootId, this.handlers[clientId].fileInfo);
+        updateDraftFile(h.serverUrl, h.channelId, h.rootId, fileInfo);
     };
 
     private onAppStateChange = async (appState: AppStateStatus) => {

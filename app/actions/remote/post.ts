@@ -5,16 +5,19 @@
 import {DeviceEventEmitter} from 'react-native';
 
 import {updateLastPostAt} from '@actions/local/channel';
-import {processPostsFetched} from '@actions/local/post';
-import {ActionType, Events, General} from '@constants';
+import {processPostsFetched, removePost} from '@actions/local/post';
+import {addRecentReaction} from '@actions/local/reactions';
+import {ActionType, Events, General, ServerErrors} from '@constants';
 import {SYSTEM_IDENTIFIERS} from '@constants/database';
 import DatabaseManager from '@database/manager';
 import {getNeededAtMentionedUsernames} from '@helpers/api/user';
 import NetworkManager from '@init/network_manager';
 import {prepareMissingChannelsForAllTeams, queryAllMyChannelIds} from '@queries/servers/channel';
-import {queryRecentPostsInChannel} from '@queries/servers/post';
+import {queryAllCustomEmojis} from '@queries/servers/custom_emoji';
+import {queryPostById, queryRecentPostsInChannel} from '@queries/servers/post';
 import {queryCurrentUserId, queryCurrentChannelId} from '@queries/servers/system';
 import {queryAllUsers} from '@queries/servers/user';
+import {getValidEmojis, matchEmoticons} from '@utils/emoji/helpers';
 
 import {forceLogoutIfNecessary} from './session';
 
@@ -32,6 +35,114 @@ type AuthorsRequest = {
     authors?: UserProfile[];
     error?: unknown;
 }
+
+export const createPost = async (serverUrl: string, post: Partial<Post>, files: FileInfo[] = []): Promise<{data?: boolean; error?: any}> => {
+    const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
+    if (!operator) {
+        return {error: `${serverUrl} database not found`};
+    }
+
+    let client: Client;
+    try {
+        client = NetworkManager.getClient(serverUrl);
+    } catch (error) {
+        return {error};
+    }
+
+    const currentUserId = queryCurrentUserId(operator.database);
+    const timestamp = Date.now();
+    const pendingPostId = post.pending_post_id || `${currentUserId}:${timestamp}`;
+
+    const existing = await queryPostById(operator.database, pendingPostId);
+    if (existing && !existing.props.failed) {
+        return {data: false};
+    }
+
+    let newPost = {
+        ...post,
+        id: '',
+        pending_post_id: pendingPostId,
+        create_at: timestamp,
+        update_at: timestamp,
+    } as Post;
+
+    if (files.length) {
+        const fileIds = files.map((file) => file.id);
+
+        newPost = {
+            ...newPost,
+            file_ids: fileIds,
+        };
+    }
+
+    const databasePost = {
+        ...newPost,
+        id: pendingPostId,
+    };
+
+    const initialPostModels: Model[] = [];
+
+    const filesModels = await operator.handleFiles({files, prepareRecordsOnly: true});
+    if (filesModels.length) {
+        initialPostModels.push(...filesModels);
+    }
+
+    const postModels = await operator.handlePosts({
+        actionType: ActionType.POSTS.RECEIVED_NEW,
+        order: [databasePost.id],
+        posts: [databasePost],
+        prepareRecordsOnly: true,
+    });
+    if (postModels.length) {
+        initialPostModels.push(...postModels);
+    }
+
+    const customEmojis = await queryAllCustomEmojis(operator.database);
+    const emojisInMessage = matchEmoticons(newPost.message);
+    const reactionModels = await addRecentReaction(serverUrl, getValidEmojis(emojisInMessage, customEmojis), true);
+    if (!('error' in reactionModels) && reactionModels.length) {
+        initialPostModels.push(...reactionModels);
+    }
+
+    operator.batchRecords(initialPostModels);
+
+    try {
+        const created = await client.createPost(newPost);
+        await operator.handlePosts({
+            actionType: ActionType.POSTS.RECEIVED_NEW,
+            order: [created.id],
+            posts: [created],
+        });
+        newPost = created;
+    } catch (error: any) {
+        const errorPost = {
+            ...newPost,
+            id: pendingPostId,
+            props: {
+                ...newPost.props,
+                failed: true,
+            },
+            update_at: Date.now(),
+        };
+
+        // If the failure was because: the root post was deleted or
+        // TownSquareIsReadOnly=true then remove the post
+        if (error.server_error_id === ServerErrors.DELETED_ROOT_POST_ERROR ||
+            error.server_error_id === ServerErrors.TOWN_SQUARE_READ_ONLY_ERROR ||
+            error.server_error_id === ServerErrors.PLUGIN_DISMISSED_POST_ERROR
+        ) {
+            await removePost(serverUrl, databasePost);
+        } else {
+            await operator.handlePosts({
+                actionType: ActionType.POSTS.RECEIVED_NEW,
+                order: [errorPost.id],
+                posts: [errorPost],
+            });
+        }
+    }
+
+    return {data: true};
+};
 
 export const fetchPostsForCurrentChannel = async (serverUrl: string) => {
     const database = DatabaseManager.serverDatabases[serverUrl]?.database;

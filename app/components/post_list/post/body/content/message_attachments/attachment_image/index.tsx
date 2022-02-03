@@ -66,7 +66,6 @@ const AttachmentImage = ({imageUrl, imageMetadata, postId, theme}: Props) => {
                 <View style={[style.image, {width, height}]}>
                     <FileIcon
                         failed={true}
-                        theme={theme}
                     />
                 </View>
             </View>

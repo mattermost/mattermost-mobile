@@ -92,7 +92,7 @@ const PostHandler = (superclass: any) => class extends superclass {
         // Let's process the post data
         for (const post of posts) {
             // Find any pending posts that matches the ones received to mark for deletion
-            if (post.pending_post_id) {
+            if (post.pending_post_id && post.id !== post.pending_post_id) {
                 pendingPostsToDelete.push({
                     ...post,
                     id: post.pending_post_id,

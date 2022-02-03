@@ -281,7 +281,7 @@ PODS:
     - SwiftyJSON (~> 5.0)
   - react-native-notifications (4.1.3):
     - React-Core
-  - react-native-paste-input (0.3.6):
+  - react-native-paste-input (0.3.7):
     - React-Core
     - Swime (= 3.0.6)
   - react-native-safe-area-context (3.3.2):
@@ -782,7 +782,7 @@ SPEC CHECKSUMS:
   react-native-netinfo: 87e5bfaf21ea5c6c110941290aa481dd8e849f98
   react-native-network-client: 30ab97e7e6c8d6f2d2b10cc1ebad0cbf9c894c6e
   react-native-notifications: 805108822ceff3440644d5701944f0cda35f5b4b
-  react-native-paste-input: 80c06e2c5c65afd696f9bd43cfd371141d8b3a1b
+  react-native-paste-input: 7d19610119115a3434c145867775723a06052362
   react-native-safe-area-context: 584dc04881deb49474363f3be89e4ca0e854c057
   react-native-video: a4c2635d0802f983594b7057e1bce8f442f0ad28
   react-native-webview: 162b6453d074e0b1c7025242bb7a939b6f72b9e7

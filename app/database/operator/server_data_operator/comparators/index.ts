@@ -56,7 +56,7 @@ export const isRecordTermsOfServiceEqualToRaw = (record: TermsOfServiceModel, ra
 };
 
 export const isRecordDraftEqualToRaw = (record: DraftModel, raw: Draft) => {
-    return raw.channel_id === record.channelId;
+    return raw.channel_id === record.channelId && raw.root_id === record.rootId;
 };
 
 export const isRecordPostEqualToRaw = (record: PostModel, raw: Post) => {

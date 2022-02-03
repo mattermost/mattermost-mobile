@@ -25,7 +25,7 @@ import {handlePreferenceChangedEvent, handlePreferencesChangedEvent, handlePrefe
 import {handleAddCustomEmoji, handleReactionRemovedFromPostEvent, handleReactionAddedToPostEvent} from './reactions';
 import {handleUserRoleUpdatedEvent, handleTeamMemberRoleUpdatedEvent, handleRoleUpdatedEvent} from './roles';
 import {handleLeaveTeamEvent, handleUserAddedToTeamEvent, handleUpdateTeamEvent} from './teams';
-import {handleUserUpdatedEvent} from './users';
+import {handleUserUpdatedEvent, handleUserTypingEvent} from './users';
 
 import type {Model} from '@nozbe/watermelondb';
 
@@ -252,9 +252,8 @@ export async function handleEvent(serverUrl: string, msg: WebSocketMessage) {
 
         // return dispatch(handleStatusChangedEvent(msg));
         case WebsocketEvents.TYPING:
+            handleUserTypingEvent(serverUrl, msg);
             break;
-
-        // return dispatch(handleUserTypingEvent(msg));
         case WebsocketEvents.HELLO:
             break;
 
