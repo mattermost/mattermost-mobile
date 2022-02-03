@@ -142,7 +142,16 @@ export function handleThreadArrived(threadData: UserThread, teamId: string) {
             },
             {
                 type: PostTypes.RECEIVED_POSTS,
-                data: {posts: [{...thread.post, participants: thread.participants}]},
+                data: {posts: [{
+
+                    // Merge post data as thread.post might not contain all post data like "metadata"
+                    ...(state.entities.posts.posts[thread.id] || {}),
+
+                    ...thread.post,
+                    reply_count: thread.reply_count,
+                    last_reply_at: thread.last_reply_at,
+                    participants: thread.participants,
+                }]},
             },
             {
                 type: ThreadTypes.RECEIVED_THREAD,

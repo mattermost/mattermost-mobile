@@ -78,6 +78,7 @@ export const getPostsInCurrentChannel: (a: GlobalState) => PostWithFormatData[] 
     const getPostsInChannel = makeGetPostsInChannel();
     return (state: GlobalState) => getPostsInChannel(state, state.entities.channels.currentChannelId, -1);
 })();
+
 export function makeGetPostIdsForThread(): (b: GlobalState, a: $ID<Post>) => Array<$ID<Post>> {
     return createIdsSelector(
         getAllPosts,
@@ -97,6 +98,25 @@ export function makeGetPostIdsForThread(): (b: GlobalState, a: $ID<Post>) => Arr
             }
 
             return thread.map((post) => post.id);
+        },
+    );
+}
+
+export function makeGetPostIdsForThreadWithLimit(): (b: GlobalState, a: $ID<Post>, c: string, d: number, e: number) => Array<$ID<Post>> {
+    const getPostIdsForThread = makeGetPostIdsForThread();
+    return createIdsSelector(
+        (state: GlobalState, rootId: string) => getPostIdsForThread(state, rootId),
+        (state: GlobalState, rootId: string, focusedPostId: string) => focusedPostId,
+        (state: GlobalState, rootId: string, focusedPostId: string, postsBeforeCount: number) => postsBeforeCount,
+        (state: GlobalState, rootId: string, focusedPostId: string, postsBeforeCount: number, postsAfterCount: number) => postsAfterCount,
+        (postIds: Array<$ID<Post>>, focusedPostId: string, postsBeforeCount = Posts.POST_CHUNK_SIZE / 2, postsAfterCount = Posts.POST_CHUNK_SIZE / 2) => {
+            const index = postIds.indexOf(focusedPostId);
+            if (index > -1) {
+                const minPostIndex = Math.max(index - postsAfterCount, 0);
+                const maxPostIndex = Math.min(index + postsBeforeCount + 1, postIds.length);
+                return postIds.slice(minPostIndex, maxPostIndex);
+            }
+            return postIds;
         },
     );
 }
