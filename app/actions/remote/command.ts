@@ -149,7 +149,7 @@ export const handleGotoLocation = async (serverUrl: string, intl: IntlShape, loc
             case DeepLinkTypes.DMCHANNEL: {
                 const data = match.data as DeepLinkDM;
                 if (!data.userName) {
-                    DraftUtils.errorBadUser(intl);
+                    DraftUtils.errorUnkownUser(intl);
                     return {data: false};
                 }
 
@@ -162,7 +162,7 @@ export const handleGotoLocation = async (serverUrl: string, intl: IntlShape, loc
                 }
                 const user = (await queryUsersByUsername(serverDatabase, [data.userName]))?.[0];
                 if (!user) {
-                    DraftUtils.errorBadUser(intl);
+                    DraftUtils.errorUnkownUser(intl);
                     return {data: false};
                 }
 

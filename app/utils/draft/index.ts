@@ -23,7 +23,7 @@ export function errorBadChannel(intl: IntlShape) {
     return alertErrorWithFallback(intl, {}, message);
 }
 
-export function errorBadUser(intl: IntlShape) {
+export function errorUnkownUser(intl: IntlShape) {
     const message = {
         id: t('mobile.server_link.unreachable_user.error'),
         defaultMessage: 'We can\'t redirect you to the DM. The user specified is unknown.',
