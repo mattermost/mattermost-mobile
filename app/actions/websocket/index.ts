@@ -24,6 +24,7 @@ import {handleNewPostEvent, handlePostDeleted, handlePostEdited, handlePostUnrea
 import {handlePreferenceChangedEvent, handlePreferencesChangedEvent, handlePreferencesDeletedEvent} from './preferences';
 import {handleAddCustomEmoji, handleReactionRemovedFromPostEvent, handleReactionAddedToPostEvent} from './reactions';
 import {handleUserRoleUpdatedEvent, handleTeamMemberRoleUpdatedEvent, handleRoleUpdatedEvent} from './roles';
+import {handleLicenseChangedEvent} from './system';
 import {handleLeaveTeamEvent, handleUserAddedToTeamEvent, handleUpdateTeamEvent} from './teams';
 import {handleUserUpdatedEvent, handleUserTypingEvent} from './users';
 
@@ -272,9 +273,9 @@ export async function handleEvent(serverUrl: string, msg: WebSocketMessage) {
             break;
 
         case WebsocketEvents.LICENSE_CHANGED:
+            handleLicenseChangedEvent(serverUrl, msg);
             break;
 
-        // return dispatch(handleLicenseChangedEvent(msg));
         case WebsocketEvents.CONFIG_CHANGED:
             break;
 
