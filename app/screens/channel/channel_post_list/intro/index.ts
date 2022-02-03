@@ -7,7 +7,7 @@ import withObservables from '@nozbe/with-observables';
 import {combineLatest} from 'rxjs';
 import {switchMap} from 'rxjs/operators';
 
-import {MM_TABLES, SYSTEM_IDENTIFIERS} from '@app/constants/database';
+import {MM_TABLES, SYSTEM_IDENTIFIERS} from '@constants/database';
 
 import Intro from './intro';
 

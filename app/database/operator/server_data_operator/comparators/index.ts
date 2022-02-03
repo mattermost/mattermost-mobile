@@ -1,6 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import type CategoryModel from '@typings/database/models/servers/category';
+import type CategoryChannelModel from '@typings/database/models/servers/category_channel';
 import type ChannelModel from '@typings/database/models/servers/channel';
 import type ChannelInfoModel from '@typings/database/models/servers/channel_info';
 import type ChannelMembershipModel from '@typings/database/models/servers/channel_membership';
@@ -33,6 +35,14 @@ import type UserModel from '@typings/database/models/servers/user';
  *  'record' and the 'raw'
  */
 
+export const isRecordCategoryEqualToRaw = (record: CategoryModel, raw: Category) => {
+    return raw.id === record.id;
+};
+
+export const isRecordCategoryChannelEqualToRaw = (record: CategoryChannelModel, raw: CategoryChannel) => {
+    return (record.id === raw.id);
+};
+
 export const isRecordRoleEqualToRaw = (record: RoleModel, raw: Role) => {
     return raw.id === record.id;
 };
@@ -46,7 +56,7 @@ export const isRecordTermsOfServiceEqualToRaw = (record: TermsOfServiceModel, ra
 };
 
 export const isRecordDraftEqualToRaw = (record: DraftModel, raw: Draft) => {
-    return raw.channel_id === record.channelId;
+    return raw.channel_id === record.channelId && raw.root_id === record.rootId;
 };
 
 export const isRecordPostEqualToRaw = (record: PostModel, raw: Post) => {

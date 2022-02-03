@@ -8,6 +8,8 @@ import {MM_TABLES} from '@constants/database';
 import {serverSchema} from './index';
 
 const {
+    CATEGORY,
+    CATEGORY_CHANNEL,
     CHANNEL,
     CHANNEL_INFO,
     CHANNEL_MEMBERSHIP,
@@ -42,8 +44,45 @@ describe('*** Test schema for SERVER database ***', () => {
         expect(serverSchema).toEqual({
             version: 1,
             tables: {
+                [CATEGORY]: {
+                    name: CATEGORY,
+                    unsafeSql: undefined,
+                    columns: {
+                        display_name: {name: 'display_name', type: 'string'},
+                        type: {name: 'type', type: 'string'},
+                        sort_order: {name: 'sort_order', type: 'number'},
+                        sorting: {name: 'sorting', type: 'string'},
+                        muted: {name: 'muted', type: 'boolean'},
+                        collapsed: {name: 'collapsed', type: 'boolean'},
+                        team_id: {name: 'team_id', type: 'string', isIndexed: true},
+                    },
+                    columnArray: [
+                        {name: 'display_name', type: 'string'},
+                        {name: 'type', type: 'string'},
+                        {name: 'sort_order', type: 'number'},
+                        {name: 'sorting', type: 'string'},
+                        {name: 'muted', type: 'boolean'},
+                        {name: 'collapsed', type: 'boolean'},
+                        {name: 'team_id', type: 'string', isIndexed: true},
+                    ],
+                },
+                [CATEGORY_CHANNEL]: {
+                    name: CATEGORY_CHANNEL,
+                    unsafeSql: undefined,
+                    columns: {
+                        category_id: {name: 'category_id', type: 'string', isIndexed: true},
+                        channel_id: {name: 'channel_id', type: 'string', isIndexed: true},
+                        sort_order: {name: 'sort_order', type: 'number'},
+                    },
+                    columnArray: [
+                        {name: 'category_id', type: 'string', isIndexed: true},
+                        {name: 'channel_id', type: 'string', isIndexed: true},
+                        {name: 'sort_order', type: 'number'},
+                    ],
+                },
                 [CHANNEL_INFO]: {
                     name: CHANNEL_INFO,
+                    unsafeSql: undefined,
                     columns: {
                         guest_count: {name: 'guest_count', type: 'number'},
                         header: {name: 'header', type: 'string'},
@@ -61,6 +100,7 @@ describe('*** Test schema for SERVER database ***', () => {
                 },
                 [CHANNEL]: {
                     name: CHANNEL,
+                    unsafeSql: undefined,
                     columns: {
                         create_at: {name: 'create_at', type: 'number'},
                         creator_id: {name: 'creator_id', type: 'string', isIndexed: true},
@@ -92,6 +132,7 @@ describe('*** Test schema for SERVER database ***', () => {
                 },
                 [CHANNEL_MEMBERSHIP]: {
                     name: CHANNEL_MEMBERSHIP,
+                    unsafeSql: undefined,
                     columns: {
                         channel_id: {name: 'channel_id', type: 'string', isIndexed: true},
                         user_id: {name: 'user_id', type: 'string', isIndexed: true},
@@ -103,6 +144,7 @@ describe('*** Test schema for SERVER database ***', () => {
                 },
                 [CUSTOM_EMOJI]: {
                     name: CUSTOM_EMOJI,
+                    unsafeSql: undefined,
                     columns: {
                         name: {name: 'name', type: 'string'},
                     },
@@ -110,6 +152,7 @@ describe('*** Test schema for SERVER database ***', () => {
                 },
                 [MY_CHANNEL]: {
                     name: MY_CHANNEL,
+                    unsafeSql: undefined,
                     columns: {
                         last_post_at: {name: 'last_post_at', type: 'number'},
                         last_viewed_at: {name: 'last_viewed_at', type: 'number'},
@@ -133,6 +176,7 @@ describe('*** Test schema for SERVER database ***', () => {
                 },
                 [MY_CHANNEL_SETTINGS]: {
                     name: MY_CHANNEL_SETTINGS,
+                    unsafeSql: undefined,
                     columns: {
                         notify_props: {name: 'notify_props', type: 'string'},
                     },
@@ -142,6 +186,7 @@ describe('*** Test schema for SERVER database ***', () => {
                 },
                 [POSTS_IN_CHANNEL]: {
                     name: POSTS_IN_CHANNEL,
+                    unsafeSql: undefined,
                     columns: {
                         channel_id: {name: 'channel_id', type: 'string', isIndexed: true},
                         earliest: {name: 'earliest', type: 'number'},
@@ -155,6 +200,7 @@ describe('*** Test schema for SERVER database ***', () => {
                 },
                 [DRAFT]: {
                     name: DRAFT,
+                    unsafeSql: undefined,
                     columns: {
                         channel_id: {name: 'channel_id', type: 'string', isIndexed: true},
                         files: {name: 'files', type: 'string'},
@@ -170,6 +216,7 @@ describe('*** Test schema for SERVER database ***', () => {
                 },
                 [FILE]: {
                     name: FILE,
+                    unsafeSql: undefined,
                     columns: {
                         extension: {name: 'extension', type: 'string'},
                         height: {name: 'height', type: 'number'},
@@ -195,6 +242,7 @@ describe('*** Test schema for SERVER database ***', () => {
                 },
                 [POSTS_IN_THREAD]: {
                     name: POSTS_IN_THREAD,
+                    unsafeSql: undefined,
                     columns: {
                         root_id: {name: 'root_id', type: 'string', isIndexed: true},
                         earliest: {name: 'earliest', type: 'number'},
@@ -208,6 +256,7 @@ describe('*** Test schema for SERVER database ***', () => {
                 },
                 [POST]: {
                     name: POST,
+                    unsafeSql: undefined,
                     columns: {
                         channel_id: {name: 'channel_id', type: 'string', isIndexed: true},
                         create_at: {name: 'create_at', type: 'number'},
@@ -245,6 +294,7 @@ describe('*** Test schema for SERVER database ***', () => {
                 },
                 [GROUP]: {
                     name: GROUP,
+                    unsafeSql: undefined,
                     columns: {
                         allow_reference: {name: 'allow_reference', type: 'boolean'},
                         delete_at: {name: 'delete_at', type: 'number'},
@@ -260,6 +310,7 @@ describe('*** Test schema for SERVER database ***', () => {
                 },
                 [GROUPS_CHANNEL]: {
                     name: GROUPS_CHANNEL,
+                    unsafeSql: undefined,
                     columns: {
                         channel_id: {name: 'channel_id', type: 'string', isIndexed: true},
                         group_id: {name: 'group_id', type: 'string', isIndexed: true},
@@ -275,6 +326,7 @@ describe('*** Test schema for SERVER database ***', () => {
                 },
                 [GROUPS_TEAM]: {
                     name: GROUPS_TEAM,
+                    unsafeSql: undefined,
                     columns: {
                         group_id: {name: 'group_id', type: 'string', isIndexed: true},
                         team_id: {name: 'team_id', type: 'string', isIndexed: true},
@@ -286,6 +338,7 @@ describe('*** Test schema for SERVER database ***', () => {
                 },
                 [GROUP_MEMBERSHIP]: {
                     name: GROUP_MEMBERSHIP,
+                    unsafeSql: undefined,
                     columns: {
                         group_id: {name: 'group_id', type: 'string', isIndexed: true},
                         user_id: {name: 'user_id', type: 'string', isIndexed: true},
@@ -297,6 +350,7 @@ describe('*** Test schema for SERVER database ***', () => {
                 },
                 [PREFERENCE]: {
                     name: PREFERENCE,
+                    unsafeSql: undefined,
                     columns: {
                         category: {name: 'category', type: 'string', isIndexed: true},
                         name: {name: 'name', type: 'string'},
@@ -312,6 +366,7 @@ describe('*** Test schema for SERVER database ***', () => {
                 },
                 [REACTION]: {
                     name: REACTION,
+                    unsafeSql: undefined,
                     columns: {
                         create_at: {name: 'create_at', type: 'number'},
                         emoji_name: {name: 'emoji_name', type: 'string'},
@@ -327,6 +382,7 @@ describe('*** Test schema for SERVER database ***', () => {
                 },
                 [MY_TEAM]: {
                     name: MY_TEAM,
+                    unsafeSql: undefined,
                     columns: {
                         roles: {name: 'roles', type: 'string'},
                     },
@@ -336,6 +392,7 @@ describe('*** Test schema for SERVER database ***', () => {
                 },
                 [ROLE]: {
                     name: ROLE,
+                    unsafeSql: undefined,
                     columns: {
                         name: {name: 'name', type: 'string'},
                         permissions: {name: 'permissions', type: 'string'},
@@ -347,6 +404,7 @@ describe('*** Test schema for SERVER database ***', () => {
                 },
                 [SLASH_COMMAND]: {
                     name: SLASH_COMMAND,
+                    unsafeSql: undefined,
                     columns: {
                         is_auto_complete: {name: 'is_auto_complete', type: 'boolean'},
                         description: {name: 'description', type: 'string'},
@@ -372,6 +430,7 @@ describe('*** Test schema for SERVER database ***', () => {
                 },
                 [SYSTEM]: {
                     name: SYSTEM,
+                    unsafeSql: undefined,
                     columns: {
                         value: {name: 'value', type: 'string'},
                     },
@@ -381,6 +440,7 @@ describe('*** Test schema for SERVER database ***', () => {
                 },
                 [TEAM]: {
                     name: TEAM,
+                    unsafeSql: undefined,
                     columns: {
                         is_allow_open_invite: {
                             name: 'is_allow_open_invite',
@@ -415,6 +475,7 @@ describe('*** Test schema for SERVER database ***', () => {
                 },
                 [TEAM_CHANNEL_HISTORY]: {
                     name: TEAM_CHANNEL_HISTORY,
+                    unsafeSql: undefined,
                     columns: {
                         channel_ids: {name: 'channel_ids', type: 'string'},
                     },
@@ -424,6 +485,7 @@ describe('*** Test schema for SERVER database ***', () => {
                 },
                 [TEAM_MEMBERSHIP]: {
                     name: TEAM_MEMBERSHIP,
+                    unsafeSql: undefined,
                     columns: {
                         team_id: {name: 'team_id', type: 'string', isIndexed: true},
                         user_id: {name: 'user_id', type: 'string', isIndexed: true},
@@ -435,6 +497,7 @@ describe('*** Test schema for SERVER database ***', () => {
                 },
                 [TEAM_SEARCH_HISTORY]: {
                     name: TEAM_SEARCH_HISTORY,
+                    unsafeSql: undefined,
                     columns: {
                         created_at: {name: 'created_at', type: 'number'},
                         display_term: {name: 'display_term', type: 'string'},
@@ -450,6 +513,7 @@ describe('*** Test schema for SERVER database ***', () => {
                 },
                 [TERMS_OF_SERVICE]: {
                     name: TERMS_OF_SERVICE,
+                    unsafeSql: undefined,
                     columns: {
                         accepted_at: {name: 'accepted_at', type: 'number'},
                     },
@@ -457,6 +521,7 @@ describe('*** Test schema for SERVER database ***', () => {
                 },
                 [USER]: {
                     name: USER,
+                    unsafeSql: undefined,
                     columns: {
                         auth_service: {name: 'auth_service', type: 'string'},
                         update_at: {name: 'update_at', type: 'number'},

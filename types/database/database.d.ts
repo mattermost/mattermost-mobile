@@ -92,6 +92,7 @@ export type SanitizeReactionsArgs = {
   database: Database;
   post_id: string;
   rawReactions: Reaction[];
+  skipSync?: boolean;
 };
 
 export type ChainPostsArgs = {
@@ -188,6 +189,14 @@ export type HandleMyChannelSettingsArgs = PrepareOnly & {
 
 export type HandleChannelArgs = PrepareOnly & {
   channels: Channel[];
+};
+
+export type HandleCategoryArgs = PrepareOnly & {
+  categories: Category[];
+};
+
+export type HandleCategoryChannelArgs = PrepareOnly & {
+  categoryChannels: CategoryChannel[];
 };
 
 export type HandleMyTeamArgs = PrepareOnly & {

@@ -15,8 +15,11 @@ import Navigation from './navigation';
 import Network from './network';
 import Permissions from './permissions';
 import Post from './post';
+import PostDraft from './post_draft';
 import Preferences from './preferences';
+import Profile from './profile';
 import Screens from './screens';
+import ServerErrors from './server_errors';
 import Sso from './sso';
 import SupportedServer from './supported_server';
 import View from './view';
@@ -37,8 +40,11 @@ export {
     Network,
     Permissions,
     Post,
+    PostDraft,
     Preferences,
+    Profile,
     Screens,
+    ServerErrors,
     SupportedServer,
     Sso,
     View,

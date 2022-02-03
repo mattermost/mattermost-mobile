@@ -15,8 +15,6 @@ import {queryPostById} from '@queries/servers/post';
 import {queryCurrentChannelId, queryCurrentUserId} from '@queries/servers/system';
 import {isFromWebhook, isSystemMessage, shouldIgnorePost} from '@utils/post';
 
-import type {WebSocketMessage} from '@typings/api/websocket';
-
 export async function handleNewPostEvent(serverUrl: string, msg: WebSocketMessage) {
     const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
     if (!operator) {

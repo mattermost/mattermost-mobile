@@ -2,7 +2,8 @@
 // See LICENSE.txt for license information.
 
 import React from 'react';
-import {FlatList, ListRenderItemInfo, View} from 'react-native';
+import {ListRenderItemInfo, View} from 'react-native';
+import {FlatList} from 'react-native-gesture-handler'; // Keep the FlatList from gesture handler so it works well with bottom sheet
 
 import FormattedText from '@components/formatted_text';
 import {useTheme} from '@context/theme';

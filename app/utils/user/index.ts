@@ -297,15 +297,3 @@ export function filterProfilesMatchingTerm(users: UserProfile[], term: string): 
             some((suggestion) => suggestion.startsWith(trimmedTerm));
     });
 }
-
-export function getDirectChannelName(id: string, otherId: string): string {
-    let handle;
-
-    if (otherId > id) {
-        handle = id + '__' + otherId;
-    } else {
-        handle = otherId + '__' + id;
-    }
-
-    return handle;
-}

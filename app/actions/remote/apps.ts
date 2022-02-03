@@ -128,7 +128,7 @@ export function postEphemeralCallResponseForCommandArgs(serverUrl: string, respo
     );
 }
 
-const showAppForm = async (form: AppForm, call: AppCallRequest, theme: Theme) => {
+export const showAppForm = async (form: AppForm, call: AppCallRequest, theme: Theme) => {
     const closeButton = await CompassIcon.getImageSource('close', 24, theme.sidebarHeaderTextColor);
 
     let submitButtons = [{
