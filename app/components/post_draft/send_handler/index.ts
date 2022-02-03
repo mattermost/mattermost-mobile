@@ -16,6 +16,7 @@ import SendHandler from './send_handler';
 
 import type {WithDatabaseArgs} from '@typings/database/database';
 import type ChannelModel from '@typings/database/models/servers/channel';
+import type ChannelInfoModel from '@typings/database/models/servers/channel_info';
 import type CustomEmojiModel from '@typings/database/models/servers/custom_emoji';
 import type GroupModel from '@typings/database/models/servers/group';
 import type SystemModel from '@typings/database/models/servers/system';
@@ -100,7 +101,10 @@ const enhanced = withObservables([], (ownProps: WithDatabaseArgs & OwnProps) => 
             if (!c) {
                 return of$(0);
             }
-            return from$(c.members.fetchCount());
+            return c.info.observe().pipe(
+                // eslint-disable-next-line max-nested-callbacks
+                switchMap((i: ChannelInfoModel) => of$(i.memberCount)),
+            );
         }),
     );
 
