@@ -66,8 +66,10 @@ export default class Permalink extends PureComponent {
         currentUserId: PropTypes.string.isRequired,
         focusedPostId: PropTypes.string.isRequired,
         isPermalink: PropTypes.bool,
+        isThreadPost: PropTypes.bool,
         myChannelMemberships: PropTypes.object.isRequired,
         myTeamMemberships: PropTypes.object.isRequired,
+        post: PropTypes.object,
         postIds: PropTypes.array,
         team: PropTypes.object,
         teamName: PropTypes.string,
@@ -106,6 +108,7 @@ export default class Permalink extends PureComponent {
         this.navigationEventListener = Navigation.events().bindComponent(this);
 
         this.mounted = true;
+        this.focusedPostId = this.props.focusedPostId;
 
         if (this.state.loading && this.props.focusedPostId) {
             this.initialLoad = true;
@@ -114,7 +117,13 @@ export default class Permalink extends PureComponent {
     }
 
     componentDidUpdate() {
-        if (this.state.loading && this.props.focusedPostId && !this.initialLoad) {
+        let focusedPostIdChanged;
+        if (this.focusedPostId !== this.props.focusedPostId) {
+            focusedPostIdChanged = true;
+            this.focusedPostId = this.props.focusedPostId;
+        }
+
+        if (focusedPostIdChanged || (this.state.loading && this.props.focusedPostId && !this.initialLoad)) {
             this.loadPosts();
         }
     }
@@ -155,7 +164,7 @@ export default class Permalink extends PureComponent {
 
     jumpToChannel = async (channelId) => {
         if (channelId) {
-            const {actions, channelId: currentChannelId, channelTeamId, currentTeamId} = this.props;
+            const {actions, channelId: currentChannelId, channelTeamId, currentTeamId, isThreadPost, post} = this.props;
             const {closePermalink, handleSelectChannel, handleTeamChange} = actions;
 
             actions.selectPost('');
@@ -178,13 +187,20 @@ export default class Permalink extends PureComponent {
                 handleTeamChange(channelTeamId);
             }
 
-            handleSelectChannel(channelId);
+            await handleSelectChannel(channelId);
+
+            if (isThreadPost) {
+                EventEmitter.emit('goToThread', {
+                    id: post?.root_id,
+                    channel_id: channelId,
+                });
+            }
         }
     };
 
     loadPosts = async () => {
         const {intl} = this.context;
-        const {actions, channelId, currentUserId, focusedPostId, isPermalink, postIds} = this.props;
+        const {actions, channelId, currentUserId, focusedPostId, isPermalink, isThreadPost, postIds} = this.props;
         const {formatMessage} = intl;
         let focusChannelId = channelId;
 
@@ -273,7 +289,9 @@ export default class Permalink extends PureComponent {
                 }
             }
 
-            await actions.getPostsAround(focusChannelId, focusedPostId, 10);
+            if (!isThreadPost) {
+                await actions.getPostsAround(focusChannelId, focusedPostId, 10);
+            }
 
             if (this.initialLoad) {
                 this.initialLoad = false;
@@ -307,7 +325,7 @@ export default class Permalink extends PureComponent {
     };
 
     render() {
-        const {channelName, currentUserId, focusedPostId, postIds, theme} = this.props;
+        const {channelName, currentUserId, focusedPostId, isThreadPost, postIds, theme} = this.props;
         const {error, joinChannelPromptVisible, loading, retry, title} = this.state;
         const style = getStyleSheet(theme);
 
@@ -383,7 +401,27 @@ export default class Permalink extends PureComponent {
                                     style={style.title}
                                 >
                                     {this.archivedIcon()}
-                                    {title || channelName}
+
+                                    {title || (isThreadPost ? (
+                                        <FormattedText
+                                            id='mobile.routes.thread_crt'
+                                            defautMessage='Thread'
+                                        />
+                                    ) : channelName)}
+
+                                    {isThreadPost && (
+                                        <>
+                                            {' '}
+                                            <FormattedText
+                                                id='mobile.routes.thread_crt.in'
+                                                defaultMessage='in {channelName}'
+                                                style={style.description}
+                                                values={{
+                                                    channelName,
+                                                }}
+                                            />
+                                        </>
+                                    )}
                                 </Text>
                             </View>
                         </View>
@@ -457,6 +495,10 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             color: theme.centerChannelColor,
             fontSize: 17,
             fontWeight: '600',
+        },
+        description: {
+            fontSize: 14,
+            fontWeight: 'normal',
         },
         postList: {
             flex: 1,
