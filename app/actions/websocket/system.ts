@@ -10,13 +10,12 @@ export async function handleLicenseChangedEvent(serverUrl: string, msg: WebSocke
         return;
     }
 
-    const license = msg.data.license;
-    const systems: IdValue[] = [{
-        id: SYSTEM_IDENTIFIERS.LICENSE,
-        value: JSON.stringify(license),
-    }];
-
     try {
+        const license = msg.data.license;
+        const systems: IdValue[] = [{
+            id: SYSTEM_IDENTIFIERS.LICENSE,
+            value: JSON.stringify(license),
+        }];
         await operator.handleSystem({systems, prepareRecordsOnly: false});
     } catch {
         // do nothing
