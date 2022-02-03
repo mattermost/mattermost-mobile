@@ -255,11 +255,7 @@ export async function handleEvent(serverUrl: string, msg: WebSocketMessage) {
         case WebsocketEvents.TYPING:
             handleUserTypingEvent(serverUrl, msg);
             break;
-        case WebsocketEvents.HELLO:
-            break;
 
-        // handleHelloEvent(msg);
-        // break;
         case WebsocketEvents.REACTION_ADDED:
             handleReactionAddedToPostEvent(serverUrl, msg);
             break;
