@@ -7,6 +7,7 @@ import CookieManager from '@react-native-cookies/cookies';
 import {AppState, Dimensions, Keyboard, Linking, Platform} from 'react-native';
 import DeviceInfo from 'react-native-device-info';
 import {getLocales} from 'react-native-localize';
+import {valid as validVersion} from 'semver';
 
 import {setDeviceDimensions, setDeviceOrientation, setDeviceAsTablet} from '@actions/device';
 import {dismissAllModals, popToRoot, showOverlay} from '@actions/navigation';
@@ -249,9 +250,10 @@ class GlobalEventHandler {
     onServerVersionChanged = async (serverVersion) => {
         const {dispatch, getState} = Store.redux;
         const state = getState();
-        if (serverVersion && state.entities.users && state.entities.users.currentUserId) {
+        const isValid = validVersion(serverVersion);
+        if (isValid && serverVersion && serverVersion !== state.entities.general.serverVersion &&
+            state.entities.users && state.entities.users.currentUserId) {
             dispatch(setServerVersion(serverVersion));
-            dispatch(loadConfigAndLicense());
         }
     };
 

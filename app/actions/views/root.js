@@ -1,6 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import deepEqual from 'deep-equal';
 import {batchActions} from 'redux-batched-actions';
 
 import {Client4} from '@client/rest';
@@ -31,7 +32,10 @@ export function startDataCleanup() {
 
 export function loadConfigAndLicense() {
     return async (dispatch, getState) => {
-        const {currentUserId} = getState().entities.users;
+        const state = getState();
+        const {currentUserId} = state.entities.users;
+        const {general} = state.entities.general;
+        const actions = [];
 
         try {
             const [config, license] = await Promise.all([
@@ -39,23 +43,31 @@ export function loadConfigAndLicense() {
                 Client4.getClientLicenseOld(),
             ]);
 
-            const actions = [{
-                type: GeneralTypes.CLIENT_CONFIG_RECEIVED,
-                data: config,
-            }, {
-                type: GeneralTypes.CLIENT_LICENSE_RECEIVED,
-                data: license,
-            }];
+            if (!deepEqual(general.config, config)) {
+                actions.push({
+                    type: GeneralTypes.CLIENT_CONFIG_RECEIVED,
+                    data: config,
+                });
+            }
 
-            if (currentUserId) {
-                if (license?.IsLicensed === 'true' && license?.DataRetention === 'true') {
-                    dispatch(getDataRetentionPolicy());
-                } else {
-                    actions.push({type: GeneralTypes.RECEIVED_DATA_RETENTION_POLICY, data: {}});
+            if (!deepEqual(general.license, license)) {
+                actions.push({
+                    type: GeneralTypes.CLIENT_LICENSE_RECEIVED,
+                    data: license,
+                });
+
+                if (currentUserId) {
+                    if (license?.IsLicensed === 'true' && license?.DataRetention === 'true') {
+                        dispatch(getDataRetentionPolicy());
+                    } else {
+                        actions.push({type: GeneralTypes.RECEIVED_DATA_RETENTION_POLICY, data: {}});
+                    }
                 }
             }
 
-            dispatch(batchActions(actions, 'BATCH_LOAD_CONFIG_AND_LICENSE'));
+            if (actions.length) {
+                dispatch(batchActions(actions, 'BATCH_LOAD_CONFIG_AND_LICENSE'));
+            }
 
             return {config, license};
         } catch (error) {
