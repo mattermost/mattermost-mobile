@@ -5,7 +5,7 @@ import React, {useMemo} from 'react';
 import {useIntl} from 'react-intl';
 import {Text, View} from 'react-native';
 
-import {useTheme} from '@app/context/theme';
+import {useTheme} from '@context/theme';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 

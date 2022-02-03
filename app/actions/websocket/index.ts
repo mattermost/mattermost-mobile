@@ -22,9 +22,10 @@ import {queryCurrentUser} from '@queries/servers/user';
 import {handleChannelDeletedEvent, handleUserAddedToChannelEvent, handleUserRemovedFromChannelEvent} from './channel';
 import {handleNewPostEvent, handlePostDeleted, handlePostEdited, handlePostUnread} from './posts';
 import {handlePreferenceChangedEvent, handlePreferencesChangedEvent, handlePreferencesDeletedEvent} from './preferences';
+import {handleAddCustomEmoji, handleReactionRemovedFromPostEvent, handleReactionAddedToPostEvent} from './reactions';
 import {handleUserRoleUpdatedEvent, handleTeamMemberRoleUpdatedEvent, handleRoleUpdatedEvent} from './roles';
 import {handleLeaveTeamEvent, handleUserAddedToTeamEvent, handleUpdateTeamEvent} from './teams';
-import {handleUserUpdatedEvent} from './users';
+import {handleUserUpdatedEvent, handleUserTypingEvent} from './users';
 
 import type {Model} from '@nozbe/watermelondb';
 
@@ -251,26 +252,25 @@ export async function handleEvent(serverUrl: string, msg: WebSocketMessage) {
 
         // return dispatch(handleStatusChangedEvent(msg));
         case WebsocketEvents.TYPING:
+            handleUserTypingEvent(serverUrl, msg);
             break;
-
-        // return dispatch(handleUserTypingEvent(msg));
         case WebsocketEvents.HELLO:
             break;
 
         // handleHelloEvent(msg);
         // break;
         case WebsocketEvents.REACTION_ADDED:
+            handleReactionAddedToPostEvent(serverUrl, msg);
             break;
 
-        // return dispatch(handleReactionAddedEvent(msg));
         case WebsocketEvents.REACTION_REMOVED:
+            handleReactionRemovedFromPostEvent(serverUrl, msg);
             break;
 
-        // return dispatch(handleReactionRemovedEvent(msg));
         case WebsocketEvents.EMOJI_ADDED:
+            handleAddCustomEmoji(serverUrl, msg);
             break;
 
-        // return dispatch(handleAddEmoji(msg));
         case WebsocketEvents.LICENSE_CHANGED:
             break;
 

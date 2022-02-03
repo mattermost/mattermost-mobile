@@ -8,7 +8,6 @@ import DocumentPicker from 'react-native-document-picker';
 import SlideUpPanelItem from '@components/slide_up_panel_item';
 
 import type {MessageDescriptor} from '@formatjs/intl/src/types';
-import type {UploadExtractedFile} from '@typings/utils/file';
 import type PickerUtil from '@utils/file/file_picker';
 import type {Source} from 'react-native-fast-image';
 

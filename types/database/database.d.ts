@@ -92,6 +92,7 @@ export type SanitizeReactionsArgs = {
   database: Database;
   post_id: string;
   rawReactions: Reaction[];
+  skipSync?: boolean;
 };
 
 export type ChainPostsArgs = {

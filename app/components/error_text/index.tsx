@@ -7,16 +7,14 @@ import {StyleProp, Text, TextStyle, ViewStyle} from 'react-native';
 import FormattedText from '@components/formatted_text';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 
-import type {ErrorText as ErrorType} from '@typings/utils/file';
-
 type ErrorProps = {
-    error: ErrorType;
+    error: ErrorText;
     testID?: string;
     textStyle?: StyleProp<ViewStyle> | StyleProp<TextStyle>;
     theme: Theme;
 }
 
-const ErrorText = ({error, testID, textStyle, theme}: ErrorProps) => {
+const ErrorTextComponent = ({error, testID, textStyle, theme}: ErrorProps) => {
     const style = getStyleSheet(theme);
     const message = typeof (error) === 'string' ? error : error.message;
 
@@ -55,4 +53,4 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     };
 });
 
-export default ErrorText;
+export default ErrorTextComponent;

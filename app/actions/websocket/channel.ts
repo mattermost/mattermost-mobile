@@ -13,7 +13,7 @@ import DatabaseManager from '@database/manager';
 import {queryActiveServer} from '@queries/app/servers';
 import {deleteChannelMembership, prepareMyChannelsForTeam, queryChannelsById, queryCurrentChannel} from '@queries/servers/channel';
 import {prepareCommonSystemValues, queryConfig, setCurrentChannelId} from '@queries/servers/system';
-import {queryLastChannelFromTeam} from '@queries/servers/team';
+import {queryNthLastChannelFromTeam} from '@queries/servers/team';
 import {queryCurrentUser, queryUserById} from '@queries/servers/user';
 import {dismissAllModals, popToRoot} from '@screens/navigation';
 import {isTablet} from '@utils/helpers';
@@ -122,7 +122,7 @@ export async function handleUserRemovedFromChannelEvent(serverUrl: string, msg: 
                 await popToRoot();
 
                 if (await isTablet()) {
-                    const channelToJumpTo = await queryLastChannelFromTeam(database.database, channel?.teamId);
+                    const channelToJumpTo = await queryNthLastChannelFromTeam(database.database, channel?.teamId);
                     if (channelToJumpTo) {
                         const {models: switchChannelModels} = await switchToChannel(serverUrl, channelToJumpTo, '', true);
                         if (switchChannelModels) {
@@ -179,7 +179,7 @@ export async function handleChannelDeletedEvent(serverUrl: string, msg: WebSocke
                 await popToRoot();
 
                 if (await isTablet()) {
-                    const channelToJumpTo = await queryLastChannelFromTeam(database.database, currentChannel?.teamId);
+                    const channelToJumpTo = await queryNthLastChannelFromTeam(database.database, currentChannel?.teamId);
                     if (channelToJumpTo) {
                         switchToChannel(serverUrl, channelToJumpTo);
                     } // TODO else jump to "join a channel" screen

@@ -152,6 +152,7 @@ const UserHandler = (superclass: any) => class extends superclass {
                 database: this.database,
                 post_id,
                 rawReactions: rawValues,
+                skipSync,
             });
 
             if (createReactions?.length) {
@@ -165,6 +166,7 @@ const UserHandler = (superclass: any) => class extends superclass {
             }
 
             if (deleteReactions?.length && !skipSync) {
+                deleteReactions.forEach((outCast) => outCast.prepareDestroyPermanently());
                 batchRecords.push(...deleteReactions);
             }
         }

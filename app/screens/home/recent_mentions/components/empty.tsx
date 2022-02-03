@@ -3,10 +3,10 @@
 import React from 'react';
 import {View} from 'react-native';
 
-import {useTheme} from '@app/context/theme';
-import {changeOpacity, makeStyleSheetFromTheme} from '@app/utils/theme';
-import {typography} from '@app/utils/typography';
 import FormattedText from '@components/formatted_text';
+import {useTheme} from '@context/theme';
+import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
+import {typography} from '@utils/typography';
 
 // @ts-expect-error svg extension
 import Mention from './mention_icon.svg';

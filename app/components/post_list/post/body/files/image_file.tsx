@@ -6,6 +6,7 @@ import {StyleProp, StyleSheet, useWindowDimensions, View, ViewStyle} from 'react
 
 import ProgressiveImage from '@components/progressive_image';
 import {useServerUrl} from '@context/server';
+import {useTheme} from '@context/theme';
 import NetworkManager from '@init/network_manager';
 import {calculateDimensions} from '@utils/images';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
@@ -21,7 +22,6 @@ type ImageFileProps = {
     inViewPort?: boolean;
     isSingleImage?: boolean;
     resizeMode?: ResizeMode;
-    theme: Theme;
     wrapperWidth?: number;
 }
 
@@ -71,11 +71,12 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
 
 const ImageFile = ({
     backgroundColor, file, inViewPort, isSingleImage,
-    resizeMode = 'cover', theme, wrapperWidth,
+    resizeMode = 'cover', wrapperWidth,
 }: ImageFileProps) => {
     const serverUrl = useServerUrl();
     const [failed, setFailed] = useState(false);
     const dimensions = useWindowDimensions();
+    const theme = useTheme();
     const style = getStyleSheet(theme);
     let image;
     let client: Client | undefined;
@@ -142,7 +143,6 @@ const ImageFile = ({
                     failed={failed}
                     file={file}
                     backgroundColor={backgroundColor}
-                    theme={theme}
                 />
             );
         }
@@ -185,7 +185,6 @@ const ImageFile = ({
                     failed={failed}
                     file={file}
                     backgroundColor={backgroundColor}
-                    theme={theme}
                 />
             </View>
         );

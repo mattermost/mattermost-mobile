@@ -7,8 +7,9 @@ import {MM_TABLES} from '@constants/database';
 
 import type PostModel from '@typings/database/models/servers/post';
 import type PostInChannelModel from '@typings/database/models/servers/posts_in_channel';
+import type PostsInThreadModel from '@typings/database/models/servers/posts_in_thread';
 
-const {SERVER: {POST, POSTS_IN_CHANNEL}} = MM_TABLES;
+const {SERVER: {POST, POSTS_IN_CHANNEL, POSTS_IN_THREAD}} = MM_TABLES;
 
 export const prepareDeletePost = async (post: PostModel): Promise<Model[]> => {
     const preparedModels: Model[] = [post.prepareDestroyPermanently()];
@@ -48,12 +49,39 @@ export const queryPostById = async (database: Database, postId: string) => {
 
 export const queryPostsInChannel = (database: Database, channelId: string): Promise<PostInChannelModel[]> => {
     try {
-        return database.get(POSTS_IN_CHANNEL).query(
+        return database.get<PostInChannelModel>(POSTS_IN_CHANNEL).query(
             Q.where('channel_id', channelId),
             Q.sortBy('latest', Q.desc),
-        ).fetch() as Promise<PostInChannelModel[]>;
+        ).fetch();
     } catch {
-        return Promise.resolve([] as PostInChannelModel[]);
+        return Promise.resolve([]);
+    }
+};
+
+export const queryPostsInThread = (database: Database, rootId: string): Promise<PostsInThreadModel[]> => {
+    try {
+        return database.get<PostsInThreadModel>(POSTS_IN_THREAD).query(
+            Q.where('root_id', rootId),
+            Q.sortBy('latest', Q.desc),
+        ).fetch();
+    } catch {
+        return Promise.resolve([]);
+    }
+};
+
+export const queryRecentPostsInThread = async (database: Database, rootId: string): Promise<PostModel[]> => {
+    try {
+        const chunks = await queryPostsInThread(database, rootId);
+        if (chunks.length) {
+            const recent = chunks[0];
+            const post = await queryPostById(database, rootId);
+            if (post) {
+                return queryPostsChunk(database, post.channelId, recent.earliest, recent.latest);
+            }
+        }
+        return Promise.resolve([]);
+    } catch {
+        return Promise.resolve([]);
     }
 };
 
@@ -68,7 +96,7 @@ export const queryPostsChunk = (database: Database, channelId: string, earliest:
             Q.sortBy('create_at', Q.desc),
         ).fetch() as Promise<PostModel[]>;
     } catch {
-        return Promise.resolve([] as PostModel[]);
+        return Promise.resolve([]);
     }
 };
 
@@ -79,9 +107,9 @@ export const queryRecentPostsInChannel = async (database: Database, channelId: s
             const recent = chunks[0];
             return queryPostsChunk(database, channelId, recent.earliest, recent.latest);
         }
-        return Promise.resolve([] as PostModel[]);
+        return Promise.resolve([]);
     } catch {
-        return Promise.resolve([] as PostModel[]);
+        return Promise.resolve([]);
     }
 };
 
