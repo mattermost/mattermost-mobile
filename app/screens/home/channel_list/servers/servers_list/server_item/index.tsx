@@ -238,7 +238,7 @@ const ServerItem = ({isActive, server}: Props) => {
                                 <Text style={styles.name}>{displayName}</Text>
                                 {websocketError &&
                                 <CompassIcon
-                                    name='information-outline'
+                                    name='alert-circle-outline'
                                     size={14.4}
                                     color={theme.dndIndicator}
                                     style={styles.websocket}
