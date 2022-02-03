@@ -6,7 +6,6 @@ import {Alert} from 'react-native';
 
 import {showPermalink} from '@actions/local/permalink';
 import {Client} from '@client/rest';
-import ClientError from '@client/rest/error';
 import {SYSTEM_IDENTIFIERS} from '@constants/database';
 import DeepLinkTypes from '@constants/deep_linking';
 import DatabaseManager from '@database/manager';
@@ -32,7 +31,7 @@ export const executeCommand = async (serverUrl: string, intl: IntlShape, message
     try {
         client = NetworkManager.getClient(serverUrl);
     } catch (error) {
-        return {error: error as ClientError};
+        return {error: error as ClientErrorProps};
     }
 
     // TODO https://mattermost.atlassian.net/browse/MM-41234
@@ -69,7 +68,7 @@ export const executeCommand = async (serverUrl: string, intl: IntlShape, message
     try {
         data = await client.executeCommand(msg, args);
     } catch (error) {
-        return {error: error as ClientError};
+        return {error: error as ClientErrorProps};
     }
 
     if (data?.trigger_id) { //eslint-disable-line camelcase
