@@ -1,14 +1,11 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {General, Permissions, Preferences} from '@constants';
-import {getPreferenceAsBool} from '@helpers/api/preference';
+import {General, Permissions} from '@constants';
 import {DEFAULT_LOCALE} from '@i18n';
 import {hasPermission} from '@utils/role';
-import {getUserIdFromChannelName} from '@utils/user';
 
 import type ChannelModel from '@typings/database/models/servers/channel';
-import type PreferenceModel from '@typings/database/models/servers/preference';
 
 export function getDirectChannelName(id: string, otherId: string): string {
     let handle;
@@ -20,15 +17,6 @@ export function getDirectChannelName(id: string, otherId: string): string {
     }
 
     return handle;
-}
-
-export function isDirectChannelVisible(userId: string, myPreferences: PreferenceModel[], channel: ChannelModel) {
-    const channelId = getUserIdFromChannelName(userId, channel.name);
-    return getPreferenceAsBool(myPreferences, Preferences.CATEGORY_DIRECT_CHANNEL_SHOW, channelId, false);
-}
-
-export function isGroupChannelVisible(myPreferences: PreferenceModel[], channel: ChannelModel) {
-    return getPreferenceAsBool(myPreferences, Preferences.CATEGORY_GROUP_CHANNEL_SHOW, channel.id, false);
 }
 
 export function selectDefaultChannelForTeam<T extends Channel|ChannelModel>(channels: T[], memberships: ChannelMembership[], teamId: string, roles?: Role[], locale = DEFAULT_LOCALE) {
