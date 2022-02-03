@@ -558,6 +558,13 @@ export async function getOrCreateDirectChannel(serverUrl: string, otherUserId: s
         return {error: `${serverUrl} database not found`};
     }
 
+    let client: Client;
+    try {
+        client = NetworkManager.getClient(serverUrl);
+    } catch (error) {
+        return {error};
+    }
+
     const currentUserId = await queryCurrentUserId(operator.database);
     const channelName = getDirectChannelName(currentUserId, otherUserId);
 
@@ -567,7 +574,6 @@ export async function getOrCreateDirectChannel(serverUrl: string, otherUserId: s
         result = {channel};
     } else {
         try {
-            const client = NetworkManager.getClient(serverUrl);
             const newChannel = await client.createDirectChannel([currentUserId, otherUserId]);
             result = {channel: newChannel};
 

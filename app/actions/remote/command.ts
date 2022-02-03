@@ -53,8 +53,7 @@ export const executeCommand = async (serverUrl: string, intl: IntlShape, message
         parent_id: rootId,
     };
 
-    let msg = message;
-    msg = filterEmDashForCommand(msg);
+    let msg = filterEmDashForCommand(message);
 
     let cmdLength = msg.indexOf(' ');
     if (cmdLength < 0) {

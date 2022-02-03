@@ -42,6 +42,13 @@ export const createPost = async (serverUrl: string, post: Partial<Post>, files: 
         return {error: `${serverUrl} database not found`};
     }
 
+    let client: Client;
+    try {
+        client = NetworkManager.getClient(serverUrl);
+    } catch (error) {
+        return {error};
+    }
+
     const currentUserId = queryCurrentUserId(operator.database);
     const timestamp = Date.now();
     const pendingPostId = post.pending_post_id || `${currentUserId}:${timestamp}`;
@@ -100,7 +107,6 @@ export const createPost = async (serverUrl: string, post: Partial<Post>, files: 
     operator.batchRecords(initialPostModels);
 
     try {
-        const client = NetworkManager.getClient(serverUrl);
         const created = await client.createPost(newPost);
         await operator.handlePosts({
             actionType: ActionType.POSTS.RECEIVED_NEW,

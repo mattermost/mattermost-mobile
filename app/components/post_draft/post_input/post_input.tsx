@@ -3,7 +3,7 @@
 
 import {useManagedConfig} from '@mattermost/react-native-emm';
 import PasteableTextInput, {PastedFile, PasteInputRef} from '@mattermost/react-native-paste-input';
-import React, {useCallback, useEffect, useRef, useState} from 'react';
+import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {IntlShape, useIntl} from 'react-intl';
 import {
     Alert, AppState, AppStateStatus, EmitterSubscription, Keyboard,
@@ -23,7 +23,6 @@ import {extractFileInfo} from '@utils/file';
 import {switchKeyboardForCodeBlocks} from '@utils/markdown';
 import {changeOpacity, makeStyleSheetFromTheme, getKeyboardAppearanceFromTheme} from '@utils/theme';
 
-const HW_SHIFT_ENTER_TEXT = Platform.OS === 'ios' ? '\n' : '';
 const HW_EVENT_IN_SCREEN = ['Channel', 'Thread'];
 
 type Props = {
@@ -129,6 +128,9 @@ export default function PostInput({
 
     const disableCopyAndPaste = managedConfig.copyAndPasteProtection === 'true';
     const maxHeight = isTablet ? 150 : 88;
+    const pasteInputStyle = useMemo(() => {
+        return {...style.input, maxHeight};
+    }, [maxHeight]);
 
     const blur = () => {
         input.current?.blur();
@@ -224,7 +226,7 @@ export default function PostInput({
                     sendMessage();
                     break;
                 case 'shift-enter':
-                    updateValue(value.substring(0, cursorPosition) + HW_SHIFT_ENTER_TEXT + value.substring(cursorPosition));
+                    updateValue(value.substring(0, cursorPosition) + '\n' + value.substring(cursorPosition));
                     updateCursorPosition(cursorPosition + 1);
                     break;
             }
@@ -298,7 +300,7 @@ export default function PostInput({
             testID={testID}
             ref={input}
             disableCopyPaste={disableCopyAndPaste}
-            style={{...style.input, maxHeight}}
+            style={pasteInputStyle}
             onChangeText={handleTextChange}
             onSelectionChange={handlePostDraftSelectionChanged}
             placeholder={intl.formatMessage(getPlaceHolder(rootId), {channelDisplayName})}
