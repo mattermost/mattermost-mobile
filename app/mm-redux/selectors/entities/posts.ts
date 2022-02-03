@@ -109,7 +109,7 @@ export function makeGetPostIdsForThreadWithLimit(): (b: GlobalState, a: $ID<Post
         (state: GlobalState, rootId: string, focusedPostId: string) => focusedPostId,
         (state: GlobalState, rootId: string, focusedPostId: string, postsBeforeCount: number) => postsBeforeCount,
         (state: GlobalState, rootId: string, focusedPostId: string, postsBeforeCount: number, postsAfterCount: number) => postsAfterCount,
-        (postIds: $ID<Post>[], focusedPostId: string, postsBeforeCount = Posts.POST_CHUNK_SIZE / 2, postsAfterCount = Posts.POST_CHUNK_SIZE / 2) => {
+        (postIds: Array<$ID<Post>>, focusedPostId: string, postsBeforeCount = Posts.POST_CHUNK_SIZE / 2, postsAfterCount = Posts.POST_CHUNK_SIZE / 2) => {
             const index = postIds.indexOf(focusedPostId);
             if (index > -1) {
                 const minPostIndex = Math.max(index - postsAfterCount, 0);
