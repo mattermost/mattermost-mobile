@@ -14,11 +14,11 @@ class PostList {
 
     getMoreMessagesButton = () => {
         return element(by.id(this.testID.moreMessagesButton));
-    }
+    };
 
     getNewMessagesDivider = () => {
         return element(by.id(this.testID.newMessagesDivider));
-    }
+    };
 
     getPost = (postId, postMessage, postProfileOptions = {}) => {
         const {
@@ -66,11 +66,11 @@ class PostList {
             postListPostItemTableExpandButton: postItemTableExpandButton,
             postListPostItemThematicBreak: postItemThematicBreak,
         };
-    }
+    };
 
     getPostMessageAtIndex = (index) => {
         return Post.getPostMessage(this.testID.postListPostItem).atIndex(index);
-    }
+    };
 }
 
 export default PostList;

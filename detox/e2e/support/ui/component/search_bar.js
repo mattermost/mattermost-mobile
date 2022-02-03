@@ -9,26 +9,26 @@ class SearchBar {
         searchInputSuffix: 'search_bar.search.input',
         cancelButtonSuffix: 'search_bar.search.cancel.button',
         clearButtonSuffix: 'search_bar.search.clear.button',
-    }
+    };
 
     getSearchBar = (screenPrefix) => {
         return element(by.id(`${screenPrefix}${this.testID.searchBarSuffix}`));
-    }
+    };
 
     getSearchInput = (screenPrefix) => {
         return element(by.id(`${screenPrefix}${this.testID.searchInputSuffix}`)).atIndex(0);
-    }
+    };
 
     getCancelButton = (screenPrefix) => {
         if (isAndroid()) {
             return element(by.id(`${screenPrefix}${this.testID.cancelButtonSuffix}`)).atIndex(0);
         }
         return element(by.text('Cancel').withAncestor(by.id(`${screenPrefix}${this.testID.searchBarSuffix}`))).atIndex(0);
-    }
+    };
 
     getClearButton = (screenPrefix) => {
         return element(by.id(`${screenPrefix}${this.testID.clearButtonSuffix}`)).atIndex(0);
-    }
+    };
 }
 
 const searchBar = new SearchBar();

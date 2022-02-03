@@ -140,7 +140,7 @@ export default class Permalink extends PureComponent {
 
     setViewRef = (ref) => {
         this.viewRef = ref;
-    }
+    };
 
     handleClose = () => {
         const {actions} = this.props;

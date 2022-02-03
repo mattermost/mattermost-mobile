@@ -16,7 +16,7 @@ class NotificationSettingsMobileScreen {
         pushModal: 'notification_settings_mobile.push.modal',
         pushModalCancelButton: 'notification_settings_mobile.push_modal_cancel.button',
         pushModalSaveButton: 'notification_settings_mobile.push_modal_save.button',
-    }
+    };
 
     notificationSettingsMobileScreen = element(by.id(this.testID.notificationSettingsMobileScreen));
     backButton = element(by.id(this.testID.backButton));
@@ -41,25 +41,25 @@ class NotificationSettingsMobileScreen {
         default:
             throw new Error('Not a valid push option: ' + pushKey);
         }
-    }
+    };
 
     toBeVisible = async () => {
         await expect(this.notificationSettingsMobileScreen).toBeVisible();
 
         return this.notificationSettingsMobileScreen;
-    }
+    };
 
     open = async () => {
         // # Open notification settings mobile screen
         await NotificationSettingsScreen.mobileAction.tap();
 
         return this.toBeVisible();
-    }
+    };
 
     back = async () => {
         await this.backButton.tap();
         await expect(this.notificationSettingsMobileScreen).not.toBeVisible();
-    }
+    };
 }
 
 const notificationSettingsMobileScreen = new NotificationSettingsMobileScreen();

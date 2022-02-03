@@ -62,13 +62,13 @@ export function getCustomEmojiByName(name: string): ActionFunc {
     };
 }
 
-export function getCustomEmojisByName(names: Array<string>): ActionFunc {
+export function getCustomEmojisByName(names: string[]): ActionFunc {
     return async (dispatch: DispatchFunc) => {
         if (!names || names.length === 0) {
             return {data: true};
         }
 
-        const promises: Promise<ActionResult|ActionResult[]>[] = [];
+        const promises: Array<Promise<ActionResult|ActionResult[]>> = [];
         names.forEach((name) => promises.push(dispatch(getCustomEmojiByName(name))));
 
         await Promise.all(promises);
@@ -122,7 +122,7 @@ export function getCustomEmojis(
     };
 }
 
-export function loadProfilesForCustomEmojis(emojis: Array<CustomEmoji>): ActionFunc {
+export function loadProfilesForCustomEmojis(emojis: CustomEmoji[]): ActionFunc {
     return async (dispatch: DispatchFunc, getState: GetStateFunc) => {
         const usersToLoad: Dictionary<boolean> = {};
         emojis.forEach((emoji: CustomEmoji) => {

@@ -54,7 +54,7 @@ class FormattedMarkdownText extends React.PureComponent {
 
     createParser = () => {
         return new Parser();
-    }
+    };
 
     createRenderer = () => {
         return new Renderer({
@@ -73,39 +73,39 @@ class FormattedMarkdownText extends React.PureComponent {
                 atMention: this.renderAtMention,
             },
         });
-    }
+    };
 
     computeTextStyle = (baseStyle, context) => {
         return concatStyles(baseStyle, context.map((type) => this.textStyles[type]));
-    }
+    };
 
     renderText = ({context, literal}) => {
         const style = this.computeTextStyle(this.props.style || this.baseTextStyle, context);
         return <Text style={style}>{literal}</Text>;
-    }
+    };
 
     renderCodeSpan = ({context, literal}) => {
         const style = this.computeTextStyle([this.baseTextStyle, this.textStyles.code], context);
         return <Text style={style}>{literal}</Text>;
-    }
+    };
 
     renderLink = ({children, href}) => {
         const url = href[0] === TARGET_BLANK_URL_PREFIX ? href.substring(1, href.length) : href;
         return <MarkdownLink href={url}>{children}</MarkdownLink>;
-    }
+    };
 
     renderBreak = () => {
         return <Text>{'\n'}</Text>;
-    }
+    };
 
     renderParagraph = ({children}) => {
         return <Text>{children}</Text>;
-    }
+    };
 
     renderHTML = (props) => {
         console.warn(`HTML used in FormattedMarkdownText component with id ${this.props.id}`); // eslint-disable-line no-console
         return this.renderText(props);
-    }
+    };
 
     renderAtMention = ({context, mentionName}) => {
         const style = getStyleSheet(this.props.theme);
@@ -118,7 +118,7 @@ class FormattedMarkdownText extends React.PureComponent {
                 textStyle={[this.computeTextStyle(this.props.baseTextStyle, context), style.atMentionOpacity]}
             />
         );
-    }
+    };
 
     render() {
         const {id, defaultMessage, values, theme} = this.props;

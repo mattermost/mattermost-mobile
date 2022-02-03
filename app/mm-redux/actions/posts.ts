@@ -71,7 +71,7 @@ export function receivedPosts(posts: CombinedPostList) {
 }
 
 // receivedPostsAfter should be dispatched when receiving an ordered list of posts that come before a given post.
-export function receivedPostsAfter(posts: Array<Post>, channelId: string, afterPostId: string, recent = false) {
+export function receivedPostsAfter(posts: Post[], channelId: string, afterPostId: string, recent = false) {
     return {
         type: PostTypes.RECEIVED_POSTS_AFTER,
         channelId,
@@ -82,7 +82,7 @@ export function receivedPostsAfter(posts: Array<Post>, channelId: string, afterP
 }
 
 // receivedPostsBefore should be dispatched when receiving an ordered list of posts that come after a given post.
-export function receivedPostsBefore(posts: Array<Post>, channelId: string, beforePostId: string, oldest = false) {
+export function receivedPostsBefore(posts: Post[], channelId: string, beforePostId: string, oldest = false) {
     return {
         type: PostTypes.RECEIVED_POSTS_BEFORE,
         channelId,
@@ -95,7 +95,7 @@ export function receivedPostsBefore(posts: Array<Post>, channelId: string, befor
 // receivedPostsSince should be dispatched when receiving a list of posts that have been updated since a certain time.
 // Due to how the API endpoint works, some of these posts will be ordered, but others will not, so this needs special
 // handling from the reducers.
-export function receivedPostsSince(posts: Array<Post>, channelId: string) {
+export function receivedPostsSince(posts: Post[], channelId: string) {
     return {
         type: PostTypes.RECEIVED_POSTS_SINCE,
         channelId,
@@ -116,7 +116,7 @@ export function receivedPostsInChannel(posts: CombinedPostList, channelId: strin
 }
 
 // receivedPostsInThread should be dispatched when receiving a list of unordered posts in a thread.
-export function receivedPostsInThread(posts: Array<Post>, rootId: string) {
+export function receivedPostsInThread(posts: Post[], rootId: string) {
     return {
         type: PostTypes.RECEIVED_POSTS_IN_THREAD,
         data: posts,
@@ -175,7 +175,7 @@ export function createPost(post: Post, files: any[] = []) {
         const currentUserId = state.entities.users.currentUserId;
         const timestamp = Date.now();
         const pendingPostId = post.pending_post_id || `${currentUserId}:${timestamp}`;
-        let actions: Array<Action> = [];
+        let actions: Action[] = [];
 
         if (Selectors.isPostIdSending(state, pendingPostId)) {
             return {data: true};
@@ -843,8 +843,8 @@ export function getPostsAfter(channelId: string, postId: string, page = 0, perPa
     };
 }
 export type CombinedPostList = {
-    posts: Array<Post>;
-    order: Array<string>;
+    posts: Post[];
+    order: string[];
     next_post_id: string;
     prev_post_id: string;
 }
@@ -897,14 +897,14 @@ export function getPostsAround(channelId: string, postId: string, perPage = Post
 
 // getThreadsForPosts is intended for an array of posts that have been batched
 // (see the actions/websocket_actions/handleNewPostEvents function in the webapp)
-export function getThreadsForPosts(posts: Array<Post>, fetchThreads = true) {
+export function getThreadsForPosts(posts: Post[], fetchThreads = true) {
     return (dispatch: DispatchFunc, getState: GetStateFunc) => {
         if (!Array.isArray(posts) || !posts.length) {
             return {data: true};
         }
 
         const state = getState();
-        const promises: Promise<ActionResult>[] = [];
+        const promises: Array<Promise<ActionResult>> = [];
 
         posts.forEach((post) => {
             if (!post.root_id) {
@@ -922,7 +922,7 @@ export function getThreadsForPosts(posts: Array<Post>, fetchThreads = true) {
 }
 
 // Note that getProfilesAndStatusesForPosts can take either an array of posts or a map of ids to posts
-export function getProfilesAndStatusesForPosts(postsArrayOrMap: Array<Post>|Map<string, Post>, dispatch: DispatchFunc, getState: GetStateFunc) {
+export function getProfilesAndStatusesForPosts(postsArrayOrMap: Post[]|Map<string, Post>, dispatch: DispatchFunc, getState: GetStateFunc) {
     if (!postsArrayOrMap) {
         // Some API methods return {error} for no results
         return Promise.resolve();
@@ -983,7 +983,7 @@ export function getProfilesAndStatusesForPosts(postsArrayOrMap: Array<Post>|Map<
     return Promise.all(promises);
 }
 
-export function getNeededAtMentionedUsernames(state: GlobalState, posts: Array<Post>): Set<string> {
+export function getNeededAtMentionedUsernames(state: GlobalState, posts: Post[]): Set<string> {
     let usersByUsername: Dictionary<UserProfile>; // Populate this lazily since it's relatively expensive
 
     const usernamesToLoad = new Set<string>();
@@ -1021,7 +1021,7 @@ export function getNeededAtMentionedUsernames(state: GlobalState, posts: Array<P
     return usernamesToLoad;
 }
 
-function buildPostAttachmentText(attachments: Array<any>) {
+function buildPostAttachmentText(attachments: any[]) {
     let attachmentText = '';
 
     attachments.forEach((a) => {
@@ -1043,7 +1043,7 @@ function buildPostAttachmentText(attachments: Array<any>) {
     return attachmentText;
 }
 
-export function getNeededCustomEmojis(state: GlobalState, posts: Array<Post>): Set<string> {
+export function getNeededCustomEmojis(state: GlobalState, posts: Post[]): Set<string> {
     if (getConfig(state).EnableCustomEmoji !== 'true') {
         return new Set<string>();
     }

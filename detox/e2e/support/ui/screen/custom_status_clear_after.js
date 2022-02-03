@@ -12,7 +12,7 @@ class ClearAfterScreen {
         menuItemPrefix: 'clear_after.menu_item.',
         selectDateButton: 'clear_after.menu_item.date_and_time.button.date',
         selectTimeButton: 'clear_after.menu_item.date_and_time.button.time',
-    }
+    };
 
     clearAfterScreen = element(by.id(this.testID.clearAfterScreen));
     doneButton = element(by.id(this.testID.doneButton));
@@ -22,37 +22,37 @@ class ClearAfterScreen {
     getClearAfterMenuItem = (duration) => {
         const menuItemID = `${this.testID.menuItemPrefix}${duration}`;
         return element(by.id(menuItemID));
-    }
+    };
 
     toBeVisible = async () => {
         await expect(this.clearAfterScreen).toBeVisible();
 
         return this.clearAfterScreen;
-    }
+    };
 
     open = async () => {
         // # Open clear after screen
         await CustomStatusScreen.openClearAfterModal();
 
         return this.toBeVisible();
-    }
+    };
 
     tapSuggestion = async (duration) => {
         await this.getClearAfterMenuItem(duration).tap();
-    }
+    };
 
     openDatePicker = async () => {
         await this.selectDateButton.tap();
-    }
+    };
 
     openTimePicker = async () => {
         await this.selectTimeButton.tap();
-    }
+    };
 
     close = async () => {
         await this.doneButton.tap();
         return expect(this.clearAfterScreen).not.toBeVisible();
-    }
+    };
 
     getExpiryText = (minutes) => {
         const currentMomentTime = moment();
@@ -79,7 +79,7 @@ class ClearAfterScreen {
         expiryText += showTomorrow;
         expiryText += showTime;
         return expiryText;
-    }
+    };
 }
 
 const clearAfterScreen = new ClearAfterScreen();

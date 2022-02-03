@@ -45,7 +45,7 @@ export default class Root extends PureComponent {
 
     setProviderRef = (ref) => {
         this.providerRef = ref;
-    }
+    };
 
     handleNoTeams = () => {
         if (!this.providerRef) {
@@ -61,7 +61,7 @@ export default class Root extends PureComponent {
             return;
         }
         this.navigateToTeamsPage('ErrorTeamsList', true);
-    }
+    };
 
     navigateToTeamsPage = (screen, error = false) => {
         const {currentUrl, theme} = this.props;
@@ -98,7 +98,7 @@ export default class Root extends PureComponent {
         }
 
         resetToTeams(screen, title, passProps, options);
-    }
+    };
 
     render() {
         const locale = getLocaleFromLanguage(this.props.locale);

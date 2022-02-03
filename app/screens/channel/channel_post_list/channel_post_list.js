@@ -77,7 +77,7 @@ export default class ChannelPostList extends PureComponent {
             duration,
             useNativeDriver: false,
         });
-    }
+    };
 
     goToThread = (post) => {
         const {actions} = this.props;

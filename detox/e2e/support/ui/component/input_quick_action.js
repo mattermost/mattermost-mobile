@@ -7,23 +7,23 @@ class InputQuickAction {
         atInputActionDisabledSuffix: 'post_draft.quick_actions.at_input_action.disabled',
         slashInputActionSuffix: 'post_draft.quick_actions.slash_input_action',
         slashInputActionDisabledSuffix: 'post_draft.quick_actions.slash_input_action.disabled',
-    }
+    };
 
     getAtInputQuickAction = (screenPrefix) => {
         return element(by.id(`${screenPrefix}${this.testID.atInputActionSuffix}`));
-    }
+    };
 
     getAtInputQuickActionDisabled = (screenPrefix) => {
         return element(by.id(`${screenPrefix}${this.testID.atInputActionDisabledSuffix}`));
-    }
+    };
 
     getSlashInputQuickAction = (screenPrefix) => {
         return element(by.id(`${screenPrefix}${this.testID.slashInputActionSuffix}`));
-    }
+    };
 
     getSlashInputQuickActionDisabled = (screenPrefix) => {
         return element(by.id(`${screenPrefix}${this.testID.slashInputActionDisabledSuffix}`));
-    }
+    };
 }
 
 const inputQuickAction = new InputQuickAction();

@@ -11,7 +11,7 @@ class LoginScreen {
         backButton: 'screen.back.button',
         signinButton: 'login.signin.button',
         errorText: 'login.error.text',
-    }
+    };
 
     loginScreen = element(by.id(this.testID.loginScreen));
     usernameInput = element(by.id(this.testID.usernameInput));
@@ -24,19 +24,19 @@ class LoginScreen {
         await expect(this.loginScreen).toBeVisible();
 
         return this.loginScreen;
-    }
+    };
 
     open = async () => {
         // # Open login screen
         await SelectServerScreen.connectToServer();
 
         return this.toBeVisible();
-    }
+    };
 
     back = async () => {
         await this.backButton.tap();
         await expect(this.loginScreen).not.toBeVisible();
-    }
+    };
 
     /**
      * login enters credential on Login screen and then tap "Sign in" button to log in.
@@ -56,7 +56,7 @@ class LoginScreen {
         await screen.tap({x: 10, y: 10});
 
         await this.signinButton.tap();
-    }
+    };
 }
 
 const loginScreen = new LoginScreen();

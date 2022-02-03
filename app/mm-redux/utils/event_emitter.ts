@@ -5,7 +5,7 @@ function isFunction(obj: any): boolean {
 }
 
 class EventEmitter {
-    listeners: Map<string, Array<Function>>;
+    listeners: Map<string, Function[]>;
 
     constructor() {
         this.listeners = new Map();
@@ -45,7 +45,7 @@ class EventEmitter {
         this.removeListener(label, callback);
     }
 
-    emit(label: string, ...args: Array<any>): boolean {
+    emit(label: string, ...args: any[]): boolean {
         const listeners = this.listeners.get(label);
 
         if (listeners && listeners.length) {

@@ -55,9 +55,9 @@ export async function isAuthorized(intl: typeof intlShape): Promise<boolean> {
     return getCredentials();
 }
 
-export async function getSharedItems(items: Array<ShareItem>, intl: typeof intlShape): Promise<ProcessedSharedItems> {
+export async function getSharedItems(items: ShareItem[], intl: typeof intlShape): Promise<ProcessedSharedItems> {
     const text = [];
-    const files: Array<ShareFileInfo> = [];
+    const files: ShareFileInfo[] = [];
     let totalSize = 0;
     let error;
 

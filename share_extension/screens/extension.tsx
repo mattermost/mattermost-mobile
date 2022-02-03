@@ -57,7 +57,7 @@ export default class ShareExtension extends PureComponent {
         );
     }
 
-    close = () => NativeShareExtension.close(null)
+    close = () => NativeShareExtension.close(null);
 
     render() {
         if (this.state.hasError) {

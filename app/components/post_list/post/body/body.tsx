@@ -84,7 +84,7 @@ const Body = ({
     const isReplyPost = Boolean(post.root_id && (!isPostEphemeral(post) || post.state === Posts.POST_DELETED) && location !== THREAD);
     const hasContent = (post.metadata?.embeds?.length || (appsEnabled && post.props?.app_bindings?.length)) || post.props?.attachments?.length;
 
-    const replyBarStyle = useCallback((): StyleProp<ViewStyle>[]|undefined => {
+    const replyBarStyle = useCallback((): Array<StyleProp<ViewStyle>>|undefined => {
         if (!isReplyPost) {
             return undefined;
         }

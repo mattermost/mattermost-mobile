@@ -99,7 +99,7 @@ export default class ChannelMembers extends PureComponent {
 
     setSearchBarRef = (ref) => {
         this.searchBarRef = ref;
-    }
+    };
 
     clearSearch = () => {
         this.setState({term: '', searchResults: []});
@@ -236,7 +236,7 @@ export default class ChannelMembers extends PureComponent {
                 {...selectProps}
             />
         );
-    }
+    };
 
     renderSelectableItem = (props) => {
         // The list will re-render when the selection changes because selectedIds is passed into the list as extraData
@@ -247,7 +247,7 @@ export default class ChannelMembers extends PureComponent {
         };
 
         return this.renderItem(props, selectProps);
-    }
+    };
 
     renderUnselectableItem = (props) => {
         const selectProps = {

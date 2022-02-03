@@ -67,7 +67,7 @@ export default class ChannelNotificationPreferenceBase extends PureComponent {
             value: ViewTypes.NotificationLevels.NONE,
             checked: notificationLevel === ViewTypes.NotificationLevels.NONE,
         }];
-    }
+    };
 
     handleSubmit = (push, push_threads) => {
         const {actions, channelId, userId, isCollapsedThreadsEnabled} = this.props;

@@ -74,7 +74,7 @@ function storeFilesForPost(state: Dictionary<FileInfo>, post: Post) {
     }, state);
 }
 
-export function fileIdsByPostId(state: Dictionary<Array<string>> = {}, action: GenericAction) {
+export function fileIdsByPostId(state: Dictionary<string[]> = {}, action: GenericAction) {
     switch (action.type) {
     case FileTypes.RECEIVED_FILES_FOR_POST: {
         const {data, postId} = action;

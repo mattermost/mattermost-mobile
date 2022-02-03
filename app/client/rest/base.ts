@@ -91,7 +91,7 @@ export default class ClientBase {
 
     getWebSocketUrl = () => {
         return `${this.getBaseRoute()}/websocket`;
-    }
+    };
 
     setAcceptLanguage(locale: string) {
         this.defaultHeaders['Accept-Language'] = locale;

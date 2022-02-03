@@ -74,7 +74,7 @@ export default class SettingsSidebarBase extends PureComponent {
         this.setState({
             showRetryMessage: true,
         });
-    }
+    };
 
     handleCustomStatusChange = (prevCustomStatus, customStatus) => {
         const isStatusSet = Boolean(customStatus?.emoji);
@@ -87,7 +87,7 @@ export default class SettingsSidebarBase extends PureComponent {
                 });
             }
         }
-    }
+    };
 
     confirmResetBase = (status, intl) => {
         confirmOutOfOfficeDisabled(intl, status, this.updateStatus);
@@ -169,7 +169,7 @@ export default class SettingsSidebarBase extends PureComponent {
     goToCustomStatusScreen = (intl) => {
         this.closeSettingsSidebar();
         showModal('CustomStatus', intl.formatMessage({id: 'mobile.routes.custom_status', defaultMessage: 'Set a Status'}));
-    }
+    };
 
     logout = preventDoubleTap(() => {
         const {logout} = this.props.actions;
@@ -239,7 +239,7 @@ export default class SettingsSidebarBase extends PureComponent {
         if (error) {
             this.setState({showStatus: true, showRetryMessage: true});
         }
-    }
+    };
 
     renderCustomStatus = () => {
         const {isCustomStatusEnabled, customStatus, theme, isCustomStatusExpired, isCustomStatusExpirySupported} = this.props;
