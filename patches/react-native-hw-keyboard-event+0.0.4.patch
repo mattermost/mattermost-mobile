@@ -1,0 +1,10 @@
+diff --git a/node_modules/react-native-hw-keyboard-event/index.d.ts b/node_modules/react-native-hw-keyboard-event/index.d.ts
+index 91999f1..53c7a42 100644
+--- a/node_modules/react-native-hw-keyboard-event/index.d.ts
++++ b/node_modules/react-native-hw-keyboard-event/index.d.ts
+@@ -1,4 +1,4 @@
+ declare module "react-native-hw-keyboard-event";
+ 
+-export function onHWKeyPressed(hwKeyEvent: { pressedKey: string }): void;
++export function onHWKeyPressed(callback: (hwKeyEvent: { pressedKey: string }) => void): void;
+ export function removeOnHWKeyPressed(): void;

@@ -1,3 +1,15 @@
+diff --git a/node_modules/react-native-fast-image/RNFastImage.podspec b/node_modules/react-native-fast-image/RNFastImage.podspec
+index db0fada..47dbd5b 100644
+--- a/node_modules/react-native-fast-image/RNFastImage.podspec
++++ b/node_modules/react-native-fast-image/RNFastImage.podspec
+@@ -16,6 +16,6 @@ Pod::Spec.new do |s|
+   s.source_files  = "ios/**/*.{h,m}"
+ 
+   s.dependency 'React-Core'
+-  s.dependency 'SDWebImage', '~> 5.11.1'
++  s.dependency 'SDWebImage', '~> 5.12.3'
+   s.dependency 'SDWebImageWebPCoder', '~> 0.8.4'
+ end
 diff --git a/node_modules/react-native-fast-image/android/src/main/java/com/dylanvann/fastimage/FastImageCookieJar.java b/node_modules/react-native-fast-image/android/src/main/java/com/dylanvann/fastimage/FastImageCookieJar.java
 new file mode 100644
 index 0000000..a302394
@@ -62,10 +74,10 @@ index e659a61..1bdf34e 100644
                  .build();
          OkHttpUrlLoader.Factory factory = new OkHttpUrlLoader.Factory(client);
 diff --git a/node_modules/react-native-fast-image/dist/index.d.ts b/node_modules/react-native-fast-image/dist/index.d.ts
-index 956fe5b..394db9a 100644
+index 8a91257..599775d 100644
 --- a/node_modules/react-native-fast-image/dist/index.d.ts
 +++ b/node_modules/react-native-fast-image/dist/index.d.ts
-@@ -89,6 +89,10 @@ export interface FastImageProps extends AccessibilityProps {
+@@ -89,6 +89,10 @@ export interface FastImageProps extends AccessibilityProps, ViewProps {
       * Render children within the image.
       */
      children?: React.ReactNode;

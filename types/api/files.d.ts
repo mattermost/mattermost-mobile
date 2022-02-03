@@ -3,13 +3,14 @@
 
 type FileInfo = {
     id?: string;
+    bytesRead?: number;
     clientId?: string;
     create_at: number;
     delete_at: number;
     extension: string;
+    failed?: boolean;
     has_preview_image: boolean;
     height: number;
-    loading?: boolean;
     localPath?: string;
     mime_type: string;
     mini_preview?: string;
