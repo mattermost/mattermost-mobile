@@ -21,3 +21,21 @@ export async function handleLicenseChangedEvent(serverUrl: string, msg: WebSocke
         // do nothing
     }
 }
+
+export async function handleConfigChangedEvent(serverUrl: string, msg: WebSocketMessage): Promise<void> {
+    const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
+    if (!operator) {
+        return;
+    }
+
+    try {
+        const config = msg.data.config;
+        const systems: IdValue[] = [{
+            id: SYSTEM_IDENTIFIERS.CONFIG,
+            value: JSON.stringify(config),
+        }];
+        await operator.handleSystem({systems, prepareRecordsOnly: false});
+    } catch {
+        // do nothing
+    }
+}
