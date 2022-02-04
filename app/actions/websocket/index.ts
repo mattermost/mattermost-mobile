@@ -20,6 +20,7 @@ import {queryCommonSystemValues, queryConfig, queryWebSocketLastDisconnected} fr
 import {queryCurrentUser} from '@queries/servers/user';
 
 import {handleChannelDeletedEvent, handleUserAddedToChannelEvent, handleUserRemovedFromChannelEvent} from './channel';
+import {handleGroupUpdatedEvent, handleGroupAssociatedToTeam, handleGroupNotAssociatedToTeam, handleGroupAssociatedToChannel, handleGroupNotAssociatedToChannel} from './groups';
 import {handleNewPostEvent, handlePostDeleted, handlePostEdited, handlePostUnread} from './posts';
 import {handlePreferenceChangedEvent, handlePreferencesChangedEvent, handlePreferencesDeletedEvent} from './preferences';
 import {handleAddCustomEmoji, handleReactionRemovedFromPostEvent, handleReactionAddedToPostEvent} from './reactions';
@@ -284,9 +285,25 @@ export async function handleEvent(serverUrl: string, msg: WebSocketMessage) {
 
         // return dispatch(handleOpenDialogEvent(msg));
         case WebsocketEvents.RECEIVED_GROUP:
+            handleGroupUpdatedEvent(serverUrl, msg);
             break;
 
-        // return dispatch(handleGroupUpdatedEvent(msg));
+        case WebsocketEvents.RECEIVED_GROUP_ASSOCIATED_TO_TEAM:
+            handleGroupAssociatedToTeam(serverUrl, msg);
+            break;
+
+        case WebsocketEvents.RECEIVED_GROUP_NOT_ASSOCIATED_TO_TEAM:
+            handleGroupNotAssociatedToTeam(serverUrl, msg);
+            break;
+
+        case WebsocketEvents.RECEIVED_GROUP_ASSOCIATED_TO_CHANNEL:
+            handleGroupAssociatedToChannel(serverUrl, msg);
+            break;
+
+        case WebsocketEvents.RECEIVED_GROUP_NOT_ASSOCIATED_TO_CHANNEL:
+            handleGroupNotAssociatedToChannel(serverUrl, msg);
+            break;
+
         case WebsocketEvents.THREAD_UPDATED:
             break;
 
