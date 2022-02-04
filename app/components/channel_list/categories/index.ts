@@ -13,14 +13,13 @@ import Categories from './categories';
 import type {WithDatabaseArgs} from '@typings/database/database';
 import type CategoryModel from '@typings/database/models/servers/category';
 
-type WithDatabaseProps = {currentTeamId: string; currentUserId: string } & WithDatabaseArgs
+ type WithDatabaseProps = {currentTeamId: string } & WithDatabaseArgs
 
 const withCategories = withObservables(
-    ['currentTeamId', 'currentUserId'],
-    ({currentTeamId, currentUserId, database}: WithDatabaseProps) => {
+    ['currentTeamId'],
+    ({currentTeamId, database}: WithDatabaseProps) => {
         const categories = database.get<CategoryModel>(CATEGORY).query(
             Q.where('team_id', currentTeamId),
-            Q.where('user_id', currentUserId),
         ).observeWithColumns(['sort_order']);
 
         return {

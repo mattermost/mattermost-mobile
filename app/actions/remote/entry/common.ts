@@ -1,6 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {fetchMyCategories, MyCategoriesRequest} from '@actions/remote/category';
 import {fetchMissingSidebarInfo, fetchMyChannelsForTeam, MyChannelsRequest} from '@actions/remote/channel';
 import {fetchGroupsForTeam} from '@actions/remote/group';
 import {fetchPostsForChannel, fetchPostsForUnreadChannels} from '@actions/remote/post';
@@ -21,6 +22,7 @@ import type ClientError from '@client/rest/error';
 export type AppEntryData = {
     initialTeamId: string;
     teamData: MyTeamsRequest;
+    categoryData?: MyCategoriesRequest;
     chData?: MyChannelsRequest;
     prefData: MyPreferencesRequest;
     meData: MyUserRequest;
@@ -43,8 +45,9 @@ export const fetchAppEntryData = async (serverUrl: string, initialTeamId: string
     const fetchOnly = true;
 
     // Fetch in parallel teams / team membership / channels for current team / user preferences / user
-    const promises: [Promise<MyTeamsRequest>, Promise<MyChannelsRequest | undefined>, Promise<MyPreferencesRequest>, Promise<MyUserRequest>] = [
+    const promises: [Promise<MyTeamsRequest>, Promise<MyCategoriesRequest | undefined>, Promise<MyChannelsRequest | undefined>, Promise<MyPreferencesRequest>, Promise<MyUserRequest>] = [
         fetchMyTeams(serverUrl, fetchOnly),
+        initialTeamId ? fetchMyCategories(serverUrl, initialTeamId, fetchOnly) : Promise.resolve(undefined),
         initialTeamId ? fetchMyChannelsForTeam(serverUrl, initialTeamId, includeDeletedChannels, lastDisconnected, fetchOnly) : Promise.resolve(undefined),
         fetchMyPreferences(serverUrl, fetchOnly),
         fetchMe(serverUrl, fetchOnly),
@@ -52,7 +55,7 @@ export const fetchAppEntryData = async (serverUrl: string, initialTeamId: string
 
     const removeTeamIds: string[] = [];
     const resolution = await Promise.all(promises);
-    const [teamData, , prefData, meData] = resolution;
+    const [teamData, categoryData, , prefData, meData] = resolution;
     let [, chData] = resolution;
 
     if (!initialTeamId && teamData.teams?.length && teamData.memberships?.length) {
@@ -75,6 +78,7 @@ export const fetchAppEntryData = async (serverUrl: string, initialTeamId: string
     let data: AppEntryData = {
         initialTeamId,
         teamData,
+        categoryData,
         chData,
         prefData,
         meData,

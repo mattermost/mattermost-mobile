@@ -1,32 +1,17 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React from 'react';
-import {FlatList} from 'react-native';
+import withObservables from '@nozbe/with-observables';
 
-import ChannelListItem from './channel';
+import CategoryBody from './category_body';
 
-const renderChannelItem = (data: { item: TempoChannel }) => {
-    return (
-        <ChannelListItem
-            icon={'globe'}
-            name={data.item.name}
-            highlight={data.item.highlight}
-        />
-    );
-};
+import type CategoryModel from '@typings/database/models/servers/category';
 
-type Props = {
-    channels: TempoChannel[];
-};
+const withCategory = withObservables(['category'], ({category}: {category: CategoryModel}) => ({
+    category,
+    categoryChannels: category.categoryChannelsBySortOrder.observeWithColumns(['sort_order']),
+    myChannels: category.myChannels.observeWithColumns(['last_post_at']),
+    channels: category.channels.observeWithColumns(['display_name']),
+}));
 
-const CategoryBody = (props: Props) => {
-    return (
-        <FlatList
-            data={props.channels}
-            renderItem={renderChannelItem}
-        />
-    );
-};
-
-export default CategoryBody;
+export default withCategory(CategoryBody);

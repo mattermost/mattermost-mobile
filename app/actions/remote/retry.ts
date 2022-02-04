@@ -176,7 +176,7 @@ export const retryInitialChannel = async (serverUrl: string, teamId: string) => 
         const {config, license} = await queryCommonSystemValues(database);
 
         // fetch channels / channel membership for initial team
-        const chData = await fetchMyChannelsForTeam(serverUrl, teamId, false, 0, true);
+        const chData = await fetchMyChannelsForTeam(serverUrl, teamId, true, 0, true);
         if (chData.channels?.length && chData.memberships?.length) {
             const {channels, memberships} = chData;
             const channelIds = new Set(channels?.map((c) => c.id));

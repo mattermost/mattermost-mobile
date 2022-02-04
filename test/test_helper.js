@@ -3,6 +3,7 @@
 
 import assert from 'assert';
 
+import {random} from 'lodash';
 import nock from 'nock';
 
 import Config from '@assets/config.json';
@@ -22,6 +23,8 @@ class TestHelper {
         this.basicUser = null;
         this.basicTeam = null;
         this.basicTeamMember = null;
+        this.basicCategory = null;
+        this.basicCategoryChannel = null;
         this.basicChannel = null;
         this.basicChannelMember = null;
         this.basicPost = null;
@@ -91,6 +94,33 @@ class TestHelper {
         };
 
         return new Client(mockApiClient, mockApiClient.baseUrl);
+    };
+
+    fakeCategory = (teamId) => {
+        return {
+            displayName: 'Test Category',
+            type: 'custom',
+            sortOrder: 0,
+            sorting: 'manual',
+            muted: false,
+            collapsed: false,
+            team_id: teamId,
+        };
+    };
+
+    fakeCategoryWithId = (teamId) => {
+        return {
+            ...this.fakeCategory(teamId),
+            id: this.generateId(),
+        };
+    };
+
+    fakeCategoryChannel = (categoryId, channelId) => {
+        return {
+            category_id: categoryId,
+            channel_id: channelId,
+            sort_order: random(0, 10, false),
+        };
     };
 
     fakeChannel = (teamId) => {
@@ -318,7 +348,9 @@ class TestHelper {
         this.basicUser.roles = 'system_user system_admin';
         this.basicTeam = this.fakeTeamWithId();
         this.basicTeamMember = this.fakeTeamMember(this.basicUser.id, this.basicTeam.id);
+        this.basicCategory = this.fakeCategoryWithId(this.basicTeam.id);
         this.basicChannel = this.fakeChannelWithId(this.basicTeam.id);
+        this.basicCategoryChannel = this.fakeCategoryChannel(this.basicCategory.id, this.basicChannel.id);
         this.basicChannelMember = this.fakeChannelMember(this.basicUser.id, this.basicChannel.id);
         this.basicPost = {...this.fakePostWithId(this.basicChannel.id), create_at: 1507841118796};
         this.basicRoles = {

@@ -31,7 +31,7 @@ export const appEntry = async (serverUrl: string) => {
         return {error: fetchedError};
     }
 
-    const {initialTeamId, teamData, chData, prefData, meData, removeTeamIds, removeChannelIds} = fetchedData as AppEntryData;
+    const {initialTeamId, teamData, categoryData, chData, prefData, meData, removeTeamIds, removeChannelIds} = fetchedData as AppEntryData;
 
     if (initialTeamId === currentTeamId) {
         let cId = await queryCurrentChannelId(database);
@@ -74,7 +74,7 @@ export const appEntry = async (serverUrl: string) => {
         removeChannels = await queryChannelsById(database, removeChannelIds);
     }
 
-    const modelPromises = await prepareModels({operator, initialTeamId, removeTeams, removeChannels, teamData, chData, prefData, meData});
+    const modelPromises = await prepareModels({operator, initialTeamId, removeTeams, removeChannels, teamData, categoryData, chData, prefData, meData});
     const models = await Promise.all(modelPromises);
     if (models.length) {
         await operator.batchRecords(models.flat());

@@ -3,11 +3,13 @@
 
 import ServerDataOperator from '@database/operator/server_data_operator';
 
+import {prepareCategories, prepareCategoryChannels} from './categories';
 import {prepareDeleteChannel, prepareMyChannelsForTeam} from './channel';
 import {prepareMyPreferences} from './preference';
 import {prepareDeleteTeam, prepareMyTeams} from './team';
 import {prepareUsers} from './user';
 
+import type {MyCategoriesRequest} from '@actions/remote/category';
 import type {MyChannelsRequest} from '@actions/remote/channel';
 import type {MyPreferencesRequest} from '@actions/remote/preference';
 import type {MyTeamsRequest} from '@actions/remote/team';
@@ -23,11 +25,12 @@ type PrepareModelsArgs = {
     removeChannels?: ChannelModel[];
     teamData?: MyTeamsRequest;
     chData?: MyChannelsRequest;
+    categoryData?: MyCategoriesRequest;
     prefData?: MyPreferencesRequest;
     meData?: MyUserRequest;
 }
 
-export const prepareModels = async ({operator, initialTeamId, removeTeams, removeChannels, teamData, chData, prefData, meData}: PrepareModelsArgs): Promise<Array<Promise<Model[]>>> => {
+export const prepareModels = async ({operator, initialTeamId, removeTeams, removeChannels, teamData, categoryData, chData, prefData, meData}: PrepareModelsArgs): Promise<Array<Promise<Model[]>>> => {
     const modelPromises: Array<Promise<Model[]>> = [];
 
     if (removeTeams?.length) {
@@ -53,6 +56,18 @@ export const prepareModels = async ({operator, initialTeamId, removeTeams, remov
         const channelModels = await prepareMyChannelsForTeam(operator, initialTeamId, chData.channels, chData.memberships || []);
         if (channelModels) {
             modelPromises.push(...channelModels);
+        }
+    }
+
+    if (initialTeamId && categoryData?.categories?.length) {
+        const categoryModels = await prepareCategories(operator, categoryData.categories || []);
+        if (categoryModels) {
+            modelPromises.push(...categoryModels);
+        }
+
+        const categoryChannelModels = await prepareCategoryChannels(operator, categoryData.categories || []);
+        if (categoryChannelModels) {
+            modelPromises.push(...categoryChannelModels);
         }
     }
 

@@ -19,6 +19,7 @@ import {prepareMyChannelsForTeam} from '@queries/servers/channel';
 import {queryCommonSystemValues, queryConfig, queryWebSocketLastDisconnected} from '@queries/servers/system';
 import {queryCurrentUser} from '@queries/servers/user';
 
+import {handleCategoryCreatedEvent, handleCategoryDeletedEvent, handleCategoryOrderUpdatedEvent, handleCategoryUpdatedEvent} from './category';
 import {handleChannelDeletedEvent, handleUserAddedToChannelEvent, handleUserRemovedFromChannelEvent} from './channel';
 import {handleNewPostEvent, handlePostDeleted, handlePostEdited, handlePostUnread} from './posts';
 import {handlePreferenceChangedEvent, handlePreferencesChangedEvent, handlePreferencesDeletedEvent} from './preferences';
@@ -308,6 +309,19 @@ export async function handleEvent(serverUrl: string, msg: WebSocketMessage) {
 
         // return dispatch(handleThreadFollowChanged(msg));
         case WebsocketEvents.APPS_FRAMEWORK_REFRESH_BINDINGS:
+            break;
+
+        case WebsocketEvents.CATEGORY_CREATED:
+            handleCategoryCreatedEvent(serverUrl, msg);
+            break;
+        case WebsocketEvents.CATEGORY_UPDATED:
+            handleCategoryUpdatedEvent(serverUrl, msg);
+            break;
+        case WebsocketEvents.CATEGORY_ORDER_UPDATED:
+            handleCategoryOrderUpdatedEvent(serverUrl, msg);
+            break;
+        case WebsocketEvents.CATEGORY_DELETED:
+            handleCategoryDeletedEvent(serverUrl, msg);
             break;
 
         // return dispatch(handleRefreshAppsBindings());

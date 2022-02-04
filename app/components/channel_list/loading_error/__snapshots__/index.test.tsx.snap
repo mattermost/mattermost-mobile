@@ -51,7 +51,7 @@ exports[`Loading Error should match snapshot 1`] = `
       ]
     }
   >
-    Error title
+    Couldn’t load Staff
   </Text>
   <Text
     style={
@@ -70,7 +70,7 @@ exports[`Loading Error should match snapshot 1`] = `
       ]
     }
   >
-    Error description
+    There was a problem loading the content for this team.
   </Text>
   <View
     onMoveShouldSetResponder={[Function]}
@@ -88,7 +88,7 @@ exports[`Loading Error should match snapshot 1`] = `
   >
     <View
       accessible={true}
-      focusable={true}
+      focusable={false}
       onClick={[Function]}
       onResponderGrant={[Function]}
       onResponderMove={[Function]}

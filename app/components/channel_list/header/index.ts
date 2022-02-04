@@ -3,7 +3,7 @@
 
 import {withDatabase} from '@nozbe/watermelondb/DatabaseProvider';
 import withObservables from '@nozbe/with-observables';
-import {catchError, of as of$} from 'rxjs';
+import {of as of$} from 'rxjs';
 import {switchMap} from 'rxjs/operators';
 
 import {MM_TABLES, SYSTEM_IDENTIFIERS} from '@constants/database';
@@ -15,10 +15,9 @@ import type {WithDatabaseArgs} from '@typings/database/database';
 import type SystemModel from '@typings/database/models/servers/system';
 import type TeamModel from '@typings/database/models/servers/team';
 
-const enhanced = withObservables([], ({database}: WithDatabaseArgs) => {
+const withCurrentTeam = withObservables([], ({database}: WithDatabaseArgs) => {
     const team = database.get<SystemModel>(SYSTEM).findAndObserve(SYSTEM_IDENTIFIERS.CURRENT_TEAM_ID).pipe(
         switchMap((id) => database.get<TeamModel>(TEAM).findAndObserve(id.value)),
-        catchError(() => of$({displayName: ''})),
     );
 
     return {
@@ -28,4 +27,4 @@ const enhanced = withObservables([], ({database}: WithDatabaseArgs) => {
     };
 });
 
-export default withDatabase(enhanced(ChannelListHeader));
+export default withDatabase(withCurrentTeam(ChannelListHeader));

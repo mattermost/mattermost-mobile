@@ -29,6 +29,9 @@ exports[`Search Field should match snapshot 1`] = `
     }
   />
   <TextInput
+    collapsable={false}
+    onGestureHandlerEvent={[Function]}
+    onGestureHandlerStateChange={[Function]}
     placeholder="Find Channels"
     placeholderTextColor="rgba(255,255,255,0.72)"
     style={

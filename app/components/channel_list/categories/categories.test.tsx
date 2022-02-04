@@ -5,11 +5,17 @@ import React from 'react';
 
 import {renderWithIntlAndTheme} from '@test/intl-test-helper';
 
-import ErrorComponent from './index';
+import Category from './index';
 
-test('Loading Error should match snapshot', () => {
+const userId = 'myUser';
+const teamId = 'myTeam';
+
+test('Category List Component should match snapshot', () => {
     const {toJSON} = renderWithIntlAndTheme(
-        <ErrorComponent/>,
+        <Category
+            currentUserId={userId}
+            currentTeamId={teamId}
+        />,
     );
 
     expect(toJSON()).toMatchSnapshot();
