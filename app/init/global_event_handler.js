@@ -250,9 +250,10 @@ class GlobalEventHandler {
     onServerVersionChanged = async (serverVersion) => {
         const {dispatch, getState} = Store.redux;
         const state = getState();
+        const {general, users} = state.entities;
         const isValid = validVersion(serverVersion);
-        if (isValid && serverVersion && serverVersion !== state.entities.general.serverVersion &&
-            state.entities.users && state.entities.users.currentUserId) {
+        const versionDidChange = general?.serverVersion !== serverVersion;
+        if (isValid && serverVersion && versionDidChange && users?.currentUserId) {
             dispatch(setServerVersion(serverVersion));
         }
     };
