@@ -34,7 +34,7 @@ export function loadConfigAndLicense() {
     return async (dispatch, getState) => {
         const state = getState();
         const {currentUserId} = state.entities.users;
-        const {general} = state.entities.general;
+        const {general} = state.entities;
         const actions = [];
 
         try {
