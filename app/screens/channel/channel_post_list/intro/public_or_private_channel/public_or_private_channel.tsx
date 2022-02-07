@@ -6,7 +6,7 @@ import {useIntl} from 'react-intl';
 import {Text, View} from 'react-native';
 
 import {fetchChannelCreator} from '@actions/remote/channel';
-import CompassIcon from '@app/components/compass_icon';
+import CompassIcon from '@components/compass_icon';
 import {General, Permissions} from '@constants';
 import {useServerUrl} from '@context/server';
 import {t} from '@i18n';

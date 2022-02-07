@@ -14,4 +14,8 @@ export default keyMirror({
     SERVER_LOGOUT: null,
     SERVER_VERSION_CHANGED: null,
     TEAM_LOAD_ERROR: null,
+    USER_TYPING: null,
+    USER_STOP_TYPING: null,
+    POST_LIST_SCROLL_TO_BOTTOM: null,
+    SWIPEABLE: null,
 });

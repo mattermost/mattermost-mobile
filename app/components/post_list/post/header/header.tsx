@@ -4,13 +4,13 @@
 import React from 'react';
 import {View} from 'react-native';
 
-import {typography} from '@app/utils/typography';
 import CustomStatusEmoji from '@components/custom_status/custom_status_emoji';
 import FormattedTime from '@components/formatted_time';
 import {CHANNEL, THREAD} from '@constants/screens';
 import {useTheme} from '@context/theme';
 import {postUserDisplayName} from '@utils/post';
 import {makeStyleSheetFromTheme} from '@utils/theme';
+import {typography} from '@utils/typography';
 import {displayUsername, getUserCustomStatus, getUserTimezone, isCustomStatusExpired} from '@utils/user';
 
 import HeaderCommentedOn from './commented_on';

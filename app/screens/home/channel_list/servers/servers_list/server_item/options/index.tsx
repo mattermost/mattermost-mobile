@@ -30,10 +30,25 @@ const styles = StyleSheet.create({
 const ServerOptions = ({progress, server}: Props) => {
     const intl = useIntl();
     const theme = useTheme();
+    const isLoggedIn = server.lastActiveAt > 0;
+    const sessionColor = isLoggedIn ? '#F58B00' : theme.sidebarTextActiveBorder;
+    const sessionIcon = isLoggedIn ? 'logout-variant' : 'exit-to-app';
+    const sessionText = isLoggedIn ? intl.formatMessage({
+        id: 'servers.logout',
+        defaultMessage: 'Log out',
+    }) : intl.formatMessage({
+        id: 'servers.login',
+        defaultMessage: 'Log in',
+    });
 
     const onEdit = useCallback(() => {
         // eslint-disable-next-line no-console
         console.log('ON EDIT');
+    }, [server]);
+
+    const onLogin = useCallback(() => {
+        // eslint-disable-next-line no-console
+        console.log('ON Login');
     }, [server]);
 
     const onLogout = useCallback(() => {
@@ -66,13 +81,13 @@ const ServerOptions = ({progress, server}: Props) => {
                 text={intl.formatMessage({id: 'servers.remove', defaultMessage: 'Remove'})}
             />
             <Option
-                color={theme.newMessageSeparator}
-                icon='exit-to-app'
-                onPress={onLogout}
+                color={sessionColor}
+                icon={sessionIcon}
+                onPress={isLoggedIn ? onLogout : onLogin}
                 positionX={OPTION_SIZE}
                 progress={progress}
                 style={styles.right}
-                text={intl.formatMessage({id: 'servers.logout', defaultMessage: 'Log out'})}
+                text={sessionText}
             />
         </View>
     );

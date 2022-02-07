@@ -57,7 +57,7 @@ export const updateLocalCustomStatus = async (serverUrl: string, user: UserModel
         }
 
         if (customStatus.emoji) {
-            const recentEmojis = await addRecentReaction(serverUrl, customStatus.emoji, true);
+            const recentEmojis = await addRecentReaction(serverUrl, [customStatus.emoji], true);
             if (Array.isArray(recentEmojis)) {
                 models.push(...recentEmojis);
             }

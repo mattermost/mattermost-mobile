@@ -10,7 +10,7 @@ import DatabaseManager from '@database/manager';
 import NetworkManager from '@init/network_manager';
 import {prepareMyChannelsForTeam, queryDefaultChannelForTeam} from '@queries/servers/channel';
 import {prepareCommonSystemValues, queryCurrentTeamId, queryWebSocketLastDisconnected} from '@queries/servers/system';
-import {addTeamToTeamHistory, prepareDeleteTeam, prepareMyTeams, queryLastChannelFromTeam, queryTeamsById, syncTeamTable} from '@queries/servers/team';
+import {addTeamToTeamHistory, prepareDeleteTeam, prepareMyTeams, queryNthLastChannelFromTeam, queryTeamsById, syncTeamTable} from '@queries/servers/team';
 import {isTablet} from '@utils/helpers';
 
 import {fetchMyCategories} from './category';
@@ -273,7 +273,7 @@ export const handleTeamChange = async (serverUrl: string, teamId: string) => {
 
     let channelId = '';
     if (await isTablet()) {
-        channelId = await queryLastChannelFromTeam(database, teamId);
+        channelId = await queryNthLastChannelFromTeam(database, teamId);
         if (channelId) {
             await switchToChannelById(serverUrl, channelId, teamId);
             return;

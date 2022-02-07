@@ -6,5 +6,6 @@ export default {
     DMCHANNEL: 'dmchannel',
     GROUPCHANNEL: 'groupchannel',
     PERMALINK: 'permalink',
+    PLUGIN: 'plugin',
     OTHER: 'other',
 };

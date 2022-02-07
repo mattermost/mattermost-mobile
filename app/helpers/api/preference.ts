@@ -31,7 +31,7 @@ export function getPreferenceAsInt(preferences: PreferenceType[] | PreferenceMod
 
 export function getTeammateNameDisplaySetting(preferences: PreferenceType[] | PreferenceModel[], config?: ClientConfig, license?: ClientLicense) {
     const useAdminTeammateNameDisplaySetting = license?.LockTeammateNameDisplay === 'true' && config?.LockTeammateNameDisplay === 'true';
-    const preference = getPreferenceValue(preferences as PreferenceType[], Preferences.CATEGORY_DISPLAY_SETTINGS, Preferences.NAME_NAME_FORMAT, '') as string;
+    const preference = getPreferenceValue(preferences, Preferences.CATEGORY_DISPLAY_SETTINGS, Preferences.NAME_NAME_FORMAT, '') as string;
     if (preference && !useAdminTeammateNameDisplaySetting) {
         return preference;
     } else if (config?.TeammateNameDisplay) {
