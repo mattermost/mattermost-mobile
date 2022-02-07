@@ -7,7 +7,7 @@ import {Shadow} from 'react-native-neomorph-shadows';
 import Animated, {useAnimatedStyle, withTiming} from 'react-native-reanimated';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
-import {Navigation as NavigationConstants, Screens} from '@constants';
+import {Navigation as NavigationConstants, Screens, View as ViewConstants} from '@constants';
 import EphemeralStore from '@store/ephemeral_store';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
@@ -23,7 +23,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         backgroundColor: theme.centerChannelBg,
         alignContent: 'center',
         flexDirection: 'row',
-        height: 52,
+        height: ViewConstants.BOTTOM_TAB_HEIGHT,
         justifyContent: 'center',
     },
     item: {

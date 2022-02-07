@@ -22,19 +22,24 @@ export interface DeepLinkGM extends DeepLink {
     channelId: string;
 }
 
+export interface DeepLinkPlugin extends DeepLink {
+    id: string;
+}
+
 export const DeepLinkType = {
     Channel: 'channel',
     DirectMessage: 'dm',
     GroupMessage: 'gm',
     Invalid: 'invalid',
     Permalink: 'permalink',
+    Plugin: 'plugin',
 } as const;
 
 export type DeepLinkType = typeof DeepLinkType[keyof typeof DeepLinkType];
 
 export interface DeepLinkWithData {
     type: DeepLinkType;
-    data?: DeepLinkChannel | DeepLinkDM | DeepLinkGM | DeepLinkPermalink;
+    data?: DeepLinkChannel | DeepLinkDM | DeepLinkGM | DeepLinkPermalink | DeepLinkPlugin;
 }
 
 export const LaunchType = {

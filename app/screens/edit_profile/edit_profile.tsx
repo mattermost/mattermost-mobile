@@ -24,7 +24,6 @@ import Updating from './components/updating';
 import UserProfilePicture from './components/user_profile_picture';
 
 import type {EditProfileProps, NewProfileImage, UserInfo} from '@typings/screens/edit_profile';
-import type {ErrorText} from '@typings/utils/file';
 
 const edges: Edge[] = ['bottom', 'left', 'right'];
 

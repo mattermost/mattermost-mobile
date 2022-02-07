@@ -3,6 +3,7 @@
 
 import {Platform} from 'react-native';
 
+export const BOTTOM_TAB_HEIGHT = 52;
 export const BOTTOM_TAB_ICON_SIZE = 31.2;
 export const PROFILE_PICTURE_SIZE = 32;
 export const PROFILE_PICTURE_EMOJI_SIZE = 28;
@@ -24,6 +25,7 @@ export const ANDROID_HEADER_SEARCH_INSET = 11;
 export const INDICATOR_BAR_HEIGHT = 38;
 
 export default {
+    BOTTOM_TAB_HEIGHT,
     BOTTOM_TAB_ICON_SIZE,
     PROFILE_PICTURE_SIZE,
     PROFILE_PICTURE_EMOJI_SIZE,
@@ -43,3 +45,4 @@ export default {
     ANDROID_HEADER_SEARCH_INSET,
     INDICATOR_BAR_HEIGHT,
 };
+

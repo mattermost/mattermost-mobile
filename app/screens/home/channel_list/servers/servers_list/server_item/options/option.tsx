@@ -58,7 +58,7 @@ const ServerOption = ({color, icon, onPress, positionX, progress, style, text}: 
                     onPress={onPress}
                 >
                     <CompassIcon
-                        color={theme.sidebarText}
+                        color={theme.buttonColor}
                         name={icon}
                         size={24}
                     />

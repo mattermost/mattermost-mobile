@@ -7,11 +7,13 @@ import {addRecentReaction} from '@actions/local/reactions';
 import {MM_TABLES} from '@constants/database';
 import DatabaseManager from '@database/manager';
 import NetworkManager from '@init/network_manager';
-import {queryCurrentUserId} from '@queries/servers/system';
+import {queryRecentPostsInChannel, queryRecentPostsInThread} from '@queries/servers/post';
+import {queryCurrentChannelId, queryCurrentUserId} from '@queries/servers/system';
 
 import {forceLogoutIfNecessary} from './session';
 
 import type {Client} from '@client/rest';
+import type PostModel from '@typings/database/models/servers/post';
 
 export const addReaction = async (serverUrl: string, postId: string, emojiName: string) => {
     const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
@@ -41,7 +43,7 @@ export const addReaction = async (serverUrl: string, postId: string, emojiName: 
         });
         models.push(...reactions);
 
-        const recent = await addRecentReaction(serverUrl, emojiName, true);
+        const recent = await addRecentReaction(serverUrl, [emojiName], true);
         if (Array.isArray(recent)) {
             models.push(...recent);
         }
@@ -90,6 +92,30 @@ export const removeReaction = async (serverUrl: string, postId: string, emojiNam
         return {reaction};
     } catch (error) {
         forceLogoutIfNecessary(serverUrl, error as ClientErrorProps);
+        return {error};
+    }
+};
+
+export const handleReactionToLatestPost = async (serverUrl: string, emojiName: string, add: boolean, rootId?: string) => {
+    const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
+    if (!operator) {
+        return {error: `${serverUrl} database not found`};
+    }
+
+    try {
+        let posts: PostModel[];
+        if (rootId) {
+            posts = await queryRecentPostsInThread(operator.database, rootId);
+        } else {
+            const channelId = await queryCurrentChannelId(operator.database);
+            posts = await queryRecentPostsInChannel(operator.database, channelId);
+        }
+
+        if (add) {
+            return addReaction(serverUrl, posts[0].id, emojiName);
+        }
+        return removeReaction(serverUrl, posts[0].id, emojiName);
+    } catch (error) {
         return {error};
     }
 };

@@ -76,8 +76,6 @@ public class MainApplication extends NavigationApplication implements INotificat
                       return new ShareModule(instance, reactContext);
                     case "NotificationPreferences":
                       return NotificationPreferencesModule.getInstance(instance, reactContext);
-                    case "RNTextInputReset":
-                      return new RNTextInputResetModule(reactContext);
                     default:
                       throw new IllegalArgumentException("Could not find module " + name);
                   }
@@ -90,7 +88,6 @@ public class MainApplication extends NavigationApplication implements INotificat
                     map.put("MattermostManaged", new ReactModuleInfo("MattermostManaged", "com.mattermost.rnbeta.MattermostManagedModule", false, false, false, false, false));
                     map.put("MattermostShare", new ReactModuleInfo("MattermostShare", "com.mattermost.share.ShareModule", false, false, true, false, false));
                     map.put("NotificationPreferences", new ReactModuleInfo("NotificationPreferences", "com.mattermost.rnbeta.NotificationPreferencesModule", false, false, false, false, false));
-                    map.put("RNTextInputReset", new ReactModuleInfo("RNTextInputReset", "com.mattermost.rnbeta.RNTextInputResetModule", false, false, false, false, false));
                     return map;
                   };
                 }

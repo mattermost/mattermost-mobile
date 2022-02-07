@@ -12,8 +12,6 @@ import Permissions, {AndroidPermission, IOSPermission} from 'react-native-permis
 import {Navigation} from '@constants';
 import {extractFileInfo, lookupMimeType} from '@utils/file';
 
-import type {ExtractedFileInfo} from '@typings/utils/file';
-
 const ShareExtension = NativeModules.MattermostShare;
 
 type PermissionSource = 'camera' | 'storage' | 'denied_android' | 'denied_ios' | 'photo';

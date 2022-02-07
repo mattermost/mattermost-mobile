@@ -21,8 +21,6 @@ const WebsocketEvents = {
     USER_REMOVED: 'user_removed',
     USER_UPDATED: 'user_updated',
     USER_ROLE_UPDATED: 'user_role_updated',
-    ROLE_ADDED: 'role_added',
-    ROLE_REMOVED: 'role_removed',
     ROLE_UPDATED: 'role_updated',
     TYPING: 'typing',
     STOP_TYPING: 'stop_typing',

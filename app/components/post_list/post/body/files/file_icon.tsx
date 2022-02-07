@@ -5,6 +5,7 @@ import React from 'react';
 import {View, StyleSheet} from 'react-native';
 
 import CompassIcon from '@components/compass_icon';
+import {useTheme} from '@context/theme';
 import {getFileType} from '@utils/file';
 
 type FileIconProps = {
@@ -15,7 +16,6 @@ type FileIconProps = {
     iconColor?: string;
     iconSize?: number;
     smallImage?: boolean;
-    theme: Theme;
 }
 
 const BLUE_ICON = '#338AFF';
@@ -49,8 +49,9 @@ const styles = StyleSheet.create({
 
 const FileIcon = ({
     backgroundColor, defaultImage = false, failed = false, file,
-    iconColor, iconSize = 48, smallImage = false, theme,
+    iconColor, iconSize = 48, smallImage = false,
 }: FileIconProps) => {
+    const theme = useTheme();
     const getFileIconNameAndColor = () => {
         if (failed) {
             return FAILED_ICON_NAME_AND_COLOR;

@@ -10,6 +10,8 @@ export const MM_TABLES = {
         SERVERS: 'Servers',
     },
     SERVER: {
+        CATEGORY: 'Category',
+        CATEGORY_CHANNEL: 'CategoryChannel',
         CHANNEL: 'Channel',
         CHANNEL_INFO: 'ChannelInfo',
         CHANNEL_MEMBERSHIP: 'ChannelMembership',
