@@ -2,7 +2,12 @@
 // See LICENSE.txt for license information.
 import {inspect} from 'util';
 
+import {Q} from '@nozbe/watermelondb';
+
+import {MM_TABLES} from '@constants/database';
 import DatabaseManager from '@database/manager';
+
+import type {HandleGroupArgs, HandleGroupMembershipArgs, HandleGroupsChannelArgs, HandleGroupsTeamArgs} from '@typings/database/database';
 
 export async function handleGroupUpdatedEvent(serverUrl: string, msg: WebSocketMessage): Promise<void> {
     const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
@@ -11,7 +16,6 @@ export async function handleGroupUpdatedEvent(serverUrl: string, msg: WebSocketM
     }
 
     console.log('msg = ', inspect(msg, false, null, true /* enable colors */));
-
     try {
         const group = JSON.parse(msg.data.group);
         operator.handleGroup({
@@ -25,37 +29,95 @@ export async function handleGroupUpdatedEvent(serverUrl: string, msg: WebSocketM
 
 export async function handleGroupAssociatedToTeam(serverUrl: string, msg: WebSocketMessage): Promise<void> {
     console.log('GAT');
-    console.log('msg = ', inspect(msg, false, null, true /* enable colors */));
     const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
     if (!operator) {
+        return;
+    }
 
+    try {
+        const groupTeamsArgs: HandleGroupsTeamArgs = {
+            groupsTeams: [{
+                group_id: msg.data.group_id,
+                team_id: msg.broadcast.team_id,
+            }],
+            prepareRecordsOnly: false,
+        };
+        operator.handleGroupsTeam(groupTeamsArgs);
+    } catch {
+        // do nothing
     }
 }
 
 export async function handleGroupNotAssociatedToTeam(serverUrl: string, msg: WebSocketMessage): Promise<void> {
     console.log('GNAT');
     console.log('msg = ', inspect(msg, false, null, true /* enable colors */));
-    const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
-    if (!operator) {
+    const database = DatabaseManager.serverDatabases[serverUrl]?.database;
+    if (!database) {
+        return;
+    }
 
+    try {
+        const group_id = msg.data.group_id;
+        const team_id = msg.broadcast.team_id;
+        const groupTeam = await database.get(MM_TABLES.SERVER.GROUPS_TEAM).query(
+            Q.where('team_id', team_id),
+            Q.where('group_id', group_id),
+        ).fetch();
+
+        if (groupTeam.length) {
+            await database.write(async () => {
+                await groupTeam[0].destroyPermanently();
+            });
+        }
+    } catch {
+        // do nothing
     }
 }
 
 export async function handleGroupAssociatedToChannel(serverUrl: string, msg: WebSocketMessage): Promise<void> {
     console.log('GAC');
-    console.log('msg = ', inspect(msg, false, null, true /* enable colors */));
     const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
     if (!operator) {
+        return;
+    }
 
+    try {
+        const groupChannelsArgs: HandleGroupsChannelArgs = {
+            groupsChannels: [{
+                group_id: msg.data.group_id,
+                channel_id: msg.broadcast.channel_id,
+            }],
+            prepareRecordsOnly: false,
+        };
+        operator.handleGroupsChannel(groupChannelsArgs);
+    } catch {
+        // do nothing
     }
 }
 
 export async function handleGroupNotAssociatedToChannel(serverUrl: string, msg: WebSocketMessage): Promise<void> {
     console.log('GNAC');
     console.log('msg = ', inspect(msg, false, null, true /* enable colors */));
-    const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
-    if (!operator) {
+    const database = DatabaseManager.serverDatabases[serverUrl]?.database;
+    if (!database) {
+        return;
+    }
 
+    try {
+        const group_id = msg.data.group_id;
+        const channel_id = msg.broadcast.channel_id;
+        const groupChannel = await database.get(MM_TABLES.SERVER.GROUPS_CHANNEL).query(
+            Q.where('channel_id', channel_id),
+            Q.where('group_id', group_id),
+        ).fetch();
+
+        if (groupChannel.length) {
+            await database.write(async () => {
+                await groupChannel[0].destroyPermanently();
+            });
+        }
+    } catch {
+        // do nothing
     }
 }
 
