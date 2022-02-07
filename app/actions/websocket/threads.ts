@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {processThreadsWithPostsFetched, updateThreadFollowing, updateThreadReadChanged} from '@actions/local/thread';
+import {processThreadsWithPostsFetched, processUpdateTeamThreadsAsRead, processUpdateThreadFollow, processUpdateThreadRead} from '@actions/local/thread';
 import DatabaseManager from '@database/manager';
 
 import type {WebSocketMessage} from '@typings/api/websocket';
@@ -31,7 +31,11 @@ export async function handleThreadReadChangedEvent(serverUrl: string, msg: WebSo
                 unread_mentions: number;
                 unread_replies: number;
             };
-            updateThreadReadChanged(serverUrl, thread_id, timestamp, unread_mentions, unread_replies);
+            if (thread_id) {
+                processUpdateThreadRead(serverUrl, thread_id, timestamp, unread_mentions, unread_replies);
+            } else {
+                processUpdateTeamThreadsAsRead(serverUrl, msg.broadcast.team_id);
+            }
         }
     } catch (error) {
         // Do nothing
@@ -52,7 +56,7 @@ export async function handleThreadFollowChangedEvent(serverUrl: string, msg: Web
                 state: boolean;
                 thread_id: string;
             };
-            updateThreadFollowing(serverUrl, thread_id, state, reply_count);
+            processUpdateThreadFollow(serverUrl, thread_id, state, reply_count);
         }
     } catch (error) {
         // Do nothing

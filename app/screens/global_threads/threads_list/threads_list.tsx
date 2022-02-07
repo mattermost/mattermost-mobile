@@ -15,6 +15,7 @@ export type Props = {
     currentUserId: string;
     setTab: (tab: Tab) => void;
     tab: Tab;
+    teamId: string;
     teammateNameDisplay: string;
     testID: string;
     threads: ThreadModel[];
@@ -22,7 +23,7 @@ export type Props = {
     unreadsCount: number;
 };
 
-const ThreadsList = ({currentUserId, setTab, tab, teammateNameDisplay, testID, theme, threads, unreadsCount}: Props) => {
+const ThreadsList = ({currentUserId, setTab, tab, teamId, teammateNameDisplay, testID, theme, threads, unreadsCount}: Props) => {
     const keyExtractor = useCallback((item: ThreadModel) => item.id, []);
 
     const renderItem = useCallback(({item}) => (
@@ -41,6 +42,7 @@ const ThreadsList = ({currentUserId, setTab, tab, teammateNameDisplay, testID, t
                 markAllAsRead={() => null}
                 setTab={setTab}
                 tab={tab}
+                teamId={teamId}
                 testID='TODO'
                 theme={theme}
                 unreadsCount={unreadsCount}

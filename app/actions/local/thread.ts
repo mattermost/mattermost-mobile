@@ -2,6 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {MM_TABLES} from '@app/constants/database';
+import {queryThreadsInTeam} from '@app/queries/servers/thread';
 import {ActionType} from '@constants';
 import DatabaseManager from '@database/manager';
 
@@ -64,7 +65,26 @@ export const processThreadsWithPostsFetched = async (serverUrl: string, threads:
     }
 };
 
-export const updateThreadFollowing = async (serverUrl: string, threadId: string, state: boolean, replyCount: number) => {
+export const processUpdateTeamThreadsAsRead = async (serverUrl: string, teamId: string) => {
+    const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
+    if (!operator) {
+        return {error: `${serverUrl} database not found`};
+    }
+    try {
+        const {database} = operator;
+        const threads = await queryThreadsInTeam(database, teamId);
+        const models = threads.map((thread) => thread.prepareUpdate((t) => {
+            t.unreadMentions = 0;
+            t.unreadReplies = 0;
+        }));
+        await operator.batchRecords(models);
+        return {};
+    } catch (error) {
+        return {error};
+    }
+};
+
+export const processUpdateThreadFollow = async (serverUrl: string, threadId: string, state: boolean, replyCount?: number) => {
     const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
     if (!operator) {
         return {error: `${serverUrl} database not found`};
@@ -75,7 +95,7 @@ export const updateThreadFollowing = async (serverUrl: string, threadId: string,
         const thread = await database.get<ThreadModel>(MM_TABLES.SERVER.THREAD).find(threadId);
         await operator.database.write(async () => {
             await thread.update(() => {
-                thread.replyCount = replyCount;
+                thread.replyCount = replyCount ?? thread.replyCount;
                 thread.isFollowing = state;
             });
         });
@@ -85,7 +105,7 @@ export const updateThreadFollowing = async (serverUrl: string, threadId: string,
     }
 };
 
-export const updateThreadReadChanged = async (serverUrl: string, threadId: string, lastViewedAt: number, unreadMentions: number, unreadReplies: number) => {
+export const processUpdateThreadRead = async (serverUrl: string, threadId: string, lastViewedAt: number, unreadMentions?: number, unreadReplies?: number) => {
     const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
     if (!operator) {
         return {error: `${serverUrl} database not found`};
@@ -97,8 +117,8 @@ export const updateThreadReadChanged = async (serverUrl: string, threadId: strin
         await operator.database.write(async () => {
             await thread.update(() => {
                 thread.lastViewedAt = lastViewedAt;
-                thread.unreadMentions = unreadMentions;
-                thread.unreadReplies = unreadReplies;
+                thread.unreadMentions = unreadMentions ?? thread.unreadMentions;
+                thread.unreadReplies = unreadReplies ?? thread.unreadReplies;
             });
         });
         return {};

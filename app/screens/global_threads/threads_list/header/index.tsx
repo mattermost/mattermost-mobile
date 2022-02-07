@@ -2,10 +2,12 @@
 // See LICENSE.txt for license information.
 import React from 'react';
 import {useIntl} from 'react-intl';
-import {Text, TouchableOpacity, View} from 'react-native';
+import {Alert, Text, TouchableOpacity, View} from 'react-native';
 
+import {updateTeamThreadsAsRead} from '@actions/remote/thread';
 import {changeOpacity} from '@app/utils/theme';
 import CompassIcon from '@components/compass_icon';
+import {useServerUrl} from '@context/server';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 
 export type Tab = 'all' | 'unreads';
@@ -14,16 +16,49 @@ export type Props = {
     markAllAsRead: () => void;
     setTab: (tab: Tab) => void;
     tab: Tab;
+    teamId: string;
     testID: string;
     theme: Theme;
     unreadsCount: number;
 };
 
-const Header = ({markAllAsRead, setTab, tab, testID, theme, unreadsCount}: Props) => {
+const Header = ({setTab, tab, teamId, testID, theme, unreadsCount}: Props) => {
     const style = getStyle(theme);
     const intl = useIntl();
+    const serverUrl = useServerUrl();
+
     const hasUnreads = unreadsCount > 0;
     const viewingUnreads = tab === 'unreads';
+
+    const handleMarkAllAsRead = () => {
+        Alert.alert(
+            intl.formatMessage({
+                id: 'global_threads.markAllRead.title',
+                defaultMessage: 'Are you sure you want to mark all threads as read?',
+            }),
+            intl.formatMessage({
+                id: 'global_threads.markAllRead.message',
+                defaultMessage: 'This will clear any unread status for all of your threads shown here',
+            }),
+            [{
+                text: intl.formatMessage({
+                    id: 'global_threads.markAllRead.cancel',
+                    defaultMessage: 'Cancel',
+                }),
+                style: 'cancel',
+            }, {
+                text: intl.formatMessage({
+                    id: 'global_threads.markAllRead.markRead',
+                    defaultMessage: 'Mark read',
+                }),
+                style: 'default',
+                onPress: () => {
+                    updateTeamThreadsAsRead(serverUrl, teamId);
+                },
+            }],
+        );
+    };
+
     return (
         <View style={style.container}>
             <View style={style.menuContainer}>
@@ -68,8 +103,8 @@ const Header = ({markAllAsRead, setTab, tab, testID, theme, unreadsCount}: Props
             </View>
             <View style={style.markAllReadIconContainer}>
                 <TouchableOpacity
-                    disabled={hasUnreads}
-                    onPress={markAllAsRead}
+                    disabled={!hasUnreads}
+                    onPress={handleMarkAllAsRead}
                     testID={`${testID}.mark_all_read`}
                 >
                     <CompassIcon
