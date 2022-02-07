@@ -29,7 +29,7 @@ describe('Fetch', () => {
     test('doFetchWithResponse handles title case headers', async () => {
         const setToken = jest.spyOn(Client4, 'setToken');
         const headers = {
-            [HEADER_X_VERSION_ID]: 'VersionId',
+            [HEADER_X_VERSION_ID]: '6.1.0',
             [HEADER_X_CLUSTER_ID]: 'ClusterId',
             [HEADER_TOKEN]: 'Token',
         };
@@ -48,7 +48,7 @@ describe('Fetch', () => {
     test('doFetchWithResponse handles lower case headers', async () => {
         const setToken = jest.spyOn(Client4, 'setToken');
         const headers = {
-            [HEADER_X_VERSION_ID.toLowerCase()]: 'versionid',
+            [HEADER_X_VERSION_ID.toLowerCase()]: '6.2.0',
             [HEADER_X_CLUSTER_ID.toLowerCase()]: 'clusterid',
             [HEADER_TOKEN.toLowerCase()]: 'token',
         };
@@ -66,7 +66,7 @@ describe('Fetch', () => {
 
     test('doFetchWithResponse handles server version change', async () => {
         const emit = jest.spyOn(EventEmitter, 'emit');
-        const serverVersion1 = 'version1';
+        const serverVersion1 = '6.3.0';
         const response = {
             json: () => Promise.resolve('data'),
             ok: true,
