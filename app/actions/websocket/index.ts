@@ -38,6 +38,7 @@ import {
     handleCallScreenOff,
 } from '@mmproducts/calls/store/actions/websockets';
 import {getChannelSinceValue} from '@utils/channels';
+import {semverFromServerVersion} from '@utils/general';
 import websocketClient from '@websocket';
 
 import {handleRefreshAppsBindings} from './apps';
@@ -474,11 +475,8 @@ function handleEvent(msg: WebSocketMessage) {
 }
 
 function handleHelloEvent(msg: WebSocketMessage) {
-    const serverVersion = msg.data.server_version;
-    if (serverVersion && Client4.serverVersion !== serverVersion) {
-        Client4.serverVersion = serverVersion;
-        EventEmitter.emit(General.SERVER_VERSION_CHANGED, serverVersion);
-    }
+    const serverVersion = semverFromServerVersion(msg.data.server_version);
+    EventEmitter.emit(General.SERVER_VERSION_CHANGED, serverVersion);
 }
 
 // Helpers

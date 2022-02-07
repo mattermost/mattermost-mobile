@@ -110,3 +110,17 @@ export function permalinkBadTeam(intl) {
 
     alertErrorWithFallback(intl, {}, message);
 }
+
+export function semverFromServerVersion(value) {
+    if (!value || typeof value !== 'string') {
+        return undefined;
+    }
+
+    const split = value.split('.');
+
+    const major = parseInt(split[0], 10);
+    const minor = parseInt(split[1] || '0', 10);
+    const patch = parseInt(split[2] || '0', 10);
+
+    return `${major}.${minor}.${patch}`;
+}
