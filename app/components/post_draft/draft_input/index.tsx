@@ -1,10 +1,12 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React from 'react';
-import {Platform, ScrollView, View} from 'react-native';
+import React, {useCallback, useState} from 'react';
+import {LayoutChangeEvent, Platform, ScrollView, View} from 'react-native';
 import {Edge, SafeAreaView} from 'react-native-safe-area-context';
 
+import Autocomplete from '@components/autocomplete';
+import {Device} from '@constants';
 import {useTheme} from '@context/theme';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
@@ -37,6 +39,7 @@ type Props = {
 }
 
 const SAFE_AREA_VIEW_EDGES: Edge[] = ['left', 'right'];
+const AUTOCOMPLETE_MARGIN = 20;
 
 const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     return {
@@ -90,11 +93,11 @@ export default function DraftInput({
 }: Props) {
     const theme = useTheme();
 
-    // const [top, setTop] = useState(0);
+    const [top, setTop] = useState(0);
 
-    // const handleLayout = useCallback((e: LayoutChangeEvent) => {
-    //     setTop(e.nativeEvent.layout.y);
-    // }, []);
+    const handleLayout = useCallback((e: LayoutChangeEvent) => {
+        setTop(e.nativeEvent.layout.y);
+    }, []);
 
     // Render
     const postInputTestID = `${testID}.post.input`;
@@ -108,19 +111,18 @@ export default function DraftInput({
                 channelId={channelId}
                 rootId={rootId}
             />
-            {/* {Platform.OS === 'android' &&
             <Autocomplete
-                maxHeight={Math.min(top - AUTOCOMPLETE_MARGIN, DEVICE.AUTOCOMPLETE_MAX_HEIGHT)}
-                onChangeText={handleInputQuickAction}
+                maxHeight={Math.min(top - AUTOCOMPLETE_MARGIN, Device.AUTOCOMPLETE_MAX_HEIGHT)}
+                updateValue={updateValue}
                 rootId={rootId}
                 channelId={channelId}
                 offsetY={0}
+                cursorPosition={cursorPosition}
+                value={value}
             />
-            } */}
             <SafeAreaView
                 edges={SAFE_AREA_VIEW_EDGES}
-
-                // onLayout={handleLayout}
+                onLayout={handleLayout}
                 style={style.inputWrapper}
                 testID={testID}
             >
