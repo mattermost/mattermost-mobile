@@ -15,7 +15,7 @@ import {addChannelToTeamHistory, addTeamToTeamHistory, removeChannelFromTeamHist
 import {queryCurrentUser} from '@queries/servers/user';
 import {dismissAllModalsAndPopToRoot, dismissAllModalsAndPopToScreen} from '@screens/navigation';
 import {isTablet} from '@utils/helpers';
-import {displayGroupMessageName, displayUsername} from '@utils/user';
+import {displayGroupMessageName, displayUsername, getUserIdFromChannelName} from '@utils/user';
 
 import type ChannelModel from '@typings/database/models/servers/channel';
 import type UserModel from '@typings/database/models/servers/user';
@@ -298,7 +298,7 @@ export const updateLastPostAt = async (serverUrl: string, channelId: string, las
     return {models};
 };
 
-export async function updateChannelsDisplayName(serverUrl: string, channels: ChannelModel[], user: UserProfile, prepareRecordsOnly = false) {
+export async function updateChannelsDisplayName(serverUrl: string, channels: ChannelModel[], users: UserProfile[], prepareRecordsOnly = false) {
     const database = DatabaseManager.serverDatabases[serverUrl];
     if (!database) {
         return {};
@@ -315,12 +315,19 @@ export async function updateChannelsDisplayName(serverUrl: string, channels: Cha
     channels?.forEach(async (channel) => {
         let newDisplayName = '';
         if (channel.type === General.DM_CHANNEL) {
+            const otherUserId = getUserIdFromChannelName(currentUser.id, channel.name);
+            const user = users.find((u) => u.id === otherUserId);
             newDisplayName = displayUsername(user, currentUser.locale, displaySettings);
         } else {
             const dbProfiles = await database.database.get<UserModel>(USER).query(Q.on(CHANNEL_MEMBERSHIP, Q.where('channel_id', channel.id))).fetch();
-            const newProfiles: Array<UserModel|UserProfile> = dbProfiles.filter((u) => u.id !== user.id);
-            newProfiles.push(user);
-            newDisplayName = displayGroupMessageName(newProfiles, currentUser.locale, displaySettings, currentUser.id);
+            const profileIds = dbProfiles.map((p) => p.id);
+            const gmUsers = users.filter((u) => profileIds.includes(u.id));
+            if (gmUsers.length) {
+                const uIds = gmUsers.map((u) => u.id);
+                const newProfiles: Array<UserModel|UserProfile> = dbProfiles.filter((u) => !uIds.includes(u.id));
+                newProfiles.push(...gmUsers);
+                newDisplayName = displayGroupMessageName(newProfiles, currentUser.locale, displaySettings, currentUser.id);
+            }
         }
 
         if (channel.displayName !== newDisplayName) {

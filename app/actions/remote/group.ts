@@ -5,12 +5,12 @@ import {Model} from '@nozbe/watermelondb';
 
 import DatabaseManager from '@database/manager';
 import NetworkManager from '@init/network_manager';
-import {queryCommonSystemValues, queryWebSocketLastDisconnected} from '@queries/servers/system';
+import {queryCommonSystemValues} from '@queries/servers/system';
 import {queryTeamById} from '@queries/servers/team';
 
 import {forceLogoutIfNecessary} from './session';
 
-export const fetchGroupsForTeam = async (serverUrl: string, teamId: string) => {
+export const fetchGroupsForTeam = async (serverUrl: string, teamId: string, since: number) => {
     const database = DatabaseManager.serverDatabases[serverUrl]?.database;
     if (!database) {
         return {error: `${serverUrl} database not found`};
@@ -59,7 +59,6 @@ export const fetchGroupsForTeam = async (serverUrl: string, teamId: string) => {
                     }
                 }
             } else {
-                const since = await queryWebSocketLastDisconnected(database);
                 const [groupsAssociatedToChannelsInTeam, allGroups]: [{groups: Record<string, Group[]>}, Group[]] = await Promise.all([
                     client.getAllGroupsAssociatedToChannelsInTeam(teamId, true),
                     client.getGroups(true, 0, 0, since),

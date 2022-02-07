@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {Q} from '@nozbe/watermelondb';
+import {Model, Q} from '@nozbe/watermelondb';
 import {DeviceEventEmitter} from 'react-native';
 
 import {updateChannelsDisplayName} from '@actions/local/channel';
@@ -22,49 +22,60 @@ import type UserModel from '@typings/database/models/servers/user';
 const {SERVER: {CHANNEL, CHANNEL_MEMBERSHIP}} = MM_TABLES;
 
 export async function handleUserUpdatedEvent(serverUrl: string, msg: any) {
-    const database = DatabaseManager.serverDatabases[serverUrl];
-    if (!database) {
+    const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
+    if (!operator) {
         return;
     }
-    const currentUser = await queryCurrentUser(database.database);
+    const currentUser = await queryCurrentUser(operator.database);
     if (!currentUser) {
         return;
     }
 
     const user: UserProfile = msg.data.user;
+    const modelsToBatch: Model[] = [];
+    let userToSave = user;
 
     if (user.id === currentUser.id) {
         if (user.update_at > (currentUser?.updateAt || 0)) {
             // Need to request me to make sure we don't override with sanitized fields from the
             // websocket event
-            // TODO Potential improvement https://mattermost.atlassian.net/browse/MM-40582
-            fetchMe(serverUrl, false);
+            if (!user.notify_props || !Object.keys(user.notify_props).length) {
+                // Current user is sanitized so we fetch it from the server
+                const me = await fetchMe(serverUrl, true);
+                if (me.user) {
+                    userToSave = me.user;
+                }
+            }
 
             // Update GMs display name if locale has changed
             if (user.locale !== currentUser.locale) {
-                const channels = await database.database.get<ChannelModel>(CHANNEL).query(
+                const channels = await operator.database.get<ChannelModel>(CHANNEL).query(
                     Q.where('type', Q.eq(General.GM_CHANNEL))).fetch();
-                const {models} = await updateChannelsDisplayName(serverUrl, channels, user, true);
+                const {models} = await updateChannelsDisplayName(serverUrl, channels, [user], true);
                 if (models?.length) {
-                    database.operator.batchRecords(models);
+                    modelsToBatch.push(...models);
                 }
             }
         }
     } else {
-        database.operator.handleUsers({users: [user], prepareRecordsOnly: false});
-
-        const channels = await database.database.get<ChannelModel>(CHANNEL).query(
+        const channels = await operator.database.get<ChannelModel>(CHANNEL).query(
             Q.where('type', Q.oneOf([General.DM_CHANNEL, General.GM_CHANNEL])),
             Q.on(CHANNEL_MEMBERSHIP, Q.where('user_id', user.id))).fetch();
-        if (!channels?.length) {
-            return;
+        if (channels?.length) {
+            const {models} = await updateChannelsDisplayName(serverUrl, channels, [user], true);
+            if (models?.length) {
+                modelsToBatch.push(...models);
+            }
         }
+    }
 
-        const {models} = await updateChannelsDisplayName(serverUrl, channels, user, true);
+    const userModel = await operator.handleUsers({users: [userToSave], prepareRecordsOnly: true});
+    modelsToBatch.push(...userModel);
 
-        if (models?.length) {
-            database.operator.batchRecords(models);
-        }
+    try {
+        await operator.batchRecords(modelsToBatch);
+    } catch {
+        // do nothing
     }
 }
 
@@ -84,7 +95,7 @@ export async function handleUserTypingEvent(serverUrl: string, msg: any) {
             user = users?.[0];
         }
         const namePreference = await queryPreferencesByCategoryAndName(database.database, Preferences.CATEGORY_DISPLAY_SETTINGS, Preferences.NAME_NAME_FORMAT);
-        const teammateDisplayNameSetting = await getTeammateNameDisplaySetting(namePreference, config, license);
+        const teammateDisplayNameSetting = getTeammateNameDisplaySetting(namePreference, config, license);
         const currentUser = await queryCurrentUser(database.database);
         const username = displayUsername(user, currentUser?.locale, teammateDisplayNameSetting);
         const data = {
