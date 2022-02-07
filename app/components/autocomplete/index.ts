@@ -14,7 +14,7 @@ import type {WithDatabaseArgs} from '@typings/database/database';
 import type SystemModel from '@typings/database/models/servers/system';
 
 const enhanced = withObservables([], ({database}: WithDatabaseArgs) => ({
-    appsEnabled: database.get<SystemModel>(MM_TABLES.SERVER.SYSTEM).findAndObserve(SYSTEM_IDENTIFIERS.CONFIG).pipe(
+    isAppsEnabled: database.get<SystemModel>(MM_TABLES.SERVER.SYSTEM).findAndObserve(SYSTEM_IDENTIFIERS.CONFIG).pipe(
         switchMap((cfg) => of$(cfg.value.FeatureFlagAppsEnabled === 'true')),
     ),
 }));

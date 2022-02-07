@@ -119,6 +119,7 @@ export default function DraftInput({
                 offsetY={0}
                 cursorPosition={cursorPosition}
                 value={value}
+                hasFilesAttached={Boolean(files.length)}
             />
             <SafeAreaView
                 edges={SAFE_AREA_VIEW_EDGES}

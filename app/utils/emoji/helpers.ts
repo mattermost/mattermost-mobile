@@ -192,9 +192,14 @@ export function doesMatchNamedEmoji(emojiName: string) {
     return false;
 }
 
-export function getEmojiByName(emojiName: string) {
+export function getEmojiByName(emojiName: string, customEmojis: CustomEmojiModel[]) {
     if (EmojiIndicesByAlias.has(emojiName)) {
         return Emojis[EmojiIndicesByAlias.get(emojiName)!];
+    }
+
+    const customEmoji = customEmojis.find((e) => e.name === emojiName);
+    if (customEmoji) {
+        return customEmoji;
     }
 
     return null;

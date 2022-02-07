@@ -2,9 +2,10 @@
 // See LICENSE.txt for license information.
 
 import Fuse from 'fuse.js';
-import React, {useCallback, useEffect, useMemo} from 'react';
+import React, {useCallback, useEffect, useMemo, useRef} from 'react';
 import {FlatList, Platform, Text, View} from 'react-native';
 
+import {searchCustomEmojis} from '@actions/remote/custom_emoji';
 import {handleReactionToLatestPost} from '@actions/remote/reactions';
 import Emoji from '@components/emoji';
 import TouchableWithFeedback from '@components/touchable_with_feedback';
@@ -18,6 +19,7 @@ import type CustomEmojiModel from '@typings/database/models/servers/custom_emoji
 
 const EMOJI_REGEX = /(^|\s|^\+|^-)(:([^:\s]*))$/i;
 const EMOJI_REGEX_WITHOUT_PREFIX = /\B(:([^:\s]*))$/i;
+const REACTION_REGEX = /^(\+|-):([^:\s]+)$/;
 const FUSE_OPTIONS = {
     findAllMatches: true,
     ignoreLocation: true,
@@ -25,6 +27,10 @@ const FUSE_OPTIONS = {
     shouldSort: false,
     includeScore: true,
 };
+
+const EMOJI_SIZE = 24;
+const MIN_SEARCH_LENGTH = 3;
+const SEARCH_DELAY = 500;
 
 const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
     return {
@@ -52,6 +58,9 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
             paddingHorizontal: 16,
             height: 40,
         },
+        container: {
+            paddingBottom: 12,
+        },
     };
 });
 
@@ -67,6 +76,7 @@ type Props = {
     value: string;
     nestedScrollEnabled: boolean;
     skinTone: string;
+    hasFilesAttached: boolean;
 }
 const EmojiSuggestion = ({
     cursorPosition,
@@ -78,6 +88,7 @@ const EmojiSuggestion = ({
     value,
     nestedScrollEnabled,
     skinTone,
+    hasFilesAttached,
 }: Props) => {
     const theme = useTheme();
     const style = getStyleFromTheme(theme);
@@ -85,6 +96,8 @@ const EmojiSuggestion = ({
     const flatListStyle = useMemo(() =>
         [style.listView, {maxHeight: maxListHeight}]
     , [style, maxListHeight]);
+
+    const searchTimeout = useRef<NodeJS.Timeout>();
 
     const emojis = useMemo(() => {
         const emoticons = new Set<string>();
@@ -114,7 +127,7 @@ const EmojiSuggestion = ({
     const data = useMemo(() => {
         const searchTermLowerCase = searchTerm.toLowerCase();
 
-        if (searchTerm.length < 3) {
+        if (searchTerm.length < MIN_SEARCH_LENGTH) {
             return [];
         }
 
@@ -144,17 +157,13 @@ const EmojiSuggestion = ({
     const showingElements = Boolean(data.length);
 
     const completeSuggestion = useCallback((emoji: string) => {
-        const emojiPart = value.substring(0, cursorPosition);
-
-        if (emojiPart.startsWith('+:')) {
-            handleReactionToLatestPost(serverUrl, emoji, true, rootId);
-            updateValue('');
-            return;
-        }
-        if (emojiPart.startsWith('-:')) {
-            handleReactionToLatestPost(serverUrl, emoji, false, rootId);
-            updateValue('');
-            return;
+        if (!hasFilesAttached) {
+            const match = value.match(REACTION_REGEX);
+            if (match) {
+                handleReactionToLatestPost(serverUrl, emoji, match[1] === '+', rootId);
+                updateValue('');
+                return;
+            }
         }
 
         // We are going to set a double : on iOS to prevent the auto correct from taking over and replacing it
@@ -165,7 +174,8 @@ const EmojiSuggestion = ({
             prefix = '::';
         }
 
-        const emojiData = getEmojiByName(emoji);
+        const emojiPart = value.substring(0, cursorPosition);
+        const emojiData = getEmojiByName(emoji, customEmojis);
         if (emojiData?.image && emojiData.category !== 'custom') {
             const codeArray: string[] = emojiData.image.split('-');
             const code = codeArray.reduce((acc, c) => {
@@ -189,7 +199,7 @@ const EmojiSuggestion = ({
                 updateValue(completedDraft.replace(`::${emoji}: `, `:${emoji}: `));
             });
         }
-    }, [value, updateValue, rootId, cursorPosition]);
+    }, [value, updateValue, rootId, cursorPosition, hasFilesAttached]);
 
     const renderItem = useCallback(({item}: {item: string}) => {
         const completeItemSuggestion = () => completeSuggestion(item);
@@ -204,18 +214,29 @@ const EmojiSuggestion = ({
                         <Emoji
                             emojiName={item}
                             textStyle={style.emojiText}
-                            size={24}
+                            size={EMOJI_SIZE}
                         />
                     </View>
                     <Text style={style.emojiName}>{`:${item}:`}</Text>
                 </View>
             </TouchableWithFeedback>
         );
-    }, [completeSuggestion, theme]);
+    }, [completeSuggestion, theme.buttonBg]);
 
     useEffect(() => {
         onShowingChange(showingElements);
     }, [showingElements]);
+
+    useEffect(() => {
+        if (searchTimeout.current) {
+            clearTimeout(searchTimeout.current);
+            searchTimeout.current = undefined;
+        }
+
+        if (searchTerm.length >= MIN_SEARCH_LENGTH) {
+            searchTimeout.current = setTimeout(() => searchCustomEmojis(serverUrl, searchTerm), SEARCH_DELAY);
+        }
+    }, [searchTerm]);
 
     return (
         <FlatList
@@ -227,7 +248,7 @@ const EmojiSuggestion = ({
             removeClippedSubviews={true}
             renderItem={renderItem}
             nestedScrollEnabled={nestedScrollEnabled}
-            contentContainerStyle={{paddingBottom: 12}}
+            contentContainerStyle={style.container}
         />
     );
 };

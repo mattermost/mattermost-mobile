@@ -17,20 +17,21 @@ import type CustomEmojiModel from '@typings/database/models/servers/custom_emoji
 import type PreferenceModel from '@typings/database/models/servers/preference';
 import type SystemModel from '@typings/database/models/servers/system';
 
+const {SERVER: {SYSTEM, CUSTOM_EMOJI, PREFERENCE}} = MM_TABLES;
 const emptyEmojiList: CustomEmojiModel[] = [];
 const enhanced = withObservables([], ({database}: WithDatabaseArgs) => {
-    const customEmojisEnabled = database.get<SystemModel>(MM_TABLES.SERVER.SYSTEM).
+    const isCustomEmojisEnabled = database.get<SystemModel>(SYSTEM).
         findAndObserve(SYSTEM_IDENTIFIERS.CONFIG).pipe(
             switchMap((config) => of$(config.value.EnableCustomEmoji === 'true')),
         );
     return {
-        customEmojis: customEmojisEnabled.pipe(
+        customEmojis: isCustomEmojisEnabled.pipe(
             switchMap((enabled) => (enabled ?
-                database.get<CustomEmojiModel>(MM_TABLES.SERVER.CUSTOM_EMOJI).query().observe() :
+                database.get<CustomEmojiModel>(CUSTOM_EMOJI).query().observe() :
                 of$(emptyEmojiList)),
             ),
         ),
-        skinTone: database.get<PreferenceModel>(MM_TABLES.SERVER.PREFERENCE).query(
+        skinTone: database.get<PreferenceModel>(PREFERENCE).query(
             Q.where('category', Preferences.CATEGORY_EMOJI),
             Q.where('name', Preferences.EMOJI_SKINTONE),
         ).observe().pipe(

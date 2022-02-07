@@ -56,11 +56,17 @@ type Props = {
     isSearch?: boolean;
     value: string;
     enableDateSuggestion?: boolean;
-    appsEnabled: boolean;
+    isAppsEnabled: boolean;
     offsetY?: number;
     nestedScrollEnabled?: boolean;
     updateValue: (v: string) => void;
+    hasFilesAttached: boolean;
 }
+
+const OFFSET_IOS = 65;
+const OFFSET_ANDROID = 75;
+const OFFSET_INSETS = 90;
+
 const Autocomplete = ({
     cursorPosition,
     maxHeight,
@@ -71,10 +77,11 @@ const Autocomplete = ({
     value,
 
     //enableDateSuggestion = false,
-    appsEnabled,
+    isAppsEnabled,
     offsetY = 80,
     nestedScrollEnabled = false,
     updateValue,
+    hasFilesAttached,
 }: Props) => {
     const theme = useTheme();
     const style = getStyleFromTheme(theme);
@@ -98,9 +105,9 @@ const Autocomplete = ({
         }
 
         // List is expanding downwards, likely from the search box
-        let offset = Platform.select({ios: 65, default: 75});
+        let offset = Platform.select({ios: OFFSET_IOS, default: OFFSET_ANDROID});
         if (Device.IS_IPHONE_WITH_INSETS) {
-            offset = 90;
+            offset = OFFSET_INSETS;
         }
 
         return (deviceHeight / 2) - offset;
@@ -120,7 +127,7 @@ const Autocomplete = ({
             s.push(style.hidden);
         }
         return s;
-    }, [theme, isSearch, hasElements, maxListHeight]);
+    }, [style, isSearch, hasElements, maxListHeight]);
 
     const containerStyles = useMemo(() => {
         const s = [style.borders];
@@ -141,7 +148,7 @@ const Autocomplete = ({
                 testID='autocomplete'
                 style={containerStyles}
             >
-                {/* {appsEnabled && (
+                {/* {isAppsEnabled && (
                     <AppSlashSuggestion
                         maxListHeight={maxListHeight}
                         updateValue={updateValue}
@@ -150,7 +157,7 @@ const Autocomplete = ({
                         nestedScrollEnabled={nestedScrollEnabled}
                     />
                 )} */}
-                {(!appsTakeOver || !appsEnabled) && (<>
+                {(!appsTakeOver || !isAppsEnabled) && (<>
                     {/* <AtMention
                         cursorPosition={cursorPosition}
                         maxListHeight={maxListHeight}
@@ -176,6 +183,7 @@ const Autocomplete = ({
                         value={value || ''}
                         nestedScrollEnabled={nestedScrollEnabled}
                         rootId={rootId}
+                        hasFilesAttached={hasFilesAttached}
                     />
                     }
                     {/* <SlashSuggestion
