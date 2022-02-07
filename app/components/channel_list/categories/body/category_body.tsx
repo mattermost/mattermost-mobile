@@ -32,8 +32,6 @@ const CategoryBody = ({category, categoryChannels, channels, myChannels}: Props)
 
     const ChannelItem = ({item}: {item: string}) => {
         return (
-
-            // <ChannelListItem channelId={data.item.channelId}/>
             <ChannelListItem channelId={item}/>
         );
     };
