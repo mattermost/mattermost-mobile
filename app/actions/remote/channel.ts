@@ -686,3 +686,25 @@ export const switchToPenultimateChannel = async (serverUrl: string) => {
         return {error};
     }
 };
+
+export const searchChannels = async (serverUrl: string, term: string) => {
+    const database = DatabaseManager.serverDatabases[serverUrl]?.database;
+    if (!database) {
+        return {error: `${serverUrl} database not found`};
+    }
+
+    let client: Client;
+    try {
+        client = NetworkManager.getClient(serverUrl);
+    } catch (error) {
+        return {error};
+    }
+
+    try {
+        const currentTeam = await queryCurrentTeamId(database);
+        const channels = await client.autocompleteChannels(currentTeam, term);
+        return {channels};
+    } catch (error) {
+        return {error};
+    }
+};

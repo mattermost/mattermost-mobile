@@ -4,7 +4,7 @@
 import React, {useCallback, useEffect, useReducer, useRef, useState} from 'react';
 import {ImageResource} from 'react-native-navigation';
 
-import {fetchArchivedChannels, fetchChannels, fetchSharedChannels} from '@actions/remote/channel';
+import {fetchArchivedChannels, fetchChannels, fetchSharedChannels, searchChannels} from '@actions/remote/channel';
 import {General} from '@constants';
 import {useServerUrl} from '@context/server';
 import useDidUpdate from '@hooks/did_update';
@@ -36,11 +36,22 @@ const MIN_CHANNELS_LOADED = 10;
 const LOAD = 'load';
 const STOP = 'stop';
 
-const filterChannelsByTerm = (channels: Channel[], term: string) => {
-    const lowerCasedTerm = term.toLowerCase();
-    return channels.filter((c) => {
-        return (c.name.toLowerCase().includes(lowerCasedTerm) || c.display_name.toLowerCase().includes(lowerCasedTerm));
-    });
+const filterChannelsByType = (channels: Channel[], joinedChannels: MyChannelModel[], channelType: string) => {
+    const ids = joinedChannels.map((c) => c.id);
+    let filter: (c: Channel) => boolean;
+    switch (channelType) {
+        case ARCHIVED:
+            filter = (c) => c.delete_at !== 0;
+            break;
+        case SHARED:
+            filter = (c) => c.delete_at === 0 && c.shared && !ids.includes(c.id);
+            break;
+        case PUBLIC:
+        default:
+            filter = (c) => c.delete_at === 0 && !c.shared && !ids.includes(c.id);
+            break;
+    }
+    return channels.filter(filter);
 };
 
 const filterJoinedChannels = (joinedChannels: MyChannelModel[], allChannels: Channel[] | undefined) => {
@@ -109,6 +120,7 @@ const reducer = (state: State, action: Action) => {
 
 const initialState = {channels: [], archivedChannels: [], sharedChannels: [], loading: false};
 const defaultJoinedChannels: MyChannelModel[] = [];
+const defaultSearchResults: Channel[] = [];
 
 export default function SearchHandler(props: Props) {
     const {
@@ -132,6 +144,11 @@ export default function SearchHandler(props: Props) {
     const nextShared = useRef(true);
     const nextArchived = useRef(true);
     const loadedChannels = useRef<(data: Channel[] | undefined, typeOfChannels: string) => Promise<void>>(async () => {/* Do nothing */});
+
+    const searchTimeout = useRef<NodeJS.Timeout>();
+    const [searchResults, setSearchResults] = useState<Channel[]>(defaultSearchResults);
+
+    const isSearch = Boolean(term);
 
     const doGetChannels = (t: string) => {
         switch (t) {
@@ -184,10 +201,10 @@ export default function SearchHandler(props: Props) {
     };
 
     const onEndReached = useCallback(() => {
-        if (!loading) {
+        if (!loading && !term) {
             doGetChannels(typeOfChannels);
         }
-    }, [typeOfChannels, loading]);
+    }, [typeOfChannels, loading, term]);
 
     let activeChannels: Channel[];
     switch (typeOfChannels) {
@@ -203,23 +220,30 @@ export default function SearchHandler(props: Props) {
 
     const stopSearch = useCallback(() => {
         setVisibleChannels(activeChannels);
+        setSearchResults(defaultSearchResults);
         setTerm('');
     }, [activeChannels]);
 
-    const searchChannels = useCallback((text: string) => {
+    const doSearchChannels = useCallback((text: string) => {
         if (text) {
-            const filtered = filterChannelsByTerm(activeChannels, text);
-            setTerm(text);
-            if (
-                filtered.length !== visibleChannels.length ||
-                filtered.reduce((shouldUpdate, c, i) => shouldUpdate || c.id !== visibleChannels[i].id, false)
-            ) {
-                setVisibleChannels(filtered);
+            setSearchResults(defaultSearchResults);
+            if (searchTimeout.current) {
+                clearTimeout(searchTimeout.current);
             }
+            searchTimeout.current = setTimeout(async () => {
+                const results = await searchChannels(serverUrl, text);
+                if (results.channels) {
+                    setSearchResults(results.channels);
+                }
+                dispatch(StopAction);
+            }, 500);
+            setTerm(text);
+            setVisibleChannels(searchResults);
+            dispatch(LoadAction);
         } else {
             stopSearch();
         }
-    }, [activeChannels, visibleChannels, stopSearch]);
+    }, [activeChannels, visibleChannels, joinedChannels, stopSearch]);
 
     const changeChannelType = useCallback((channelType: string) => {
         setTypeOfChannels(channelType);
@@ -273,21 +297,26 @@ export default function SearchHandler(props: Props) {
     }, [joinedChannels]);
 
     useEffect(() => {
-        doGetChannels(typeOfChannels);
-    }, [typeOfChannels]);
+        if (!isSearch) {
+            doGetChannels(typeOfChannels);
+        }
+    }, [typeOfChannels, isSearch]);
 
     useDidUpdate(() => {
-        if (term) {
-            setVisibleChannels(filterChannelsByTerm(activeChannels, term));
+        if (isSearch) {
+            setVisibleChannels(filterChannelsByType(searchResults, joinedChannels, typeOfChannels));
         } else {
             setVisibleChannels(activeChannels);
         }
-    }, [activeChannels]);
+    }, [activeChannels, isSearch && searchResults, isSearch && typeOfChannels, joinedChannels]);
 
     // Make sure enough channels are loaded to allow the FlatList to scroll,
     // and let it call the onReachEnd function.
     useDidUpdate(() => {
         if (loading) {
+            return;
+        }
+        if (isSearch) {
             return;
         }
         if (visibleChannels.length >= MIN_CHANNELS_LOADED) {
@@ -307,7 +336,7 @@ export default function SearchHandler(props: Props) {
         if (next) {
             doGetChannels(typeOfChannels);
         }
-    }, [visibleChannels, loading]);
+    }, [visibleChannels.length >= MIN_CHANNELS_LOADED, loading, isSearch]);
 
     return (
         <BrowseChannels
@@ -317,7 +346,7 @@ export default function SearchHandler(props: Props) {
             channels={visibleChannels}
             loading={loading}
             onEndReached={onEndReached}
-            searchChannels={searchChannels}
+            searchChannels={doSearchChannels}
             stopSearch={stopSearch}
             term={term}
             typeOfChannels={typeOfChannels}
