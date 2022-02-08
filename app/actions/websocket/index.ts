@@ -101,7 +101,7 @@ async function doReconnect(serverUrl: string) {
 
     if (chData?.channels?.length) {
         const teammateDisplayNameSetting = getTeammateNameDisplaySetting(prefData.preferences || [], config, license);
-        let directChannels: Channel[] = [];
+        let directChannels: Channel[];
         [chData.channels, directChannels] = chData.channels.reduce(([others, direct], c: Channel) => {
             if (c.type === General.DM_CHANNEL || c.type === General.GM_CHANNEL) {
                 direct.push(c);
@@ -112,7 +112,7 @@ async function doReconnect(serverUrl: string) {
             return [others, direct];
         }, [[], []] as Channel[][]);
 
-        if (directChannels?.length) {
+        if (directChannels.length) {
             await fetchMissingSidebarInfo(serverUrl, directChannels, meData.user?.locale, teammateDisplayNameSetting, system.currentUserId, true);
             chData.channels.push(...directChannels);
         }
