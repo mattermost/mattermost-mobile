@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback, useEffect, useRef, useState} from 'react';
-import {useIntl} from 'react-intl';
+import {IntlShape, useIntl} from 'react-intl';
 import {StyleSheet} from 'react-native';
 
 import ServerIcon from '@components/server_icon';
@@ -33,6 +33,20 @@ const styles = StyleSheet.create({
         height: 40,
     },
 });
+
+const sortServers = (servers: ServersModel[], intl: IntlShape) => {
+    function serverName(s: ServersModel) {
+        if (s.displayName === s.url) {
+            return intl.formatMessage({id: 'servers.default', defaultMessage: 'Default Server'});
+        }
+
+        return s.displayName;
+    }
+
+    return servers.sort((a, b) => {
+        return serverName(a).localeCompare(serverName(b));
+    });
+};
 
 export default function Servers() {
     const intl = useIntl();
@@ -70,7 +84,7 @@ export default function Servers() {
     };
 
     const serversObserver = async (servers: ServersModel[]) => {
-        registeredServers.current = servers;
+        registeredServers.current = sortServers(servers, intl);
 
         // unsubscribe mentions from servers that were removed
         const allUrls = servers.map((s) => s.url);
