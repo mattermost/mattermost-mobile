@@ -52,26 +52,23 @@ export const addChannelToTeamHistory = async (operator: ServerDataOperator, team
 };
 
 export const queryNthLastChannelFromTeam = async (database: Database, teamId: string, n = 0) => {
-    let channelId = '';
+    const teamChannelHistory = await queryChannelHistory(database, teamId);
+    if (teamChannelHistory && teamChannelHistory.length > n + 1) {
+        return teamChannelHistory[n];
+    }
 
+    // No channel history for the team
+    const channel = await queryDefaultChannelForTeam(database, teamId);
+    return channel?.id || '';
+};
+
+export const queryChannelHistory = async (database: Database, teamId: string) => {
     try {
         const teamChannelHistory = await database.get<TeamChannelHistoryModel>(TEAM_CHANNEL_HISTORY).find(teamId);
-        if (teamChannelHistory.channelIds.length > n + 1) {
-            channelId = teamChannelHistory.channelIds[n];
-        }
+        return teamChannelHistory.channelIds;
     } catch {
-        //Do nothing
+        return [];
     }
-
-    if (!channelId) {
-        // No channel history for the team
-        const channel = await queryDefaultChannelForTeam(database, teamId);
-        if (channel) {
-            channelId = channel.id;
-        }
-    }
-
-    return channelId;
 };
 
 export const removeChannelFromTeamHistory = async (operator: ServerDataOperator, teamId: string, channelId: string, prepareRecordsOnly = false) => {
