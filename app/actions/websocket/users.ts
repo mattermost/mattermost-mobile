@@ -21,12 +21,14 @@ import type UserModel from '@typings/database/models/servers/user';
 
 const {SERVER: {CHANNEL, CHANNEL_MEMBERSHIP}} = MM_TABLES;
 
-export async function handleUserUpdatedEvent(serverUrl: string, msg: any) {
+export async function handleUserUpdatedEvent(serverUrl: string, msg: WebSocketMessage) {
     const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
     if (!operator) {
         return;
     }
-    const currentUser = await queryCurrentUser(operator.database);
+
+    const {database} = operator;
+    const currentUser = await queryCurrentUser(database);
     if (!currentUser) {
         return;
     }
@@ -37,10 +39,11 @@ export async function handleUserUpdatedEvent(serverUrl: string, msg: any) {
 
     if (user.id === currentUser.id) {
         if (user.update_at > (currentUser?.updateAt || 0)) {
-            // Need to request me to make sure we don't override with sanitized fields from the
-            // websocket event
+            // ESR: 6.5
             if (!user.notify_props || !Object.keys(user.notify_props).length) {
                 // Current user is sanitized so we fetch it from the server
+                // Need to request me to make sure we don't override with sanitized fields from the
+                // websocket event
                 const me = await fetchMe(serverUrl, true);
                 if (me.user) {
                     userToSave = me.user;
@@ -49,19 +52,21 @@ export async function handleUserUpdatedEvent(serverUrl: string, msg: any) {
 
             // Update GMs display name if locale has changed
             if (user.locale !== currentUser.locale) {
-                const channels = await operator.database.get<ChannelModel>(CHANNEL).query(
+                const channels = await database.get<ChannelModel>(CHANNEL).query(
                     Q.where('type', Q.eq(General.GM_CHANNEL))).fetch();
-                const {models} = await updateChannelsDisplayName(serverUrl, channels, [user], true);
-                if (models?.length) {
-                    modelsToBatch.push(...models);
+                if (channels.length) {
+                    const {models} = await updateChannelsDisplayName(serverUrl, channels, [user], true);
+                    if (models?.length) {
+                        modelsToBatch.push(...models);
+                    }
                 }
             }
         }
     } else {
-        const channels = await operator.database.get<ChannelModel>(CHANNEL).query(
+        const channels = await database.get<ChannelModel>(CHANNEL).query(
             Q.where('type', Q.oneOf([General.DM_CHANNEL, General.GM_CHANNEL])),
             Q.on(CHANNEL_MEMBERSHIP, Q.where('user_id', user.id))).fetch();
-        if (channels?.length) {
+        if (channels.length) {
             const {models} = await updateChannelsDisplayName(serverUrl, channels, [user], true);
             if (models?.length) {
                 modelsToBatch.push(...models);
@@ -79,24 +84,24 @@ export async function handleUserUpdatedEvent(serverUrl: string, msg: any) {
     }
 }
 
-export async function handleUserTypingEvent(serverUrl: string, msg: any) {
+export async function handleUserTypingEvent(serverUrl: string, msg: WebSocketMessage) {
     const currentServerUrl = await DatabaseManager.getActiveServerUrl();
     if (currentServerUrl === serverUrl) {
-        const database = DatabaseManager.serverDatabases[serverUrl];
+        const database = DatabaseManager.serverDatabases[serverUrl]?.database;
         if (!database) {
             return;
         }
 
-        const {config, license} = await queryCommonSystemValues(database.database);
+        const {config, license} = await queryCommonSystemValues(database);
 
-        let user: UserModel | UserProfile | undefined = await queryUserById(database.database, msg.data.user_id);
+        let user: UserModel | UserProfile | undefined = await queryUserById(database, msg.data.user_id);
         if (!user) {
             const {users} = await fetchUsersByIds(serverUrl, [msg.data.user_id]);
             user = users?.[0];
         }
-        const namePreference = await queryPreferencesByCategoryAndName(database.database, Preferences.CATEGORY_DISPLAY_SETTINGS, Preferences.NAME_NAME_FORMAT);
+        const namePreference = await queryPreferencesByCategoryAndName(database, Preferences.CATEGORY_DISPLAY_SETTINGS, Preferences.NAME_NAME_FORMAT);
         const teammateDisplayNameSetting = getTeammateNameDisplaySetting(namePreference, config, license);
-        const currentUser = await queryCurrentUser(database.database);
+        const currentUser = await queryCurrentUser(database);
         const username = displayUsername(user, currentUser?.locale, teammateDisplayNameSetting);
         const data = {
             channelId: msg.broadcast.channel_id,
