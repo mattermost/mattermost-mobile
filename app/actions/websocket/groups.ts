@@ -52,11 +52,9 @@ export async function handleGroupNotAssociatedToTeam(serverUrl: string, msg: Web
     }
 
     try {
-        const group_id = msg.data.group_id;
-        const team_id = msg.broadcast.team_id;
         const groupTeam = await database.get(MM_TABLES.SERVER.GROUPS_TEAM).query(
-            Q.where('team_id', team_id),
-            Q.where('group_id', group_id),
+            Q.where('team_id', msg.broadcast.team_id),
+            Q.where('group_id', msg.data.group_id),
         ).fetch();
 
         if (groupTeam.length) {
@@ -96,11 +94,9 @@ export async function handleGroupNotAssociatedToChannel(serverUrl: string, msg: 
     }
 
     try {
-        const group_id = msg.data.group_id;
-        const channel_id = msg.broadcast.channel_id;
         const groupChannel = await database.get(MM_TABLES.SERVER.GROUPS_CHANNEL).query(
-            Q.where('channel_id', channel_id),
-            Q.where('group_id', group_id),
+            Q.where('channel_id', msg.broadcast.channel_id),
+            Q.where('group_id', msg.data.group_id),
         ).fetch();
 
         if (groupChannel.length) {
