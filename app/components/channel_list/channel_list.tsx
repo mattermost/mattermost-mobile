@@ -1,8 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useEffect, useState} from 'react';
-import {TouchableOpacity} from 'react-native-gesture-handler';
+import React, {useEffect} from 'react';
 import Animated, {useAnimatedStyle, useSharedValue, withTiming} from 'react-native-reanimated';
 
 import {TABLET_SIDEBAR_WIDTH, TEAM_SIDEBAR_WIDTH} from '@constants/view';
@@ -11,7 +10,6 @@ import {makeStyleSheetFromTheme} from '@utils/theme';
 
 import Categories from './categories';
 import ChannelListHeader from './header';
-import LoadingError from './loading_error';
 import SearchField from './search';
 import Threads from './threads';
 
@@ -54,26 +52,20 @@ const ChannelList = ({iconPad, isTablet, teamsCount, currentTeamId}: ChannelList
         }
     }, [isTablet, teamsCount]);
 
-    const [showCats, setShowCats] = useState<boolean>(true);
     return (
         <Animated.View style={[styles.container, tabletStyle]}>
-            <TouchableOpacity onPress={() => setShowCats(!showCats)}>
-                <ChannelListHeader
-                    iconPad={iconPad}
-                />
-            </TouchableOpacity>
 
-            {showCats && (
-                <>
-                    <SearchField/>
-                    <Threads/>
-                    <Categories
-                        currentTeamId={currentTeamId}
-                    />
-                </>
-            )}
+            <ChannelListHeader
+                iconPad={iconPad}
+            />
+
+            <SearchField/>
+            <Threads/>
+            <Categories
+                currentTeamId={currentTeamId}
+            />
+
             {/* <Loading/> */}
-            {!showCats && (<LoadingError/>)}
         </Animated.View>
     );
 };

@@ -3,7 +3,7 @@
 
 export interface ClientCategoriesMix {
     getCategories: (userId: string, teamId: string) => Promise<CategoriesWithOrder>;
-    getCategoriesOrder: (userId: string, teamId: string) => Promise<CategoryOrder>;
+    getCategoriesOrder: (userId: string, teamId: string) => Promise<string[]>;
     getCategory: (userId: string, teamId: string, categoryId: string) => Promise<Category>;
 }
 
