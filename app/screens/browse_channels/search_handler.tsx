@@ -151,52 +151,40 @@ export default function SearchHandler(props: Props) {
     const isSearch = Boolean(term);
 
     const doGetChannels = (t: string) => {
+        let next: (typeof nextPublic | typeof nextShared | typeof nextArchived);
+        let fetch: (typeof fetchChannels | typeof fetchSharedChannels | typeof fetchArchivedChannels);
+        let page: (typeof publicPage | typeof sharedPage | typeof archivedPage);
+
         switch (t) {
-            case PUBLIC:
-                if (nextPublic.current) {
-                    dispatch(LoadAction);
-                    fetchChannels(
-                        serverUrl,
-                        currentTeamId,
-                        publicPage.current + 1,
-                        General.CHANNELS_CHUNK_SIZE,
-                    ).then(
-                        ({channels: receivedChannels}) => loadedChannels.current(receivedChannels || [], t),
-                    ).catch(
-                        () => dispatch(StopAction),
-                    );
-                }
-                break;
             case SHARED:
-                if (nextShared.current) {
-                    dispatch(LoadAction);
-                    fetchSharedChannels(
-                        serverUrl,
-                        currentTeamId,
-                        sharedPage.current + 1,
-                        General.CHANNELS_CHUNK_SIZE,
-                    ).then(
-                        ({channels: receivedChannels}) => loadedChannels.current(receivedChannels || [], t),
-                    ).catch(
-                        () => dispatch(StopAction),
-                    );
-                }
+                next = nextShared;
+                fetch = fetchSharedChannels;
+                page = sharedPage;
                 break;
             case ARCHIVED:
-                if (nextArchived.current) {
-                    dispatch(LoadAction);
-                    fetchArchivedChannels(
-                        serverUrl,
-                        currentTeamId,
-                        archivedPage.current + 1,
-                        General.CHANNELS_CHUNK_SIZE,
-                    ).then(
-                        ({channels: receivedChannels}) => loadedChannels.current(receivedChannels || [], t),
-                    ).catch(
-                        () => dispatch(StopAction),
-                    );
-                }
+                next = nextArchived;
+                fetch = fetchArchivedChannels;
+                page = archivedPage;
                 break;
+            case PUBLIC:
+            default:
+                next = nextPublic;
+                fetch = fetchChannels;
+                page = publicPage;
+        }
+
+        if (next.current) {
+            dispatch(LoadAction);
+            fetch(
+                serverUrl,
+                currentTeamId,
+                page.current + 1,
+                General.CHANNELS_CHUNK_SIZE,
+            ).then(
+                ({channels: receivedChannels}) => loadedChannels.current(receivedChannels, t),
+            ).catch(
+                () => dispatch(StopAction),
+            );
         }
     };
 
@@ -251,44 +239,38 @@ export default function SearchHandler(props: Props) {
 
     useEffect(() => {
         loadedChannels.current = async (data: Channel[] | undefined, t: string) => {
+            let next: (typeof nextPublic | typeof nextShared | typeof nextArchived);
+            let page: (typeof publicPage | typeof sharedPage | typeof archivedPage);
+            let shouldFilterJoined: boolean;
             switch (t) {
-                case PUBLIC: {
-                    publicPage.current += 1;
-                    nextPublic.current = Boolean(data?.length);
-                    const filtered = filterJoinedChannels(joinedChannels, data);
-                    if (filtered?.length) {
-                        dispatch(addAction(t, filtered));
-                    } else if (data?.length) {
-                        doGetChannels(t);
-                    } else {
-                        dispatch(StopAction);
-                    }
+                case SHARED:
+                    page = sharedPage;
+                    next = nextShared;
+                    shouldFilterJoined = true;
                     break;
-                }
-                case SHARED: {
-                    sharedPage.current += 1;
-                    nextShared.current = Boolean(data?.length);
-                    const filtered = filterJoinedChannels(joinedChannels, data);
-                    if (filtered?.length) {
-                        dispatch(addAction(t, filtered));
-                    } else if (data?.length && !filtered?.length) {
-                        doGetChannels(t);
-                    } else {
-                        dispatch(StopAction);
-                    }
-                    break;
-                }
                 case ARCHIVED:
-                default:
-                    archivedPage.current += 1;
-                    nextArchived.current = Boolean(data?.length);
-                    if (data?.length) {
-                        dispatch(addAction(t, data));
-                    } else {
-                        dispatch(StopAction);
-                    }
-
+                    page = archivedPage;
+                    next = nextArchived;
+                    shouldFilterJoined = false;
                     break;
+                case PUBLIC:
+                default:
+                    page = publicPage;
+                    next = nextPublic;
+                    shouldFilterJoined = true;
+            }
+            page.current += 1;
+            next.current = Boolean(data?.length);
+            let filtered = data;
+            if (shouldFilterJoined) {
+                filtered = filterJoinedChannels(joinedChannels, data);
+            }
+            if (filtered?.length) {
+                dispatch(addAction(t, filtered));
+            } else if (data?.length) {
+                doGetChannels(t);
+            } else {
+                dispatch(StopAction);
             }
         };
         return () => {
@@ -313,13 +295,7 @@ export default function SearchHandler(props: Props) {
     // Make sure enough channels are loaded to allow the FlatList to scroll,
     // and let it call the onReachEnd function.
     useDidUpdate(() => {
-        if (loading) {
-            return;
-        }
-        if (isSearch) {
-            return;
-        }
-        if (visibleChannels.length >= MIN_CHANNELS_LOADED) {
+        if (loading || isSearch || visibleChannels.length >= MIN_CHANNELS_LOADED) {
             return;
         }
         let next;
