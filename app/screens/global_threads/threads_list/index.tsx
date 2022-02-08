@@ -8,7 +8,7 @@ import {AppStateStatus} from 'react-native';
 import {combineLatest, of as of$} from 'rxjs';
 import {map, switchMap} from 'rxjs/operators';
 
-import {ThreadModel} from '@app/database/models/server';
+import {queryThreadsInTeam} from '@app/queries/servers/thread';
 import {Preferences} from '@constants';
 import {MM_TABLES, SYSTEM_IDENTIFIERS} from '@constants/database';
 import {getTeammateNameDisplaySetting} from '@helpers/api/preference';
@@ -21,7 +21,7 @@ import type SystemModel from '@typings/database/models/servers/system';
 
 export type {Tab};
 
-const {SERVER: {CHANNEL, PREFERENCE, POST, SYSTEM, THREAD}} = MM_TABLES;
+const {SERVER: {PREFERENCE, SYSTEM}} = MM_TABLES;
 
 const enhanced = withObservables(['tab', 'teamId', 'forceQueryAfterAppState'], ({database, tab, teamId}: {tab: Tab; teamId: string; forceQueryAfterAppState: AppStateStatus} & WithDatabaseArgs) => {
     // Get current user
@@ -29,34 +29,13 @@ const enhanced = withObservables(['tab', 'teamId', 'forceQueryAfterAppState'], (
         switchMap(({value}) => of$(value)),
     );
 
-    // Query: To map threads to teams/dm/gm
-    const threadsQuery: Q.Clause[] = [
-        Q.experimentalNestedJoin(POST, CHANNEL),
-        Q.on(
-            POST,
-            Q.on(
-                CHANNEL,
-                Q.or(
-                    Q.where('team_id', teamId),
-                    Q.where('team_id', ''),
-                ),
-            ),
-        ),
-    ];
-
-    // Query: Add additional clause for unread replies
-    const unreadThreadsQuery = threadsQuery.concat(Q.where('unread_replies', Q.gt(0)));
+    const getOnlyUnreads = tab !== 'all';
 
     // Get all/unread threads
-    const threads = database.get<ThreadModel>(THREAD).query(
-        ...(tab === 'all' ? threadsQuery : unreadThreadsQuery),
-        Q.sortBy('last_reply_at', Q.desc),
-    ).observe();
+    const threads = queryThreadsInTeam(database, teamId, getOnlyUnreads, true).observe();
 
     // Get unreads count
-    const unreadsCount = database.get<ThreadModel>(THREAD).query(
-        ...unreadThreadsQuery,
-    ).observeCount();
+    const unreadsCount = queryThreadsInTeam(database, teamId, true).observeCount();
 
     // Get team name display setting
     const config = database.get<SystemModel>(SYSTEM).findAndObserve(SYSTEM_IDENTIFIERS.CONFIG);

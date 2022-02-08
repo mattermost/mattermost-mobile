@@ -72,7 +72,7 @@ export const processUpdateTeamThreadsAsRead = async (serverUrl: string, teamId: 
     }
     try {
         const {database} = operator;
-        const threads = await queryThreadsInTeam(database, teamId);
+        const threads = await queryThreadsInTeam(database, teamId).fetch();
         const models = threads.map((thread) => thread.prepareUpdate((t) => {
             t.unreadMentions = 0;
             t.unreadReplies = 0;

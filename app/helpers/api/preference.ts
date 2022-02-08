@@ -40,3 +40,16 @@ export function getTeammateNameDisplaySetting(preferences: PreferenceType[] | Pr
 
     return General.TEAMMATE_NAME_DISPLAY.SHOW_USERNAME;
 }
+
+export function getIsCRTEnabled(preferences: PreferenceModel[], config?: ClientConfig): boolean {
+    let preferenceDefault = Preferences.COLLAPSED_REPLY_THREADS_OFF;
+    const configValue = config?.CollapsedThreads;
+    if (configValue === 'default_on') {
+        preferenceDefault = Preferences.COLLAPSED_REPLY_THREADS_ON;
+    }
+    const preference = getPreferenceValue(preferences, Preferences.CATEGORY_DISPLAY_SETTINGS, Preferences.COLLAPSED_REPLY_THREADS, preferenceDefault);
+
+    const isAllowed = config?.FeatureFlagCollapsedThreads === 'true' && config?.CollapsedThreads !== 'disabled';
+
+    return isAllowed && (preference === Preferences.COLLAPSED_REPLY_THREADS_ON || config?.CollapsedThreads === 'always_on');
+}

@@ -4,10 +4,10 @@
 import React, {useCallback} from 'react';
 import {FlatList} from 'react-native';
 
-import {ThreadModel} from '@app/database/models/server';
-
 import Header, {Tab} from './header';
 import Thread from './thread';
+
+import type ThreadModel from '@typings/database/models/servers/thread';
 
 export type {Tab};
 
