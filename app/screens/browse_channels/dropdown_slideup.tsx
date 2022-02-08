@@ -8,6 +8,7 @@ import {DeviceEventEmitter} from 'react-native';
 import SlideUpPanelItem from '@components/slide_up_panel_item';
 import NavigationConstants from '@constants/navigation';
 import {useTheme} from '@context/theme';
+import {useIsTablet} from '@hooks/device';
 import BottomSheetContent from '@screens/bottom_sheet/content';
 import {
     makeStyleSheetFromTheme,
@@ -40,6 +41,7 @@ export default function DropdownSlideup({
     const intl = useIntl();
     const theme = useTheme();
     const style = getStyleFromTheme(theme);
+    const isTablet = useIsTablet();
 
     const commonProps = {
         rightIcon: true,
@@ -64,7 +66,7 @@ export default function DropdownSlideup({
     return (
         <BottomSheetContent
             showButton={false}
-            showTitle={true}
+            showTitle={!isTablet}
             title={intl.formatMessage({id: 'browse_channels.dropdownTitle', defaultMessage: 'Show'})}
         >
             <SlideUpPanelItem

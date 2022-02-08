@@ -73,10 +73,10 @@ export default function ChannelDropdown({
         }
 
         bottomSheet({
-            title: '',
+            title: intl.formatMessage({id: 'browse_channels.dropdownTitle', defaultMessage: 'Show'}),
             renderContent,
             snapPoints: [(items * ITEM_HEIGHT) + TITLE_HEIGHT + BOTTOM_SHEET_HEIGHT_BASE, 10],
-            closeButtonId: '',
+            closeButtonId: 'close',
             theme,
         });
     };
