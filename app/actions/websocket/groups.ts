@@ -19,7 +19,7 @@ export async function handleGroupUpdatedEvent(serverUrl: string, msg: WebSocketM
             groups: [group],
             prepareRecordsOnly: false,
         };
-        operator.handleGroup(groupArgs);
+        await operator.handleGroup(groupArgs);
     } catch {
         // do nothing
     }
@@ -39,7 +39,7 @@ export async function handleGroupAssociatedToTeam(serverUrl: string, msg: WebSoc
             }],
             prepareRecordsOnly: false,
         };
-        operator.handleGroupsTeam(groupsTeamArgs);
+        await operator.handleGroupsTeam(groupsTeamArgs);
     } catch {
         // do nothing
     }
@@ -83,7 +83,7 @@ export async function handleGroupAssociatedToChannel(serverUrl: string, msg: Web
             }],
             prepareRecordsOnly: false,
         };
-        operator.handleGroupsChannel(groupsChannelArgs);
+        await operator.handleGroupsChannel(groupsChannelArgs);
     } catch {
         // do nothing
     }
