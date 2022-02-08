@@ -1,13 +1,11 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
-import {inspect} from 'util';
-
 import {Q} from '@nozbe/watermelondb';
 
 import {MM_TABLES} from '@constants/database';
 import DatabaseManager from '@database/manager';
 
-import type {HandleGroupArgs, HandleGroupMembershipArgs, HandleGroupsChannelArgs, HandleGroupsTeamArgs} from '@typings/database/database';
+import type {HandleGroupArgs, HandleGroupsChannelArgs, HandleGroupsTeamArgs} from '@typings/database/database';
 
 export async function handleGroupUpdatedEvent(serverUrl: string, msg: WebSocketMessage): Promise<void> {
     const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
@@ -15,7 +13,6 @@ export async function handleGroupUpdatedEvent(serverUrl: string, msg: WebSocketM
         return;
     }
 
-    console.log('msg = ', inspect(msg, false, null, true /* enable colors */));
     try {
         const group = JSON.parse(msg.data.group);
         const groupArgs: HandleGroupArgs = {
@@ -29,7 +26,6 @@ export async function handleGroupUpdatedEvent(serverUrl: string, msg: WebSocketM
 }
 
 export async function handleGroupAssociatedToTeam(serverUrl: string, msg: WebSocketMessage): Promise<void> {
-    console.log('GAT');
     const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
     if (!operator) {
         return;
@@ -50,8 +46,6 @@ export async function handleGroupAssociatedToTeam(serverUrl: string, msg: WebSoc
 }
 
 export async function handleGroupNotAssociatedToTeam(serverUrl: string, msg: WebSocketMessage): Promise<void> {
-    console.log('GNAT');
-    console.log('msg = ', inspect(msg, false, null, true /* enable colors */));
     const database = DatabaseManager.serverDatabases[serverUrl]?.database;
     if (!database) {
         return;
@@ -76,7 +70,6 @@ export async function handleGroupNotAssociatedToTeam(serverUrl: string, msg: Web
 }
 
 export async function handleGroupAssociatedToChannel(serverUrl: string, msg: WebSocketMessage): Promise<void> {
-    console.log('GAC');
     const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
     if (!operator) {
         return;
@@ -97,8 +90,6 @@ export async function handleGroupAssociatedToChannel(serverUrl: string, msg: Web
 }
 
 export async function handleGroupNotAssociatedToChannel(serverUrl: string, msg: WebSocketMessage): Promise<void> {
-    console.log('GNAC');
-    console.log('msg = ', inspect(msg, false, null, true /* enable colors */));
     const database = DatabaseManager.serverDatabases[serverUrl]?.database;
     if (!database) {
         return;
