@@ -701,8 +701,8 @@ export const searchChannels = async (serverUrl: string, term: string) => {
     }
 
     try {
-        const currentTeam = await queryCurrentTeamId(database);
-        const channels = await client.autocompleteChannels(currentTeam, term);
+        const currentTeamId = await queryCurrentTeamId(database);
+        const channels = await client.autocompleteChannels(currentTeamId, term);
         return {channels};
     } catch (error) {
         return {error};

@@ -39,13 +39,14 @@ const makeLeftButton = (icon: ImageResource): OptionsTopBarButton => {
     };
 };
 
-const makeRightButton = (theme: Theme, formatMessage: IntlShape['formatMessage']): OptionsTopBarButton => {
+const makeRightButton = (theme: Theme, formatMessage: IntlShape['formatMessage'], enabled: boolean): OptionsTopBarButton => {
     return {
         color: theme.sidebarHeaderTextColor,
         id: CREATE_BUTTON_ID,
         text: formatMessage({id: 'mobile.create_channel', defaultMessage: 'Create'}),
         showAsAction: 'always',
         testID: 'browse_channels.create.button',
+        enabled,
     };
 };
 
@@ -141,7 +142,7 @@ export default function BrowseChannels(props: Props) {
         };
 
         if (canCreateChannels) {
-            buttons.rightButtons = [{...makeRightButton(theme, intl.formatMessage), enabled: createEnabled}];
+            buttons.rightButtons = [makeRightButton(theme, intl.formatMessage, createEnabled)];
         }
 
         setButtons(componentId, buttons);
@@ -204,7 +205,7 @@ export default function BrowseChannels(props: Props) {
     useEffect(() => {
         // Update header buttons in case anything related to the header changes
         setHeaderButtons(!adding);
-    }, [theme, canCreateChannels]);
+    }, [theme, canCreateChannels, adding]);
 
     let content;
     if (adding) {

@@ -7,10 +7,9 @@ import {View, Text} from 'react-native';
 
 import CompassIcon from '@components/compass_icon';
 import {ITEM_HEIGHT} from '@components/slide_up_panel_item';
-import Screens from '@constants/screens';
 import {useTheme} from '@context/theme';
 import {TITLE_HEIGHT} from '@screens/bottom_sheet/content';
-import {showModalOverCurrentContext} from '@screens/navigation';
+import {bottomSheet} from '@screens/navigation';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
@@ -73,9 +72,12 @@ export default function ChannelDropdown({
             items += 1;
         }
 
-        showModalOverCurrentContext(Screens.BOTTOM_SHEET, {
+        bottomSheet({
+            title: '',
             renderContent,
             snapPoints: [(items * ITEM_HEIGHT) + TITLE_HEIGHT + BOTTOM_SHEET_HEIGHT_BASE, 10],
+            closeButtonId: '',
+            theme,
         });
     };
 
