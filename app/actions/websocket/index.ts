@@ -120,7 +120,7 @@ async function doReconnect(serverUrl: string) {
 
     // if no longer a member of the current team
     if (initialTeamId !== system.currentTeamId) {
-        let cId = await queryCurrentChannelId(database);
+        let cId = '';
         if (tabletDevice) {
             if (!cId) {
                 const channel = await queryDefaultChannelForTeam(database, initialTeamId);
@@ -165,10 +165,8 @@ async function doReconnect(serverUrl: string) {
 
     const currentChannelId = await queryCurrentChannelId(database);
     if (currentChannelId) {
-        // TODO Differentiate between post and thread, to fetch the thread posts
+        // https://mattermost.atlassian.net/browse/MM-40098
         fetchPostsSince(serverUrl, currentChannelId, lastDisconnectedAt);
-
-        // TODO Consider global thread screen to update global threads
 
         // defer fetching posts for unread channels on initial team
         if (chData?.channels && chData.memberships) {
@@ -188,7 +186,7 @@ async function doReconnect(serverUrl: string) {
     fetchAllTeams(serverUrl);
     updateAllUsersSince(serverUrl, lastDisconnectedAt);
 
-    // TODO Fetch App bindings?
+    // https://mattermost.atlassian.net/browse/MM-41520
 }
 
 export async function handleEvent(serverUrl: string, msg: WebSocketMessage) {
