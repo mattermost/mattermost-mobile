@@ -188,7 +188,7 @@ lane :upload_file_to_s3 do |options|
     files.push("#{build_folder_path}/#{options[:file]}")
   else
     extensions.each do |extension|
-      files.push(Dir.glob("#{build_folder_path}/#{extension}").select { |f| File.file? f}.first)
+      files.push(*Dir.glob("#{build_folder_path}/#{extension}").select { |f| File.file? f})
     end
   end
 
