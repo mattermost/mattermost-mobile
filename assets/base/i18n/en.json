@@ -366,9 +366,10 @@
   "screens.channel_details": "Channel Details",
   "screens.channel_edit": "Edit Channel",
   "search_bar.search": "Search",
-  "servers.create_button": "Add a Server",
+  "servers.create_button": "Add a server",
   "servers.default": "Default Server",
   "servers.edit": "Edit",
+  "servers.login": "Log in",
   "servers.logout": "Log out",
   "servers.remove": "Remove",
   "status_dropdown.set_away": "Away",
@@ -387,5 +388,5 @@
   "user.settings.general.nickname": "Nickname",
   "user.settings.general.position": "Position",
   "user.settings.general.username": "Username",
-  "your.servers": "Your Servers"
+  "your.servers": "Your servers"
 }
