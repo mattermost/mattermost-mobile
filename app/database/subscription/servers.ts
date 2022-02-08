@@ -23,7 +23,7 @@ export const subscribeAllServers = (observer: (servers: ServersModel[]) => void)
     const db = DatabaseManager.appDatabase?.database;
     return db?.
         get(SERVERS).
-        query(Q.sortBy('display_name', Q.asc)).
+        query().
         observeWithColumns(['last_active_at']).
         subscribe(observer);
 };
