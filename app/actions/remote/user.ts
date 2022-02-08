@@ -347,12 +347,19 @@ export const updateAllUsersSince = async (serverUrl: string, since: number, fetc
         return {error: `${serverUrl} database not found`};
     }
 
+    let client: Client;
+    try {
+        client = NetworkManager.getClient(serverUrl);
+    } catch (error) {
+        return {error};
+    }
+
     const currentUserId = await queryCurrentUserId(operator.database);
     const users = await queryAllUsers(operator.database);
     const userIds = users.map((u) => u.id).filter((id) => id !== currentUserId);
     let userUpdates: UserProfile[] = [];
     try {
-        userUpdates = await NetworkManager.getClient(serverUrl).getProfilesByIds(userIds, {since});
+        userUpdates = await client.getProfilesByIds(userIds, {since});
         if (userUpdates.length && !fetchOnly) {
             const modelsToBatch: Model[] = [];
             const userModels = await operator.handleUsers({users: userUpdates, prepareRecordsOnly: true});
@@ -369,8 +376,6 @@ export const updateAllUsersSince = async (serverUrl: string, since: number, fetc
                 await operator.batchRecords(modelsToBatch);
             }
         }
-
-        // Update the display names
     } catch {
         // Do nothing
     }
