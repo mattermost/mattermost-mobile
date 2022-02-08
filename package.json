@@ -13,6 +13,7 @@
     "@formatjs/intl-numberformat": "7.4.1",
     "@formatjs/intl-pluralrules": "4.3.1",
     "@formatjs/intl-relativetimeformat": "9.5.1",
+    "@mattermost/compass-icons": "0.1.21",
     "@mattermost/react-native-emm": "1.1.8",
     "@mattermost/react-native-network-client": "github:mattermost/react-native-network-client",
     "@mattermost/react-native-paste-input": "0.3.7",
