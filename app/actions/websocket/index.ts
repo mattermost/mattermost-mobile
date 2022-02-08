@@ -15,7 +15,7 @@ import DatabaseManager from '@database/manager';
 import {getTeammateNameDisplaySetting} from '@helpers/api/preference';
 import {queryChannelsById, queryDefaultChannelForTeam} from '@queries/servers/channel';
 import {prepareModels} from '@queries/servers/entry';
-import {queryCommonSystemValues, queryConfig, queryCurrentChannelId, queryWebSocketLastDisconnected, resetWebSocketLastDisconnected} from '@queries/servers/system';
+import {queryCommonSystemValues, queryConfig, queryCurrentChannelId, queryWebSocketLastDisconnected, resetWebSocketLastDisconnected, setCurrentTeamAndChannelId} from '@queries/servers/system';
 import {deleteMyTeams, queryTeamsById} from '@queries/servers/team';
 import {isTablet} from '@utils/helpers';
 
@@ -128,8 +128,9 @@ async function doReconnect(serverUrl: string) {
                     cId = channel.id;
                 }
             }
-
             switchToChannelById(serverUrl, cId, initialTeamId);
+        } else {
+            setCurrentTeamAndChannelId(operator, initialTeamId, cId);
         }
     }
 
