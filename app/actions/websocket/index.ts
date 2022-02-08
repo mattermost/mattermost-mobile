@@ -27,7 +27,7 @@ import {handleUserRoleUpdatedEvent, handleTeamMemberRoleUpdatedEvent, handleRole
 import {handleLeaveTeamEvent, handleUserAddedToTeamEvent, handleUpdateTeamEvent} from './teams';
 import {handleUserUpdatedEvent, handleUserTypingEvent} from './users';
 
-// Remove once 5.37 is no longer supported
+// ESR: 5.37
 const alreadyConnected = new Set<string>();
 
 export async function handleFirstConnect(serverUrl: string) {
@@ -38,7 +38,7 @@ export async function handleFirstConnect(serverUrl: string) {
     const config = await queryConfig(operator.database);
     const lastDisconnect = await queryWebSocketLastDisconnected(operator.database);
 
-    // Remove once 5.37 is no longer supported
+    // ESR: 5.37
     if (lastDisconnect && config.EnableReliableWebSockets !== 'true' && alreadyConnected.has(serverUrl)) {
         handleReconnect(serverUrl);
         return;
@@ -101,8 +101,16 @@ async function doReconnect(serverUrl: string) {
 
     if (chData?.channels?.length) {
         const teammateDisplayNameSetting = getTeammateNameDisplaySetting(prefData.preferences || [], config, license);
-        const directChannels = chData.channels.filter((c) => c.type === General.DM_CHANNEL || c.type === General.GM_CHANNEL);
-        chData.channels = chData.channels.filter((c) => c.type !== General.DM_CHANNEL && c.type !== General.GM_CHANNEL) || [];
+        const directChannels: Channel[] = [];
+        chData.channels = [...chData.channels].reduce((result, c: Channel) => {
+            if (c.type === General.DM_CHANNEL || c.type === General.GM_CHANNEL) {
+                directChannels.push(c);
+                return result;
+            }
+
+            result.push(c);
+            return result;
+        }, [] as Channel[]);
 
         if (directChannels?.length) {
             await fetchMissingSidebarInfo(serverUrl, directChannels, meData.user?.locale, teammateDisplayNameSetting, system.currentUserId, true);
