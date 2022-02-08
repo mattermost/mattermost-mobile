@@ -3,7 +3,6 @@ package com.mattermost.rnbeta;
 import android.os.Bundle;
 import androidx.annotation.Nullable;
 
-import android.util.Log;
 import android.view.KeyEvent;
 import android.content.res.Configuration;
 
@@ -44,7 +43,6 @@ public class MainActivity extends NavigationActivity {
             WritableMap data = Arguments.createMap();
             data.putString("appState", hasFocus ? "active" : "background");
             instance.sendEvent("windowFocusChanged", data);
-            Log.d("ReactNative", String.format("Window has focus %s", hasFocus));
         }
     }
 
