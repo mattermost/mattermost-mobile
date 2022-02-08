@@ -18,10 +18,11 @@ export async function handleGroupUpdatedEvent(serverUrl: string, msg: WebSocketM
     console.log('msg = ', inspect(msg, false, null, true /* enable colors */));
     try {
         const group = JSON.parse(msg.data.group);
-        operator.handleGroup({
+        const groupArgs: HandleGroupArgs = {
             groups: [group],
             prepareRecordsOnly: false,
-        });
+        };
+        operator.handleGroup(groupArgs);
     } catch {
         // do nothing
     }
@@ -35,14 +36,14 @@ export async function handleGroupAssociatedToTeam(serverUrl: string, msg: WebSoc
     }
 
     try {
-        const groupTeamsArgs: HandleGroupsTeamArgs = {
+        const groupsTeamArgs: HandleGroupsTeamArgs = {
             groupsTeams: [{
                 group_id: msg.data.group_id,
                 team_id: msg.broadcast.team_id,
             }],
             prepareRecordsOnly: false,
         };
-        operator.handleGroupsTeam(groupTeamsArgs);
+        operator.handleGroupsTeam(groupsTeamArgs);
     } catch {
         // do nothing
     }
@@ -82,14 +83,14 @@ export async function handleGroupAssociatedToChannel(serverUrl: string, msg: Web
     }
 
     try {
-        const groupChannelsArgs: HandleGroupsChannelArgs = {
+        const groupsChannelArgs: HandleGroupsChannelArgs = {
             groupsChannels: [{
                 group_id: msg.data.group_id,
                 channel_id: msg.broadcast.channel_id,
             }],
             prepareRecordsOnly: false,
         };
-        operator.handleGroupsChannel(groupChannelsArgs);
+        operator.handleGroupsChannel(groupsChannelArgs);
     } catch {
         // do nothing
     }
