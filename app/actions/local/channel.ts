@@ -299,27 +299,29 @@ export const updateLastPostAt = async (serverUrl: string, channelId: string, las
 };
 
 export async function updateChannelsDisplayName(serverUrl: string, channels: ChannelModel[], users: UserProfile[], prepareRecordsOnly = false) {
-    const database = DatabaseManager.serverDatabases[serverUrl];
-    if (!database) {
+    const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
+    if (!operator) {
         return {};
     }
-    const currentUser = await queryCurrentUser(database.database);
+
+    const {database} = operator;
+    const currentUser = await queryCurrentUser(database);
     if (!currentUser) {
         return {};
     }
 
-    const {config, license} = await queryCommonSystemValues(database.database);
-    const preferences = await queryPreferencesByCategoryAndName(database.database, Preferences.CATEGORY_DISPLAY_SETTINGS, Preferences.NAME_NAME_FORMAT);
+    const {config, license} = await queryCommonSystemValues(database);
+    const preferences = await queryPreferencesByCategoryAndName(database, Preferences.CATEGORY_DISPLAY_SETTINGS, Preferences.NAME_NAME_FORMAT);
     const displaySettings = getTeammateNameDisplaySetting(preferences, config, license);
     const models: Model[] = [];
-    channels?.forEach(async (channel) => {
+    for await (const channel of channels) {
         let newDisplayName = '';
         if (channel.type === General.DM_CHANNEL) {
             const otherUserId = getUserIdFromChannelName(currentUser.id, channel.name);
             const user = users.find((u) => u.id === otherUserId);
             newDisplayName = displayUsername(user, currentUser.locale, displaySettings);
         } else {
-            const dbProfiles = await database.database.get<UserModel>(USER).query(Q.on(CHANNEL_MEMBERSHIP, Q.where('channel_id', channel.id))).fetch();
+            const dbProfiles = await database.get<UserModel>(USER).query(Q.on(CHANNEL_MEMBERSHIP, Q.where('channel_id', channel.id))).fetch();
             const profileIds = dbProfiles.map((p) => p.id);
             const gmUsers = users.filter((u) => profileIds.includes(u.id));
             if (gmUsers.length) {
@@ -336,10 +338,10 @@ export async function updateChannelsDisplayName(serverUrl: string, channels: Cha
             });
             models.push(channel);
         }
-    });
+    }
 
     if (models.length && !prepareRecordsOnly) {
-        database.operator.batchRecords(models);
+        await operator.batchRecords(models);
     }
 
     return {models};
