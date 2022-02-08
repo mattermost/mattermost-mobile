@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import NetInfo, {NetInfoState} from '@react-native-community/netinfo';
-import {AppState, AppStateStatus, DeviceEventEmitter} from 'react-native';
+import {AppState, AppStateStatus, DeviceEventEmitter, Platform} from 'react-native';
 
 import {setCurrentUserStatusOffline} from '@actions/local/user';
 import {fetchStatusByIds} from '@actions/remote/user';
@@ -47,9 +47,11 @@ class WebsocketManager {
         AppState.addEventListener('change', this.onAppStateChange);
         NetInfo.addEventListener(this.onNetStateChange);
 
-        DeviceEventEmitter.addListener('windowFocusChanged', ({appState}: {appState: AppStateStatus}) => {
-            this.onAppStateChange(appState);
-        });
+        if (Platform.OS === 'android') {
+            DeviceEventEmitter.addListener('windowFocusChanged', ({appState}: {appState: AppStateStatus}) => {
+                this.onAppStateChange(appState);
+            });
+        }
     };
 
     public invalidateClient = (serverUrl: string) => {
