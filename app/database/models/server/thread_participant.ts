@@ -16,7 +16,7 @@ const {THREAD, THREAD_PARTICIPANT, USER} = MM_TABLES.SERVER;
  * The Thread Participants model contains participants data of a thread.
  */
 export default class ThreadParticipantModel extends Model {
-    /** table (name) : ThreadParticipants */
+    /** table (name) : ThreadParticipant */
     static table = THREAD_PARTICIPANT;
 
     /** associations : Describes every relationship to this table. */
