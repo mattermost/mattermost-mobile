@@ -5,7 +5,9 @@ import React from 'react';
 import {View} from 'react-native';
 
 import * as Screens from '@constants/screens';
+import {useTheme} from '@context/theme';
 import {isSystemMessage} from '@utils/post';
+import {makeStyleSheetFromTheme} from '@utils/theme';
 
 import CopyLinkOption from './components/options/copy_link_option';
 import CopyTextOption from './components/options/copy_text_option';
@@ -21,6 +23,15 @@ import type PostModel from '@typings/database/models/servers/post';
 
 //fixme: should this be even a screen ??
 //fixme: some props are optional - review them
+
+const getStyleSheet = makeStyleSheetFromTheme((theme) => {
+    return {
+        container: {
+            backgroundColor: theme.centerChannelBg,
+            marginLeft: -20,
+        },
+    };
+});
 
 type PostOptionsProps = {
     canCopyPermalink?: boolean;
@@ -50,9 +61,14 @@ const PostOptions = ({
     location,
     post,
 }: PostOptionsProps) => {
+    const theme = useTheme();
+    const styles = getStyleSheet(theme);
+
     const shouldRenderEdit = canEdit && (canEditUntil === -1 || canEditUntil > Date.now());
     return (
-        <View>
+        <View
+            style={styles.container}
+        >
             <ReplyOption/>
             <FollowThreadOption
 
