@@ -27,6 +27,7 @@ export const addRecentReaction = async (serverUrl: string, emojiNames: string[],
         // no previous values.. continue
     }
 
+    //todo: with respect to this PR https://github.com/mattermost/mattermost-webapp/pull/9691, we can shift the most frequently used emoji to the front ?
     try {
         const recentEmojis = new Set(recent);
         for (const name of emojiNames) {

@@ -6,8 +6,9 @@ import {View} from 'react-native';
 
 import * as Screens from '@constants/screens';
 import {useTheme} from '@context/theme';
+import QuickReaction from '@screens/post_options/components/reactions/quick_reaction';
 import {isSystemMessage} from '@utils/post';
-import {makeStyleSheetFromTheme} from '@utils/theme';
+import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 import CopyLinkOption from './components/options/copy_link_option';
 import CopyTextOption from './components/options/copy_text_option';
@@ -28,7 +29,12 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     return {
         container: {
             backgroundColor: theme.centerChannelBg,
+        },
+        optionContainer: {
             marginLeft: -20,
+        },
+        icon: {
+            backgroundColor: changeOpacity(theme.centerChannelColor, 0.56),
         },
     };
 });
@@ -65,28 +71,31 @@ const PostOptions = ({
     const styles = getStyleSheet(theme);
 
     const shouldRenderEdit = canEdit && (canEditUntil === -1 || canEditUntil > Date.now());
+
     return (
         <View
             style={styles.container}
         >
-            <ReplyOption/>
-            <FollowThreadOption
-
-                location={location}
-            />
-            {canMarkAsUnread && !isSystemMessage(post) && (
-                <MarkAsUnreadOption/>
-            )}
-            {canCopyPermalink && <CopyLinkOption/>}
-            {canFlag &&
+            <QuickReaction theme={theme}/>
+            <View style={styles.optionContainer}>
+                <ReplyOption/>
+                <FollowThreadOption
+                    location={location}
+                />
+                {canMarkAsUnread && !isSystemMessage(post) && (
+                    <MarkAsUnreadOption/>
+                )}
+                {canCopyPermalink && <CopyLinkOption/>}
+                {canFlag &&
                 <SaveOption
                     isFlagged={isFlagged}
                 />
-            }
-            {canCopyText && <CopyTextOption/>}
-            {canPin && <PinChannelOption isPostPinned={post.isPinned}/>}
-            {shouldRenderEdit && <EditOption/>}
-            {canDelete && <DeletePostOption/>}
+                }
+                {canCopyText && <CopyTextOption/>}
+                {canPin && <PinChannelOption isPostPinned={post.isPinned}/>}
+                {shouldRenderEdit && <EditOption/>}
+                {canDelete && <DeletePostOption/>}
+            </View>
         </View>
     );
 };

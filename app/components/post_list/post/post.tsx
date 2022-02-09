@@ -170,7 +170,7 @@ const Post = ({
             showAddReaction,
             closeButtonId: 'close-post-options',
             initialSnapIndex: 0,
-            snapPoints: [10 * OPTION_HEIGHT, 10],
+            snapPoints: [12 * OPTION_HEIGHT, 10],
             title: '',
             theme,
             renderContent: () => (
