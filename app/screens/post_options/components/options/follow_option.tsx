@@ -3,14 +3,14 @@
 
 import React, {useMemo} from 'react';
 
-import * as Screens from '@constants/screens';
+import {Screens} from '@constants';
 import {t} from '@i18n';
 
 import BaseOption from './base_option';
 
 type FollowThreadOptionProps = {
     thread?: any;
-    location?: typeof Screens[keyof typeof Screens] | string;
+    location?: typeof Screens[keyof typeof Screens];
 };
 
 //todo: to implement CRT follow thread
@@ -19,7 +19,9 @@ const FollowThreadOption = ({
     thread = undefined,
 
 }: FollowThreadOptionProps) => {
-    //todo: to enable after CRT
+    //todo: to enable after CRT. Move this to PostOptions and do not mount the component
+    // instead of rendering null
+
     // if (location !== Screens.CHANNEL || !thread) {
     //     return null;
     // }

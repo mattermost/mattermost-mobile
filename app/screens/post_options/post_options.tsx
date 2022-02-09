@@ -4,9 +4,8 @@
 import React from 'react';
 import {View} from 'react-native';
 
-import * as Screens from '@constants/screens';
+import {Screens} from '@constants';
 import {useTheme} from '@context/theme';
-import QuickReaction from '@screens/post_options/components/reactions/quick_reaction';
 import {isSystemMessage} from '@utils/post';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
@@ -19,6 +18,7 @@ import MarkAsUnreadOption from './components/options/mark_unread_option';
 import PinChannelOption from './components/options/pin_channel_option';
 import ReplyOption from './components/options/reply_option';
 import SaveOption from './components/options/save_option';
+import QuickReaction from './components/quick_reactions';
 
 import type PostModel from '@typings/database/models/servers/post';
 
@@ -49,7 +49,7 @@ type PostOptionsProps = {
     canMarkAsUnread?: boolean;
     canPin?: boolean;
     isFlagged?: boolean;
-    location: typeof Screens[keyof typeof Screens] | string;
+    location: typeof Screens[keyof typeof Screens];
     post: PostModel;
 };
 
