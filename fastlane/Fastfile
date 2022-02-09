@@ -933,6 +933,7 @@ def submit_to_testflight(ipa_path)
 end
 
 def submit_to_google_play(file_path)
+  filenames = []
   if(file_path.include?("aab"))
     aab_filename = Dir.glob(file_path).select { |f| File.file? f}.first
     unless ENV['SUPPLY_JSON_KEY'].nil? || ENV['SUPPLY_JSON_KEY'].empty?
@@ -943,6 +944,7 @@ def submit_to_google_play(file_path)
           skip_upload_apk: true
       )
     end
+    filenames.push(aab_filename)
   else
     apks = Dir.glob(file_path).select { |f| File.file? f}
     filenames = apks.map {|f| File.basename(f)}
