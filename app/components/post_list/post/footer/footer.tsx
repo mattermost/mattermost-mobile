@@ -2,64 +2,110 @@
 // See LICENSE.txt for license information.
 
 import React from 'react';
-import {View} from 'react-native';
+import {useIntl} from 'react-intl';
+import {View, Text, TouchableOpacity} from 'react-native';
 
+import {updateThreadFollow} from '@actions/remote/thread';
 import AvatarsStack from '@app/components/avatars_stack';
-import FormattedText from '@components/formatted_text';
+import CompassIcon from '@app/components/compass_icon';
+import {preventDoubleTap} from '@app/utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 import type ThreadModel from '@typings/database/models/servers/thread';
 import type UserModel from '@typings/database/models/servers/user';
 
-export type Props = {
-    author: UserModel;
+type Props = {
     currentUserId: string;
     participants: UserModel[];
+    serverUrl: string;
+    teamId: string;
     teammateNameDisplay: string;
     testID: string;
-    thread: ThreadModel;
     theme: Theme;
+    thread: ThreadModel;
 };
 
-const ThreadFooter = ({author, currentUserId, participants, teammateNameDisplay, testID, theme, thread}: Props) => {
+const Footer = ({currentUserId, participants, serverUrl, teamId, teammateNameDisplay, testID, theme, thread}: Props) => {
+    const intl = useIntl();
     const style = getStyleSheet(theme);
+    const onUnfollow = React.useCallback(preventDoubleTap(() => {
+        updateThreadFollow(serverUrl, teamId, thread.id, false);
+    }), []);
 
-    let repliesComponent;
-    if (thread.unreadReplies) {
-        repliesComponent = (
-            <FormattedText
-                id={'threads.newReplies'}
-                defaultMessage={'{count} new {count, plural, one {reply} other {replies}}'}
-                style={style.unreadReplies}
-                testID={`${testID}.unread_replies`}
-                values={{
-                    count: thread.unreadReplies,
-                }}
-            />
-        );
-    } else if (thread.replyCount) {
-        repliesComponent = (
-            <FormattedText
-                id={'threads.replies'}
-                defaultMessage={'{count} {count, plural, one {reply} other {replies}}'}
-                style={style.replies}
-                testID={`${testID}.reply_count`}
-                values={{
-                    count: thread.replyCount,
-                }}
-            />
+    const onFollow = React.useCallback(preventDoubleTap(() => {
+        updateThreadFollow(serverUrl, teamId, thread.id, true);
+    }), []);
+
+    let replyIcon;
+    let followButton;
+    if (thread.replyCount) {
+        replyIcon = (
+            <View style={style.replyIconContainer}>
+                <CompassIcon
+                    name='reply-outline'
+                    size={18}
+                    color={changeOpacity(theme.centerChannelColor, 0.64)}
+                />
+            </View>
         );
     }
+    if (thread.isFollowing) {
+        followButton = (
+            <TouchableOpacity
+                onPress={preventDoubleTap(onUnfollow)}
+                style={style.followingButtonContainer}
+                testID={`${testID}.following`}
+            >
+                <Text style={style.following}>
+                    {intl.formatMessage({
+                        id: 'threads.following',
+                        defaultMessage: 'Following',
+                    })}
+                </Text>
+            </TouchableOpacity>
+        );
+    } else {
+        followButton = (
+            <>
+                <View style={style.followSeparator}/>
+                <TouchableOpacity
+                    onPress={preventDoubleTap(onFollow)}
+                    style={style.notFollowingButtonContainer}
+                    testID={`${testID}.follow`}
+                >
+                    <Text style={style.notFollowing}>
+                        {intl.formatMessage({
+                            id: 'threads.follow',
+                            defaultMessage: 'Follow',
+                        })}
+                    </Text>
+                </TouchableOpacity>
+            </>
+        );
+    }
+
+    const repliesComponent = (
+        <Text
+            style={style.replies}
+            testID={`${testID}.reply_count`}
+        >
+            {intl.formatMessage({
+                id: 'threads.replies',
+                defaultMessage: '{count} {count, plural, one {reply} other {replies}}',
+            }, {
+                count: thread.replyCount,
+            })}
+        </Text>
+    );
 
     // threadstarter should be the first one in the avatars list
     const participantsList = React.useMemo(() => {
         if (participants?.length) {
-            const filteredParticipantsList = participants.filter((participant) => participant.id !== author.id).reverse();
-            filteredParticipantsList.unshift(author);
+            const filteredParticipantsList = [...participants].reverse();
             return filteredParticipantsList;
         }
         return [];
-    }, [participants, author]);
+    }, [participants]);
 
     let avatars;
     if (participantsList.length) {
@@ -76,7 +122,9 @@ const ThreadFooter = ({author, currentUserId, participants, teammateNameDisplay,
     return (
         <View style={style.container}>
             {avatars}
+            {replyIcon}
             {repliesComponent}
+            {followButton}
         </View>
     );
 };
@@ -144,4 +192,4 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     };
 });
 
-export default ThreadFooter;
+export default Footer;

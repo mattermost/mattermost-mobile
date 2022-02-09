@@ -79,6 +79,9 @@ export default class PostModel extends Model {
     /** channel: The channel which is presenting this Post */
     channel: Relation<ChannelModel>;
 
+    /** thread : the related thread for the post */
+    thread: Relation<ThreadModel>;
+
     /** hasReplies: Async function to determine if the post is part of a thread */
     hasReplies: () => Promise<boolean>;
 }

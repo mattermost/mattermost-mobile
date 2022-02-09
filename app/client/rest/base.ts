@@ -180,6 +180,10 @@ export default class ClientBase {
         return `${this.getUserRoute(userID)}/teams/${teamID}/threads`;
     }
 
+    getThreadRoute(userId: string, teamId: string, threadId: string): string {
+        return `${this.getThreadsRoute(userId, teamId)}/${threadId}`;
+    }
+
     getAppsProxyRoute() {
         return '/plugins/com.mattermost.apps';
     }

@@ -5,12 +5,12 @@ import {Q} from '@nozbe/watermelondb';
 import {withDatabase} from '@nozbe/watermelondb/DatabaseProvider';
 import withObservables from '@nozbe/with-observables';
 import {AppStateStatus} from 'react-native';
-import {of as of$} from 'rxjs';
-import {switchMap} from 'rxjs/operators';
+import {combineLatest, of as of$} from 'rxjs';
+import {map, switchMap} from 'rxjs/operators';
 
 import {Preferences} from '@constants';
 import {MM_TABLES, SYSTEM_IDENTIFIERS} from '@constants/database';
-import {getPreferenceAsBool} from '@helpers/api/preference';
+import {getIsCRTEnabled, getPreferenceAsBool} from '@helpers/api/preference';
 import {getTimezone} from '@utils/user';
 
 import ChannelPostList from './channel_post_list';
@@ -25,7 +25,21 @@ import type UserModel from '@typings/database/models/servers/user';
 
 const {SERVER: {MY_CHANNEL, POST, POSTS_IN_CHANNEL, PREFERENCE, SYSTEM, USER}} = MM_TABLES;
 
-const enhanced = withObservables(['channelId', 'forceQueryAfterAppState'], ({database, channelId}: {channelId: string; forceQueryAfterAppState: AppStateStatus} & WithDatabaseArgs) => {
+const withIsCRTEnabled = withObservables([], ({database}: WithDatabaseArgs) => {
+    const config = database.get<SystemModel>(SYSTEM).findAndObserve(SYSTEM_IDENTIFIERS.CONFIG);
+    const preferences = database.get<PreferenceModel>(PREFERENCE).query(Q.where('category', Preferences.CATEGORY_DISPLAY_SETTINGS)).observe();
+    const isCRTEnabled = combineLatest([config, preferences]).pipe(
+        map(
+            ([{value: cfg}, prefs]) => getIsCRTEnabled(prefs, cfg),
+        ),
+    );
+
+    return {
+        isCRTEnabled,
+    };
+});
+
+const enhanced = withObservables(['channelId', 'forceQueryAfterAppState'], ({database, channelId, isCRTEnabled}: {channelId: string; forceQueryAfterAppState: AppStateStatus; isCRTEnabled: boolean} & WithDatabaseArgs) => {
     const currentUser = database.get<SystemModel>(SYSTEM).findAndObserve(SYSTEM_IDENTIFIERS.CURRENT_USER_ID).pipe(
         switchMap((currentUserId) => database.get<UserModel>(USER).findAndObserve(currentUserId.value)),
     );
@@ -49,11 +63,15 @@ const enhanced = withObservables(['channelId', 'forceQueryAfterAppState'], ({dat
                 }
 
                 const {earliest, latest} = postsInChannel[0];
+                const matchPostsConditions = [
+                    Q.where('channel_id', channelId),
+                    Q.where('create_at', Q.between(earliest, latest)),
+                ];
+                if (isCRTEnabled) {
+                    matchPostsConditions.push(Q.where('root_id', ''));
+                }
                 return database.get<PostModel>(POST).query(
-                    Q.and(
-                        Q.where('channel_id', channelId),
-                        Q.where('create_at', Q.between(earliest, latest)),
-                    ),
+                    Q.and(...matchPostsConditions),
                     Q.sortBy('create_at', Q.desc),
                 ).observe();
             }),
@@ -67,4 +85,4 @@ const enhanced = withObservables(['channelId', 'forceQueryAfterAppState'], ({dat
     };
 });
 
-export default withDatabase(enhanced(ChannelPostList));
+export default withDatabase(withIsCRTEnabled(enhanced(ChannelPostList)));

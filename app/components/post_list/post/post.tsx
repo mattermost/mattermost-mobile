@@ -19,18 +19,23 @@ import {preventDoubleTap} from '@utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 import Avatar from './avatar';
+import Badge from './badge';
 import Body from './body';
+import Footer from './footer';
 import Header from './header';
 import PreHeader from './pre_header';
 import SystemMessage from './system_message';
 
+import type ChannelModel from '@typings/database/models/servers/channel';
 import type FileModel from '@typings/database/models/servers/file';
 import type PostModel from '@typings/database/models/servers/post';
+import type ThreadModel from '@typings/database/models/servers/thread';
 import type UserModel from '@typings/database/models/servers/user';
 
 type PostProps = {
     appsEnabled: boolean;
     canDelete: boolean;
+    channel: ChannelModel;
     currentUser: UserModel;
     differentThreadSequence: boolean;
     files: FileModel[];
@@ -39,6 +44,7 @@ type PostProps = {
     highlightPinnedOrSaved?: boolean;
     highlightReplyBar: boolean;
     isConsecutivePost?: boolean;
+    isCRTEnabled?: boolean;
     isEphemeral: boolean;
     isFirstReply?: boolean;
     isFlagged?: boolean;
@@ -47,6 +53,7 @@ type PostProps = {
     isPostAddChannelMember: boolean;
     location: string;
     post: PostModel;
+    thread: ThreadModel;
     previousPost?: PostModel;
     reactionsCount: number;
     shouldRenderReplyButton?: boolean;
@@ -54,6 +61,7 @@ type PostProps = {
     skipFlaggedHeader?: boolean;
     skipPinnedHeader?: boolean;
     style?: StyleProp<ViewStyle>;
+    teammateNameDisplay: string;
     testID?: string;
 };
 
@@ -95,10 +103,10 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
 });
 
 const Post = ({
-    appsEnabled, canDelete, currentUser, differentThreadSequence, files, hasReplies, highlight, highlightPinnedOrSaved = true, highlightReplyBar,
-    isConsecutivePost, isEphemeral, isFirstReply, isFlagged, isJumboEmoji, isLastReply, isPostAddChannelMember,
+    appsEnabled, canDelete, channel, currentUser, differentThreadSequence, files, hasReplies, highlight, highlightPinnedOrSaved = true, highlightReplyBar,
+    isCRTEnabled, isConsecutivePost, isEphemeral, isFirstReply, isFlagged, isJumboEmoji, isLastReply, isPostAddChannelMember,
     location, post, reactionsCount, shouldRenderReplyButton, skipFlaggedHeader, skipPinnedHeader, showAddReaction = true, style,
-    testID, previousPost,
+    teammateNameDisplay, testID, thread, previousPost,
 }: PostProps) => {
     const pressDetected = useRef(false);
     const intl = useIntl();
@@ -224,6 +232,7 @@ const Post = ({
                     currentUser={currentUser}
                     differentThreadSequence={differentThreadSequence}
                     isAutoResponse={isAutoResponder}
+                    isCRTEnabled={isCRTEnabled}
                     isEphemeral={isEphemeral}
                     isPendingOrFailed={isPendingOrFailed}
                     isSystemPost={isSystemPost}
@@ -231,6 +240,7 @@ const Post = ({
                     location={location}
                     post={post}
                     shouldRenderReplyButton={shouldRenderReplyButton}
+                    teammateNameDisplay={teammateNameDisplay}
                 />
             );
         }
@@ -265,6 +275,29 @@ const Post = ({
         );
     }
 
+    let badge;
+    let footer;
+    if (isCRTEnabled && thread) {
+        footer = (
+            <Footer
+                currentUserId={currentUser.id}
+                serverUrl={serverUrl}
+                teamId={channel?.teamId}
+                testID={`${itemTestID}.footer`}
+                teammateNameDisplay={teammateNameDisplay}
+                theme={theme}
+                thread={thread}
+            />
+        );
+        badge = (
+            <Badge
+                testID={`${itemTestID}.badge`}
+                theme={theme}
+                thread={thread}
+            />
+        );
+    }
+
     return (
         <View
             testID={testID}
@@ -291,7 +324,9 @@ const Post = ({
                         <View style={rightColumnStyle}>
                             {header}
                             {body}
+                            {footer}
                         </View>
+                        {badge}
                     </View>
                 </>
             </TouchableWithFeedback>

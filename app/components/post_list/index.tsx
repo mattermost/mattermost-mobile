@@ -28,6 +28,7 @@ type Props = {
     currentTimezone: string | null;
     currentUsername: string;
     highlightPinnedOrSaved?: boolean;
+    isCRTEnabled?: boolean;
     isTimezoneEnabled: boolean;
     lastViewedAt: number;
     location: string;
@@ -84,6 +85,7 @@ const PostList = ({
     currentUsername,
     footer,
     highlightPinnedOrSaved = true,
+    isCRTEnabled,
     isTimezoneEnabled,
     lastViewedAt,
     location,
@@ -272,6 +274,7 @@ const PostList = ({
 
         return (
             <Post
+                isCRTEnabled={isCRTEnabled}
                 key={item.id}
                 post={item}
                 style={styles.scale}
