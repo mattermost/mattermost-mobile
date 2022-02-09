@@ -3,11 +3,11 @@
 
 import React, {useCallback} from 'react';
 import {useIntl} from 'react-intl';
-import {View} from 'react-native';
+import {DeviceEventEmitter, View} from 'react-native';
 
 import CompassIcon from '@components/compass_icon';
-import {EMOJI_PICKER} from '@constants/screens';
-import {dismissModal, showModal} from '@screens/navigation';
+import {Navigation, Screens} from '@constants';
+import {showModal} from '@screens/navigation';
 
 import PickReaction from './pick_reaction';
 import Reaction from './reaction';
@@ -25,26 +25,29 @@ const QuickReaction = ({recentEmojis = [], theme}: QuickReactionProps) => {
         console.log('>>>  selected this emoji', emoji);
     }, []);
 
-    const openEmojiPicker = useCallback(() => {
-        dismissModal();
-        const closeButton = CompassIcon.getImageSourceSync(
-            'close',
-            24,
-            theme.sidebarHeaderTextColor,
-        );
+    const openEmojiPicker = useCallback(async () => {
+        DeviceEventEmitter.emit(Navigation.NAVIGATION_CLOSE_MODAL);
 
-        const screen = EMOJI_PICKER;
-        const title = intl.formatMessage({
-            id: 'mobile.post_info.add_reaction',
-            defaultMessage: 'Add Reaction',
+        requestAnimationFrame(() => {
+            const closeButton = CompassIcon.getImageSourceSync(
+                'close',
+                24,
+                theme.sidebarHeaderTextColor,
+            );
+
+            const screen = Screens.EMOJI_PICKER;
+            const title = intl.formatMessage({
+                id: 'mobile.post_info.add_reaction',
+                defaultMessage: 'Add Reaction',
+            });
+            const passProps = {
+                closeButton,
+                onEmojiPress: handleEmojiPress,
+            };
+
+            showModal(screen, title, passProps);
         });
-        const passProps = {
-            closeButton,
-            onEmojiPress: handleEmojiPress,
-        };
-
-        showModal(screen, title, passProps);
-    }, [intl]);
+    }, [intl, theme]);
 
     const getMostFrequentReactions = useCallback(() => {
         return recentEmojis.map((emojiName) => {
