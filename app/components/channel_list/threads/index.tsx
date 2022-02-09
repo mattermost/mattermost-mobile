@@ -9,7 +9,7 @@ import {StyleSheet, Text, View} from 'react-native';
 import {of as of$} from 'rxjs';
 import {switchMap} from 'rxjs/operators';
 
-// import {switchToChannelById} from '@actions/remote/channel';
+import {switchToChannelById} from '@actions/remote/channel';
 import {goToScreen} from '@app/screens/navigation';
 import CompassIcon from '@components/compass_icon';
 import TouchableWithFeedback from '@components/touchable_with_feedback';
@@ -54,15 +54,26 @@ const ThreadsButton = ({channelId}: {channelId?: string}) => {
      * - Add right-side number badge
      */
     return (
-        <TouchableWithFeedback onPress={() => goToScreen(Screens.GLOBAL_THREADS, 'Threads', {channelId, serverUrl}, {topBar: {visible: false}})} >
-            <View style={styles.container}>
-                <CompassIcon
-                    name='message-text-outline'
-                    style={styles.icon}
-                />
-                <Text style={[textStyle, styles.text]}>{'Threads'}</Text>
-            </View>
-        </TouchableWithFeedback>
+        <>
+            <TouchableWithFeedback onPress={() => goToScreen(Screens.GLOBAL_THREADS, 'Threads', {channelId, serverUrl}, {topBar: {visible: false}})} >
+                <View style={styles.container}>
+                    <CompassIcon
+                        name='message-text-outline'
+                        style={styles.icon}
+                    />
+                    <Text style={[textStyle, styles.text]}>{'Threads'}</Text>
+                </View>
+            </TouchableWithFeedback>
+            <TouchableWithFeedback onPress={() => (channelId ? switchToChannelById(serverUrl, channelId) : true)}>
+                <View style={styles.container}>
+                    <CompassIcon
+                        name='message-text-outline'
+                        style={styles.icon}
+                    />
+                    <Text style={[textStyle, styles.text]}>{'Town Square'}</Text>
+                </View>
+            </TouchableWithFeedback>
+        </>
     );
 };
 
