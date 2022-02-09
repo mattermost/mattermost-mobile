@@ -3,14 +3,13 @@
 
 import React, {useMemo} from 'react';
 
-import DrawerItem from '@components/drawer_item';
-import FormattedText from '@components/formatted_text';
 import * as Screens from '@constants/screens';
 import {t} from '@i18n';
 
+import BaseOption from './base_option';
+
 type FollowThreadOptionProps = {
     thread?: any;
-    theme: Theme;
     location?: typeof Screens[keyof typeof Screens] | string;
 };
 
@@ -18,7 +17,7 @@ type FollowThreadOptionProps = {
 
 const FollowThreadOption = ({
     thread = undefined,
-    theme,
+
 }: FollowThreadOptionProps) => {
     //todo: to enable after CRT
     // if (location !== Screens.CHANNEL || !thread) {
@@ -60,18 +59,12 @@ const FollowThreadOption = ({
     };
 
     return (
-        <DrawerItem
-            testID='post.options.follow.thread'
-            labelComponent={
-                <FormattedText
-                    id={config.id}
-                    defaultMessage={config.defaultMessage}
-                />
-            }
+        <BaseOption
+            i18nId={config.id}
+            defaultMessage={config.defaultMessage}
+            optionType='post.options.follow.thread'
             iconName={config.icon}
             onPress={handleToggleFollow}
-            separator={false}
-            theme={theme}
         />
     );
 };

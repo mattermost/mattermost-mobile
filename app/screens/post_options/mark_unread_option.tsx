@@ -3,32 +3,21 @@
 
 import React from 'react';
 
-import DrawerItem from '@components/drawer_item';
-import FormattedText from '@components/formatted_text';
-
-type MarkAsUnreadOptionProps = {
-    theme: Theme;
-}
+import BaseOption from './base_option';
 
 //fixme: wire up canMarkAsUnread
-const MarkAsUnreadOption = ({theme}: MarkAsUnreadOptionProps) => {
+const MarkAsUnreadOption = () => {
     const handleMarkUnread = () => {
         //todo:
     };
 
     return (
-        <DrawerItem
-            testID='post.options.mark.unread'
-            labelComponent={
-                <FormattedText
-                    id='mobile.post_info.mark_unread'
-                    defaultMessage='Mark as Unread'
-                />
-            }
+        <BaseOption
+            i18nId='mobile.post_info.mark_unread'
+            defaultMessage='Mark as Unread'
             iconName='mark-as-unread'
             onPress={handleMarkUnread}
-            separator={false}
-            theme={theme}
+            optionType='post.options.mark.unread'
         />
     );
 };

@@ -45,20 +45,20 @@ const PostOptions = ({
         <View>
             <ReplyOption theme={theme}/>
             <FollowThreadOption
-                theme={theme}
+
                 location={location}
             />
             {canMarkAsUnread && !isSystemMessage(post) && (
-                <MarkAsUnreadOption theme={theme}/>
+                <MarkAsUnreadOption/>
             )}
-            {canCopyPermalink && <CopyLinkOption theme={theme}/>}
+            {canCopyPermalink && <CopyLinkOption/>}
             {canFlag &&
                 <SaveOption
                     theme={theme}
                     isFlagged={isFlagged}
                 />
             }
-            {canCopyText && <CopyTextOption theme={theme}/>}
+            {canCopyText && <CopyTextOption/>}
         </View>
     );
 };

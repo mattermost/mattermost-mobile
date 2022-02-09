@@ -3,30 +3,19 @@
 
 import React from 'react';
 
-import DrawerItem from '@components/drawer_item';
-import FormattedText from '@components/formatted_text';
+import BaseOption from './base_option';
 
-type CopyTextProps = {
-    theme: Theme;
-}
-
-const CopyPermalinkOption = ({theme}: CopyTextProps) => {
+const CopyPermalinkOption = () => {
     const handleCopyLink = () => {
         //todo:
     };
     return (
-        <DrawerItem
-            testID='post.options.copy.permalink'
-            labelComponent={
-                <FormattedText
-                    id='get_post_link_modal.title'
-                    defaultMessage='Copy Link'
-                />
-            }
-            iconName='link-variant'
+        <BaseOption
+            i18nId='get_post_link_modal.title'
+            defaultMessage='Copy Link'
             onPress={handleCopyLink}
-            separator={false}
-            theme={theme}
+            iconName='link-variant'
+            optionType='post.options.copy.permalink'
         />
     );
 };

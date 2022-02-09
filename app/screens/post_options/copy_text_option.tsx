@@ -3,30 +3,19 @@
 
 import React from 'react';
 
-import DrawerItem from '@components/drawer_item';
-import FormattedText from '@components/formatted_text';
+import BaseOption from './base_option';
 
-type CopyTextProps = {
-    theme: Theme;
-}
-
-const CopyTextOption = ({theme}: CopyTextProps) => {
+const CopyTextOption = () => {
     const handleCopyText = () => {
         //todo:
     };
     return (
-        <DrawerItem
-            testID='post.options.copy.text'
-            labelComponent={
-                <FormattedText
-                    id='mobile.post_info.copy_text'
-                    defaultMessage='Copy Text'
-                />
-            }
+        <BaseOption
+            i18nId='mobile.post_info.copy_text'
+            defaultMessage='Copy Text'
             iconName='content-copy'
             onPress={handleCopyText}
-            separator={false}
-            theme={theme}
+            optionType='post.options.copy.text'
         />
     );
 };
