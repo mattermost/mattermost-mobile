@@ -19,6 +19,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         },
         icon: {
             ...typography('Body', 1000),
+            color: theme.centerChannelColor,
         },
     };
 });

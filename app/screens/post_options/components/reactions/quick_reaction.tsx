@@ -11,8 +11,8 @@ import {catchError, switchMap} from 'rxjs/operators';
 
 import CompassIcon from '@components/compass_icon';
 import {MM_TABLES, SYSTEM_IDENTIFIERS} from '@constants/database';
-import * as Screens from '@constants/screens';
-import {showModal} from '@screens/navigation';
+import {EMOJI_PICKER} from '@constants/screens';
+import {dismissModal, showModal} from '@screens/navigation';
 import {safeParseJSON} from '@utils/helpers';
 
 import PickReaction from './pick_reaction';
@@ -25,6 +25,21 @@ type QuickReactionProps = {
     theme: Theme;
     recentEmojis: string[];
 };
+
+const DEFAULT_EMOJIS = [
+    'thumbsup',
+    'smiley',
+    'white_check_mark',
+    'heart',
+    'eyes',
+    'raised_hands',
+];
+
+const mergeRecentWithDefault = (recentEmojis: string[]) => {
+    const filterUsed = DEFAULT_EMOJIS.filter((e) => !recentEmojis.includes(e));
+    return recentEmojis.concat(filterUsed).splice(0, 6);
+};
+
 const QuickReaction = ({recentEmojis = [], theme}: QuickReactionProps) => {
     const intl = useIntl();
 
@@ -34,23 +49,24 @@ const QuickReaction = ({recentEmojis = [], theme}: QuickReactionProps) => {
     }, []);
 
     const openEmojiPicker = useCallback(() => {
-        CompassIcon.getImageSource(
+        dismissModal();
+        const closeButton = CompassIcon.getImageSourceSync(
             'close',
             24,
             theme.sidebarHeaderTextColor,
-        ).then((source) => {
-            const screen = Screens.EMOJI_PICKER;
-            const title = intl.formatMessage({
-                id: 'mobile.post_info.add_reaction',
-                defaultMessage: 'Add Reaction',
-            });
-            const passProps = {
-                closeButton: source,
-                onEmojiPress: handleEmojiPress,
-            };
+        );
 
-            showModal(screen, title, passProps);
+        const screen = EMOJI_PICKER;
+        const title = intl.formatMessage({
+            id: 'mobile.post_info.add_reaction',
+            defaultMessage: 'Add Reaction',
         });
+        const passProps = {
+            closeButton,
+            onEmojiPress: handleEmojiPress,
+        };
+
+        showModal(screen, title, passProps);
     }, [intl]);
 
     const getMostFrequentReactions = useCallback(() => {
@@ -73,7 +89,7 @@ const QuickReaction = ({recentEmojis = [], theme}: QuickReactionProps) => {
                 flexDirection: 'row',
             }}
         >
-            { recentEmojis.length && (
+            { recentEmojis.length > 0 && (
                 <View style={{flexDirection: 'row'}}>
                     {getMostFrequentReactions()}
                 </View>
@@ -92,8 +108,8 @@ const enhanced = withObservables([], ({database}: WithDatabaseArgs) => ({
         get<SystemModel>(MM_TABLES.SERVER.SYSTEM).
         findAndObserve(SYSTEM_IDENTIFIERS.RECENT_REACTIONS).
         pipe(
-            switchMap((recent) => of$(safeParseJSON(recent.value) as string[])),
-            catchError(() => of$([])),
+            switchMap((recent) => of$(mergeRecentWithDefault(safeParseJSON(recent.value) as string[]))),
+            catchError(() => of$(mergeRecentWithDefault([]))),
         ),
 }));
 
