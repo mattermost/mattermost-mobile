@@ -133,6 +133,7 @@ interface ClientConfig {
     LdapPositionAttributeSet: string;
     LockTeammateNameDisplay: string;
     MaxFileSize: string;
+    MaxPostSize: string;
     MaxNotificationsPerChannel: string;
     MinimumHashtagLength: string;
     OpenIdButtonColor: string;

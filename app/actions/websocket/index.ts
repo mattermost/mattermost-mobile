@@ -22,8 +22,10 @@ import {queryCurrentUser} from '@queries/servers/user';
 import {handleChannelDeletedEvent, handleUserAddedToChannelEvent, handleUserRemovedFromChannelEvent} from './channel';
 import {handleNewPostEvent, handlePostDeleted, handlePostEdited, handlePostUnread} from './posts';
 import {handlePreferenceChangedEvent, handlePreferencesChangedEvent, handlePreferencesDeletedEvent} from './preferences';
-import {handleLeaveTeamEvent} from './teams';
-import {handleUserUpdatedEvent} from './users';
+import {handleAddCustomEmoji, handleReactionRemovedFromPostEvent, handleReactionAddedToPostEvent} from './reactions';
+import {handleUserRoleUpdatedEvent, handleTeamMemberRoleUpdatedEvent, handleRoleUpdatedEvent} from './roles';
+import {handleLeaveTeamEvent, handleUserAddedToTeamEvent, handleUpdateTeamEvent} from './teams';
+import {handleUserUpdatedEvent, handleUserTypingEvent} from './users';
 
 import type {Model} from '@nozbe/watermelondb';
 
@@ -171,13 +173,12 @@ export async function handleEvent(serverUrl: string, msg: WebSocketMessage) {
             handleLeaveTeamEvent(serverUrl, msg);
             break;
         case WebsocketEvents.UPDATE_TEAM:
+            handleUpdateTeamEvent(serverUrl, msg);
             break;
-
-        // return dispatch(handleUpdateTeamEvent(msg));
         case WebsocketEvents.ADDED_TO_TEAM:
+            handleUserAddedToTeamEvent(serverUrl, msg);
             break;
 
-        // return dispatch(handleTeamAddedEvent(msg));
         case WebsocketEvents.USER_ADDED:
             handleUserAddedToChannelEvent(serverUrl, msg);
             break;
@@ -187,26 +188,18 @@ export async function handleEvent(serverUrl: string, msg: WebSocketMessage) {
         case WebsocketEvents.USER_UPDATED:
             handleUserUpdatedEvent(serverUrl, msg);
             break;
-        case WebsocketEvents.ROLE_ADDED:
-            break;
-
-        // return dispatch(handleRoleAddedEvent(msg));
-        case WebsocketEvents.ROLE_REMOVED:
-            break;
-
-        // return dispatch(handleRoleRemovedEvent(msg));
         case WebsocketEvents.ROLE_UPDATED:
+            handleRoleUpdatedEvent(serverUrl, msg);
             break;
 
-        // return dispatch(handleRoleUpdatedEvent(msg));
         case WebsocketEvents.USER_ROLE_UPDATED:
+            handleUserRoleUpdatedEvent(serverUrl, msg);
             break;
 
-        // return dispatch(handleUserRoleUpdated(msg));
         case WebsocketEvents.MEMBERROLE_UPDATED:
+            handleTeamMemberRoleUpdatedEvent(serverUrl, msg);
             break;
 
-        // return dispatch(handleUpdateMemberRoleEvent(msg));
         case WebsocketEvents.CHANNEL_CREATED:
             break;
 
@@ -259,26 +252,25 @@ export async function handleEvent(serverUrl: string, msg: WebSocketMessage) {
 
         // return dispatch(handleStatusChangedEvent(msg));
         case WebsocketEvents.TYPING:
+            handleUserTypingEvent(serverUrl, msg);
             break;
-
-        // return dispatch(handleUserTypingEvent(msg));
         case WebsocketEvents.HELLO:
             break;
 
         // handleHelloEvent(msg);
         // break;
         case WebsocketEvents.REACTION_ADDED:
+            handleReactionAddedToPostEvent(serverUrl, msg);
             break;
 
-        // return dispatch(handleReactionAddedEvent(msg));
         case WebsocketEvents.REACTION_REMOVED:
+            handleReactionRemovedFromPostEvent(serverUrl, msg);
             break;
 
-        // return dispatch(handleReactionRemovedEvent(msg));
         case WebsocketEvents.EMOJI_ADDED:
+            handleAddCustomEmoji(serverUrl, msg);
             break;
 
-        // return dispatch(handleAddEmoji(msg));
         case WebsocketEvents.LICENSE_CHANGED:
             break;
 

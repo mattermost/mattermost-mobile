@@ -171,7 +171,6 @@ const DocumentFile = forwardRef<DocumentFileRef, DocumentFileProps>(({background
         <FileIcon
             backgroundColor={backgroundColor}
             file={file}
-            theme={theme}
         />
     );
 

@@ -8,6 +8,8 @@ tmp/
 .env
 env.d.ts
 
+*/**/compass-icons.ttf
+
 # OSX
 #
 .DS_Store

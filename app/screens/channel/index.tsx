@@ -7,8 +7,8 @@ import withObservables from '@nozbe/with-observables';
 import {combineLatest, of as of$} from 'rxjs';
 import {switchMap} from 'rxjs/operators';
 
-import {getUserIdFromChannelName} from '@app/utils/user';
 import {Database, General} from '@constants';
+import {getUserIdFromChannelName} from '@utils/user';
 
 import Channel from './channel';
 

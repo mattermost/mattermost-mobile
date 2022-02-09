@@ -51,11 +51,11 @@ const ServerList = ({servers}: Props) => {
     return (
         <BottomSheetContent
             buttonIcon='plus'
-            buttonText={intl.formatMessage({id: 'servers.create_button', defaultMessage: 'Add a Server'})}
+            buttonText={intl.formatMessage({id: 'servers.create_button', defaultMessage: 'Add a server'})}
             onPress={onAddServer}
             showButton={true}
             showTitle={!isTablet}
-            title={intl.formatMessage({id: 'your.servers', defaultMessage: 'Your Servers'})}
+            title={intl.formatMessage({id: 'your.servers', defaultMessage: 'Your servers'})}
         >
             <View style={styles.container}>
                 <FlatList

@@ -159,6 +159,11 @@ export function parseDeepLink(deepLinkUrl: string): DeepLinkWithData {
         return {type: DeepLinkType.GroupMessage, data: {serverUrl: match[1], teamName: match[2], channelId: match[3]}};
     }
 
+    match = new RegExp('(.*)\\/plugins\\/([^\\/]+)\\/(\\S+)').exec(url);
+    if (match) {
+        return {type: DeepLinkType.Plugin, data: {serverUrl: match[1], id: match[2], teamName: ''}};
+    }
+
     return {type: DeepLinkType.Invalid};
 }
 

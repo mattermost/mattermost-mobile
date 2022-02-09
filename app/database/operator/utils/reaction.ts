@@ -19,7 +19,7 @@ const {REACTION} = MM_TABLES.SERVER;
  * @param {RawReaction[]} sanitizeReactions.rawReactions
  * @returns {Promise<{createReactions: RawReaction[],  deleteReactions: Reaction[]}>}
  */
-export const sanitizeReactions = async ({database, post_id, rawReactions}: SanitizeReactionsArgs) => {
+export const sanitizeReactions = async ({database, post_id, rawReactions, skipSync}: SanitizeReactionsArgs) => {
     const reactions = (await database.collections.
         get(REACTION).
         query(Q.where('post_id', post_id)).
@@ -45,10 +45,13 @@ export const sanitizeReactions = async ({database, post_id, rawReactions}: Sanit
         }
     }
 
+    if (skipSync) {
+        return {createReactions, deleteReactions: []};
+    }
+
     // finding out elements to delete using array subtract
     const deleteReactions = reactions.
-        filter((reaction) => !similarObjects.includes(reaction)).
-        map((outCast) => outCast.prepareDestroyPermanently());
+        filter((reaction) => !similarObjects.includes(reaction));
 
     return {createReactions, deleteReactions};
 };

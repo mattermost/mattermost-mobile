@@ -61,7 +61,6 @@ type Post = {
     file_ids?: any[];
     metadata: PostMetadata;
     last_reply_at?: number;
-    failed?: boolean;
     user_activity_posts?: Post[];
     state?: 'DELETED';
     prev_post_id?: string;

@@ -17,7 +17,6 @@ import {preventDoubleTap} from '@utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 import type UserModel from '@typings/database/models/servers/user';
-import type {UploadExtractedFile} from '@typings/utils/file';
 
 const hitSlop = {top: 100, bottom: 20, right: 20, left: 100};
 const ACTION_HEIGHT = 55;

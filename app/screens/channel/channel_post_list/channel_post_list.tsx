@@ -1,14 +1,16 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback, useMemo, useRef} from 'react';
-import {StyleProp, ViewStyle} from 'react-native';
+import React, {useCallback, useRef} from 'react';
+import {StyleProp, StyleSheet, ViewStyle} from 'react-native';
+import {Edge, SafeAreaView} from 'react-native-safe-area-context';
 
 import {fetchPostsBefore} from '@actions/remote/post';
 import PostList from '@components/post_list';
 import {Screens} from '@constants';
 import {useServerUrl} from '@context/server';
 import {debounce} from '@helpers/api/general';
+import {useIsTablet} from '@hooks/device';
 import {sortPostsByNewest} from '@utils/post';
 
 import Intro from './intro';
@@ -22,11 +24,21 @@ type Props = {
     currentUsername: string;
     isTimezoneEnabled: boolean;
     lastViewedAt: number;
+    nativeID: string;
     posts: PostModel[];
     shouldShowJoinLeaveMessages: boolean;
 }
 
-const ChannelPostList = ({channelId, contentContainerStyle, currentTimezone, currentUsername, isTimezoneEnabled, lastViewedAt, posts, shouldShowJoinLeaveMessages}: Props) => {
+const edges: Edge[] = ['bottom'];
+const styles = StyleSheet.create({
+    flex: {flex: 1},
+});
+
+const ChannelPostList = ({
+    channelId, contentContainerStyle, currentTimezone, currentUsername,
+    isTimezoneEnabled, lastViewedAt, nativeID, posts, shouldShowJoinLeaveMessages,
+}: Props) => {
+    const isTablet = useIsTablet();
     const serverUrl = useServerUrl();
     const canLoadPosts = useRef(true);
     const fetchingPosts = useRef(false);
@@ -41,11 +53,9 @@ const ChannelPostList = ({channelId, contentContainerStyle, currentTimezone, cur
         }
     }, 500), [channelId, posts]);
 
-    const intro = useMemo(() => (
-        <Intro channelId={channelId}/>
-    ), [channelId]);
+    const intro = <Intro channelId={channelId}/>;
 
-    return (
+    const postList = (
         <PostList
             channelId={channelId}
             contentContainerStyle={contentContainerStyle}
@@ -55,13 +65,26 @@ const ChannelPostList = ({channelId, contentContainerStyle, currentTimezone, cur
             footer={intro}
             lastViewedAt={lastViewedAt}
             location={Screens.CHANNEL}
-            nativeID={`${Screens.CHANNEL}-${channelId}`}
+            nativeID={nativeID}
             onEndReached={onEndReached}
             posts={posts}
             shouldShowJoinLeaveMessages={shouldShowJoinLeaveMessages}
             showMoreMessages={true}
             testID='channel.post_list'
         />
+    );
+
+    if (isTablet) {
+        return postList;
+    }
+
+    return (
+        <SafeAreaView
+            edges={edges}
+            style={styles.flex}
+        >
+            {postList}
+        </SafeAreaView>
     );
 };
 

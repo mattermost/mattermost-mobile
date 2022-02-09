@@ -6,6 +6,7 @@ type logLevel = 'ERROR' | 'WARNING' | 'INFO';
 type ClientOptions = {
     body?: any;
     method?: string;
+    noRetry?: boolean;
 };
 
 interface ClientErrorProps extends Error {
