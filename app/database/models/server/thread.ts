@@ -8,7 +8,7 @@ import Model, {Associations} from '@nozbe/watermelondb/Model';
 import {MM_TABLES} from '@constants/database';
 
 import type PostModel from '@typings/database/models/servers/post';
-import type ThreadParticipantsModel from '@typings/database/models/servers/thread_participant';
+import type ThreadParticipantModel from '@typings/database/models/servers/thread_participant';
 
 const {POST, TEAM, THREAD, THREAD_PARTICIPANT} = MM_TABLES.SERVER;
 
@@ -51,7 +51,7 @@ export default class ThreadModel extends Model {
     @field('unread_mentions') unreadMentions!: number;
 
     /** reactions : All the reactions associated with this Post */
-    @children(THREAD_PARTICIPANT) participants!: Query<ThreadParticipantsModel>;
+    @children(THREAD_PARTICIPANT) participants!: Query<ThreadParticipantModel>;
 
     /** channel : The channel which is presenting this Post */
     @immutableRelation(POST, 'id') post!: Relation<PostModel>;
