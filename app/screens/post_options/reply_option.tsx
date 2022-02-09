@@ -3,30 +3,19 @@
 
 import React from 'react';
 
-import DrawerItem from '@components/drawer_item';
-import FormattedText from '@components/formatted_text';
+import BaseOption from './base_option';
 
-type ReplyOptionProps = {
-    theme: Theme;
-};
-
-const ReplyOption = ({theme}: ReplyOptionProps) => {
+const ReplyOption = () => {
     const handleReply = () => {
         //todo:
     };
     return (
-        <DrawerItem
-            testID='post.options.reply'
-            labelComponent={
-                <FormattedText
-                    id='mobile.post_info.reply'
-                    defaultMessage='Reply'
-                />
-            }
+        <BaseOption
+            i18nId='mobile.post_info.reply'
+            defaultMessage='Reply'
             iconName='reply-outline'
             onPress={handleReply}
-            separator={false}
-            theme={theme}
+            optionType='post.options.reply'
         />
     );
 };

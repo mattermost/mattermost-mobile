@@ -3,16 +3,15 @@
 
 import React, {useMemo} from 'react';
 
-import DrawerItem from '@components/drawer_item';
-import FormattedText from '@components/formatted_text';
 import {t} from '@i18n';
 
+import BaseOption from './base_option';
+
 type CopyTextProps = {
-    theme: Theme;
     isFlagged: boolean;
 }
 
-const SaveOption = ({theme, isFlagged}: CopyTextProps) => {
+const SaveOption = ({isFlagged}: CopyTextProps) => {
     const handleUnflagPost = () => {
         //todo:
     };
@@ -27,21 +26,15 @@ const SaveOption = ({theme, isFlagged}: CopyTextProps) => {
         }
 
         return {id: t('mobile.post_info.flag'), defaultMessage: 'Save', onPress: handleFlagPost};
-    }, [isFlagged]);
+    }, [isFlagged, handleFlagPost, handleUnflagPost]);
 
     return (
-        <DrawerItem
-            testID='post.options.flag.unflag'
-            labelComponent={
-                <FormattedText
-                    id={config.id}
-                    defaultMessage={config.defaultMessage}
-                />
-            }
+        <BaseOption
+            i18nId={config.id}
+            defaultMessage={config.defaultMessage}
             iconName='bookmark-outline'
             onPress={config.onPress}
-            separator={false}
-            theme={theme}
+            optionType='post.options.flag.unflag'
         />
     );
 };

@@ -13,6 +13,7 @@ type BaseOptionType = {
     iconName: string;
     onPress: () => void;
     optionType: string;
+    isDestructive?: boolean;
 }
 
 const BaseOption = ({
@@ -21,6 +22,7 @@ const BaseOption = ({
     iconName,
     onPress,
     optionType,
+    isDestructive = false,
 }: BaseOptionType) => {
     const theme = useTheme();
     return (
@@ -36,6 +38,7 @@ const BaseOption = ({
             onPress={onPress}
             separator={false}
             theme={theme}
+            isDestructor={isDestructive}
         />
     );
 };
