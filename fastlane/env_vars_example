@@ -46,6 +46,7 @@ export SUPPLY_TRACK=alpha
 export SUPPLY_PACKAGE_NAME=com.mattermost.rnbeta
 export SUPPLY_JSON_KEY=<The path to the service account json file used to authenticate with Google>
 export SUPPLY_VALIDATE_ONLY=false
+export SUPPLY_RELEASE_STATUS=completed
 
 ############ REPLACE ASSETS, BUILD IN RELEASE MODE ############
 export BETA_BUILD=true
