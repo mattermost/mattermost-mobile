@@ -14,6 +14,7 @@ import * as Screens from '@constants/screens';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {showModalOverCurrentContext} from '@screens/navigation';
+import PostOptions from '@screens/post_options';
 import {fromAutoResponder, isFromWebhook, isPostPendingOrFailed, isSystemMessage} from '@utils/post';
 import {preventDoubleTap} from '@utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
@@ -45,7 +46,7 @@ type PostProps = {
     isJumboEmoji: boolean;
     isLastReply?: boolean;
     isPostAddChannelMember: boolean;
-    location: string;
+    location: typeof Screens[keyof typeof Screens];
     post: PostModel;
     previousPost?: PostModel;
     reactionsCount: number;
@@ -125,9 +126,9 @@ const Post = ({
         pressDetected.current = true;
 
         if (post) {
-            if (location === Screens.THREAD) {
+            if (Screens[location] === Screens.THREAD) {
                 Keyboard.dismiss();
-            } else if (location === Screens.SEARCH) {
+            } else if (Screens[location] === Screens.SEARCH) {
                 showPermalink(serverUrl, '', post.id, intl);
                 return;
             }
@@ -162,16 +163,28 @@ const Post = ({
             return;
         }
 
-        const screen = 'PostOptions';
+        const OPTION_HEIGHT = 50;
         const passProps = {
             location,
             post,
             showAddReaction,
+            closeButtonId: 'close-post-options',
+            initialSnapIndex: 0,
+            snapPoints: [10 * OPTION_HEIGHT, 10],
+            title: '',
+            theme,
+            renderContent: () => (
+                <PostOptions
+                    location={location}
+                    post={post}
+                />
+            ), //fix-me: is this the right way of doing it ?
         };
 
         Keyboard.dismiss();
+
         const postOptionsRequest = requestAnimationFrame(() => {
-            showModalOverCurrentContext(screen, passProps);
+            showModalOverCurrentContext(Screens.BOTTOM_SHEET, passProps);
             cancelAnimationFrame(postOptionsRequest);
         });
     };
