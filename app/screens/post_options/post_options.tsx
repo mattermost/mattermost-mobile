@@ -7,15 +7,15 @@ import {View} from 'react-native';
 import * as Screens from '@constants/screens';
 import {isSystemMessage} from '@utils/post';
 
-import CopyLinkOption from './copy_link_option';
-import CopyTextOption from './copy_text_option';
-import DeletePostOption from './delete_post_option';
-import EditOption from './edit_option';
-import FollowThreadOption from './follow_option';
-import MarkAsUnreadOption from './mark_unread_option';
-import PinChannelOption from './pin_channel_option';
-import ReplyOption from './reply_option';
-import SaveOption from './save_option';
+import CopyLinkOption from './components/options/copy_link_option';
+import CopyTextOption from './components/options/copy_text_option';
+import DeletePostOption from './components/options/delete_post_option';
+import EditOption from './components/options/edit_option';
+import FollowThreadOption from './components/options/follow_option';
+import MarkAsUnreadOption from './components/options/mark_unread_option';
+import PinChannelOption from './components/options/pin_channel_option';
+import ReplyOption from './components/options/reply_option';
+import SaveOption from './components/options/save_option';
 
 import type PostModel from '@typings/database/models/servers/post';
 
