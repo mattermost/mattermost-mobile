@@ -15,11 +15,11 @@ import {sanitizeThreadParticipants} from '@database/operator/utils/thread';
 
 import type {HandleThreadsArgs, HandleThreadParticipantsArgs, ProcessRecordResults} from '@typings/database/database';
 import type ThreadModel from '@typings/database/models/servers/thread';
-import type ThreadParticipantsModel from '@typings/database/models/servers/thread_participants';
+import type ThreadParticipantModel from '@typings/database/models/servers/thread_participant';
 
 const {
     THREAD,
-    THREAD_PARTICIPANTS,
+    THREAD_PARTICIPANT,
 } = Database.MM_TABLES.SERVER;
 
 export interface ThreadHandlerMix {
@@ -82,7 +82,7 @@ const ThreadHandler = (superclass: any) => class extends superclass {
         const batch: Model[] = [...preparedThreads];
 
         // calls handler for Thread Participants
-        const threadParticipants = (await this.handleThreadParticipants({threadsParticipants, prepareRecordsOnly: true})) as ThreadParticipantsModel[];
+        const threadParticipants = (await this.handleThreadParticipants({threadsParticipants, prepareRecordsOnly: true})) as ThreadParticipantModel[];
         batch.push(...threadParticipants);
 
         if (batch.length && !prepareRecordsOnly) {
@@ -98,10 +98,10 @@ const ThreadHandler = (superclass: any) => class extends superclass {
      * @param {ParticipantsPerThread[]} handleReactions.threadsParticipants
      * @param {boolean} handleReactions.prepareRecordsOnly
      * @throws DataOperatorException
-     * @returns {Promise<Array<ThreadParticipantsModel>>}
+     * @returns {Promise<Array<ThreadParticipantModel>>}
      */
-    handleThreadParticipants = async ({threadsParticipants, prepareRecordsOnly}: HandleThreadParticipantsArgs): Promise<ThreadParticipantsModel[]> => {
-        const batchRecords: ThreadParticipantsModel[] = [];
+    handleThreadParticipants = async ({threadsParticipants, prepareRecordsOnly}: HandleThreadParticipantsArgs): Promise<ThreadParticipantModel[]> => {
+        const batchRecords: ThreadParticipantModel[] = [];
 
         if (!threadsParticipants.length) {
             throw new DataOperatorException(
@@ -126,8 +126,8 @@ const ThreadHandler = (superclass: any) => class extends superclass {
                 const reactionsRecords = (await this.prepareRecords({
                     createRaws: createParticipants,
                     transformer: transformThreadparticipantRecord,
-                    tableName: THREAD_PARTICIPANTS,
-                })) as ThreadParticipantsModel[];
+                    tableName: THREAD_PARTICIPANT,
+                })) as ThreadParticipantModel[];
                 batchRecords.push(...reactionsRecords);
             }
 

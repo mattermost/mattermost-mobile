@@ -7,11 +7,11 @@ import {OperationType} from '@typings/database/enums';
 
 import type{TransformerArgs} from '@typings/database/database';
 import type ThreadModel from '@typings/database/models/servers/thread';
-import type ThreadParticipantsModel from '@typings/database/models/servers/thread_participants';
+import type ThreadParticipantModel from '@typings/database/models/servers/thread_participant';
 
 const {
     THREAD,
-    THREAD_PARTICIPANTS,
+    THREAD_PARTICIPANT,
 } = MM_TABLES.SERVER;
 
 /**
@@ -47,17 +47,17 @@ export const transformThreadRecord = ({action, database, value}: TransformerArgs
 };
 
 /**
- * transformThreadParticipantRecord: Prepares a record of the SERVER database 'ThreadParticipants' table for update or create actions.
+ * transformThreadParticipantRecord: Prepares a record of the SERVER database 'ThreadParticipant' table for update or create actions.
  * @param {TransformerArgs} operator
  * @param {Database} operator.database
  * @param {RecordPair} operator.value
- * @returns {Promise<ThreadParticipantsModel>}
+ * @returns {Promise<ThreadParticipantModel>}
  */
-export const transformThreadparticipantRecord = ({action, database, value}: TransformerArgs): Promise<ThreadParticipantsModel> => {
+export const transformThreadparticipantRecord = ({action, database, value}: TransformerArgs): Promise<ThreadParticipantModel> => {
     const raw = value.raw as ThreadParticipant;
 
     // id of reaction comes from server response
-    const fieldsMapper = (reaction: ThreadParticipantsModel) => {
+    const fieldsMapper = (reaction: ThreadParticipantModel) => {
         reaction.threadId = raw.thread_id;
         reaction.userId = raw.id;
     };
@@ -65,8 +65,8 @@ export const transformThreadparticipantRecord = ({action, database, value}: Tran
     return prepareBaseRecord({
         action,
         database,
-        tableName: THREAD_PARTICIPANTS,
+        tableName: THREAD_PARTICIPANT,
         value,
         fieldsMapper,
-    }) as Promise<ThreadParticipantsModel>;
+    }) as Promise<ThreadParticipantModel>;
 };

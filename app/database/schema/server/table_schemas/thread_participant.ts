@@ -5,10 +5,10 @@ import {tableSchema} from '@nozbe/watermelondb';
 
 import {MM_TABLES} from '@constants/database';
 
-const {THREAD_PARTICIPANTS} = MM_TABLES.SERVER;
+const {THREAD_PARTICIPANT} = MM_TABLES.SERVER;
 
 export default tableSchema({
-    name: THREAD_PARTICIPANTS,
+    name: THREAD_PARTICIPANT,
     columns: [
         {name: 'thread_id', type: 'string', isIndexed: true},
         {name: 'user_id', type: 'string', isIndexed: true},

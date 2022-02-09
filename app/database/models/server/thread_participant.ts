@@ -10,14 +10,14 @@ import {MM_TABLES} from '@constants/database';
 import type ThreadModel from '@typings/database/models/servers/thread';
 import type UserModel from '@typings/database/models/servers/user';
 
-const {THREAD, THREAD_PARTICIPANTS, USER} = MM_TABLES.SERVER;
+const {THREAD, THREAD_PARTICIPANT, USER} = MM_TABLES.SERVER;
 
 /**
  * The Thread Participants model contains participants data of a thread.
  */
-export default class ThreadParticipantsModel extends Model {
-    /** table (name) : ThreadParticipants */
-    static table = THREAD_PARTICIPANTS;
+export default class ThreadParticipantModel extends Model {
+    /** table (name) : ThreadParticipant */
+    static table = THREAD_PARTICIPANT;
 
     /** associations : Describes every relationship to this table. */
     static associations: Associations = {

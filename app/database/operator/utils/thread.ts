@@ -5,9 +5,9 @@ import {Q} from '@nozbe/watermelondb';
 import {MM_TABLES} from '@constants/database';
 
 import type {RecordPair, SanitizeThreadParticipantsArgs} from '@typings/database/database';
-import type ThreadParticipantsModel from '@typings/database/models/servers/thread_participants';
+import type ThreadParticipantModel from '@typings/database/models/servers/thread_participant';
 
-const {THREAD_PARTICIPANTS} = MM_TABLES.SERVER;
+const {THREAD_PARTICIPANT} = MM_TABLES.SERVER;
 
 /**
  * sanitizeThreadParticipants: Treats thread participants participants in a Thread. For example, a user can participate/not.  Hence, this function
@@ -16,16 +16,16 @@ const {THREAD_PARTICIPANTS} = MM_TABLES.SERVER;
  * @param {Database} sanitizeThreadParticipants.database
  * @param {string} sanitizeThreadParticipants.thread_id
  * @param {UserProfile[]} sanitizeReactions.rawParticipants
- * @returns {Promise<{createParticipants: ThreadParticipant[],  deleteParticipants: ThreadParticipantsModel[]}>}
+ * @returns {Promise<{createParticipants: ThreadParticipant[],  deleteParticipants: ThreadParticipantModel[]}>}
  */
 export const sanitizeThreadParticipants = async ({database, thread_id, rawParticipants}: SanitizeThreadParticipantsArgs) => {
     const participants = (await database.collections.
-        get(THREAD_PARTICIPANTS).
+        get(THREAD_PARTICIPANT).
         query(Q.where('thread_id', thread_id)).
-        fetch()) as ThreadParticipantsModel[];
+        fetch()) as ThreadParticipantModel[];
 
-    // similarObjects: Contains objects that are in both the RawParticipant array and in the ThreadParticipants table
-    const similarObjects: ThreadParticipantsModel[] = [];
+    // similarObjects: Contains objects that are in both the RawParticipant array and in the ThreadParticipant table
+    const similarObjects: ThreadParticipantModel[] = [];
 
     const createParticipants: RecordPair[] = [];
 

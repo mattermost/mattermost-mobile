@@ -39,7 +39,7 @@ export const MM_TABLES = {
         TEAM_SEARCH_HISTORY: 'TeamSearchHistory',
         TERMS_OF_SERVICE: 'TermsOfService',
         THREAD: 'Thread',
-        THREAD_PARTICIPANTS: 'ThreadParticipants',
+        THREAD_PARTICIPANT: 'ThreadParticipant',
         USER: 'User',
     },
 };
