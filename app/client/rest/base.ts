@@ -109,6 +109,18 @@ export default class ClientBase {
         return `${this.getTeamMembersRoute(teamId)}/${userId}`;
     }
 
+    getCategoriesRoute(userId: string, teamId: string) {
+        return `${this.getUserRoute(userId)}/teams/${teamId}/channels/categories`;
+    }
+
+    getCategoriesOrderRoute(userId: string, teamId: string) {
+        return `${this.getCategoriesRoute(userId, teamId)}/order`;
+    }
+
+    getCategoryRoute(userId: string, teamId: string, categoryId: string) {
+        return `${this.getCategoriesRoute(userId, teamId)}/${categoryId}`;
+    }
+
     getChannelsRoute() {
         return `${this.urlVersion}/channels`;
     }
