@@ -11,7 +11,7 @@ import {t} from '@i18n';
 type FollowThreadOptionProps = {
     thread?: any;
     theme: Theme;
-    location?: typeof Screens[keyof typeof Screens];
+    location?: typeof Screens[keyof typeof Screens] | string;
 };
 
 //todo: to implement CRT follow thread

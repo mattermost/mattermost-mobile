@@ -21,7 +21,7 @@ import type PostModel from '@typings/database/models/servers/post';
 //fixme: some props are optional - review them
 
 type PostOptionsProps = {
-    location: typeof Screens[keyof typeof Screens];
+    location: typeof Screens[keyof typeof Screens] | string;
     post: PostModel;
     canMarkAsUnread?: boolean;
     canCopyText?: boolean;

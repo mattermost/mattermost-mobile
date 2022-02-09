@@ -46,7 +46,7 @@ type PostProps = {
     isJumboEmoji: boolean;
     isLastReply?: boolean;
     isPostAddChannelMember: boolean;
-    location: typeof Screens[keyof typeof Screens];
+    location: string;
     post: PostModel;
     previousPost?: PostModel;
     reactionsCount: number;
@@ -126,9 +126,9 @@ const Post = ({
         pressDetected.current = true;
 
         if (post) {
-            if (Screens[location] === Screens.THREAD) {
+            if (location === Screens.THREAD) {
                 Keyboard.dismiss();
-            } else if (Screens[location] === Screens.SEARCH) {
+            } else if (location === Screens.SEARCH) {
                 showPermalink(serverUrl, '', post.id, intl);
                 return;
             }
