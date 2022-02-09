@@ -5,6 +5,7 @@ import {DeviceEventEmitter} from 'react-native';
 
 import {autoUpdateTimezone, getDeviceTimezone, isTimezoneEnabled} from '@actions/local/timezone';
 import {Database, Events} from '@constants';
+import {SYSTEM_IDENTIFIERS} from '@constants/database';
 import DatabaseManager from '@database/manager';
 import {getServerCredentials} from '@init/credentials';
 import NetworkManager from '@init/network_manager';
@@ -23,11 +24,12 @@ import type {LoginArgs} from '@typings/database/database';
 const HTTP_UNAUTHORIZED = 401;
 
 export const completeLogin = async (serverUrl: string, user: UserProfile) => {
-    const database = DatabaseManager.serverDatabases[serverUrl]?.database;
-    if (!database) {
+    const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
+    if (!operator) {
         return {error: `${serverUrl} database not found`};
     }
 
+    const {database} = operator;
     const {config, license}: { config: Partial<ClientConfig>; license: Partial<ClientLicense> } = await queryCommonSystemValues(database);
 
     if (!Object.keys(config)?.length || !Object.keys(license)?.length) {
@@ -49,6 +51,11 @@ export const completeLogin = async (serverUrl: string, user: UserProfile) => {
     const credentials = await getServerCredentials(serverUrl);
     if (credentials?.token) {
         WebsocketManager.createClient(serverUrl, credentials.token);
+        return operator.handleSystem({systems: [{
+            id: SYSTEM_IDENTIFIERS.WEBSOCKET,
+            value: 0,
+        }],
+        prepareRecordsOnly: false});
     }
     return null;
 };

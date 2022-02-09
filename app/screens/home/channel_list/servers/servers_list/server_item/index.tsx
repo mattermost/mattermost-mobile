@@ -11,13 +11,14 @@ import CompassIcon from '@components/compass_icon';
 import ServerIcon from '@components/server_icon';
 import {Events} from '@constants';
 import {useTheme} from '@context/theme';
+import DatabaseManager from '@database/manager';
 import {subscribeServerUnreadAndMentions} from '@database/subscription/unreads';
-import WebsocketManager from '@init/websocket_manager';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 import {removeProtocol, stripTrailingSlashes} from '@utils/url';
 
 import Options from './options';
+import WebSocket from './websocket';
 
 import type ServersModel from '@typings/database/models/app/servers';
 import type MyChannelModel from '@typings/database/models/servers/my_channel';
@@ -63,15 +64,11 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     logout: {
         backgroundColor: theme.centerChannelBg,
         borderRadius: 8,
-        height: 16,
-        left: 40,
+        height: 18,
+        left: 42,
         position: 'absolute',
         top: 11,
-        width: 16,
-    },
-    nameContainer: {
-        alignItems: 'center',
-        flexDirection: 'row',
+        width: 18,
     },
     name: {
         color: theme.centerChannelColor,
@@ -89,10 +86,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         color: changeOpacity(theme.centerChannelColor, 0.72),
         ...typography('Body', 75, 'Regular'),
     },
-    websocket: {
-        marginLeft: 7,
-        marginTop: 4,
-    },
 }));
 
 const ServerItem = ({isActive, server}: Props) => {
@@ -102,7 +95,7 @@ const ServerItem = ({isActive, server}: Props) => {
     const styles = getStyleSheet(theme);
     const swipeable = useRef<Swipeable>();
     const subscription = useRef<Subscription|undefined>();
-    const websocketError = server.lastActiveAt ? !WebsocketManager.isConnected(server.url) : false;
+    const database = DatabaseManager.serverDatabases[server.url]?.database;
     let displayName = server.displayName;
     if (server.url === server.displayName) {
         displayName = intl.formatMessage({id: 'servers.default', defaultMessage: 'Default Server'});
@@ -195,62 +188,59 @@ const ServerItem = ({isActive, server}: Props) => {
     }, [server.lastActiveAt, isActive]);
 
     return (
-        <Swipeable
-            renderRightActions={renderActions}
-            friction={2}
-            onSwipeableWillOpen={onSwipeableWillOpen}
+        <>
+            <Swipeable
+                renderRightActions={renderActions}
+                friction={2}
+                onSwipeableWillOpen={onSwipeableWillOpen}
 
-            // @ts-expect-error legacy ref
-            ref={swipeable}
-            rightThreshold={40}
-        >
-            <View
-                style={containerStyle}
+                // @ts-expect-error legacy ref
+                ref={swipeable}
+                rightThreshold={40}
             >
-                <RectButton
-                    onPress={onServerPressed}
-                    style={styles.button}
-                    rippleColor={changeOpacity(theme.centerChannelColor, 0.16)}
+                <View
+                    style={containerStyle}
                 >
-                    {!server.lastActiveAt &&
-                    <View style={styles.logout}>
-                        <CompassIcon
-                            name='minus-circle'
-                            size={16}
-                            color={theme.dndIndicator}
-                        />
-                    </View>
-                    }
-                    <View style={serverStyle}>
-                        <ServerIcon
-                            badgeBackgroundColor={theme.mentionColor}
-                            badgeBorderColor={theme.mentionBg}
-                            badgeColor={theme.mentionBg}
-                            badgeStyle={styles.badge}
-                            iconColor={changeOpacity(theme.centerChannelColor, 0.56)}
-                            hasUnreads={badge.isUnread}
-                            mentionCount={badge.mentions}
-                            size={36}
-                            unreadStyle={styles.unread}
-                        />
-                        <View style={styles.details}>
-                            <View style={styles.nameContainer}>
+                    <RectButton
+                        onPress={onServerPressed}
+                        style={styles.button}
+                        rippleColor={changeOpacity(theme.centerChannelColor, 0.16)}
+                    >
+                        <View style={serverStyle}>
+                            <ServerIcon
+                                badgeBackgroundColor={theme.mentionColor}
+                                badgeBorderColor={theme.mentionBg}
+                                badgeColor={theme.mentionBg}
+                                badgeStyle={styles.badge}
+                                iconColor={changeOpacity(theme.centerChannelColor, 0.56)}
+                                hasUnreads={badge.isUnread}
+                                mentionCount={badge.mentions}
+                                size={36}
+                                unreadStyle={styles.unread}
+                            />
+                            <View style={styles.details}>
                                 <Text style={styles.name}>{displayName}</Text>
-                                {websocketError &&
-                                <CompassIcon
-                                    name='alert-circle-outline'
-                                    size={14.4}
-                                    color={theme.dndIndicator}
-                                    style={styles.websocket}
-                                />
-                                }
+                                <Text style={styles.url}>{removeProtocol(stripTrailingSlashes(server.url))}</Text>
                             </View>
-                            <Text style={styles.url}>{removeProtocol(stripTrailingSlashes(server.url))}</Text>
                         </View>
-                    </View>
-                </RectButton>
-            </View>
-        </Swipeable>
+                        {!server.lastActiveAt &&
+                        <View style={styles.logout}>
+                            <CompassIcon
+                                name='alert-circle-outline'
+                                size={18}
+                                color={changeOpacity(theme.centerChannelColor, 0.64)}
+                            />
+                        </View>
+                        }
+                    </RectButton>
+                </View>
+            </Swipeable>
+            {Boolean(database) && server.lastActiveAt > 0 &&
+            <WebSocket
+                database={database}
+            />
+            }
+        </>
     );
 };
 

@@ -129,7 +129,7 @@ export default function Servers() {
                 renderContent,
                 snapPoints,
                 theme,
-                title: intl.formatMessage({id: 'servers.create_button', defaultMessage: 'Add a server'}),
+                title: intl.formatMessage({id: 'your.servers', defaultMessage: 'Your servers'}),
             });
         }
     }, [isTablet, theme]);

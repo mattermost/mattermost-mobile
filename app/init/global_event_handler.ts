@@ -90,6 +90,8 @@ class GlobalEventHandler {
 
         NetworkManager.invalidateClient(serverUrl);
         WebsocketManager.invalidateClient(serverUrl);
+
+        const activeServerUrl = await DatabaseManager.getActiveServerUrl();
         await DatabaseManager.deleteServerDatabase(serverUrl);
 
         const analyticsClient = analytics.get(serverUrl);
@@ -102,11 +104,13 @@ class GlobalEventHandler {
         this.clearCookiesForServer(serverUrl);
         deleteFileCache(serverUrl);
 
-        if (!Object.keys(DatabaseManager.serverDatabases).length) {
-            EphemeralStore.theme = undefined;
-        }
+        if (activeServerUrl === serverUrl) {
+            if (!Object.keys(DatabaseManager.serverDatabases).length) {
+                EphemeralStore.theme = undefined;
+            }
 
-        relaunchApp({launchType: LaunchType.Normal}, true);
+            relaunchApp({launchType: LaunchType.Normal}, true);
+        }
     };
 
     onServerConfigChanged = ({serverUrl, config}: {serverUrl: string; config: ClientConfig}) => {
