@@ -14,6 +14,20 @@ export function unsupportedServer(isSystemAdmin: boolean, intl: IntlShape) {
     return unsupportedServerAlert(intl);
 }
 
+export function semverFromServerVersion(value: string) {
+    if (!value || typeof value !== 'string') {
+        return undefined;
+    }
+
+    const split = value.split('.');
+
+    const major = parseInt(split[0], 10);
+    const minor = parseInt(split[1] || '0', 10);
+    const patch = parseInt(split[2] || '0', 10);
+
+    return `${major}.${minor}.${patch}`;
+}
+
 function unsupportedServerAdminAlert(intl: IntlShape) {
     const title = intl.formatMessage({id: 'mobile.server_upgrade.title', defaultMessage: 'Server upgrade required'});
 

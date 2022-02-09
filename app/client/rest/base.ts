@@ -7,6 +7,7 @@ import {Events} from '@constants';
 import {t} from '@i18n';
 import {Analytics, create} from '@init/analytics';
 import {setServerCredentials} from '@init/credentials';
+import {semverFromServerVersion} from '@utils/supported_server';
 
 import * as ClientConstants from './constants';
 import ClientError from './error';
@@ -234,7 +235,7 @@ export default class ClientBase {
         }
 
         const headers: ClientHeaders = response.headers || {};
-        const serverVersion = headers[ClientConstants.HEADER_X_VERSION_ID] || headers[ClientConstants.HEADER_X_VERSION_ID.toLowerCase()];
+        const serverVersion = semverFromServerVersion(headers[ClientConstants.HEADER_X_VERSION_ID] || headers[ClientConstants.HEADER_X_VERSION_ID.toLowerCase()]);
         const hasCacheControl = Boolean(headers[ClientConstants.HEADER_CACHE_CONTROL] || headers[ClientConstants.HEADER_CACHE_CONTROL.toLowerCase()]);
         if (serverVersion && !hasCacheControl && this.serverVersion !== serverVersion) {
             this.serverVersion = serverVersion;

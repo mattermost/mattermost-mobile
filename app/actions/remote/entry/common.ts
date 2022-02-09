@@ -5,15 +5,16 @@ import {fetchMissingSidebarInfo, fetchMyChannelsForTeam, MyChannelsRequest} from
 import {fetchGroupsForTeam} from '@actions/remote/group';
 import {fetchPostsForChannel, fetchPostsForUnreadChannels} from '@actions/remote/post';
 import {MyPreferencesRequest, fetchMyPreferences} from '@actions/remote/preference';
+import {fetchConfigAndLicense} from '@actions/remote/systems';
 import {fetchMyTeams, fetchTeamsChannelsAndUnreadPosts, MyTeamsRequest} from '@actions/remote/team';
-import {fetchMe, MyUserRequest} from '@actions/remote/user';
+import {fetchMe, MyUserRequest, updateAllUsersSince} from '@actions/remote/user';
 import {General, Preferences} from '@constants';
 import DatabaseManager from '@database/manager';
 import {getPreferenceValue, getTeammateNameDisplaySetting} from '@helpers/api/preference';
 import {selectDefaultTeam} from '@helpers/api/team';
 import {DEFAULT_LOCALE} from '@i18n';
 import {queryAllChannelsForTeam} from '@queries/servers/channel';
-import {queryConfig, queryWebSocketLastDisconnected} from '@queries/servers/system';
+import {queryConfig} from '@queries/servers/system';
 import {queryAvailableTeamIds, queryMyTeams} from '@queries/servers/team';
 
 import type ClientError from '@client/rest/error';
@@ -32,20 +33,21 @@ export type AppEntryError = {
     error?: Error | ClientError | string;
 }
 
-export const fetchAppEntryData = async (serverUrl: string, initialTeamId: string): Promise<AppEntryData | AppEntryError> => {
+export const fetchAppEntryData = async (serverUrl: string, since: number, initialTeamId: string): Promise<AppEntryData | AppEntryError> => {
     const database = DatabaseManager.serverDatabases[serverUrl]?.database;
     if (!database) {
         return {error: `${serverUrl} database not found`};
     }
 
-    const lastDisconnected = await queryWebSocketLastDisconnected(database);
     const includeDeletedChannels = true;
     const fetchOnly = true;
+
+    await fetchConfigAndLicense(serverUrl);
 
     // Fetch in parallel teams / team membership / channels for current team / user preferences / user
     const promises: [Promise<MyTeamsRequest>, Promise<MyChannelsRequest | undefined>, Promise<MyPreferencesRequest>, Promise<MyUserRequest>] = [
         fetchMyTeams(serverUrl, fetchOnly),
-        initialTeamId ? fetchMyChannelsForTeam(serverUrl, initialTeamId, includeDeletedChannels, lastDisconnected, fetchOnly) : Promise.resolve(undefined),
+        initialTeamId ? fetchMyChannelsForTeam(serverUrl, initialTeamId, includeDeletedChannels, since, fetchOnly) : Promise.resolve(undefined),
         fetchMyPreferences(serverUrl, fetchOnly),
         fetchMe(serverUrl, fetchOnly),
     ];
@@ -63,7 +65,7 @@ export const fetchAppEntryData = async (serverUrl: string, initialTeamId: string
         const myTeams = teamData.teams!.filter((t) => teamMembers?.includes(t.id));
         const defaultTeam = selectDefaultTeam(myTeams, meData.user?.locale || DEFAULT_LOCALE, teamOrderPreference, config.ExperimentalPrimaryTeam);
         if (defaultTeam?.id) {
-            chData = await fetchMyChannelsForTeam(serverUrl, defaultTeam.id, includeDeletedChannels, lastDisconnected, fetchOnly);
+            chData = await fetchMyChannelsForTeam(serverUrl, defaultTeam.id, includeDeletedChannels, since, fetchOnly);
         }
     }
 
@@ -102,7 +104,7 @@ export const fetchAppEntryData = async (serverUrl: string, initialTeamId: string
         }
 
         const availableTeamIds = await queryAvailableTeamIds(database, initialTeamId, teamData.teams, prefData.preferences, meData.user?.locale);
-        const alternateTeamData = await fetchAlternateTeamData(serverUrl, availableTeamIds, removeTeamIds, includeDeletedChannels, lastDisconnected, fetchOnly);
+        const alternateTeamData = await fetchAlternateTeamData(serverUrl, availableTeamIds, removeTeamIds, includeDeletedChannels, since, fetchOnly);
 
         data = {
             ...data,
@@ -156,7 +158,7 @@ export const fetchAlternateTeamData = async (
 };
 
 export const deferredAppEntryActions = async (
-    serverUrl: string, currentUserId: string, currentUserLocale: string, preferences: PreferenceType[] | undefined,
+    serverUrl: string, since: number, currentUserId: string, currentUserLocale: string, preferences: PreferenceType[] | undefined,
     config: ClientConfig, license: ClientLicense, teamData: MyTeamsRequest, chData: MyChannelsRequest | undefined,
     initialTeamId?: string, initialChannelId?: string) => {
     // defer fetching posts for initial channel
@@ -179,11 +181,13 @@ export const deferredAppEntryActions = async (
 
     // defer groups for team
     if (initialTeamId) {
-        await fetchGroupsForTeam(serverUrl, initialTeamId);
+        fetchGroupsForTeam(serverUrl, initialTeamId, since);
     }
 
     // defer fetch channels and unread posts for other teams
     if (teamData.teams?.length && teamData.memberships?.length) {
-        fetchTeamsChannelsAndUnreadPosts(serverUrl, teamData.teams, teamData.memberships, initialTeamId);
+        await fetchTeamsChannelsAndUnreadPosts(serverUrl, since, teamData.teams, teamData.memberships, initialTeamId);
     }
+
+    updateAllUsersSince(serverUrl, since);
 };

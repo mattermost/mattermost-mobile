@@ -9,7 +9,7 @@ import {Events} from '@constants';
 import DatabaseManager from '@database/manager';
 import NetworkManager from '@init/network_manager';
 import {prepareMyChannelsForTeam, queryDefaultChannelForTeam} from '@queries/servers/channel';
-import {prepareCommonSystemValues, queryCurrentTeamId, queryWebSocketLastDisconnected} from '@queries/servers/system';
+import {prepareCommonSystemValues, queryCurrentTeamId} from '@queries/servers/system';
 import {addTeamToTeamHistory, prepareDeleteTeam, prepareMyTeams, queryNthLastChannelFromTeam, queryTeamsById, syncTeamTable} from '@queries/servers/team';
 import {isTablet} from '@utils/helpers';
 
@@ -191,14 +191,13 @@ export const fetchAllTeams = async (serverUrl: string, fetchOnly = false): Promi
     }
 };
 
-export const fetchTeamsChannelsAndUnreadPosts = async (serverUrl: string, teams: Team[], memberships: TeamMembership[], excludeTeamId?: string) => {
+export const fetchTeamsChannelsAndUnreadPosts = async (serverUrl: string, since: number, teams: Team[], memberships: TeamMembership[], excludeTeamId?: string) => {
     const database = DatabaseManager.serverDatabases[serverUrl]?.database;
     if (!database) {
         return {error: `${serverUrl} database not found`};
     }
 
     const myTeams = teams.filter((t) => memberships.find((m) => m.team_id === t.id && t.id !== excludeTeamId));
-    const since = await queryWebSocketLastDisconnected(database);
 
     for await (const team of myTeams) {
         const {channels, memberships: members} = await fetchMyChannelsForTeam(serverUrl, team.id, since > 0, since, false, true);
