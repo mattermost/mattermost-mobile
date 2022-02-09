@@ -8,10 +8,11 @@ import {SafeAreaView} from 'react-native-safe-area-context';
 
 import {closePermalink} from '@actions/local/permalink';
 import {fetchPostsAround} from '@actions/remote/post';
+import {Screens} from '@app/constants';
 import {changeOpacity, makeStyleSheetFromTheme} from '@app/utils/theme';
 import CompassIcon from '@components/compass_icon';
 import FormattedText from '@components/formatted_text';
-import PostList from '@components/post_list/post_list';
+import PostList from '@components/post_list';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {dismissModal} from '@screens/navigation';
@@ -174,13 +175,15 @@ function Permalink({channel, postId, currentUsername}: Props) {
                 <View style={style.postList}>
                     <PostList
                         posts={posts}
+                        location={Screens.PERMALINK}
                         lastViewedAt={0}
                         isTimezoneEnabled={false}
                         shouldShowJoinLeaveMessages={false}
                         currentTimezone={null}
                         currentUsername={currentUsername}
                         channelId={channel.id}
-                        testID='permalink'
+                        testID='permalink.post_list'
+                        nativeID={Screens.PERMALINK}
                     />
                 </View>
                 <TouchableOpacity

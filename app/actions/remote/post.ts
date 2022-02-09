@@ -462,6 +462,7 @@ export async function fetchPostsAround(
     serverUrl: string,
     channelId: string,
     postId: string,
+    perPage = 10,
 ) {
     let client: Client;
     try {
@@ -474,9 +475,9 @@ export async function fetchPostsAround(
         const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
 
         const [after, post, before] = await Promise.all<PostsObjectsRequest>([
-            client.getPostsAfter(channelId, postId, 0),
+            client.getPostsAfter(channelId, postId, 0, perPage),
             client.getPostThread(postId),
-            client.getPostsBefore(channelId, postId, 0),
+            client.getPostsBefore(channelId, postId, 0, perPage),
         ]);
 
         const preData: PostResponse = {
