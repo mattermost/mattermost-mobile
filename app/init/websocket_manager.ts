@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import NetInfo, {NetInfoState} from '@react-native-community/netinfo';
-import {AppState, AppStateStatus} from 'react-native';
+import {AppState, AppStateStatus, DeviceEventEmitter, Platform} from 'react-native';
 
 import {setCurrentUserStatusOffline} from '@actions/local/user';
 import {fetchStatusByIds} from '@actions/remote/user';
@@ -10,7 +10,7 @@ import {handleClose, handleEvent, handleFirstConnect, handleReconnect} from '@ac
 import WebSocketClient from '@client/websocket';
 import {General} from '@constants';
 import DatabaseManager from '@database/manager';
-import {queryCurrentUserId, resetWebSocketLastDisconnected} from '@queries/servers/system';
+import {queryCurrentUserId} from '@queries/servers/system';
 import {queryAllUsers} from '@queries/servers/user';
 
 import type {ServerCredential} from '@typings/credentials';
@@ -34,7 +34,7 @@ class WebsocketManager {
                     if (!operator) {
                         return;
                     }
-                    await resetWebSocketLastDisconnected(operator);
+
                     try {
                         this.createClient(serverUrl, token, 0);
                     } catch (error) {
@@ -46,6 +46,12 @@ class WebsocketManager {
 
         AppState.addEventListener('change', this.onAppStateChange);
         NetInfo.addEventListener(this.onNetStateChange);
+
+        if (Platform.OS === 'android') {
+            DeviceEventEmitter.addListener('windowFocusChanged', ({appState}: {appState: AppStateStatus}) => {
+                this.onAppStateChange(appState);
+            });
+        }
     };
 
     public invalidateClient = (serverUrl: string) => {

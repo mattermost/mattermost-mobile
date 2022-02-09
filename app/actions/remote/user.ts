@@ -3,19 +3,22 @@
 
 import {Model, Q} from '@nozbe/watermelondb';
 
+import {updateChannelsDisplayName} from '@actions/local/channel';
 import {updateRecentCustomStatuses, updateLocalUser} from '@actions/local/user';
 import {fetchRolesIfNeeded} from '@actions/remote/role';
 import {Database, General} from '@constants';
+import {MM_TABLES} from '@constants/database';
 import DatabaseManager from '@database/manager';
 import {debounce} from '@helpers/api/general';
 import NetworkManager from '@init/network_manager';
-import {queryCurrentUserId, queryWebSocketLastDisconnected} from '@queries/servers/system';
+import {queryCurrentUserId} from '@queries/servers/system';
 import {prepareUsers, queryAllUsers, queryCurrentUser, queryUsersById, queryUsersByUsername} from '@queries/servers/user';
 
 import {forceLogoutIfNecessary} from './session';
 
 import type {Client} from '@client/rest';
 import type ClientError from '@client/rest/error';
+import type ChannelModel from '@typings/database/models/servers/channel';
 import type UserModel from '@typings/database/models/servers/user';
 
 export type MyUserRequest = {
@@ -33,6 +36,8 @@ export type ProfilesInChannelRequest = {
     channelId: string;
     error?: unknown;
 }
+
+const {SERVER: {CHANNEL}} = MM_TABLES;
 
 export const fetchMe = async (serverUrl: string, fetchOnly = false): Promise<MyUserRequest> => {
     let client;
@@ -332,29 +337,47 @@ export const fetchMissingProfilesByUsernames = async (serverUrl: string, usernam
     }
 };
 
-export const updateAllUsersSinceLastDisconnect = async (serverUrl: string) => {
-    const database = DatabaseManager.serverDatabases[serverUrl];
-    if (!database) {
+export const updateAllUsersSince = async (serverUrl: string, since: number, fetchOnly = false) => {
+    if (!since) {
+        return {users: []};
+    }
+
+    const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
+    if (!operator) {
         return {error: `${serverUrl} database not found`};
     }
 
-    const lastDisconnectedAt = await queryWebSocketLastDisconnected(database.database);
-
-    if (!lastDisconnectedAt) {
-        return {users: []};
+    let client: Client;
+    try {
+        client = NetworkManager.getClient(serverUrl);
+    } catch (error) {
+        return {error};
     }
-    const currentUserId = await queryCurrentUserId(database.database);
-    const users = await queryAllUsers(database.database);
+
+    const currentUserId = await queryCurrentUserId(operator.database);
+    const users = await queryAllUsers(operator.database);
     const userIds = users.map((u) => u.id).filter((id) => id !== currentUserId);
     let userUpdates: UserProfile[] = [];
     try {
-        userUpdates = await NetworkManager.getClient(serverUrl).getProfilesByIds(userIds, {since: lastDisconnectedAt});
+        userUpdates = await client.getProfilesByIds(userIds, {since});
+        if (userUpdates.length && !fetchOnly) {
+            const modelsToBatch: Model[] = [];
+            const userModels = await operator.handleUsers({users: userUpdates, prepareRecordsOnly: true});
+            modelsToBatch.push(...userModels);
+            const directChannels = await operator.database.get<ChannelModel>(CHANNEL).
+                query(Q.where('type', Q.oneOf([General.DM_CHANNEL, General.GM_CHANNEL]))).
+                fetch();
+            const {models} = await updateChannelsDisplayName(serverUrl, directChannels, userUpdates, true);
+            if (models?.length) {
+                modelsToBatch.push(...models);
+            }
+
+            if (modelsToBatch.length) {
+                await operator.batchRecords(modelsToBatch);
+            }
+        }
     } catch {
         // Do nothing
-    }
-
-    if (userUpdates.length) {
-        database.operator.handleUsers({users: userUpdates, prepareRecordsOnly: false});
     }
 
     return {users: userUpdates};
