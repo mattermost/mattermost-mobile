@@ -82,12 +82,6 @@ const ThreadFooter = ({author, currentUserId, participants, teammateNameDisplay,
 };
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
-    const followingButtonContainerBase = {
-        justifyContent: 'center',
-        height: 32,
-        paddingHorizontal: 12,
-    };
-
     return {
         container: {
             flexDirection: 'row',
@@ -115,31 +109,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             fontSize: 12,
             fontWeight: '600',
             marginRight: 12,
-        },
-        notFollowingButtonContainer: {
-            ...followingButtonContainerBase,
-            paddingLeft: 0,
-        },
-        notFollowing: {
-            color: changeOpacity(theme.centerChannelColor, 0.64),
-            fontWeight: '600',
-            fontSize: 12,
-        },
-        followingButtonContainer: {
-            ...followingButtonContainerBase,
-            backgroundColor: changeOpacity(theme.buttonBg, 0.08),
-            borderRadius: 4,
-        },
-        following: {
-            color: theme.buttonBg,
-            fontWeight: '600',
-            fontSize: 12,
-        },
-        followSeparator: {
-            backgroundColor: changeOpacity(theme.centerChannelColor, 0.16),
-            height: 16,
-            marginRight: 12,
-            width: 1,
         },
     };
 });

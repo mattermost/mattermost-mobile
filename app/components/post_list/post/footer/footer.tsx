@@ -157,13 +157,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             fontWeight: '600',
             marginRight: 12,
         },
-        unreadReplies: {
-            alignSelf: 'center',
-            color: theme.sidebarTextActiveBorder,
-            fontSize: 12,
-            fontWeight: '600',
-            marginRight: 12,
-        },
         notFollowingButtonContainer: {
             ...followingButtonContainerBase,
             paddingLeft: 0,
