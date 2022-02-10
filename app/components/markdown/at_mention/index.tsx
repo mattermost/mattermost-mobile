@@ -14,12 +14,12 @@ import {map, switchMap} from 'rxjs/operators';
 
 import CompassIcon from '@components/compass_icon';
 import SlideUpPanelItem, {ITEM_HEIGHT} from '@components/slide_up_panel_item';
-import {Navigation, Preferences} from '@constants';
+import {Events, Preferences} from '@constants';
 import {MM_TABLES, SYSTEM_IDENTIFIERS} from '@constants/database';
 import {useTheme} from '@context/theme';
 import UserModel from '@database/models/server/user';
 import {getTeammateNameDisplaySetting} from '@helpers/api/preference';
-import {showModal, showModalOverCurrentContext} from '@screens/navigation';
+import {bottomSheet, showModal} from '@screens/navigation';
 import {displayUsername, getUserMentionKeys, getUsersByUsername} from '@utils/user';
 
 import type {WithDatabaseArgs} from '@typings/database/database';
@@ -140,7 +140,7 @@ const AtMention = ({
                         <SlideUpPanelItem
                             icon='content-copy'
                             onPress={() => {
-                                DeviceEventEmitter.emit(Navigation.NAVIGATION_CLOSE_MODAL);
+                                DeviceEventEmitter.emit(Events.CLOSE_BOTTOM_SHEET);
                                 let username = mentionName;
                                 if (user.username) {
                                     username = user.username;
@@ -155,7 +155,7 @@ const AtMention = ({
                             destructive={true}
                             icon='cancel'
                             onPress={() => {
-                                DeviceEventEmitter.emit(Navigation.NAVIGATION_CLOSE_MODAL);
+                                DeviceEventEmitter.emit(Events.CLOSE_BOTTOM_SHEET);
                             }}
                             testID='at_mention.bottom_sheet.cancel'
                             text={intl.formatMessage({id: 'mobile.post.cancel', defaultMessage: 'Cancel'})}
@@ -164,12 +164,15 @@ const AtMention = ({
                 );
             };
 
-            showModalOverCurrentContext('BottomSheet', {
+            bottomSheet({
+                closeButtonId: 'close-at-mention',
                 renderContent,
                 snapPoints: [3 * ITEM_HEIGHT, 10],
+                title: intl.formatMessage({id: 'post.options.title', defaultMessage: 'Options'}),
+                theme,
             });
         }
-    }, [managedConfig]);
+    }, [managedConfig, intl, theme]);
 
     const mentionTextStyle = [];
 

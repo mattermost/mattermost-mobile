@@ -6,7 +6,7 @@ import {useIntl} from 'react-intl';
 import {DeviceEventEmitter} from 'react-native';
 
 import SlideUpPanelItem from '@components/slide_up_panel_item';
-import NavigationConstants from '@constants/navigation';
+import {Events} from '@constants';
 import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
 import BottomSheetContent from '@screens/bottom_sheet/content';
@@ -49,17 +49,17 @@ export default function DropdownSlideup({
     };
 
     const handlePublicPress = useCallback(() => {
-        DeviceEventEmitter.emit(NavigationConstants.NAVIGATION_CLOSE_MODAL);
+        DeviceEventEmitter.emit(Events.CLOSE_BOTTOM_SHEET);
         onPress(PUBLIC);
     }, [onPress]);
 
     const handleArchivedPress = useCallback(() => {
-        DeviceEventEmitter.emit(NavigationConstants.NAVIGATION_CLOSE_MODAL);
+        DeviceEventEmitter.emit(Events.CLOSE_BOTTOM_SHEET);
         onPress(ARCHIVED);
     }, [onPress]);
 
     const handleSharedPress = useCallback(() => {
-        DeviceEventEmitter.emit(NavigationConstants.NAVIGATION_CLOSE_MODAL);
+        DeviceEventEmitter.emit(Events.CLOSE_BOTTOM_SHEET);
         onPress(SHARED);
     }, [onPress]);
 

@@ -8,7 +8,7 @@ import {Navigation as RNN} from 'react-native-navigation';
 import Animated from 'react-native-reanimated';
 import RNBottomSheet from 'reanimated-bottom-sheet';
 
-import {Navigation, Screens} from '@constants';
+import {Events, Screens} from '@constants';
 import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
 import {dismissModal} from '@screens/navigation';
@@ -32,7 +32,7 @@ const BottomSheet = ({closeButtonId, initialSnapIndex = 0, renderContent, snapPo
     const lastSnap = snapPoints.length - 1;
 
     useEffect(() => {
-        const listener = DeviceEventEmitter.addListener(Navigation.NAVIGATION_CLOSE_MODAL, () => {
+        const listener = DeviceEventEmitter.addListener(Events.CLOSE_BOTTOM_SHEET, () => {
             if (sheetRef.current) {
                 sheetRef.current.snapTo(lastSnap);
             } else {
