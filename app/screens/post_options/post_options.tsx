@@ -45,10 +45,10 @@ type PostOptionsProps = {
     canDelete?: boolean;
     canEdit?: boolean;
     canEditUntil?: number;
-    canFlag?: boolean;
+    canSave?: boolean;
     canMarkAsUnread?: boolean;
     canPin?: boolean;
-    isFlagged?: boolean;
+    isSaved?: boolean;
     location: typeof Screens[keyof typeof Screens];
     post: PostModel;
 };
@@ -60,10 +60,10 @@ const PostOptions = ({
     canDelete = true,
     canEdit = true,
     canEditUntil = -1,
-    canFlag = true,
+    canSave = true,
     canMarkAsUnread = true,
     canPin = true,
-    isFlagged = true,
+    isSaved = true,
     location,
     post,
 }: PostOptionsProps) => {
@@ -86,9 +86,9 @@ const PostOptions = ({
                     <MarkAsUnreadOption/>
                 )}
                 {canCopyPermalink && <CopyLinkOption/>}
-                {canFlag &&
+                {canSave &&
                 <SaveOption
-                    isFlagged={isFlagged}
+                    isSaved={isSaved}
                 />
                 }
                 {canCopyText && <CopyTextOption/>}

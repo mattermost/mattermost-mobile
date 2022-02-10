@@ -8,10 +8,10 @@ import {t} from '@i18n';
 import BaseOption from './base_option';
 
 type CopyTextProps = {
-    isFlagged: boolean;
+    isSaved: boolean;
 }
 
-const SaveOption = ({isFlagged}: CopyTextProps) => {
+const SaveOption = ({isSaved}: CopyTextProps) => {
     const handleUnflagPost = () => {
         //todo:
     };
@@ -21,12 +21,12 @@ const SaveOption = ({isFlagged}: CopyTextProps) => {
     };
 
     const config = useMemo(() => {
-        if (isFlagged) {
+        if (isSaved) {
             return {id: t('mobile.post_info.unflag'), defaultMessage: 'Unsave', onPress: handleUnflagPost};
         }
 
         return {id: t('mobile.post_info.flag'), defaultMessage: 'Save', onPress: handleFlagPost};
-    }, [isFlagged, handleFlagPost, handleUnflagPost]);
+    }, [isSaved, handleFlagPost, handleUnflagPost]);
 
     return (
         <BaseOption
