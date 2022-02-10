@@ -9,9 +9,9 @@ import {removePost} from '@actions/local/post';
 import CompassIcon from '@components/compass_icon';
 import SlideUpPanelItem, {ITEM_HEIGHT} from '@components/slide_up_panel_item';
 import TouchableWithFeedback from '@components/touchable_with_feedback';
-import Navigation from '@constants/navigation';
+import {Events} from '@constants';
 import {useServerUrl} from '@context/server';
-import {showModalOverCurrentContext} from '@screens/navigation';
+import {bottomSheet} from '@screens/navigation';
 
 import type PostModel from '@typings/database/models/servers/post';
 
@@ -46,7 +46,7 @@ const Failed = ({post, theme}: FailedProps) => {
                     <SlideUpPanelItem
                         icon='send-outline'
                         onPress={() => {
-                            DeviceEventEmitter.emit(Navigation.NAVIGATION_CLOSE_MODAL);
+                            DeviceEventEmitter.emit(Events.CLOSE_BOTTOM_SHEET);
                             retryPost(serverUrl, post);
                         }}
                         testID='post.failed.retry'
@@ -56,7 +56,7 @@ const Failed = ({post, theme}: FailedProps) => {
                         destructive={true}
                         icon='close-circle-outline'
                         onPress={() => {
-                            DeviceEventEmitter.emit(Navigation.NAVIGATION_CLOSE_MODAL);
+                            DeviceEventEmitter.emit(Events.CLOSE_BOTTOM_SHEET);
                             removePost(serverUrl, post);
                         }}
                         testID='post.failed.delete'
@@ -66,9 +66,12 @@ const Failed = ({post, theme}: FailedProps) => {
             );
         };
 
-        showModalOverCurrentContext('BottomSheet', {
+        bottomSheet({
+            closeButtonId: 'close-post-failed',
             renderContent,
             snapPoints: [3 * ITEM_HEIGHT, 10],
+            title: intl.formatMessage({id: 'post.options.title', defaultMessage: 'Options'}),
+            theme,
         });
     }, []);
 

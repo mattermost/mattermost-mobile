@@ -5,7 +5,6 @@ import keyMirror from '@utils/key_mirror';
 
 const Navigation = keyMirror({
     NAVIGATE_TO_TAB: null,
-    NAVIGATION_CLOSE_MODAL: null,
     NAVIGATION_HOME: null,
     NAVIGATION_SHOW_OVERLAY: null,
     NAVIGATION_DISMISS_AND_POP_TO_ROOT: null,
