@@ -1,12 +1,14 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback, useState} from 'react';
+import React, {memo, useCallback} from 'react';
 import {View, TouchableWithoutFeedback} from 'react-native';
 
 import Emoji from '@components/emoji';
 import {useTheme} from '@context/theme';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
+
+import {useSelectedReaction} from './reaction_context';
 
 const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     return {
@@ -33,11 +35,11 @@ type ReactionProps = {
     containerSize: number;
 }
 const Reaction = ({onPressReaction, emoji, iconSize, containerSize}: ReactionProps) => {
+    const selectedEmoji = useSelectedReaction();
+    console.log('>>>  selectedEmoji context ', selectedEmoji);
     const theme = useTheme();
-    const [isSelected, setIsSelected] = useState(false);
     const styles = getStyleSheet(theme);
     const handleReactionPressed = useCallback(() => {
-        setIsSelected(true);
         onPressReaction(emoji);
     }, [onPressReaction]);
 
@@ -49,7 +51,7 @@ const Reaction = ({onPressReaction, emoji, iconSize, containerSize}: ReactionPro
             <View
                 style={[
                     styles.reactionContainer,
-                    isSelected ? styles.highlight : null,
+                    selectedEmoji === emoji ? styles.highlight : null,
                     {
                         width: containerSize,
                         height: containerSize,
@@ -66,4 +68,4 @@ const Reaction = ({onPressReaction, emoji, iconSize, containerSize}: ReactionPro
     );
 };
 
-export default Reaction;
+export default memo(Reaction);

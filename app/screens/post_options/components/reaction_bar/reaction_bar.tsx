@@ -1,18 +1,26 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback} from 'react';
+import React, {useCallback, useState} from 'react';
 import {useIntl} from 'react-intl';
-import {DeviceEventEmitter, useWindowDimensions, View} from 'react-native';
+import {useWindowDimensions, View} from 'react-native';
 
 import CompassIcon from '@components/compass_icon';
-import {Navigation, Screens} from '@constants';
-import {LARGE_CONTAINER_SIZE, LARGE_ICON_SIZE, REACTION_PICKER_HEIGHT, SMALL_CONTAINER_SIZE, SMALL_ICON_BREAKPOINT, SMALL_ICON_SIZE} from '@constants/reaction_picker';
+import {Screens} from '@constants';
+import {
+    LARGE_CONTAINER_SIZE,
+    LARGE_ICON_SIZE,
+    REACTION_PICKER_HEIGHT,
+    SMALL_CONTAINER_SIZE,
+    SMALL_ICON_BREAKPOINT,
+    SMALL_ICON_SIZE,
+} from '@constants/reaction_picker';
 import {showModal} from '@screens/navigation';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 
-import PickReaction from './pick_reaction';
-import Reaction from './reaction';
+import PickReaction from './components/pick_reaction';
+import Reaction from './components/reaction';
+import {ReactionProvider} from './components/reaction_context';
 
 type QuickReactionProps = {
     theme: Theme;
@@ -35,17 +43,21 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
 const ReactionBar = ({recentEmojis = [], theme}: QuickReactionProps) => {
     const intl = useIntl();
     const {width} = useWindowDimensions();
+    const [selectedEmoji, setSelectedEmoji] = useState('');
     const isSmallDevice = width < SMALL_ICON_BREAKPOINT;
     const styles = getStyleSheet(theme);
 
     const handleEmojiPress = useCallback((emoji: string) => {
+        setSelectedEmoji(emoji);
         // eslint-disable-next-line no-console
         console.log('>>>  selected this emoji', emoji);
     }, []);
 
     const openEmojiPicker = useCallback(async () => {
-        DeviceEventEmitter.emit(Navigation.NAVIGATION_CLOSE_MODAL);
+        // DeviceEventEmitter.emit(Navigation.NAVIGATION_CLOSE_MODAL);
+        // dismissModal({componentId: Screens.BOTTOM_SHEET});
 
+        //fixme:  if we want to close  the post menu - better listen to the close button id event
         requestAnimationFrame(() => {
             const closeButton = CompassIcon.getImageSourceSync('close', 24, theme.sidebarHeaderTextColor);
             const screen = Screens.EMOJI_PICKER;
@@ -68,19 +80,21 @@ const ReactionBar = ({recentEmojis = [], theme}: QuickReactionProps) => {
         <View
             style={styles.container}
         >
-            {
-                recentEmojis.map((emoji) => {
-                    return (
-                        <Reaction
-                            key={emoji}
-                            onPressReaction={handleEmojiPress}
-                            emoji={emoji}
-                            iconSize={iconSize}
-                            containerSize={containerSize}
-                        />
-                    );
-                })
-            }
+            <ReactionProvider value={selectedEmoji}>
+                {
+                    recentEmojis.map((emoji) => {
+                        return (
+                            <Reaction
+                                key={emoji}
+                                onPressReaction={handleEmojiPress}
+                                emoji={emoji}
+                                iconSize={iconSize}
+                                containerSize={containerSize}
+                            />
+                        );
+                    })
+                }
+            </ReactionProvider>
             <PickReaction
                 openEmojiPicker={openEmojiPicker}
                 theme={theme}
