@@ -25,10 +25,9 @@ type WithReactionsInput = WithDatabaseArgs & {
 }
 
 const withReactions = withObservables(['post'], ({database, post}: WithReactionsInput) => {
-    const currentUserId = database.
-        get<SystemModel>(MM_TABLES.SERVER.SYSTEM).
-        findAndObserve(SYSTEM_IDENTIFIERS.CURRENT_USER_ID).
-        pipe(map(({value}: { value: string }) => value));
+    const currentUserId = database.get<SystemModel>(MM_TABLES.SERVER.SYSTEM).findAndObserve(SYSTEM_IDENTIFIERS.CURRENT_USER_ID).pipe(
+        map(({value}: {value: string}) => value),
+    );
     const currentUser = currentUserId.pipe(
         switchMap((id) => database.get<UserModel>(MM_TABLES.SERVER.USER).findAndObserve(id)),
     );
