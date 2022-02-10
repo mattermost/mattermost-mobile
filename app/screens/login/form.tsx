@@ -52,7 +52,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         borderColor: 'transparent',
     },
     forgotPasswordError: {
-        marginTop: 10,
+        marginTop: 30,
     },
     forgotPasswordTxt: {
         paddingVertical: 10,
