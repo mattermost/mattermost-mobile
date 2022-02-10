@@ -11,7 +11,7 @@ import {getTeammateNameDisplaySetting} from '@helpers/api/preference';
 import {prepareDeleteChannel, prepareMyChannelsForTeam, queryAllMyChannelIds, queryChannelsById, queryMyChannel} from '@queries/servers/channel';
 import {queryPreferencesByCategoryAndName} from '@queries/servers/preference';
 import {prepareCommonSystemValues, PrepareCommonSystemValuesArgs, queryCommonSystemValues, queryCurrentTeamId, setCurrentChannelId} from '@queries/servers/system';
-import {addChannelToTeamHistory, addTeamToTeamHistory, removeChannelFromTeamHistory} from '@queries/servers/team';
+import {addChannelToTeamHistory, addTeamToTeamHistory, queryTeamById, removeChannelFromTeamHistory} from '@queries/servers/team';
 import {queryCurrentUser} from '@queries/servers/user';
 import {dismissAllModalsAndPopToRoot, dismissAllModalsAndPopToScreen} from '@screens/navigation';
 import {isTablet} from '@utils/helpers';
@@ -37,29 +37,39 @@ export const switchToChannel = async (serverUrl: string, channelId: string, team
 
         if (member) {
             const channel: ChannelModel = await member.channel.fetch();
+            if (!channel.teamId && teamId) {
+                const team = await queryTeamById(database, teamId);
+                if (!team) {
+                    return {error: `team with id ${teamId} not found`};
+                }
+            }
+            const toTeamId = channel.teamId || teamId || system.currentTeamId;
             const {operator} = DatabaseManager.serverDatabases[serverUrl];
-            const commonValues: PrepareCommonSystemValuesArgs = {currentChannelId: channelId};
+
             if (isTabletDevice) {
                 // On tablet, the channel is being rendered, by setting the channel to empty first we speed up
                 // the switch by ~3x
                 await setCurrentChannelId(operator, '');
             }
 
-            if (teamId && system.currentTeamId !== teamId) {
-                commonValues.currentTeamId = teamId;
-                const history = await addTeamToTeamHistory(operator, teamId, true);
+            if (system.currentTeamId !== toTeamId) {
+                const history = await addTeamToTeamHistory(operator, toTeamId, true);
                 models.push(...history);
             }
 
-            if ((teamId && system.currentTeamId !== teamId) || (system.currentChannelId !== channelId)) {
+            if ((system.currentTeamId !== toTeamId) || (system.currentChannelId !== channelId)) {
+                const commonValues: PrepareCommonSystemValuesArgs = {
+                    currentChannelId: system.currentChannelId === channelId ? undefined : channelId,
+                    currentTeamId: system.currentTeamId === toTeamId ? undefined : toTeamId,
+                };
                 const common = await prepareCommonSystemValues(operator, commonValues);
                 if (common) {
                     models.push(...common);
                 }
             }
 
-            if (system.currentChannelId !== channelId) {
-                const history = await addChannelToTeamHistory(operator, channel.teamId || system.currentTeamId, channelId, true);
+            if (system.currentChannelId !== channelId || system.currentTeamId !== toTeamId) {
+                const history = await addChannelToTeamHistory(operator, toTeamId, channelId, true);
                 models.push(...history);
             }
 

@@ -1,15 +1,21 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {DeviceEventEmitter} from 'react-native';
+
+import {Navigation} from '@app/constants';
 import {SYSTEM_IDENTIFIERS} from '@app/constants/database';
 import {queryMyChannel} from '@app/queries/servers/channel';
 import {queryCommonSystemValues, queryTeamHistory} from '@app/queries/servers/system';
 import {queryChannelHistory} from '@app/queries/servers/team';
 import DatabaseManager from '@database/manager';
 import ServerDataOperator from '@database/operator/server_data_operator';
-import {dismissAllModalsAndPopToScreen} from '@screens/navigation';
+import {dismissAllModalsAndPopToRoot, dismissAllModalsAndPopToScreen} from '@screens/navigation';
 
 import {switchToChannel} from './channel';
+
+let mockIsTablet: jest.Mock;
+const now = new Date('2020-01-01').getTime();
 
 jest.mock('@screens/navigation', () => {
     const original = jest.requireActual('@screens/navigation');
@@ -20,7 +26,14 @@ jest.mock('@screens/navigation', () => {
     };
 });
 
-const now = new Date('2020-01-01').getTime();
+jest.mock('@utils/helpers', () => {
+    const original = jest.requireActual('@utils/helpers');
+    mockIsTablet = jest.fn(() => false);
+    return {
+        ...original,
+        isTablet: mockIsTablet,
+    };
+});
 
 describe('switchToChannel', () => {
     let operator: ServerDataOperator;
@@ -28,6 +41,9 @@ describe('switchToChannel', () => {
     const serverUrl = 'baseHandler.test.com';
     const channelId = 'id1';
     const teamId = 'tId1';
+    const team: Team = {
+        id: teamId,
+    } as Team;
     const channel: Channel = {
         id: channelId,
         team_id: teamId,
@@ -50,29 +66,59 @@ describe('switchToChannel', () => {
     });
 
     it('handle not found database', async () => {
+        const listenerCallback = jest.fn();
+        const listener = DeviceEventEmitter.addListener(Navigation.NAVIGATION_HOME, listenerCallback);
         const {error} = await switchToChannel('foo', 'channelId');
+        listener.remove();
+
         expect(error).toBeTruthy();
+        expect(dismissAllModalsAndPopToScreen).toHaveBeenCalledTimes(0);
+        expect(dismissAllModalsAndPopToRoot).toHaveBeenCalledTimes(0);
+        expect(listenerCallback).toHaveBeenCalledTimes(0);
     });
 
     it('handle no member', async () => {
+        const listenerCallback = jest.fn();
+        const listener = DeviceEventEmitter.addListener(Navigation.NAVIGATION_HOME, listenerCallback);
         const {models, error} = await switchToChannel(serverUrl, 'channelId');
-        expect(error).toBe(undefined);
+        listener.remove();
+
+        expect(error).toBeUndefined();
         expect(models?.length).toBe(0);
-    });
-
-    it('switch to current channel', async () => {
-        await operator.handleChannel({channels: [channel], prepareRecordsOnly: false});
-        await operator.handleMyChannel({channels: [channel], myChannels: [channelMember], prepareRecordsOnly: false});
-        await operator.handleSystem({systems: [{id: SYSTEM_IDENTIFIERS.CURRENT_TEAM_ID, value: teamId}, {id: SYSTEM_IDENTIFIERS.CURRENT_CHANNEL_ID, value: channelId}], prepareRecordsOnly: false});
-
-        const {models, error} = await switchToChannel(serverUrl, channelId);
 
         const systemValues = await queryCommonSystemValues(operator.database);
         const teamHistory = await queryTeamHistory(operator.database);
         const channelHistory = await queryChannelHistory(operator.database, teamId);
         const member = await queryMyChannel(operator.database, channelId);
 
-        expect(error).toBe(undefined);
+        expect(error).toBeUndefined();
+        expect(systemValues.currentTeamId).toBe('');
+        expect(systemValues.currentChannelId).toBe('');
+        expect(teamHistory.length).toBe(0);
+        expect(channelHistory.length).toBe(0);
+        expect(member?.lastViewedAt).toBe(undefined);
+        expect(dismissAllModalsAndPopToScreen).toHaveBeenCalledTimes(0);
+        expect(dismissAllModalsAndPopToRoot).toHaveBeenCalledTimes(0);
+        expect(listenerCallback).toHaveBeenCalledTimes(0);
+    });
+
+    it('switch to current channel', async () => {
+        await operator.handleTeam({teams: [team], prepareRecordsOnly: false});
+        await operator.handleChannel({channels: [channel], prepareRecordsOnly: false});
+        await operator.handleMyChannel({channels: [channel], myChannels: [channelMember], prepareRecordsOnly: false});
+        await operator.handleSystem({systems: [{id: SYSTEM_IDENTIFIERS.CURRENT_TEAM_ID, value: teamId}, {id: SYSTEM_IDENTIFIERS.CURRENT_CHANNEL_ID, value: channelId}], prepareRecordsOnly: false});
+
+        const listenerCallback = jest.fn();
+        const listener = DeviceEventEmitter.addListener(Navigation.NAVIGATION_HOME, listenerCallback);
+        const {models, error} = await switchToChannel(serverUrl, channelId);
+        listener.remove();
+
+        const systemValues = await queryCommonSystemValues(operator.database);
+        const teamHistory = await queryTeamHistory(operator.database);
+        const channelHistory = await queryChannelHistory(operator.database, teamId);
+        const member = await queryMyChannel(operator.database, channelId);
+
+        expect(error).toBeUndefined();
         expect(models?.length).toBe(1); // Viewed at
         expect(systemValues.currentTeamId).toBe(teamId);
         expect(systemValues.currentChannelId).toBe(channelId);
@@ -80,22 +126,28 @@ describe('switchToChannel', () => {
         expect(channelHistory.length).toBe(0);
         expect(member?.lastViewedAt).toBe(now);
         expect(dismissAllModalsAndPopToScreen).toHaveBeenCalledTimes(1);
+        expect(dismissAllModalsAndPopToRoot).toHaveBeenCalledTimes(0);
+        expect(listenerCallback).toHaveBeenCalledTimes(0);
     });
 
     it('switch to different channel in same team', async () => {
+        await operator.handleTeam({teams: [team], prepareRecordsOnly: false});
         await operator.handleChannel({channels: [channel], prepareRecordsOnly: false});
         await operator.handleMyChannel({channels: [channel], myChannels: [channelMember], prepareRecordsOnly: false});
         await operator.handleSystem({systems: [{id: SYSTEM_IDENTIFIERS.CURRENT_TEAM_ID, value: teamId}, {id: SYSTEM_IDENTIFIERS.CURRENT_CHANNEL_ID, value: 'currentChannelId'}], prepareRecordsOnly: false});
 
+        const listenerCallback = jest.fn();
+        const listener = DeviceEventEmitter.addListener(Navigation.NAVIGATION_HOME, listenerCallback);
         const {models, error} = await switchToChannel(serverUrl, channelId);
+        listener.remove();
 
         const systemValues = await queryCommonSystemValues(operator.database);
         const teamHistory = await queryTeamHistory(operator.database);
         const channelHistory = await queryChannelHistory(operator.database, teamId);
         const member = await queryMyChannel(operator.database, channelId);
 
-        expect(error).toBe(undefined);
-        expect(models?.length).toBe(3); // Viewed at, channel history and currentUserId
+        expect(error).toBeUndefined();
+        expect(models?.length).toBe(3); // Viewed at, channel history and currentChannelId
         expect(systemValues.currentTeamId).toBe(teamId);
         expect(systemValues.currentChannelId).toBe(channelId);
         expect(teamHistory.length).toBe(0);
@@ -103,22 +155,28 @@ describe('switchToChannel', () => {
         expect(channelHistory[0]).toBe(channelId);
         expect(member?.lastViewedAt).toBe(now);
         expect(dismissAllModalsAndPopToScreen).toHaveBeenCalledTimes(1);
+        expect(dismissAllModalsAndPopToRoot).toHaveBeenCalledTimes(0);
+        expect(listenerCallback).toHaveBeenCalledTimes(0);
     });
 
     it('switch to different channel in different team', async () => {
+        await operator.handleTeam({teams: [team], prepareRecordsOnly: false});
         await operator.handleChannel({channels: [channel], prepareRecordsOnly: false});
         await operator.handleMyChannel({channels: [channel], myChannels: [channelMember], prepareRecordsOnly: false});
         await operator.handleSystem({systems: [{id: SYSTEM_IDENTIFIERS.CURRENT_TEAM_ID, value: 'currentTeamId'}, {id: SYSTEM_IDENTIFIERS.CURRENT_CHANNEL_ID, value: 'currentChannelId'}], prepareRecordsOnly: false});
 
+        const listenerCallback = jest.fn();
+        const listener = DeviceEventEmitter.addListener(Navigation.NAVIGATION_HOME, listenerCallback);
         const {models, error} = await switchToChannel(serverUrl, channelId, teamId);
+        listener.remove();
 
         const systemValues = await queryCommonSystemValues(operator.database);
         const teamHistory = await queryTeamHistory(operator.database);
         const channelHistory = await queryChannelHistory(operator.database, teamId);
         const member = await queryMyChannel(operator.database, channelId);
 
-        expect(error).toBe(undefined);
-        expect(models?.length).toBe(5); // Viewed at, channel history, team history, currentTeamId and currentUserId
+        expect(error).toBeUndefined();
+        expect(models?.length).toBe(5); // Viewed at, channel history, team history, currentTeamId and currentChannelId
         expect(systemValues.currentTeamId).toBe(teamId);
         expect(systemValues.currentChannelId).toBe(channelId);
         expect(teamHistory.length).toBe(1);
@@ -127,66 +185,284 @@ describe('switchToChannel', () => {
         expect(channelHistory[0]).toBe(channelId);
         expect(member?.lastViewedAt).toBe(now);
         expect(dismissAllModalsAndPopToScreen).toHaveBeenCalledTimes(1);
+        expect(dismissAllModalsAndPopToRoot).toHaveBeenCalledTimes(0);
+        expect(listenerCallback).toHaveBeenCalledTimes(0);
+    });
+
+    it('switch to same channel in different team', async () => {
+        await operator.handleTeam({teams: [team], prepareRecordsOnly: false});
+        const tChannel = {...channel, team_id: ''};
+        await operator.handleChannel({channels: [tChannel], prepareRecordsOnly: false});
+        await operator.handleMyChannel({channels: [tChannel], myChannels: [channelMember], prepareRecordsOnly: false});
+        await operator.handleSystem({systems: [{id: SYSTEM_IDENTIFIERS.CURRENT_TEAM_ID, value: 'currentTeamId'}, {id: SYSTEM_IDENTIFIERS.CURRENT_CHANNEL_ID, value: channelId}], prepareRecordsOnly: false});
+
+        const listenerCallback = jest.fn();
+        const listener = DeviceEventEmitter.addListener(Navigation.NAVIGATION_HOME, listenerCallback);
+        const {models, error} = await switchToChannel(serverUrl, channelId, teamId);
+        listener.remove();
+
+        const systemValues = await queryCommonSystemValues(operator.database);
+        const teamHistory = await queryTeamHistory(operator.database);
+        const channelHistory = await queryChannelHistory(operator.database, teamId);
+        const member = await queryMyChannel(operator.database, channelId);
+
+        expect(error).toBeUndefined();
+        expect(models?.length).toBe(4); // Viewed at, channel history, team history and currentTeamId
+        expect(systemValues.currentTeamId).toBe(teamId);
+        expect(systemValues.currentChannelId).toBe(channelId);
+        expect(teamHistory.length).toBe(1);
+        expect(teamHistory[0]).toBe(teamId);
+        expect(channelHistory.length).toBe(1);
+        expect(channelHistory[0]).toBe(channelId);
+        expect(member?.lastViewedAt).toBe(now);
+        expect(dismissAllModalsAndPopToScreen).toHaveBeenCalledTimes(1);
+        expect(dismissAllModalsAndPopToRoot).toHaveBeenCalledTimes(0);
+        expect(listenerCallback).toHaveBeenCalledTimes(0);
     });
 
     it('switch to dm channel in different team', async () => {
+        await operator.handleTeam({teams: [team], prepareRecordsOnly: false});
         const tChannel = {...channel, team_id: ''};
         await operator.handleChannel({channels: [tChannel], prepareRecordsOnly: false});
         await operator.handleMyChannel({channels: [tChannel], myChannels: [channelMember], prepareRecordsOnly: false});
         await operator.handleSystem({systems: [{id: SYSTEM_IDENTIFIERS.CURRENT_TEAM_ID, value: 'currentTeamId'}, {id: SYSTEM_IDENTIFIERS.CURRENT_CHANNEL_ID, value: 'currentChannelId'}], prepareRecordsOnly: false});
 
+        const listenerCallback = jest.fn();
+        const listener = DeviceEventEmitter.addListener(Navigation.NAVIGATION_HOME, listenerCallback);
         const {models, error} = await switchToChannel(serverUrl, channelId, teamId);
+        listener.remove();
 
         const systemValues = await queryCommonSystemValues(operator.database);
         const teamHistory = await queryTeamHistory(operator.database);
         const channelHistory = await queryChannelHistory(operator.database, teamId);
         const member = await queryMyChannel(operator.database, channelId);
 
-        expect(error).toBe(undefined);
-        expect(models?.length).toBe(5); // Viewed at, channel history, team history, currentTeamId and currentUserId
+        expect(error).toBeUndefined();
+        expect(models?.length).toBe(5); // Viewed at, channel history, team history, currentTeamId and currentChannelId
         expect(systemValues.currentTeamId).toBe(teamId);
         expect(systemValues.currentChannelId).toBe(channelId);
         expect(teamHistory.length).toBe(1);
         expect(teamHistory[0]).toBe(teamId);
-        expect(channelHistory.length).toBe(1); // Currently errors since it is being stored in the current team history and not the destination history
+        expect(channelHistory.length).toBe(1);
         expect(channelHistory[0]).toBe(channelId);
         expect(member?.lastViewedAt).toBe(now);
         expect(dismissAllModalsAndPopToScreen).toHaveBeenCalledTimes(1);
+        expect(dismissAllModalsAndPopToRoot).toHaveBeenCalledTimes(0);
+        expect(listenerCallback).toHaveBeenCalledTimes(0);
     });
 
     it('switch to a channel from different team without passing the teamId', async () => {
-        // TODO: Why do we need to pass the team id?
-    });
-
-    it('prepare records only does not change the database', async () => {
-        // This test may not be possible, since not batching the models will result in errors,
-        // and querying the models without batching will either way return the modified models.
-        // Unless we can cancel the models or somehow we can access the "original models", it is
-        // not testable.
-        const currentTeamId = 'ctid';
-        const currentChannelId = 'ccid';
+        await operator.handleTeam({teams: [team], prepareRecordsOnly: false});
         await operator.handleChannel({channels: [channel], prepareRecordsOnly: false});
         await operator.handleMyChannel({channels: [channel], myChannels: [channelMember], prepareRecordsOnly: false});
-        await operator.handleSystem({systems: [{id: SYSTEM_IDENTIFIERS.CURRENT_TEAM_ID, value: currentTeamId}, {id: SYSTEM_IDENTIFIERS.CURRENT_CHANNEL_ID, value: currentChannelId}], prepareRecordsOnly: false});
+        await operator.handleSystem({systems: [{id: SYSTEM_IDENTIFIERS.CURRENT_TEAM_ID, value: 'currentTeamId'}, {id: SYSTEM_IDENTIFIERS.CURRENT_CHANNEL_ID, value: 'currentChannelId'}], prepareRecordsOnly: false});
 
-        const {models, error} = await switchToChannel(serverUrl, channelId, teamId, true);
+        const listenerCallback = jest.fn();
+        const listener = DeviceEventEmitter.addListener(Navigation.NAVIGATION_HOME, listenerCallback);
+        const {models, error} = await switchToChannel(serverUrl, channelId);
+        listener.remove();
 
         const systemValues = await queryCommonSystemValues(operator.database);
         const teamHistory = await queryTeamHistory(operator.database);
         const channelHistory = await queryChannelHistory(operator.database, teamId);
         const member = await queryMyChannel(operator.database, channelId);
 
-        expect(error).toBe(undefined);
-        expect(models?.length).toBe(5); // Viewed at, channel history, team history, currentTeamId and currentUserId
+        expect(error).toBeUndefined();
+        expect(models?.length).toBe(5); // Viewed at, channel history, team history, currentTeamId and currentChannelId
+        expect(systemValues.currentTeamId).toBe(teamId);
+        expect(systemValues.currentChannelId).toBe(channelId);
+        expect(teamHistory.length).toBe(1);
+        expect(teamHistory[0]).toBe(teamId);
+        expect(channelHistory.length).toBe(1);
+        expect(channelHistory[0]).toBe(channelId);
+        expect(member?.lastViewedAt).toBe(now);
+        expect(dismissAllModalsAndPopToScreen).toHaveBeenCalledTimes(1);
+        expect(dismissAllModalsAndPopToRoot).toHaveBeenCalledTimes(0);
+        expect(listenerCallback).toHaveBeenCalledTimes(0);
+    });
+
+    it('switch to a channel from the same team without passing a teamId', async () => {
+        await operator.handleTeam({teams: [team], prepareRecordsOnly: false});
+        await operator.handleChannel({channels: [channel], prepareRecordsOnly: false});
+        await operator.handleMyChannel({channels: [channel], myChannels: [channelMember], prepareRecordsOnly: false});
+        await operator.handleSystem({systems: [{id: SYSTEM_IDENTIFIERS.CURRENT_TEAM_ID, value: teamId}, {id: SYSTEM_IDENTIFIERS.CURRENT_CHANNEL_ID, value: 'currentChannelId'}], prepareRecordsOnly: false});
+
+        const listenerCallback = jest.fn();
+        const listener = DeviceEventEmitter.addListener(Navigation.NAVIGATION_HOME, listenerCallback);
+        const {models, error} = await switchToChannel(serverUrl, channelId);
+        listener.remove();
+
+        const systemValues = await queryCommonSystemValues(operator.database);
+        const teamHistory = await queryTeamHistory(operator.database);
+        const channelHistory = await queryChannelHistory(operator.database, teamId);
+        const member = await queryMyChannel(operator.database, channelId);
+
+        expect(error).toBeUndefined();
+        expect(models?.length).toBe(3); // Viewed at, channel history and currentChannelId
+        expect(systemValues.currentTeamId).toBe(teamId);
+        expect(systemValues.currentChannelId).toBe(channelId);
+        expect(teamHistory.length).toBe(0);
+        expect(channelHistory.length).toBe(1);
+        expect(channelHistory[0]).toBe(channelId);
+        expect(member?.lastViewedAt).toBe(now);
+        expect(dismissAllModalsAndPopToScreen).toHaveBeenCalledTimes(1);
+        expect(dismissAllModalsAndPopToRoot).toHaveBeenCalledTimes(0);
+        expect(listenerCallback).toHaveBeenCalledTimes(0);
+    });
+
+    it('switch to a DM without passing the teamId', async () => {
+        await operator.handleTeam({teams: [team], prepareRecordsOnly: false});
+        const tChannel = {...channel, team_id: ''};
+        await operator.handleChannel({channels: [tChannel], prepareRecordsOnly: false});
+        await operator.handleMyChannel({channels: [tChannel], myChannels: [channelMember], prepareRecordsOnly: false});
+        await operator.handleSystem({systems: [{id: SYSTEM_IDENTIFIERS.CURRENT_TEAM_ID, value: teamId}, {id: SYSTEM_IDENTIFIERS.CURRENT_CHANNEL_ID, value: 'currentChannelId'}], prepareRecordsOnly: false});
+
+        const listenerCallback = jest.fn();
+        const listener = DeviceEventEmitter.addListener(Navigation.NAVIGATION_HOME, listenerCallback);
+        const {models, error} = await switchToChannel(serverUrl, channelId);
+        listener.remove();
+
+        const systemValues = await queryCommonSystemValues(operator.database);
+        const teamHistory = await queryTeamHistory(operator.database);
+        const channelHistory = await queryChannelHistory(operator.database, teamId);
+        const member = await queryMyChannel(operator.database, channelId);
+
+        expect(error).toBeUndefined();
+        expect(models?.length).toBe(3); // Viewed at, channel history and currentChannelId
+        expect(systemValues.currentTeamId).toBe(teamId);
+        expect(systemValues.currentChannelId).toBe(channelId);
+        expect(teamHistory.length).toBe(0);
+        expect(channelHistory.length).toBe(1); // Currently errors since it is being stored in the current team history and not the destination history
+        expect(channelHistory[0]).toBe(channelId);
+        expect(member?.lastViewedAt).toBe(now);
+        expect(dismissAllModalsAndPopToScreen).toHaveBeenCalledTimes(1);
+        expect(dismissAllModalsAndPopToRoot).toHaveBeenCalledTimes(0);
+        expect(listenerCallback).toHaveBeenCalledTimes(0);
+    });
+
+    it('switch to a channel passing a wrong teamId', async () => {
+        await operator.handleTeam({teams: [team], prepareRecordsOnly: false});
+        await operator.handleChannel({channels: [channel], prepareRecordsOnly: false});
+        await operator.handleMyChannel({channels: [channel], myChannels: [channelMember], prepareRecordsOnly: false});
+        await operator.handleSystem({systems: [{id: SYSTEM_IDENTIFIERS.CURRENT_TEAM_ID, value: 'currentTeamId'}, {id: SYSTEM_IDENTIFIERS.CURRENT_CHANNEL_ID, value: 'currentChannelId'}], prepareRecordsOnly: false});
+
+        const listenerCallback = jest.fn();
+        const listener = DeviceEventEmitter.addListener(Navigation.NAVIGATION_HOME, listenerCallback);
+        const {models, error} = await switchToChannel(serverUrl, channelId, 'someTeamId');
+        listener.remove();
+
+        const systemValues = await queryCommonSystemValues(operator.database);
+        const teamHistory = await queryTeamHistory(operator.database);
+        const channelHistory = await queryChannelHistory(operator.database, teamId);
+        const member = await queryMyChannel(operator.database, channelId);
+
+        expect(error).toBeUndefined();
+        expect(models?.length).toBe(5); // Viewed at, channel history, team history, currentTeamId and currentChannelId
+        expect(systemValues.currentTeamId).toBe(teamId);
+        expect(systemValues.currentChannelId).toBe(channelId);
+        expect(teamHistory.length).toBe(1);
+        expect(teamHistory[0]).toBe(teamId);
+        expect(channelHistory.length).toBe(1);
+        expect(channelHistory[0]).toBe(channelId);
+        expect(member?.lastViewedAt).toBe(now);
+        expect(dismissAllModalsAndPopToScreen).toHaveBeenCalledTimes(1);
+        expect(dismissAllModalsAndPopToRoot).toHaveBeenCalledTimes(0);
+        expect(listenerCallback).toHaveBeenCalledTimes(0);
+    });
+
+    it('switch to a DM passing a non-existing teamId', async () => {
+        const currentTeamId = 'ctid';
+        const currentChannelId = 'ccid';
+
+        await operator.handleTeam({teams: [team], prepareRecordsOnly: false});
+        const tChannel = {...channel, team_id: ''};
+        await operator.handleChannel({channels: [tChannel], prepareRecordsOnly: false});
+        await operator.handleMyChannel({channels: [tChannel], myChannels: [channelMember], prepareRecordsOnly: false});
+        await operator.handleSystem({systems: [{id: SYSTEM_IDENTIFIERS.CURRENT_TEAM_ID, value: currentTeamId}, {id: SYSTEM_IDENTIFIERS.CURRENT_CHANNEL_ID, value: currentChannelId}], prepareRecordsOnly: false});
+
+        const listenerCallback = jest.fn();
+        const listener = DeviceEventEmitter.addListener(Navigation.NAVIGATION_HOME, listenerCallback);
+        const {error} = await switchToChannel(serverUrl, channelId, 'someTeamId');
+        listener.remove();
+
+        const systemValues = await queryCommonSystemValues(operator.database);
+        const teamHistory = await queryTeamHistory(operator.database);
+        const channelHistory = await queryChannelHistory(operator.database, teamId);
+        const member = await queryMyChannel(operator.database, channelId);
+
+        expect(error).toBeTruthy();
         expect(systemValues.currentTeamId).toBe(currentTeamId);
         expect(systemValues.currentChannelId).toBe(currentChannelId);
         expect(teamHistory.length).toBe(0);
         expect(channelHistory.length).toBe(0);
-        expect(member?.lastViewedAt).toBe(undefined);
+        expect(member?.lastViewedAt).toBe(0);
+        expect(dismissAllModalsAndPopToScreen).toHaveBeenCalledTimes(0);
+        expect(dismissAllModalsAndPopToRoot).toHaveBeenCalledTimes(0);
+        expect(listenerCallback).toHaveBeenCalledTimes(0);
+    });
+
+    it('prepare records only does not change the database', async () => {
+        const currentTeamId = 'ctid';
+        const currentChannelId = 'ccid';
+
+        await operator.handleChannel({channels: [channel], prepareRecordsOnly: false});
+        await operator.handleMyChannel({channels: [channel], myChannels: [channelMember], prepareRecordsOnly: false});
+        await operator.handleSystem({systems: [{id: SYSTEM_IDENTIFIERS.CURRENT_TEAM_ID, value: currentTeamId}, {id: SYSTEM_IDENTIFIERS.CURRENT_CHANNEL_ID, value: currentChannelId}], prepareRecordsOnly: false});
+
+        const listenerCallback = jest.fn();
+        const listener = DeviceEventEmitter.addListener(Navigation.NAVIGATION_HOME, listenerCallback);
+        const {models, error} = await switchToChannel(serverUrl, channelId, teamId, true);
+        for (const model of models!) {
+            model.cancelPrepareUpdate();
+        }
+        listener.remove();
+
+        const systemValues = await queryCommonSystemValues(operator.database);
+        const teamHistory = await queryTeamHistory(operator.database);
+        const channelHistory = await queryChannelHistory(operator.database, teamId);
+        const member = await queryMyChannel(operator.database, channelId);
+
+        expect(error).toBeUndefined();
+        expect(models?.length).toBe(5); // Viewed at, channel history, team history, currentTeamId and currentChannelId
+        expect(systemValues.currentTeamId).toBe(currentTeamId);
+        expect(systemValues.currentChannelId).toBe(currentChannelId);
+        expect(teamHistory.length).toBe(0);
+        expect(channelHistory.length).toBe(0);
+        expect(member?.lastViewedAt).toBe(0);
         expect(dismissAllModalsAndPopToScreen).toHaveBeenCalledTimes(1);
+        expect(dismissAllModalsAndPopToRoot).toHaveBeenCalledTimes(0);
+        expect(listenerCallback).toHaveBeenCalledTimes(0);
     });
 
     it('test behaviour when it is a tablet', async () => {
-        // TODO
+        mockIsTablet.mockImplementationOnce(() => true);
+
+        await operator.handleTeam({teams: [team], prepareRecordsOnly: false});
+        await operator.handleChannel({channels: [channel], prepareRecordsOnly: false});
+        await operator.handleMyChannel({channels: [channel], myChannels: [channelMember], prepareRecordsOnly: false});
+        await operator.handleSystem({systems: [{id: SYSTEM_IDENTIFIERS.CURRENT_TEAM_ID, value: 'currentTeamId'}, {id: SYSTEM_IDENTIFIERS.CURRENT_CHANNEL_ID, value: 'currentChannelId'}], prepareRecordsOnly: false});
+
+        const listenerCallback = jest.fn();
+        const listener = DeviceEventEmitter.addListener(Navigation.NAVIGATION_HOME, listenerCallback);
+        const {models, error} = await switchToChannel(serverUrl, channelId, teamId);
+        listener.remove();
+
+        const systemValues = await queryCommonSystemValues(operator.database);
+        const teamHistory = await queryTeamHistory(operator.database);
+        const channelHistory = await queryChannelHistory(operator.database, teamId);
+        const member = await queryMyChannel(operator.database, channelId);
+
+        expect(error).toBeUndefined();
+        expect(models?.length).toBe(5); // Viewed at, channel history, team history, currentTeamId and currentChannelId
+        expect(systemValues.currentTeamId).toBe(teamId);
+        expect(systemValues.currentChannelId).toBe(channelId);
+        expect(teamHistory.length).toBe(1);
+        expect(teamHistory[0]).toBe(teamId);
+        expect(channelHistory.length).toBe(1);
+        expect(channelHistory[0]).toBe(channelId);
+        expect(member?.lastViewedAt).toBe(now);
+        expect(dismissAllModalsAndPopToScreen).toHaveBeenCalledTimes(0);
+        expect(dismissAllModalsAndPopToRoot).toHaveBeenCalledTimes(1);
+        expect(listenerCallback).toHaveBeenCalledTimes(1);
     });
 });
