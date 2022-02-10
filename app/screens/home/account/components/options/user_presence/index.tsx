@@ -6,7 +6,7 @@ import {useIntl} from 'react-intl';
 import {DeviceEventEmitter, TextStyle} from 'react-native';
 
 import {setStatus} from '@actions/remote/user';
-import DrawerItem from '@components/drawer_item';
+import MenuItem from '@components/menu_item';
 import SlideUpPanelItem, {ITEM_HEIGHT} from '@components/slide_up_panel_item';
 import StatusLabel from '@components/status_label';
 import UserStatusIndicator from '@components/user_status';
@@ -116,7 +116,7 @@ const UserStatus = ({currentUser, style, theme}: Props) => {
     }, []);
 
     return (
-        <DrawerItem
+        <MenuItem
             testID='account.status.action'
             labelComponent={
                 <StatusLabel

@@ -38,13 +38,16 @@ exports[`DrawerItem should match snapshot 1`] = `
     >
       <View
         style={
-          Object {
-            "alignItems": "center",
-            "height": 50,
-            "justifyContent": "center",
-            "marginLeft": 5,
-            "width": 45,
-          }
+          Array [
+            Object {
+              "alignItems": "center",
+              "height": 50,
+              "justifyContent": "center",
+              "marginLeft": 5,
+              "width": 45,
+            },
+            undefined,
+          ]
         }
       >
         <Icon
@@ -153,13 +156,16 @@ exports[`DrawerItem should match snapshot without separator and centered false 1
     >
       <View
         style={
-          Object {
-            "alignItems": "center",
-            "height": 50,
-            "justifyContent": "center",
-            "marginLeft": 5,
-            "width": 45,
-          }
+          Array [
+            Object {
+              "alignItems": "center",
+              "height": 50,
+              "justifyContent": "center",
+              "marginLeft": 5,
+              "width": 45,
+            },
+            undefined,
+          ]
         }
       >
         <Icon

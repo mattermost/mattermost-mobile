@@ -4,9 +4,11 @@
 import React, {ReactNode, useMemo, useRef} from 'react';
 import {useIntl} from 'react-intl';
 import {DeviceEventEmitter, Keyboard, Platform, StyleProp, View, ViewStyle} from 'react-native';
+import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import {showPermalink} from '@actions/local/permalink';
 import {removePost} from '@actions/local/post';
+import {ITEM_HEIGHT} from '@app/components/menu_item';
 import SystemAvatar from '@components/system_avatar';
 import SystemHeader from '@components/system_header';
 import TouchableWithFeedback from '@components/touchable_with_feedback';
@@ -104,6 +106,7 @@ const Post = ({
 }: PostProps) => {
     const pressDetected = useRef(false);
     const intl = useIntl();
+    const insets = useSafeAreaInsets();
     const serverUrl = useServerUrl();
     const theme = useTheme();
     const isTablet = useIsTablet();
@@ -172,21 +175,25 @@ const Post = ({
             />
         );
 
-        const OPTION_HEIGHT = 48;
-        const countOptions = 11; //fixme:  this value will vary according to the number of permissions for each option
         const title = isTablet ? intl.formatMessage({id: 'post.options.title', defaultMessage: 'Options'}) : '';
 
         Keyboard.dismiss();
+        let initialSnapIndex = 1;
+        const snapPoints = ['90%', '65%', 10];
 
-        const postOptionsRequest = requestAnimationFrame(() => {
-            bottomSheet({
-                closeButtonId: 'close-post-options',
-                renderContent,
-                snapPoints: [(countOptions * OPTION_HEIGHT), 10],
-                title,
-                theme,
-            });
-            cancelAnimationFrame(postOptionsRequest);
+        if (isSystemPost && canDelete) {
+            snapPoints.splice(0, 1);
+            snapPoints[0] = (ITEM_HEIGHT * 2) + insets.bottom;
+            initialSnapIndex = 0;
+        }
+
+        bottomSheet({
+            closeButtonId: 'close-post-options',
+            renderContent,
+            snapPoints,
+            initialSnapIndex,
+            title,
+            theme,
         });
     };
 

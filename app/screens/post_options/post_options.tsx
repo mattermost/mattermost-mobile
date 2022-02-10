@@ -76,33 +76,28 @@ const PostOptions = ({
     const shouldRenderFollow = !(location !== Screens.CHANNEL || !thread);
 
     return (
-        <View
-            style={styles.container}
-        >
+        <View style={styles.container}>
             {canAddReaction && <ReactionBar theme={theme}/>}
-            <View style={{marginLeft: -5}}>
-                {canReply && <ReplyOption/>}
-                {shouldRenderFollow &&
-                    <FollowThreadOption
-                        location={location}
-                        thread={thread}
-                    />
-                }
-                {canMarkAsUnread && !isSystemMessage(post) && (
-                    <MarkAsUnreadOption/>
-                )}
-                {canCopyPermalink && <CopyLinkOption/>}
-                {canSave &&
-                    <SaveOption
-                        isSaved={isSaved}
-                    />
-                }
-                {canCopyText && <CopyTextOption/>}
-                {canPin && <PinChannelOption isPostPinned={post.isPinned}/>}
-                {shouldRenderEdit && <EditOption/>}
-                {canDelete && <DeletePostOption/>}
-            </View>
-
+            {canReply && <ReplyOption/>}
+            {shouldRenderFollow &&
+                <FollowThreadOption
+                    location={location}
+                    thread={thread}
+                />
+            }
+            {canMarkAsUnread && !isSystemMessage(post) && (
+                <MarkAsUnreadOption/>
+            )}
+            {canCopyPermalink && <CopyLinkOption/>}
+            {canSave &&
+                <SaveOption
+                    isSaved={isSaved}
+                />
+            }
+            {canCopyText && <CopyTextOption/>}
+            {canPin && <PinChannelOption isPostPinned={post.isPinned}/>}
+            {shouldRenderEdit && <EditOption/>}
+            {canDelete && <DeletePostOption/>}
         </View>
     );
 };

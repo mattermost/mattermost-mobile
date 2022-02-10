@@ -4,8 +4,8 @@
 import React, {useMemo} from 'react';
 import {StyleSheet} from 'react-native';
 
-import DrawerItem from '@components/drawer_item';
 import FormattedText from '@components/formatted_text';
+import MenuItem from '@components/menu_item';
 import {useTheme} from '@context/theme';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
@@ -17,6 +17,9 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     label: {
         color: theme.centerChannelColor,
         ...typography('Body', 200),
+    },
+    iconContainerStyle: {
+        marginLeft: 0,
     },
 }));
 
@@ -48,7 +51,7 @@ const BaseOption = ({
     }, [theme, isDestructive, styles]);
 
     return (
-        <DrawerItem
+        <MenuItem
             testID={optionType}
             labelComponent={
                 <FormattedText
@@ -57,6 +60,7 @@ const BaseOption = ({
                     style={labelStyles}
                 />
             }
+            iconContainerStyle={styles.iconContainerStyle}
             iconName={iconName}
             onPress={onPress}
             separator={false}

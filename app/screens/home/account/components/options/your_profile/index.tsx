@@ -5,8 +5,8 @@ import React, {useCallback} from 'react';
 import {useIntl} from 'react-intl';
 import {DeviceEventEmitter, TextStyle} from 'react-native';
 
-import DrawerItem from '@components/drawer_item';
 import FormattedText from '@components/formatted_text';
+import MenuItem from '@components/menu_item';
 import {Events, Screens} from '@constants';
 import {ACCOUNT_OUTLINE_IMAGE} from '@constants/profile';
 import {showModal} from '@screens/navigation';
@@ -32,7 +32,7 @@ const YourProfile = ({isTablet, style, theme}: Props) => {
     }), [isTablet, theme]);
 
     return (
-        <DrawerItem
+        <MenuItem
             testID='account.your_profile.action'
             labelComponent={
                 <FormattedText

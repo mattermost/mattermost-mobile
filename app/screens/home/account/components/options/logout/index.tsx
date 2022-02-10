@@ -5,8 +5,8 @@ import React, {useCallback, useEffect, useState} from 'react';
 import {TextStyle, View} from 'react-native';
 
 import {logout} from '@actions/remote/session';
-import DrawerItem from '@components/drawer_item';
 import FormattedText from '@components/formatted_text';
+import MenuItem from '@components/menu_item';
 import {useServerUrl} from '@context/server';
 import DatabaseManager from '@database/manager';
 import {queryServer} from '@queries/app/servers';
@@ -52,7 +52,7 @@ const Settings = ({style, theme}: Props) => {
     }, [serverUrl]);
 
     return (
-        <DrawerItem
+        <MenuItem
             testID='account.logout.action'
             labelComponent={(
                 <View>

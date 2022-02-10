@@ -2,17 +2,20 @@
 // See LICENSE.txt for license information.
 
 import React, {ReactNode} from 'react';
-import {Platform, View} from 'react-native';
+import {Platform, StyleProp, View, ViewStyle} from 'react-native';
 
 import CompassIcon from '@components/compass_icon';
 import FormattedText from '@components/formatted_text';
 import TouchableWithFeedback from '@components/touchable_with_feedback';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
-type DrawerItemProps = {
+export const ITEM_HEIGHT = 50;
+
+type MenuItemProps = {
     centered?: boolean;
     defaultMessage?: string;
     i18nId?: string;
+    iconContainerStyle?: StyleProp<ViewStyle>;
     iconName?: string;
     isDestructor?: boolean;
     labelComponent?: ReactNode;
@@ -23,11 +26,12 @@ type DrawerItemProps = {
     theme: Theme;
 };
 
-const DrawerItem = (props: DrawerItemProps) => {
+const MenuItem = (props: MenuItemProps) => {
     const {
         centered,
         defaultMessage = '',
         i18nId,
+        iconContainerStyle,
         iconName,
         isDestructor = false,
         labelComponent,
@@ -87,7 +91,7 @@ const DrawerItem = (props: DrawerItemProps) => {
         >
             <View style={style.container}>
                 {icon && (
-                    <View style={style.iconContainer}>
+                    <View style={[style.iconContainer, iconContainerStyle]}>
                         {icon}
                     </View>
                 )}
@@ -107,11 +111,11 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         container: {
             backgroundColor: theme.centerChannelBg,
             flexDirection: 'row',
-            minHeight: 50,
+            minHeight: ITEM_HEIGHT,
         },
         iconContainer: {
             width: 45,
-            height: 50,
+            height: ITEM_HEIGHT,
             alignItems: 'center',
             justifyContent: 'center',
             marginLeft: 5,
@@ -146,4 +150,4 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     };
 });
 
-export default DrawerItem;
+export default MenuItem;
