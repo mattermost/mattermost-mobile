@@ -16,6 +16,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             backgroundColor: changeOpacity(theme.centerChannelColor, 0.04),
             alignItems: 'center',
             justifyContent: 'center',
+            borderRadius: 4,
         },
         icon: {
             ...typography('Body', 1000),
@@ -27,11 +28,17 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
 type PickReactionProps = {
     openEmojiPicker: () => void;
     theme: Theme;
+    width: number;
+    height: number;
 }
-const PickReaction = ({openEmojiPicker, theme}: PickReactionProps) => {
+const PickReaction = ({openEmojiPicker, theme, width, height}: PickReactionProps) => {
     const styles = getStyleSheet(theme);
     return (
-        <View style={styles.container}>
+        <View
+            style={[styles.container, {
+                width, height,
+            }]}
+        >
             <CompassIcon
                 onPress={openEmojiPicker}
                 name='emoticon-plus-outline'

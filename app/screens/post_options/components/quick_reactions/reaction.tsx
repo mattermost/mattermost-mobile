@@ -1,18 +1,25 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback} from 'react';
+import React, {useCallback, useState} from 'react';
+import {View, TouchableWithoutFeedback} from 'react-native';
 
-import Emoji from '@components/emoji_picker/sections/touchable_emoji';
+import Emoji from '@components/emoji';
 import {useTheme} from '@context/theme';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     return {
-        container: {
-            height: 50,
-            width: 50,
+        emoji: {
+            color: '#000',
+            fontWeight: 'bold',
+        },
+        highlight: {
+            backgroundColor: changeOpacity(theme.linkColor, 0.1),
+        },
+        reactionContainer: {
             backgroundColor: changeOpacity(theme.centerChannelColor, 0.04),
+            borderRadius: 4,
             alignItems: 'center',
             justifyContent: 'center',
         },
@@ -22,21 +29,40 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
 type ReactionProps = {
     onPressReaction: (emoji: string) => void;
     emoji: string;
+    iconSize: number;
+    containerSize: number;
 }
-const Reaction = ({onPressReaction, emoji}: ReactionProps) => {
+const Reaction = ({onPressReaction, emoji, iconSize, containerSize}: ReactionProps) => {
     const theme = useTheme();
+    const [isSelected, setIsSelected] = useState(false);
     const styles = getStyleSheet(theme);
     const handleReactionPressed = useCallback(() => {
+        setIsSelected(true);
         onPressReaction(emoji);
     }, [onPressReaction]);
 
     return (
-        <Emoji
-            style={styles.container}
-            name={emoji}
-            size={32}
-            onEmojiPress={handleReactionPressed}
-        />
+        <TouchableWithoutFeedback
+            key={emoji}
+            onPress={handleReactionPressed}
+        >
+            <View
+                style={[
+                    styles.reactionContainer,
+                    isSelected ? styles.highlight : null,
+                    {
+                        width: containerSize,
+                        height: containerSize,
+                    },
+                ]}
+            >
+                <Emoji
+                    emojiName={emoji}
+                    textStyle={styles.emoji}
+                    size={iconSize}
+                />
+            </View>
+        </TouchableWithoutFeedback>
     );
 };
 
