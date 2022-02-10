@@ -11,8 +11,6 @@ import {typography} from '@utils/typography';
 const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     return {
         container: {
-            height: 50,
-            width: 50,
             backgroundColor: changeOpacity(theme.centerChannelColor, 0.04),
             alignItems: 'center',
             justifyContent: 'center',

@@ -163,14 +163,14 @@ const Post = ({
             return;
         }
 
-        const OPTION_HEIGHT = 50;
+        const OPTION_HEIGHT = 48;
         const passProps = {
             location,
             post,
             showAddReaction,
             closeButtonId: 'close-post-options',
             initialSnapIndex: 0,
-            snapPoints: [12 * OPTION_HEIGHT, 10],
+            snapPoints: [11 * OPTION_HEIGHT, 10],
             title: '',
             theme,
             renderContent: () => (

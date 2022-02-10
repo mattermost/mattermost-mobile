@@ -46,9 +46,11 @@ type PostOptionsProps = {
     canMarkAsUnread?: boolean;
     canPin?: boolean;
     canSave?: boolean;
+    canReply?: boolean;
     isSaved?: boolean;
     location: typeof Screens[keyof typeof Screens];
     post: PostModel;
+    thread?: Partial<PostModel>;
 };
 
 //todo: look up the permission here and render each option accordingly
@@ -61,38 +63,47 @@ const PostOptions = ({
     canEditUntil = -1,
     canMarkAsUnread = true,
     canPin = true,
+    canReply = true,
     canSave = true,
     isSaved = true,
     location,
     post,
+    thread,
 }: PostOptionsProps) => {
     const theme = useTheme();
     const styles = getStyleSheet(theme);
 
     const shouldRenderEdit = canEdit && (canEditUntil === -1 || canEditUntil > Date.now());
+    const shouldRenderFollow = !(location !== Screens.CHANNEL || !thread);
 
     return (
         <View
             style={styles.container}
         >
             {canAddReaction && <ReactionBar theme={theme}/>}
-            <ReplyOption/>
-            <FollowThreadOption
-                location={location}
-            />
-            {canMarkAsUnread && !isSystemMessage(post) && (
-                <MarkAsUnreadOption/>
-            )}
-            {canCopyPermalink && <CopyLinkOption/>}
-            {canSave &&
-                <SaveOption
-                    isSaved={isSaved}
-                />
-            }
-            {canCopyText && <CopyTextOption/>}
-            {canPin && <PinChannelOption isPostPinned={post.isPinned}/>}
-            {shouldRenderEdit && <EditOption/>}
-            {canDelete && <DeletePostOption/>}
+            <View style={{marginLeft: -5}}>
+                {canReply && <ReplyOption/>}
+                {shouldRenderFollow &&
+                    <FollowThreadOption
+                        location={location}
+                        thread={thread}
+                    />
+                }
+                {canMarkAsUnread && !isSystemMessage(post) && (
+                    <MarkAsUnreadOption/>
+                )}
+                {canCopyPermalink && <CopyLinkOption/>}
+                {canSave &&
+                    <SaveOption
+                        isSaved={isSaved}
+                    />
+                }
+                {canCopyText && <CopyTextOption/>}
+                {canPin && <PinChannelOption isPostPinned={post.isPinned}/>}
+                {shouldRenderEdit && <EditOption/>}
+                {canDelete && <DeletePostOption/>}
+            </View>
+
         </View>
     );
 };

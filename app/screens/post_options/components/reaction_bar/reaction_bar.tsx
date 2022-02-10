@@ -27,7 +27,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             alignItems: 'center',
             height: REACTION_PICKER_HEIGHT,
             justifyContent: 'space-between',
-
+            marginTop: -16,
         },
     };
 });
