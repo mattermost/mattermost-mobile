@@ -15,6 +15,7 @@ import {
     SMALL_ICON_BREAKPOINT,
     SMALL_ICON_SIZE,
 } from '@constants/reaction_picker';
+import {useIsTablet} from '@hooks/device';
 import {showModal} from '@screens/navigation';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 
@@ -42,6 +43,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
 
 const ReactionBar = ({recentEmojis = [], theme}: QuickReactionProps) => {
     const intl = useIntl();
+    const isTablet = useIsTablet();
     const {width} = useWindowDimensions();
     const [selectedEmoji, setSelectedEmoji] = useState('');
     const isSmallDevice = width < SMALL_ICON_BREAKPOINT;
@@ -78,7 +80,10 @@ const ReactionBar = ({recentEmojis = [], theme}: QuickReactionProps) => {
 
     return (
         <View
-            style={styles.container}
+            style={[
+                styles.container,
+                isTablet && {marginTop: 16},
+            ]}
         >
             <ReactionProvider value={selectedEmoji}>
                 {

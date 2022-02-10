@@ -36,7 +36,6 @@ type ReactionProps = {
 }
 const Reaction = ({onPressReaction, emoji, iconSize, containerSize}: ReactionProps) => {
     const selectedEmoji = useSelectedReaction();
-    console.log('>>>  selectedEmoji context ', selectedEmoji);
     const theme = useTheme();
     const styles = getStyleSheet(theme);
     const handleReactionPressed = useCallback(() => {

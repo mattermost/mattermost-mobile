@@ -13,6 +13,7 @@ import TouchableWithFeedback from '@components/touchable_with_feedback';
 import * as Screens from '@constants/screens';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
+import {useIsTablet} from '@hooks/device';
 import {bottomSheet} from '@screens/navigation';
 import PostOptions from '@screens/post_options';
 import {fromAutoResponder, isFromWebhook, isPostPendingOrFailed, isSystemMessage} from '@utils/post';
@@ -105,6 +106,7 @@ const Post = ({
     const intl = useIntl();
     const serverUrl = useServerUrl();
     const theme = useTheme();
+    const isTablet = useIsTablet();
     const styles = getStyleSheet(theme);
     const isAutoResponder = fromAutoResponder(post);
     const isPendingOrFailed = isPostPendingOrFailed(post);
@@ -171,6 +173,7 @@ const Post = ({
         );
 
         const OPTION_HEIGHT = 48;
+        const title = isTablet ? intl.formatMessage({id: 'post.options.title', defaultMessage: 'Options'}) : '';
 
         Keyboard.dismiss();
 
@@ -179,7 +182,7 @@ const Post = ({
                 closeButtonId: 'close-post-options',
                 renderContent,
                 snapPoints: [(11 * OPTION_HEIGHT), 10],
-                title: '', // fixme: add a title for tablet ?
+                title,
                 theme,
             });
             cancelAnimationFrame(postOptionsRequest);
