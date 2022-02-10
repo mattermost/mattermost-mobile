@@ -54,9 +54,11 @@ export const switchToChannel = async (serverUrl: string, channelId: string, team
                 models.push(...history);
             }
 
-            const common = await prepareCommonSystemValues(operator, commonValues);
-            if (common) {
-                models.push(...common);
+            if (Object.keys(commonValues).length) {
+                const common = await prepareCommonSystemValues(operator, commonValues);
+                if (common) {
+                    models.push(...common);
+                }
             }
 
             if (system.currentChannelId !== channelId) {
