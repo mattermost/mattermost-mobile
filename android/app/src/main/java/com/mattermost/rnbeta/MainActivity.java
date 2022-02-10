@@ -2,9 +2,14 @@ package com.mattermost.rnbeta;
 
 import android.os.Bundle;
 import androidx.annotation.Nullable;
+
 import android.view.KeyEvent;
 import android.content.res.Configuration;
 
+import com.facebook.react.bridge.Arguments;
+import com.facebook.react.bridge.ReactApplicationContext;
+import com.facebook.react.bridge.ReactMethod;
+import com.facebook.react.bridge.WritableMap;
 import com.reactnativenavigation.NavigationActivity;
 import com.github.emilioicai.hwkeyboardevent.HWKeyboardEventModule;
 
@@ -26,6 +31,18 @@ public class MainActivity extends NavigationActivity {
             HWKeyboardConnected = true;
         } else if (newConfig.hardKeyboardHidden == Configuration.HARDKEYBOARDHIDDEN_YES) {
             HWKeyboardConnected = false;
+        }
+    }
+
+    @Override
+    // This can be removed once https://github.com/facebook/react-native/issues/32628 is solved
+    public void onWindowFocusChanged(boolean hasFocus) {
+        super.onWindowFocusChanged(hasFocus);
+        MattermostManagedModule instance = MattermostManagedModule.getInstance();
+        if (instance != null) {
+            WritableMap data = Arguments.createMap();
+            data.putString("appState", hasFocus ? "active" : "background");
+            instance.sendEvent("windowFocusChanged", data);
         }
     }
 

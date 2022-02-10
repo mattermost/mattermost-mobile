@@ -7,7 +7,7 @@ import {fetchConfigAndLicense} from '@actions/remote/systems';
 import DatabaseManager from '@database/manager';
 import {queryChannelsById, queryDefaultChannelForTeam} from '@queries/servers/channel';
 import {prepareModels} from '@queries/servers/entry';
-import {prepareCommonSystemValues, queryCommonSystemValues, queryCurrentChannelId, queryCurrentTeamId, setCurrentTeamAndChannelId} from '@queries/servers/system';
+import {prepareCommonSystemValues, queryCommonSystemValues, queryCurrentChannelId, queryCurrentTeamId, queryWebSocketLastDisconnected, setCurrentTeamAndChannelId} from '@queries/servers/system';
 import {deleteMyTeams, queryTeamsById} from '@queries/servers/team';
 import {queryCurrentUser} from '@queries/servers/user';
 import {deleteV1Data} from '@utils/file';
@@ -24,7 +24,8 @@ export const appEntry = async (serverUrl: string) => {
 
     const tabletDevice = await isTablet();
     const currentTeamId = await queryCurrentTeamId(database);
-    const fetchedData = await fetchAppEntryData(serverUrl, currentTeamId);
+    const lastDisconnectedAt = await queryWebSocketLastDisconnected(database);
+    const fetchedData = await fetchAppEntryData(serverUrl, lastDisconnectedAt, currentTeamId);
     const fetchedError = (fetchedData as AppEntryError).error;
 
     if (fetchedError) {
@@ -32,6 +33,7 @@ export const appEntry = async (serverUrl: string) => {
     }
 
     const {initialTeamId, teamData, chData, prefData, meData, removeTeamIds, removeChannelIds} = fetchedData as AppEntryData;
+    const rolesData = await fetchRoles(serverUrl, teamData?.memberships, chData?.memberships, meData?.user, true);
 
     if (initialTeamId === currentTeamId) {
         let cId = await queryCurrentChannelId(database);
@@ -67,14 +69,15 @@ export const appEntry = async (serverUrl: string) => {
         await deleteMyTeams(operator, removeTeams!);
     }
 
-    fetchRoles(serverUrl, teamData?.memberships, chData?.memberships, meData?.user);
-
     let removeChannels;
     if (removeChannelIds?.length) {
         removeChannels = await queryChannelsById(database, removeChannelIds);
     }
 
     const modelPromises = await prepareModels({operator, initialTeamId, removeTeams, removeChannels, teamData, chData, prefData, meData});
+    if (rolesData.roles?.length) {
+        modelPromises.push(operator.handleRole({roles: rolesData.roles, prepareRecordsOnly: true}));
+    }
     const models = await Promise.all(modelPromises);
     if (models.length) {
         await operator.batchRecords(models.flat());
@@ -82,7 +85,7 @@ export const appEntry = async (serverUrl: string) => {
 
     const {id: currentUserId, locale: currentUserLocale} = meData.user || (await queryCurrentUser(database))!;
     const {config, license} = await queryCommonSystemValues(database);
-    deferredAppEntryActions(serverUrl, currentUserId, currentUserLocale, prefData.preferences, config, license, teamData, chData, initialTeamId);
+    deferredAppEntryActions(serverUrl, lastDisconnectedAt, currentUserId, currentUserLocale, prefData.preferences, config, license, teamData, chData, initialTeamId);
 
     const error = teamData.error || chData?.error || prefData.error || meData.error;
     return {error, userId: meData?.user?.id};
