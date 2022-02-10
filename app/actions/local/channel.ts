@@ -15,7 +15,7 @@ import {addChannelToTeamHistory, addTeamToTeamHistory, removeChannelFromTeamHist
 import {queryCurrentUser} from '@queries/servers/user';
 import {dismissAllModalsAndPopToRoot, dismissAllModalsAndPopToScreen} from '@screens/navigation';
 import {isTablet} from '@utils/helpers';
-import {displayGroupMessageName, displayUsername} from '@utils/user';
+import {displayGroupMessageName, displayUsername, getUserIdFromChannelName} from '@utils/user';
 
 import type ChannelModel from '@typings/database/models/servers/channel';
 import type UserModel from '@typings/database/models/servers/user';
@@ -23,11 +23,12 @@ import type UserModel from '@typings/database/models/servers/user';
 const {SERVER: {CHANNEL_MEMBERSHIP, USER}} = MM_TABLES;
 
 export const switchToChannel = async (serverUrl: string, channelId: string, teamId?: string, prepareRecordsOnly = false) => {
-    const database = DatabaseManager.serverDatabases[serverUrl]?.database;
-    if (!database) {
+    const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
+    if (!operator) {
         return {error: `${serverUrl} database not found`};
     }
 
+    const {database} = operator;
     const models: Model[] = [];
     try {
         const dt = Date.now();
@@ -37,9 +38,11 @@ export const switchToChannel = async (serverUrl: string, channelId: string, team
 
         if (member) {
             const channel: ChannelModel = await member.channel.fetch();
-            const {operator} = DatabaseManager.serverDatabases[serverUrl];
-            const commonValues: PrepareCommonSystemValuesArgs = {currentChannelId: channelId};
-            if (isTabletDevice) {
+            const commonValues: PrepareCommonSystemValuesArgs = {};
+            if (system.currentChannelId !== channelId) {
+                commonValues.currentChannelId = channelId;
+            }
+            if (isTabletDevice && system.currentChannelId !== channelId) {
                 // On tablet, the channel is being rendered, by setting the channel to empty first we speed up
                 // the switch by ~3x
                 await setCurrentChannelId(operator, '');
@@ -51,9 +54,11 @@ export const switchToChannel = async (serverUrl: string, channelId: string, team
                 models.push(...history);
             }
 
-            const common = await prepareCommonSystemValues(operator, commonValues);
-            if (common) {
-                models.push(...common);
+            if (Object.keys(commonValues).length) {
+                const common = await prepareCommonSystemValues(operator, commonValues);
+                if (common) {
+                    models.push(...common);
+                }
             }
 
             if (system.currentChannelId !== channelId) {
@@ -298,29 +303,38 @@ export const updateLastPostAt = async (serverUrl: string, channelId: string, las
     return {models};
 };
 
-export async function updateChannelsDisplayName(serverUrl: string, channels: ChannelModel[], user: UserProfile, prepareRecordsOnly = false) {
-    const database = DatabaseManager.serverDatabases[serverUrl];
-    if (!database) {
+export async function updateChannelsDisplayName(serverUrl: string, channels: ChannelModel[], users: UserProfile[], prepareRecordsOnly = false) {
+    const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
+    if (!operator) {
         return {};
     }
-    const currentUser = await queryCurrentUser(database.database);
+
+    const {database} = operator;
+    const currentUser = await queryCurrentUser(database);
     if (!currentUser) {
         return {};
     }
 
-    const {config, license} = await queryCommonSystemValues(database.database);
-    const preferences = await queryPreferencesByCategoryAndName(database.database, Preferences.CATEGORY_DISPLAY_SETTINGS, Preferences.NAME_NAME_FORMAT);
+    const {config, license} = await queryCommonSystemValues(database);
+    const preferences = await queryPreferencesByCategoryAndName(database, Preferences.CATEGORY_DISPLAY_SETTINGS, Preferences.NAME_NAME_FORMAT);
     const displaySettings = getTeammateNameDisplaySetting(preferences, config, license);
     const models: Model[] = [];
-    channels?.forEach(async (channel) => {
+    for await (const channel of channels) {
         let newDisplayName = '';
         if (channel.type === General.DM_CHANNEL) {
+            const otherUserId = getUserIdFromChannelName(currentUser.id, channel.name);
+            const user = users.find((u) => u.id === otherUserId);
             newDisplayName = displayUsername(user, currentUser.locale, displaySettings);
         } else {
-            const dbProfiles = await database.database.get<UserModel>(USER).query(Q.on(CHANNEL_MEMBERSHIP, Q.where('channel_id', channel.id))).fetch();
-            const newProfiles: Array<UserModel|UserProfile> = dbProfiles.filter((u) => u.id !== user.id);
-            newProfiles.push(user);
-            newDisplayName = displayGroupMessageName(newProfiles, currentUser.locale, displaySettings, currentUser.id);
+            const dbProfiles = await database.get<UserModel>(USER).query(Q.on(CHANNEL_MEMBERSHIP, Q.where('channel_id', channel.id))).fetch();
+            const profileIds = dbProfiles.map((p) => p.id);
+            const gmUsers = users.filter((u) => profileIds.includes(u.id));
+            if (gmUsers.length) {
+                const uIds = gmUsers.map((u) => u.id);
+                const newProfiles: Array<UserModel|UserProfile> = dbProfiles.filter((u) => !uIds.includes(u.id));
+                newProfiles.push(...gmUsers);
+                newDisplayName = displayGroupMessageName(newProfiles, currentUser.locale, displaySettings, currentUser.id);
+            }
         }
 
         if (channel.displayName !== newDisplayName) {
@@ -329,10 +343,10 @@ export async function updateChannelsDisplayName(serverUrl: string, channels: Cha
             });
             models.push(channel);
         }
-    });
+    }
 
     if (models.length && !prepareRecordsOnly) {
-        database.operator.batchRecords(models);
+        await operator.batchRecords(models);
     }
 
     return {models};

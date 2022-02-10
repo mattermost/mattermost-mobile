@@ -1,3 +1,60 @@
+diff --git a/node_modules/@nozbe/watermelondb/Database/index.js b/node_modules/@nozbe/watermelondb/Database/index.js
+index 8d71c6f..9ad75d6 100644
+--- a/node_modules/@nozbe/watermelondb/Database/index.js
++++ b/node_modules/@nozbe/watermelondb/Database/index.js
+@@ -126,6 +126,10 @@ var Database = /*#__PURE__*/function () {
+           // subsequent changes to the record don't trip up the invariant
+           // TODO: What if this fails?
+           record._preparedState = null;
++
++          if ('update' === preparedState) {
++            record.__original = null;
++          }
+         }
+ 
+         if (!changeNotifications[table]) {
+diff --git a/node_modules/@nozbe/watermelondb/Model/index.d.ts b/node_modules/@nozbe/watermelondb/Model/index.d.ts
+index 1a7c99e..0cb7b87 100644
+--- a/node_modules/@nozbe/watermelondb/Model/index.d.ts
++++ b/node_modules/@nozbe/watermelondb/Model/index.d.ts
+@@ -44,6 +44,8 @@ declare module '@nozbe/watermelondb/Model' {
+ 
+     public update(recordUpdater?: (record: this) => void): Promise<this>
+ 
++    public cancelPrepareUpdate(): void;
++
+     public prepareUpdate(recordUpdater?: (record: this) => void): this
+ 
+     public markAsDeleted(): Promise<void>
+diff --git a/node_modules/@nozbe/watermelondb/Model/index.js b/node_modules/@nozbe/watermelondb/Model/index.js
+index 075a047..e5e52fa 100644
+--- a/node_modules/@nozbe/watermelondb/Model/index.js
++++ b/node_modules/@nozbe/watermelondb/Model/index.js
+@@ -78,6 +78,16 @@ var Model = /*#__PURE__*/function () {
+   // database.batch()
+   ;
+ 
++  _proto.cancelPrepareUpdate = function cancelPrepareUpdate() {
++    if ('test' !== process.env.NODE_ENV && 'undefined' !== typeof process && process) {
++      (0, _invariant.default)('update' !== _this._preparedState, "Cannot cancel an update on a model that has not been prepared");
++    }
++    this.__changes = null;
++    this._preparedState = null;
++    this._raw = this.original;
++    this.__original = undefined;
++  }
++
+   _proto.prepareUpdate = function prepareUpdate(recordUpdater = _noop.default) {
+     var _this = this;
+ 
+@@ -92,6 +102,7 @@ var Model = /*#__PURE__*/function () {
+     } // Perform updates
+ 
+ 
++    this.__original = Object.assign({}, this._raw);
+     (0, _ensureSync.default)(recordUpdater(this));
+     this._isEditing = false;
+     this._preparedState = 'update'; // TODO: `process.nextTick` doesn't work on React Native
 diff --git a/node_modules/@nozbe/watermelondb/native/android/src/main/java/com/nozbe/watermelondb/Database.kt b/node_modules/@nozbe/watermelondb/native/android/src/main/java/com/nozbe/watermelondb/Database.kt
 index ca31e20..b45c753 100644
 --- a/node_modules/@nozbe/watermelondb/native/android/src/main/java/com/nozbe/watermelondb/Database.kt
