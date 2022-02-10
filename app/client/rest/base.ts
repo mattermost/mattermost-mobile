@@ -117,6 +117,10 @@ export default class ClientBase {
         return `${this.getChannelsRoute()}/${channelId}`;
     }
 
+    getSharedChannelsRoute() {
+        return `${this.urlVersion}/sharedchannels`;
+    }
+
     getChannelMembersRoute(channelId: string) {
         return `${this.getChannelRoute(channelId)}/members`;
     }
