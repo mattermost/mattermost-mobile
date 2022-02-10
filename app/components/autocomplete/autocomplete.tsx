@@ -91,7 +91,7 @@ const Autocomplete = ({
     const [showingEmoji, setShowingEmoji] = useState(false);
 
     // const [showingCommand, setShowingCommand] = useState(false);
-    // const [showingAppCommand, setSwhoingAppCommand] = useState(false);
+    // const [showingAppCommand, setShowingAppCommand] = useState(false);
     // const [showingDate, setShowingDate] = useState(false);
 
     const hasElements = showingEmoji; // || showingAtMention || showingChannelMention || showingCommand || showingAppCommand || showingDate;
@@ -147,7 +147,7 @@ const Autocomplete = ({
                     <AppSlashSuggestion
                         maxListHeight={maxListHeight}
                         updateValue={updateValue}
-                        onResultCountChange={setSwhoingAppCommand}
+                        onResultCountChange={setShowingAppCommand}
                         value={value || ''}
                         nestedScrollEnabled={nestedScrollEnabled}
                     />

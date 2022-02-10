@@ -11,8 +11,7 @@ import Emoji from '@components/emoji';
 import TouchableWithFeedback from '@components/touchable_with_feedback';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
-import {EmojiIndicesByAlias, Emojis} from '@utils/emoji';
-import {compareEmojis, getEmojiByName, getSkin} from '@utils/emoji/helpers';
+import {getEmojiByName, getEmojis, searchEmojis} from '@utils/emoji/helpers';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 import type CustomEmojiModel from '@typings/database/models/servers/custom_emoji';
@@ -99,21 +98,7 @@ const EmojiSuggestion = ({
 
     const searchTimeout = useRef<NodeJS.Timeout>();
 
-    const emojis = useMemo(() => {
-        const emoticons = new Set<string>();
-        for (const [key, index] of EmojiIndicesByAlias.entries()) {
-            const skin = getSkin(Emojis[index]);
-            if (!skin || skin === skinTone) {
-                emoticons.add(key);
-            }
-        }
-
-        for (const custom of customEmojis) {
-            emoticons.add(custom.name);
-        }
-
-        return Array.from(emoticons);
-    }, [skinTone, customEmojis]);
+    const emojis = useMemo(() => getEmojis(skinTone, customEmojis), [skinTone, customEmojis]);
 
     const searchTerm = useMemo(() => {
         const match = value.substring(0, cursorPosition).match(EMOJI_REGEX);
@@ -125,33 +110,11 @@ const EmojiSuggestion = ({
     }, [emojis]);
 
     const data = useMemo(() => {
-        const searchTermLowerCase = searchTerm.toLowerCase();
-
         if (searchTerm.length < MIN_SEARCH_LENGTH) {
             return [];
         }
 
-        const sorter = (a: string, b: string) => {
-            return compareEmojis(a, b, searchTermLowerCase);
-        };
-
-        const fuzz = fuse.search(searchTermLowerCase);
-
-        if (fuzz) {
-            const results = fuzz.reduce((values, r) => {
-                const score = r?.score === undefined ? 1 : r.score;
-                const v = r?.matches?.[0]?.value;
-                if (score < 0.2 && v) {
-                    values.push(v);
-                }
-
-                return values;
-            }, [] as string[]);
-
-            return results.sort(sorter);
-        }
-
-        return [];
+        return searchEmojis(fuse, searchTerm);
     }, [fuse, searchTerm]);
 
     const showingElements = Boolean(data.length);
