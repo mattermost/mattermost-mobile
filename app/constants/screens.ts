@@ -6,6 +6,7 @@ export const ACCOUNT = 'Account';
 export const EMOJI_PICKER = 'AddReaction';
 export const APP_FORM = 'AppForm';
 export const BOTTOM_SHEET = 'BottomSheet';
+export const BROWSE_CHANNELS = 'BrowseChannels';
 export const CHANNEL = 'Channel';
 export const CHANNEL_ADD_PEOPLE = 'ChannelAddPeople';
 export const CHANNEL_DETAILS = 'ChannelDetails';
@@ -34,6 +35,7 @@ export default {
     EMOJI_PICKER,
     APP_FORM,
     BOTTOM_SHEET,
+    BROWSE_CHANNELS,
     CHANNEL,
     CHANNEL_ADD_PEOPLE,
     CHANNEL_EDIT,

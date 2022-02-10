@@ -22,6 +22,7 @@ export interface ClientChannelsMix {
     getChannelByNameAndTeamName: (teamName: string, channelName: string, includeDeleted?: boolean) => Promise<Channel>;
     getChannels: (teamId: string, page?: number, perPage?: number) => Promise<Channel[]>;
     getArchivedChannels: (teamId: string, page?: number, perPage?: number) => Promise<Channel[]>;
+    getSharedChannels: (teamId: string, page?: number, perPage?: number) => Promise<Channel[]>;
     getMyChannels: (teamId: string, includeDeleted?: boolean, lastDeleteAt?: number) => Promise<Channel[]>;
     getMyChannelMember: (channelId: string) => Promise<ChannelMembership>;
     getMyChannelMembers: (teamId: string) => Promise<ChannelMembership[]>;
@@ -180,6 +181,13 @@ const ClientChannels = (superclass: any) => class extends superclass {
     getArchivedChannels = async (teamId: string, page = 0, perPage = PER_PAGE_DEFAULT) => {
         return this.doFetch(
             `${this.getTeamRoute(teamId)}/channels/deleted${buildQueryString({page, per_page: perPage})}`,
+            {method: 'get'},
+        );
+    };
+
+    getSharedChannels = async (teamId: string, page = 0, perPage = PER_PAGE_DEFAULT) => {
+        return this.doFetch(
+            `${this.getSharedChannelsRoute()}/${teamId}${buildQueryString({page, per_page: perPage})}`,
             {method: 'get'},
         );
     };

@@ -19,6 +19,8 @@ type Props = {
     title?: string;
 }
 
+export const TITLE_HEIGHT = 38;
+
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     return {
         container: {

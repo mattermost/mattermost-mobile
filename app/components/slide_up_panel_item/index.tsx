@@ -15,6 +15,7 @@ import {isValidUrl} from '@utils/url';
 type SlideUpPanelProps = {
     destructive?: boolean;
     icon?: string | Source;
+    rightIcon?: boolean;
     imageStyles?: StyleProp<TextStyle>;
     onPress: () => void;
     textStyles?: TextStyle;
@@ -65,7 +66,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     };
 });
 
-const SlideUpPanelItem = ({destructive, icon, imageStyles, onPress, testID, text, textStyles}: SlideUpPanelProps) => {
+const SlideUpPanelItem = ({destructive, icon, imageStyles, onPress, testID, text, textStyles, rightIcon = false}: SlideUpPanelProps) => {
     const theme = useTheme();
     const handleOnPress = useCallback(preventDoubleTap(onPress, 500), []);
     const style = getStyleSheet(theme);
@@ -109,12 +110,15 @@ const SlideUpPanelItem = ({destructive, icon, imageStyles, onPress, testID, text
             underlayColor={changeOpacity(theme.centerChannelColor, 0.5)}
         >
             <View style={style.row}>
-                {Boolean(image) &&
+                {Boolean(image) && !rightIcon &&
                     <View style={iconStyle}>{image}</View>
                 }
                 <View style={style.textContainer}>
                     <Text style={[style.text, destructive ? style.destructive : null, textStyles]}>{text}</Text>
                 </View>
+                {Boolean(image) && rightIcon &&
+                    <View style={iconStyle}>{image}</View>
+                }
             </View>
         </TouchableWithFeedback>
     );

@@ -152,9 +152,9 @@ Navigation.setLazyComponentRegistrator((screenName) => {
     case Screens.MFA:
         screen = withIntl(require('@screens/mfa').default);
         break;
-    // case 'MoreChannels':
-    //     screen = require('@screens/more_channels').default;
-    //     break;
+    case Screens.BROWSE_CHANNELS:
+        screen = withServerDatabase(require('@screens/browse_channels').default);
+        break;
     // case 'MoreDirectMessages':
     //     screen = require('@screens/more_dms').default;
     //     break;
