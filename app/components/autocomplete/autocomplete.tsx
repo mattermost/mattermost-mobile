@@ -4,7 +4,6 @@
 import React, {useMemo, useState} from 'react';
 import {Platform, useWindowDimensions, View} from 'react-native';
 
-import {Device} from '@constants';
 import {useTheme} from '@context/theme';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
@@ -65,7 +64,6 @@ type Props = {
 
 const OFFSET_IOS = 65;
 const OFFSET_ANDROID = 75;
-const OFFSET_INSETS = 90;
 
 const Autocomplete = ({
     cursorPosition,
@@ -105,10 +103,7 @@ const Autocomplete = ({
         }
 
         // List is expanding downwards, likely from the search box
-        let offset = Platform.select({ios: OFFSET_IOS, default: OFFSET_ANDROID});
-        if (Device.IS_IPHONE_WITH_INSETS) {
-            offset = OFFSET_INSETS;
-        }
+        const offset = Platform.select({ios: OFFSET_IOS, default: OFFSET_ANDROID});
 
         return (deviceHeight / 2) - offset;
     }, [maxHeight, deviceHeight]);
@@ -127,7 +122,7 @@ const Autocomplete = ({
             s.push(style.hidden);
         }
         return s;
-    }, [style, isSearch, hasElements, maxListHeight]);
+    }, [style, isSearch && maxListHeight, hasElements]);
 
     const containerStyles = useMemo(() => {
         const s = [style.borders];
@@ -138,7 +133,7 @@ const Autocomplete = ({
             s.push(style.hidden);
         }
         return s;
-    }, [isSearch, offsetY, hasElements]);
+    }, [!isSearch && offsetY, hasElements]);
 
     return (
         <View

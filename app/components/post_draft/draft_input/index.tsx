@@ -6,8 +6,9 @@ import {LayoutChangeEvent, Platform, ScrollView, View} from 'react-native';
 import {Edge, SafeAreaView} from 'react-native-safe-area-context';
 
 import Autocomplete from '@components/autocomplete';
-import {Device} from '@constants';
 import {useTheme} from '@context/theme';
+import {useIsTablet} from '@hooks/device';
+import {useHeaderHeight} from '@hooks/header';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 import PostInput from '../post_input';
@@ -92,6 +93,7 @@ export default function DraftInput({
     cursorPosition,
 }: Props) {
     const theme = useTheme();
+    const isTablet = useIsTablet();
 
     const [top, setTop] = useState(0);
 
@@ -105,6 +107,10 @@ export default function DraftInput({
     const sendActionTestID = `${testID}.send_action`;
     const style = getStyleSheet(theme);
 
+    // From component/navigation_header/index.tsx and screen/channel/channel.tsx
+    const {defaultHeight} = useHeaderHeight(false, true, false);
+    const autocompleteMaxHeight = Math.min(top - defaultHeight - AUTOCOMPLETE_MARGIN, isTablet ? 200 : 1450);
+
     return (
         <>
             <Typing
@@ -112,7 +118,7 @@ export default function DraftInput({
                 rootId={rootId}
             />
             <Autocomplete
-                maxHeight={Math.min(top - AUTOCOMPLETE_MARGIN, Device.AUTOCOMPLETE_MAX_HEIGHT)}
+                maxHeight={autocompleteMaxHeight}
                 updateValue={updateValue}
                 rootId={rootId}
                 channelId={channelId}
@@ -127,6 +133,7 @@ export default function DraftInput({
                 style={style.inputWrapper}
                 testID={testID}
             >
+
                 <ScrollView
                     style={style.inputContainer}
                     contentContainerStyle={style.inputContentContainer}
