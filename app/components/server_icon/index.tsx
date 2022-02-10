@@ -29,7 +29,8 @@ const styles = StyleSheet.create({
         left: 25,
     },
     unread: {
-        top: 5,
+        left: 18,
+        top: -5,
     },
 });
 

@@ -10,7 +10,7 @@ import DrawerItem from '@components/drawer_item';
 import SlideUpPanelItem, {ITEM_HEIGHT} from '@components/slide_up_panel_item';
 import StatusLabel from '@components/status_label';
 import UserStatusIndicator from '@components/user_status';
-import {Navigation} from '@constants';
+import {Events} from '@constants';
 import General from '@constants/general';
 import {useServerUrl} from '@context/server';
 import {bottomSheet, dismissModal} from '@screens/navigation';
@@ -111,7 +111,7 @@ const UserStatus = ({currentUser, style, theme}: Props) => {
         }
 
         updateStatus(status);
-        DeviceEventEmitter.emit(Navigation.NAVIGATION_CLOSE_MODAL);
+        DeviceEventEmitter.emit(Events.CLOSE_BOTTOM_SHEET);
         return null;
     }, []);
 

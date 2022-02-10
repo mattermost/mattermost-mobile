@@ -9,7 +9,7 @@ import Swipeable from 'react-native-gesture-handler/Swipeable';
 
 import CompassIcon from '@components/compass_icon';
 import ServerIcon from '@components/server_icon';
-import {Events, Navigation} from '@constants';
+import {Events} from '@constants';
 import {useTheme} from '@context/theme';
 import {subscribeServerUnreadAndMentions} from '@database/subscription/unreads';
 import WebsocketManager from '@init/websocket_manager';
@@ -141,7 +141,7 @@ const ServerItem = ({isActive, server}: Props) => {
         if (isActive) {
             // eslint-disable-next-line no-console
             console.log('ACTIVE SERVER', server.displayName);
-            DeviceEventEmitter.emit(Navigation.NAVIGATION_CLOSE_MODAL);
+            DeviceEventEmitter.emit(Events.CLOSE_BOTTOM_SHEET);
             return;
         }
 

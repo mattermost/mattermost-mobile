@@ -9,8 +9,7 @@ import {useIntl} from 'react-intl';
 import {StyleProp, Text, TextStyle} from 'react-native';
 import {map, switchMap} from 'rxjs/operators';
 
-import {switchToChannel} from '@actions/local/channel';
-import {joinChannel} from '@actions/remote/channel';
+import {joinChannel, switchToChannelById} from '@actions/remote/channel';
 import {MM_TABLES, SYSTEM_IDENTIFIERS} from '@constants/database';
 import {useServerUrl} from '@context/server';
 import {t} from '@i18n';
@@ -96,7 +95,7 @@ const ChannelMention = ({
         }
 
         if (c?.id) {
-            switchToChannel(serverUrl, c.id);
+            switchToChannelById(serverUrl, c.id);
             await dismissAllModals();
             await popToRoot();
         }

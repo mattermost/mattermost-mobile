@@ -5,7 +5,7 @@ import React, {useCallback} from 'react';
 import {useIntl} from 'react-intl';
 import {DeviceEventEmitter} from 'react-native';
 
-import {Navigation} from '@constants';
+import {Events} from '@constants';
 import BottomSheetContent from '@screens/bottom_sheet/content';
 
 import TeamList from './team_list';
@@ -23,7 +23,7 @@ export default function AddTeamSlideUp({otherTeams, canCreateTeams, showTitle = 
 
     const onPressCreate = useCallback(() => {
         //TODO Create team screen
-        DeviceEventEmitter.emit(Navigation.NAVIGATION_CLOSE_MODAL);
+        DeviceEventEmitter.emit(Events.CLOSE_BOTTOM_SHEET);
     }, []);
 
     return (
