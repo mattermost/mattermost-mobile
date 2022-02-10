@@ -38,8 +38,11 @@ export const switchToChannel = async (serverUrl: string, channelId: string, team
         if (member) {
             const channel: ChannelModel = await member.channel.fetch();
             const {operator} = DatabaseManager.serverDatabases[serverUrl];
-            const commonValues: PrepareCommonSystemValuesArgs = {currentChannelId: channelId};
-            if (isTabletDevice) {
+            const commonValues: PrepareCommonSystemValuesArgs = {};
+            if (system.currentChannelId !== channelId) {
+                commonValues.currentChannelId = channelId;
+            }
+            if (isTabletDevice && system.currentChannelId !== channelId) {
                 // On tablet, the channel is being rendered, by setting the channel to empty first we speed up
                 // the switch by ~3x
                 await setCurrentChannelId(operator, '');
