@@ -13,7 +13,7 @@ import {bottomSheet} from '@screens/navigation';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
-import {PUBLIC, SHARED} from './browse_channels';
+import {ARCHIVED, SHARED} from './browse_channels';
 import DropdownSlideup from './dropdown_slideup';
 
 type Props = {
@@ -81,12 +81,10 @@ export default function ChannelDropdown({
         });
     };
 
-    let channelDropdownText;
-    if (typeOfChannels === PUBLIC) {
-        channelDropdownText = intl.formatMessage({id: 'browse_channels.showPublicChannels', defaultMessage: 'Show: Public Channels'});
-    } else if (typeOfChannels === SHARED) {
+    let channelDropdownText = intl.formatMessage({id: 'browse_channels.showPublicChannels', defaultMessage: 'Show: Public Channels'});
+    if (typeOfChannels === SHARED) {
         channelDropdownText = intl.formatMessage({id: 'browse_channels.showSharedChannels', defaultMessage: 'Show: Shared Channels'});
-    } else {
+    } else if (typeOfChannels === ARCHIVED) {
         channelDropdownText = intl.formatMessage({id: 'browse_channels.showArchivedChannels', defaultMessage: 'Show: Archived Channels'});
     }
     return (
