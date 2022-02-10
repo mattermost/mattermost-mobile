@@ -185,6 +185,14 @@ const Server = ({componentId, extra, launchType, launchError, theme}: ServerProp
             return;
         }
 
+        if (displayNameError) {
+            setDisplayNameError(undefined);
+        }
+
+        if (urlError) {
+            setUrlError(undefined);
+        }
+
         const server = await queryServerByDisplayName(DatabaseManager.appDatabase!.database, displayName);
         if (server && server.lastActiveAt > 0) {
             setButtonDisabled(true);

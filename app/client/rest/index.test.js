@@ -36,7 +36,7 @@ describe('Client', () => {
 
             await client.getMe();
 
-            assert.equal(client.serverVersion, '5.0.0.5.0.0.abc123');
+            assert.equal(client.serverVersion, '5.0.0');
             assert.equal(isMinimumServerVersion(client.serverVersion, 5, 0, 0), true);
             assert.equal(isMinimumServerVersion(client.serverVersion, 5, 1, 0), false);
 
@@ -49,7 +49,7 @@ describe('Client', () => {
 
             await client.getMe();
 
-            assert.equal(client.serverVersion, '5.3.0.5.3.0.abc123');
+            assert.equal(client.serverVersion, '5.3.0');
             assert.equal(isMinimumServerVersion(client.serverVersion, 5, 0, 0), true);
             assert.equal(isMinimumServerVersion(client.serverVersion, 5, 1, 0), true);
         });

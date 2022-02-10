@@ -158,7 +158,7 @@ export const loginEntry = async ({serverUrl, user, deviceToken}: AfterLoginArgs)
 
         const config = clData.config || {} as ClientConfig;
         const license = clData.license || {} as ClientLicense;
-        deferredAppEntryActions(serverUrl, user.id, user.locale, prefData.preferences, config, license, teamData, chData, initialTeam?.id, initialChannel?.id);
+        deferredAppEntryActions(serverUrl, 0, user.id, user.locale, prefData.preferences, config, license, teamData, chData, initialTeam?.id, initialChannel?.id);
 
         const error = clData.error || prefData.error || teamData.error || chData?.error;
         return {error, time: Date.now() - dt, hasTeams: Boolean((myTeams?.length || 0) > 0 && !teamData.error)};
