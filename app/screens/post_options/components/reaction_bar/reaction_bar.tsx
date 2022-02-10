@@ -3,10 +3,10 @@
 
 import React, {useCallback, useState} from 'react';
 import {useIntl} from 'react-intl';
-import {useWindowDimensions, View} from 'react-native';
+import {DeviceEventEmitter, useWindowDimensions, View} from 'react-native';
 
 import CompassIcon from '@components/compass_icon';
-import {Screens} from '@constants';
+import {Navigation, Screens} from '@constants';
 import {
     LARGE_CONTAINER_SIZE,
     LARGE_ICON_SIZE,
@@ -17,6 +17,7 @@ import {
 } from '@constants/reaction_picker';
 import {useIsTablet} from '@hooks/device';
 import {showModal} from '@screens/navigation';
+import EphemeralStore from '@store/ephemeral_store';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 
 import PickReaction from './components/pick_reaction';
@@ -56,10 +57,11 @@ const ReactionBar = ({recentEmojis = [], theme}: QuickReactionProps) => {
     }, []);
 
     const openEmojiPicker = useCallback(async () => {
-        // DeviceEventEmitter.emit(Navigation.NAVIGATION_CLOSE_MODAL);
-        // dismissModal({componentId: Screens.BOTTOM_SHEET});
+        DeviceEventEmitter.emit(Navigation.NAVIGATION_CLOSE_MODAL);
+        if (isTablet) {
+            await EphemeralStore.waitUntilScreensIsRemoved(Screens.BOTTOM_SHEET);
+        }
 
-        //fixme:  if we want to close  the post menu - better listen to the close button id event
         requestAnimationFrame(() => {
             const closeButton = CompassIcon.getImageSourceSync('close', 24, theme.sidebarHeaderTextColor);
             const screen = Screens.EMOJI_PICKER;
@@ -68,7 +70,7 @@ const ReactionBar = ({recentEmojis = [], theme}: QuickReactionProps) => {
 
             showModal(screen, title, passProps);
         });
-    }, [intl, theme]);
+    }, [intl, theme, isTablet]);
 
     let containerSize = LARGE_CONTAINER_SIZE;
     let iconSize = LARGE_ICON_SIZE;
