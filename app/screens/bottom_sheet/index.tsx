@@ -8,7 +8,7 @@ import {Navigation as RNN} from 'react-native-navigation';
 import Animated from 'react-native-reanimated';
 import RNBottomSheet from 'reanimated-bottom-sheet';
 
-import {Navigation} from '@constants';
+import {Navigation, Screens} from '@constants';
 import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
 import {dismissModal} from '@screens/navigation';
@@ -36,7 +36,7 @@ const BottomSheet = ({closeButtonId, initialSnapIndex = 0, renderContent, snapPo
             if (sheetRef.current) {
                 sheetRef.current.snapTo(lastSnap);
             } else {
-                dismissModal();
+                dismissModal({componentId: Screens.BOTTOM_SHEET});
             }
         });
 
@@ -48,7 +48,7 @@ const BottomSheet = ({closeButtonId, initialSnapIndex = 0, renderContent, snapPo
             if (sheetRef.current) {
                 sheetRef.current.snapTo(1);
             } else {
-                dismissModal();
+                dismissModal({componentId: Screens.BOTTOM_SHEET});
             }
             return true;
         });
@@ -65,7 +65,7 @@ const BottomSheet = ({closeButtonId, initialSnapIndex = 0, renderContent, snapPo
     useEffect(() => {
         const navigationEvents = RNN.events().registerNavigationButtonPressedListener(({buttonId}) => {
             if (closeButtonId && buttonId === closeButtonId) {
-                dismissModal();
+                dismissModal({componentId: Screens.BOTTOM_SHEET});
             }
         });
 
