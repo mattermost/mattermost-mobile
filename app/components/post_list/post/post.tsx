@@ -13,7 +13,7 @@ import TouchableWithFeedback from '@components/touchable_with_feedback';
 import * as Screens from '@constants/screens';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
-import {showModalOverCurrentContext} from '@screens/navigation';
+import {bottomSheet} from '@screens/navigation';
 import PostOptions from '@screens/post_options';
 import {fromAutoResponder, isFromWebhook, isPostPendingOrFailed, isSystemMessage} from '@utils/post';
 import {preventDoubleTap} from '@utils/tap';
@@ -163,28 +163,25 @@ const Post = ({
             return;
         }
 
+        const renderContent = () => (
+            <PostOptions
+                location={location}
+                post={post}
+            />
+        );
+
         const OPTION_HEIGHT = 48;
-        const passProps = {
-            location,
-            post,
-            showAddReaction,
-            closeButtonId: 'close-post-options',
-            initialSnapIndex: 0,
-            snapPoints: [11 * OPTION_HEIGHT, 10],
-            title: '',
-            theme,
-            renderContent: () => (
-                <PostOptions
-                    location={location}
-                    post={post}
-                />
-            ), //fix-me: is this the right way of doing it ?
-        };
 
         Keyboard.dismiss();
 
         const postOptionsRequest = requestAnimationFrame(() => {
-            showModalOverCurrentContext(Screens.BOTTOM_SHEET, passProps);
+            bottomSheet({
+                closeButtonId: 'close-post-options',
+                renderContent,
+                snapPoints: [(11 * OPTION_HEIGHT), 10],
+                title: '', // fixme: add a title for tablet ?
+                theme,
+            });
             cancelAnimationFrame(postOptionsRequest);
         });
     };
