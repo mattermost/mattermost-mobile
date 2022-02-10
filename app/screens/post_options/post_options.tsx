@@ -18,7 +18,7 @@ import MarkAsUnreadOption from './components/options/mark_unread_option';
 import PinChannelOption from './components/options/pin_channel_option';
 import ReplyOption from './components/options/reply_option';
 import SaveOption from './components/options/save_option';
-import QuickReaction from './components/quick_reactions';
+import ReactionBar from './components/reaction_bar';
 
 import type PostModel from '@typings/database/models/servers/post';
 
@@ -40,14 +40,15 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
 });
 
 type PostOptionsProps = {
+    canAddReaction?: boolean;
     canCopyPermalink?: boolean;
     canCopyText?: boolean;
     canDelete?: boolean;
     canEdit?: boolean;
     canEditUntil?: number;
-    canSave?: boolean;
     canMarkAsUnread?: boolean;
     canPin?: boolean;
+    canSave?: boolean;
     isSaved?: boolean;
     location: typeof Screens[keyof typeof Screens];
     post: PostModel;
@@ -55,14 +56,15 @@ type PostOptionsProps = {
 
 //todo: look up the permission here and render each option accordingly
 const PostOptions = ({
+    canAddReaction = true,
     canCopyPermalink = true,
     canCopyText = true,
     canDelete = true,
     canEdit = true,
     canEditUntil = -1,
-    canSave = true,
     canMarkAsUnread = true,
     canPin = true,
+    canSave = true,
     isSaved = true,
     location,
     post,
@@ -76,7 +78,7 @@ const PostOptions = ({
         <View
             style={styles.container}
         >
-            <QuickReaction theme={theme}/>
+            {canAddReaction && <ReactionBar theme={theme}/>}
             <View style={styles.optionContainer}>
                 <ReplyOption/>
                 <FollowThreadOption

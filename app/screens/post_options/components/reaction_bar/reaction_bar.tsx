@@ -32,7 +32,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     };
 });
 
-const QuickReaction = ({recentEmojis = [], theme}: QuickReactionProps) => {
+const ReactionBar = ({recentEmojis = [], theme}: QuickReactionProps) => {
     const intl = useIntl();
     const {width} = useWindowDimensions();
     const isSmallDevice = width < SMALL_ICON_BREAKPOINT;
@@ -91,4 +91,4 @@ const QuickReaction = ({recentEmojis = [], theme}: QuickReactionProps) => {
     );
 };
 
-export default QuickReaction;
+export default ReactionBar;

@@ -9,7 +9,7 @@ import {catchError, switchMap} from 'rxjs/operators';
 import {MM_TABLES, SYSTEM_IDENTIFIERS} from '@constants/database';
 import {safeParseJSON} from '@utils/helpers';
 
-import QuickReaction from './quick_reaction';
+import ReactionBar from './reaction_bar';
 
 import type {WithDatabaseArgs} from '@typings/database/database';
 import type SystemModel from '@typings/database/models/servers/system';
@@ -38,4 +38,4 @@ const enhanced = withObservables([], ({database}: WithDatabaseArgs) => ({
         ),
 }));
 
-export default withDatabase(enhanced(QuickReaction));
+export default withDatabase(enhanced(ReactionBar));
