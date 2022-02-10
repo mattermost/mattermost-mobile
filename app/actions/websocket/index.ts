@@ -8,7 +8,7 @@ import {fetchPostsForUnreadChannels, fetchPostsSince} from '@actions/remote/post
 import {fetchRoles} from '@actions/remote/role';
 import {fetchConfigAndLicense} from '@actions/remote/systems';
 import {fetchAllTeams, fetchTeamsChannelsAndUnreadPosts} from '@actions/remote/team';
-import {updateAllUsersSince} from '@actions/remote/user';
+import {fetchStatusByIds, updateAllUsersSince} from '@actions/remote/user';
 import {General, WebsocketEvents} from '@constants';
 import {SYSTEM_IDENTIFIERS} from '@constants/database';
 import DatabaseManager from '@database/manager';
@@ -36,8 +36,9 @@ export async function handleFirstConnect(serverUrl: string) {
     if (!operator) {
         return;
     }
-    const config = await queryConfig(operator.database);
-    const lastDisconnect = await queryWebSocketLastDisconnected(operator.database);
+    const {database} = operator;
+    const config = await queryConfig(database);
+    const lastDisconnect = await queryWebSocketLastDisconnected(database);
 
     // ESR: 5.37
     if (lastDisconnect && config.EnableReliableWebSockets !== 'true' && alreadyConnected.has(serverUrl)) {
@@ -47,6 +48,7 @@ export async function handleFirstConnect(serverUrl: string) {
 
     alreadyConnected.add(serverUrl);
     resetWebSocketLastDisconnected(operator);
+    fetchStatusByIds(serverUrl, ['me']);
 }
 
 export function handleReconnect(serverUrl: string) {

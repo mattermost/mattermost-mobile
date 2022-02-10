@@ -142,7 +142,7 @@ exports[`Server Icon Server Icon Component should match snapshot with unreads 1`
           "fontFamily": "OpenSans-Bold",
           "fontSize": 12,
           "height": 12,
-          "left": 25,
+          "left": 18,
           "lineHeight": 16.5,
           "minWidth": 12,
           "opacity": 1,
@@ -150,7 +150,7 @@ exports[`Server Icon Server Icon Component should match snapshot with unreads 1`
           "paddingHorizontal": 0,
           "position": "absolute",
           "textAlign": "center",
-          "top": 5,
+          "top": -5,
           "transform": Array [
             Object {
               "scale": 1,

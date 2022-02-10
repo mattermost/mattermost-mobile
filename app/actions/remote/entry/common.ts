@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {fetchMissingSidebarInfo, fetchMyChannelsForTeam, MyChannelsRequest} from '@actions/remote/channel';
+import {fetchChannelStats, fetchMissingSidebarInfo, fetchMyChannelsForTeam, markChannelAsRead, MyChannelsRequest} from '@actions/remote/channel';
 import {fetchGroupsForTeam} from '@actions/remote/group';
 import {fetchPostsForChannel, fetchPostsForUnreadChannels} from '@actions/remote/post';
 import {MyPreferencesRequest, fetchMyPreferences} from '@actions/remote/preference';
@@ -164,6 +164,8 @@ export const deferredAppEntryActions = async (
     // defer fetching posts for initial channel
     if (initialChannelId) {
         fetchPostsForChannel(serverUrl, initialChannelId);
+        markChannelAsRead(serverUrl, initialChannelId);
+        fetchChannelStats(serverUrl, initialChannelId);
     }
 
     // defer sidebar DM & GM profiles

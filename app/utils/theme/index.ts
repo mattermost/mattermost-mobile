@@ -1,11 +1,12 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import merge from 'deepmerge';
 import {StatusBar, StyleSheet} from 'react-native';
 import tinyColor from 'tinycolor2';
 
 import {Preferences, Screens} from '@constants';
-import {mergeNavigationOptions} from '@screens/navigation';
+import {appearanceControlledScreens, mergeNavigationOptions} from '@screens/navigation';
 import EphemeralStore from '@store/ephemeral_store';
 
 import type {Options} from 'react-native-navigation';
@@ -121,17 +122,14 @@ export function setNavigatorStyles(componentId: string, theme: Theme, additional
     }
     StatusBar.setBarStyle(isDark ? 'light-content' : 'dark-content');
 
-    const mergeOptions = {
-        ...options,
-        ...additionalOptions,
-    };
+    const mergeOptions = merge(options, additionalOptions);
 
     mergeNavigationOptions(componentId, mergeOptions);
 }
 
 export function setNavigationStackStyles(theme: Theme) {
     EphemeralStore.allNavigationComponentIds.forEach((componentId) => {
-        if (componentId !== Screens.BOTTOM_SHEET) {
+        if (componentId !== Screens.BOTTOM_SHEET && !appearanceControlledScreens.includes(componentId)) {
             setNavigatorStyles(componentId, theme);
         }
     });
