@@ -20,12 +20,6 @@ const FollowThreadOption = ({
 
 }: FollowThreadOptionProps) => {
     //todo: to enable after CRT. Move this to PostOptions and do not mount the component
-    // instead of rendering null
-
-    // if (location !== Screens.CHANNEL || !thread) {
-    //     return null;
-    // }
-
     const config = useMemo(() => {
         if (thread?.is_following) {
             if (thread?.participants?.length) {
