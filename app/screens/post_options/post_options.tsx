@@ -30,9 +30,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         container: {
             backgroundColor: theme.centerChannelBg,
         },
-        optionContainer: {
-            marginLeft: -20,
-        },
         icon: {
             backgroundColor: changeOpacity(theme.centerChannelColor, 0.56),
         },
@@ -79,25 +76,23 @@ const PostOptions = ({
             style={styles.container}
         >
             {canAddReaction && <ReactionBar theme={theme}/>}
-            <View style={styles.optionContainer}>
-                <ReplyOption/>
-                <FollowThreadOption
-                    location={location}
-                />
-                {canMarkAsUnread && !isSystemMessage(post) && (
-                    <MarkAsUnreadOption/>
-                )}
-                {canCopyPermalink && <CopyLinkOption/>}
-                {canSave &&
+            <ReplyOption/>
+            <FollowThreadOption
+                location={location}
+            />
+            {canMarkAsUnread && !isSystemMessage(post) && (
+                <MarkAsUnreadOption/>
+            )}
+            {canCopyPermalink && <CopyLinkOption/>}
+            {canSave &&
                 <SaveOption
                     isSaved={isSaved}
                 />
-                }
-                {canCopyText && <CopyTextOption/>}
-                {canPin && <PinChannelOption isPostPinned={post.isPinned}/>}
-                {shouldRenderEdit && <EditOption/>}
-                {canDelete && <DeletePostOption/>}
-            </View>
+            }
+            {canCopyText && <CopyTextOption/>}
+            {canPin && <PinChannelOption isPostPinned={post.isPinned}/>}
+            {shouldRenderEdit && <EditOption/>}
+            {canDelete && <DeletePostOption/>}
         </View>
     );
 };
