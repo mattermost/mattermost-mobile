@@ -23,11 +23,12 @@ import type UserModel from '@typings/database/models/servers/user';
 const {SERVER: {CHANNEL_MEMBERSHIP, USER}} = MM_TABLES;
 
 export const switchToChannel = async (serverUrl: string, channelId: string, teamId?: string, prepareRecordsOnly = false) => {
-    const database = DatabaseManager.serverDatabases[serverUrl]?.database;
-    if (!database) {
+    const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
+    if (!operator) {
         return {error: `${serverUrl} database not found`};
     }
 
+    const {database} = operator;
     const models: Model[] = [];
     try {
         const dt = Date.now();
@@ -37,7 +38,6 @@ export const switchToChannel = async (serverUrl: string, channelId: string, team
 
         if (member) {
             const channel: ChannelModel = await member.channel.fetch();
-            const {operator} = DatabaseManager.serverDatabases[serverUrl];
             const commonValues: PrepareCommonSystemValuesArgs = {};
             if (system.currentChannelId !== channelId) {
                 commonValues.currentChannelId = channelId;
