@@ -58,18 +58,14 @@ const ReactionBar = ({recentEmojis = [], theme}: QuickReactionProps) => {
 
     const openEmojiPicker = useCallback(async () => {
         DeviceEventEmitter.emit(Navigation.NAVIGATION_CLOSE_MODAL);
-        if (isTablet) {
-            await EphemeralStore.waitUntilScreensIsRemoved(Screens.BOTTOM_SHEET);
-        }
+        await EphemeralStore.waitUntilScreensIsRemoved(Screens.BOTTOM_SHEET);
 
-        requestAnimationFrame(() => {
-            const closeButton = CompassIcon.getImageSourceSync('close', 24, theme.sidebarHeaderTextColor);
-            const screen = Screens.EMOJI_PICKER;
-            const title = intl.formatMessage({id: 'mobile.post_info.add_reaction', defaultMessage: 'Add Reaction'});
-            const passProps = {closeButton, onEmojiPress: handleEmojiPress};
+        const closeButton = CompassIcon.getImageSourceSync('close', 24, theme.sidebarHeaderTextColor);
+        const screen = Screens.EMOJI_PICKER;
+        const title = intl.formatMessage({id: 'mobile.post_info.add_reaction', defaultMessage: 'Add Reaction'});
+        const passProps = {closeButton, onEmojiPress: handleEmojiPress};
 
-            showModal(screen, title, passProps);
-        });
+        showModal(screen, title, passProps);
     }, [intl, theme, isTablet]);
 
     let containerSize = LARGE_CONTAINER_SIZE;
