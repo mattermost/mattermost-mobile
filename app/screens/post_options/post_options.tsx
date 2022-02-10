@@ -22,7 +22,6 @@ import ReactionBar from './components/reaction_bar';
 
 import type PostModel from '@typings/database/models/servers/post';
 
-//fixme: should this be even a screen ??
 //fixme: some props are optional - review them
 
 const getStyleSheet = makeStyleSheetFromTheme((theme) => {

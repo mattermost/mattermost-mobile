@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {memo, useCallback} from 'react';
+import React, {useCallback} from 'react';
 import {View, TouchableWithoutFeedback} from 'react-native';
 
 import Emoji from '@components/emoji';
@@ -67,4 +67,4 @@ const Reaction = ({onPressReaction, emoji, iconSize, containerSize}: ReactionPro
     );
 };
 
-export default memo(Reaction);
+export default Reaction;

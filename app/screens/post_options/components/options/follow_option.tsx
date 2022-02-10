@@ -15,10 +15,7 @@ type FollowThreadOptionProps = {
 
 //todo: to implement CRT follow thread
 
-const FollowThreadOption = ({
-    thread = undefined,
-
-}: FollowThreadOptionProps) => {
+const FollowThreadOption = ({thread}: FollowThreadOptionProps) => {
     //todo: to enable after CRT. Move this to PostOptions and do not mount the component
     const config = useMemo(() => {
         if (thread?.is_following) {

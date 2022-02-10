@@ -173,6 +173,7 @@ const Post = ({
         );
 
         const OPTION_HEIGHT = 48;
+        const countOptions = 11; //fixme:  this value will vary according to the number of permissions for each option
         const title = isTablet ? intl.formatMessage({id: 'post.options.title', defaultMessage: 'Options'}) : '';
 
         Keyboard.dismiss();
@@ -181,7 +182,7 @@ const Post = ({
             bottomSheet({
                 closeButtonId: 'close-post-options',
                 renderContent,
-                snapPoints: [(11 * OPTION_HEIGHT), 10],
+                snapPoints: [(countOptions * OPTION_HEIGHT), 10],
                 title,
                 theme,
             });
