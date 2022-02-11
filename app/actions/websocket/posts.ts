@@ -15,6 +15,16 @@ import {queryPostById} from '@queries/servers/post';
 import {queryCurrentChannelId, queryCurrentUserId} from '@queries/servers/system';
 import {isFromWebhook, isSystemMessage, shouldIgnorePost} from '@utils/post';
 
+import type MyChannelModel from '@typings/database/models/servers/my_channel';
+
+function preparedMyChannelHack(myChannel: MyChannelModel) {
+    // @ts-expect-error hack accessing _preparedState
+    if (!myChannel._preparedState) {
+        // @ts-expect-error hack setting _preparedState
+        myChannel._preparedState = null;
+    }
+}
+
 export async function handleNewPostEvent(serverUrl: string, msg: WebSocketMessage) {
     const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
     if (!operator) {
@@ -51,7 +61,6 @@ export async function handleNewPostEvent(serverUrl: string, msg: WebSocketMessag
     // Ensure the channel membership
     let myChannel = await queryMyChannel(operator.database, post.channel_id);
     if (myChannel) {
-        // Do not batch lastPostAt update since we may be modifying the member later for unreads
         await updateLastPostAt(serverUrl, post.channel_id, post.create_at, false);
     } else {
         const myChannelRequest = await fetchMyChannel(serverUrl, '', post.channel_id, true);
@@ -127,12 +136,14 @@ export async function handleNewPostEvent(serverUrl: string, msg: WebSocketMessag
         if (markAsRead) {
             markChannelAsRead(serverUrl, post.channel_id);
         } else if (markAsViewed) {
+            preparedMyChannelHack(myChannel);
             const {member: viewedAt} = await markChannelAsViewed(serverUrl, post.channel_id, true);
             if (viewedAt) {
                 models.push(viewedAt);
             }
         } else {
             const hasMentions = msg.data.mentions.includes(currentUserId);
+            preparedMyChannelHack(myChannel);
             const {member: unreadAt} = await markChannelAsUnread(
                 serverUrl,
                 post.channel_id,

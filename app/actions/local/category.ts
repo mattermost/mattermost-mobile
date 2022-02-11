@@ -3,8 +3,8 @@
 
 import {Model} from '@nozbe/watermelondb';
 
-import {prepareCategories, prepareCategoryChannels} from '@app/queries/servers/categories';
 import DatabaseManager from '@database/manager';
+import {prepareCategories, prepareCategoryChannels} from '@queries/servers/categories';
 
 export const storeCategories = async (serverUrl: string, categories: CategoryWithChannels[], prepareRecordsOnly = false) => {
     const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
@@ -12,12 +12,12 @@ export const storeCategories = async (serverUrl: string, categories: CategoryWit
         return {error: `${serverUrl} database not found`};
     }
     const modelPromises: Array<Promise<Model[]>> = [];
-    const preparedCategories = await prepareCategories(operator, categories);
+    const preparedCategories = prepareCategories(operator, categories);
     if (preparedCategories) {
         modelPromises.push(...preparedCategories);
     }
 
-    const preparedCategoryChannels = await prepareCategoryChannels(operator, categories);
+    const preparedCategoryChannels = prepareCategoryChannels(operator, categories);
     if (preparedCategoryChannels) {
         modelPromises.push(...preparedCategoryChannels);
     }

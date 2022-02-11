@@ -2,10 +2,11 @@
 // See LICENSE.txt for license information.
 
 import {storeCategories} from '@actions/local/category';
-import {Client} from '@app/client/rest';
 import NetworkManager from '@init/network_manager';
 
 import {forceLogoutIfNecessary} from './session';
+
+import type {Client} from '@client/rest';
 
 export type CategoriesRequest = {
      categories?: CategoryWithChannels[];
@@ -21,13 +22,13 @@ export const fetchCategories = async (serverUrl: string, teamId: string, fetchOn
     }
 
     try {
-        const categories = await client.getCategories('me', teamId);
+        const {categories} = await client.getCategories('me', teamId);
 
         if (!fetchOnly) {
-            storeCategories(serverUrl, categories.categories);
+            storeCategories(serverUrl, categories);
         }
 
-        return {categories: categories.categories};
+        return {categories};
     } catch (error) {
         forceLogoutIfNecessary(serverUrl, error as ClientErrorProps);
         return {error};

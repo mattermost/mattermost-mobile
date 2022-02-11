@@ -30,7 +30,7 @@ type PrepareModelsArgs = {
     meData?: MyUserRequest;
 }
 
-export const prepareModels = async ({operator, initialTeamId, removeTeams, removeChannels, teamData, categoryData, chData, prefData, meData}: PrepareModelsArgs): Promise<Array<Promise<Model[]>>> => {
+export const prepareModels = async ({operator, initialTeamId, removeTeams, removeChannels, teamData, chData, prefData, meData}: PrepareModelsArgs): Promise<Array<Promise<Model[]>>> => {
     const modelPromises: Array<Promise<Model[]>> = [];
 
     if (removeTeams?.length) {
@@ -52,13 +52,13 @@ export const prepareModels = async ({operator, initialTeamId, removeTeams, remov
         }
     }
 
-    if (initialTeamId && categoryData?.categories?.length) {
-        const categoryModels = await prepareCategories(operator, categoryData.categories || []);
+    if (chData?.categories?.length) {
+        const categoryModels = prepareCategories(operator, chData.categories);
         if (categoryModels) {
             modelPromises.push(...categoryModels);
         }
 
-        const categoryChannelModels = await prepareCategoryChannels(operator, categoryData.categories || []);
+        const categoryChannelModels = prepareCategoryChannels(operator, chData.categories);
         if (categoryChannelModels) {
             modelPromises.push(...categoryChannelModels);
         }
