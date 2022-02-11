@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useMemo} from 'react';
+import React from 'react';
 
 import {t} from '@i18n';
 
@@ -20,20 +20,16 @@ const SaveOption = ({isSaved}: CopyTextProps) => {
         //todo:
     };
 
-    const config = useMemo(() => {
-        if (isSaved) {
-            return {id: t('mobile.post_info.unflag'), defaultMessage: 'Unsave', onPress: handleUnflagPost};
-        }
-
-        return {id: t('mobile.post_info.flag'), defaultMessage: 'Save', onPress: handleFlagPost};
-    }, [isSaved, handleFlagPost, handleUnflagPost]);
+    const id = isSaved ? t('mobile.post_info.unsave') : t('mobile.post_info.save');
+    const defaultMessage = isSaved ? 'Unsave' : 'Save';
+    const onPress = isSaved ? handleUnsavePost : handleSavePost;
 
     return (
         <BaseOption
-            i18nId={config.id}
-            defaultMessage={config.defaultMessage}
+            i18nId={id}
+            defaultMessage={defaultMessage}
             iconName='bookmark-outline'
-            onPress={config.onPress}
+            onPress={onPress}
             testID='post.options.flag.unflag'
         />
     );

@@ -3,6 +3,8 @@
 
 import React from 'react';
 
+import {t} from '@i18n';
+
 import BaseOption from './base_option';
 
 const ReplyOption = () => {
