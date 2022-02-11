@@ -1,15 +1,300 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`components/channel_list should match snapshot 1`] = `
-<RNCSafeAreaProvider
-  onInsetsChange={[Function]}
-  style={
-    Array [
-      Object {
-        "flex": 1,
+<View
+  animatedStyle={
+    Object {
+      "value": Object {
+        "maxWidth": "100%",
       },
-      undefined,
-    ]
+    }
   }
-/>
+  collapsable={false}
+  style={
+    Object {
+      "backgroundColor": "#1e325c",
+      "flex": 1,
+      "maxWidth": "100%",
+      "paddingHorizontal": 20,
+      "paddingVertical": 10,
+    }
+  }
+>
+  <View
+    animatedStyle={
+      Object {
+        "value": Object {
+          "marginLeft": 0,
+        },
+      }
+    }
+    collapsable={false}
+    style={
+      Object {
+        "marginLeft": 0,
+      }
+    }
+  >
+    <View
+      style={
+        Object {
+          "alignItems": "center",
+          "flexDirection": "row",
+          "justifyContent": "space-between",
+        }
+      }
+    >
+      <View
+        accessible={true}
+        collapsable={false}
+        focusable={true}
+        onClick={[Function]}
+        onResponderGrant={[Function]}
+        onResponderMove={[Function]}
+        onResponderRelease={[Function]}
+        onResponderTerminate={[Function]}
+        onResponderTerminationRequest={[Function]}
+        onStartShouldSetResponder={[Function]}
+        style={
+          Object {
+            "opacity": 1,
+          }
+        }
+      >
+        <View
+          style={
+            Object {
+              "alignItems": "center",
+              "flexDirection": "row",
+              "justifyContent": "space-between",
+            }
+          }
+        >
+          <Text
+            style={
+              Object {
+                "color": "#ffffff",
+                "fontFamily": "Metropolis-SemiBold",
+                "fontSize": 28,
+                "fontWeight": "600",
+                "lineHeight": 36,
+              }
+            }
+          >
+            Test Team!
+          </Text>
+          <View
+            style={
+              Object {
+                "marginLeft": 4,
+              }
+            }
+          >
+            <Icon
+              name="chevron-down"
+              style={
+                Object {
+                  "color": "rgba(255,255,255,0.8)",
+                  "fontSize": 24,
+                }
+              }
+            />
+          </View>
+        </View>
+      </View>
+      <View
+        accessible={true}
+        collapsable={false}
+        focusable={true}
+        onClick={[Function]}
+        onResponderGrant={[Function]}
+        onResponderMove={[Function]}
+        onResponderRelease={[Function]}
+        onResponderTerminate={[Function]}
+        onResponderTerminationRequest={[Function]}
+        onStartShouldSetResponder={[Function]}
+        style={
+          Object {
+            "alignItems": "center",
+            "backgroundColor": "rgba(255,255,255,0.08)",
+            "borderRadius": 14,
+            "height": 28,
+            "justifyContent": "center",
+            "opacity": 1,
+            "width": 28,
+          }
+        }
+      >
+        <Icon
+          name="plus"
+          style={
+            Object {
+              "color": "rgba(255,255,255,0.8)",
+              "fontSize": 18,
+            }
+          }
+        />
+      </View>
+    </View>
+    <Text
+      style={
+        Object {
+          "color": "rgba(255,255,255,0.64)",
+          "fontFamily": "OpenSans-SemiBold",
+          "fontSize": 11,
+          "fontWeight": "600",
+          "lineHeight": 16,
+        }
+      }
+    >
+      
+    </Text>
+  </View>
+  <View
+    style={
+      Object {
+        "alignItems": "center",
+        "flex": 1,
+        "justifyContent": "center",
+        "padding": 20,
+      }
+    }
+  >
+    <View
+      style={
+        Object {
+          "alignItems": "center",
+          "backgroundColor": "rgba(255,255,255,0.08)",
+          "borderRadius": 60,
+          "height": 120,
+          "justifyContent": "center",
+          "width": 120,
+        }
+      }
+    >
+      <Icon
+        name="alert-circle-outline"
+        style={
+          Object {
+            "color": "rgba(255,255,255,0.48)",
+            "fontSize": 72,
+            "lineHeight": 72,
+          }
+        }
+      />
+    </View>
+    <Text
+      style={
+        Array [
+          Object {
+            "fontFamily": "Metropolis-SemiBold",
+            "fontSize": 20,
+            "fontWeight": "600",
+            "lineHeight": 28,
+          },
+          Object {
+            "color": "#ffffff",
+            "marginTop": 20,
+            "textAlign": "center",
+          },
+        ]
+      }
+    >
+      Couldn't load 
+    </Text>
+    <Text
+      style={
+        Array [
+          Object {
+            "fontFamily": "OpenSans",
+            "fontSize": 16,
+            "fontWeight": "400",
+            "lineHeight": 24,
+          },
+          Object {
+            "color": "#ffffff",
+            "marginTop": 4,
+            "textAlign": "center",
+          },
+        ]
+      }
+    >
+      There was a problem loading content for this server.
+    </Text>
+    <View
+      onMoveShouldSetResponder={[Function]}
+      onMoveShouldSetResponderCapture={[Function]}
+      onResponderEnd={[Function]}
+      onResponderGrant={[Function]}
+      onResponderMove={[Function]}
+      onResponderReject={[Function]}
+      onResponderRelease={[Function]}
+      onResponderStart={[Function]}
+      onResponderTerminate={[Function]}
+      onResponderTerminationRequest={[Function]}
+      onStartShouldSetResponder={[Function]}
+      onStartShouldSetResponderCapture={[Function]}
+    >
+      <View
+        accessible={true}
+        focusable={true}
+        onClick={[Function]}
+        onResponderGrant={[Function]}
+        onResponderMove={[Function]}
+        onResponderRelease={[Function]}
+        onResponderTerminate={[Function]}
+        onResponderTerminationRequest={[Function]}
+        onStartShouldSetResponder={[Function]}
+        style={
+          Array [
+            Object {
+              "marginTop": 24,
+            },
+            Array [
+              Object {
+                "alignItems": "center",
+                "borderRadius": 4,
+                "flex": 0,
+                "justifyContent": "center",
+              },
+              Object {
+                "height": 48,
+                "paddingHorizontal": 24,
+                "paddingVertical": 14,
+              },
+              Object {
+                "backgroundColor": "#ffffff",
+              },
+            ],
+          ]
+        }
+      >
+        <Text
+          style={
+            Array [
+              Object {
+                "alignItems": "center",
+                "fontFamily": "OpenSans-SemiBold",
+                "fontWeight": "600",
+                "justifyContent": "center",
+                "padding": 1,
+                "textAlignVertical": "center",
+              },
+              Object {
+                "fontSize": 16,
+                "lineHeight": 16,
+                "marginTop": 1,
+              },
+              Object {
+                "color": "#1c58d9",
+              },
+            ]
+          }
+        >
+          Retry
+        </Text>
+      </View>
+    </View>
+  </View>
+</View>
 `;
