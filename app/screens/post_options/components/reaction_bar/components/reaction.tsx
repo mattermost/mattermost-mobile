@@ -2,13 +2,11 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback} from 'react';
-import {View, TouchableWithoutFeedback} from 'react-native';
+import {Pressable, PressableStateCallbackType, View} from 'react-native';
 
 import Emoji from '@components/emoji';
 import {useTheme} from '@context/theme';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
-
-import {useSelectedReaction} from './reaction_context';
 
 const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     return {
@@ -35,22 +33,23 @@ type ReactionProps = {
     containerSize: number;
 }
 const Reaction = ({onPressReaction, emoji, iconSize, containerSize}: ReactionProps) => {
-    const selectedEmoji = useSelectedReaction();
     const theme = useTheme();
     const styles = getStyleSheet(theme);
     const handleReactionPressed = useCallback(() => {
         onPressReaction(emoji);
     }, [onPressReaction]);
 
+    const highlightedStyle = useCallback(({pressed}: PressableStateCallbackType) => pressed && styles.highlight, [styles.highlight]);
+
     return (
-        <TouchableWithoutFeedback
+        <Pressable
             key={emoji}
             onPress={handleReactionPressed}
+            style={highlightedStyle}
         >
             <View
                 style={[
                     styles.reactionContainer,
-                    selectedEmoji === emoji ? styles.highlight : null,
                     {
                         width: containerSize,
                         height: containerSize,
@@ -63,7 +62,7 @@ const Reaction = ({onPressReaction, emoji, iconSize, containerSize}: ReactionPro
                     size={iconSize}
                 />
             </View>
-        </TouchableWithoutFeedback>
+        </Pressable>
     );
 };
 

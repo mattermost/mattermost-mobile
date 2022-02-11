@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback, useState} from 'react';
+import React, {useCallback} from 'react';
 import {useIntl} from 'react-intl';
 import {DeviceEventEmitter, useWindowDimensions, View} from 'react-native';
 
@@ -22,7 +22,6 @@ import {makeStyleSheetFromTheme} from '@utils/theme';
 
 import PickReaction from './components/pick_reaction';
 import Reaction from './components/reaction';
-import {ReactionProvider} from './components/reaction_context';
 
 type QuickReactionProps = {
     theme: Theme;
@@ -46,12 +45,10 @@ const ReactionBar = ({recentEmojis = [], theme}: QuickReactionProps) => {
     const intl = useIntl();
     const isTablet = useIsTablet();
     const {width} = useWindowDimensions();
-    const [selectedEmoji, setSelectedEmoji] = useState('');
     const isSmallDevice = width < SMALL_ICON_BREAKPOINT;
     const styles = getStyleSheet(theme);
 
     const handleEmojiPress = useCallback((emoji: string) => {
-        setSelectedEmoji(emoji);
         // eslint-disable-next-line no-console
         console.log('>>>  selected this emoji', emoji);
     }, []);
@@ -83,21 +80,19 @@ const ReactionBar = ({recentEmojis = [], theme}: QuickReactionProps) => {
                 isTablet && {marginTop: 16},
             ]}
         >
-            <ReactionProvider value={selectedEmoji}>
-                {
-                    recentEmojis.map((emoji) => {
-                        return (
-                            <Reaction
-                                key={emoji}
-                                onPressReaction={handleEmojiPress}
-                                emoji={emoji}
-                                iconSize={iconSize}
-                                containerSize={containerSize}
-                            />
-                        );
-                    })
-                }
-            </ReactionProvider>
+            {
+                recentEmojis.map((emoji) => {
+                    return (
+                        <Reaction
+                            key={emoji}
+                            onPressReaction={handleEmojiPress}
+                            emoji={emoji}
+                            iconSize={iconSize}
+                            containerSize={containerSize}
+                        />
+                    );
+                })
+            }
             <PickReaction
                 openEmojiPicker={openEmojiPicker}
                 theme={theme}
