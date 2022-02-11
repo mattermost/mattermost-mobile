@@ -208,6 +208,7 @@ export const fetchMyChannelsForTeam = async (serverUrl: string, teamId: string, 
         }
 
         const channelIds = new Set<string>(channels.map((c) => c.id));
+        const {categories} = categoriesWithOrder;
         memberships = memberships.reduce((result: ChannelMembership[], m: ChannelMembership) => {
             if (channelIds.has(m.channel_id)) {
                 result.push(m);
@@ -217,10 +218,9 @@ export const fetchMyChannelsForTeam = async (serverUrl: string, teamId: string, 
 
         if (!fetchOnly) {
             storeMyChannelsForTeam(serverUrl, teamId, channels, memberships);
-            storeCategories(serverUrl, categoriesWithOrder.categories);
+            storeCategories(serverUrl, categories);
         }
 
-        const {categories} = categoriesWithOrder;
         return {channels, memberships, categories};
     } catch (error) {
         forceLogoutIfNecessary(serverUrl, error as ClientErrorProps);
