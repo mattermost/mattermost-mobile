@@ -37,10 +37,7 @@ const enhanced = withObservables(['post'], ({database, post, location, showAddRe
         });
     }));
 
-    const isLicensed = database.get<SystemModel>(SYSTEM).findAndObserve(SYSTEM_IDENTIFIERS.LICENSE).pipe(switchMap(({value}) => {
-        return of$(value.IsLicensed === 'true',
-        );
-    }));
+    const isLicensed = database.get<SystemModel>(SYSTEM).findAndObserve(SYSTEM_IDENTIFIERS.LICENSE).pipe(switchMap(({value}) => of$(value.IsLicensed === 'true')));
 
     const experimentalTownSquareIsReadOnly = database.get<SystemModel>(MM_TABLES.SERVER.SYSTEM).
         findAndObserve(SYSTEM_IDENTIFIERS.CONFIG).
@@ -81,6 +78,10 @@ const enhanced = withObservables(['post'], ({database, post, location, showAddRe
         canDelete = of$(false);
         canPin = of$(false);
     } else {
+        const editPermission = isOwner ? [Permissions.EDIT_POST] : [Permissions.EDIT_POST, Permissions.EDIT_OTHERS_POSTS];
+
+        // canEdit = combineLatest([post, currentUser]).pipe(switchMap(([ps, u]) => from$(hasPermissionForPost(ps, u, editPermission, false))));
+
         canEdit = canEditPost(state, config, license, currentTeamId, channel, currentUserId, post);
 
         if (
