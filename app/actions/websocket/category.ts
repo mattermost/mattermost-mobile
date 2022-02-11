@@ -3,8 +3,8 @@
 
 import {storeCategories} from '@actions/local/category';
 import {fetchCategories} from '@actions/remote/category';
-import {queryCategoriesById} from '@app/queries/servers/categories';
 import DatabaseManager from '@database/manager';
+import {queryCategoriesById} from '@queries/servers/categories';
 
 type WebsocketMessage = {
     data: {
@@ -56,17 +56,26 @@ export async function handleCategoryDeletedEvent(serverUrl: string, msg: Websock
 
 export async function handleCategoryOrderUpdatedEvent(serverUrl: string, msg: WebsocketMessage) {
     try {
-        const database = DatabaseManager.serverDatabases[serverUrl];
+        const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
+
+        if (!operator) {
+            return;
+        }
+
+        const {database} = operator;
 
         // Update category order
-        const categories = await queryCategoriesById(database.database, msg.data.order!);
-        categories.forEach((c) => {
-            const findOrder = (id: string) => id === c.id;
-            c.prepareUpdate(() => {
-                c.sortOrder = (msg.data.order as string[]).findIndex(findOrder);
+        if (msg.data.order?.length) {
+            const order = msg.data.order;
+            const categories = await queryCategoriesById(database, order);
+            categories.forEach((c) => {
+                const findOrder = (id: string) => id === c.id;
+                c.prepareUpdate(() => {
+                    c.sortOrder = order.findIndex(findOrder);
+                });
             });
-        });
-        await database.operator.batchRecords(categories);
+            await operator.batchRecords(categories);
+        }
     } catch (e) {
         // eslint-disable-next-line no-console
         console.log('Category WS: handleCategoryOrderUpdatedEvent', e, msg);
