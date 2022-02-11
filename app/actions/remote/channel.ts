@@ -5,6 +5,7 @@
 import {Model} from '@nozbe/watermelondb';
 import {IntlShape} from 'react-intl';
 
+import {storeCategories} from '@actions/local/category';
 import {storeMyChannelsForTeam, switchToChannel} from '@actions/local/channel';
 import {General} from '@constants';
 import DatabaseManager from '@database/manager';
@@ -30,6 +31,7 @@ import type MyTeamModel from '@typings/database/models/servers/my_team';
 import type TeamModel from '@typings/database/models/servers/team';
 
 export type MyChannelsRequest = {
+    categories?: CategoryWithChannels[];
     channels?: Channel[];
     memberships?: ChannelMembership[];
     error?: unknown;
@@ -195,16 +197,20 @@ export const fetchMyChannelsForTeam = async (serverUrl: string, teamId: string, 
     }
 
     try {
-        let [channels, memberships]: [Channel[], ChannelMembership[]] = await Promise.all([
+        const [allChannels, channelMemberships, categoriesWithOrder] = await Promise.all([
             client.getMyChannels(teamId, includeDeleted, since),
             client.getMyChannelMembers(teamId),
+            client.getCategories('me', teamId),
         ]);
 
+        let channels = allChannels;
+        let memberships = channelMemberships;
         if (excludeDirect) {
             channels = channels.filter((c) => c.type !== General.GM_CHANNEL && c.type !== General.DM_CHANNEL);
         }
 
         const channelIds = new Set<string>(channels.map((c) => c.id));
+        const {categories} = categoriesWithOrder;
         memberships = memberships.reduce((result: ChannelMembership[], m: ChannelMembership) => {
             if (channelIds.has(m.channel_id)) {
                 result.push(m);
@@ -214,9 +220,10 @@ export const fetchMyChannelsForTeam = async (serverUrl: string, teamId: string, 
 
         if (!fetchOnly) {
             storeMyChannelsForTeam(serverUrl, teamId, channels, memberships);
+            storeCategories(serverUrl, categories);
         }
 
-        return {channels, memberships};
+        return {channels, memberships, categories};
     } catch (error) {
         forceLogoutIfNecessary(serverUrl, error as ClientErrorProps);
         return {error};
