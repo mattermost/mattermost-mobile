@@ -9,7 +9,6 @@ import {prepareMyPreferences} from './preference';
 import {prepareDeleteTeam, prepareMyTeams} from './team';
 import {prepareUsers} from './user';
 
-import type {CategoriesRequest} from '@actions/remote/category';
 import type {MyChannelsRequest} from '@actions/remote/channel';
 import type {MyPreferencesRequest} from '@actions/remote/preference';
 import type {MyTeamsRequest} from '@actions/remote/team';
@@ -24,7 +23,6 @@ type PrepareModelsArgs = {
     removeTeams?: TeamModel[];
     removeChannels?: ChannelModel[];
     teamData?: MyTeamsRequest;
-    categoryData?: CategoriesRequest;
     chData?: MyChannelsRequest;
     prefData?: MyPreferencesRequest;
     meData?: MyUserRequest;
