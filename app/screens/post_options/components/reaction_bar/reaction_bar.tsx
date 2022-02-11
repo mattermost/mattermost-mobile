@@ -6,7 +6,7 @@ import {useIntl} from 'react-intl';
 import {DeviceEventEmitter, useWindowDimensions, View} from 'react-native';
 
 import CompassIcon from '@components/compass_icon';
-import {Navigation, Screens} from '@constants';
+import {Events, Screens} from '@constants';
 import {
     LARGE_CONTAINER_SIZE,
     LARGE_ICON_SIZE,
@@ -57,7 +57,7 @@ const ReactionBar = ({recentEmojis = [], theme}: QuickReactionProps) => {
     }, []);
 
     const openEmojiPicker = useCallback(async () => {
-        DeviceEventEmitter.emit(Navigation.NAVIGATION_CLOSE_MODAL);
+        DeviceEventEmitter.emit(Events.CLOSE_BOTTOM_SHEET);
         await EphemeralStore.waitUntilScreensIsRemoved(Screens.BOTTOM_SHEET);
 
         const closeButton = CompassIcon.getImageSourceSync('close', 24, theme.sidebarHeaderTextColor);
