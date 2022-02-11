@@ -77,6 +77,48 @@ export async function addNewServer(theme: Theme, serverUrl?: string, displayName
     showModal(Screens.SERVER, '', props, options);
 }
 
+export async function alertServerLogout(displayName: string, onPress: () => void, intl: IntlShape) {
+    Alert.alert(
+        intl.formatMessage({
+            id: 'server.logout.alert_title',
+            defaultMessage: 'Are you sure you want to log out of {displayName}?',
+        }, {displayName}),
+        intl.formatMessage({
+            id: 'server.logout.alert_description',
+            defaultMessage: 'All associated data will be removed',
+        }),
+        [{
+            style: 'cancel',
+            text: intl.formatMessage({id: 'mobile.post.cancel', defaultMessage: 'Cancel'}),
+        }, {
+            style: 'destructive',
+            text: intl.formatMessage({id: 'servers.logout', defaultMessage: 'Log out'}),
+            onPress,
+        }],
+    );
+}
+
+export async function alertServerRemove(displayName: string, onPress: () => void, intl: IntlShape) {
+    Alert.alert(
+        intl.formatMessage({
+            id: 'server.remove.alert_title',
+            defaultMessage: 'Are you sure you want to remove {displayName}?',
+        }, {displayName}),
+        intl.formatMessage({
+            id: 'server.remove.alert_description',
+            defaultMessage: 'This will remove it from your list of servers. All associated data will be removed',
+        }),
+        [{
+            style: 'cancel',
+            text: intl.formatMessage({id: 'mobile.post.cancel', defaultMessage: 'Cancel'}),
+        }, {
+            style: 'destructive',
+            text: intl.formatMessage({id: 'servers.remove', defaultMessage: 'Remove'}),
+            onPress,
+        }],
+    );
+}
+
 function unsupportedServerAdminAlert(intl: IntlShape) {
     const title = intl.formatMessage({id: 'mobile.server_upgrade.title', defaultMessage: 'Server upgrade required'});
 
