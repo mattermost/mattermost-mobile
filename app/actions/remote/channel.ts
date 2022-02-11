@@ -197,13 +197,14 @@ export const fetchMyChannelsForTeam = async (serverUrl: string, teamId: string, 
     }
 
     try {
-        // eslint-disable-next-line prefer-const
-        let [channels, memberships, categoriesWithOrder]: [Channel[], ChannelMembership[], CategoriesWithOrder] = await Promise.all([
+        const [allChannels, channelMemberships, categoriesWithOrder] = await Promise.all([
             client.getMyChannels(teamId, includeDeleted, since),
             client.getMyChannelMembers(teamId),
             client.getCategories('me', teamId),
         ]);
 
+        let channels = allChannels;
+        let memberships = channelMemberships;
         if (excludeDirect) {
             channels = channels.filter((c) => c.type !== General.GM_CHANNEL && c.type !== General.DM_CHANNEL);
         }
