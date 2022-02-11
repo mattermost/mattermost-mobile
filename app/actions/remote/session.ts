@@ -47,6 +47,8 @@ export const completeLogin = async (serverUrl: string, user: UserProfile) => {
         fetchDataRetentionPolicy(serverUrl);
     }
 
+    await DatabaseManager.setActiveServerDatabase(serverUrl);
+
     // Start websocket
     const credentials = await getServerCredentials(serverUrl);
     if (credentials?.token) {
@@ -127,7 +129,7 @@ export const login = async (serverUrl: string, {ldapOnly = false, loginId, mfaTo
                 displayName: serverDisplayName,
             },
         });
-        await DatabaseManager.setActiveServerDatabase(serverUrl);
+
         await server?.operator.handleUsers({users: [user], prepareRecordsOnly: false});
         await server?.operator.handleSystem({
             systems: [{
@@ -215,7 +217,6 @@ export const ssoLogin = async (serverUrl: string, serverDisplayName: string, ser
                 displayName: serverDisplayName,
             },
         });
-        await DatabaseManager.setActiveServerDatabase(serverUrl);
         deviceToken = await queryDeviceToken(database);
         user = await client.getMe();
         await server?.operator.handleUsers({users: [user], prepareRecordsOnly: false});
