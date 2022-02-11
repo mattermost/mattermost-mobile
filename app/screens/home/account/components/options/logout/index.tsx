@@ -46,7 +46,7 @@ const Settings = ({style, theme}: Props) => {
             },
             intl,
         );
-    }), []);
+    }), [serverDisplayName, serverUrl, intl]);
 
     return (
         <DrawerItem
