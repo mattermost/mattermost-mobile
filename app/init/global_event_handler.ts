@@ -105,11 +105,13 @@ class GlobalEventHandler {
         deleteFileCache(serverUrl);
 
         if (activeServerUrl === serverUrl) {
+            let launchType: LaunchType = LaunchType.AddServer;
             if (!Object.keys(DatabaseManager.serverDatabases).length) {
                 EphemeralStore.theme = undefined;
+                launchType = LaunchType.Normal;
             }
 
-            relaunchApp({launchType: LaunchType.Normal}, true);
+            relaunchApp({launchType}, true);
         }
     };
 
