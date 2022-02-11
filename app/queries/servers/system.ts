@@ -118,12 +118,18 @@ export const queryWebSocketLastDisconnected = async (serverDatabase: Database) =
     }
 };
 
-export const resetWebSocketLastDisconnected = (operator: ServerDataOperator) => {
-    return operator.handleSystem({systems: [{
-        id: SYSTEM_IDENTIFIERS.WEBSOCKET,
-        value: 0,
-    }],
-    prepareRecordsOnly: false});
+export const resetWebSocketLastDisconnected = async (operator: ServerDataOperator, prepareRecordsOnly = false) => {
+    const lastDisconnectedAt = await queryWebSocketLastDisconnected(operator.database);
+
+    if (lastDisconnectedAt) {
+        return operator.handleSystem({systems: [{
+            id: SYSTEM_IDENTIFIERS.WEBSOCKET,
+            value: 0,
+        }],
+        prepareRecordsOnly});
+    }
+
+    return [];
 };
 
 export const queryTeamHistory = async (serverDatabase: Database) => {

@@ -4,37 +4,41 @@
 import React from 'react';
 import {View} from 'react-native';
 
-import BottomSheetContent from '@screens/bottom_sheet/content';
+import SlideUpPanelItem from '@app/components/slide_up_panel_item';
 
-import PlusMenuItem from './menu_item';
+type PlusMenuItemProps = {
+    pickerAction: 'browseChannels' | 'createNewChannel' | 'openDirectMessage';
+    onPress: () => void;
+};
 
-const PlusMenuList = () => {
+const PlusMenuList = ({pickerAction, onPress}: PlusMenuItemProps) => {
+    const menuItems = {
+        browseChannels: {
+            icon: 'globe',
+            text: 'Browse Channels',
+        },
+
+        createNewChannel: {
+            icon: 'plus',
+            text: 'Create New Channel',
+            onPress: {},
+        },
+
+        openDirectMessage: {
+            icon: 'account-outline',
+            text: 'Open a Direct Message',
+            onPress: {},
+        },
+    };
+    const itemType = menuItems[pickerAction];
     return (
-        <BottomSheetContent
-            showTitle={false}
-            showButton={false}
-        >
-            <View>
-                <PlusMenuItem
-                    title='Browse Channels'
-                    iconName='globe'
-                />
-            </View>
-
-            <View>
-                <PlusMenuItem
-                    title='Create New Channel'
-                    iconName='plus'
-                />
-            </View>
-
-            <View>
-                <PlusMenuItem
-                    title='Open a Direct Message'
-                    iconName='account-outline'
-                />
-            </View>
-        </BottomSheetContent>
+        <View>
+            <SlideUpPanelItem
+                text={itemType.text}
+                icon={itemType.icon}
+                onPress={onPress}
+            />
+        </View>
     );
 };
 

@@ -7,7 +7,7 @@ import {DeviceEventEmitter, Text, View} from 'react-native';
 import {addUserToTeam} from '@actions/remote/team';
 import TeamIcon from '@components/team_sidebar/team_list/team_item/team_icon';
 import TouchableWithFeedback from '@components/touchable_with_feedback';
-import {Navigation} from '@constants';
+import {Events} from '@constants';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {makeStyleSheetFromTheme} from '@utils/theme';
@@ -25,7 +25,7 @@ export default function TeamListItem({team, currentUserId}: Props) {
     const serverUrl = useServerUrl();
     const onPress = useCallback(async () => {
         await addUserToTeam(serverUrl, team.id, currentUserId);
-        DeviceEventEmitter.emit(Navigation.NAVIGATION_CLOSE_MODAL);
+        DeviceEventEmitter.emit(Events.CLOSE_BOTTOM_SHEET);
     }, []);
 
     return (

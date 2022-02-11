@@ -9,8 +9,9 @@ import {Navigation, Options, OptionsModalPresentationStyle} from 'react-native-n
 import tinyColor from 'tinycolor2';
 
 import CompassIcon from '@components/compass_icon';
-import {Device, Preferences, Screens} from '@constants';
+import {Device, Screens} from '@constants';
 import NavigationConstants from '@constants/navigation';
+import {getDefaultThemeByAppearance} from '@context/theme';
 import EphemeralStore from '@store/ephemeral_store';
 import {NavButtons} from '@typings/screens/navigation';
 import {changeOpacity, setNavigatorStyles} from '@utils/theme';
@@ -19,7 +20,7 @@ import type {LaunchProps} from '@typings/launch';
 
 const {MattermostManaged} = NativeModules;
 const isRunningInSplitView = MattermostManaged.isRunningInSplitView;
-const appearanceControlledScreens = [Screens.SERVER, Screens.LOGIN, Screens.FORGOT_PASSWORD, Screens.MFA];
+export const appearanceControlledScreens = [Screens.SERVER, Screens.LOGIN, Screens.FORGOT_PASSWORD, Screens.MFA, Screens.SSO];
 
 const alpha = {
     from: 0,
@@ -30,6 +31,10 @@ const alpha = {
 export const loginAnimationOptions = () => {
     const theme = getThemeFromState();
     return {
+        layout: {
+            backgroundColor: theme.centerChannelBg,
+            componentBackgroundColor: theme.centerChannelBg,
+        },
         topBar: {
             visible: true,
             drawBehind: true,
@@ -96,10 +101,8 @@ function getThemeFromState(): Theme {
     if (EphemeralStore.theme) {
         return EphemeralStore.theme;
     }
-    if (Appearance.getColorScheme() === 'dark') {
-        return Preferences.THEMES.onyx;
-    }
-    return Preferences.THEMES.denim;
+
+    return getDefaultThemeByAppearance();
 }
 
 export function resetToHome(passProps = {}) {
@@ -145,7 +148,7 @@ export function resetToHome(passProps = {}) {
 }
 
 export function resetToSelectServer(passProps: LaunchProps) {
-    const theme = getThemeFromState();
+    const theme = getDefaultThemeByAppearance();
     const isDark = tinyColor(theme.centerChannelBg).isDark();
     StatusBar.setBarStyle(isDark ? 'light-content' : 'dark-content');
 
@@ -565,7 +568,9 @@ export async function bottomSheet({title, renderContent, snapPoints, initialSnap
             snapPoints,
         }, {
             modalPresentationStyle: OptionsModalPresentationStyle.formSheet,
-            swipeToDismiss: true,
+            modal: {
+                swipeToDismiss: true,
+            },
             topBar: {
                 leftButtons: [{
                     id: closeButtonId,
@@ -586,6 +591,6 @@ export async function bottomSheet({title, renderContent, snapPoints, initialSnap
             initialSnapIndex,
             renderContent,
             snapPoints,
-        }, {swipeToDismiss: true});
+        }, {modal: {swipeToDismiss: true}});
     }
 }

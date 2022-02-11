@@ -9,7 +9,7 @@ import DocumentPicker, {DocumentPickerResponse} from 'react-native-document-pick
 import {Asset, CameraOptions, ImageLibraryOptions, ImagePickerResponse, launchCamera, launchImageLibrary} from 'react-native-image-picker';
 import Permissions, {AndroidPermission, IOSPermission} from 'react-native-permissions';
 
-import {Navigation} from '@constants';
+import {Events} from '@constants';
 import {extractFileInfo, lookupMimeType} from '@utils/file';
 
 const ShareExtension = NativeModules.MattermostShare;
@@ -101,7 +101,7 @@ export default class FilePickerUtil {
         const out = await extractFileInfo(files);
 
         if (out.length > 0) {
-            DeviceEventEmitter.emit(Navigation.NAVIGATION_CLOSE_MODAL);
+            DeviceEventEmitter.emit(Events.CLOSE_BOTTOM_SHEET);
             this.uploadFiles(out);
         }
     };
