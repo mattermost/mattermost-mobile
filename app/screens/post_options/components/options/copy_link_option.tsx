@@ -11,7 +11,7 @@ const CopyPermalinkOption = () => {
     };
     return (
         <BaseOption
-            i18nId='get_post_link_modal.title'
+            i18nId={t('get_post_link_modal.title')}
             defaultMessage='Copy Link'
             onPress={handleCopyLink}
             iconName='link-variant'

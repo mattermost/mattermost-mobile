@@ -12,11 +12,11 @@ type CopyTextProps = {
 }
 
 const SaveOption = ({isSaved}: CopyTextProps) => {
-    const handleUnflagPost = () => {
+    const handleUnsavePost = () => {
         //todo:
     };
 
-    const handleFlagPost = () => {
+    const handleSavePost = () => {
         //todo:
     };
 

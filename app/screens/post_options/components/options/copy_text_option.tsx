@@ -11,7 +11,7 @@ const CopyTextOption = () => {
     };
     return (
         <BaseOption
-            i18nId='mobile.post_info.copy_text'
+            i18nId={t('mobile.post_info.copy_text')}
             defaultMessage='Copy Text'
             iconName='content-copy'
             onPress={handleCopyText}
