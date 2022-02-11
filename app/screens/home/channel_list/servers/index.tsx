@@ -92,6 +92,7 @@ export default function Servers() {
         for (const [key, map] of subscriptionsToRemove) {
             map.subscription?.unsubscribe();
             subscriptions.delete(key);
+            updateTotal();
         }
 
         for (const server of servers) {
@@ -103,9 +104,10 @@ export default function Servers() {
                 };
                 subscriptions.set(url, unreads);
                 unreads.subscription = subscribeUnreadAndMentionsByServer(url, unreadsSubscription);
-            } else if (subscriptions.has(url)) {
+            } else if ((!lastActiveAt || url === currentServerUrl) && subscriptions.has(url)) {
                 subscriptions.get(url)?.subscription?.unsubscribe();
                 subscriptions.delete(url);
+                updateTotal();
             }
         }
     };
