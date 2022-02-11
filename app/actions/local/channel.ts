@@ -284,11 +284,10 @@ export const updateLastPostAt = async (serverUrl: string, channelId: string, las
         return {error: 'not a member'};
     }
 
-    if (lastPostAt > member.lastPostAt) {
-        member.prepareUpdate((m) => {
-            m.lastPostAt = lastPostAt;
-        });
-    }
+    const timestamp = lastPostAt > member.lastPostAt ? lastPostAt : member.lastPostAt;
+    member.prepareUpdate((m) => {
+        m.lastPostAt = timestamp;
+    });
 
     try {
         if (!prepareRecordsOnly) {
