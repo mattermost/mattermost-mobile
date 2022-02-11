@@ -2,7 +2,8 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback, useEffect} from 'react';
-import {Text, View} from 'react-native';
+import {useIntl} from 'react-intl';
+import {DeviceEventEmitter, Text, View} from 'react-native';
 import Animated, {useAnimatedStyle, useSharedValue, withTiming} from 'react-native-reanimated';
 
 import {ITEM_HEIGHT} from '@app/components/slide_up_panel_item';
@@ -10,9 +11,10 @@ import {useIsTablet} from '@app/hooks/device';
 import PlusMenuList from '@app/screens/home/channel_list/plus_menu';
 import CompassIcon from '@components/compass_icon';
 import TouchableWithFeedback from '@components/touchable_with_feedback';
+import {Events, Screens} from '@constants';
 import {useServerDisplayName} from '@context/server';
 import {useTheme} from '@context/theme';
-import {bottomSheet} from '@screens/navigation';
+import {bottomSheet, showModal} from '@screens/navigation';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
@@ -59,6 +61,7 @@ const getStyles = makeStyleSheetFromTheme((theme: Theme) => ({
 const ChannelListHeader = ({displayName, iconPad}: Props) => {
     const theme = useTheme();
     const isTablet = useIsTablet();
+    const intl = useIntl();
     const serverDisplayName = useServerDisplayName();
     const marginLeft = useSharedValue(iconPad ? 44 : 0);
     const styles = getStyles(theme);
@@ -77,7 +80,15 @@ const ChannelListHeader = ({displayName, iconPad}: Props) => {
                     <PlusMenuList
                         pickerAction='browseChannels'
                         onPress={() => {
-                            //this is a click
+                            DeviceEventEmitter.emit(Events.CLOSE_BOTTOM_SHEET);
+                            const showBrowseChannelModal = async () => {
+                                const title = intl.formatMessage({id: 'browse_channels.title', defaultMessage: 'More Channels'});
+                                const closeButton = await CompassIcon.getImageSource('close', 24, theme.sidebarHeaderTextColor);
+                                showModal(Screens.BROWSE_CHANNELS, title, {
+                                    closeButton,
+                                });
+                            };
+                            showBrowseChannelModal();
                         }}
                     />
                     <PlusMenuList
@@ -104,7 +115,7 @@ const ChannelListHeader = ({displayName, iconPad}: Props) => {
             theme,
             title: 'Plus Menu',
         });
-    }, [isTablet, theme]);
+    }, [intl, isTablet, theme]);
 
     return (
         <Animated.View style={animatedStyle}>
@@ -121,11 +132,13 @@ const ChannelListHeader = ({displayName, iconPad}: Props) => {
                         />
                     </TouchableWithFeedback>
                 </View>
-                <TouchableWithFeedback style={styles.plusButton}>
+                <TouchableWithFeedback
+                    style={styles.plusButton}
+                    onPress={onPress}
+                >
                     <CompassIcon
                         style={styles.plusIcon}
                         name={'plus'}
-                        onPress={onPress}
                     />
                 </TouchableWithFeedback>
             </View>

@@ -2,6 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React from 'react';
+import {useIntl} from 'react-intl';
 import {View} from 'react-native';
 
 import SlideUpPanelItem from '@app/components/slide_up_panel_item';
@@ -12,22 +13,22 @@ type PlusMenuItemProps = {
 };
 
 const PlusMenuList = ({pickerAction, onPress}: PlusMenuItemProps) => {
+    const intl = useIntl();
+
     const menuItems = {
         browseChannels: {
             icon: 'globe',
-            text: 'Browse Channels',
+            text: intl.formatMessage({id: 'plus_menu.browse_channels.title', defaultMessage: 'Browse Channels'}),
         },
 
         createNewChannel: {
             icon: 'plus',
-            text: 'Create New Channel',
-            onPress: {},
+            text: intl.formatMessage({id: 'plus_menu.create_new_channel.title', defaultMessage: 'Create New Channel'}),
         },
 
         openDirectMessage: {
             icon: 'account-outline',
-            text: 'Open a Direct Message',
-            onPress: {},
+            text: intl.formatMessage({id: 'plus_menu.open_direct_message.title', defaultMessage: 'Open a Direct Message'}),
         },
     };
     const itemType = menuItems[pickerAction];
