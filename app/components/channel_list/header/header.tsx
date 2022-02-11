@@ -1,17 +1,18 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useEffect} from 'react';
-import {useIntl} from 'react-intl';
+import React, {useCallback, useEffect} from 'react';
 import {Text, View} from 'react-native';
 import Animated, {useAnimatedStyle, useSharedValue, withTiming} from 'react-native-reanimated';
 
+import {ITEM_HEIGHT} from '@app/components/slide_up_panel_item';
+import {useIsTablet} from '@app/hooks/device';
+import PlusMenuList from '@app/screens/home/channel_list/plus_menu';
 import CompassIcon from '@components/compass_icon';
 import TouchableWithFeedback from '@components/touchable_with_feedback';
-import {Screens} from '@constants';
 import {useServerDisplayName} from '@context/server';
 import {useTheme} from '@context/theme';
-import {showModal} from '@screens/navigation';
+import {bottomSheet} from '@screens/navigation';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
@@ -57,6 +58,7 @@ const getStyles = makeStyleSheetFromTheme((theme: Theme) => ({
 
 const ChannelListHeader = ({displayName, iconPad}: Props) => {
     const theme = useTheme();
+    const isTablet = useIsTablet();
     const serverDisplayName = useServerDisplayName();
     const marginLeft = useSharedValue(iconPad ? 44 : 0);
     const styles = getStyles(theme);
@@ -64,11 +66,45 @@ const ChannelListHeader = ({displayName, iconPad}: Props) => {
         marginLeft: withTiming(marginLeft.value, {duration: 350}),
     }), []);
 
-    const intl = useIntl();
-
     useEffect(() => {
         marginLeft.value = iconPad ? 44 : 0;
     }, [iconPad]);
+
+    const onPress = useCallback(() => {
+        const renderContent = () => {
+            return (
+                <>
+                    <PlusMenuList
+                        pickerAction='browseChannels'
+                        onPress={() => {
+                            //this is a click
+                        }}
+                    />
+                    <PlusMenuList
+                        pickerAction='createNewChannel'
+                        onPress={() => {
+                            //this is a click
+                        }}
+                    />
+                    <PlusMenuList
+                        pickerAction='openDirectMessage'
+                        onPress={() => {
+                            //this is a click
+                        }}
+                    />
+                </>
+            );
+        };
+
+        const closeButtonId = 'close-plus-menu';
+        bottomSheet({
+            closeButtonId,
+            renderContent,
+            snapPoints: [4 * ITEM_HEIGHT, 10],
+            theme,
+            title: 'Plus Menu',
+        });
+    }, [isTablet, theme]);
 
     return (
         <Animated.View style={animatedStyle}>
@@ -89,13 +125,7 @@ const ChannelListHeader = ({displayName, iconPad}: Props) => {
                     <CompassIcon
                         style={styles.plusIcon}
                         name={'plus'}
-                        onPress={async () => {
-                            const title = intl.formatMessage({id: 'browse_channels.title', defaultMessage: 'More Channels'});
-                            const closeButton = await CompassIcon.getImageSource('close', 24, theme.sidebarHeaderTextColor);
-                            showModal(Screens.BROWSE_CHANNELS, title, {
-                                closeButton,
-                            });
-                        }}
+                        onPress={onPress}
                     />
                 </TouchableWithFeedback>
             </View>
