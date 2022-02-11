@@ -61,7 +61,10 @@ export async function handleNewPostEvent(serverUrl: string, msg: WebSocketMessag
     // Ensure the channel membership
     let myChannel = await queryMyChannel(operator.database, post.channel_id);
     if (myChannel) {
-        await updateLastPostAt(serverUrl, post.channel_id, post.create_at, false);
+        const {member} = await updateLastPostAt(serverUrl, post.channel_id, post.create_at, false);
+        if (member) {
+            myChannel = member;
+        }
     } else {
         const myChannelRequest = await fetchMyChannel(serverUrl, '', post.channel_id, true);
         if (myChannelRequest.error) {
@@ -142,7 +145,7 @@ export async function handleNewPostEvent(serverUrl: string, msg: WebSocketMessag
                 models.push(viewedAt);
             }
         } else {
-            const hasMentions = msg.data.mentions.includes(currentUserId);
+            const hasMentions = msg.data.mentions?.includes(currentUserId);
             preparedMyChannelHack(myChannel);
             const {member: unreadAt} = await markChannelAsUnread(
                 serverUrl,
