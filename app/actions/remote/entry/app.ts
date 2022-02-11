@@ -32,7 +32,7 @@ export const appEntry = async (serverUrl: string) => {
         return {error: fetchedError};
     }
 
-    const {initialTeamId, teamData, categoryData, chData, prefData, meData, removeTeamIds, removeChannelIds} = fetchedData as AppEntryData;
+    const {initialTeamId, teamData, chData, prefData, meData, removeTeamIds, removeChannelIds} = fetchedData as AppEntryData;
     const rolesData = await fetchRoles(serverUrl, teamData?.memberships, chData?.memberships, meData?.user, true);
 
     if (initialTeamId === currentTeamId) {
@@ -74,7 +74,7 @@ export const appEntry = async (serverUrl: string) => {
         removeChannels = await queryChannelsById(database, removeChannelIds);
     }
 
-    const modelPromises = await prepareModels({operator, initialTeamId, removeTeams, removeChannels, teamData, categoryData, chData, prefData, meData});
+    const modelPromises = await prepareModels({operator, initialTeamId, removeTeams, removeChannels, teamData, chData, prefData, meData});
     if (rolesData.roles?.length) {
         modelPromises.push(operator.handleRole({roles: rolesData.roles, prepareRecordsOnly: true}));
     }
