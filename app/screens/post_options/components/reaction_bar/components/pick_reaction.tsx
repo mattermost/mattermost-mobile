@@ -3,9 +3,9 @@
 
 import React from 'react';
 import {View} from 'react-native';
-import {useTheme} from 'react-native-elements';
 
 import CompassIcon from '@components/compass_icon';
+import {useTheme} from '@context/theme';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
