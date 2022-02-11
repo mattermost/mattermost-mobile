@@ -5,14 +5,14 @@ import React from 'react';
 import {useIntl} from 'react-intl';
 import {View} from 'react-native';
 
-import SlideUpPanelItem from '@app/components/slide_up_panel_item';
+import SlideUpPanelItem from '@components/slide_up_panel_item';
 
 type PlusMenuItemProps = {
     pickerAction: 'browseChannels' | 'createNewChannel' | 'openDirectMessage';
     onPress: () => void;
 };
 
-const PlusMenuList = ({pickerAction, onPress}: PlusMenuItemProps) => {
+const PlusMenuItem = ({pickerAction, onPress}: PlusMenuItemProps) => {
     const intl = useIntl();
 
     const menuItems = {
@@ -43,4 +43,4 @@ const PlusMenuList = ({pickerAction, onPress}: PlusMenuItemProps) => {
     );
 };
 
-export default PlusMenuList;
+export default PlusMenuItem;

@@ -3,24 +3,27 @@
 
 import React, {useCallback, useEffect} from 'react';
 import {useIntl} from 'react-intl';
-import {DeviceEventEmitter, Text, View} from 'react-native';
+import {Text, View} from 'react-native';
 import Animated, {useAnimatedStyle, useSharedValue, withTiming} from 'react-native-reanimated';
+import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
-import {ITEM_HEIGHT} from '@app/components/slide_up_panel_item';
-import {useIsTablet} from '@app/hooks/device';
-import PlusMenuList from '@app/screens/home/channel_list/plus_menu';
 import CompassIcon from '@components/compass_icon';
+import {ITEM_HEIGHT} from '@components/slide_up_panel_item';
 import TouchableWithFeedback from '@components/touchable_with_feedback';
-import {Events, Screens} from '@constants';
 import {useServerDisplayName} from '@context/server';
 import {useTheme} from '@context/theme';
-import {bottomSheet, showModal} from '@screens/navigation';
+import {useIsTablet} from '@hooks/device';
+import {bottomSheet} from '@screens/navigation';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
+
+import PlusMenu from './plus_menu';
 
 type Props = {
     displayName: string;
     iconPad?: boolean;
+
+    onHeaderPress?: () => void;
 }
 
 const getStyles = makeStyleSheetFromTheme((theme: Theme) => ({
@@ -58,10 +61,11 @@ const getStyles = makeStyleSheetFromTheme((theme: Theme) => ({
     },
 }));
 
-const ChannelListHeader = ({displayName, iconPad}: Props) => {
+const ChannelListHeader = ({displayName, iconPad, onHeaderPress}: Props) => {
     const theme = useTheme();
     const isTablet = useIsTablet();
     const intl = useIntl();
+    const insets = useSafeAreaInsets();
     const serverDisplayName = useServerDisplayName();
     const marginLeft = useSharedValue(iconPad ? 44 : 0);
     const styles = getStyles(theme);
@@ -75,66 +79,43 @@ const ChannelListHeader = ({displayName, iconPad}: Props) => {
 
     const onPress = useCallback(() => {
         const renderContent = () => {
-            return (
-                <>
-                    <PlusMenuList
-                        pickerAction='browseChannels'
-                        onPress={() => {
-                            DeviceEventEmitter.emit(Events.CLOSE_BOTTOM_SHEET);
-                            const showBrowseChannelModal = async () => {
-                                const title = intl.formatMessage({id: 'browse_channels.title', defaultMessage: 'More Channels'});
-                                const closeButton = await CompassIcon.getImageSource('close', 24, theme.sidebarHeaderTextColor);
-                                showModal(Screens.BROWSE_CHANNELS, title, {
-                                    closeButton,
-                                });
-                            };
-                            showBrowseChannelModal();
-                        }}
-                    />
-                    <PlusMenuList
-                        pickerAction='createNewChannel'
-                        onPress={() => {
-                            //this is a click
-                        }}
-                    />
-                    <PlusMenuList
-                        pickerAction='openDirectMessage'
-                        onPress={() => {
-                            //this is a click
-                        }}
-                    />
-                </>
-            );
+            return (<PlusMenu/>);
         };
 
         const closeButtonId = 'close-plus-menu';
         bottomSheet({
             closeButtonId,
             renderContent,
-            snapPoints: [4 * ITEM_HEIGHT, 10],
+            snapPoints: [(4 * ITEM_HEIGHT) + insets.bottom, 10],
             theme,
-            title: 'Plus Menu',
+            title: intl.formatMessage({id: 'home.header.plus_menu', defaultMessage: 'Options'}),
         });
-    }, [intl, isTablet, theme]);
+    }, [intl, insets, isTablet, theme]);
 
     return (
         <Animated.View style={animatedStyle}>
             {Boolean(displayName) &&
             <View style={styles.headerRow}>
-                <View style={styles.headerRow}>
-                    <Text style={styles.headingStyles}>
-                        {displayName}
-                    </Text>
-                    <TouchableWithFeedback style={styles.chevronButton}>
-                        <CompassIcon
-                            style={styles.chevronIcon}
-                            name={'chevron-down'}
-                        />
-                    </TouchableWithFeedback>
-                </View>
                 <TouchableWithFeedback
-                    style={styles.plusButton}
+                    onPress={onHeaderPress}
+                    type='opacity'
+                >
+                    <View style={styles.headerRow}>
+                        <Text style={styles.headingStyles}>
+                            {displayName}
+                        </Text>
+                        <View style={styles.chevronButton}>
+                            <CompassIcon
+                                style={styles.chevronIcon}
+                                name={'chevron-down'}
+                            />
+                        </View>
+                    </View>
+                </TouchableWithFeedback>
+                <TouchableWithFeedback
                     onPress={onPress}
+                    style={styles.plusButton}
+                    type='opacity'
                 >
                     <CompassIcon
                         style={styles.plusIcon}

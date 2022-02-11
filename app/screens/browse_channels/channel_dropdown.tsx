@@ -3,7 +3,8 @@
 
 import React from 'react';
 import {useIntl} from 'react-intl';
-import {View, Text} from 'react-native';
+import {View, Text, Platform} from 'react-native';
+import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import CompassIcon from '@components/compass_icon';
 import {ITEM_HEIGHT} from '@components/slide_up_panel_item';
@@ -39,8 +40,6 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme: Theme) => {
     };
 });
 
-const BOTTOM_SHEET_HEIGHT_BASE = 55; // Magic number
-
 export default function ChannelDropdown({
     typeOfChannels,
     onPress,
@@ -48,6 +47,7 @@ export default function ChannelDropdown({
     sharedChannelsEnabled,
 }: Props) {
     const intl = useIntl();
+    const insets = useSafeAreaInsets();
     const theme = useTheme();
     const style = getStyleFromTheme(theme);
 
@@ -72,10 +72,11 @@ export default function ChannelDropdown({
             items += 1;
         }
 
+        const itemsSnap = ((items + 1) * ITEM_HEIGHT) + insets.bottom + TITLE_HEIGHT + Platform.select({ios: ITEM_HEIGHT, default: 0});
         bottomSheet({
             title: intl.formatMessage({id: 'browse_channels.dropdownTitle', defaultMessage: 'Show'}),
             renderContent,
-            snapPoints: [(items * ITEM_HEIGHT) + TITLE_HEIGHT + BOTTOM_SHEET_HEIGHT_BASE, 10],
+            snapPoints: [itemsSnap, 10],
             closeButtonId: 'close',
             theme,
         });
