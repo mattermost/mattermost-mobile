@@ -210,9 +210,9 @@ export const fetchPostsForChannel = async (serverUrl: string, channelId: string,
             for (const post of data.posts) {
                 lastPostAt = post.create_at > lastPostAt ? post.create_at : lastPostAt;
             }
-            const {models: memberModels} = await updateLastPostAt(serverUrl, channelId, lastPostAt, true);
-            if (memberModels?.length) {
-                models.push(...memberModels);
+            const {member: memberModel} = await updateLastPostAt(serverUrl, channelId, lastPostAt, true);
+            if (memberModel) {
+                models.push(memberModel);
             }
 
             if (models.length) {
