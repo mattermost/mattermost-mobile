@@ -36,7 +36,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             alignItems: 'center',
             height: REACTION_PICKER_HEIGHT,
             justifyContent: 'space-between',
-            marginTop: -16,
         },
     };
 });
@@ -75,10 +74,7 @@ const ReactionBar = ({recentEmojis = [], theme}: QuickReactionProps) => {
 
     return (
         <View
-            style={[
-                styles.container,
-                isTablet && {marginTop: 16},
-            ]}
+            style={styles.container}
         >
             {
                 recentEmojis.map((emoji) => {
