@@ -2,6 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {Model, Q} from '@nozbe/watermelondb';
+import {chunk} from 'lodash';
 
 import {updateChannelsDisplayName} from '@actions/local/channel';
 import {updateRecentCustomStatuses, updateLocalUser} from '@actions/local/user';
@@ -114,8 +115,14 @@ export const fetchProfilesInChannel = async (serverUrl: string, channelId: strin
 
 export const fetchProfilesPerChannels = async (serverUrl: string, channelIds: string[], excludeUserId?: string, fetchOnly = false): Promise<ProfilesPerChannelRequest> => {
     try {
-        const requests = channelIds.map((id) => fetchProfilesInChannel(serverUrl, id, excludeUserId, true));
-        const data = await Promise.all(requests);
+        // Batch fetching profiles per channel by chunks of 50
+        const channels = chunk(channelIds, 50);
+        const data: ProfilesInChannelRequest[] = [];
+        for await (const cIds of channels) {
+            const requests = cIds.map((id) => fetchProfilesInChannel(serverUrl, id, excludeUserId, true));
+            const response = await Promise.all(requests);
+            data.push(...response);
+        }
 
         if (!fetchOnly) {
             const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
