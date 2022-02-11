@@ -2,9 +2,14 @@
 // See LICENSE.txt for license information.
 
 import {IntlShape} from 'react-intl';
-import {Alert, AlertButton} from 'react-native';
+import {Alert, AlertButton, DeviceEventEmitter} from 'react-native';
 
-import {SupportedServer} from '@constants';
+import CompassIcon from '@components/compass_icon';
+import {Events, Screens, SupportedServer} from '@constants';
+import {showModal} from '@screens/navigation';
+import EphemeralStore from '@store/ephemeral_store';
+import {LaunchType} from '@typings/launch';
+import {changeOpacity} from '@utils/theme';
 import {tryOpenURL} from '@utils/url';
 
 export function unsupportedServer(isSystemAdmin: boolean, intl: IntlShape) {
@@ -26,6 +31,50 @@ export function semverFromServerVersion(value: string) {
     const patch = parseInt(split[2] || '0', 10);
 
     return `${major}.${minor}.${patch}`;
+}
+
+export async function addNewServer(theme: Theme, serverUrl?: string, displayName?: string) {
+    DeviceEventEmitter.emit(Events.CLOSE_BOTTOM_SHEET);
+
+    await EphemeralStore.waitUntilScreensIsRemoved(Screens.BOTTOM_SHEET);
+    const closeButton = CompassIcon.getImageSourceSync('close', 24, changeOpacity(theme.centerChannelColor, 0.56));
+    const closeButtonId = 'close-server';
+    const props = {
+        closeButtonId,
+        displayName,
+        launchType: LaunchType.AddServer,
+        serverUrl,
+        theme,
+    };
+    const options = {
+        layout: {
+            backgroundColor: theme.centerChannelBg,
+            componentBackgroundColor: theme.centerChannelBg,
+        },
+        modal: {swipeToDismiss: false},
+        topBar: {
+            visible: true,
+            drawBehind: true,
+            translucid: true,
+            noBorder: true,
+            elevation: 0,
+            background: {color: 'transparent'},
+            leftButtons: [{
+                id: closeButtonId,
+                icon: closeButton,
+                testID: 'close.server.button',
+            }],
+            leftButtonColor: undefined,
+            title: {color: theme.sidebarHeaderTextColor},
+            scrollEdgeAppearance: {
+                active: true,
+                noBorder: true,
+                translucid: true,
+            },
+        },
+    };
+
+    showModal(Screens.SERVER, '', props, options);
 }
 
 function unsupportedServerAdminAlert(intl: IntlShape) {
