@@ -21,7 +21,7 @@ import {t} from '@i18n';
 import NetworkManager from '@init/network_manager';
 import {queryServerByDisplayName, queryServerByIdentifier} from '@queries/app/servers';
 import Background from '@screens/background';
-import {goToScreen, loginAnimationOptions} from '@screens/navigation';
+import {dismissModal, goToScreen, loginAnimationOptions} from '@screens/navigation';
 import {DeepLinkWithData, LaunchProps, LaunchType} from '@typings/launch';
 import {getErrorMessage} from '@utils/client_error';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
@@ -31,6 +31,7 @@ import ServerForm from './form';
 import ServerHeader from './header';
 
 interface ServerProps extends LaunchProps {
+    closeButtonId?: string;
     componentId: string;
     theme: Theme;
 }
@@ -44,7 +45,16 @@ const defaultServerUrlMessage = {
 
 const AnimatedSafeArea = Animated.createAnimatedComponent(SafeAreaView);
 
-const Server = ({componentId, extra, launchType, launchError, theme}: ServerProps) => {
+const Server = ({
+    closeButtonId,
+    componentId,
+    displayName: defaultDisplayName,
+    extra,
+    launchType,
+    launchError,
+    serverUrl: defaultServerUrl,
+    theme,
+}: ServerProps) => {
     const intl = useIntl();
     const managedConfig = useManagedConfig<ManagedConfig>();
     const dimensions = useWindowDimensions();
@@ -60,7 +70,7 @@ const Server = ({componentId, extra, launchType, launchError, theme}: ServerProp
     const {formatMessage} = intl;
 
     useEffect(() => {
-        const serverName = managedConfig?.serverName || LocalConfig.DefaultServerName;
+        let serverName = managedConfig?.serverName || LocalConfig.DefaultServerName;
         let serverUrl = managedConfig?.serverUrl || LocalConfig.DefaultServerUrl;
         let autoconnect = managedConfig?.allowOtherServers === 'false' || LocalConfig.AutoSelectServerUrl;
 
@@ -78,6 +88,9 @@ const Server = ({componentId, extra, launchType, launchError, theme}: ServerProp
                 autoconnect = true;
                 serverUrl = deepLinkServerUrl;
             }
+        } else if (launchType === LaunchType.AddServer) {
+            serverName = defaultDisplayName;
+            serverUrl = defaultServerUrl;
         }
 
         if (serverUrl) {
@@ -119,6 +132,16 @@ const Server = ({componentId, extra, launchType, launchError, theme}: ServerProp
 
         return () => unsubscribe.remove();
     }, [componentId, url, dimensions]);
+
+    useEffect(() => {
+        const navigationEvents = Navigation.events().registerNavigationButtonPressedListener(({buttonId}) => {
+            if (closeButtonId && buttonId === closeButtonId) {
+                dismissModal({componentId});
+            }
+        });
+
+        return () => navigationEvents.remove();
+    }, []);
 
     const displayLogin = (serverUrl: string, config: ClientConfig, license: ClientLicense) => {
         const isLicensed = license.IsLicensed === 'true';
@@ -310,7 +333,10 @@ const Server = ({componentId, extra, launchType, launchError, theme}: ServerProp
                     scrollToOverflowEnabled={true}
                     style={styles.flex}
                 >
-                    <ServerHeader theme={theme}/>
+                    <ServerHeader
+                        additionalServer={launchType === LaunchType.AddServer}
+                        theme={theme}
+                    />
                     <ServerForm
                         buttonDisabled={buttonDisabled}
                         connecting={connecting}
