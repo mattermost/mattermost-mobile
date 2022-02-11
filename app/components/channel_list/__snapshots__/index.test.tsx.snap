@@ -142,7 +142,7 @@ exports[`components/channel_list should match snapshot 1`] = `
           >
             <View
               accessible={true}
-              focusable={false}
+              focusable={true}
               onClick={[Function]}
               onResponderGrant={[Function]}
               onResponderMove={[Function]}
@@ -163,7 +163,6 @@ exports[`components/channel_list should match snapshot 1`] = `
             >
               <Icon
                 name="plus"
-                onPress={[Function]}
                 style={
                   Object {
                     "color": "rgba(255,255,255,0.8)",

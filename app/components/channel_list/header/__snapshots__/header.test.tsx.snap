@@ -105,7 +105,7 @@ exports[`components/channel_list/header Channel List Header Component should mat
     >
       <View
         accessible={true}
-        focusable={false}
+        focusable={true}
         onClick={[Function]}
         onResponderGrant={[Function]}
         onResponderMove={[Function]}
@@ -126,7 +126,6 @@ exports[`components/channel_list/header Channel List Header Component should mat
       >
         <Icon
           name="plus"
-          onPress={[Function]}
           style={
             Object {
               "color": "rgba(255,255,255,0.8)",
