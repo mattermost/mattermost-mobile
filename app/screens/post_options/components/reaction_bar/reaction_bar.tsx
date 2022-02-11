@@ -95,7 +95,6 @@ const ReactionBar = ({recentEmojis = [], theme}: QuickReactionProps) => {
             }
             <PickReaction
                 openEmojiPicker={openEmojiPicker}
-                theme={theme}
                 width={containerSize}
                 height={containerSize}
             />

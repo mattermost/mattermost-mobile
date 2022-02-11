@@ -3,6 +3,7 @@
 
 import React from 'react';
 import {View} from 'react-native';
+import {useTheme} from 'react-native-elements';
 
 import CompassIcon from '@components/compass_icon';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
@@ -25,11 +26,11 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
 
 type PickReactionProps = {
     openEmojiPicker: () => void;
-    theme: Theme;
     width: number;
     height: number;
 }
-const PickReaction = ({openEmojiPicker, theme, width, height}: PickReactionProps) => {
+const PickReaction = ({openEmojiPicker, width, height}: PickReactionProps) => {
+    const theme = useTheme();
     const styles = getStyleSheet(theme);
     return (
         <View
