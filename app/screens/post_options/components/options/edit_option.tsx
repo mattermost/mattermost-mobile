@@ -18,7 +18,7 @@ const EditOption = () => {
             defaultMessage='Edit'
             onPress={handleEdit}
             iconName='pencil-outline'
-            optionType='post.options.edit'
+            testID='post.options.edit'
         />
     );
 };

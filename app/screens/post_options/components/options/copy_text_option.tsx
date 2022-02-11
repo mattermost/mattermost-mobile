@@ -15,7 +15,7 @@ const CopyTextOption = () => {
             defaultMessage='Copy Text'
             iconName='content-copy'
             onPress={handleCopyText}
-            optionType='post.options.copy.text'
+            testID='post.options.copy.text'
         />
     );
 };

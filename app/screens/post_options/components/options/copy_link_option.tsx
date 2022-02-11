@@ -15,7 +15,7 @@ const CopyPermalinkOption = () => {
             defaultMessage='Copy Link'
             onPress={handleCopyLink}
             iconName='link-variant'
-            optionType='post.options.copy.permalink'
+            testID='post.options.copy.permalink'
         />
     );
 };

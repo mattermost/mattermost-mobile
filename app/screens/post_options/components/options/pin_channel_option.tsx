@@ -42,7 +42,7 @@ const PinChannelOption = ({isPostPinned}: PinChannelProps) => {
             defaultMessage={config.message.defaultMessage}
             iconName={config.icon}
             onPress={config.onPress}
-            optionType={`post.options.${config.key}.channel`}
+            testID={`post.options.${config.key}.channel`}
         />
     );
 };

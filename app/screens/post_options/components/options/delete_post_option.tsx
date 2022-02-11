@@ -17,7 +17,7 @@ const DeletePostOption = () => {
             defaultMessage='Delete'
             iconName='trash-can-outline'
             onPress={handleDeletePost}
-            optionType='post.options.delete.post'
+            testID='post.options.delete.post'
             isDestructive={true}
         />
     );

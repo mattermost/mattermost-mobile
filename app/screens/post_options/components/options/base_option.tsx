@@ -28,7 +28,7 @@ type BaseOptionType = {
     defaultMessage: string;
     iconName: string;
     onPress: () => void;
-    optionType: string;
+    testID: string;
     isDestructive?: boolean;
 }
 
@@ -37,7 +37,7 @@ const BaseOption = ({
     defaultMessage,
     iconName,
     onPress,
-    optionType,
+    testID,
     isDestructive = false,
 }: BaseOptionType) => {
     const theme = useTheme();
@@ -52,7 +52,7 @@ const BaseOption = ({
 
     return (
         <MenuItem
-            testID={optionType}
+            testID={testID}
             labelComponent={
                 <FormattedText
                     id={i18nId}

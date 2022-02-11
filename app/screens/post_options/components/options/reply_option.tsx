@@ -15,7 +15,7 @@ const ReplyOption = () => {
             defaultMessage='Reply'
             iconName='reply-outline'
             onPress={handleReply}
-            optionType='post.options.reply'
+            testID='post.options.reply'
         />
     );
 };

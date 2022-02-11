@@ -17,7 +17,7 @@ const MarkAsUnreadOption = () => {
             defaultMessage='Mark as Unread'
             iconName='mark-as-unread'
             onPress={handleMarkUnread}
-            optionType='post.options.mark.unread'
+            testID='post.options.mark.unread'
         />
     );
 };
