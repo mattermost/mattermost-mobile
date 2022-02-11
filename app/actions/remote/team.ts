@@ -13,7 +13,6 @@ import {prepareCommonSystemValues, queryCurrentTeamId} from '@queries/servers/sy
 import {addTeamToTeamHistory, prepareDeleteTeam, prepareMyTeams, queryNthLastChannelFromTeam, queryTeamsById, syncTeamTable} from '@queries/servers/team';
 import {isTablet} from '@utils/helpers';
 
-import {fetchCategories} from './category';
 import {fetchMyChannelsForTeam, switchToChannelById} from './channel';
 import {fetchPostsForChannel, fetchPostsForUnreadChannels} from './post';
 import {fetchRolesIfNeeded} from './role';
@@ -294,10 +293,9 @@ export const handleTeamChange = async (serverUrl: string, teamId: string) => {
     }
 
     const {channels, memberships, error: chError} = await fetchMyChannelsForTeam(serverUrl, teamId);
-    const {error: catError} = await fetchCategories(serverUrl, teamId);
 
-    if (chError || catError) {
-        DeviceEventEmitter.emit(Events.TEAM_LOAD_ERROR, serverUrl, chError || catError);
+    if (chError) {
+        DeviceEventEmitter.emit(Events.TEAM_LOAD_ERROR, serverUrl, chError);
     }
 
     if (channels?.length && memberships?.length) {

@@ -9,7 +9,6 @@ import {prepareMyPreferences} from './preference';
 import {prepareDeleteTeam, prepareMyTeams} from './team';
 import {prepareUsers} from './user';
 
-import type {CategoriesRequest} from '@actions/remote/category';
 import type {MyChannelsRequest} from '@actions/remote/channel';
 import type {MyPreferencesRequest} from '@actions/remote/preference';
 import type {MyTeamsRequest} from '@actions/remote/team';
@@ -24,13 +23,12 @@ type PrepareModelsArgs = {
     removeTeams?: TeamModel[];
     removeChannels?: ChannelModel[];
     teamData?: MyTeamsRequest;
-    categoryData?: CategoriesRequest;
     chData?: MyChannelsRequest;
     prefData?: MyPreferencesRequest;
     meData?: MyUserRequest;
 }
 
-export const prepareModels = async ({operator, initialTeamId, removeTeams, removeChannels, teamData, categoryData, chData, prefData, meData}: PrepareModelsArgs): Promise<Array<Promise<Model[]>>> => {
+export const prepareModels = async ({operator, initialTeamId, removeTeams, removeChannels, teamData, chData, prefData, meData}: PrepareModelsArgs): Promise<Array<Promise<Model[]>>> => {
     const modelPromises: Array<Promise<Model[]>> = [];
 
     if (removeTeams?.length) {
@@ -52,13 +50,13 @@ export const prepareModels = async ({operator, initialTeamId, removeTeams, remov
         }
     }
 
-    if (initialTeamId && categoryData?.categories?.length) {
-        const categoryModels = await prepareCategories(operator, categoryData.categories || []);
+    if (chData?.categories?.length) {
+        const categoryModels = prepareCategories(operator, chData.categories);
         if (categoryModels) {
             modelPromises.push(...categoryModels);
         }
 
-        const categoryChannelModels = await prepareCategoryChannels(operator, categoryData.categories || []);
+        const categoryChannelModels = prepareCategoryChannels(operator, chData.categories);
         if (categoryChannelModels) {
             modelPromises.push(...categoryChannelModels);
         }

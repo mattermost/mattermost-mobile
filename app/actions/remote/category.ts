@@ -2,10 +2,11 @@
 // See LICENSE.txt for license information.
 
 import {storeCategories} from '@actions/local/category';
-import {Client} from '@app/client/rest';
 import NetworkManager from '@init/network_manager';
 
 import {forceLogoutIfNecessary} from './session';
+
+import type {Client} from '@client/rest';
 
 export type CategoriesRequest = {
      categories?: CategoryWithChannels[];

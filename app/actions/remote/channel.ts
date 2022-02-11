@@ -4,6 +4,7 @@
 import {Model} from '@nozbe/watermelondb';
 import {IntlShape} from 'react-intl';
 
+import {storeCategories} from '@actions/local/category';
 import {storeMyChannelsForTeam, switchToChannel} from '@actions/local/channel';
 import {General} from '@constants';
 import DatabaseManager from '@database/manager';
@@ -29,6 +30,7 @@ import type MyTeamModel from '@typings/database/models/servers/my_team';
 import type TeamModel from '@typings/database/models/servers/team';
 
 export type MyChannelsRequest = {
+    categories?: CategoryWithChannels[];
     channels?: Channel[];
     memberships?: ChannelMembership[];
     error?: unknown;
@@ -194,9 +196,11 @@ export const fetchMyChannelsForTeam = async (serverUrl: string, teamId: string, 
     }
 
     try {
-        let [channels, memberships]: [Channel[], ChannelMembership[]] = await Promise.all([
+        // eslint-disable-next-line prefer-const
+        let [channels, memberships, categoriesWithOrder]: [Channel[], ChannelMembership[], CategoriesWithOrder] = await Promise.all([
             client.getMyChannels(teamId, includeDeleted, since),
             client.getMyChannelMembers(teamId),
+            client.getCategories('me', teamId),
         ]);
 
         if (excludeDirect) {
@@ -213,9 +217,10 @@ export const fetchMyChannelsForTeam = async (serverUrl: string, teamId: string, 
 
         if (!fetchOnly) {
             storeMyChannelsForTeam(serverUrl, teamId, channels, memberships);
+            storeCategories(serverUrl, categoriesWithOrder.categories);
         }
 
-        return {channels, memberships};
+        return {channels, memberships, categories: categoriesWithOrder.categories};
     } catch (error) {
         forceLogoutIfNecessary(serverUrl, error as ClientErrorProps);
         return {error};

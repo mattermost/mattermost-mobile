@@ -12,12 +12,12 @@ export const storeCategories = async (serverUrl: string, categories: CategoryWit
         return {error: `${serverUrl} database not found`};
     }
     const modelPromises: Array<Promise<Model[]>> = [];
-    const preparedCategories = await prepareCategories(operator, categories);
+    const preparedCategories = prepareCategories(operator, categories);
     if (preparedCategories) {
         modelPromises.push(...preparedCategories);
     }
 
-    const preparedCategoryChannels = await prepareCategoryChannels(operator, categories);
+    const preparedCategoryChannels = prepareCategoryChannels(operator, categories);
     if (preparedCategoryChannels) {
         modelPromises.push(...preparedCategoryChannels);
     }
