@@ -220,7 +220,8 @@ export const fetchMyChannelsForTeam = async (serverUrl: string, teamId: string, 
             storeCategories(serverUrl, categoriesWithOrder.categories);
         }
 
-        return {channels, memberships, categories: categoriesWithOrder.categories};
+        const {categories} = categoriesWithOrder;
+        return {channels, memberships, categories};
     } catch (error) {
         forceLogoutIfNecessary(serverUrl, error as ClientErrorProps);
         return {error};

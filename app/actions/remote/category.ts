@@ -22,13 +22,13 @@ export const fetchCategories = async (serverUrl: string, teamId: string, fetchOn
     }
 
     try {
-        const categories = await client.getCategories('me', teamId);
+        const {categories} = await client.getCategories('me', teamId);
 
         if (!fetchOnly) {
-            storeCategories(serverUrl, categories.categories);
+            storeCategories(serverUrl, categories);
         }
 
-        return {categories: categories.categories};
+        return {categories};
     } catch (error) {
         forceLogoutIfNecessary(serverUrl, error as ClientErrorProps);
         return {error};
