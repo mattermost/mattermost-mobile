@@ -11,7 +11,7 @@ const ReplyOption = () => {
     };
     return (
         <BaseOption
-            i18nId='mobile.post_info.reply'
+            i18nId={t('mobile.post_info.reply')}
             defaultMessage='Reply'
             iconName='reply-outline'
             onPress={handleReply}

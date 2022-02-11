@@ -13,7 +13,7 @@ const MarkAsUnreadOption = () => {
 
     return (
         <BaseOption
-            i18nId='mobile.post_info.mark_unread'
+            i18nId={t('mobile.post_info.mark_unread')}
             defaultMessage='Mark as Unread'
             iconName='mark-as-unread'
             onPress={handleMarkUnread}
