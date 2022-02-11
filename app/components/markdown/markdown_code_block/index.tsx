@@ -10,9 +10,9 @@ import {DeviceEventEmitter, Keyboard, StyleSheet, Text, TextStyle, View} from 'r
 import FormattedText from '@components/formatted_text';
 import SlideUpPanelItem, {ITEM_HEIGHT} from '@components/slide_up_panel_item';
 import TouchableWithFeedback from '@components/touchable_with_feedback';
-import {Navigation} from '@constants';
+import {Events} from '@constants';
 import {useTheme} from '@context/theme';
-import {goToScreen, showModalOverCurrentContext} from '@screens/navigation';
+import {bottomSheet, goToScreen} from '@screens/navigation';
 import {getDisplayNameForLanguage} from '@utils/markdown';
 import {preventDoubleTap} from '@utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
@@ -136,7 +136,7 @@ const MarkdownCodeBlock = ({language = '', content, textStyle}: MarkdownCodeBloc
                         <SlideUpPanelItem
                             icon='content-copy'
                             onPress={() => {
-                                DeviceEventEmitter.emit(Navigation.NAVIGATION_CLOSE_MODAL);
+                                DeviceEventEmitter.emit(Events.CLOSE_BOTTOM_SHEET);
                                 Clipboard.setString(content);
                             }}
                             testID='at_mention.bottom_sheet.copy_code'
@@ -146,7 +146,7 @@ const MarkdownCodeBlock = ({language = '', content, textStyle}: MarkdownCodeBloc
                             destructive={true}
                             icon='cancel'
                             onPress={() => {
-                                DeviceEventEmitter.emit(Navigation.NAVIGATION_CLOSE_MODAL);
+                                DeviceEventEmitter.emit(Events.CLOSE_BOTTOM_SHEET);
                             }}
                             testID='at_mention.bottom_sheet.cancel'
                             text={intl.formatMessage({id: 'mobile.post.cancel', defaultMessage: 'Cancel'})}
@@ -155,12 +155,15 @@ const MarkdownCodeBlock = ({language = '', content, textStyle}: MarkdownCodeBloc
                 );
             };
 
-            showModalOverCurrentContext('BottomSheet', {
+            bottomSheet({
+                closeButtonId: 'close-code-block',
                 renderContent,
                 snapPoints: [3 * ITEM_HEIGHT, 10],
+                title: intl.formatMessage({id: 'post.options.title', defaultMessage: 'Options'}),
+                theme,
             });
         }
-    }, [managedConfig]);
+    }, [managedConfig, intl, theme]);
 
     const trimContent = (text: string) => {
         const lines = text.split('\n');

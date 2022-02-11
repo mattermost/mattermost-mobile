@@ -6,7 +6,7 @@ import {DeviceEventEmitter, Platform, View} from 'react-native';
 
 import {Client} from '@client/rest';
 import ProfileImage from '@components/profile_picture';
-import {Navigation} from '@constants';
+import {Events} from '@constants';
 import {ACCOUNT_OUTLINE_IMAGE} from '@constants/profile';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
@@ -81,7 +81,7 @@ const EditProfilePicture = ({user, onUpdateProfilePicture}: ChangeProfilePicture
 
         setPictureUrl(pUrl);
         onUpdateProfilePicture({isRemoved, localPath});
-        DeviceEventEmitter.emit(Navigation.NAVIGATION_CLOSE_MODAL);
+        DeviceEventEmitter.emit(Events.CLOSE_BOTTOM_SHEET);
     }, [onUpdateProfilePicture]);
 
     const pictureSource = useMemo(() => {

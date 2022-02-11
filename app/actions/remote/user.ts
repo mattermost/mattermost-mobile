@@ -48,7 +48,12 @@ export const fetchMe = async (serverUrl: string, fetchOnly = false): Promise<MyU
     }
 
     try {
-        const user = await client.getMe();
+        const [user, userStatus] = await Promise.all<[Promise<UserProfile>, Promise<UserStatus>]>([
+            client.getMe(),
+            client.getStatus('me'),
+        ]);
+
+        user.status = userStatus.status;
 
         if (!fetchOnly) {
             const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;

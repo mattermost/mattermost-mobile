@@ -13,10 +13,11 @@ import FormattedText from '@components/formatted_text';
 import ProgressiveImage from '@components/progressive_image';
 import SlideUpPanelItem, {ITEM_HEIGHT} from '@components/slide_up_panel_item';
 import TouchableWithFeedback from '@components/touchable_with_feedback';
-import {Navigation} from '@constants';
+import {Events} from '@constants';
 import {useServerUrl} from '@context/server';
+import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
-import {showModalOverCurrentContext} from '@screens/navigation';
+import {bottomSheet} from '@screens/navigation';
 import {openGallerWithMockFile} from '@utils/gallery';
 import {generateId} from '@utils/general';
 import {calculateDimensions, getViewPortWidth, isGifTooLarge} from '@utils/images';
@@ -54,6 +55,7 @@ const MarkdownImage = ({
 }: MarkdownImageProps) => {
     const intl = useIntl();
     const isTablet = useIsTablet();
+    const theme = useTheme();
     const managedConfig = useManagedConfig();
     const genericFileId = useRef(generateId()).current;
     const metadata = imagesMetadata?.[source] || Object.values(imagesMetadata || {})[0];
@@ -120,7 +122,7 @@ const MarkdownImage = ({
                         <SlideUpPanelItem
                             icon='content-copy'
                             onPress={() => {
-                                DeviceEventEmitter.emit(Navigation.NAVIGATION_CLOSE_MODAL);
+                                DeviceEventEmitter.emit(Events.CLOSE_BOTTOM_SHEET);
                                 Clipboard.setString(linkDestination || source);
                             }}
                             testID='at_mention.bottom_sheet.copy_url'
@@ -130,7 +132,7 @@ const MarkdownImage = ({
                             destructive={true}
                             icon='cancel'
                             onPress={() => {
-                                DeviceEventEmitter.emit(Navigation.NAVIGATION_CLOSE_MODAL);
+                                DeviceEventEmitter.emit(Events.CLOSE_BOTTOM_SHEET);
                             }}
                             testID='at_mention.bottom_sheet.cancel'
                             text={intl.formatMessage({id: 'mobile.post.cancel', defaultMessage: 'Cancel'})}
@@ -139,12 +141,15 @@ const MarkdownImage = ({
                 );
             };
 
-            showModalOverCurrentContext('BottomSheet', {
+            bottomSheet({
+                closeButtonId: 'close-mardown-image',
                 renderContent,
                 snapPoints: [3 * ITEM_HEIGHT, 10],
+                title: intl.formatMessage({id: 'post.options.title', defaultMessage: 'Options'}),
+                theme,
             });
         }
-    }, [managedConfig]);
+    }, [managedConfig, intl, theme]);
 
     const handlePreviewImage = useCallback(() => {
         openGallerWithMockFile(fileInfo.uri, postId, fileInfo.height, fileInfo.width, fileInfo.id);
