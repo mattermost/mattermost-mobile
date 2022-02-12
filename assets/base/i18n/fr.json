@@ -29,6 +29,7 @@
   "apps.error.parser": "Erreur d'interprétation : {error}",
   "apps.error.parser.empty_value": "les valeurs vides ne sont pas autorisées",
   "apps.error.parser.execute_non_leaf": "Vous devez choisir une sous-commande.",
+  "apps.error.parser.missing_binding": "Liens de commande manquants.",
   "apps.error.parser.missing_call": "Appel de lien manquant.",
   "apps.error.parser.missing_field_value": "La valeur du champ est manquante.",
   "apps.error.parser.missing_quote": "Les doubles guillemets doivent être fermés avant la fin du champ de saisie.",
