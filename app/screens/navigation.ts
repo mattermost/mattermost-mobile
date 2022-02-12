@@ -77,9 +77,7 @@ export const loginAnimationOptions = () => {
 
 Navigation.setDefaultOptions({
     layout: {
-
-        //@ts-expect-error all not defined in type definition
-        orientation: [Device.IS_TABLET ? 'all' : 'portrait'],
+        orientation: [Device.IS_TABLET ? 'landscape' : 'portrait'],
     },
 });
 
