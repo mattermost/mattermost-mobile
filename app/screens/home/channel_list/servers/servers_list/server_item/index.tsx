@@ -1,6 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import withObservables from '@nozbe/with-observables';
 import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
 import {DeviceEventEmitter, Text, View} from 'react-native';
@@ -17,7 +18,7 @@ import {useTheme} from '@context/theme';
 import DatabaseManager from '@database/manager';
 import {subscribeServerUnreadAndMentions} from '@database/subscription/unreads';
 import {dismissBottomSheet} from '@screens/navigation';
-import {addNewServer, alertServerLogout, alertServerRemove} from '@utils/server';
+import {addNewServer, alertServerLogout, alertServerRemove, editServer} from '@utils/server';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 import {removeProtocol, stripTrailingSlashes} from '@utils/url';
@@ -178,8 +179,8 @@ const ServerItem = ({isActive, server}: Props) => {
     }, [server, theme, intl]);
 
     const handleEdit = useCallback(() => {
-        // eslint-disable-next-line no-console
-        console.log('ON EDIT');
+        DeviceEventEmitter.emit(Events.SWIPEABLE, '');
+        editServer(theme, server);
     }, [server]);
 
     const handleLogout = useCallback(async () => {
@@ -317,4 +318,8 @@ const ServerItem = ({isActive, server}: Props) => {
     );
 };
 
-export default ServerItem;
+const enhance = withObservables([], ({server}: {server: ServersModel}) => ({
+    server: server.observe(),
+}));
+
+export default enhance(ServerItem);
