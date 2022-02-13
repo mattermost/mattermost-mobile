@@ -1,14 +1,11 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback, useState} from 'react';
+import React, {useCallback} from 'react';
 import {LayoutChangeEvent, Platform, ScrollView, View} from 'react-native';
 import {Edge, SafeAreaView} from 'react-native-safe-area-context';
 
-import Autocomplete from '@components/autocomplete';
 import {useTheme} from '@context/theme';
-import {useIsTablet} from '@hooks/device';
-import {useHeaderHeight} from '@hooks/header';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 import PostInput from '../post_input';
@@ -37,10 +34,10 @@ type Props = {
     uploadFileError: React.ReactNode;
     updateValue: (value: string) => void;
     addFiles: (files: FileInfo[]) => void;
+    updateTop: (top: number) => void;
 }
 
 const SAFE_AREA_VIEW_EDGES: Edge[] = ['left', 'right'];
-const AUTOCOMPLETE_MARGIN = 20;
 
 const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     return {
@@ -91,14 +88,12 @@ export default function DraftInput({
     addFiles,
     updateCursorPosition,
     cursorPosition,
+    updateTop,
 }: Props) {
     const theme = useTheme();
-    const isTablet = useIsTablet();
-
-    const [top, setTop] = useState(0);
 
     const handleLayout = useCallback((e: LayoutChangeEvent) => {
-        setTop(e.nativeEvent.layout.y);
+        updateTop(e.nativeEvent.layout.y);
     }, []);
 
     // Render
@@ -108,24 +103,14 @@ export default function DraftInput({
     const style = getStyleSheet(theme);
 
     // From component/navigation_header/index.tsx and screen/channel/channel.tsx
-    const {defaultHeight} = useHeaderHeight(false, true, false);
-    const autocompleteMaxHeight = Math.min(top - defaultHeight - AUTOCOMPLETE_MARGIN, isTablet ? 200 : 1450);
+    // const {defaultHeight} = useHeaderHeight(false, true, false);
+    // const autocompleteMaxHeight = Math.min(top - defaultHeight - AUTOCOMPLETE_MARGIN, isTablet ? 200 : 1450);
 
     return (
         <>
             <Typing
                 channelId={channelId}
                 rootId={rootId}
-            />
-            <Autocomplete
-                maxHeight={autocompleteMaxHeight}
-                updateValue={updateValue}
-                rootId={rootId}
-                channelId={channelId}
-                offsetY={0}
-                cursorPosition={cursorPosition}
-                value={value}
-                hasFilesAttached={Boolean(files.length)}
             />
             <SafeAreaView
                 edges={SAFE_AREA_VIEW_EDGES}

@@ -4,6 +4,7 @@
 import Fuse from 'fuse.js';
 import React, {useCallback, useEffect, useMemo, useRef} from 'react';
 import {FlatList, Platform, Text, View} from 'react-native';
+import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import {searchCustomEmojis} from '@actions/remote/custom_emoji';
 import {handleReactionToLatestPost} from '@actions/remote/reactions';
@@ -28,7 +29,7 @@ const FUSE_OPTIONS = {
 };
 
 const EMOJI_SIZE = 24;
-const MIN_SEARCH_LENGTH = 3;
+const MIN_SEARCH_LENGTH = 1;
 const SEARCH_DELAY = 500;
 
 const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
@@ -56,9 +57,6 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
             paddingBottom: 8,
             paddingHorizontal: 16,
             height: 40,
-        },
-        container: {
-            paddingBottom: 12,
         },
     };
 });
@@ -89,12 +87,16 @@ const EmojiSuggestion = ({
     skinTone,
     hasFilesAttached,
 }: Props) => {
+    const insets = useSafeAreaInsets();
     const theme = useTheme();
     const style = getStyleFromTheme(theme);
     const serverUrl = useServerUrl();
     const flatListStyle = useMemo(() =>
         [style.listView, {maxHeight: maxListHeight}]
     , [style, maxListHeight]);
+    const containerStyle = useMemo(() =>
+        ({paddingBottom: insets.bottom + 12})
+    , [insets.bottom]);
 
     const searchTimeout = useRef<NodeJS.Timeout>();
 
@@ -211,7 +213,7 @@ const EmojiSuggestion = ({
             removeClippedSubviews={true}
             renderItem={renderItem}
             nestedScrollEnabled={nestedScrollEnabled}
-            contentContainerStyle={style.container}
+            contentContainerStyle={containerStyle}
         />
     );
 };

@@ -1,10 +1,12 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useMemo, useState} from 'react';
-import {Platform, useWindowDimensions, View} from 'react-native';
+import React, {useEffect, useMemo, useState} from 'react';
+import {Keyboard, KeyboardEvent, Platform, useWindowDimensions, View} from 'react-native';
 
 import {useTheme} from '@context/theme';
+import {useIsTablet} from '@hooks/device';
+import useHeaderHeight from '@hooks/header';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 import EmojiSuggestion from './emoji_suggestion/';
@@ -62,8 +64,8 @@ type Props = {
     hasFilesAttached: boolean;
 }
 
-const OFFSET_IOS = 65;
-const OFFSET_ANDROID = 75;
+const OFFSET_IPAD = 60;
+const AUTOCOMPLETE_MARGIN = 20;
 
 const Autocomplete = ({
     cursorPosition,
@@ -76,15 +78,18 @@ const Autocomplete = ({
 
     //enableDateSuggestion = false,
     isAppsEnabled,
-    offsetY = 80,
+    offsetY = 60,
     nestedScrollEnabled = false,
     updateValue,
     hasFilesAttached,
 }: Props) => {
     const theme = useTheme();
+    const isTablet = useIsTablet();
     const style = getStyleFromTheme(theme);
     const dimensions = useWindowDimensions();
     const deviceHeight = dimensions.height;
+    const {defaultHeight} = useHeaderHeight(false, true, false);
+    const [keyboardHeight, setKeyboardHeight] = useState(0);
 
     // const [showingAtMention, setShowingAtMention] = useState(false);
     // const [showingChannelMention, setShowingChannelMention] = useState(false);
@@ -98,15 +103,20 @@ const Autocomplete = ({
     const appsTakeOver = false; // showingAppCommand;
 
     const maxListHeight = useMemo(() => {
-        if (maxHeight) {
-            return maxHeight;
+        if (Platform.OS === 'ios') {
+            const offset = isTablet ? OFFSET_IPAD : 0;
+            return Math.min(
+                (deviceHeight - keyboardHeight - defaultHeight - AUTOCOMPLETE_MARGIN - offset),
+                (deviceHeight / 2) - defaultHeight - AUTOCOMPLETE_MARGIN - offset,
+            );
         }
 
-        // List is expanding downwards, likely from the search box
-        const offset = Platform.select({ios: OFFSET_IOS, default: OFFSET_ANDROID});
+        if (keyboardHeight) {
+            return (deviceHeight - (maxHeight + defaultHeight + AUTOCOMPLETE_MARGIN));
+        }
 
-        return (deviceHeight / 2) - offset;
-    }, [maxHeight, deviceHeight]);
+        return ((deviceHeight + defaultHeight) / 2) - AUTOCOMPLETE_MARGIN;
+    }, [maxHeight, deviceHeight, keyboardHeight, defaultHeight, isTablet]);
 
     const wrapperStyles = useMemo(() => {
         const s = [];
@@ -134,6 +144,19 @@ const Autocomplete = ({
         }
         return s;
     }, [!isSearch && offsetY, hasElements]);
+
+    useEffect(() => {
+        const keyboardEvent = (event: KeyboardEvent) => {
+            setKeyboardHeight(event.endCoordinates.height);
+        };
+        const shown = Keyboard.addListener('keyboardDidShow', keyboardEvent);
+        const hidden = Keyboard.addListener('keyboardDidHide', keyboardEvent);
+
+        return () => {
+            shown.remove();
+            hidden.remove();
+        };
+    }, []);
 
     return (
         <View

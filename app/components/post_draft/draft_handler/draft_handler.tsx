@@ -14,12 +14,16 @@ import SendHandler from '../send_handler';
 type Props = {
     testID?: string;
     channelId: string;
+    cursorPosition: number;
     rootId?: string;
     files?: FileInfo[];
-    message?: string;
     maxFileSize: number;
     maxFileCount: number;
     canUploadFiles: boolean;
+    updateCursorPosition: (cursorPosition: number) => void;
+    updateTop: (top: number) => void;
+    updateValue: (value: string) => void;
+    value: string;
 }
 
 const emptyFileList: FileInfo[] = [];
@@ -33,18 +37,21 @@ export default function DraftHandler(props: Props) {
     const {
         testID,
         channelId,
+        cursorPosition,
         rootId = '',
         files,
-        message,
         maxFileSize,
         maxFileCount,
         canUploadFiles,
+        updateCursorPosition,
+        updateTop,
+        updateValue,
+        value,
     } = props;
 
     const serverUrl = useServerUrl();
     const intl = useIntl();
 
-    const [currentValue, setCurrentValue] = useState(message || '');
     const [uploadError, setUploadError] = useState<React.ReactNode>(null);
 
     const uploadErrorTimeout = useRef<NodeJS.Timeout>();
@@ -52,7 +59,7 @@ export default function DraftHandler(props: Props) {
 
     const clearDraft = useCallback(() => {
         removeDraft(serverUrl, channelId, rootId);
-        setCurrentValue('');
+        updateValue('');
     }, [serverUrl, channelId, rootId]);
 
     const newUploadError = useCallback((error: React.ReactNode) => {
@@ -122,18 +129,23 @@ export default function DraftHandler(props: Props) {
     }, [files]);
 
     return (
-        <SendHandler
-            testID={testID}
-            channelId={channelId}
-            rootId={rootId}
+        <>
+            <SendHandler
+                testID={testID}
+                channelId={channelId}
+                rootId={rootId}
 
-            // From draft handler
-            value={currentValue}
-            files={files || emptyFileList}
-            clearDraft={clearDraft}
-            updateValue={setCurrentValue}
-            addFiles={addFiles}
-            uploadFileError={uploadError}
-        />
+                // From draft handler
+                cursorPosition={cursorPosition}
+                value={value}
+                files={files || emptyFileList}
+                clearDraft={clearDraft}
+                addFiles={addFiles}
+                uploadFileError={uploadError}
+                updateCursorPosition={updateCursorPosition}
+                updateTop={updateTop}
+                updateValue={updateValue}
+            />
+        </>
     );
 }
