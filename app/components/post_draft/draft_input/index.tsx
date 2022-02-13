@@ -102,10 +102,6 @@ export default function DraftInput({
     const sendActionTestID = `${testID}.send_action`;
     const style = getStyleSheet(theme);
 
-    // From component/navigation_header/index.tsx and screen/channel/channel.tsx
-    // const {defaultHeight} = useHeaderHeight(false, true, false);
-    // const autocompleteMaxHeight = Math.min(top - defaultHeight - AUTOCOMPLETE_MARGIN, isTablet ? 200 : 1450);
-
     return (
         <>
             <Typing
