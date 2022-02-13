@@ -29,7 +29,7 @@ const FUSE_OPTIONS = {
 };
 
 const EMOJI_SIZE = 24;
-const MIN_SEARCH_LENGTH = 1;
+const MIN_SEARCH_LENGTH = 2;
 const SEARCH_DELAY = 500;
 
 const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
