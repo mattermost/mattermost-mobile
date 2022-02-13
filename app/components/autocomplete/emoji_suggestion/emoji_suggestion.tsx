@@ -2,7 +2,8 @@
 // See LICENSE.txt for license information.
 
 import Fuse from 'fuse.js';
-import React, {useCallback, useEffect, useMemo, useRef} from 'react';
+import {debounce} from 'lodash';
+import React, {useCallback, useEffect, useMemo} from 'react';
 import {FlatList, Platform, Text, View} from 'react-native';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
@@ -98,8 +99,6 @@ const EmojiSuggestion = ({
         ({paddingBottom: insets.bottom + 12})
     , [insets.bottom]);
 
-    const searchTimeout = useRef<NodeJS.Timeout>();
-
     const emojis = useMemo(() => getEmojis(skinTone, customEmojis), [skinTone, customEmojis]);
 
     const searchTerm = useMemo(() => {
@@ -193,14 +192,14 @@ const EmojiSuggestion = ({
     }, [showingElements]);
 
     useEffect(() => {
-        if (searchTimeout.current) {
-            clearTimeout(searchTimeout.current);
-            searchTimeout.current = undefined;
+        const search = debounce(() => searchCustomEmojis(serverUrl, searchTerm), SEARCH_DELAY);
+        if (searchTerm.length >= MIN_SEARCH_LENGTH) {
+            search();
         }
 
-        if (searchTerm.length >= MIN_SEARCH_LENGTH) {
-            searchTimeout.current = setTimeout(() => searchCustomEmojis(serverUrl, searchTerm), SEARCH_DELAY);
-        }
+        return () => {
+            search.cancel();
+        };
     }, [searchTerm]);
 
     return (
