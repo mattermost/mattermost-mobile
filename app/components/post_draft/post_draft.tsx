@@ -38,14 +38,14 @@ export default function PostDraft({
     deactivatedChannel,
     files,
     isSearch,
-    message,
+    message = '',
     rootId = '',
     scrollViewNativeID,
 }: Props) {
     const keyboardTracker = useRef<KeyboardTrackingViewRef>(null);
     const resetScrollViewAnimationFrame = useRef<number>();
-    const [value, setValue] = useState(message || '');
-    const [cursorPosition, setCursorPosition] = useState(message?.length || 0);
+    const [value, setValue] = useState(message);
+    const [cursorPosition, setCursorPosition] = useState(message.length);
     const [top, setTop] = useState(0);
     const isTablet = useIsTablet();
 
