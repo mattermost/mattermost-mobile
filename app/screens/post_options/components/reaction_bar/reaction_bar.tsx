@@ -53,7 +53,7 @@ const ReactionBar = ({recentEmojis = []}: QuickReactionProps) => {
 
     const openEmojiPicker = useCallback(async () => {
         DeviceEventEmitter.emit(Events.CLOSE_BOTTOM_SHEET);
-        await EphemeralStore.waitUntilScreensIsRemoved(Screens.BOTTOM_SHEET);
+        await EphemeralStore.waitUntilScreensIsRemoved(Screens.POST_OPTIONS);
 
         const closeButton = CompassIcon.getImageSourceSync('close', 24, theme.sidebarHeaderTextColor);
         const screen = Screens.EMOJI_PICKER;
