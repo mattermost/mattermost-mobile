@@ -9,7 +9,7 @@ import {Events} from '@constants';
 import DatabaseManager from '@database/manager';
 import NetworkManager from '@init/network_manager';
 import {prepareMyChannelsForTeam, queryDefaultChannelForTeam} from '@queries/servers/channel';
-import {prepareCommonSystemValues, queryCurrentTeamId} from '@queries/servers/system';
+import {prepareCommonSystemValues, queryCurrentTeamId, queryWebSocketLastDisconnected} from '@queries/servers/system';
 import {addTeamToTeamHistory, prepareDeleteTeam, prepareMyTeams, queryNthLastChannelFromTeam, queryTeamsById, syncTeamTable} from '@queries/servers/team';
 import {isTablet} from '@utils/helpers';
 
@@ -262,7 +262,12 @@ export const removeUserFromTeam = async (serverUrl: string, teamId: string, user
 };
 
 export const handleTeamChange = async (serverUrl: string, teamId: string) => {
-    const {operator, database} = DatabaseManager.serverDatabases[serverUrl];
+    const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
+    if (!operator) {
+        return;
+    }
+
+    const {database} = operator;
     const currentTeamId = await queryCurrentTeamId(database);
 
     if (currentTeamId === teamId) {
@@ -292,7 +297,10 @@ export const handleTeamChange = async (serverUrl: string, teamId: string) => {
         await operator.batchRecords(models);
     }
 
-    const {channels, memberships, error} = await fetchMyChannelsForTeam(serverUrl, teamId);
+    // If WebSocket is not disconnected we fetch everything since this moment
+    const lastDisconnectedAt = (await queryWebSocketLastDisconnected(database)) || Date.now();
+    const {channels, memberships, error} = await fetchMyChannelsForTeam(serverUrl, teamId, true, lastDisconnectedAt, false, true);
+
     if (error) {
         DeviceEventEmitter.emit(Events.TEAM_LOAD_ERROR, serverUrl, error);
     }
