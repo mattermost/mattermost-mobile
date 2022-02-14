@@ -4,11 +4,9 @@
 import React, {ReactNode, useMemo, useRef} from 'react';
 import {useIntl} from 'react-intl';
 import {DeviceEventEmitter, Keyboard, Platform, StyleProp, View, ViewStyle} from 'react-native';
-import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import {showPermalink} from '@actions/local/permalink';
 import {removePost} from '@actions/local/post';
-import {ITEM_HEIGHT} from '@app/components/menu_item';
 import SystemAvatar from '@components/system_avatar';
 import SystemHeader from '@components/system_header';
 import TouchableWithFeedback from '@components/touchable_with_feedback';
@@ -16,8 +14,7 @@ import * as Screens from '@constants/screens';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
-import {bottomSheet} from '@screens/navigation';
-import PostOptions from '@screens/post_options';
+import {showModal, showModalOverCurrentContext} from '@screens/navigation';
 import {fromAutoResponder, isFromWebhook, isPostPendingOrFailed, isSystemMessage} from '@utils/post';
 import {preventDoubleTap} from '@utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
@@ -106,7 +103,6 @@ const Post = ({
 }: PostProps) => {
     const pressDetected = useRef(false);
     const intl = useIntl();
-    const insets = useSafeAreaInsets();
     const serverUrl = useServerUrl();
     const theme = useTheme();
     const isTablet = useIsTablet();
@@ -168,33 +164,16 @@ const Post = ({
             return;
         }
 
-        const renderContent = () => (
-            <PostOptions
-                location={location}
-                post={post}
-            />
-        );
+        Keyboard.dismiss();
 
+        const passProps = {location, post};
         const title = isTablet ? intl.formatMessage({id: 'post.options.title', defaultMessage: 'Options'}) : '';
 
-        Keyboard.dismiss();
-        let initialSnapIndex = 1;
-        const snapPoints = ['90%', '65%', 10];
-
-        if (isSystemPost && canDelete) {
-            snapPoints.splice(0, 1);
-            snapPoints[0] = (ITEM_HEIGHT * 2) + insets.bottom;
-            initialSnapIndex = 0;
+        if (isTablet) {
+            showModal(Screens.POST_OPTIONS, title, passProps);
+        } else {
+            showModalOverCurrentContext(Screens.POST_OPTIONS, passProps, {title});
         }
-
-        bottomSheet({
-            closeButtonId: 'close-post-options',
-            renderContent,
-            snapPoints,
-            initialSnapIndex,
-            title,
-            theme,
-        });
     };
 
     const highlightFlagged = isFlagged && !skipFlaggedHeader;
