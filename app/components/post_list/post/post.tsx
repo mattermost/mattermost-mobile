@@ -172,7 +172,10 @@ const Post = ({
         if (isTablet) {
             showModal(Screens.POST_OPTIONS, title, passProps);
         } else {
-            showModalOverCurrentContext(Screens.POST_OPTIONS, passProps, {title});
+            showModalOverCurrentContext(Screens.POST_OPTIONS, passProps, {
+                title,
+                animations: undefined,
+            });
         }
     };
 
