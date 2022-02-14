@@ -6,7 +6,7 @@ import React from 'react';
 import {Preferences} from '@constants';
 import {renderWithIntl} from '@test/intl-test-helper';
 
-import DrawerItem from './';
+import MenuItem from '.';
 
 describe('DrawerItem', () => {
     const baseProps = {
@@ -22,7 +22,7 @@ describe('DrawerItem', () => {
     };
 
     test('should match snapshot', () => {
-        const wrapper = renderWithIntl(<DrawerItem {...baseProps}/>);
+        const wrapper = renderWithIntl(<MenuItem {...baseProps}/>);
 
         expect(wrapper.toJSON()).toMatchSnapshot();
     });
@@ -34,7 +34,7 @@ describe('DrawerItem', () => {
             separator: false,
         };
         const wrapper = renderWithIntl(
-            <DrawerItem {...props}/>,
+            <MenuItem {...props}/>,
         );
 
         expect(wrapper.toJSON()).toMatchSnapshot();

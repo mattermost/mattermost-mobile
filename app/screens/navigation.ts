@@ -75,6 +75,30 @@ export const loginAnimationOptions = () => {
     };
 };
 
+export const bottomSheetModalOptions = (theme: Theme, closeButtonId: string) => {
+    const closeButton = CompassIcon.getImageSourceSync('close', 24, theme.centerChannelColor);
+    return {
+        modalPresentationStyle: OptionsModalPresentationStyle.formSheet,
+        modal: {
+            swipeToDismiss: true,
+        },
+        topBar: {
+            leftButtons: [{
+                id: closeButtonId,
+                icon: closeButton,
+                testID: closeButtonId,
+            }],
+            leftButtonColor: changeOpacity(theme.centerChannelColor, 0.56),
+            background: {
+                color: theme.centerChannelBg,
+            },
+            title: {
+                color: theme.centerChannelColor,
+            },
+        },
+    };
+};
+
 Navigation.setDefaultOptions({
     layout: {
 
@@ -565,32 +589,12 @@ export async function bottomSheet({title, renderContent, snapPoints, initialSnap
     const isTablet = Device.IS_TABLET && !isSplitView;
 
     if (isTablet) {
-        const closeButton = CompassIcon.getImageSourceSync('close', 24, theme.centerChannelColor);
         showModal(Screens.BOTTOM_SHEET, title, {
             closeButtonId,
             initialSnapIndex,
             renderContent,
             snapPoints,
-        }, {
-            modalPresentationStyle: OptionsModalPresentationStyle.formSheet,
-            modal: {
-                swipeToDismiss: true,
-            },
-            topBar: {
-                leftButtons: [{
-                    id: closeButtonId,
-                    icon: closeButton,
-                    testID: closeButtonId,
-                }],
-                leftButtonColor: changeOpacity(theme.centerChannelColor, 0.56),
-                background: {
-                    color: theme.centerChannelBg,
-                },
-                title: {
-                    color: theme.centerChannelColor,
-                },
-            },
-        });
+        }, bottomSheetModalOptions(theme, closeButtonId));
     } else {
         showModalOverCurrentContext(Screens.BOTTOM_SHEET, {
             initialSnapIndex,
