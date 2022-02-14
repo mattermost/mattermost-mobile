@@ -72,6 +72,7 @@ const EditServer = ({closeButtonId, componentId, server, theme}: ServerProps) =>
                 defaultMessage: 'You are using this name for another server.',
             }));
             setSaving(false);
+            return;
         }
 
         await DatabaseManager.updateServerDisplayName(server.url, displayName);
