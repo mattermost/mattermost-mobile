@@ -6,8 +6,8 @@ import {useIntl} from 'react-intl';
 import {TextStyle, View} from 'react-native';
 
 import {logout} from '@actions/remote/session';
-import DrawerItem from '@components/drawer_item';
 import FormattedText from '@components/formatted_text';
+import MenuItem from '@components/menu_item';
 import {useServerDisplayName, useServerUrl} from '@context/server';
 import {alertServerLogout} from '@utils/server';
 import {preventDoubleTap} from '@utils/tap';
@@ -49,7 +49,7 @@ const Settings = ({style, theme}: Props) => {
     }), [serverDisplayName, serverUrl, intl]);
 
     return (
-        <DrawerItem
+        <MenuItem
             testID='account.logout.action'
             labelComponent={(
                 <View>

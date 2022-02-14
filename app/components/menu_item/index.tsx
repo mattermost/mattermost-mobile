@@ -2,17 +2,20 @@
 // See LICENSE.txt for license information.
 
 import React, {ReactNode} from 'react';
-import {Platform, View} from 'react-native';
+import {Platform, StyleProp, View, ViewStyle} from 'react-native';
 
 import CompassIcon from '@components/compass_icon';
 import FormattedText from '@components/formatted_text';
 import TouchableWithFeedback from '@components/touchable_with_feedback';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
-type DrawerItemProps = {
+export const ITEM_HEIGHT = 50;
+
+type MenuItemProps = {
     centered?: boolean;
     defaultMessage?: string;
     i18nId?: string;
+    iconContainerStyle?: StyleProp<ViewStyle>;
     iconName?: string;
     isDestructor?: boolean;
     labelComponent?: ReactNode;
@@ -23,11 +26,55 @@ type DrawerItemProps = {
     theme: Theme;
 };
 
-const DrawerItem = (props: DrawerItemProps) => {
+const getStyleSheet = makeStyleSheetFromTheme((theme) => {
+    return {
+        container: {
+            flexDirection: 'row',
+            minHeight: ITEM_HEIGHT,
+        },
+        iconContainer: {
+            width: 45,
+            height: ITEM_HEIGHT,
+            alignItems: 'center',
+            justifyContent: 'center',
+            marginLeft: 5,
+        },
+        icon: {
+            color: changeOpacity(theme.centerChannelColor, 0.64),
+            fontSize: 24,
+        },
+        wrapper: {
+            flex: 1,
+        },
+        labelContainer: {
+            flex: 1,
+            justifyContent: 'center',
+            paddingTop: 14,
+            paddingBottom: 14,
+        },
+        centerLabel: {
+            textAlign: 'center',
+            textAlignVertical: 'center',
+        },
+        label: {
+            color: changeOpacity(theme.centerChannelColor, 0.5),
+            fontSize: 17,
+            textAlignVertical: 'center',
+            includeFontPadding: false,
+        },
+        divider: {
+            backgroundColor: changeOpacity(theme.centerChannelColor, 0.2),
+            height: 1,
+        },
+    };
+});
+
+const MenuItem = (props: MenuItemProps) => {
     const {
         centered,
         defaultMessage = '',
         i18nId,
+        iconContainerStyle,
         iconName,
         isDestructor = false,
         labelComponent,
@@ -87,7 +134,7 @@ const DrawerItem = (props: DrawerItemProps) => {
         >
             <View style={style.container}>
                 {icon && (
-                    <View style={style.iconContainer}>
+                    <View style={[style.iconContainer, iconContainerStyle]}>
                         {icon}
                     </View>
                 )}
@@ -102,48 +149,4 @@ const DrawerItem = (props: DrawerItemProps) => {
     );
 };
 
-const getStyleSheet = makeStyleSheetFromTheme((theme) => {
-    return {
-        container: {
-            backgroundColor: theme.centerChannelBg,
-            flexDirection: 'row',
-            minHeight: 50,
-        },
-        iconContainer: {
-            width: 45,
-            height: 50,
-            alignItems: 'center',
-            justifyContent: 'center',
-            marginLeft: 5,
-        },
-        icon: {
-            color: changeOpacity(theme.centerChannelColor, 0.64),
-            fontSize: 24,
-        },
-        wrapper: {
-            flex: 1,
-        },
-        labelContainer: {
-            flex: 1,
-            justifyContent: 'center',
-            paddingTop: 14,
-            paddingBottom: 14,
-        },
-        centerLabel: {
-            textAlign: 'center',
-            textAlignVertical: 'center',
-        },
-        label: {
-            color: changeOpacity(theme.centerChannelColor, 0.5),
-            fontSize: 17,
-            textAlignVertical: 'center',
-            includeFontPadding: false,
-        },
-        divider: {
-            backgroundColor: changeOpacity(theme.centerChannelColor, 0.2),
-            height: 1,
-        },
-    };
-});
-
-export default DrawerItem;
+export default MenuItem;

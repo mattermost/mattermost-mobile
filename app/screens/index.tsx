@@ -21,7 +21,7 @@ const withGestures = (Screen: React.ComponentType, styles: StyleProp<ViewStyle>)
         if (Platform.OS === 'android') {
             return (
                 <GestureHandlerRootView style={[{flex: 1}, styles]}>
-                    <Screen {...props}/>     
+                    <Screen {...props}/>
                 </GestureHandlerRootView>
             )
         }
@@ -101,9 +101,12 @@ Navigation.setLazyComponentRegistrator((screenName) => {
     case Screens.BROWSE_CHANNELS:
         screen = withServerDatabase(require('@screens/browse_channels').default);
         break;
-        case Screens.SSO:
-            screen = withIntl(require('@screens/sso').default);
-            break;
+    case Screens.POST_OPTIONS:
+        screen = withServerDatabase(require('@screens/post_options').default);
+        break;
+    case Screens.SSO:
+        screen = withIntl(require('@screens/sso').default);
+        break;
     }
 
     if (screen) {

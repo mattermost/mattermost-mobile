@@ -29,6 +29,7 @@ export const SETTINGS_SIDEBAR = 'SettingsSidebar';
 export const SSO = 'SSO';
 export const THREAD = 'Thread';
 export const USER_PROFILE = 'UserProfile';
+export const POST_OPTIONS = 'PostOptions';
 
 export default {
     ABOUT,
@@ -59,4 +60,5 @@ export default {
     SSO,
     THREAD,
     USER_PROFILE,
+    POST_OPTIONS,
 };
