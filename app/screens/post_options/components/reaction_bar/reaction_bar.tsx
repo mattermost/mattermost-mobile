@@ -16,7 +16,6 @@ import {
     SMALL_ICON_SIZE,
 } from '@constants/reaction_picker';
 import {useTheme} from '@context/theme';
-import {useIsTablet} from '@hooks/device';
 import {showModal} from '@screens/navigation';
 import EphemeralStore from '@store/ephemeral_store';
 import {makeStyleSheetFromTheme} from '@utils/theme';
@@ -43,7 +42,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
 const ReactionBar = ({recentEmojis = []}: QuickReactionProps) => {
     const theme = useTheme();
     const intl = useIntl();
-    const isTablet = useIsTablet();
     const {width} = useWindowDimensions();
     const isSmallDevice = width < SMALL_ICON_BREAKPOINT;
     const styles = getStyleSheet(theme);
@@ -63,7 +61,7 @@ const ReactionBar = ({recentEmojis = []}: QuickReactionProps) => {
         const passProps = {closeButton, onEmojiPress: handleEmojiPress};
 
         showModal(screen, title, passProps);
-    }, [intl, theme, isTablet]);
+    }, [intl, theme]);
 
     let containerSize = LARGE_CONTAINER_SIZE;
     let iconSize = LARGE_ICON_SIZE;
@@ -74,9 +72,7 @@ const ReactionBar = ({recentEmojis = []}: QuickReactionProps) => {
     }
 
     return (
-        <View
-            style={styles.container}
-        >
+        <View style={styles.container}>
             {
                 recentEmojis.map((emoji) => {
                     return (

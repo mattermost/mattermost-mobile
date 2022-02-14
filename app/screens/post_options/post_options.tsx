@@ -40,7 +40,6 @@ type PostOptionsProps = {
     thread?: Partial<PostModel>;
 };
 
-//todo: look up the permission here and render each option accordingly
 const PostOptions = ({
     canAddReaction = true,
     canCopyPermalink = true,

@@ -2,7 +2,6 @@
 // See LICENSE.txt for license information.
 
 import React, {useMemo} from 'react';
-import {StyleSheet} from 'react-native';
 
 import FormattedText from '@components/formatted_text';
 import MenuItem from '@components/menu_item';
@@ -45,7 +44,7 @@ const BaseOption = ({
 
     const labelStyles = useMemo(() => {
         if (isDestructive) {
-            return StyleSheet.flatten([styles.label, styles.destructive]);
+            return [styles.label, styles.destructive];
         }
         return styles.label;
     }, [isDestructive, styles.label, styles.destructive]);
