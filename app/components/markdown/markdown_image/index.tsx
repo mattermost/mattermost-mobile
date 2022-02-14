@@ -5,7 +5,7 @@ import {useManagedConfig} from '@mattermost/react-native-emm';
 import Clipboard from '@react-native-community/clipboard';
 import React, {useCallback, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
-import {Alert, DeviceEventEmitter, Platform, StyleProp, StyleSheet, Text, TextStyle, View} from 'react-native';
+import {Alert, Platform, StyleProp, StyleSheet, Text, TextStyle, View} from 'react-native';
 import parseUrl from 'url-parse';
 
 import CompassIcon from '@components/compass_icon';
@@ -13,11 +13,10 @@ import FormattedText from '@components/formatted_text';
 import ProgressiveImage from '@components/progressive_image';
 import SlideUpPanelItem, {ITEM_HEIGHT} from '@components/slide_up_panel_item';
 import TouchableWithFeedback from '@components/touchable_with_feedback';
-import {Events} from '@constants';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
-import {bottomSheet} from '@screens/navigation';
+import {bottomSheet, dismissBottomSheet} from '@screens/navigation';
 import {openGallerWithMockFile} from '@utils/gallery';
 import {generateId} from '@utils/general';
 import {calculateDimensions, getViewPortWidth, isGifTooLarge} from '@utils/images';
@@ -122,7 +121,7 @@ const MarkdownImage = ({
                         <SlideUpPanelItem
                             icon='content-copy'
                             onPress={() => {
-                                DeviceEventEmitter.emit(Events.CLOSE_BOTTOM_SHEET);
+                                dismissBottomSheet();
                                 Clipboard.setString(linkDestination || source);
                             }}
                             testID='at_mention.bottom_sheet.copy_url'
@@ -132,7 +131,7 @@ const MarkdownImage = ({
                             destructive={true}
                             icon='cancel'
                             onPress={() => {
-                                DeviceEventEmitter.emit(Events.CLOSE_BOTTOM_SHEET);
+                                dismissBottomSheet();
                             }}
                             testID='at_mention.bottom_sheet.cancel'
                             text={intl.formatMessage({id: 'mobile.post.cancel', defaultMessage: 'Cancel'})}

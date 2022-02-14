@@ -2,16 +2,16 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback, useMemo, useState} from 'react';
-import {DeviceEventEmitter, Platform, View} from 'react-native';
+import {Platform, View} from 'react-native';
 
 import {Client} from '@client/rest';
 import ProfileImage from '@components/profile_picture';
-import {Events} from '@constants';
 import {ACCOUNT_OUTLINE_IMAGE} from '@constants/profile';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import useDidUpdate from '@hooks/did_update';
 import NetworkManager from '@init/network_manager';
+import {dismissBottomSheet} from '@screens/navigation';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 import ProfileImagePicker from './profile_image_picker';
@@ -81,7 +81,7 @@ const EditProfilePicture = ({user, onUpdateProfilePicture}: ChangeProfilePicture
 
         setPictureUrl(pUrl);
         onUpdateProfilePicture({isRemoved, localPath});
-        DeviceEventEmitter.emit(Events.CLOSE_BOTTOM_SHEET);
+        dismissBottomSheet();
     }, [onUpdateProfilePicture]);
 
     const pictureSource = useMemo(() => {
