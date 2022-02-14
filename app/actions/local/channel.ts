@@ -288,17 +288,17 @@ export const updateLastPostAt = async (serverUrl: string, channelId: string, las
         member.prepareUpdate((m) => {
             m.lastPostAt = lastPostAt;
         });
-    }
 
-    try {
-        if (!prepareRecordsOnly) {
-            await operator.batchRecords([member]);
+        try {
+            if (!prepareRecordsOnly) {
+                await operator.batchRecords([member]);
+            }
+        } catch (error) {
+            return {error};
         }
-    } catch (error) {
-        return {error};
     }
 
-    return {member};
+    return {member: undefined};
 };
 
 export async function updateChannelsDisplayName(serverUrl: string, channels: ChannelModel[], users: UserProfile[], prepareRecordsOnly = false) {

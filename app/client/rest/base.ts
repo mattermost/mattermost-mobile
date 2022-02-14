@@ -7,7 +7,7 @@ import {Events} from '@constants';
 import {t} from '@i18n';
 import {Analytics, create} from '@init/analytics';
 import {setServerCredentials} from '@init/credentials';
-import {semverFromServerVersion} from '@utils/supported_server';
+import {semverFromServerVersion} from '@utils/server';
 
 import * as ClientConstants from './constants';
 import ClientError from './error';

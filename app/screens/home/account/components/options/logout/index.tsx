@@ -1,15 +1,15 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback, useEffect, useState} from 'react';
+import React, {useCallback} from 'react';
+import {useIntl} from 'react-intl';
 import {TextStyle, View} from 'react-native';
 
 import {logout} from '@actions/remote/session';
 import DrawerItem from '@components/drawer_item';
 import FormattedText from '@components/formatted_text';
-import {useServerUrl} from '@context/server';
-import DatabaseManager from '@database/manager';
-import {queryServer} from '@queries/app/servers';
+import {useServerDisplayName, useServerUrl} from '@context/server';
+import {alertServerLogout} from '@utils/server';
 import {preventDoubleTap} from '@utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
@@ -34,22 +34,19 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
 
 const Settings = ({style, theme}: Props) => {
     const styles = getStyleSheet(theme);
+    const intl = useIntl();
     const serverUrl = useServerUrl();
-    const [serverName, setServerName] = useState(serverUrl);
-    const onLogout = useCallback(preventDoubleTap(() => {
-        logout(serverUrl);
-    }), []);
+    const serverDisplayName = useServerDisplayName();
 
-    useEffect(() => {
-        const appDatabase = DatabaseManager.appDatabase?.database;
-        if (appDatabase) {
-            queryServer(appDatabase, serverUrl).then((server) => {
-                if (server) {
-                    setServerName(server.displayName);
-                }
-            });
-        }
-    }, [serverUrl]);
+    const onLogout = useCallback(preventDoubleTap(() => {
+        alertServerLogout(
+            serverDisplayName,
+            () => {
+                logout(serverUrl);
+            },
+            intl,
+        );
+    }), [serverDisplayName, serverUrl, intl]);
 
     return (
         <DrawerItem
@@ -64,7 +61,7 @@ const Settings = ({style, theme}: Props) => {
                     <FormattedText
                         id={'account.logout_from'}
                         defaultMessage={'Log out of {serverName}'}
-                        values={{serverName}}
+                        values={{serverName: serverDisplayName}}
                         style={styles.logOutFrom}
                     />
                 </View>

@@ -259,7 +259,7 @@ export const fetchMyChannel = async (serverUrl: string, teamId: string, channelI
 };
 
 export const fetchMissingSidebarInfo = async (serverUrl: string, directChannels: Channel[], locale?: string, teammateDisplayNameSetting?: string, exludeUserId?: string, fetchOnly = false) => {
-    const channelIds = directChannels.map((dc) => dc.id);
+    const channelIds = directChannels.sort((a, b) => b.last_post_at - a.last_post_at).map((dc) => dc.id);
     const result = await fetchProfilesPerChannels(serverUrl, channelIds, exludeUserId, false);
     if (result.error) {
         return {error: result.error};
