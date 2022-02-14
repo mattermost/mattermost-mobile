@@ -4,7 +4,7 @@
 /* eslint-disable max-lines */
 
 import merge from 'deepmerge';
-import {Appearance, DeviceEventEmitter, NativeModules, StatusBar, Platform} from 'react-native';
+import {Appearance, DeviceEventEmitter, NativeModules, StatusBar, Platform, Alert} from 'react-native';
 import {Navigation, Options, OptionsModalPresentationStyle} from 'react-native-navigation';
 import tinyColor from 'tinycolor2';
 
@@ -126,6 +126,22 @@ function getThemeFromState(): Theme {
     }
 
     return getDefaultThemeByAppearance();
+}
+
+// This is a temporary helper function to avoid
+// crashes when trying to load a screen that does
+// NOT exists, this should be removed for GA
+function isScreenRegistered(screen: string) {
+    const exists = Object.values(Screens).includes(screen);
+
+    if (!exists) {
+        Alert.alert(
+            'Temporary error ' + screen,
+            'The functionality you are trying to use has not been implemented yet',
+        );
+    }
+
+    return exists;
 }
 
 export function resetToHome(passProps: LaunchProps = {launchType: LaunchType.Normal}) {
@@ -272,6 +288,10 @@ export function resetToTeams(name: string, title: string, passProps = {}, option
 }
 
 export function goToScreen(name: string, title: string, passProps = {}, options = {}) {
+    if (!isScreenRegistered(name)) {
+        return;
+    }
+
     const theme = getThemeFromState();
     const isDark = tinyColor(theme.sidebarBg).isDark();
     const componentId = EphemeralStore.getNavigationTopComponentId();
@@ -376,6 +396,10 @@ export async function dismissAllModalsAndPopToScreen(screenId: string, title: st
 }
 
 export function showModal(name: string, title: string, passProps = {}, options = {}) {
+    if (!isScreenRegistered(name)) {
+        return;
+    }
+
     const theme = getThemeFromState();
     const modalPresentationStyle: OptionsModalPresentationStyle = Platform.OS === 'ios' ? OptionsModalPresentationStyle.pageSheet : OptionsModalPresentationStyle.none;
     const defaultOptions: Options = {
@@ -547,6 +571,10 @@ export function mergeNavigationOptions(componentId: string, options: Options) {
 }
 
 export function showOverlay(name: string, passProps = {}, options = {}) {
+    if (!isScreenRegistered(name)) {
+        return;
+    }
+
     const defaultOptions = {
         layout: {
             backgroundColor: 'transparent',
