@@ -186,9 +186,9 @@ Navigation.setLazyComponentRegistrator((screenName) => {
     // case 'PinnedPosts':
     //     screen = require('@screens/pinned_posts').default;
     //     break;
-    // case Screens.POST_OPTIONS:
-    //     screen = withServerDatabase((require('@screens/post_options')).default);
-    //     break;
+    case Screens.POST_OPTIONS:
+        screen = withServerDatabase(require('@screens/post_options').default);
+        break;
     // case 'ReactionList':
     //     screen = require('@screens/reaction_list').default;
     //     break;
