@@ -55,7 +55,7 @@ export async function addNewServer(theme: Theme, serverUrl?: string, displayName
         topBar: {
             visible: true,
             drawBehind: true,
-            translucid: true,
+            translucient: true,
             noBorder: true,
             elevation: 0,
             background: {color: 'transparent'},
