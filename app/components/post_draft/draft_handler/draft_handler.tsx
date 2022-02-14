@@ -129,23 +129,21 @@ export default function DraftHandler(props: Props) {
     }, [files]);
 
     return (
-        <>
-            <SendHandler
-                testID={testID}
-                channelId={channelId}
-                rootId={rootId}
+        <SendHandler
+            testID={testID}
+            channelId={channelId}
+            rootId={rootId}
 
-                // From draft handler
-                cursorPosition={cursorPosition}
-                value={value}
-                files={files || emptyFileList}
-                clearDraft={clearDraft}
-                addFiles={addFiles}
-                uploadFileError={uploadError}
-                updateCursorPosition={updateCursorPosition}
-                updatePostInputTop={updatePostInputTop}
-                updateValue={updateValue}
-            />
-        </>
+            // From draft handler
+            cursorPosition={cursorPosition}
+            value={value}
+            files={files || emptyFileList}
+            clearDraft={clearDraft}
+            addFiles={addFiles}
+            uploadFileError={uploadError}
+            updateCursorPosition={updateCursorPosition}
+            updatePostInputTop={updatePostInputTop}
+            updateValue={updateValue}
+        />
     );
 }
