@@ -88,7 +88,7 @@ const PostOptions = ({
     const renderContent = () => {
         return (
             <View style={styles.container}>
-                {canAddReaction && <ReactionBar theme={theme}/>}
+                {canAddReaction && <ReactionBar/>}
                 {canReply && <ReplyOption/>}
                 {shouldRenderFollow &&
                     <FollowThreadOption

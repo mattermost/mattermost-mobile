@@ -15,6 +15,7 @@ import {
     SMALL_ICON_BREAKPOINT,
     SMALL_ICON_SIZE,
 } from '@constants/reaction_picker';
+import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
 import {showModal} from '@screens/navigation';
 import EphemeralStore from '@store/ephemeral_store';
@@ -24,7 +25,6 @@ import PickReaction from './components/pick_reaction';
 import Reaction from './components/reaction';
 
 type QuickReactionProps = {
-    theme: Theme;
     recentEmojis: string[];
 };
 
@@ -40,7 +40,8 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     };
 });
 
-const ReactionBar = ({recentEmojis = [], theme}: QuickReactionProps) => {
+const ReactionBar = ({recentEmojis = []}: QuickReactionProps) => {
+    const theme = useTheme();
     const intl = useIntl();
     const isTablet = useIsTablet();
     const {width} = useWindowDimensions();

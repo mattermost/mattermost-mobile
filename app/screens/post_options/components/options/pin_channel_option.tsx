@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useMemo} from 'react';
+import React from 'react';
 
 import {t} from '@i18n';
 
@@ -13,36 +13,34 @@ type PinChannelProps = {
 
 //fixme: wire up handlePinChannel
 const PinChannelOption = ({isPostPinned}: PinChannelProps) => {
+    //todo:  add useCallback for the handler callbacks
     const handlePinPost = () => null;
     const handleUnpinPost = () => null;
 
-    const config = useMemo(() => {
-        let key;
-        let message;
-        let onPress;
-        const icon = 'pin-outline';
+    let defaultMessage;
+    let id;
+    let key;
+    let onPress;
 
-        if (isPostPinned) {
-            key = 'unpin';
-            message = {id: t('mobile.post_info.unpin'), defaultMessage: 'Unpin from Channel'};
-            onPress = handleUnpinPost;
-        } else {
-            key = 'pin';
-            message = {id: t('mobile.post_info.pin'), defaultMessage: 'Pin to Channel'};
-            onPress = handlePinPost;
-        }
-        return {
-            key, message, onPress, icon,
-        };
-    }, [isPostPinned, handlePinPost, handleUnpinPost]);
+    if (isPostPinned) {
+        defaultMessage = 'Unpin from Channel';
+        id = t('mobile.post_info.unpin');
+        key = 'unpin';
+        onPress = handleUnpinPost;
+    } else {
+        defaultMessage = 'Pin to Channel';
+        id = t('mobile.post_info.pin');
+        key = 'pin';
+        onPress = handlePinPost;
+    }
 
     return (
         <BaseOption
-            i18nId={config.message.id}
-            defaultMessage={config.message.defaultMessage}
-            iconName={config.icon}
-            onPress={config.onPress}
-            testID={`post.options.${config.key}.channel`}
+            i18nId={id}
+            defaultMessage={defaultMessage}
+            iconName='pin-outline'
+            onPress={onPress}
+            testID={`post.options.${key}.channel`}
         />
     );
 };

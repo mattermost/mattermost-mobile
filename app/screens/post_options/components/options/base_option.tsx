@@ -48,18 +48,20 @@ const BaseOption = ({
             return StyleSheet.flatten([styles.label, styles.destructive]);
         }
         return styles.label;
-    }, [theme, isDestructive, styles]);
+    }, [isDestructive, styles.label, styles.destructive]);
+
+    const label = useMemo(() => (
+        <FormattedText
+            id={i18nId}
+            defaultMessage={defaultMessage}
+            style={labelStyles}
+        />
+    ), [i18nId, defaultMessage, labelStyles]);
 
     return (
         <MenuItem
             testID={testID}
-            labelComponent={
-                <FormattedText
-                    id={i18nId}
-                    defaultMessage={defaultMessage}
-                    style={labelStyles}
-                />
-            }
+            labelComponent={label}
             iconContainerStyle={styles.iconContainerStyle}
             iconName={iconName}
             onPress={onPress}
