@@ -14,7 +14,7 @@ import * as Screens from '@constants/screens';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
-import {showModal, showModalOverCurrentContext} from '@screens/navigation';
+import {bottomSheetModalOptions, showModal, showModalOverCurrentContext} from '@screens/navigation';
 import {fromAutoResponder, isFromWebhook, isPostPendingOrFailed, isSystemMessage} from '@utils/post';
 import {preventDoubleTap} from '@utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
@@ -170,12 +170,9 @@ const Post = ({
         const title = isTablet ? intl.formatMessage({id: 'post.options.title', defaultMessage: 'Options'}) : '';
 
         if (isTablet) {
-            showModal(Screens.POST_OPTIONS, title, passProps);
+            showModal(Screens.POST_OPTIONS, title, passProps, bottomSheetModalOptions(theme, 'close-post-options'));
         } else {
-            showModalOverCurrentContext(Screens.POST_OPTIONS, passProps, {
-                title,
-                animations: undefined,
-            });
+            showModalOverCurrentContext(Screens.POST_OPTIONS, passProps);
         }
     };
 

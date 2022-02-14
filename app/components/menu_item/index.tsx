@@ -29,7 +29,6 @@ type MenuItemProps = {
 const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     return {
         container: {
-            backgroundColor: theme.centerChannelBg,
             flexDirection: 'row',
             minHeight: ITEM_HEIGHT,
         },

@@ -2,14 +2,11 @@
 // See LICENSE.txt for license information.
 
 import React from 'react';
-import {View} from 'react-native';
 
 import {ITEM_HEIGHT} from '@components/menu_item';
 import {Screens} from '@constants';
-import {useTheme} from '@context/theme';
 import BottomSheet from '@screens/bottom_sheet';
 import {isSystemMessage} from '@utils/post';
-import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 import CopyLinkOption from './components/options/copy_link_option';
 import CopyTextOption from './components/options/copy_text_option';
@@ -25,17 +22,6 @@ import ReactionBar from './components/reaction_bar';
 import type PostModel from '@typings/database/models/servers/post';
 
 //fixme: some props are optional - review them
-
-const getStyleSheet = makeStyleSheetFromTheme((theme) => {
-    return {
-        container: {
-            backgroundColor: theme.centerChannelBg,
-        },
-        icon: {
-            backgroundColor: changeOpacity(theme.centerChannelColor, 0.56),
-        },
-    };
-});
 
 type PostOptionsProps = {
     canAddReaction?: boolean;
@@ -71,9 +57,6 @@ const PostOptions = ({
     post,
     thread,
 }: PostOptionsProps) => {
-    const theme = useTheme();
-    const styles = getStyleSheet(theme);
-
     const shouldRenderEdit = canEdit && (canEditUntil === -1 || canEditUntil > Date.now());
     const shouldRenderFollow = !(location !== Screens.CHANNEL || !thread);
 
@@ -87,7 +70,7 @@ const PostOptions = ({
 
     const renderContent = () => {
         return (
-            <View style={styles.container}>
+            <>
                 {canAddReaction && <ReactionBar/>}
                 {canReply && <ReplyOption/>}
                 {shouldRenderFollow &&
@@ -109,7 +92,7 @@ const PostOptions = ({
                 {canPin && <PinChannelOption isPostPinned={post.isPinned}/>}
                 {shouldRenderEdit && <EditOption/>}
                 {canDelete && <DeletePostOption/>}
-            </View>
+            </>
         );
     };
 
