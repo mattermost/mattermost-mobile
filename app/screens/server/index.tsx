@@ -70,8 +70,8 @@ const Server = ({
     const {formatMessage} = intl;
 
     useEffect(() => {
-        let serverName = managedConfig?.serverName || LocalConfig.DefaultServerName;
-        let serverUrl = managedConfig?.serverUrl || LocalConfig.DefaultServerUrl;
+        let serverName = managedConfig?.serverName || LocalConfig.DefaultServerName || defaultDisplayName;
+        let serverUrl = managedConfig?.serverUrl || LocalConfig.DefaultServerUrl || defaultServerUrl;
         let autoconnect = managedConfig?.allowOtherServers === 'false' || LocalConfig.AutoSelectServerUrl;
 
         if (launchType === LaunchType.DeepLink) {

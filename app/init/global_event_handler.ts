@@ -92,6 +92,7 @@ class GlobalEventHandler {
         WebsocketManager.invalidateClient(serverUrl);
 
         const activeServerUrl = await DatabaseManager.getActiveServerUrl();
+        const activeServerDisplayName = await DatabaseManager.getActiveServerDisplayName();
         await DatabaseManager.deleteServerDatabase(serverUrl);
 
         const analyticsClient = analytics.get(serverUrl);
@@ -105,13 +106,18 @@ class GlobalEventHandler {
         deleteFileCache(serverUrl);
 
         if (activeServerUrl === serverUrl) {
+            let displayName = '';
             let launchType: LaunchType = LaunchType.AddServer;
             if (!Object.keys(DatabaseManager.serverDatabases).length) {
                 EphemeralStore.theme = undefined;
                 launchType = LaunchType.Normal;
+
+                if (activeServerDisplayName) {
+                    displayName = activeServerDisplayName;
+                }
             }
 
-            relaunchApp({launchType}, true);
+            relaunchApp({launchType, serverUrl, displayName}, true);
         }
     };
 

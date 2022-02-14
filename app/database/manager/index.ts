@@ -252,7 +252,7 @@ class DatabaseManager {
     };
 
     /**
-    * getActiveServerUrl: Get the record for active server database.
+    * getActiveServerUrl: Get the server url for active server database.
     * @returns {Promise<string|null|undefined>}
     */
     public getActiveServerUrl = async (): Promise<string|null|undefined> => {
@@ -260,6 +260,20 @@ class DatabaseManager {
         if (database) {
             const server = await queryActiveServer(database);
             return server?.url;
+        }
+
+        return null;
+    };
+
+    /**
+    * getActiveServerDisplayName: Get the server display name for active server database.
+    * @returns {Promise<string|null|undefined>}
+    */
+    public getActiveServerDisplayName = async (): Promise<string|null|undefined> => {
+        const database = this.appDatabase?.database;
+        if (database) {
+            const server = await queryActiveServer(database);
+            return server?.displayName;
         }
 
         return null;
