@@ -51,7 +51,7 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
 
 type Props = {
     cursorPosition: number;
-    maxHeight: number;
+    postInputTop: number;
     rootId: string;
     channelId: string;
     isSearch?: boolean;
@@ -69,7 +69,7 @@ const AUTOCOMPLETE_MARGIN = 20;
 
 const Autocomplete = ({
     cursorPosition,
-    maxHeight,
+    postInputTop,
     rootId,
 
     //channelId,
@@ -88,7 +88,7 @@ const Autocomplete = ({
     const style = getStyleFromTheme(theme);
     const dimensions = useWindowDimensions();
     const deviceHeight = dimensions.height;
-    const {defaultHeight} = useHeaderHeight(false, true, false);
+    const {defaultHeight: headerHeight} = useHeaderHeight(false, true, false);
     const [keyboardHeight, setKeyboardHeight] = useState(0);
 
     // const [showingAtMention, setShowingAtMention] = useState(false);
@@ -106,17 +106,17 @@ const Autocomplete = ({
         if (Platform.OS === 'ios') {
             const offset = isTablet ? OFFSET_IPAD : 0;
             return Math.min(
-                (deviceHeight - keyboardHeight - defaultHeight - AUTOCOMPLETE_MARGIN - offset),
-                (deviceHeight / 2) - defaultHeight - AUTOCOMPLETE_MARGIN - offset,
+                deviceHeight - (keyboardHeight + headerHeight + AUTOCOMPLETE_MARGIN + offset),
+                (deviceHeight / 2) - (headerHeight + AUTOCOMPLETE_MARGIN + offset),
             );
         }
 
         if (keyboardHeight) {
-            return (deviceHeight - (maxHeight + defaultHeight + AUTOCOMPLETE_MARGIN));
+            return (deviceHeight - (postInputTop + headerHeight + AUTOCOMPLETE_MARGIN));
         }
 
-        return ((deviceHeight + defaultHeight) / 2) - AUTOCOMPLETE_MARGIN;
-    }, [maxHeight, deviceHeight, keyboardHeight, defaultHeight, isTablet]);
+        return ((deviceHeight + headerHeight) / 2) - AUTOCOMPLETE_MARGIN;
+    }, [postInputTop, deviceHeight, keyboardHeight, headerHeight, isTablet]);
 
     const wrapperStyles = useMemo(() => {
         const s = [];

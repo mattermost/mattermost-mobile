@@ -46,7 +46,7 @@ export default function PostDraft({
     const resetScrollViewAnimationFrame = useRef<number>();
     const [value, setValue] = useState(message);
     const [cursorPosition, setCursorPosition] = useState(message.length);
-    const [top, setTop] = useState(0);
+    const [postInputTop, setPostInputTop] = useState(0);
     const isTablet = useIsTablet();
 
     const updateNativeScrollView = useCallback((scrollViewNativeIDToUpdate: string) => {
@@ -100,7 +100,7 @@ export default function PostDraft({
             files={files}
             rootId={rootId}
             updateCursorPosition={setCursorPosition}
-            updateTop={setTop}
+            updatePostInputTop={setPostInputTop}
             updateValue={setValue}
             value={value}
         />
@@ -108,7 +108,7 @@ export default function PostDraft({
 
     const autoComplete = (
         <Autocomplete
-            maxHeight={top}
+            postInputTop={postInputTop}
             updateValue={setValue}
             rootId={rootId}
             channelId={channelId}

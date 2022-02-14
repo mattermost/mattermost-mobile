@@ -21,7 +21,7 @@ type Props = {
     maxFileCount: number;
     canUploadFiles: boolean;
     updateCursorPosition: (cursorPosition: number) => void;
-    updateTop: (top: number) => void;
+    updatePostInputTop: (top: number) => void;
     updateValue: (value: string) => void;
     value: string;
 }
@@ -44,7 +44,7 @@ export default function DraftHandler(props: Props) {
         maxFileCount,
         canUploadFiles,
         updateCursorPosition,
-        updateTop,
+        updatePostInputTop,
         updateValue,
         value,
     } = props;
@@ -143,7 +143,7 @@ export default function DraftHandler(props: Props) {
                 addFiles={addFiles}
                 uploadFileError={uploadError}
                 updateCursorPosition={updateCursorPosition}
-                updateTop={updateTop}
+                updatePostInputTop={updatePostInputTop}
                 updateValue={updateValue}
             />
         </>

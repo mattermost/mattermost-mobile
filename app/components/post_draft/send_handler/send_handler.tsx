@@ -48,7 +48,7 @@ type Props = {
     clearDraft: () => void;
     updateValue: (message: string) => void;
     updateCursorPosition: (cursorPosition: number) => void;
-    updateTop: (top: number) => void;
+    updatePostInputTop: (top: number) => void;
     addFiles: (file: FileInfo[]) => void;
     uploadFileError: React.ReactNode;
 }
@@ -75,7 +75,7 @@ export default function SendHandler({
     addFiles,
     uploadFileError,
     updateCursorPosition,
-    updateTop,
+    updatePostInputTop,
 }: Props) {
     const intl = useIntl();
     const serverUrl = useServerUrl();
@@ -284,7 +284,7 @@ export default function SendHandler({
             sendMessage={handleSendMessage}
             canSend={canSend()}
             maxMessageLength={maxMessageLength}
-            updateTop={updateTop}
+            updatePostInputTop={updatePostInputTop}
         />
     );
 }

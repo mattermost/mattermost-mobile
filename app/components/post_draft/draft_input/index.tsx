@@ -34,7 +34,7 @@ type Props = {
     uploadFileError: React.ReactNode;
     updateValue: (value: string) => void;
     addFiles: (files: FileInfo[]) => void;
-    updateTop: (top: number) => void;
+    updatePostInputTop: (top: number) => void;
 }
 
 const SAFE_AREA_VIEW_EDGES: Edge[] = ['left', 'right'];
@@ -88,12 +88,12 @@ export default function DraftInput({
     addFiles,
     updateCursorPosition,
     cursorPosition,
-    updateTop,
+    updatePostInputTop,
 }: Props) {
     const theme = useTheme();
 
     const handleLayout = useCallback((e: LayoutChangeEvent) => {
-        updateTop(e.nativeEvent.layout.y);
+        updatePostInputTop(e.nativeEvent.layout.y);
     }, []);
 
     // Render
