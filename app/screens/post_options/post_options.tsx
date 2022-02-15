@@ -63,8 +63,6 @@ const PostOptions = ({
         return v ? acc + 1 : acc;
     }, 0);
 
-    console.log('>>>  canReply', canReply);
-
     const renderContent = () => {
         return (
             <>

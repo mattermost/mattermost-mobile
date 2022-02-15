@@ -165,7 +165,6 @@ const Post = ({
         }
 
         Keyboard.dismiss();
-        console.log('>>>  location in post option', location);
         const passProps = {location, post, showAddReaction};
         const title = isTablet ? intl.formatMessage({id: 'post.options.title', defaultMessage: 'Options'}) : '';
 
