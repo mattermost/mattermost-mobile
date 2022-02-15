@@ -59,7 +59,7 @@ function canEditPost(isOwner: boolean, post: PostModel, postEditTimeLimit: numbe
     return cep;
 }
 
-const enhanced = withObservables(['post'], ({post, showAddReaction, location, database}: WithDatabaseArgs & { post: PostModel; showAddReaction: boolean; location: string }) => {
+const enhanced = withObservables([], ({post, showAddReaction, location, database}: WithDatabaseArgs & { post: PostModel; showAddReaction: boolean; location: string }) => {
     const currentUserId = database.get<SystemModel>(SYSTEM).findAndObserve(CURRENT_USER_ID).pipe(switchMap(({value}) => of$(value)));
     const currentUser = currentUserId.pipe(switchMap((userId) => database.get<UserModel>(USER).findAndObserve(userId)));
     const channel = post.channel.observe();
@@ -74,9 +74,9 @@ const enhanced = withObservables(['post'], ({post, showAddReaction, location, da
     const channelIsArchived = channelDeleteAt.pipe(switchMap((cda) => of$(Boolean(cda !== 0))));
 
     const isChannelReadOnly = checkChannelReadOnly(database, channel, currentUser);
-    const isSystemPost = isSystemMessage(post);
+    const isSystemPost = of$(isSystemMessage(post));
 
-    const isFlagged = database.get<PreferenceModel>(PREFERENCE).query(Q.where('category', Preferences.CATEGORY_FLAGGED_POST), Q.where('name', post.id)).observe().pipe(switchMap((pref) => of$(Boolean(pref.length))));
+    const isSaved = database.get<PreferenceModel>(PREFERENCE).query(Q.where('category', Preferences.CATEGORY_FLAGGED_POST), Q.where('name', post.id)).observe().pipe(switchMap((pref) => of$(Boolean(pref.length))));
     const isOwner = currentUserId === of$(post.userId);
 
     const hasBeenDeleted = post.deleteAt !== 0;// fixme : Enquire about the second part of the condition || post.state === WebsocketEvents.POST_DELETED);
@@ -87,7 +87,7 @@ const enhanced = withObservables(['post'], ({post, showAddReaction, location, da
     const canCopyText: Observable<boolean> = of$(false);
     let canEdit: Observable<boolean> = of$(false);
     let canEditUntil: Observable<number> = of$(-1);
-    let canFlag: Observable<boolean> = of$(true);
+    let canSave: Observable<boolean> = of$(true);
     let canPin: Observable<boolean> = of$(true);
 
     let canAddReaction = currentUser.pipe(switchMap((u) => from$(hasPermissionForPost(post, u, Permissions.ADD_REACTION, true))));
@@ -130,7 +130,7 @@ const enhanced = withObservables(['post'], ({post, showAddReaction, location, da
         canCopyPermalink = of$(false);
         canEdit = of$(false);
         canPin = of$(false);
-        canFlag = of$(false);
+        canSave = of$(false);
     }
     if (hasBeenDeleted) {
         canDelete = of$(false);
@@ -157,12 +157,13 @@ const enhanced = withObservables(['post'], ({post, showAddReaction, location, da
     );
 
     return {
-        isFlagged,
-        currentUser,
-        isSystemPost,
-        post,
+        isSaved,
 
-        //fixme: Validate everything below and validate all your exports
+        currentUser,
+
+        isSystemPost, //fixme:  should be removed ??
+        //
+        // //fixme: Validate everything below and validate all your exports
         canMarkAsUnread,
         canCopyText,
         canReply,
@@ -170,9 +171,10 @@ const enhanced = withObservables(['post'], ({post, showAddReaction, location, da
         canEdit,
         canEditUntil,
         canDelete,
-        canFlag,
+        canSave,
         canPin,
-        canAddReaction: canAddReaction && isUnderMaxAllowedReactions, // reactionsCount: post.reactions.observeCount(),
+        isUnderMaxAllowedReactions,
+        canAddReaction: canAddReaction && isUnderMaxAllowedReactions,
     };
 });
 
