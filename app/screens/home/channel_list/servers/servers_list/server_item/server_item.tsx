@@ -231,7 +231,7 @@ const ServerItem = ({highlight, isActive, server, tutorialWatched}: Props) => {
 
     const onServerPressed = useCallback(async () => {
         if (isActive) {
-            DeviceEventEmitter.emit(Events.CLOSE_BOTTOM_SHEET);
+            dismissBottomSheet();
             return;
         }
 
