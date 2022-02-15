@@ -94,9 +94,12 @@ export const prepareCategoryChannels = (
             });
         });
 
-        const categoryChannelRecords = operator.handleCategoryChannels({categoryChannels, prepareRecordsOnly: true});
+        if (categoryChannels.length) {
+            const categoryChannelRecords = operator.handleCategoryChannels({categoryChannels, prepareRecordsOnly: true});
+            return [categoryChannelRecords];
+        }
 
-        return [categoryChannelRecords];
+        return [];
     } catch (e) {
         return undefined;
     }

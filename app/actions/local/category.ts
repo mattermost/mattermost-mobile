@@ -4,7 +4,7 @@
 import {Model} from '@nozbe/watermelondb';
 
 import DatabaseManager from '@database/manager';
-import {prepareCategories, prepareCategoryChannels, queryCategoryById} from '@queries/servers/categories';
+import {prepareCategories, prepareCategoryChannels, queryCategoriesByTeamId, queryCategoryById} from '@queries/servers/categories';
 
 export const deleteCategory = async (serverUrl: string, categoryId: string) => {
     const database = DatabaseManager.serverDatabases[serverUrl]?.database;
@@ -26,9 +26,10 @@ export const deleteCategory = async (serverUrl: string, categoryId: string) => {
     }
 };
 
-export const storeCategories = async (serverUrl: string, categories: CategoryWithChannels[], prepareRecordsOnly = false) => {
+export const storeCategories = async (serverUrl: string, categories: CategoryWithChannels[], prepareRecordsOnly = false, prune = false) => {
     const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
-    if (!operator) {
+    const database = DatabaseManager.serverDatabases[serverUrl]?.database;
+    if (!operator || !database) {
         return {error: `${serverUrl} database not found`};
     }
     const modelPromises: Array<Promise<Model[]>> = [];
@@ -44,6 +45,18 @@ export const storeCategories = async (serverUrl: string, categories: CategoryWit
 
     const models = await Promise.all(modelPromises);
     const flattenedModels = models.flat() as Model[];
+
+    if (prune) {
+        const remoteCategoryIds = categories.map((cat) => cat.id);
+        const localCategories = await queryCategoriesByTeamId(database, categories[0].team_id);
+
+        (localCategories).filter((cat) => {
+            return !remoteCategoryIds.includes(cat.id);
+        }).forEach((category) => {
+            category.prepareDestroyPermanently();
+            flattenedModels.push(category);
+        });
+    }
 
     if (prepareRecordsOnly) {
         return {models: flattenedModels};

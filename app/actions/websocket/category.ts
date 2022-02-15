@@ -36,7 +36,7 @@ export async function handleCategoryCreatedEvent(serverUrl: string, msg: Websock
     } catch (e) {
         // eslint-disable-next-line no-console
         console.log('Category WS: handleCategoryCreatedEvent', e, msg);
-        fetchCategories(serverUrl, msg.data.team_id);
+        fetchCategories(serverUrl, msg.broadcast.team_id);
     }
 }
 
@@ -49,7 +49,7 @@ export async function handleCategoryUpdatedEvent(serverUrl: string, msg: Websock
     } catch (e) {
         // eslint-disable-next-line no-console
         console.log('Category WS: handleCategoryUpdatedEvent', e, msg);
-        fetchCategories(serverUrl, msg.data.team_id);
+        fetchCategories(serverUrl, msg.broadcast.team_id, false, true);
     }
 }
 
