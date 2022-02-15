@@ -1,8 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+// import {fetchGroupsForTeam} from '@actions/remote/group';
 import {fetchMissingSidebarInfo, fetchMyChannelsForTeam, MyChannelsRequest} from '@actions/remote/channel';
-import {fetchGroupsForTeam} from '@actions/remote/group';
 import {fetchPostsForChannel, fetchPostsForUnreadChannels} from '@actions/remote/post';
 import {MyPreferencesRequest, fetchMyPreferences} from '@actions/remote/preference';
 import {fetchMyTeams, fetchTeamsChannelsAndUnreadPosts, MyTeamsRequest} from '@actions/remote/team';
@@ -178,9 +178,9 @@ export const deferredAppEntryActions = async (
     }
 
     // defer groups for team
-    if (initialTeamId) {
-        await fetchGroupsForTeam(serverUrl, initialTeamId);
-    }
+    // if (initialTeamId) {
+    //     await fetchGroupsForTeam(serverUrl, initialTeamId);
+    // }
 
     // defer fetch channels and unread posts for other teams
     if (teamData.teams?.length && teamData.memberships?.length) {
