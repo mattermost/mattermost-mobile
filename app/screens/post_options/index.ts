@@ -28,38 +28,6 @@ import type UserModel from '@typings/database/models/servers/user';
 const {USER, SYSTEM, PREFERENCE} = MM_TABLES.SERVER;
 const {CURRENT_USER_ID, LICENSE, CONFIG} = SYSTEM_IDENTIFIERS;
 
-const checkChannelReadOnly = (database: Database, channel: Observable<ChannelModel>, currentUser: Observable<UserModel>) => {
-    const experimentalTownSquareIsReadOnly = database.get<SystemModel>(SYSTEM).findAndObserve(CONFIG).pipe(
-        switchMap(({value}: {value: ClientConfig}) => of$(value.ExperimentalTownSquareIsReadOnly === 'true')),
-    );
-    return combineLatest([currentUser, channel, experimentalTownSquareIsReadOnly]).pipe(
-        switchMap(([u, c, readOnly]) => of$(c?.name === General.DEFAULT_CHANNEL && !isSystemAdmin(u.roles) && readOnly)),
-    );
-};
-
-function canEditPost(isOwner: boolean, post: PostModel, postEditTimeLimit: number, isLicensed: boolean, channel: ChannelModel, user: UserModel): boolean {
-    if (!post || isSystemMessage(post)) {
-        return false;
-    }
-
-    let cep: boolean;
-
-    let permissions = [Permissions.EDIT_POST, Permissions.EDIT_OTHERS_POSTS];
-    if (isOwner) {
-        permissions = [Permissions.EDIT_POST];
-    }
-
-    cep = permissions.every((permission) => hasPermissionForChannel(channel, user, permission, false));
-    if (isLicensed && postEditTimeLimit !== -1) {
-        const timeLeft = (post.createAt + (postEditTimeLimit * 1000)) - Date.now();
-        if (timeLeft <= 0) {
-            cep = false;
-        }
-    }
-
-    return cep;
-}
-
 const enhanced = withObservables([], ({post, showAddReaction, location, database}: WithDatabaseArgs & { post: PostModel; showAddReaction: boolean; location: string }) => {
     const channel = post.channel.observe();
     const channelIsArchived = channel.pipe(switchMap((ch: ChannelModel) => of$(ch.deleteAt !== 0)));
@@ -82,24 +50,27 @@ const enhanced = withObservables([], ({post, showAddReaction, location, database
         }),
     );
 
-    const canDeletePostPermission = currentUser.pipe(
-        switchMap((u) => {
-            const isOwner = post.userId === u.id;
-            return from$(hasPermissionForPost(post, u, isOwner ? Permissions.DELETE_POST : Permissions.DELETE_OTHERS_POSTS, false));
-        }),
-    );
+    const canDeletePostPermission = currentUser.pipe(switchMap((u) => {
+        const isOwner = post.userId === u.id;
+        return from$(hasPermissionForPost(post, u, isOwner ? Permissions.DELETE_POST : Permissions.DELETE_OTHERS_POSTS, false));
+    }));
 
-    const canDelete = combineLatest([canDeletePostPermission, channelIsArchived, channelIsReadOnly]).pipe(
-        switchMap(([permission, isArchived, isReadOnly]) => {
-            const hasBeenDeleted = post.deleteAt !== 0;//|| post.state === Posts.POST_DELETED);
-            return of$(permission && !isArchived && !isReadOnly && !hasBeenDeleted);
-        }),
-    );
+    const canDelete = combineLatest([canDeletePostPermission, channelIsArchived, channelIsReadOnly]).pipe(switchMap(([permission, isArchived, isReadOnly]) => {
+        const hasBeenDeleted = post.deleteAt !== 0;//|| post.state === Posts.POST_DELETED); //fixme: review this second condition
+        return of$(permission && !isArchived && !isReadOnly && !hasBeenDeleted);
+    }));
+
+    const canPostPermission = combineLatest([channel, currentUser]).pipe(switchMap(([c, u]) => from$(hasPermissionForChannel(c, u, Permissions.CREATE_POST, false))));
+
+    const canReply = combineLatest([canPostPermission, channelIsArchived, channelIsReadOnly, location]).pipe(switchMap(([permission, isArchived, isReadOnly, loc]) => {
+        return of$(permission && !isArchived && !isReadOnly && loc !== Screens.THREAD && !isSystemMessage(post));
+    }));
 
     return {
         canMarkAsUnread,
         canAddReaction,
         canDelete,
+        canReply,
     };
 });
 
