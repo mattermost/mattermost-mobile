@@ -82,9 +82,24 @@ const enhanced = withObservables([], ({post, showAddReaction, location, database
         }),
     );
 
+    const canDeletePostPermission = currentUser.pipe(
+        switchMap((u) => {
+            const isOwner = post.userId === u.id;
+            return from$(hasPermissionForPost(post, u, isOwner ? Permissions.DELETE_POST : Permissions.DELETE_OTHERS_POSTS, false));
+        }),
+    );
+
+    const canDelete = combineLatest([canDeletePostPermission, channelIsArchived, channelIsReadOnly]).pipe(
+        switchMap(([permission, isArchived, isReadOnly]) => {
+            const hasBeenDeleted = post.deleteAt !== 0;//|| post.state === Posts.POST_DELETED);
+            return of$(permission && !isArchived && !isReadOnly && !hasBeenDeleted);
+        }),
+    );
+
     return {
         canMarkAsUnread,
         canAddReaction,
+        canDelete,
     };
 });
 
