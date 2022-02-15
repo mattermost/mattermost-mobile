@@ -69,6 +69,7 @@ const enhanced = withObservables(['post'], ({post, showAddReaction, location, da
 
     const config = database.get<SystemModel>(SYSTEM).findAndObserve(SYSTEM_IDENTIFIERS.CONFIG).pipe(switchMap(({value}) => of$(value as ClientConfig)));
     const allowEditPost = config.pipe(switchMap((cfg) => of$(cfg.AllowEditPost)));
+    const serverVersion = config.pipe(switchMap((cfg) => cfg.Version));
     const postEditTimeLimit = config.pipe(switchMap((cfg) => of$(parseInt(cfg.PostEditTimeLimit || '-1', 10))));
 
     const isLicensed = database.get<SystemModel>(SYSTEM).findAndObserve(LICENSE).pipe(switchMap(({value}) => of$(value.IsLicensed === 'true')));
@@ -113,10 +114,10 @@ const enhanced = withObservables(['post'], ({post, showAddReaction, location, da
         canEdit = combineLatest([postEditTimeLimit, isLicensed, channel, currentUser]).pipe(
             switchMap(([lt, ls, c, u]) => of$(Boolean(canEditPost(isOwner, post, lt, ls, c, u)))));
 
-        canEditUntil = combineLatest([canEdit, isLicensed, allowEditPost, postEditTimeLimit]).pipe(
-            switchMap(([ct, ls, alw, limit]) => {
+        canEditUntil = combineLatest([canEdit, isLicensed, allowEditPost, postEditTimeLimit, serverVersion]).pipe(
+            switchMap(([ct, ls, alw, limit, v]) => {
                 if (ct && ls &&
-                    ((alw === Permissions.ALLOW_EDIT_POST_TIME_LIMIT && !isMinimumServerVersion(serverVersion, 6)) || (limit !== -1))
+                    ((alw === Permissions.ALLOW_EDIT_POST_TIME_LIMIT && !isMinimumServerVersion(v, 6)) || (limit !== -1))
                 ) {
                     return of$(post.createAt + (limit * (1000)));
                 }
