@@ -84,6 +84,7 @@ commands:
           name: Generate assets
           command: node ./scripts/generate-assets.js
       - run:
+          name: Compass Icons
           environment:
             COMPASS_ICONS: "node_modules/@mattermost/compass-icons/font/compass-icons.ttf"
           command: |

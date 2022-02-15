@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React, {useMemo} from 'react';
-import {StyleSheet, useWindowDimensions} from 'react-native';
+import {StyleSheet} from 'react-native';
 import Svg, {ClipPath, Defs, G, Path, Rect} from 'react-native-svg';
 import tinyColor from 'tinycolor2';
 
@@ -10,8 +10,10 @@ import {useTheme} from '@context/theme';
 
 type Props = {
     borderRadius?: number;
+    height: number;
     itemBounds: TutorialItemBounds;
     onDismiss: () => void;
+    width: number;
 }
 
 const svgM = (x: number, y: number) => `M ${x} ${y}`;
@@ -42,8 +44,7 @@ const constructRectangularPath = (
     ].join(' ');
 };
 
-const HighlightItem = ({itemBounds, onDismiss, borderRadius = 0}: Props) => {
-    const {height, width} = useWindowDimensions();
+const HighlightItem = ({height, itemBounds, onDismiss, borderRadius = 0, width}: Props) => {
     const theme = useTheme();
     const isDark = tinyColor(theme.centerChannelBg).isDark();
 

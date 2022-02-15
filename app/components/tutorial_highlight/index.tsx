@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React from 'react';
-import {Modal, StyleSheet, View} from 'react-native';
+import {Modal, StyleSheet, useWindowDimensions, View} from 'react-native';
 
 import HighlightItem from './item';
 
@@ -15,6 +15,10 @@ type Props = {
 }
 
 const TutorialHighlight = ({children, itemBounds, itemBorderRadius, onDismiss, onShow}: Props) => {
+    const {width, height} = useWindowDimensions();
+    const isLandscape = width > height;
+    const supportedOrientations = isLandscape ? 'landscape' : 'portrait';
+
     return (
         <Modal
             visible={true}
@@ -23,7 +27,7 @@ const TutorialHighlight = ({children, itemBounds, itemBorderRadius, onDismiss, o
             onShow={onShow}
             onDismiss={onDismiss}
             onRequestClose={onDismiss}
-            supportedOrientations={['landscape']}
+            supportedOrientations={[supportedOrientations]}
         >
             <View
                 style={StyleSheet.absoluteFill}
@@ -32,7 +36,9 @@ const TutorialHighlight = ({children, itemBounds, itemBorderRadius, onDismiss, o
             <HighlightItem
                 borderRadius={itemBorderRadius}
                 itemBounds={itemBounds}
+                height={height}
                 onDismiss={onDismiss}
+                width={width}
             />
             {children}
         </Modal>

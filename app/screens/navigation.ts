@@ -101,7 +101,7 @@ export const bottomSheetModalOptions = (theme: Theme, closeButtonId: string) => 
 
 Navigation.setDefaultOptions({
     layout: {
-        orientation: [Device.IS_TABLET ? 'landscape' : 'portrait'],
+        orientation: Device.IS_TABLET ? undefined : ['portrait'],
     },
 });
 

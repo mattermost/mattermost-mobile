@@ -4,11 +4,11 @@
 import React from 'react';
 import {StyleProp, StyleSheet, Text, TextStyle, View, ViewStyle} from 'react-native';
 
-// @ts-expect-error svg imports
-import HandSwipeLeft from '@assets/images/hand-swipe-left.svg';
 import {useTheme} from '@context/theme';
-import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
+import {makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
+
+import HandSwipeLeft from './swipe_left_hand';
 
 type Props = {
     containerStyle?: StyleProp<ViewStyle>;
@@ -25,7 +25,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     },
     view: {
         alignItems: 'center',
-        backgroundColor: changeOpacity(theme.centerChannelColor, 0.84),
+        backgroundColor: theme.centerChannelBg,
         borderRadius: 8,
         height: 136,
         padding: 16,
@@ -33,7 +33,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     },
     text: {
         ...typography('Heading', 200),
-        color: 'white',
+        color: theme.centerChannelColor,
         marginTop: 8,
         paddingHorizontal: 12,
         textAlign: 'center',
@@ -50,7 +50,7 @@ const TutorialSwipeLeft = ({containerStyle, message, style, textStyles}: Props) 
             style={[styles.container, containerStyle]}
         >
             <View style={[styles.view, style]}>
-                <HandSwipeLeft/>
+                <HandSwipeLeft fillColor={theme.centerChannelColor}/>
                 <Text style={[styles.text, textStyles]}>
                     {message}
                 </Text>
