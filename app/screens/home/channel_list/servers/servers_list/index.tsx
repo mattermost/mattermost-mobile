@@ -7,8 +7,10 @@ import {ListRenderItemInfo, StyleSheet, View} from 'react-native';
 import {FlatList} from 'react-native-gesture-handler';
 
 import {useServerUrl} from '@context/server';
+import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
 import BottomSheetContent from '@screens/bottom_sheet/content';
+import {addNewServer} from '@utils/server';
 
 import ServerItem from './server_item';
 
@@ -33,10 +35,10 @@ const ServerList = ({servers}: Props) => {
     const intl = useIntl();
     const isTablet = useIsTablet();
     const serverUrl = useServerUrl();
+    const theme = useTheme();
 
-    const onAddServer = useCallback(() => {
-        // eslint-disable-next-line no-console
-        console.log('Lets add a server');
+    const onAddServer = useCallback(async () => {
+        addNewServer(theme);
     }, [servers]);
 
     const renderServer = useCallback(({item: t}: ListRenderItemInfo<ServersModel>) => {

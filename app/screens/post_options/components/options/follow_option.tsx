@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useMemo} from 'react';
+import React from 'react';
 
 import {Screens} from '@constants';
 import {t} from '@i18n';
@@ -16,36 +16,29 @@ type FollowThreadOptionProps = {
 //todo: to implement CRT follow thread
 
 const FollowThreadOption = ({thread}: FollowThreadOptionProps) => {
-    //todo: to enable after CRT. Move this to PostOptions and do not mount the component
-    const config = useMemo(() => {
-        if (thread?.is_following) {
-            if (thread?.participants?.length) {
-                return {
-                    id: t('threads.unfollowThread'),
-                    defaultMessage: 'Unfollow Thread',
-                    icon: 'message-minus-outline',
-                };
-            }
-            return {
-                id: t('threads.unfollowMessage'),
-                defaultMessage: 'Unfollow Message',
-                icon: 'message-minus-outline',
-            };
-        }
+    let id: string;
+    let defaultMessage: string;
+    let icon: string;
 
+    if (thread.is_following) {
+        icon = 'message-minus-outline';
         if (thread?.participants?.length) {
-            return {
-                id: t('threads.followThread'),
-                defaultMessage: 'Follow Thread',
-                icon: 'message-plus-outline',
-            };
+            id = t('threads.unfollowThread');
+            defaultMessage = 'Unfollow Thread';
+        } else {
+            id = t('threads.unfollowMessage');
+            defaultMessage = 'Unfollow Message';
         }
-        return {
-            id: t('threads.followMessage'),
-            defaultMessage: 'Follow Message',
-            icon: 'message-plus-outline',
-        };
-    }, [thread?.is_following, thread?.participants]);
+    } else {
+        icon = 'message-plus-outline';
+        if (thread?.participants?.length) {
+            id = t('threads.followThread');
+            defaultMessage = 'Follow Thread';
+        } else {
+            id = t('threads.followMessage');
+            defaultMessage = 'Follow Message';
+        }
+    }
 
     const handleToggleFollow = () => {
         //todo:
@@ -53,10 +46,10 @@ const FollowThreadOption = ({thread}: FollowThreadOptionProps) => {
 
     return (
         <BaseOption
-            i18nId={config.id}
-            defaultMessage={config.defaultMessage}
+            i18nId={id}
+            defaultMessage={defaultMessage}
             testID='post.options.follow.thread'
-            iconName={config.icon}
+            iconName={icon}
             onPress={handleToggleFollow}
         />
     );

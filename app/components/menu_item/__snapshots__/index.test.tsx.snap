@@ -30,7 +30,6 @@ exports[`DrawerItem should match snapshot 1`] = `
     <View
       style={
         Object {
-          "backgroundColor": "#ffffff",
           "flexDirection": "row",
           "minHeight": 50,
         }
@@ -148,7 +147,6 @@ exports[`DrawerItem should match snapshot without separator and centered false 1
     <View
       style={
         Object {
-          "backgroundColor": "#ffffff",
           "flexDirection": "row",
           "minHeight": 50,
         }

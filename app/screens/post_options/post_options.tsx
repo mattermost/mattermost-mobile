@@ -2,12 +2,11 @@
 // See LICENSE.txt for license information.
 
 import React from 'react';
-import {View} from 'react-native';
 
+import {ITEM_HEIGHT} from '@components/menu_item';
 import {Screens} from '@constants';
-import {useTheme} from '@context/theme';
+import BottomSheet from '@screens/bottom_sheet';
 import {isSystemMessage} from '@utils/post';
-import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 import CopyLinkOption from './components/options/copy_link_option';
 import CopyTextOption from './components/options/copy_text_option';
@@ -23,17 +22,6 @@ import ReactionBar from './components/reaction_bar';
 import type PostModel from '@typings/database/models/servers/post';
 
 //fixme: some props are optional - review them
-
-const getStyleSheet = makeStyleSheetFromTheme((theme) => {
-    return {
-        container: {
-            backgroundColor: theme.centerChannelBg,
-        },
-        icon: {
-            backgroundColor: changeOpacity(theme.centerChannelColor, 0.56),
-        },
-    };
-});
 
 type PostOptionsProps = {
     canAddReaction?: boolean;
@@ -52,7 +40,6 @@ type PostOptionsProps = {
     thread?: Partial<PostModel>;
 };
 
-//todo: look up the permission here and render each option accordingly
 const PostOptions = ({
     canAddReaction = true,
     canCopyPermalink = true,
@@ -69,36 +56,52 @@ const PostOptions = ({
     post,
     thread,
 }: PostOptionsProps) => {
-    const theme = useTheme();
-    const styles = getStyleSheet(theme);
-
     const shouldRenderEdit = canEdit && (canEditUntil === -1 || canEditUntil > Date.now());
     const shouldRenderFollow = !(location !== Screens.CHANNEL || !thread);
 
+    const snapPoints = [
+        canAddReaction, canCopyPermalink, canCopyText,
+        canDelete, shouldRenderEdit, shouldRenderFollow,
+        canMarkAsUnread, canPin, canReply, canSave,
+    ].reduce((acc, v) => {
+        return v ? acc + 1 : acc;
+    }, 0);
+
+    const renderContent = () => {
+        return (
+            <>
+                {canAddReaction && <ReactionBar/>}
+                {canReply && <ReplyOption/>}
+                {shouldRenderFollow &&
+                    <FollowThreadOption
+                        location={location}
+                        thread={thread}
+                    />
+                }
+                {canMarkAsUnread && !isSystemMessage(post) && (
+                    <MarkAsUnreadOption/>
+                )}
+                {canCopyPermalink && <CopyLinkOption/>}
+                {canSave &&
+                    <SaveOption
+                        isSaved={isSaved}
+                    />
+                }
+                {canCopyText && <CopyTextOption/>}
+                {canPin && <PinChannelOption isPostPinned={post.isPinned}/>}
+                {shouldRenderEdit && <EditOption/>}
+                {canDelete && <DeletePostOption/>}
+            </>
+        );
+    };
+
     return (
-        <View style={styles.container}>
-            {canAddReaction && <ReactionBar theme={theme}/>}
-            {canReply && <ReplyOption/>}
-            {shouldRenderFollow &&
-                <FollowThreadOption
-                    location={location}
-                    thread={thread}
-                />
-            }
-            {canMarkAsUnread && !isSystemMessage(post) && (
-                <MarkAsUnreadOption/>
-            )}
-            {canCopyPermalink && <CopyLinkOption/>}
-            {canSave &&
-                <SaveOption
-                    isSaved={isSaved}
-                />
-            }
-            {canCopyText && <CopyTextOption/>}
-            {canPin && <PinChannelOption isPostPinned={post.isPinned}/>}
-            {shouldRenderEdit && <EditOption/>}
-            {canDelete && <DeletePostOption/>}
-        </View>
+        <BottomSheet
+            renderContent={renderContent}
+            closeButtonId='close-post-options'
+            initialSnapIndex={0}
+            snapPoints={[((snapPoints + 2) * ITEM_HEIGHT), 10]}
+        />
     );
 };
 

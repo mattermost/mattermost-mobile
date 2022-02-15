@@ -67,19 +67,17 @@ export default class CategoryModel extends Model implements CategoryInterface {
     @children(CATEGORY_CHANNEL) categoryChannels!: Query<CategoryChannelModel>;
 
     /** categoryChannelsBySortOrder : Retrieves assocated category channels sorted by sort_order */
-    @lazy categoryChannelsBySortOrder = this.categoryChannels.collection.query(Q.sortBy('sort_order', Q.asc));
+    @lazy categoryChannelsBySortOrder = this.categoryChannels.collection.query(
+        Q.where('category_id', this.id),
+        Q.sortBy('sort_order', Q.asc),
+    );
 
     /** channels : Retrieves all the channels that are part of this category */
     @lazy channels = this.collections.
         get<ChannelModel>(CHANNEL).
         query(
-            Q.experimentalJoinTables([CHANNEL, CATEGORY_CHANNEL]),
-            Q.on(CATEGORY_CHANNEL,
-                Q.and(
-                    Q.on(CHANNEL, Q.where('delete_at', Q.eq(0))),
-                    Q.where('category_id', this.id),
-                ),
-            ),
+            Q.on(CATEGORY_CHANNEL, 'category_id', this.id),
+            Q.where('delete_at', Q.eq(0)),
             Q.sortBy('display_name'),
         );
 

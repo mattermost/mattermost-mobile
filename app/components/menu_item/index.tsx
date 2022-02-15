@@ -26,6 +26,49 @@ type MenuItemProps = {
     theme: Theme;
 };
 
+const getStyleSheet = makeStyleSheetFromTheme((theme) => {
+    return {
+        container: {
+            flexDirection: 'row',
+            minHeight: ITEM_HEIGHT,
+        },
+        iconContainer: {
+            width: 45,
+            height: ITEM_HEIGHT,
+            alignItems: 'center',
+            justifyContent: 'center',
+            marginLeft: 5,
+        },
+        icon: {
+            color: changeOpacity(theme.centerChannelColor, 0.64),
+            fontSize: 24,
+        },
+        wrapper: {
+            flex: 1,
+        },
+        labelContainer: {
+            flex: 1,
+            justifyContent: 'center',
+            paddingTop: 14,
+            paddingBottom: 14,
+        },
+        centerLabel: {
+            textAlign: 'center',
+            textAlignVertical: 'center',
+        },
+        label: {
+            color: changeOpacity(theme.centerChannelColor, 0.5),
+            fontSize: 17,
+            textAlignVertical: 'center',
+            includeFontPadding: false,
+        },
+        divider: {
+            backgroundColor: changeOpacity(theme.centerChannelColor, 0.2),
+            height: 1,
+        },
+    };
+});
+
 const MenuItem = (props: MenuItemProps) => {
     const {
         centered,
@@ -105,49 +148,5 @@ const MenuItem = (props: MenuItemProps) => {
         </TouchableWithFeedback>
     );
 };
-
-const getStyleSheet = makeStyleSheetFromTheme((theme) => {
-    return {
-        container: {
-            backgroundColor: theme.centerChannelBg,
-            flexDirection: 'row',
-            minHeight: ITEM_HEIGHT,
-        },
-        iconContainer: {
-            width: 45,
-            height: ITEM_HEIGHT,
-            alignItems: 'center',
-            justifyContent: 'center',
-            marginLeft: 5,
-        },
-        icon: {
-            color: changeOpacity(theme.centerChannelColor, 0.64),
-            fontSize: 24,
-        },
-        wrapper: {
-            flex: 1,
-        },
-        labelContainer: {
-            flex: 1,
-            justifyContent: 'center',
-            paddingTop: 14,
-            paddingBottom: 14,
-        },
-        centerLabel: {
-            textAlign: 'center',
-            textAlignVertical: 'center',
-        },
-        label: {
-            color: changeOpacity(theme.centerChannelColor, 0.5),
-            fontSize: 17,
-            textAlignVertical: 'center',
-            includeFontPadding: false,
-        },
-        divider: {
-            backgroundColor: changeOpacity(theme.centerChannelColor, 0.2),
-            height: 1,
-        },
-    };
-});
 
 export default MenuItem;

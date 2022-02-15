@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback} from 'react';
+import React, {useCallback, useMemo} from 'react';
 import {Pressable, PressableStateCallbackType, View} from 'react-native';
 
 import Emoji from '@components/emoji';
@@ -37,9 +37,16 @@ const Reaction = ({onPressReaction, emoji, iconSize, containerSize}: ReactionPro
     const styles = getStyleSheet(theme);
     const handleReactionPressed = useCallback(() => {
         onPressReaction(emoji);
-    }, [onPressReaction]);
+    }, [onPressReaction, emoji]);
 
     const highlightedStyle = useCallback(({pressed}: PressableStateCallbackType) => pressed && styles.highlight, [styles.highlight]);
+    const reactionStyle = useMemo(() => [
+        styles.reactionContainer,
+        {
+            width: containerSize,
+            height: containerSize,
+        },
+    ], [containerSize]);
 
     return (
         <Pressable
@@ -48,13 +55,7 @@ const Reaction = ({onPressReaction, emoji, iconSize, containerSize}: ReactionPro
             style={highlightedStyle}
         >
             <View
-                style={[
-                    styles.reactionContainer,
-                    {
-                        width: containerSize,
-                        height: containerSize,
-                    },
-                ]}
+                style={reactionStyle}
             >
                 <Emoji
                     emojiName={emoji}

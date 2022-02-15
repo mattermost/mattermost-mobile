@@ -76,7 +76,7 @@ exports[`Server Icon Server Icon Component should match snapshot with mentions 1
           "fontFamily": "OpenSans-Bold",
           "fontSize": 12,
           "height": 22,
-          "left": 25,
+          "left": 13,
           "lineHeight": 16.5,
           "minWidth": 26,
           "opacity": 1,
@@ -84,7 +84,7 @@ exports[`Server Icon Server Icon Component should match snapshot with mentions 1
           "paddingHorizontal": 5,
           "position": "absolute",
           "textAlign": "center",
-          "top": -1,
+          "top": -8,
           "transform": Array [
             Object {
               "scale": 1,

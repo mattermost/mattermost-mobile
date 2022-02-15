@@ -142,14 +142,9 @@ const launchToHome = async (props: LaunchProps) => {
             break;
     }
 
-    const passProps = {
-        skipMetrics: true,
-        ...props,
-    };
-
     // eslint-disable-next-line no-console
     console.log('Launch app in Home screen');
-    resetToHome(passProps);
+    resetToHome(props);
 };
 
 const launchToServer = (props: LaunchProps, resetNavigation: Boolean) => {
