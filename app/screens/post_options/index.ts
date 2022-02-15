@@ -11,6 +11,7 @@ import {General, Permissions, Preferences, Screens} from '@constants';
 import {MM_TABLES, SYSTEM_IDENTIFIERS} from '@constants/database';
 import {MAX_ALLOWED_REACTIONS} from '@constants/emoji';
 import PreferenceModel from '@typings/database/models/servers/preference';
+import ReactionModel from '@typings/database/models/servers/reaction';
 import {isMinimumServerVersion} from '@utils/helpers';
 import {isSystemMessage} from '@utils/post';
 import {hasPermissionForChannel, hasPermissionForPost} from '@utils/role';
@@ -150,10 +151,16 @@ const enhanced = withObservables([], ({post, showAddReaction, location, database
         canAddReaction = of$(false);
     }
 
+    //fixme:  you can use array.reduce()
     const isUnderMaxAllowedReactions = post.reactions.observe().pipe(
-        // eslint-disable-next-line max-nested-callbacks
-        switchMap((reactionArr) => reactionArr.reduce((acc, v) => acc.add(v), new Set<string>())),
-        switchMap((reactionSet: Set<string>) => of$(reactionSet.size < MAX_ALLOWED_REACTIONS)),
+        switchMap((reactions: ReactionModel[]) => {
+            // eslint-disable-next-line max-nested-callbacks
+            const emojiNames = reactions.map((r) => r.emojiName);
+            return [...new Set(emojiNames)];
+        }),
+        switchMap((allEmojis) => {
+            return of$(allEmojis.length < MAX_ALLOWED_REACTIONS);
+        }),
     );
 
     return {
