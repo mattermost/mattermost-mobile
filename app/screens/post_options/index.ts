@@ -10,8 +10,6 @@ import {switchMap} from 'rxjs/operators';
 import {General, Permissions, Preferences, Screens} from '@constants';
 import {MM_TABLES, SYSTEM_IDENTIFIERS} from '@constants/database';
 import {MAX_ALLOWED_REACTIONS} from '@constants/emoji';
-import PreferenceModel from '@typings/database/models/servers/preference';
-import ReactionModel from '@typings/database/models/servers/reaction';
 import {isMinimumServerVersion} from '@utils/helpers';
 import {isSystemMessage} from '@utils/post';
 import {hasPermissionForChannel, hasPermissionForPost} from '@utils/role';
@@ -22,6 +20,8 @@ import PostOptions from './post_options';
 import type {WithDatabaseArgs} from '@typings/database/database';
 import type ChannelModel from '@typings/database/models/servers/channel';
 import type PostModel from '@typings/database/models/servers/post';
+import type PreferenceModel from '@typings/database/models/servers/preference';
+import type ReactionModel from '@typings/database/models/servers/reaction';
 import type SystemModel from '@typings/database/models/servers/system';
 import type UserModel from '@typings/database/models/servers/user';
 
@@ -61,127 +61,25 @@ function canEditPost(isOwner: boolean, post: PostModel, postEditTimeLimit: numbe
 }
 
 const enhanced = withObservables([], ({post, showAddReaction, location, database}: WithDatabaseArgs & { post: PostModel; showAddReaction: boolean; location: string }) => {
-    const currentUserId = database.get<SystemModel>(SYSTEM).findAndObserve(CURRENT_USER_ID).pipe(switchMap(({value}) => of$(value)));
-    const currentUser = currentUserId.pipe(switchMap((userId) => database.get<UserModel>(USER).findAndObserve(userId)));
     const channel = post.channel.observe();
+    const canMarkAsUnread = channel.pipe(switchMap((ch: ChannelModel) => of$(ch.deleteAt === 0)));
+    const currentUser = database.get<SystemModel>(SYSTEM).findAndObserve(CURRENT_USER_ID).pipe(switchMap(({value}) => database.get<UserModel>(USER).findAndObserve(value)));
 
-    const config = database.get<SystemModel>(SYSTEM).findAndObserve(SYSTEM_IDENTIFIERS.CONFIG).pipe(switchMap(({value}) => of$(value as ClientConfig)));
-    const allowEditPost = config.pipe(switchMap((cfg) => of$(cfg.AllowEditPost)));
-    const serverVersion = config.pipe(switchMap((cfg) => cfg.Version));
-    const postEditTimeLimit = config.pipe(switchMap((cfg) => of$(parseInt(cfg.PostEditTimeLimit || '-1', 10))));
+    const experimentalTownSquareIsReadOnly = database.get<SystemModel>(SYSTEM).findAndObserve(CONFIG).pipe(switchMap(({value}: {value: ClientConfig}) => of$(value.ExperimentalTownSquareIsReadOnly === 'true')));
+    const channelIsReadOnly = combineLatest([currentUser, channel, experimentalTownSquareIsReadOnly]).pipe(switchMap(([u, c, readOnly]) => of$(c?.name === General.DEFAULT_CHANNEL && !isSystemAdmin(u.roles) && readOnly)));
 
-    const isLicensed = database.get<SystemModel>(SYSTEM).findAndObserve(LICENSE).pipe(switchMap(({value}) => of$(value.IsLicensed === 'true')));
-    const channelDeleteAt = channel.pipe(switchMap((c: ChannelModel) => of$(c.deleteAt)));
-    const channelIsArchived = channelDeleteAt.pipe(switchMap((cda) => of$(Boolean(cda !== 0))));
+    const canAddReaction = currentUser.pipe(switchMap((u) => from$(hasPermissionForPost(post, u, Permissions.ADD_REACTION, true))));
 
-    const isChannelReadOnly = checkChannelReadOnly(database, channel, currentUser);
-    const isSystemPost = of$(isSystemMessage(post));
-
-    const isSaved = database.get<PreferenceModel>(PREFERENCE).query(Q.where('category', Preferences.CATEGORY_FLAGGED_POST), Q.where('name', post.id)).observe().pipe(switchMap((pref) => of$(Boolean(pref.length))));
-    const isOwner = currentUserId === of$(post.userId);
-
-    const hasBeenDeleted = post.deleteAt !== 0;// fixme : Enquire about the second part of the condition || post.state === WebsocketEvents.POST_DELETED);
-
-    let canMarkAsUnread: Observable<boolean> = of$(true);
-    let canReply: Observable<boolean> = of$(true);
-    let canCopyPermalink: Observable<boolean> = of$(true);
-    const canCopyText: Observable<boolean> = of$(false);
-    let canEdit: Observable<boolean> = of$(false);
-    let canEditUntil: Observable<number> = of$(-1);
-    let canSave: Observable<boolean> = of$(true);
-    let canPin: Observable<boolean> = of$(true);
-
-    let canAddReaction = currentUser.pipe(switchMap((u) => from$(hasPermissionForPost(post, u, Permissions.ADD_REACTION, true))));
-    const canPost = combineLatest([channel, currentUser]).pipe(switchMap(([c, u]) => from$(hasPermissionForChannel(c, u, Permissions.CREATE_POST, false))));
-
-    let canDelete = of$(false);
-    if (post && channelDeleteAt === of$(0)) {
-        canDelete = currentUser.pipe(switchMap((u) => from$(hasPermissionForPost(post, u, isOwner ? Permissions.DELETE_POST : Permissions.DELETE_OTHERS_POSTS, false))));
-    }
-
-    if (location === Screens.THREAD) {
-        canReply = of$(false);
-    }
-
-    if (channelIsArchived || isChannelReadOnly) {
-        canAddReaction = of$(false);
-        canReply = of$(false);
-        canDelete = of$(false);
-        canPin = of$(false);
-    } else {
-        canEdit = combineLatest([postEditTimeLimit, isLicensed, channel, currentUser]).pipe(switchMap(([lt, ls, c, u]) => of$(Boolean(canEditPost(isOwner, post, lt, ls, c, u)))));
-
-        canEditUntil = combineLatest([canEdit, isLicensed, allowEditPost, postEditTimeLimit, serverVersion]).pipe(
-            switchMap(([ct, ls, alw, limit, v]) => {
-                if (ct && ls && ((alw === Permissions.ALLOW_EDIT_POST_TIME_LIMIT && !isMinimumServerVersion(v, 6)) || (limit !== -1))) {
-                    return of$(post.createAt + (limit * (1000)));
-                }
-                return of$(-1);
-            }),
-        );
-    }
-
-    if (!canPost) {
-        canReply = of$(false);
-    }
-
-    if (isSystemPost) {
-        canAddReaction = of$(false);
-        canReply = of$(false);
-        canCopyPermalink = of$(false);
-        canEdit = of$(false);
-        canPin = of$(false);
-        canSave = of$(false);
-    }
-    if (hasBeenDeleted) {
-        canDelete = of$(false);
-    }
-
-    if (!showAddReaction) {
-        canAddReaction = of$(false);
-    }
-
-    if (channelIsArchived) {
-        canMarkAsUnread = of$(false);
-    }
-
-    // near the end
-
-    if (!showAddReaction) {
-        canAddReaction = of$(false);
-    }
-
-    //fixme:  you can use array.reduce()
     const isUnderMaxAllowedReactions = post.reactions.observe().pipe(
         switchMap((reactions: ReactionModel[]) => {
             // eslint-disable-next-line max-nested-callbacks
             const emojiNames = reactions.map((r) => r.emojiName);
-            return [...new Set(emojiNames)];
-        }),
-        switchMap((allEmojis) => {
-            return of$(allEmojis.length < MAX_ALLOWED_REACTIONS);
+            return [...new Set(emojiNames)].length < MAX_ALLOWED_REACTIONS;
         }),
     );
 
     return {
-        isSaved,
-
-        currentUser,
-
-        isSystemPost, //fixme:  should be removed ??
-        //
-        // //fixme: Validate everything below and validate all your exports
         canMarkAsUnread,
-        canCopyText,
-        canReply,
-        canCopyPermalink,
-        canEdit,
-        canEditUntil,
-        canDelete,
-        canSave,
-        canPin,
-        isUnderMaxAllowedReactions,
-        canAddReaction: canAddReaction && isUnderMaxAllowedReactions,
     };
 });
 

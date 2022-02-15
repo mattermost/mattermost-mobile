@@ -7,7 +7,6 @@ import React from 'react';
 import {ITEM_HEIGHT} from '@components/menu_item';
 import {Screens} from '@constants';
 import BottomSheet from '@screens/bottom_sheet';
-import {isSystemMessage} from '@utils/post';
 
 import CopyLinkOption from './components/options/copy_link_option';
 import CopyTextOption from './components/options/copy_text_option';
@@ -56,7 +55,7 @@ const PostOptions = ({
     isSystemPost,
 }: PostOptionsProps) => {
     const managedConfig = useManagedConfig();
-
+    console.log('>>>  canMarkAsUnread ** ', {canMarkAsUnread});
     const canCopyText = !isSystemPost && managedConfig?.copyAndPasteProtection !== 'true' && post.message;
 
     const shouldRenderEdit = canEdit && (canEditUntil === -1 || canEditUntil > Date.now());
@@ -81,15 +80,9 @@ const PostOptions = ({
                         thread={thread}
                     />
                 }
-                {canMarkAsUnread && !isSystemMessage(post) && (
-                    <MarkAsUnreadOption/>
-                )}
+                {canMarkAsUnread && !isSystemPost && (<MarkAsUnreadOption/>)}
                 {canCopyPermalink && <CopyLinkOption/>}
-                {canSave &&
-                    <SaveOption
-                        isSaved={isSaved}
-                    />
-                }
+                {canSave && <SaveOption isSaved={isSaved}/>}
                 {canCopyText && <CopyTextOption/>}
                 {canPin && <PinChannelOption isPostPinned={post.isPinned}/>}
                 {shouldRenderEdit && <EditOption/>}
