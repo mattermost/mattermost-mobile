@@ -1,9 +1,9 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+// import {fetchGroupsForTeam} from '@actions/remote/group';
 import {fetchMissingSidebarInfo, switchToChannelById} from '@actions/remote/channel';
 import {AppEntryData, AppEntryError, fetchAppEntryData} from '@actions/remote/entry/common';
-import {fetchGroupsForTeam} from '@actions/remote/group';
 import {fetchPostsForUnreadChannels, fetchPostsSince} from '@actions/remote/post';
 import {fetchRoles} from '@actions/remote/role';
 import {fetchConfigAndLicense} from '@actions/remote/systems';
@@ -19,8 +19,8 @@ import {queryCommonSystemValues, queryConfig, queryCurrentChannelId, queryWebSoc
 import {deleteMyTeams, queryTeamsById} from '@queries/servers/team';
 import {isTablet} from '@utils/helpers';
 
+// import {handleGroupUpdatedEvent, handleGroupAssociatedToTeam, handleGroupNotAssociatedToTeam, handleGroupAssociatedToChannel, handleGroupNotAssociatedToChannel} from './groups';
 import {handleChannelDeletedEvent, handleUserAddedToChannelEvent, handleUserRemovedFromChannelEvent} from './channel';
-import {handleGroupUpdatedEvent, handleGroupAssociatedToTeam, handleGroupNotAssociatedToTeam, handleGroupAssociatedToChannel, handleGroupNotAssociatedToChannel} from './groups';
 import {handleNewPostEvent, handlePostDeleted, handlePostEdited, handlePostUnread} from './posts';
 import {handlePreferenceChangedEvent, handlePreferencesChangedEvent, handlePreferencesDeletedEvent} from './preferences';
 import {handleAddCustomEmoji, handleReactionRemovedFromPostEvent, handleReactionAddedToPostEvent} from './reactions';
@@ -179,9 +179,9 @@ async function doReconnect(serverUrl: string) {
         }
     }
 
-    if (initialTeamId) {
-        fetchGroupsForTeam(serverUrl, initialTeamId, lastDisconnectedAt);
-    }
+    // if (initialTeamId) {
+    //     fetchGroupsForTeam(serverUrl, initialTeamId, lastDisconnectedAt);
+    // }
 
     // defer fetch channels and unread posts for other teams
     if (teamData.teams?.length && teamData.memberships?.length) {
@@ -322,26 +322,26 @@ export async function handleEvent(serverUrl: string, msg: WebSocketMessage) {
         case WebsocketEvents.OPEN_DIALOG:
             break;
 
-        // return dispatch(handleOpenDialogEvent(msg));
-        case WebsocketEvents.RECEIVED_GROUP:
-            handleGroupUpdatedEvent(serverUrl, msg);
-            break;
-
-        case WebsocketEvents.RECEIVED_GROUP_ASSOCIATED_TO_TEAM:
-            handleGroupAssociatedToTeam(serverUrl, msg);
-            break;
-
-        case WebsocketEvents.RECEIVED_GROUP_NOT_ASSOCIATED_TO_TEAM:
-            handleGroupNotAssociatedToTeam(serverUrl, msg);
-            break;
-
-        case WebsocketEvents.RECEIVED_GROUP_ASSOCIATED_TO_CHANNEL:
-            handleGroupAssociatedToChannel(serverUrl, msg);
-            break;
-
-        case WebsocketEvents.RECEIVED_GROUP_NOT_ASSOCIATED_TO_CHANNEL:
-            handleGroupNotAssociatedToChannel(serverUrl, msg);
-            break;
+            // return dispatch(handleOpenDialogEvent(msg));
+            // case WebsocketEvents.RECEIVED_GROUP:
+            //     handleGroupUpdatedEvent(serverUrl, msg);
+            //     break;
+            //
+            // case WebsocketEvents.RECEIVED_GROUP_ASSOCIATED_TO_TEAM:
+            //     handleGroupAssociatedToTeam(serverUrl, msg);
+            //     break;
+            //
+            // case WebsocketEvents.RECEIVED_GROUP_NOT_ASSOCIATED_TO_TEAM:
+            //     handleGroupNotAssociatedToTeam(serverUrl, msg);
+            //     break;
+            //
+            // case WebsocketEvents.RECEIVED_GROUP_ASSOCIATED_TO_CHANNEL:
+            //     handleGroupAssociatedToChannel(serverUrl, msg);
+            //     break;
+            //
+            // case WebsocketEvents.RECEIVED_GROUP_NOT_ASSOCIATED_TO_CHANNEL:
+            //     handleGroupNotAssociatedToChannel(serverUrl, msg);
+            //     break;
 
         case WebsocketEvents.THREAD_UPDATED:
             break;
