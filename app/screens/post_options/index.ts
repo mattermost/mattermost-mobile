@@ -66,11 +66,18 @@ const enhanced = withObservables([], ({post, showAddReaction, location, database
         return of$(permission && !isArchived && !isReadOnly && loc !== Screens.THREAD && !isSystemMessage(post));
     }));
 
+    const canPin = combineLatest([channelIsArchived, channelIsReadOnly]).pipe(switchMap(([isArchived, isReadOnly]) => {
+        return of$(!isSystemMessage(post) && !isArchived && !isReadOnly);
+    }));
+
     return {
         canMarkAsUnread,
         canAddReaction,
         canDelete,
         canReply,
+        canCopyPermalink: !isSystemMessage(post),
+        canSave: !isSystemMessage(post),
+        canPin,
     };
 });
 
