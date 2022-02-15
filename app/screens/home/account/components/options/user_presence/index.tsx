@@ -3,17 +3,16 @@
 
 import React, {useCallback} from 'react';
 import {useIntl} from 'react-intl';
-import {DeviceEventEmitter, TextStyle} from 'react-native';
+import {TextStyle} from 'react-native';
 
 import {setStatus} from '@actions/remote/user';
 import MenuItem from '@components/menu_item';
 import SlideUpPanelItem, {ITEM_HEIGHT} from '@components/slide_up_panel_item';
 import StatusLabel from '@components/status_label';
 import UserStatusIndicator from '@components/user_status';
-import {Events} from '@constants';
 import General from '@constants/general';
 import {useServerUrl} from '@context/server';
-import {bottomSheet, dismissModal} from '@screens/navigation';
+import {bottomSheet, dismissBottomSheet, dismissModal} from '@screens/navigation';
 import {preventDoubleTap} from '@utils/tap';
 import {changeOpacity} from '@utils/theme';
 import {confirmOutOfOfficeDisabled} from '@utils/user';
@@ -111,7 +110,7 @@ const UserStatus = ({currentUser, style, theme}: Props) => {
         }
 
         updateStatus(status);
-        DeviceEventEmitter.emit(Events.CLOSE_BOTTOM_SHEET);
+        dismissBottomSheet();
         return null;
     }, []);
 

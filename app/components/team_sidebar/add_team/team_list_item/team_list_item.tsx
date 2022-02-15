@@ -2,14 +2,14 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback} from 'react';
-import {DeviceEventEmitter, Text, View} from 'react-native';
+import {Text, View} from 'react-native';
 
 import {addUserToTeam} from '@actions/remote/team';
 import TeamIcon from '@components/team_sidebar/team_list/team_item/team_icon';
 import TouchableWithFeedback from '@components/touchable_with_feedback';
-import {Events} from '@constants';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
+import {dismissBottomSheet} from '@screens/navigation';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 
 import type TeamModel from '@typings/database/models/servers/team';
@@ -25,7 +25,7 @@ export default function TeamListItem({team, currentUserId}: Props) {
     const serverUrl = useServerUrl();
     const onPress = useCallback(async () => {
         await addUserToTeam(serverUrl, team.id, currentUserId);
-        DeviceEventEmitter.emit(Events.CLOSE_BOTTOM_SHEET);
+        dismissBottomSheet();
     }, []);
 
     return (

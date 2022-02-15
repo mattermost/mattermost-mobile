@@ -2,12 +2,11 @@
 // See LICENSE.txt for license information.
 
 import {IntlShape} from 'react-intl';
-import {Alert, AlertButton, DeviceEventEmitter} from 'react-native';
+import {Alert, AlertButton} from 'react-native';
 
 import CompassIcon from '@components/compass_icon';
-import {Events, Screens, SupportedServer} from '@constants';
-import {showModal} from '@screens/navigation';
-import EphemeralStore from '@store/ephemeral_store';
+import {Screens, SupportedServer} from '@constants';
+import {dismissBottomSheet, showModal} from '@screens/navigation';
 import {LaunchType} from '@typings/launch';
 import {changeOpacity} from '@utils/theme';
 import {tryOpenURL} from '@utils/url';
@@ -34,9 +33,7 @@ export function semverFromServerVersion(value: string) {
 }
 
 export async function addNewServer(theme: Theme, serverUrl?: string, displayName?: string) {
-    DeviceEventEmitter.emit(Events.CLOSE_BOTTOM_SHEET);
-
-    await EphemeralStore.waitUntilScreensIsRemoved(Screens.BOTTOM_SHEET);
+    await dismissBottomSheet();
     const closeButton = CompassIcon.getImageSourceSync('close', 24, changeOpacity(theme.centerChannelColor, 0.56));
     const closeButtonId = 'close-server';
     const props = {

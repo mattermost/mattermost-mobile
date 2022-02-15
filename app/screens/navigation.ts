@@ -632,7 +632,7 @@ export async function bottomSheet({title, renderContent, snapPoints, initialSnap
     }
 }
 
-export async function dismissBottomSheet() {
+export async function dismissBottomSheet(alternativeScreen = Screens.BOTTOM_SHEET) {
     DeviceEventEmitter.emit(Events.CLOSE_BOTTOM_SHEET);
-    await EphemeralStore.waitUntilScreensIsRemoved(Screens.BOTTOM_SHEET);
+    await EphemeralStore.waitUntilScreensIsRemoved(alternativeScreen);
 }
