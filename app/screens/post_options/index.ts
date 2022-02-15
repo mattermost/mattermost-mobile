@@ -87,7 +87,7 @@ const enhanced = withObservables(['post'], ({post, showAddReaction, location, da
     let canMarkAsUnread: Observable<boolean> = of$(true);
     let canReply: Observable<boolean> = of$(true);
     let canCopyPermalink: Observable<boolean> = of$(true);
-    let canCopyText: Observable<boolean> = of$(false);
+    const canCopyText: Observable<boolean> = of$(false);
     let canEdit: Observable<boolean> = of$(false);
     let canEditUntil: Observable<number> = of$(-1);
     let canFlag: Observable<boolean> = of$(true);
@@ -146,10 +146,6 @@ const enhanced = withObservables(['post'], ({post, showAddReaction, location, da
         canAddReaction = of$(false);
     }
 
-    if (!isSystemPost && managedConfig?.copyAndPasteProtection !== 'true' && post.message) {
-        canCopyText = of$(true);
-    }
-
     if (channelIsArchived) {
         canMarkAsUnread = of$(false);
     }
@@ -163,6 +159,10 @@ const enhanced = withObservables(['post'], ({post, showAddReaction, location, da
     return {
         isFlagged,
         currentUser,
+        isSystemPost,
+        post,
+
+        /// Validate everything below
         canMarkAsUnread,
         canCopyText,
         canReply,

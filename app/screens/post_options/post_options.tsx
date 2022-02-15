@@ -1,6 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {useManagedConfig} from '@mattermost/react-native-emm';
 import React from 'react';
 
 import {ITEM_HEIGHT} from '@components/menu_item';
@@ -21,41 +22,43 @@ import ReactionBar from './components/reaction_bar';
 
 import type PostModel from '@typings/database/models/servers/post';
 
-//fixme: some props are optional - review them
-
 type PostOptionsProps = {
-    canAddReaction?: boolean;
-    canCopyPermalink?: boolean;
-    canCopyText?: boolean;
-    canDelete?: boolean;
-    canEdit?: boolean;
-    canEditUntil?: number;
-    canMarkAsUnread?: boolean;
-    canPin?: boolean;
-    canSave?: boolean;
-    canReply?: boolean;
-    isSaved?: boolean;
+    canAddReaction: boolean;
+    canCopyPermalink: boolean;
+    canDelete: boolean;
+    canEdit: boolean;
+    canEditUntil: number;
+    canMarkAsUnread: boolean;
+    canPin: boolean;
+    canSave: boolean;
+    isSystemPost: boolean;
+    canReply: boolean;
+    isSaved: boolean;
     location: typeof Screens[keyof typeof Screens];
     post: PostModel;
-    thread?: Partial<PostModel>;
+    thread: Partial<PostModel>;
 };
 
 const PostOptions = ({
-    canAddReaction = true,
-    canCopyPermalink = true,
-    canCopyText = true,
-    canDelete = true,
-    canEdit = true,
-    canEditUntil = -1,
-    canMarkAsUnread = true,
-    canPin = true,
-    canReply = true,
-    canSave = true,
-    isSaved = true,
+    canAddReaction,
+    canCopyPermalink,
+    canDelete,
+    canEdit,
+    canEditUntil,
+    canMarkAsUnread,
+    canPin,
+    canReply,
+    canSave,
+    isSaved,
     location,
     post,
     thread,
+    isSystemPost,
 }: PostOptionsProps) => {
+    const managedConfig = useManagedConfig();
+
+    const canCopyText = !isSystemPost && managedConfig?.copyAndPasteProtection !== 'true' && post.message;
+
     const shouldRenderEdit = canEdit && (canEditUntil === -1 || canEditUntil > Date.now());
     const shouldRenderFollow = !(location !== Screens.CHANNEL || !thread);
 
