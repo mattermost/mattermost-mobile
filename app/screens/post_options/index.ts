@@ -43,10 +43,13 @@ const enhanced = withObservables([], ({post, showAddReaction, location, database
         // eslint-disable-next-line max-nested-callbacks
         switchMap((reactions: ReactionModel[]) => of$(new Set(reactions.map((r) => r.emojiName)).size < MAX_ALLOWED_REACTIONS)),
     );
+    const isNotSystemPost = post.observe().pipe(
+        switchMap((p) => of$(!isSystemMessage(p))),
+    );
 
     const canAddReaction = combineLatest([hasAddReactionPermission, channelIsReadOnly, isUnderMaxAllowedReactions, channelIsArchived]).pipe(
         switchMap(([permission, readOnly, maxAllowed, isArchived]) => {
-            return of$(!isSystemMessage(post) && permission && !readOnly && !isArchived && maxAllowed && showAddReaction);
+            return of$(isNotSystemPost && permission && !readOnly && !isArchived && maxAllowed && showAddReaction);
         }),
     );
 
@@ -63,21 +66,27 @@ const enhanced = withObservables([], ({post, showAddReaction, location, database
     const canPostPermission = combineLatest([channel, currentUser]).pipe(switchMap(([c, u]) => from$(hasPermissionForChannel(c, u, Permissions.CREATE_POST, false))));
 
     const canReply = combineLatest([canPostPermission, channelIsArchived, channelIsReadOnly, location]).pipe(switchMap(([permission, isArchived, isReadOnly, loc]) => {
-        return of$(permission && !isArchived && !isReadOnly && loc !== Screens.THREAD && !isSystemMessage(post));
+        return of$(permission && !isArchived && !isReadOnly && loc !== Screens.THREAD && isNotSystemPost);
     }));
 
     const canPin = combineLatest([channelIsArchived, channelIsReadOnly]).pipe(switchMap(([isArchived, isReadOnly]) => {
-        return of$(!isSystemMessage(post) && !isArchived && !isReadOnly);
+        return of$(isNotSystemPost && !isArchived && !isReadOnly);
     }));
+
+    const isFlagged = database.get<PreferenceModel>(PREFERENCE).query(
+        Q.where('category', Preferences.CATEGORY_FLAGGED_POST),
+        Q.where('name', post.id),
+    ).observe().pipe(switchMap((pref) => of$(Boolean(pref.length))));
 
     return {
         canMarkAsUnread,
         canAddReaction,
         canDelete,
         canReply,
-        canCopyPermalink: !isSystemMessage(post),
-        canSave: !isSystemMessage(post),
+        canCopyPermalink: isNotSystemPost,
+        canSave: isNotSystemPost,
         canPin,
+        isFlagged,
     };
 });
 
