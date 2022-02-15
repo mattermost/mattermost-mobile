@@ -38,7 +38,7 @@ export default function PostDraft({
     const keyboardTracker = useRef<KeyboardTrackingViewRef>(null);
     const resetScrollViewAnimationFrame = useRef<number>();
     const isTablet = useIsTablet();
-
+    console.log('>>>  canPost: ', canPost);
     const updateNativeScrollView = useCallback((scrollViewNativeIDToUpdate: string) => {
         if (keyboardTracker?.current && scrollViewNativeID === scrollViewNativeIDToUpdate) {
             resetScrollViewAnimationFrame.current = requestAnimationFrame(() => {

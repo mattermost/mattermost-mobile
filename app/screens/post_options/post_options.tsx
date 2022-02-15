@@ -7,6 +7,7 @@ import React from 'react';
 import {ITEM_HEIGHT} from '@components/menu_item';
 import {Screens} from '@constants';
 import BottomSheet from '@screens/bottom_sheet';
+import {isSystemMessage} from '@utils/post';
 
 import CopyLinkOption from './components/options/copy_link_option';
 import CopyTextOption from './components/options/copy_text_option';
@@ -23,14 +24,10 @@ import type PostModel from '@typings/database/models/servers/post';
 
 type PostOptionsProps = {
     canAddReaction: boolean;
-    canCopyPermalink: boolean;
     canDelete: boolean;
     canEdit: boolean;
-    canEditUntil: number;
     canMarkAsUnread: boolean;
     canPin: boolean;
-    canSave: boolean;
-    isSystemPost: boolean;
     canReply: boolean;
     isSaved: boolean;
     location: typeof Screens[keyof typeof Screens];
@@ -40,34 +37,33 @@ type PostOptionsProps = {
 
 const PostOptions = ({
     canAddReaction,
-    canCopyPermalink,
     canDelete,
     canEdit,
-    canEditUntil,
     canMarkAsUnread,
     canPin,
     canReply,
-    canSave,
     isSaved,
     location,
     post,
     thread,
-    isSystemPost,
 }: PostOptionsProps) => {
     const managedConfig = useManagedConfig();
-    console.log('>>>  canMarkAsUnread ** ', {canMarkAsUnread});
-    const canCopyText = !isSystemPost && managedConfig?.copyAndPasteProtection !== 'true' && post.message;
+    const isSystemPost = isSystemMessage(post);
 
-    const shouldRenderEdit = canEdit && (canEditUntil === -1 || canEditUntil > Date.now());
+    const canCopyPermalink = !isSystemPost && managedConfig?.copyAndPasteProtection !== 'true';
+    const canCopyText = canCopyPermalink && post.message;
+
     const shouldRenderFollow = !(location !== Screens.CHANNEL || !thread);
 
     const snapPoints = [
         canAddReaction, canCopyPermalink, canCopyText,
-        canDelete, shouldRenderEdit, shouldRenderFollow,
-        canMarkAsUnread, canPin, canReply, canSave,
+        canDelete, canEdit, shouldRenderFollow,
+        canMarkAsUnread, canPin, canReply, !isSystemPost,
     ].reduce((acc, v) => {
         return v ? acc + 1 : acc;
     }, 0);
+
+    console.log('>>>  canReply', canReply);
 
     const renderContent = () => {
         return (
@@ -82,10 +78,10 @@ const PostOptions = ({
                 }
                 {canMarkAsUnread && !isSystemPost && (<MarkAsUnreadOption/>)}
                 {canCopyPermalink && <CopyLinkOption/>}
-                {canSave && <SaveOption isSaved={isSaved}/>}
+                {!isSystemPost && <SaveOption isSaved={isSaved}/>}
                 {canCopyText && <CopyTextOption/>}
                 {canPin && <PinChannelOption isPostPinned={post.isPinned}/>}
-                {shouldRenderEdit && <EditOption/>}
+                {canEdit && <EditOption/>}
                 {canDelete && <DeletePostOption/>}
             </>
         );
