@@ -9,6 +9,7 @@ import {switchMap} from 'rxjs/operators';
 
 import {General, Permissions, Preferences, Screens} from '@constants';
 import {MM_TABLES, SYSTEM_IDENTIFIERS} from '@constants/database';
+import {MAX_ALLOWED_REACTIONS} from '@constants/emoji';
 import PreferenceModel from '@typings/database/models/servers/preference';
 import {isMinimumServerVersion} from '@utils/helpers';
 import {isSystemMessage} from '@utils/post';
@@ -58,11 +59,7 @@ function canEditPost(isOwner: boolean, post: PostModel, postEditTimeLimit: numbe
     return cep;
 }
 
-const enhanced = withObservables(['post'], ({post, showAddReaction, location, database}: WithDatabaseArgs & {
-    post: PostModel;
-    showAddReaction: boolean;
-    location: string;
-}) => {
+const enhanced = withObservables(['post'], ({post, showAddReaction, location, database}: WithDatabaseArgs & { post: PostModel; showAddReaction: boolean; location: string }) => {
     const currentUserId = database.get<SystemModel>(SYSTEM).findAndObserve(CURRENT_USER_ID).pipe(switchMap(({value}) => of$(value)));
     const currentUser = currentUserId.pipe(switchMap((userId) => database.get<UserModel>(USER).findAndObserve(userId)));
     const channel = post.channel.observe();
@@ -82,7 +79,7 @@ const enhanced = withObservables(['post'], ({post, showAddReaction, location, da
     const isFlagged = database.get<PreferenceModel>(PREFERENCE).query(Q.where('category', Preferences.CATEGORY_FLAGGED_POST), Q.where('name', post.id)).observe().pipe(switchMap((pref) => of$(Boolean(pref.length))));
     const isOwner = currentUserId === of$(post.userId);
 
-    const hasBeenDeleted = post.deleteAt !== 0;//|| post.state === WebsocketEvents.POST_DELETED);
+    const hasBeenDeleted = post.deleteAt !== 0;// fixme : Enquire about the second part of the condition || post.state === WebsocketEvents.POST_DELETED);
 
     let canMarkAsUnread: Observable<boolean> = of$(true);
     let canReply: Observable<boolean> = of$(true);
@@ -111,14 +108,11 @@ const enhanced = withObservables(['post'], ({post, showAddReaction, location, da
         canDelete = of$(false);
         canPin = of$(false);
     } else {
-        canEdit = combineLatest([postEditTimeLimit, isLicensed, channel, currentUser]).pipe(
-            switchMap(([lt, ls, c, u]) => of$(Boolean(canEditPost(isOwner, post, lt, ls, c, u)))));
+        canEdit = combineLatest([postEditTimeLimit, isLicensed, channel, currentUser]).pipe(switchMap(([lt, ls, c, u]) => of$(Boolean(canEditPost(isOwner, post, lt, ls, c, u)))));
 
         canEditUntil = combineLatest([canEdit, isLicensed, allowEditPost, postEditTimeLimit, serverVersion]).pipe(
             switchMap(([ct, ls, alw, limit, v]) => {
-                if (ct && ls &&
-                    ((alw === Permissions.ALLOW_EDIT_POST_TIME_LIMIT && !isMinimumServerVersion(v, 6)) || (limit !== -1))
-                ) {
+                if (ct && ls && ((alw === Permissions.ALLOW_EDIT_POST_TIME_LIMIT && !isMinimumServerVersion(v, 6)) || (limit !== -1))) {
                     return of$(post.createAt + (limit * (1000)));
                 }
                 return of$(-1);
@@ -156,13 +150,19 @@ const enhanced = withObservables(['post'], ({post, showAddReaction, location, da
         canAddReaction = of$(false);
     }
 
+    const isUnderMaxAllowedReactions = post.reactions.observe().pipe(
+        // eslint-disable-next-line max-nested-callbacks
+        switchMap((reactionArr) => reactionArr.reduce((acc, v) => acc.add(v), new Set<string>())),
+        switchMap((reactionSet: Set<string>) => of$(reactionSet.size < MAX_ALLOWED_REACTIONS)),
+    );
+
     return {
         isFlagged,
         currentUser,
         isSystemPost,
         post,
 
-        /// Validate everything below
+        //fixme: Validate everything below and validate all your exports
         canMarkAsUnread,
         canCopyText,
         canReply,
@@ -172,7 +172,7 @@ const enhanced = withObservables(['post'], ({post, showAddReaction, location, da
         canDelete,
         canFlag,
         canPin,
-        canAddReaction: canAddReaction && selectEmojisCountFromReactions(reactions) < MAX_ALLOWED_REACTIONS,
+        canAddReaction: canAddReaction && isUnderMaxAllowedReactions, // reactionsCount: post.reactions.observeCount(),
     };
 });
 
