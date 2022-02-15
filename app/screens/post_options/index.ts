@@ -40,22 +40,22 @@ function canEditPost(isOwner: boolean, post: PostModel, postEditTimeLimit: numbe
         return false;
     }
 
-    let canEdit: boolean;
+    let cep: boolean;
 
     let permissions = [Permissions.EDIT_POST, Permissions.EDIT_OTHERS_POSTS];
     if (isOwner) {
         permissions = [Permissions.EDIT_POST];
     }
 
-    canEdit = permissions.every((permission) => hasPermissionForChannel(channel, user, permission, false));
+    cep = permissions.every((permission) => hasPermissionForChannel(channel, user, permission, false));
     if (isLicensed && postEditTimeLimit !== -1) {
         const timeLeft = (post.createAt + (postEditTimeLimit * 1000)) - Date.now();
         if (timeLeft <= 0) {
-            canEdit = false;
+            cep = false;
         }
     }
 
-    return canEdit;
+    return cep;
 }
 
 const enhanced = withObservables(['post'], ({post, showAddReaction, location, database}: WithDatabaseArgs & {
@@ -68,7 +68,7 @@ const enhanced = withObservables(['post'], ({post, showAddReaction, location, da
     const channel = post.channel.observe();
 
     const config = database.get<SystemModel>(SYSTEM).findAndObserve(SYSTEM_IDENTIFIERS.CONFIG).pipe(switchMap(({value}) => of$(value as ClientConfig)));
-    const allowEditPost = config.pipe(switchMap((cfg) => of$(Boolean(cfg.AllowEditPost === 'true'))));
+    const allowEditPost = config.pipe(switchMap((cfg) => of$(cfg.AllowEditPost)));
     const postEditTimeLimit = config.pipe(switchMap((cfg) => of$(parseInt(cfg.PostEditTimeLimit || '-1', 10))));
 
     const isLicensed = database.get<SystemModel>(SYSTEM).findAndObserve(LICENSE).pipe(switchMap(({value}) => of$(value.IsLicensed === 'true')));
@@ -110,12 +110,19 @@ const enhanced = withObservables(['post'], ({post, showAddReaction, location, da
         canDelete = of$(false);
         canPin = of$(false);
     } else {
-        canEdit = canEditPost(state, config, license, currentTeamId, currentChannelId, currentUserId, post);
-        if (canEdit && isLicensed &&
-            ((allowEditPost === General.ALLOW_EDIT_POST_TIME_LIMIT && !isMinimumServerVersion(serverVersion, 6)) || (postEditTimeLimit !== of$(-1) && postEditTimeLimit !== of$('-1')))
-        ) {
-            canEditUntil = post.createAt + (postEditTimeLimit * 1000);
-        }
+        canEdit = combineLatest([postEditTimeLimit, isLicensed, channel, currentUser]).pipe(
+            switchMap(([lt, ls, c, u]) => of$(Boolean(canEditPost(isOwner, post, lt, ls, c, u)))));
+
+        canEditUntil = combineLatest([canEdit, isLicensed, allowEditPost, postEditTimeLimit]).pipe(
+            switchMap(([ct, ls, alw, limit]) => {
+                if (ct && ls &&
+                    ((alw === Permissions.ALLOW_EDIT_POST_TIME_LIMIT && !isMinimumServerVersion(serverVersion, 6)) || (limit !== -1))
+                ) {
+                    return of$(post.createAt + (limit * (1000)));
+                }
+                return of$(-1);
+            }),
+        );
     }
 
     if (!canPost) {
