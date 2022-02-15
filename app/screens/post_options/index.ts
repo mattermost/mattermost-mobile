@@ -7,7 +7,7 @@ import withObservables from '@nozbe/with-observables';
 import {combineLatest, from as from$, Observable, of as of$} from 'rxjs';
 import {switchMap} from 'rxjs/operators';
 
-import {General, Permissions, Preferences, Screens, WebsocketEvents} from '@constants';
+import {General, Permissions, Preferences, Screens} from '@constants';
 import {MM_TABLES, SYSTEM_IDENTIFIERS} from '@constants/database';
 import PreferenceModel from '@typings/database/models/servers/preference';
 import {isMinimumServerVersion} from '@utils/helpers';
@@ -35,6 +35,29 @@ const checkChannelReadOnly = (database: Database, channel: Observable<ChannelMod
     );
 };
 
+function canEditPost(isOwner: boolean, post: PostModel, postEditTimeLimit: number, isLicensed: boolean, channel: ChannelModel, user: UserModel): boolean {
+    if (!post || isSystemMessage(post)) {
+        return false;
+    }
+
+    let canEdit: boolean;
+
+    let permissions = [Permissions.EDIT_POST, Permissions.EDIT_OTHERS_POSTS];
+    if (isOwner) {
+        permissions = [Permissions.EDIT_POST];
+    }
+
+    canEdit = permissions.every((permission) => hasPermissionForChannel(channel, user, permission, false));
+    if (isLicensed && postEditTimeLimit !== -1) {
+        const timeLeft = (post.createAt + (postEditTimeLimit * 1000)) - Date.now();
+        if (timeLeft <= 0) {
+            canEdit = false;
+        }
+    }
+
+    return canEdit;
+}
+
 const enhanced = withObservables(['post'], ({post, showAddReaction, location, database}: WithDatabaseArgs & {
     post: PostModel;
     showAddReaction: boolean;
@@ -46,7 +69,7 @@ const enhanced = withObservables(['post'], ({post, showAddReaction, location, da
 
     const config = database.get<SystemModel>(SYSTEM).findAndObserve(SYSTEM_IDENTIFIERS.CONFIG).pipe(switchMap(({value}) => of$(value as ClientConfig)));
     const allowEditPost = config.pipe(switchMap((cfg) => of$(Boolean(cfg.AllowEditPost === 'true'))));
-    const postEditTimeLimit = config.pipe(switchMap((cfg) => of$(Boolean(cfg.PostEditTimeLimit === 'true'))));
+    const postEditTimeLimit = config.pipe(switchMap((cfg) => of$(parseInt(cfg.PostEditTimeLimit || '-1', 10))));
 
     const isLicensed = database.get<SystemModel>(SYSTEM).findAndObserve(LICENSE).pipe(switchMap(({value}) => of$(value.IsLicensed === 'true')));
     const channelDeleteAt = channel.pipe(switchMap((c: ChannelModel) => of$(c.deleteAt)));
@@ -58,7 +81,7 @@ const enhanced = withObservables(['post'], ({post, showAddReaction, location, da
     const isFlagged = database.get<PreferenceModel>(PREFERENCE).query(Q.where('category', Preferences.CATEGORY_FLAGGED_POST), Q.where('name', post.id)).observe().pipe(switchMap((pref) => of$(Boolean(pref.length))));
     const isOwner = currentUserId === of$(post.userId);
 
-    const hasBeenDeleted = (post.deleteAt !== 0 || post.state === WebsocketEvents.POST_DELETED);
+    const hasBeenDeleted = post.deleteAt !== 0;//|| post.state === WebsocketEvents.POST_DELETED);
 
     let canMarkAsUnread: Observable<boolean> = of$(true);
     let canReply: Observable<boolean> = of$(true);
@@ -88,10 +111,10 @@ const enhanced = withObservables(['post'], ({post, showAddReaction, location, da
         canPin = of$(false);
     } else {
         canEdit = canEditPost(state, config, license, currentTeamId, currentChannelId, currentUserId, post);
-        if (canEdit && license.IsLicensed === 'true' &&
-            ((config.AllowEditPost === General.ALLOW_EDIT_POST_TIME_LIMIT && !isMinimumServerVersion(serverVersion, 6)) || (config.PostEditTimeLimit !== -1 && config.PostEditTimeLimit !== '-1'))
+        if (canEdit && isLicensed &&
+            ((allowEditPost === General.ALLOW_EDIT_POST_TIME_LIMIT && !isMinimumServerVersion(serverVersion, 6)) || (postEditTimeLimit !== of$(-1) && postEditTimeLimit !== of$('-1')))
         ) {
-            canEditUntil = post.create_at + (config.PostEditTimeLimit * 1000);
+            canEditUntil = post.createAt + (postEditTimeLimit * 1000);
         }
     }
 
@@ -130,6 +153,7 @@ const enhanced = withObservables(['post'], ({post, showAddReaction, location, da
     }
 
     return {
+        isFlagged,
         currentUser,
         canMarkAsUnread,
         canCopyText,
