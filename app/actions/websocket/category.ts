@@ -1,15 +1,19 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {storeCategories} from '@actions/local/category';
+import {deleteCategory, storeCategories} from '@actions/local/category';
 import {fetchCategories} from '@actions/remote/category';
 import DatabaseManager from '@database/manager';
 import {queryCategoriesById} from '@queries/servers/categories';
 
 type WebsocketMessage = {
+    broadcast: {
+        team_id: string;
+    };
     data: {
         team_id: string;
         category?: string;
+        category_id: string;
         updatedCategories?: string;
         order?: string[];
     };
@@ -50,8 +54,16 @@ export async function handleCategoryUpdatedEvent(serverUrl: string, msg: Websock
 }
 
 export async function handleCategoryDeletedEvent(serverUrl: string, msg: WebsocketMessage) {
-    // Just fetch and update everything again.
-    fetchCategories(serverUrl, msg.data.team_id);
+    try {
+        // Delete the Category
+        await deleteCategory(serverUrl, msg.data.category_id);
+
+        // Fetch the categories again as channels will have moved
+        fetchCategories(serverUrl, msg.broadcast.team_id);
+    } catch (e) {
+        // eslint-disable-next-line no-console
+        console.log('Category WS: handleCategoryDeletedEvent', e, msg);
+    }
 }
 
 export async function handleCategoryOrderUpdatedEvent(serverUrl: string, msg: WebsocketMessage) {

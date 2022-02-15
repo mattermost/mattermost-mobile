@@ -4,7 +4,27 @@
 import {Model} from '@nozbe/watermelondb';
 
 import DatabaseManager from '@database/manager';
-import {prepareCategories, prepareCategoryChannels} from '@queries/servers/categories';
+import {prepareCategories, prepareCategoryChannels, queryCategoryById} from '@queries/servers/categories';
+
+export const deleteCategory = async (serverUrl: string, categoryId: string) => {
+    const database = DatabaseManager.serverDatabases[serverUrl]?.database;
+    if (!database) {
+        return {error: `${serverUrl} database not found`};
+    }
+
+    try {
+        const category = await queryCategoryById(database, categoryId);
+        database.write(async () => {
+            await category?.destroyPermanently();
+        });
+
+        return true;
+    } catch (error) {
+        // eslint-disable-next-line no-console
+        console.log('FAILED TO DELETE CATEGORY', categoryId);
+        return {error};
+    }
+};
 
 export const storeCategories = async (serverUrl: string, categories: CategoryWithChannels[], prepareRecordsOnly = false) => {
     const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
