@@ -44,10 +44,10 @@ const GlobalThreads = ({currentTeamId}: Props) => {
     const [tab, setTab] = useState<Tab>('all');
 
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const [loading, setLoading] = useState(true);
+    const [isLoading, setIsLoading] = useState(true);
     useEffect(() => {
-        setLoading(true);
-        getThreads(serverUrl, currentTeamId).finally(() => setLoading(false));
+        setIsLoading(true);
+        getThreads(serverUrl, currentTeamId).finally(() => setIsLoading(false));
     }, [serverUrl]);
 
     const renderComponent = useMemo(() => {
@@ -57,6 +57,7 @@ const GlobalThreads = ({currentTeamId}: Props) => {
                 <ThreadsList
                     forceQueryAfterAppState={appState}
                     setTab={setTab}
+                    isLoading={isLoading}
                     tab={tab}
                     teamId={currentTeamId}
                     testID={'undefined'}

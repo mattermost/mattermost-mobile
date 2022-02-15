@@ -66,7 +66,8 @@ const Thread = ({author, channel, currentUserId, participants, post, teammateNam
     }
 
     let name;
-    if (post?.deleteAt) {
+    let postBody;
+    if (post.deleteAt > 0) {
         name = (
             <FormattedText
                 id={'threads.deleted'}
@@ -82,10 +83,6 @@ const Thread = ({author, channel, currentUserId, participants, post, teammateNam
                 numberOfLines={1}
             >{threadStarterName}</Text>
         );
-    }
-
-    let postBody;
-    if (!post?.deleteAt) {
         postBody = (
             <Text
                 style={style.message}

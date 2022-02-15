@@ -282,7 +282,7 @@ const PostList = ({
                 {...postProps}
             />
         );
-    }, [currentTimezone, highlightPinnedOrSaved, isTimezoneEnabled, orderedPosts, shouldRenderReplyButton, theme]);
+    }, [currentTimezone, highlightPinnedOrSaved, isCRTEnabled, isTimezoneEnabled, orderedPosts, shouldRenderReplyButton, theme]);
 
     const scrollToIndex = useCallback((index: number, animated = true) => {
         listRef.current?.scrollToIndex({

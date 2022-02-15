@@ -19,7 +19,7 @@ const Header = () => {
                 mode='padding'
                 style={style.header}
             >
-                <Text style={style.title}>Threads</Text>
+                <Text style={style.title}>{'Threads'}</Text>
             </SafeAreaView>
             <View style={style.separatorContainer}>
                 <View style={style.separatorContent}/>
