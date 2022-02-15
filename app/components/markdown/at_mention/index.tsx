@@ -8,18 +8,18 @@ import withObservables from '@nozbe/with-observables';
 import Clipboard from '@react-native-community/clipboard';
 import React, {useCallback, useMemo} from 'react';
 import {useIntl} from 'react-intl';
-import {DeviceEventEmitter, GestureResponderEvent, StyleProp, StyleSheet, Text, TextStyle, View} from 'react-native';
+import {GestureResponderEvent, StyleProp, StyleSheet, Text, TextStyle, View} from 'react-native';
 import {combineLatest, of as of$} from 'rxjs';
 import {map, switchMap} from 'rxjs/operators';
 
 import CompassIcon from '@components/compass_icon';
 import SlideUpPanelItem, {ITEM_HEIGHT} from '@components/slide_up_panel_item';
-import {Events, Preferences} from '@constants';
+import {Preferences} from '@constants';
 import {MM_TABLES, SYSTEM_IDENTIFIERS} from '@constants/database';
 import {useTheme} from '@context/theme';
 import UserModel from '@database/models/server/user';
 import {getTeammateNameDisplaySetting} from '@helpers/api/preference';
-import {bottomSheet, showModal} from '@screens/navigation';
+import {bottomSheet, dismissBottomSheet, showModal} from '@screens/navigation';
 import {displayUsername, getUserMentionKeys, getUsersByUsername} from '@utils/user';
 
 import type {WithDatabaseArgs} from '@typings/database/database';
@@ -140,7 +140,7 @@ const AtMention = ({
                         <SlideUpPanelItem
                             icon='content-copy'
                             onPress={() => {
-                                DeviceEventEmitter.emit(Events.CLOSE_BOTTOM_SHEET);
+                                dismissBottomSheet();
                                 let username = mentionName;
                                 if (user.username) {
                                     username = user.username;
@@ -155,7 +155,7 @@ const AtMention = ({
                             destructive={true}
                             icon='cancel'
                             onPress={() => {
-                                DeviceEventEmitter.emit(Events.CLOSE_BOTTOM_SHEET);
+                                dismissBottomSheet();
                             }}
                             testID='at_mention.bottom_sheet.cancel'
                             text={intl.formatMessage({id: 'mobile.post.cancel', defaultMessage: 'Cancel'})}

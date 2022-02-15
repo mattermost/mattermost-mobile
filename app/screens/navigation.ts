@@ -4,19 +4,18 @@
 /* eslint-disable max-lines */
 
 import merge from 'deepmerge';
-import {Appearance, DeviceEventEmitter, NativeModules, StatusBar, Platform} from 'react-native';
+import {Appearance, DeviceEventEmitter, NativeModules, StatusBar, Platform, Alert} from 'react-native';
 import {Navigation, Options, OptionsModalPresentationStyle} from 'react-native-navigation';
 import tinyColor from 'tinycolor2';
 
 import CompassIcon from '@components/compass_icon';
-import {Device, Screens} from '@constants';
+import {Device, Events, Screens} from '@constants';
 import NavigationConstants from '@constants/navigation';
 import {getDefaultThemeByAppearance} from '@context/theme';
 import EphemeralStore from '@store/ephemeral_store';
+import {LaunchProps, LaunchType} from '@typings/launch';
 import {NavButtons} from '@typings/screens/navigation';
 import {changeOpacity, setNavigatorStyles} from '@utils/theme';
-
-import type {LaunchProps} from '@typings/launch';
 
 const {MattermostManaged} = NativeModules;
 const isRunningInSplitView = MattermostManaged.isRunningInSplitView;
@@ -76,6 +75,30 @@ export const loginAnimationOptions = () => {
     };
 };
 
+export const bottomSheetModalOptions = (theme: Theme, closeButtonId: string) => {
+    const closeButton = CompassIcon.getImageSourceSync('close', 24, theme.centerChannelColor);
+    return {
+        modalPresentationStyle: OptionsModalPresentationStyle.formSheet,
+        modal: {
+            swipeToDismiss: true,
+        },
+        topBar: {
+            leftButtons: [{
+                id: closeButtonId,
+                icon: closeButton,
+                testID: closeButtonId,
+            }],
+            leftButtonColor: changeOpacity(theme.centerChannelColor, 0.56),
+            background: {
+                color: theme.centerChannelBg,
+            },
+            title: {
+                color: theme.centerChannelColor,
+            },
+        },
+    };
+};
+
 Navigation.setDefaultOptions({
     layout: {
 
@@ -105,10 +128,32 @@ function getThemeFromState(): Theme {
     return getDefaultThemeByAppearance();
 }
 
-export function resetToHome(passProps = {}) {
+// This is a temporary helper function to avoid
+// crashes when trying to load a screen that does
+// NOT exists, this should be removed for GA
+function isScreenRegistered(screen: string) {
+    const exists = Object.values(Screens).includes(screen);
+
+    if (!exists) {
+        Alert.alert(
+            'Temporary error ' + screen,
+            'The functionality you are trying to use has not been implemented yet',
+        );
+    }
+
+    return exists;
+}
+
+export function resetToHome(passProps: LaunchProps = {launchType: LaunchType.Normal}) {
     const theme = getThemeFromState();
     const isDark = tinyColor(theme.sidebarBg).isDark();
     StatusBar.setBarStyle(isDark ? 'light-content' : 'dark-content');
+
+    if (passProps.launchType === LaunchType.AddServer) {
+        dismissModal({componentId: Screens.SERVER});
+        dismissModal({componentId: Screens.BOTTOM_SHEET});
+        return;
+    }
 
     EphemeralStore.clearNavigationComponents();
 
@@ -243,6 +288,10 @@ export function resetToTeams(name: string, title: string, passProps = {}, option
 }
 
 export function goToScreen(name: string, title: string, passProps = {}, options = {}) {
+    if (!isScreenRegistered(name)) {
+        return;
+    }
+
     const theme = getThemeFromState();
     const isDark = tinyColor(theme.sidebarBg).isDark();
     const componentId = EphemeralStore.getNavigationTopComponentId();
@@ -347,6 +396,10 @@ export async function dismissAllModalsAndPopToScreen(screenId: string, title: st
 }
 
 export function showModal(name: string, title: string, passProps = {}, options = {}) {
+    if (!isScreenRegistered(name)) {
+        return;
+    }
+
     const theme = getThemeFromState();
     const modalPresentationStyle: OptionsModalPresentationStyle = Platform.OS === 'ios' ? OptionsModalPresentationStyle.pageSheet : OptionsModalPresentationStyle.none;
     const defaultOptions: Options = {
@@ -518,6 +571,10 @@ export function mergeNavigationOptions(componentId: string, options: Options) {
 }
 
 export function showOverlay(name: string, passProps = {}, options = {}) {
+    if (!isScreenRegistered(name)) {
+        return;
+    }
+
     const defaultOptions = {
         layout: {
             backgroundColor: 'transparent',
@@ -560,32 +617,12 @@ export async function bottomSheet({title, renderContent, snapPoints, initialSnap
     const isTablet = Device.IS_TABLET && !isSplitView;
 
     if (isTablet) {
-        const closeButton = CompassIcon.getImageSourceSync('close', 24, theme.centerChannelColor);
         showModal(Screens.BOTTOM_SHEET, title, {
             closeButtonId,
             initialSnapIndex,
             renderContent,
             snapPoints,
-        }, {
-            modalPresentationStyle: OptionsModalPresentationStyle.formSheet,
-            modal: {
-                swipeToDismiss: true,
-            },
-            topBar: {
-                leftButtons: [{
-                    id: closeButtonId,
-                    icon: closeButton,
-                    testID: closeButtonId,
-                }],
-                leftButtonColor: changeOpacity(theme.centerChannelColor, 0.56),
-                background: {
-                    color: theme.centerChannelBg,
-                },
-                title: {
-                    color: theme.centerChannelColor,
-                },
-            },
-        });
+        }, bottomSheetModalOptions(theme, closeButtonId));
     } else {
         showModalOverCurrentContext(Screens.BOTTOM_SHEET, {
             initialSnapIndex,
@@ -593,4 +630,9 @@ export async function bottomSheet({title, renderContent, snapPoints, initialSnap
             snapPoints,
         }, {modal: {swipeToDismiss: true}});
     }
+}
+
+export async function dismissBottomSheet(alternativeScreen = Screens.BOTTOM_SHEET) {
+    DeviceEventEmitter.emit(Events.CLOSE_BOTTOM_SHEET);
+    await EphemeralStore.waitUntilScreensIsRemoved(alternativeScreen);
 }

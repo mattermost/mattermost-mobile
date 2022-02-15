@@ -2,15 +2,15 @@
 // See LICENSE.txt for license information.
 
 import React from 'react';
-import {View, DeviceEventEmitter} from 'react-native';
+import {View} from 'react-native';
 import {CameraOptions} from 'react-native-image-picker';
 
 import CompassIcon from '@components/compass_icon';
 import FormattedText from '@components/formatted_text';
 import TouchableWithFeedback from '@components/touchable_with_feedback';
-import {Events} from '@constants';
 import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
+import {dismissBottomSheet} from '@screens/navigation';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 
 type Props = {
@@ -65,7 +65,7 @@ const CameraType = ({onPress}: Props) => {
         };
 
         onPress(options);
-        DeviceEventEmitter.emit(Events.CLOSE_BOTTOM_SHEET);
+        dismissBottomSheet();
     };
 
     const onVideo = () => {
@@ -76,7 +76,7 @@ const CameraType = ({onPress}: Props) => {
         };
 
         onPress(options);
-        DeviceEventEmitter.emit(Events.CLOSE_BOTTOM_SHEET);
+        dismissBottomSheet();
     };
 
     return (

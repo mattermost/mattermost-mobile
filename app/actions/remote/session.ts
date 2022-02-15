@@ -5,6 +5,7 @@ import {DeviceEventEmitter} from 'react-native';
 
 import {autoUpdateTimezone, getDeviceTimezone, isTimezoneEnabled} from '@actions/local/timezone';
 import {Database, Events} from '@constants';
+import {SYSTEM_IDENTIFIERS} from '@constants/database';
 import DatabaseManager from '@database/manager';
 import {getServerCredentials} from '@init/credentials';
 import NetworkManager from '@init/network_manager';
@@ -23,11 +24,12 @@ import type {LoginArgs} from '@typings/database/database';
 const HTTP_UNAUTHORIZED = 401;
 
 export const completeLogin = async (serverUrl: string, user: UserProfile) => {
-    const database = DatabaseManager.serverDatabases[serverUrl]?.database;
-    if (!database) {
+    const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
+    if (!operator) {
         return {error: `${serverUrl} database not found`};
     }
 
+    const {database} = operator;
     const {config, license}: { config: Partial<ClientConfig>; license: Partial<ClientLicense> } = await queryCommonSystemValues(database);
 
     if (!Object.keys(config)?.length || !Object.keys(license)?.length) {
@@ -45,10 +47,17 @@ export const completeLogin = async (serverUrl: string, user: UserProfile) => {
         fetchDataRetentionPolicy(serverUrl);
     }
 
+    await DatabaseManager.setActiveServerDatabase(serverUrl);
+
     // Start websocket
     const credentials = await getServerCredentials(serverUrl);
     if (credentials?.token) {
         WebsocketManager.createClient(serverUrl, credentials.token);
+        return operator.handleSystem({systems: [{
+            id: SYSTEM_IDENTIFIERS.WEBSOCKET,
+            value: 0,
+        }],
+        prepareRecordsOnly: false});
     }
     return null;
 };
@@ -120,7 +129,7 @@ export const login = async (serverUrl: string, {ldapOnly = false, loginId, mfaTo
                 displayName: serverDisplayName,
             },
         });
-        await DatabaseManager.setActiveServerDatabase(serverUrl);
+
         await server?.operator.handleUsers({users: [user], prepareRecordsOnly: false});
         await server?.operator.handleSystem({
             systems: [{
@@ -208,7 +217,6 @@ export const ssoLogin = async (serverUrl: string, serverDisplayName: string, ser
                 displayName: serverDisplayName,
             },
         });
-        await DatabaseManager.setActiveServerDatabase(serverUrl);
         deviceToken = await queryDeviceToken(database);
         user = await client.getMe();
         await server?.operator.handleUsers({users: [user], prepareRecordsOnly: false});

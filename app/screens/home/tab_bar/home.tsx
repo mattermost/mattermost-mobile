@@ -75,6 +75,7 @@ const Home = ({isFocused, theme}: Props) => {
         for (const [key, map] of subscriptionsToRemove) {
             map.subscription?.unsubscribe();
             subscriptions.delete(key);
+            updateTotal();
         }
 
         for (const server of servers) {
@@ -86,9 +87,10 @@ const Home = ({isFocused, theme}: Props) => {
                 };
                 subscriptions.set(url, unreads);
                 unreads.subscription = subscribeUnreadAndMentionsByServer(url, unreadsSubscription);
-            } else if (subscriptions.has(url)) {
+            } else if (!lastActiveAt && subscriptions.has(url)) {
                 subscriptions.get(url)?.subscription?.unsubscribe();
                 subscriptions.delete(url);
+                updateTotal();
             }
         }
     };
@@ -101,6 +103,7 @@ const Home = ({isFocused, theme}: Props) => {
             subscriptions.forEach((unreads) => {
                 unreads.subscription?.unsubscribe();
             });
+            subscriptions.clear();
         };
     }, []);
 

@@ -45,10 +45,12 @@ const ThemeProvider = ({currentTeamId, children, themes}: Props) => {
             if (teamTheme?.value) {
                 try {
                     const theme = setThemeDefaults(JSON.parse(teamTheme.value) as Theme);
-                    EphemeralStore.theme = theme;
-                    requestAnimationFrame(() => {
-                        setNavigationStackStyles(theme);
-                    });
+                    if (theme !== EphemeralStore.theme) {
+                        EphemeralStore.theme = theme;
+                        requestAnimationFrame(() => {
+                            setNavigationStackStyles(theme);
+                        });
+                    }
                     return theme;
                 } catch {
                     // no theme change

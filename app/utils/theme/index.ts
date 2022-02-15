@@ -5,7 +5,7 @@ import merge from 'deepmerge';
 import {StatusBar, StyleSheet} from 'react-native';
 import tinyColor from 'tinycolor2';
 
-import {Preferences, Screens} from '@constants';
+import {Preferences} from '@constants';
 import {appearanceControlledScreens, mergeNavigationOptions} from '@screens/navigation';
 import EphemeralStore from '@store/ephemeral_store';
 
@@ -129,7 +129,7 @@ export function setNavigatorStyles(componentId: string, theme: Theme, additional
 
 export function setNavigationStackStyles(theme: Theme) {
     EphemeralStore.allNavigationComponentIds.forEach((componentId) => {
-        if (componentId !== Screens.BOTTOM_SHEET && !appearanceControlledScreens.includes(componentId)) {
+        if (!appearanceControlledScreens.includes(componentId)) {
             setNavigatorStyles(componentId, theme);
         }
     });

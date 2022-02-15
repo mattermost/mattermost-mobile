@@ -376,9 +376,9 @@ class DatabaseManager {
         const databaseShm = `${androidFilesDir}${databaseName}.db-shm`;
         const databaseWal = `${androidFilesDir}${databaseName}.db-wal`;
 
-        FileSystem.deleteAsync(databaseFile);
-        FileSystem.deleteAsync(databaseShm);
-        FileSystem.deleteAsync(databaseWal);
+        FileSystem.deleteAsync(databaseFile, {idempotent: true});
+        FileSystem.deleteAsync(databaseShm, {idempotent: true});
+        FileSystem.deleteAsync(databaseWal, {idempotent: true});
     };
 
     /**

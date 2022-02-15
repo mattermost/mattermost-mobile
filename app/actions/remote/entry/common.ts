@@ -13,6 +13,8 @@ import DatabaseManager from '@database/manager';
 import {getPreferenceValue, getTeammateNameDisplaySetting} from '@helpers/api/preference';
 import {selectDefaultTeam} from '@helpers/api/team';
 import {DEFAULT_LOCALE} from '@i18n';
+import NetworkManager from '@init/network_manager';
+import {queryAllServers} from '@queries/app/servers';
 import {queryAllChannelsForTeam} from '@queries/servers/channel';
 import {queryConfig} from '@queries/servers/system';
 import {queryAvailableTeamIds, queryMyTeams} from '@queries/servers/team';
@@ -192,4 +194,41 @@ export const deferredAppEntryActions = async (
     }
 
     updateAllUsersSince(serverUrl, since);
+};
+
+export const syncOtherServers = async (serverUrl: string) => {
+    const database = DatabaseManager.appDatabase?.database;
+    if (database) {
+        const servers = await queryAllServers(database);
+        for (const server of servers) {
+            if (server.url !== serverUrl && server.lastActiveAt > 0) {
+                syncAllChannelMembers(server.url);
+            }
+        }
+    }
+};
+
+const syncAllChannelMembers = async (serverUrl: string) => {
+    const database = DatabaseManager.serverDatabases[serverUrl]?.database;
+    if (!database) {
+        return;
+    }
+
+    let client;
+    try {
+        client = NetworkManager.getClient(serverUrl);
+    } catch {
+        return;
+    }
+
+    try {
+        const myTeams = await client.getMyTeams();
+        let excludeDirect = false;
+        for (const myTeam of myTeams) {
+            fetchMyChannelsForTeam(serverUrl, myTeam.id, false, 0, false, excludeDirect);
+            excludeDirect = true;
+        }
+    } catch {
+        // Do nothing
+    }
 };
