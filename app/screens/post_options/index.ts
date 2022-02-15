@@ -62,24 +62,29 @@ function canEditPost(isOwner: boolean, post: PostModel, postEditTimeLimit: numbe
 
 const enhanced = withObservables([], ({post, showAddReaction, location, database}: WithDatabaseArgs & { post: PostModel; showAddReaction: boolean; location: string }) => {
     const channel = post.channel.observe();
-    const canMarkAsUnread = channel.pipe(switchMap((ch: ChannelModel) => of$(ch.deleteAt === 0)));
+    const channelIsArchived = channel.pipe(switchMap((ch: ChannelModel) => of$(ch.deleteAt !== 0)));
+    const canMarkAsUnread = channelIsArchived.pipe(switchMap((value) => of$(!value)));
     const currentUser = database.get<SystemModel>(SYSTEM).findAndObserve(CURRENT_USER_ID).pipe(switchMap(({value}) => database.get<UserModel>(USER).findAndObserve(value)));
 
     const experimentalTownSquareIsReadOnly = database.get<SystemModel>(SYSTEM).findAndObserve(CONFIG).pipe(switchMap(({value}: {value: ClientConfig}) => of$(value.ExperimentalTownSquareIsReadOnly === 'true')));
     const channelIsReadOnly = combineLatest([currentUser, channel, experimentalTownSquareIsReadOnly]).pipe(switchMap(([u, c, readOnly]) => of$(c?.name === General.DEFAULT_CHANNEL && !isSystemAdmin(u.roles) && readOnly)));
 
-    const canAddReaction = currentUser.pipe(switchMap((u) => from$(hasPermissionForPost(post, u, Permissions.ADD_REACTION, true))));
+    const hasAddReactionPermission = currentUser.pipe(switchMap((u) => from$(hasPermissionForPost(post, u, Permissions.ADD_REACTION, true))));
 
     const isUnderMaxAllowedReactions = post.reactions.observe().pipe(
-        switchMap((reactions: ReactionModel[]) => {
-            // eslint-disable-next-line max-nested-callbacks
-            const emojiNames = reactions.map((r) => r.emojiName);
-            return [...new Set(emojiNames)].length < MAX_ALLOWED_REACTIONS;
+        // eslint-disable-next-line max-nested-callbacks
+        switchMap((reactions: ReactionModel[]) => of$(new Set(reactions.map((r) => r.emojiName)).size < MAX_ALLOWED_REACTIONS)),
+    );
+
+    const canAddReaction = combineLatest([hasAddReactionPermission, channelIsReadOnly, isUnderMaxAllowedReactions, channelIsArchived]).pipe(
+        switchMap(([permission, readOnly, maxAllowed, isArchived]) => {
+            return of$(!isSystemMessage(post) && permission && !readOnly && !isArchived && maxAllowed && showAddReaction);
         }),
     );
 
     return {
         canMarkAsUnread,
+        canAddReaction,
     };
 });
 
