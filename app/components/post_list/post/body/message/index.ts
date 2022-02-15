@@ -3,11 +3,12 @@
 
 import {withDatabase} from '@nozbe/watermelondb/DatabaseProvider';
 import withObservables from '@nozbe/with-observables';
-import {from as from$} from 'rxjs';
 import {switchMap} from 'rxjs/operators';
 
+// import {from as from$} from 'rxjs';
+// import {queryGroupForPosts} from '@helpers/database/groups';
 import {MM_TABLES, SYSTEM_IDENTIFIERS} from '@constants/database';
-import {queryGroupForPosts} from '@helpers/database/groups';
+import GroupModel from '@typings/database/models/servers/group';
 
 import Message from './message';
 
@@ -22,11 +23,13 @@ type MessageInputArgs = {
     post: PostModel;
 }
 
-const withMessageInput = withObservables(['post'], ({database, post}: WithDatabaseArgs & MessageInputArgs) => {
+const withMessageInput = withObservables(['post'], ({database}: WithDatabaseArgs & MessageInputArgs) => {
     const currentUser = database.get<SystemModel>(SYSTEM).findAndObserve(SYSTEM_IDENTIFIERS.CURRENT_USER_ID).pipe(
         switchMap(({value}) => database.get<UserModel>(USER).findAndObserve(value)),
     );
-    const groupsForPosts = from$(queryGroupForPosts(post));
+
+    // const groupsForPosts = from$(queryGroupForPosts(post));
+    const groupsForPosts: GroupModel[] = [];
 
     return {
         currentUser,
