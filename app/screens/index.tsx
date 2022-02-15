@@ -21,7 +21,7 @@ const withGestures = (Screen: React.ComponentType, styles: StyleProp<ViewStyle>)
         if (Platform.OS === 'android') {
             return (
                 <GestureHandlerRootView style={[{flex: 1}, styles]}>
-                    <Screen {...props}/>     
+                    <Screen {...props}/>
                 </GestureHandlerRootView>
             )
         }
@@ -152,9 +152,9 @@ Navigation.setLazyComponentRegistrator((screenName) => {
     case Screens.MFA:
         screen = withIntl(require('@screens/mfa').default);
         break;
-    // case 'MoreChannels':
-    //     screen = require('@screens/more_channels').default;
-    //     break;
+    case Screens.BROWSE_CHANNELS:
+        screen = withServerDatabase(require('@screens/browse_channels').default);
+        break;
     // case 'MoreDirectMessages':
     //     screen = require('@screens/more_dms').default;
     //     break;
@@ -186,9 +186,9 @@ Navigation.setLazyComponentRegistrator((screenName) => {
     // case 'PinnedPosts':
     //     screen = require('@screens/pinned_posts').default;
     //     break;
-    // case 'PostOptions':
-    //     screen = require('@screens/post_options').default;
-    //     break;
+    case Screens.POST_OPTIONS:
+        screen = withServerDatabase(require('@screens/post_options').default);
+        break;
     // case 'ReactionList':
     //     screen = require('@screens/reaction_list').default;
     //     break;

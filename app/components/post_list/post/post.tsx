@@ -13,7 +13,8 @@ import TouchableWithFeedback from '@components/touchable_with_feedback';
 import * as Screens from '@constants/screens';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
-import {showModalOverCurrentContext} from '@screens/navigation';
+import {useIsTablet} from '@hooks/device';
+import {bottomSheetModalOptions, showModal, showModalOverCurrentContext} from '@screens/navigation';
 import {fromAutoResponder, isFromWebhook, isPostPendingOrFailed, isSystemMessage} from '@utils/post';
 import {preventDoubleTap} from '@utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
@@ -104,6 +105,7 @@ const Post = ({
     const intl = useIntl();
     const serverUrl = useServerUrl();
     const theme = useTheme();
+    const isTablet = useIsTablet();
     const styles = getStyleSheet(theme);
     const isAutoResponder = fromAutoResponder(post);
     const isPendingOrFailed = isPostPendingOrFailed(post);
@@ -162,18 +164,16 @@ const Post = ({
             return;
         }
 
-        const screen = 'PostOptions';
-        const passProps = {
-            location,
-            post,
-            showAddReaction,
-        };
-
         Keyboard.dismiss();
-        const postOptionsRequest = requestAnimationFrame(() => {
-            showModalOverCurrentContext(screen, passProps);
-            cancelAnimationFrame(postOptionsRequest);
-        });
+
+        const passProps = {location, post};
+        const title = isTablet ? intl.formatMessage({id: 'post.options.title', defaultMessage: 'Options'}) : '';
+
+        if (isTablet) {
+            showModal(Screens.POST_OPTIONS, title, passProps, bottomSheetModalOptions(theme, 'close-post-options'));
+        } else {
+            showModalOverCurrentContext(Screens.POST_OPTIONS, passProps);
+        }
     };
 
     const highlightFlagged = isFlagged && !skipFlaggedHeader;

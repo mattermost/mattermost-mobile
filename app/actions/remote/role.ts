@@ -56,7 +56,7 @@ export const fetchRolesIfNeeded = async (serverUrl: string, updatedRoles: string
     }
 };
 
-export const fetchRoles = async (serverUrl: string, teamMembership?: TeamMembership[], channelMembership?: ChannelMembership[], user?: UserProfile) => {
+export const fetchRoles = async (serverUrl: string, teamMembership?: TeamMembership[], channelMembership?: ChannelMembership[], user?: UserProfile, fetchOnly = false) => {
     const rolesToFetch = new Set<string>(user?.roles.split(' ') || []);
 
     if (teamMembership?.length) {
@@ -79,6 +79,8 @@ export const fetchRoles = async (serverUrl: string, teamMembership?: TeamMembers
     }
 
     if (rolesToFetch.size > 0) {
-        fetchRolesIfNeeded(serverUrl, Array.from(rolesToFetch));
+        return fetchRolesIfNeeded(serverUrl, Array.from(rolesToFetch), fetchOnly);
     }
+
+    return {roles: []};
 };

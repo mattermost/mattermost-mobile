@@ -126,6 +126,7 @@ exports[`components/channel_list/header Channel List Header Component should mat
       >
         <Icon
           name="plus"
+          onPress={[Function]}
           style={
             Object {
               "color": "rgba(255,255,255,0.8)",

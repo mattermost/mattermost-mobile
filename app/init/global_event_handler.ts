@@ -6,7 +6,6 @@ import {Alert, DeviceEventEmitter, Linking, Platform} from 'react-native';
 import semver from 'semver';
 
 import {selectAllMyChannelIds} from '@actions/local/channel';
-import {fetchConfigAndLicense} from '@actions/remote/systems';
 import LocalConfig from '@assets/config.json';
 import {Events, Sso} from '@constants';
 import DatabaseManager from '@database/manager';
@@ -91,6 +90,8 @@ class GlobalEventHandler {
 
         NetworkManager.invalidateClient(serverUrl);
         WebsocketManager.invalidateClient(serverUrl);
+
+        const activeServerUrl = await DatabaseManager.getActiveServerUrl();
         await DatabaseManager.deleteServerDatabase(serverUrl);
 
         const analyticsClient = analytics.get(serverUrl);
@@ -103,11 +104,15 @@ class GlobalEventHandler {
         this.clearCookiesForServer(serverUrl);
         deleteFileCache(serverUrl);
 
-        if (!Object.keys(DatabaseManager.serverDatabases).length) {
-            EphemeralStore.theme = undefined;
-        }
+        if (activeServerUrl === serverUrl) {
+            let launchType: LaunchType = LaunchType.AddServer;
+            if (!Object.keys(DatabaseManager.serverDatabases).length) {
+                EphemeralStore.theme = undefined;
+                launchType = LaunchType.Normal;
+            }
 
-        relaunchApp({launchType: LaunchType.Normal}, true);
+            relaunchApp({launchType}, true);
+        }
     };
 
     onServerConfigChanged = ({serverUrl, config}: {serverUrl: string; config: ClientConfig}) => {
@@ -132,12 +137,6 @@ class GlobalEventHandler {
                     {cancelable: false},
                 );
             }
-
-            const fetchTimeout = setTimeout(() => {
-                // Defer the call to avoid collision with other request writting to the db
-                fetchConfigAndLicense(serverUrl);
-                clearTimeout(fetchTimeout);
-            }, 3000);
         }
     };
 
