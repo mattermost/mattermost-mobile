@@ -90,6 +90,7 @@
         "EnableUserCreation": true,
         "EnableOpenServer": true,
         "EnableUserDeactivation": false,
+        "EnableCustomUserStatuses": false,
         "RestrictCreationToDomains": "",
         "EnableCustomBrand": false,
         "CustomBrandText": "",
