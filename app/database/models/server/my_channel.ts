@@ -35,8 +35,14 @@ export default class MyChannelModel extends Model {
     /** message_count : The derived number of unread messages on this channel */
     @field('message_count') messageCount!: number;
 
+    /** message_count_root : The derived number of unread ROOT messages on this channel */
+    @field('message_count_root') messageCountRoot!: number;
+
     /** mentions_count : The number of mentions on this channel */
     @field('mentions_count') mentionsCount!: number;
+
+    /** mentions_count : The number of ROOT mentions on this channel */
+    @field('mentions_count_root') mentionsCountRoot!: number;
 
     /** is_unread : Whether the channel has unread messages */
     @field('is_unread') isUnread!: boolean;

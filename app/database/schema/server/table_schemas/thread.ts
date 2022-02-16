@@ -16,5 +16,7 @@ export default tableSchema({
         {name: 'reply_count', type: 'number'},
         {name: 'unread_replies', type: 'number'},
         {name: 'unread_mentions', type: 'number'},
+        {name: 'loaded_in_all_threads_tab', type: 'boolean'},
+        {name: 'loaded_in_unreads_tab', type: 'boolean'},
     ],
 });

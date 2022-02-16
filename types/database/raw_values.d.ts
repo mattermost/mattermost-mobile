@@ -90,6 +90,10 @@ type TeamSearchHistory = {
     team_id: string;
 };
 
+type TeamThreadsCount = Omit<GetUserThreadsResponse, 'threads'> & {
+    id: string;
+}
+
 type TermsOfService = {
     id: string;
     accepted_at: number;
@@ -127,6 +131,7 @@ type RawValue =
   | TeamChannelHistory
   | TeamMembership
   | TeamSearchHistory
+  | TeamThreadsCount
   | TermsOfService
   | Thread
   | ThreadParticipant
