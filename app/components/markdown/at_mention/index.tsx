@@ -22,9 +22,9 @@ import {getTeammateNameDisplaySetting} from '@helpers/api/preference';
 import {bottomSheet, dismissBottomSheet, showModal} from '@screens/navigation';
 import {displayUsername, getUserMentionKeys, getUsersByUsername} from '@utils/user';
 
+// import type GroupModel from '@typings/database/models/servers/group';
+// import type GroupMembershipModel from '@typings/database/models/servers/group_membership';
 import type {WithDatabaseArgs} from '@typings/database/database';
-import type GroupModel from '@typings/database/models/servers/group';
-import type GroupMembershipModel from '@typings/database/models/servers/group_membership';
 import type PreferenceModel from '@typings/database/models/servers/preference';
 import type SystemModel from '@typings/database/models/servers/system';
 import type UserModelType from '@typings/database/models/servers/user';
@@ -33,19 +33,22 @@ type AtMentionProps = {
     currentUserId: string;
     database: Database;
     disableAtChannelMentionHighlight?: boolean;
-    groups: GroupModel[];
+
+    // groups: GroupModel[];
     isSearchResult?: boolean;
     mentionKeys?: Array<{key: string }>;
     mentionName: string;
     mentionStyle: TextStyle;
-    myGroups: GroupMembershipModel[];
+
+    // myGroups: GroupMembershipModel[];
     onPostPress?: (e: GestureResponderEvent) => void;
     teammateNameDisplay: string;
     textStyle?: StyleProp<TextStyle>;
     users: UserModelType[];
 }
 
-const {SERVER: {GROUP, GROUP_MEMBERSHIP, PREFERENCE, SYSTEM, USER}} = MM_TABLES;
+// const {SERVER: {GROUP, GROUP_MEMBERSHIP, PREFERENCE, SYSTEM, USER}} = MM_TABLES;
+const {SERVER: {PREFERENCE, SYSTEM, USER}} = MM_TABLES;
 
 const style = StyleSheet.create({
     bottomSheet: {
@@ -57,12 +60,14 @@ const AtMention = ({
     currentUserId,
     database,
     disableAtChannelMentionHighlight,
-    groups,
+
+    // groups,
     isSearchResult,
     mentionName,
     mentionKeys,
     mentionStyle,
-    myGroups,
+
+    // myGroups,
     onPostPress,
     teammateNameDisplay,
     textStyle,
@@ -99,13 +104,17 @@ const AtMention = ({
         if (user.id !== currentUserId) {
             return [];
         }
-        return getUserMentionKeys(user, groups, myGroups);
-    }, [currentUserId, groups, mentionKeys, myGroups, user]);
 
-    const getGroupFromMentionName = () => {
-        const mentionNameTrimmed = mentionName.toLowerCase().replace(/[._-]*$/, '');
-        return groups.find((g) => g.name === mentionNameTrimmed);
-    };
+        // return getUserMentionKeys(user, groups, myGroups);
+        return getUserMentionKeys(user);
+
+    // }, [currentUserId, groups, mentionKeys, myGroups, user]);
+    }, [currentUserId, mentionKeys, user]);
+
+    // const getGroupFromMentionName = () => {
+    //     const mentionNameTrimmed = mentionName.toLowerCase().replace(/[._-]*$/, '');
+    //     return groups.find((g) => g.name === mentionNameTrimmed);
+    // };
 
     const goToUserProfile = useCallback(() => {
         const screen = 'UserProfile';
@@ -199,25 +208,26 @@ const AtMention = ({
         isMention = true;
         canPress = true;
     } else {
-        const group = getGroupFromMentionName();
-        if (group?.allowReference) {
-            highlighted = userMentionKeys.some((item) => item.key === `@${group.name}`);
-            isMention = true;
-            mention = group.name;
-            suffix = mentionName.substring(group.name.length);
-        } else {
-            const pattern = new RegExp(/\b(all|channel|here)(?:\.\B|_\b|\b)/, 'i');
-            const mentionMatch = pattern.exec(mentionName);
+        // const group = getGroupFromMentionName();
+        // if (group?.allowReference) {
+        //     highlighted = userMentionKeys.some((item) => item.key === `@${group.name}`);
+        //     isMention = true;
+        //     mention = group.name;
+        //     suffix = mentionName.substring(group.name.length);
+        // } else {
+        const pattern = new RegExp(/\b(all|channel|here)(?:\.\B|_\b|\b)/, 'i');
+        const mentionMatch = pattern.exec(mentionName);
 
-            if (mentionMatch && !disableAtChannelMentionHighlight) {
-                mention = mentionMatch.length > 1 ? mentionMatch[1] : mentionMatch[0];
-                suffix = mentionName.replace(mention, '');
-                isMention = true;
-                highlighted = true;
-            } else {
-                mention = mentionName;
-            }
+        if (mentionMatch && !disableAtChannelMentionHighlight) {
+            mention = mentionMatch.length > 1 ? mentionMatch[1] : mentionMatch[0];
+            suffix = mentionName.replace(mention, '');
+            isMention = true;
+            highlighted = true;
+        } else {
+            mention = mentionName;
         }
+
+        // }
     }
 
     if (canPress) {
@@ -276,8 +286,9 @@ const withAtMention = withObservables(['mentionName'], ({database, mentionName}:
 
     return {
         currentUserId,
-        groups: database.get(GROUP).query(Q.where('delete_at', Q.eq(0))).observe(),
-        myGroups: database.get(GROUP_MEMBERSHIP).query().observe(),
+
+        // groups: database.get(GROUP).query(Q.where('delete_at', Q.eq(0))).observe(),
+        // myGroups: database.get(GROUP_MEMBERSHIP).query().observe(),
         teammateNameDisplay,
         users: database.get(USER).query(
             Q.where('username', Q.like(

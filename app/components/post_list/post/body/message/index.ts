@@ -8,7 +8,8 @@ import {switchMap} from 'rxjs/operators';
 // import {from as from$} from 'rxjs';
 // import {queryGroupForPosts} from '@helpers/database/groups';
 import {MM_TABLES, SYSTEM_IDENTIFIERS} from '@constants/database';
-import GroupModel from '@typings/database/models/servers/group';
+
+// import GroupModel from '@typings/database/models/servers/group';
 
 import Message from './message';
 
@@ -29,11 +30,10 @@ const withMessageInput = withObservables(['post'], ({database}: WithDatabaseArgs
     );
 
     // const groupsForPosts = from$(queryGroupForPosts(post));
-    const groupsForPosts: GroupModel[] = [];
-
     return {
         currentUser,
-        groupsForPosts,
+
+        // groupsForPosts,
     };
 });
 

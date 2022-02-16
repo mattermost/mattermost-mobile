@@ -29,15 +29,15 @@ type GroupMembership = {
     group_id: string;
 };
 
-type GroupChannelRelation = {
-    channel_id: string;
-    group_id: string;
-}
+// type GroupChannelRelation = {
+//     channel_id: string;
+//     group_id: string;
+// }
 
-type GroupTeamRelation = {
-    group_id: string;
-    team_id: string;
-}
+// type GroupTeamRelation = {
+//     group_id: string;
+//     team_id: string;
+// }
 
 type MyTeam = {
     id: string;
@@ -104,10 +104,11 @@ type RawValue =
   | CustomEmoji
   | Draft
   | FileInfo
-  | Group
-  | GroupMembership
-  | GroupChannel
-  | GroupTeam
+
+  // | Group
+  // | GroupMembership
+  // | GroupChannel
+  // | GroupTeam
   | IdValue
   | Metadata
   | MyTeam

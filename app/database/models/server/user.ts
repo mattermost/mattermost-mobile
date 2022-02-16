@@ -7,9 +7,9 @@ import Model, {Associations} from '@nozbe/watermelondb/Model';
 import {MM_TABLES} from '@constants/database';
 import {safeParseJSON} from '@utils/helpers';
 
+// import type GroupMembershipModel from '@typings/database/models/servers/group_membership';
 import type ChannelModel from '@typings/database/models/servers/channel';
 import type ChannelMembershipModel from '@typings/database/models/servers/channel_membership';
-import type GroupMembershipModel from '@typings/database/models/servers/group_membership';
 import type PostModel from '@typings/database/models/servers/post';
 import type PreferenceModel from '@typings/database/models/servers/preference';
 import type ReactionModel from '@typings/database/models/servers/reaction';
@@ -19,7 +19,8 @@ import type {UserMentionKey} from '@typings/global/markdown';
 const {
     CHANNEL,
     CHANNEL_MEMBERSHIP,
-    GROUP_MEMBERSHIP,
+
+    // GROUP_MEMBERSHIP,
     POST,
     PREFERENCE,
     REACTION,
@@ -45,7 +46,7 @@ export default class UserModel extends Model {
         [CHANNEL_MEMBERSHIP]: {type: 'has_many', foreignKey: 'user_id'},
 
         /** USER has a 1:N relationship with GROUP_MEMBERSHIP.  A user can be part of multiple groups */
-        [GROUP_MEMBERSHIP]: {type: 'has_many', foreignKey: 'user_id'},
+        // [GROUP_MEMBERSHIP]: {type: 'has_many', foreignKey: 'user_id'},
 
         /** USER has a 1:N relationship with POST.  A user can author multiple posts */
         [POST]: {type: 'has_many', foreignKey: 'user_id'},
@@ -123,7 +124,7 @@ export default class UserModel extends Model {
     @children(CHANNEL_MEMBERSHIP) channels!: ChannelMembershipModel[];
 
     /** groups : All the groups that this user is part of  */
-    @children(GROUP_MEMBERSHIP) groups!: GroupMembershipModel[];
+    // @children(GROUP_MEMBERSHIP) groups!: GroupMembershipModel[];
 
     /** posts :  All the posts that this user has written*/
     @children(POST) posts!: PostModel[];

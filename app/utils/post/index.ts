@@ -5,7 +5,7 @@ import {Post} from '@constants';
 import {DEFAULT_LOCALE} from '@i18n';
 import {displayUsername} from '@utils/user';
 
-import type GroupModel from '@typings/database/models/servers/group';
+// import type GroupModel from '@typings/database/models/servers/group';
 import type PostModel from '@typings/database/models/servers/post';
 import type UserModel from '@typings/database/models/servers/user';
 import type {UserMentionKey} from '@typings/global/markdown';
@@ -60,16 +60,17 @@ export function postUserDisplayName(post: PostModel, author?: UserModel, teammat
     return displayUsername(author, author?.locale || DEFAULT_LOCALE, teammateNameDisplay, true);
 }
 
-export const getMentionKeysForPost = (user: UserModel, post: PostModel, groups: GroupModel[] | null) => {
+// export const getMentionKeysForPost = (user: UserModel, post: PostModel, groups: GroupModel[] | null) => {
+export const getMentionKeysForPost = (user: UserModel) => {
     const keys: UserMentionKey[] = user.mentionKeys;
 
-    if (groups?.length) {
-        for (const group of groups) {
-            if (group.name && group.name.trim()) {
-                keys.push({key: `@${group.name}`});
-            }
-        }
-    }
+    // if (groups?.length) {
+    //     for (const group of groups) {
+    //         if (group.name && group.name.trim()) {
+    //             keys.push({key: `@${group.name}`});
+    //         }
+    //     }
+    // }
 
     return keys;
 };

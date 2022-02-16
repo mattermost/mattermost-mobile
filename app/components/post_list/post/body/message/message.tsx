@@ -14,13 +14,14 @@ import {makeStyleSheetFromTheme} from '@utils/theme';
 
 import ShowMoreButton from './show_more_button';
 
-import type GroupModel from '@typings/database/models/servers/group';
+// import type GroupModel from '@typings/database/models/servers/group';
 import type PostModel from '@typings/database/models/servers/post';
 import type UserModel from '@typings/database/models/servers/user';
 
 type MessageProps = {
     currentUser: UserModel;
-    groupsForPosts: GroupModel[];
+
+    // groupsForPosts: GroupModel[];
     highlight: boolean;
     isEdited: boolean;
     isPendingOrFailed: boolean;
@@ -52,7 +53,8 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     };
 });
 
-const Message = ({currentUser, groupsForPosts, highlight, isEdited, isPendingOrFailed, isReplyPost, location, post, theme}: MessageProps) => {
+// const Message = ({currentUser, groupsForPosts, highlight, isEdited, isPendingOrFailed, isReplyPost, location, post, theme}: MessageProps) => {
+const Message = ({currentUser, highlight, isEdited, isPendingOrFailed, isReplyPost, location, post, theme}: MessageProps) => {
     const [open, setOpen] = useState(false);
     const [height, setHeight] = useState<number|undefined>();
     const dimensions = useWindowDimensions();
@@ -61,9 +63,13 @@ const Message = ({currentUser, groupsForPosts, highlight, isEdited, isPendingOrF
     const style = getStyleSheet(theme);
     const blockStyles = getMarkdownBlockStyles(theme);
     const textStyles = getMarkdownTextStyles(theme);
+
+    // const mentionKeys = useMemo(() => {
+    //     return getMentionKeysForPost(currentUser, post, groupsForPosts);
+    // }, [currentUser, post.message, groupsForPosts]);
     const mentionKeys = useMemo(() => {
-        return getMentionKeysForPost(currentUser, post, groupsForPosts);
-    }, [currentUser, post.message, groupsForPosts]);
+        return getMentionKeysForPost(currentUser);
+    }, [currentUser]);
 
     const onLayout = useCallback((event: LayoutChangeEvent) => setHeight(event.nativeEvent.layout.height), []);
     const onPress = () => setOpen(!open);

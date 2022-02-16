@@ -219,25 +219,25 @@ export type HandleTeamArgs = PrepareOnly & {
     teams: Team[];
 };
 
-export type HandleGroupsChannelArgs = PrepareOnly & {
-  groupsChannels: GroupChannelRelation[];
-};
+// export type HandleGroupsChannelArgs = PrepareOnly & {
+//   groupsChannels: GroupChannelRelation[];
+// };
 
-export type HandleGroupsTeamArgs = PrepareOnly &{
-  groupsTeams: GroupTeamRelation[];
-};
+// export type HandleGroupsTeamArgs = PrepareOnly &{
+//   groupsTeams: GroupTeamRelation[];
+// };
 
-export type HandleGroupArgs = PrepareOnly & {
-  groups: Group[];
-};
+// export type HandleGroupArgs = PrepareOnly & {
+//   groups: Group[];
+// };
 
 export type HandleChannelMembershipArgs = PrepareOnly & {
   channelMemberships: Array<Pick<ChannelMembership, 'user_id' | 'channel_id'>>;
 };
 
-export type HandleGroupMembershipArgs = PrepareOnly & {
-  groupMemberships: GroupMembership[];
-};
+// export type HandleGroupMembershipArgs = PrepareOnly & {
+//   groupMemberships: GroupMembership[];
+// };
 
 export type HandleTeamMembershipArgs = PrepareOnly & {
   teamMemberships: TeamMembership[];
