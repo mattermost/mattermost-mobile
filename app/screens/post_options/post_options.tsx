@@ -1,6 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {useManagedConfig} from '@mattermost/react-native-emm';
 import React from 'react';
 
 import {ITEM_HEIGHT} from '@components/menu_item';
@@ -21,48 +22,43 @@ import ReactionBar from './components/reaction_bar';
 
 import type PostModel from '@typings/database/models/servers/post';
 
-//fixme: some props are optional - review them
-
 type PostOptionsProps = {
-    canAddReaction?: boolean;
-    canCopyPermalink?: boolean;
-    canCopyText?: boolean;
-    canDelete?: boolean;
-    canEdit?: boolean;
-    canEditUntil?: number;
-    canMarkAsUnread?: boolean;
-    canPin?: boolean;
-    canSave?: boolean;
-    canReply?: boolean;
-    isSaved?: boolean;
+    canAddReaction: boolean;
+    canDelete: boolean;
+    canEdit: boolean;
+    canMarkAsUnread: boolean;
+    canPin: boolean;
+    canReply: boolean;
+    isSaved: boolean;
     location: typeof Screens[keyof typeof Screens];
     post: PostModel;
-    thread?: Partial<PostModel>;
+    thread: Partial<PostModel>;
 };
 
 const PostOptions = ({
-    canAddReaction = true,
-    canCopyPermalink = true,
-    canCopyText = true,
-    canDelete = true,
-    canEdit = true,
-    canEditUntil = -1,
-    canMarkAsUnread = true,
-    canPin = true,
-    canReply = true,
-    canSave = true,
-    isSaved = true,
+    canAddReaction,
+    canDelete,
+    canEdit,
+    canMarkAsUnread,
+    canPin,
+    canReply,
+    isSaved,
     location,
     post,
     thread,
 }: PostOptionsProps) => {
-    const shouldRenderEdit = canEdit && (canEditUntil === -1 || canEditUntil > Date.now());
+    const managedConfig = useManagedConfig();
+    const isSystemPost = isSystemMessage(post);
+
+    const canCopyPermalink = !isSystemPost && managedConfig?.copyAndPasteProtection !== 'true';
+    const canCopyText = canCopyPermalink && post.message;
+
     const shouldRenderFollow = !(location !== Screens.CHANNEL || !thread);
 
     const snapPoints = [
         canAddReaction, canCopyPermalink, canCopyText,
-        canDelete, shouldRenderEdit, shouldRenderFollow,
-        canMarkAsUnread, canPin, canReply, canSave,
+        canDelete, canEdit, shouldRenderFollow,
+        canMarkAsUnread, canPin, canReply, !isSystemPost,
     ].reduce((acc, v) => {
         return v ? acc + 1 : acc;
     }, 0);
@@ -78,18 +74,12 @@ const PostOptions = ({
                         thread={thread}
                     />
                 }
-                {canMarkAsUnread && !isSystemMessage(post) && (
-                    <MarkAsUnreadOption/>
-                )}
+                {canMarkAsUnread && !isSystemPost && (<MarkAsUnreadOption/>)}
                 {canCopyPermalink && <CopyLinkOption/>}
-                {canSave &&
-                    <SaveOption
-                        isSaved={isSaved}
-                    />
-                }
+                {!isSystemPost && <SaveOption isSaved={isSaved}/>}
                 {canCopyText && <CopyTextOption/>}
                 {canPin && <PinChannelOption isPostPinned={post.isPinned}/>}
-                {shouldRenderEdit && <EditOption/>}
+                {canEdit && <EditOption/>}
                 {canDelete && <DeletePostOption/>}
             </>
         );
