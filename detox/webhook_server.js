@@ -247,7 +247,7 @@ function sendSysadminResponse(message, channelId) {
     const username = ADMIN_USERNAME || 'sysadmin';
     const password = ADMIN_PASSWORD || 'Sys@dmin-sample1';
     const baseUrl = getBaseUrl();
-    postMessageAs({sender: {username, password}, message, channelId, baseUrl});
+    postMessageAs(baseUrl, {sender: {username, password}, message, channelId});
 }
 
 const responseTypes = ['in_channel', 'comment'];

@@ -3,7 +3,7 @@
 
 const axios = require('axios');
 
-module.exports = async ({sender, message, channelId, rootId, createAt = 0, baseUrl}) => {
+module.exports = async (baseUrl, {sender, message, channelId, rootId, createAt = 0}) => {
     const loginResponse = await axios({
         url: `${baseUrl}/api/v4/users/login`,
         headers: {'X-Requested-With': 'XMLHttpRequest'},
