@@ -91,7 +91,7 @@ const EditServer = ({closeButtonId, componentId, server, theme}: ServerProps) =>
 
         await DatabaseManager.updateServerDisplayName(server.url, displayName);
         dismissModal({componentId});
-    }, [buttonDisabled, displayName, displayNameError]);
+    }, [!buttonDisabled && displayName, !buttonDisabled && displayNameError]);
 
     const handleDisplayNameTextChanged = useCallback((text: string) => {
         setDisplayName(text);

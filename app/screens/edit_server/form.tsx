@@ -96,7 +96,7 @@ const EditServerForm = ({
     const onUpdate = useCallback(() => {
         Keyboard.dismiss();
         handleUpdate();
-    }, [buttonDisabled, connecting, displayName, handleUpdate, theme]);
+    }, [handleUpdate]);
 
     const onFocus = useCallback(() => {
         if (Platform.OS === 'ios') {
@@ -120,7 +120,7 @@ const EditServerForm = ({
                 keyboardAwareRef.current?.scrollToPosition(0, 0);
             }
         }
-    }, [dimensions, isTablet]);
+    }, [onFocus]);
 
     const buttonType = buttonDisabled ? 'disabled' : 'default';
     const styleButtonText = buttonTextStyle(theme, 'lg', 'primary', buttonType);
