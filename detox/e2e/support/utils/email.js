@@ -1,10 +1,9 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import testConfig from '@support/test_config';
 import axios from 'axios';
 import jestExpect from 'expect';
-
-import testConfig from '@support/test_config';
 
 /**
  * Get email url.
