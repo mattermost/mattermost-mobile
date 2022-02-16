@@ -12,7 +12,7 @@ This document includes a list of open source components used in Mattermost Mobil
 
 This product contains '@mattermost/react-native-paste-input' by Mattermost.
 
-React Native TextInput component have functionality to capture text input from a user by using the soft and hardware keyboards but lacks the ability to restrict copy & paste options as well as allwing pasting different files formats copied from other apps, like images & videos from the Photos gallery app.
+React Native TextInput component have functionality to capture text input from a user by using the soft and hardware keyboards but lacks the ability to restrict copy & paste options as well as allowing pasting different files formats copied from other apps, like images & videos from the Photos gallery app.
 
 * HOMEPAGE:
   * https://github.com/mattermost/react-native-paste-input
