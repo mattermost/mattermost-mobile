@@ -21,10 +21,11 @@ import {getResponseFromError} from './common';
 
 /**
  * Login to Mattermost server as sysadmin.
+ * @param {string} baseUrl - the base server URL
  * @return {Object} returns {user, status} on success or {error, status} on error
  */
-export const apiAdminLogin = () => {
-    return apiLogin({
+export const apiAdminLogin = (baseUrl) => {
+    return apiLogin(baseUrl, {
         username: testConfig.adminUsername,
         password: testConfig.adminPassword,
     });
@@ -33,16 +34,17 @@ export const apiAdminLogin = () => {
 /**
  * Create a user.
  * See https://api.mattermost.com/#operation/CreateUser
+ * @param {string} baseUrl - the base server URL
  * @param {string} option.prefix - prefix to email and username
  * @param {Object} option.user - user object to be created
  * @return {Object} returns {user} on success or {error, status} on error
  */
-export const apiCreateUser = async ({prefix = 'user', user = null} = {}) => {
+export const apiCreateUser = async (baseUrl, {prefix = 'user', user = null} = {}) => {
     try {
         const newUser = user || generateRandomUser({prefix});
 
         const response = await client.post(
-            '/api/v4/users',
+            `${baseUrl}/api/v4/users`,
             newUser,
         );
 
@@ -55,12 +57,13 @@ export const apiCreateUser = async ({prefix = 'user', user = null} = {}) => {
 /**
  * Deactivate a user account.
  * See https://api.mattermost.com/#operation/DeleteUser
+ * @param {string} baseUrl - the base server URL
  * @param {string} userId - the user ID
  * @return {Object} returns {status} on success or {error, status} on error
  */
-export const apiDeactivateUser = async (userId) => {
+export const apiDeactivateUser = async (baseUrl, userId) => {
     try {
-        const response = await client.delete(`/api/v4/users/${userId}`);
+        const response = await client.delete(`${baseUrl}/api/v4/users/${userId}`);
 
         return {status: response.status};
     } catch (err) {
@@ -71,12 +74,13 @@ export const apiDeactivateUser = async (userId) => {
 /**
  * Demote a user to a guest.
  * See https://api.mattermost.com/#operation/DemoteUserToGuest
+ * @param {string} baseUrl - the base server URL
  * @param {string} userId - the user ID
  * @return {Object} returns {status} on success or {error, status} on error
  */
-export const apiDemoteUserToGuest = async (userId) => {
+export const apiDemoteUserToGuest = async (baseUrl, userId) => {
     try {
-        const response = await client.post(`/api/v4/users/${userId}/demote`);
+        const response = await client.post(`${baseUrl}/api/v4/users/${userId}/demote`);
 
         return {status: response.status};
     } catch (err) {
@@ -86,21 +90,23 @@ export const apiDemoteUserToGuest = async (userId) => {
 
 /**
  * Get user from a current session.
+ * @param {string} baseUrl - the base server URL
  * @return {Object} returns {user} on success or {error, status} on error
  */
-export const apiGetMe = () => {
-    return apiGetUserById('me');
+export const apiGetMe = (baseUrl) => {
+    return apiGetUserById(baseUrl, 'me');
 };
 
 /**
  * Get a user by ID.
  * See https://api.mattermost.com/#operation/GetUser
+ * @param {string} baseUrl - the base server URL
  * @param {string} userId - the user ID
  * @return {Object} returns {user} on success or {error, status} on error
  */
-export const apiGetUserById = async (userId) => {
+export const apiGetUserById = async (baseUrl, userId) => {
     try {
-        const response = await client.get(`/api/v4/users/${userId}`);
+        const response = await client.get(`${baseUrl}/api/v4/users/${userId}`);
 
         return {user: response.data};
     } catch (err) {
@@ -111,12 +117,13 @@ export const apiGetUserById = async (userId) => {
 /**
  * Get a user by username.
  * See https://api.mattermost.com/#operation/GetUserByUsername
+ * @param {string} baseUrl - the base server URL
  * @param {string} username - the username
  * @return {Object} returns {user} on success or {error, status} on error
  */
-export const apiGetUserByUsername = async (username) => {
+export const apiGetUserByUsername = async (baseUrl, username) => {
     try {
-        const response = await client.get(`/api/v4/users/username/${username}`);
+        const response = await client.get(`${baseUrl}/api/v4/users/username/${username}`);
 
         return {user: response.data};
     } catch (err) {
@@ -127,14 +134,15 @@ export const apiGetUserByUsername = async (username) => {
 /**
  * Login to Mattermost server.
  * See https://api.mattermost.com/#operation/Login
+ * @param {string} baseUrl - the base server URL
  * @param {string} user.username - username of a user
  * @param {string} user.password - password of a user
  * @return {Object} returns {user, status} on success or {error, status} on error
  */
-export const apiLogin = async (user) => {
+export const apiLogin = async (baseUrl, user) => {
     try {
         const response = await client.post(
-            '/api/v4/users/login',
+            `${baseUrl}/api/v4/users/login`,
             {login_id: user.username, password: user.password},
         );
 
@@ -156,10 +164,11 @@ export const apiLogin = async (user) => {
 /**
  * Logout from the Mattermost server.
  * See https://api.mattermost.com/#operation/Logout
+ * @param {string} baseUrl - the base server URL
  * @return {Object} returns {status} on success
  */
-export const apiLogout = async () => {
-    const response = await client.post('/api/v4/users/logout');
+export const apiLogout = async (baseUrl) => {
+    const response = await client.post(`${baseUrl}/api/v4/users/logout`);
 
     client.defaults.headers.Cookie = '';
 
@@ -168,24 +177,26 @@ export const apiLogout = async () => {
 
 /**
  * Patch user from a current session.
+ * @param {string} baseUrl - the base server URL
  * @param {Object} userData - data to partially update a user
  * @return {Object} returns {user} on success or {error, status} on error
  */
-export const apiPatchMe = (userData) => {
-    return apiPatchUser('me', userData);
+export const apiPatchMe = (baseUrl, userData) => {
+    return apiPatchUser(baseUrl, 'me', userData);
 };
 
 /**
  * Patch a user.
  * See https://api.mattermost.com/#operation/PatchUser
+ * @param {string} baseUrl - the base server URL
  * @param {string} userId - the user ID
  * @param {Object} userData - data to partially update a user
  * @return {Object} returns {user} on success or {error, status} on error
  */
-export const apiPatchUser = async (userId, userData) => {
+export const apiPatchUser = async (baseUrl, userId, userData) => {
     try {
         const response = await client.put(
-            `/api/v4/users/${userId}/patch`,
+            `${baseUrl}/api/v4/users/${userId}/patch`,
             userData,
         );
 
@@ -198,14 +209,15 @@ export const apiPatchUser = async (userId, userData) => {
 /**
  * Update user active status.
  * See https://api.mattermost.com/#operation/UpdateUserActive
+ * @param {string} baseUrl - the base server URL
  * @param {string} userId - the user ID
  * @param {boolean} active - use true to set the user active, false for inactive
  * @return {Object} returns {status} on success or {error, status} on error
  */
-export const apiUpdateUserActiveStatus = async (userId, active) => {
+export const apiUpdateUserActiveStatus = async (baseUrl, userId, active) => {
     try {
         const response = await client.put(
-            `/api/v4/users/${userId}/active`,
+            `${baseUrl}/api/v4/users/${userId}/active`,
             {active},
         );
 

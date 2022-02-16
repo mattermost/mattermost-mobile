@@ -21,16 +21,17 @@ import {getResponseFromError} from './common';
 /**
  * Create a bot.
  * See https://api.mattermost.com/#operation/CreateBot
+ * @param {string} baseUrl - the base server URL
  * @param {string} option.prefix - prefix to username and display name
  * @param {Object} option.bot - bot object to be created
  * @return {Object} returns {bot} on success or {error, status} on error
  */
-export const apiCreateBot = async ({prefix = 'bot', bot = null} = {}) => {
+export const apiCreateBot = async (baseUrl, {prefix = 'bot', bot = null} = {}) => {
     try {
         const newBot = bot || generateRandomBot({prefix});
 
         const response = await client.post(
-            '/api/v4/bots',
+            `${baseUrl}/api/v4/bots`,
             newBot,
         );
 

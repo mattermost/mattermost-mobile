@@ -18,11 +18,12 @@ import {getResponseFromError} from './common';
 
 /**
  * Save the user's favorite channel preference.
+ * @param {string} baseUrl - the base server URL
  * @param {string} userId - the user ID
  * @param {string} channelId - the channel id to be favorited
  * @return {string} returns {status} on success or {error, status} on error
  */
-export const apiSaveFavoriteChannelPreference = (userId, channelId) => {
+export const apiSaveFavoriteChannelPreference = (baseUrl, userId, channelId) => {
     const preference = {
         user_id: userId,
         category: 'favorite_channel',
@@ -30,16 +31,17 @@ export const apiSaveFavoriteChannelPreference = (userId, channelId) => {
         value: 'true',
     };
 
-    return apiSaveUserPreferences(userId, [preference]);
+    return apiSaveUserPreferences(baseUrl, userId, [preference]);
 };
 
 /**
  * Save the user's teammate name display preference.
+ * @param {string} baseUrl - the base server URL
  * @param {string} userId - the user ID
  * @param {string} nameFormat - one of "username" (default), "nickname_full_name" or "full_name"
  * @returns
  */
-export const apiSaveTeammateNameDisplayPreference = (userId, nameFormat = 'username') => {
+export const apiSaveTeammateNameDisplayPreference = (baseUrl, userId, nameFormat = 'username') => {
     const preference = {
         user_id: userId,
         category: 'display_settings',
@@ -47,16 +49,17 @@ export const apiSaveTeammateNameDisplayPreference = (userId, nameFormat = 'usern
         value: nameFormat,
     };
 
-    return apiSaveUserPreferences(userId, [preference]);
+    return apiSaveUserPreferences(baseUrl, userId, [preference]);
 };
 
 /**
  * Save the user's teams order preference.
+ * @param {string} baseUrl - the base server URL
  * @param {string} userId - the user ID
  * @param {Array} orderedTeamIds - ordered array of team IDs
  * @return {string} returns {status} on success or {error, status} on error
  */
-export const apiSaveTeamsOrderPreference = (userId, orderedTeamIds = []) => {
+export const apiSaveTeamsOrderPreference = (baseUrl, userId, orderedTeamIds = []) => {
     const preference = {
         user_id: userId,
         category: 'teams_order',
@@ -64,20 +67,21 @@ export const apiSaveTeamsOrderPreference = (userId, orderedTeamIds = []) => {
         value: orderedTeamIds.toString(),
     };
 
-    return apiSaveUserPreferences(userId, [preference]);
+    return apiSaveUserPreferences(baseUrl, userId, [preference]);
 };
 
 /**
  * Save the user's preferences.
  * See https://api.mattermost.com/#operation/UpdatePreferences
+ * @param {string} baseUrl - the base server URL
  * @param {string} userId - the user ID
  * @param {Array} preferences - a list of user's preferences
  * @return {string} returns {status} on success or {error, status} on error
  */
-export const apiSaveUserPreferences = async (userId, preferences = []) => {
+export const apiSaveUserPreferences = async (baseUrl, userId, preferences = []) => {
     try {
         const response = await client.put(
-            `/api/v4/users/${userId}/preferences`,
+            `${baseUrl}/api/v4/users/${userId}/preferences`,
             preferences,
         );
 

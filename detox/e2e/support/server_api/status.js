@@ -19,12 +19,13 @@ import {getResponseFromError} from './common';
 /**
  * Get user status.
  * See https://api.mattermost.com/#operation/GetUserStatus
+ * @param {string} baseUrl - the base server URL
  * @param {string} userId - the user ID
  * @return {Object} returns {userStatus} on success or {error, status} on error
  */
-export const apiGetUserStatus = async (userId) => {
+export const apiGetUserStatus = async (baseUrl, userId) => {
     try {
-        const response = await client.get(`/api/v4/users/${userId}/status`);
+        const response = await client.get(`${baseUrl}/api/v4/users/${userId}/status`);
 
         return {userStatus: response.data};
     } catch (err) {
@@ -35,14 +36,15 @@ export const apiGetUserStatus = async (userId) => {
 /**
  * Update user status.
  * See https://api.mattermost.com/#operation/UpdateUserStatus
+ * @param {string} baseUrl - the base server URL
  * @param {string} userId - the user ID
  * @param {string} status - the user status, can be online, away, offline and dnd
  * @return {Object} returns {userStatus} on success or {error, status} on error
  */
-export const apiUpdateUserStatus = async (userId, status = 'online') => {
+export const apiUpdateUserStatus = async (baseUrl, userId, status = 'online') => {
     try {
         const response = await client.put(
-            `/api/v4/users/${userId}/status`,
+            `${baseUrl}/api/v4/users/${userId}/status`,
             {user_id: userId, status},
         );
 

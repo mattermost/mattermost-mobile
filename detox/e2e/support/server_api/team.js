@@ -22,14 +22,15 @@ import {getResponseFromError} from './common';
 /**
  * Add user to team.
  * See https://api.mattermost.com/#operation/AddTeamMember
+ * @param {string} baseUrl - the base server URL
  * @param {string} userId - The ID of user to add into the team
  * @param {string} teamId - The team ID
  * @return {Object} returns {member} on success or {error, status} on error
  */
-export const apiAddUserToTeam = async (userId, teamId) => {
+export const apiAddUserToTeam = async (baseUrl, userId, teamId) => {
     try {
         const response = await client.post(
-            `/api/v4/teams/${teamId}/members`,
+            `${baseUrl}/api/v4/teams/${teamId}/members`,
             {team_id: teamId, user_id: userId},
         );
 
@@ -42,15 +43,16 @@ export const apiAddUserToTeam = async (userId, teamId) => {
 /**
  * Create a team.
  * See https://api.mattermost.com/#operation/CreateTeam
+ * @param {string} baseUrl - the base server URL
  * @param {string} option.type - 'O' (default) for open, 'I' for invite only
  * @param {string} option.prefix - prefix to name and display name
  * @param {Object} option.team - team object to be created
  * @return {Object} returns {team} on success or {error, status} on error
  */
-export const apiCreateTeam = async ({type = 'O', prefix = 'team', team = null} = {}) => {
+export const apiCreateTeam = async (baseUrl, {type = 'O', prefix = 'team', team = null} = {}) => {
     try {
         const response = await client.post(
-            '/api/v4/teams',
+            `${baseUrl}/api/v4/teams`,
             team || generateRandomTeam(type, prefix),
         );
 
@@ -63,13 +65,14 @@ export const apiCreateTeam = async ({type = 'O', prefix = 'team', team = null} =
 /**
  * Delete a team.
  * See https://api.mattermost.com/#operation/SoftDeleteTeam
+ * @param {string} baseUrl - the base server URL
  * @param {string} teamId - The team ID
  * @return {Object} returns {status} on success or {error, status} on error
  */
-export const apiDeleteTeam = async (teamId) => {
+export const apiDeleteTeam = async (baseUrl, teamId) => {
     try {
         const response = await client.delete(
-            `/api/v4/teams/${teamId}`,
+            `${baseUrl}/api/v4/teams/${teamId}`,
         );
 
         return {status: response.status};
@@ -80,16 +83,17 @@ export const apiDeleteTeam = async (teamId) => {
 
 /**
  * Delete teams.
+ * @param {string} baseUrl - the base server URL
  * @param {Array} teams - array of teams
  */
-export const apiDeleteTeams = async (teams = []) => {
+export const apiDeleteTeams = async (baseUrl, teams = []) => {
     let teamArray = teams;
     if (!teamArray.length > 0) {
-        ({teams: teamArray} = await Team.apiGetTeams());
+        ({teams: teamArray} = await Team.apiGetTeams(baseUrl));
     }
 
     teamArray.forEach(async (team) => {
-        const {status} = await Team.apiDeleteTeam(team.id);
+        const {status} = await Team.apiDeleteTeam(baseUrl, team.id);
         jestExpect(status).toEqual(200);
     });
 };
@@ -97,14 +101,15 @@ export const apiDeleteTeams = async (teams = []) => {
 /**
  * Remove user from team.
  * See https://api.mattermost.com/#operation/RemoveTeamMember
+ * @param {string} baseUrl - the base server URL
  * @param {string} teamId - The team ID
  * @param {string} userId - The user ID to be removed from team
  * @return {Object} returns {status} on success or {error, status} on error
  */
-export const apiDeleteUserFromTeam = async (teamId, userId) => {
+export const apiDeleteUserFromTeam = async (baseUrl, teamId, userId) => {
     try {
         const response = await client.delete(
-            `/api/v4/teams/${teamId}/members/${userId}`,
+            `${baseUrl}/api/v4/teams/${teamId}/members/${userId}`,
         );
 
         return {status: response.status};
@@ -116,11 +121,12 @@ export const apiDeleteUserFromTeam = async (teamId, userId) => {
 /**
  * Get teams.
  * See https://api.mattermost.com/#operation/GetAllTeams
+ * @param {string} baseUrl - the base server URL
  * @return {Object} returns {teams} on success or {error, status} on error
  */
-export const apiGetTeams = async () => {
+export const apiGetTeams = async (baseUrl) => {
     try {
-        const response = await client.get('/api/v4/teams');
+        const response = await client.get(`${baseUrl}/api/v4/teams`);
 
         return {teams: response.data};
     } catch (err) {
@@ -131,12 +137,13 @@ export const apiGetTeams = async () => {
 /**
  * Get teams for user.
  * See https://api.mattermost.com/#operation/GetTeamsForUser
+ * @param {string} baseUrl - the base server URL
  * @param {string} userId - The user ID
  * @return {Object} returns {teams} on success or {error, status} on error
  */
-export const apiGetTeamsForUser = async (userId = 'me') => {
+export const apiGetTeamsForUser = async (baseUrl, userId = 'me') => {
     try {
-        const response = await client.get(`/api/v4/users/${userId}/teams`);
+        const response = await client.get(`${baseUrl}/api/v4/users/${userId}/teams`);
 
         return {teams: response.data};
     } catch (err) {
@@ -147,6 +154,7 @@ export const apiGetTeamsForUser = async (userId = 'me') => {
 /**
  * Patch a team.
  * See https://api.mattermost.com/#operation/PatchTeam
+ * @param {string} baseUrl - the base server URL
  * @param {string} teamId - The team ID
  * @param {string} patch.display_name - Display name
  * @param {string} patch.description - Description
@@ -156,10 +164,10 @@ export const apiGetTeamsForUser = async (userId = 'me') => {
  * @param {boolean} patch.group_constrained - Group constrained
  * @return {Object} returns {team} on success or {error, status} on error
  */
-export const apiPatchTeam = async (teamId, teamData) => {
+export const apiPatchTeam = async (baseUrl, teamId, teamData) => {
     try {
         const response = await client.put(
-            `/api/v4/teams/${teamId}/patch`,
+            `${baseUrl}/api/v4/teams/${teamId}/patch`,
             teamData,
         );
 
@@ -171,6 +179,7 @@ export const apiPatchTeam = async (teamId, teamData) => {
 
 /**
  * Patch teams.
+ * @param {string} baseUrl - the base server URL
  * @param {string} patch.display_name - Display name
  * @param {string} patch.description - Description
  * @param {string} patch.company_name - Company name
@@ -179,14 +188,14 @@ export const apiPatchTeam = async (teamId, teamData) => {
  * @param {boolean} patch.group_constrained - Group constrained
  * @param {Array} teams - array of teams
  */
-export const apiPatchTeams = async (teamData, teams = []) => {
+export const apiPatchTeams = async (baseUrl, teamData, teams = []) => {
     let teamArray = teams;
     if (!teamArray.length > 0) {
-        ({teams: teamArray} = await Team.apiGetTeams());
+        ({teams: teamArray} = await Team.apiGetTeams(baseUrl));
     }
 
     teamArray.forEach(async (team) => {
-        await Team.apiPatchTeam(team.id, teamData);
+        await Team.apiPatchTeam(baseUrl, team.id, teamData);
     });
 };
 
