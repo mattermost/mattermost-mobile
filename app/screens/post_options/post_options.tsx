@@ -66,7 +66,7 @@ const PostOptions = ({
     const renderContent = () => {
         return (
             <>
-                {canAddReaction && <ReactionBar/>}
+                {canAddReaction && <ReactionBar postId={post.id}/>}
                 {canReply && <ReplyOption/>}
                 {shouldRenderFollow &&
                     <FollowThreadOption
