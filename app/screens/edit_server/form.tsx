@@ -84,20 +84,6 @@ const EditServerForm = ({
     const displayNameRef = useRef<FloatingTextInputRef>(null);
     const styles = getStyleSheet(theme);
 
-    const focus = () => {
-        if (Platform.OS === 'ios') {
-            let offsetY = 160;
-            if (isTablet) {
-                const {width, height} = dimensions;
-                const isLandscape = width > height;
-                offsetY = isLandscape ? 230 : 100;
-            }
-            requestAnimationFrame(() => {
-                keyboardAwareRef.current?.scrollToPosition(0, offsetY);
-            });
-        }
-    };
-
     const onBlur = useCallback(() => {
         if (Platform.OS === 'ios') {
             const reset = !displayNameRef.current?.isFocused();
@@ -110,16 +96,26 @@ const EditServerForm = ({
     const onUpdate = useCallback(() => {
         Keyboard.dismiss();
         handleUpdate();
-    }, [buttonDisabled, connecting, displayName, theme]);
+    }, [buttonDisabled, connecting, displayName, handleUpdate, theme]);
 
     const onFocus = useCallback(() => {
-        focus();
-    }, [dimensions]);
+        if (Platform.OS === 'ios') {
+            let offsetY = 160;
+            if (isTablet) {
+                const {width, height} = dimensions;
+                const isLandscape = width > height;
+                offsetY = isLandscape ? 230 : 100;
+            }
+            requestAnimationFrame(() => {
+                keyboardAwareRef.current?.scrollToPosition(0, offsetY);
+            });
+        }
+    }, [dimensions, isTablet]);
 
     useEffect(() => {
         if (Platform.OS === 'ios' && isTablet) {
             if (displayNameRef.current?.isFocused()) {
-                focus();
+                onFocus();
             } else {
                 keyboardAwareRef.current?.scrollToPosition(0, 0);
             }

@@ -26,6 +26,20 @@ interface ServerProps {
     theme: Theme;
 }
 
+const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
+    appInfo: {
+        color: changeOpacity(theme.centerChannelColor, 0.56),
+    },
+    flex: {
+        flex: 1,
+    },
+    scrollContainer: {
+        alignItems: 'center',
+        height: '100%',
+        justifyContent: 'center',
+    },
+}));
+
 const EditServer = ({closeButtonId, componentId, server, theme}: ServerProps) => {
     const intl = useIntl();
     const keyboardAwareRef = useRef<KeyboardAwareScrollView>();
@@ -54,7 +68,7 @@ const EditServer = ({closeButtonId, componentId, server, theme}: ServerProps) =>
         return () => navigationEvents.remove();
     }, []);
 
-    const handleUpdate = async () => {
+    const handleUpdate = useCallback(async () => {
         if (buttonDisabled) {
             return;
         }
@@ -77,7 +91,7 @@ const EditServer = ({closeButtonId, componentId, server, theme}: ServerProps) =>
 
         await DatabaseManager.updateServerDisplayName(server.url, displayName);
         dismissModal({componentId});
-    };
+    }, [buttonDisabled, displayName, displayNameError]);
 
     const handleDisplayNameTextChanged = useCallback((text: string) => {
         setDisplayName(text);
@@ -124,19 +138,5 @@ const EditServer = ({closeButtonId, componentId, server, theme}: ServerProps) =>
         </View>
     );
 };
-
-const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
-    appInfo: {
-        color: changeOpacity(theme.centerChannelColor, 0.56),
-    },
-    flex: {
-        flex: 1,
-    },
-    scrollContainer: {
-        alignItems: 'center',
-        height: '100%',
-        justifyContent: 'center',
-    },
-}));
 
 export default EditServer;
