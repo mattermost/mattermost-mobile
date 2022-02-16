@@ -25,7 +25,7 @@ export const fetchCategories = async (serverUrl: string, teamId: string, fetchOn
         const {categories} = await client.getCategories('me', teamId);
 
         if (!fetchOnly) {
-            storeCategories(serverUrl, categories, false, prune);
+            storeCategories(serverUrl, categories, prune);
         }
 
         return {categories};
