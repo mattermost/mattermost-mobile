@@ -221,7 +221,6 @@ export const fetchPostsForChannel = async (serverUrl: string, channelId: string,
                 const threads: Thread[] = [];
                 data.posts.forEach((post: Post) => {
                     if (!post.root_id && post.type === '') {
-                        console.log(post.message, post.is_following);
                         threads.push({
                             id: post.id,
                             participants: post.participants,
