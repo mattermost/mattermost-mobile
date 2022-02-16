@@ -3,10 +3,10 @@
 
 import React, {useCallback} from 'react';
 import {useIntl} from 'react-intl';
-import {DeviceEventEmitter, useWindowDimensions, View} from 'react-native';
+import {useWindowDimensions, View} from 'react-native';
 
 import CompassIcon from '@components/compass_icon';
-import {Events, Screens} from '@constants';
+import {Screens} from '@constants';
 import {
     LARGE_CONTAINER_SIZE,
     LARGE_ICON_SIZE,
@@ -16,8 +16,7 @@ import {
     SMALL_ICON_SIZE,
 } from '@constants/reaction_picker';
 import {useTheme} from '@context/theme';
-import {showModal} from '@screens/navigation';
-import EphemeralStore from '@store/ephemeral_store';
+import {dismissBottomSheet, showModal} from '@screens/navigation';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 
 import PickReaction from './components/pick_reaction';
@@ -52,8 +51,7 @@ const ReactionBar = ({recentEmojis = []}: QuickReactionProps) => {
     }, []);
 
     const openEmojiPicker = useCallback(async () => {
-        DeviceEventEmitter.emit(Events.CLOSE_BOTTOM_SHEET);
-        await EphemeralStore.waitUntilScreensIsRemoved(Screens.POST_OPTIONS);
+        await dismissBottomSheet(Screens.POST_OPTIONS);
 
         const closeButton = CompassIcon.getImageSourceSync('close', 24, theme.sidebarHeaderTextColor);
         const screen = Screens.EMOJI_PICKER;

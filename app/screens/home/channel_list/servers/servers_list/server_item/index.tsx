@@ -192,7 +192,7 @@ const ServerItem = ({isActive, server}: Props) => {
 
     const onServerPressed = useCallback(async () => {
         if (isActive) {
-            DeviceEventEmitter.emit(Events.CLOSE_BOTTOM_SHEET);
+            dismissBottomSheet();
             return;
         }
 

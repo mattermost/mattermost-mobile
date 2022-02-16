@@ -3,15 +3,14 @@
 
 import React, {useCallback} from 'react';
 import {useIntl} from 'react-intl';
-import {DeviceEventEmitter, StyleSheet, View} from 'react-native';
+import {StyleSheet, View} from 'react-native';
 
 import {removePost} from '@actions/local/post';
 import CompassIcon from '@components/compass_icon';
 import SlideUpPanelItem, {ITEM_HEIGHT} from '@components/slide_up_panel_item';
 import TouchableWithFeedback from '@components/touchable_with_feedback';
-import {Events} from '@constants';
 import {useServerUrl} from '@context/server';
-import {bottomSheet} from '@screens/navigation';
+import {bottomSheet, dismissBottomSheet} from '@screens/navigation';
 
 import type PostModel from '@typings/database/models/servers/post';
 
@@ -46,7 +45,7 @@ const Failed = ({post, theme}: FailedProps) => {
                     <SlideUpPanelItem
                         icon='send-outline'
                         onPress={() => {
-                            DeviceEventEmitter.emit(Events.CLOSE_BOTTOM_SHEET);
+                            dismissBottomSheet();
                             retryPost(serverUrl, post);
                         }}
                         testID='post.failed.retry'
@@ -56,7 +55,7 @@ const Failed = ({post, theme}: FailedProps) => {
                         destructive={true}
                         icon='close-circle-outline'
                         onPress={() => {
-                            DeviceEventEmitter.emit(Events.CLOSE_BOTTOM_SHEET);
+                            dismissBottomSheet();
                             removePost(serverUrl, post);
                         }}
                         testID='post.failed.delete'

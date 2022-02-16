@@ -3,13 +3,12 @@
 
 import React, {useCallback} from 'react';
 import {useIntl} from 'react-intl';
-import {DeviceEventEmitter} from 'react-native';
 
 import SlideUpPanelItem from '@components/slide_up_panel_item';
-import {Events} from '@constants';
 import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
 import BottomSheetContent from '@screens/bottom_sheet/content';
+import {dismissBottomSheet} from '@screens/navigation';
 import {
     makeStyleSheetFromTheme,
 
@@ -49,17 +48,17 @@ export default function DropdownSlideup({
     };
 
     const handlePublicPress = useCallback(() => {
-        DeviceEventEmitter.emit(Events.CLOSE_BOTTOM_SHEET);
+        dismissBottomSheet();
         onPress(PUBLIC);
     }, [onPress]);
 
     const handleArchivedPress = useCallback(() => {
-        DeviceEventEmitter.emit(Events.CLOSE_BOTTOM_SHEET);
+        dismissBottomSheet();
         onPress(ARCHIVED);
     }, [onPress]);
 
     const handleSharedPress = useCallback(() => {
-        DeviceEventEmitter.emit(Events.CLOSE_BOTTOM_SHEET);
+        dismissBottomSheet();
         onPress(SHARED);
     }, [onPress]);
 
