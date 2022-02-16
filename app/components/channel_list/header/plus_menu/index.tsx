@@ -3,23 +3,25 @@
 
 import React, {useCallback} from 'react';
 import {useIntl} from 'react-intl';
-import {DeviceEventEmitter} from 'react-native';
 
 import CompassIcon from '@components/compass_icon';
-import {Events, Screens} from '@constants';
+import {Screens} from '@constants';
 import {useTheme} from '@context/theme';
-import {showModal} from '@screens/navigation';
-import EphemeralStore from '@store/ephemeral_store';
+import {dismissBottomSheet, showModal} from '@screens/navigation';
 
 import PlusMenuItem from './item';
 
-const PlusMenuList = () => {
+type Props = {
+    canCreateChannels: boolean;
+    canJoinChannels: boolean;
+}
+
+const PlusMenuList = ({canCreateChannels, canJoinChannels}: Props) => {
     const intl = useIntl();
     const theme = useTheme();
 
     const browseChannels = useCallback(async () => {
-        DeviceEventEmitter.emit(Events.CLOSE_BOTTOM_SHEET);
-        await EphemeralStore.waitUntilScreensIsRemoved(Screens.BOTTOM_SHEET);
+        await dismissBottomSheet();
 
         const title = intl.formatMessage({id: 'browse_channels.title', defaultMessage: 'More Channels'});
         const closeButton = await CompassIcon.getImageSource('close', 24, theme.sidebarHeaderTextColor);
@@ -39,14 +41,18 @@ const PlusMenuList = () => {
 
     return (
         <>
+            {canJoinChannels &&
             <PlusMenuItem
                 pickerAction='browseChannels'
                 onPress={browseChannels}
             />
+            }
+            {canCreateChannels &&
             <PlusMenuItem
                 pickerAction='createNewChannel'
                 onPress={createNewChannel}
             />
+            }
             <PlusMenuItem
                 pickerAction='openDirectMessage'
                 onPress={openDirectMessage}

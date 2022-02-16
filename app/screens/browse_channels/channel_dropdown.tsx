@@ -3,7 +3,7 @@
 
 import React from 'react';
 import {useIntl} from 'react-intl';
-import {View, Text, Platform} from 'react-native';
+import {View, Text} from 'react-native';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import CompassIcon from '@components/compass_icon';
@@ -72,7 +72,7 @@ export default function ChannelDropdown({
             items += 1;
         }
 
-        const itemsSnap = ((items + 1) * ITEM_HEIGHT) + insets.bottom + TITLE_HEIGHT + Platform.select({ios: ITEM_HEIGHT, default: 0});
+        const itemsSnap = ((items + 1) * ITEM_HEIGHT) + (insets.bottom * 2) + TITLE_HEIGHT;
         bottomSheet({
             title: intl.formatMessage({id: 'browse_channels.dropdownTitle', defaultMessage: 'Show'}),
             renderContent,

@@ -12,7 +12,11 @@ describe('components/channel_list/header', () => {
     it('Channel List Header Component should match snapshot', () => {
         const {toJSON} = renderWithIntl(
             <SafeAreaProvider>
-                <Header displayName={'Test!'}/>
+                <Header
+                    canCreateChannels={true}
+                    canJoinChannels={true}
+                    displayName={'Test!'}
+                />
             </SafeAreaProvider>,
         );
 

@@ -20,9 +20,10 @@ import {typography} from '@utils/typography';
 import PlusMenu from './plus_menu';
 
 type Props = {
+    canCreateChannels: boolean;
+    canJoinChannels: boolean;
     displayName: string;
     iconPad?: boolean;
-
     onHeaderPress?: () => void;
 }
 
@@ -61,7 +62,7 @@ const getStyles = makeStyleSheetFromTheme((theme: Theme) => ({
     },
 }));
 
-const ChannelListHeader = ({displayName, iconPad, onHeaderPress}: Props) => {
+const ChannelListHeader = ({canCreateChannels, canJoinChannels, displayName, iconPad, onHeaderPress}: Props) => {
     const theme = useTheme();
     const isTablet = useIsTablet();
     const intl = useIntl();
@@ -79,14 +80,28 @@ const ChannelListHeader = ({displayName, iconPad, onHeaderPress}: Props) => {
 
     const onPress = useCallback(() => {
         const renderContent = () => {
-            return (<PlusMenu/>);
+            return (
+                <PlusMenu
+                    canCreateChannels={canCreateChannels}
+                    canJoinChannels={canJoinChannels}
+                />
+            );
         };
 
         const closeButtonId = 'close-plus-menu';
+        let items = 1;
+        if (canCreateChannels) {
+            items += 1;
+        }
+
+        if (canJoinChannels) {
+            items += 1;
+        }
+
         bottomSheet({
             closeButtonId,
             renderContent,
-            snapPoints: [(4 * ITEM_HEIGHT) + insets.bottom, 10],
+            snapPoints: [(items * ITEM_HEIGHT) + (insets.bottom * 2), 10],
             theme,
             title: intl.formatMessage({id: 'home.header.plus_menu', defaultMessage: 'Options'}),
         });
