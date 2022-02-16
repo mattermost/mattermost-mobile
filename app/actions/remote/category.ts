@@ -13,7 +13,7 @@ export type CategoriesRequest = {
      error?: unknown;
  }
 
-export const fetchCategories = async (serverUrl: string, teamId: string, fetchOnly = false, prune = false): Promise<CategoriesRequest> => {
+export const fetchCategories = async (serverUrl: string, teamId: string, prune = false, fetchOnly = false): Promise<CategoriesRequest> => {
     let client: Client;
     try {
         client = NetworkManager.getClient(serverUrl);

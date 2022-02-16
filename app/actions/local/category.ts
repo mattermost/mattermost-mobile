@@ -3,9 +3,9 @@
 
 import {Model} from '@nozbe/watermelondb';
 
-import {pluckUnique} from '@app/utils/helpers';
 import DatabaseManager from '@database/manager';
 import {prepareCategories, prepareCategoryChannels, queryCategoriesByTeamIds, queryCategoryById} from '@queries/servers/categories';
+import {pluckUnique} from '@utils/helpers';
 
 export const deleteCategory = async (serverUrl: string, categoryId: string) => {
     const database = DatabaseManager.serverDatabases[serverUrl]?.database;
@@ -22,7 +22,7 @@ export const deleteCategory = async (serverUrl: string, categoryId: string) => {
             });
         }
 
-        return true;
+        return {category};
     } catch (error) {
         // eslint-disable-next-line no-console
         console.log('FAILED TO DELETE CATEGORY', categoryId);

@@ -6,7 +6,7 @@ import {fetchCategories} from '@actions/remote/category';
 import DatabaseManager from '@database/manager';
 import {queryCategoriesById} from '@queries/servers/categories';
 
-type WebsocketMessage = {
+type WebsocketCategoriesMessage = {
     broadcast: {
         team_id: string;
     };
@@ -28,7 +28,7 @@ const addOrUpdateCategories = async (serverUrl: string, categories: CategoryWith
     }
 };
 
-export async function handleCategoryCreatedEvent(serverUrl: string, msg: WebsocketMessage) {
+export async function handleCategoryCreatedEvent(serverUrl: string, msg: WebsocketCategoriesMessage) {
     let category;
     try {
         category = JSON.parse(msg.data.category!);
@@ -40,7 +40,7 @@ export async function handleCategoryCreatedEvent(serverUrl: string, msg: Websock
     }
 }
 
-export async function handleCategoryUpdatedEvent(serverUrl: string, msg: WebsocketMessage) {
+export async function handleCategoryUpdatedEvent(serverUrl: string, msg: WebsocketCategoriesMessage) {
     let categories;
 
     try {
@@ -49,11 +49,11 @@ export async function handleCategoryUpdatedEvent(serverUrl: string, msg: Websock
     } catch (e) {
         // eslint-disable-next-line no-console
         console.log('Category WS: handleCategoryUpdatedEvent', e, msg);
-        fetchCategories(serverUrl, msg.broadcast.team_id, false, true);
+        fetchCategories(serverUrl, msg.broadcast.team_id, true);
     }
 }
 
-export async function handleCategoryDeletedEvent(serverUrl: string, msg: WebsocketMessage) {
+export async function handleCategoryDeletedEvent(serverUrl: string, msg: WebsocketCategoriesMessage) {
     try {
         // Delete the Category
         await deleteCategory(serverUrl, msg.data.category_id);
@@ -66,7 +66,7 @@ export async function handleCategoryDeletedEvent(serverUrl: string, msg: Websock
     }
 }
 
-export async function handleCategoryOrderUpdatedEvent(serverUrl: string, msg: WebsocketMessage) {
+export async function handleCategoryOrderUpdatedEvent(serverUrl: string, msg: WebsocketCategoriesMessage) {
     try {
         const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
 
