@@ -71,7 +71,7 @@ const Header = ({setTab, tab, teamId, testID, theme, unreadsCount}: Props) => {
                             {
                                 intl.formatMessage({
                                     id: 'global_threads.allThreads',
-                                    defaultMessage: 'All Your Threads',
+                                    defaultMessage: 'All your threads',
                                 })
                             }
                         </Text>

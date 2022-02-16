@@ -65,7 +65,7 @@ const GlobalThreads = ({currentTeamId}: Props) => {
                 />
             </>
         );
-    }, [tab, theme, appState, currentTeamId]);
+    }, [isLoading, tab, theme, appState, currentTeamId]);
 
     return (
         <SafeAreaView

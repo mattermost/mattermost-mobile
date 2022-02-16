@@ -4,13 +4,11 @@
 import {processThreadsWithPostsFetched, processUpdateTeamThreadsAsRead, processUpdateThreadFollow, processUpdateThreadRead} from '@actions/local/thread';
 import DatabaseManager from '@database/manager';
 
-import type {WebSocketMessage} from '@typings/api/websocket';
-
 export async function handleThreadUpdatedEvent(serverUrl: string, msg: WebSocketMessage): Promise<void> {
     try {
         const thread = JSON.parse(msg.data.thread) as Thread;
         thread.is_following = true; // Mark as following
-        processThreadsWithPostsFetched(serverUrl, [thread]);
+        processThreadsWithPostsFetched(serverUrl, msg.broadcast.team_id, [thread]);
     } catch (error) {
         // Do nothing
     }

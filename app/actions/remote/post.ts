@@ -7,6 +7,7 @@ import {DeviceEventEmitter} from 'react-native';
 import {updateLastPostAt} from '@actions/local/channel';
 import {processPostsFetched, removePost} from '@actions/local/post';
 import {addRecentReaction} from '@actions/local/reactions';
+import {getIsCRTEnabled} from '@app/helpers/api/preference';
 import {ActionType, Events, General, ServerErrors} from '@constants';
 import {SYSTEM_IDENTIFIERS} from '@constants/database';
 import DatabaseManager from '@database/manager';
@@ -215,6 +216,27 @@ export const fetchPostsForChannel = async (serverUrl: string, channelId: string,
                 models.push(...memberModels);
             }
 
+            const isCRTEnabled = await getIsCRTEnabled(operator.database);
+            if (isCRTEnabled) {
+                const threads: Thread[] = [];
+                data.posts.forEach((post: Post) => {
+                    if (!post.root_id && post.type === '') {
+                        console.log(post.message, post.is_following);
+                        threads.push({
+                            id: post.id,
+                            participants: post.participants,
+                            reply_count: post.reply_count,
+                            last_reply_at: post.last_reply_at,
+                            is_following: post.is_following,
+                        } as Thread);
+                    }
+                });
+                const threadModels = await operator.handleThreads({threads, prepareRecordsOnly: true});
+                if (threadModels.length) {
+                    models.push(...threadModels);
+                }
+            }
+
             if (models.length) {
                 await operator.batchRecords(models);
             }
@@ -245,6 +267,10 @@ export const fetchPostsForUnreadChannels = async (serverUrl: string, channels: C
 };
 
 export const fetchPosts = async (serverUrl: string, channelId: string, page = 0, perPage = General.POST_CHUNK_SIZE, fetchOnly = false): Promise<PostsRequest> => {
+    const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
+    if (!operator) {
+        return {error: `${serverUrl} database not found`};
+    }
     let client: Client;
     try {
         client = NetworkManager.getClient(serverUrl);
@@ -253,7 +279,8 @@ export const fetchPosts = async (serverUrl: string, channelId: string, page = 0,
     }
 
     try {
-        const data = await client.getPosts(channelId, page, perPage);
+        const isCRTEnabled = await getIsCRTEnabled(operator.database);
+        const data = await client.getPosts(channelId, page, perPage, isCRTEnabled, isCRTEnabled);
         return processPostsFetched(serverUrl, ActionType.POSTS.RECEIVED_IN_CHANNEL, data, fetchOnly);
     } catch (error) {
         forceLogoutIfNecessary(serverUrl, error as ClientErrorProps);
@@ -280,7 +307,8 @@ export const fetchPostsBefore = async (serverUrl: string, channelId: string, pos
         if (activeServerUrl === serverUrl) {
             DeviceEventEmitter.emit(Events.LOADING_CHANNEL_POSTS, true);
         }
-        const data = await client.getPostsBefore(channelId, postId, 0, perPage);
+        const isCRTEnabled = await getIsCRTEnabled(operator.database);
+        const data = await client.getPostsBefore(channelId, postId, 0, perPage, isCRTEnabled, isCRTEnabled);
         const result = await processPostsFetched(serverUrl, ActionType.POSTS.RECEIVED_BEFORE, data, true);
 
         if (activeServerUrl === serverUrl) {
@@ -321,6 +349,11 @@ export const fetchPostsBefore = async (serverUrl: string, channelId: string, pos
 };
 
 export const fetchPostsSince = async (serverUrl: string, channelId: string, since: number, fetchOnly = false): Promise<PostsRequest> => {
+    const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
+    if (!operator) {
+        return {error: `${serverUrl} database not found`};
+    }
+
     let client: Client;
     try {
         client = NetworkManager.getClient(serverUrl);
@@ -329,7 +362,8 @@ export const fetchPostsSince = async (serverUrl: string, channelId: string, sinc
     }
 
     try {
-        const data = await client.getPostsSince(channelId, since);
+        const isCRTEnabled = await getIsCRTEnabled(operator.database);
+        const data = await client.getPostsSince(channelId, since, isCRTEnabled, isCRTEnabled);
         return processPostsFetched(serverUrl, ActionType.POSTS.RECEIVED_SINCE, data, fetchOnly);
     } catch (error) {
         forceLogoutIfNecessary(serverUrl, error as ClientErrorProps);

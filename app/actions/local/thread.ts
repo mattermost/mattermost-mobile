@@ -9,16 +9,7 @@ import DatabaseManager from '@database/manager';
 import type Model from '@nozbe/watermelondb/Model';
 import type ThreadModel from '@typings/database/models/servers/thread';
 
-export const processThreadsFetched = async (serverUrl: string, threads: Thread[]) => {
-    const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
-    if (operator) {
-        await operator.handleThreads({
-            threads,
-        });
-    }
-};
-
-export const processThreadsWithPostsFetched = async (serverUrl: string, threads: Thread[]) => {
+export const processThreadsWithPostsFetched = async (serverUrl: string, teamId: string, threads: Thread[], threadsCount?: Omit<GetUserThreadsResponse, 'threads'>) => {
     const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
     if (operator) {
         const posts: Post[] = [];
@@ -48,6 +39,17 @@ export const processThreadsWithPostsFetched = async (serverUrl: string, threads:
 
         if (threadModels.length) {
             models.push(...threadModels);
+        }
+
+        if (threadsCount) {
+            const teamThreadsCountModel = await operator.handleTeamThreadsCount({
+                data: [{
+                    id: teamId,
+                    ...threadsCount,
+                }],
+                prepareRecordsOnly: true,
+            });
+            models.push(...teamThreadsCountModel);
         }
 
         const userModels = await operator.handleUsers({

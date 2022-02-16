@@ -39,12 +39,19 @@ export const getThreads = async (serverUrl: string, teamId: string, before?: str
 
         const data = await client.getThreads(config.Version, currentUser.id, teamId, before, after, perPage, deleted, unread, since);
 
+        const {threads, ...threadsCountData} = data;
+
         // Mark all fetched threads as following
-        data.threads.forEach((thread: Thread) => {
+        threads.forEach((thread: Thread) => {
             thread.is_following = true;
+            if (unread) {
+                thread.loaded_in_unreads_tab = true;
+            } else {
+                thread.loaded_in_all_threads_tab = true;
+            }
         });
 
-        await processThreadsWithPostsFetched(serverUrl, data.threads);
+        await processThreadsWithPostsFetched(serverUrl, teamId, threads, threadsCountData);
 
         return {data};
     } catch (error) {
@@ -75,7 +82,7 @@ export const getThread = async (serverUrl: string, teamId: string, threadId: str
 
         const thread = await client.getThread(currentUser.id, teamId, threadId, extended);
 
-        await processThreadsWithPostsFetched(serverUrl, [thread]);
+        await processThreadsWithPostsFetched(serverUrl, teamId, [thread]);
 
         return {data: thread};
     } catch (error) {

@@ -10,7 +10,7 @@ import {map, switchMap} from 'rxjs/operators';
 
 import {Preferences} from '@constants';
 import {MM_TABLES, SYSTEM_IDENTIFIERS} from '@constants/database';
-import {getIsCRTEnabled, getPreferenceAsBool} from '@helpers/api/preference';
+import {processIsCRTEnabled, getPreferenceAsBool} from '@helpers/api/preference';
 import {getTimezone} from '@utils/user';
 
 import ChannelPostList from './channel_post_list';
@@ -30,7 +30,7 @@ const withIsCRTEnabled = withObservables([], ({database}: WithDatabaseArgs) => {
     const preferences = database.get<PreferenceModel>(PREFERENCE).query(Q.where('category', Preferences.CATEGORY_DISPLAY_SETTINGS)).observe();
     const isCRTEnabled = combineLatest([config, preferences]).pipe(
         map(
-            ([{value: cfg}, prefs]) => getIsCRTEnabled(prefs, cfg),
+            ([{value: cfg}, prefs]) => processIsCRTEnabled(prefs, cfg),
         ),
     );
 

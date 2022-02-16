@@ -48,7 +48,7 @@ const ThreadsList = ({currentUserId, isLoading, setTab, tab, teamId, teammateNam
         return (
             <EmptyState
                 intl={intl}
-                isUnreads={true}
+                isUnreads={tab === 'unreads'}
                 theme={theme}
             />
         );
