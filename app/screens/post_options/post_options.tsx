@@ -9,7 +9,7 @@ import {Screens} from '@constants';
 import BottomSheet from '@screens/bottom_sheet';
 import {isSystemMessage} from '@utils/post';
 
-import CopyLinkOption from './components/options/copy_link_option';
+import CopyLinkOption from './components/options/copy_permalink_option';
 import CopyTextOption from './components/options/copy_text_option';
 import DeletePostOption from './components/options/delete_post_option';
 import EditOption from './components/options/edit_option';
@@ -75,9 +75,9 @@ const PostOptions = ({
                     />
                 }
                 {canMarkAsUnread && !isSystemPost && (<MarkAsUnreadOption/>)}
-                {canCopyPermalink && <CopyLinkOption/>}
+                {canCopyPermalink && <CopyLinkOption post={post}/>}
                 {!isSystemPost && <SaveOption isSaved={isSaved}/>}
-                {canCopyText && <CopyTextOption/>}
+                {canCopyText && <CopyTextOption postMessage={post.message}/>}
                 {canPin && <PinChannelOption isPostPinned={post.isPinned}/>}
                 {canEdit && <EditOption/>}
                 {canDelete && <DeletePostOption/>}
