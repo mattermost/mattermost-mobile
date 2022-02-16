@@ -13,7 +13,7 @@ import ServerDatabaseMigrations from '@database/migration/server';
 import {InfoModel, GlobalModel, ServersModel} from '@database/models/app';
 import {CategoryModel, CategoryChannelModel, ChannelModel, ChannelInfoModel, ChannelMembershipModel, CustomEmojiModel, DraftModel, FileModel,
 
-    // GroupModel, GroupMembershipModel, GroupsChannelModel, GroupsTeamModel, MyChannelModel, MyChannelSettingsModel, MyTeamModel,
+    // groups: MM-41882 GroupModel, GroupMembershipModel, GroupsChannelModel, GroupsTeamModel, MyChannelModel, MyChannelSettingsModel, MyTeamModel,
     MyChannelModel, MyChannelSettingsModel, MyTeamModel,
     PostModel, PostsInChannelModel, PostsInThreadModel, PreferenceModel, ReactionModel, RoleModel,
     SlashCommandModel, SystemModel, TeamModel, TeamChannelHistoryModel, TeamMembershipModel, TeamSearchHistoryModel,
@@ -51,7 +51,7 @@ class DatabaseManager {
         this.serverModels = [
             CategoryModel, CategoryChannelModel, ChannelModel, ChannelInfoModel, ChannelMembershipModel, CustomEmojiModel, DraftModel, FileModel,
 
-            // GroupModel, GroupMembershipModel, GroupsChannelModel, GroupsTeamModel, MyChannelModel, MyChannelSettingsModel, MyTeamModel,
+            // groups: MM-41882 GroupModel, GroupMembershipModel, GroupsChannelModel, GroupsTeamModel, MyChannelModel, MyChannelSettingsModel, MyTeamModel,
             MyChannelModel, MyChannelSettingsModel, MyTeamModel,
             PostModel, PostsInChannelModel, PostsInThreadModel, PreferenceModel, ReactionModel, RoleModel,
             SlashCommandModel, SystemModel, TeamModel, TeamChannelHistoryModel, TeamMembershipModel, TeamSearchHistoryModel,

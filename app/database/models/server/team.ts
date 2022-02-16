@@ -7,7 +7,7 @@ import Model, {Associations} from '@nozbe/watermelondb/Model';
 
 import {MM_TABLES} from '@constants/database';
 
-// import type GroupsTeamModel from '@typings/database/models/servers/groups_team';
+// groups: MM-41882 import type GroupsTeamModel from '@typings/database/models/servers/groups_team';
 import type ChannelModel from '@typings/database/models/servers/channel';
 import type MyTeamModel from '@typings/database/models/servers/my_team';
 import type SlashCommandModel from '@typings/database/models/servers/slash_command';
@@ -18,7 +18,7 @@ import type TeamSearchHistoryModel from '@typings/database/models/servers/team_s
 const {
     CHANNEL,
 
-    // GROUPS_TEAM,
+    // groups: MM-41882 GROUPS_TEAM,
     TEAM,
     MY_TEAM,
     SLASH_COMMAND,
@@ -41,7 +41,7 @@ export default class TeamModel extends Model {
         [CHANNEL]: {type: 'has_many', foreignKey: 'team_id'},
 
         /** A TEAM has a 1:N relationship with GROUPS_TEAM. A TEAM can possess multiple groups */
-        // [GROUPS_TEAM]: {type: 'has_many', foreignKey: 'team_id'},
+        // groups: MM-41882 [GROUPS_TEAM]: {type: 'has_many', foreignKey: 'team_id'},
 
         /** A TEAM can be associated to one MY_TEAM (relationship is 1:1) */
         [MY_TEAM]: {type: 'has_many', foreignKey: 'id'},
@@ -87,7 +87,7 @@ export default class TeamModel extends Model {
     @children(CHANNEL) channels!: ChannelModel[];
 
     /** groupsTeam : All the groups associated with this team */
-    // @children(GROUPS_TEAM) groupsTeam!: GroupsTeamModel[];
+    // groups: MM-41882 @children(GROUPS_TEAM) groupsTeam!: GroupsTeamModel[];
 
     /** myTeam : Retrieves additional information about the team that this user is possibly part of. */
     @immutableRelation(MY_TEAM, 'id') myTeam!: Relation<MyTeamModel>;

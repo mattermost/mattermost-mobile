@@ -112,7 +112,7 @@ export const prepareDeleteChannel = async (channel: ChannelModel): Promise<Model
         channel.members,
         channel.drafts,
 
-        // channel.groupsChannel,
+        // groups: MM-41882 channel.groupsChannel,
         channel.postsInChannel,
     ];
     for await (const children of associatedChildren) {

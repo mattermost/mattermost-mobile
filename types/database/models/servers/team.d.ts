@@ -45,7 +45,7 @@ export default class TeamModel extends Model {
     channels: Query<ChannelModel>;
 
     /** groupsTeam : All the groups associated with this team */
-    // groupsTeam: Query<GroupsTeamModel>;
+    // groups: MM-41882 groupsTeam: Query<GroupsTeamModel>;
 
     /** myTeam : Retrieves additional information about the team that this user is possibly part of.  This query might yield no result if the user isn't part of a team. */
     myTeam: Relation<MyTeamModel>;

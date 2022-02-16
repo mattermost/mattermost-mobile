@@ -7,7 +7,7 @@ import Model, {Associations} from '@nozbe/watermelondb/Model';
 
 import {MM_TABLES} from '@constants/database';
 
-// import type GroupsChannelModel from '@typings/database/models/servers/groups_channel';
+// groups: MM-41882 import type GroupsChannelModel from '@typings/database/models/servers/groups_channel';
 import type ChannelInfoModel from '@typings/database/models/servers/channel_info';
 import type ChannelMembershipModel from '@typings/database/models/servers/channel_membership';
 import type DraftModel from '@typings/database/models/servers/draft';
@@ -25,7 +25,7 @@ const {
     CHANNEL_MEMBERSHIP,
     DRAFT,
 
-    // GROUPS_CHANNEL,
+    // groups: MM-41882 GROUPS_CHANNEL,
     MY_CHANNEL,
     MY_CHANNEL_SETTINGS,
     POSTS_IN_CHANNEL,
@@ -54,7 +54,7 @@ export default class ChannelModel extends Model {
         [DRAFT]: {type: 'has_many', foreignKey: 'channel_id'},
 
         /** A CHANNEL can be associated with multiple GROUPS_CHANNEL  (relationship is 1:N) */
-        // [GROUPS_CHANNEL]: {type: 'has_many', foreignKey: 'channel_id'},
+        // groups: MM-41882 [GROUPS_CHANNEL]: {type: 'has_many', foreignKey: 'channel_id'},
 
         /** A CHANNEL can be associated with multiple POSTS_IN_CHANNEL (relationship is 1:N) */
         [POSTS_IN_CHANNEL]: {type: 'has_many', foreignKey: 'channel_id'},
@@ -112,7 +112,7 @@ export default class ChannelModel extends Model {
     @children(DRAFT) drafts!: DraftModel[];
 
     /** groupsChannel : Every group contained in this channel */
-    // @children(GROUPS_CHANNEL) groupsChannel!: GroupsChannelModel[];
+    // groups: MM-41882 @children(GROUPS_CHANNEL) groupsChannel!: GroupsChannelModel[];
 
     /** posts : All posts made in that channel */
     @children(POST) posts!: PostModel[];

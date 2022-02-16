@@ -23,21 +23,21 @@ type Draft = {
     root_id: string;
 };
 
-type GroupMembership = {
-    id?: string;
-    user_id: string;
-    group_id: string;
-};
+// groups: MM-41882 type GroupMembership = {
+// groups: MM-41882     id?: string;
+// groups: MM-41882     user_id: string;
+// groups: MM-41882     group_id: string;
+// groups: MM-41882 };
 
-// type GroupChannelRelation = {
-//     channel_id: string;
-//     group_id: string;
-// }
+// groups: MM-41882 type GroupChannelRelation = {
+// groups: MM-41882     channel_id: string;
+// groups: MM-41882     group_id: string;
+// groups: MM-41882 }
 
-// type GroupTeamRelation = {
-//     group_id: string;
-//     team_id: string;
-// }
+// groups: MM-41882 type GroupTeamRelation = {
+// groups: MM-41882     group_id: string;
+// groups: MM-41882     team_id: string;
+// groups: MM-41882 }
 
 type MyTeam = {
     id: string;
@@ -105,10 +105,10 @@ type RawValue =
   | Draft
   | FileInfo
 
-  // | Group
-  // | GroupMembership
-  // | GroupChannel
-  // | GroupTeam
+  // groups: MM-41882 | Group
+  // groups: MM-41882 | GroupMembership
+  // groups: MM-41882 | GroupChannel
+  // groups: MM-41882 | GroupTeam
   | IdValue
   | Metadata
   | MyTeam

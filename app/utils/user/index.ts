@@ -10,8 +10,8 @@ import {UserModel} from '@database/models/server';
 import {DEFAULT_LOCALE, getLocalizedMessage, t} from '@i18n';
 import {toTitleCase} from '@utils/helpers';
 
-// import type GroupModel from '@typings/database/models/servers/group';
-// import type GroupMembershipModel from '@typings/database/models/servers/group_membership';
+// groups: MM-41882 import type GroupModel from '@typings/database/models/servers/group';
+// groups: MM-41882 import type GroupMembershipModel from '@typings/database/models/servers/group_membership';
 import type {IntlShape} from 'react-intl';
 
 export function displayUsername(user?: UserProfile | UserModel, locale?: string, teammateDisplayNameSetting?: string, useFallbackUsername = true) {
@@ -103,21 +103,21 @@ export const getUsersByUsername = (users: UserModel[]) => {
     return usersByUsername;
 };
 
-// export const getUserMentionKeys = (user: UserModel, groups: GroupModel[], userGroups: GroupMembershipModel[]) => {
+// groups: MM-41882 export const getUserMentionKeys = (user: UserModel, groups: GroupModel[], userGroups: GroupMembershipModel[]) => {
 export const getUserMentionKeys = (user: UserModel) => {
     const keys = user.mentionKeys;
 
-    // if (groups.length && userGroups.length) {
-    //     const groupMentions = userGroups.reduce((result: Array<{key: string}>, ug: GroupMembershipModel) => {
-    //         const group = groups.find((g) => ug.groupId === g.id);
-    //         if (group) {
-    //             result.push({key: `@${group.name}`});
-    //         }
-    //         return result;
-    //     }, []);
-    //
-    //     keys.push(...groupMentions);
-    // }
+    // groups: MM-41882 if (groups.length && userGroups.length) {
+    // groups: MM-41882     const groupMentions = userGroups.reduce((result: Array<{key: string}>, ug: GroupMembershipModel) => {
+    // groups: MM-41882         const group = groups.find((g) => ug.groupId === g.id);
+    // groups: MM-41882         if (group) {
+    // groups: MM-41882             result.push({key: `@${group.name}`});
+    // groups: MM-41882         }
+    // groups: MM-41882         return result;
+    // groups: MM-41882     }, []);
+    // groups: MM-41882
+    // groups: MM-41882     keys.push(...groupMentions);
+    // groups: MM-41882 }
 
     return keys;
 };

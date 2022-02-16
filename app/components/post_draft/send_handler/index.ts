@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-// import {Q} from '@nozbe/watermelondb';
+// groups: MM-41882 import {Q} from '@nozbe/watermelondb';
 import {withDatabase} from '@nozbe/watermelondb/DatabaseProvider';
 import withObservables from '@nozbe/with-observables';
 import {combineLatest, of as of$, from as from$} from 'rxjs';
@@ -14,7 +14,7 @@ import {hasPermissionForChannel} from '@utils/role';
 
 import SendHandler from './send_handler';
 
-// import type GroupModel from '@typings/database/models/servers/group';
+// groups: MM-41882 import type GroupModel from '@typings/database/models/servers/group';
 import type {WithDatabaseArgs} from '@typings/database/database';
 import type ChannelModel from '@typings/database/models/servers/channel';
 import type ChannelInfoModel from '@typings/database/models/servers/channel_info';
@@ -22,7 +22,7 @@ import type CustomEmojiModel from '@typings/database/models/servers/custom_emoji
 import type SystemModel from '@typings/database/models/servers/system';
 import type UserModel from '@typings/database/models/servers/user';
 
-// const {SERVER: {SYSTEM, USER, CHANNEL, GROUP, GROUPS_TEAM, GROUPS_CHANNEL, CUSTOM_EMOJI}} = MM_TABLES;
+// groups: MM-41882 const {SERVER: {SYSTEM, USER, CHANNEL, GROUP, GROUPS_TEAM, GROUPS_CHANNEL, CUSTOM_EMOJI}} = MM_TABLES;
 const {SERVER: {SYSTEM, USER, CHANNEL, CUSTOM_EMOJI}} = MM_TABLES;
 
 type OwnProps = {
@@ -76,26 +76,26 @@ const enhanced = withObservables([], (ownProps: WithDatabaseArgs & OwnProps) => 
         }),
     );
 
-    // const license = database.get<SystemModel>(SYSTEM).findAndObserve(SYSTEM_IDENTIFIERS.LICENSE).pipe(
-    //     switchMap(({value}) => of$(value as ClientLicense)),
-    // );
+    // groups: MM-41882 const license = database.get<SystemModel>(SYSTEM).findAndObserve(SYSTEM_IDENTIFIERS.LICENSE).pipe(
+    // groups: MM-41882     switchMap(({value}) => of$(value as ClientLicense)),
+    // groups: MM-41882 );
 
-    // const useGroupMentions = combineLatest([channel, currentUser, license]).pipe(
-    //     switchMap(([c, u, l]) => {
-    //         if (!c || l?.IsLicensed !== 'true') {
-    //             return of$(false);
-    //         }
-    //
-    //         return from$(hasPermissionForChannel(c, u, Permissions.USE_GROUP_MENTIONS, true));
-    //     }),
-    // );
+    // groups: MM-41882 const useGroupMentions = combineLatest([channel, currentUser, license]).pipe(
+    // groups: MM-41882     switchMap(([c, u, l]) => {
+    // groups: MM-41882         if (!c || l?.IsLicensed !== 'true') {
+    // groups: MM-41882             return of$(false);
+    // groups: MM-41882         }
+    // groups: MM-41882
+    // groups: MM-41882         return from$(hasPermissionForChannel(c, u, Permissions.USE_GROUP_MENTIONS, true));
+    // groups: MM-41882     }),
+    // groups: MM-41882 );
 
-    // const groupsWithAllowReference = channel.pipe(switchMap(
-    //     (c) => database.get<GroupModel>(GROUP).query(
-    //         Q.experimentalJoinTables([GROUPS_TEAM, GROUPS_CHANNEL]),
-    //         Q.or(Q.on(GROUPS_TEAM, 'team_id', c.teamId), Q.on(GROUPS_CHANNEL, 'channel_id', c.id)),
-    //     ).observeWithColumns(['name'])),
-    // );
+    // groups: MM-41882 const groupsWithAllowReference = channel.pipe(switchMap(
+    // groups: MM-41882     (c) => database.get<GroupModel>(GROUP).query(
+    // groups: MM-41882         Q.experimentalJoinTables([GROUPS_TEAM, GROUPS_CHANNEL]),
+    // groups: MM-41882         Q.or(Q.on(GROUPS_TEAM, 'team_id', c.teamId), Q.on(GROUPS_CHANNEL, 'channel_id', c.id)),
+    // groups: MM-41882     ).observeWithColumns(['name'])),
+    // groups: MM-41882 );
 
     const channelInfo = channel.pipe(switchMap((c) => c.info.observe()));
     const membersCount = channelInfo.pipe(
@@ -113,8 +113,8 @@ const enhanced = withObservables([], (ownProps: WithDatabaseArgs & OwnProps) => 
         userIsOutOfOffice,
         useChannelMentions,
 
-        // useGroupMentions,
-        // groupsWithAllowReference,
+        // groups: MM-41882 useGroupMentions,
+        // groups: MM-41882 groupsWithAllowReference,
         customEmojis,
     };
 });

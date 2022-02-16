@@ -22,8 +22,8 @@ import {getTeammateNameDisplaySetting} from '@helpers/api/preference';
 import {bottomSheet, dismissBottomSheet, showModal} from '@screens/navigation';
 import {displayUsername, getUserMentionKeys, getUsersByUsername} from '@utils/user';
 
-// import type GroupModel from '@typings/database/models/servers/group';
-// import type GroupMembershipModel from '@typings/database/models/servers/group_membership';
+// groups: MM-41882 import type GroupModel from '@typings/database/models/servers/group';
+// groups: MM-41882 import type GroupMembershipModel from '@typings/database/models/servers/group_membership';
 import type {WithDatabaseArgs} from '@typings/database/database';
 import type PreferenceModel from '@typings/database/models/servers/preference';
 import type SystemModel from '@typings/database/models/servers/system';
@@ -34,20 +34,20 @@ type AtMentionProps = {
     database: Database;
     disableAtChannelMentionHighlight?: boolean;
 
-    // groups: GroupModel[];
+    // groups: MM-41882 groups: GroupModel[];
     isSearchResult?: boolean;
     mentionKeys?: Array<{key: string }>;
     mentionName: string;
     mentionStyle: TextStyle;
 
-    // myGroups: GroupMembershipModel[];
+    // groups: MM-41882 myGroups: GroupMembershipModel[];
     onPostPress?: (e: GestureResponderEvent) => void;
     teammateNameDisplay: string;
     textStyle?: StyleProp<TextStyle>;
     users: UserModelType[];
 }
 
-// const {SERVER: {GROUP, GROUP_MEMBERSHIP, PREFERENCE, SYSTEM, USER}} = MM_TABLES;
+// groups: MM-41882 const {SERVER: {GROUP, GROUP_MEMBERSHIP, PREFERENCE, SYSTEM, USER}} = MM_TABLES;
 const {SERVER: {PREFERENCE, SYSTEM, USER}} = MM_TABLES;
 
 const style = StyleSheet.create({
@@ -61,13 +61,13 @@ const AtMention = ({
     database,
     disableAtChannelMentionHighlight,
 
-    // groups,
+    // groups: MM-41882 groups,
     isSearchResult,
     mentionName,
     mentionKeys,
     mentionStyle,
 
-    // myGroups,
+    // groups: MM-41882 myGroups,
     onPostPress,
     teammateNameDisplay,
     textStyle,
@@ -105,16 +105,16 @@ const AtMention = ({
             return [];
         }
 
-        // return getUserMentionKeys(user, groups, myGroups);
+        // groups: MM-41882 return getUserMentionKeys(user, groups, myGroups);
         return getUserMentionKeys(user);
 
-    // }, [currentUserId, groups, mentionKeys, myGroups, user]);
+    // groups: MM-41882 }, [currentUserId, groups, mentionKeys, myGroups, user]);
     }, [currentUserId, mentionKeys, user]);
 
-    // const getGroupFromMentionName = () => {
-    //     const mentionNameTrimmed = mentionName.toLowerCase().replace(/[._-]*$/, '');
-    //     return groups.find((g) => g.name === mentionNameTrimmed);
-    // };
+    // groups: MM-41882 const getGroupFromMentionName = () => {
+    // groups: MM-41882     const mentionNameTrimmed = mentionName.toLowerCase().replace(/[._-]*$/, '');
+    // groups: MM-41882     return groups.find((g) => g.name === mentionNameTrimmed);
+    // groups: MM-41882 };
 
     const goToUserProfile = useCallback(() => {
         const screen = 'UserProfile';
@@ -208,13 +208,13 @@ const AtMention = ({
         isMention = true;
         canPress = true;
     } else {
-        // const group = getGroupFromMentionName();
-        // if (group?.allowReference) {
-        //     highlighted = userMentionKeys.some((item) => item.key === `@${group.name}`);
-        //     isMention = true;
-        //     mention = group.name;
-        //     suffix = mentionName.substring(group.name.length);
-        // } else {
+        // groups: MM-41882 const group = getGroupFromMentionName();
+        // groups: MM-41882 if (group?.allowReference) {
+        // groups: MM-41882     highlighted = userMentionKeys.some((item) => item.key === `@${group.name}`);
+        // groups: MM-41882     isMention = true;
+        // groups: MM-41882     mention = group.name;
+        // groups: MM-41882     suffix = mentionName.substring(group.name.length);
+        // groups: MM-41882 } else {
         const pattern = new RegExp(/\b(all|channel|here)(?:\.\B|_\b|\b)/, 'i');
         const mentionMatch = pattern.exec(mentionName);
 
@@ -227,7 +227,7 @@ const AtMention = ({
             mention = mentionName;
         }
 
-        // }
+        // groups: MM-41882 }
     }
 
     if (canPress) {
@@ -287,8 +287,8 @@ const withAtMention = withObservables(['mentionName'], ({database, mentionName}:
     return {
         currentUserId,
 
-        // groups: database.get(GROUP).query(Q.where('delete_at', Q.eq(0))).observe(),
-        // myGroups: database.get(GROUP_MEMBERSHIP).query().observe(),
+        // groups: MM-41882 groups: database.get(GROUP).query(Q.where('delete_at', Q.eq(0))).observe(),
+        // groups: MM-41882 myGroups: database.get(GROUP_MEMBERSHIP).query().observe(),
         teammateNameDisplay,
         users: database.get(USER).query(
             Q.where('username', Q.like(

@@ -10,10 +10,10 @@ export {default as CustomEmojiModel} from './custom_emoji';
 export {default as DraftModel} from './draft';
 export {default as FileModel} from './file';
 
-// export {default as GroupMembershipModel} from './group_membership';
-// export {default as GroupModel} from './group';
-// export {default as GroupsChannelModel} from './groups_channel';
-// export {default as GroupsTeamModel} from './groups_team';
+// groups: MM-41882 export {default as GroupMembershipModel} from './group_membership';
+// groups: MM-41882 export {default as GroupModel} from './group';
+// groups: MM-41882 export {default as GroupsChannelModel} from './groups_channel';
+// groups: MM-41882 export {default as GroupsTeamModel} from './groups_team';
 export {default as MyChannelModel} from './my_channel';
 export {default as MyChannelSettingsModel} from './my_channel_settings';
 export {default as MyTeamModel} from './my_team';

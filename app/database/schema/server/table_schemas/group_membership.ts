@@ -2,16 +2,16 @@
 // See LICENSE.txt for license information.
 export {};
 
-// import {tableSchema} from '@nozbe/watermelondb';
-//
-// import {MM_TABLES} from '@constants/database';
-//
-// const {GROUP_MEMBERSHIP} = MM_TABLES.SERVER;
-
-// export default tableSchema({
-//     name: GROUP_MEMBERSHIP,
-//     columns: [
-//         {name: 'group_id', type: 'string', isIndexed: true},
-//         {name: 'user_id', type: 'string', isIndexed: true},
-//     ],
-// });
+// groups: MM-41882 import {tableSchema} from '@nozbe/watermelondb';
+// groups: MM-41882
+// groups: MM-41882 import {MM_TABLES} from '@constants/database';
+// groups: MM-41882
+// groups: MM-41882 const {GROUP_MEMBERSHIP} = MM_TABLES.SERVER;
+// groups: MM-41882
+// groups: MM-41882 export default tableSchema({
+// groups: MM-41882     name: GROUP_MEMBERSHIP,
+// groups: MM-41882     columns: [
+// groups: MM-41882         {name: 'group_id', type: 'string', isIndexed: true},
+// groups: MM-41882         {name: 'user_id', type: 'string', isIndexed: true},
+// groups: MM-41882     ],
+// groups: MM-41882 });

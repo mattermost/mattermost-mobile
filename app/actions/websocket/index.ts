@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-// import {fetchGroupsForTeam} from '@actions/remote/group';
+// groups: MM-41882 import {fetchGroupsForTeam} from '@actions/remote/group';
 import {fetchMissingSidebarInfo, switchToChannelById} from '@actions/remote/channel';
 import {AppEntryData, AppEntryError, fetchAppEntryData} from '@actions/remote/entry/common';
 import {fetchPostsForUnreadChannels, fetchPostsSince} from '@actions/remote/post';
@@ -19,7 +19,7 @@ import {queryCommonSystemValues, queryConfig, queryCurrentChannelId, queryWebSoc
 import {deleteMyTeams, queryTeamsById} from '@queries/servers/team';
 import {isTablet} from '@utils/helpers';
 
-// import {handleGroupUpdatedEvent, handleGroupAssociatedToTeam, handleGroupNotAssociatedToTeam, handleGroupAssociatedToChannel, handleGroupNotAssociatedToChannel} from './groups';
+// groups: MM-41882 import {handleGroupUpdatedEvent, handleGroupAssociatedToTeam, handleGroupNotAssociatedToTeam, handleGroupAssociatedToChannel, handleGroupNotAssociatedToChannel} from './groups';
 import {handleCategoryCreatedEvent, handleCategoryDeletedEvent, handleCategoryOrderUpdatedEvent, handleCategoryUpdatedEvent} from './category';
 import {handleChannelDeletedEvent, handleUserAddedToChannelEvent, handleUserRemovedFromChannelEvent} from './channel';
 import {handleNewPostEvent, handlePostDeleted, handlePostEdited, handlePostUnread} from './posts';
@@ -180,9 +180,9 @@ async function doReconnect(serverUrl: string) {
         }
     }
 
-    // if (initialTeamId) {
-    //     fetchGroupsForTeam(serverUrl, initialTeamId, lastDisconnectedAt);
-    // }
+    // groups: MM-41882 if (initialTeamId) {
+    // groups: MM-41882     fetchGroupsForTeam(serverUrl, initialTeamId, lastDisconnectedAt);
+    // groups: MM-41882 }
 
     // defer fetch channels and unread posts for other teams
     if (teamData.teams?.length && teamData.memberships?.length) {
@@ -336,26 +336,26 @@ export async function handleEvent(serverUrl: string, msg: WebSocketMessage) {
         case WebsocketEvents.OPEN_DIALOG:
             break;
 
-            // return dispatch(handleOpenDialogEvent(msg));
-            // case WebsocketEvents.RECEIVED_GROUP:
-            //     handleGroupUpdatedEvent(serverUrl, msg);
-            //     break;
-            //
-            // case WebsocketEvents.RECEIVED_GROUP_ASSOCIATED_TO_TEAM:
-            //     handleGroupAssociatedToTeam(serverUrl, msg);
-            //     break;
-            //
-            // case WebsocketEvents.RECEIVED_GROUP_NOT_ASSOCIATED_TO_TEAM:
-            //     handleGroupNotAssociatedToTeam(serverUrl, msg);
-            //     break;
-            //
-            // case WebsocketEvents.RECEIVED_GROUP_ASSOCIATED_TO_CHANNEL:
-            //     handleGroupAssociatedToChannel(serverUrl, msg);
-            //     break;
-            //
-            // case WebsocketEvents.RECEIVED_GROUP_NOT_ASSOCIATED_TO_CHANNEL:
-            //     handleGroupNotAssociatedToChannel(serverUrl, msg);
-            //     break;
+            // groups: MM-41882 return dispatch(handleOpenDialogEvent(msg));
+            // groups: MM-41882 case WebsocketEvents.RECEIVED_GROUP:
+            // groups: MM-41882     handleGroupUpdatedEvent(serverUrl, msg);
+            // groups: MM-41882     break;
+            // groups: MM-41882
+            // groups: MM-41882 case WebsocketEvents.RECEIVED_GROUP_ASSOCIATED_TO_TEAM:
+            // groups: MM-41882     handleGroupAssociatedToTeam(serverUrl, msg);
+            // groups: MM-41882     break;
+            // groups: MM-41882
+            // groups: MM-41882 case WebsocketEvents.RECEIVED_GROUP_NOT_ASSOCIATED_TO_TEAM:
+            // groups: MM-41882     handleGroupNotAssociatedToTeam(serverUrl, msg);
+            // groups: MM-41882     break;
+            // groups: MM-41882
+            // groups: MM-41882 case WebsocketEvents.RECEIVED_GROUP_ASSOCIATED_TO_CHANNEL:
+            // groups: MM-41882     handleGroupAssociatedToChannel(serverUrl, msg);
+            // groups: MM-41882     break;
+            // groups: MM-41882
+            // groups: MM-41882 case WebsocketEvents.RECEIVED_GROUP_NOT_ASSOCIATED_TO_CHANNEL:
+            // groups: MM-41882     handleGroupNotAssociatedToChannel(serverUrl, msg);
+            // groups: MM-41882     break;
 
         case WebsocketEvents.THREAD_UPDATED:
             break;
