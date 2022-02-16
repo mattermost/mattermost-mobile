@@ -2,13 +2,15 @@
 // See LICENSE.txt for license information.
 
 import {Plugin, System, User} from '@support/server_api';
+import testConfig from '../test_config';
 
 beforeAll(async () => {
     // Login as sysadmin and reset server configuration
-    await System.apiCheckSystemHealth();
-    await User.apiAdminLogin();
-    await System.apiUpdateConfig();
-    await Plugin.apiDisableNonPrepackagedPlugins();
+    const baseUrl = testConfig.siteUrl;
+    await System.apiCheckSystemHealth(baseUrl);
+    await User.apiAdminLogin(baseUrl);
+    await System.apiUpdateConfig(baseUrl);
+    await Plugin.apiDisableNonPrepackagedPlugins(baseUrl);
 
     await device.launchApp({
         newInstance: false,
