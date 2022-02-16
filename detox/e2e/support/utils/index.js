@@ -1,9 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {v4 as uuidv4} from 'uuid';
-
 import testConfig from '@support/test_config';
+import {v4 as uuidv4} from 'uuid';
 
 export * from './email';
 
