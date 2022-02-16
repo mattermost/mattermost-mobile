@@ -3,11 +3,36 @@
 
 import {Model} from '@nozbe/watermelondb';
 
-import {prepareCategories, prepareCategoryChannels} from '@app/queries/servers/categories';
 import DatabaseManager from '@database/manager';
+import {prepareCategories, prepareCategoryChannels, queryCategoriesByTeamIds, queryCategoryById} from '@queries/servers/categories';
+import {pluckUnique} from '@utils/helpers';
 
-export const storeCategories = async (serverUrl: string, categories: CategoryWithChannels[], prepareRecordsOnly = false) => {
+export const deleteCategory = async (serverUrl: string, categoryId: string) => {
+    const database = DatabaseManager.serverDatabases[serverUrl]?.database;
+    if (!database) {
+        return {error: `${serverUrl} database not found`};
+    }
+
+    try {
+        const category = await queryCategoryById(database, categoryId);
+
+        if (category) {
+            await database.write(async () => {
+                await category.destroyPermanently();
+            });
+        }
+
+        return {category};
+    } catch (error) {
+        // eslint-disable-next-line no-console
+        console.log('FAILED TO DELETE CATEGORY', categoryId);
+        return {error};
+    }
+};
+
+export const storeCategories = async (serverUrl: string, categories: CategoryWithChannels[], prune = false, prepareRecordsOnly = false) => {
     const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
+
     if (!operator) {
         return {error: `${serverUrl} database not found`};
     }
@@ -24,6 +49,22 @@ export const storeCategories = async (serverUrl: string, categories: CategoryWit
 
     const models = await Promise.all(modelPromises);
     const flattenedModels = models.flat() as Model[];
+
+    if (prune && categories.length) {
+        const {database} = operator;
+        const remoteCategoryIds = categories.map((cat) => cat.id);
+
+        // If the passed categories have more than one team, we want to update across teams
+        const teamIds = pluckUnique('team_id')(categories) as string[];
+        const localCategories = await queryCategoriesByTeamIds(database, teamIds);
+
+        localCategories.forEach((localCategory) => {
+            if (!remoteCategoryIds.includes(localCategory.id)) {
+                localCategory.prepareDestroyPermanently();
+                flattenedModels.push(localCategory);
+            }
+        });
+    }
 
     if (prepareRecordsOnly) {
         return {models: flattenedModels};
