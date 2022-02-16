@@ -31,6 +31,7 @@ export const sendAddToChannelEphemeralPost = async (serverUrl: string, user: Use
             update_at: timestamp,
             delete_at: 0,
             is_pinned: false,
+            is_following: false,
             original_id: '',
             hashtags: '',
             pending_post_id: '',

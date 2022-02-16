@@ -149,5 +149,5 @@ export const isRecordThreadEqualToRaw = (record: PostModel, raw: Post) => {
 };
 
 export const isRecordTeamThreadsCountEqualToRaw = (record: TeamThreadsCountModel, raw: TeamThreadsCount) => {
-    return raw.team_id === record.id;
+    return raw.id === record.id;
 };

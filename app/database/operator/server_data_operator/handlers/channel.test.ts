@@ -77,7 +77,9 @@ describe('*** Operator: Channel Handlers tests ***', () => {
                 channel_id: 'c',
                 roles: '',
                 msg_count: 0,
+                msg_count_root: 0,
                 mention_count: 0,
+                mention_count_root: 0,
                 last_viewed_at: 0,
                 last_update_at: 0,
                 notify_props: {
@@ -170,7 +172,9 @@ describe('*** Operator: Channel Handlers tests ***', () => {
                 last_viewed_at: 1617311494451,
                 last_update_at: 1617311494451,
                 mention_count: 3,
+                mention_count_root: 0,
                 msg_count: 10,
+                msg_count_root: 0,
                 roles: 'guest',
                 notify_props: {
                     desktop: 'default',

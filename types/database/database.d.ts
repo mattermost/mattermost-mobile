@@ -98,6 +98,11 @@ export type HandleThreadParticipantsArgs = {
   threadsParticipants: ParticipantsPerThread[];
 };
 
+export type HandleTeamThreadsCountArgs = {
+  data: TeamThreadsCount[];
+  prepareRecordsOnly: boolean;
+};
+
 export type SanitizeReactionsArgs = {
   database: Database;
   post_id: string;

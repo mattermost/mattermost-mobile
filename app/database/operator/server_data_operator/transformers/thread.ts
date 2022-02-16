@@ -90,7 +90,7 @@ export const transformTeamThreadsCountRecord = ({action, database, value}: Trans
     const record = value.record as TeamThreadsCountModel;
 
     const fieldsMapper = (threadsCount: TeamThreadsCountModel) => {
-        threadsCount._raw.id = raw.team_id;
+        threadsCount._raw.id = raw.id;
         threadsCount.total = raw.total ?? record?.total;
         threadsCount.totalUnreadMentions = raw.total_unread_mentions ?? record?.totalUnreadMentions;
         threadsCount.totalUnreadThreads = raw.total_unread_threads ?? record?.totalUnreadThreads;
