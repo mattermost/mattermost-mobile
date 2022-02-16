@@ -2,6 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {Plugin, System, User} from '@support/server_api';
+
 import testConfig from '../test_config';
 
 beforeAll(async () => {
