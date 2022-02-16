@@ -3,7 +3,7 @@
 
 import {Plugin, System, User} from '@support/server_api';
 
-import testConfig from '../test_config';
+import testConfig from '@support/test_config';
 
 beforeAll(async () => {
     // Login as sysadmin and reset server configuration
