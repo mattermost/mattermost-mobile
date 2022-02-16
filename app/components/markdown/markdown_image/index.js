@@ -4,12 +4,14 @@
 import {connect} from 'react-redux';
 
 import {getCurrentUrl} from '@mm-redux/selectors/entities/general';
+import {getTheme} from '@mm-redux/selectors/entities/preferences';
 
 import MarkdownImage from './markdown_image';
 
 function mapStateToProps(state) {
     return {
         serverURL: getCurrentUrl(state),
+        theme: getTheme(state),
     };
 }
 
