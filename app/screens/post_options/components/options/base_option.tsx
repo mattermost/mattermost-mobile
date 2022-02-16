@@ -42,20 +42,13 @@ const BaseOption = ({
     const theme = useTheme();
     const styles = getStyleSheet(theme);
 
-    const labelStyles = useMemo(() => {
-        if (isDestructive) {
-            return [styles.label, styles.destructive];
-        }
-        return styles.label;
-    }, [isDestructive, styles.label, styles.destructive]);
-
     const label = useMemo(() => (
         <FormattedText
             id={i18nId}
             defaultMessage={defaultMessage}
-            style={labelStyles}
+            style={[styles.label, isDestructive && styles.destructive]}
         />
-    ), [i18nId, defaultMessage, labelStyles]);
+    ), [i18nId, defaultMessage, theme]);
 
     return (
         <MenuItem
