@@ -21,8 +21,8 @@ import {useTheme} from '@context/theme';
 import {dismissBottomSheet, showModal} from '@screens/navigation';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 
-import PickReaction from './components/pick_reaction';
-import Reaction from './components/reaction';
+import PickReaction from './pick_reaction';
+import Reaction from './reaction';
 
 type QuickReactionProps = {
     recentEmojis: string[];
