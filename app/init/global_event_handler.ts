@@ -23,6 +23,11 @@ import {deleteFileCache} from '@utils/file';
 
 type LinkingCallbackArg = {url: string};
 
+type LogoutCallbackArg = {
+    serverUrl: string;
+    removeServer: boolean;
+}
+
 class GlobalEventHandler {
     JavascriptAndNativeErrorHandler: jsAndNativeErrorHandler | undefined;
 
@@ -83,7 +88,7 @@ class GlobalEventHandler {
         }
     };
 
-    onLogout = async (serverUrl: string) => {
+    onLogout = async ({serverUrl, removeServer}: LogoutCallbackArg) => {
         await removeServerCredentials(serverUrl);
         const channelIds = await selectAllMyChannelIds(serverUrl);
         PushNotifications.cancelChannelsNotifications(channelIds);
@@ -93,7 +98,11 @@ class GlobalEventHandler {
 
         const activeServerUrl = await DatabaseManager.getActiveServerUrl();
         const activeServerDisplayName = await DatabaseManager.getActiveServerDisplayName();
-        await DatabaseManager.deleteServerDatabase(serverUrl);
+        if (removeServer) {
+            await DatabaseManager.destroyServerDatabase(serverUrl);
+        } else {
+            await DatabaseManager.deleteServerDatabase(serverUrl);
+        }
 
         const analyticsClient = analytics.get(serverUrl);
         if (analyticsClient) {
@@ -160,7 +169,7 @@ class GlobalEventHandler {
         const credentials = await getServerCredentials(serverUrl);
 
         if (credentials) {
-            this.onLogout(serverUrl);
+            this.onLogout({serverUrl, removeServer: false});
         }
     };
 }

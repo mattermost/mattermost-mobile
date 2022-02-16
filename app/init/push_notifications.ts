@@ -187,7 +187,7 @@ class PushNotifications {
         const serverUrl = await this.getServerUrlFromNotification(notification);
 
         if (serverUrl) {
-            DeviceEventEmitter.emit(Events.SERVER_LOGOUT, serverUrl);
+            DeviceEventEmitter.emit(Events.SERVER_LOGOUT, {serverUrl});
         }
     };
 

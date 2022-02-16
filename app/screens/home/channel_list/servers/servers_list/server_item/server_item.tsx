@@ -158,17 +158,9 @@ const ServerItem = ({highlight, isActive, server, tutorialWatched}: Props) => {
     };
 
     const removeServer = async () => {
-        if (server.lastActiveAt > 0) {
-            await logout(server.url);
-        }
-
-        if (isActive) {
-            dismissBottomSheet();
-        } else {
-            DeviceEventEmitter.emit(Events.SWIPEABLE, '');
-        }
-
-        await DatabaseManager.destroyServerDatabase(server.url);
+        const skipLogoutFromServer = server.lastActiveAt === 0;
+        await dismissBottomSheet();
+        await logout(server.url, skipLogoutFromServer, true);
     };
 
     const startTutorial = () => {
