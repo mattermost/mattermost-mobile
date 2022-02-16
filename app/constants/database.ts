@@ -37,6 +37,7 @@ export const MM_TABLES = {
         TEAM_CHANNEL_HISTORY: 'TeamChannelHistory',
         TEAM_MEMBERSHIP: 'TeamMembership',
         TEAM_SEARCH_HISTORY: 'TeamSearchHistory',
+        TEAM_THREADS_COUNT: 'TeamThreadsCount',
         TERMS_OF_SERVICE: 'TermsOfService',
         THREAD: 'Thread',
         THREAD_PARTICIPANT: 'ThreadParticipant',

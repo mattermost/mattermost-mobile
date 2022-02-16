@@ -73,6 +73,11 @@ type IdValue = {
     value: unknown;
 };
 
+type ParticipantsPerThread = {
+    thread_id: string;
+    participants: ThreadParticipant[];
+};
+
 type TeamChannelHistory = {
     id: string;
     channel_ids: string[];
@@ -84,6 +89,10 @@ type TeamSearchHistory = {
     term: string;
     team_id: string;
 };
+
+type TeamThreadsCount = Omit<GetUserThreadsResponse, 'threads'> & {
+    id: string;
+}
 
 type TermsOfService = {
     id: string;
@@ -122,6 +131,7 @@ type RawValue =
   | TeamChannelHistory
   | TeamMembership
   | TeamSearchHistory
+  | TeamThreadsCount
   | TermsOfService
   | Thread
   | ThreadParticipant
