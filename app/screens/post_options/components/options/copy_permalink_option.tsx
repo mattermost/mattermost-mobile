@@ -30,11 +30,9 @@ type Props = {
 const CopyPermalinkOption = ({teamName, post}: Props) => {
     const serverUrl = useServerUrl();
 
-    // const teamUrl = teamName ? `${serverUrl}/${teamName}` : serverUrl;
-
     const handleCopyLink = useCallback(() => {
         const teamUrl = `${serverUrl}/${teamName}`;
-        const permalink = `${teamUrl}/pl/${post.id}`;
+        const permalink = `${teamUrl.slice(0, -1)}/pl/${post.id}`;
 
         Clipboard.setString(permalink);
         dismissBottomSheet();
