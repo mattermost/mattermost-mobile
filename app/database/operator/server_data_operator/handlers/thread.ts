@@ -5,22 +5,19 @@ import Model from '@nozbe/watermelondb/Model';
 
 import {Database} from '@constants';
 import DataOperatorException from '@database/exceptions/data_operator_exception';
-import {isRecordTeamThreadsCountEqualToRaw, isRecordThreadEqualToRaw} from '@database/operator/server_data_operator/comparators';
+import {isRecordThreadEqualToRaw} from '@database/operator/server_data_operator/comparators';
 import {
     transformThreadRecord,
     transformThreadparticipantRecord,
-    transformTeamThreadsCountRecord,
 } from '@database/operator/server_data_operator/transformers/thread';
 import {getUniqueRawsBy} from '@database/operator/utils/general';
 import {sanitizeThreadParticipants} from '@database/operator/utils/thread';
 
-import type {HandleThreadsArgs, HandleThreadParticipantsArgs, HandleTeamThreadsCountArgs, ProcessRecordResults} from '@typings/database/database';
-import type TeamThreadsCountModel from '@typings/database/models/servers/team_threads_count';
+import type {HandleThreadsArgs, HandleThreadParticipantsArgs, ProcessRecordResults} from '@typings/database/database';
 import type ThreadModel from '@typings/database/models/servers/thread';
 import type ThreadParticipantModel from '@typings/database/models/servers/thread_participant';
 
 const {
-    TEAM_THREADS_COUNT,
     THREAD,
     THREAD_PARTICIPANT,
 } = Database.MM_TABLES.SERVER;
@@ -28,7 +25,6 @@ const {
 export interface ThreadHandlerMix {
     handleThreads: ({threads, prepareRecordsOnly}: HandleThreadsArgs) => Promise<Model[]>;
     handleThreadParticipants: ({threadsParticipants, prepareRecordsOnly}: HandleThreadParticipantsArgs) => Promise<ThreadParticipantModel[]>;
-    handleTeamThreadsCount: ({data, prepareRecordsOnly}: HandleTeamThreadsCountArgs) => Promise<TeamThreadsCountModel[]>;
 }
 
 const ThreadHandler = (superclass: any) => class extends superclass {
@@ -150,25 +146,6 @@ const ThreadHandler = (superclass: any) => class extends superclass {
         }
 
         return batchRecords;
-    };
-
-    /**
-     * handleTeamThreadsCount: Handler responsible for the Create/Update operations occuring on the TeamThreadsCount table from the 'Server' schema
-     */
-    handleTeamThreadsCount = async ({data, prepareRecordsOnly}: HandleTeamThreadsCountArgs): Promise<TeamThreadsCountModel[]> => {
-        const createOrUpdateRawValues = getUniqueRawsBy({
-            raws: data,
-            key: 'id',
-        });
-
-        return this.handleRecords({
-            fieldName: 'id',
-            findMatchingRecordBy: isRecordTeamThreadsCountEqualToRaw,
-            transformer: transformTeamThreadsCountRecord,
-            prepareRecordsOnly,
-            createOrUpdateRawValues,
-            tableName: TEAM_THREADS_COUNT,
-        });
     };
 };
 

@@ -25,7 +25,6 @@ import type TeamModel from '@typings/database/models/servers/team';
 import type TeamChannelHistoryModel from '@typings/database/models/servers/team_channel_history';
 import type TeamMembershipModel from '@typings/database/models/servers/team_membership';
 import type TeamSearchHistoryModel from '@typings/database/models/servers/team_search_history';
-import type TeamThreadsCountModel from '@typings/database/models/servers/team_threads_count';
 import type TermsOfServiceModel from '@typings/database/models/servers/terms_of_service';
 import type UserModel from '@typings/database/models/servers/user';
 
@@ -145,9 +144,5 @@ export const isRecordFileEqualToRaw = (record: FileModel, raw: FileInfo) => {
 };
 
 export const isRecordThreadEqualToRaw = (record: PostModel, raw: Post) => {
-    return raw.id === record.id;
-};
-
-export const isRecordTeamThreadsCountEqualToRaw = (record: TeamThreadsCountModel, raw: TeamThreadsCount) => {
     return raw.id === record.id;
 };

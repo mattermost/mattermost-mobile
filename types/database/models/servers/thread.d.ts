@@ -32,11 +32,8 @@ export default class ThreadModel extends Model {
     /** unread_mentions : The number of mentions that are not read by the user. */
     unreadMentions: number;
 
-    /** loaded_in_all_threads_tab: If this thread is loaded under "All Your Threads" tab */
-    loadedInAllThreadsTab: boolean;
-
-    /** loaded_in_unreads_tab: If this thread is loaded under "Unreads" tab */
-    loadedInUnreadsTab: boolean;
+    /** loaded_in_global_threads : Flag to differentiate the unread threads loaded for showing unread counts/mentions */
+    loadedInGlobalThreads: boolean;
 
     /** participants: All the participants of the thread */
     participants: Query<ThreadParticipantsModel>;
