@@ -5,6 +5,7 @@ import React, {useCallback} from 'react';
 import {useIntl} from 'react-intl';
 import {useWindowDimensions, View} from 'react-native';
 
+import {addReaction} from '@actions/remote/reactions';
 import CompassIcon from '@components/compass_icon';
 import {Screens} from '@constants';
 import {
@@ -15,15 +16,17 @@ import {
     SMALL_ICON_BREAKPOINT,
     SMALL_ICON_SIZE,
 } from '@constants/reaction_picker';
+import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {dismissBottomSheet, showModal} from '@screens/navigation';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 
-import PickReaction from './components/pick_reaction';
-import Reaction from './components/reaction';
+import PickReaction from './pick_reaction';
+import Reaction from './reaction';
 
 type QuickReactionProps = {
     recentEmojis: string[];
+    postId: string;
 };
 
 const getStyleSheet = makeStyleSheetFromTheme((theme) => {
@@ -38,17 +41,18 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     };
 });
 
-const ReactionBar = ({recentEmojis = []}: QuickReactionProps) => {
+const ReactionBar = ({recentEmojis = [], postId}: QuickReactionProps) => {
     const theme = useTheme();
     const intl = useIntl();
     const {width} = useWindowDimensions();
+    const serverUrl = useServerUrl();
     const isSmallDevice = width < SMALL_ICON_BREAKPOINT;
     const styles = getStyleSheet(theme);
 
     const handleEmojiPress = useCallback((emoji: string) => {
-        // eslint-disable-next-line no-console
-        console.log('>>>  selected this emoji', emoji);
-    }, []);
+        addReaction(serverUrl, postId, emoji);
+        dismissBottomSheet(Screens.POST_OPTIONS);
+    }, [postId, serverUrl]);
 
     const openEmojiPicker = useCallback(async () => {
         await dismissBottomSheet(Screens.POST_OPTIONS);
