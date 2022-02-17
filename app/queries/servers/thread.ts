@@ -8,7 +8,7 @@ import ThreadModel from '@typings/database/models/servers/thread';
 
 const {SERVER: {CHANNEL, POST, THREAD}} = MM_TABLES;
 
-export const queryThreadsInTeam = (database: Database, teamId: string, onlyUnreads?: boolean, sort?: boolean, tab?: 'all' | 'unreads'): Query<ThreadModel> => {
+export const queryThreadsInTeam = (database: Database, teamId: string, onlyUnreads?: boolean, sort?: boolean): Query<ThreadModel> => {
     const query: Q.Clause[] = [
         Q.experimentalNestedJoin(POST, CHANNEL),
         Q.on(
@@ -24,13 +24,6 @@ export const queryThreadsInTeam = (database: Database, teamId: string, onlyUnrea
     ];
     if (onlyUnreads) {
         query.push(Q.where('unread_replies', Q.gt(0)));
-    }
-    if (tab) {
-        if (tab === 'all') {
-            query.push(Q.where('loaded_in_all_threads_tab', true));
-        } else {
-            query.push(Q.where('loaded_in_unreads_tab', true));
-        }
     }
     if (sort) {
         query.push(Q.sortBy('last_reply_at', Q.desc));

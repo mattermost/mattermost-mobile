@@ -32,7 +32,7 @@ const enhanced = withObservables(['tab', 'teamId', 'forceQueryAfterAppState'], (
     const getOnlyUnreads = tab !== 'all';
 
     // Get all/unread threads
-    const threads = queryThreadsInTeam(database, teamId, getOnlyUnreads, true, tab).observe();
+    const threads = queryThreadsInTeam(database, teamId, getOnlyUnreads, true).observe();
 
     // Get unreads count
     const unreadsCount = queryThreadsInTeam(database, teamId, true).observeCount();
