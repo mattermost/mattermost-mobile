@@ -9,8 +9,6 @@ export interface ClientPreferencesMix {
 
 const ClientPreferences = (superclass: any) => class extends superclass {
     savePreferences = async (userId: string, preferences: PreferenceType[]) => {
-        //todo: confirm if this analytics string is used on other platforms; for it can be changed to action
-        // event from v1 is 'action_posts_flag';
         this.analytics.trackAPI('api_preferences_save_post');
         return this.doFetch(
             `${this.getPreferencesRoute(userId)}`,
