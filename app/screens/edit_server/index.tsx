@@ -50,7 +50,7 @@ const EditServer = ({closeButtonId, componentId, server, theme}: ServerProps) =>
     const styles = getStyleSheet(theme);
 
     useEffect(() => {
-        setButtonDisabled(Boolean(displayName && displayName !== server.displayName));
+        setButtonDisabled(Boolean(!displayName || displayName === server.displayName));
     }, [displayName]);
 
     useEffect(() => {
