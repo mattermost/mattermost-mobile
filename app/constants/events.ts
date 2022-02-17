@@ -19,4 +19,5 @@ export default keyMirror({
     USER_STOP_TYPING: null,
     POST_LIST_SCROLL_TO_BOTTOM: null,
     SWIPEABLE: null,
+    GO_TO_THREAD: null,
 });

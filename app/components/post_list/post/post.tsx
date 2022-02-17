@@ -10,6 +10,7 @@ import {removePost} from '@actions/local/post';
 import SystemAvatar from '@components/system_avatar';
 import SystemHeader from '@components/system_header';
 import TouchableWithFeedback from '@components/touchable_with_feedback';
+import {Events} from '@constants';
 import * as Screens from '@constants/screens';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
@@ -137,7 +138,7 @@ const Post = ({
             const isValidSystemMessage = isAutoResponder || !isSystemPost;
             if (post.deleteAt !== 0 && isValidSystemMessage && !isPendingOrFailed) {
                 if ([Screens.CHANNEL, Screens.PERMALINK].includes(location)) {
-                    DeviceEventEmitter.emit('goToThread', post);
+                    DeviceEventEmitter.emit(Events.GO_TO_THREAD, post);
                 }
             } else if ((isEphemeral || post.deleteAt > 0)) {
                 removePost(serverUrl, post);

@@ -6,6 +6,7 @@ import {DeviceEventEmitter, Text, View} from 'react-native';
 
 import CompassIcon from '@components/compass_icon';
 import TouchableWithFeedback from '@components/touchable_with_feedback';
+import {Events} from '@constants';
 import {SEARCH} from '@constants/screens';
 import {preventDoubleTap} from '@utils/tap';
 import {makeStyleSheetFromTheme} from '@utils/theme';
@@ -47,7 +48,7 @@ const HeaderReply = ({commentCount, location, post, theme}: HeaderReplyProps) =>
     const style = getStyleSheet(theme);
 
     const onPress = useCallback(preventDoubleTap(() => {
-        DeviceEventEmitter.emit('goToThread', post);
+        DeviceEventEmitter.emit(Events.GO_TO_THREAD, post);
     }), []);
 
     return (
