@@ -220,7 +220,7 @@ export const fetchMyChannelsForTeam = async (serverUrl: string, teamId: string, 
 
         if (!fetchOnly) {
             storeMyChannelsForTeam(serverUrl, teamId, channels, memberships);
-            storeCategories(serverUrl, categories);
+            storeCategories(serverUrl, categories, true); // Re-sync
         }
 
         return {channels, memberships, categories};

@@ -13,7 +13,7 @@ export type CategoriesRequest = {
      error?: unknown;
  }
 
-export const fetchCategories = async (serverUrl: string, teamId: string, fetchOnly = false): Promise<CategoriesRequest> => {
+export const fetchCategories = async (serverUrl: string, teamId: string, prune = false, fetchOnly = false): Promise<CategoriesRequest> => {
     let client: Client;
     try {
         client = NetworkManager.getClient(serverUrl);
@@ -25,7 +25,7 @@ export const fetchCategories = async (serverUrl: string, teamId: string, fetchOn
         const {categories} = await client.getCategories('me', teamId);
 
         if (!fetchOnly) {
-            storeCategories(serverUrl, categories);
+            storeCategories(serverUrl, categories, prune);
         }
 
         return {categories};
