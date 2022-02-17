@@ -99,11 +99,11 @@ export const bottomSheetModalOptions = (theme: Theme, closeButtonId: string) => 
     };
 };
 
+// This locks phones to portrait for all screens while keeps
+// all orientations available for Tablets.
 Navigation.setDefaultOptions({
     layout: {
-
-        //@ts-expect-error all not defined in type definition
-        orientation: [Device.IS_TABLET ? 'all' : 'portrait'],
+        orientation: Device.IS_TABLET ? undefined : ['portrait'],
     },
 });
 

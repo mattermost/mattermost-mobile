@@ -260,6 +260,8 @@ PODS:
   - React-jsinspector (0.67.2)
   - React-logger (0.67.2):
     - glog
+  - react-native-background-timer (2.4.1):
+    - React-Core
   - react-native-cameraroll (4.1.2):
     - React-Core
   - react-native-cookies (6.0.11):
@@ -498,6 +500,7 @@ DEPENDENCIES:
   - React-jsiexecutor (from `../node_modules/react-native/ReactCommon/jsiexecutor`)
   - React-jsinspector (from `../node_modules/react-native/ReactCommon/jsinspector`)
   - React-logger (from `../node_modules/react-native/ReactCommon/logger`)
+  - react-native-background-timer (from `../node_modules/react-native-background-timer`)
   - "react-native-cameraroll (from `../node_modules/@react-native-community/cameraroll`)"
   - "react-native-cookies (from `../node_modules/@react-native-cookies/cookies`)"
   - react-native-document-picker (from `../node_modules/react-native-document-picker`)
@@ -627,6 +630,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native/ReactCommon/jsinspector"
   React-logger:
     :path: "../node_modules/react-native/ReactCommon/logger"
+  react-native-background-timer:
+    :path: "../node_modules/react-native-background-timer"
   react-native-cameraroll:
     :path: "../node_modules/@react-native-community/cameraroll"
   react-native-cookies:
@@ -773,6 +778,7 @@ SPEC CHECKSUMS:
   React-jsiexecutor: 52beb652bbc61201bd70cbe4f0b8edb607e8da4f
   React-jsinspector: 595f76eba2176ebd8817a1fffd47b84fbdab9383
   React-logger: 23de8ea0f44fa00ee77e96060273225607fd4d78
+  react-native-background-timer: 17ea5e06803401a379ebf1f20505b793ac44d0fe
   react-native-cameraroll: 2957f2bce63ae896a848fbe0d5352c1bd4d20866
   react-native-cookies: cd92f3824ed1e32a20802e8185101e14bb5b76da
   react-native-document-picker: 429972f7ece4463aa5bcdd789622b3a674a3c5d1

@@ -38,6 +38,15 @@ export function getDefaultThemeByAppearance(): Theme {
 export const ThemeContext = createContext(getDefaultThemeByAppearance());
 const {Consumer, Provider} = ThemeContext;
 
+const updateThemeIfNeeded = (theme: Theme) => {
+    if (theme !== EphemeralStore.theme) {
+        EphemeralStore.theme = theme;
+        requestAnimationFrame(() => {
+            setNavigationStackStyles(theme);
+        });
+    }
+};
+
 const ThemeProvider = ({currentTeamId, children, themes}: Props) => {
     const getTheme = (): Theme => {
         if (currentTeamId) {
@@ -45,12 +54,8 @@ const ThemeProvider = ({currentTeamId, children, themes}: Props) => {
             if (teamTheme?.value) {
                 try {
                     const theme = setThemeDefaults(JSON.parse(teamTheme.value) as Theme);
-                    if (theme !== EphemeralStore.theme) {
-                        EphemeralStore.theme = theme;
-                        requestAnimationFrame(() => {
-                            setNavigationStackStyles(theme);
-                        });
-                    }
+                    updateThemeIfNeeded(theme);
+
                     return theme;
                 } catch {
                     // no theme change
@@ -59,10 +64,7 @@ const ThemeProvider = ({currentTeamId, children, themes}: Props) => {
         }
 
         const defaultTheme = getDefaultThemeByAppearance();
-        EphemeralStore.theme = defaultTheme;
-        requestAnimationFrame(() => {
-            setNavigationStackStyles(defaultTheme);
-        });
+        updateThemeIfNeeded(defaultTheme);
 
         return defaultTheme;
     };
