@@ -519,3 +519,36 @@ export const fetchPostById = async (serverUrl: string, postId: string, fetchOnly
         return {error};
     }
 };
+
+export const togglePinPost = async (serverUrl: string, postId: string) => {
+    const database = DatabaseManager.serverDatabases[serverUrl]?.database;
+    if (!database) {
+        return {error: `${serverUrl} database not found`};
+    }
+
+    let client: Client;
+    try {
+        client = NetworkManager.getClient(serverUrl);
+    } catch (error) {
+        return {error};
+    }
+
+    try {
+        const post = await queryPostById(database, postId);
+        if (post) {
+            const isPinned = post.isPinned;
+            const request = isPinned ? client.unpinPost : client.pinPost;
+
+            await request(postId);
+            await database.write(async () => {
+                await post.update((p) => {
+                    p.isPinned = !isPinned;
+                });
+            });
+        }
+        return {post};
+    } catch (error) {
+        forceLogoutIfNecessary(serverUrl, error as ClientErrorProps);
+        return {error};
+    }
+};

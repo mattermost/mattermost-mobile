@@ -80,9 +80,15 @@ const PostOptions = ({
                     <SaveOption
                         isSaved={isSaved}
                         postId={post.id}
-                    />}
+                    />
+                }
                 {canCopyText && <CopyTextOption postMessage={post.message}/>}
-                {canPin && <PinChannelOption isPostPinned={post.isPinned}/>}
+                {canPin &&
+                    <PinChannelOption
+                        isPostPinned={post.isPinned}
+                        postId={post.id}
+                    />
+                }
                 {canEdit && <EditOption/>}
                 {canDelete && <DeletePostOption/>}
             </>
