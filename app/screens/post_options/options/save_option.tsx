@@ -9,7 +9,7 @@ import {useServerUrl} from '@context/server';
 import {t} from '@i18n';
 import {dismissBottomSheet} from '@screens/navigation';
 
-import BaseOption from '../base_option';
+import BaseOption from './base_option';
 
 type CopyTextProps = {
     isSaved: boolean;
