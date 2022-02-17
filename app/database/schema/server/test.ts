@@ -550,8 +550,6 @@ describe('*** Test schema for SERVER database ***', () => {
                         reply_count: {name: 'reply_count', type: 'number'},
                         unread_replies: {name: 'unread_replies', type: 'number'},
                         unread_mentions: {name: 'unread_mentions', type: 'number'},
-                        loaded_in_all_threads_tab: {name: 'loaded_in_all_threads_tab', type: 'boolean'},
-                        loaded_in_unreads_tab: {name: 'loaded_in_unreads_tab', type: 'boolean'},
                     },
                     columnArray: [
                         {name: 'last_reply_at', type: 'number'},
@@ -560,8 +558,6 @@ describe('*** Test schema for SERVER database ***', () => {
                         {name: 'reply_count', type: 'number'},
                         {name: 'unread_replies', type: 'number'},
                         {name: 'unread_mentions', type: 'number'},
-                        {name: 'loaded_in_all_threads_tab', type: 'boolean'},
-                        {name: 'loaded_in_unreads_tab', type: 'boolean'},
                     ],
                 },
                 [THREAD_PARTICIPANT]: {

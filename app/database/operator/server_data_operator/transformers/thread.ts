@@ -37,11 +37,6 @@ export const transformThreadRecord = ({action, database, value}: TransformerArgs
         thread.isFollowing = raw.is_following ?? record?.isFollowing;
         thread.unreadReplies = raw.unread_replies;
         thread.unreadMentions = raw.unread_mentions;
-
-        // Save where this thread is loaded.
-        // Note: Once it is marked as true under specific tab, It cannot be false again.
-        thread.loadedInAllThreadsTab = raw.loaded_in_all_threads_tab || record?.loadedInAllThreadsTab;
-        thread.loadedInUnreadsTab = raw.loaded_in_unreads_tab || record?.loadedInUnreadsTab;
     };
 
     return prepareBaseRecord({
