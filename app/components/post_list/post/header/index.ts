@@ -8,30 +8,30 @@ import {combineLatest, of as of$} from 'rxjs';
 import {map, switchMap} from 'rxjs/operators';
 
 import {Preferences} from '@constants';
-import {MM_TABLES, SYSTEM_IDENTIFIERS} from '@constants/database';
+import {MM_TABLES} from '@constants/database';
 import {getPreferenceAsBool, getTeammateNameDisplaySetting} from '@helpers/api/preference';
+import {observePreferencesByCategoryAndName} from '@queries/servers/preference';
+import {observeConfig, observeLicense} from '@queries/servers/system';
 import {isMinimumServerVersion} from '@utils/helpers';
 
 import Header from './header';
 
 import type {WithDatabaseArgs} from '@typings/database/database';
 import type PostModel from '@typings/database/models/servers/post';
-import type PreferenceModel from '@typings/database/models/servers/preference';
-import type SystemModel from '@typings/database/models/servers/system';
 
 type HeaderInputProps = {
     differentThreadSequence: boolean;
     post: PostModel;
 };
 
-const {SERVER: {POST, PREFERENCE, SYSTEM}} = MM_TABLES;
+const {SERVER: {POST}} = MM_TABLES;
 
 const withHeaderProps = withObservables(
     ['post', 'differentThreadSequence'],
     ({post, database, differentThreadSequence}: WithDatabaseArgs & HeaderInputProps) => {
-        const config = database.get<SystemModel>(SYSTEM).findAndObserve(SYSTEM_IDENTIFIERS.CONFIG).pipe(switchMap(({value}) => of$(value as ClientConfig)));
-        const license = database.get<SystemModel>(SYSTEM).findAndObserve(SYSTEM_IDENTIFIERS.LICENSE).pipe(switchMap(({value}) => of$(value as ClientLicense)));
-        const preferences = database.get<PreferenceModel>(PREFERENCE).query(Q.where('category', Preferences.CATEGORY_DISPLAY_SETTINGS)).observe();
+        const config = observeConfig(database);
+        const license = observeLicense(database);
+        const preferences = observePreferencesByCategoryAndName(database, Preferences.CATEGORY_DISPLAY_SETTINGS);
         const author = post.author.observe();
         const enablePostUsernameOverride = config.pipe(map((cfg) => cfg.EnablePostUsernameOverride === 'true'));
         const isTimezoneEnabled = config.pipe(map((cfg) => cfg.ExperimentalTimezone === 'true'));

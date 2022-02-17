@@ -6,16 +6,17 @@ import withObservables from '@nozbe/with-observables';
 import {of as of$} from 'rxjs';
 import {switchMap} from 'rxjs/operators';
 
-import {MM_TABLES, SYSTEM_IDENTIFIERS} from '@constants/database';
+import {observeCurrentChannel} from '@app/queries/servers/channel';
+import {observeConfig} from '@app/queries/servers/system';
+import {MM_TABLES} from '@constants/database';
 
 import PostInput from './post_input';
 
 import type {WithDatabaseArgs} from '@typings/database/database';
 import type ChannelModel from '@typings/database/models/servers/channel';
 import type ChannelInfoModel from '@typings/database/models/servers/channel_info';
-import type SystemModel from '@typings/database/models/servers/system';
 
-const {SERVER: {SYSTEM, CHANNEL}} = MM_TABLES;
+const {SERVER: {CHANNEL}} = MM_TABLES;
 
 type OwnProps = {
     channelId: string;
@@ -23,26 +24,24 @@ type OwnProps = {
 }
 
 const enhanced = withObservables([], ({database, channelId, rootId}: WithDatabaseArgs & OwnProps) => {
-    const config = database.get<SystemModel>(SYSTEM).findAndObserve(SYSTEM_IDENTIFIERS.CONFIG);
+    const config = observeConfig(database);
     const timeBetweenUserTypingUpdatesMilliseconds = config.pipe(
-        switchMap(({value}: {value: ClientConfig}) => of$(parseInt(value.TimeBetweenUserTypingUpdatesMilliseconds, 10))),
+        switchMap((cfg) => of$(parseInt(cfg.TimeBetweenUserTypingUpdatesMilliseconds, 10))),
     );
 
     const enableUserTypingMessage = config.pipe(
-        switchMap(({value}: {value: ClientConfig}) => of$(value.EnableUserTypingMessages === 'true')),
+        switchMap((cfg) => of$(cfg.EnableUserTypingMessages === 'true')),
     );
 
     const maxNotificationsPerChannel = config.pipe(
-        switchMap(({value}: {value: ClientConfig}) => of$(parseInt(value.MaxNotificationsPerChannel, 10))),
+        switchMap((cfg) => of$(parseInt(cfg.MaxNotificationsPerChannel, 10))),
     );
 
     let channel;
     if (rootId) {
         channel = database.get<ChannelModel>(CHANNEL).findAndObserve(channelId);
     } else {
-        channel = database.get<SystemModel>(SYSTEM).findAndObserve(SYSTEM_IDENTIFIERS.CURRENT_CHANNEL_ID).pipe(
-            switchMap((t) => database.get<ChannelModel>(CHANNEL).findAndObserve(t.value)),
-        );
+        channel = observeCurrentChannel(database);
     }
 
     const channelDisplayName = channel.pipe(

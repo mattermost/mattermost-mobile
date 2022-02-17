@@ -13,15 +13,15 @@ import {switchToChannelById} from '@actions/remote/channel';
 import CompassIcon from '@components/compass_icon';
 import TouchableWithFeedback from '@components/touchable_with_feedback';
 import {General} from '@constants';
-import {MM_TABLES, SYSTEM_IDENTIFIERS} from '@constants/database';
+import {MM_TABLES} from '@constants/database';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
+import {observeCurrentTeamId} from '@queries/servers/system';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
 import type {WithDatabaseArgs} from '@typings/database/database';
 import type ChannelModel from '@typings/database/models/servers/channel';
-import type SystemModel from '@typings/database/models/servers/system';
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     container: {
@@ -66,10 +66,10 @@ const ThreadsButton = ({channelId}: {channelId?: string}) => {
 };
 
 const enhanced = withObservables([], ({database}: WithDatabaseArgs) => {
-    const currentTeamId = database.get<SystemModel>(MM_TABLES.SERVER.SYSTEM).findAndObserve(SYSTEM_IDENTIFIERS.CURRENT_TEAM_ID);
+    const currentTeamId = observeCurrentTeamId(database);
     const channelId = currentTeamId.pipe(
-        switchMap((model) => database.get<ChannelModel>(MM_TABLES.SERVER.CHANNEL).query(
-            Q.where('team_id', model.value),
+        switchMap((id) => database.get<ChannelModel>(MM_TABLES.SERVER.CHANNEL).query(
+            Q.where('team_id', id),
             Q.where('name', General.DEFAULT_CHANNEL),
         ).observe().pipe(
             // eslint-disable-next-line max-nested-callbacks

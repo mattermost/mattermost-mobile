@@ -16,14 +16,14 @@ import FastImage, {ImageStyle} from 'react-native-fast-image';
 import {of as of$} from 'rxjs';
 import {switchMap} from 'rxjs/operators';
 
-import {MM_TABLES, SYSTEM_IDENTIFIERS} from '@constants/database';
+import {MM_TABLES} from '@constants/database';
 import {useServerUrl} from '@context/server';
 import NetworkManager from '@init/network_manager';
+import {observeConfigBooleanValue} from '@queries/servers/system';
 import {EmojiIndicesByAlias, Emojis} from '@utils/emoji';
 
 import type {WithDatabaseArgs} from '@typings/database/database';
 import type CustomEmojiModel from '@typings/database/models/servers/custom_emoji';
-import type SystemModel from '@typings/database/models/servers/system';
 
 const assetImages = new Map([['mattermost.png', require('@assets/images/emojis/mattermost.png')]]);
 
@@ -149,8 +149,8 @@ const Emoji = (props: Props) => {
 const withCustomEmojis = withObservables(['emojiName'], ({database, emojiName}: WithDatabaseArgs & {emojiName: string}) => {
     const hasEmojiBuiltIn = EmojiIndicesByAlias.has(emojiName);
 
-    const displayTextOnly = hasEmojiBuiltIn ? of$(false) : database.get<SystemModel>(MM_TABLES.SERVER.SYSTEM).findAndObserve(SYSTEM_IDENTIFIERS.CONFIG).pipe(
-        switchMap((config) => of$(config.value.EnableCustomEmoji !== 'true')),
+    const displayTextOnly = hasEmojiBuiltIn ? of$(false) : observeConfigBooleanValue(database, 'EnableCustomEmoji').pipe(
+        switchMap((value) => of$(!value)),
     );
 
     return {

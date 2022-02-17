@@ -11,15 +11,15 @@ import {switchMap, map} from 'rxjs/operators';
 
 import {Preferences} from '@constants';
 import {MM_TABLES} from '@constants/database';
+import {observePreferencesByCategoryAndName} from '@queries/servers/preference';
 
 import TeamList from './team_list';
 
 import type {WithDatabaseArgs} from '@typings/database/database';
 import type MyTeamModel from '@typings/database/models/servers/my_team';
-import type PreferenceModel from '@typings/database/models/servers/preference';
 import type TeamModel from '@typings/database/models/servers/team';
 
-const {SERVER: {MY_TEAM, PREFERENCE, TEAM}} = MM_TABLES;
+const {SERVER: {MY_TEAM, TEAM}} = MM_TABLES;
 
 const withTeams = withObservables([], ({database}: WithDatabaseArgs) => {
     const myTeams = database.get<MyTeamModel>(MY_TEAM).query().observe();
@@ -28,9 +28,7 @@ const withTeams = withObservables([], ({database}: WithDatabaseArgs) => {
     ).observe().pipe(
         map((ts) => ts.map((t) => ({id: t.id, displayName: t.displayName}))),
     );
-    const order = database.get<PreferenceModel>(PREFERENCE).query(
-        Q.where('category', Preferences.TEAMS_ORDER),
-    ).observe().pipe(
+    const order = observePreferencesByCategoryAndName(database, Preferences.TEAMS_ORDER).pipe(
         switchMap((p) => (p.length ? of$(p[0].value.split(',')) : of$([]))),
     );
     const myOrderedTeams = combineLatest([myTeams, order, teamIds]).pipe(

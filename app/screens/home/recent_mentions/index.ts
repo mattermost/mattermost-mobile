@@ -9,19 +9,19 @@ import {of as of$} from 'rxjs';
 import {switchMap} from 'rxjs/operators';
 
 import {SYSTEM_IDENTIFIERS, MM_TABLES} from '@constants/database';
-import {SystemModel, UserModel} from '@database/models/server';
+import {SystemModel} from '@database/models/server';
+import {observeConfigBooleanValue} from '@queries/servers/system';
+import {observeCurrentUser} from '@queries/servers/user';
 import {getTimezone} from '@utils/user';
 
 import RecentMentionsScreen from './recent_mentions';
 
 import type {WithDatabaseArgs} from '@typings/database/database';
 
-const {USER, SYSTEM, POST} = MM_TABLES.SERVER;
+const {SYSTEM, POST} = MM_TABLES.SERVER;
 
 const enhance = withObservables([], ({database}: WithDatabaseArgs) => {
-    const currentUser = database.get<SystemModel>(SYSTEM).findAndObserve(SYSTEM_IDENTIFIERS.CURRENT_USER_ID).pipe(
-        switchMap((currentUserId) => database.get<UserModel>(USER).findAndObserve(currentUserId.value)),
-    );
+    const currentUser = observeCurrentUser(database);
 
     return {
         mentions: database.get<SystemModel>(SYSTEM).query(
@@ -41,9 +41,7 @@ const enhance = withObservables([], ({database}: WithDatabaseArgs) => {
         ),
         currentUser,
         currentTimezone: currentUser.pipe((switchMap((user) => of$(getTimezone(user.timezone))))),
-        isTimezoneEnabled: database.get<SystemModel>(SYSTEM).findAndObserve(SYSTEM_IDENTIFIERS.CONFIG).pipe(
-            switchMap((config) => of$(config.value.ExperimentalTimezone === 'true')),
-        ),
+        isTimezoneEnabled: observeConfigBooleanValue(database, 'ExperimentalTimezone'),
     };
 });
 

@@ -8,6 +8,7 @@ import {switchMap} from 'rxjs/operators';
 
 import {Permissions} from '@constants';
 import {MM_TABLES, SYSTEM_IDENTIFIERS} from '@constants/database';
+import {observeCurrentUser} from '@queries/servers/user';
 import {hasPermissionForTeam} from '@utils/role';
 
 import ChannelListHeader from './header';
@@ -15,10 +16,9 @@ import ChannelListHeader from './header';
 import type {WithDatabaseArgs} from '@typings/database/database';
 import type SystemModel from '@typings/database/models/servers/system';
 import type TeamModel from '@typings/database/models/servers/team';
-import type UserModel from '@typings/database/models/servers/user';
 
-const {SERVER: {SYSTEM, TEAM, USER}} = MM_TABLES;
-const {CURRENT_TEAM_ID, CURRENT_USER_ID} = SYSTEM_IDENTIFIERS;
+const {SERVER: {SYSTEM, TEAM}} = MM_TABLES;
+const {CURRENT_TEAM_ID} = SYSTEM_IDENTIFIERS;
 
 const enhanced = withObservables([], ({database}: WithDatabaseArgs) => {
     const team = database.get<SystemModel>(SYSTEM).findAndObserve(CURRENT_TEAM_ID).pipe(
@@ -26,9 +26,7 @@ const enhanced = withObservables([], ({database}: WithDatabaseArgs) => {
         catchError(() => of$({displayName: ''})),
     );
 
-    const currentUser = database.get<SystemModel>(SYSTEM).findAndObserve(CURRENT_USER_ID).pipe(
-        switchMap(({value}) => database.get<UserModel>(USER).findAndObserve(value)),
-    );
+    const currentUser = observeCurrentUser(database);
 
     const canJoinChannels = combineLatest([currentUser, team]).pipe(
         switchMap(([u, t]) => (('id' in t) ? from$(hasPermissionForTeam(t, u, Permissions.JOIN_PUBLIC_CHANNELS, true)) : of$(false))),

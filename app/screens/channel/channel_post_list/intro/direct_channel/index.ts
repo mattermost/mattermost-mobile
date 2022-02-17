@@ -7,18 +7,18 @@ import {of as of$} from 'rxjs';
 import {catchError, switchMap} from 'rxjs/operators';
 
 import {General} from '@constants';
-import {MM_TABLES, SYSTEM_IDENTIFIERS} from '@constants/database';
+import {MM_TABLES} from '@constants/database';
+import {observeCurrentUserId} from '@queries/servers/system';
 import {getUserIdFromChannelName} from '@utils/user';
 
 import DirectChannel from './direct_channel';
 
 import type {WithDatabaseArgs} from '@typings/database/database';
 import type ChannelModel from '@typings/database/models/servers/channel';
-import type SystemModel from '@typings/database/models/servers/system';
 import type UserModel from '@typings/database/models/servers/user';
 
 const enhanced = withObservables([], ({channel, database}: {channel: ChannelModel} & WithDatabaseArgs) => {
-    const currentUserId = database.get<SystemModel>(MM_TABLES.SERVER.SYSTEM).findAndObserve(SYSTEM_IDENTIFIERS.CURRENT_USER_ID).pipe(switchMap(({value}) => of$(value)));
+    const currentUserId = observeCurrentUserId(database);
     const members = channel.members.observe();
     let isBot = of$(false);
 

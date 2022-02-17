@@ -7,7 +7,9 @@ import {combineLatest, of as of$, from as from$} from 'rxjs';
 import {switchMap} from 'rxjs/operators';
 
 import {General, Permissions} from '@constants';
-import {MM_TABLES, SYSTEM_IDENTIFIERS} from '@constants/database';
+import {MM_TABLES} from '@constants/database';
+import {observeConfigBooleanValue, observeCurrentChannelId} from '@queries/servers/system';
+import {observeCurrentUser} from '@queries/servers/user';
 import {hasPermissionForChannel} from '@utils/role';
 import {isSystemAdmin, getUserIdFromChannelName} from '@utils/user';
 
@@ -15,10 +17,9 @@ import PostDraft from './post_draft';
 
 import type {WithDatabaseArgs} from '@typings/database/database';
 import type ChannelModel from '@typings/database/models/servers/channel';
-import type SystemModel from '@typings/database/models/servers/system';
 import type UserModel from '@typings/database/models/servers/user';
 
-const {SERVER: {SYSTEM, USER, CHANNEL}} = MM_TABLES;
+const {SERVER: {USER, CHANNEL}} = MM_TABLES;
 
 type OwnProps = {
     channelId?: string;
@@ -27,15 +28,11 @@ type OwnProps = {
 
 const enhanced = withObservables([], (ownProps: WithDatabaseArgs & OwnProps) => {
     const database = ownProps.database;
-    const currentUser = database.get<SystemModel>(SYSTEM).findAndObserve(SYSTEM_IDENTIFIERS.CURRENT_USER_ID).pipe(
-        switchMap(({value}) => database.get<UserModel>(USER).findAndObserve(value)),
-    );
+    const currentUser = observeCurrentUser(database);
 
     let channelId = of$(ownProps.channelId);
     if (!ownProps.channelId) {
-        channelId = database.get<SystemModel>(SYSTEM).findAndObserve(SYSTEM_IDENTIFIERS.CURRENT_CHANNEL_ID).pipe(
-            switchMap((t) => of$(t.value)),
-        );
+        channelId = observeCurrentChannelId(database);
     }
 
     const channel = channelId.pipe(
@@ -45,9 +42,7 @@ const enhanced = withObservables([], (ownProps: WithDatabaseArgs & OwnProps) => 
     const canPost = combineLatest([channel, currentUser]).pipe(switchMap(([c, u]) => from$(hasPermissionForChannel(c, u, Permissions.CREATE_POST, false))));
     const channelIsArchived = channel.pipe(switchMap((c) => (ownProps.channelIsArchived ? of$(true) : of$(c.deleteAt !== 0))));
 
-    const experimentalTownSquareIsReadOnly = database.get<SystemModel>(MM_TABLES.SERVER.SYSTEM).findAndObserve(SYSTEM_IDENTIFIERS.CONFIG).pipe(
-        switchMap(({value}: {value: ClientConfig}) => of$(value.ExperimentalTownSquareIsReadOnly === 'true')),
-    );
+    const experimentalTownSquareIsReadOnly = observeConfigBooleanValue(database, 'ExperimentalTownSquareIsReadOnly');
     const channelIsReadOnly = combineLatest([currentUser, channel, experimentalTownSquareIsReadOnly]).pipe(
         switchMap(([u, c, readOnly]) => of$(c?.name === General.DEFAULT_CHANNEL && !isSystemAdmin(u.roles) && readOnly)),
     );

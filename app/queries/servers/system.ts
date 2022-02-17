@@ -2,6 +2,8 @@
 // See LICENSE.txt for license information.
 
 import {Database} from '@nozbe/watermelondb';
+import {of as of$} from 'rxjs';
+import {switchMap} from 'rxjs/operators';
 
 import {MM_TABLES, SYSTEM_IDENTIFIERS} from '@constants/database';
 
@@ -28,6 +30,12 @@ export const queryCurrentChannelId = async (serverDatabase: Database) => {
     }
 };
 
+export const observeCurrentChannelId = (database: Database) => {
+    return database.get<SystemModel>(SYSTEM).findAndObserve(SYSTEM_IDENTIFIERS.CURRENT_CHANNEL_ID).pipe(
+        switchMap(({value}) => of$(value as string)),
+    );
+};
+
 export const queryCurrentTeamId = async (serverDatabase: Database) => {
     try {
         const currentTeamId = await serverDatabase.get(SYSTEM).find(SYSTEM_IDENTIFIERS.CURRENT_TEAM_ID) as SystemModel;
@@ -37,6 +45,12 @@ export const queryCurrentTeamId = async (serverDatabase: Database) => {
     }
 };
 
+export const observeCurrentTeamId = (database: Database) => {
+    return database.get<SystemModel>(SYSTEM).findAndObserve(SYSTEM_IDENTIFIERS.CURRENT_TEAM_ID).pipe(
+        switchMap(({value}) => of$(value as string)),
+    );
+};
+
 export const queryCurrentUserId = async (serverDatabase: Database) => {
     try {
         const currentUserId = await serverDatabase.get(SYSTEM).find(SYSTEM_IDENTIFIERS.CURRENT_USER_ID) as SystemModel;
@@ -44,6 +58,12 @@ export const queryCurrentUserId = async (serverDatabase: Database) => {
     } catch {
         return '';
     }
+};
+
+export const observeCurrentUserId = (database: Database) => {
+    return database.get<SystemModel>(SYSTEM).findAndObserve(SYSTEM_IDENTIFIERS.CURRENT_USER_ID).pipe(
+        switchMap(({value}) => of$(value as string)),
+    );
 };
 
 export const queryCommonSystemValues = async (serverDatabase: Database) => {
@@ -89,6 +109,29 @@ export const queryConfig = async (serverDatabase: Database) => {
     } catch {
         return {} as ClientConfig;
     }
+};
+
+export const observeConfig = (database: Database) => {
+    return database.get<SystemModel>(SYSTEM).findAndObserve(SYSTEM_IDENTIFIERS.CONFIG).pipe(
+        switchMap(({value}) => of$(value as ClientConfig)),
+    );
+};
+
+export const observeConfigValue = (database: Database, key: keyof ClientConfig) => {
+    return database.get<SystemModel>(SYSTEM).findAndObserve(SYSTEM_IDENTIFIERS.CONFIG).pipe(
+        switchMap(({value}) => of$((value as ClientConfig)[key])),
+    );
+};
+export const observeConfigBooleanValue = (database: Database, key: keyof ClientConfig) => {
+    return database.get<SystemModel>(SYSTEM).findAndObserve(SYSTEM_IDENTIFIERS.CONFIG).pipe(
+        switchMap(({value}) => of$((value as ClientConfig)[key] === 'true')),
+    );
+};
+
+export const observeLicense = (database: Database) => {
+    return database.get<SystemModel>(SYSTEM).findAndObserve(SYSTEM_IDENTIFIERS.LICENSE).pipe(
+        switchMap(({value}) => of$((value as ClientLicense))),
+    );
 };
 
 export const queryRecentCustomStatuses = async (serverDatabase: Database) => {

@@ -8,8 +8,10 @@ import {from as from$, of as of$} from 'rxjs';
 import {switchMap} from 'rxjs/operators';
 
 import {Permissions, Preferences} from '@constants';
-import {MM_TABLES, SYSTEM_IDENTIFIERS} from '@constants/database';
-import {appsEnabled} from '@utils/apps';
+import {MM_TABLES} from '@constants/database';
+import {observePreferencesByCategoryAndName} from '@queries/servers/preference';
+import {observeConfigBooleanValue} from '@queries/servers/system';
+import {observeCurrentUser} from '@queries/servers/user';
 import {hasJumboEmojiOnly} from '@utils/emoji/helpers';
 import {areConsecutivePosts, isPostEphemeral} from '@utils/post';
 import {canManageChannelMembers, hasPermissionForPost} from '@utils/role';
@@ -20,14 +22,12 @@ import type {WithDatabaseArgs} from '@typings/database/database';
 import type CustomEmojiModel from '@typings/database/models/servers/custom_emoji';
 import type PostModel from '@typings/database/models/servers/post';
 import type PostsInThreadModel from '@typings/database/models/servers/posts_in_thread';
-import type PreferenceModel from '@typings/database/models/servers/preference';
-import type SystemModel from '@typings/database/models/servers/system';
 import type UserModel from '@typings/database/models/servers/user';
 
-const {SERVER: {CUSTOM_EMOJI, POST, PREFERENCE, SYSTEM, USER}} = MM_TABLES;
+const {SERVER: {CUSTOM_EMOJI, POST}} = MM_TABLES;
 
 type PropsInput = WithDatabaseArgs & {
-    featureFlagAppsEnabled?: string;
+    appsEnabled: boolean;
     currentUser: UserModel;
     nextPost: PostModel | undefined;
     post: PostModel;
@@ -82,17 +82,13 @@ function isFirstReply(post: PostModel, previousPost?: PostModel) {
 }
 
 const withSystem = withObservables([], ({database}: WithDatabaseArgs) => ({
-    featureFlagAppsEnabled: database.get<SystemModel>(SYSTEM).findAndObserve(SYSTEM_IDENTIFIERS.CONFIG).pipe(
-        switchMap((cfg) => of$(cfg.value.FeatureFlagAppsEnabled)),
-    ),
-    currentUser: database.get<SystemModel>(SYSTEM).findAndObserve(SYSTEM_IDENTIFIERS.CURRENT_USER_ID).pipe(
-        switchMap((currentUserId) => database.get<UserModel>(USER).findAndObserve(currentUserId.value)),
-    ),
+    appsEnabled: observeConfigBooleanValue(database, 'FeatureFlagAppsEnabled'),
+    currentUser: observeCurrentUser(database),
 }));
 
 const withPost = withObservables(
     ['currentUser', 'post', 'previousPost', 'nextPost'],
-    ({featureFlagAppsEnabled, currentUser, database, post, previousPost, nextPost}: PropsInput) => {
+    ({appsEnabled, currentUser, database, post, previousPost, nextPost}: PropsInput) => {
         let isJumboEmoji = of$(false);
         let isLastReply = of$(true);
         let isPostAddChannelMember = of$(false);
@@ -100,10 +96,9 @@ const withPost = withObservables(
         const author = post.author.observe();
         const canDelete = from$(hasPermissionForPost(post, currentUser, isOwner ? Permissions.DELETE_POST : Permissions.DELETE_OTHERS_POSTS, false));
         const isEphemeral = of$(isPostEphemeral(post));
-        const isFlagged = database.get<PreferenceModel>(PREFERENCE).query(
-            Q.where('category', Preferences.CATEGORY_SAVED_POST),
-            Q.where('name', post.id),
-        ).observe().pipe(switchMap((pref) => of$(Boolean(pref.length))));
+        const isFlagged = observePreferencesByCategoryAndName(database, Preferences.CATEGORY_SAVED_POST, post.id).pipe(
+            switchMap((pref) => of$(Boolean(pref.length))),
+        );
 
         if (post.props?.add_channel_member && isPostEphemeral(post)) {
             isPostAddChannelMember = from$(canManageChannelMembers(post, currentUser));
@@ -135,12 +130,8 @@ const withPost = withObservables(
             switchMap((user) => of$(Boolean(post && previousPost && !user.isBot && areConsecutivePosts(post, previousPost)))),
         );
 
-        const partialConfig: Partial<ClientConfig> = {
-            FeatureFlagAppsEnabled: featureFlagAppsEnabled,
-        };
-
         return {
-            appsEnabled: of$(appsEnabled(partialConfig)),
+            appsEnabled,
             canDelete,
             differentThreadSequence: of$(differentThreadSequence),
             files: post.files.observe(),

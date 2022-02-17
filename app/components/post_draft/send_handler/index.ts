@@ -8,8 +8,10 @@ import {combineLatest, of as of$, from as from$} from 'rxjs';
 import {switchMap} from 'rxjs/operators';
 
 import {General, Permissions} from '@constants';
-import {MM_TABLES, SYSTEM_IDENTIFIERS} from '@constants/database';
+import {MM_TABLES} from '@constants/database';
 import {MAX_MESSAGE_LENGTH_FALLBACK} from '@constants/post_draft';
+import {observeCurrentChannel} from '@queries/servers/channel';
+import {observeConfig, observeCurrentUserId, observeLicense} from '@queries/servers/system';
 import {hasPermissionForChannel} from '@utils/role';
 
 import SendHandler from './send_handler';
@@ -19,10 +21,9 @@ import type ChannelModel from '@typings/database/models/servers/channel';
 import type ChannelInfoModel from '@typings/database/models/servers/channel_info';
 import type CustomEmojiModel from '@typings/database/models/servers/custom_emoji';
 import type GroupModel from '@typings/database/models/servers/group';
-import type SystemModel from '@typings/database/models/servers/system';
 import type UserModel from '@typings/database/models/servers/user';
 
-const {SERVER: {SYSTEM, USER, CHANNEL, GROUP, GROUPS_TEAM, GROUPS_CHANNEL, CUSTOM_EMOJI}} = MM_TABLES;
+const {SERVER: {USER, CHANNEL, GROUP, GROUPS_TEAM, GROUPS_CHANNEL, CUSTOM_EMOJI}} = MM_TABLES;
 
 type OwnProps = {
     rootId: string;
@@ -37,14 +38,10 @@ const enhanced = withObservables([], (ownProps: WithDatabaseArgs & OwnProps) => 
     if (rootId) {
         channel = database.get<ChannelModel>(CHANNEL).findAndObserve(channelId);
     } else {
-        channel = database.get<SystemModel>(SYSTEM).findAndObserve(SYSTEM_IDENTIFIERS.CURRENT_CHANNEL_ID).pipe(
-            switchMap((t) => database.get<ChannelModel>(CHANNEL).findAndObserve(t.value)),
-        );
+        channel = observeCurrentChannel(database);
     }
 
-    const currentUserId = database.get<SystemModel>(SYSTEM).findAndObserve(SYSTEM_IDENTIFIERS.CURRENT_USER_ID).pipe(
-        switchMap(({value}) => of$(value)),
-    );
+    const currentUserId = observeCurrentUserId(database);
     const currentUser = currentUserId.pipe(
         switchMap((id) => database.get<UserModel>(USER).findAndObserve(id)),
     );
@@ -52,9 +49,7 @@ const enhanced = withObservables([], (ownProps: WithDatabaseArgs & OwnProps) => 
         switchMap((u) => of$(u.status === General.OUT_OF_OFFICE)),
     );
 
-    const config = database.get<SystemModel>(SYSTEM).findAndObserve(SYSTEM_IDENTIFIERS.CONFIG).pipe(
-        switchMap(({value}) => of$(value as ClientConfig)),
-    );
+    const config = observeConfig(database);
     const enableConfirmNotificationsToChannel = config.pipe(
         switchMap((cfg) => of$(Boolean(cfg.EnableConfirmNotificationsToChannel === 'true'))),
     );
@@ -75,9 +70,7 @@ const enhanced = withObservables([], (ownProps: WithDatabaseArgs & OwnProps) => 
         }),
     );
 
-    const license = database.get<SystemModel>(SYSTEM).findAndObserve(SYSTEM_IDENTIFIERS.LICENSE).pipe(
-        switchMap(({value}) => of$(value as ClientLicense)),
-    );
+    const license = observeLicense(database);
 
     const useGroupMentions = combineLatest([channel, currentUser, license]).pipe(
         switchMap(([c, u, l]) => {

@@ -8,23 +8,21 @@ import {of as of$} from 'rxjs';
 import {switchMap} from 'rxjs/operators';
 
 import {Permissions} from '@constants';
-import {MM_TABLES, SYSTEM_IDENTIFIERS} from '@constants/database';
+import {MM_TABLES} from '@constants/database';
 import {MyChannelModel} from '@database/models/server';
+import {observeConfig, observeCurrentTeamId, observeCurrentUserId} from '@queries/servers/system';
 import {hasPermission} from '@utils/role';
 
 import SearchHandler from './search_handler';
 
 import type {WithDatabaseArgs} from '@typings/database/database';
 import type RoleModel from '@typings/database/models/servers/role';
-import type SystemModel from '@typings/database/models/servers/system';
 import type UserModel from '@typings/database/models/servers/user';
 
-const {SERVER: {SYSTEM, USER, ROLE, MY_CHANNEL}} = MM_TABLES;
+const {SERVER: {USER, ROLE, MY_CHANNEL}} = MM_TABLES;
 
 const enhanced = withObservables([], ({database}: WithDatabaseArgs) => {
-    const config = database.get<SystemModel>(SYSTEM).findAndObserve(SYSTEM_IDENTIFIERS.CONFIG).pipe(
-        switchMap(({value}) => of$(value as ClientConfig)),
-    );
+    const config = observeConfig(database);
 
     const sharedChannelsEnabled = config.pipe(
         switchMap((v) => of$(v.ExperimentalSharedChannels === 'true')),
@@ -34,12 +32,8 @@ const enhanced = withObservables([], ({database}: WithDatabaseArgs) => {
         switchMap((v) => of$(v.ExperimentalViewArchivedChannels === 'true')),
     );
 
-    const currentTeamId = database.get<SystemModel>(SYSTEM).findAndObserve(SYSTEM_IDENTIFIERS.CURRENT_TEAM_ID).pipe(
-        switchMap(({value}) => of$(value)),
-    );
-    const currentUserId = database.get<SystemModel>(SYSTEM).findAndObserve(SYSTEM_IDENTIFIERS.CURRENT_USER_ID).pipe(
-        switchMap(({value}) => of$(value)),
-    );
+    const currentTeamId = observeCurrentTeamId(database);
+    const currentUserId = observeCurrentUserId(database);
 
     const joinedChannels = database.get<MyChannelModel>(MY_CHANNEL).query().observe();
 

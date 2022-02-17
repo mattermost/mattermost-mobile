@@ -2,6 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {Database, Model, Q, Query, Relation} from '@nozbe/watermelondb';
+import {switchMap} from 'rxjs/operators';
 
 import {General, Permissions} from '@constants';
 import {MM_TABLES} from '@constants/database';
@@ -9,14 +10,13 @@ import {hasPermission} from '@utils/role';
 
 import {prepareDeletePost} from './post';
 import {queryRoles} from './role';
-import {queryCurrentChannelId} from './system';
+import {observeCurrentChannelId, queryCurrentChannelId} from './system';
 
 import type ServerDataOperator from '@database/operator/server_data_operator';
 import type ChannelModel from '@typings/database/models/servers/channel';
 import type ChannelInfoModel from '@typings/database/models/servers/channel_info';
 import type MyChannelModel from '@typings/database/models/servers/my_channel';
 import type PostModel from '@typings/database/models/servers/post';
-
 const {SERVER: {CHANNEL, MY_CHANNEL, CHANNEL_MEMBERSHIP}} = MM_TABLES;
 
 export function prepareMissingChannelsForAllTeams(operator: ServerDataOperator, channels: Channel[], channelMembers: ChannelMembership[]): Array<Promise<Model[]>> | undefined {
@@ -217,6 +217,12 @@ export const queryCurrentChannel = async (database: Database) => {
     }
 
     return undefined;
+};
+
+export const observeCurrentChannel = (database: Database) => {
+    return observeCurrentChannelId(database).pipe(
+        switchMap((id) => database.get<ChannelModel>(CHANNEL).findAndObserve(id)),
+    );
 };
 
 export const deleteChannelMembership = async (operator: ServerDataOperator, userId: string, channelId: string, prepareRecordsOnly = false) => {

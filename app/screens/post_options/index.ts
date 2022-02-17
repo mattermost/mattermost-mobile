@@ -1,15 +1,16 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {Q} from '@nozbe/watermelondb';
 import {withDatabase} from '@nozbe/watermelondb/DatabaseProvider';
 import withObservables from '@nozbe/with-observables';
 import {combineLatest, from as from$, of as of$} from 'rxjs';
 import {switchMap} from 'rxjs/operators';
 
 import {General, Permissions, Preferences, Screens} from '@constants';
-import {MM_TABLES, SYSTEM_IDENTIFIERS} from '@constants/database';
 import {MAX_ALLOWED_REACTIONS} from '@constants/emoji';
+import {observePreferencesByCategoryAndName} from '@queries/servers/preference';
+import {observeConfig, observeLicense} from '@queries/servers/system';
+import {observeCurrentUser} from '@queries/servers/user';
 import {isMinimumServerVersion} from '@utils/helpers';
 import {isSystemMessage} from '@utils/post';
 import {hasPermissionForChannel, hasPermissionForPost} from '@utils/role';
@@ -20,13 +21,8 @@ import PostOptions from './post_options';
 import type {WithDatabaseArgs} from '@typings/database/database';
 import type ChannelModel from '@typings/database/models/servers/channel';
 import type PostModel from '@typings/database/models/servers/post';
-import type PreferenceModel from '@typings/database/models/servers/preference';
 import type ReactionModel from '@typings/database/models/servers/reaction';
-import type SystemModel from '@typings/database/models/servers/system';
 import type UserModel from '@typings/database/models/servers/user';
-
-const {USER, SYSTEM, PREFERENCE} = MM_TABLES.SERVER;
-const {CURRENT_USER_ID, LICENSE, CONFIG} = SYSTEM_IDENTIFIERS;
 
 const canEditPost = (isOwner: boolean, post: PostModel, postEditTimeLimit: number, isLicensed: boolean, channel: ChannelModel, user: UserModel): boolean => {
     if (!post || isSystemMessage(post)) {
@@ -54,9 +50,9 @@ const canEditPost = (isOwner: boolean, post: PostModel, postEditTimeLimit: numbe
 const enhanced = withObservables([], ({post, showAddReaction, location, database}: WithDatabaseArgs & { post: PostModel; showAddReaction: boolean; location: string }) => {
     const channel = post.channel.observe();
     const channelIsArchived = channel.pipe(switchMap((ch: ChannelModel) => of$(ch.deleteAt !== 0)));
-    const currentUser = database.get<SystemModel>(SYSTEM).findAndObserve(CURRENT_USER_ID).pipe(switchMap(({value}) => database.get<UserModel>(USER).findAndObserve(value)));
-    const config = database.get<SystemModel>(SYSTEM).findAndObserve(CONFIG).pipe(switchMap(({value}) => of$(value as ClientConfig)));
-    const isLicensed = database.get<SystemModel>(SYSTEM).findAndObserve(LICENSE).pipe(switchMap(({value}) => of$(value.IsLicensed === 'true')));
+    const currentUser = observeCurrentUser(database);
+    const config = observeConfig(database);
+    const isLicensed = observeLicense(database).pipe(switchMap((lcs) => of$(lcs.IsLicensed === 'true')));
     const allowEditPost = config.pipe(switchMap((cfg) => of$(cfg.AllowEditPost)));
     const serverVersion = config.pipe(switchMap((cfg) => cfg.Version));
     const postEditTimeLimit = config.pipe(switchMap((cfg) => of$(parseInt(cfg.PostEditTimeLimit || '-1', 10))));
@@ -95,7 +91,7 @@ const enhanced = withObservables([], ({post, showAddReaction, location, database
         return of$(!isSystemMessage(post) && !isArchived && !isReadOnly);
     }));
 
-    const isSaved = database.get<PreferenceModel>(PREFERENCE).query(Q.where('category', Preferences.CATEGORY_SAVED_POST), Q.where('name', post.id)).observe().pipe(switchMap((pref) => of$(Boolean(pref[0]?.value === 'true'))));
+    const isSaved = observePreferencesByCategoryAndName(database, Preferences.CATEGORY_SAVED_POST, post.id).pipe(switchMap((pref) => of$(Boolean(pref[0]?.value === 'true'))));
 
     const canEdit = combineLatest([postEditTimeLimit, isLicensed, channel, currentUser, channelIsArchived, channelIsReadOnly, canEditUntil, canPostPermission]).pipe(switchMap(([lt, ls, c, u, isArchived, isReadOnly, until, canPost]) => {
         const isOwner = u.id === post.userId;

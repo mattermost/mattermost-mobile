@@ -8,10 +8,10 @@ import {DeviceEventEmitter, StyleProp, StyleSheet, View, ViewStyle} from 'react-
 import {combineLatest, of as of$} from 'rxjs';
 import {map, switchMap} from 'rxjs/operators';
 
-import {MM_TABLES, SYSTEM_IDENTIFIERS} from '@constants/database';
 import {useServerUrl} from '@context/server';
 import {useIsTablet} from '@hooks/device';
 import NetworkManager from '@init/network_manager';
+import {observeConfigBooleanValue, observeLicense} from '@queries/servers/system';
 import {isGif, isImage} from '@utils/file';
 import {openGalleryAtIndex} from '@utils/gallery';
 import {getViewPortWidth} from '@utils/images';
@@ -23,7 +23,6 @@ import type {Client} from '@client/rest';
 import type {WithDatabaseArgs} from '@typings/database/database';
 import type FileModel from '@typings/database/models/servers/file';
 import type PostModel from '@typings/database/models/servers/post';
-import type SystemModel from '@typings/database/models/servers/system';
 
 type FilesProps = {
     authorId: string;
@@ -187,11 +186,9 @@ const Files = ({authorId, canDownloadFiles, failed, files, isReplyPost, postId, 
 };
 
 const withCanDownload = withObservables(['post'], ({database, post}: {post: PostModel} & WithDatabaseArgs) => {
-    const enableMobileFileDownload = database.get<SystemModel>(MM_TABLES.SERVER.SYSTEM).findAndObserve(SYSTEM_IDENTIFIERS.CONFIG).pipe(
-        switchMap(({value}: {value: ClientConfig}) => of$(value.EnableMobileFileDownload !== 'false')),
-    );
-    const complianceDisabled = database.get<SystemModel>(MM_TABLES.SERVER.SYSTEM).findAndObserve(SYSTEM_IDENTIFIERS.LICENSE).pipe(
-        switchMap(({value}: {value: ClientLicense}) => of$(value.IsLicensed === 'false' || value.Compliance === 'false')),
+    const enableMobileFileDownload = observeConfigBooleanValue(database, 'EnableMobileFileDownload');
+    const complianceDisabled = observeLicense(database).pipe(
+        switchMap((lcs) => of$(lcs.IsLicensed === 'false' || lcs.Compliance === 'false')),
     );
 
     const canDownloadFiles = combineLatest([enableMobileFileDownload, complianceDisabled]).pipe(

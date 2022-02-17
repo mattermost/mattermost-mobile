@@ -8,7 +8,8 @@ import {combineLatest, from as from$, of as of$} from 'rxjs';
 import {map, switchMap} from 'rxjs/operators';
 
 import {Permissions} from '@constants';
-import {MM_TABLES, SYSTEM_IDENTIFIERS} from '@constants/database';
+import {MM_TABLES} from '@constants/database';
+import {observeCurrentUserId} from '@queries/servers/system';
 import {generateCombinedPost, getPostIdsForCombinedUserActivityPost} from '@utils/post_list';
 import {hasPermissionForPost} from '@utils/role';
 
@@ -16,15 +17,12 @@ import CombinedUserActivity from './combined_user_activity';
 
 import type {WithDatabaseArgs} from '@typings/database/database';
 import type PostModel from '@typings/database/models/servers/post';
-import type SystemModel from '@typings/database/models/servers/system';
 import type UserModel from '@typings/database/models/servers/user';
 
-const {SERVER: {POST, SYSTEM, USER}} = MM_TABLES;
+const {SERVER: {POST, USER}} = MM_TABLES;
 
 const withCombinedPosts = withObservables(['postId'], ({database, postId}: WithDatabaseArgs & {postId: string}) => {
-    const currentUserId = database.get<SystemModel>(SYSTEM).findAndObserve(SYSTEM_IDENTIFIERS.CURRENT_USER_ID).pipe(
-        map(({value}: {value: string}) => value),
-    );
+    const currentUserId = observeCurrentUserId(database);
     const currentUser = currentUserId.pipe(
         switchMap((value) => database.get<UserModel>(USER).findAndObserve(value)),
     );

@@ -8,7 +8,8 @@ import {of as of$} from 'rxjs';
 import {switchMap} from 'rxjs/operators';
 
 import {Permissions} from '@constants';
-import {MM_TABLES, SYSTEM_IDENTIFIERS} from '@constants/database';
+import {MM_TABLES} from '@constants/database';
+import {observeCurrentUser} from '@queries/servers/user';
 import {hasPermission} from '@utils/role';
 
 import TeamSidebar from './team_sidebar';
@@ -16,17 +17,12 @@ import TeamSidebar from './team_sidebar';
 import type {WithDatabaseArgs} from '@typings/database/database';
 import type MyTeam from '@typings/database/models/servers/my_team';
 import type RoleModel from '@typings/database/models/servers/role';
-import type SystemModel from '@typings/database/models/servers/system';
 import type TeamModel from '@typings/database/models/servers/team';
-import type UserModel from '@typings/database/models/servers/user';
 
-const {SERVER: {SYSTEM, MY_TEAM, TEAM, USER, ROLE}} = MM_TABLES;
+const {SERVER: {MY_TEAM, TEAM, ROLE}} = MM_TABLES;
 
 const enhanced = withObservables([], ({database}: WithDatabaseArgs) => {
-    const currentUser = database.get<SystemModel>(SYSTEM).findAndObserve(SYSTEM_IDENTIFIERS.CURRENT_USER_ID).pipe(
-        switchMap(({value}) => database.get<UserModel>(USER).findAndObserve(value)),
-    );
-    const rolesArray = currentUser.pipe(
+    const rolesArray = observeCurrentUser(database).pipe(
         switchMap((u) => of$(u.roles.split(' '))),
     );
     const roles = rolesArray.pipe(

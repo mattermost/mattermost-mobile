@@ -7,19 +7,16 @@ import React, {useCallback} from 'react';
 import {useIntl} from 'react-intl';
 import {Alert, Image, Platform, StatusBar, StyleSheet} from 'react-native';
 import {YouTubeStandaloneAndroid, YouTubeStandaloneIOS} from 'react-native-youtube';
-import {of as of$} from 'rxjs';
-import {switchMap} from 'rxjs/operators';
 
 import ProgressiveImage from '@components/progressive_image';
 import TouchableWithFeedback from '@components/touchable_with_feedback';
-import {MM_TABLES, SYSTEM_IDENTIFIERS} from '@constants/database';
 import {useIsTablet} from '@hooks/device';
+import {observeConfigValue} from '@queries/servers/system';
 import {emptyFunction} from '@utils/general';
 import {calculateDimensions, getViewPortWidth} from '@utils/images';
 import {getYouTubeVideoId, tryOpenURL} from '@utils/url';
 
 import type {WithDatabaseArgs} from '@typings/database/database';
-import type SystemModel from '@typings/database/models/servers/system';
 
 type YouTubeProps = {
     googleDeveloperKey?: string;
@@ -183,11 +180,7 @@ const YouTube = ({googleDeveloperKey, isReplyPost, metadata}: YouTubeProps) => {
 };
 
 const withGoogleKey = withObservables([], ({database}: WithDatabaseArgs) => ({
-    googleDeveloperKey: database.get<SystemModel>(MM_TABLES.SERVER.SYSTEM).findAndObserve(SYSTEM_IDENTIFIERS.CONFIG).pipe(
-        switchMap(({value}: {value: ClientConfig}) => {
-            return of$(value.GoogleDeveloperKey);
-        }),
-    ),
+    googleDeveloperKey: observeConfigValue(database, 'GoogleDeveloperKey'),
 }));
 
 export default withDatabase(withGoogleKey(React.memo(YouTube)));

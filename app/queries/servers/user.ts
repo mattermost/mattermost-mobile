@@ -2,10 +2,15 @@
 // See LICENSE.txt for license information.
 
 import {Database, Q} from '@nozbe/watermelondb';
+import {combineLatest} from 'rxjs';
+import {switchMap} from 'rxjs/operators';
 
+import {Preferences} from '@constants';
 import {MM_TABLES} from '@constants/database';
+import {getTeammateNameDisplaySetting} from '@helpers/api/preference';
 
-import {queryCurrentUserId} from './system';
+import {observePreferencesByCategoryAndName} from './preference';
+import {observeConfig, observeCurrentUserId, observeLicense, queryCurrentUserId} from './system';
 
 import type ServerDataOperator from '@database/operator/server_data_operator';
 import type UserModel from '@typings/database/models/servers/user';
@@ -26,6 +31,12 @@ export const queryCurrentUser = async (database: Database) => {
     }
 
     return undefined;
+};
+
+export const observeCurrentUser = (database: Database) => {
+    return observeCurrentUserId(database).pipe(
+        switchMap((id) => database.get<UserModel>(MM_TABLES.SERVER.USER).findAndObserve(id)),
+    );
 };
 
 export const queryAllUsers = async (database: Database): Promise<UserModel[]> => {
@@ -65,4 +76,15 @@ export const prepareUsers = (operator: ServerDataOperator, users: UserProfile[])
     } catch {
         return undefined;
     }
+};
+
+export const observeTeammateNameDisplay = (database: Database) => {
+    const config = observeConfig(database);
+    const license = observeLicense(database);
+    const preferences = observePreferencesByCategoryAndName(database, Preferences.CATEGORY_DISPLAY_SETTINGS);
+    return combineLatest([config, license, preferences]).pipe(
+        switchMap(
+            ([cfg, lcs, prefs]) => getTeammateNameDisplaySetting(prefs, cfg, lcs),
+        ),
+    );
 };

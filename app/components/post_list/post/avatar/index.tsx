@@ -7,25 +7,22 @@ import React, {ReactNode, useRef} from 'react';
 import {useIntl} from 'react-intl';
 import {Keyboard, Platform, StyleSheet, View} from 'react-native';
 import FastImage from 'react-native-fast-image';
-import {of as of$} from 'rxjs';
-import {switchMap} from 'rxjs/operators';
 
 import CompassIcon from '@components/compass_icon';
 import ProfilePicture from '@components/profile_picture';
 import SystemAvatar from '@components/system_avatar';
 import TouchableWithFeedback from '@components/touchable_with_feedback';
 import {View as ViewConstant} from '@constants';
-import {MM_TABLES, SYSTEM_IDENTIFIERS} from '@constants/database';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import NetworkManager from '@init/network_manager';
+import {observeConfigBooleanValue} from '@queries/servers/system';
 import {showModal} from '@screens/navigation';
 import {preventDoubleTap} from '@utils/tap';
 
 import type {Client} from '@client/rest';
 import type {WithDatabaseArgs} from '@typings/database/database';
 import type PostModel from '@typings/database/models/servers/post';
-import type SystemModel from '@typings/database/models/servers/system';
 import type UserModel from '@typings/database/models/servers/user';
 import type {ImageSource} from 'react-native-vector-icons/Icon';
 
@@ -153,9 +150,7 @@ const Avatar = ({author, enablePostIconOverride, isAutoReponse, isSystemPost, po
 };
 
 const withPost = withObservables(['post'], ({database, post}: {post: PostModel} & WithDatabaseArgs) => {
-    const enablePostIconOverride = database.get<SystemModel>(MM_TABLES.SERVER.SYSTEM).findAndObserve(SYSTEM_IDENTIFIERS.CONFIG).pipe(
-        switchMap((cfg) => of$(cfg.value.EnablePostIconOverride === 'true')),
-    );
+    const enablePostIconOverride = observeConfigBooleanValue(database, 'EnablePostIconOverride');
 
     return {
         author: post.author.observe(),

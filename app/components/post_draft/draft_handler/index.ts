@@ -7,17 +7,17 @@ import withObservables from '@nozbe/with-observables';
 import {combineLatest, of as of$} from 'rxjs';
 import {switchMap} from 'rxjs/operators';
 
-import {MM_TABLES, SYSTEM_IDENTIFIERS} from '@constants/database';
+import {MM_TABLES} from '@constants/database';
 import {DEFAULT_SERVER_MAX_FILE_SIZE} from '@constants/post_draft';
+import {observeConfig, observeLicense} from '@queries/servers/system';
 import {isMinimumServerVersion} from '@utils/helpers';
 
 import DraftHandler from './draft_handler';
 
 import type {WithDatabaseArgs} from '@typings/database/database';
 import type DraftModel from '@typings/database/models/servers/draft';
-import type SystemModel from '@typings/database/models/servers/system';
 
-const {SERVER: {SYSTEM, DRAFT}} = MM_TABLES;
+const {SERVER: {DRAFT}} = MM_TABLES;
 
 type OwnProps = {
     channelId: string;
@@ -32,13 +32,9 @@ const enhanced = withObservables([], ({database, channelId, rootId = ''}: WithDa
     const files = draft.pipe(switchMap((d) => of$(d?.files)));
     const message = draft.pipe(switchMap((d) => of$(d?.message)));
 
-    const config = database.get<SystemModel>(SYSTEM).findAndObserve(SYSTEM_IDENTIFIERS.CONFIG).pipe(
-        switchMap(({value}) => of$(value as ClientConfig)),
-    );
+    const config = observeConfig(database);
 
-    const license = database.get<SystemModel>(SYSTEM).findAndObserve(SYSTEM_IDENTIFIERS.LICENSE).pipe(
-        switchMap(({value}) => of$(value as ClientLicense)),
-    );
+    const license = observeLicense(database);
 
     const canUploadFiles = combineLatest([config, license]).pipe(
         switchMap(([c, l]) => of$(

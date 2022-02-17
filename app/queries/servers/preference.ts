@@ -34,6 +34,18 @@ export const queryPreferencesByCategoryAndName = (database: Database, category: 
         fetch();
 };
 
+export const observePreferencesByCategoryAndName = (database: Database, category: string, name?: string) => {
+    if (name == null) {
+        return database.get<PreferenceModel>(MM_TABLES.SERVER.PREFERENCE).query(
+            Q.where('category', category),
+        ).observe();
+    }
+    return database.get<PreferenceModel>(MM_TABLES.SERVER.PREFERENCE).query(
+        Q.where('category', category),
+        Q.where('name', name),
+    ).observe();
+};
+
 export const queryThemeForCurrentTeam = async (database: Database) => {
     const currentTeamId = await queryCurrentTeamId(database);
     const teamTheme = await queryPreferencesByCategoryAndName(database, Preferences.CATEGORY_THEME, currentTeamId);

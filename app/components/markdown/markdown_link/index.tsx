@@ -15,17 +15,16 @@ import urlParse from 'url-parse';
 import {showPermalink} from '@actions/local/permalink';
 import {switchToChannelByName} from '@actions/remote/channel';
 import SlideUpPanelItem, {ITEM_HEIGHT} from '@components/slide_up_panel_item';
-import {MM_TABLES, SYSTEM_IDENTIFIERS} from '@constants/database';
 import DeepLinkTypes from '@constants/deep_linking';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
+import {observeConfig} from '@queries/servers/system';
 import {bottomSheet, dismissAllModals, dismissBottomSheet, popToRoot} from '@screens/navigation';
 import {errorBadChannel} from '@utils/draft';
 import {preventDoubleTap} from '@utils/tap';
 import {matchDeepLink, normalizeProtocol, tryOpenURL} from '@utils/url';
 
 import type {WithDatabaseArgs} from '@typings/database/database';
-import type SystemModel from '@typings/database/models/servers/system';
 import type {DeepLinkChannel, DeepLinkPermalink, DeepLinkWithData} from '@typings/launch';
 
 type MarkdownLinkProps = {
@@ -173,17 +172,13 @@ const MarkdownLink = ({children, experimentalNormalizeMarkdownLinks, href, siteU
     );
 };
 
-type ConfigValue = {
-    value: ClientConfig;
-}
-
 const withConfigValues = withObservables([], ({database}: WithDatabaseArgs) => {
-    const config = database.get<SystemModel>(MM_TABLES.SERVER.SYSTEM).findAndObserve(SYSTEM_IDENTIFIERS.CONFIG);
+    const config = observeConfig(database);
     const experimentalNormalizeMarkdownLinks = config.pipe(
-        switchMap(({value}: ConfigValue) => of$(value.ExperimentalNormalizeMarkdownLinks)),
+        switchMap((cfg) => of$(cfg.ExperimentalNormalizeMarkdownLinks)),
     );
     const siteURL = config.pipe(
-        switchMap(({value}: ConfigValue) => of$(value.SiteURL)),
+        switchMap((cfg) => of$(cfg.SiteURL)),
     );
 
     return {

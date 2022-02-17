@@ -9,24 +9,20 @@ import Clipboard from '@react-native-community/clipboard';
 import React, {useCallback, useMemo} from 'react';
 import {useIntl} from 'react-intl';
 import {GestureResponderEvent, StyleProp, StyleSheet, Text, TextStyle, View} from 'react-native';
-import {combineLatest, of as of$} from 'rxjs';
-import {map, switchMap} from 'rxjs/operators';
 
 import CompassIcon from '@components/compass_icon';
 import SlideUpPanelItem, {ITEM_HEIGHT} from '@components/slide_up_panel_item';
-import {Preferences} from '@constants';
-import {MM_TABLES, SYSTEM_IDENTIFIERS} from '@constants/database';
+import {MM_TABLES} from '@constants/database';
 import {useTheme} from '@context/theme';
 import UserModel from '@database/models/server/user';
-import {getTeammateNameDisplaySetting} from '@helpers/api/preference';
+import {observeCurrentUserId} from '@queries/servers/system';
+import {observeTeammateNameDisplay} from '@queries/servers/user';
 import {bottomSheet, dismissBottomSheet, showModal} from '@screens/navigation';
 import {displayUsername, getUserMentionKeys, getUsersByUsername} from '@utils/user';
 
 import type {WithDatabaseArgs} from '@typings/database/database';
 import type GroupModel from '@typings/database/models/servers/group';
 import type GroupMembershipModel from '@typings/database/models/servers/group_membership';
-import type PreferenceModel from '@typings/database/models/servers/preference';
-import type SystemModel from '@typings/database/models/servers/system';
 import type UserModelType from '@typings/database/models/servers/user';
 
 type AtMentionProps = {
@@ -45,7 +41,7 @@ type AtMentionProps = {
     users: UserModelType[];
 }
 
-const {SERVER: {GROUP, GROUP_MEMBERSHIP, PREFERENCE, SYSTEM, USER}} = MM_TABLES;
+const {SERVER: {GROUP, GROUP_MEMBERSHIP, USER}} = MM_TABLES;
 
 const style = StyleSheet.create({
     bottomSheet: {
@@ -257,17 +253,8 @@ const AtMention = ({
 };
 
 const withAtMention = withObservables(['mentionName'], ({database, mentionName}: {mentionName: string} & WithDatabaseArgs) => {
-    const config = database.get<SystemModel>(SYSTEM).findAndObserve(SYSTEM_IDENTIFIERS.CONFIG);
-    const license = database.get<SystemModel>(SYSTEM).findAndObserve(SYSTEM_IDENTIFIERS.LICENSE);
-    const preferences = database.get<PreferenceModel>(PREFERENCE).query(Q.where('category', Preferences.CATEGORY_DISPLAY_SETTINGS)).observe();
-    const currentUserId = database.get<SystemModel>(SYSTEM).findAndObserve(SYSTEM_IDENTIFIERS.CURRENT_USER_ID).pipe(
-        switchMap(({value}) => of$(value)),
-    );
-    const teammateNameDisplay = combineLatest([config, license, preferences]).pipe(
-        map(
-            ([{value: cfg}, {value: lcs}, prefs]) => getTeammateNameDisplaySetting(prefs, cfg, lcs),
-        ),
-    );
+    const currentUserId = observeCurrentUserId(database);
+    const teammateNameDisplay = observeTeammateNameDisplay(database);
 
     let mn = mentionName.toLowerCase();
     if ((/[._-]$/).test(mn)) {
