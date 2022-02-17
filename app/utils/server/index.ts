@@ -167,7 +167,7 @@ function buildServerModalOptions(theme: Theme, closeButtonId: string) {
         topBar: {
             visible: true,
             drawBehind: true,
-            translucid: true,
+            translucient: true,
             noBorder: true,
             elevation: 0,
             background: {color: 'transparent'},

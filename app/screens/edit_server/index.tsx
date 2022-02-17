@@ -41,21 +41,16 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
 }));
 
 const EditServer = ({closeButtonId, componentId, server, theme}: ServerProps) => {
-    const intl = useIntl();
+    const {formatMessage} = useIntl();
     const keyboardAwareRef = useRef<KeyboardAwareScrollView>();
     const [saving, setSaving] = useState(false);
     const [displayName, setDisplayName] = useState<string>(server.displayName);
     const [buttonDisabled, setButtonDisabled] = useState(true);
     const [displayNameError, setDisplayNameError] = useState<string | undefined>();
     const styles = getStyleSheet(theme);
-    const {formatMessage} = intl;
 
     useEffect(() => {
-        if (displayName && displayName !== server.displayName) {
-            setButtonDisabled(false);
-        } else {
-            setButtonDisabled(true);
-        }
+        setButtonDisabled(Boolean(displayName && displayName !== server.displayName));
     }, [displayName]);
 
     useEffect(() => {
@@ -78,8 +73,8 @@ const EditServer = ({closeButtonId, componentId, server, theme}: ServerProps) =>
         }
 
         setSaving(true);
-        const exists = await queryServerByDisplayName(DatabaseManager.appDatabase!.database, displayName);
-        if (exists && exists.lastActiveAt > 0 && exists.url !== server.url) {
+        const knownServer = await queryServerByDisplayName(DatabaseManager.appDatabase!.database, displayName);
+        if (knownServer && knownServer.lastActiveAt > 0 && knownServer.url !== server.url) {
             setButtonDisabled(true);
             setDisplayNameError(formatMessage({
                 id: 'mobile.server_name.exists',

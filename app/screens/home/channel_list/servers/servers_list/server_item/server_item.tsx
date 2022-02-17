@@ -218,7 +218,7 @@ const ServerItem = ({highlight, isActive, server, tutorialWatched}: Props) => {
     }, [isActive, server, intl]);
 
     const handleShowTutorial = useCallback(() => {
-        setTimeout(() => swipeable.current?.openRight(), 500);
+        swipeable.current?.openRight();
     }, []);
 
     const onServerPressed = useCallback(async () => {

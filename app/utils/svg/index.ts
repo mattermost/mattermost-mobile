@@ -6,10 +6,10 @@ export const svgL = (x: number, y: number) => `L ${x} ${y}`;
 export const svgArc = (toX: number, toY: number, radius: number) => `A ${radius},${radius} 0 0 0 ${toX},${toY}`;
 export const z = 'z';
 
-export const constructRectangularPath = (
+export const constructRectangularPathWithBorderRadius = (
     parentBounds: TutorialItemBounds,
     itemBounds: TutorialItemBounds,
-    borderRadius: number,
+    borderRadius = 0,
 ): string => {
     const {startX, startY, endX, endY} = itemBounds;
     return [

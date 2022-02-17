@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React from 'react';
+import React, {useEffect, useState} from 'react';
 import {Modal, StyleSheet, useWindowDimensions, View} from 'react-native';
 
 import HighlightItem from './item';
@@ -16,12 +16,21 @@ type Props = {
 
 const TutorialHighlight = ({children, itemBounds, itemBorderRadius, onDismiss, onShow}: Props) => {
     const {width, height} = useWindowDimensions();
+    const [visible, setIsVisible] = useState(false);
     const isLandscape = width > height;
     const supportedOrientations = isLandscape ? 'landscape' : 'portrait';
 
+    useEffect(() => {
+        const t = setTimeout(() => {
+            setIsVisible(true);
+        }, 500);
+
+        return () => clearTimeout(t);
+    }, []);
+
     return (
         <Modal
-            visible={true}
+            visible={visible}
             transparent={true}
             animationType='fade'
             onShow={onShow}

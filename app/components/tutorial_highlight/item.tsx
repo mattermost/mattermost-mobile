@@ -7,7 +7,7 @@ import Svg, {ClipPath, Defs, G, Path, Rect} from 'react-native-svg';
 import tinyColor from 'tinycolor2';
 
 import {useTheme} from '@context/theme';
-import {constructRectangularPath} from '@utils/svg';
+import {constructRectangularPathWithBorderRadius} from '@utils/svg';
 
 type Props = {
     borderRadius?: number;
@@ -23,7 +23,7 @@ const HighlightItem = ({height, itemBounds, onDismiss, borderRadius = 0, width}:
 
     const pathD = useMemo(() => {
         const parent = {startX: 0, startY: 0, endX: width, endY: height};
-        return constructRectangularPath(parent, itemBounds, borderRadius);
+        return constructRectangularPathWithBorderRadius(parent, itemBounds, borderRadius);
     }, [borderRadius, itemBounds, width]);
 
     return (

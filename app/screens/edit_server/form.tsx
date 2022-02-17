@@ -99,6 +99,10 @@ const EditServerForm = ({
     }, [handleUpdate]);
 
     const onFocus = useCallback(() => {
+        // For iOS we set the position of the input instead of
+        // having the KeyboardAwareScrollView figure it out by itself
+        // on Android KeyboardAwareScrollView does nothing as is handled
+        // by the OS
         if (Platform.OS === 'ios') {
             let offsetY = 160;
             if (isTablet) {
