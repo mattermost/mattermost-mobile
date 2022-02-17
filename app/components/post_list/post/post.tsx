@@ -135,7 +135,7 @@ const Post = ({
             }
 
             const isValidSystemMessage = isAutoResponder || !isSystemPost;
-            if (post.deleteAt !== 0 && isValidSystemMessage && !isPendingOrFailed) {
+            if (post.deleteAt === 0 && isValidSystemMessage && !isPendingOrFailed) {
                 if ([Screens.CHANNEL, Screens.PERMALINK].includes(location)) {
                     DeviceEventEmitter.emit('goToThread', post);
                 }
