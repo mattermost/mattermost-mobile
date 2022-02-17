@@ -173,6 +173,17 @@ class PushNotifications {
             EphemeralStore.setStartFromNotification(true);
             notification.userInteraction = true;
 
+            if (Platform.OS === 'ios') {
+                // when a notification is received on iOS, getInitialNotification, will return the notification
+                // as the app will initialized cause we are using background fetch,
+                // that does not necessarily mean that the app was opened cause of the notification was tapped.
+                // Here we are going to dettermine if the notification still exists in NotificationCenter to verify if
+                // the app was opened because of a tap or cause of the background fetch init
+                const delivered = await Notifications.ios.getDeliveredNotifications();
+                notification.userInteraction = delivered.find((d) => (d as unknown as NotificationWithAck).ack_id === notification?.payload?.ack_id) == null;
+                notification.foreground = false;
+            }
+
             // getInitialNotification may run before the store is set
             // that is why we run on an interval until the store is available
             // once we handle the notification the interval is cleared.
@@ -221,6 +232,8 @@ class PushNotifications {
                                 }
                             }
                         }
+                    } else if (!userInteraction && Platform.OS === 'ios') {
+                        dispatch(loadFromPushNotification(notification, isInitialNotification, true));
                     }
                     break;
                 case NOTIFICATION_TYPE.SESSION:
