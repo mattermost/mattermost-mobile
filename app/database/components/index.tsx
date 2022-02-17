@@ -29,14 +29,16 @@ export function withServerDatabase<T>(Component: ComponentType<T>): ComponentTyp
             ) : undefined;
 
             if (server) {
-                const serverDatabase =
-                    DatabaseManager.serverDatabases[server?.url]?.database;
+                const database =
+                    DatabaseManager.serverDatabases[server.url]?.database;
 
-                setState({
-                    database: serverDatabase,
-                    serverUrl: server?.url,
-                    serverDisplayName: server?.displayName,
-                });
+                if (database) {
+                    setState({
+                        database,
+                        serverUrl: server.url,
+                        serverDisplayName: server.displayName,
+                    });
+                }
             } else {
                 setState(undefined);
             }
@@ -55,7 +57,10 @@ export function withServerDatabase<T>(Component: ComponentType<T>): ComponentTyp
         }
 
         return (
-            <DatabaseProvider database={state.database}>
+            <DatabaseProvider
+                database={state.database}
+                key={state.serverUrl}
+            >
                 <UserLocaleProvider database={state.database}>
                     <ServerProvider server={{displayName: state.serverDisplayName, url: state.serverUrl}}>
                         <ThemeProvider database={state.database}>

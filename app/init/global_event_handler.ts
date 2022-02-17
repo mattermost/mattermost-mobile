@@ -6,7 +6,6 @@ import {Alert, DeviceEventEmitter, Linking, Platform} from 'react-native';
 import semver from 'semver';
 
 import {selectAllMyChannelIds} from '@actions/local/channel';
-import {fetchConfigAndLicense} from '@actions/remote/systems';
 import LocalConfig from '@assets/config.json';
 import {Events, Sso} from '@constants';
 import DatabaseManager from '@database/manager';
@@ -23,6 +22,11 @@ import {LaunchType} from '@typings/launch';
 import {deleteFileCache} from '@utils/file';
 
 type LinkingCallbackArg = {url: string};
+
+type LogoutCallbackArg = {
+    serverUrl: string;
+    removeServer: boolean;
+}
 
 class GlobalEventHandler {
     JavascriptAndNativeErrorHandler: jsAndNativeErrorHandler | undefined;
@@ -84,14 +88,21 @@ class GlobalEventHandler {
         }
     };
 
-    onLogout = async (serverUrl: string) => {
+    onLogout = async ({serverUrl, removeServer}: LogoutCallbackArg) => {
         await removeServerCredentials(serverUrl);
         const channelIds = await selectAllMyChannelIds(serverUrl);
         PushNotifications.cancelChannelsNotifications(channelIds);
 
         NetworkManager.invalidateClient(serverUrl);
         WebsocketManager.invalidateClient(serverUrl);
-        await DatabaseManager.deleteServerDatabase(serverUrl);
+
+        const activeServerUrl = await DatabaseManager.getActiveServerUrl();
+        const activeServerDisplayName = await DatabaseManager.getActiveServerDisplayName();
+        if (removeServer) {
+            await DatabaseManager.destroyServerDatabase(serverUrl);
+        } else {
+            await DatabaseManager.deleteServerDatabase(serverUrl);
+        }
 
         const analyticsClient = analytics.get(serverUrl);
         if (analyticsClient) {
@@ -103,11 +114,20 @@ class GlobalEventHandler {
         this.clearCookiesForServer(serverUrl);
         deleteFileCache(serverUrl);
 
-        if (!Object.keys(DatabaseManager.serverDatabases).length) {
-            EphemeralStore.theme = undefined;
-        }
+        if (activeServerUrl === serverUrl) {
+            let displayName = '';
+            let launchType: LaunchType = LaunchType.AddServer;
+            if (!Object.keys(DatabaseManager.serverDatabases).length) {
+                EphemeralStore.theme = undefined;
+                launchType = LaunchType.Normal;
 
-        relaunchApp({launchType: LaunchType.Normal}, true);
+                if (activeServerDisplayName) {
+                    displayName = activeServerDisplayName;
+                }
+            }
+
+            relaunchApp({launchType, serverUrl, displayName}, true);
+        }
     };
 
     onServerConfigChanged = ({serverUrl, config}: {serverUrl: string; config: ClientConfig}) => {
@@ -132,12 +152,6 @@ class GlobalEventHandler {
                     {cancelable: false},
                 );
             }
-
-            const fetchTimeout = setTimeout(() => {
-                // Defer the call to avoid collision with other request writting to the db
-                fetchConfigAndLicense(serverUrl);
-                clearTimeout(fetchTimeout);
-            }, 3000);
         }
     };
 
@@ -155,7 +169,7 @@ class GlobalEventHandler {
         const credentials = await getServerCredentials(serverUrl);
 
         if (credentials) {
-            this.onLogout(serverUrl);
+            this.onLogout({serverUrl, removeServer: false});
         }
     };
 }

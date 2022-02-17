@@ -7,7 +7,7 @@ const Preferences: Record<string, any> = {
     CATEGORY_DIRECT_CHANNEL_SHOW: 'direct_channel_show',
     CATEGORY_GROUP_CHANNEL_SHOW: 'group_channel_show',
     CATEGORY_EMOJI: 'emoji',
-    CATEGORY_FLAGGED_POST: 'flagged_post',
+    CATEGORY_SAVED_POST: 'flagged_post',
     CATEGORY_FAVORITE_CHANNEL: 'favorite_channel',
     CATEGORY_AUTO_RESET_MANUAL_STATUS: 'auto_reset_manual_status',
     CATEGORY_NOTIFICATIONS: 'notifications',

@@ -191,14 +191,13 @@ export const fetchAllTeams = async (serverUrl: string, fetchOnly = false): Promi
     }
 };
 
-export const fetchTeamsChannelsAndUnreadPosts = async (serverUrl: string, teams: Team[], memberships: TeamMembership[], excludeTeamId?: string) => {
+export const fetchTeamsChannelsAndUnreadPosts = async (serverUrl: string, since: number, teams: Team[], memberships: TeamMembership[], excludeTeamId?: string) => {
     const database = DatabaseManager.serverDatabases[serverUrl]?.database;
     if (!database) {
         return {error: `${serverUrl} database not found`};
     }
 
     const myTeams = teams.filter((t) => memberships.find((m) => m.team_id === t.id && t.id !== excludeTeamId));
-    const since = await queryWebSocketLastDisconnected(database);
 
     for await (const team of myTeams) {
         const {channels, memberships: members} = await fetchMyChannelsForTeam(serverUrl, team.id, since > 0, since, false, true);
@@ -263,7 +262,12 @@ export const removeUserFromTeam = async (serverUrl: string, teamId: string, user
 };
 
 export const handleTeamChange = async (serverUrl: string, teamId: string) => {
-    const {operator, database} = DatabaseManager.serverDatabases[serverUrl];
+    const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
+    if (!operator) {
+        return;
+    }
+
+    const {database} = operator;
     const currentTeamId = await queryCurrentTeamId(database);
 
     if (currentTeamId === teamId) {
@@ -293,7 +297,10 @@ export const handleTeamChange = async (serverUrl: string, teamId: string) => {
         await operator.batchRecords(models);
     }
 
-    const {channels, memberships, error} = await fetchMyChannelsForTeam(serverUrl, teamId);
+    // If WebSocket is not disconnected we fetch everything since this moment
+    const lastDisconnectedAt = (await queryWebSocketLastDisconnected(database)) || Date.now();
+    const {channels, memberships, error} = await fetchMyChannelsForTeam(serverUrl, teamId, true, lastDisconnectedAt, false, true);
+
     if (error) {
         DeviceEventEmitter.emit(Events.TEAM_LOAD_ERROR, serverUrl, error);
     }

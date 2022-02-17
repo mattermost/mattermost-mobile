@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback} from 'react';
+import React from 'react';
 import {useIntl} from 'react-intl';
 import {Animated, StyleSheet, View} from 'react-native';
 
@@ -13,6 +13,10 @@ import Option, {OPTION_SIZE} from './option';
 import type ServersModel from '@typings/database/models/app/servers';
 
 type Props = {
+    onEdit: () => void;
+    onLogin: () => void;
+    onLogout: () => void;
+    onRemove: () => void;
     progress: Animated.AnimatedInterpolation;
     server: ServersModel;
 }
@@ -27,7 +31,7 @@ const styles = StyleSheet.create({
     right: {borderTopRightRadius: 8, borderBottomRightRadius: 8},
 });
 
-const ServerOptions = ({progress, server}: Props) => {
+const ServerOptions = ({onEdit, onLogin, onLogout, onRemove, progress, server}: Props) => {
     const intl = useIntl();
     const theme = useTheme();
     const isLoggedIn = server.lastActiveAt > 0;
@@ -40,26 +44,6 @@ const ServerOptions = ({progress, server}: Props) => {
         id: 'servers.login',
         defaultMessage: 'Log in',
     });
-
-    const onEdit = useCallback(() => {
-        // eslint-disable-next-line no-console
-        console.log('ON EDIT');
-    }, [server]);
-
-    const onLogin = useCallback(() => {
-        // eslint-disable-next-line no-console
-        console.log('ON Login');
-    }, [server]);
-
-    const onLogout = useCallback(() => {
-        // eslint-disable-next-line no-console
-        console.log('ON Logout');
-    }, [server]);
-
-    const onRemove = useCallback(() => {
-        // eslint-disable-next-line no-console
-        console.log('ON Remove');
-    }, [server]);
 
     return (
         <View style={styles.container}>

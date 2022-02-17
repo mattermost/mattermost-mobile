@@ -7,6 +7,7 @@ import {Events} from '@constants';
 import {t} from '@i18n';
 import {Analytics, create} from '@init/analytics';
 import {setServerCredentials} from '@init/credentials';
+import {semverFromServerVersion} from '@utils/server';
 
 import * as ClientConstants from './constants';
 import ClientError from './error';
@@ -108,12 +109,28 @@ export default class ClientBase {
         return `${this.getTeamMembersRoute(teamId)}/${userId}`;
     }
 
+    getCategoriesRoute(userId: string, teamId: string) {
+        return `${this.getUserRoute(userId)}/teams/${teamId}/channels/categories`;
+    }
+
+    getCategoriesOrderRoute(userId: string, teamId: string) {
+        return `${this.getCategoriesRoute(userId, teamId)}/order`;
+    }
+
+    getCategoryRoute(userId: string, teamId: string, categoryId: string) {
+        return `${this.getCategoriesRoute(userId, teamId)}/${categoryId}`;
+    }
+
     getChannelsRoute() {
         return `${this.urlVersion}/channels`;
     }
 
     getChannelRoute(channelId: string) {
         return `${this.getChannelsRoute()}/${channelId}`;
+    }
+
+    getSharedChannelsRoute() {
+        return `${this.urlVersion}/sharedchannels`;
     }
 
     getChannelMembersRoute(channelId: string) {
@@ -234,7 +251,7 @@ export default class ClientBase {
         }
 
         const headers: ClientHeaders = response.headers || {};
-        const serverVersion = headers[ClientConstants.HEADER_X_VERSION_ID] || headers[ClientConstants.HEADER_X_VERSION_ID.toLowerCase()];
+        const serverVersion = semverFromServerVersion(headers[ClientConstants.HEADER_X_VERSION_ID] || headers[ClientConstants.HEADER_X_VERSION_ID.toLowerCase()]);
         const hasCacheControl = Boolean(headers[ClientConstants.HEADER_CACHE_CONTROL] || headers[ClientConstants.HEADER_CACHE_CONTROL.toLowerCase()]);
         if (serverVersion && !hasCacheControl && this.serverVersion !== serverVersion) {
             this.serverVersion = serverVersion;

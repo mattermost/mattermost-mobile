@@ -43,6 +43,7 @@ export interface DeepLinkWithData {
 }
 
 export const LaunchType = {
+    AddServer: 'add-server',
     Normal: 'normal',
     DeepLink: 'deeplink',
     Notification: 'notification',
@@ -56,4 +57,6 @@ export interface LaunchProps {
     launchType: LaunchType;
     launchError?: Boolean;
     serverUrl?: string;
+    displayName?: string;
+    time?: number;
 }
