@@ -3,7 +3,7 @@
 
 import React, {useCallback} from 'react';
 import {useIntl} from 'react-intl';
-import {FlatList, Platform, StyleSheet} from 'react-native';
+import {FlatList, Platform} from 'react-native';
 
 import Loading from '@components/loading';
 import {makeStyleSheetFromTheme} from '@utils/theme';
