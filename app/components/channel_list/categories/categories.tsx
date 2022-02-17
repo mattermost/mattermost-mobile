@@ -4,13 +4,13 @@
 import React from 'react';
 import {FlatList, StyleSheet} from 'react-native';
 
-import ThreadsButton from '../threads';
-
 import CategoryBody from './body';
 import CategoryHeader from './header';
 
+import type {CategoryModel} from '@app/database/models/server';
+
 type Props = {
-    categories: TempoCategory[];
+    categories: CategoryModel[];
 }
 
 const styles = StyleSheet.create({
@@ -19,20 +19,26 @@ const styles = StyleSheet.create({
     },
 });
 
-const renderCategory = (data: {item: TempoCategory}) => (
-    <>
-        <CategoryHeader heading={data.item.title}/>
-        <CategoryBody channels={data.item.channels}/>
-    </>
-);
+const renderCategory = (data: {item: CategoryModel}) => {
+    return (
+        <>
+            <CategoryHeader category={data.item}/>
+            <CategoryBody category={data.item}/>
+        </>
+    );
+};
 
 const Categories = (props: Props) => {
+    // Sort Categories
+    props.categories.sort((a, b) => a.sortOrder - b.sortOrder);
+
     return (
         <FlatList
             data={props.categories}
             renderItem={renderCategory}
-            ListHeaderComponent={ThreadsButton}
             style={styles.flex}
+            showsHorizontalScrollIndicator={false}
+            showsVerticalScrollIndicator={false}
         />
     );
 };

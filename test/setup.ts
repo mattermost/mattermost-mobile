@@ -5,7 +5,6 @@
 
 import MockAsyncStorage from 'mock-async-storage';
 import * as ReactNative from 'react-native';
-import mockSafeAreaContext from 'react-native-safe-area-context/jest/mock';
 
 import 'react-native-gesture-handler/jestSetup';
 require('react-native-reanimated/lib/reanimated2/jestUtils').setUpTests();
@@ -310,8 +309,6 @@ jest.mock('@screens/navigation', () => ({
 }));
 
 jest.mock('@mattermost/react-native-emm');
-
-jest.mock('react-native-safe-area-context', () => mockSafeAreaContext);
 
 declare const global: {requestAnimationFrame: (callback: any) => void};
 global.requestAnimationFrame = (callback) => {

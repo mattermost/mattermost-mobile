@@ -3,6 +3,7 @@
 
 import assert from 'assert';
 
+import {random} from 'lodash';
 import nock from 'nock';
 
 import Config from '@assets/config.json';
@@ -22,8 +23,11 @@ class TestHelper {
         this.basicUser = null;
         this.basicTeam = null;
         this.basicTeamMember = null;
+        this.basicCategory = null;
+        this.basicCategoryChannel = null;
         this.basicChannel = null;
         this.basicChannelMember = null;
+        this.basicMyChannel = null;
         this.basicPost = null;
         this.basicRoles = null;
         this.basicScheme = null;
@@ -50,6 +54,25 @@ class TestHelper {
         await operator.handleMyTeam({
             myTeams: [this.basicTeamMember],
             prepareRecordsOnly: false,
+        });
+
+        // Add a category and associated channel entities
+        await operator.handleCategories({
+            categories: [this.basicCategory],
+            prepareRecordsOnly: false,
+        });
+        await operator.handleCategoryChannels({
+            categoryChannels: [this.basicCategoryChannel],
+            prepareRecordsOnly: false,
+        });
+        await operator.handleChannel({
+            channels: [this.basicChannel],
+            prepareRecordsOnly: false,
+        });
+        await operator.handleMyChannel({
+            prepareRecordsOnly: false,
+            channels: [this.basicChannel],
+            myChannels: [this.basicMyChannel],
         });
 
         const systems = await prepareCommonSystemValues(operator, {
@@ -93,13 +116,51 @@ class TestHelper {
         return new Client(mockApiClient, mockApiClient.baseUrl);
     };
 
+    fakeCategory = (teamId) => {
+        return {
+            display_name: 'Test Category',
+            type: 'custom',
+            sort_order: 0,
+            sorting: 'manual',
+            muted: false,
+            collapsed: false,
+            team_id: teamId,
+        };
+    };
+
+    fakeCategoryWithId = (teamId) => {
+        return {
+            ...this.fakeCategory(teamId),
+            id: this.generateId(),
+        };
+    };
+
+    fakeCategoryChannel = (categoryId, channelId) => {
+        return {
+            category_id: categoryId,
+            channel_id: channelId,
+            sort_order: random(0, 10, false),
+        };
+    };
+
+    fakeCategoryChannelWithId = (teamId, categoryId, channelId) => {
+        return {
+            id: teamId + channelId,
+            category_id: categoryId,
+            channel_id: channelId,
+            sort_order: random(0, 10, false),
+        };
+    };
+
     fakeChannel = (teamId) => {
         const name = this.generateId();
 
         return {
             name,
             team_id: teamId,
-            display_name: `Unit Test ${name}`,
+
+            // display_name: `Unit Test ${name}`,
+            display_name: 'Channel',
             type: 'O',
             delete_at: 0,
             total_msg_count: 0,
@@ -141,6 +202,21 @@ class TestHelper {
             mention_count: 0,
             scheme_user: false,
             scheme_admin: false,
+        };
+    };
+
+    fakeMyChannel = (channelId) => {
+        return {
+            id: channelId,
+            channel_id: channelId,
+            last_post_at: 0,
+            last_viewed_at: 0,
+            manually_unread: false,
+            mentions_count: 0,
+            message_count: 0,
+            is_unread: false,
+            roles: '',
+            viewed_at: 0,
         };
     };
 
@@ -318,8 +394,11 @@ class TestHelper {
         this.basicUser.roles = 'system_user system_admin';
         this.basicTeam = this.fakeTeamWithId();
         this.basicTeamMember = this.fakeTeamMember(this.basicUser.id, this.basicTeam.id);
+        this.basicCategory = this.fakeCategoryWithId(this.basicTeam.id);
         this.basicChannel = this.fakeChannelWithId(this.basicTeam.id);
+        this.basicCategoryChannel = this.fakeCategoryChannelWithId(this.basicTeam.id, this.basicCategory.id, this.basicChannel.id);
         this.basicChannelMember = this.fakeChannelMember(this.basicUser.id, this.basicChannel.id);
+        this.basicMyChannel = this.fakeMyChannel(this.basicChannel.id);
         this.basicPost = {...this.fakePostWithId(this.basicChannel.id), create_at: 1507841118796};
         this.basicRoles = {
             system_admin: {

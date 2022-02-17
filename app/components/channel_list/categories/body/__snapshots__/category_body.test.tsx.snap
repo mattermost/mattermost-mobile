@@ -1,0 +1,118 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`components/channel_list/categories/body should match snapshot 1`] = `
+Object {
+  "children": Array [
+    <View>
+      <View
+        onLayout={[Function]}
+        style={null}
+      >
+        <RNGestureHandlerButton
+          collapsable={false}
+          exclusive={true}
+          onGestureEvent={[Function]}
+          onGestureHandlerEvent={[Function]}
+          onGestureHandlerStateChange={[Function]}
+          onHandlerStateChange={[Function]}
+          rippleColor={0}
+        >
+          <View
+            accessible={true}
+            collapsable={false}
+            style={
+              Object {
+                "opacity": 1,
+              }
+            }
+          >
+            <View
+              style={
+                Object {
+                  "flexDirection": "row",
+                  "paddingVertical": 4,
+                }
+              }
+            >
+              <View
+                style={
+                  Array [
+                    Object {
+                      "alignItems": "center",
+                      "justifyContent": "center",
+                    },
+                    Object {
+                      "height": 24,
+                      "width": 24,
+                    },
+                    undefined,
+                  ]
+                }
+              >
+                <Icon
+                  name="globe"
+                  style={
+                    Array [
+                      Object {
+                        "color": "rgba(255,255,255,0.4)",
+                      },
+                      undefined,
+                      undefined,
+                      Object {
+                        "fontSize": 24,
+                        "left": 1,
+                      },
+                    ]
+                  }
+                  testID="undefined.public"
+                />
+              </View>
+              <Text
+                style={
+                  Array [
+                    Object {
+                      "fontFamily": "OpenSans",
+                      "fontSize": 16,
+                      "fontWeight": "400",
+                      "lineHeight": 24,
+                    },
+                    Object {
+                      "color": "rgba(255,255,255,0.72)",
+                      "marginTop": -1,
+                      "paddingLeft": 12,
+                    },
+                    false,
+                  ]
+                }
+              >
+                Channel
+              </Text>
+            </View>
+          </View>
+        </RNGestureHandlerButton>
+      </View>
+    </View>,
+  ],
+  "props": Object {
+    "data": Anything,
+    "getItem": [Function],
+    "getItemCount": [Function],
+    "invertStickyHeaders": undefined,
+    "keyExtractor": [Function],
+    "onContentSizeChange": [Function],
+    "onLayout": [Function],
+    "onMomentumScrollBegin": [Function],
+    "onMomentumScrollEnd": [Function],
+    "onScroll": [Function],
+    "onScrollBeginDrag": [Function],
+    "onScrollEndDrag": [Function],
+    "removeClippedSubviews": false,
+    "renderItem": [Function],
+    "scrollEventThrottle": 50,
+    "stickyHeaderIndices": Array [],
+    "style": undefined,
+    "viewabilityConfigCallbackPairs": Array [],
+  },
+  "type": "RCTScrollView",
+}
+`;

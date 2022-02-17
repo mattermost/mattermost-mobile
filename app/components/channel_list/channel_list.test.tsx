@@ -10,7 +10,7 @@ import {TeamModel} from '@database/models/server';
 import {renderWithEverything} from '@test/intl-test-helper';
 import TestHelper from '@test/test_helper';
 
-import ChannelsList from './index';
+import ChannelsList from './channel_list';
 
 describe('components/channel_list', () => {
     let database: Database;
@@ -32,8 +32,8 @@ describe('components/channel_list', () => {
                 <ChannelsList
                     isTablet={false}
                     teamsCount={1}
-                />
-            </SafeAreaProvider>,
+                    currentTeamId='myTeam'
+                /></SafeAreaProvider>,
             {database},
         );
         expect(wrapper.toJSON()).toMatchSnapshot();

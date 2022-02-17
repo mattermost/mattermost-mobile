@@ -8,6 +8,8 @@ import {useTheme} from '@context/theme';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
+import type CategoryModel from '@typings/database/models/servers/category';
+
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     container: {
         paddingVertical: 8,
@@ -20,17 +22,23 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
 }));
 
 type Props = {
-    heading: string;
+    category: CategoryModel;
+    hasChannels: boolean;
 }
 
-const CategoryHeader = (props: Props) => {
+const CategoryHeader = ({category, hasChannels}: Props) => {
     const theme = useTheme();
     const styles = getStyleSheet(theme);
+
+    // Hide favs if empty
+    if (!hasChannels && category.type === 'favorites') {
+        return (<></>);
+    }
 
     return (
         <View style={styles.container}>
             <Text style={styles.heading}>
-                {props.heading.toUpperCase()}
+                {category.displayName.toUpperCase()}
             </Text>
         </View>
     );

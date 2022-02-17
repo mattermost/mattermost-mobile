@@ -1,0 +1,107 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`components/channel_list/categories/body/channel/item should match snapshot 1`] = `
+<RNGestureHandlerButton
+  collapsable={false}
+  exclusive={true}
+  onGestureEvent={[Function]}
+  onGestureHandlerEvent={[Function]}
+  onGestureHandlerStateChange={[Function]}
+  onHandlerStateChange={[Function]}
+  rippleColor={0}
+>
+  <View
+    accessible={true}
+    collapsable={false}
+    style={
+      Object {
+        "opacity": 1,
+      }
+    }
+  >
+    <View
+      style={
+        Object {
+          "flexDirection": "row",
+          "paddingVertical": 4,
+        }
+      }
+    >
+      <View
+        style={
+          Array [
+            Object {
+              "alignItems": "center",
+              "justifyContent": "center",
+            },
+            Object {
+              "height": 24,
+              "width": 24,
+            },
+            undefined,
+          ]
+        }
+      >
+        <View
+          style={
+            Array [
+              Object {
+                "alignItems": "center",
+                "backgroundColor": "rgba(255,255,255,0.16)",
+                "borderRadius": 4,
+                "justifyContent": "center",
+              },
+              undefined,
+              undefined,
+              Object {
+                "height": 20,
+                "width": 20,
+              },
+            ]
+          }
+        >
+          <Text
+            style={
+              Array [
+                Object {
+                  "color": "#ffffff",
+                  "fontFamily": "OpenSans-SemiBold",
+                  "fontSize": 10,
+                },
+                undefined,
+                undefined,
+                Object {
+                  "fontSize": 12,
+                },
+              ]
+            }
+            testID="undefined.gm_member_count"
+          >
+            0
+          </Text>
+        </View>
+      </View>
+      <Text
+        style={
+          Array [
+            Object {
+              "fontFamily": "OpenSans",
+              "fontSize": 16,
+              "fontWeight": "400",
+              "lineHeight": 24,
+            },
+            Object {
+              "color": "rgba(255,255,255,0.72)",
+              "marginTop": -1,
+              "paddingLeft": 12,
+            },
+            false,
+          ]
+        }
+      >
+        Hello!
+      </Text>
+    </View>
+  </View>
+</RNGestureHandlerButton>
+`;
