@@ -47,12 +47,6 @@ export default class ThreadModel extends Model {
     /** unread_mentions : The number of mentions that are not read by the user. */
     @field('unread_mentions') unreadMentions!: number;
 
-    /** loaded_in_all_threads_tab: If this thread is loaded under "All your threads" tab */
-    @field('loaded_in_all_threads_tab') loadedInAllThreadsTab!: boolean;
-
-    /** loaded_in_unreads_tab: If this thread is loaded under "Unreads" tab */
-    @field('loaded_in_unreads_tab') loadedInUnreadsTab!: boolean;
-
     /** reactions : All the reactions associated with this Post */
     @children(THREAD_PARTICIPANT) participants!: Query<ThreadParticipantModel>;
 

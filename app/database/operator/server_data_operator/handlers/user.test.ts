@@ -168,7 +168,9 @@ describe('*** Operator: User Handlers tests ***', () => {
                 roles: 'wqyby5r5pinxxdqhoaomtacdhc',
                 last_viewed_at: 1613667352029,
                 msg_count: 3864,
+                msg_count_root: 0,
                 mention_count: 0,
+                mention_count_root: 0,
                 notify_props: {
                     desktop: 'default',
                     email: 'default',
@@ -187,7 +189,9 @@ describe('*** Operator: User Handlers tests ***', () => {
                 roles: 'channel_user',
                 last_viewed_at: 1615300540549,
                 msg_count: 16,
+                msg_count_root: 0,
                 mention_count: 0,
+                mention_count_root: 0,
                 notify_props: {
                     desktop: 'default',
                     email: 'default',

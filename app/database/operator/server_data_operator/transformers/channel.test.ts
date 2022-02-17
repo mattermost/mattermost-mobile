@@ -60,7 +60,9 @@ describe('*** CHANNEL Prepare Records Test ***', () => {
             roles: '',
             last_viewed_at: 0,
             msg_count: 0,
+            msg_count_root: 0,
             mention_count: 0,
+            mention_count_root: 0,
             last_update_at: 0,
             notify_props: {
                 desktop: 'default',
