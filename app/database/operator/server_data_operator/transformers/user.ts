@@ -80,6 +80,9 @@ export const transformUserRecord = ({action, database, value}: TransformerArgs):
         user.props = raw.props || null;
         user.timezone = raw.timezone || null;
         user.isBot = raw.is_bot;
+        if (raw.status) {
+            user.status = raw.status;
+        }
     };
 
     return prepareBaseRecord({

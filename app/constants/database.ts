@@ -37,7 +37,6 @@ export const MM_TABLES = {
         TEAM_CHANNEL_HISTORY: 'TeamChannelHistory',
         TEAM_MEMBERSHIP: 'TeamMembership',
         TEAM_SEARCH_HISTORY: 'TeamSearchHistory',
-        TEAM_THREADS_COUNT: 'TeamThreadsCount',
         TERMS_OF_SERVICE: 'TermsOfService',
         THREAD: 'Thread',
         THREAD_PARTICIPANT: 'ThreadParticipant',
@@ -69,6 +68,7 @@ export const SYSTEM_IDENTIFIERS = {
 
 export const GLOBAL_IDENTIFIERS = {
     DEVICE_TOKEN: 'deviceToken',
+    MULTI_SERVER_TUTORIAL: 'multiServerTutorial',
 };
 
 export default {

@@ -52,7 +52,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         borderColor: 'transparent',
     },
     forgotPasswordError: {
-        marginTop: 10,
+        marginTop: 30,
     },
     forgotPasswordTxt: {
         paddingVertical: 10,
@@ -177,11 +177,11 @@ const LoginForm = ({config, extra, keyboardAwareRef, numberSSOs, serverDisplayNa
 
         if (loginError instanceof ClientError) {
             const errorId = loginError.server_error_id;
-            if (!errorId) {
+            if (!errorId && loginError.message) {
                 return loginError.message;
             }
 
-            if (errorId === 'api.user.login.invalid_credentials_email_username') {
+            if (errorId === 'api.user.login.invalid_credentials_email_username' || !errorId) {
                 return intl.formatMessage({
                     id: 'login.invalid_credentials',
                     defaultMessage: 'The email and password combination is incorrect',

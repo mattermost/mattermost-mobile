@@ -16,7 +16,6 @@ export const mockedPosts = {
             edit_at: 0,
             delete_at: 0,
             is_pinned: false,
-            is_following: false,
             user_id: 'q3mzxua9zjfczqakxdkowc6u6yy',
             channel_id: 'xxoq1p6bqg7dkxb3kj1mcjoungw',
             root_id: 'ps81iqbesfby8jayz7owg4yypoo',
@@ -29,7 +28,6 @@ export const mockedPosts = {
             pending_post_id: '',
             reply_count: 4,
             last_reply_at: 0,
-            participants: null,
             metadata: {},
         },
         '8fcnk3p1jt8mmkaprgajoxz115a': {
@@ -39,7 +37,6 @@ export const mockedPosts = {
             edit_at: 0,
             delete_at: 0,
             is_pinned: false,
-            is_following: false,
             user_id: 'hy5sq51sebfh58ktrce5ijtcwyy',
             channel_id: 'xxoq1p6bqg7dkxb3kj1mcjoungw',
             root_id: '',
@@ -57,7 +54,6 @@ export const mockedPosts = {
             pending_post_id: '',
             reply_count: 0,
             last_reply_at: 0,
-            participants: null,
             metadata: {},
         },
         '3y3w3a6gkbg73bnj3xund9o5ic': {
@@ -67,7 +63,6 @@ export const mockedPosts = {
             edit_at: 0,
             delete_at: 0,
             is_pinned: false,
-            is_following: false,
             user_id: '44ud4m9tqwby3mphzzdwm7h31sr',
             channel_id: 'xxoq1p6bqg7dkxb3kj1mcjoungw',
             root_id: 'ps81iqbewesfby8jayz7owg4yypo',
@@ -80,7 +75,6 @@ export const mockedPosts = {
             pending_post_id: '',
             reply_count: 4,
             last_reply_at: 0,
-            participants: null,
             metadata: {},
         },
         '4btbnmticjgw7ewd3qopmpiwqw': {
@@ -90,7 +84,6 @@ export const mockedPosts = {
             edit_at: 0,
             delete_at: 0,
             is_pinned: false,
-            is_following: false,
             user_id: 'opihgdf9nby385mnxj7a5jpfsy3e',
             channel_id: 'xxoq1p6bqg7dkxb3kj1mcjoungw',
             root_id: '',
@@ -105,7 +98,6 @@ export const mockedPosts = {
             pending_post_id: '',
             reply_count: 0,
             last_reply_at: 0,
-            participants: null,
             metadata: {},
         },
         '4r9jmr7eqt8dxq3f9woypzurry': {
@@ -115,7 +107,6 @@ export const mockedPosts = {
             edit_at: 0,
             delete_at: 0,
             is_pinned: false,
-            is_following: false,
             user_id: '1zkzkhh357b4bdfejephjz5u8daw',
             channel_id: 'xxoq1p6bqg7dkxb3kj1mcjoungw',
             root_id: 'a7ebyw883sdftrm884p1qcgt8yw4a',
@@ -129,7 +120,6 @@ export const mockedPosts = {
             has_reactions: true,
             reply_count: 7,
             last_reply_at: 0,
-            participants: null,
             metadata: {
                 reactions: [
                     {
@@ -158,7 +148,6 @@ export const mockedPosts = {
             edit_at: 1608289727232,
             delete_at: 0,
             is_pinned: false,
-            is_following: false,
             user_id: '1zkzkhhk357b4bejephjz5u8daw',
             channel_id: 'xxoq1p6bqg7dkxb3kj1mcjoungw',
             root_id: 'a7ebyw8f83trm884p1qcgt8yw4a',
@@ -171,7 +160,6 @@ export const mockedPosts = {
             pending_post_id: '',
             reply_count: 7,
             last_reply_at: 0,
-            participants: null,
             metadata: {
                 emojis: [
                     {

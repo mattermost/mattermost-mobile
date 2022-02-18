@@ -5,6 +5,7 @@ interface ClientConfig {
     AboutLink: string;
     AllowBannerDismissal: string;
     AllowCustomThemes: string;
+    AllowEditPost: string;
     AllowedThemes: string;
     AndroidAppDownloadLink: string;
     AndroidLatestVersion: string;
@@ -109,6 +110,7 @@ interface ClientConfig {
     ExperimentalHideTownSquareinLHS: string;
     ExperimentalNormalizeMarkdownLinks: string;
     ExperimentalPrimaryTeam: string;
+    ExperimentalSharedChannels: string;
     ExperimentalTimezone: string;
     ExperimentalTownSquareIsReadOnly: string;
     ExperimentalViewArchivedChannels: string;

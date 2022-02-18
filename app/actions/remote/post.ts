@@ -211,9 +211,9 @@ export const fetchPostsForChannel = async (serverUrl: string, channelId: string,
             for (const post of data.posts) {
                 lastPostAt = post.create_at > lastPostAt ? post.create_at : lastPostAt;
             }
-            const {models: memberModels} = await updateLastPostAt(serverUrl, channelId, lastPostAt, true);
-            if (memberModels?.length) {
-                models.push(...memberModels);
+            const {member: memberModel} = await updateLastPostAt(serverUrl, channelId, lastPostAt, true);
+            if (memberModel) {
+                models.push(memberModel);
             }
 
             const isCRTEnabled = await getIsCRTEnabled(operator.database);
@@ -546,6 +546,39 @@ export const fetchPostById = async (serverUrl: string, postId: string, fetchOnly
             operator.handlePosts({actionType: ActionType.POSTS.RECEIVED_NEW, order: [post.id], posts: [post]});
         }
 
+        return {post};
+    } catch (error) {
+        forceLogoutIfNecessary(serverUrl, error as ClientErrorProps);
+        return {error};
+    }
+};
+
+export const togglePinPost = async (serverUrl: string, postId: string) => {
+    const database = DatabaseManager.serverDatabases[serverUrl]?.database;
+    if (!database) {
+        return {error: `${serverUrl} database not found`};
+    }
+
+    let client: Client;
+    try {
+        client = NetworkManager.getClient(serverUrl);
+    } catch (error) {
+        return {error};
+    }
+
+    try {
+        const post = await queryPostById(database, postId);
+        if (post) {
+            const isPinned = post.isPinned;
+            const request = isPinned ? client.unpinPost : client.pinPost;
+
+            await request(postId);
+            await database.write(async () => {
+                await post.update((p) => {
+                    p.isPinned = !isPinned;
+                });
+            });
+        }
         return {post};
     } catch (error) {
         forceLogoutIfNecessary(serverUrl, error as ClientErrorProps);

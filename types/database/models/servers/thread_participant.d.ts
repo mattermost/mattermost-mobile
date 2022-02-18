@@ -17,7 +17,7 @@ export default class ThreadParticipantsModel extends Model {
     /** thread_id : The related Thread's foreign key to which this participant belongs */
     threadId: string;
 
-    /** user_id : The related User's foreign key by which this reaction was expressed */
+    /** user_id : The user id of the user participating in the thread */
     userId: string;
 
     /** user : The related record to the User model */

@@ -6,6 +6,7 @@ export const ACCOUNT = 'Account';
 export const EMOJI_PICKER = 'AddReaction';
 export const APP_FORM = 'AppForm';
 export const BOTTOM_SHEET = 'BottomSheet';
+export const BROWSE_CHANNELS = 'BrowseChannels';
 export const CHANNEL = 'Channel';
 export const CHANNEL_ADD_PEOPLE = 'ChannelAddPeople';
 export const CHANNEL_DETAILS = 'ChannelDetails';
@@ -13,6 +14,7 @@ export const CHANNEL_EDIT = 'ChannelEdit';
 export const CUSTOM_STATUS_CLEAR_AFTER = 'CustomStatusClearAfter';
 export const CUSTOM_STATUS = 'CustomStatus';
 export const EDIT_PROFILE = 'EditProfile';
+export const EDIT_SERVER = 'EditServer';
 export const FORGOT_PASSWORD = 'ForgotPassword';
 export const GLOBAL_THREADS = 'GlobalThreads';
 export const HOME = 'Home';
@@ -29,6 +31,7 @@ export const SETTINGS_SIDEBAR = 'SettingsSidebar';
 export const SSO = 'SSO';
 export const THREAD = 'Thread';
 export const USER_PROFILE = 'UserProfile';
+export const POST_OPTIONS = 'PostOptions';
 
 export default {
     ABOUT,
@@ -36,6 +39,7 @@ export default {
     EMOJI_PICKER,
     APP_FORM,
     BOTTOM_SHEET,
+    BROWSE_CHANNELS,
     CHANNEL,
     CHANNEL_ADD_PEOPLE,
     CHANNEL_EDIT,
@@ -43,6 +47,7 @@ export default {
     CUSTOM_STATUS_CLEAR_AFTER,
     CUSTOM_STATUS,
     EDIT_PROFILE,
+    EDIT_SERVER,
     FORGOT_PASSWORD,
     GLOBAL_THREADS,
     HOME,
@@ -59,4 +64,5 @@ export default {
     SSO,
     THREAD,
     USER_PROFILE,
+    POST_OPTIONS,
 };

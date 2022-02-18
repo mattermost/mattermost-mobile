@@ -7,7 +7,7 @@ import withObservables from '@nozbe/with-observables';
 import Clipboard from '@react-native-community/clipboard';
 import React, {Children, ReactElement, useCallback} from 'react';
 import {useIntl} from 'react-intl';
-import {Alert, DeviceEventEmitter, StyleSheet, Text, View} from 'react-native';
+import {Alert, StyleSheet, Text, View} from 'react-native';
 import {of as of$} from 'rxjs';
 import {switchMap} from 'rxjs/operators';
 import urlParse from 'url-parse';
@@ -15,11 +15,11 @@ import urlParse from 'url-parse';
 import {showPermalink} from '@actions/local/permalink';
 import {switchToChannelByName} from '@actions/remote/channel';
 import SlideUpPanelItem, {ITEM_HEIGHT} from '@components/slide_up_panel_item';
-import {Navigation} from '@constants';
 import {MM_TABLES, SYSTEM_IDENTIFIERS} from '@constants/database';
 import DeepLinkTypes from '@constants/deep_linking';
 import {useServerUrl} from '@context/server';
-import {dismissAllModals, popToRoot, showModalOverCurrentContext} from '@screens/navigation';
+import {useTheme} from '@context/theme';
+import {bottomSheet, dismissAllModals, dismissBottomSheet, popToRoot} from '@screens/navigation';
 import {errorBadChannel} from '@utils/draft';
 import {preventDoubleTap} from '@utils/tap';
 import {matchDeepLink, normalizeProtocol, tryOpenURL} from '@utils/url';
@@ -45,6 +45,7 @@ const MarkdownLink = ({children, experimentalNormalizeMarkdownLinks, href, siteU
     const intl = useIntl();
     const managedConfig = useManagedConfig();
     const serverUrl = useServerUrl();
+    const theme = useTheme();
 
     const {formatMessage} = intl;
 
@@ -131,7 +132,7 @@ const MarkdownLink = ({children, experimentalNormalizeMarkdownLinks, href, siteU
                         <SlideUpPanelItem
                             icon='content-copy'
                             onPress={() => {
-                                DeviceEventEmitter.emit(Navigation.NAVIGATION_CLOSE_MODAL);
+                                dismissBottomSheet();
                                 Clipboard.setString(href);
                             }}
                             testID='at_mention.bottom_sheet.copy_url'
@@ -141,7 +142,7 @@ const MarkdownLink = ({children, experimentalNormalizeMarkdownLinks, href, siteU
                             destructive={true}
                             icon='cancel'
                             onPress={() => {
-                                DeviceEventEmitter.emit(Navigation.NAVIGATION_CLOSE_MODAL);
+                                dismissBottomSheet();
                             }}
                             testID='at_mention.bottom_sheet.cancel'
                             text={intl.formatMessage({id: 'mobile.post.cancel', defaultMessage: 'Cancel'})}
@@ -150,12 +151,15 @@ const MarkdownLink = ({children, experimentalNormalizeMarkdownLinks, href, siteU
                 );
             };
 
-            showModalOverCurrentContext('BottomSheet', {
+            bottomSheet({
+                closeButtonId: 'close-mardown-link',
                 renderContent,
                 snapPoints: [3 * ITEM_HEIGHT, 10],
+                title: intl.formatMessage({id: 'post.options.title', defaultMessage: 'Options'}),
+                theme,
             });
         }
-    }, [managedConfig]);
+    }, [managedConfig, intl, theme]);
 
     const renderChildren = experimentalNormalizeMarkdownLinks ? parseChildren() : children;
 

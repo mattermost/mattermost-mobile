@@ -11,7 +11,7 @@ import {map, switchMap} from 'rxjs/operators';
 import {SupportedServer} from '@constants';
 import {MM_TABLES, SYSTEM_IDENTIFIERS} from '@constants/database';
 import {isMinimumServerVersion} from '@utils/helpers';
-import {unsupportedServer} from '@utils/supported_server';
+import {unsupportedServer} from '@utils/server';
 import {isSystemAdmin} from '@utils/user';
 
 import type {WithDatabaseArgs} from '@typings/database/database';
