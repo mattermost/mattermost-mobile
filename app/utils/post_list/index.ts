@@ -313,7 +313,6 @@ export function generateCombinedPost(combinedId: string, systemPosts: PostModel[
         edit_at: 0,
         update_at: 0,
         is_pinned: false,
-        is_following: false,
         message,
         hashtags: '',
         pending_post_id: '',
@@ -327,7 +326,6 @@ export function generateCombinedPost(combinedId: string, systemPosts: PostModel[
         type: Post.POST_TYPES.COMBINED_USER_ACTIVITY as PostType,
         user_id: '',
         metadata: {},
-        participants: null,
     };
 }
 

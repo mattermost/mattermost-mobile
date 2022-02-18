@@ -50,7 +50,7 @@ export default class ThreadModel extends Model {
     /** loaded_in_global_threads : Flag to differentiate the unread threads loaded for showing unread counts/mentions */
     @field('loaded_in_global_threads') loadedInGlobalThreads!: boolean;
 
-    /** reactions : All the reactions associated with this Post */
+    /** participants : All the participants associated with this Post */
     @children(THREAD_PARTICIPANT) participants!: Query<ThreadParticipantModel>;
 
     /** channel : The channel which is presenting this Post */

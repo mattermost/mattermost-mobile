@@ -16,7 +16,7 @@ import type ReactionModel from '@typings/database/models/servers/reaction';
 import type ThreadModel from '@typings/database/models/servers/thread';
 import type UserModel from '@typings/database/models/servers/user';
 
-const {CHANNEL, DRAFT, FILE, POST, POSTS_IN_THREAD, REACTION, THREAD, USER} = MM_TABLES.SERVER;
+const {CHANNEL, DRAFT, FILE, POST, POSTS_IN_THREAD, REACTION, THREAD, THREAD_PARTICIPANT, USER} = MM_TABLES.SERVER;
 
 /**
  * The Post model is the building block of communication in the Mattermost app.
@@ -126,6 +126,12 @@ export default class PostModel extends Model {
         await this.reactions.destroyAllPermanently();
         await this.files.destroyAllPermanently();
         await this.draft.destroyAllPermanently();
+        await this.collections.get(THREAD).query(
+            Q.where('id', this.id),
+        ).destroyAllPermanently();
+        await this.collections.get(THREAD_PARTICIPANT).query(
+            Q.where('thread_id', this.id),
+        ).destroyAllPermanently();
         await this.collections.get(POSTS_IN_THREAD).query(
             Q.where('root_id', this.id),
         ).destroyAllPermanently();

@@ -64,8 +64,6 @@ const ThreadHandler = (superclass: any) => class extends superclass {
         // Process the threads to get which ones need to be created and which updated
         const processedThreads = (await this.processRecords({
             createOrUpdateRawValues: uniqueThreads,
-
-            // deleteRawValues: pendingThreadsToDelete,
             tableName,
             findMatchingRecordBy: isRecordThreadEqualToRaw,
             fieldName: 'id',
@@ -74,7 +72,6 @@ const ThreadHandler = (superclass: any) => class extends superclass {
         const preparedThreads = (await this.prepareRecords({
             createRaws: processedThreads.createRaws,
             updateRaws: processedThreads.updateRaws,
-            deleteRaws: processedThreads.deleteRaws,
             transformer: transformThreadRecord,
             tableName,
         })) as ThreadModel[];
