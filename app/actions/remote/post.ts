@@ -566,20 +566,19 @@ export const markPostAsUnread = async (serverUrl: string, postId: string, channe
     }
     try {
         const userId = await queryCurrentUserId(database);
-        const myChanel = await queryMyChannel(database, channelId);
+        const myChannel = await queryMyChannel(database, channelId);
 
-        if (myChanel) {
+        if (myChannel) {
             client.markPostAsUnread(userId, postId);
 
-            // do something locally
             await database.write(async () => {
-                await myChanel.update((c) => {
+                await myChannel.update((c) => {
                     c.manuallyUnread = true;
                 });
             });
         }
         return {
-            myChanel,
+            myChannel,
         };
     } catch (error) {
         forceLogoutIfNecessary(serverUrl, error as ClientErrorProps);
