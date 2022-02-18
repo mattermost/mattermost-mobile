@@ -1,9 +1,11 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+/* eslint-disable max-lines */
 import {Model} from '@nozbe/watermelondb';
 import {IntlShape} from 'react-intl';
 
+import {storeCategories} from '@actions/local/category';
 import {storeMyChannelsForTeam, switchToChannel} from '@actions/local/channel';
 import {General} from '@constants';
 import DatabaseManager from '@database/manager';
@@ -29,6 +31,7 @@ import type MyTeamModel from '@typings/database/models/servers/my_team';
 import type TeamModel from '@typings/database/models/servers/team';
 
 export type MyChannelsRequest = {
+    categories?: CategoryWithChannels[];
     channels?: Channel[];
     memberships?: ChannelMembership[];
     error?: unknown;
@@ -194,16 +197,20 @@ export const fetchMyChannelsForTeam = async (serverUrl: string, teamId: string, 
     }
 
     try {
-        let [channels, memberships]: [Channel[], ChannelMembership[]] = await Promise.all([
+        const [allChannels, channelMemberships, categoriesWithOrder] = await Promise.all([
             client.getMyChannels(teamId, includeDeleted, since),
             client.getMyChannelMembers(teamId),
+            client.getCategories('me', teamId),
         ]);
 
+        let channels = allChannels;
+        let memberships = channelMemberships;
         if (excludeDirect) {
             channels = channels.filter((c) => c.type !== General.GM_CHANNEL && c.type !== General.DM_CHANNEL);
         }
 
         const channelIds = new Set<string>(channels.map((c) => c.id));
+        const {categories} = categoriesWithOrder;
         memberships = memberships.reduce((result: ChannelMembership[], m: ChannelMembership) => {
             if (channelIds.has(m.channel_id)) {
                 result.push(m);
@@ -213,9 +220,10 @@ export const fetchMyChannelsForTeam = async (serverUrl: string, teamId: string, 
 
         if (!fetchOnly) {
             storeMyChannelsForTeam(serverUrl, teamId, channels, memberships);
+            storeCategories(serverUrl, categories, true); // Re-sync
         }
 
-        return {channels, memberships};
+        return {channels, memberships, categories};
     } catch (error) {
         forceLogoutIfNecessary(serverUrl, error as ClientErrorProps);
         return {error};
@@ -251,7 +259,7 @@ export const fetchMyChannel = async (serverUrl: string, teamId: string, channelI
 };
 
 export const fetchMissingSidebarInfo = async (serverUrl: string, directChannels: Channel[], locale?: string, teammateDisplayNameSetting?: string, exludeUserId?: string, fetchOnly = false) => {
-    const channelIds = directChannels.map((dc) => dc.id);
+    const channelIds = directChannels.sort((a, b) => b.last_post_at - a.last_post_at).map((dc) => dc.id);
     const result = await fetchProfilesPerChannels(serverUrl, channelIds, exludeUserId, false);
     if (result.error) {
         return {error: result.error};
@@ -520,6 +528,58 @@ export const switchToChannelByName = async (serverUrl: string, channelName: stri
     }
 };
 
+export const fetchChannels = async (serverUrl: string, teamId: string, page = 0, perPage: number = General.CHANNELS_CHUNK_SIZE) => {
+    let client: Client;
+    try {
+        client = NetworkManager.getClient(serverUrl);
+    } catch (error) {
+        return {error};
+    }
+
+    try {
+        const channels = await client.getChannels(teamId, page, perPage);
+
+        return {channels};
+    } catch (error) {
+        forceLogoutIfNecessary(serverUrl, error as ClientErrorProps);
+        return {error};
+    }
+};
+
+export const fetchArchivedChannels = async (serverUrl: string, teamId: string, page = 0, perPage: number = General.CHANNELS_CHUNK_SIZE) => {
+    let client: Client;
+    try {
+        client = NetworkManager.getClient(serverUrl);
+    } catch (error) {
+        return {error};
+    }
+
+    try {
+        const channels = await client.getArchivedChannels(teamId, page, perPage);
+
+        return {channels};
+    } catch (error) {
+        forceLogoutIfNecessary(serverUrl, error as ClientErrorProps);
+        return {error};
+    }
+};
+
+export const fetchSharedChannels = async (serverUrl: string, teamId: string, page = 0, perPage: number = General.CHANNELS_CHUNK_SIZE) => {
+    let client: Client;
+    try {
+        client = NetworkManager.getClient(serverUrl);
+    } catch (error) {
+        return {error};
+    }
+    try {
+        const channels = await client.getSharedChannels(teamId, page, perPage);
+
+        return {channels};
+    } catch (error) {
+        forceLogoutIfNecessary(serverUrl, error as ClientErrorProps);
+        return {error};
+    }
+};
 export async function getChannelMemberCountsByGroup(serverUrl: string, channelId: string, includeTimezones: boolean) {
     let client: Client;
     try {
@@ -630,6 +690,28 @@ export const switchToPenultimateChannel = async (serverUrl: string) => {
         const currentTeam = await queryCurrentTeamId(database);
         const channelId = await queryNthLastChannelFromTeam(database, currentTeam, 1);
         return switchToChannelById(serverUrl, channelId);
+    } catch (error) {
+        return {error};
+    }
+};
+
+export const searchChannels = async (serverUrl: string, term: string) => {
+    const database = DatabaseManager.serverDatabases[serverUrl]?.database;
+    if (!database) {
+        return {error: `${serverUrl} database not found`};
+    }
+
+    let client: Client;
+    try {
+        client = NetworkManager.getClient(serverUrl);
+    } catch (error) {
+        return {error};
+    }
+
+    try {
+        const currentTeamId = await queryCurrentTeamId(database);
+        const channels = await client.autocompleteChannels(currentTeamId, term);
+        return {channels};
     } catch (error) {
         return {error};
     }

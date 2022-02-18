@@ -208,6 +208,16 @@ class DatabaseManager {
         return null;
     };
 
+    public getActiveServerDisplayName = async (): Promise<string|null|undefined> => {
+        const database = this.appDatabase?.database;
+        if (database) {
+            const server = await queryActiveServer(database);
+            return server?.displayName;
+        }
+
+        return null;
+    };
+
     public getServerUrlFromIdentifier = async (identifier: string): Promise<string|undefined> => {
         const database = this.appDatabase?.database;
         if (database) {

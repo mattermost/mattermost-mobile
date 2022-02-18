@@ -7,7 +7,7 @@ import {DeviceEventEmitter} from 'react-native';
 
 import {updateLocalCustomStatus} from '@actions/local/user';
 import {unsetCustomStatus} from '@actions/remote/user';
-import DrawerItem from '@components/drawer_item';
+import MenuItem from '@components/menu_item';
 import {Events, Screens} from '@constants';
 import {SET_CUSTOM_STATUS_FAILURE} from '@constants/custom_status';
 import {useServerUrl} from '@context/server';
@@ -68,7 +68,7 @@ const CustomStatus = ({isCustomStatusExpirySupported, isTablet, currentUser}: Cu
     }), [isTablet]);
 
     return (
-        <DrawerItem
+        <MenuItem
             testID='settings.sidebar.custom_status.action'
             labelComponent={
                 <CustomLabel

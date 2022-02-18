@@ -2,7 +2,6 @@
 // See LICENSE.txt for license information.
 
 import React, {useEffect, useState} from 'react';
-import {TouchableOpacity} from 'react-native-gesture-handler';
 import Animated, {useAnimatedStyle, useSharedValue, withTiming} from 'react-native-reanimated';
 
 import {TABLET_SIDEBAR_WIDTH, TEAM_SIDEBAR_WIDTH} from '@constants/view';
@@ -82,11 +81,10 @@ const ChannelList = ({currentTeamId, iconPad, isTablet, teamsCount}: ChannelList
 
     return (
         <Animated.View style={[styles.container, tabletStyle]}>
-            <TouchableOpacity onPress={() => setShowCats(!showCats)}>
-                <ChannelListHeader
-                    iconPad={iconPad}
-                />
-            </TouchableOpacity>
+            <ChannelListHeader
+                iconPad={iconPad}
+                onHeaderPress={() => setShowCats(!showCats)}
+            />
             {content}
         </Animated.View>
     );

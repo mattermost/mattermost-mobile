@@ -3,6 +3,7 @@
 
 import Database from '@nozbe/watermelondb/Database';
 import React from 'react';
+import {SafeAreaProvider} from 'react-native-safe-area-context';
 
 import {MM_TABLES} from '@constants/database';
 import {TeamModel} from '@database/models/server';
@@ -27,10 +28,12 @@ describe('components/channel_list', () => {
 
     it('should match snapshot', () => {
         const wrapper = renderWithEverything(
-            <ChannelsList
-                isTablet={false}
-                teamsCount={1}
-            />,
+            <SafeAreaProvider>
+                <ChannelsList
+                    isTablet={false}
+                    teamsCount={1}
+                />
+            </SafeAreaProvider>,
             {database},
         );
         expect(wrapper.toJSON()).toMatchSnapshot();

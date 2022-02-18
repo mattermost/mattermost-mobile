@@ -6,6 +6,7 @@ import keyMirror from '@utils/key_mirror';
 export default keyMirror({
     ACCOUNT_SELECT_TABLET_VIEW: null,
     CHANNEL_DELETED: null,
+    CLOSE_BOTTOM_SHEET: null,
     CONFIG_CHANGED: null,
     LEAVE_CHANNEL: null,
     LEAVE_TEAM: null,
