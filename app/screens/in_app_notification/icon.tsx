@@ -95,7 +95,7 @@ const enhanced = withObservables([], ({database, senderId}: WithDatabaseArgs & {
     return {
         author,
         enablePostIconOverride: config.pipe(
-            switchMap((cfg) => of$(cfg.EnablePostIconOverride === 'true')),
+            switchMap((cfg) => of$(cfg?.EnablePostIconOverride === 'true')),
         ),
     };
 });

@@ -2,6 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {Database, Model, Q, Query, Relation} from '@nozbe/watermelondb';
+import {of as of$} from 'rxjs';
 import {switchMap} from 'rxjs/operators';
 
 import {Database as DatabaseConstants, Preferences} from '@constants';
@@ -268,7 +269,9 @@ export const getTeamById = async (database: Database, teamId: string) => {
 };
 
 export const observeTeam = (database: Database, teamId: string) => {
-    return database.get<TeamModel>(TEAM).findAndObserve(teamId);
+    return database.get<TeamModel>(TEAM).query(Q.where('id', teamId), Q.take(1)).observe().pipe(
+        switchMap((result) => (result.length ? result[0].observe() : of$(undefined))),
+    );
 };
 
 export const queryTeamsById = (database: Database, teamIds: string[]) => {
@@ -328,6 +331,6 @@ export const getAvailableTeamIds = async (database: Database, excludeTeamId: str
 
 export const observeCurrentTeam = (database: Database) => {
     return observeCurrentTeamId(database).pipe(
-        switchMap((id) => database.get<TeamModel>(TEAM).findAndObserve(id)),
+        switchMap((id) => observeTeam(database, id)),
     );
 };

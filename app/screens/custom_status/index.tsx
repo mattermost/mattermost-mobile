@@ -397,7 +397,7 @@ const enhancedCSM = withObservables([], ({database}: WithDatabaseArgs) => {
     return {
         currentUser: observeCurrentUser(database),
         customStatusExpirySupported: config.pipe(
-            switchMap((cfg) => of$(isCustomStatusExpirySupported(cfg.Version))),
+            switchMap((cfg) => of$(isCustomStatusExpirySupported(cfg?.Version || ''))),
         ),
         recentCustomStatuses: observeRecentCustomStatus(database),
     };

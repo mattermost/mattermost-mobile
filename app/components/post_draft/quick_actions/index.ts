@@ -19,14 +19,14 @@ const enhanced = withObservables([], ({database}: WithDatabaseArgs) => {
 
     const canUploadFiles = combineLatest([config, license]).pipe(
         switchMap(([c, l]) => of$(
-            c.EnableFileAttachments !== 'false' &&
-                (l.IsLicensed === 'false' || l.Compliance === 'false' || c.EnableMobileFileUpload !== 'false'),
+            c?.EnableFileAttachments === 'true' ||
+                (l?.IsLicensed !== 'true' && l?.Compliance !== 'true' && c?.EnableMobileFileUpload === 'true'),
         ),
         ),
     );
 
     const maxFileCount = config.pipe(
-        switchMap((cfg) => of$(isMinimumServerVersion(cfg.Version, 6, 0) ? 10 : 5)),
+        switchMap((cfg) => of$(isMinimumServerVersion(cfg?.Version || '', 6, 0) ? 10 : 5)),
     );
 
     return {

@@ -32,7 +32,7 @@ const enhanced = withObservables([], ({channel, database}: {channel: ChannelMode
             map(([prefs, cfg, lcs]) => getTeammateNameDisplaySetting(prefs, cfg, lcs)),
         );
         creator = combineLatest([profile, teammateNameDisplay, me]).pipe(
-            map(([user, displaySetting, currentUser]) => (user ? displayUsername(user as UserModel, currentUser.locale, displaySetting, true) : '')),
+            map(([user, displaySetting, currentUser]) => (user ? displayUsername(user as UserModel, currentUser?.locale, displaySetting, true) : '')),
         );
     } else {
         creator = of$(undefined);

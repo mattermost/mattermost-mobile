@@ -46,7 +46,7 @@ const enhanced = withObservables([], ({database}: WithDatabaseArgs) => {
             const teammateId = getUserIdFromChannelName(userId, c.name);
             return observeUser(database, teammateId).pipe(
                 // eslint-disable-next-line max-nested-callbacks
-                switchMap((u) => of$(`@${u.username}`)),
+                switchMap((u) => (u ? of$(`@${u.username}`) : of$('Someone'))),
             );
         } else if (c?.type === General.GM_CHANNEL) {
             return of$(`@${c.name}`);

@@ -27,7 +27,7 @@ const withCombinedPosts = withObservables(['postId'], ({database, postId}: WithD
     const posts = queryPostsById(database, postIds).observe();
     const post = posts.pipe(map((ps) => generateCombinedPost(postId, ps)));
     const canDelete = combineLatest([posts, currentUser]).pipe(
-        switchMap(([ps, u]) => from$(hasPermissionForPost(ps[0], u, Permissions.DELETE_OTHERS_POSTS, false))),
+        switchMap(([ps, u]) => (u ? from$(hasPermissionForPost(ps[0], u, Permissions.DELETE_OTHERS_POSTS, false)) : of$(false))),
     );
 
     const usernamesById = post.pipe(

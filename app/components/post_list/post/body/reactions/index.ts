@@ -31,11 +31,11 @@ const withReactions = withObservables(['post'], ({database, post}: WithReactions
     const channel = (post.channel as Relation<ChannelModel>).observe();
     const experimentalTownSquareIsReadOnly = observeConfigBooleanValue(database, 'ExperimentalTownSquareIsReadOnly');
     const disabled = combineLatest([currentUser, channel, experimentalTownSquareIsReadOnly]).pipe(
-        map(([u, c, readOnly]) => ((c && c.deleteAt > 0) || (c?.name === General.DEFAULT_CHANNEL && !isSystemAdmin(u.roles) && readOnly))),
+        map(([u, c, readOnly]) => ((c && c.deleteAt > 0) || (c?.name === General.DEFAULT_CHANNEL && !isSystemAdmin(u?.roles || '') && readOnly))),
     );
 
-    const canAddReaction = currentUser.pipe(switchMap((u) => from$(hasPermissionForPost(post, u, Permissions.ADD_REACTION, true))));
-    const canRemoveReaction = currentUser.pipe(switchMap((u) => from$(hasPermissionForPost(post, u, Permissions.REMOVE_REACTION, true))));
+    const canAddReaction = currentUser.pipe(switchMap((u) => (u ? from$(hasPermissionForPost(post, u, Permissions.ADD_REACTION, true)) : of$(false))));
+    const canRemoveReaction = currentUser.pipe(switchMap((u) => (u ? from$(hasPermissionForPost(post, u, Permissions.REMOVE_REACTION, true)) : of$(false))));
 
     return {
         canAddReaction,

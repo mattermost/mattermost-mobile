@@ -14,8 +14,8 @@ import type {WithDatabaseArgs} from '@typings/database/database';
 
 const enhanced = withObservables(['channelId'], ({channelId, database}: {channelId: string} & WithDatabaseArgs) => {
     const myChannel = observeMyChannel(database, channelId);
-    const isManualUnread = myChannel.pipe(switchMap((ch) => of$(ch.manuallyUnread)));
-    const unreadCount = myChannel.pipe(switchMap((ch) => of$(ch.messageCount)));
+    const isManualUnread = myChannel.pipe(switchMap((ch) => of$(ch?.manuallyUnread)));
+    const unreadCount = myChannel.pipe(switchMap((ch) => of$(ch?.messageCount)));
 
     return {
         isManualUnread,

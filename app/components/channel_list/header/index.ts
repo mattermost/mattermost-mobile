@@ -21,15 +21,15 @@ const enhanced = withObservables([], ({database}: WithDatabaseArgs) => {
     const currentUser = observeCurrentUser(database);
 
     const canJoinChannels = combineLatest([currentUser, team]).pipe(
-        switchMap(([u, t]) => (('id' in t) ? from$(hasPermissionForTeam(t, u, Permissions.JOIN_PUBLIC_CHANNELS, true)) : of$(false))),
+        switchMap(([u, t]) => (t && u ? from$(hasPermissionForTeam(t, u, Permissions.JOIN_PUBLIC_CHANNELS, true)) : of$(false))),
     );
 
     const canCreatePublicChannels = combineLatest([currentUser, team]).pipe(
-        switchMap(([u, t]) => (('id' in t) ? from$(hasPermissionForTeam(t, u, Permissions.CREATE_PUBLIC_CHANNEL, true)) : of$(false))),
+        switchMap(([u, t]) => (t && u ? from$(hasPermissionForTeam(t, u, Permissions.CREATE_PUBLIC_CHANNEL, true)) : of$(false))),
     );
 
     const canCreatePrivateChannels = combineLatest([currentUser, team]).pipe(
-        switchMap(([u, t]) => (('id' in t) ? from$(hasPermissionForTeam(t, u, Permissions.CREATE_PRIVATE_CHANNEL, false)) : of$(false))),
+        switchMap(([u, t]) => (t && u ? from$(hasPermissionForTeam(t, u, Permissions.CREATE_PRIVATE_CHANNEL, false)) : of$(false))),
     );
 
     const canCreateChannels = combineLatest([canCreatePublicChannels, canCreatePrivateChannels]).pipe(
@@ -40,7 +40,7 @@ const enhanced = withObservables([], ({database}: WithDatabaseArgs) => {
         canCreateChannels,
         canJoinChannels,
         displayName: team.pipe(
-            switchMap((t) => of$(t.displayName)),
+            switchMap((t) => of$(t?.displayName)),
         ),
     };
 });

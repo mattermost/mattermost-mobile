@@ -31,18 +31,18 @@ const enhanced = withObservables([], ({database, channelId, rootId = ''}: WithDa
 
     const canUploadFiles = combineLatest([config, license]).pipe(
         switchMap(([c, l]) => of$(
-            c.EnableFileAttachments !== 'false' &&
-                (l.IsLicensed === 'false' || l.Compliance === 'false' || c.EnableMobileFileUpload !== 'false'),
+            c?.EnableFileAttachments === 'true' ||
+                (l?.IsLicensed !== 'true' && l?.Compliance !== 'true' && c?.EnableMobileFileUpload === 'true'),
         ),
         ),
     );
 
     const maxFileSize = config.pipe(
-        switchMap((cfg) => of$(parseInt(cfg.MaxFileSize || '0', 10) || DEFAULT_SERVER_MAX_FILE_SIZE)),
+        switchMap((cfg) => of$(parseInt(cfg?.MaxFileSize || '0', 10) || DEFAULT_SERVER_MAX_FILE_SIZE)),
     );
 
     const maxFileCount = config.pipe(
-        switchMap((cfg) => of$(isMinimumServerVersion(cfg.Version, 6, 0) ? 10 : 5)),
+        switchMap((cfg) => of$(isMinimumServerVersion(cfg?.Version || '', 6, 0) ? 10 : 5)),
     );
 
     return {

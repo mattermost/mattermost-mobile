@@ -30,10 +30,10 @@ const withHeaderProps = withObservables(
         const license = observeLicense(database);
         const preferences = queryPreferencesByCategoryAndName(database, Preferences.CATEGORY_DISPLAY_SETTINGS).observe();
         const author = post.author.observe();
-        const enablePostUsernameOverride = config.pipe(map((cfg) => cfg.EnablePostUsernameOverride === 'true'));
-        const isTimezoneEnabled = config.pipe(map((cfg) => cfg.ExperimentalTimezone === 'true'));
+        const enablePostUsernameOverride = config.pipe(map((cfg) => cfg?.EnablePostUsernameOverride === 'true'));
+        const isTimezoneEnabled = config.pipe(map((cfg) => cfg?.ExperimentalTimezone === 'true'));
         const isMilitaryTime = preferences.pipe(map((prefs) => getPreferenceAsBool(prefs, Preferences.CATEGORY_DISPLAY_SETTINGS, 'use_military_time', false)));
-        const isCustomStatusEnabled = config.pipe(map((cfg) => cfg.EnableCustomUserStatuses === 'true' && isMinimumServerVersion(cfg.Version, 5, 36)));
+        const isCustomStatusEnabled = config.pipe(map((cfg) => cfg?.EnableCustomUserStatuses === 'true' && isMinimumServerVersion(cfg.Version, 5, 36)));
         const teammateNameDisplay = combineLatest([preferences, config, license]).pipe(
             map(([prefs, cfg, lcs]) => getTeammateNameDisplaySetting(prefs, cfg, lcs)),
         );

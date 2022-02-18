@@ -41,18 +41,18 @@ const enhanced = withObservables([], (ownProps: WithDatabaseArgs & OwnProps) => 
         switchMap((id) => observeUser(database, id),
         ));
     const userIsOutOfOffice = currentUser.pipe(
-        switchMap((u) => of$(u.status === General.OUT_OF_OFFICE)),
+        switchMap((u) => of$(u?.status === General.OUT_OF_OFFICE)),
     );
 
     const config = observeConfig(database);
     const enableConfirmNotificationsToChannel = config.pipe(
-        switchMap((cfg) => of$(Boolean(cfg.EnableConfirmNotificationsToChannel === 'true'))),
+        switchMap((cfg) => of$(Boolean(cfg?.EnableConfirmNotificationsToChannel === 'true'))),
     );
     const isTimezoneEnabled = config.pipe(
-        switchMap((cfg) => of$(Boolean(cfg.ExperimentalTimezone === 'true'))),
+        switchMap((cfg) => of$(Boolean(cfg?.ExperimentalTimezone === 'true'))),
     );
     const maxMessageLength = config.pipe(
-        switchMap((cfg) => of$(parseInt(cfg.MaxPostSize || '0', 10) || MAX_MESSAGE_LENGTH_FALLBACK)),
+        switchMap((cfg) => of$(parseInt(cfg?.MaxPostSize || '0', 10) || MAX_MESSAGE_LENGTH_FALLBACK)),
     );
 
     const useChannelMentions = combineLatest([channel, currentUser]).pipe(
@@ -61,7 +61,7 @@ const enhanced = withObservables([], (ownProps: WithDatabaseArgs & OwnProps) => 
                 return of$(true);
             }
 
-            return from$(hasPermissionForChannel(c, u, Permissions.USE_CHANNEL_MENTIONS, false));
+            return u ? from$(hasPermissionForChannel(c, u, Permissions.USE_CHANNEL_MENTIONS, false)) : of$(false);
         }),
     );
 
@@ -73,16 +73,17 @@ const enhanced = withObservables([], (ownProps: WithDatabaseArgs & OwnProps) => 
                 return of$(false);
             }
 
-            return from$(hasPermissionForChannel(c, u, Permissions.USE_GROUP_MENTIONS, true));
+            return u ? from$(hasPermissionForChannel(c, u, Permissions.USE_GROUP_MENTIONS, true)) : of$(false);
         }),
     );
 
     const groupsWithAllowReference = channel.pipe(switchMap(
-        (c) => queryGroupsForTeamAndChannel(database, c.teamId, c.id).observeWithColumns(['name'])),
+        (c) => (c ? queryGroupsForTeamAndChannel(database, c.teamId, c.id).observeWithColumns(['name']) : of$([]))),
     );
 
-    const channelInfo = channel.pipe(switchMap((c) => c.info.observe()));
-    const membersCount = channelInfo.pipe(
+    const membersCount = channel.pipe(
+        switchMap((c) => (c ? c.info.observe() : of$({memberCount: 0}))),
+    ).pipe(
         switchMap((i: ChannelInfoModel) => of$(i.memberCount)),
     );
 

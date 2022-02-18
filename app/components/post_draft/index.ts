@@ -35,23 +35,26 @@ const enhanced = withObservables([], (ownProps: WithDatabaseArgs & OwnProps) => 
         switchMap((id) => observeChannel(database, id!)),
     );
 
-    const canPost = combineLatest([channel, currentUser]).pipe(switchMap(([c, u]) => from$(hasPermissionForChannel(c, u, Permissions.CREATE_POST, false))));
-    const channelIsArchived = channel.pipe(switchMap((c) => (ownProps.channelIsArchived ? of$(true) : of$(c.deleteAt !== 0))));
+    const canPost = combineLatest([channel, currentUser]).pipe(switchMap(([c, u]) => (c && u ? from$(hasPermissionForChannel(c, u, Permissions.CREATE_POST, false)) : of$(false))));
+    const channelIsArchived = channel.pipe(switchMap((c) => (ownProps.channelIsArchived ? of$(true) : of$(c?.deleteAt !== 0))));
 
     const experimentalTownSquareIsReadOnly = observeConfigBooleanValue(database, 'ExperimentalTownSquareIsReadOnly');
     const channelIsReadOnly = combineLatest([currentUser, channel, experimentalTownSquareIsReadOnly]).pipe(
-        switchMap(([u, c, readOnly]) => of$(c?.name === General.DEFAULT_CHANNEL && !isSystemAdmin(u.roles) && readOnly)),
+        switchMap(([u, c, readOnly]) => of$(c?.name === General.DEFAULT_CHANNEL && !isSystemAdmin(u?.roles || '') && readOnly)),
     );
 
     const deactivatedChannel = combineLatest([currentUser, channel]).pipe(
         switchMap(([u, c]) => {
+            if (!u || !c) {
+                return of$(false);
+            }
             if (c.type !== General.DM_CHANNEL) {
                 return of$(false);
             }
             const teammateId = getUserIdFromChannelName(u.id, c.name);
             if (teammateId) {
                 return observeUser(database, teammateId).pipe(
-                    switchMap((u2) => of$(Boolean(u2.deleteAt))), // eslint-disable-line max-nested-callbacks
+                    switchMap((u2) => (u2 ? of$(Boolean(u2.deleteAt)) : of$(false))), // eslint-disable-line max-nested-callbacks
                 );
             }
             return of$(true);

@@ -19,27 +19,27 @@ const enhanced = withObservables([], ({database}: WithDatabaseArgs) => {
         currentUser: observeCurrentUser(database),
         lockedFirstName: config.pipe(
             switchMap(
-                (cfg) => of$(cfg.LdapFirstNameAttributeSet === 'true' || cfg.SamlFirstNameAttributeSet === 'true'),
+                (cfg) => of$(cfg?.LdapFirstNameAttributeSet === 'true' || cfg?.SamlFirstNameAttributeSet === 'true'),
             ),
         ),
         lockedLastName: config.pipe(
             switchMap(
-                (cfg) => of$(cfg.LdapLastNameAttributeSet === 'true' || cfg.SamlLastNameAttributeSet === 'true'),
+                (cfg) => of$(cfg?.LdapLastNameAttributeSet === 'true' || cfg?.SamlLastNameAttributeSet === 'true'),
             ),
         ),
         lockedNickname: config.pipe(
             switchMap(
-                (cfg) => of$(cfg.LdapNicknameAttributeSet === 'true' || cfg.SamlNicknameAttributeSet === 'true'),
+                (cfg) => of$(cfg?.LdapNicknameAttributeSet === 'true' || cfg?.SamlNicknameAttributeSet === 'true'),
             ),
         ),
         lockedPosition: config.pipe(
             switchMap(
-                (cfg) => of$(cfg.LdapPositionAttributeSet === 'true' || cfg.SamlPositionAttributeSet === 'true'),
+                (cfg) => of$(cfg?.LdapPositionAttributeSet === 'true' || cfg?.SamlPositionAttributeSet === 'true'),
             ),
         ),
         lockedPicture: config.pipe(
             switchMap(
-                (cfg) => of$(cfg.LdapPictureAttributeSet === 'true'),
+                (cfg) => of$(cfg?.LdapPictureAttributeSet === 'true'),
             ),
         ),
     };

@@ -188,7 +188,7 @@ const Files = ({authorId, canDownloadFiles, failed, files, isReplyPost, postId, 
 const withCanDownload = withObservables(['post'], ({database, post}: {post: PostModel} & WithDatabaseArgs) => {
     const enableMobileFileDownload = observeConfigBooleanValue(database, 'EnableMobileFileDownload');
     const complianceDisabled = observeLicense(database).pipe(
-        switchMap((lcs) => of$(lcs.IsLicensed === 'false' || lcs.Compliance === 'false')),
+        switchMap((lcs) => of$(lcs?.IsLicensed !== 'true' && lcs?.Compliance !== 'true')),
     );
 
     const canDownloadFiles = combineLatest([enableMobileFileDownload, complianceDisabled]).pipe(

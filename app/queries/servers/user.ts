@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {Database, Q} from '@nozbe/watermelondb';
-import {combineLatest} from 'rxjs';
+import {combineLatest, of as of$} from 'rxjs';
 import {switchMap} from 'rxjs/operators';
 
 import {Preferences} from '@constants';
@@ -26,7 +26,9 @@ export const getUserById = async (database: Database, userId: string) => {
 };
 
 export const observeUser = (database: Database, userId: string) => {
-    return database.get<UserModel>(USER).findAndObserve(userId);
+    return database.get<UserModel>(USER).query(Q.where('id', userId), Q.take(1)).observe().pipe(
+        switchMap((result) => (result.length ? result[0].observe() : of$(undefined))),
+    );
 };
 
 export const getCurrentUser = async (database: Database) => {
@@ -40,7 +42,7 @@ export const getCurrentUser = async (database: Database) => {
 
 export const observeCurrentUser = (database: Database) => {
     return observeCurrentUserId(database).pipe(
-        switchMap((id) => database.get<UserModel>(USER).findAndObserve(id)),
+        switchMap((id) => observeUser(database, id)),
     );
 };
 

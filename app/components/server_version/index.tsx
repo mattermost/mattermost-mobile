@@ -44,7 +44,7 @@ const ServerVersion = ({version, roles}: ServerVersionProps) => {
 const enahanced = withObservables([], ({database}: WithDatabaseArgs) => ({
     version: observeConfigValue(database, 'Version'),
     roles: observeCurrentUser(database).pipe(
-        map((user) => user.roles),
+        map((user) => user?.roles),
     ),
 }));
 

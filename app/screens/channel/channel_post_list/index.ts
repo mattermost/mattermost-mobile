@@ -25,11 +25,11 @@ const enhanced = withObservables(['channelId', 'forceQueryAfterAppState'], ({dat
     const currentUser = observeCurrentUser(database);
 
     return {
-        currentTimezone: currentUser.pipe((switchMap((user) => of$(getTimezone(user.timezone))))),
-        currentUsername: currentUser.pipe((switchMap((user) => of$(user.username)))),
+        currentTimezone: currentUser.pipe((switchMap((user) => of$(getTimezone(user?.timezone || null))))),
+        currentUsername: currentUser.pipe((switchMap((user) => of$(user?.username)))),
         isTimezoneEnabled: observeConfigBooleanValue(database, 'ExperimentalTimezone'),
         lastViewedAt: observeMyChannel(database, channelId).pipe(
-            switchMap((myChannel) => of$(myChannel.viewedAt)),
+            switchMap((myChannel) => of$(myChannel?.viewedAt)),
         ),
         posts: queryPostsInChannel(database, channelId).observeWithColumns(['earliest', 'latest']).pipe(
             switchMap((postsInChannel) => {

@@ -2,6 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {Database, Model, Q, Query, Relation} from '@nozbe/watermelondb';
+import {of as of$} from 'rxjs';
 import {switchMap} from 'rxjs/operators';
 
 import {General, Permissions} from '@constants';
@@ -147,7 +148,9 @@ export const getMyChannel = async (database: Database, channelId: string) => {
 };
 
 export const observeMyChannel = (database: Database, channelId: string) => {
-    return database.get<MyChannelModel>(MY_CHANNEL).findAndObserve(channelId);
+    return database.get<MyChannelModel>(MY_CHANNEL).query(Q.where('id', channelId), Q.take(1)).observe().pipe(
+        switchMap((result) => (result.length ? result[0].observe() : of$(undefined))),
+    );
 };
 
 export const getChannelById = async (database: Database, channelId: string) => {
@@ -160,7 +163,9 @@ export const getChannelById = async (database: Database, channelId: string) => {
 };
 
 export const observeChannel = (database: Database, channelId: string) => {
-    return database.get<ChannelModel>(CHANNEL).findAndObserve(channelId);
+    return database.get<ChannelModel>(CHANNEL).query(Q.where('id', channelId), Q.take(1)).observe().pipe(
+        switchMap((result) => (result.length ? result[0].observe() : of$(undefined))),
+    );
 };
 
 export const getChannelByName = async (database: Database, channelName: string) => {
@@ -219,8 +224,10 @@ export const getCurrentChannel = async (database: Database) => {
 
 export const observeCurrentChannel = (database: Database) => {
     return observeCurrentChannelId(database).pipe(
-        switchMap((id) => database.get<ChannelModel>(CHANNEL).findAndObserve(id)),
-    );
+        switchMap((id) => database.get<ChannelModel>(CHANNEL).query(Q.where('id', id), Q.take(1)).observe().pipe(
+            switchMap((result) => (result.length ? result[0].observe() : of$(undefined))),
+        ),
+        ));
 };
 
 export const deleteChannelMembership = async (operator: ServerDataOperator, userId: string, channelId: string, prepareRecordsOnly = false) => {
@@ -280,5 +287,7 @@ export const queryMyChannelsByTeam = (database: Database, teamId: string) => {
 };
 
 export const observeChannelInfo = (database: Database, channelId: string) => {
-    return database.get<ChannelInfoModel>(CHANNEL_INFO).findAndObserve(channelId);
+    return database.get<ChannelInfoModel>(CHANNEL_INFO).query(Q.where('id', channelId), Q.take(1)).observe().pipe(
+        switchMap((result) => (result.length ? result[0].observe() : of$(undefined))),
+    );
 };

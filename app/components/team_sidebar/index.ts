@@ -17,14 +17,13 @@ import TeamSidebar from './team_sidebar';
 import type {WithDatabaseArgs} from '@typings/database/database';
 
 const enhanced = withObservables([], ({database}: WithDatabaseArgs) => {
-    const rolesArray = observeCurrentUser(database).pipe(
-        switchMap((u) => of$(u.roles.split(' '))),
-    );
-    const roles = rolesArray.pipe(
+    const canCreateTeams = observeCurrentUser(database).pipe(
+        switchMap((u) => (u ? of$(u.roles.split(' ')) : of$([]))),
+    ).pipe(
         switchMap((values) => queryRolesByNames(database, values).observe()),
+    ).pipe(
+        switchMap((r) => of$(hasPermission(r, Permissions.CREATE_TEAM, false))),
     );
-
-    const canCreateTeams = roles.pipe(switchMap((r) => of$(hasPermission(r, Permissions.CREATE_TEAM, false))));
 
     const otherTeams = queryMyTeams(database).observe().pipe(
         switchMap((mm) => {

@@ -175,10 +175,10 @@ const MarkdownLink = ({children, experimentalNormalizeMarkdownLinks, href, siteU
 const withConfigValues = withObservables([], ({database}: WithDatabaseArgs) => {
     const config = observeConfig(database);
     const experimentalNormalizeMarkdownLinks = config.pipe(
-        switchMap((cfg) => of$(cfg.ExperimentalNormalizeMarkdownLinks)),
+        switchMap((cfg) => of$(cfg?.ExperimentalNormalizeMarkdownLinks)),
     );
     const siteURL = config.pipe(
-        switchMap((cfg) => of$(cfg.SiteURL)),
+        switchMap((cfg) => of$(cfg?.SiteURL)),
     );
 
     return {

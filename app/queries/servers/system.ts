@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {Database} from '@nozbe/watermelondb';
+import {Database, Q} from '@nozbe/watermelondb';
 import {of as of$} from 'rxjs';
 import {switchMap} from 'rxjs/operators';
 
@@ -30,9 +30,15 @@ export const getCurrentChannelId = async (serverDatabase: Database): Promise<str
     }
 };
 
+export const querySystemValue = (database: Database, key: string) => {
+    return database.get<SystemModel>(SYSTEM).query(Q.where('id', (key)), Q.take(1));
+};
+
 export const observeCurrentChannelId = (database: Database) => {
-    return database.get<SystemModel>(SYSTEM).findAndObserve(SYSTEM_IDENTIFIERS.CURRENT_CHANNEL_ID).pipe(
-        switchMap(({value}) => of$(value as string)),
+    return querySystemValue(database, SYSTEM_IDENTIFIERS.CURRENT_CHANNEL_ID).observe().pipe(
+        switchMap((result) => (result.length ? result[0].observe() : of$({value: ''}))),
+    ).pipe(
+        switchMap((model) => of$(model.value as string)),
     );
 };
 
@@ -46,8 +52,10 @@ export const getCurrentTeamId = async (serverDatabase: Database): Promise<string
 };
 
 export const observeCurrentTeamId = (database: Database) => {
-    return database.get<SystemModel>(SYSTEM).findAndObserve(SYSTEM_IDENTIFIERS.CURRENT_TEAM_ID).pipe(
-        switchMap(({value}) => of$(value as string)),
+    return querySystemValue(database, SYSTEM_IDENTIFIERS.CURRENT_TEAM_ID).observe().pipe(
+        switchMap((result) => (result.length ? result[0].observe() : of$({value: ''}))),
+    ).pipe(
+        switchMap((model) => of$(model.value as string)),
     );
 };
 
@@ -61,8 +69,10 @@ export const getCurrentUserId = async (serverDatabase: Database): Promise<string
 };
 
 export const observeCurrentUserId = (database: Database) => {
-    return database.get<SystemModel>(SYSTEM).findAndObserve(SYSTEM_IDENTIFIERS.CURRENT_USER_ID).pipe(
-        switchMap(({value}) => of$(value as string)),
+    return querySystemValue(database, SYSTEM_IDENTIFIERS.CURRENT_USER_ID).observe().pipe(
+        switchMap((result) => (result.length ? result[0].observe() : of$({value: ''}))),
+    ).pipe(
+        switchMap((model) => of$(model.value as string)),
     );
 };
 
@@ -112,55 +122,63 @@ export const getConfig = async (serverDatabase: Database) => {
 };
 
 export const observeConfig = (database: Database) => {
-    return database.get<SystemModel>(SYSTEM).findAndObserve(SYSTEM_IDENTIFIERS.CONFIG).pipe(
-        switchMap(({value}) => of$(value as ClientConfig)),
+    return querySystemValue(database, SYSTEM_IDENTIFIERS.CONFIG).observe().pipe(
+        switchMap((result) => (result.length ? result[0].observe() : of$({value: undefined}))),
+    ).pipe(
+        switchMap((model) => of$(model.value as ClientConfig | undefined)),
     );
 };
 
 export const observeConfigValue = (database: Database, key: keyof ClientConfig) => {
     return observeConfig(database).pipe(
-        switchMap((cfg) => of$(cfg[key])),
+        switchMap((cfg) => of$(cfg?.[key])),
     );
 };
 export const observeConfigBooleanValue = (database: Database, key: keyof ClientConfig) => {
     return observeConfig(database).pipe(
-        switchMap((cfg) => of$(cfg[key] === 'true')),
+        switchMap((cfg) => of$(cfg?.[key] === 'true')),
     );
 };
 
 export const observeLicense = (database: Database) => {
-    return database.get<SystemModel>(SYSTEM).findAndObserve(SYSTEM_IDENTIFIERS.LICENSE).pipe(
-        switchMap(({value}) => of$((value as ClientLicense))),
+    return querySystemValue(database, SYSTEM_IDENTIFIERS.LICENSE).observe().pipe(
+        switchMap((result) => (result.length ? result[0].observe() : of$({value: undefined}))),
+    ).pipe(
+        switchMap((model) => of$(model.value as ClientLicense | undefined)),
     );
 };
 
-export const getRecentCustomStatuses = async (serverDatabase: Database) => {
+export const getRecentCustomStatuses = async (database: Database) => {
     try {
-        const recent = await serverDatabase.get<SystemModel>(SYSTEM).find(SYSTEM_IDENTIFIERS.RECENT_CUSTOM_STATUS);
+        const recent = await database.get<SystemModel>(SYSTEM).find(SYSTEM_IDENTIFIERS.RECENT_CUSTOM_STATUS);
         return recent.value as UserCustomStatus[];
     } catch {
         return [];
     }
 };
 
-export const getExpandedLinks = async (serverDatabase: Database) => {
+export const getExpandedLinks = async (database: Database) => {
     try {
-        const expandedLinks = await serverDatabase.get<SystemModel>(SYSTEM).find(SYSTEM_IDENTIFIERS.EXPANDED_LINKS);
+        const expandedLinks = await database.get<SystemModel>(SYSTEM).find(SYSTEM_IDENTIFIERS.EXPANDED_LINKS);
         return (expandedLinks?.value || {}) as Record<string, string>;
     } catch {
         return {};
     }
 };
 
-export const observeExpandedLinks = (serverDatabase: Database) => {
-    return serverDatabase.get<SystemModel>(SYSTEM).findAndObserve(SYSTEM_IDENTIFIERS.EXPANDED_LINKS).pipe(
-        switchMap(({value}) => of$((value as Record<string, string>))),
+export const observeExpandedLinks = (database: Database) => {
+    return querySystemValue(database, SYSTEM_IDENTIFIERS.EXPANDED_LINKS).observe().pipe(
+        switchMap((result) => (result.length ? result[0].observe() : of$({value: {}}))),
+    ).pipe(
+        switchMap((model) => of$(model.value as Record<string, string>)),
     );
 };
 
 export const observeRecentMentions = (database: Database) => {
-    return database.get<SystemModel>(SYSTEM).findAndObserve(SYSTEM_IDENTIFIERS.RECENT_MENTIONS).pipe(
-        switchMap(({value}) => of$(value as string[])),
+    return querySystemValue(database, SYSTEM_IDENTIFIERS.RECENT_MENTIONS).observe().pipe(
+        switchMap((result) => (result.length ? result[0].observe() : of$({value: []}))),
+    ).pipe(
+        switchMap((model) => of$(model.value as string[])),
     );
 };
 
@@ -174,14 +192,18 @@ export const getRecentReactions = async (database: Database) => {
 };
 
 export const observeRecentReactions = (database: Database) => {
-    return database.get<SystemModel>(SYSTEM).findAndObserve(SYSTEM_IDENTIFIERS.RECENT_REACTIONS).pipe(
-        switchMap(({value}) => of$(value as string[])),
+    return querySystemValue(database, SYSTEM_IDENTIFIERS.RECENT_REACTIONS).observe().pipe(
+        switchMap((result) => (result.length ? result[0].observe() : of$({value: []}))),
+    ).pipe(
+        switchMap((model) => of$(model.value as string[])),
     );
 };
 
 export const observeRecentCustomStatus = (database: Database) => {
-    return database.get<SystemModel>(SYSTEM).findAndObserve(SYSTEM_IDENTIFIERS.RECENT_CUSTOM_STATUS).pipe(
-        switchMap(({value}) => of$(value as UserCustomStatus[])),
+    return querySystemValue(database, SYSTEM_IDENTIFIERS.RECENT_CUSTOM_STATUS).observe().pipe(
+        switchMap((result) => (result.length ? result[0].observe() : of$({value: []}))),
+    ).pipe(
+        switchMap((model) => of$(model.value as UserCustomStatus[])),
     );
 };
 
@@ -194,9 +216,11 @@ export const getWebSocketLastDisconnected = async (serverDatabase: Database) => 
     }
 };
 
-export const observeWebsocket = (serverDatabase: Database) => {
-    return serverDatabase.get<SystemModel>(SYSTEM).findAndObserve(SYSTEM_IDENTIFIERS.WEBSOCKET).pipe(
-        switchMap(({value}) => of$(parseInt(value || 0, 10) || 0)),
+export const observeWebsocket = (database: Database) => {
+    return querySystemValue(database, SYSTEM_IDENTIFIERS.WEBSOCKET).observe().pipe(
+        switchMap((result) => (result.length ? result[0].observe() : of$({value: '0'}))),
+    ).pipe(
+        switchMap((model) => of$(parseInt(model.value || 0, 10) || 0)),
     );
 };
 

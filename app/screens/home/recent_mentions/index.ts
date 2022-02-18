@@ -30,7 +30,7 @@ const enhance = withObservables([], ({database}: WithDatabaseArgs) => {
             }),
         ),
         currentUser,
-        currentTimezone: currentUser.pipe((switchMap((user) => of$(getTimezone(user.timezone))))),
+        currentTimezone: currentUser.pipe((switchMap((user) => of$(getTimezone(user?.timezone || null))))),
         isTimezoneEnabled: observeConfigBooleanValue(database, 'ExperimentalTimezone'),
     };
 });

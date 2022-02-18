@@ -20,8 +20,16 @@ const enhanced = withObservables(['channelId'], ({channelId, database}: {channel
     const me = observeCurrentUser(database);
 
     const roles = combineLatest([me, myChannel]).pipe(
-        switchMap(([{roles: userRoles}, {roles: memberRoles}]) => {
-            const combinedRoles = userRoles.split(' ').concat(memberRoles.split(' '));
+        switchMap(([user, member]) => {
+            const userRoles = user?.roles.split(' ');
+            const memberRoles = member?.roles.split(' ');
+            const combinedRoles = [];
+            if (userRoles) {
+                combinedRoles.push(...userRoles);
+            }
+            if (memberRoles) {
+                combinedRoles.push(...memberRoles);
+            }
             return queryRolesByNames(database, combinedRoles).observe();
         }),
     );

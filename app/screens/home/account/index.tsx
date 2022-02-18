@@ -143,15 +143,15 @@ const AccountScreen = ({currentUser, enableCustomUserStatuses, customStatusExpir
 
 const enhanced = withObservables([], ({database}: WithDatabaseArgs) => {
     const config = observeConfig(database);
-    const showFullName = config.pipe((switchMap((cfg) => of$(cfg.ShowFullName === 'true'))));
+    const showFullName = config.pipe((switchMap((cfg) => of$(cfg?.ShowFullName === 'true'))));
     const enableCustomUserStatuses = config.pipe((switchMap((cfg) => {
-        return of$(cfg.EnableCustomUserStatuses === 'true' && isMinimumServerVersion(cfg.Version, 5, 36));
+        return of$(cfg?.EnableCustomUserStatuses === 'true' && isMinimumServerVersion(cfg?.Version || '', 5, 36));
     })));
     const version = config.pipe(
-        switchMap((cfg) => of$(cfg.Version)),
+        switchMap((cfg) => of$(cfg?.Version || '')),
     );
     const customStatusExpirySupported = config.pipe(
-        switchMap((cfg) => of$(isCustomStatusExpirySupported(cfg.Version))),
+        switchMap((cfg) => of$(isCustomStatusExpirySupported(cfg?.Version || ''))),
     );
 
     return {

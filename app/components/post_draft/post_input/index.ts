@@ -22,15 +22,15 @@ type OwnProps = {
 const enhanced = withObservables([], ({database, channelId, rootId}: WithDatabaseArgs & OwnProps) => {
     const config = observeConfig(database);
     const timeBetweenUserTypingUpdatesMilliseconds = config.pipe(
-        switchMap((cfg) => of$(parseInt(cfg.TimeBetweenUserTypingUpdatesMilliseconds, 10))),
+        switchMap((cfg) => of$(parseInt(cfg?.TimeBetweenUserTypingUpdatesMilliseconds || '0', 10))),
     );
 
     const enableUserTypingMessage = config.pipe(
-        switchMap((cfg) => of$(cfg.EnableUserTypingMessages === 'true')),
+        switchMap((cfg) => of$(cfg?.EnableUserTypingMessages === 'true')),
     );
 
     const maxNotificationsPerChannel = config.pipe(
-        switchMap((cfg) => of$(parseInt(cfg.MaxNotificationsPerChannel, 10))),
+        switchMap((cfg) => of$(parseInt(cfg?.MaxNotificationsPerChannel || '0', 10))),
     );
 
     let channel;
@@ -41,12 +41,12 @@ const enhanced = withObservables([], ({database, channelId, rootId}: WithDatabas
     }
 
     const channelDisplayName = channel.pipe(
-        switchMap((c) => of$(c.displayName)),
+        switchMap((c) => of$(c?.displayName)),
     );
 
-    const channelInfo = channel.pipe(switchMap((c) => c.info.observe()));
-
-    const membersInChannel = channelInfo.pipe(
+    const membersInChannel = channel.pipe(
+        switchMap((c) => (c ? c.info.observe() : of$({memberCount: 0}))),
+    ).pipe(
         switchMap((i: ChannelInfoModel) => of$(i.memberCount)),
     );
 

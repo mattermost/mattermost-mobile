@@ -17,7 +17,7 @@ const enhanced = withObservables(['teamId'], ({database, teamId}: {teamId: strin
 
     return {
         teamDisplayName: team.pipe(
-            switchMap((t) => of$(t.displayName)),
+            switchMap((t) => of$(t?.displayName)),
         ),
     };
 });

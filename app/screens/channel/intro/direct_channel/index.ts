@@ -27,7 +27,7 @@ const enhanced = withObservables([], ({channel, database}: {channel: ChannelMode
                 const otherUserId = getUserIdFromChannelName(userId, channel.name);
                 return observeUser(database, otherUserId).pipe(
                     // eslint-disable-next-line max-nested-callbacks
-                    switchMap((user) => of$(user.isBot)), // eslint-disable-next-line max-nested-callbacks
+                    switchMap((user) => of$(Boolean(user?.isBot))), // eslint-disable-next-line max-nested-callbacks
                     catchError(() => of$(false)),
                 );
             }),

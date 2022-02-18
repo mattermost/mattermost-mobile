@@ -21,11 +21,11 @@ const enhanced = withObservables([], ({database}: WithDatabaseArgs) => {
     const config = observeConfig(database);
 
     const sharedChannelsEnabled = config.pipe(
-        switchMap((v) => of$(v.ExperimentalSharedChannels === 'true')),
+        switchMap((v) => of$(v?.ExperimentalSharedChannels === 'true')),
     );
 
     const canShowArchivedChannels = config.pipe(
-        switchMap((v) => of$(v.ExperimentalViewArchivedChannels === 'true')),
+        switchMap((v) => of$(v?.ExperimentalViewArchivedChannels === 'true')),
     );
 
     const currentTeamId = observeCurrentTeamId(database);
@@ -33,13 +33,11 @@ const enhanced = withObservables([], ({database}: WithDatabaseArgs) => {
 
     const joinedChannels = queryAllMyChannel(database).observe();
 
-    const currentUser = currentUserId.pipe(
+    const roles = currentUserId.pipe(
         switchMap((id) => observeUser(database, id),
-        ));
-    const rolesArray = currentUser.pipe(
-        switchMap((u) => of$(u.roles.split(' '))),
-    );
-    const roles = rolesArray.pipe(
+        )).pipe(
+        switchMap((u) => (u ? of$(u.roles.split(' ')) : of$([]))),
+    ).pipe(
         switchMap((values) => queryRolesByNames(database, values).observe()),
     );
 
