@@ -12,7 +12,7 @@ import {SYSTEM_IDENTIFIERS} from '@constants/database';
 import DatabaseManager from '@database/manager';
 import {getNeededAtMentionedUsernames} from '@helpers/api/user';
 import NetworkManager from '@init/network_manager';
-import {prepareMissingChannelsForAllTeams, queryAllMyChannelIds} from '@queries/servers/channel';
+import {prepareMissingChannelsForAllTeams, queryAllMyChannelIds, queryMyChannel} from '@queries/servers/channel';
 import {queryAllCustomEmojis} from '@queries/servers/custom_emoji';
 import {queryPostById, queryRecentPostsInChannel} from '@queries/servers/post';
 import {queryCurrentUserId, queryCurrentChannelId} from '@queries/servers/system';
@@ -547,6 +547,40 @@ export const togglePinPost = async (serverUrl: string, postId: string) => {
             });
         }
         return {post};
+    } catch (error) {
+        forceLogoutIfNecessary(serverUrl, error as ClientErrorProps);
+        return {error};
+    }
+};
+
+export const markPostAsUnread = async (serverUrl: string, postId: string, channelId: string) => {
+    const database = DatabaseManager.serverDatabases[serverUrl]?.database;
+    if (!database) {
+        return {error: `${serverUrl} database not found`};
+    }
+    let client;
+    try {
+        client = NetworkManager.getClient(serverUrl);
+    } catch (error) {
+        return {error};
+    }
+    try {
+        const userId = await queryCurrentUserId(database);
+        const myChanel = await queryMyChannel(database, channelId);
+
+        if (myChanel) {
+            client.markPostAsUnread(userId, postId);
+
+            // do something locally
+            await database.write(async () => {
+                await myChanel.update((c) => {
+                    c.manuallyUnread = true;
+                });
+            });
+        }
+        return {
+            myChanel,
+        };
     } catch (error) {
         forceLogoutIfNecessary(serverUrl, error as ClientErrorProps);
         return {error};
