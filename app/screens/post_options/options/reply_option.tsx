@@ -2,11 +2,10 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback} from 'react';
-import {DeviceEventEmitter} from 'react-native';
 
-import {Events, Screens} from '@constants';
+import {Screens} from '@constants';
 import {t} from '@i18n';
-import {dismissBottomSheet} from '@screens/navigation';
+import {dismissBottomSheet, goToScreen} from '@screens/navigation';
 
 import BaseOption from './base_option';
 
@@ -17,7 +16,9 @@ type Props = {
 }
 const ReplyOption = ({post}: Props) => {
     const handleReply = useCallback(() => {
-        DeviceEventEmitter.emit(Events.GO_TO_THREAD, post);
+        //todo: @anurag Change below screen name to Screens.THREAD once implemented
+        // https://mattermost.atlassian.net/browse/MM-39708
+        goToScreen('THREADS_SCREEN_NOT_IMPLEMENTED_YET', '', {post});
         dismissBottomSheet(Screens.POST_OPTIONS);
     }, [post]);
 
