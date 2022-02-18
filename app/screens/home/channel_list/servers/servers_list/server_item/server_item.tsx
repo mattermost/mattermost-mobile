@@ -7,17 +7,21 @@ import {DeviceEventEmitter, Text, View} from 'react-native';
 import {RectButton} from 'react-native-gesture-handler';
 import Swipeable from 'react-native-gesture-handler/Swipeable';
 
+import {storeMultiServerTutorial} from '@actions/app/global';
 import {appEntry} from '@actions/remote/entry';
 import {logout} from '@actions/remote/session';
 import CompassIcon from '@components/compass_icon';
 import Loading from '@components/loading';
 import ServerIcon from '@components/server_icon';
+import TutorialHighlight from '@components/tutorial_highlight';
+import TutorialSwipeLeft from '@components/tutorial_highlight/swipe_left';
 import {Events} from '@constants';
 import {useTheme} from '@context/theme';
 import DatabaseManager from '@database/manager';
 import {subscribeServerUnreadAndMentions} from '@database/subscription/unreads';
+import {useIsTablet} from '@hooks/device';
 import {dismissBottomSheet} from '@screens/navigation';
-import {addNewServer, alertServerLogout, alertServerRemove} from '@utils/server';
+import {addNewServer, alertServerLogout, alertServerRemove, editServer} from '@utils/server';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 import {removeProtocol, stripTrailingSlashes} from '@utils/url';
@@ -30,8 +34,10 @@ import type MyChannelModel from '@typings/database/models/servers/my_channel';
 import type {Subscription} from 'rxjs';
 
 type Props = {
+    highlight: boolean;
     isActive: boolean;
     server: ServersModel;
+    tutorialWatched: boolean;
 }
 
 type BadgeValues = {
@@ -103,16 +109,26 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         width: 40,
         justifyContent: 'center',
     },
+    tutorial: {
+        top: -30,
+    },
+    tutorialTablet: {
+        top: -80,
+    },
 }));
 
-const ServerItem = ({isActive, server}: Props) => {
+const ServerItem = ({highlight, isActive, server, tutorialWatched}: Props) => {
     const intl = useIntl();
     const theme = useTheme();
+    const isTablet = useIsTablet();
     const [switching, setSwitching] = useState(false);
     const [badge, setBadge] = useState<BadgeValues>({isUnread: false, mentions: 0});
     const styles = getStyleSheet(theme);
     const swipeable = useRef<Swipeable>();
     const subscription = useRef<Subscription|undefined>();
+    const viewRef = useRef<View>(null);
+    const [showTutorial, setShowTutorial] = useState(false);
+    const [itemBounds, setItemBounds] = useState<TutorialItemBounds>({startX: 0, startY: 0, endX: 0, endY: 0});
     const database = DatabaseManager.serverDatabases[server.url]?.database;
     let displayName = server.displayName;
 
@@ -142,17 +158,22 @@ const ServerItem = ({isActive, server}: Props) => {
     };
 
     const removeServer = async () => {
-        if (server.lastActiveAt > 0) {
-            await logout(server.url);
-        }
+        const skipLogoutFromServer = server.lastActiveAt === 0;
+        await dismissBottomSheet();
+        await logout(server.url, skipLogoutFromServer, true);
+    };
 
-        if (isActive) {
-            dismissBottomSheet();
-        } else {
-            DeviceEventEmitter.emit(Events.SWIPEABLE, '');
-        }
-
-        await DatabaseManager.destroyServerDatabase(server.url);
+    const startTutorial = () => {
+        viewRef.current?.measureInWindow((x, y, w, h) => {
+            const bounds: TutorialItemBounds = {
+                startX: x - 20,
+                startY: y - 5,
+                endX: x + w + 20,
+                endY: y + h + 5,
+            };
+            setShowTutorial(true);
+            setItemBounds(bounds);
+        });
     };
 
     const containerStyle = useMemo(() => {
@@ -177,9 +198,15 @@ const ServerItem = ({isActive, server}: Props) => {
         addNewServer(theme, server.url, displayName);
     }, [server, theme, intl]);
 
+    const handleDismissTutorial = useCallback(() => {
+        swipeable.current?.close();
+        setShowTutorial(false);
+        storeMultiServerTutorial();
+    }, []);
+
     const handleEdit = useCallback(() => {
-        // eslint-disable-next-line no-console
-        console.log('ON EDIT');
+        DeviceEventEmitter.emit(Events.SWIPEABLE, '');
+        editServer(theme, server);
     }, [server]);
 
     const handleLogout = useCallback(async () => {
@@ -189,6 +216,10 @@ const ServerItem = ({isActive, server}: Props) => {
     const handleRemove = useCallback(() => {
         alertServerRemove(server.displayName, removeServer, intl);
     }, [isActive, server, intl]);
+
+    const handleShowTutorial = useCallback(() => {
+        swipeable.current?.openRight();
+    }, []);
 
     const onServerPressed = useCallback(async () => {
         if (isActive) {
@@ -251,6 +282,14 @@ const ServerItem = ({isActive, server}: Props) => {
         };
     }, [server.lastActiveAt, isActive]);
 
+    useEffect(() => {
+        let time: NodeJS.Timeout;
+        if (highlight && !tutorialWatched) {
+            time = setTimeout(startTutorial, 300);
+        }
+        return () => clearTimeout(time);
+    }, [highlight, tutorialWatched]);
+
     return (
         <>
             <Swipeable
@@ -264,6 +303,7 @@ const ServerItem = ({isActive, server}: Props) => {
             >
                 <View
                     style={containerStyle}
+                    ref={viewRef}
                 >
                     <RectButton
                         onPress={onServerPressed}
@@ -312,6 +352,18 @@ const ServerItem = ({isActive, server}: Props) => {
             <WebSocket
                 database={database}
             />
+            }
+            {showTutorial &&
+            <TutorialHighlight
+                itemBounds={itemBounds}
+                onDismiss={handleDismissTutorial}
+                onShow={handleShowTutorial}
+            >
+                <TutorialSwipeLeft
+                    message={intl.formatMessage({id: 'server.tutorial.swipe', defaultMessage: 'Swipe left on a server to see more actions'})}
+                    style={isTablet ? styles.tutorialTablet : styles.tutorial}
+                />
+            </TutorialHighlight>
             }
         </>
     );

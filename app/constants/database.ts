@@ -66,6 +66,7 @@ export const SYSTEM_IDENTIFIERS = {
 
 export const GLOBAL_IDENTIFIERS = {
     DEVICE_TOKEN: 'deviceToken',
+    MULTI_SERVER_TUTORIAL: 'multiServerTutorial',
 };
 
 export default {

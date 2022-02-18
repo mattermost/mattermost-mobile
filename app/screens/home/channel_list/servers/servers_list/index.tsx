@@ -41,9 +41,10 @@ const ServerList = ({servers}: Props) => {
         addNewServer(theme);
     }, [servers]);
 
-    const renderServer = useCallback(({item: t}: ListRenderItemInfo<ServersModel>) => {
+    const renderServer = useCallback(({item: t, index}: ListRenderItemInfo<ServersModel>) => {
         return (
             <ServerItem
+                highlight={index === 0}
                 isActive={t.url === serverUrl}
                 server={t}
             />

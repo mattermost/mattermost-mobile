@@ -11,6 +11,8 @@ import {LaunchType} from '@typings/launch';
 import {changeOpacity} from '@utils/theme';
 import {tryOpenURL} from '@utils/url';
 
+import type ServersModel from '@typings/database/models/app/servers';
+
 export function unsupportedServer(isSystemAdmin: boolean, intl: IntlShape) {
     if (isSystemAdmin) {
         return unsupportedServerAdminAlert(intl);
@@ -34,7 +36,6 @@ export function semverFromServerVersion(value: string) {
 
 export async function addNewServer(theme: Theme, serverUrl?: string, displayName?: string) {
     await dismissBottomSheet();
-    const closeButton = CompassIcon.getImageSourceSync('close', 24, changeOpacity(theme.centerChannelColor, 0.56));
     const closeButtonId = 'close-server';
     const props = {
         closeButtonId,
@@ -43,35 +44,21 @@ export async function addNewServer(theme: Theme, serverUrl?: string, displayName
         serverUrl,
         theme,
     };
-    const options = {
-        layout: {
-            backgroundColor: theme.centerChannelBg,
-            componentBackgroundColor: theme.centerChannelBg,
-        },
-        modal: {swipeToDismiss: false},
-        topBar: {
-            visible: true,
-            drawBehind: true,
-            translucient: true,
-            noBorder: true,
-            elevation: 0,
-            background: {color: 'transparent'},
-            leftButtons: [{
-                id: closeButtonId,
-                icon: closeButton,
-                testID: 'close.server.button',
-            }],
-            leftButtonColor: undefined,
-            title: {color: theme.sidebarHeaderTextColor},
-            scrollEdgeAppearance: {
-                active: true,
-                noBorder: true,
-                translucid: true,
-            },
-        },
-    };
+    const options = buildServerModalOptions(theme, closeButtonId);
 
     showModal(Screens.SERVER, '', props, options);
+}
+
+export async function editServer(theme: Theme, server: ServersModel) {
+    const closeButtonId = 'close-server-edit';
+    const props = {
+        closeButtonId,
+        server,
+        theme,
+    };
+    const options = buildServerModalOptions(theme, closeButtonId);
+
+    showModal(Screens.EDIT_SERVER, '', props, options);
 }
 
 export async function alertServerLogout(displayName: string, onPress: () => void, intl: IntlShape) {
@@ -167,4 +154,35 @@ function unsupportedServerAlert(intl: IntlShape) {
     const options = {cancelable: false};
 
     Alert.alert(title, message, buttons, options);
+}
+
+function buildServerModalOptions(theme: Theme, closeButtonId: string) {
+    const closeButton = CompassIcon.getImageSourceSync('close', 24, changeOpacity(theme.centerChannelColor, 0.56));
+    return {
+        layout: {
+            backgroundColor: theme.centerChannelBg,
+            componentBackgroundColor: theme.centerChannelBg,
+        },
+        modal: {swipeToDismiss: false},
+        topBar: {
+            visible: true,
+            drawBehind: true,
+            translucient: true,
+            noBorder: true,
+            elevation: 0,
+            background: {color: 'transparent'},
+            leftButtons: [{
+                id: closeButtonId,
+                icon: closeButton,
+                testID: closeButtonId,
+            }],
+            leftButtonColor: undefined,
+            title: {color: theme.sidebarHeaderTextColor},
+            scrollEdgeAppearance: {
+                active: true,
+                noBorder: true,
+                translucid: true,
+            },
+        },
+    };
 }
