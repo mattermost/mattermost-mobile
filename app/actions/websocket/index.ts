@@ -13,9 +13,9 @@ import {General, WebsocketEvents} from '@constants';
 import {SYSTEM_IDENTIFIERS} from '@constants/database';
 import DatabaseManager from '@database/manager';
 import {getTeammateNameDisplaySetting} from '@helpers/api/preference';
-import {queryChannelsById, queryDefaultChannelForTeam} from '@queries/servers/channel';
+import {queryChannelsById, getDefaultChannelForTeam} from '@queries/servers/channel';
 import {prepareModels} from '@queries/servers/entry';
-import {queryCommonSystemValues, queryConfig, queryCurrentChannelId, queryWebSocketLastDisconnected, resetWebSocketLastDisconnected, setCurrentTeamAndChannelId} from '@queries/servers/system';
+import {getCommonSystemValues, getConfig, getCurrentChannelId, getWebSocketLastDisconnected, resetWebSocketLastDisconnected, setCurrentTeamAndChannelId} from '@queries/servers/system';
 import {deleteMyTeams, queryTeamsById} from '@queries/servers/team';
 import {isTablet} from '@utils/helpers';
 
@@ -38,11 +38,11 @@ export async function handleFirstConnect(serverUrl: string) {
         return;
     }
     const {database} = operator;
-    const config = await queryConfig(database);
-    const lastDisconnect = await queryWebSocketLastDisconnected(database);
+    const config = await getConfig(database);
+    const lastDisconnect = await getWebSocketLastDisconnected(database);
 
     // ESR: 5.37
-    if (lastDisconnect && config.EnableReliableWebSockets !== 'true' && alreadyConnected.has(serverUrl)) {
+    if (lastDisconnect && config?.EnableReliableWebSockets !== 'true' && alreadyConnected.has(serverUrl)) {
         handleReconnect(serverUrl);
         return;
     }
@@ -80,8 +80,8 @@ async function doReconnect(serverUrl: string) {
 
     const {database} = operator;
     const tabletDevice = await isTablet();
-    const system = await queryCommonSystemValues(database);
-    const lastDisconnectedAt = await queryWebSocketLastDisconnected(database);
+    const system = await getCommonSystemValues(database);
+    const lastDisconnectedAt = await getWebSocketLastDisconnected(database);
 
     resetWebSocketLastDisconnected(operator);
     let {config, license} = await fetchConfigAndLicense(serverUrl);
@@ -127,7 +127,7 @@ async function doReconnect(serverUrl: string) {
         let cId = '';
         if (tabletDevice) {
             if (!cId) {
-                const channel = await queryDefaultChannelForTeam(database, initialTeamId);
+                const channel = await getDefaultChannelForTeam(database, initialTeamId);
                 if (channel) {
                     cId = channel.id;
                 }
@@ -141,13 +141,13 @@ async function doReconnect(serverUrl: string) {
     let removeTeams;
     if (removeTeamIds?.length) {
         // Immediately delete myTeams so that the UI renders only teams the user is a member of.
-        removeTeams = await queryTeamsById(database, removeTeamIds);
-        await deleteMyTeams(operator, removeTeams!);
+        removeTeams = await queryTeamsById(database, removeTeamIds).fetch();
+        await deleteMyTeams(operator, removeTeams);
     }
 
     let removeChannels;
     if (removeChannelIds?.length) {
-        removeChannels = await queryChannelsById(database, removeChannelIds);
+        removeChannels = await queryChannelsById(database, removeChannelIds).fetch();
     }
 
     const modelPromises = await prepareModels({operator, initialTeamId, removeTeams, removeChannels, teamData, chData, prefData, meData});
@@ -168,7 +168,7 @@ async function doReconnect(serverUrl: string) {
         }
     }
 
-    const currentChannelId = await queryCurrentChannelId(database);
+    const currentChannelId = await getCurrentChannelId(database);
     if (currentChannelId) {
         // https://mattermost.atlassian.net/browse/MM-40098
         fetchPostsSince(serverUrl, currentChannelId, lastDisconnectedAt);

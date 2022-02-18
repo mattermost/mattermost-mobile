@@ -11,10 +11,10 @@ import {fetchUsersByIds, updateUsersNoLongerVisible} from '@actions/remote/user'
 import Events from '@constants/events';
 import DatabaseManager from '@database/manager';
 import {queryActiveServer} from '@queries/app/servers';
-import {deleteChannelMembership, prepareMyChannelsForTeam, queryChannelsById, queryCurrentChannel} from '@queries/servers/channel';
-import {prepareCommonSystemValues, queryConfig, setCurrentChannelId} from '@queries/servers/system';
-import {queryNthLastChannelFromTeam} from '@queries/servers/team';
-import {queryCurrentUser, queryUserById} from '@queries/servers/user';
+import {deleteChannelMembership, getChannelById, prepareMyChannelsForTeam, getCurrentChannel} from '@queries/servers/channel';
+import {prepareCommonSystemValues, getConfig, setCurrentChannelId} from '@queries/servers/system';
+import {getNthLastChannelFromTeam} from '@queries/servers/team';
+import {getCurrentUser, getUserById} from '@queries/servers/user';
 import {dismissAllModals, popToRoot} from '@screens/navigation';
 import {isTablet} from '@utils/helpers';
 
@@ -23,12 +23,12 @@ export async function handleUserAddedToChannelEvent(serverUrl: string, msg: any)
     if (!database) {
         return;
     }
-    const currentUser = await queryCurrentUser(database.database);
+    const currentUser = await getCurrentUser(database.database);
     const {team_id: teamId, channel_id: channelId, user_id: userId} = msg.data;
     const models: Model[] = [];
 
     try {
-        const addedUser = queryUserById(database.database, userId);
+        const addedUser = getUserById(database.database, userId);
         if (!addedUser) {
             // TODO Potential improvement https://mattermost.atlassian.net/browse/MM-40581
             const {users} = await fetchUsersByIds(serverUrl, [userId], true);
@@ -67,8 +67,8 @@ export async function handleUserAddedToChannelEvent(serverUrl: string, msg: any)
 
             database.operator.batchRecords(models);
         } else {
-            const channels = await queryChannelsById(database.database, [channelId]);
-            if (channels?.[0]) {
+            const channel = await getChannelById(database.database, channelId);
+            if (channel) {
                 models.push(...await database.operator.handleChannelMembership({
                     channelMemberships: [{channel_id: channelId, user_id: userId}],
                     prepareRecordsOnly: true,
@@ -88,8 +88,8 @@ export async function handleUserRemovedFromChannelEvent(serverUrl: string, msg: 
         return;
     }
 
-    const channel = await queryCurrentChannel(database.database);
-    const user = await queryCurrentUser(database.database);
+    const channel = await getCurrentChannel(database.database);
+    const user = await getCurrentUser(database.database);
     if (!user) {
         return;
     }
@@ -121,7 +121,7 @@ export async function handleUserRemovedFromChannelEvent(serverUrl: string, msg: 
                 await popToRoot();
 
                 if (await isTablet()) {
-                    const channelToJumpTo = await queryNthLastChannelFromTeam(database.database, channel?.teamId);
+                    const channelToJumpTo = await getNthLastChannelFromTeam(database.database, channel?.teamId);
                     if (channelToJumpTo) {
                         const {models: switchChannelModels} = await switchToChannel(serverUrl, channelToJumpTo, '', true);
                         if (switchChannelModels) {
@@ -152,13 +152,13 @@ export async function handleChannelDeletedEvent(serverUrl: string, msg: WebSocke
         return;
     }
 
-    const currentChannel = await queryCurrentChannel(database.database);
-    const user = await queryCurrentUser(database.database);
+    const currentChannel = await getCurrentChannel(database.database);
+    const user = await getCurrentUser(database.database);
     if (!user) {
         return;
     }
 
-    const config = await queryConfig(database.database);
+    const config = await getConfig(database.database);
 
     await setChannelDeleteAt(serverUrl, msg.data.channel_id, msg.data.delete_at);
 
@@ -178,7 +178,7 @@ export async function handleChannelDeletedEvent(serverUrl: string, msg: WebSocke
                 await popToRoot();
 
                 if (await isTablet()) {
-                    const channelToJumpTo = await queryNthLastChannelFromTeam(database.database, currentChannel?.teamId);
+                    const channelToJumpTo = await getNthLastChannelFromTeam(database.database, currentChannel?.teamId);
                     if (channelToJumpTo) {
                         switchToChannel(serverUrl, channelToJumpTo);
                     } // TODO else jump to "join a channel" screen

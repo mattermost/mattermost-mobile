@@ -6,17 +6,13 @@ import withObservables from '@nozbe/with-observables';
 import {of as of$} from 'rxjs';
 import {switchMap} from 'rxjs/operators';
 
-import {observeCurrentChannel} from '@app/queries/servers/channel';
-import {observeConfig} from '@app/queries/servers/system';
-import {MM_TABLES} from '@constants/database';
+import {observeChannel, observeCurrentChannel} from '@queries/servers/channel';
+import {observeConfig} from '@queries/servers/system';
 
 import PostInput from './post_input';
 
 import type {WithDatabaseArgs} from '@typings/database/database';
-import type ChannelModel from '@typings/database/models/servers/channel';
 import type ChannelInfoModel from '@typings/database/models/servers/channel_info';
-
-const {SERVER: {CHANNEL}} = MM_TABLES;
 
 type OwnProps = {
     channelId: string;
@@ -39,7 +35,7 @@ const enhanced = withObservables([], ({database, channelId, rootId}: WithDatabas
 
     let channel;
     if (rootId) {
-        channel = database.get<ChannelModel>(CHANNEL).findAndObserve(channelId);
+        channel = observeChannel(database, channelId);
     } else {
         channel = observeCurrentChannel(database);
     }

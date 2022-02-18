@@ -11,7 +11,7 @@ import FormattedText from '@components/formatted_text';
 import FormattedTime from '@components/formatted_time';
 import {Preferences} from '@constants';
 import {getPreferenceAsBool} from '@helpers/api/preference';
-import {observePreferencesByCategoryAndName} from '@queries/servers/preference';
+import {queryPreferencesByCategoryAndName} from '@queries/servers/preference';
 import {observeConfig} from '@queries/servers/system';
 import {observeCurrentUser} from '@queries/servers/user';
 import {makeStyleSheetFromTheme} from '@utils/theme';
@@ -82,7 +82,7 @@ const SystemHeader = ({isMilitaryTime, isTimezoneEnabled, createAt, theme, user}
 
 const enhanced = withObservables([], ({database}: WithDatabaseArgs) => {
     const config = observeConfig(database);
-    const preferences = observePreferencesByCategoryAndName(database, Preferences.CATEGORY_DISPLAY_SETTINGS, 'use_military_time');
+    const preferences = queryPreferencesByCategoryAndName(database, Preferences.CATEGORY_DISPLAY_SETTINGS, 'use_military_time').observe();
     const isTimezoneEnabled = config.pipe(map((cfg) => cfg.ExperimentalTimezone === 'true'));
     const isMilitaryTime = preferences.pipe(
         map((prefs) => getPreferenceAsBool(prefs, Preferences.CATEGORY_DISPLAY_SETTINGS, 'use_military_time', false)),

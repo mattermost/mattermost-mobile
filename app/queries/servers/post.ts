@@ -38,78 +38,91 @@ export const prepareDeletePost = async (post: PostModel): Promise<Model[]> => {
     return preparedModels;
 };
 
-export const queryPostById = async (database: Database, postId: string) => {
+export const getPostById = async (database: Database, postId: string) => {
     try {
-        const userRecord = (await database.collections.get(MM_TABLES.SERVER.POST).find(postId)) as PostModel;
-        return userRecord;
+        const postModel = await database.collections.get<PostModel>(MM_TABLES.SERVER.POST).find(postId);
+        return postModel;
     } catch {
         return undefined;
     }
 };
 
-export const queryPostsInChannel = (database: Database, channelId: string): Promise<PostInChannelModel[]> => {
-    try {
-        return database.get<PostInChannelModel>(POSTS_IN_CHANNEL).query(
+export const queryPostsInChannel = (database: Database, channelId: string) => {
+    return database.get<PostInChannelModel>(POSTS_IN_CHANNEL).query(
+        Q.where('channel_id', channelId),
+        Q.sortBy('latest', Q.desc),
+    );
+};
+
+export const queryPostsInThread = (database: Database, rootId: string, sorted = false, includeDeleted = false) => {
+    const clauses: Q.Clause[] = [Q.where('root_id', rootId)];
+    if (sorted) {
+        clauses.push(Q.sortBy('latest', Q.desc));
+    }
+
+    if (includeDeleted) {
+        clauses.push(Q.where('delete_at', Q.eq(0)));
+    }
+    return database.get<PostsInThreadModel>(POSTS_IN_THREAD).query(...clauses);
+};
+
+export const getRecentPostsInThread = async (database: Database, rootId: string) => {
+    const chunks = await queryPostsInThread(database, rootId, true, true).fetch();
+    if (chunks.length) {
+        const recent = chunks[0];
+        const post = await getPostById(database, rootId);
+        if (post) {
+            return queryPostsChunk(database, post.channelId, recent.earliest, recent.latest).fetch();
+        }
+    }
+    return [];
+};
+
+export const queryPostsChunk = (database: Database, channelId: string, earliest: number, latest: number) => {
+    return database.get<PostModel>(POST).query(
+        Q.and(
             Q.where('channel_id', channelId),
-            Q.sortBy('latest', Q.desc),
-        ).fetch();
-    } catch {
-        return Promise.resolve([]);
-    }
+            Q.where('create_at', Q.between(earliest, latest)),
+            Q.where('delete_at', Q.eq(0)),
+        ),
+        Q.sortBy('create_at', Q.desc),
+    );
 };
 
-export const queryPostsInThread = (database: Database, rootId: string): Promise<PostsInThreadModel[]> => {
-    try {
-        return database.get<PostsInThreadModel>(POSTS_IN_THREAD).query(
-            Q.where('root_id', rootId),
-            Q.sortBy('latest', Q.desc),
-        ).fetch();
-    } catch {
-        return Promise.resolve([]);
+export const queryRecentPostsInChannel = async (database: Database, channelId: string) => {
+    const chunks = await queryPostsInChannel(database, channelId).fetch();
+    if (chunks.length) {
+        const recent = chunks[0];
+        return queryPostsChunk(database, channelId, recent.earliest, recent.latest).fetch();
     }
+    return [];
 };
 
-export const queryRecentPostsInThread = async (database: Database, rootId: string): Promise<PostModel[]> => {
-    try {
-        const chunks = await queryPostsInThread(database, rootId);
-        if (chunks.length) {
-            const recent = chunks[0];
-            const post = await queryPostById(database, rootId);
-            if (post) {
-                return queryPostsChunk(database, post.channelId, recent.earliest, recent.latest);
-            }
-        }
-        return Promise.resolve([]);
-    } catch {
-        return Promise.resolve([]);
+export const queryPostsById = (database: Database, postIds: string[], sort?: Q.SortOrder) => {
+    const clauses: Q.Clause[] = [Q.where('id', Q.oneOf(postIds))];
+    if (sort) {
+        clauses.push(Q.sortBy('create_at', sort));
     }
+    return database.get<PostModel>(POST).query(...clauses);
 };
 
-export const queryPostsChunk = (database: Database, channelId: string, earliest: number, latest: number): Promise<PostModel[]> => {
-    try {
-        return database.get(POST).query(
-            Q.and(
-                Q.where('channel_id', channelId),
-                Q.where('create_at', Q.between(earliest, latest)),
-                Q.where('delete_at', Q.eq(0)),
-            ),
-            Q.sortBy('create_at', Q.desc),
-        ).fetch() as Promise<PostModel[]>;
-    } catch {
-        return Promise.resolve([]);
+export const queryPostsBetween = (database: Database, earliest: number, latest: number, sort: Q.SortOrder | null, userId?: string, channelId?: string, rootId?: string) => {
+    const andClauses = [Q.where('create_at', Q.between(earliest, latest))];
+    if (channelId) {
+        andClauses.push(Q.where('channel_id', channelId));
     }
-};
 
-export const queryRecentPostsInChannel = async (database: Database, channelId: string): Promise<PostModel[]> => {
-    try {
-        const chunks = await queryPostsInChannel(database, channelId);
-        if (chunks.length) {
-            const recent = chunks[0];
-            return queryPostsChunk(database, channelId, recent.earliest, recent.latest);
-        }
-        return Promise.resolve([]);
-    } catch {
-        return Promise.resolve([]);
+    if (userId) {
+        andClauses.push(Q.where('user_id', userId));
     }
-};
 
+    if (rootId) {
+        andClauses.push(Q.where('root_id', rootId));
+    }
+
+    const clauses: Q.Clause[] = [Q.and(...andClauses)];
+    if (sort != null) {
+        clauses.push(Q.sortBy('create_at', sort));
+    }
+    return database.get<PostModel>(POST).query(...clauses);
+};

@@ -15,7 +15,7 @@ import FormattedText from '@components/formatted_text';
 import FormattedTime from '@components/formatted_time';
 import {Preferences} from '@constants';
 import {getPreferenceAsBool} from '@helpers/api/preference';
-import {observePreferencesByCategoryAndName} from '@queries/servers/preference';
+import {queryPreferencesByCategoryAndName} from '@queries/servers/preference';
 import {getCurrentMomentForTimezone} from '@utils/helpers';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 
@@ -126,7 +126,7 @@ const CustomStatusExpiry = ({currentUser, isMilitaryTime, showPrefix, showTimeCo
 };
 
 const enhanced = withObservables([], ({database}: WithDatabaseArgs) => ({
-    isMilitaryTime: observePreferencesByCategoryAndName(database, Preferences.CATEGORY_DISPLAY_SETTINGS).pipe(
+    isMilitaryTime: queryPreferencesByCategoryAndName(database, Preferences.CATEGORY_DISPLAY_SETTINGS).observe().pipe(
         switchMap(
             (preferences) => of$(getPreferenceAsBool(preferences, Preferences.CATEGORY_DISPLAY_SETTINGS, 'use_military_time', false)),
         ),

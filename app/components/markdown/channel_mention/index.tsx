@@ -1,7 +1,6 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {Q} from '@nozbe/watermelondb';
 import {withDatabase} from '@nozbe/watermelondb/DatabaseProvider';
 import withObservables from '@nozbe/with-observables';
 import React, {useCallback} from 'react';
@@ -10,10 +9,11 @@ import {StyleProp, Text, TextStyle} from 'react-native';
 import {switchMap} from 'rxjs/operators';
 
 import {joinChannel, switchToChannelById} from '@actions/remote/channel';
-import {MM_TABLES} from '@constants/database';
 import {useServerUrl} from '@context/server';
 import {t} from '@i18n';
+import {queryAllChannelsForTeam} from '@queries/servers/channel';
 import {observeCurrentTeamId, observeCurrentUserId} from '@queries/servers/system';
+import {observeTeam} from '@queries/servers/team';
 import {dismissAllModals, popToRoot} from '@screens/navigation';
 import {alertErrorWithFallback} from '@utils/draft';
 import {preventDoubleTap} from '@utils/tap';
@@ -63,8 +63,6 @@ function getChannelFromChannelName(name: string, channels: ChannelModel[], chann
 
     return null;
 }
-
-const {SERVER: {CHANNEL, TEAM}} = MM_TABLES;
 
 const ChannelMention = ({
     channelMentions, channelName, channels, currentTeamId, currentUserId,
@@ -127,10 +125,10 @@ const withChannelsForTeam = withObservables([], ({database}: WithDatabaseArgs) =
     const currentTeamId = observeCurrentTeamId(database);
     const currentUserId = observeCurrentUserId(database);
     const channels = currentTeamId.pipe(
-        switchMap((id) => database.get<ChannelModel>(CHANNEL).query(Q.where('team_id', id)).observeWithColumns(['display_name'])),
+        switchMap((id) => queryAllChannelsForTeam(database, id).observeWithColumns(['display_name'])),
     );
     const team = currentTeamId.pipe(
-        switchMap((id) => database.get<TeamModel>(TEAM).findAndObserve(id)),
+        switchMap((id) => observeTeam(database, id)),
     );
 
     return {

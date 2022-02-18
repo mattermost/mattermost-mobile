@@ -11,9 +11,9 @@ import {General} from '@constants';
 import DatabaseManager from '@database/manager';
 import {privateChannelJoinPrompt} from '@helpers/api/channel';
 import NetworkManager from '@init/network_manager';
-import {prepareMyChannelsForTeam, queryChannelById, queryChannelByName, queryMyChannel} from '@queries/servers/channel';
-import {queryCommonSystemValues, queryCurrentTeamId, queryCurrentUserId} from '@queries/servers/system';
-import {prepareMyTeams, queryNthLastChannelFromTeam, queryMyTeamById, queryTeamById, queryTeamByName} from '@queries/servers/team';
+import {prepareMyChannelsForTeam, getChannelById, getChannelByName, getMyChannel} from '@queries/servers/channel';
+import {getCommonSystemValues, getCurrentTeamId, getCurrentUserId} from '@queries/servers/system';
+import {prepareMyTeams, getNthLastChannelFromTeam, getMyTeamById, getTeamById, getTeamByName} from '@queries/servers/team';
 import {getDirectChannelName} from '@utils/channel';
 import {PERMALINK_GENERIC_TEAM_NAME_REDIRECT} from '@utils/url';
 import {displayGroupMessageName, displayUsername} from '@utils/user';
@@ -117,8 +117,8 @@ export const fetchChannelCreator = async (serverUrl: string, channelId: string, 
     }
 
     try {
-        const currentUserId = await queryCurrentUserId(operator.database);
-        const channel = await queryChannelById(operator.database, channelId);
+        const currentUserId = await getCurrentUserId(operator.database);
+        const channel = await getChannelById(operator.database, channelId);
         if (channel && channel.creatorId) {
             const user = await client.getUser(channel.creatorId);
 
@@ -166,7 +166,7 @@ export const fetchChannelStats = async (serverUrl: string, channelId: string, fe
     try {
         const stats = await client.getChannelStats(channelId);
         if (!fetchOnly) {
-            const channel = await queryChannelById(operator.database, channelId);
+            const channel = await getChannelById(operator.database, channelId);
             if (channel) {
                 const channelInfo = await channel.info.fetch() as ChannelInfoModel;
                 const channelInfos: ChannelInfo[] = [{
@@ -317,7 +317,7 @@ export const joinChannel = async (serverUrl: string, userId: string, teamId: str
             channel = await client.getChannel(channelId);
         } else if (channelName) {
             channel = await client.getChannelByName(teamId, channelName, true);
-            if ([General.GM_CHANNEL, General.DM_CHANNEL].includes(channel.type)) {
+            if ([General.GM_CHANNEL, General.DM_CHANNEL].includes(channel.type as any)) {
                 member = await client.getChannelMember(channel.id, userId);
             } else {
                 member = await client.addToChannel(userId, channel.id);
@@ -380,13 +380,13 @@ export const switchToChannelByName = async (serverUrl: string, channelName: stri
         let myTeam: MyTeamModel | TeamMembership | undefined;
         let name = teamName;
         const roles: string [] = [];
-        const system = await queryCommonSystemValues(database);
-        const currentTeam = await queryTeamById(database, system.currentTeamId);
+        const system = await getCommonSystemValues(database);
+        const currentTeam = await getTeamById(database, system.currentTeamId);
 
         if (name === PERMALINK_GENERIC_TEAM_NAME_REDIRECT) {
             name = currentTeam!.name;
         } else {
-            team = await queryTeamByName(database, teamName);
+            team = await getTeamByName(database, teamName);
         }
 
         if (!team) {
@@ -400,7 +400,7 @@ export const switchToChannelByName = async (serverUrl: string, channelName: stri
         }
 
         let joinedNewTeam = false;
-        myTeam = await queryMyTeamById(database, team.id);
+        myTeam = await getMyTeamById(database, team.id);
         if (!myTeam) {
             const added = await addUserToTeam(serverUrl, team.id, system.currentUserId, true);
             if (added.error) {
@@ -435,7 +435,7 @@ export const switchToChannelByName = async (serverUrl: string, channelName: stri
             return {error: 'Channel is archived'};
         }
 
-        myChannel = await queryMyChannel(database, channel.id);
+        myChannel = await getMyChannel(database, channel.id);
 
         if (!myChannel) {
             if (channel.type === General.PRIVATE_CHANNEL) {
@@ -625,10 +625,10 @@ export async function getOrCreateDirectChannel(serverUrl: string, otherUserId: s
         return {error};
     }
 
-    const currentUserId = await queryCurrentUserId(operator.database);
+    const currentUserId = await getCurrentUserId(operator.database);
     const channelName = getDirectChannelName(currentUserId, otherUserId);
 
-    const channel = await queryChannelByName(operator.database, channelName);
+    const channel = await getChannelByName(operator.database, channelName);
     let result;
     if (channel) {
         result = {channel};
@@ -687,8 +687,8 @@ export const switchToPenultimateChannel = async (serverUrl: string) => {
     }
 
     try {
-        const currentTeam = await queryCurrentTeamId(database);
-        const channelId = await queryNthLastChannelFromTeam(database, currentTeam, 1);
+        const currentTeam = await getCurrentTeamId(database);
+        const channelId = await getNthLastChannelFromTeam(database, currentTeam, 1);
         return switchToChannelById(serverUrl, channelId);
     } catch (error) {
         return {error};
@@ -709,7 +709,7 @@ export const searchChannels = async (serverUrl: string, term: string) => {
     }
 
     try {
-        const currentTeamId = await queryCurrentTeamId(database);
+        const currentTeamId = await getCurrentTeamId(database);
         const channels = await client.autocompleteChannels(currentTeamId, term);
         return {channels};
     } catch (error) {

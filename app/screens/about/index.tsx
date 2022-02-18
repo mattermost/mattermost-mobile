@@ -14,9 +14,9 @@ import AppVersion from '@components/app_version';
 import CompassIcon from '@components/compass_icon';
 import FormattedText from '@components/formatted_text';
 import AboutLinks from '@constants/about_links';
-import {MM_TABLES, SYSTEM_IDENTIFIERS} from '@constants/database';
 import {useTheme} from '@context/theme';
 import {t} from '@i18n';
+import {observeConfig, observeLicense} from '@queries/servers/system';
 import {preventDoubleTap} from '@utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {tryOpenURL} from '@utils/url';
@@ -28,7 +28,6 @@ import Title from './title';
 import TosPrivacyContainer from './tos_privacy';
 
 import type {WithDatabaseArgs} from '@typings/database/database';
-import type SystemModel from '@typings/database/models/servers/system';
 
 const MATTERMOST_BUNDLE_IDS = ['com.mattermost.rnbeta', 'com.mattermost.rn'];
 
@@ -118,8 +117,8 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
 });
 
 type ConnectedAboutProps = {
-    config: SystemModel;
-    license: SystemModel;
+    config: ClientConfig;
+    license: ClientLicense;
 }
 
 const ConnectedAbout = ({config, license}: ConnectedAboutProps) => {
@@ -193,7 +192,7 @@ const ConnectedAbout = ({config, license}: ConnectedAboutProps) => {
                             style={style.title}
                             testID='about.site_name'
                         >
-                            {`${config.value.SiteName} `}
+                            {`${config.SiteName} `}
                         </Text>
                         <Title
                             config={config}
@@ -211,18 +210,18 @@ const ConnectedAbout = ({config, license}: ConnectedAboutProps) => {
                         defaultMessage='Database: {type}'
                         style={style.info}
                         values={{
-                            type: config.value.SQLDriverName,
+                            type: config.SQLDriverName,
                         }}
                         testID='about.database'
                     />
-                    {license.value.IsLicensed === 'true' && (
+                    {license.IsLicensed === 'true' && (
                         <View style={style.licenseContainer}>
                             <FormattedText
                                 id={t('mobile.about.licensed')}
                                 defaultMessage='Licensed to: {company}'
                                 style={style.info}
                                 values={{
-                                    company: license.value.Company,
+                                    company: license.Company,
                                 }}
                                 testID='about.licensee'
                             />
@@ -239,7 +238,7 @@ const ConnectedAbout = ({config, license}: ConnectedAboutProps) => {
                         defaultMessage='{site} is powered by Mattermost'
                         style={style.footerText}
                         values={{
-                            site: config.value.SiteName,
+                            site: config.SiteName,
                         }}
                         testID='about.powered_by'
                     />
@@ -300,7 +299,7 @@ const ConnectedAbout = ({config, license}: ConnectedAboutProps) => {
                                 style={style.footerText}
                                 testID='about.build_hash.value'
                             >
-                                {config.value.BuildHash}
+                                {config.BuildHash}
                             </Text>
                         </View>
                         <View style={style.footerGroup}>
@@ -314,7 +313,7 @@ const ConnectedAbout = ({config, license}: ConnectedAboutProps) => {
                                 style={style.footerText}
                                 testID='about.build_hash_enterprise.value'
                             >
-                                {config.value.BuildHashEnterprise}
+                                {config.BuildHashEnterprise}
                             </Text>
                         </View>
                     </View>
@@ -329,7 +328,7 @@ const ConnectedAbout = ({config, license}: ConnectedAboutProps) => {
                             style={style.footerText}
                             testID='about.build_date.value'
                         >
-                            {config.value.BuildDate}
+                            {config.BuildDate}
                         </Text>
                     </View>
                 </View>
@@ -339,8 +338,8 @@ const ConnectedAbout = ({config, license}: ConnectedAboutProps) => {
 };
 
 const enhanced = withObservables([], ({database}: WithDatabaseArgs) => ({
-    config: database.collections.get(MM_TABLES.SERVER.SYSTEM).findAndObserve(SYSTEM_IDENTIFIERS.CONFIG),
-    license: database.collections.get(MM_TABLES.SERVER.SYSTEM).findAndObserve(SYSTEM_IDENTIFIERS.LICENSE),
+    config: observeConfig(database),
+    license: observeLicense(database),
 }));
 
 export default withDatabase(enhanced(ConnectedAbout));

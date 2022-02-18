@@ -11,11 +11,11 @@ import {fetchMyTeam} from '@actions/remote/team';
 import {Preferences} from '@constants';
 import DatabaseManager from '@database/manager';
 import {getTeammateNameDisplaySetting} from '@helpers/api/preference';
-import {queryChannelsById, queryMyChannel} from '@queries/servers/channel';
+import {getMyChannel, getChannelById} from '@queries/servers/channel';
 import {queryPreferencesByCategoryAndName} from '@queries/servers/preference';
-import {queryCommonSystemValues} from '@queries/servers/system';
-import {queryMyTeamById} from '@queries/servers/team';
-import {queryCurrentUser} from '@queries/servers/user';
+import {getCommonSystemValues} from '@queries/servers/system';
+import {getMyTeamById} from '@queries/servers/team';
+import {getCurrentUser} from '@queries/servers/user';
 import {emitNotificationError} from '@utils/notification';
 
 import {fetchPostsForChannel} from './post';
@@ -34,7 +34,7 @@ const fetchNotificationData = async (serverUrl: string, notification: Notificati
         }
 
         const {database} = operator;
-        const system = await queryCommonSystemValues(database);
+        const system = await getCommonSystemValues(database);
         let teamId = notification.payload?.team_id;
         let isDirectChannel = false;
 
@@ -45,8 +45,8 @@ const fetchNotificationData = async (serverUrl: string, notification: Notificati
         }
 
         // To make the switch faster we determine if we already have the team & channel
-        const myChannel = await queryMyChannel(database, channelId);
-        const myTeam = await queryMyTeamById(database, teamId);
+        const myChannel = await getMyChannel(database, channelId);
+        const myTeam = await getMyTeamById(database, teamId);
 
         if (!myTeam) {
             const teamsReq = await fetchMyTeam(serverUrl, teamId, false);
@@ -71,12 +71,12 @@ const fetchNotificationData = async (serverUrl: string, notification: Notificati
             }
 
             if (isDirectChannel) {
-                const preferences = await queryPreferencesByCategoryAndName(database, Preferences.CATEGORY_DISPLAY_SETTINGS, Preferences.NAME_NAME_FORMAT);
-                const currentUser = await queryCurrentUser(database);
+                const preferences = await queryPreferencesByCategoryAndName(database, Preferences.CATEGORY_DISPLAY_SETTINGS, Preferences.NAME_NAME_FORMAT).fetch();
+                const currentUser = await getCurrentUser(database);
                 const teammateDisplayNameSetting = getTeammateNameDisplaySetting(preferences || [], system.config, system.license);
-                const channel = await queryChannelsById(database, [channelId]);
-                if (channel?.length) {
-                    fetchMissingSidebarInfo(serverUrl, [channel[0].toApi()], currentUser?.locale, teammateDisplayNameSetting, currentUser?.id);
+                const channel = await getChannelById(database, channelId);
+                if (channel) {
+                    fetchMissingSidebarInfo(serverUrl, [channel.toApi()], currentUser?.locale, teammateDisplayNameSetting, currentUser?.id);
                 }
             }
         }
@@ -108,7 +108,7 @@ export const openNotification = async (serverUrl: string, notification: Notifica
         await markChannelAsRead(serverUrl, channelId);
 
         const {database} = operator;
-        const system = await queryCommonSystemValues(database);
+        const system = await getCommonSystemValues(database);
         const currentServerUrl = await DatabaseManager.getActiveServerUrl();
         let teamId = notification.payload?.team_id;
 
@@ -122,8 +122,8 @@ export const openNotification = async (serverUrl: string, notification: Notifica
         }
 
         // To make the switch faster we determine if we already have the team & channel
-        const myChannel = await queryMyChannel(database, channelId);
-        const myTeam = await queryMyTeamById(database, teamId);
+        const myChannel = await getMyChannel(database, channelId);
+        const myTeam = await getMyTeamById(database, teamId);
 
         if (myChannel && myTeam) {
             fetchPostsForChannel(serverUrl, channelId);

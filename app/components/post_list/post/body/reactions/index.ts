@@ -7,8 +7,8 @@ import {combineLatest, from as from$, of as of$} from 'rxjs';
 import {map, switchMap} from 'rxjs/operators';
 
 import {General, Permissions} from '@constants';
-import {MM_TABLES} from '@constants/database';
 import {observeConfigBooleanValue, observeCurrentUserId} from '@queries/servers/system';
+import {observeUser} from '@queries/servers/user';
 import {hasPermissionForPost} from '@utils/role';
 import {isSystemAdmin} from '@utils/user';
 
@@ -18,7 +18,6 @@ import type {Relation} from '@nozbe/watermelondb';
 import type {WithDatabaseArgs} from '@typings/database/database';
 import type ChannelModel from '@typings/database/models/servers/channel';
 import type PostModel from '@typings/database/models/servers/post';
-import type UserModel from '@typings/database/models/servers/user';
 
 type WithReactionsInput = WithDatabaseArgs & {
     post: PostModel;
@@ -27,7 +26,7 @@ type WithReactionsInput = WithDatabaseArgs & {
 const withReactions = withObservables(['post'], ({database, post}: WithReactionsInput) => {
     const currentUserId = observeCurrentUserId(database);
     const currentUser = currentUserId.pipe(
-        switchMap((id) => database.get<UserModel>(MM_TABLES.SERVER.USER).findAndObserve(id)),
+        switchMap((id) => observeUser(database, id)),
     );
     const channel = (post.channel as Relation<ChannelModel>).observe();
     const experimentalTownSquareIsReadOnly = observeConfigBooleanValue(database, 'ExperimentalTownSquareIsReadOnly');

@@ -5,11 +5,11 @@ import {switchToChannelById} from '@actions/remote/channel';
 import {fetchRoles} from '@actions/remote/role';
 import {fetchConfigAndLicense} from '@actions/remote/systems';
 import DatabaseManager from '@database/manager';
-import {queryChannelsById, queryDefaultChannelForTeam} from '@queries/servers/channel';
+import {queryChannelsById, getDefaultChannelForTeam} from '@queries/servers/channel';
 import {prepareModels} from '@queries/servers/entry';
-import {prepareCommonSystemValues, queryCommonSystemValues, queryCurrentChannelId, queryCurrentTeamId, queryWebSocketLastDisconnected, setCurrentTeamAndChannelId} from '@queries/servers/system';
+import {prepareCommonSystemValues, getCommonSystemValues, getCurrentChannelId, getCurrentTeamId, getWebSocketLastDisconnected, setCurrentTeamAndChannelId} from '@queries/servers/system';
 import {deleteMyTeams, queryTeamsById} from '@queries/servers/team';
-import {queryCurrentUser} from '@queries/servers/user';
+import {getCurrentUser} from '@queries/servers/user';
 import {deleteV1Data} from '@utils/file';
 import {isTablet} from '@utils/helpers';
 
@@ -23,8 +23,8 @@ export const appEntry = async (serverUrl: string, since = 0) => {
     const {database} = operator;
 
     const tabletDevice = await isTablet();
-    const currentTeamId = await queryCurrentTeamId(database);
-    const lastDisconnectedAt = (await queryWebSocketLastDisconnected(database)) || since;
+    const currentTeamId = await getCurrentTeamId(database);
+    const lastDisconnectedAt = (await getWebSocketLastDisconnected(database)) || since;
     const fetchedData = await fetchAppEntryData(serverUrl, lastDisconnectedAt, currentTeamId);
     const fetchedError = (fetchedData as AppEntryError).error;
 
@@ -36,10 +36,10 @@ export const appEntry = async (serverUrl: string, since = 0) => {
     const rolesData = await fetchRoles(serverUrl, teamData?.memberships, chData?.memberships, meData?.user, true);
 
     if (initialTeamId === currentTeamId) {
-        let cId = await queryCurrentChannelId(database);
+        let cId = await getCurrentChannelId(database);
         if (tabletDevice) {
             if (!cId) {
-                const channel = await queryDefaultChannelForTeam(database, initialTeamId);
+                const channel = await getDefaultChannelForTeam(database, initialTeamId);
                 if (channel) {
                     cId = channel.id;
                 }
@@ -52,7 +52,7 @@ export const appEntry = async (serverUrl: string, since = 0) => {
         // renders the correct team.
         let channelId = '';
         if (tabletDevice) {
-            const channel = await queryDefaultChannelForTeam(database, initialTeamId);
+            const channel = await getDefaultChannelForTeam(database, initialTeamId);
             channelId = channel?.id || '';
         }
         if (channelId) {
@@ -65,13 +65,13 @@ export const appEntry = async (serverUrl: string, since = 0) => {
     let removeTeams;
     if (removeTeamIds?.length) {
         // Immediately delete myTeams so that the UI renders only teams the user is a member of.
-        removeTeams = await queryTeamsById(database, removeTeamIds);
-        await deleteMyTeams(operator, removeTeams!);
+        removeTeams = await queryTeamsById(database, removeTeamIds).fetch();
+        await deleteMyTeams(operator, removeTeams);
     }
 
     let removeChannels;
     if (removeChannelIds?.length) {
-        removeChannels = await queryChannelsById(database, removeChannelIds);
+        removeChannels = await queryChannelsById(database, removeChannelIds).fetch();
     }
 
     const modelPromises = await prepareModels({operator, initialTeamId, removeTeams, removeChannels, teamData, chData, prefData, meData});
@@ -83,8 +83,8 @@ export const appEntry = async (serverUrl: string, since = 0) => {
         await operator.batchRecords(models.flat());
     }
 
-    const {id: currentUserId, locale: currentUserLocale} = meData.user || (await queryCurrentUser(database))!;
-    const {config, license} = await queryCommonSystemValues(database);
+    const {id: currentUserId, locale: currentUserLocale} = meData.user || (await getCurrentUser(database))!;
+    const {config, license} = await getCommonSystemValues(database);
     deferredAppEntryActions(serverUrl, lastDisconnectedAt, currentUserId, currentUserLocale, prefData.preferences, config, license, teamData, chData, initialTeamId);
 
     if (!since) {

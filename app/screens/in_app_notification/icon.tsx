@@ -6,12 +6,12 @@ import React from 'react';
 import {StyleSheet, View} from 'react-native';
 import FastImage, {Source} from 'react-native-fast-image';
 import {of as of$} from 'rxjs';
-import {catchError, switchMap} from 'rxjs/operators';
+import {switchMap} from 'rxjs/operators';
 
 import CompassIcon from '@components/compass_icon';
-import {MM_TABLES} from '@constants/database';
 import NetworkManager from '@init/network_manager';
 import {observeConfig} from '@queries/servers/system';
+import {observeUser} from '@queries/servers/user';
 import {WithDatabaseArgs} from '@typings/database/database';
 
 import type {Client} from '@client/rest';
@@ -26,7 +26,6 @@ interface NotificationIconProps {
     useUserIcon: boolean;
 }
 
-const {SERVER: {USER}} = MM_TABLES;
 const IMAGE_SIZE = 36;
 const logo = require('@assets/images/icon.png');
 
@@ -91,9 +90,7 @@ const NotificationIcon = ({author, enablePostIconOverride, fromWebhook, override
 
 const enhanced = withObservables([], ({database, senderId}: WithDatabaseArgs & {senderId: string}) => {
     const config = observeConfig(database);
-    const author = database.get<UserModel>(USER).findAndObserve(senderId).pipe(
-        catchError(() => of$(undefined)),
-    );
+    const author = observeUser(database, senderId);
 
     return {
         author,

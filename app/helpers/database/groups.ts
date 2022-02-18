@@ -1,11 +1,10 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {MM_TABLES} from '@constants/database';
+import {queryAllGroupMemberships} from '@queries/servers/groups';
 
 import type ChannelModel from '@typings/database/models/servers/channel';
 import type GroupModel from '@typings/database/models/servers/group';
-import type GroupMembershipModel from '@typings/database/models/servers/group_membership';
 import type GroupsChannelModel from '@typings/database/models/servers/groups_channel';
 import type GroupsTeamModel from '@typings/database/models/servers/groups_team';
 import type PostModel from '@typings/database/models/servers/post';
@@ -44,9 +43,9 @@ export const queryGroupForPosts = async (post: PostModel) => {
         } else if (channel.isGroupConstrained) {
             groupsForReference = await queryGroupsAssociatedToChannelForReference(channel);
         } else {
-            const myGroups = await post.collections.get(MM_TABLES.SERVER.GROUP_MEMBERSHIP).query().fetch() as GroupMembershipModel[];
+            const myGroups = await queryAllGroupMemberships(post.database).fetch();
             const myGroupsPromises = myGroups.map((g) => g.group.fetch());
-            groupsForReference = await Promise.all(myGroupsPromises) as GroupModel[];
+            groupsForReference = (await Promise.all(myGroupsPromises)).filter((v) => v != null) as GroupModel[];
         }
 
         return groupsForReference;

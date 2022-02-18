@@ -1,15 +1,15 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {Q} from '@nozbe/watermelondb';
 import {withDatabase} from '@nozbe/watermelondb/DatabaseProvider';
 import withObservables from '@nozbe/with-observables';
 import {from as from$, of as of$} from 'rxjs';
 import {switchMap} from 'rxjs/operators';
 
 import {Permissions, Preferences} from '@constants';
-import {MM_TABLES} from '@constants/database';
-import {observePreferencesByCategoryAndName} from '@queries/servers/preference';
+import {queryAllCustomEmojis} from '@queries/servers/custom_emoji';
+import {queryPostsBetween} from '@queries/servers/post';
+import {queryPreferencesByCategoryAndName} from '@queries/servers/preference';
 import {observeConfigBooleanValue} from '@queries/servers/system';
 import {observeCurrentUser} from '@queries/servers/user';
 import {hasJumboEmojiOnly} from '@utils/emoji/helpers';
@@ -24,8 +24,6 @@ import type PostModel from '@typings/database/models/servers/post';
 import type PostsInThreadModel from '@typings/database/models/servers/posts_in_thread';
 import type UserModel from '@typings/database/models/servers/user';
 
-const {SERVER: {CUSTOM_EMOJI, POST}} = MM_TABLES;
-
 type PropsInput = WithDatabaseArgs & {
     appsEnabled: boolean;
     currentUser: UserModel;
@@ -38,13 +36,7 @@ async function shouldHighlightReplyBar(currentUser: UserModel, post: PostModel, 
     let commentsNotifyLevel = Preferences.COMMENTS_NEVER;
     let threadCreatedByCurrentUser = false;
     let rootPost: PostModel | undefined;
-    const myPosts = await postsInThread.collections.get(POST).query(
-        Q.and(
-            Q.where('root_id', post.rootId || post.id),
-            Q.where('create_at', Q.between(postsInThread.earliest, postsInThread.latest)),
-            Q.where('user_id', currentUser.id),
-        ),
-    ).fetch();
+    const myPosts = await queryPostsBetween(postsInThread.database, postsInThread.earliest, postsInThread.latest, null, currentUser.id, '', post.rootId || post.id).fetch();
 
     const threadRepliedToByCurrentUser = myPosts.length > 0;
     const root = await post.root.fetch();
@@ -96,7 +88,7 @@ const withPost = withObservables(
         const author = post.author.observe();
         const canDelete = from$(hasPermissionForPost(post, currentUser, isOwner ? Permissions.DELETE_POST : Permissions.DELETE_OTHERS_POSTS, false));
         const isEphemeral = of$(isPostEphemeral(post));
-        const isFlagged = observePreferencesByCategoryAndName(database, Preferences.CATEGORY_SAVED_POST, post.id).pipe(
+        const isFlagged = queryPreferencesByCategoryAndName(database, Preferences.CATEGORY_SAVED_POST, post.id).observe().pipe(
             switchMap((pref) => of$(Boolean(pref.length))),
         );
 
@@ -119,7 +111,7 @@ const withPost = withObservables(
         }
 
         if (post.message.length && !(/^\s{4}/).test(post.message)) {
-            isJumboEmoji = post.collections.get(CUSTOM_EMOJI).query().observe().pipe(
+            isJumboEmoji = queryAllCustomEmojis(post.database).observe().pipe(
                 // eslint-disable-next-line max-nested-callbacks
                 switchMap((customEmojis: CustomEmojiModel[]) => of$(hasJumboEmojiOnly(post.message, customEmojis.map((c) => c.name))),
                 ),

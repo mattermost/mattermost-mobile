@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {useManagedConfig} from '@mattermost/react-native-emm';
-import {Database, Q} from '@nozbe/watermelondb';
+import {Database} from '@nozbe/watermelondb';
 import {withDatabase} from '@nozbe/watermelondb/DatabaseProvider';
 import withObservables from '@nozbe/with-observables';
 import Clipboard from '@react-native-community/clipboard';
@@ -15,8 +15,9 @@ import SlideUpPanelItem, {ITEM_HEIGHT} from '@components/slide_up_panel_item';
 import {MM_TABLES} from '@constants/database';
 import {useTheme} from '@context/theme';
 import UserModel from '@database/models/server/user';
+import {queryAllGroupMemberships, queryAllGroups} from '@queries/servers/groups';
 import {observeCurrentUserId} from '@queries/servers/system';
-import {observeTeammateNameDisplay} from '@queries/servers/user';
+import {observeTeammateNameDisplay, queryUsersLike} from '@queries/servers/user';
 import {bottomSheet, dismissBottomSheet, showModal} from '@screens/navigation';
 import {displayUsername, getUserMentionKeys, getUsersByUsername} from '@utils/user';
 
@@ -41,7 +42,7 @@ type AtMentionProps = {
     users: UserModelType[];
 }
 
-const {SERVER: {GROUP, GROUP_MEMBERSHIP, USER}} = MM_TABLES;
+const {SERVER: {USER}} = MM_TABLES;
 
 const style = StyleSheet.create({
     bottomSheet: {
@@ -263,14 +264,10 @@ const withAtMention = withObservables(['mentionName'], ({database, mentionName}:
 
     return {
         currentUserId,
-        groups: database.get(GROUP).query(Q.where('delete_at', Q.eq(0))).observe(),
-        myGroups: database.get(GROUP_MEMBERSHIP).query().observe(),
+        groups: queryAllGroups(database).observe(),
+        myGroups: queryAllGroupMemberships(database).observe(),
         teammateNameDisplay,
-        users: database.get(USER).query(
-            Q.where('username', Q.like(
-                `%${Q.sanitizeLikeString(mn)}%`,
-            )),
-        ).observeWithColumns(['username']),
+        users: queryUsersLike(database, mn).observeWithColumns(['username']),
     };
 });
 

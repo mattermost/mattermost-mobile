@@ -6,7 +6,7 @@ import withObservables from '@nozbe/with-observables';
 import {combineLatest, of as of$} from 'rxjs';
 import {switchMap} from 'rxjs/operators';
 
-import {observeConfig, observeLicense} from '@app/queries/servers/system';
+import {observeConfig, observeLicense} from '@queries/servers/system';
 import {isMinimumServerVersion} from '@utils/helpers';
 
 import QuickActions from './quick_actions';

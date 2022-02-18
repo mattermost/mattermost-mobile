@@ -1,7 +1,6 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {Q} from '@nozbe/watermelondb';
 import {withDatabase} from '@nozbe/watermelondb/DatabaseProvider';
 import withObservables from '@nozbe/with-observables';
 import React from 'react';
@@ -12,16 +11,14 @@ import {switchMap} from 'rxjs/operators';
 import {switchToChannelById} from '@actions/remote/channel';
 import CompassIcon from '@components/compass_icon';
 import TouchableWithFeedback from '@components/touchable_with_feedback';
-import {General} from '@constants';
-import {MM_TABLES} from '@constants/database';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
+import {queryTeamDefaultChannel} from '@queries/servers/channel';
 import {observeCurrentTeamId} from '@queries/servers/system';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
 import type {WithDatabaseArgs} from '@typings/database/database';
-import type ChannelModel from '@typings/database/models/servers/channel';
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     container: {
@@ -68,10 +65,7 @@ const ThreadsButton = ({channelId}: {channelId?: string}) => {
 const enhanced = withObservables([], ({database}: WithDatabaseArgs) => {
     const currentTeamId = observeCurrentTeamId(database);
     const channelId = currentTeamId.pipe(
-        switchMap((id) => database.get<ChannelModel>(MM_TABLES.SERVER.CHANNEL).query(
-            Q.where('team_id', id),
-            Q.where('name', General.DEFAULT_CHANNEL),
-        ).observe().pipe(
+        switchMap((id) => queryTeamDefaultChannel(database, id).observe().pipe(
             // eslint-disable-next-line max-nested-callbacks
             switchMap((channels) => (channels.length ? of$(channels[0].id) : of$(undefined))),
         )),

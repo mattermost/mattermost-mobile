@@ -1,29 +1,24 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {Q} from '@nozbe/watermelondb';
 import {withDatabase} from '@nozbe/watermelondb/DatabaseProvider';
 import withObservables from '@nozbe/with-observables';
 import {combineLatest, of as of$, from as from$} from 'rxjs';
 import {switchMap} from 'rxjs/operators';
 
 import {General, Permissions} from '@constants';
-import {MM_TABLES} from '@constants/database';
 import {MAX_MESSAGE_LENGTH_FALLBACK} from '@constants/post_draft';
-import {observeCurrentChannel} from '@queries/servers/channel';
+import {observeChannel, observeCurrentChannel} from '@queries/servers/channel';
+import {queryAllCustomEmojis} from '@queries/servers/custom_emoji';
+import {queryGroupsForTeamAndChannel} from '@queries/servers/groups';
 import {observeConfig, observeCurrentUserId, observeLicense} from '@queries/servers/system';
+import {observeUser} from '@queries/servers/user';
 import {hasPermissionForChannel} from '@utils/role';
 
 import SendHandler from './send_handler';
 
 import type {WithDatabaseArgs} from '@typings/database/database';
-import type ChannelModel from '@typings/database/models/servers/channel';
 import type ChannelInfoModel from '@typings/database/models/servers/channel_info';
-import type CustomEmojiModel from '@typings/database/models/servers/custom_emoji';
-import type GroupModel from '@typings/database/models/servers/group';
-import type UserModel from '@typings/database/models/servers/user';
-
-const {SERVER: {USER, CHANNEL, GROUP, GROUPS_TEAM, GROUPS_CHANNEL, CUSTOM_EMOJI}} = MM_TABLES;
 
 type OwnProps = {
     rootId: string;
@@ -36,15 +31,15 @@ const enhanced = withObservables([], (ownProps: WithDatabaseArgs & OwnProps) => 
     const {rootId, channelId} = ownProps;
     let channel;
     if (rootId) {
-        channel = database.get<ChannelModel>(CHANNEL).findAndObserve(channelId);
+        channel = observeChannel(database, channelId);
     } else {
         channel = observeCurrentChannel(database);
     }
 
     const currentUserId = observeCurrentUserId(database);
     const currentUser = currentUserId.pipe(
-        switchMap((id) => database.get<UserModel>(USER).findAndObserve(id)),
-    );
+        switchMap((id) => observeUser(database, id),
+        ));
     const userIsOutOfOffice = currentUser.pipe(
         switchMap((u) => of$(u.status === General.OUT_OF_OFFICE)),
     );
@@ -83,10 +78,7 @@ const enhanced = withObservables([], (ownProps: WithDatabaseArgs & OwnProps) => 
     );
 
     const groupsWithAllowReference = channel.pipe(switchMap(
-        (c) => database.get<GroupModel>(GROUP).query(
-            Q.experimentalJoinTables([GROUPS_TEAM, GROUPS_CHANNEL]),
-            Q.or(Q.on(GROUPS_TEAM, 'team_id', c.teamId), Q.on(GROUPS_CHANNEL, 'channel_id', c.id)),
-        ).observeWithColumns(['name'])),
+        (c) => queryGroupsForTeamAndChannel(database, c.teamId, c.id).observeWithColumns(['name'])),
     );
 
     const channelInfo = channel.pipe(switchMap((c) => c.info.observe()));
@@ -94,7 +86,7 @@ const enhanced = withObservables([], (ownProps: WithDatabaseArgs & OwnProps) => 
         switchMap((i: ChannelInfoModel) => of$(i.memberCount)),
     );
 
-    const customEmojis = database.get<CustomEmojiModel>(CUSTOM_EMOJI).query().observe();
+    const customEmojis = queryAllCustomEmojis(database).observe();
 
     return {
         currentUserId,

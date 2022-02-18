@@ -5,8 +5,8 @@ import {Model} from '@nozbe/watermelondb';
 
 import DatabaseManager from '@database/manager';
 import NetworkManager from '@init/network_manager';
-import {queryCommonSystemValues} from '@queries/servers/system';
-import {queryTeamById} from '@queries/servers/team';
+import {getCommonSystemValues} from '@queries/servers/system';
+import {getTeamById} from '@queries/servers/team';
 
 import {forceLogoutIfNecessary} from './session';
 
@@ -24,8 +24,8 @@ export const fetchGroupsForTeam = async (serverUrl: string, teamId: string, sinc
     }
 
     try {
-        const system = await queryCommonSystemValues(database);
-        const team = await queryTeamById(database, teamId);
+        const system = await getCommonSystemValues(database);
+        const team = await getTeamById(database, teamId);
         const hasLicense = system.license.IsLicensed === 'true' && system.license.LDAPGroups === 'true';
 
         if (hasLicense && team) {

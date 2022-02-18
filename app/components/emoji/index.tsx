@@ -1,7 +1,6 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {Q} from '@nozbe/watermelondb';
 import {withDatabase} from '@nozbe/watermelondb/DatabaseProvider';
 import withObservables from '@nozbe/with-observables';
 import React from 'react';
@@ -16,9 +15,9 @@ import FastImage, {ImageStyle} from 'react-native-fast-image';
 import {of as of$} from 'rxjs';
 import {switchMap} from 'rxjs/operators';
 
-import {MM_TABLES} from '@constants/database';
 import {useServerUrl} from '@context/server';
 import NetworkManager from '@init/network_manager';
+import {queryCustomEmojisByName} from '@queries/servers/custom_emoji';
 import {observeConfigBooleanValue} from '@queries/servers/system';
 import {EmojiIndicesByAlias, Emojis} from '@utils/emoji';
 
@@ -155,7 +154,7 @@ const withCustomEmojis = withObservables(['emojiName'], ({database, emojiName}: 
 
     return {
         displayTextOnly,
-        customEmojis: hasEmojiBuiltIn ? of$([]) : database.get<CustomEmojiModel>(MM_TABLES.SERVER.CUSTOM_EMOJI).query(Q.where('name', emojiName)).observe(),
+        customEmojis: hasEmojiBuiltIn ? of$([]) : queryCustomEmojisByName(database, [emojiName]).observe(),
     };
 });
 

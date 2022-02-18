@@ -8,7 +8,7 @@ import {switchMap} from 'rxjs/operators';
 
 import {General, Permissions, Preferences, Screens} from '@constants';
 import {MAX_ALLOWED_REACTIONS} from '@constants/emoji';
-import {observePreferencesByCategoryAndName} from '@queries/servers/preference';
+import {queryPreferencesByCategoryAndName} from '@queries/servers/preference';
 import {observeConfig, observeLicense} from '@queries/servers/system';
 import {observeCurrentUser} from '@queries/servers/user';
 import {isMinimumServerVersion} from '@utils/helpers';
@@ -91,7 +91,7 @@ const enhanced = withObservables([], ({post, showAddReaction, location, database
         return of$(!isSystemMessage(post) && !isArchived && !isReadOnly);
     }));
 
-    const isSaved = observePreferencesByCategoryAndName(database, Preferences.CATEGORY_SAVED_POST, post.id).pipe(switchMap((pref) => of$(Boolean(pref[0]?.value === 'true'))));
+    const isSaved = queryPreferencesByCategoryAndName(database, Preferences.CATEGORY_SAVED_POST, post.id).observe().pipe(switchMap((pref) => of$(Boolean(pref[0]?.value === 'true'))));
 
     const canEdit = combineLatest([postEditTimeLimit, isLicensed, channel, currentUser, channelIsArchived, channelIsReadOnly, canEditUntil, canPostPermission]).pipe(switchMap(([lt, ls, c, u, isArchived, isReadOnly, until, canPost]) => {
         const isOwner = u.id === post.userId;

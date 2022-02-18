@@ -7,15 +7,14 @@ import {of as of$} from 'rxjs';
 import {catchError, switchMap} from 'rxjs/operators';
 
 import {General} from '@constants';
-import {MM_TABLES} from '@constants/database';
 import {observeCurrentUserId} from '@queries/servers/system';
+import {observeUser} from '@queries/servers/user';
 import {getUserIdFromChannelName} from '@utils/user';
 
 import DirectChannel from './direct_channel';
 
 import type {WithDatabaseArgs} from '@typings/database/database';
 import type ChannelModel from '@typings/database/models/servers/channel';
-import type UserModel from '@typings/database/models/servers/user';
 
 const enhanced = withObservables([], ({channel, database}: {channel: ChannelModel} & WithDatabaseArgs) => {
     const currentUserId = observeCurrentUserId(database);
@@ -26,7 +25,7 @@ const enhanced = withObservables([], ({channel, database}: {channel: ChannelMode
         isBot = currentUserId.pipe(
             switchMap((userId: string) => {
                 const otherUserId = getUserIdFromChannelName(userId, channel.name);
-                return database.get<UserModel>(MM_TABLES.SERVER.USER).findAndObserve(otherUserId).pipe(
+                return observeUser(database, otherUserId).pipe(
                     // eslint-disable-next-line max-nested-callbacks
                     switchMap((user) => of$(user.isBot)), // eslint-disable-next-line max-nested-callbacks
                     catchError(() => of$(false)),

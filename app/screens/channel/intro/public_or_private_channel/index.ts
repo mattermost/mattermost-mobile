@@ -8,7 +8,7 @@ import {map} from 'rxjs/operators';
 
 import {Preferences} from '@constants';
 import {getTeammateNameDisplaySetting} from '@helpers/api/preference';
-import {observePreferencesByCategoryAndName} from '@queries/servers/preference';
+import {queryPreferencesByCategoryAndName} from '@queries/servers/preference';
 import {observeConfig, observeLicense} from '@queries/servers/system';
 import {observeCurrentUser} from '@queries/servers/user';
 import {displayUsername} from '@utils/user';
@@ -24,7 +24,7 @@ const enhanced = withObservables([], ({channel, database}: {channel: ChannelMode
     if (channel.creatorId) {
         const config = observeConfig(database);
         const license = observeLicense(database);
-        const preferences = observePreferencesByCategoryAndName(database, Preferences.CATEGORY_DISPLAY_SETTINGS);
+        const preferences = queryPreferencesByCategoryAndName(database, Preferences.CATEGORY_DISPLAY_SETTINGS).observe();
         const me = observeCurrentUser(database);
 
         const profile = channel.creator.observe();

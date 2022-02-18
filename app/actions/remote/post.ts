@@ -12,10 +12,10 @@ import {SYSTEM_IDENTIFIERS} from '@constants/database';
 import DatabaseManager from '@database/manager';
 import {getNeededAtMentionedUsernames} from '@helpers/api/user';
 import NetworkManager from '@init/network_manager';
-import {prepareMissingChannelsForAllTeams, queryAllMyChannelIds} from '@queries/servers/channel';
+import {prepareMissingChannelsForAllTeams, queryAllMyChannel} from '@queries/servers/channel';
 import {queryAllCustomEmojis} from '@queries/servers/custom_emoji';
-import {queryPostById, queryRecentPostsInChannel} from '@queries/servers/post';
-import {queryCurrentUserId, queryCurrentChannelId} from '@queries/servers/system';
+import {getPostById, queryRecentPostsInChannel} from '@queries/servers/post';
+import {getCurrentUserId, getCurrentChannelId} from '@queries/servers/system';
 import {queryAllUsers} from '@queries/servers/user';
 import {getValidEmojis, matchEmoticons} from '@utils/emoji/helpers';
 
@@ -49,11 +49,11 @@ export const createPost = async (serverUrl: string, post: Partial<Post>, files: 
         return {error};
     }
 
-    const currentUserId = queryCurrentUserId(operator.database);
+    const currentUserId = getCurrentUserId(operator.database);
     const timestamp = Date.now();
     const pendingPostId = post.pending_post_id || `${currentUserId}:${timestamp}`;
 
-    const existing = await queryPostById(operator.database, pendingPostId);
+    const existing = await getPostById(operator.database, pendingPostId);
     if (existing && !existing.props.failed) {
         return {data: false};
     }
@@ -97,7 +97,7 @@ export const createPost = async (serverUrl: string, post: Partial<Post>, files: 
         initialPostModels.push(...postModels);
     }
 
-    const customEmojis = await queryAllCustomEmojis(operator.database);
+    const customEmojis = await queryAllCustomEmojis(operator.database).fetch();
     const emojisInMessage = matchEmoticons(newPost.message);
     const reactionModels = await addRecentReaction(serverUrl, getValidEmojis(emojisInMessage, customEmojis), true);
     if (!('error' in reactionModels) && reactionModels.length) {
@@ -150,7 +150,7 @@ export const fetchPostsForCurrentChannel = async (serverUrl: string) => {
         return {error: `${serverUrl} database not found`};
     }
 
-    const currentChannelId = await queryCurrentChannelId(database);
+    const currentChannelId = await getCurrentChannelId(database);
     return fetchPostsForChannel(serverUrl, currentChannelId);
 };
 
@@ -350,8 +350,8 @@ export const fetchPostAuthors = async (serverUrl: string, posts: Post[], fetchOn
         return {error};
     }
 
-    const currentUserId = await queryCurrentUserId(operator.database);
-    const users = await queryAllUsers(operator.database);
+    const currentUserId = await getCurrentUserId(operator.database);
+    const users = await queryAllUsers(operator.database).fetch();
     const existingUserIds = new Set<string>();
     const existingUserNames = new Set<string>();
     let excludeUsername;
@@ -453,7 +453,7 @@ export async function getMissingChannelsFromPosts(serverUrl: string, posts: Post
         return {error};
     }
 
-    const channelIds = await queryAllMyChannelIds(operator.database);
+    const channelIds = await queryAllMyChannel(operator.database).fetchIds();
     const channelPromises: Array<Promise<Channel>> = [];
     const userPromises: Array<Promise<ChannelMembership>> = [];
 
@@ -534,7 +534,7 @@ export const togglePinPost = async (serverUrl: string, postId: string) => {
     }
 
     try {
-        const post = await queryPostById(database, postId);
+        const post = await getPostById(database, postId);
         if (post) {
             const isPinned = post.isPinned;
             const request = isPinned ? client.unpinPost : client.pinPost;

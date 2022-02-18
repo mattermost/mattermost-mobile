@@ -7,19 +7,15 @@ import {combineLatest, of as of$, from as from$} from 'rxjs';
 import {switchMap} from 'rxjs/operators';
 
 import {General, Permissions} from '@constants';
-import {MM_TABLES} from '@constants/database';
+import {observeChannel} from '@queries/servers/channel';
 import {observeConfigBooleanValue, observeCurrentChannelId} from '@queries/servers/system';
-import {observeCurrentUser} from '@queries/servers/user';
+import {observeCurrentUser, observeUser} from '@queries/servers/user';
 import {hasPermissionForChannel} from '@utils/role';
 import {isSystemAdmin, getUserIdFromChannelName} from '@utils/user';
 
 import PostDraft from './post_draft';
 
 import type {WithDatabaseArgs} from '@typings/database/database';
-import type ChannelModel from '@typings/database/models/servers/channel';
-import type UserModel from '@typings/database/models/servers/user';
-
-const {SERVER: {USER, CHANNEL}} = MM_TABLES;
 
 type OwnProps = {
     channelId?: string;
@@ -36,7 +32,7 @@ const enhanced = withObservables([], (ownProps: WithDatabaseArgs & OwnProps) => 
     }
 
     const channel = channelId.pipe(
-        switchMap((id) => database.get<ChannelModel>(CHANNEL).findAndObserve(id!)),
+        switchMap((id) => observeChannel(database, id!)),
     );
 
     const canPost = combineLatest([channel, currentUser]).pipe(switchMap(([c, u]) => from$(hasPermissionForChannel(c, u, Permissions.CREATE_POST, false))));
@@ -54,7 +50,7 @@ const enhanced = withObservables([], (ownProps: WithDatabaseArgs & OwnProps) => 
             }
             const teammateId = getUserIdFromChannelName(u.id, c.name);
             if (teammateId) {
-                return database.get<UserModel>(USER).findAndObserve(teammateId).pipe(
+                return observeUser(database, teammateId).pipe(
                     switchMap((u2) => of$(Boolean(u2.deleteAt))), // eslint-disable-line max-nested-callbacks
                 );
             }

@@ -1,27 +1,25 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {Q} from '@nozbe/watermelondb';
 import {withDatabase} from '@nozbe/watermelondb/DatabaseProvider';
 import withObservables from '@nozbe/with-observables';
 import React from 'react';
 import {useIntl} from 'react-intl';
 import {Alert, Text, View} from 'react-native';
-import {of as of$} from 'rxjs';
+import {of as of$, combineLatest} from 'rxjs';
 import {switchMap} from 'rxjs/operators';
 
 import TouchableWithFeedback from '@components/touchable_with_feedback';
 import {Preferences} from '@constants';
-import {MM_TABLES, SYSTEM_IDENTIFIERS} from '@constants/database';
 import {getPreferenceAsBool} from '@helpers/api/preference';
+import {queryPreferencesByCategoryAndName} from '@queries/servers/preference';
+import {observeConfigBooleanValue} from '@queries/servers/system';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {tryOpenURL} from '@utils/url';
 
 import OpengraphImage from './opengraph_image';
 
 import type {WithDatabaseArgs} from '@typings/database/database';
-import type PreferenceModel from '@typings/database/models/servers/preference';
-import type SystemModel from '@typings/database/models/servers/system';
 
 type OpengraphProps = {
     isReplyPost: boolean;
@@ -179,19 +177,14 @@ const withOpenGraphInput = withObservables(
             return {showLinkPreviews: of$(false)};
         }
 
-        const showLinkPreviews = database.get(MM_TABLES.SERVER.PREFERENCE).query(
-            Q.where('category', Preferences.CATEGORY_DISPLAY_SETTINGS),
-            Q.where('name', Preferences.LINK_PREVIEW_DISPLAY),
-        ).observe().pipe(
+        const enableLinkPreviewsConfig = observeConfigBooleanValue(database, 'EnableLinkPreviews');
+        const showLinkPreviewsPreference = queryPreferencesByCategoryAndName(database, Preferences.CATEGORY_DISPLAY_SETTINGS, Preferences.LINK_PREVIEW_DISPLAY).observe();
+        const showLinkPreviews = combineLatest([enableLinkPreviewsConfig, showLinkPreviewsPreference]).pipe(
             switchMap(
-                (preferences: PreferenceModel[]) => database.get(MM_TABLES.SERVER.SYSTEM).findAndObserve(SYSTEM_IDENTIFIERS.CONFIG).pipe(
-                    // eslint-disable-next-line max-nested-callbacks
-                    switchMap((config: SystemModel) => {
-                        const cfg: ClientConfig = config.value;
-                        const previewsEnabled = getPreferenceAsBool(preferences, Preferences.CATEGORY_DISPLAY_SETTINGS, Preferences.LINK_PREVIEW_DISPLAY, true);
-                        return of$(previewsEnabled && cfg.EnableLinkPreviews === 'true');
-                    }),
-                ),
+                ([cfg, pref]) => {
+                    const previewsEnabled = getPreferenceAsBool(pref, Preferences.CATEGORY_DISPLAY_SETTINGS, Preferences.LINK_PREVIEW_DISPLAY, true);
+                    return of$(previewsEnabled && cfg);
+                },
             ),
         );
 

@@ -1,7 +1,6 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {Q} from '@nozbe/watermelondb';
 import {withDatabase} from '@nozbe/watermelondb/DatabaseProvider';
 import withObservables from '@nozbe/with-observables';
 import React, {useCallback, useEffect, useRef, useState} from 'react';
@@ -13,10 +12,10 @@ import {getRedirectLocation} from '@actions/remote/general';
 import FileIcon from '@components/post_list/post/body/files/file_icon';
 import ProgressiveImage from '@components/progressive_image';
 import TouchableWithFeedback from '@components/touchable_with_feedback';
-import {MM_TABLES, SYSTEM_IDENTIFIERS} from '@constants/database';
 import {useServerUrl} from '@context/server';
 import {useIsTablet} from '@hooks/device';
 import useDidUpdate from '@hooks/did_update';
+import {observeExpandedLinks} from '@queries/servers/system';
 import {openGallerWithMockFile} from '@utils/gallery';
 import {generateId} from '@utils/general';
 import {calculateDimensions, getViewPortWidth, isGifTooLarge} from '@utils/images';
@@ -24,7 +23,6 @@ import {changeOpacity} from '@utils/theme';
 import {isImageLink, isValidUrl} from '@utils/url';
 
 import type {WithDatabaseArgs} from '@typings/database/database';
-import type SystemModel from '@typings/database/models/servers/system';
 
 type ImagePreviewProps = {
     expandedLink?: string;
@@ -123,11 +121,9 @@ const withExpandedLink = withObservables(['metadata'], ({database, metadata}: Wi
     const link = metadata.embeds?.[0].url;
 
     return {
-        expandedLink: database.get(MM_TABLES.SERVER.SYSTEM).query(
-            Q.where('id', SYSTEM_IDENTIFIERS.EXPANDED_LINKS),
-        ).observe().pipe(
-            switchMap((values: SystemModel[]) => (
-                (link && values.length) ? of$((values[0].value as Record<string, string>)[link]) : of$(undefined)),
+        expandedLink: observeExpandedLinks(database).pipe(
+            switchMap((value) => (
+                (link && value) ? of$(value[link]) : of$(undefined)),
             ),
         ),
         link: of$(link),

@@ -5,8 +5,7 @@ import Database from '@nozbe/watermelondb/Database';
 import React from 'react';
 import {SafeAreaProvider} from 'react-native-safe-area-context';
 
-import {MM_TABLES} from '@constants/database';
-import {TeamModel} from '@database/models/server';
+import {getTeamById} from '@queries/servers/team';
 import {renderWithEverything} from '@test/intl-test-helper';
 import TestHelper from '@test/test_helper';
 
@@ -18,7 +17,7 @@ describe('components/channel_list', () => {
         const server = await TestHelper.setupServerDatabase();
         database = server.database;
 
-        const team = await database.get<TeamModel>(MM_TABLES.SERVER.TEAM).find(TestHelper.basicTeam!.id);
+        const team = await getTeamById(database, TestHelper.basicTeam!.id);
         await database.write(async () => {
             await team?.update(() => {
                 team.displayName = 'Test Team!';

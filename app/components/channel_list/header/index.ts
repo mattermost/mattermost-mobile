@@ -3,28 +3,20 @@
 
 import {withDatabase} from '@nozbe/watermelondb/DatabaseProvider';
 import withObservables from '@nozbe/with-observables';
-import {catchError, combineLatest, of as of$, from as from$} from 'rxjs';
+import {combineLatest, of as of$, from as from$} from 'rxjs';
 import {switchMap} from 'rxjs/operators';
 
 import {Permissions} from '@constants';
-import {MM_TABLES, SYSTEM_IDENTIFIERS} from '@constants/database';
+import {observeCurrentTeam} from '@queries/servers/team';
 import {observeCurrentUser} from '@queries/servers/user';
 import {hasPermissionForTeam} from '@utils/role';
 
 import ChannelListHeader from './header';
 
 import type {WithDatabaseArgs} from '@typings/database/database';
-import type SystemModel from '@typings/database/models/servers/system';
-import type TeamModel from '@typings/database/models/servers/team';
-
-const {SERVER: {SYSTEM, TEAM}} = MM_TABLES;
-const {CURRENT_TEAM_ID} = SYSTEM_IDENTIFIERS;
 
 const enhanced = withObservables([], ({database}: WithDatabaseArgs) => {
-    const team = database.get<SystemModel>(SYSTEM).findAndObserve(CURRENT_TEAM_ID).pipe(
-        switchMap((id) => database.get<TeamModel>(TEAM).findAndObserve(id.value)),
-        catchError(() => of$({displayName: ''})),
-    );
+    const team = observeCurrentTeam(database);
 
     const currentUser = observeCurrentUser(database);
 

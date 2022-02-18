@@ -13,7 +13,7 @@ import {switchMap} from 'rxjs/operators';
 import {Preferences} from '@constants';
 import {CUSTOM_STATUS_TIME_PICKER_INTERVALS_IN_MINUTES} from '@constants/custom_status';
 import {getPreferenceAsBool} from '@helpers/api/preference';
-import {observePreferencesByCategoryAndName} from '@queries/servers/preference';
+import {queryPreferencesByCategoryAndName} from '@queries/servers/preference';
 import {getCurrentMomentForTimezone, getRoundedTime, getUtcOffsetForTimeZone} from '@utils/helpers';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 
@@ -113,7 +113,7 @@ const DateTimeSelector = ({timezone, handleChange, isMilitaryTime, theme}: Props
 };
 
 const enhanced = withObservables([], ({database}: WithDatabaseArgs) => ({
-    isMilitaryTime: observePreferencesByCategoryAndName(database, Preferences.CATEGORY_DISPLAY_SETTINGS).pipe(
+    isMilitaryTime: queryPreferencesByCategoryAndName(database, Preferences.CATEGORY_DISPLAY_SETTINGS).observe().pipe(
         switchMap(
             (preferences) => of$(getPreferenceAsBool(preferences, Preferences.CATEGORY_DISPLAY_SETTINGS, 'use_military_time', false)),
         ),

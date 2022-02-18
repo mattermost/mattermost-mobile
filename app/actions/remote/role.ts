@@ -26,7 +26,7 @@ export const fetchRolesIfNeeded = async (serverUrl: string, updatedRoles: string
 
     const database = DatabaseManager.serverDatabases[serverUrl].database;
     const operator = DatabaseManager.serverDatabases[serverUrl].operator;
-    const existingRoles = await queryRoles(database);
+    const existingRoles = await queryRoles(database).fetch();
 
     const roleNames = existingRoles.map((role) => {
         return role.name;

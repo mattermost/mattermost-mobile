@@ -5,8 +5,8 @@ import {Keyboard} from 'react-native';
 
 import {fetchMyChannelsForTeam} from '@actions/remote/channel';
 import DatabaseManager from '@database/manager';
-import {queryCommonSystemValues} from '@queries/servers/system';
-import {queryTeamById, queryTeamByName} from '@queries/servers/team';
+import {getCommonSystemValues} from '@queries/servers/system';
+import {getTeamById, getTeamByName} from '@queries/servers/team';
 import {dismissAllModals, showModalOverCurrentContext} from '@screens/navigation';
 import {permalinkBadTeam} from '@utils/draft';
 import {changeOpacity} from '@utils/theme';
@@ -26,16 +26,16 @@ export const showPermalink = async (serverUrl: string, teamName: string, postId:
     try {
         let name = teamName;
         let team: TeamModel | undefined;
-        const system = await queryCommonSystemValues(database);
+        const system = await getCommonSystemValues(database);
         if (!name || name === PERMALINK_GENERIC_TEAM_NAME_REDIRECT) {
-            team = await queryTeamById(database, system.currentTeamId);
+            team = await getTeamById(database, system.currentTeamId);
             if (team) {
                 name = team.name;
             }
         }
 
         if (!team) {
-            team = await queryTeamByName(database, name);
+            team = await getTeamByName(database, name);
             if (!team) {
                 permalinkBadTeam(intl);
                 return {error: 'Bad Permalink team'};
