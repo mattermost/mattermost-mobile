@@ -2,14 +2,14 @@
 // See LICENSE.txt for license information.
 
 import {IntlShape} from 'react-intl';
-import {Alert, DeviceEventEmitter, NativeModules, Platform, StatusBar} from 'react-native';
+import {Alert, NativeModules, Platform, StatusBar} from 'react-native';
 import AndroidOpenSettings from 'react-native-android-open-settings';
 import DeviceInfo from 'react-native-device-info';
 import DocumentPicker, {DocumentPickerResponse} from 'react-native-document-picker';
 import {Asset, CameraOptions, ImageLibraryOptions, ImagePickerResponse, launchCamera, launchImageLibrary} from 'react-native-image-picker';
 import Permissions, {AndroidPermission, IOSPermission} from 'react-native-permissions';
 
-import {Events} from '@constants';
+import {dismissBottomSheet} from '@screens/navigation';
 import {extractFileInfo, lookupMimeType} from '@utils/file';
 
 const ShareExtension = NativeModules.MattermostShare;
@@ -101,7 +101,7 @@ export default class FilePickerUtil {
         const out = await extractFileInfo(files);
 
         if (out.length > 0) {
-            DeviceEventEmitter.emit(Events.CLOSE_BOTTOM_SHEET);
+            dismissBottomSheet();
             this.uploadFiles(out);
         }
     };

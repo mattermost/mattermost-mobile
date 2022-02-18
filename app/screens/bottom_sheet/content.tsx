@@ -26,10 +26,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
         container: {
             flex: 1,
         },
-        titleContainer: {
-            marginTop: 4,
-            marginBottom: 4,
-        },
+        titleContainer: {marginVertical: 4},
         titleText: {
             color: theme.centerChannelColor,
             lineHeight: 30,

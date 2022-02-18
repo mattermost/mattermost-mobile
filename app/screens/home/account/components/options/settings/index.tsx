@@ -4,8 +4,8 @@
 import React, {useCallback} from 'react';
 import {TextStyle} from 'react-native';
 
-import DrawerItem from '@components/drawer_item';
 import FormattedText from '@components/formatted_text';
+import MenuItem from '@components/menu_item';
 import {preventDoubleTap} from '@utils/tap';
 
 type Props = {
@@ -20,7 +20,7 @@ const Settings = ({isTablet, style, theme}: Props) => {
     }), [isTablet]);
 
     return (
-        <DrawerItem
+        <MenuItem
             testID='account.settings.action'
             labelComponent={
                 <FormattedText

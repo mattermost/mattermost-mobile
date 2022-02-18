@@ -291,23 +291,21 @@ export const updateLastPostAt = async (serverUrl: string, channelId: string, las
         return {error: 'not a member'};
     }
 
-    const models: Model[] = [];
     if (lastPostAt > member.lastPostAt) {
         member.prepareUpdate((m) => {
             m.lastPostAt = lastPostAt;
         });
-        models.push();
-    }
 
-    try {
-        if (!prepareRecordsOnly && models.length) {
-            await operator.batchRecords([member]);
+        try {
+            if (!prepareRecordsOnly) {
+                await operator.batchRecords([member]);
+            }
+        } catch (error) {
+            return {error};
         }
-    } catch (error) {
-        return {error};
     }
 
-    return {models};
+    return {member: undefined};
 };
 
 export async function updateChannelsDisplayName(serverUrl: string, channels: ChannelModel[], users: UserProfile[], prepareRecordsOnly = false) {

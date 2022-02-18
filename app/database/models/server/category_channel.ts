@@ -10,6 +10,7 @@ import {MM_TABLES} from '@constants/database';
 import type CategoryModel from '@typings/database/models/servers/category';
 import type CategoryChannelInterface from '@typings/database/models/servers/category_channel';
 import type ChannelModel from '@typings/database/models/servers/channel';
+import type MyChannelModel from '@typings/database/models/servers/my_channel';
 
 const {CATEGORY_CHANNEL, CATEGORY, MY_CHANNEL, CHANNEL} = MM_TABLES.SERVER;
 
@@ -50,5 +51,5 @@ export default class CategoryChannelModel extends Model implements CategoryChann
     @immutableRelation(CHANNEL, 'channel_id') channel!: Relation<ChannelModel>;
 
     /** myChannel : The related myChannel */
-    @immutableRelation(MY_CHANNEL, 'channel_id') myChannel!: Relation<ChannelModel>;
+    @immutableRelation(MY_CHANNEL, 'channel_id') myChannel!: Relation<MyChannelModel>;
 }

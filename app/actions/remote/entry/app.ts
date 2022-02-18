@@ -13,9 +13,9 @@ import {queryCurrentUser} from '@queries/servers/user';
 import {deleteV1Data} from '@utils/file';
 import {isTablet} from '@utils/helpers';
 
-import {AppEntryData, AppEntryError, deferredAppEntryActions, fetchAppEntryData} from './common';
+import {AppEntryData, AppEntryError, deferredAppEntryActions, fetchAppEntryData, syncOtherServers} from './common';
 
-export const appEntry = async (serverUrl: string) => {
+export const appEntry = async (serverUrl: string, since = 0) => {
     const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
     if (!operator) {
         return {error: `${serverUrl} database not found`};
@@ -24,7 +24,7 @@ export const appEntry = async (serverUrl: string) => {
 
     const tabletDevice = await isTablet();
     const currentTeamId = await queryCurrentTeamId(database);
-    const lastDisconnectedAt = await queryWebSocketLastDisconnected(database);
+    const lastDisconnectedAt = (await queryWebSocketLastDisconnected(database)) || since;
     const fetchedData = await fetchAppEntryData(serverUrl, lastDisconnectedAt, currentTeamId);
     const fetchedError = (fetchedData as AppEntryError).error;
 
@@ -86,6 +86,11 @@ export const appEntry = async (serverUrl: string) => {
     const {id: currentUserId, locale: currentUserLocale} = meData.user || (await queryCurrentUser(database))!;
     const {config, license} = await queryCommonSystemValues(database);
     deferredAppEntryActions(serverUrl, lastDisconnectedAt, currentUserId, currentUserLocale, prefData.preferences, config, license, teamData, chData, initialTeamId);
+
+    if (!since) {
+        // Load data from other servers
+        syncOtherServers(serverUrl);
+    }
 
     const error = teamData.error || chData?.error || prefData.error || meData.error;
     return {error, userId: meData?.user?.id};

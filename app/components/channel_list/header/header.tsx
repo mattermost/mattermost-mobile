@@ -1,23 +1,30 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useEffect} from 'react';
+import React, {useCallback, useEffect} from 'react';
 import {useIntl} from 'react-intl';
 import {Text, View} from 'react-native';
 import Animated, {useAnimatedStyle, useSharedValue, withTiming} from 'react-native-reanimated';
+import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import CompassIcon from '@components/compass_icon';
+import {ITEM_HEIGHT} from '@components/slide_up_panel_item';
 import TouchableWithFeedback from '@components/touchable_with_feedback';
-import {Screens} from '@constants';
 import {useServerDisplayName} from '@context/server';
 import {useTheme} from '@context/theme';
-import {showModal} from '@screens/navigation';
+import {useIsTablet} from '@hooks/device';
+import {bottomSheet} from '@screens/navigation';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
+import PlusMenu from './plus_menu';
+
 type Props = {
+    canCreateChannels: boolean;
+    canJoinChannels: boolean;
     displayName: string;
     iconPad?: boolean;
+    onHeaderPress?: () => void;
 }
 
 const getStyles = makeStyleSheetFromTheme((theme: Theme) => ({
@@ -55,8 +62,11 @@ const getStyles = makeStyleSheetFromTheme((theme: Theme) => ({
     },
 }));
 
-const ChannelListHeader = ({displayName, iconPad}: Props) => {
+const ChannelListHeader = ({canCreateChannels, canJoinChannels, displayName, iconPad, onHeaderPress}: Props) => {
     const theme = useTheme();
+    const isTablet = useIsTablet();
+    const intl = useIntl();
+    const insets = useSafeAreaInsets();
     const serverDisplayName = useServerDisplayName();
     const marginLeft = useSharedValue(iconPad ? 44 : 0);
     const styles = getStyles(theme);
@@ -64,38 +74,67 @@ const ChannelListHeader = ({displayName, iconPad}: Props) => {
         marginLeft: withTiming(marginLeft.value, {duration: 350}),
     }), []);
 
-    const intl = useIntl();
-
     useEffect(() => {
         marginLeft.value = iconPad ? 44 : 0;
     }, [iconPad]);
+
+    const onPress = useCallback(() => {
+        const renderContent = () => {
+            return (
+                <PlusMenu
+                    canCreateChannels={canCreateChannels}
+                    canJoinChannels={canJoinChannels}
+                />
+            );
+        };
+
+        const closeButtonId = 'close-plus-menu';
+        let items = 1;
+        if (canCreateChannels) {
+            items += 1;
+        }
+
+        if (canJoinChannels) {
+            items += 1;
+        }
+
+        bottomSheet({
+            closeButtonId,
+            renderContent,
+            snapPoints: [(items * ITEM_HEIGHT) + (insets.bottom * 2), 10],
+            theme,
+            title: intl.formatMessage({id: 'home.header.plus_menu', defaultMessage: 'Options'}),
+        });
+    }, [intl, insets, isTablet, theme]);
 
     return (
         <Animated.View style={animatedStyle}>
             {Boolean(displayName) &&
             <View style={styles.headerRow}>
-                <View style={styles.headerRow}>
-                    <Text style={styles.headingStyles}>
-                        {displayName}
-                    </Text>
-                    <TouchableWithFeedback style={styles.chevronButton}>
-                        <CompassIcon
-                            style={styles.chevronIcon}
-                            name={'chevron-down'}
-                        />
-                    </TouchableWithFeedback>
-                </View>
-                <TouchableWithFeedback style={styles.plusButton}>
+                <TouchableWithFeedback
+                    onPress={onHeaderPress}
+                    type='opacity'
+                >
+                    <View style={styles.headerRow}>
+                        <Text style={styles.headingStyles}>
+                            {displayName}
+                        </Text>
+                        <View style={styles.chevronButton}>
+                            <CompassIcon
+                                style={styles.chevronIcon}
+                                name={'chevron-down'}
+                            />
+                        </View>
+                    </View>
+                </TouchableWithFeedback>
+                <TouchableWithFeedback
+                    onPress={onPress}
+                    style={styles.plusButton}
+                    type='opacity'
+                >
                     <CompassIcon
                         style={styles.plusIcon}
                         name={'plus'}
-                        onPress={async () => {
-                            const title = intl.formatMessage({id: 'browse_channels.title', defaultMessage: 'More Channels'});
-                            const closeButton = await CompassIcon.getImageSource('close', 24, theme.sidebarHeaderTextColor);
-                            showModal(Screens.BROWSE_CHANNELS, title, {
-                                closeButton,
-                            });
-                        }}
                     />
                 </TouchableWithFeedback>
             </View>

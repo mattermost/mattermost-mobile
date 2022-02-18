@@ -17,7 +17,7 @@ import EphemeralStore from '@store/ephemeral_store';
 import {isTablet} from '@utils/helpers';
 import {emitNotificationError} from '@utils/notification';
 
-import {AppEntryData, AppEntryError, deferredAppEntryActions, fetchAppEntryData} from './common';
+import {AppEntryData, AppEntryError, deferredAppEntryActions, fetchAppEntryData, syncOtherServers} from './common';
 
 export const pushNotificationEntry = async (serverUrl: string, notification: NotificationWithData) => {
     const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
@@ -143,6 +143,7 @@ export const pushNotificationEntry = async (serverUrl: string, notification: Not
     const {config, license} = await queryCommonSystemValues(operator.database);
 
     deferredAppEntryActions(serverUrl, lastDisconnectedAt, currentUserId, currentUserLocale, prefData.preferences, config, license, teamData, chData, selectedTeamId, selectedChannelId);
+    syncOtherServers(serverUrl);
     const error = teamData.error || chData?.error || prefData.error || meData.error;
     return {error, userId: meData?.user?.id};
 };

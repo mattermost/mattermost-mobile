@@ -5,14 +5,13 @@ import {useManagedConfig} from '@mattermost/react-native-emm';
 import Clipboard from '@react-native-community/clipboard';
 import React, {useCallback} from 'react';
 import {useIntl} from 'react-intl';
-import {DeviceEventEmitter, Keyboard, StyleSheet, Text, TextStyle, View} from 'react-native';
+import {Keyboard, StyleSheet, Text, TextStyle, View} from 'react-native';
 
 import FormattedText from '@components/formatted_text';
 import SlideUpPanelItem, {ITEM_HEIGHT} from '@components/slide_up_panel_item';
 import TouchableWithFeedback from '@components/touchable_with_feedback';
-import {Events} from '@constants';
 import {useTheme} from '@context/theme';
-import {bottomSheet, goToScreen} from '@screens/navigation';
+import {bottomSheet, dismissBottomSheet, goToScreen} from '@screens/navigation';
 import {getDisplayNameForLanguage} from '@utils/markdown';
 import {preventDoubleTap} from '@utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
@@ -136,7 +135,7 @@ const MarkdownCodeBlock = ({language = '', content, textStyle}: MarkdownCodeBloc
                         <SlideUpPanelItem
                             icon='content-copy'
                             onPress={() => {
-                                DeviceEventEmitter.emit(Events.CLOSE_BOTTOM_SHEET);
+                                dismissBottomSheet();
                                 Clipboard.setString(content);
                             }}
                             testID='at_mention.bottom_sheet.copy_code'
@@ -146,7 +145,7 @@ const MarkdownCodeBlock = ({language = '', content, textStyle}: MarkdownCodeBloc
                             destructive={true}
                             icon='cancel'
                             onPress={() => {
-                                DeviceEventEmitter.emit(Events.CLOSE_BOTTOM_SHEET);
+                                dismissBottomSheet();
                             }}
                             testID='at_mention.bottom_sheet.cancel'
                             text={intl.formatMessage({id: 'mobile.post.cancel', defaultMessage: 'Cancel'})}
