@@ -23,6 +23,11 @@ import {deleteFileCache} from '@utils/file';
 
 type LinkingCallbackArg = {url: string};
 
+type LogoutCallbackArg = {
+    serverUrl: string;
+    removeServer: boolean;
+}
+
 class GlobalEventHandler {
     JavascriptAndNativeErrorHandler: jsAndNativeErrorHandler | undefined;
 
@@ -83,7 +88,7 @@ class GlobalEventHandler {
         }
     };
 
-    onLogout = async (serverUrl: string) => {
+    onLogout = async ({serverUrl, removeServer}: LogoutCallbackArg) => {
         await removeServerCredentials(serverUrl);
         const channelIds = await selectAllMyChannelIds(serverUrl);
         PushNotifications.cancelChannelsNotifications(channelIds);
@@ -92,7 +97,12 @@ class GlobalEventHandler {
         WebsocketManager.invalidateClient(serverUrl);
 
         const activeServerUrl = await DatabaseManager.getActiveServerUrl();
-        await DatabaseManager.deleteServerDatabase(serverUrl);
+        const activeServerDisplayName = await DatabaseManager.getActiveServerDisplayName();
+        if (removeServer) {
+            await DatabaseManager.destroyServerDatabase(serverUrl);
+        } else {
+            await DatabaseManager.deleteServerDatabase(serverUrl);
+        }
 
         const analyticsClient = analytics.get(serverUrl);
         if (analyticsClient) {
@@ -105,13 +115,18 @@ class GlobalEventHandler {
         deleteFileCache(serverUrl);
 
         if (activeServerUrl === serverUrl) {
+            let displayName = '';
             let launchType: LaunchType = LaunchType.AddServer;
             if (!Object.keys(DatabaseManager.serverDatabases).length) {
                 EphemeralStore.theme = undefined;
                 launchType = LaunchType.Normal;
+
+                if (activeServerDisplayName) {
+                    displayName = activeServerDisplayName;
+                }
             }
 
-            relaunchApp({launchType}, true);
+            relaunchApp({launchType, serverUrl, displayName}, true);
         }
     };
 
@@ -154,7 +169,7 @@ class GlobalEventHandler {
         const credentials = await getServerCredentials(serverUrl);
 
         if (credentials) {
-            this.onLogout(serverUrl);
+            this.onLogout({serverUrl, removeServer: false});
         }
     };
 }

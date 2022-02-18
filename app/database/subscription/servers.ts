@@ -15,7 +15,7 @@ export const subscribeActiveServers = (observer: (servers: ServersModel[]) => vo
     return db?.
         get(SERVERS).
         query(Q.where('identifier', Q.notEq(''))).
-        observeWithColumns(['last_active_at']).
+        observeWithColumns(['display_name', 'last_active_at']).
         subscribe(observer);
 };
 
