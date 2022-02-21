@@ -570,10 +570,12 @@ export const markPostAsUnread = async (serverUrl: string, postId: string, channe
 
         if (myChannel) {
             client.markPostAsUnread(userId, postId);
-
+            const lastViewed = Date.now();
             await database.write(async () => {
-                await myChannel.update((c) => {
-                    c.manuallyUnread = true;
+                await myChannel.update((m) => {
+                    m.manuallyUnread = true;
+                    m.viewedAt = lastViewed;
+                    m.lastViewedAt = lastViewed;
                 });
             });
         }
