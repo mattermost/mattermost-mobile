@@ -3,19 +3,18 @@
 
 import React, {ReactNode, useMemo, useRef} from 'react';
 import {useIntl} from 'react-intl';
-import {DeviceEventEmitter, Keyboard, Platform, StyleProp, View, ViewStyle} from 'react-native';
+import {Keyboard, Platform, StyleProp, View, ViewStyle} from 'react-native';
 
 import {showPermalink} from '@actions/local/permalink';
 import {removePost} from '@actions/local/post';
 import SystemAvatar from '@components/system_avatar';
 import SystemHeader from '@components/system_header';
 import TouchableWithFeedback from '@components/touchable_with_feedback';
-import {Events} from '@constants';
 import * as Screens from '@constants/screens';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
-import {bottomSheetModalOptions, showModal, showModalOverCurrentContext} from '@screens/navigation';
+import {bottomSheetModalOptions, goToScreen, showModal, showModalOverCurrentContext} from '@screens/navigation';
 import {fromAutoResponder, isFromWebhook, isPostPendingOrFailed, isSystemMessage} from '@utils/post';
 import {preventDoubleTap} from '@utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
@@ -138,7 +137,8 @@ const Post = ({
             const isValidSystemMessage = isAutoResponder || !isSystemPost;
             if (post.deleteAt !== 0 && isValidSystemMessage && !isPendingOrFailed) {
                 if ([Screens.CHANNEL, Screens.PERMALINK].includes(location)) {
-                    DeviceEventEmitter.emit(Events.GO_TO_THREAD, post);
+                    // https://mattermost.atlassian.net/browse/MM-39708
+                    goToScreen('THREADS_SCREEN_NOT_IMPLEMENTED_YET', '', {post});
                 }
             } else if ((isEphemeral || post.deleteAt > 0)) {
                 removePost(serverUrl, post);
