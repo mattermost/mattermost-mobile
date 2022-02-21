@@ -137,3 +137,5 @@ export async function isTablet() {
 
     return false;
 }
+
+export const pluckUnique = (key: string) => (array: Array<{[key: string]: unknown}>) => Array.from(new Set(array.map((obj) => obj[key])));

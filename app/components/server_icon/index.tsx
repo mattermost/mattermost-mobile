@@ -26,10 +26,12 @@ type Props = {
 
 const styles = StyleSheet.create({
     badge: {
-        left: 25,
+        left: 13,
+        top: -8,
     },
     unread: {
-        top: 5,
+        left: 18,
+        top: -5,
     },
 });
 

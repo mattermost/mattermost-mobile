@@ -27,7 +27,12 @@ const fetchNotificationData = async (serverUrl: string, notification: Notificati
     }
 
     try {
-        const channelId = notification.payload!.channel_id!;
+        const channelId = notification.payload?.channel_id;
+
+        if (!channelId) {
+            return {error: 'No chanel Id was specified'};
+        }
+
         const {database} = operator;
         const system = await queryCommonSystemValues(database);
         let teamId = notification.payload?.team_id;

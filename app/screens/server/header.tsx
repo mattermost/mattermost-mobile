@@ -10,6 +10,7 @@ import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
 type Props = {
+    additionalServer: boolean;
     theme: Theme;
 };
 
@@ -28,7 +29,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     connect: {
         width: 270,
         letterSpacing: -1,
-        color: theme.mentionColor,
+        color: theme.centerChannelColor,
         marginVertical: 12,
         ...typography('Heading', 1000, 'SemiBold'),
     },
@@ -41,29 +42,47 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     },
 }));
 
-const ServerHeader = ({theme}: Props) => {
+const ServerHeader = ({additionalServer, theme}: Props) => {
     const isTablet = useIsTablet();
     const styles = getStyleSheet(theme);
 
+    let title;
+    if (additionalServer) {
+        title = (
+            <FormattedText
+                defaultMessage='Add a server'
+                id='servers.create_button'
+                style={[styles.connect, isTablet ? styles.connectTablet : undefined]}
+                testID='mobile.components.select_server_view.add_server'
+            />
+        );
+    } else {
+        title = (
+            <FormattedText
+                defaultMessage='Let’s Connect to a Server'
+                id='mobile.components.select_server_view.msg_connect'
+                style={[styles.connect, isTablet ? styles.connectTablet : undefined]}
+                testID='mobile.components.select_server_view.msg_connect'
+            />
+        );
+    }
+
     return (
         <View style={styles.textContainer}>
+            {!additionalServer &&
             <FormattedText
-                defaultMessage={'Welcome'}
-                id={'mobile.components.select_server_view.msg_welcome'}
-                testID={'mobile.components.select_server_view.msg_welcome'}
+                defaultMessage='Welcome'
+                id='mobile.components.select_server_view.msg_welcome'
+                testID='mobile.components.select_server_view.msg_welcome'
                 style={styles.welcome}
             />
+            }
+            {title}
             <FormattedText
-                defaultMessage={'Let’s Connect to a Server'}
-                id={'mobile.components.select_server_view.msg_connect'}
-                style={[styles.connect, isTablet ? styles.connectTablet : undefined]}
-                testID={'mobile.components.select_server_view.msg_connect'}
-            />
-            <FormattedText
-                defaultMessage={"A Server is your team's communication hub which is accessed through a unique URL"}
-                id={'mobile.components.select_server_view.msg_description'}
+                defaultMessage="A Server is your team's communication hub which is accessed through a unique URL"
+                id='mobile.components.select_server_view.msg_description'
                 style={styles.description}
-                testID={'mobile.components.select_server_view.msg_description'}
+                testID='mobile.components.select_server_view.msg_description'
             />
         </View>
     );

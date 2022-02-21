@@ -2,7 +2,9 @@
 // See LICENSE.txt for license information.
 
 import NetInfo, {NetInfoState} from '@react-native-community/netinfo';
-import {AppState, AppStateStatus, DeviceEventEmitter, Platform} from 'react-native';
+import {debounce, DebouncedFunc} from 'lodash';
+import {AppState, AppStateStatus} from 'react-native';
+import BackgroundTimer from 'react-native-background-timer';
 
 import {setCurrentUserStatusOffline} from '@actions/local/user';
 import {fetchStatusByIds} from '@actions/remote/user';
@@ -15,11 +17,16 @@ import {queryAllUsers} from '@queries/servers/user';
 
 import type {ServerCredential} from '@typings/credentials';
 
+const WAIT_TO_CLOSE = 15 * 1000;
+const WAIT_UNTIL_NEXT = 5 * 1000;
+
 class WebsocketManager {
     private clients: Record<string, WebSocketClient> = {};
-    private statusUpdatesIntervalIDs: Record<string, NodeJS.Timer> = {};
-    private previousAppState: AppStateStatus;
+    private connectionTimerIDs: Record<string, DebouncedFunc<() => void>> = {};
+    private isBackgroundTimerRunning = false;
     private netConnected = false;
+    private previousAppState: AppStateStatus;
+    private statusUpdatesIntervalIDs: Record<string, NodeJS.Timer> = {};
 
     constructor() {
         this.previousAppState = AppState.currentState;
@@ -46,17 +53,14 @@ class WebsocketManager {
 
         AppState.addEventListener('change', this.onAppStateChange);
         NetInfo.addEventListener(this.onNetStateChange);
-
-        if (Platform.OS === 'android') {
-            DeviceEventEmitter.addListener('windowFocusChanged', ({appState}: {appState: AppStateStatus}) => {
-                this.onAppStateChange(appState);
-            });
-        }
     };
 
     public invalidateClient = (serverUrl: string) => {
         this.clients[serverUrl]?.close();
         this.clients[serverUrl]?.invalidate();
+        if (this.connectionTimerIDs[serverUrl]) {
+            this.connectionTimerIDs[serverUrl].cancel();
+        }
         delete this.clients[serverUrl];
     };
 
@@ -80,20 +84,45 @@ class WebsocketManager {
 
     public closeAll = () => {
         for (const client of Object.values(this.clients)) {
-            client.close(true);
+            if (client.isConnected()) {
+                client.close(true);
+            }
         }
     };
 
-    public openAll = () => {
-        for (const client of Object.values(this.clients)) {
-            if (!client.isConnected()) {
-                client.initialize();
+    public openAll = async () => {
+        for await (const clientUrl of Object.keys(this.clients)) {
+            const activeServerUrl = await DatabaseManager.getActiveServerUrl();
+            if (clientUrl === activeServerUrl) {
+                this.initializeClient(clientUrl);
+            } else {
+                const bounce = debounce(this.initializeClient.bind(this, clientUrl), WAIT_UNTIL_NEXT);
+                this.connectionTimerIDs[clientUrl] = bounce;
+                bounce();
             }
         }
     };
 
     public isConnected = (serverUrl: string): boolean => {
         return this.clients[serverUrl]?.isConnected();
+    };
+
+    private cancelAllConnections = () => {
+        for (const url in this.connectionTimerIDs) {
+            if (this.connectionTimerIDs[url]) {
+                this.connectionTimerIDs[url].cancel();
+                delete this.connectionTimerIDs[url];
+            }
+        }
+    };
+
+    private initializeClient = (serverUrl: string) => {
+        const client: WebSocketClient = this.clients[serverUrl];
+        if (!client?.isConnected()) {
+            client.initialize();
+        }
+        this.connectionTimerIDs[serverUrl]?.cancel();
+        delete this.connectionTimerIDs[serverUrl];
     };
 
     private onFirstConnect = (serverUrl: string) => {
@@ -156,13 +185,22 @@ class WebsocketManager {
             return;
         }
 
-        if (appState !== 'active') {
-            this.closeAll();
+        this.cancelAllConnections();
+        if (appState === 'background' && !this.isBackgroundTimerRunning) {
+            this.isBackgroundTimerRunning = true;
+            this.cancelAllConnections();
+            BackgroundTimer.runBackgroundTimer(() => {
+                this.closeAll();
+                BackgroundTimer.stopBackgroundTimer();
+                this.isBackgroundTimerRunning = false;
+            }, WAIT_TO_CLOSE);
             this.previousAppState = appState;
             return;
         }
 
         if (appState === 'active' && this.netConnected) { // Reopen the websockets only if there is connection
+            BackgroundTimer.stopBackgroundTimer();
+            this.isBackgroundTimerRunning = false;
             this.openAll();
             this.previousAppState = appState;
             return;

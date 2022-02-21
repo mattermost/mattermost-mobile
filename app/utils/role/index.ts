@@ -48,6 +48,22 @@ export async function hasPermissionForChannel(channel: ChannelModel, user: UserM
     return defaultValue;
 }
 
+export async function hasPermissionForTeam(team: TeamModel, user: UserModel, permission: string, defaultValue: boolean) {
+    const rolesArray = [...user.roles.split(' ')];
+
+    const myTeam = await team.myTeam.fetch() as MyTeamModel | undefined;
+    if (myTeam) {
+        rolesArray.push(...myTeam.roles.split(' '));
+    }
+
+    if (rolesArray.length) {
+        const roles = await user.collections.get(MM_TABLES.SERVER.ROLE).query(Q.where('name', Q.oneOf(rolesArray))).fetch() as RoleModel[];
+        return hasPermission(roles, permission, defaultValue);
+    }
+
+    return defaultValue;
+}
+
 export async function hasPermissionForPost(post: PostModel, user: UserModel, permission: string, defaultValue: boolean) {
     const channel = await post.channel.fetch() as ChannelModel | undefined;
     if (channel) {

@@ -25,7 +25,6 @@ export async function handleUserAddedToChannelEvent(serverUrl: string, msg: any)
     }
     const currentUser = await queryCurrentUser(database.database);
     const {team_id: teamId, channel_id: channelId, user_id: userId} = msg.data;
-
     const models: Model[] = [];
 
     try {

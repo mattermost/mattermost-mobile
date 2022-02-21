@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import LottieView from 'lottie-react-native';
-import React from 'react';
+import React, {useEffect, useRef} from 'react';
 import {StyleSheet, View, ViewStyle} from 'react-native';
 
 type LoadingProps = {
@@ -12,14 +12,28 @@ type LoadingProps = {
 }
 
 const Loading = ({containerStyle, style, color}: LoadingProps) => {
+    const lottieRef = useRef<LottieView|null>(null);
+
+    // This is a workaround as it seems that autoPlay does not work properly on
+    // newer versions of RN
+    useEffect(() => {
+        const animationFrame = requestAnimationFrame(() => {
+            lottieRef.current?.reset();
+            lottieRef.current?.play();
+        });
+
+        return () => cancelAnimationFrame(animationFrame);
+    }, []);
+
     return (
         <View style={containerStyle}>
             <LottieView
-                source={require('./spinner.json')}
                 autoPlay={true}
-                loop={true}
-                style={[styles.lottie, style]}
                 colorFilters={color ? [{color, keypath: 'Shape Layer 1'}] : undefined}
+                loop={true}
+                ref={lottieRef}
+                source={require('./spinner.json')}
+                style={[styles.lottie, style]}
             />
         </View>
     );

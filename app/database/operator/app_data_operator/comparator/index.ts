@@ -9,5 +9,5 @@ export const isRecordInfoEqualToRaw = (record: InfoModel, raw: AppInfo) => {
 };
 
 export const isRecordGlobalEqualToRaw = (record: GlobalModel, raw: IdValue) => {
-    return raw.id === record.id && raw.value === record.value;
+    return raw.id === record.id;
 };

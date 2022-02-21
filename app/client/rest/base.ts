@@ -7,7 +7,7 @@ import {Events} from '@constants';
 import {t} from '@i18n';
 import {Analytics, create} from '@init/analytics';
 import {setServerCredentials} from '@init/credentials';
-import {semverFromServerVersion} from '@utils/supported_server';
+import {semverFromServerVersion} from '@utils/server';
 
 import * as ClientConstants from './constants';
 import ClientError from './error';
@@ -109,12 +109,28 @@ export default class ClientBase {
         return `${this.getTeamMembersRoute(teamId)}/${userId}`;
     }
 
+    getCategoriesRoute(userId: string, teamId: string) {
+        return `${this.getUserRoute(userId)}/teams/${teamId}/channels/categories`;
+    }
+
+    getCategoriesOrderRoute(userId: string, teamId: string) {
+        return `${this.getCategoriesRoute(userId, teamId)}/order`;
+    }
+
+    getCategoryRoute(userId: string, teamId: string, categoryId: string) {
+        return `${this.getCategoriesRoute(userId, teamId)}/${categoryId}`;
+    }
+
     getChannelsRoute() {
         return `${this.urlVersion}/channels`;
     }
 
     getChannelRoute(channelId: string) {
         return `${this.getChannelsRoute()}/${channelId}`;
+    }
+
+    getSharedChannelsRoute() {
+        return `${this.urlVersion}/sharedchannels`;
     }
 
     getChannelMembersRoute(channelId: string) {

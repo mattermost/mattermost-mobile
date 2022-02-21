@@ -8,7 +8,7 @@ import {fetchPostsForUnreadChannels, fetchPostsSince} from '@actions/remote/post
 import {fetchRoles} from '@actions/remote/role';
 import {fetchConfigAndLicense} from '@actions/remote/systems';
 import {fetchAllTeams, fetchTeamsChannelsAndUnreadPosts} from '@actions/remote/team';
-import {updateAllUsersSince} from '@actions/remote/user';
+import {fetchStatusByIds, updateAllUsersSince} from '@actions/remote/user';
 import {General, WebsocketEvents} from '@constants';
 import {SYSTEM_IDENTIFIERS} from '@constants/database';
 import DatabaseManager from '@database/manager';
@@ -19,11 +19,13 @@ import {queryCommonSystemValues, queryConfig, queryCurrentChannelId, queryWebSoc
 import {deleteMyTeams, queryTeamsById} from '@queries/servers/team';
 import {isTablet} from '@utils/helpers';
 
+import {handleCategoryCreatedEvent, handleCategoryDeletedEvent, handleCategoryOrderUpdatedEvent, handleCategoryUpdatedEvent} from './category';
 import {handleChannelDeletedEvent, handleUserAddedToChannelEvent, handleUserRemovedFromChannelEvent} from './channel';
 import {handleNewPostEvent, handlePostDeleted, handlePostEdited, handlePostUnread} from './posts';
 import {handlePreferenceChangedEvent, handlePreferencesChangedEvent, handlePreferencesDeletedEvent} from './preferences';
 import {handleAddCustomEmoji, handleReactionRemovedFromPostEvent, handleReactionAddedToPostEvent} from './reactions';
 import {handleUserRoleUpdatedEvent, handleTeamMemberRoleUpdatedEvent, handleRoleUpdatedEvent} from './roles';
+import {handleLicenseChangedEvent, handleConfigChangedEvent} from './system';
 import {handleLeaveTeamEvent, handleUserAddedToTeamEvent, handleUpdateTeamEvent} from './teams';
 import {handleUserUpdatedEvent, handleUserTypingEvent} from './users';
 
@@ -35,8 +37,9 @@ export async function handleFirstConnect(serverUrl: string) {
     if (!operator) {
         return;
     }
-    const config = await queryConfig(operator.database);
-    const lastDisconnect = await queryWebSocketLastDisconnected(operator.database);
+    const {database} = operator;
+    const config = await queryConfig(database);
+    const lastDisconnect = await queryWebSocketLastDisconnected(database);
 
     // ESR: 5.37
     if (lastDisconnect && config.EnableReliableWebSockets !== 'true' && alreadyConnected.has(serverUrl)) {
@@ -46,6 +49,7 @@ export async function handleFirstConnect(serverUrl: string) {
 
     alreadyConnected.add(serverUrl);
     resetWebSocketLastDisconnected(operator);
+    fetchStatusByIds(serverUrl, ['me']);
 }
 
 export function handleReconnect(serverUrl: string) {
@@ -240,6 +244,19 @@ export async function handleEvent(serverUrl: string, msg: WebSocketMessage) {
             handleTeamMemberRoleUpdatedEvent(serverUrl, msg);
             break;
 
+        case WebsocketEvents.CATEGORY_CREATED:
+            handleCategoryCreatedEvent(serverUrl, msg);
+            break;
+        case WebsocketEvents.CATEGORY_UPDATED:
+            handleCategoryUpdatedEvent(serverUrl, msg);
+            break;
+        case WebsocketEvents.CATEGORY_ORDER_UPDATED:
+            handleCategoryOrderUpdatedEvent(serverUrl, msg);
+            break;
+        case WebsocketEvents.CATEGORY_DELETED:
+            handleCategoryDeletedEvent(serverUrl, msg);
+            break;
+
         case WebsocketEvents.CHANNEL_CREATED:
             break;
 
@@ -294,11 +311,7 @@ export async function handleEvent(serverUrl: string, msg: WebSocketMessage) {
         case WebsocketEvents.TYPING:
             handleUserTypingEvent(serverUrl, msg);
             break;
-        case WebsocketEvents.HELLO:
-            break;
 
-        // handleHelloEvent(msg);
-        // break;
         case WebsocketEvents.REACTION_ADDED:
             handleReactionAddedToPostEvent(serverUrl, msg);
             break;
@@ -312,13 +325,13 @@ export async function handleEvent(serverUrl: string, msg: WebSocketMessage) {
             break;
 
         case WebsocketEvents.LICENSE_CHANGED:
+            handleLicenseChangedEvent(serverUrl, msg);
             break;
 
-        // return dispatch(handleLicenseChangedEvent(msg));
         case WebsocketEvents.CONFIG_CHANGED:
+            handleConfigChangedEvent(serverUrl, msg);
             break;
 
-        // return dispatch(handleConfigChangedEvent(msg));
         case WebsocketEvents.OPEN_DIALOG:
             break;
 

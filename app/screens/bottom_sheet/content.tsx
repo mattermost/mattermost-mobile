@@ -19,15 +19,14 @@ type Props = {
     title?: string;
 }
 
+export const TITLE_HEIGHT = 38;
+
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     return {
         container: {
             flex: 1,
         },
-        titleContainer: {
-            marginTop: 4,
-            marginBottom: 4,
-        },
+        titleContainer: {marginVertical: 4},
         titleText: {
             color: theme.centerChannelColor,
             lineHeight: 30,
