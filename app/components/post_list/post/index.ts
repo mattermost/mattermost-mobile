@@ -123,7 +123,7 @@ const withPost = withObservables(
         );
 
         return {
-            appsEnabled,
+            appsEnabled: of$(appsEnabled),
             canDelete,
             differentThreadSequence: of$(differentThreadSequence),
             files: post.files.observe(),
