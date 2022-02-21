@@ -103,20 +103,17 @@ const Autocomplete = ({
     const appsTakeOver = false; // showingAppCommand;
 
     const maxListHeight = useMemo(() => {
-        if (Platform.OS === 'ios') {
-            const offset = isTablet ? OFFSET_IPAD : 0;
-            return Math.min(
-                deviceHeight - (keyboardHeight + headerHeight + AUTOCOMPLETE_MARGIN + offset),
-                (deviceHeight / 2) - (headerHeight + AUTOCOMPLETE_MARGIN + offset),
-            );
+        const postInputHeight = deviceHeight - postInputTop;
+        let offset = 0;
+        if (Platform.OS === 'ios' && isTablet) {
+            offset = OFFSET_IPAD;
         }
 
         if (keyboardHeight) {
-            return (deviceHeight - (postInputTop + headerHeight + AUTOCOMPLETE_MARGIN));
+            return (deviceHeight - (postInputHeight + headerHeight + AUTOCOMPLETE_MARGIN + offset));
         }
-
-        return ((deviceHeight + headerHeight) / 2) - AUTOCOMPLETE_MARGIN;
-    }, [postInputTop, deviceHeight, keyboardHeight, headerHeight, isTablet]);
+        return (deviceHeight - (postInputHeight + headerHeight + AUTOCOMPLETE_MARGIN + offset)) / 2;
+    }, [postInputTop, deviceHeight, headerHeight, isTablet]); // We don't depend on keyboardHeight to avoid visual artifacts due to postInputTop and keyboardHeight not being updated in the same render.
 
     const wrapperStyles = useMemo(() => {
         const s = [];
