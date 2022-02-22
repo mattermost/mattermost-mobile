@@ -9,6 +9,7 @@ const languages: Record<string, string> = keyMirror({
     en: null,
     'en-AU': null,
     es: null,
+    fa: null,
     fr: null,
     hu: null,
     it: null,
