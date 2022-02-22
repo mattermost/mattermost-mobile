@@ -154,6 +154,7 @@ export async function handleNewPostEvent(serverUrl: string, msg: WebSocketMessag
                 myChannel.mentionsCount + (hasMentions ? 1 : 0),
                 false,
                 myChannel.lastViewedAt,
+                undefined,
                 true,
             );
             if (unreadAt) {
@@ -217,5 +218,5 @@ export async function handlePostUnread(serverUrl: string, msg: WebSocketMessage)
     const channel = channels?.[0];
     const postNumber = channel?.total_msg_count;
     const delta = postNumber ? postNumber - msg.data.msg_count : msg.data.msg_count;
-    markChannelAsUnread(serverUrl, msg.broadcast.channel_id, delta, msg.data.mention_count, true, msg.data.last_viewed_at);
+    markChannelAsUnread(serverUrl, msg.broadcast.channel_id, delta, msg.data.mention_count, true, msg.data.last_viewed_at, undefined);
 }

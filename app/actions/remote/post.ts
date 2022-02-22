@@ -4,7 +4,7 @@
 
 import {DeviceEventEmitter} from 'react-native';
 
-import {updateLastPostAt} from '@actions/local/channel';
+import {markChannelAsUnread, updateLastPostAt} from '@actions/local/channel';
 import {processPostsFetched, removePost} from '@actions/local/post';
 import {addRecentReaction} from '@actions/local/reactions';
 import {ActionType, Events, General, ServerErrors} from '@constants';
@@ -12,7 +12,7 @@ import {SYSTEM_IDENTIFIERS} from '@constants/database';
 import DatabaseManager from '@database/manager';
 import {getNeededAtMentionedUsernames} from '@helpers/api/user';
 import NetworkManager from '@init/network_manager';
-import {prepareMissingChannelsForAllTeams, queryAllMyChannelIds, queryMyChannel} from '@queries/servers/channel';
+import {prepareMissingChannelsForAllTeams, queryAllMyChannelIds} from '@queries/servers/channel';
 import {queryAllCustomEmojis} from '@queries/servers/custom_emoji';
 import {queryPostById, queryRecentPostsInChannel} from '@queries/servers/post';
 import {queryCurrentUserId, queryCurrentChannelId} from '@queries/servers/system';
@@ -573,33 +573,14 @@ export const markPostAsUnread = async (serverUrl: string, postId: string) => {
             const channelId = post.channelId;
 
             //update the channel locally
-            const [myChannel, channel, channelMember] = await Promise.all([
-                queryMyChannel(database, channelId),
+            const [channel, channelMember] = await Promise.all([
                 client.getChannel(channelId),
                 client.getChannelMember(channelId, userId),
             ]);
-            if (myChannel && channel && channelMember) {
-                await database.write(async () => {
-                    await myChannel.update((m) => {
-                        m.manuallyUnread = true;
-                        m.isUnread = true;
-                        m.viewedAt = post.createAt;
-                        m.lastViewedAt = post.createAt;
-                        m.mentionsCount = channelMember.mention_count;
-                        m.messageCount = channel.total_msg_count - channelMember.msg_count;
-                    });
-                });
-
-                // const messageCount = channel.total_msg_count - channelMember.msg_count;
-                // const mentionCount = channelMember.mention_count;
-                // await markChannelAsUnread(
-                //     serverUrl,
-                //     channelId,
-                //     messageCount,
-                //     mentionCount,
-                //     true,
-                //     post.createAt,
-                // );
+            if (channel && channelMember) {
+                const messageCount = channel.total_msg_count - channelMember.msg_count;
+                const mentionCount = channelMember.mention_count;
+                await markChannelAsUnread(serverUrl, channelId, messageCount, mentionCount, true, post.createAt, undefined);
                 return {
                     post,
                 };
