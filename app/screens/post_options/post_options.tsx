@@ -89,7 +89,7 @@ const PostOptions = ({
                         postId={post.id}
                     />
                 }
-                {canEdit && <EditOption/>}
+                {canEdit && <EditOption post={post}/>}
                 {canDelete && <DeletePostOption postId={post.id}/>}
             </>
         );

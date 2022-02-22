@@ -2,6 +2,8 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback} from 'react';
+import {useIntl} from 'react-intl';
+import {Alert} from 'react-native';
 
 import {deletePost} from '@actions/remote/post';
 import {Screens} from '@constants';
@@ -16,10 +18,28 @@ type Props = {
 }
 const DeletePostOption = ({postId}: Props) => {
     const serverUrl = useServerUrl();
+    const {formatMessage} = useIntl();
 
     const onPress = useCallback(() => {
-        deletePost(serverUrl, postId);
-        dismissBottomSheet(Screens.POST_OPTIONS);
+        Alert.alert(
+            formatMessage({id: 'mobile.post.delete_title', defaultMessage: 'Delete Post'}),
+            formatMessage({
+                id: 'mobile.post.delete_question',
+                defaultMessage: 'Are you sure you want to delete this post?',
+            }),
+            [{
+                text: formatMessage({id: 'mobile.post.cancel', defaultMessage: 'Cancel'}),
+                style: 'cancel',
+                onPress: () => dismissBottomSheet(Screens.POST_OPTIONS),
+            }, {
+                text: formatMessage({id: 'post_info.del', defaultMessage: 'Delete'}),
+                style: 'destructive',
+                onPress: () => {
+                    deletePost(serverUrl, postId);
+                    dismissBottomSheet(Screens.POST_OPTIONS);
+                },
+            }],
+        );
     }, [postId, serverUrl]);
 
     return (
