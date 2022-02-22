@@ -30,7 +30,6 @@ const DeletePostOption = ({postId}: Props) => {
             [{
                 text: formatMessage({id: 'mobile.post.cancel', defaultMessage: 'Cancel'}),
                 style: 'cancel',
-                onPress: () => dismissBottomSheet(Screens.POST_OPTIONS),
             }, {
                 text: formatMessage({id: 'post_info.del', defaultMessage: 'Delete'}),
                 style: 'destructive',
