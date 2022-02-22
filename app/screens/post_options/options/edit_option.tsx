@@ -16,8 +16,8 @@ type Props = {
 const EditOption = ({post}: Props) => {
     const onPress = useCallback(() => {
         // https://mattermost.atlassian.net/browse/MM-41991
+        await dismissBottomSheet(Screens.POST_OPTIONS);
         goToScreen('EDIT_SCREEN_NOT_IMPLEMENTED_YET', '', {post});
-        dismissBottomSheet(Screens.POST_OPTIONS);
     }, [post]);
 
     return (
