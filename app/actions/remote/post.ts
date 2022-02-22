@@ -568,11 +568,9 @@ export const markPostAsUnread = async (serverUrl: string, postId: string) => {
     try {
         const [userId, post] = await Promise.all([queryCurrentUserId(database), queryPostById(database, postId)]);
         if (post && userId) {
-            //marks the post as unread on the server
-            client.markPostAsUnread(userId, postId);
+            await client.markPostAsUnread(userId, postId);
             const channelId = post.channelId;
 
-            //update the channel locally
             const [channel, channelMember] = await Promise.all([
                 client.getChannel(channelId),
                 client.getChannelMember(channelId, userId),
@@ -580,7 +578,7 @@ export const markPostAsUnread = async (serverUrl: string, postId: string) => {
             if (channel && channelMember) {
                 const messageCount = channel.total_msg_count - channelMember.msg_count;
                 const mentionCount = channelMember.mention_count;
-                await markChannelAsUnread(serverUrl, channelId, messageCount, mentionCount, true, post.createAt, undefined);
+                await markChannelAsUnread(serverUrl, channelId, messageCount, mentionCount, post.createAt);
                 return {
                     post,
                 };

@@ -189,16 +189,7 @@ export const markChannelAsViewed = async (serverUrl: string, channelId: string, 
     }
 };
 
-export const markChannelAsUnread = async (
-    serverUrl: string,
-    channelId: string,
-    messageCount: number,
-    mentionsCount: number,
-    manuallyUnread: boolean,
-    lastViewed: number,
-    isUnread: boolean | undefined,
-    prepareRecordsOnly = false,
-) => {
+export const markChannelAsUnread = async (serverUrl: string, channelId: string, messageCount: number, mentionsCount: number, lastViewed: number, prepareRecordsOnly = false) => {
     const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
     if (!operator) {
         return {error: `${serverUrl} database not found`};
@@ -214,8 +205,8 @@ export const markChannelAsUnread = async (
         m.lastViewedAt = lastViewed;
         m.messageCount = messageCount;
         m.mentionsCount = mentionsCount;
-        m.manuallyUnread = manuallyUnread;
-        m.isUnread = isUnread || m.isUnread;
+        m.manuallyUnread = true;
+        m.isUnread = true;
     });
 
     try {
