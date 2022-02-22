@@ -553,7 +553,7 @@ export const togglePinPost = async (serverUrl: string, postId: string) => {
     }
 };
 
-export const markPostAsUnread = async (serverUrl: string, postId: string, channelId: string) => {
+export const markPostAsUnread = async (serverUrl: string, postId: string) => {
     const database = DatabaseManager.serverDatabases[serverUrl]?.database;
     if (!database) {
         return {error: `${serverUrl} database not found`};
@@ -564,23 +564,49 @@ export const markPostAsUnread = async (serverUrl: string, postId: string, channe
     } catch (error) {
         return {error};
     }
-    try {
-        const userId = await queryCurrentUserId(database);
-        const myChannel = await queryMyChannel(database, channelId);
 
-        if (myChannel) {
+    try {
+        const [userId, post] = await Promise.all([queryCurrentUserId(database), queryPostById(database, postId)]);
+        if (post && userId) {
+            //marks the post as unread on the server
             client.markPostAsUnread(userId, postId);
-            const lastViewed = Date.now();
-            await database.write(async () => {
-                await myChannel.update((m) => {
-                    m.manuallyUnread = true;
-                    m.viewedAt = lastViewed;
-                    m.lastViewedAt = lastViewed;
+            const channelId = post.channelId;
+
+            //update the channel locally
+            const [myChannel, channel, channelMember] = await Promise.all([
+                queryMyChannel(database, channelId),
+                client.getChannel(channelId),
+                client.getChannelMember(channelId, userId),
+            ]);
+            if (myChannel && channel && channelMember) {
+                await database.write(async () => {
+                    await myChannel.update((m) => {
+                        m.manuallyUnread = true;
+                        m.isUnread = true;
+                        m.viewedAt = post.createAt;
+                        m.lastViewedAt = post.createAt;
+                        m.mentionsCount = channelMember.mention_count;
+                        m.messageCount = channel.total_msg_count - channelMember.msg_count;
+                    });
                 });
-            });
+
+                // const messageCount = channel.total_msg_count - channelMember.msg_count;
+                // const mentionCount = channelMember.mention_count;
+                // await markChannelAsUnread(
+                //     serverUrl,
+                //     channelId,
+                //     messageCount,
+                //     mentionCount,
+                //     true,
+                //     post.createAt,
+                // );
+                return {
+                    post,
+                };
+            }
         }
         return {
-            myChannel,
+            post,
         };
     } catch (error) {
         forceLogoutIfNecessary(serverUrl, error as ClientErrorProps);

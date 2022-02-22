@@ -13,14 +13,13 @@ import BaseOption from './base_option';
 
 type Props = {
     postId: string;
-    channelId: string;
 }
 
-const MarkAsUnreadOption = ({postId, channelId}: Props) => {
+const MarkAsUnreadOption = ({postId}: Props) => {
     const serverUrl = useServerUrl();
 
     const onPress = useCallback(() => {
-        markPostAsUnread(serverUrl, postId, channelId);
+        markPostAsUnread(serverUrl, postId);
         dismissBottomSheet(Screens.POST_OPTIONS);
     }, [serverUrl, postId]);
 
