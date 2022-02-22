@@ -552,3 +552,26 @@ export const togglePinPost = async (serverUrl: string, postId: string) => {
         return {error};
     }
 };
+
+export const deletePost = async (serverUrl: string, postId: string) => {
+    const database = DatabaseManager.serverDatabases[serverUrl]?.database;
+    if (!database) {
+        return {error: `${serverUrl} database not found`};
+    }
+
+    let client: Client;
+    try {
+        client = NetworkManager.getClient(serverUrl);
+    } catch (error) {
+        return {error};
+    }
+
+    try {
+        await client.deletePost(postId);
+        const post = await removePost(serverUrl, {id: postId} as Post);
+        return {post};
+    } catch (error) {
+        forceLogoutIfNecessary(serverUrl, error as ClientErrorProps);
+        return {error};
+    }
+};
