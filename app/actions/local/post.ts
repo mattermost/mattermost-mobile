@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {postActionWithCookie} from '@actions/remote/post';
-import {ActionType, Post} from '@constants';
+import {ActionType, Post as POST} from '@constants';
 import DatabaseManager from '@database/manager';
 import {queryPostById} from '@queries/servers/post';
 import {queryCurrentUserId} from '@queries/servers/system';
@@ -25,7 +25,7 @@ export const sendAddToChannelEphemeralPost = async (serverUrl: string, user: Use
             user_id: user.id,
             channel_id: channeId,
             message,
-            type: Post.POST_TYPES.EPHEMERAL_ADD_TO_CHANNEL as PostType,
+            type: POST.POST_TYPES.EPHEMERAL_ADD_TO_CHANNEL as PostType,
             create_at: timestamp,
             edit_at: 0,
             update_at: timestamp,
@@ -75,7 +75,7 @@ export const sendEphemeralPost = async (serverUrl: string, message: string, chan
         user_id: authorId,
         channel_id: channeId,
         message,
-        type: Post.POST_TYPES.EPHEMERAL_ADD_TO_CHANNEL as PostType,
+        type: POST.POST_TYPES.EPHEMERAL_ADD_TO_CHANNEL as PostType,
         create_at: timestamp,
         edit_at: 0,
         update_at: timestamp,
@@ -106,7 +106,7 @@ export const removePost = async (serverUrl: string, post: PostModel | Post) => {
         return {error: `${serverUrl} database not found`};
     }
 
-    if (post.type === Post.POST_TYPES.COMBINED_USER_ACTIVITY && post.props?.system_post_ids) {
+    if (post.type === POST.POST_TYPES.COMBINED_USER_ACTIVITY && post.props?.system_post_ids) {
         const systemPostIds = post.props.system_post_ids as string[];
         for await (const id of systemPostIds) {
             const postModel = await queryPostById(operator.database, id);
