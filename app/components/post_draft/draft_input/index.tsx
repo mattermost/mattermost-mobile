@@ -1,8 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React from 'react';
-import {Platform, ScrollView, View} from 'react-native';
+import React, {useCallback} from 'react';
+import {LayoutChangeEvent, Platform, ScrollView, View} from 'react-native';
 import {Edge, SafeAreaView} from 'react-native-safe-area-context';
 
 import {useTheme} from '@context/theme';
@@ -34,6 +34,7 @@ type Props = {
     uploadFileError: React.ReactNode;
     updateValue: (value: string) => void;
     addFiles: (files: FileInfo[]) => void;
+    updatePostInputTop: (top: number) => void;
 }
 
 const SAFE_AREA_VIEW_EDGES: Edge[] = ['left', 'right'];
@@ -87,14 +88,13 @@ export default function DraftInput({
     addFiles,
     updateCursorPosition,
     cursorPosition,
+    updatePostInputTop,
 }: Props) {
     const theme = useTheme();
 
-    // const [top, setTop] = useState(0);
-
-    // const handleLayout = useCallback((e: LayoutChangeEvent) => {
-    //     setTop(e.nativeEvent.layout.y);
-    // }, []);
+    const handleLayout = useCallback((e: LayoutChangeEvent) => {
+        updatePostInputTop(e.nativeEvent.layout.y);
+    }, []);
 
     // Render
     const postInputTestID = `${testID}.post.input`;
@@ -108,22 +108,13 @@ export default function DraftInput({
                 channelId={channelId}
                 rootId={rootId}
             />
-            {/* {Platform.OS === 'android' &&
-            <Autocomplete
-                maxHeight={Math.min(top - AUTOCOMPLETE_MARGIN, DEVICE.AUTOCOMPLETE_MAX_HEIGHT)}
-                onChangeText={handleInputQuickAction}
-                rootId={rootId}
-                channelId={channelId}
-                offsetY={0}
-            />
-            } */}
             <SafeAreaView
                 edges={SAFE_AREA_VIEW_EDGES}
-
-                // onLayout={handleLayout}
+                onLayout={handleLayout}
                 style={style.inputWrapper}
                 testID={testID}
             >
+
                 <ScrollView
                     style={style.inputContainer}
                     contentContainerStyle={style.inputContentContainer}
