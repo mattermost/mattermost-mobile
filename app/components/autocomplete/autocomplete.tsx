@@ -86,8 +86,7 @@ const Autocomplete = ({
     const theme = useTheme();
     const isTablet = useIsTablet();
     const style = getStyleFromTheme(theme);
-    const dimensions = useWindowDimensions();
-    const deviceHeight = dimensions.height;
+    const {height: deviceHeight} = useWindowDimensions();
     const {defaultHeight: headerHeight} = useHeaderHeight(false, true, false);
     const [keyboardHeight, setKeyboardHeight] = useState(0);
 

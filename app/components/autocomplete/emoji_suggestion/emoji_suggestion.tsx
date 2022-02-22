@@ -185,7 +185,7 @@ const EmojiSuggestion = ({
                 </View>
             </TouchableWithFeedback>
         );
-    }, [completeSuggestion, theme.buttonBg]);
+    }, [completeSuggestion, theme.buttonBg, style]);
 
     useEffect(() => {
         onShowingChange(showingElements);
