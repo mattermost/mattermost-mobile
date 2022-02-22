@@ -567,12 +567,9 @@ export const deletePost = async (serverUrl: string, postId: string) => {
     }
 
     try {
-        const {status_code = undefined} = await client.deletePost(postId);
-        if (!status_code) {
-            const post = await removePost(serverUrl, {id: postId} as Post);
-            return {post};
-        }
-        return {postId};
+        await client.deletePost(postId);
+        const post = await removePost(serverUrl, {id: postId} as Post);
+        return {post};
     } catch (error) {
         forceLogoutIfNecessary(serverUrl, error as ClientErrorProps);
         return {error};
