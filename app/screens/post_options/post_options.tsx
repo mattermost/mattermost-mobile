@@ -67,13 +67,13 @@ const PostOptions = ({
         return (
             <>
                 {canAddReaction && <ReactionBar postId={post.id}/>}
-                {canReply && <ReplyOption/>}
-                {shouldRenderFollow && (
+                {canReply && <ReplyOption post={post}/>}
+                {shouldRenderFollow &&
                     <FollowThreadOption
                         location={location}
                         thread={thread}
                     />
-                )}
+                }
                 {canMarkAsUnread && !isSystemPost && (
                     <MarkAsUnreadOption postId={post.id}/>
                 )}
