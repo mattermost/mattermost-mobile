@@ -569,7 +569,7 @@ export const markPostAsUnread = async (serverUrl: string, postId: string) => {
         const [userId, post] = await Promise.all([queryCurrentUserId(database), queryPostById(database, postId)]);
         if (post && userId) {
             await client.markPostAsUnread(userId, postId);
-            const channelId = post.channelId;
+            const {channelId} = post;
 
             const [channel, channelMember] = await Promise.all([
                 client.getChannel(channelId),
