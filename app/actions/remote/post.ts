@@ -570,7 +570,7 @@ export const markPostAsUnread = async (serverUrl: string, postId: string) => {
         if (post && userId) {
             //marks the post as unread on the server
             client.markPostAsUnread(userId, postId);
-            const channelId = post.channelId;
+            const {channelId} = post;
 
             //update the channel locally
             const [channel, channelMember] = await Promise.all([
