@@ -202,6 +202,10 @@ const EmojiSuggestion = ({
         };
     }, [searchTerm]);
 
+    if (!data.length) {
+        return null;
+    }
+
     return (
         <FlatList
             testID='emoji_suggestion.list'

@@ -9,6 +9,7 @@ import {useIsTablet} from '@hooks/device';
 import useHeaderHeight from '@hooks/header';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
+import ChannelMention from './channel_mention/';
 import EmojiSuggestion from './emoji_suggestion/';
 
 const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
@@ -91,14 +92,14 @@ const Autocomplete = ({
     const [keyboardHeight, setKeyboardHeight] = useState(0);
 
     // const [showingAtMention, setShowingAtMention] = useState(false);
-    // const [showingChannelMention, setShowingChannelMention] = useState(false);
+    const [showingChannelMention, setShowingChannelMention] = useState(false);
     const [showingEmoji, setShowingEmoji] = useState(false);
 
     // const [showingCommand, setShowingCommand] = useState(false);
     // const [showingAppCommand, setShowingAppCommand] = useState(false);
     // const [showingDate, setShowingDate] = useState(false);
 
-    const hasElements = showingEmoji; // || showingAtMention || showingChannelMention || showingCommand || showingAppCommand || showingDate;
+    const hasElements = showingChannelMention || showingEmoji; // || showingAtMention || showingCommand || showingAppCommand || showingDate;
     const appsTakeOver = false; // showingAppCommand;
 
     const maxListHeight = useMemo(() => {
@@ -179,15 +180,16 @@ const Autocomplete = ({
                         onResultCountChange={setShowingAtMention}
                         value={value || ''}
                         nestedScrollEnabled={nestedScrollEnabled}
-                    />
+                    /> */}
                     <ChannelMention
                         cursorPosition={cursorPosition}
                         maxListHeight={maxListHeight}
                         updateValue={updateValue}
-                        onResultCountChange={setShowingChannelMention}
+                        onShowingChange={setShowingChannelMention}
                         value={value || ''}
                         nestedScrollEnabled={nestedScrollEnabled}
-                    /> */}
+                        isSearch={isSearch}
+                    />
                     {!isSearch &&
                     <EmojiSuggestion
                         cursorPosition={cursorPosition}
