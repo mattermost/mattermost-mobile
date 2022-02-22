@@ -201,7 +201,7 @@ export const markChannelAsUnread = async (serverUrl: string, channelId: string, 
     }
 
     member.prepareUpdate((m) => {
-        m.viewedAt = lastViewed;
+        m.viewedAt = lastViewed - 1;
         m.lastViewedAt = lastViewed;
         m.messageCount = messageCount;
         m.mentionsCount = mentionsCount;
