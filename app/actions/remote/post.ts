@@ -5,7 +5,7 @@
 import {DeviceEventEmitter} from 'react-native';
 
 import {updateLastPostAt} from '@actions/local/channel';
-import {markPostAsDeleted, processPostsFetched, removePost} from '@actions/local/post';
+import {processPostsFetched, removePost} from '@actions/local/post';
 import {addRecentReaction} from '@actions/local/reactions';
 import {ActionType, Events, General, ServerErrors} from '@constants';
 import {SYSTEM_IDENTIFIERS} from '@constants/database';
@@ -567,11 +567,9 @@ export const deletePost = async (serverUrl: string, postId: string) => {
     }
 
     try {
-        const post = await queryPostById(database, postId);
-        if (post) {
-            client.deletePost(postId);
-            await markPostAsDeleted(serverUrl, {id: post.id} as Post);
-        }
+        client.deletePost(postId);
+        const post = await removePost(serverUrl, {id: postId} as Post);
+
         return {post};
     } catch (error) {
         forceLogoutIfNecessary(serverUrl, error as ClientErrorProps);
