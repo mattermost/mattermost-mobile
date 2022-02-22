@@ -561,30 +561,6 @@ export const togglePinPost = async (serverUrl: string, postId: string) => {
     }
 };
 
-export async function fetchPostsAfter(
-    serverUrl: string,
-    channelId: string,
-    postId: string,
-    fetchOnly = false,
-    page?: number,
-    perPage?: number,
-): Promise<PostsRequest> {
-    let client: Client;
-    try {
-        client = NetworkManager.getClient(serverUrl);
-    } catch (error) {
-        return {error};
-    }
-
-    try {
-        const data = await client.getPostsAfter(channelId, postId, page, perPage);
-        return processPostsFetched(serverUrl, ActionType.POSTS.RECEIVED_BEFORE, data, fetchOnly);
-    } catch (error) {
-        forceLogoutIfNecessary(serverUrl, error as ClientErrorProps);
-        return {error};
-    }
-}
-
 export async function fetchPostThread(serverUrl: string, postId: string, fetchOnly = false) {
     let client: Client;
     try {
@@ -650,8 +626,7 @@ export async function fetchPostsAround(
 
             posts = await operator.handlePosts({
                 actionType: ActionType.POSTS.RECEIVED_AROUND,
-                order: data.order,
-                posts: data.posts,
+                ...data,
             }) as PostModel[];
         }
 

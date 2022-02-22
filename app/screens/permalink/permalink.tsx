@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React, {useEffect, useState} from 'react';
-import {TouchableOpacity, Text, View, BackHandler} from 'react-native';
+import {TouchableOpacity, Text, View, BackHandler, ActivityIndicator} from 'react-native';
 import Animated from 'react-native-reanimated';
 import {SafeAreaView} from 'react-native-safe-area-context';
 
@@ -72,6 +72,11 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     postList: {
         flex: 1,
     },
+    loading: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
     bottom: {
         borderBottomLeftRadius: 6,
         borderBottomRightRadius: 6,
@@ -109,6 +114,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
 
 function Permalink({channel, postId, currentUsername}: Props) {
     const [posts, setPosts] = useState<PostModel[]>([]);
+    const [loading, setLoading] = useState(true);
     const theme = useTheme();
     const serverUrl = useServerUrl();
 
@@ -118,6 +124,7 @@ function Permalink({channel, postId, currentUsername}: Props) {
         (async () => {
             const data = await fetchPostsAround(serverUrl, channel.id, postId);
             if (data?.posts) {
+                setLoading(false);
                 setPosts(data.posts);
             }
         })();
@@ -172,20 +179,30 @@ function Permalink({channel, postId, currentUsername}: Props) {
                 <View style={style.dividerContainer}>
                     <View style={style.divider}/>
                 </View>
-                <View style={style.postList}>
-                    <PostList
-                        posts={posts}
-                        location={Screens.PERMALINK}
-                        lastViewedAt={0}
-                        isTimezoneEnabled={false}
-                        shouldShowJoinLeaveMessages={false}
-                        currentTimezone={null}
-                        currentUsername={currentUsername}
-                        channelId={channel.id}
-                        testID='permalink.post_list'
-                        nativeID={Screens.PERMALINK}
-                    />
-                </View>
+                {loading ? (
+                    <View style={style.loading}>
+                        <ActivityIndicator
+                            color={theme.centerChannelColor}
+                            size='large'
+                        />
+                    </View>
+                ) : (
+                    <View style={style.postList}>
+                        <PostList
+                            highlightedId={postId}
+                            posts={posts}
+                            location={Screens.PERMALINK}
+                            lastViewedAt={0}
+                            isTimezoneEnabled={false}
+                            shouldShowJoinLeaveMessages={false}
+                            currentTimezone={null}
+                            currentUsername={currentUsername}
+                            channelId={channel.id}
+                            testID='permalink.post_list'
+                            nativeID={Screens.PERMALINK}
+                        />
+                    </View>
+                )}
                 <TouchableOpacity
                     style={[style.footer, style.bottom]}
                     onPress={handlePress}

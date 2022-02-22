@@ -27,6 +27,7 @@ type Props = {
     contentContainerStyle?: StyleProp<ViewStyle>;
     currentTimezone: string | null;
     currentUsername: string;
+    highlightedId?: PostModel['id'];
     highlightPinnedOrSaved?: boolean;
     isTimezoneEnabled: boolean;
     lastViewedAt: number;
@@ -83,6 +84,7 @@ const PostList = ({
     currentTimezone,
     currentUsername,
     footer,
+    highlightedId,
     highlightPinnedOrSaved = true,
     isTimezoneEnabled,
     lastViewedAt,
@@ -268,6 +270,7 @@ const PostList = ({
             nextPost,
             previousPost,
             shouldRenderReplyButton,
+            highlight: highlightedId === item.id,
         };
 
         return (

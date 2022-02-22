@@ -37,6 +37,7 @@ const styles = StyleSheet.create({
     content: {
         flexDirection: 'row',
         paddingBottom: 8,
+        flex: 1,
     },
     message: {
         flex: 1,
@@ -45,6 +46,9 @@ const styles = StyleSheet.create({
         marginBottom: 5,
         marginRight: 10,
         marginTop: 10,
+    },
+    rightColumn: {
+        flex: 1,
     },
 });
 
@@ -60,7 +64,7 @@ function Mention({post, currentUser}: Props) {
     const isEdited = postEdited(post);
 
     const postAvatar = (
-        <View style={[styles.profilePictureContainer]}>
+        <View style={styles.profilePictureContainer}>
             {isAutoResponder ? (
                 <SystemAvatar theme={theme}/>
             ) : (
@@ -115,7 +119,7 @@ function Mention({post, currentUser}: Props) {
                     <ChannelInfo post={post}/>
                     <View style={styles.content}>
                         {postAvatar}
-                        <View>
+                        <View style={styles.rightColumn}>
                             {header}
                             <View style={styles.message}>
                                 <Message
