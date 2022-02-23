@@ -93,10 +93,10 @@ MattermostBucket* bucket = nil;
   BOOL isClearAction = (action && [action isEqualToString: NOTIFICATION_CLEAR_ACTION]);
   BOOL isTestAction = (action && [action isEqualToString: NOTIFICATION_TEST_ACTION]);
   
-if (isTestAction) {
+  if (isTestAction) {
     completionHandler(UIBackgroundFetchResultNoData);
     return;
-}
+  }
 
   if (isClearAction) {
     // If received a notification that a channel was read, remove all notifications from that channel (only with app in foreground/background)
