@@ -106,8 +106,6 @@ if (isTestAction) {
   
   if (state != UIApplicationStateActive || isClearAction) {
     [RNNotifications didReceiveBackgroundNotification:userInfo withCompletionHandler:completionHandler];
-  } else if (isTestAction) {
-    completionHandler(UIBackgroundFetchResultNoData);
   } else {
     completionHandler(UIBackgroundFetchResultNewData);
   }
