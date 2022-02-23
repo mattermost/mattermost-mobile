@@ -74,18 +74,18 @@ const PostOptions = ({
                         thread={thread}
                     />
                 }
-                {canMarkAsUnread && !isSystemPost && (
+                {canMarkAsUnread && !isSystemPost &&
                     <MarkAsUnreadOption postId={post.id}/>
-                )}
+                }
                 {canCopyPermalink && <CopyLinkOption post={post}/>}
-                {!isSystemPost && (
+                {!isSystemPost &&
                     <SaveOption
                         isSaved={isSaved}
                         postId={post.id}
                     />
-                )}
+                }
                 {canCopyText && <CopyTextOption postMessage={post.message}/>}
-                {canPin && (
+                {canPin &&
                     <PinChannelOption
                         isPostPinned={post.isPinned}
                         postId={post.id}
