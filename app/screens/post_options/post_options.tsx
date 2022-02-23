@@ -74,7 +74,9 @@ const PostOptions = ({
                         thread={thread}
                     />
                 }
-                {canMarkAsUnread && !isSystemPost && (<MarkAsUnreadOption/>)}
+                {canMarkAsUnread && !isSystemPost &&
+                    <MarkAsUnreadOption postId={post.id}/>
+                }
                 {canCopyPermalink && <CopyLinkOption post={post}/>}
                 {!isSystemPost &&
                     <SaveOption
