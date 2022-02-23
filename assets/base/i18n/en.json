@@ -291,6 +291,8 @@
   "mobile.post_textbox.uploadFailedDesc": "Some attachments failed to upload to the server. Are you sure you want to post the message?",
   "mobile.post_textbox.uploadFailedTitle": "Attachment failure",
   "mobile.post.cancel": "Cancel",
+  "mobile.post.delete_question": "Are you sure you want to delete this post?",
+  "mobile.post.delete_title": "Delete Post",
   "mobile.post.failed_delete": "Delete Message",
   "mobile.post.failed_retry": "Try Again",
   "mobile.posts_view.moreMsg": "More New Messages Above",

@@ -90,9 +90,9 @@ const PostOptions = ({
                         isPostPinned={post.isPinned}
                         postId={post.id}
                     />
-                )}
-                {canEdit && <EditOption/>}
-                {canDelete && <DeletePostOption/>}
+                }
+                {canEdit && <EditOption post={post}/>}
+                {canDelete && <DeletePostOption postId={post.id}/>}
             </>
         );
     };
