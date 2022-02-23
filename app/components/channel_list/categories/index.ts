@@ -7,13 +7,14 @@ import withObservables from '@nozbe/with-observables';
 
 import {MM_TABLES} from '@constants/database';
 
-const {SERVER: {CATEGORY}} = MM_TABLES;
 import Categories from './categories';
 
 import type {WithDatabaseArgs} from '@typings/database/database';
 import type CategoryModel from '@typings/database/models/servers/category';
 
- type WithDatabaseProps = {currentTeamId: string } & WithDatabaseArgs
+const {SERVER: {CATEGORY}} = MM_TABLES;
+
+type WithDatabaseProps = {currentTeamId: string } & WithDatabaseArgs
 
 const withCategories = withObservables(
     ['currentTeamId'],

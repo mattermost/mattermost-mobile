@@ -18,6 +18,12 @@ type Props = {
     categoryChannels: CategoryChannelModel[];
 };
 
+const ChannelItem = ({item}: {item: string}) => {
+    return (
+        <ChannelListItem channelId={item}/>
+    );
+};
+
 const CategoryBody = ({category, categoryChannels, channels, myChannels}: Props) => {
     const data: string[] = useMemo(() => {
         switch (category.sorting) {
@@ -29,12 +35,6 @@ const CategoryBody = ({category, categoryChannels, channels, myChannels}: Props)
                 return myChannels.map((m) => m.id);
         }
     }, [category.sorting, categoryChannels, channels, myChannels]);
-
-    const ChannelItem = ({item}: {item: string}) => {
-        return (
-            <ChannelListItem channelId={item}/>
-        );
-    };
 
     return (
         <FlatList

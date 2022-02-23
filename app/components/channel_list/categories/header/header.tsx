@@ -32,7 +32,7 @@ const CategoryHeader = ({category, hasChannels}: Props) => {
 
     // Hide favs if empty
     if (!hasChannels && category.type === 'favorites') {
-        return (<></>);
+        return (null);
     }
 
     return (

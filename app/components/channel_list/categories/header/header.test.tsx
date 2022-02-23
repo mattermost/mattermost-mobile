@@ -4,7 +4,7 @@
 import {Database, Q} from '@nozbe/watermelondb';
 import React from 'react';
 
-import {MM_TABLES} from '@app/constants/database';
+import {MM_TABLES} from '@constants/database';
 import {renderWithIntlAndTheme} from '@test/intl-test-helper';
 import TestHelper from '@test/test_helper';
 

@@ -6,8 +6,8 @@ import {StyleSheet, Text, View} from 'react-native';
 import {TouchableOpacity} from 'react-native-gesture-handler';
 
 import {switchToChannelById} from '@actions/remote/channel';
-import ChannelIcon from '@app/components/channel_icon';
-import {useServerUrl} from '@app/context/server';
+import ChannelIcon from '@components/channel_icon';
+import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
@@ -53,8 +53,10 @@ const ChannelListItem = ({channel, myChannel}: Props) => {
     // Make it brighter if it's highlighted, or has unreads
     const bright = false;
 
+    const switchChannels = () => switchToChannelById(serverUrl, myChannel.id);
+
     return (
-        <TouchableOpacity onPress={() => switchToChannelById(serverUrl, myChannel.id)}>
+        <TouchableOpacity onPress={switchChannels}>
             <View style={styles.container}>
                 <ChannelIcon
                     shared={false}

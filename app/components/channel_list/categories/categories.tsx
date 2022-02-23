@@ -7,7 +7,7 @@ import {FlatList, StyleSheet} from 'react-native';
 import CategoryBody from './body';
 import CategoryHeader from './header';
 
-import type {CategoryModel} from '@app/database/models/server';
+import type {CategoryModel} from '@database/models/server';
 
 type Props = {
     categories: CategoryModel[];
