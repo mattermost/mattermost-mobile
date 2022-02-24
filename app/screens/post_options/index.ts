@@ -101,7 +101,7 @@ const enhanced = withObservables([], ({post, showAddReaction, location, database
         const isOwner = u.id === post.userId;
         const canEditPostPermission = canEditPost(isOwner, post, lt, ls, c, u);
         const timeReached = until === -1 || until > Date.now();
-        return of$(canEditPostPermission && isSystemMessage(post) && !isArchived && !isReadOnly && !timeReached && canPost);
+        return of$(canEditPostPermission && !isArchived && !isReadOnly && timeReached && canPost);
     }));
 
     const canMarkAsUnread = combineLatest([currentUser, channelIsArchived]).pipe(
