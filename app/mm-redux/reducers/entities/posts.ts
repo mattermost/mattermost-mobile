@@ -231,7 +231,7 @@ function handlePostReceived(nextState: any, post: Post) {
     return nextState;
 }
 
-export function handlePendingPosts(state: Array<string> = [], action: GenericAction) {
+export function handlePendingPosts(state: string[] = [], action: GenericAction) {
     switch (action.type) {
     case PostTypes.RECEIVED_NEW_POST: {
         const post = action.data;
@@ -297,7 +297,7 @@ export function handlePendingPosts(state: Array<string> = [], action: GenericAct
     }
 }
 
-export function postsInChannel(state: Dictionary<Array<PostOrderBlock>> = {}, action: GenericAction, prevPosts: IDMappedObjects<Post>, nextPosts: Dictionary<Post>) {
+export function postsInChannel(state: Dictionary<PostOrderBlock[]> = {}, action: GenericAction, prevPosts: IDMappedObjects<Post>, nextPosts: Dictionary<Post>) {
     switch (action.type) {
     case PostTypes.RECEIVED_NEW_POST: {
         const post = action.data as Post;

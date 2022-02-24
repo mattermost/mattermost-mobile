@@ -132,7 +132,7 @@ export default class List extends PureComponent {
 
     setListRef = (ref) => {
         this.listRef = ref;
-    }
+    };
 
     getSectionConfigByType = (props, sectionType) => {
         const {canCreatePrivateChannels, canJoinPublicChannels} = props;
@@ -463,7 +463,7 @@ export default class List extends PureComponent {
                 {header}
             </TouchableHighlight>
         );
-    }
+    };
 
     buildCategorySections = () => {
         const categoriesBySection = [];
@@ -496,7 +496,7 @@ export default class List extends PureComponent {
         }
 
         return categoriesBySection;
-    }
+    };
 
     scrollToTop = () => {
         //eslint-disable-next-line no-underscore-dangle

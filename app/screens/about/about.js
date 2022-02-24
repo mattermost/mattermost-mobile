@@ -75,7 +75,7 @@ export default class About extends PureComponent {
 
     handlePrivacyPolicy = () => {
         this.openURL(AboutLinks.PRIVACY_POLICY);
-    }
+    };
 
     render() {
         const {theme, config, license} = this.props;

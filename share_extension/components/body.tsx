@@ -14,8 +14,8 @@ import CharsRemaining from './chars_remaining';
 import Files from './files';
 
 export interface BodyProps {
-    canPost: (error?: string, text?: string, extensionFiles?: Array<ShareFileInfo>, calculatedSize?: number) => void;
-    files: Array<ShareFileInfo>;
+    canPost: (error?: string, text?: string, extensionFiles?: ShareFileInfo[], calculatedSize?: number) => void;
+    files: ShareFileInfo[];
     initialValue?: string;
     placeholder: string;
 }

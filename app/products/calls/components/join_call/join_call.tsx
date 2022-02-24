@@ -8,7 +8,6 @@ import {View, Text, Pressable} from 'react-native';
 import Avatars from '@components/avatars';
 import CompassIcon from '@components/compass_icon';
 import FormattedRelativeTime from '@components/formatted_relative_time';
-import FormattedText from '@components/formatted_text';
 import ViewTypes, {JOIN_CALL_BAR_HEIGHT} from '@constants/view';
 import EventEmitter from '@mm-redux/utils/event_emitter';
 import leaveAndJoinWithAlert from '@mmproducts/calls/components/leave_and_join_alert';
@@ -118,11 +117,7 @@ const JoinCall = (props: Props) => {
                     userIds={userIds}
                     breakAt={1}
                     listTitle={
-                        <FormattedText
-                            id='calls.join_call.participants_list_header'
-                            defaultMessage={'CALL PARTICIPANTS'}
-                            style={style.headerText}
-                        />
+                        <Text style={style.headerText}>{'Call participants'}</Text>
                     }
                 />
             </View>

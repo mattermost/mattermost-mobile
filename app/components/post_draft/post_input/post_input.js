@@ -44,7 +44,7 @@ export default class PostInput extends PureComponent {
         theme: PropTypes.object.isRequired,
         updateInitialValue: PropTypes.func.isRequired,
         userTyping: PropTypes.func.isRequired,
-    }
+    };
 
     constructor(props) {
         super(props);
@@ -139,7 +139,7 @@ export default class PostInput extends PureComponent {
         if (this.input.current) {
             this.input.current.focus();
         }
-    }
+    };
 
     getPlaceHolder = () => {
         const {rootId} = this.props;
@@ -261,11 +261,11 @@ export default class PostInput extends PureComponent {
 
     onManagedConfigurationChange = (config) => {
         this.setState({disableCopyAndPaste: config.copyAndPasteProtection === 'true'});
-    }
+    };
 
     onPaste = (error, files) => {
         EventEmitter.emit(PASTE_FILES, error, files, this.props.screenId);
-    }
+    };
 
     resetTextInput = () => {
         if (this.input.current) {
@@ -273,7 +273,7 @@ export default class PostInput extends PureComponent {
                 text: '',
             });
         }
-    }
+    };
 
     setValue = (value, autocomplete = false) => {
         this.value = value;
@@ -283,7 +283,7 @@ export default class PostInput extends PureComponent {
             });
             this.handleTextChange(value, autocomplete);
         }
-    }
+    };
 
     onPressIn = () => {
         if (Platform.OS === 'ios') {

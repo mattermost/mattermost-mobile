@@ -13,10 +13,10 @@ import {Theme} from '@mm-redux/types/theme';
 
 type Props = {
     baseTextStyle: StyleProp<TextStyle>;
-    blockStyles?: StyleProp<ViewStyle>[];
+    blockStyles?: Array<StyleProp<ViewStyle>>;
     hasThumbnail?: boolean;
     metadata?: PostMetadata;
-    textStyles?: StyleProp<TextStyle>[];
+    textStyles?: Array<StyleProp<TextStyle>>;
     theme: Theme;
     value?: string;
 }

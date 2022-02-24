@@ -17,7 +17,7 @@ type RetriableFastImageState = {
 export default class RetriableFastImage extends PureComponent<RetriableFastImageProps, RetriableFastImageState> {
     state = {
         retry: 0,
-    }
+    };
 
     onError = () => {
         const retry = this.state.retry + 1;
@@ -27,7 +27,7 @@ export default class RetriableFastImage extends PureComponent<RetriableFastImage
         }
 
         this.setState({retry});
-    }
+    };
 
     render() {
         return (

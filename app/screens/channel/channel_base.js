@@ -154,13 +154,13 @@ export default class ChannelBase extends PureComponent {
         };
 
         return removeAnimation;
-    }
+    };
 
     runTypingAnimations = (typingVisible) => {
         Animated.parallel(
             this.typingAnimations.map((animation) => animation(typingVisible)),
         ).start();
-    }
+    };
 
     goToChannelInfo = preventDoubleTap(() => {
         const {intl} = this.context;
@@ -232,7 +232,7 @@ export default class ChannelBase extends PureComponent {
         } else {
             actions.selectDefaultTeam();
         }
-    }
+    };
 
     retryLoadChannels = () => {
         this.loadChannels(this.props.currentTeamId);

@@ -31,8 +31,9 @@ export function loadCalls(): ActionFunc {
             if (channel.call) {
                 callsResults[channel.channel_id] = {
                     participants: channel.call.users.reduce((prev: Dictionary<CallParticipant>, cur: string, curIdx: number) => {
+                        const profile = getState().entities.users.profiles[cur];
                         const muted = channel.call.states && channel.call.states[curIdx] ? !channel.call.states[curIdx].unmuted : true;
-                        prev[cur] = {id: cur, muted, isTalking: false};
+                        prev[cur] = {id: cur, muted, isTalking: false, profile};
                         return prev;
                     }, {}),
                     channelId: channel.channel_id,

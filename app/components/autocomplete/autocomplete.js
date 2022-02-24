@@ -142,7 +142,7 @@ export default class Autocomplete extends PureComponent {
 
     handleAppCommandCountChange = (appCommandCount) => {
         this.setState({appCommandCount});
-    }
+    };
 
     handleCommandCountChange = (commandCount) => {
         this.setState({commandCount});

@@ -32,7 +32,7 @@ class UserProfileScreen {
         localTimeValue: 'user_profile.timezone_block.local_time.value',
         additionalOptionsAction: 'user_profile.additional_options.action',
         sendMessageAction: 'user_profile.send_message.action',
-    }
+    };
 
     userProfileScreen = element(by.id(this.testID.userProfileScreen));
     userProfileScrollView = element(by.id(this.testID.userProfileScrollView));
@@ -61,25 +61,25 @@ class UserProfileScreen {
     getProfilePicture = (userId) => {
         const profilePictureItemMatcher = ProfilePicture.getProfilePictureItemMatcher(this.testID.userProfilePicturePrefix, userId);
         return element(profilePictureItemMatcher);
-    }
+    };
 
     toBeVisible = async () => {
         await expect(this.userProfileScreen).toBeVisible();
 
         return this.userProfileScreen;
-    }
+    };
 
     open = async () => {
         // # Open user profile screen
         await SettingsSidebar.userInfoAction.tap();
 
         return this.toBeVisible();
-    }
+    };
 
     close = async () => {
         await this.closeSettingsButton.tap();
         await expect(this.userProfileScreen).not.toBeVisible();
-    }
+    };
 }
 
 const userProfileScreen = new UserProfileScreen();

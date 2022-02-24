@@ -74,11 +74,11 @@ export default class NotificationSettingsEmailBase extends PureComponent {
                 newInterval: this.computeEmailInterval(notifyProps?.email === 'true' && sendEmailNotifications, enableEmailBatching, emailInterval),
             });
         }
-    }
+    };
 
     getPlatformOS = () => {
         return Platform.OS;
-    }
+    };
 
     setEmailInterval = (value) => {
         this.setState({newInterval: value});
@@ -92,7 +92,7 @@ export default class NotificationSettingsEmailBase extends PureComponent {
         const {emailThreads} = this.state;
         const {actions, notifyProps} = this.props;
         actions.updateMe({notify_props: {...notifyProps, email_threads: emailThreads}});
-    }
+    };
 
     saveEmailNotifyProps = () => {
         const {emailInterval, newInterval} = this.state;
@@ -123,5 +123,5 @@ export default class NotificationSettingsEmailBase extends PureComponent {
             enableEmailBatching,
             parseInt(emailInterval, 10),
         ).toString();
-    }
+    };
 }

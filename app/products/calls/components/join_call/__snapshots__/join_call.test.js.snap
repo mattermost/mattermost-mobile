@@ -62,9 +62,7 @@ exports[`JoinCall should match snapshot 1`] = `
     <Connect(Avatars)
       breakAt={1}
       listTitle={
-        <InjectIntl(FormattedText)
-          defaultMessage="CALL PARTICIPANTS"
-          id="calls.join_call.participants_list_header"
+        <Text
           style={
             Object {
               "color": "rgba(63,67,80,0.56)",
@@ -75,7 +73,9 @@ exports[`JoinCall should match snapshot 1`] = `
               "top": 16,
             }
           }
-        />
+        >
+          Call participants
+        </Text>
       }
       userIds={
         Array [

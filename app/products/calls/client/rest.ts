@@ -17,6 +17,13 @@ const ClientCalls = (superclass: any) => class extends superclass {
         );
     };
 
+    getCallsConfig = async () => {
+        return this.doFetch(
+            `${this.getCallsRoute()}/config`,
+            {method: 'get'},
+        );
+    };
+
     enableChannelCalls = async (channelId: string) => {
         return this.doFetch(
             `${this.getCallsRoute()}/${channelId}`,

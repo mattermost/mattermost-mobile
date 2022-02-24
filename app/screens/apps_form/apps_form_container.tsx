@@ -103,7 +103,7 @@ export default class AppsFormContainer extends PureComponent<Props, State> {
             )))};
         }
         return res;
-    }
+    };
 
     refreshOnSelect = async (field: AppField, values: AppFormValues): Promise<DoAppCallResult<FormResponseData>> => {
         const intl = this.context.intl;
@@ -194,7 +194,7 @@ export default class AppsFormContainer extends PureComponent<Props, State> {
             selected_field: field.name,
             query: userInput,
         }, AppCallTypes.LOOKUP, intl);
-    }
+    };
 
     getCall = (): AppCallRequest | null => {
         const {form} = this.state;
@@ -214,7 +214,7 @@ export default class AppsFormContainer extends PureComponent<Props, State> {
                 ...call.values,
             },
         };
-    }
+    };
 
     render() {
         const {form} = this.state;

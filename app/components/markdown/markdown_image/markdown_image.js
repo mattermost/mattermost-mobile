@@ -13,6 +13,7 @@ import {
     Text,
     View,
 } from 'react-native';
+import {SvgUri} from 'react-native-svg';
 import parseUrl from 'url-parse';
 
 import CompassIcon from '@components/compass_icon';
@@ -41,6 +42,7 @@ export default class MarkdownImage extends ImageViewPort {
         linkDestination: PropTypes.string,
         postId: PropTypes.string,
         source: PropTypes.string.isRequired,
+        theme: PropTypes.object,
     };
 
     static contextTypes = {
@@ -50,18 +52,19 @@ export default class MarkdownImage extends ImageViewPort {
     constructor(props) {
         super(props);
 
-        const metadata = props.imagesMetadata?.[props.source] || Object.values(props.imagesMetadata || {})[0];
+        const metadata = props.imagesMetadata?.[props.source] || Object.values(props.imagesMetadata || {})?.[0];
         this.fileId = generateId();
         this.state = {
             originalHeight: metadata?.height || 0,
             originalWidth: metadata?.width || 0,
             failed: isGifTooLarge(metadata),
+            format: metadata?.format,
             uri: null,
         };
     }
 
     getFileInfo = () => {
-        const {originalHeight, originalWidth} = this.state;
+        const {format, originalHeight, originalWidth} = this.state;
         const link = decodeURIComponent(this.getSource());
         let filename = parseUrl(link.substr(link.lastIndexOf('/'))).pathname.replace('/', '');
         let extension = filename.split('.').pop();
@@ -76,6 +79,7 @@ export default class MarkdownImage extends ImageViewPort {
             id: this.fileId,
             name: filename,
             extension,
+            format,
             has_preview_image: true,
             post_id: this.props.postId,
             uri: link,
@@ -175,13 +179,14 @@ export default class MarkdownImage extends ImageViewPort {
     render() {
         let image = null;
         const fileInfo = this.getFileInfo();
-        const {height, width} = calculateDimensions(fileInfo.height, fileInfo.width, getViewPortWidth(this.props.isReplyPost, this.hasPermanentSidebar()));
+        const {height, width} = calculateDimensions(fileInfo?.height, fileInfo?.width, getViewPortWidth(this.props.isReplyPost, this.hasPermanentSidebar()));
 
         if (this.state.failed) {
             image = (
                 <CompassIcon
-                    name='jumbo-attachment-image-broken'
+                    name='file-image-broken-outline-large'
                     size={24}
+                    color={this.props.theme?.centerChannelColor}
                 />
             );
         } else if (width && height) {
@@ -204,11 +209,7 @@ export default class MarkdownImage extends ImageViewPort {
                 );
             } else {
                 // React Native complains if we try to pass resizeMode as a style
-                let source = null;
-                if (fileInfo.uri) {
-                    source = {uri: fileInfo.uri};
-                }
-
+                const source = fileInfo.uri ? {uri: fileInfo.uri} : null;
                 image = (
                     <TouchableWithFeedback
                         onLongPress={this.handleLinkLongPress}
@@ -224,6 +225,14 @@ export default class MarkdownImage extends ImageViewPort {
                     </TouchableWithFeedback>
                 );
             }
+        } else if (fileInfo?.format === 'svg') {
+            image = (
+                <SvgUri
+                    uri={fileInfo.uri}
+                    style={{flex: 1}}
+                    onError={this.handleSizeFailed}
+                />
+            );
         }
 
         if (image && this.props.linkDestination) {
