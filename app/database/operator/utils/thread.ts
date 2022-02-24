@@ -15,7 +15,7 @@ const {THREAD_PARTICIPANT} = MM_TABLES.SERVER;
  * @param {SanitizeThreadParticipantsArgs} sanitizeThreadParticipants
  * @param {Database} sanitizeThreadParticipants.database
  * @param {string} sanitizeThreadParticipants.thread_id
- * @param {UserProfile[]} sanitizeReactions.rawParticipants
+ * @param {UserProfile[]} sanitizeThreadParticipants.rawParticipants
  * @returns {Promise<{createParticipants: ThreadParticipant[],  deleteParticipants: ThreadParticipantModel[]}>}
  */
 export const sanitizeThreadParticipants = async ({database, thread_id, rawParticipants}: SanitizeThreadParticipantsArgs) => {
