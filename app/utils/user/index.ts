@@ -93,6 +93,10 @@ export function isSystemAdmin(roles: string): boolean {
     return isRoleInRoles(roles, Permissions.SYSTEM_ADMIN_ROLE);
 }
 
+export function isShared(user: UserProfile): boolean {
+    return Boolean(user.remote_id);
+}
+
 export const getUsersByUsername = (users: UserModel[]) => {
     const usersByUsername: Dictionary<UserModel> = {};
 
@@ -143,7 +147,7 @@ export const getTimezone = (timezone: UserTimezone | null) => {
     return timezone.manualTimezone;
 };
 
-export const getUserCustomStatus = (user: UserModel): UserCustomStatus | undefined => {
+export const getUserCustomStatus = (user: UserModel | UserProfile): UserCustomStatus | undefined => {
     try {
         if (typeof user.props?.customStatus === 'string') {
             return JSON.parse(user.props.customStatus) as UserCustomStatus;

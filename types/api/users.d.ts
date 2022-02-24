@@ -42,6 +42,7 @@ type UserProfile = {
     is_bot: boolean;
     last_picture_update: number;
     status?: string;
+    remote_id?: string;
 };
 
 type UsersState = {

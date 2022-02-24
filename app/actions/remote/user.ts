@@ -12,7 +12,7 @@ import {MM_TABLES} from '@constants/database';
 import DatabaseManager from '@database/manager';
 import {debounce} from '@helpers/api/general';
 import NetworkManager from '@init/network_manager';
-import {queryCurrentUserId} from '@queries/servers/system';
+import {queryCurrentTeamId, queryCurrentUserId} from '@queries/servers/system';
 import {prepareUsers, queryAllUsers, queryCurrentUser, queryUsersById, queryUsersByUsername} from '@queries/servers/user';
 
 import {forceLogoutIfNecessary} from './session';
@@ -560,4 +560,26 @@ export const uploadUserProfileImage = async (serverUrl: string, localPath: strin
         return {error: e};
     }
     return {error: undefined};
+};
+
+export const searchUsers = async (serverUrl: string, term: string, channelId?: string) => {
+    const database = DatabaseManager.serverDatabases[serverUrl]?.database;
+    if (!database) {
+        return {error: `${serverUrl} database not found`};
+    }
+
+    let client: Client;
+    try {
+        client = NetworkManager.getClient(serverUrl);
+    } catch (error) {
+        return {error};
+    }
+
+    try {
+        const currentTeamId = await queryCurrentTeamId(database);
+        const users = await client.autocompleteUsers(term, currentTeamId, channelId);
+        return {users};
+    } catch (error) {
+        return {error};
+    }
 };

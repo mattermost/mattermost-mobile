@@ -21,7 +21,7 @@ const STATUS_BUFFER = Platform.select({
 });
 
 type ProfilePictureProps = {
-    author?: UserModel;
+    author?: UserModel | UserProfile;
     iconSize?: number;
     showStatus?: boolean;
     size: number;

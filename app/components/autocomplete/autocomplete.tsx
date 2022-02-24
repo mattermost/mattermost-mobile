@@ -9,6 +9,7 @@ import {useIsTablet} from '@hooks/device';
 import useHeaderHeight from '@hooks/header';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
+import AtMention from './at_mention/';
 import EmojiSuggestion from './emoji_suggestion/';
 
 const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
@@ -53,7 +54,7 @@ type Props = {
     cursorPosition: number;
     postInputTop: number;
     rootId: string;
-    channelId: string;
+    channelId?: string;
     isSearch?: boolean;
     value: string;
     enableDateSuggestion?: boolean;
@@ -71,8 +72,7 @@ const Autocomplete = ({
     cursorPosition,
     postInputTop,
     rootId,
-
-    //channelId,
+    channelId,
     isSearch = false,
     value,
 
@@ -90,7 +90,8 @@ const Autocomplete = ({
     const {defaultHeight: headerHeight} = useHeaderHeight(false, true, false);
     const [keyboardHeight, setKeyboardHeight] = useState(0);
 
-    // const [showingAtMention, setShowingAtMention] = useState(false);
+    const [showingAtMention, setShowingAtMention] = useState(false);
+
     // const [showingChannelMention, setShowingChannelMention] = useState(false);
     const [showingEmoji, setShowingEmoji] = useState(false);
 
@@ -98,7 +99,7 @@ const Autocomplete = ({
     // const [showingAppCommand, setShowingAppCommand] = useState(false);
     // const [showingDate, setShowingDate] = useState(false);
 
-    const hasElements = showingEmoji; // || showingAtMention || showingChannelMention || showingCommand || showingAppCommand || showingDate;
+    const hasElements = showingEmoji || showingAtMention; // || showingChannelMention || showingCommand || showingAppCommand || showingDate;
     const appsTakeOver = false; // showingAppCommand;
 
     const maxListHeight = useMemo(() => {
@@ -172,15 +173,17 @@ const Autocomplete = ({
                     />
                 )} */}
                 {(!appsTakeOver || !isAppsEnabled) && (<>
-                    {/* <AtMention
+                    <AtMention
                         cursorPosition={cursorPosition}
                         maxListHeight={maxListHeight}
                         updateValue={updateValue}
-                        onResultCountChange={setShowingAtMention}
+                        onShowingChange={setShowingAtMention}
                         value={value || ''}
                         nestedScrollEnabled={nestedScrollEnabled}
+                        isSearch={isSearch}
+                        channelId={channelId}
                     />
-                    <ChannelMention
+                    {/* <ChannelMention
                         cursorPosition={cursorPosition}
                         maxListHeight={maxListHeight}
                         updateValue={updateValue}
