@@ -44,7 +44,7 @@ export default class PostModel extends Model {
         [REACTION]: {type: 'has_many', foreignKey: 'post_id'},
 
         /** A POST can have an associated thread. (relationship is 1:1) */
-        [THREAD]: {type: 'belongs_to', key: 'id'},
+        [THREAD]: {type: 'has_many', foreignKey: 'id'},
 
         /** A USER can have multiple POST.  A user can author several posts. (relationship is 1:N)*/
         [USER]: {type: 'belongs_to', key: 'user_id'},
