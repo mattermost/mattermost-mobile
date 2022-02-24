@@ -38,8 +38,13 @@ end
   post_install do |installer|
     react_native_post_install(installer)
     __apply_Xcode_12_5_M1_post_install_workaround(installer)
+
     puts 'Patching XCDYouTube so it can playback videos'
     %x(patch Pods/XCDYouTubeKit/XCDYouTubeKit/XCDYouTubeVideoOperation.m < patches/XCDYouTubeVideoOperation.patch)
+
+    puts 'Patching Alamofire to include X-Uncompressed-Content-Length to measure download progress'
+    %x(patch Pods/Alamofire/Source/SessionDelegate.swift < patches/SessionDelegate.patch)
+
     installer.pods_project.targets.each do |target|
       if target.name != "RCT-Folly"
         target.build_configurations.each do |config|

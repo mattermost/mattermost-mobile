@@ -14,7 +14,6 @@ import {Files} from '@constants';
 import {generateId} from '@utils/general';
 import {deleteEntititesFile, getIOSAppGroupDetails} from '@utils/mattermost_managed';
 import {hashCode} from '@utils/security';
-import {removeProtocol} from '@utils/url';
 
 import type FileModel from '@typings/database/models/servers/file';
 
@@ -50,7 +49,7 @@ const SUPPORTED_DOCS_FORMAT = Platform.select({
 
 const SUPPORTED_VIDEO_FORMAT = Platform.select({
     ios: ['video/mp4', 'video/x-m4v', 'video/quicktime'],
-    android: ['video/3gpp', 'video/x-matroska', 'video/mp4', 'video/webm'],
+    android: ['video/3gpp', 'video/x-matroska', 'video/mp4', 'video/webm', 'video/quicktime'],
 });
 
 const types: Record<string, string> = {};
@@ -253,10 +252,9 @@ export const isImage = (file?: FileInfo | FileModel) => {
     const fi = file as FileInfo;
     const fm = file as FileModel;
 
-    const hasPreview = Boolean(fi.mini_preview || fm.imageThumbnail);
     const mimeType = fi.mime_type || fm.mimeType || '';
 
-    return (hasPreview || isGif(file) || mimeType.startsWith('image/'));
+    return (isGif(file) || mimeType.startsWith('image/'));
 };
 
 export const isDocument = (file?: FileInfo | FileModel) => {
@@ -338,9 +336,9 @@ export function getFileType(file: FileInfo): string {
     }) || 'other';
 }
 
-export function getLocalFilePathFromFile(dir: string, serverUrl: string, file: FileInfo | FileModel) {
-    if (dir && serverUrl) {
-        const server = removeProtocol(serverUrl);
+export function getLocalFilePathFromFile(serverUrl: string, file: FileInfo | FileModel) {
+    if (serverUrl) {
+        const server = hashCode(serverUrl);
         if (file?.name) {
             let extension: string | undefined = file.extension;
             let filename = file.name;
@@ -361,13 +359,13 @@ export function getLocalFilePathFromFile(dir: string, serverUrl: string, file: F
                 }
             }
 
-            return `${dir}/${server}/${filename}-${hashCode(file.id!)}.${extension}`;
+            return `${FileSystem.cacheDirectory}${server}/${filename}-${hashCode(file.id!)}.${extension}`;
         } else if (file?.id && file?.extension) {
-            return `${dir}/${server}/${file.id}.${file.extension}`;
+            return `${FileSystem.cacheDirectory}${server}/${file.id}.${file.extension}`;
         }
     }
 
-    return undefined;
+    throw new Error('File path could not be set');
 }
 
 export async function extractFileInfo(files: Array<Asset | DocumentPickerResponse | PastedFile>) {
@@ -440,3 +438,13 @@ export function uploadDisabledWarning(intl: IntlShape) {
         defaultMessage: 'File uploads from mobile are disabled.',
     });
 }
+
+export const fileExists = async (path: string) => {
+    try {
+        const filePath = Platform.select({ios: path.replace('file://', ''), default: path});
+        const info = await FileSystem.getInfoAsync(filePath);
+        return info.exists;
+    } catch {
+        return false;
+    }
+};
