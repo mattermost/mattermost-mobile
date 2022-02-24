@@ -20,13 +20,13 @@ export default class LatexInline extends PureComponent {
         const style = getStyleSheet(this.props.theme);
 
         return <Text style={style.errorText}>{'Latex error: ' + errorMsg.message}</Text>;
-    }
+    };
 
     onRenderErrorMessage = (errorMsg) => {
         const style = getStyleSheet(this.props.theme);
 
         return <Text style={style.errorText}>{'Latex render error: ' + errorMsg.error.message}</Text>;
-    }
+    };
 
     render() {
         const style = getStyleSheet(this.props.theme);

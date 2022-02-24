@@ -21,13 +21,13 @@ export default class Latex extends Code {
         const style = getStyleSheet(this.props.theme);
 
         return <Text style={style.errorText}>{'Error: ' + errorMsg.message}</Text>;
-    }
+    };
 
     onRenderErrorMessage = (errorMsg) => {
         const style = getStyleSheet(this.props.theme);
 
         return <Text style={style.errorText}>{'Render error: ' + errorMsg.error.message}</Text>;
-    }
+    };
 
     render() {
         const style = getStyleSheet(this.props.theme);

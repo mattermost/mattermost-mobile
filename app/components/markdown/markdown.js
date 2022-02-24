@@ -169,7 +169,7 @@ export default class Markdown extends PureComponent {
     onInlineLatexLayout = (event) => {
         const mathLineHeight = Math.max(event.nativeEvent.layout.height, this.state.inlineLatexHeight);
         this.setState({inlineLatexHeight: mathLineHeight});
-    }
+    };
 
     renderText = ({context, literal}) => {
         if (context.indexOf('image') !== -1) {

@@ -8,7 +8,7 @@
  * - The linebreak is in between brackets.
  * - The linebreak occurs inbetween a `\begin` and `\end` statement.
  */
-export function splitLatexCodeInLines(content: string): Array<string> {
+export function splitLatexCodeInLines(content: string): string[] {
     let outLines = content.split('\\\\');
 
     let i = 0;
