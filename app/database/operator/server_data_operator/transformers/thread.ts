@@ -57,10 +57,10 @@ export const transformThreadRecord = ({action, database, value}: TransformerArgs
 export const transformThreadparticipantRecord = ({action, database, value}: TransformerArgs): Promise<ThreadParticipantModel> => {
     const raw = value.raw as ThreadParticipant;
 
-    // id of reaction comes from server response
-    const fieldsMapper = (reaction: ThreadParticipantModel) => {
-        reaction.threadId = raw.thread_id;
-        reaction.userId = raw.id;
+    // id of participant comes from server response
+    const fieldsMapper = (participant: ThreadParticipantModel) => {
+        participant.threadId = raw.thread_id;
+        participant.userId = raw.id;
     };
 
     return prepareBaseRecord({
