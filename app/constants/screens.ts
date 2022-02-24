@@ -30,6 +30,7 @@ export const SSO = 'SSO';
 export const THREAD = 'Thread';
 export const USER_PROFILE = 'UserProfile';
 export const POST_OPTIONS = 'PostOptions';
+export const EDIT_POST = 'EditPost';
 
 export default {
     ABOUT,
@@ -61,4 +62,5 @@ export default {
     THREAD,
     USER_PROFILE,
     POST_OPTIONS,
+    EDIT_POST,
 };

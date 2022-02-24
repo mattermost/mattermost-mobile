@@ -104,6 +104,9 @@ Navigation.setLazyComponentRegistrator((screenName) => {
     case Screens.POST_OPTIONS:
         screen = withServerDatabase(require('@screens/post_options').default);
         break;
+        case Screens.EDIT_POST:
+        screen = withServerDatabase(require('@screens/edit_post').default);
+        break;
     case Screens.SSO:
         screen = withIntl(require('@screens/sso').default);
         break;
