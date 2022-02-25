@@ -1,15 +1,173 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`components/channel_list should match snapshot 1`] = `
-<RNCSafeAreaProvider
-  onInsetsChange={[Function]}
+<View
+  animatedStyle={
+    Object {
+      "value": Object {
+        "maxWidth": "100%",
+      },
+    }
+  }
+  collapsable={false}
   style={
-    Array [
+    Object {
+      "backgroundColor": "#1e325c",
+      "flex": 1,
+      "maxWidth": "100%",
+      "paddingHorizontal": 20,
+      "paddingVertical": 10,
+    }
+  }
+>
+  <View
+    style={
+      Object {
+        "alignItems": "center",
+        "backgroundColor": "rgba(255,255,255,0.12)",
+        "borderRadius": 8,
+        "flex": 1,
+        "flexDirection": "row",
+        "height": 40,
+        "justifyContent": "flex-start",
+        "marginVertical": 20,
+        "maxHeight": 40,
+        "padding": 8,
+        "width": "100%",
+      }
+    }
+  >
+    <Icon
+      name="magnify"
+      style={
+        Object {
+          "color": "rgba(255,255,255,0.72)",
+          "fontSize": 24,
+          "width": 24,
+        }
+      }
+    />
+    <TextInput
+      placeholder="Find Channels"
+      placeholderTextColor="rgba(255,255,255,0.72)"
+      style={
+        Array [
+          Array [
+            Object {
+              "fontFamily": "OpenSans",
+              "fontSize": 16,
+              "fontWeight": "400",
+              "lineHeight": 24,
+            },
+            Object {
+              "textAlignVertical": "center",
+            },
+          ],
+          Object {
+            "alignContent": "center",
+            "alignItems": "center",
+            "color": "#ffffff",
+            "flex": 1,
+            "height": 40,
+            "marginLeft": 5,
+            "marginTop": -2,
+          },
+        ]
+      }
+    />
+  </View>
+  <View
+    onMoveShouldSetResponder={[Function]}
+    onMoveShouldSetResponderCapture={[Function]}
+    onResponderEnd={[Function]}
+    onResponderGrant={[Function]}
+    onResponderMove={[Function]}
+    onResponderReject={[Function]}
+    onResponderRelease={[Function]}
+    onResponderStart={[Function]}
+    onResponderTerminate={[Function]}
+    onResponderTerminationRequest={[Function]}
+    onStartShouldSetResponder={[Function]}
+    onStartShouldSetResponderCapture={[Function]}
+  >
+    <View
+      accessible={true}
+      focusable={true}
+      onClick={[Function]}
+      onResponderGrant={[Function]}
+      onResponderMove={[Function]}
+      onResponderRelease={[Function]}
+      onResponderTerminate={[Function]}
+      onResponderTerminationRequest={[Function]}
+      onStartShouldSetResponder={[Function]}
+    >
+      <View
+        style={
+          Object {
+            "display": "flex",
+            "flexDirection": "row",
+          }
+        }
+      >
+        <Icon
+          name="message-text-outline"
+          style={
+            Object {
+              "color": "#ffffff",
+              "fontSize": 24,
+              "lineHeight": 28,
+            }
+          }
+        />
+        <Text
+          style={
+            Array [
+              Array [
+                Object {
+                  "fontFamily": "OpenSans-SemiBold",
+                  "fontSize": 16,
+                  "fontWeight": "600",
+                  "lineHeight": 24,
+                },
+              ],
+              Object {
+                "color": "#ffffff",
+                "paddingLeft": 12,
+              },
+            ]
+          }
+        >
+          Threads
+        </Text>
+      </View>
+    </View>
+  </View>
+  <RCTScrollView
+    data={Array []}
+    getItem={[Function]}
+    getItemCount={[Function]}
+    keyExtractor={[Function]}
+    onContentSizeChange={[Function]}
+    onLayout={[Function]}
+    onMomentumScrollBegin={[Function]}
+    onMomentumScrollEnd={[Function]}
+    onScroll={[Function]}
+    onScrollBeginDrag={[Function]}
+    onScrollEndDrag={[Function]}
+    removeClippedSubviews={false}
+    renderItem={[Function]}
+    scrollEventThrottle={50}
+    showsHorizontalScrollIndicator={false}
+    showsVerticalScrollIndicator={false}
+    stickyHeaderIndices={Array []}
+    style={
       Object {
         "flex": 1,
-      },
-      undefined,
-    ]
-  }
-/>
+      }
+    }
+    viewabilityConfigCallbackPairs={Array []}
+  >
+    <View />
+  </RCTScrollView>
+</View>
 `;
