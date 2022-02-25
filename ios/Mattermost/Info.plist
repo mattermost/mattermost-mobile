@@ -64,25 +64,25 @@
 	<key>NSBluetoothPeripheralUsageDescription</key>
 	<string>Share post data across devices with Mattermost</string>
 	<key>NSCalendarsUsageDescription</key>
-	<string>Share contacts in your Mattermost workspace</string>
+	<string>Share contacts within Mattermost</string>
 	<key>NSCameraUsageDescription</key>
-	<string>Take a Photo or Video and upload it to your Mattermost workspace</string>
+	<string>Take a Photo or Video and upload it to Mattermost</string>
 	<key>NSFaceIDUsageDescription</key>
 	<string>Mattermost uses Face ID to restrict unauthorized users from accessing the app.</string>
 	<key>NSLocationAlwaysUsageDescription</key>
-	<string>Send your current location to your Mattermost workspace</string>
+	<string>Send your current location to Mattermost</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
-	<string>Send your current location to your Mattermost workspace</string>
+	<string>Send your current location to Mattermost</string>
 	<key>NSMicrophoneUsageDescription</key>
-	<string>Capture audio when recording a video to share to your Mattermost workspace</string>
+	<string>Capture audio when recording a video to share within Mattermost</string>
 	<key>NSMotionUsageDescription</key>
 	<string>Share your route in your Mattermost workspace</string>
 	<key>NSPhotoLibraryAddUsageDescription</key>
-	<string>Save downloaded Photos and Videos from your Mattermost workspace to your device</string>
+	<string>Save downloaded Photos and Videos from Mattermost to your device</string>
 	<key>NSPhotoLibraryUsageDescription</key>
-	<string>Upload Photos and Videos from your device to your Mattermost workspace</string>
+	<string>Upload Photos and Videos from your device to Mattermost</string>
 	<key>NSSpeechRecognitionUsageDescription</key>
-	<string>Send voice messages to your Mattermost workspace</string>
+	<string>Send voice messages to Mattermost</string>
 	<key>UIAppFonts</key>
 	<array>
 		<string>OpenSans-Bold.ttf</string>
