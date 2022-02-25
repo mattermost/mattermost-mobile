@@ -53,20 +53,21 @@ const PostInput = ({keyboardType, message, onChangeText, onPostSelectionChange, 
     return (
         <View style={[styles.inputContainer, {height}, hasError && {marginTop: 0}]}>
             <TextInput
-                testID='edit_post.message.input'
-                value={message}
+                autoFocus={true}
                 blurOnSubmit={false}
-                onChangeText={onChangeText}
-                multiline={true}
-                numberOfLines={10}
-                style={[styles.input, {inputHeight}]}
-                placeholder={placeholder}
-                placeholderTextColor={changeOpacity(theme.centerChannelColor, 0.4)}
-                underlineColorAndroid='transparent'
                 disableFullscreenUI={true}
                 keyboardAppearance={getKeyboardAppearanceFromTheme(theme)}
-                onSelectionChange={onSelectionChange}
                 keyboardType={keyboardType}
+                multiline={true}
+                numberOfLines={10}
+                onChangeText={onChangeText}
+                onSelectionChange={onSelectionChange}
+                placeholder={placeholder}
+                placeholderTextColor={changeOpacity(theme.centerChannelColor, 0.4)}
+                style={[styles.input, {inputHeight}]}
+                testID='edit_post.message.input'
+                underlineColorAndroid='transparent'
+                value={message}
             />
         </View>
     );
