@@ -3,7 +3,7 @@
 
 import React from 'react';
 import {useIntl} from 'react-intl';
-import {KeyboardType, NativeSyntheticEvent, StyleProp, TextInput, TextInputSelectionChangeEventData, View, ViewStyle} from 'react-native';
+import {KeyboardType, NativeSyntheticEvent, Platform, TextInput, TextInputSelectionChangeEventData, useWindowDimensions, View} from 'react-native';
 
 import {useTheme} from '@context/theme';
 import {t} from '@i18n';
@@ -17,34 +17,45 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => ({
         textAlignVertical: 'top',
         ...typography(),
     },
+    inputContainer: {
+        borderTopWidth: 1,
+        borderBottomWidth: 1,
+        borderTopColor: changeOpacity(theme.centerChannelColor, 0.1),
+        borderBottomColor: changeOpacity(theme.centerChannelColor, 0.1),
+        backgroundColor: theme.centerChannelBg,
+        marginTop: 2,
+    },
 }));
 
 type Props = {
     keyboardType: KeyboardType;
     message: string;
-    containerStyle: StyleProp<ViewStyle>;
+    hasError: boolean;
     onSelectionChange: (e: NativeSyntheticEvent<TextInputSelectionChangeEventData>) => void;
     onChangeText: (text: string) => void;
-    height: number;
 }
-const PostInput = ({containerStyle, height, keyboardType, message, onChangeText, onSelectionChange}: Props) => {
+const PostInput = ({keyboardType, message, onChangeText, onSelectionChange, hasError}: Props) => {
     const theme = useTheme();
     const intl = useIntl();
+    const {height} = useWindowDimensions();
+    const baseHeight = (height / 2) - 30;
 
     const styles = getStyleSheet(theme);
     const placeholder = intl.formatMessage({id: t('edit_post.editPost'), defaultMessage: 'Edit the post...'});
-
+    const inputHeight = Platform.select({
+        android: baseHeight - 10,
+        ios: baseHeight,
+    });
     return (
-        <View style={containerStyle}>
+        <View style={[styles.inputContainer, {height}, hasError && {marginTop: 0}]}>
             <TextInput
-                allowFontScaling={true}
                 testID='edit_post.message.input'
                 value={message}
                 blurOnSubmit={false}
                 onChangeText={onChangeText}
                 multiline={true}
                 numberOfLines={10}
-                style={[styles.input, {height}]}
+                style={[styles.input, {inputHeight}]}
                 placeholder={placeholder}
                 placeholderTextColor={changeOpacity(theme.centerChannelColor, 0.4)}
                 underlineColorAndroid='transparent'
