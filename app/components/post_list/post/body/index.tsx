@@ -151,6 +151,7 @@ const Body = ({
                 {hasContent &&
                 <Content
                     isReplyPost={isReplyPost}
+                    location={location}
                     post={post}
                     theme={theme}
                 />
@@ -159,6 +160,7 @@ const Body = ({
                 <Files
                     failed={post.props?.failed}
                     files={files}
+                    location={location}
                     post={post}
                     isReplyPost={isReplyPost}
                     theme={theme}

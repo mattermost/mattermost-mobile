@@ -19,17 +19,11 @@ import type {ResizeMode} from 'react-native-fast-image';
 type ImageFileProps = {
     backgroundColor?: string;
     file: FileInfo;
+    forwardRef: React.RefObject<unknown>;
     inViewPort?: boolean;
     isSingleImage?: boolean;
     resizeMode?: ResizeMode;
     wrapperWidth?: number;
-}
-
-type ProgressiveImageProps = {
-    defaultSource?: {uri: string};
-    imageUri?: string;
-    inViewPort?: boolean;
-    thumbnailUri?: string;
 }
 
 const SMALL_IMAGE_MAX_HEIGHT = 48;
@@ -70,7 +64,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
 }));
 
 const ImageFile = ({
-    backgroundColor, file, inViewPort, isSingleImage,
+    backgroundColor, file, forwardRef, inViewPort, isSingleImage,
     resizeMode = 'cover', wrapperWidth,
 }: ImageFileProps) => {
     const serverUrl = useServerUrl();
@@ -129,6 +123,7 @@ const ImageFile = ({
         image = (
             <ProgressiveImage
                 id={file.id!}
+                forwardRef={forwardRef}
                 style={{height: file.height, width: file.width}}
                 tintDefaultSource={!file.localPath && !failed}
                 onError={handleError}
@@ -170,6 +165,7 @@ const ImageFile = ({
     image = (
         <ProgressiveImage
             id={file.id!}
+            forwardRef={forwardRef}
             style={[isSingleImage ? null : style.imagePreview, imageDimensions]}
             tintDefaultSource={!file.localPath && !failed}
             onError={handleError}

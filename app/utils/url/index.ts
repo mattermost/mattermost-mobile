@@ -269,3 +269,8 @@ export function cleanUrlForLogging(baseUrl: string, apiUrl: string): string {
 
     return url;
 }
+
+export function extractFilenameFromUrl(url: string) {
+    const uri = urlParse(url);
+    return uri.pathname.split('/').pop();
+}

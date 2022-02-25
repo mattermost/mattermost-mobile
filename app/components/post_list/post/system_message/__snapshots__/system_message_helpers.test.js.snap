@@ -13,28 +13,48 @@ exports[`renderSystemMessage uses renderer for Channel Display Name update 1`] =
   }
 >
   <Text>
-    <Text
-      style={
-        Array [
-          Object {
-            "color": "rgba(63,67,80,0.6)",
-            "fontFamily": "OpenSans",
-            "fontSize": 16,
-            "fontWeight": "400",
-            "lineHeight": 24,
-          },
+    <RNGestureHandlerButton
+      collapsable={false}
+      exclusive={true}
+      onGestureEvent={[Function]}
+      onGestureHandlerEvent={[Function]}
+      onGestureHandlerStateChange={[Function]}
+      onHandlerStateChange={[Function]}
+      rippleColor={0}
+    >
+      <View
+        accessible={true}
+        collapsable={false}
+        style={
           Object {
             "opacity": 1,
-          },
-        ]
-      }
-    >
-      <Text
-        style={Array []}
+          }
+        }
       >
-        @username
-      </Text>
-    </Text>
+        <Text
+          style={
+            Array [
+              Object {
+                "color": "rgba(63,67,80,0.6)",
+                "fontFamily": "OpenSans",
+                "fontSize": 16,
+                "fontWeight": "400",
+                "lineHeight": 24,
+              },
+              Object {
+                "opacity": 1,
+              },
+            ]
+          }
+        >
+          <Text
+            style={Array []}
+          >
+            @username
+          </Text>
+        </Text>
+      </View>
+    </RNGestureHandlerButton>
     <Text
       style={
         Object {
@@ -66,28 +86,48 @@ exports[`renderSystemMessage uses renderer for Channel Header update 1`] = `
   }
 >
   <Text>
-    <Text
-      style={
-        Array [
-          Object {
-            "color": "rgba(63,67,80,0.6)",
-            "fontFamily": "OpenSans",
-            "fontSize": 16,
-            "fontWeight": "400",
-            "lineHeight": 24,
-          },
+    <RNGestureHandlerButton
+      collapsable={false}
+      exclusive={true}
+      onGestureEvent={[Function]}
+      onGestureHandlerEvent={[Function]}
+      onGestureHandlerStateChange={[Function]}
+      onHandlerStateChange={[Function]}
+      rippleColor={0}
+    >
+      <View
+        accessible={true}
+        collapsable={false}
+        style={
           Object {
             "opacity": 1,
-          },
-        ]
-      }
-    >
-      <Text
-        style={Array []}
+          }
+        }
       >
-        @username
-      </Text>
-    </Text>
+        <Text
+          style={
+            Array [
+              Object {
+                "color": "rgba(63,67,80,0.6)",
+                "fontFamily": "OpenSans",
+                "fontSize": 16,
+                "fontWeight": "400",
+                "lineHeight": 24,
+              },
+              Object {
+                "opacity": 1,
+              },
+            ]
+          }
+        >
+          <Text
+            style={Array []}
+          >
+            @username
+          </Text>
+        </Text>
+      </View>
+    </RNGestureHandlerButton>
     <Text
       style={
         Object {
@@ -135,28 +175,48 @@ exports[`renderSystemMessage uses renderer for Guest added and join to channel 1
   }
 >
   <Text>
-    <Text
-      style={
-        Array [
-          Object {
-            "color": "rgba(63,67,80,0.6)",
-            "fontFamily": "OpenSans",
-            "fontSize": 16,
-            "fontWeight": "400",
-            "lineHeight": 24,
-          },
+    <RNGestureHandlerButton
+      collapsable={false}
+      exclusive={true}
+      onGestureEvent={[Function]}
+      onGestureHandlerEvent={[Function]}
+      onGestureHandlerStateChange={[Function]}
+      onHandlerStateChange={[Function]}
+      rippleColor={0}
+    >
+      <View
+        accessible={true}
+        collapsable={false}
+        style={
           Object {
             "opacity": 1,
-          },
-        ]
-      }
-    >
-      <Text
-        style={Array []}
+          }
+        }
       >
-        @username
-      </Text>
-    </Text>
+        <Text
+          style={
+            Array [
+              Object {
+                "color": "rgba(63,67,80,0.6)",
+                "fontFamily": "OpenSans",
+                "fontSize": 16,
+                "fontWeight": "400",
+                "lineHeight": 24,
+              },
+              Object {
+                "opacity": 1,
+              },
+            ]
+          }
+        >
+          <Text
+            style={Array []}
+          >
+            @username
+          </Text>
+        </Text>
+      </View>
+    </RNGestureHandlerButton>
     <Text
       style={
         Object {
@@ -188,28 +248,48 @@ exports[`renderSystemMessage uses renderer for Guest added and join to channel 2
   }
 >
   <Text>
-    <Text
-      style={
-        Array [
-          Object {
-            "color": "rgba(63,67,80,0.6)",
-            "fontFamily": "OpenSans",
-            "fontSize": 16,
-            "fontWeight": "400",
-            "lineHeight": 24,
-          },
+    <RNGestureHandlerButton
+      collapsable={false}
+      exclusive={true}
+      onGestureEvent={[Function]}
+      onGestureHandlerEvent={[Function]}
+      onGestureHandlerStateChange={[Function]}
+      onHandlerStateChange={[Function]}
+      rippleColor={0}
+    >
+      <View
+        accessible={true}
+        collapsable={false}
+        style={
           Object {
             "opacity": 1,
-          },
-        ]
-      }
-    >
-      <Text
-        style={Array []}
+          }
+        }
       >
-        @other.user
-      </Text>
-    </Text>
+        <Text
+          style={
+            Array [
+              Object {
+                "color": "rgba(63,67,80,0.6)",
+                "fontFamily": "OpenSans",
+                "fontSize": 16,
+                "fontWeight": "400",
+                "lineHeight": 24,
+              },
+              Object {
+                "opacity": 1,
+              },
+            ]
+          }
+        >
+          <Text
+            style={Array []}
+          >
+            @other.user
+          </Text>
+        </Text>
+      </View>
+    </RNGestureHandlerButton>
     <Text
       style={
         Object {
@@ -224,28 +304,48 @@ exports[`renderSystemMessage uses renderer for Guest added and join to channel 2
     >
        added to the channel as a guest by 
     </Text>
-    <Text
-      style={
-        Array [
-          Object {
-            "color": "rgba(63,67,80,0.6)",
-            "fontFamily": "OpenSans",
-            "fontSize": 16,
-            "fontWeight": "400",
-            "lineHeight": 24,
-          },
+    <RNGestureHandlerButton
+      collapsable={false}
+      exclusive={true}
+      onGestureEvent={[Function]}
+      onGestureHandlerEvent={[Function]}
+      onGestureHandlerStateChange={[Function]}
+      onHandlerStateChange={[Function]}
+      rippleColor={0}
+    >
+      <View
+        accessible={true}
+        collapsable={false}
+        style={
           Object {
             "opacity": 1,
-          },
-        ]
-      }
-    >
-      <Text
-        style={Array []}
+          }
+        }
       >
-        @username.
-      </Text>
-    </Text>
+        <Text
+          style={
+            Array [
+              Object {
+                "color": "rgba(63,67,80,0.6)",
+                "fontFamily": "OpenSans",
+                "fontSize": 16,
+                "fontWeight": "400",
+                "lineHeight": 24,
+              },
+              Object {
+                "opacity": 1,
+              },
+            ]
+          }
+        >
+          <Text
+            style={Array []}
+          >
+            @username.
+          </Text>
+        </Text>
+      </View>
+    </RNGestureHandlerButton>
   </Text>
 </View>
 `;
@@ -294,28 +394,48 @@ exports[`renderSystemMessage uses renderer for archived channel 1`] = `
   }
 >
   <Text>
-    <Text
-      style={
-        Array [
-          Object {
-            "color": "rgba(63,67,80,0.6)",
-            "fontFamily": "OpenSans",
-            "fontSize": 16,
-            "fontWeight": "400",
-            "lineHeight": 24,
-          },
+    <RNGestureHandlerButton
+      collapsable={false}
+      exclusive={true}
+      onGestureEvent={[Function]}
+      onGestureHandlerEvent={[Function]}
+      onGestureHandlerStateChange={[Function]}
+      onHandlerStateChange={[Function]}
+      rippleColor={0}
+    >
+      <View
+        accessible={true}
+        collapsable={false}
+        style={
           Object {
             "opacity": 1,
-          },
-        ]
-      }
-    >
-      <Text
-        style={Array []}
+          }
+        }
       >
-        @username
-      </Text>
-    </Text>
+        <Text
+          style={
+            Array [
+              Object {
+                "color": "rgba(63,67,80,0.6)",
+                "fontFamily": "OpenSans",
+                "fontSize": 16,
+                "fontWeight": "400",
+                "lineHeight": 24,
+              },
+              Object {
+                "opacity": 1,
+              },
+            ]
+          }
+        >
+          <Text
+            style={Array []}
+          >
+            @username
+          </Text>
+        </Text>
+      </View>
+    </RNGestureHandlerButton>
     <Text
       style={
         Object {
@@ -347,28 +467,48 @@ exports[`renderSystemMessage uses renderer for unarchived channel 1`] = `
   }
 >
   <Text>
-    <Text
-      style={
-        Array [
-          Object {
-            "color": "rgba(63,67,80,0.6)",
-            "fontFamily": "OpenSans",
-            "fontSize": 16,
-            "fontWeight": "400",
-            "lineHeight": 24,
-          },
+    <RNGestureHandlerButton
+      collapsable={false}
+      exclusive={true}
+      onGestureEvent={[Function]}
+      onGestureHandlerEvent={[Function]}
+      onGestureHandlerStateChange={[Function]}
+      onHandlerStateChange={[Function]}
+      rippleColor={0}
+    >
+      <View
+        accessible={true}
+        collapsable={false}
+        style={
           Object {
             "opacity": 1,
-          },
-        ]
-      }
-    >
-      <Text
-        style={Array []}
+          }
+        }
       >
-        @username
-      </Text>
-    </Text>
+        <Text
+          style={
+            Array [
+              Object {
+                "color": "rgba(63,67,80,0.6)",
+                "fontFamily": "OpenSans",
+                "fontSize": 16,
+                "fontWeight": "400",
+                "lineHeight": 24,
+              },
+              Object {
+                "opacity": 1,
+              },
+            ]
+          }
+        >
+          <Text
+            style={Array []}
+          >
+            @username
+          </Text>
+        </Text>
+      </View>
+    </RNGestureHandlerButton>
     <Text
       style={
         Object {

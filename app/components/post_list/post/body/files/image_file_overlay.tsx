@@ -4,6 +4,7 @@
 import React from 'react';
 import {PixelRatio, StyleSheet, Text, useWindowDimensions, View} from 'react-native';
 
+import {useIsTablet} from '@hooks/device';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 
 type ImageFileOverlayProps = {
@@ -35,9 +36,8 @@ const getStyleSheet = (scale: number, th: Theme) => {
 
 const ImageFileOverlay = ({theme, value}: ImageFileOverlayProps) => {
     const dimensions = useWindowDimensions();
-    const scale = dimensions.width / 320;
-    const style = getStyleSheet(scale, theme);
-    return null;
+    const isTablet = useIsTablet();
+    const style = getStyleSheet(isTablet ? dimensions.scale : 1, theme);
 
     return (
         <View style={style.moreImagesWrapper}>
