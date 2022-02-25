@@ -134,7 +134,7 @@ export default class FilePickerUtil {
                 }
 
                 if (uri) {
-                    files.push({...file, fileName, uri, type});
+                    files.push({...file, fileName, uri, type, width: file.width, height: file.height});
                 }
             }
         })));
