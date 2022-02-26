@@ -265,7 +265,6 @@ export default function PostInput({
             // May change when we implement Fabric
             input.current?.setNativeProps({
                 text: value,
-                selection: {start: cursorPosition},
             });
             lastNativeValue.current = value;
         }
