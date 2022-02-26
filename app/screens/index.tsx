@@ -90,7 +90,7 @@ Navigation.setLazyComponentRegistrator((screenName) => {
     case Screens.IN_APP_NOTIFICATION: {
         const notificationScreen = require('@screens/in_app_notification').default;
         Navigation.registerComponent(Screens.IN_APP_NOTIFICATION, () => Platform.select({
-            default: withGestures(notificationScreen, undefined),
+            default: notificationScreen,
             ios: withSafeAreaInsets(notificationScreen),
         }));
         return;
