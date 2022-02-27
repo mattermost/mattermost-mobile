@@ -1,11 +1,13 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback, useEffect, useRef, useState} from 'react';
+import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
-import {Keyboard, KeyboardType, Platform, SafeAreaView, View} from 'react-native';
+import {Keyboard, KeyboardType, LayoutChangeEvent, Platform, SafeAreaView, View} from 'react-native';
+import {KeyboardTrackingView} from 'react-native-keyboard-tracking-view';
 import {Navigation} from 'react-native-navigation';
 
+import AutoComplete from '@components/autocomplete';
 import CompassIcon from '@components/compass_icon';
 import Loading from '@components/loading';
 import {useTheme} from '@context/theme';
@@ -63,6 +65,7 @@ const EditPost = ({componentId, maxPostSize, post}: EditPostProps) => {
     const [errorExtra, setErrorExtra] = useState<string | undefined>();
     const [rightButtonEnabled, setRightButtonEnabled] = useState(true);
     const [isEditing, setIsEditing] = useState(false);
+    const [postInputTop, setPostInputTop] = useState(0);
 
     // const [autocompleteVisible, setAutocompleteVisible] = useState<boolean>(false);
     const postInputRef = useRef<PostInputRef>(null);
@@ -70,7 +73,7 @@ const EditPost = ({componentId, maxPostSize, post}: EditPostProps) => {
     const theme = useTheme();
     const intl = useIntl();
     const styles = getStyleSheet(theme);
-    const closeButtonIcon = CompassIcon.getImageSourceSync('close', 24, theme.sidebarHeaderTextColor);
+    const closeButtonIcon = useMemo(() => CompassIcon.getImageSourceSync('close', 24, theme.sidebarHeaderTextColor), [theme.sidebarHeaderTextColor]);
 
     useEffect(() => {
         setButtons(componentId, {
@@ -95,8 +98,7 @@ const EditPost = ({componentId, maxPostSize, post}: EditPostProps) => {
                         break;
                     }
                     case 'edit-post':
-                        //todo:
-                        // onEditPost();
+                        onEditPost();
                         break;
                 }
             },
@@ -140,7 +142,7 @@ const EditPost = ({componentId, maxPostSize, post}: EditPostProps) => {
         setErrorLine(line);
         setErrorExtra(extra);
         updateCanEditPostButton(message ? !tooLong : false);
-    }, [maxPostSize, updateCanEditPostButton]);
+    }, [intl, maxPostSize, updateCanEditPostButton]);
 
     const emitEditing = useCallback((loading) => {
         setRightButtonEnabled(!loading);
@@ -148,14 +150,14 @@ const EditPost = ({componentId, maxPostSize, post}: EditPostProps) => {
             leftButtons: [{...LEFT_BUTTON, icon: closeButtonIcon}],
             rightButtons: [{...RIGHT_BUTTON, enabled: !loading}],
         });
-    }, []);
+    }, [closeButtonIcon]);
 
     const onClose = useCallback(() => {
         Keyboard.dismiss();
         popTopScreen();
     }, []);
 
-    const onEditPost = async () => {
+    const onEditPost = useCallback(async () => {
         // const editedPost = Object.assign({}, post, {postMessage});
         setIsEditing(true);
         setErrorLine(undefined);
@@ -175,7 +177,11 @@ const EditPost = ({componentId, maxPostSize, post}: EditPostProps) => {
             setIsEditing(false);
             onClose();
         }
-    };
+    }, [emitEditing, onClose]);
+
+    const handleLayout = useCallback((e: LayoutChangeEvent) => {
+        setPostInputTop(e.nativeEvent.layout.y);
+    }, []);
 
     if (isEditing) {
         return (
@@ -194,20 +200,37 @@ const EditPost = ({componentId, maxPostSize, post}: EditPostProps) => {
                 <View style={styles.scrollView}>
                     { (errorLine || errorExtra) && (
                         <PostError
-                            errorLine={errorLine}
                             errorExtra={errorExtra}
+                            errorLine={errorLine}
                         />
                     ) }
                     <PostInput
-                        ref={postInputRef}
                         hasError={Boolean(errorLine)}
                         keyboardType={keyboardType}
                         message={postMessage}
                         onChangeText={onPostChangeText}
                         onPostSelectionChange={onPostSelectionChange}
+                        ref={postInputRef}
                     />
                 </View>
             </SafeAreaView>
+            <KeyboardTrackingView
+
+                // style={autocompleteStyles}
+                onLayout={handleLayout}
+            >
+                <AutoComplete
+                    channelId={post.channelId}
+                    cursorPosition={cursorPosition}
+                    hasFilesAttached={false}
+                    nestedScrollEnabled={true}
+                    offsetY={8}
+                    postInputTop={postInputTop}
+                    rootId={post.rootId}
+                    updateValue={onPostChangeText}
+                    value={postMessage}
+                />
+            </KeyboardTrackingView>
         </>
     );
 };
