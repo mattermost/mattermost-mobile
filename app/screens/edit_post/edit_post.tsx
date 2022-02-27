@@ -143,6 +143,10 @@ const EditPost = ({componentId, maxPostSize, post}: EditPostProps) => {
     const emitEditing = useCallback((loading) => {
         setRightButtonEnabled(!loading);
         setButtons(componentId, {
+            leftButtons: [{...LEFT_BUTTON, icon: closeButtonIcon}],
+            rightButtons: [{...RIGHT_BUTTON, enabled: !loading}],
+        });
+    }, []);
 
     return (
         <>
