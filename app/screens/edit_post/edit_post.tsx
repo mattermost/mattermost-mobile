@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback, useEffect, useState} from 'react';
+import React, {useCallback, useEffect, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
 import {Keyboard, KeyboardType, Platform, SafeAreaView, View} from 'react-native';
 import {Navigation} from 'react-native-navigation';
@@ -15,7 +15,7 @@ import PostModel from '@typings/database/models/servers/post';
 import {switchKeyboardForCodeBlocks} from '@utils/markdown';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
-import PostInput from './post_input';
+import PostInput, {PostInputRef} from './post_input';
 
 const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     return {
@@ -60,9 +60,11 @@ const EditPost = ({componentId, maxPostSize, post}: EditPostProps) => {
     const [cursorPosition, setCursorPosition] = useState(0);
     const [errorLine, setErrorLine] = useState<string | undefined>();
     const [errorExtra, setErrorExtra] = useState<string | undefined>();
-    const [rightButtonEnabled, setRightButtonEnabled] = useState<boolean>(true);
+    const [rightButtonEnabled, setRightButtonEnabled] = useState(true);
+    const [isEditing, setIsEditing] = useState(false);
 
     // const [autocompleteVisible, setAutocompleteVisible] = useState<boolean>(false);
+    const postInputRef = useRef<PostInputRef>(null);
 
     const theme = useTheme();
     const intl = useIntl();
@@ -88,8 +90,7 @@ const EditPost = ({componentId, maxPostSize, post}: EditPostProps) => {
             navigationButtonPressed: ({buttonId}: { buttonId: string }) => {
                 switch (buttonId) {
                     case 'close-edit-post': {
-                        Keyboard.dismiss();
-                        popTopScreen();
+                        onClose();
                         break;
                     }
                     case 'edit-post':
@@ -148,6 +149,33 @@ const EditPost = ({componentId, maxPostSize, post}: EditPostProps) => {
         });
     }, []);
 
+    const onClose = useCallback(() => {
+        Keyboard.dismiss();
+        popTopScreen();
+    }, []);
+
+    const onEditPost = async () => {
+        // const editedPost = Object.assign({}, post, {postMessage});
+        setIsEditing(true);
+        setErrorLine(undefined);
+        setErrorExtra(undefined);
+
+        emitEditing(true);
+
+        //todo: make api call to update post's message
+        const {error} = await actions.editPost(editedPost);
+        emitEditing(false);
+
+        if (error) {
+            setIsEditing(false);
+            setErrorLine(error);
+            postInputRef?.current?.focus();
+        } else {
+            setIsEditing(false);
+            onClose();
+        }
+    };
+
     return (
         <>
             <SafeAreaView
@@ -162,6 +190,7 @@ const EditPost = ({componentId, maxPostSize, post}: EditPostProps) => {
                         />
                     ) }
                     <PostInput
+                        ref={postInputRef}
                         hasError={Boolean(errorLine)}
                         keyboardType={keyboardType}
                         message={postMessage}

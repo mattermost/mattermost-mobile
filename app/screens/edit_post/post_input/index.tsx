@@ -1,10 +1,11 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback} from 'react';
+import React, {forwardRef, useCallback, useImperativeHandle, useRef} from 'react';
 import {useIntl} from 'react-intl';
 import {KeyboardType, Platform, TextInput, useWindowDimensions, View} from 'react-native';
 
+import FloatingTextInput from '@components/floating_text_input_label';
 import {useTheme} from '@context/theme';
 import {changeOpacity, getKeyboardAppearanceFromTheme, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
@@ -26,17 +27,26 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => ({
     },
 }));
 
-type Props = {
+export type PostInputRef = {
+    focus: () => void;
+}
+type PostInputProps = {
     keyboardType: KeyboardType;
     message: string;
     hasError: boolean;
     onPostSelectionChange: (curPos: number) => void;
     onChangeText: (text: string) => void;
 }
-const PostInput = ({keyboardType, message, onChangeText, onPostSelectionChange, hasError}: Props) => {
+const PostInput = forwardRef<PostInputRef, PostInputProps>(({keyboardType, message, onChangeText, onPostSelectionChange, hasError}: PostInputProps, ref) => {
     const theme = useTheme();
     const intl = useIntl();
     const {height} = useWindowDimensions();
+    const inputRef = useRef<TextInput>(null);
+
+    useImperativeHandle(ref, () => ({
+        focus: () => inputRef.current?.focus(),
+    }), [inputRef]);
+
     const baseHeight = (height / 2) - 30;
 
     const styles = getStyleSheet(theme);
@@ -71,6 +81,8 @@ const PostInput = ({keyboardType, message, onChangeText, onPostSelectionChange, 
             />
         </View>
     );
-};
+});
+
+PostInput.displayName = 'FloatingTextInput';
 
 export default PostInput;
