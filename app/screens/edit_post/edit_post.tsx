@@ -9,6 +9,7 @@ import {Navigation} from 'react-native-navigation';
 import CompassIcon from '@components/compass_icon';
 import {useTheme} from '@context/theme';
 import useDidUpdate from '@hooks/did_update';
+import PostError from '@screens/edit_post/post_error';
 import {popTopScreen, setButtons} from '@screens/navigation';
 import PostModel from '@typings/database/models/servers/post';
 import {switchKeyboardForCodeBlocks} from '@utils/markdown';
@@ -28,20 +29,8 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             flex: 1,
             backgroundColor: changeOpacity(theme.centerChannelColor, 0.03),
         },
-        errorContainer: {
-            paddingHorizontal: 10,
-        },
-        errorContainerSplit: {
-            paddingHorizontal: 15,
-            flexDirection: 'row',
-            justifyContent: 'space-between',
-        },
         errorWrapper: {
             alignItems: 'center',
-        },
-        errorWrap: {
-            flexShrink: 1,
-            paddingRight: 20,
         },
         autocompleteContainer: {
             flex: 1,
@@ -95,7 +84,7 @@ const EditPost = ({componentId, maxPostSize, post}: EditPostProps) => {
                 ...RIGHT_BUTTON,
             }],
         });
-    }, [intl, theme.sidebarHeaderTextColor]);
+    }, [theme.sidebarHeaderTextColor]);
 
     useEffect(() => {
         const unsubscribe = Navigation.events().registerComponentListener({
@@ -144,7 +133,7 @@ const EditPost = ({componentId, maxPostSize, post}: EditPostProps) => {
         setCursorPosition(curPos);
     }, [cursorPosition, postMessage]);
 
-    const onPostChangeText = (message: string) => {
+    const onPostChangeText = useCallback((message: string) => {
         setPostMessage(message);
         const tooLong = message.trim().length > maxPostSize;
         const line = tooLong ? intl.formatMessage({id: 'mobile.message_length.message_split_left', defaultMessage: 'Message exceeds the character limit'}) : undefined;
@@ -152,7 +141,11 @@ const EditPost = ({componentId, maxPostSize, post}: EditPostProps) => {
         setErrorLine(line);
         setErrorExtra(extra);
         updateCanEditPostButton(message ? !tooLong : false);
-    };
+    }, [maxPostSize, updateCanEditPostButton]);
+
+    const emitEditing = useCallback((loading) => {
+        setRightButtonEnabled(!loading);
+        setButtons(componentId, {
 
     return (
         <>
@@ -161,7 +154,12 @@ const EditPost = ({componentId, maxPostSize, post}: EditPostProps) => {
                 style={styles.container}
             >
                 <View style={styles.scrollView}>
-                    {/*{displayError}*/}
+                    { (errorLine || errorExtra) && (
+                        <PostError
+                            errorLine={errorLine}
+                            errorExtra={errorExtra}
+                        />
+                    ) }
                     <PostInput
                         hasError={Boolean(errorLine)}
                         keyboardType={keyboardType}
