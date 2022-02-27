@@ -2,8 +2,8 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback, useEffect, useState} from 'react';
-import {DeviceEventEmitter, StyleSheet, View, ViewStyle} from 'react-native';
-import Animated, {AnimatedStyleProp} from 'react-native-reanimated';
+import {DeviceEventEmitter, StyleProp, StyleSheet, View, ViewStyle} from 'react-native';
+import Animated from 'react-native-reanimated';
 import {SafeAreaView, Edge} from 'react-native-safe-area-context';
 
 import {Events} from '@constants';
@@ -33,7 +33,7 @@ type Props = {
     isDirectChannel: boolean;
     item: GalleryItemType;
     post?: PostModel;
-    style: AnimatedStyleProp<ViewStyle>;
+    style: StyleProp<ViewStyle>;
     teammateNameDisplay: string;
 }
 

@@ -2,9 +2,9 @@
 // See LICENSE.txt for license information.
 
 import React, {useMemo} from 'react';
-import {StyleSheet, useWindowDimensions, View, ViewStyle} from 'react-native';
+import {StyleProp, StyleSheet, useWindowDimensions, View, ViewStyle} from 'react-native';
 import {TouchableOpacity} from 'react-native-gesture-handler';
-import Animated, {AnimatedStyleProp} from 'react-native-reanimated';
+import Animated from 'react-native-reanimated';
 import {SafeAreaView, Edge} from 'react-native-safe-area-context';
 
 import CompassIcon from '@components/compass_icon';
@@ -16,7 +16,7 @@ import {typography} from '@utils/typography';
 type Props = {
     index: number;
     onClose: () => void;
-    style: AnimatedStyleProp<ViewStyle>;
+    style: StyleProp<ViewStyle>;
     total: number;
 }
 

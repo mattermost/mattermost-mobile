@@ -22,6 +22,8 @@ interface VideoRendererProps extends ImageRendererProps {
 const AnimatedVideo = Animated.createAnimatedComponent(Video);
 const timingConfig: WithTimingConfig = {
     duration: 250,
+
+    // @ts-expect-error EasingFactoryFunction missing in type definition
     easing: Easing.bezier(0.33, 0.01, 0, 1),
 };
 

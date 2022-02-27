@@ -58,6 +58,8 @@ const AnimatedImage = Animated.createAnimatedComponent(FastImage);
 
 const timingConfig: WithTimingConfig = {
     duration: 250,
+
+    // @ts-expect-error EasingFactoryFunction missing in type definition
     easing: Easing.bezier(0.5002, 0.2902, 0.3214, 0.9962),
 };
 

@@ -146,7 +146,7 @@ const Gallery = forwardRef<GalleryRef, GalleryProps>(({
             return (
                 <AnimatedImage
                     source={{uri: item.posterUri}}
-                    style={info.itemStyles as StyleProp<Animated.AnimateStyle<StyleProp<ImageStyle>>>}
+                    style={info.itemStyles as StyleProp<ImageStyle>}
                 />
             );
         }

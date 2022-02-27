@@ -168,6 +168,8 @@ export function useGalleryControls() {
 
     const translateYConfig: WithTimingConfig = {
         duration: 400,
+
+        // @ts-expect-error EasingFactoryFunction missing in type definition
         easing: Easing.bezier(0.33, 0.01, 0, 1),
     };
 
