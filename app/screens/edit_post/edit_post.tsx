@@ -29,9 +29,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             flex: 1,
             backgroundColor: changeOpacity(theme.centerChannelColor, 0.03),
         },
-        errorWrapper: {
-            alignItems: 'center',
-        },
         autocompleteContainer: {
             flex: 1,
             justifyContent: 'flex-end',

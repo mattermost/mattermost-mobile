@@ -25,6 +25,9 @@ const styles = StyleSheet.create({
         flexShrink: 1,
         paddingRight: 20,
     },
+    errorWrapper: {
+        alignItems: 'center',
+    },
 });
 
 const PostError = ({errorLine, errorExtra}: PostErrorProps) => {
@@ -50,6 +53,7 @@ const PostError = ({errorLine, errorExtra}: PostErrorProps) => {
                 <ErrorText
                     testID='edit_post.error.text.extra'
                     error={errorExtra}
+                    textStyle={!errorLine && styles.errorWrapper}
                     theme={theme}
                 />
             )}
