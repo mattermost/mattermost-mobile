@@ -7,6 +7,7 @@ import {Keyboard, KeyboardType, Platform, SafeAreaView, View} from 'react-native
 import {Navigation} from 'react-native-navigation';
 
 import CompassIcon from '@components/compass_icon';
+import Loading from '@components/loading';
 import {useTheme} from '@context/theme';
 import useDidUpdate from '@hooks/did_update';
 import PostError from '@screens/edit_post/post_error';
@@ -175,6 +176,14 @@ const EditPost = ({componentId, maxPostSize, post}: EditPostProps) => {
             onClose();
         }
     };
+
+    if (isEditing) {
+        return (
+            <View style={styles.container}>
+                <Loading color={theme.buttonBg}/>
+            </View>
+        );
+    }
 
     return (
         <>
