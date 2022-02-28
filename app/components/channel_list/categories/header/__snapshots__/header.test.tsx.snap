@@ -2,25 +2,55 @@
 
 exports[`components/channel_list/categories/header should match snapshot 1`] = `
 <View
+  accessible={true}
+  collapsable={false}
+  focusable={true}
+  onClick={[Function]}
+  onResponderGrant={[Function]}
+  onResponderMove={[Function]}
+  onResponderRelease={[Function]}
+  onResponderTerminate={[Function]}
+  onResponderTerminationRequest={[Function]}
+  onStartShouldSetResponder={[Function]}
   style={
     Object {
-      "marginTop": 12,
-      "paddingVertical": 8,
+      "opacity": 1,
     }
   }
 >
-  <Text
+  <View
     style={
       Object {
-        "color": "rgba(255,255,255,0.64)",
-        "fontFamily": "OpenSans-SemiBold",
-        "fontSize": 12,
-        "fontWeight": "600",
-        "lineHeight": 16,
+        "alignItems": "flex-start",
+        "flexDirection": "row",
+        "marginTop": 12,
+        "paddingVertical": 8,
       }
     }
   >
-    TEST CATEGORY
-  </Text>
+    <Icon
+      name="chevron-down"
+      style={
+        Object {
+          "color": "rgba(255,255,255,0.64)",
+          "paddingRight": 2,
+          "paddingTop": 2,
+        }
+      }
+    />
+    <Text
+      style={
+        Object {
+          "color": "rgba(255,255,255,0.64)",
+          "fontFamily": "OpenSans-SemiBold",
+          "fontSize": 12,
+          "fontWeight": "600",
+          "lineHeight": 16,
+        }
+      }
+    >
+      TEST CATEGORY
+    </Text>
+  </View>
 </View>
 `;

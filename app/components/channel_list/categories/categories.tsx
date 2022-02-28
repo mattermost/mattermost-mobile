@@ -24,7 +24,7 @@ const renderCategory = (data: {item: CategoryModel}) => {
     return (
         <>
             <CategoryHeader category={data.item}/>
-            <CategoryBody category={data.item}/>
+            {!data.item.collapsed && <CategoryBody category={data.item}/>}
         </>
     );
 };
