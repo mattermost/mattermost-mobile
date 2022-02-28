@@ -65,7 +65,7 @@ const EditPost = ({componentId, maxPostSize, post}: EditPostProps) => {
     const [errorLine, setErrorLine] = useState<string | undefined>();
     const [errorExtra, setErrorExtra] = useState<string | undefined>();
     const [rightButtonEnabled, setRightButtonEnabled] = useState(true);
-    const [isEditing, setIsEditing] = useState(false);
+    const [isUpdating, setIsUpdating] = useState(false);
     const [postInputTop, setPostInputTop] = useState(0);
 
     const postInputRef = useRef<PostInputRef>(null);
@@ -99,7 +99,7 @@ const EditPost = ({componentId, maxPostSize, post}: EditPostProps) => {
                         break;
                     }
                     case RIGHT_BUTTON.id:
-                        onEditPost();
+                        onSaveEditedPost();
                         break;
                 }
             },
@@ -117,6 +117,13 @@ const EditPost = ({componentId, maxPostSize, post}: EditPostProps) => {
         }
     }, [postMessage]);
 
+    const onPostSelectionChange = useCallback((curPos: number = cursorPosition) => {
+        if (Platform.OS === 'ios') {
+            setKeyboardType(switchKeyboardForCodeBlocks(postMessage, curPos));
+        }
+        setCursorPosition(curPos);
+    }, [cursorPosition, postMessage]);
+
     const updateCanEditPostButton = useCallback((enabled) => {
         if (rightButtonEnabled !== enabled) {
             setRightButtonEnabled(enabled);
@@ -125,15 +132,7 @@ const EditPost = ({componentId, maxPostSize, post}: EditPostProps) => {
                 rightButtons: [{...RIGHT_BUTTON, enabled}],
             });
         }
-    }, [closeButtonIcon, rightButtonEnabled]);
-
-    const onPostSelectionChange = useCallback((curPos: number = cursorPosition) => {
-        // const cpos = fromOnPostChangeText ? cursorPosition : event!.nativeEvent.selection.end;
-        if (Platform.OS === 'ios') {
-            setKeyboardType(switchKeyboardForCodeBlocks(postMessage, curPos));
-        }
-        setCursorPosition(curPos);
-    }, [cursorPosition, postMessage]);
+    }, [closeButtonIcon, rightButtonEnabled, componentId]);
 
     const onPostChangeText = useCallback((message: string) => {
         setPostMessage(message);
@@ -158,8 +157,8 @@ const EditPost = ({componentId, maxPostSize, post}: EditPostProps) => {
         popTopScreen();
     }, []);
 
-    const onEditPost = useCallback(async () => {
-        setIsEditing(true);
+    const onSaveEditedPost = useCallback(async () => {
+        setIsUpdating(true);
         setErrorLine(undefined);
         setErrorExtra(undefined);
 
@@ -169,11 +168,11 @@ const EditPost = ({componentId, maxPostSize, post}: EditPostProps) => {
         emitEditing(false);
 
         if (error) {
-            setIsEditing(false);
+            setIsUpdating(false);
             setErrorLine(error as string);
             postInputRef?.current?.focus();
         } else {
-            setIsEditing(false);
+            setIsUpdating(false);
             onClose();
         }
     }, [emitEditing, serverUrl, post.id, postMessage, onClose]);
@@ -182,7 +181,7 @@ const EditPost = ({componentId, maxPostSize, post}: EditPostProps) => {
         setPostInputTop(e.nativeEvent.layout.y);
     }, []);
 
-    if (isEditing) {
+    if (isUpdating) {
         return (
             <View style={styles.container}>
                 <Loading color={theme.buttonBg}/>
