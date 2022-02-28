@@ -83,6 +83,13 @@ commands:
       - run:
           name: Generate assets
           command: node ./scripts/generate-assets.js
+      - run:
+          name: Compass Icons
+          environment:
+            COMPASS_ICONS: "node_modules/@mattermost/compass-icons/font/compass-icons.ttf"
+          command: |
+            cp "$COMPASS_ICONS" "assets/fonts/"
+            cp "$COMPASS_ICONS" "android/app/src/main/assets/fonts"
       - save_cache:
           name: Save assets cache
           key: v1-assets-{{ checksum "assets/base/config.json" }}-{{ arch }}

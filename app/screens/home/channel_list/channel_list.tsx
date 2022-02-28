@@ -17,6 +17,7 @@ import {makeStyleSheetFromTheme} from '@utils/theme';
 import Servers from './servers';
 
 type ChannelProps = {
+    channelsCount: number;
     currentTeamId?: string;
     teamsCount: number;
     time?: number;
@@ -91,10 +92,11 @@ const ChannelListScreen = (props: ChannelProps) => {
                         teamsCount={props.teamsCount}
                     />
                     <ChannelList
-                        currentTeamId={props.currentTeamId}
                         iconPad={canAddOtherServers && props.teamsCount <= 1}
                         isTablet={isTablet}
                         teamsCount={props.teamsCount}
+                        channelsCount={props.channelsCount}
+                        currentTeamId={props.currentTeamId}
                     />
                     {isTablet && Boolean(props.currentTeamId) &&
                         <Channel/>

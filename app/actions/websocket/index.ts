@@ -19,6 +19,7 @@ import {queryCommonSystemValues, queryConfig, queryCurrentChannelId, queryWebSoc
 import {deleteMyTeams, queryTeamsById} from '@queries/servers/team';
 import {isTablet} from '@utils/helpers';
 
+import {handleCategoryCreatedEvent, handleCategoryDeletedEvent, handleCategoryOrderUpdatedEvent, handleCategoryUpdatedEvent} from './category';
 import {handleChannelDeletedEvent, handleUserAddedToChannelEvent, handleUserRemovedFromChannelEvent} from './channel';
 import {handleNewPostEvent, handlePostDeleted, handlePostEdited, handlePostUnread} from './posts';
 import {handlePreferenceChangedEvent, handlePreferencesChangedEvent, handlePreferencesDeletedEvent} from './preferences';
@@ -241,6 +242,19 @@ export async function handleEvent(serverUrl: string, msg: WebSocketMessage) {
 
         case WebsocketEvents.MEMBERROLE_UPDATED:
             handleTeamMemberRoleUpdatedEvent(serverUrl, msg);
+            break;
+
+        case WebsocketEvents.CATEGORY_CREATED:
+            handleCategoryCreatedEvent(serverUrl, msg);
+            break;
+        case WebsocketEvents.CATEGORY_UPDATED:
+            handleCategoryUpdatedEvent(serverUrl, msg);
+            break;
+        case WebsocketEvents.CATEGORY_ORDER_UPDATED:
+            handleCategoryOrderUpdatedEvent(serverUrl, msg);
+            break;
+        case WebsocketEvents.CATEGORY_DELETED:
+            handleCategoryDeletedEvent(serverUrl, msg);
             break;
 
         case WebsocketEvents.CHANNEL_CREATED:

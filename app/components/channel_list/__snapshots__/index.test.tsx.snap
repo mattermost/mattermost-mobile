@@ -1,6 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`components/channel_list should match snapshot 1`] = `
+exports[`components/channel_list should render channels error 1`] = `
 <View
   animatedStyle={
     Object {
@@ -15,7 +15,8 @@ exports[`components/channel_list should match snapshot 1`] = `
       "backgroundColor": "#1e325c",
       "flex": 1,
       "maxWidth": "100%",
-      "paddingHorizontal": 20,
+      "paddingLeft": 18,
+      "paddingRight": 20,
       "paddingVertical": 10,
     }
   }
@@ -70,7 +71,299 @@ exports[`components/channel_list should match snapshot 1`] = `
         ]
       }
     >
-      Couldn't load 
+      Couldn't load Test Team!
+    </Text>
+    <Text
+      style={
+        Array [
+          Object {
+            "fontFamily": "OpenSans",
+            "fontSize": 16,
+            "fontWeight": "400",
+            "lineHeight": 24,
+          },
+          Object {
+            "color": "#ffffff",
+            "marginTop": 4,
+            "textAlign": "center",
+          },
+        ]
+      }
+    >
+      There was a problem loading content for this team.
+    </Text>
+    <View
+      onMoveShouldSetResponder={[Function]}
+      onMoveShouldSetResponderCapture={[Function]}
+      onResponderEnd={[Function]}
+      onResponderGrant={[Function]}
+      onResponderMove={[Function]}
+      onResponderReject={[Function]}
+      onResponderRelease={[Function]}
+      onResponderStart={[Function]}
+      onResponderTerminate={[Function]}
+      onResponderTerminationRequest={[Function]}
+      onStartShouldSetResponder={[Function]}
+      onStartShouldSetResponderCapture={[Function]}
+    >
+      <View
+        accessible={true}
+        focusable={true}
+        onClick={[Function]}
+        onResponderGrant={[Function]}
+        onResponderMove={[Function]}
+        onResponderRelease={[Function]}
+        onResponderTerminate={[Function]}
+        onResponderTerminationRequest={[Function]}
+        onStartShouldSetResponder={[Function]}
+        style={
+          Array [
+            Object {
+              "marginTop": 24,
+            },
+            Array [
+              Object {
+                "alignItems": "center",
+                "borderRadius": 4,
+                "flex": 0,
+                "justifyContent": "center",
+              },
+              Object {
+                "height": 48,
+                "paddingHorizontal": 24,
+                "paddingVertical": 14,
+              },
+              Object {
+                "backgroundColor": "#ffffff",
+              },
+            ],
+          ]
+        }
+      >
+        <Text
+          style={
+            Array [
+              Object {
+                "alignItems": "center",
+                "fontFamily": "OpenSans-SemiBold",
+                "fontWeight": "600",
+                "justifyContent": "center",
+                "padding": 1,
+                "textAlignVertical": "center",
+              },
+              Object {
+                "fontSize": 16,
+                "lineHeight": 16,
+                "marginTop": 1,
+              },
+              Object {
+                "color": "#1c58d9",
+              },
+            ]
+          }
+        >
+          Retry
+        </Text>
+      </View>
+    </View>
+  </View>
+</View>
+`;
+
+exports[`components/channel_list should render team error 1`] = `
+<View
+  animatedStyle={
+    Object {
+      "value": Object {
+        "maxWidth": "100%",
+      },
+    }
+  }
+  collapsable={false}
+  style={
+    Object {
+      "backgroundColor": "#1e325c",
+      "flex": 1,
+      "maxWidth": "100%",
+      "paddingLeft": 18,
+      "paddingRight": 20,
+      "paddingVertical": 10,
+    }
+  }
+>
+  <View
+    style={
+      Object {
+        "alignItems": "center",
+        "backgroundColor": "rgba(255,255,255,0.12)",
+        "borderRadius": 8,
+        "flex": 1,
+        "flexDirection": "row",
+        "height": 40,
+        "justifyContent": "flex-start",
+        "marginVertical": 20,
+        "maxHeight": 40,
+        "padding": 8,
+        "width": "100%",
+      }
+    }
+  >
+    <Icon
+      name="magnify"
+      style={
+        Object {
+          "color": "rgba(255,255,255,0.72)",
+          "fontSize": 24,
+          "width": 24,
+        }
+      }
+    />
+    <TextInput
+      placeholder="Find Channels"
+      placeholderTextColor="rgba(255,255,255,0.72)"
+      style={
+        Array [
+          Array [
+            Object {
+              "fontFamily": "OpenSans",
+              "fontSize": 16,
+              "fontWeight": "400",
+              "lineHeight": 24,
+            },
+            Object {
+              "textAlignVertical": "center",
+            },
+          ],
+          Object {
+            "alignContent": "center",
+            "alignItems": "center",
+            "color": "#ffffff",
+            "flex": 1,
+            "height": 40,
+            "marginLeft": 5,
+            "marginTop": -2,
+          },
+        ]
+      }
+    />
+  </View>
+  <View
+    onMoveShouldSetResponder={[Function]}
+    onMoveShouldSetResponderCapture={[Function]}
+    onResponderEnd={[Function]}
+    onResponderGrant={[Function]}
+    onResponderMove={[Function]}
+    onResponderReject={[Function]}
+    onResponderRelease={[Function]}
+    onResponderStart={[Function]}
+    onResponderTerminate={[Function]}
+    onResponderTerminationRequest={[Function]}
+    onStartShouldSetResponder={[Function]}
+    onStartShouldSetResponderCapture={[Function]}
+  >
+    <View
+      accessible={true}
+      focusable={true}
+      onClick={[Function]}
+      onResponderGrant={[Function]}
+      onResponderMove={[Function]}
+      onResponderRelease={[Function]}
+      onResponderTerminate={[Function]}
+      onResponderTerminationRequest={[Function]}
+      onStartShouldSetResponder={[Function]}
+    >
+      <View
+        style={
+          Object {
+            "display": "flex",
+            "flexDirection": "row",
+          }
+        }
+      >
+        <Icon
+          name="message-text-outline"
+          style={
+            Object {
+              "color": "#ffffff",
+              "fontSize": 24,
+              "lineHeight": 28,
+            }
+          }
+        />
+        <Text
+          style={
+            Array [
+              Array [
+                Object {
+                  "fontFamily": "OpenSans-SemiBold",
+                  "fontSize": 16,
+                  "fontWeight": "600",
+                  "lineHeight": 24,
+                },
+              ],
+              Object {
+                "color": "#ffffff",
+                "paddingLeft": 12,
+              },
+            ]
+          }
+        >
+          Threads
+        </Text>
+      </View>
+    </View>
+  </View>
+  <View
+    style={
+      Object {
+        "alignItems": "center",
+        "flex": 1,
+        "justifyContent": "center",
+        "padding": 20,
+      }
+    }
+  >
+    <View
+      style={
+        Object {
+          "alignItems": "center",
+          "backgroundColor": "rgba(255,255,255,0.08)",
+          "borderRadius": 60,
+          "height": 120,
+          "justifyContent": "center",
+          "width": 120,
+        }
+      }
+    >
+      <Icon
+        name="alert-circle-outline"
+        style={
+          Object {
+            "color": "rgba(255,255,255,0.48)",
+            "fontSize": 72,
+            "lineHeight": 72,
+          }
+        }
+      />
+    </View>
+    <Text
+      style={
+        Array [
+          Object {
+            "fontFamily": "Metropolis-SemiBold",
+            "fontSize": 20,
+            "fontWeight": "600",
+            "lineHeight": 28,
+          },
+          Object {
+            "color": "#ffffff",
+            "marginTop": 20,
+            "textAlign": "center",
+          },
+        ]
+      }
+    >
+      Couldn't load categories for 
     </Text>
     <Text
       style={

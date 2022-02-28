@@ -9,16 +9,16 @@ import {Screens} from '@constants';
 import BottomSheet from '@screens/bottom_sheet';
 import {isSystemMessage} from '@utils/post';
 
-import CopyLinkOption from './components/options/copy_permalink_option';
-import CopyTextOption from './components/options/copy_text_option';
-import DeletePostOption from './components/options/delete_post_option';
-import EditOption from './components/options/edit_option';
-import FollowThreadOption from './components/options/follow_option';
-import MarkAsUnreadOption from './components/options/mark_unread_option';
-import PinChannelOption from './components/options/pin_channel_option';
-import ReplyOption from './components/options/reply_option';
-import SaveOption from './components/options/save_option';
-import ReactionBar from './components/reaction_bar';
+import CopyLinkOption from './options/copy_permalink_option';
+import CopyTextOption from './options/copy_text_option';
+import DeletePostOption from './options/delete_post_option';
+import EditOption from './options/edit_option';
+import FollowThreadOption from './options/follow_option';
+import MarkAsUnreadOption from './options/mark_unread_option';
+import PinChannelOption from './options/pin_channel_option';
+import ReplyOption from './options/reply_option';
+import SaveOption from './options/save_option';
+import ReactionBar from './reaction_bar';
 
 import type PostModel from '@typings/database/models/servers/post';
 
@@ -66,21 +66,33 @@ const PostOptions = ({
     const renderContent = () => {
         return (
             <>
-                {canAddReaction && <ReactionBar/>}
-                {canReply && <ReplyOption/>}
+                {canAddReaction && <ReactionBar postId={post.id}/>}
+                {canReply && <ReplyOption post={post}/>}
                 {shouldRenderFollow &&
                     <FollowThreadOption
                         location={location}
                         thread={thread}
                     />
                 }
-                {canMarkAsUnread && !isSystemPost && (<MarkAsUnreadOption/>)}
+                {canMarkAsUnread && !isSystemPost &&
+                    <MarkAsUnreadOption postId={post.id}/>
+                }
                 {canCopyPermalink && <CopyLinkOption post={post}/>}
-                {!isSystemPost && <SaveOption isSaved={isSaved}/>}
+                {!isSystemPost &&
+                    <SaveOption
+                        isSaved={isSaved}
+                        postId={post.id}
+                    />
+                }
                 {canCopyText && <CopyTextOption postMessage={post.message}/>}
-                {canPin && <PinChannelOption isPostPinned={post.isPinned}/>}
-                {canEdit && <EditOption/>}
-                {canDelete && <DeletePostOption/>}
+                {canPin &&
+                    <PinChannelOption
+                        isPostPinned={post.isPinned}
+                        postId={post.id}
+                    />
+                }
+                {canEdit && <EditOption post={post}/>}
+                {canDelete && <DeletePostOption postId={post.id}/>}
             </>
         );
     };

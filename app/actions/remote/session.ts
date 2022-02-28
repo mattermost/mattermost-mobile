@@ -153,7 +153,7 @@ export const login = async (serverUrl: string, {ldapOnly = false, loginId, mfaTo
     }
 };
 
-export const logout = async (serverUrl: string, skipServerLogout = false) => {
+export const logout = async (serverUrl: string, skipServerLogout = false, removeServer = false) => {
     if (!skipServerLogout) {
         try {
             const client = NetworkManager.getClient(serverUrl);
@@ -165,7 +165,7 @@ export const logout = async (serverUrl: string, skipServerLogout = false) => {
         }
     }
 
-    DeviceEventEmitter.emit(Events.SERVER_LOGOUT, serverUrl);
+    DeviceEventEmitter.emit(Events.SERVER_LOGOUT, {serverUrl, removeServer});
 };
 
 export const sendPasswordResetEmail = async (serverUrl: string, email: string) => {

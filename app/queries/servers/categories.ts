@@ -46,6 +46,15 @@ export const queryCategoriesByTeamId = async (database: Database, teamId: string
     }
 };
 
+export const queryCategoriesByTeamIds = async (database: Database, teamIds: string[]): Promise<CategoryModel[]> => {
+    try {
+        const records = (await database.get<CategoryModel>(CATEGORY).query(Q.where('team_id', Q.oneOf(teamIds))).fetch());
+        return records;
+    } catch {
+        return Promise.resolve([] as CategoryModel[]);
+    }
+};
+
 export const queryCategoriesByTypeTeamId = async (database: Database, type: CategoryType, teamId: string): Promise<CategoryModel[]> => {
     try {
         const records = await database.get<CategoryModel>(CATEGORY).query(
@@ -94,9 +103,12 @@ export const prepareCategoryChannels = (
             });
         });
 
-        const categoryChannelRecords = operator.handleCategoryChannels({categoryChannels, prepareRecordsOnly: true});
+        if (categoryChannels.length) {
+            const categoryChannelRecords = operator.handleCategoryChannels({categoryChannels, prepareRecordsOnly: true});
+            return [categoryChannelRecords];
+        }
 
-        return [categoryChannelRecords];
+        return [];
     } catch (e) {
         return undefined;
     }

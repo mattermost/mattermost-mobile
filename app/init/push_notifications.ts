@@ -14,10 +14,10 @@ import {
     Registered,
 } from 'react-native-notifications';
 
+import {storeDeviceToken} from '@actions/app/global';
 import {markChannelAsViewed} from '@actions/local/channel';
 import {backgroundNotification, openNotification} from '@actions/remote/notifications';
 import {Device, Events, Navigation, Screens} from '@constants';
-import {GLOBAL_IDENTIFIERS} from '@constants/database';
 import DatabaseManager from '@database/manager';
 import {DEFAULT_LOCALE, getLocalizedMessage, t} from '@i18n';
 import NativeNotifications from '@notifications';
@@ -187,7 +187,7 @@ class PushNotifications {
         const serverUrl = await this.getServerUrlFromNotification(notification);
 
         if (serverUrl) {
-            DeviceEventEmitter.emit(Events.SERVER_LOGOUT, serverUrl);
+            DeviceEventEmitter.emit(Events.SERVER_LOGOUT, {serverUrl});
         }
     };
 
@@ -257,16 +257,7 @@ class PushNotifications {
                 prefix = Device.PUSH_NOTIFY_ANDROID_REACT_NATIVE;
             }
 
-            const operator = DatabaseManager.appDatabase?.operator;
-
-            if (!operator) {
-                return {error: 'No App database found'};
-            }
-
-            operator.handleGlobal({
-                global: [{id: GLOBAL_IDENTIFIERS.DEVICE_TOKEN, value: `${prefix}:${deviceToken}`}],
-                prepareRecordsOnly: false,
-            });
+            storeDeviceToken(`${prefix}:${deviceToken}`);
 
             // Store the device token in the default database
             this.requestNotificationReplyPermissions();
