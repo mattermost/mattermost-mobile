@@ -28,7 +28,7 @@ export type SharedVector<T extends SharedValueType> = {
 const isVector = (value: any): value is Vector<any> => {
     'worklet';
 
-    return typeof value.x !== 'undefined' && typeof value.y !== 'undefined';
+    return value.x !== undefined && value.y !== undefined;
 };
 
 const isSharedValue = (
