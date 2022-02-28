@@ -29,6 +29,8 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         },
         container: {
             flex: 1,
+            alignItems: 'center',
+            justifyContent: 'center',
         },
         scrollView: {
             flex: 1,
