@@ -137,11 +137,14 @@ const EditPost = ({componentId, maxPostSize, post}: EditPostProps) => {
     const onPostChangeText = useCallback((message: string) => {
         setPostMessage(message);
         const tooLong = message.trim().length > maxPostSize;
-        const line = tooLong ? intl.formatMessage({id: 'mobile.message_length.message_split_left', defaultMessage: 'Message exceeds the character limit'}) : undefined;
-        const extra = tooLong ? `${message.trim().length} / ${maxPostSize}` : undefined;
-        setErrorLine(line);
-        setErrorExtra(extra);
-        updateCanEditPostButton(message ? !tooLong : false);
+
+        if (tooLong) {
+            const line = tooLong ? intl.formatMessage({id: 'mobile.message_length.message_split_left', defaultMessage: 'Message exceeds the character limit'}) : undefined;
+            const extra = tooLong ? `${message.trim().length} / ${maxPostSize}` : undefined;
+            setErrorLine(line);
+            setErrorExtra(extra);
+        }
+        updateCanEditPostButton(Boolean(message) && !tooLong);
     }, [intl, maxPostSize, updateCanEditPostButton]);
 
     const emitEditing = useCallback((loading) => {
