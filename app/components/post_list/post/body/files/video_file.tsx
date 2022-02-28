@@ -6,18 +6,17 @@ import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {StyleSheet, useWindowDimensions, View} from 'react-native';
 
 import {updateLocalFile} from '@actions/local/file';
+import {buildFilePreviewUrl, fetchPublicLink} from '@actions/remote/file';
 import CompassIcon from '@components/compass_icon';
 import ProgressiveImage from '@components/progressive_image';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
-import NetworkManager from '@init/network_manager';
 import {fileExists} from '@utils/file';
 import {calculateDimensions} from '@utils/images';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 import FileIcon from './file_icon';
 
-import type {Client} from '@client/rest';
 import type {ResizeMode} from 'react-native-fast-image';
 
 type Props = {
@@ -84,31 +83,26 @@ const VideoFile = ({
     }, [dimensions.height, dimensions.width, video.height, video.width, wrapperWidth]);
 
     const getThumbnail = async () => {
-        let client: Client | undefined;
-        try {
-            client = NetworkManager.getClient(serverUrl);
-        } catch {
-            return;
-        }
-
         const data = {...file};
         try {
             const exists = data.mini_preview ? await fileExists(data.mini_preview) : false;
             if (!data.mini_preview || !exists) {
                 // We use the public link to avoid having to pass the token through a third party
                 // library
-                const publicUri = await client!.getFilePublicLink(data.id!);
-                const {uri, height, width} = await getThumbnailAsync(publicUri!.link, {time: 2000});
-                data.mini_preview = uri;
-                data.height = height;
-                data.width = width;
-                updateLocalFile(serverUrl, data);
-                if (mounted.current) {
-                    setVideo(data);
+                const publicUri = await fetchPublicLink(serverUrl, data.id!);
+                if (('link') in publicUri) {
+                    const {uri, height, width} = await getThumbnailAsync(publicUri.link, {time: 2000});
+                    data.mini_preview = uri;
+                    data.height = height;
+                    data.width = width;
+                    updateLocalFile(serverUrl, data);
+                    if (mounted.current) {
+                        setVideo(data);
+                    }
                 }
             }
         } catch (error) {
-            data.mini_preview = client!.getFilePreviewUrl(data.id!, 0);
+            data.mini_preview = buildFilePreviewUrl(serverUrl, data.id!);
             if (mounted.current) {
                 setVideo(data);
             }

@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useLayoutEffect} from 'react';
+import React, {useEffect, useLayoutEffect} from 'react';
 import Animated, {makeMutable, runOnUI} from 'react-native-reanimated';
 
 export interface GalleryManagerItem {
@@ -154,7 +154,11 @@ export function GalleryInit({children, galleryIdentifier}: GalleryInitProps) {
         };
     }, []);
 
-    // add effect para limipiar del manager
+    useEffect(() => {
+        return () => {
+            galleryManager.remove(galleryIdentifier);
+        };
+    }, []);
 
     return children;
 }

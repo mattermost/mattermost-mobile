@@ -4,16 +4,15 @@
 import React, {useCallback, useState} from 'react';
 import {StyleProp, StyleSheet, useWindowDimensions, View, ViewStyle} from 'react-native';
 
+import {buildFilePreviewUrl, buildFileThumbnailUrl} from '@actions/remote/file';
 import ProgressiveImage from '@components/progressive_image';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
-import NetworkManager from '@init/network_manager';
 import {calculateDimensions} from '@utils/images';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 import FileIcon from './file_icon';
 
-import type {Client} from '@client/rest';
 import type {ResizeMode} from 'react-native-fast-image';
 
 type ImageFileProps = {
@@ -73,12 +72,6 @@ const ImageFile = ({
     const theme = useTheme();
     const style = getStyleSheet(theme);
     let image;
-    let client: Client | undefined;
-    try {
-        client = NetworkManager.getClient(serverUrl);
-    } catch {
-        // do nothing
-    }
 
     const getImageDimensions = () => {
         if (isSingleImage) {
@@ -102,9 +95,9 @@ const ImageFile = ({
             if (file.mini_preview && file.mime_type) {
                 props.thumbnailUri = `data:${file.mime_type};base64,${file.mini_preview}`;
             } else {
-                props.thumbnailUri = client?.getFileThumbnailUrl(file.id, 0);
+                props.thumbnailUri = buildFileThumbnailUrl(serverUrl, file.id);
             }
-            props.imageUri = client?.getFilePreviewUrl(file.id, 0);
+            props.imageUri = buildFilePreviewUrl(serverUrl, file.id);
             props.inViewPort = inViewPort;
         }
         return props;

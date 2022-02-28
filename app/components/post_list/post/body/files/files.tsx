@@ -5,10 +5,10 @@ import React, {useEffect, useMemo, useState} from 'react';
 import {DeviceEventEmitter, StyleProp, StyleSheet, View, ViewStyle} from 'react-native';
 import Animated, {useDerivedValue} from 'react-native-reanimated';
 
+import {buildFilePreviewUrl, buildFileUrl} from '@actions/remote/file';
 import {GalleryInit} from '@context/gallery';
 import {useServerUrl} from '@context/server';
 import {useIsTablet} from '@hooks/device';
-import NetworkManager from '@init/network_manager';
 import {isGif, isImage, isVideo} from '@utils/file';
 import {fileToGalleryItem, openGalleryAtIndex} from '@utils/gallery';
 import {getViewPortWidth} from '@utils/images';
@@ -16,7 +16,6 @@ import {preventDoubleTap} from '@utils/tap';
 
 import File from './file';
 
-import type {Client} from '@client/rest';
 import type FileModel from '@typings/database/models/servers/file';
 
 type FilesProps = {
@@ -57,13 +56,6 @@ const Files = ({authorId, canDownloadFiles, failed, files, isReplyPost, location
     const filesInfo: FileInfo[] = useMemo(() => files.map((f) => f.toFileInfo(authorId)), [authorId, files]);
 
     const {images: imageAttachments, nonImages: nonImageAttachments} = useMemo(() => {
-        let client: Client | undefined;
-        try {
-            client = NetworkManager.getClient(serverUrl);
-        } catch {
-            return {images: [], nonImages: []};
-        }
-
         return filesInfo.reduce(({images, nonImages}: {images: FileInfo[]; nonImages: FileInfo[]}, file) => {
             const imageFile = isImage(file);
             const videoFile = isVideo(file);
@@ -72,13 +64,13 @@ const Files = ({authorId, canDownloadFiles, failed, files, isReplyPost, location
                 if (file.localPath) {
                     uri = file.localPath;
                 } else {
-                    uri = (isGif(file) || videoFile) ? client!.getFileUrl(file.id!, 0) : client!.getFilePreviewUrl(file.id!, 0);
+                    uri = (isGif(file) || videoFile) ? buildFileUrl(serverUrl, file.id!) : buildFilePreviewUrl(serverUrl, file.id!);
                 }
                 images.push({...file, uri});
             } else {
                 if (videoFile) {
                     // fallback if public links are not enabled
-                    file.uri = client!.getFileUrl(file.id!, 0);
+                    file.uri = buildFileUrl(serverUrl, file.id!);
                 }
 
                 nonImages.push(file);

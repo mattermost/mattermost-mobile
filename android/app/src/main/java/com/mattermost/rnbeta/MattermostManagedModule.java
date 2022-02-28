@@ -53,10 +53,12 @@ public class MattermostManagedModule extends ReactContextBaseJavaModule {
                     if (mPickerPromise != null) {
                         if (resultCode == Activity.RESULT_CANCELED) {
                             mPickerPromise.reject(SAVE_EVENT, "Save operation cancelled");
+                            mPickerPromise = null;
                         } else if (resultCode == Activity.RESULT_OK) {
                             Uri uri = intent.getData();
                             if (uri == null) {
                                 mPickerPromise.reject(SAVE_EVENT, "No data found");
+                                mPickerPromise = null;
                             } else {
                                 try {
                                     new SaveDataTask(reactContext, fileContent, uri).execute();
@@ -64,6 +66,7 @@ public class MattermostManagedModule extends ReactContextBaseJavaModule {
                                     mPickerPromise = null;
                                 } catch (Exception e) {
                                     mPickerPromise.reject(SAVE_EVENT, e.getMessage());
+                                    mPickerPromise = null;
                                 }
                             }
                         }

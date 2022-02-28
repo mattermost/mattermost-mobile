@@ -68,11 +68,7 @@ export const friction = (value: number) => {
         ),
     );
 
-    if (value < 0) {
-        return -res;
-    }
-
-    return res;
+    return value > 0 ? res : -res;
 };
 
 export const galleryItemToFileInfo = (item: GalleryItemType): FileInfo => ({

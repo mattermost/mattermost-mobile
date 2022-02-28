@@ -7,6 +7,8 @@ import {Client} from '@client/rest';
 import ClientError from '@client/rest/error';
 import NetworkManager from '@init/network_manager';
 
+import {forceLogoutIfNecessary} from './session';
+
 export const uploadFile = (
     serverUrl: string,
     file: FileInfo,
@@ -23,4 +25,54 @@ export const uploadFile = (
         return {error: error as ClientError};
     }
     return {cancel: client.uploadPostAttachment(file, channelId, onProgress, onComplete, onError, skipBytes)};
+};
+
+export const fetchPublicLink = async (serverUrl: string, fileId: string) => {
+    let client: Client;
+    try {
+        client = NetworkManager.getClient(serverUrl);
+    } catch (error) {
+        return {error: error as ClientError};
+    }
+
+    try {
+        const publicLink = await client!.getFilePublicLink(fileId);
+        return publicLink;
+    } catch (error) {
+        forceLogoutIfNecessary(serverUrl, error as ClientErrorProps);
+        return {error};
+    }
+};
+
+export const buildFileUrl = (serverUrl: string, fileId: string, timestamp = 0) => {
+    let client: Client;
+    try {
+        client = NetworkManager.getClient(serverUrl);
+    } catch (error) {
+        return '';
+    }
+
+    return client.getFileUrl(fileId, timestamp);
+};
+
+export const buildFilePreviewUrl = (serverUrl: string, fileId: string, timestamp = 0) => {
+    let client: Client;
+    try {
+        client = NetworkManager.getClient(serverUrl);
+    } catch (error) {
+        return '';
+    }
+
+    return client.getFilePreviewUrl(fileId, timestamp);
+};
+
+export const buildFileThumbnailUrl = (serverUrl: string, fileId: string, timestamp = 0) => {
+    let client: Client;
+    try {
+        client = NetworkManager.getClient(serverUrl);
+    } catch (error) {
+        return '';
+    }
+
+    return client.getFileThumbnailUrl(fileId, timestamp);
 };
