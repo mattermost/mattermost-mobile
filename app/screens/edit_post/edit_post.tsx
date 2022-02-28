@@ -29,6 +29,9 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         },
         container: {
             flex: 1,
+        },
+        loader: {
+            flex: 1,
             alignItems: 'center',
             justifyContent: 'center',
         },
@@ -188,7 +191,7 @@ const EditPost = ({componentId, maxPostSize, post}: EditPostProps) => {
 
     if (isUpdating) {
         return (
-            <View style={styles.container}>
+            <View style={styles.loader}>
                 <Loading color={theme.buttonBg}/>
             </View>
         );
@@ -202,7 +205,7 @@ const EditPost = ({componentId, maxPostSize, post}: EditPostProps) => {
             >
                 <View style={styles.scrollView}>
                     { (errorLine || errorExtra) && (
-                        <PostError //fixme display not good
+                        <PostError
                             errorExtra={errorExtra}
                             errorLine={errorLine}
                         />
