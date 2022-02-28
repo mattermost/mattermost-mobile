@@ -159,6 +159,8 @@ class TestHelper {
             name,
             team_id: teamId,
 
+            // @to-do: Make tests more detriministic;
+            // https://jestjs.io/docs/snapshot-testing#2-tests-should-be-deterministic
             // display_name: `Unit Test ${name}`,
             display_name: 'Channel',
             type: 'O',

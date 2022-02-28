@@ -10,10 +10,9 @@ import {makeStyleSheetFromTheme} from '@utils/theme';
 
 import Categories from './categories';
 import ChannelListHeader from './header';
+import LoadTeamsError from './load_teams_error';
 import SearchField from './search';
 import Threads from './threads';
-
-// import Loading from '@components/loading';
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     container: {
@@ -26,13 +25,13 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
 }));
 
 type ChannelListProps = {
+    currentTeamId?: string;
     iconPad?: boolean;
     isTablet: boolean;
     teamsCount: number;
-    currentTeamId: string;
 }
 
-const ChannelList = ({iconPad, isTablet, teamsCount, currentTeamId}: ChannelListProps) => {
+const ChannelList = ({currentTeamId, iconPad, isTablet, teamsCount}: ChannelListProps) => {
     const theme = useTheme();
     const styles = getStyleSheet(theme);
     const tabletWidth = useSharedValue(TABLET_SIDEBAR_WIDTH);
@@ -52,18 +51,27 @@ const ChannelList = ({iconPad, isTablet, teamsCount, currentTeamId}: ChannelList
         }
     }, [isTablet, teamsCount]);
 
+    let content;
+    if (currentTeamId) {
+        content = (
+            <>
+                <SearchField/>
+                <Threads/>
+                <Categories
+                    currentTeamId={currentTeamId}
+                />
+            </>
+        );
+    } else {
+        content = (<LoadTeamsError/>);
+    }
+
     return (
         <Animated.View style={[styles.container, tabletStyle]}>
-
             <ChannelListHeader
                 iconPad={iconPad}
             />
-
-            <SearchField/>
-            <Threads/>
-            <Categories
-                currentTeamId={currentTeamId}
-            />
+            {content}
         </Animated.View>
     );
 };
