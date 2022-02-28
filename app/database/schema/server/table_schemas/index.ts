@@ -9,11 +9,6 @@ export {default as ChannelSchema} from './channel';
 export {default as CustomEmojiSchema} from './custom_emoji';
 export {default as DraftSchema} from './draft';
 export {default as FileSchema} from './file';
-
-// groups: MM-41882 export {default as GroupMembershipSchema} from './group_membership';
-// groups: MM-41882 export {default as GroupSchema} from './group';
-// groups: MM-41882 export {default as GroupsChannelSchema} from './groups_channel';
-// groups: MM-41882 export {default as GroupsTeamSchema} from './groups_team';
 export {default as MyChannelSchema} from './my_channel';
 export {default as MyChannelSettingsSchema} from './my_channel_settings';
 export {default as MyTeamSchema} from './my_team';

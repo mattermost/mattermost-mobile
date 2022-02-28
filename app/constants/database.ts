@@ -18,11 +18,6 @@ export const MM_TABLES = {
         CUSTOM_EMOJI: 'CustomEmoji',
         DRAFT: 'Draft',
         FILE: 'File',
-
-        // groups: MM-41882 GROUP: 'Group',
-        // groups: MM-41882 GROUPS_CHANNEL: 'GroupsChannel',
-        // groups: MM-41882 GROUPS_TEAM: 'GroupsTeam',
-        // groups: MM-41882 GROUP_MEMBERSHIP: 'GroupMembership',
         MY_CHANNEL: 'MyChannel',
         MY_CHANNEL_SETTINGS: 'MyChannelSettings',
         MY_TEAM: 'MyTeam',

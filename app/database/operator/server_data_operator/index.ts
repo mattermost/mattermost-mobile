@@ -1,7 +1,6 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-// groups: MM-41882 import GroupHandler, {GroupHandlerMix} from '@database/operator/server_data_operator/handlers/group';
 import ServerDataOperatorBase from '@database/operator/server_data_operator/handlers';
 import CategoryHandler, {CategoryHandlerMix} from '@database/operator/server_data_operator/handlers/category';
 import ChannelHandler, {ChannelHandlerMix} from '@database/operator/server_data_operator/handlers/channel';
@@ -17,13 +16,9 @@ import type {Database} from '@nozbe/watermelondb';
 interface ServerDataOperator extends ServerDataOperatorBase, PostHandlerMix, PostsInChannelHandlerMix,
     PostsInThreadHandlerMix, UserHandlerMix, ChannelHandlerMix, CategoryHandlerMix, TeamHandlerMix {}
 
-// groups: MM-41882 PostsInThreadHandlerMix, UserHandlerMix, GroupHandlerMix, ChannelHandlerMix, CategoryHandlerMix, TeamHandlerMix {}
-
 class ServerDataOperator extends mix(ServerDataOperatorBase).with(
     CategoryHandler,
     ChannelHandler,
-
-    // groups: MM-41882 GroupHandler,
     PostHandler,
     PostsInChannelHandler,
     PostsInThreadHandler,

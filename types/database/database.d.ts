@@ -219,25 +219,9 @@ export type HandleTeamArgs = PrepareOnly & {
     teams: Team[];
 };
 
-// groups: MM-41882 export type HandleGroupsChannelArgs = PrepareOnly & {
-// groups: MM-41882   groupsChannels: GroupChannelRelation[];
-// groups: MM-41882 };
-
-// groups: MM-41882 export type HandleGroupsTeamArgs = PrepareOnly &{
-// groups: MM-41882   groupsTeams: GroupTeamRelation[];
-// groups: MM-41882 };
-
-// groups: MM-41882 export type HandleGroupArgs = PrepareOnly & {
-// groups: MM-41882   groups: Group[];
-// groups: MM-41882 };
-
 export type HandleChannelMembershipArgs = PrepareOnly & {
   channelMemberships: Array<Pick<ChannelMembership, 'user_id' | 'channel_id'>>;
 };
-
-// groups: MM-41882 export type HandleGroupMembershipArgs = PrepareOnly & {
-// groups: MM-41882   groupMemberships: GroupMembership[];
-// groups: MM-41882 };
 
 export type HandleTeamMembershipArgs = PrepareOnly & {
   teamMemberships: TeamMembership[];

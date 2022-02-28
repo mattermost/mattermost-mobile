@@ -12,11 +12,6 @@ import {
     CustomEmojiSchema,
     DraftSchema,
     FileSchema,
-
-    // groups: MM-41882 GroupMembershipSchema,
-    // groups: MM-41882 GroupSchema,
-    // groups: MM-41882 GroupsChannelSchema,
-    // groups: MM-41882 GroupsTeamSchema,
     MyChannelSchema,
     MyChannelSettingsSchema,
     MyTeamSchema,
@@ -47,11 +42,6 @@ export const serverSchema: AppSchema = appSchema({
         CustomEmojiSchema,
         DraftSchema,
         FileSchema,
-
-        // groups: MM-41882 GroupMembershipSchema,
-        // groups: MM-41882 GroupSchema,
-        // groups: MM-41882 GroupsChannelSchema,
-        // groups: MM-41882 GroupsTeamSchema,
         MyChannelSchema,
         MyChannelSettingsSchema,
         MyTeamSchema,

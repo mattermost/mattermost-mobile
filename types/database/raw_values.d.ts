@@ -23,22 +23,6 @@ type Draft = {
     root_id: string;
 };
 
-// groups: MM-41882 type GroupMembership = {
-// groups: MM-41882     id?: string;
-// groups: MM-41882     user_id: string;
-// groups: MM-41882     group_id: string;
-// groups: MM-41882 };
-
-// groups: MM-41882 type GroupChannelRelation = {
-// groups: MM-41882     channel_id: string;
-// groups: MM-41882     group_id: string;
-// groups: MM-41882 }
-
-// groups: MM-41882 type GroupTeamRelation = {
-// groups: MM-41882     group_id: string;
-// groups: MM-41882     team_id: string;
-// groups: MM-41882 }
-
 type MyTeam = {
     id: string;
     roles: string;
@@ -104,11 +88,6 @@ type RawValue =
   | CustomEmoji
   | Draft
   | FileInfo
-
-  // groups: MM-41882 | Group
-  // groups: MM-41882 | GroupMembership
-  // groups: MM-41882 | GroupChannel
-  // groups: MM-41882 | GroupTeam
   | IdValue
   | Metadata
   | MyTeam

@@ -16,11 +16,6 @@ const {
     CUSTOM_EMOJI,
     DRAFT,
     FILE,
-
-    // groups: MM-41882 GROUP,
-    // groups: MM-41882 GROUPS_CHANNEL,
-    // groups: MM-41882 GROUPS_TEAM,
-    // groups: MM-41882 GROUP_MEMBERSHIP,
     MY_CHANNEL,
     MY_CHANNEL_SETTINGS,
     MY_TEAM,
@@ -293,63 +288,6 @@ describe('*** Test schema for SERVER database ***', () => {
                         {name: 'user_id', type: 'string', isIndexed: true},
                     ],
                 },
-
-                // groups: MM-41882 [GROUP]: {
-                // groups: MM-41882     name: GROUP,
-                // groups: MM-41882     unsafeSql: undefined,
-                // groups: MM-41882     columns: {
-                // groups: MM-41882         allow_reference: {name: 'allow_reference', type: 'boolean'},
-                // groups: MM-41882         delete_at: {name: 'delete_at', type: 'number'},
-                // groups: MM-41882         display_name: {name: 'display_name', type: 'string'},
-                // groups: MM-41882         name: {name: 'name', type: 'string'},
-                // groups: MM-41882     },
-                // groups: MM-41882     columnArray: [
-                // groups: MM-41882         {name: 'allow_reference', type: 'boolean'},
-                // groups: MM-41882         {name: 'delete_at', type: 'number'},
-                // groups: MM-41882         {name: 'display_name', type: 'string'},
-                // groups: MM-41882         {name: 'name', type: 'string'},
-                // groups: MM-41882     ],
-                // groups: MM-41882 },
-                // groups: MM-41882 [GROUPS_CHANNEL]: {
-                // groups: MM-41882     name: GROUPS_CHANNEL,
-                // groups: MM-41882     unsafeSql: undefined,
-                // groups: MM-41882     columns: {
-                // groups: MM-41882         channel_id: {name: 'channel_id', type: 'string', isIndexed: true},
-                // groups: MM-41882         group_id: {name: 'group_id', type: 'string', isIndexed: true},
-                // groups: MM-41882         member_count: {name: 'member_count', type: 'number'},
-                // groups: MM-41882         timezone_count: {name: 'timezone_count', type: 'number'},
-                // groups: MM-41882     },
-                // groups: MM-41882     columnArray: [
-                // groups: MM-41882         {name: 'channel_id', type: 'string', isIndexed: true},
-                // groups: MM-41882         {name: 'group_id', type: 'string', isIndexed: true},
-                // groups: MM-41882         {name: 'member_count', type: 'number'},
-                // groups: MM-41882         {name: 'timezone_count', type: 'number'},
-                // groups: MM-41882     ],
-                // groups: MM-41882 },
-                // groups: MM-41882 [GROUPS_TEAM]: {
-                // groups: MM-41882     name: GROUPS_TEAM,
-                // groups: MM-41882     unsafeSql: undefined,
-                // groups: MM-41882     columns: {
-                // groups: MM-41882         group_id: {name: 'group_id', type: 'string', isIndexed: true},
-                // groups: MM-41882         team_id: {name: 'team_id', type: 'string', isIndexed: true},
-                // groups: MM-41882     },
-                // groups: MM-41882     columnArray: [
-                // groups: MM-41882         {name: 'group_id', type: 'string', isIndexed: true},
-                // groups: MM-41882         {name: 'team_id', type: 'string', isIndexed: true},
-                // groups: MM-41882     ],
-                // groups: MM-41882 },
-                // groups: MM-41882 [GROUP_MEMBERSHIP]: {
-                // groups: MM-41882     name: GROUP_MEMBERSHIP,
-                // groups: MM-41882     unsafeSql: undefined,
-                // groups: MM-41882     columns: {
-                // groups: MM-41882         group_id: {name: 'group_id', type: 'string', isIndexed: true},
-                // groups: MM-41882         user_id: {name: 'user_id', type: 'string', isIndexed: true},
-                // groups: MM-41882     },
-                // groups: MM-41882     columnArray: [
-                // groups: MM-41882         {name: 'group_id', type: 'string', isIndexed: true},
-                // groups: MM-41882         {name: 'user_id', type: 'string', isIndexed: true},
-                // groups: MM-41882     ],
-                // groups: MM-41882 },
                 [PREFERENCE]: {
                     name: PREFERENCE,
                     unsafeSql: undefined,
