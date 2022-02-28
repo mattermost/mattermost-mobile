@@ -137,8 +137,8 @@ const Post = ({
             const isValidSystemMessage = isAutoResponder || !isSystemPost;
             if (post.deleteAt === 0 && isValidSystemMessage && !isPendingOrFailed) {
                 if ([Screens.CHANNEL, Screens.PERMALINK].includes(location)) {
-                    // https://mattermost.atlassian.net/browse/MM-39708
-                    goToScreen('THREADS_SCREEN_NOT_IMPLEMENTED_YET', '', {post});
+                    const rootId = post.rootId || post.id;
+                    goToScreen(Screens.THREAD, '', {rootId}, {topBar: {visible: false}});
                 }
             } else if ((isEphemeral || post.deleteAt > 0)) {
                 removePost(serverUrl, post);

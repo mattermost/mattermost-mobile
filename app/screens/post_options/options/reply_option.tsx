@@ -15,11 +15,10 @@ type Props = {
     post: PostModel;
 }
 const ReplyOption = ({post}: Props) => {
-    const handleReply = useCallback(() => {
-        //todo: @anurag Change below screen name to Screens.THREAD once implemented
-        // https://mattermost.atlassian.net/browse/MM-39708
-        goToScreen('THREADS_SCREEN_NOT_IMPLEMENTED_YET', '', {post});
-        dismissBottomSheet(Screens.POST_OPTIONS);
+    const handleReply = useCallback(async () => {
+        const rootId = post.rootId || post.id;
+        await dismissBottomSheet(Screens.POST_OPTIONS);
+        goToScreen(Screens.THREAD, '', {rootId}, {topBar: {visible: false}});
     }, [post]);
 
     return (

@@ -34,18 +34,9 @@ type ChannelProps = {
 
 const edges: Edge[] = ['left', 'right'];
 
-const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
+const getStyleSheet = makeStyleSheetFromTheme(() => ({
     flex: {
         flex: 1,
-    },
-    sectionContainer: {
-        marginTop: 10,
-        paddingHorizontal: 24,
-    },
-    sectionTitle: {
-        fontSize: 16,
-        fontFamily: 'OpenSans-SemiBold',
-        color: theme.centerChannelColor,
     },
 }));
 

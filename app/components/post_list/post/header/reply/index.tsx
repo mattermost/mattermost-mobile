@@ -4,6 +4,7 @@
 import React, {useCallback} from 'react';
 import {Text, View} from 'react-native';
 
+import {Screens} from '@app/constants';
 import CompassIcon from '@components/compass_icon';
 import TouchableWithFeedback from '@components/touchable_with_feedback';
 import {SEARCH} from '@constants/screens';
@@ -48,8 +49,8 @@ const HeaderReply = ({commentCount, location, post, theme}: HeaderReplyProps) =>
     const style = getStyleSheet(theme);
 
     const onPress = useCallback(preventDoubleTap(() => {
-        // https://mattermost.atlassian.net/browse/MM-39708
-        goToScreen('THREADS_SCREEN_NOT_IMPLEMENTED_YET', '', {post});
+        const rootId = post.rootId || post.id;
+        goToScreen(Screens.THREAD, '', {rootId}, {topBar: {visible: false}});
     }), []);
 
     return (
