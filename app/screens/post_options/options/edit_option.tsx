@@ -2,6 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback} from 'react';
+import {useIntl} from 'react-intl';
 
 import {Screens} from '@constants';
 import {t} from '@i18n';
@@ -14,10 +15,11 @@ type Props = {
     post: PostModel;
 }
 const EditOption = ({post}: Props) => {
+    const intl = useIntl();
     const onPress = useCallback(async () => {
-        // https://mattermost.atlassian.net/browse/MM-41991
         await dismissBottomSheet(Screens.POST_OPTIONS);
-        goToScreen(Screens.EDIT_POST, '', {post});
+        const title = intl.formatMessage({id: 'mobile.edit_post.title', defaultMessage: 'Editing Message'});
+        goToScreen(Screens.EDIT_POST, title, {post});
     }, [post]);
 
     return (

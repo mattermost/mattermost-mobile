@@ -82,6 +82,6 @@ const PostInput = forwardRef<PostInputRef, PostInputProps>(({keyboardType, messa
     );
 });
 
-PostInput.displayName = 'FloatingTextInput';
+PostInput.displayName = 'PostInput';
 
 export default PostInput;
