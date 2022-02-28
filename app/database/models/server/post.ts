@@ -126,15 +126,14 @@ export default class PostModel extends Model {
         await this.reactions.destroyAllPermanently();
         await this.files.destroyAllPermanently();
         await this.draft.destroyAllPermanently();
-        await this.collections.get(THREAD).query(
-            Q.where('id', this.id),
-        ).destroyAllPermanently();
-        await this.collections.get(THREAD_PARTICIPANT).query(
-            Q.where('thread_id', this.id),
-        ).destroyAllPermanently();
         await this.collections.get(POSTS_IN_THREAD).query(
             Q.where('root_id', this.id),
         ).destroyAllPermanently();
+        try {
+            (await this.thread.fetch())?.destroyPermanently();
+        } catch {
+            // there is no thread record for this post
+        }
         super.destroyPermanently();
     }
 
