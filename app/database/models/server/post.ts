@@ -16,7 +16,7 @@ import type ReactionModel from '@typings/database/models/servers/reaction';
 import type ThreadModel from '@typings/database/models/servers/thread';
 import type UserModel from '@typings/database/models/servers/user';
 
-const {CHANNEL, DRAFT, FILE, POST, POSTS_IN_THREAD, REACTION, THREAD, THREAD_PARTICIPANT, USER} = MM_TABLES.SERVER;
+const {CHANNEL, DRAFT, FILE, POST, POSTS_IN_THREAD, REACTION, USER} = MM_TABLES.SERVER;
 
 /**
  * The Post model is the building block of communication in the Mattermost app.
