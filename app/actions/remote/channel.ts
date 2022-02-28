@@ -189,6 +189,11 @@ export const fetchChannelStats = async (serverUrl: string, channelId: string, fe
 };
 
 export const fetchMyChannelsForTeam = async (serverUrl: string, teamId: string, includeDeleted = true, since = 0, fetchOnly = false, excludeDirect = false): Promise<MyChannelsRequest> => {
+    const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
+    if (!operator) {
+        return {error: `${serverUrl} database not found`};
+    }
+
     let client: Client;
     try {
         client = NetworkManager.getClient(serverUrl);
@@ -219,8 +224,12 @@ export const fetchMyChannelsForTeam = async (serverUrl: string, teamId: string, 
         }, []);
 
         if (!fetchOnly) {
-            storeMyChannelsForTeam(serverUrl, teamId, channels, memberships);
-            storeCategories(serverUrl, categories, true); // Re-sync
+            const {models: chModels} = await storeMyChannelsForTeam(serverUrl, teamId, channels, memberships, true);
+            const {models: catModels} = await storeCategories(serverUrl, categories, true, true); // Re-sync
+            const models = (chModels || []).concat(catModels || []);
+            if (models.length) {
+                await operator.batchRecords(models);
+            }
         }
 
         return {channels, memberships, categories};
