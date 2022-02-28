@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {debounce} from 'lodash';
-import React, {useCallback, useEffect, useMemo, useState} from 'react';
+import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {Platform, SectionList, SectionListData} from 'react-native';
 
 import {searchChannels} from '@actions/remote/channel';
@@ -110,10 +110,14 @@ const ChannelMention = ({
     const serverUrl = useServerUrl();
     const theme = useTheme();
     const style = getStyleFromTheme(theme);
+
     const [sections, setSections] = useState<Array<SectionListData<Channel>>>([]);
     const [channels, setChannels] = useState<Channel[]>([]);
     const [loading, setLoading] = useState(false);
     const [noResultsTerm, setNoResultsTerm] = useState<string|null>(null);
+    const [localCursorPosition, setLocalCursorPosition] = useState(cursorPosition); // To avoid errors due to delay between value changes and cursor position changes.
+
+    const applyingIOSFix = useRef<boolean>(false);
 
     const listStyle = useMemo(() =>
         [style.listView, {maxHeight: maxListHeight}]
@@ -128,15 +132,15 @@ const ChannelMention = ({
         setLoading(false);
     }, 200), []);
 
-    const matchTerm = getMatchTermForChannelMention(value.substring(0, cursorPosition), isSearch);
-
+    const matchTerm = getMatchTermForChannelMention(value.substring(0, localCursorPosition), isSearch);
     const resetState = () => {
-        setSections([]);
+        setChannels([]);
         setNoResultsTerm(null);
+        runSearch.cancel();
     };
 
     const completeMention = useCallback((mention: string) => {
-        const mentionPart = value.substring(0, cursorPosition);
+        const mentionPart = value.substring(0, localCursorPosition);
 
         let completedDraft: string;
         if (isSearch) {
@@ -146,27 +150,32 @@ const ChannelMention = ({
             // We are going to set a double ~ on iOS to prevent the auto correct from taking over and replacing it
             // with the wrong value, this is a hack but I could not found another way to solve it
             completedDraft = mentionPart.replace(CHANNEL_MENTION_REGEX, `~~${mention} `);
+            applyingIOSFix.current = true;
         } else {
             completedDraft = mentionPart.replace(CHANNEL_MENTION_REGEX, `~${mention} `);
         }
 
-        if (value.length > cursorPosition) {
-            completedDraft += value.substring(cursorPosition);
+        const newCursorPosition = completedDraft.length - 1;
+
+        if (value.length > localCursorPosition) {
+            completedDraft += value.substring(localCursorPosition);
         }
 
         updateValue(completedDraft);
+        setLocalCursorPosition(newCursorPosition);
 
         if (Platform.OS === 'ios') {
             // This is the second part of the hack were we replace the double ~ with just one
             // after the auto correct vanished
             setTimeout(() => {
+                applyingIOSFix.current = false;
                 updateValue(completedDraft.replace(`~~${mention} `, `~${mention} `));
             });
         }
 
         onShowingChange(false);
         setNoResultsTerm(mention);
-    }, [value, cursorPosition, isSearch]);
+    }, [value, localCursorPosition, isSearch]);
 
     const renderItem = useCallback(({item}) => {
         return (
@@ -179,18 +188,28 @@ const ChannelMention = ({
     }, [completeMention]);
 
     const renderSectionHeader = useCallback(({section}) => {
-        const isFirstSection = section.id === sections[0].id;
         return (
             <AutocompleteSectionHeader
                 id={section.id}
                 defaultMessage={section.defaultMessage}
                 loading={!section.hideLoadingIndicator && loading}
-                isFirstSection={isFirstSection}
             />
         );
-    }, [sections[0]?.id, loading]);
+    }, [loading]);
 
     useEffect(() => {
+        if (localCursorPosition !== cursorPosition) {
+            setLocalCursorPosition(cursorPosition);
+        }
+    }, [cursorPosition]);
+
+    useEffect(() => {
+        if (applyingIOSFix.current) {
+            // During one render, the value will start by ~~, which will result in matchTerm being null.
+            // We don't want to reset the search on that case.
+            return;
+        }
+
         if (matchTerm === null) {
             resetState();
             onShowingChange(false);

@@ -11,10 +11,6 @@ import {makeStyleSheetFromTheme, changeOpacity} from '@utils/theme';
 
 const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
     return {
-        borderTop: {
-            borderTopWidth: 1,
-            borderTopColor: changeOpacity(theme.centerChannelColor, 0.2),
-        },
         section: {
             justifyContent: 'center',
             position: 'relative',
@@ -41,27 +37,20 @@ type Props = {
     defaultMessage: string;
     id: string;
     loading: boolean;
-    isFirstSection: boolean;
 }
 
 const AutocompleteSectionHeader = ({
     defaultMessage,
     id,
     loading,
-    isFirstSection,
 }: Props) => {
     const insets = useSafeAreaInsets();
     const theme = useTheme();
     const style = getStyleFromTheme(theme);
 
     const sectionStyles = useMemo(() => {
-        const s = [style.section, {marginLeft: insets.left, marginRight: insets.right}];
-        if (!isFirstSection) {
-            s.push(style.borderTop);
-        }
-
-        return s;
-    }, [isFirstSection, style, insets]);
+        return [style.section, {marginLeft: insets.left, marginRight: insets.right}];
+    }, [style, insets]);
 
     return (
         <View style={style.sectionWrapper}>
