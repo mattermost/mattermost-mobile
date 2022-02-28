@@ -48,11 +48,11 @@ const Details = ({channelName, isDirectChannel, ownPost, userDisplayName}: Props
         userElement = (
             <FormattedText
                 id='channel_header.directchannel.you'
-                defaultMessage='{displayname} (you)'
+                defaultMessage='{displayName} (you)'
                 ellipsizeMode='tail'
                 numberOfLines={1}
                 style={styles.userText}
-                values={{displayname: userDisplayName}}
+                values={{displayName: userDisplayName}}
             />
         );
     }
