@@ -102,6 +102,7 @@ const ClientPosts = (superclass: any) => class extends superclass {
 
     getPostsBefore = async (channelId: string, postId: string, page = 0, perPage = PER_PAGE_DEFAULT) => {
         this.analytics.trackAPI('api_posts_get_before', {channel_id: channelId});
+
         return this.doFetch(
             `${this.getChannelRoute(channelId)}/posts${buildQueryString({before: postId, page, per_page: perPage})}`,
             {method: 'get'},

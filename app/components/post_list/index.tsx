@@ -233,7 +233,7 @@ const PostList = ({
                 return (
                     <ThreadOverview
                         rootId={rootId!}
-                        testID={`${testID}.new_messages_line`}
+                        testID={`${testID}.thread_overview`}
                         theme={theme}
                     />
                 );
