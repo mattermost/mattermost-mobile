@@ -172,12 +172,13 @@ const EditPost = ({componentId, maxPostSize, post}: EditPostProps) => {
 
         emitEditing(true);
 
-        const {error} = await editPost(serverUrl, post.id, postMessage);
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
+        const {error: {status_code, message: errorMessage}} = await editPost(serverUrl, post.id, postMessage);
         emitEditing(false);
-
-        if (error) {
+        if (status_code) {
             setIsUpdating(false);
-            setErrorLine(error as string);
+            setErrorLine(errorMessage);
             postInputRef?.current?.focus();
         } else {
             setIsUpdating(false);
