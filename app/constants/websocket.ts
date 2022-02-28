@@ -44,12 +44,6 @@ const WebsocketEvents = {
     OPEN_DIALOG: 'open_dialog',
     INCREASE_POST_VISIBILITY_BY_ONE: 'increase_post_visibility_by_one',
     MEMBERROLE_UPDATED: 'memberrole_updated',
-
-    // groups: MM-41882 RECEIVED_GROUP: 'received_group',
-    // groups: MM-41882 RECEIVED_GROUP_ASSOCIATED_TO_TEAM: 'received_group_associated_to_team',
-    // groups: MM-41882 RECEIVED_GROUP_NOT_ASSOCIATED_TO_TEAM: 'received_group_not_associated_to_team',
-    // groups: MM-41882 RECEIVED_GROUP_ASSOCIATED_TO_CHANNEL: 'received_group_associated_to_channel',
-    // groups: MM-41882 RECEIVED_GROUP_NOT_ASSOCIATED_TO_CHANNEL: 'received_group_not_associated_to_channel',
     THREAD_UPDATED: 'thread_updated',
     THREAD_FOLLOW_CHANGED: 'thread_follow_changed',
     THREAD_READ_CHANGED: 'thread_read_changed',

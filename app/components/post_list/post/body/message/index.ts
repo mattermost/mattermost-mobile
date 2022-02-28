@@ -5,11 +5,7 @@ import {withDatabase} from '@nozbe/watermelondb/DatabaseProvider';
 import withObservables from '@nozbe/with-observables';
 import {switchMap} from 'rxjs/operators';
 
-// groups: MM-41882 import {from as from$} from 'rxjs';
-// groups: MM-41882 import {queryGroupForPosts} from '@helpers/database/groups';
 import {MM_TABLES, SYSTEM_IDENTIFIERS} from '@constants/database';
-
-// groups: MM-41882 import GroupModel from '@typings/database/models/servers/group';
 
 import Message from './message';
 
@@ -28,12 +24,8 @@ const withMessageInput = withObservables(['post'], ({database}: WithDatabaseArgs
     const currentUser = database.get<SystemModel>(SYSTEM).findAndObserve(SYSTEM_IDENTIFIERS.CURRENT_USER_ID).pipe(
         switchMap(({value}) => database.get<UserModel>(USER).findAndObserve(value)),
     );
-
-    // groups: MM-41882 const groupsForPosts = from$(queryGroupForPosts(post));
     return {
         currentUser,
-
-        // groups: MM-41882 groupsForPosts,
     };
 });
 

@@ -1,7 +1,6 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-// groups: MM-41882 import {fetchGroupsForTeam} from '@actions/remote/group';
 import {fetchMissingSidebarInfo, switchToChannelById} from '@actions/remote/channel';
 import {AppEntryData, AppEntryError, fetchAppEntryData} from '@actions/remote/entry/common';
 import {fetchPostsForUnreadChannels, fetchPostsSince} from '@actions/remote/post';
@@ -19,7 +18,6 @@ import {queryCommonSystemValues, queryConfig, queryCurrentChannelId, queryWebSoc
 import {deleteMyTeams, queryTeamsById} from '@queries/servers/team';
 import {isTablet} from '@utils/helpers';
 
-// groups: MM-41882 import {handleGroupUpdatedEvent, handleGroupAssociatedToTeam, handleGroupNotAssociatedToTeam, handleGroupAssociatedToChannel, handleGroupNotAssociatedToChannel} from './groups';
 import {handleCategoryCreatedEvent, handleCategoryDeletedEvent, handleCategoryOrderUpdatedEvent, handleCategoryUpdatedEvent} from './category';
 import {handleChannelDeletedEvent, handleUserAddedToChannelEvent, handleUserRemovedFromChannelEvent} from './channel';
 import {handleNewPostEvent, handlePostDeleted, handlePostEdited, handlePostUnread} from './posts';
@@ -180,10 +178,6 @@ async function doReconnect(serverUrl: string) {
         }
     }
 
-    // groups: MM-41882 if (initialTeamId) {
-    // groups: MM-41882     fetchGroupsForTeam(serverUrl, initialTeamId, lastDisconnectedAt);
-    // groups: MM-41882 }
-
     // defer fetch channels and unread posts for other teams
     if (teamData.teams?.length && teamData.memberships?.length) {
         await fetchTeamsChannelsAndUnreadPosts(serverUrl, lastDisconnectedAt, teamData.teams, teamData.memberships, initialTeamId);
@@ -335,27 +329,6 @@ export async function handleEvent(serverUrl: string, msg: WebSocketMessage) {
 
         case WebsocketEvents.OPEN_DIALOG:
             break;
-
-            // groups: MM-41882 return dispatch(handleOpenDialogEvent(msg));
-            // groups: MM-41882 case WebsocketEvents.RECEIVED_GROUP:
-            // groups: MM-41882     handleGroupUpdatedEvent(serverUrl, msg);
-            // groups: MM-41882     break;
-            // groups: MM-41882
-            // groups: MM-41882 case WebsocketEvents.RECEIVED_GROUP_ASSOCIATED_TO_TEAM:
-            // groups: MM-41882     handleGroupAssociatedToTeam(serverUrl, msg);
-            // groups: MM-41882     break;
-            // groups: MM-41882
-            // groups: MM-41882 case WebsocketEvents.RECEIVED_GROUP_NOT_ASSOCIATED_TO_TEAM:
-            // groups: MM-41882     handleGroupNotAssociatedToTeam(serverUrl, msg);
-            // groups: MM-41882     break;
-            // groups: MM-41882
-            // groups: MM-41882 case WebsocketEvents.RECEIVED_GROUP_ASSOCIATED_TO_CHANNEL:
-            // groups: MM-41882     handleGroupAssociatedToChannel(serverUrl, msg);
-            // groups: MM-41882     break;
-            // groups: MM-41882
-            // groups: MM-41882 case WebsocketEvents.RECEIVED_GROUP_NOT_ASSOCIATED_TO_CHANNEL:
-            // groups: MM-41882     handleGroupNotAssociatedToChannel(serverUrl, msg);
-            // groups: MM-41882     break;
 
         case WebsocketEvents.THREAD_UPDATED:
             break;

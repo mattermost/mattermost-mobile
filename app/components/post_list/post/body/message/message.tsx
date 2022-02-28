@@ -14,14 +14,11 @@ import {makeStyleSheetFromTheme} from '@utils/theme';
 
 import ShowMoreButton from './show_more_button';
 
-// groups: MM-41882 import type GroupModel from '@typings/database/models/servers/group';
 import type PostModel from '@typings/database/models/servers/post';
 import type UserModel from '@typings/database/models/servers/user';
 
 type MessageProps = {
     currentUser: UserModel;
-
-    // groupsForPosts: GroupModel[];
     highlight: boolean;
     isEdited: boolean;
     isPendingOrFailed: boolean;
@@ -53,7 +50,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     };
 });
 
-// groups: MM-41882 const Message = ({currentUser, groupsForPosts, highlight, isEdited, isPendingOrFailed, isReplyPost, location, post, theme}: MessageProps) => {
 const Message = ({currentUser, highlight, isEdited, isPendingOrFailed, isReplyPost, location, post, theme}: MessageProps) => {
     const [open, setOpen] = useState(false);
     const [height, setHeight] = useState<number|undefined>();
@@ -64,9 +60,6 @@ const Message = ({currentUser, highlight, isEdited, isPendingOrFailed, isReplyPo
     const blockStyles = getMarkdownBlockStyles(theme);
     const textStyles = getMarkdownTextStyles(theme);
 
-    // groups: MM-41882 const mentionKeys = useMemo(() => {
-    // groups: MM-41882     return getMentionKeysForPost(currentUser, post, groupsForPosts);
-    // groups: MM-41882 }, [currentUser, post.message, groupsForPosts]);
     const mentionKeys = useMemo(() => {
         return getMentionKeysForPost(currentUser);
     }, [currentUser]);
