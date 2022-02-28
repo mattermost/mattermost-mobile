@@ -7,9 +7,11 @@ import {Keyboard, KeyboardType, LayoutChangeEvent, Platform, SafeAreaView, View}
 import {KeyboardTrackingView} from 'react-native-keyboard-tracking-view';
 import {Navigation} from 'react-native-navigation';
 
+import {editPost} from '@actions/remote/post';
 import AutoComplete from '@components/autocomplete';
 import CompassIcon from '@components/compass_icon';
 import Loading from '@components/loading';
+import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import useDidUpdate from '@hooks/did_update';
 import PostError from '@screens/edit_post/post_error';
@@ -56,7 +58,6 @@ type EditPostProps = {
     maxPostSize: number;
 }
 
-//todo: Call api to editPost
 const EditPost = ({componentId, maxPostSize, post}: EditPostProps) => {
     const [keyboardType, setKeyboardType] = useState<KeyboardType>('default');
     const [postMessage, setPostMessage] = useState(post.message);
@@ -67,11 +68,11 @@ const EditPost = ({componentId, maxPostSize, post}: EditPostProps) => {
     const [isEditing, setIsEditing] = useState(false);
     const [postInputTop, setPostInputTop] = useState(0);
 
-    // const [autocompleteVisible, setAutocompleteVisible] = useState<boolean>(false);
     const postInputRef = useRef<PostInputRef>(null);
-
     const theme = useTheme();
     const intl = useIntl();
+    const serverUrl = useServerUrl();
+
     const styles = getStyleSheet(theme);
     const closeButtonIcon = useMemo(() => CompassIcon.getImageSourceSync('close', 24, theme.sidebarHeaderTextColor), [theme.sidebarHeaderTextColor]);
 
@@ -93,11 +94,11 @@ const EditPost = ({componentId, maxPostSize, post}: EditPostProps) => {
         const unsubscribe = Navigation.events().registerComponentListener({
             navigationButtonPressed: ({buttonId}: { buttonId: string }) => {
                 switch (buttonId) {
-                    case 'close-edit-post': {
+                    case LEFT_BUTTON.id: {
                         onClose();
                         break;
                     }
-                    case 'edit-post':
+                    case RIGHT_BUTTON.id:
                         onEditPost();
                         break;
                 }
@@ -107,7 +108,7 @@ const EditPost = ({componentId, maxPostSize, post}: EditPostProps) => {
         return () => {
             unsubscribe.remove();
         };
-    }, []);
+    }, [postMessage]);
 
     useDidUpdate(() => {
         // Workaround to avoid iOS emdash autocorrect in Code Blocks
@@ -158,26 +159,24 @@ const EditPost = ({componentId, maxPostSize, post}: EditPostProps) => {
     }, []);
 
     const onEditPost = useCallback(async () => {
-        // const editedPost = Object.assign({}, post, {postMessage});
         setIsEditing(true);
         setErrorLine(undefined);
         setErrorExtra(undefined);
 
         emitEditing(true);
 
-        //todo: make api call to update post's message
-        const {error} = await actions.editPost(editedPost);
+        const {error} = await editPost(serverUrl, post.id, postMessage);
         emitEditing(false);
 
         if (error) {
             setIsEditing(false);
-            setErrorLine(error);
+            setErrorLine(error as string);
             postInputRef?.current?.focus();
         } else {
             setIsEditing(false);
             onClose();
         }
-    }, [emitEditing, onClose]);
+    }, [emitEditing, serverUrl, post.id, postMessage, onClose]);
 
     const handleLayout = useCallback((e: LayoutChangeEvent) => {
         setPostInputTop(e.nativeEvent.layout.y);
@@ -199,7 +198,7 @@ const EditPost = ({componentId, maxPostSize, post}: EditPostProps) => {
             >
                 <View style={styles.scrollView}>
                     { (errorLine || errorExtra) && (
-                        <PostError
+                        <PostError //fixme display not good
                             errorExtra={errorExtra}
                             errorLine={errorLine}
                         />
@@ -214,11 +213,7 @@ const EditPost = ({componentId, maxPostSize, post}: EditPostProps) => {
                     />
                 </View>
             </SafeAreaView>
-            <KeyboardTrackingView
-
-                // style={autocompleteStyles}
-                onLayout={handleLayout}
-            >
+            <KeyboardTrackingView onLayout={handleLayout}>
                 <AutoComplete
                     channelId={post.channelId}
                     cursorPosition={cursorPosition}

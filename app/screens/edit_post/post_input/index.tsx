@@ -5,7 +5,6 @@ import React, {forwardRef, useCallback, useImperativeHandle, useRef} from 'react
 import {useIntl} from 'react-intl';
 import {KeyboardType, Platform, TextInput, useWindowDimensions, View} from 'react-native';
 
-import FloatingTextInput from '@components/floating_text_input_label';
 import {useTheme} from '@context/theme';
 import {changeOpacity, getKeyboardAppearanceFromTheme, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
