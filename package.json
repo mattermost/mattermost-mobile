@@ -162,6 +162,7 @@
     "build:ios-sim": "./scripts/build.sh ipa simulator",
     "build:ios-unsigned": "./scripts/build.sh ipa unsigned",
     "check": "npm run lint && npm run tsc",
+    "check-test": "npm run lint && npm run tsc && npm run test",
     "clean": "./scripts/clean.sh",
     "e2e:android": "cd detox && npm run e2e:android-build && npm run e2e:android-test && cd ..",
     "e2e:ios": "cd detox && npm run e2e:ios-test && cd ..",

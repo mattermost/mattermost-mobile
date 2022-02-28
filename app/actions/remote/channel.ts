@@ -14,6 +14,7 @@ import NetworkManager from '@init/network_manager';
 import {prepareMyChannelsForTeam, queryChannelById, queryChannelByName, queryMyChannel} from '@queries/servers/channel';
 import {queryCommonSystemValues, queryCurrentTeamId, queryCurrentUserId} from '@queries/servers/system';
 import {prepareMyTeams, queryNthLastChannelFromTeam, queryMyTeamById, queryTeamById, queryTeamByName} from '@queries/servers/team';
+import {queryCurrentUser} from '@queries/servers/user';
 import {getDirectChannelName} from '@utils/channel';
 import {PERMALINK_GENERIC_TEAM_NAME_REDIRECT} from '@utils/url';
 import {displayGroupMessageName, displayUsername} from '@utils/user';
@@ -267,9 +268,9 @@ export const fetchMyChannel = async (serverUrl: string, teamId: string, channelI
     }
 };
 
-export const fetchMissingSidebarInfo = async (serverUrl: string, directChannels: Channel[], locale?: string, teammateDisplayNameSetting?: string, exludeUserId?: string, fetchOnly = false) => {
+export const fetchMissingSidebarInfo = async (serverUrl: string, directChannels: Channel[], locale?: string, teammateDisplayNameSetting?: string, currentUserId?: string, fetchOnly = false) => {
     const channelIds = directChannels.sort((a, b) => b.last_post_at - a.last_post_at).map((dc) => dc.id);
-    const result = await fetchProfilesPerChannels(serverUrl, channelIds, exludeUserId, false);
+    const result = await fetchProfilesPerChannels(serverUrl, channelIds, currentUserId, false);
     if (result.error) {
         return {error: result.error};
     }
@@ -280,7 +281,7 @@ export const fetchMissingSidebarInfo = async (serverUrl: string, directChannels:
         result.data.forEach((data) => {
             if (data.users) {
                 if (data.users.length > 1) {
-                    displayNameByChannel[data.channelId] = displayGroupMessageName(data.users, locale, teammateDisplayNameSetting, exludeUserId);
+                    displayNameByChannel[data.channelId] = displayGroupMessageName(data.users, locale, teammateDisplayNameSetting, currentUserId);
                 } else {
                     displayNameByChannel[data.channelId] = displayUsername(data.users[0], locale, teammateDisplayNameSetting);
                 }
@@ -294,6 +295,15 @@ export const fetchMissingSidebarInfo = async (serverUrl: string, directChannels:
             c.display_name = displayName;
         }
     });
+
+    if (currentUserId) {
+        const ownDirectChannel = directChannels.find((dm) => dm.name === getDirectChannelName(currentUserId, currentUserId));
+        const database = DatabaseManager.serverDatabases[serverUrl]?.database;
+        if (ownDirectChannel && database) {
+            const currentUser = await queryCurrentUser(database);
+            ownDirectChannel.display_name = displayUsername(currentUser, locale, teammateDisplayNameSetting);
+        }
+    }
 
     if (!fetchOnly) {
         const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;

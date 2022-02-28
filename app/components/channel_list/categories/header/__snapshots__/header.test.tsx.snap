@@ -1,10 +1,11 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`Category Header Component should match snapshot 1`] = `
+exports[`components/channel_list/categories/header should match snapshot 1`] = `
 <View
   style={
     Object {
       "marginTop": 12,
+      "paddingLeft": 2,
       "paddingVertical": 8,
     }
   }
@@ -20,7 +21,7 @@ exports[`Category Header Component should match snapshot 1`] = `
       }
     }
   >
-    CAT HEADING
+    TEST CATEGORY
   </Text>
 </View>
 `;
