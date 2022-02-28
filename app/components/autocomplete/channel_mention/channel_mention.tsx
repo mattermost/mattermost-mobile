@@ -12,6 +12,7 @@ import {General} from '@constants';
 import {CHANNEL_MENTION_REGEX, CHANNEL_MENTION_SEARCH_REGEX} from '@constants/autocomplete';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
+import useDidUpdate from '@hooks/did_update';
 import {t} from '@i18n';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 
@@ -204,7 +205,7 @@ const ChannelMention = ({
         runSearch(serverUrl, matchTerm);
     }, [matchTerm]);
 
-    useEffect(() => {
+    useDidUpdate(() => {
         const newSections = [];
         if (isSearch) {
             const [publicChannels, privateChannels, directAndGroupMessages] = reduceChannelsForSearch(channels, myMembers);
@@ -234,6 +235,7 @@ const ChannelMention = ({
                     defaultMessage: 'Direct Messages',
                     data: directAndGroupMessages,
                     key: 'directAndGroupMessages',
+                    hideLoadingIndicator: true,
                 });
             }
         } else {
@@ -248,21 +250,27 @@ const ChannelMention = ({
                 });
             }
 
-            if (otherChannels.length || (loading && (myChannels.length || otherChannels.length))) {
+            if (otherChannels.length) {
                 newSections.push({
                     id: t('suggestion.mention.morechannels'),
                     defaultMessage: 'Other Channels',
                     data: otherChannels,
                     key: 'otherChannels',
+                    hideLoadingIndicator: true,
                 });
             }
         }
 
-        if (!loading && !newSections.length && noResultsTerm == null) {
+        const nSections = newSections.length;
+        if (nSections) {
+            newSections[nSections - 1].hideLoadingIndicator = false;
+        }
+
+        if (!loading && !nSections && noResultsTerm == null) {
             setNoResultsTerm(matchTerm);
         }
         setSections(newSections);
-        onShowingChange(Boolean(newSections.length));
+        onShowingChange(Boolean(nSections));
     }, [channels, myMembers, loading]);
 
     if (sections.length === 0 || noResultsTerm != null) {
