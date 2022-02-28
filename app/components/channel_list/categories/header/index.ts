@@ -7,9 +7,9 @@ import CategoryHeader from './header';
 
 import type CategoryModel from '@typings/database/models/servers/category';
 
-const withCategory = withObservables(['category'], ({category}: {category: CategoryModel}) => ({
+const enhanced = withObservables(['category'], ({category}: {category: CategoryModel}) => ({
     category,
     hasChannels: category.hasChannels,
 }));
 
-export default withCategory(CategoryHeader);
+export default enhanced(CategoryHeader);

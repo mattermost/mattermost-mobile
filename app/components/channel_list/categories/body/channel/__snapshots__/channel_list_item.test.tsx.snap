@@ -23,6 +23,8 @@ exports[`components/channel_list/categories/body/channel/item should match snaps
       style={
         Object {
           "flexDirection": "row",
+          "marginBottom": 8,
+          "paddingLeft": 2,
           "paddingVertical": 4,
         }
       }
@@ -54,8 +56,8 @@ exports[`components/channel_list/categories/body/channel/item should match snaps
               undefined,
               undefined,
               Object {
-                "height": 20,
-                "width": 20,
+                "height": 24,
+                "width": 24,
               },
             ]
           }
@@ -66,7 +68,9 @@ exports[`components/channel_list/categories/body/channel/item should match snaps
                 Object {
                   "color": "#ffffff",
                   "fontFamily": "OpenSans-SemiBold",
-                  "fontSize": 10,
+                  "fontSize": 12,
+                  "fontWeight": "600",
+                  "lineHeight": 16,
                 },
                 undefined,
                 undefined,
@@ -77,11 +81,13 @@ exports[`components/channel_list/categories/body/channel/item should match snaps
             }
             testID="undefined.gm_member_count"
           >
-            0
+            1
           </Text>
         </View>
       </View>
       <Text
+        ellipsizeMode="tail"
+        numberOfLines={1}
         style={
           Array [
             Object {
@@ -92,6 +98,7 @@ exports[`components/channel_list/categories/body/channel/item should match snaps
             },
             Object {
               "color": "rgba(255,255,255,0.72)",
+              "flex": 1,
               "marginTop": -1,
               "paddingLeft": 12,
             },

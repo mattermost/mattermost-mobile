@@ -5,6 +5,7 @@ exports[`components/channel_list/categories/header should match snapshot 1`] = `
   style={
     Object {
       "marginTop": 12,
+      "paddingLeft": 2,
       "paddingVertical": 8,
     }
   }

@@ -19,7 +19,8 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     container: {
         flex: 1,
         backgroundColor: theme.sidebarBg,
-        paddingHorizontal: 20,
+        paddingLeft: 18,
+        paddingRight: 20,
         paddingVertical: 10,
     },
 

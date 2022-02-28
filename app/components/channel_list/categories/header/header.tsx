@@ -14,6 +14,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     container: {
         paddingVertical: 8,
         marginTop: 12,
+        paddingLeft: 2,
     },
     heading: {
         color: changeOpacity(theme.sidebarText, 0.64),

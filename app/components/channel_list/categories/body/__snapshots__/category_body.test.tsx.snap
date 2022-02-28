@@ -30,6 +30,8 @@ Object {
               style={
                 Object {
                   "flexDirection": "row",
+                  "marginBottom": 8,
+                  "paddingLeft": 2,
                   "paddingVertical": 4,
                 }
               }
@@ -68,6 +70,8 @@ Object {
                 />
               </View>
               <Text
+                ellipsizeMode="tail"
+                numberOfLines={1}
                 style={
                   Array [
                     Object {
@@ -78,6 +82,7 @@ Object {
                     },
                     Object {
                       "color": "rgba(255,255,255,0.72)",
+                      "flex": 1,
                       "marginTop": -1,
                       "paddingLeft": 12,
                     },

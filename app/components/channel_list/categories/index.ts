@@ -16,7 +16,7 @@ const {SERVER: {CATEGORY}} = MM_TABLES;
 
 type WithDatabaseProps = {currentTeamId: string } & WithDatabaseArgs
 
-const withCategories = withObservables(
+const enhanced = withObservables(
     ['currentTeamId'],
     ({currentTeamId, database}: WithDatabaseProps) => {
         const categories = database.get<CategoryModel>(CATEGORY).query(
@@ -28,4 +28,4 @@ const withCategories = withObservables(
         };
     });
 
-export default withDatabase(withCategories(Categories));
+export default withDatabase(enhanced(Categories));
