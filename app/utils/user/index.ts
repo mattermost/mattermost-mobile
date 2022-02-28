@@ -101,11 +101,6 @@ export const getUsersByUsername = (users: UserModel[]) => {
     return usersByUsername;
 };
 
-export const getUserMentionKeys = (user: UserModel) => {
-    const keys = user.mentionKeys;
-    return keys;
-};
-
 export const getUserTimezone = (user: UserModel) => {
     return getTimezone(user.timezone);
 };

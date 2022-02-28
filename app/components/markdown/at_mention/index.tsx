@@ -20,7 +20,7 @@ import {useTheme} from '@context/theme';
 import UserModel from '@database/models/server/user';
 import {getTeammateNameDisplaySetting} from '@helpers/api/preference';
 import {bottomSheet, dismissBottomSheet, showModal} from '@screens/navigation';
-import {displayUsername, getUserMentionKeys, getUsersByUsername} from '@utils/user';
+import {displayUsername, getUsersByUsername} from '@utils/user';
 
 import type {WithDatabaseArgs} from '@typings/database/database';
 import type PreferenceModel from '@typings/database/models/servers/preference';
@@ -94,7 +94,7 @@ const AtMention = ({
             return [];
         }
 
-        return getUserMentionKeys(user);
+        return user.mentionKeys;
     }, [currentUserId, mentionKeys, user]);
 
     const goToUserProfile = useCallback(() => {

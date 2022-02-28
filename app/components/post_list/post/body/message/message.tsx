@@ -9,7 +9,6 @@ import Markdown from '@components/markdown';
 import {SEARCH} from '@constants/screens';
 import {useShowMoreAnimatedStyle} from '@hooks/show_more';
 import {getMarkdownTextStyles, getMarkdownBlockStyles} from '@utils/markdown';
-import {getMentionKeysForPost} from '@utils/post';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 
 import ShowMoreButton from './show_more_button';
@@ -61,7 +60,7 @@ const Message = ({currentUser, highlight, isEdited, isPendingOrFailed, isReplyPo
     const textStyles = getMarkdownTextStyles(theme);
 
     const mentionKeys = useMemo(() => {
-        return getMentionKeysForPost(currentUser);
+        return currentUser.mentionKeys;
     }, [currentUser]);
 
     const onLayout = useCallback((event: LayoutChangeEvent) => setHeight(event.nativeEvent.layout.height), []);

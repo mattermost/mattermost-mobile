@@ -7,7 +7,6 @@ import {displayUsername} from '@utils/user';
 
 import type PostModel from '@typings/database/models/servers/post';
 import type UserModel from '@typings/database/models/servers/user';
-import type {UserMentionKey} from '@typings/global/markdown';
 
 export function areConsecutivePosts(post: PostModel, previousPost: PostModel) {
     let consecutive = false;
@@ -58,11 +57,6 @@ export function postUserDisplayName(post: PostModel, author?: UserModel, teammat
 
     return displayUsername(author, author?.locale || DEFAULT_LOCALE, teammateNameDisplay, true);
 }
-
-export const getMentionKeysForPost = (user: UserModel) => {
-    const keys: UserMentionKey[] = user.mentionKeys;
-    return keys;
-};
 
 export function shouldIgnorePost(post: Post): boolean {
     return Post.IGNORE_POST_TYPES.includes(post.type);
