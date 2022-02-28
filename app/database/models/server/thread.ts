@@ -41,19 +41,19 @@ export default class ThreadModel extends Model {
     /** is_following: If user is following the thread or not */
     @field('is_following') isFollowing!: boolean;
 
-    /** unread_replies : The number of replies that are not read by the user. */
+    /** unread_replies : The number of replies that have not been read by the user. */
     @field('unread_replies') unreadReplies!: number;
 
-    /** unread_mentions : The number of mentions that are not read by the user. */
+    /** unread_mentions : The number of mentions that have not been read by the user. */
     @field('unread_mentions') unreadMentions!: number;
 
     /** loaded_in_global_threads : Flag to differentiate the unread threads loaded for showing unread counts/mentions */
     @field('loaded_in_global_threads') loadedInGlobalThreads!: boolean;
 
-    /** participants : All the participants associated with this Post */
+    /** participants : All the participants associated with this Thread */
     @children(THREAD_PARTICIPANT) participants!: Query<ThreadParticipantModel>;
 
-    /** channel : The channel which is presenting this Post */
+    /** post : The root post of this thread */
     @immutableRelation(POST, 'id') post!: Relation<PostModel>;
 
     async destroyPermanently() {
