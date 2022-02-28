@@ -154,6 +154,8 @@
   "load_channels_error.title": "Couldn't load {teamDisplayName}",
   "load_teams_error.message": "There was a problem loading content for this server.",
   "load_teams_error.title": "Couldn't load {serverName}",
+  "load_categories_error.message": "There was a problem loading content for this server.",
+  "load_categories_error.title": "Couldn't load categories for {serverName}",
   "login_mfa.enterToken": "To complete the sign in process, please enter the code from your mobile device's authenticator app.",
   "login_mfa.token": "Enter MFA Token",
   "login_mfa.tokenReq": "Please enter an MFA token",

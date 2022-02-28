@@ -4,7 +4,10 @@
 import React from 'react';
 import {FlatList, StyleSheet} from 'react-native';
 
+import LoadChannelsError from '../load_channels_error/load_channel_error';
+
 import CategoryBody from './body';
+import LoadCategoriesError from './error';
 import CategoryHeader from './header';
 
 import type {CategoryModel} from '@database/models/server';
@@ -29,6 +32,10 @@ const renderCategory = (data: {item: CategoryModel}) => {
 };
 
 const Categories = (props: Props) => {
+    if (!props.categories.length) {
+        return <LoadCategoriesError/>;
+    }
+
     // Sort Categories
     props.categories.sort((a, b) => a.sortOrder - b.sortOrder);
 

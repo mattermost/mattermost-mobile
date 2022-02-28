@@ -10,6 +10,7 @@ import {makeStyleSheetFromTheme} from '@utils/theme';
 
 import Categories from './categories';
 import ChannelListHeader from './header';
+import LoadChannelsError from './load_channels_error';
 import LoadTeamsError from './load_teams_error';
 import SearchField from './search';
 import Threads from './threads';
@@ -25,13 +26,14 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
 }));
 
 type ChannelListProps = {
+    channelsCount: number;
     currentTeamId?: string;
     iconPad?: boolean;
     isTablet: boolean;
     teamsCount: number;
 }
 
-const ChannelList = ({currentTeamId, iconPad, isTablet, teamsCount}: ChannelListProps) => {
+const ChannelList = ({channelsCount, currentTeamId, iconPad, isTablet, teamsCount}: ChannelListProps) => {
     const theme = useTheme();
     const styles = getStyleSheet(theme);
     const tabletWidth = useSharedValue(TABLET_SIDEBAR_WIDTH);
@@ -52,7 +54,12 @@ const ChannelList = ({currentTeamId, iconPad, isTablet, teamsCount}: ChannelList
     }, [isTablet, teamsCount]);
 
     let content;
-    if (currentTeamId) {
+
+    if (!currentTeamId) {
+        content = (<LoadTeamsError/>);
+    } else if (channelsCount < 1) {
+        content = (<LoadChannelsError teamId={currentTeamId}/>);
+    } else {
         content = (
             <>
                 <SearchField/>
@@ -62,8 +69,6 @@ const ChannelList = ({currentTeamId, iconPad, isTablet, teamsCount}: ChannelList
                 />
             </>
         );
-    } else {
-        content = (<LoadTeamsError/>);
     }
 
     return (
