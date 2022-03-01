@@ -4,12 +4,12 @@
 class ProfilePicture {
     testID = {
         userStatusIconPrefix: 'user_status.icon.',
-    }
+    };
 
     getProfilePictureItemMatcher = (profilePictureSourcePrefix, userId) => {
         const profilePictureTestID = `${profilePictureSourcePrefix}${userId}`;
         return by.id(profilePictureTestID);
-    }
+    };
 
     getProfilePictureItemUserStatusMatcher(profilePictureItemMatcher, userStatus = 'online') {
         const userStatusIconTestID = `${this.testID.userStatusIconPrefix}${userStatus}`;

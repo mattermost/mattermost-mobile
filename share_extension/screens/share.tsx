@@ -62,7 +62,7 @@ const Share = ({intl}: ShareProps) => {
     const maxFileSize = getAllowedServerMaxFileSize(config);
     const maxFileCount = getMaxFileCount(useSelector(getServerVersion));
 
-    const showPostButton = (error?: string, text?: string, extensionFiles?: Array<ShareFileInfo>, calculatedSize?: number) => {
+    const showPostButton = (error?: string, text?: string, extensionFiles?: ShareFileInfo[], calculatedSize?: number) => {
         const files = extensionFiles || state.files;
         const totalSize = calculatedSize || state.totalSize;
         const filesOK = files.length ? files.length <= maxFileCount : false;
@@ -84,7 +84,7 @@ const Share = ({intl}: ShareProps) => {
         };
 
         if (authorized && hasPermission) {
-            const data: Array<ShareItem> = await ShareExtension.data();
+            const data: ShareItem[] = await ShareExtension.data();
             const {error, files, value, totalSize} = await getSharedItems(data, intl);
             newState.error = error;
             newState.files = files;

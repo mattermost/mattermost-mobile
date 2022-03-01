@@ -11,7 +11,7 @@ class AdvancedSettingsScreen {
         advancedSettingsScrollView: 'advanced_settings.scroll_view',
         backButton: 'screen.back.button',
         deleteDocumentsAndDataAction: 'advanced_settings.delete_documents_and_data.action',
-    }
+    };
 
     advancedSettingsScreen = element(by.id(this.testID.advancedSettingsScreen));
     advancedSettingsScrollView = element(by.id(this.testID.advancedSettingsScrollView));
@@ -22,19 +22,19 @@ class AdvancedSettingsScreen {
         await expect(this.advancedSettingsScreen).toBeVisible();
 
         return this.advancedSettingsScreen;
-    }
+    };
 
     open = async () => {
         // # Open advanced settings screen
         await GeneralSettingsScreen.advancedAction.tap();
 
         return this.toBeVisible();
-    }
+    };
 
     back = async () => {
         await this.backButton.tap();
         await expect(this.advancedSettingsScreen).not.toBeVisible();
-    }
+    };
 
     deleteDocumentsAndData = async ({confirm = true} = {}) => {
         await this.deleteDocumentsAndDataAction.tap();
@@ -55,7 +55,7 @@ class AdvancedSettingsScreen {
             await wait(timeouts.ONE_SEC);
             await expect(this.advancedSettingsScreen).toBeVisible();
         }
-    }
+    };
 }
 
 const advancedSettingsScreen = new AdvancedSettingsScreen();

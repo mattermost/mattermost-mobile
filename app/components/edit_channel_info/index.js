@@ -163,7 +163,7 @@ export default class EditChannelInfo extends PureComponent {
 
     onHeaderLayout = ({nativeEvent}) => {
         this.setState({headerPosition: nativeEvent.layout.y});
-    }
+    };
 
     onKeyboardDidShow = () => {
         this.setState({keyboardVisible: true});
@@ -172,15 +172,15 @@ export default class EditChannelInfo extends PureComponent {
             this.setState({headerHasFocus: false});
             this.scrollHeaderToTop();
         }
-    }
+    };
 
     onKeyboardDidHide = () => {
         this.setState({keyboardVisible: false});
-    }
+    };
 
     onKeyboardOffsetChanged = (keyboardPosition) => {
         this.setState({keyboardPosition});
-    }
+    };
 
     onHeaderFocus = () => {
         if (this.state.keyboardVisible) {
@@ -194,7 +194,7 @@ export default class EditChannelInfo extends PureComponent {
         if (this.scroll.current) {
             this.scroll.current.scrollTo({x: 0, y: this.state.headerPosition});
         }
-    }
+    };
 
     render() {
         const {

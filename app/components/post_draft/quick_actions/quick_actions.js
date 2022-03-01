@@ -59,11 +59,11 @@ export default class QuickActions extends PureComponent {
     handleOnTextChange = (newValue) => {
         this.handleInputEvent(newValue);
         this.props.onTextChange(newValue);
-    }
+    };
 
     handleUploadFiles = (files) => {
         EventEmitter.emit(UPLOAD_FILES, files, this.props.screenId);
-    }
+    };
 
     render() {
         const {

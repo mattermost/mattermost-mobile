@@ -20,7 +20,7 @@ export default class Archived extends PureComponent {
         selectPenultimateChannel: PropTypes.func.isRequired,
         teamId: PropTypes.string.isRequired,
         theme: PropTypes.object.isRequired,
-    }
+    };
 
     onCloseChannelPress = () => {
         const {rootId, teamId} = this.props;

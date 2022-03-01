@@ -9,9 +9,9 @@ import {PostMetadata} from '@mm-redux/types/posts';
 
 type Props = {
     baseTextStyle: StyleProp<TextStyle>;
-        blockStyles?: StyleProp<ViewStyle>[];
+        blockStyles?: Array<StyleProp<ViewStyle>>;
         metadata?: PostMetadata;
-        textStyles?: StyleProp<TextStyle>[];
+        textStyles?: Array<StyleProp<TextStyle>>;
         value?: string;
 }
 export default function AttachmentPreText(props: Props) {

@@ -14,7 +14,7 @@ import {WebSocketMessage} from '@mm-redux/types/websocket';
 export function handlePreferenceChangedEvent(msg: WebSocketMessage) {
     return async (dispatch: DispatchFunc, getState: GetStateFunc): Promise<ActionResult> => {
         const preference = JSON.parse(msg.data.preference);
-        const actions: Array<GenericAction> = [{
+        const actions: GenericAction[] = [{
             type: PreferenceTypes.RECEIVED_PREFERENCES,
             data: [preference],
         }];
@@ -36,7 +36,7 @@ export function handlePreferencesChangedEvent(msg: WebSocketMessage) {
     return async (dispatch: DispatchFunc, getState: GetStateFunc): Promise<ActionResult> => {
         const preferences: PreferenceType[] = JSON.parse(msg.data.preferences);
         const posts = getAllPosts(getState());
-        const actions: Array<GenericAction> = [{
+        const actions: GenericAction[] = [{
             type: PreferenceTypes.RECEIVED_PREFERENCES,
             data: preferences,
         }];

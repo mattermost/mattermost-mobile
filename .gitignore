@@ -30,6 +30,7 @@ DerivedData
 *.hmap
 *.ipa
 *.apk
+*.aab
 *.xcuserstate
 project.xcworkspace
 ios/Pods

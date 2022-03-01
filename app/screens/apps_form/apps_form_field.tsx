@@ -118,7 +118,7 @@ export default class AppsFormField extends React.PureComponent<Props, State> {
         });
 
         this.props.onChange(field.name, selectedOptions);
-    }
+    };
 
     getDynamicOptions = async (userInput = ''): Promise<{data: DialogOption[]}> => {
         const options = await this.props.performLookup(this.props.field.name, userInput);

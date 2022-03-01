@@ -27,7 +27,7 @@ function makeMapStateToProps() {
         const thread = collapsedThreadsEnabled ? getThread(state, ownProps.rootId, true) : null;
         let lastViewedAt = myMember?.last_viewed_at;
         if (collapsedThreadsEnabled) {
-            lastViewedAt = getThreadLastViewedAt(state, thread.id);
+            lastViewedAt = getThreadLastViewedAt(state, thread?.id);
         }
         return {
             channelId: ownProps.channelId,

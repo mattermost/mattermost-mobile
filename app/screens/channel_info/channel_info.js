@@ -51,6 +51,7 @@ export default class ChannelInfo extends PureComponent {
         currentUserId: PropTypes.string,
         isTeammateGuest: PropTypes.bool.isRequired,
         isDirectMessage: PropTypes.bool.isRequired,
+        isGroupMessage: PropTypes.bool.isRequired,
         teammateId: PropTypes.string,
         theme: PropTypes.object.isRequired,
         customStatus: PropTypes.object,
@@ -64,7 +65,7 @@ export default class ChannelInfo extends PureComponent {
 
     static defaultProps = {
         currentChannelGuestCount: 0,
-    }
+    };
 
     static contextTypes = {
         intl: intlShape.isRequired,
@@ -95,7 +96,7 @@ export default class ChannelInfo extends PureComponent {
     startCallHandler = (channelId) => {
         this.props.actions.joinCall(channelId);
         this.close();
-    }
+    };
 
     toggleCalls = () => {
         if (this.props.isCallsEnabled) {
@@ -103,7 +104,7 @@ export default class ChannelInfo extends PureComponent {
         } else {
             this.props.actions.enableChannelCalls(this.props.currentChannel.id);
         }
-    }
+    };
 
     permalinkBadTeam = () => {
         const {intl} = this.context;
@@ -116,7 +117,7 @@ export default class ChannelInfo extends PureComponent {
     };
 
     actionsRows = (channelIsArchived) => {
-        const {currentChannel, currentUserId, isDirectMessage, theme, isCallsEnabled, callsFeatureEnabled, isChannelAdmin} = this.props;
+        const {currentChannel, currentUserId, isDirectMessage, isGroupMessage, theme, isCallsEnabled, callsFeatureEnabled, isChannelAdmin} = this.props;
 
         if (channelIsArchived) {
             return (
@@ -191,7 +192,7 @@ export default class ChannelInfo extends PureComponent {
                             testID='channel_info.start_call.action'
                             theme={theme}
                             onPress={this.toggleCalls}
-                            canEnableDisableCalls={isChannelAdmin}
+                            canEnableDisableCalls={isDirectMessage || isGroupMessage || isChannelAdmin}
                             enabled={isCallsEnabled}
                         />
                     </>}

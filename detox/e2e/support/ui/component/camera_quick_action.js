@@ -5,15 +5,15 @@ class CameraQuickAction {
     testID = {
         cameraActionSuffix: 'post_draft.quick_actions.camera_action',
         cameraActionDisabledSuffix: 'post_draft.quick_actions.camera_action.disabled',
-    }
+    };
 
     getCameraQuickAction = (screenPrefix) => {
         return element(by.id(`${screenPrefix}${this.testID.cameraActionSuffix}`));
-    }
+    };
 
     getCameraQuickActionDisabled = (screenPrefix) => {
         return element(by.id(`${screenPrefix}${this.testID.cameraActionDisabledSuffix}`));
-    }
+    };
 }
 
 const cameraQuickAction = new CameraQuickAction();

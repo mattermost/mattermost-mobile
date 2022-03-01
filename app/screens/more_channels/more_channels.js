@@ -161,7 +161,7 @@ export default class MoreChannels extends PureComponent {
 
     setSearchBarRef = (ref) => {
         this.searchBarRef = ref;
-    }
+    };
 
     cancelSearch = () => {
         const {channels, archivedChannels} = this.props;
@@ -373,7 +373,7 @@ export default class MoreChannels extends PureComponent {
                 testID='more_channels.custom_list.channel_item'
             />
         );
-    }
+    };
 
     searchChannels = (text) => {
         const {actions, channels, sharedChannels, archivedChannels, currentTeamId, canShowArchivedChannels} = this.props;
@@ -451,7 +451,7 @@ export default class MoreChannels extends PureComponent {
                 this.setState({typeOfChannels, loading: false}, this.doGetChannels);
             }
         });
-    }
+    };
 
     render() {
         const {formatMessage} = this.context.intl;

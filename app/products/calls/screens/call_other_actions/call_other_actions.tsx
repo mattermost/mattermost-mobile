@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 import React, {useCallback} from 'react';
-import {injectIntl, intlShape} from 'react-intl';
+import {injectIntl} from 'react-intl';
 import {View} from 'react-native';
 
 import {dismissModal} from '@actions/navigation';
@@ -13,10 +13,9 @@ import type {Theme} from '@mm-redux/types/theme';
 
 type Props = {
     theme: Theme;
-    intl: typeof intlShape;
 }
 
-const CallOtherActions = ({theme, intl}: Props) => {
+const CallOtherActions = ({theme}: Props) => {
     const close = () => {
         dismissModal();
     };
@@ -41,21 +40,21 @@ const CallOtherActions = ({theme, intl}: Props) => {
                     destructive={false}
                     icon='account-plus-outline'
                     onPress={addParticipants}
-                    text={intl.formatMessage({id: 'call.add_participants', defaultMessage: 'Add participants'})}
+                    text='Add participants'
                     theme={theme}
                 />
                 <Action
                     destructive={false}
                     icon='link-variant'
                     onPress={copyCallLink}
-                    text={intl.formatMessage({id: 'call.copy_call_link', defaultMessage: 'Copy call link'})}
+                    text='Copy call link'
                     theme={theme}
                 />
                 <Action
                     destructive={false}
                     icon='send-outline'
                     onPress={giveFeedback}
-                    text={intl.formatMessage({id: 'call.give_feedback', defaultMessage: 'Give Feedback'})}
+                    text='Give Feedback'
                     theme={theme}
                 />
             </SlideUpPanel>

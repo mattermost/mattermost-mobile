@@ -15,7 +15,7 @@ class ChannelAddMembersScreen {
         usersList: 'channel_add_members.custom_list',
         userItem: 'channel_add_members.custom_list.user_item',
         userItemDisplayUsername: 'channel_add_members.custom_list.user_item.display_username',
-    }
+    };
 
     channelAddMembersScreen = element(by.id(this.testID.channelAddMembersScreen));
     addButton = element(by.id(this.testID.addButton));
@@ -38,43 +38,43 @@ class ChannelAddMembersScreen {
             userItem: element(userItemMatcher),
             userItemDisplayUsername: element(userItemDisplayUsernameMatcher),
         };
-    }
+    };
 
     getUserAtIndex = (index) => {
         return element(by.id(this.testID.userItem).withAncestor(by.id(this.testID.usersList))).atIndex(index);
-    }
+    };
 
     getUserByDisplayUsername = (displayUsername) => {
         return element(by.text(displayUsername).withAncestor(by.id(this.testID.usersList)));
-    }
+    };
 
     getDisplayUsernameAtIndex = (index) => {
         return element(by.id(this.testID.userItemDisplayUsername)).atIndex(index);
-    }
+    };
 
     toBeVisible = async () => {
         await expect(this.channelAddMembersScreen).toBeVisible();
 
         return this.channelAddMembersScreen;
-    }
+    };
 
     open = async () => {
         // # Open more direct messages screen
         await MainSidebar.openChannelMembersButton.tap();
 
         return this.toBeVisible();
-    }
+    };
 
     back = async () => {
         await this.backButton.tap();
         await expect(this.channelAddMembersScreen).not.toBeVisible();
-    }
+    };
 
     hasUserDisplayUsernameAtIndex = async (index, displayUsername) => {
         await expect(
             this.getDisplayUsernameAtIndex(index),
         ).toHaveText(displayUsername);
-    }
+    };
 }
 
 const channelAddMembersScreen = new ChannelAddMembersScreen();

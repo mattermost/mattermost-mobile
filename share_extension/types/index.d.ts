@@ -25,14 +25,14 @@ interface ShareState {
     error?: string;
     hasPermission?: boolean;
     loading: boolean;
-    files: Array<ShareFileInfo>;
+    files: ShareFileInfo[];
     totalSize?: number;
     value?: string;
 }
 
 interface ProcessedSharedItems {
     error?: string;
-    files: Array<ShareFileInfo>;
+    files: ShareFileInfo[];
     value?: string;
     totalSize?: number;
 }

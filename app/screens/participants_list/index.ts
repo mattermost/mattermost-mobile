@@ -20,7 +20,7 @@ const EMPTY_USER_PROFILES: UserProfile[] = [];
 function makeMapStateToProps() {
     const getProfilesByIds = makeGetProfilesByIds();
 
-    return function mapStateToProps(state: GlobalState, ownProps:ListProps) {
+    return function mapStateToProps(state: GlobalState, ownProps: ListProps) {
         const allUserIds = ownProps.userIds;
         return {
             currentUserId: getCurrentUserId(state),

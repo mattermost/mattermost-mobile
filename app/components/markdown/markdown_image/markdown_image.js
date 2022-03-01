@@ -42,6 +42,7 @@ export default class MarkdownImage extends ImageViewPort {
         linkDestination: PropTypes.string,
         postId: PropTypes.string,
         source: PropTypes.string.isRequired,
+        theme: PropTypes.object,
     };
 
     static contextTypes = {
@@ -185,6 +186,7 @@ export default class MarkdownImage extends ImageViewPort {
                 <CompassIcon
                     name='file-image-broken-outline-large'
                     size={24}
+                    color={this.props.theme?.centerChannelColor}
                 />
             );
         } else if (width && height) {
@@ -228,6 +230,7 @@ export default class MarkdownImage extends ImageViewPort {
                 <SvgUri
                     uri={fileInfo.uri}
                     style={{flex: 1}}
+                    onError={this.handleSizeFailed}
                 />
             );
         }

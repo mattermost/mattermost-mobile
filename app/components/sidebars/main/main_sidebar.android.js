@@ -57,7 +57,7 @@ export default class MainSidebarAndroid extends MainSidebarBase {
 
     handleSidebarDidOpen = () => {
         this.setState({opened: true});
-    }
+    };
 
     onPageSelected = (index) => {
         this.swiperIndex = index;
@@ -69,7 +69,7 @@ export default class MainSidebarAndroid extends MainSidebarBase {
 
     setProviderRef = (ref) => {
         this.providerRef = ref;
-    }
+    };
 
     render() {
         const locale = this.props.locale;

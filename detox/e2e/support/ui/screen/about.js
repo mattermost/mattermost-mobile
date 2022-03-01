@@ -29,7 +29,7 @@ class AboutScreen {
         aboutSubtitle: 'about.subtitle',
         aboutTermsOfService: 'about.terms_of_service',
         aboutTitle: 'about.title',
-    }
+    };
 
     aboutScreen = element(by.id(this.testID.aboutScreen));
     aboutScrollView = element(by.id(this.testID.aboutScrollView));
@@ -60,19 +60,19 @@ class AboutScreen {
         await expect(this.aboutScreen).toBeVisible();
 
         return this.aboutScreen;
-    }
+    };
 
     open = async () => {
         // # Open about screen
         await GeneralSettingsScreen.aboutAction.tap();
 
         return this.toBeVisible();
-    }
+    };
 
     back = async () => {
         await this.backButton.tap();
         await expect(this.aboutScreen).not.toBeVisible();
-    }
+    };
 }
 
 const aboutScreen = new AboutScreen();

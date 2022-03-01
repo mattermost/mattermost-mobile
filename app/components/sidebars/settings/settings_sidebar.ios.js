@@ -115,7 +115,7 @@ export default class SettingsDrawer extends SettingsSidebarBase {
     goToCustomStatus = preventDoubleTap(() => {
         const {intl} = this.context;
         this.goToCustomStatusScreen(intl);
-    })
+    });
 
     renderNavigationView = () => {
         const {theme} = this.props;

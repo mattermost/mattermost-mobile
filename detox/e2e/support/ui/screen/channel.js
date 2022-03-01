@@ -36,7 +36,7 @@ class ChannelScreen {
         channelSearchButton: 'channel.search.button',
         channelTitleButton: 'channel.title.button',
         settingsSidebarDrawerButton: 'settings_sidebar_drawer.button',
-    }
+    };
 
     channelScreen = element(by.id(this.testID.channelScreen));
     channelPostList = element(by.id(this.testID.channelPostList));
@@ -73,29 +73,29 @@ class ChannelScreen {
     getChannelIntroProfilePicture = (userId) => {
         const profilePictureItemMatcher = ProfilePicture.getProfilePictureItemMatcher(this.testID.channelIntroProfilePicturePrefix, userId);
         return element(profilePictureItemMatcher);
-    }
+    };
 
     getMoreMessagesButton = () => {
         return this.postList.getMoreMessagesButton();
-    }
+    };
 
     getNewMessagesDivider = () => {
         return this.postList.getNewMessagesDivider();
-    }
+    };
 
     getPostListPostItem = (postId, text, postProfileOptions = {}) => {
         return this.postList.getPost(postId, text, postProfileOptions);
-    }
+    };
 
     getPostMessageAtIndex = (index) => {
         return this.postList.getPostMessageAtIndex(index);
-    }
+    };
 
     toBeVisible = async () => {
         await expect(this.channelScreen).toBeVisible();
 
         return this.channelScreen;
-    }
+    };
 
     open = async (user) => {
         // # Open channel screen
@@ -103,13 +103,13 @@ class ChannelScreen {
         await LoginScreen.login(user);
 
         return this.toBeVisible();
-    }
+    };
 
     logout = async () => {
         await this.openSettingsSidebar();
         await SettingsSidebar.tapLogoutAction();
         await SelectServerScreen.toBeVisible();
-    }
+    };
 
     closeMainSidebar = async () => {
         if (isAndroid()) {
@@ -120,7 +120,7 @@ class ChannelScreen {
             // # iOS workaround for now
             await device.reloadReactNative();
         }
-    }
+    };
 
     closeSettingsSidebar = async () => {
         if (isAndroid()) {
@@ -131,13 +131,13 @@ class ChannelScreen {
             // # iOS workaround for now
             await device.reloadReactNative();
         }
-    }
+    };
 
     closeTeamSidebar = async () => {
         // # Close team sidebar
         await MainSidebar.closeTeamSidebar();
         await this.closeMainSidebar();
-    }
+    };
 
     deletePost = async (postId, text, {confirm = true} = {}) => {
         await this.openPostOptionsFor(postId, text);
@@ -145,33 +145,33 @@ class ChannelScreen {
         // # Delete post
         await PostOptions.deletePost({confirm});
         await this.toBeVisible();
-    }
+    };
 
     goToChannel = async (displayName) => {
         await this.openMainSidebar();
         const channelItem = MainSidebar.getChannelByDisplayName(displayName);
         await channelItem.tap();
         await expect(this.channelNavBarTitle).toHaveText(displayName);
-    }
+    };
 
     openMainSidebar = async () => {
         // # Open main sidebar
         await this.mainSidebarDrawerButton.tap();
         await expect(MainSidebar.channelsList).toBeVisible();
         await MainSidebar.toBeVisible();
-    }
+    };
 
     openSettingsSidebar = async () => {
         // # Open settings sidebar
         await this.settingsSidebarDrawerButton.tap();
         await SettingsSidebar.toBeVisible();
-    }
+    };
 
     openTeamSidebar = async () => {
         // # Open team sidebar
         await this.openMainSidebar();
         await MainSidebar.openTeamSidebar();
-    }
+    };
 
     openPostOptionsFor = async (postId, text) => {
         const {postListPostItem} = await this.getPostListPostItem(postId, text);
@@ -180,7 +180,7 @@ class ChannelScreen {
         // # Open post options
         await postListPostItem.longPress();
         await PostOptions.toBeVisible();
-    }
+    };
 
     openReplyThreadFor = async (postId, text) => {
         await this.openPostOptionsFor(postId, text);
@@ -188,7 +188,7 @@ class ChannelScreen {
         // # Open reply thread screen
         await PostOptions.replyAction.tap();
         await ThreadScreen.toBeVisible();
-    }
+    };
 
     postMessage = async (message, {quickReplace = false} = {}) => {
         // # Post message
@@ -199,39 +199,39 @@ class ChannelScreen {
             await this.postInput.typeText(message);
         }
         await this.tapSendButton();
-    }
+    };
 
     swipeLeft = async () => {
         await this.channelScreen.swipe('left');
-    }
+    };
 
     swipeRight = async () => {
         await this.channelScreen.swipe('right');
-    }
+    };
 
     tapSendButton = async () => {
         // # Tap send button
         await this.sendButton.tap();
         await expect(this.sendButton).not.toExist();
         await expect(this.sendButtonDisabled).toBeVisible();
-    }
+    };
 
     hasLongPostMessage = async (postMessage) => {
         await expect(
             this.getLongPostMessage(),
         ).toHaveText(postMessage);
-    }
+    };
 
     hasPostMessage = async (postId, postMessage) => {
         const {postListPostItem} = this.getPostListPostItem(postId, postMessage);
         await expect(postListPostItem).toBeVisible();
-    }
+    };
 
     hasPostMessageAtIndex = async (index, postMessage) => {
         await expect(
             this.getPostMessageAtIndex(index),
         ).toHaveText(postMessage);
-    }
+    };
 }
 
 const channelScreen = new ChannelScreen();

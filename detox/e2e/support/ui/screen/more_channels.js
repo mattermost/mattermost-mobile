@@ -19,7 +19,7 @@ class MoreChannelsScreen {
         channelsList: 'more_channels.custom_list',
         channelItem: 'more_channels.custom_list.channel_item',
         channelItemDisplayName: 'more_channels.custom_list.channel_item.display_name',
-    }
+    };
 
     moreChannelsScreen = element(by.id(this.testID.moreChannelsScreen));
     closeMoreChannelsButton = element(by.id(this.testID.closeMoreChannelsButton));
@@ -48,21 +48,21 @@ class MoreChannelsScreen {
             channelItem: element(channelItemMatcher),
             channelItemDisplayName: element(channelItemDisplayNameMatcher),
         };
-    }
+    };
 
     getChannelByDisplayName = (displayName) => {
         return element(by.text(displayName).withAncestor(by.id(this.testID.channelsList)));
-    }
+    };
 
     getChannelDisplayNameAtIndex = (index) => {
         return element(by.id(this.testID.channelItemDisplayName)).atIndex(index);
-    }
+    };
 
     toBeVisible = async () => {
         await expect(this.moreChannelsScreen).toBeVisible();
 
         return this.moreChannelsScreen;
-    }
+    };
 
     open = async () => {
         // # Open more channels screen
@@ -70,30 +70,30 @@ class MoreChannelsScreen {
         await BottomSheet.moreChannelsOption.tap();
 
         return this.toBeVisible();
-    }
+    };
 
     close = async () => {
         await this.closeMoreChannelsButton.tap();
         await expect(this.moreChannelsScreen).not.toBeVisible();
-    }
+    };
 
     showArchivedChannels = async () => {
         await this.channelDropdown.tap();
         await this.archivedChannelsOption.tap();
         await expect(this.channelDropdownArchived).toBeVisible();
-    }
+    };
 
     showPublicChannels = async () => {
         await this.channelDropdown.tap();
         await this.publicChannelsOption.tap();
         await expect(this.channelDropdownPublic).toBeVisible();
-    }
+    };
 
     hasChannelDisplayNameAtIndex = async (index, channelDisplayName) => {
         await expect(
             this.getChannelDisplayNameAtIndex(index),
         ).toHaveText(channelDisplayName);
-    }
+    };
 }
 
 const moreChannelsScreen = new MoreChannelsScreen();

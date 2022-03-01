@@ -28,12 +28,12 @@ type Props = {
         markAllThreadsInTeamRead: (userId: $ID<UserProfile>, teamId: $ID<Team>) => void;
         selectPost: (postId: string) => void;
     };
-    allThreadIds: $ID<UserThread>[];
+    allThreadIds: Array<$ID<UserThread>>;
     intl: typeof intlShape;
     teamId: $ID<Team>;
     theme: Theme;
     threadCount: ThreadsState['counts'][$ID<Team>];
-    unreadThreadIds: $ID<UserThread>[];
+    unreadThreadIds: Array<$ID<UserThread>>;
     userId: $ID<UserProfile>;
     viewingUnreads: boolean;
 }

@@ -68,7 +68,7 @@ class PushNotifications {
             return AndroidNotificationPreferences.getDeliveredNotifications();
         }
         return Notifications.ios.getDeliveredNotifications() as Promise<NotificationWithChannel[]>;
-    }
+    };
 
     cancelAllLocalNotifications() {
         Notifications.cancelAllLocalNotifications();
@@ -132,7 +132,7 @@ class PushNotifications {
         } else {
             Notifications.ios.removeDeliveredNotifications(notificationIds);
         }
-    }
+    };
 
     setBadgeCountByMentions = (initialBadge = 0) => {
         let badgeCount = initialBadge;
@@ -148,7 +148,7 @@ class PushNotifications {
             badgeCount = badgeCount <= 0 ? 0 : badgeCount;
             Notifications.ios.setBadgeCount(badgeCount);
         }
-    }
+    };
 
     createReplyCategory = () => {
         const {getState} = Store.redux!;
@@ -164,7 +164,7 @@ class PushNotifications {
         };
         const replyAction = new NotificationAction(REPLY_ACTION, 'background', replyTitle, true, replyTextInput);
         return new NotificationCategory(CATEGORY, [replyAction]);
-    }
+    };
 
     getInitialNotification = async () => {
         const notification: NotificationWithData | undefined = await Notifications.getInitialNotification();
@@ -172,6 +172,17 @@ class PushNotifications {
         if (notification) {
             EphemeralStore.setStartFromNotification(true);
             notification.userInteraction = true;
+
+            if (Platform.OS === 'ios') {
+                // when a notification is received on iOS, getInitialNotification, will return the notification
+                // as the app will initialized cause we are using background fetch,
+                // that does not necessarily mean that the app was opened cause of the notification was tapped.
+                // Here we are going to dettermine if the notification still exists in NotificationCenter to verify if
+                // the app was opened because of a tap or cause of the background fetch init
+                const delivered = await Notifications.ios.getDeliveredNotifications();
+                notification.userInteraction = delivered.find((d) => (d as unknown as NotificationWithAck).ack_id === notification?.payload?.ack_id) == null;
+                notification.foreground = false;
+            }
 
             // getInitialNotification may run before the store is set
             // that is why we run on an interval until the store is available
@@ -183,7 +194,7 @@ class PushNotifications {
                 }
             }, 500);
         }
-    }
+    };
 
     handleNotification = (notification: NotificationWithData, isInitialNotification = false) => {
         const {payload, foreground, userInteraction} = notification;
@@ -221,6 +232,8 @@ class PushNotifications {
                                 }
                             }
                         }
+                    } else if (!userInteraction && Platform.OS === 'ios') {
+                        dispatch(loadFromPushNotification(notification, isInitialNotification, true));
                     }
                     break;
                 case NOTIFICATION_TYPE.SESSION:
@@ -231,17 +244,17 @@ class PushNotifications {
                 }
             });
         }
-    }
+    };
 
     localNotification = (notification: Notification) => {
         Notifications.postLocalNotification(notification);
-    }
+    };
 
     onNotificationOpened = (notification: NotificationWithData, completion: () => void) => {
         notification.userInteraction = true;
         this.handleNotification(notification);
         completion();
-    }
+    };
 
     onNotificationReceivedBackground = (notification: NotificationWithData, completion: (response: NotificationBackgroundFetchResult) => void) => {
         this.handleNotification(notification);

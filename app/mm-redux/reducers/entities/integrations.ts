@@ -77,7 +77,7 @@ function systemCommands(state: IDMappedObjects<Command> = {}, action: GenericAct
     }
 }
 
-function commandAutocompleteSuggestions(state: Array<AutocompleteSuggestion> = [], action: GenericAction) {
+function commandAutocompleteSuggestions(state: AutocompleteSuggestion[] = [], action: GenericAction) {
     switch (action.type) {
     case IntegrationTypes.RECEIVED_COMMAND_SUGGESTIONS:
         return action.data;

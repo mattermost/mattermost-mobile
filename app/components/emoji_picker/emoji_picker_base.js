@@ -109,7 +109,7 @@ export default class EmojiPicker extends PureComponent {
 
     setSearchBarRef = (ref) => {
         this.searchBarRef = ref;
-    }
+    };
 
     setSectionListRef = (ref) => {
         this.sectionListRef = ref;
@@ -121,7 +121,7 @@ export default class EmojiPicker extends PureComponent {
             const emojis = this.renderableEmojis(this.props.emojisBySection, this.props.deviceWidth);
             this.setState({emojis});
         }
-    }
+    };
 
     renderableEmojis = (emojis, deviceWidth) => {
         const numberOfColumns = this.getNumberOfColumns(deviceWidth);
@@ -501,7 +501,7 @@ export default class EmojiPicker extends PureComponent {
                 </View>
             </View>
         );
-    }
+    };
 }
 
 export const getStyleSheetFromTheme = makeStyleSheetFromTheme((theme) => {
