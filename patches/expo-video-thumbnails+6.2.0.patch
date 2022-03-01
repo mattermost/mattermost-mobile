@@ -1,7 +1,7 @@
-diff --git a/node_modules/expo-modules-core/android/build.gradle b/node_modules/expo-modules-core/android/build.gradle
-index f3ac20a..51774b4 100644
---- a/node_modules/expo-modules-core/android/build.gradle
-+++ b/node_modules/expo-modules-core/android/build.gradle
+diff --git a/node_modules/expo-video-thumbnails/android/build.gradle b/node_modules/expo-video-thumbnails/android/build.gradle
+index 0342e3c..4c6c39c 100644
+--- a/node_modules/expo-video-thumbnails/android/build.gradle
++++ b/node_modules/expo-video-thumbnails/android/build.gradle
 @@ -1,6 +1,6 @@
  apply plugin: 'com.android.library'
  apply plugin: 'kotlin-android'
@@ -9,7 +9,7 @@ index f3ac20a..51774b4 100644
 +apply plugin: 'maven-publish'
  
  group = 'host.exp.exponent'
- version = '0.4.10'
+ version = '6.2.0'
 @@ -36,15 +36,6 @@ artifacts {
    archives androidSourcesJar
  }

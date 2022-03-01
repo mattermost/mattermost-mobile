@@ -3,9 +3,8 @@
 
 import {Platform} from 'react-native';
 
-import {switchToChannel} from '@actions/local/channel';
 import {updatePostSinceCache} from '@actions/local/notification';
-import {fetchMissingSidebarInfo, fetchMyChannel, markChannelAsRead} from '@actions/remote/channel';
+import {fetchMissingSidebarInfo, fetchMyChannel, markChannelAsRead, switchToChannelById} from '@actions/remote/channel';
 import {forceLogoutIfNecessary} from '@actions/remote/session';
 import {fetchMyTeam} from '@actions/remote/team';
 import {Preferences} from '@constants';
@@ -13,12 +12,10 @@ import DatabaseManager from '@database/manager';
 import {getTeammateNameDisplaySetting} from '@helpers/api/preference';
 import {queryChannelsById, queryMyChannel} from '@queries/servers/channel';
 import {queryPreferencesByCategoryAndName} from '@queries/servers/preference';
-import {queryCommonSystemValues} from '@queries/servers/system';
+import {queryCommonSystemValues, queryWebSocketLastDisconnected} from '@queries/servers/system';
 import {queryMyTeamById} from '@queries/servers/team';
 import {queryCurrentUser} from '@queries/servers/user';
 import {emitNotificationError} from '@utils/notification';
-
-import {fetchPostsForChannel} from './post';
 
 const fetchNotificationData = async (serverUrl: string, notification: NotificationWithData, skipEvents = false) => {
     const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
@@ -81,7 +78,6 @@ const fetchNotificationData = async (serverUrl: string, notification: Notificati
             }
         }
 
-        fetchPostsForChannel(serverUrl, channelId);
         return {};
     } catch (error) {
         forceLogoutIfNecessary(serverUrl, error as ClientErrorProps);
@@ -90,11 +86,20 @@ const fetchNotificationData = async (serverUrl: string, notification: Notificati
 };
 
 export const backgroundNotification = async (serverUrl: string, notification: NotificationWithData) => {
-    if (Platform.OS === 'ios') {
-        updatePostSinceCache(serverUrl, notification);
+    const database = DatabaseManager.serverDatabases[serverUrl]?.database;
+    if (!database) {
+        return;
     }
 
-    await fetchNotificationData(serverUrl, notification, true);
+    const lastDisconnectedAt = await queryWebSocketLastDisconnected(database);
+
+    if (lastDisconnectedAt) {
+        if (Platform.OS === 'ios') {
+            updatePostSinceCache(serverUrl, notification);
+        }
+
+        await fetchNotificationData(serverUrl, notification, true);
+    }
 };
 
 export const openNotification = async (serverUrl: string, notification: NotificationWithData) => {
@@ -126,8 +131,7 @@ export const openNotification = async (serverUrl: string, notification: Notifica
         const myTeam = await queryMyTeamById(database, teamId);
 
         if (myChannel && myTeam) {
-            fetchPostsForChannel(serverUrl, channelId);
-            switchToChannel(serverUrl, channelId, teamId);
+            switchToChannelById(serverUrl, channelId, teamId);
             return {};
         }
 
@@ -136,7 +140,7 @@ export const openNotification = async (serverUrl: string, notification: Notifica
             return {error: result.error};
         }
 
-        return switchToChannel(serverUrl, channelId, teamId);
+        return switchToChannelById(serverUrl, channelId, teamId);
     } catch (error) {
         forceLogoutIfNecessary(serverUrl, error as ClientErrorProps);
         return {error};

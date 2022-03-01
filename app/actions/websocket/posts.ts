@@ -116,6 +116,7 @@ export async function handleNewPostEvent(serverUrl: string, msg: WebSocketMessag
     //const viewingGlobalThreads = getViewingGlobalThreads(state);
     // const collapsedThreadsEnabled = isCollapsedThreadsEnabled(state);
     // actions.push(receivedNewPost(post, collapsedThreadsEnabled));
+
     if (!shouldIgnorePost(post)) {
         let markAsViewed = false;
         let markAsRead = false;
@@ -153,6 +154,7 @@ export async function handleNewPostEvent(serverUrl: string, msg: WebSocketMessag
                 myChannel.messageCount + 1,
                 myChannel.mentionsCount + (hasMentions ? 1 : 0),
                 myChannel.lastViewedAt,
+                true,
             );
             if (unreadAt) {
                 models.push(unreadAt);
