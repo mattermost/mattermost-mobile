@@ -50,10 +50,8 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     },
     playContainer: {
         alignItems: 'center',
-        height: '100%',
         justifyContent: 'center',
-        position: 'absolute',
-        width: '100%',
+        ...StyleSheet.absoluteFillObject,
     },
     play: {
         backgroundColor: changeOpacity('#000', 0.16),
@@ -172,12 +170,13 @@ const VideoFile = ({
             {!isSingleImage && <View style={style.boxPlaceholder}/>}
             {thumbnail}
             <View style={style.playContainer}>
-                <CompassIcon
-                    color={changeOpacity('#fff', 0.8)}
-                    style={style.play}
-                    name='play'
-                    size={40}
-                />
+                <View style={style.play}>
+                    <CompassIcon
+                        color={changeOpacity('#fff', 0.8)}
+                        name='play'
+                        size={40}
+                    />
+                </View>
             </View>
         </View>
     );
