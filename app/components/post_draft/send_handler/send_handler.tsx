@@ -5,7 +5,7 @@ import React, {useCallback, useEffect, useState} from 'react';
 import {useIntl} from 'react-intl';
 import {DeviceEventEmitter} from 'react-native';
 
-import {getChannelMemberCountsByGroup, getChannelTimezones} from '@actions/remote/channel';
+import {getChannelTimezones} from '@actions/remote/channel';
 import {executeCommand, handleGotoLocation} from '@actions/remote/command';
 import {createPost} from '@actions/remote/post';
 import {handleReactionToLatestPost} from '@actions/remote/reactions';
@@ -22,7 +22,6 @@ import {confirmOutOfOfficeDisabled} from '@utils/user';
 import DraftInput from '../draft_input';
 
 import type CustomEmojiModel from '@typings/database/models/servers/custom_emoji';
-import type GroupModel from '@typings/database/models/servers/group';
 
 type Props = {
     testID?: string;
@@ -38,8 +37,6 @@ type Props = {
     membersCount?: number;
     useChannelMentions: boolean;
     userIsOutOfOffice: boolean;
-    useGroupMentions: boolean;
-    groupsWithAllowReference: GroupModel[];
     customEmojis: CustomEmojiModel[];
 
     // DRAFT Handler
@@ -68,8 +65,6 @@ export default function SendHandler({
     userIsOutOfOffice,
     customEmojis,
     value,
-    useGroupMentions,
-    groupsWithAllowReference,
     clearDraft,
     updateValue,
     addFiles,
@@ -82,7 +77,6 @@ export default function SendHandler({
 
     const [channelTimezoneCount, setChannelTimezoneCount] = useState(0);
     const [sendingMessage, setSendingMessage] = useState(false);
-    const [channelMemberCountsByGroup, setChannelMemberCountsByGroup] = useState<ChannelMemberCountByGroup[]>([]);
 
     const canSend = useCallback(() => {
         if (sendingMessage) {
@@ -134,15 +128,6 @@ export default function SendHandler({
         DraftUtils.alertChannelWideMention(intl, notifyAllMessage, doSubmitMessage, cancel);
     }, [intl, isTimezoneEnabled, channelTimezoneCount, doSubmitMessage]);
 
-    const showSendToGroupsAlert = useCallback((groupMentions: string[], memberNotifyCount: number, calculatedChannelTimezoneCount: number) => {
-        const notifyAllMessage = DraftUtils.buildGroupMentionsMessage(intl, groupMentions, memberNotifyCount, calculatedChannelTimezoneCount);
-        const cancel = () => {
-            setSendingMessage(false);
-        };
-
-        DraftUtils.alertSendToGroups(intl, notifyAllMessage, doSubmitMessage, cancel);
-    }, [intl, doSubmitMessage]);
-
     const sendCommand = useCallback(async () => {
         const status = DraftUtils.getStatusFromSlashCommand(value);
         if (userIsOutOfOffice && status) {
@@ -182,40 +167,23 @@ export default function SendHandler({
 
     const sendMessage = useCallback(() => {
         const notificationsToChannel = enableConfirmNotificationsToChannel && useChannelMentions;
-        const notificationsToGroups = enableConfirmNotificationsToChannel && useGroupMentions;
         const toAllOrChannel = DraftUtils.textContainsAtAllAtChannel(value);
         const toHere = DraftUtils.textContainsAtHere(value);
-        const groupMentions = (!toAllOrChannel && !toHere && notificationsToGroups) ? DraftUtils.groupsMentionedInText(groupsWithAllowReference, value) : [];
 
         if (value.indexOf('/') === 0) {
             sendCommand();
         } else if (notificationsToChannel && membersCount > NOTIFY_ALL_MEMBERS && (toAllOrChannel || toHere)) {
             showSendToAllOrChannelOrHereAlert(membersCount, toHere && !toAllOrChannel);
-        } else if (groupMentions.length > 0) {
-            const {
-                groupMentionsSet,
-                memberNotifyCount,
-                channelTimezoneCount: calculatedChannelTimezoneCount,
-            } = DraftUtils.mapGroupMentions(channelMemberCountsByGroup, groupMentions);
-            if (memberNotifyCount > 0) {
-                showSendToGroupsAlert(Array.from(groupMentionsSet), memberNotifyCount, calculatedChannelTimezoneCount);
-            } else {
-                doSubmitMessage();
-            }
         } else {
             doSubmitMessage();
         }
     }, [
         enableConfirmNotificationsToChannel,
         useChannelMentions,
-        useGroupMentions,
         value,
-        groupsWithAllowReference,
         channelTimezoneCount,
-        channelMemberCountsByGroup,
         sendCommand,
         showSendToAllOrChannelOrHereAlert,
-        showSendToGroupsAlert,
         doSubmitMessage,
     ]);
 
@@ -247,21 +215,6 @@ export default function SendHandler({
             sendMessage();
         }
     }), [canSend, value, handleReaction, files, sendMessage, customEmojis]);
-
-    useEffect(() => {
-        if (useGroupMentions) {
-            getChannelMemberCountsByGroup(serverUrl, channelId, isTimezoneEnabled).then((resp) => {
-                if (resp.error) {
-                    return;
-                }
-
-                const received = resp.channelMemberCountsByGroup || [];
-                if (received.length || channelMemberCountsByGroup.length) {
-                    setChannelMemberCountsByGroup(received);
-                }
-            });
-        }
-    }, [useGroupMentions, channelId, isTimezoneEnabled, channelMemberCountsByGroup.length]);
 
     useEffect(() => {
         getChannelTimezones(serverUrl, channelId).then(({channelTimezones}) => {
