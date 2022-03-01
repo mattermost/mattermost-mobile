@@ -286,9 +286,7 @@ class Markdown extends PureComponent<MarkdownProps> {
 
         return (
             <View style={blockStyle}>
-                <Text>
-                    {children}
-                </Text>
+                {children}
             </View>
         );
     };
