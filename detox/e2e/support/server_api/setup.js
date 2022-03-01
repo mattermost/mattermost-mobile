@@ -7,20 +7,21 @@ import User from './user';
 
 /**
  * Creates new user, channel and team for test isolation.
+ * @param {string} baseUrl - the base server URL
  * @param {Object} options - may pass options to predefine channel, team and user creation
  * @return {Object} returns {channel, team, user} on success or {error, status} on error
  */
-export const apiInit = async ({
+export const apiInit = async (baseUrl, {
     channelOptions = {type: 'O', prefix: 'channel'},
     teamOptions = {type: 'O', prefix: 'team'},
     userOptions = {prefix: 'user'},
 } = {}) => {
-    const {team} = await Team.apiCreateTeam(teamOptions);
-    const {channel} = await Channel.apiCreateChannel({...channelOptions, teamId: team.id});
-    const {user} = await User.apiCreateUser(userOptions);
+    const {team} = await Team.apiCreateTeam(baseUrl, teamOptions);
+    const {channel} = await Channel.apiCreateChannel(baseUrl, {...channelOptions, teamId: team.id});
+    const {user} = await User.apiCreateUser(baseUrl, userOptions);
 
-    await Team.apiAddUserToTeam(user.id, team.id);
-    await Channel.apiAddUserToChannel(user.id, channel.id);
+    await Team.apiAddUserToTeam(baseUrl, user.id, team.id);
+    await Channel.apiAddUserToChannel(baseUrl, user.id, channel.id);
 
     return {
         channel,
