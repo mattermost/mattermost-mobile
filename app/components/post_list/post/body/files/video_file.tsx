@@ -129,8 +129,10 @@ const VideoFile = ({
     }, []);
 
     useEffect(() => {
-        getThumbnail();
-    }, [file]);
+        if (inViewPort) {
+            getThumbnail();
+        }
+    }, [file, inViewPort]);
 
     const imageProps = () => {
         const props: ProgressiveImageProps = {
