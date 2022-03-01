@@ -1,13 +1,16 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback, useState} from 'react';
+import React, {useCallback, useEffect, useState} from 'react';
 import {StyleProp, StyleSheet, useWindowDimensions, View, ViewStyle} from 'react-native';
+import LinearGradient from 'react-native-linear-gradient';
 
 import {buildFilePreviewUrl, buildFileThumbnailUrl} from '@actions/remote/file';
+import CompassIcon from '@components/compass_icon';
 import ProgressiveImage from '@components/progressive_image';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
+import {isGif as isGifImage} from '@utils/file';
 import {calculateDimensions} from '@utils/images';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
@@ -27,17 +30,18 @@ type ImageFileProps = {
 
 const SMALL_IMAGE_MAX_HEIGHT = 48;
 const SMALL_IMAGE_MAX_WIDTH = 48;
+const GRADIENT_COLORS = ['rgba(0, 0, 0, 0)', 'rgba(0, 0, 0, .32)'];
+const GRADIENT_END = {x: 1, y: 1};
+const GRADIENT_LOCATIONS = [0.5, 1];
+const GRADIENT_START = {x: 0.5, y: 0.5};
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
-    imagePreview: {
-        ...StyleSheet.absoluteFillObject,
+    boxPlaceholder: {
+        paddingBottom: '100%',
     },
     fileImageWrapper: {
         borderRadius: 5,
         overflow: 'hidden',
-    },
-    boxPlaceholder: {
-        paddingBottom: '100%',
     },
     failed: {
         justifyContent: 'center',
@@ -45,6 +49,15 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         borderColor: changeOpacity(theme.centerChannelColor, 0.2),
         borderRadius: 4,
         borderWidth: 1,
+    },
+    gifContainer: {
+        alignItems: 'flex-end',
+        justifyContent: 'flex-end',
+        padding: 8,
+        ...StyleSheet.absoluteFillObject,
+    },
+    imagePreview: {
+        ...StyleSheet.absoluteFillObject,
     },
     smallImageBorder: {
         borderRadius: 5,
@@ -66,10 +79,11 @@ const ImageFile = ({
     backgroundColor, file, forwardRef, inViewPort, isSingleImage,
     resizeMode = 'cover', wrapperWidth,
 }: ImageFileProps) => {
-    const serverUrl = useServerUrl();
-    const [failed, setFailed] = useState(false);
     const dimensions = useWindowDimensions();
     const theme = useTheme();
+    const serverUrl = useServerUrl();
+    const [isGif, setIsGif] = useState(isGifImage(file));
+    const [failed, setFailed] = useState(false);
     const style = getStyleSheet(theme);
     let image;
 
@@ -102,6 +116,10 @@ const ImageFile = ({
         }
         return props;
     };
+
+    useEffect(() => {
+        setIsGif(isGifImage(file));
+    }, [file]);
 
     if (file.height <= SMALL_IMAGE_MAX_HEIGHT || file.width <= SMALL_IMAGE_MAX_WIDTH) {
         let wrapperStyle: StyleProp<ViewStyle> = style.fileImageWrapper;
@@ -179,12 +197,34 @@ const ImageFile = ({
         );
     }
 
+    let gifIndicator;
+    if (isGif) {
+        gifIndicator = (
+            <View style={StyleSheet.absoluteFill}>
+                <LinearGradient
+                    start={GRADIENT_START}
+                    end={GRADIENT_END}
+                    locations={GRADIENT_LOCATIONS}
+                    colors={GRADIENT_COLORS}
+                    style={[style.imagePreview, {...imageDimensions}]}
+                />
+                <View style={[style.gifContainer, {...imageDimensions}]}>
+                    <CompassIcon
+                        name='file-gif'
+                        color='#FFF'
+                        size={24}
+                    />
+                </View>
+            </View>
+        );
+    }
     return (
         <View
             style={style.fileImageWrapper}
         >
             {!isSingleImage && <View style={style.boxPlaceholder}/>}
             {image}
+            {gifIndicator}
         </View>
     );
 };
