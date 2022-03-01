@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback, useMemo, useState} from 'react';
-import {LayoutChangeEvent, useWindowDimensions, View} from 'react-native';
+import {LayoutChangeEvent, ScrollView, useWindowDimensions, View} from 'react-native';
 import Animated from 'react-native-reanimated';
 
 import Markdown from '@components/markdown';
@@ -71,26 +71,33 @@ const Message = ({currentUser, groupsForPosts, highlight, isEdited, isPendingOrF
     return (
         <>
             <Animated.View style={animatedStyle}>
-                <View
-                    style={[style.messageContainer, (isReplyPost && style.reply), (isPendingOrFailed && style.pendingPost)]}
-                    onLayout={onLayout}
+                <ScrollView
+                    keyboardShouldPersistTaps={'always'}
+                    scrollEnabled={false}
+                    showsVerticalScrollIndicator={false}
+                    showsHorizontalScrollIndicator={false}
                 >
-                    <Markdown
-                        baseTextStyle={style.message}
-                        blockStyles={blockStyles}
-                        channelMentions={post.props?.channel_mentions}
-                        imagesMetadata={post.metadata?.images}
-                        isEdited={isEdited}
-                        isReplyPost={isReplyPost}
-                        isSearchResult={location === SEARCH}
-                        location={location}
-                        postId={post.id}
-                        textStyles={textStyles}
-                        value={post.message}
-                        mentionKeys={mentionKeys}
-                        theme={theme}
-                    />
-                </View>
+                    <View
+                        style={[style.messageContainer, (isReplyPost && style.reply), (isPendingOrFailed && style.pendingPost)]}
+                        onLayout={onLayout}
+                    >
+                        <Markdown
+                            baseTextStyle={style.message}
+                            blockStyles={blockStyles}
+                            channelMentions={post.props?.channel_mentions}
+                            imagesMetadata={post.metadata?.images}
+                            isEdited={isEdited}
+                            isReplyPost={isReplyPost}
+                            isSearchResult={location === SEARCH}
+                            location={location}
+                            postId={post.id}
+                            textStyles={textStyles}
+                            value={post.message}
+                            mentionKeys={mentionKeys}
+                            theme={theme}
+                        />
+                    </View>
+                </ScrollView>
             </Animated.View>
             {(height || 0) > maxHeight &&
             <ShowMoreButton
