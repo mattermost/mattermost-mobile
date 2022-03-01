@@ -4,7 +4,7 @@
 
 import {DeviceEventEmitter} from 'react-native';
 
-import {updateLastPostAt} from '@actions/local/channel';
+import {markChannelAsUnread, updateLastPostAt} from '@actions/local/channel';
 import {processPostsFetched, removePost} from '@actions/local/post';
 import {addRecentReaction} from '@actions/local/reactions';
 import {ActionType, Events, General, ServerErrors} from '@constants';
@@ -514,6 +514,102 @@ export const fetchPostById = async (serverUrl: string, postId: string, fetchOnly
         }
 
         return {post};
+    } catch (error) {
+        forceLogoutIfNecessary(serverUrl, error as ClientErrorProps);
+        return {error};
+    }
+};
+
+export const togglePinPost = async (serverUrl: string, postId: string) => {
+    const database = DatabaseManager.serverDatabases[serverUrl]?.database;
+    if (!database) {
+        return {error: `${serverUrl} database not found`};
+    }
+
+    let client: Client;
+    try {
+        client = NetworkManager.getClient(serverUrl);
+    } catch (error) {
+        return {error};
+    }
+
+    try {
+        const post = await queryPostById(database, postId);
+        if (post) {
+            const isPinned = post.isPinned;
+            const request = isPinned ? client.unpinPost : client.pinPost;
+
+            await request(postId);
+            await database.write(async () => {
+                await post.update((p) => {
+                    p.isPinned = !isPinned;
+                });
+            });
+        }
+        return {post};
+    } catch (error) {
+        forceLogoutIfNecessary(serverUrl, error as ClientErrorProps);
+        return {error};
+    }
+};
+
+export const deletePost = async (serverUrl: string, postId: string) => {
+    const database = DatabaseManager.serverDatabases[serverUrl]?.database;
+    if (!database) {
+        return {error: `${serverUrl} database not found`};
+    }
+
+    let client: Client;
+    try {
+        client = NetworkManager.getClient(serverUrl);
+    } catch (error) {
+        return {error};
+    }
+
+    try {
+        await client.deletePost(postId);
+        const post = await removePost(serverUrl, {id: postId} as Post);
+        return {post};
+    } catch (error) {
+        forceLogoutIfNecessary(serverUrl, error as ClientErrorProps);
+        return {error};
+    }
+};
+
+export const markPostAsUnread = async (serverUrl: string, postId: string) => {
+    const database = DatabaseManager.serverDatabases[serverUrl]?.database;
+    if (!database) {
+        return {error: `${serverUrl} database not found`};
+    }
+    let client;
+    try {
+        client = NetworkManager.getClient(serverUrl);
+    } catch (error) {
+        return {error};
+    }
+
+    try {
+        const [userId, post] = await Promise.all([queryCurrentUserId(database), queryPostById(database, postId)]);
+        if (post && userId) {
+            await client.markPostAsUnread(userId, postId);
+            const {channelId} = post;
+
+            const [channel, channelMember] = await Promise.all([
+                client.getChannel(channelId),
+                client.getChannelMember(channelId, userId),
+            ]);
+            if (channel && channelMember) {
+                const messageCount = channel.total_msg_count - channelMember.msg_count;
+                const mentionCount = channelMember.mention_count;
+                await markChannelAsUnread(serverUrl, channelId, messageCount, mentionCount, post.createAt);
+                return {
+                    post,
+                };
+            }
+        }
+        return {
+            post,
+        };
     } catch (error) {
         forceLogoutIfNecessary(serverUrl, error as ClientErrorProps);
         return {error};

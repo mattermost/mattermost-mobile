@@ -1,37 +1,41 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React from 'react';
+import React, {useCallback} from 'react';
 
+import {togglePinPost} from '@actions/remote/post';
+import {Screens} from '@constants';
+import {useServerUrl} from '@context/server';
 import {t} from '@i18n';
+import {dismissBottomSheet} from '@screens/navigation';
 
 import BaseOption from './base_option';
 
 type PinChannelProps = {
     isPostPinned: boolean;
+    postId: string;
 }
 
-//fixme: wire up handlePinChannel
-const PinChannelOption = ({isPostPinned}: PinChannelProps) => {
-    //todo:  add useCallback for the handler callbacks
-    const handlePinPost = () => null;
-    const handleUnpinPost = () => null;
+const PinChannelOption = ({isPostPinned, postId}: PinChannelProps) => {
+    const serverUrl = useServerUrl();
+
+    const onPress = useCallback(() => {
+        togglePinPost(serverUrl, postId);
+        dismissBottomSheet(Screens.POST_OPTIONS);
+    }, [postId, serverUrl]);
 
     let defaultMessage;
     let id;
     let key;
-    let onPress;
 
     if (isPostPinned) {
         defaultMessage = 'Unpin from Channel';
         id = t('mobile.post_info.unpin');
         key = 'unpin';
-        onPress = handleUnpinPost;
     } else {
         defaultMessage = 'Pin to Channel';
         id = t('mobile.post_info.pin');
         key = 'pin';
-        onPress = handlePinPost;
     }
 
     return (

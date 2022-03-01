@@ -2,11 +2,12 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback} from 'react';
-import {DeviceEventEmitter, Text, View} from 'react-native';
+import {Text, View} from 'react-native';
 
 import CompassIcon from '@components/compass_icon';
 import TouchableWithFeedback from '@components/touchable_with_feedback';
 import {SEARCH} from '@constants/screens';
+import {goToScreen} from '@screens/navigation';
 import {preventDoubleTap} from '@utils/tap';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 
@@ -47,7 +48,8 @@ const HeaderReply = ({commentCount, location, post, theme}: HeaderReplyProps) =>
     const style = getStyleSheet(theme);
 
     const onPress = useCallback(preventDoubleTap(() => {
-        DeviceEventEmitter.emit('goToThread', post);
+        // https://mattermost.atlassian.net/browse/MM-39708
+        goToScreen('THREADS_SCREEN_NOT_IMPLEMENTED_YET', '', {post});
     }), []);
 
     return (

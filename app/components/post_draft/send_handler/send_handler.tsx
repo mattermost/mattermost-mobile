@@ -19,7 +19,7 @@ import {isReactionMatch} from '@utils/emoji/helpers';
 import {preventDoubleTap} from '@utils/tap';
 import {confirmOutOfOfficeDisabled} from '@utils/user';
 
-import CursorPositionHandler from '../cursor_position_handler';
+import DraftInput from '../draft_input';
 
 import type CustomEmojiModel from '@typings/database/models/servers/custom_emoji';
 import type GroupModel from '@typings/database/models/servers/group';
@@ -31,6 +31,7 @@ type Props = {
 
     // From database
     currentUserId: string;
+    cursorPosition: number;
     enableConfirmNotificationsToChannel?: boolean;
     isTimezoneEnabled: boolean;
     maxMessageLength: number;
@@ -46,6 +47,8 @@ type Props = {
     files: FileInfo[];
     clearDraft: () => void;
     updateValue: (message: string) => void;
+    updateCursorPosition: (cursorPosition: number) => void;
+    updatePostInputTop: (top: number) => void;
     addFiles: (file: FileInfo[]) => void;
     uploadFileError: React.ReactNode;
 }
@@ -59,6 +62,7 @@ export default function SendHandler({
     isTimezoneEnabled,
     maxMessageLength,
     membersCount = 0,
+    cursorPosition,
     rootId,
     useChannelMentions,
     userIsOutOfOffice,
@@ -70,6 +74,8 @@ export default function SendHandler({
     updateValue,
     addFiles,
     uploadFileError,
+    updateCursorPosition,
+    updatePostInputTop,
 }: Props) {
     const intl = useIntl();
     const serverUrl = useServerUrl();
@@ -264,23 +270,21 @@ export default function SendHandler({
     }, [serverUrl, channelId]);
 
     return (
-        <CursorPositionHandler
+        <DraftInput
             testID={testID}
             channelId={channelId}
             rootId={rootId}
-
-            // From draft handler
+            cursorPosition={cursorPosition}
+            updateCursorPosition={updateCursorPosition}
             value={value}
             files={files}
-            clearDraft={clearDraft}
             updateValue={updateValue}
             addFiles={addFiles}
             uploadFileError={uploadFileError}
-
-            // From send handler
             sendMessage={handleSendMessage}
             canSend={canSend()}
             maxMessageLength={maxMessageLength}
+            updatePostInputTop={updatePostInputTop}
         />
     );
 }

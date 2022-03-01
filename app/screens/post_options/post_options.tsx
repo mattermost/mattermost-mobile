@@ -67,24 +67,32 @@ const PostOptions = ({
         return (
             <>
                 {canAddReaction && <ReactionBar postId={post.id}/>}
-                {canReply && <ReplyOption/>}
+                {canReply && <ReplyOption post={post}/>}
                 {shouldRenderFollow &&
                     <FollowThreadOption
                         location={location}
                         thread={thread}
                     />
                 }
-                {canMarkAsUnread && !isSystemPost && (<MarkAsUnreadOption/>)}
+                {canMarkAsUnread && !isSystemPost &&
+                    <MarkAsUnreadOption postId={post.id}/>
+                }
                 {canCopyPermalink && <CopyLinkOption post={post}/>}
                 {!isSystemPost &&
                     <SaveOption
                         isSaved={isSaved}
                         postId={post.id}
-                    />}
+                    />
+                }
                 {canCopyText && <CopyTextOption postMessage={post.message}/>}
-                {canPin && <PinChannelOption isPostPinned={post.isPinned}/>}
-                {canEdit && <EditOption/>}
-                {canDelete && <DeletePostOption/>}
+                {canPin &&
+                    <PinChannelOption
+                        isPostPinned={post.isPinned}
+                        postId={post.id}
+                    />
+                }
+                {canEdit && <EditOption post={post}/>}
+                {canDelete && <DeletePostOption postId={post.id}/>}
             </>
         );
     };
