@@ -54,7 +54,7 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
             marginHorizontal: 12,
             borderRadius: 8,
             marginTop: 12,
-            marginBottom: 5,
+            marginBottom: 12,
             backgroundColor: changeOpacity(theme.centerChannelColor, 0.08),
         },
         searchBarInput: {

@@ -57,6 +57,8 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
         },
         text: {
             color: theme.centerChannelColor,
+            textAlignVertical: 'center',
+            height: 32,
             ...typography('Body', 100, 'SemiBold'),
         },
     };

@@ -101,7 +101,7 @@ const ChannelListHeader = ({canCreateChannels, canJoinChannels, displayName, ico
         bottomSheet({
             closeButtonId,
             renderContent,
-            snapPoints: [(items * ITEM_HEIGHT) + (insets.bottom * 2), 10],
+            snapPoints: [((items + 1) * ITEM_HEIGHT) + (insets.bottom * 2), 10],
             theme,
             title: intl.formatMessage({id: 'home.header.plus_menu', defaultMessage: 'Options'}),
         });
