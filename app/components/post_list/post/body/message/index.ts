@@ -20,7 +20,7 @@ type MessageInputArgs = {
     post: PostModel;
 }
 
-const withMessageInput = withObservables(['post'], ({database}: WithDatabaseArgs & MessageInputArgs) => {
+const withMessageInput = withObservables([], ({database}: WithDatabaseArgs) => {
     const currentUser = database.get<SystemModel>(SYSTEM).findAndObserve(SYSTEM_IDENTIFIERS.CURRENT_USER_ID).pipe(
         switchMap(({value}) => database.get<UserModel>(USER).findAndObserve(value)),
     );
