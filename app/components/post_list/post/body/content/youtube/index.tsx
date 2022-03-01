@@ -5,7 +5,7 @@ import {withDatabase} from '@nozbe/watermelondb/DatabaseProvider';
 import withObservables from '@nozbe/with-observables';
 import React, {useCallback} from 'react';
 import {useIntl} from 'react-intl';
-import {Alert, Image, Platform, StatusBar, StyleSheet} from 'react-native';
+import {Alert, Image, Platform, StatusBar, StyleSheet, View} from 'react-native';
 import {TouchableOpacity} from 'react-native-gesture-handler';
 import {YouTubeStandaloneAndroid, YouTubeStandaloneIOS} from 'react-native-youtube';
 import {of as of$} from 'rxjs';
@@ -169,12 +169,9 @@ const YouTube = ({googleDeveloperKey, isReplyPost, metadata}: YouTubeProps) => {
                 resizeMode='cover'
                 onError={emptyFunction}
             >
-                <TouchableOpacity
-                    style={styles.playButton}
-                    onPress={playYouTubeVideo}
-                >
+                <View style={styles.playButton}>
                     <Image source={require('@assets/images/icons/youtube-play-icon.png')}/>
-                </TouchableOpacity>
+                </View>
             </ProgressiveImage>
         </TouchableOpacity>
     );
