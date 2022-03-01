@@ -28,7 +28,8 @@ const {CONFIG, CURRENT_CHANNEL_ID, CURRENT_USER_ID, LICENSE} = SYSTEM_IDENTIFIER
 const {SERVER: {CHANNEL, POST, PREFERENCE, SYSTEM, USER}} = MM_TABLES;
 
 const enhanced = withObservables(['item'], ({database, item}: FooterProps) => {
-    let post: Observable<PostModel|undefined> = of$(undefined);
+    const post: Observable<PostModel|undefined> =
+        item.postId ? database.get<PostModel>(POST).findAndObserve(item.postId) : of$(undefined);
 
     const currentChannelId = database.get<SystemModel>(SYSTEM).findAndObserve(CURRENT_CHANNEL_ID).pipe(
         switchMap(({value}) => of$(value)),
@@ -48,10 +49,6 @@ const enhanced = withObservables(['item'], ({database, item}: FooterProps) => {
     const teammateNameDisplay = combineLatest([preferences, config, license]).pipe(
         switchMap(([prefs, cfg, lcs]) => of$(getTeammateNameDisplaySetting(prefs, cfg, lcs))),
     );
-
-    if (item.postId) {
-        post = database.get<PostModel>(POST).findAndObserve(item.postId);
-    }
 
     const author = post.pipe(
         switchMap((p) => {

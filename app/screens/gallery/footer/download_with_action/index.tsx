@@ -12,14 +12,13 @@ import {TouchableOpacity} from 'react-native-gesture-handler';
 import {useAnimatedStyle, withTiming} from 'react-native-reanimated';
 import Share from 'react-native-share';
 
+import {downloadFile} from '@actions/remote/file';
 import {typography} from '@app/utils/typography';
 import CompassIcon from '@components/compass_icon';
 import ProgressBar from '@components/progress_bar';
 import Toast from '@components/toast';
 import {GALLERY_FOOTER_HEIGHT} from '@constants/gallery';
-import {DOWNLOAD_TIMEOUT} from '@constants/network';
 import {useServerUrl} from '@context/server';
-import NetworkManager from '@init/network_manager';
 import {alertFailedToOpenDocument} from '@utils/document';
 import {fileExists, getLocalFilePathFromFile, hasWriteStoragePermission} from '@utils/file';
 import {galleryItemToFileInfo} from '@utils/gallery';
@@ -186,20 +185,18 @@ const DownloadWithAction = ({action, item, setAction}: Props) => {
     };
 
     const save = async (response: ClientResponse) => {
-        if (mounted.current) {
-            if (response.data?.path) {
-                const path = response.data.path as string;
-                const hasPermission = await hasWriteStoragePermission(intl);
+        if (response.data?.path) {
+            const path = response.data.path as string;
+            const hasPermission = await hasWriteStoragePermission(intl);
 
-                if (hasPermission) {
-                    switch (item.type) {
-                        case 'file':
-                            saveFile(path);
-                            break;
-                        default:
-                            saveImageOrVideo(path);
-                            break;
-                    }
+            if (hasPermission) {
+                switch (item.type) {
+                    case 'file':
+                        saveFile(path);
+                        break;
+                    default:
+                        saveImageOrVideo(path);
+                        break;
                 }
             }
         }
@@ -247,8 +244,7 @@ const DownloadWithAction = ({action, item, setAction}: Props) => {
                         data: {path},
                     });
                 } else {
-                    const client = NetworkManager.getClient(serverUrl);
-                    downloadPromise.current = client.apiClient.download(client.getFileRoute(item.id!), path.replace('file://', ''), {timeoutInterval: DOWNLOAD_TIMEOUT});
+                    downloadPromise.current = downloadFile(serverUrl, item.id!, path);
                     downloadPromise.current?.then(actionToExecute).catch(() => {
                         setError(intl.formatMessage({id: 'download.error', defaultMessage: 'Unable to download the file. Try again later'}));
                     });
@@ -267,9 +263,6 @@ const DownloadWithAction = ({action, item, setAction}: Props) => {
 
         return () => {
             mounted.current = false;
-            if (downloadPromise.current) {
-                downloadPromise.current.cancel?.();
-            }
         };
     }, []);
 

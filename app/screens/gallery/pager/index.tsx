@@ -52,10 +52,7 @@ const Pager = ({
     shouldHandleGestureEvent = workletNoopTrue, shouldRenderGutter = true, totalCount, width, height,
 }: PagerProps) => {
     const sharedWidth = useSharedValue(width);
-    const gutterWidthToUse = useMemo(() => (
-        shouldRenderGutter ? gutterWidth : 0
-    ),
-    [gutterWidth, shouldRenderGutter]);
+    const gutterWidthToUse = shouldRenderGutter ? gutterWidth : 0;
 
     const getPageTranslate = (i: number, w?: number) => {
         'worklet';

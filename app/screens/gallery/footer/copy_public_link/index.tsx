@@ -7,10 +7,10 @@ import {useIntl} from 'react-intl';
 import {StyleSheet} from 'react-native';
 import {useAnimatedStyle, withTiming} from 'react-native-reanimated';
 
+import {fetchPublicLink} from '@actions/remote/file';
 import Toast from '@components/toast';
 import {GALLERY_FOOTER_HEIGHT} from '@constants/gallery';
 import {useServerUrl} from '@context/server';
-import NetworkManager from '@init/network_manager';
 
 type Props = {
     item: GalleryItemType;
@@ -18,6 +18,9 @@ type Props = {
 }
 
 const styles = StyleSheet.create({
+    error: {
+        backgroundColor: '#D24B4E',
+    },
     toast: {
         backgroundColor: '#3DB887', // intended hardcoded color
     },
@@ -26,27 +29,31 @@ const styles = StyleSheet.create({
 const CopyPublicLink = ({item, setAction}: Props) => {
     const {formatMessage} = useIntl();
     const serverUrl = useServerUrl();
-    const [started, setStarted] = useState<boolean|undefined>();
+    const [showToast, setShowToast] = useState<boolean|undefined>();
+    const [error, setError] = useState('');
     const mounted = useRef(false);
 
     const animatedStyle = useAnimatedStyle(() => ({
         position: 'absolute',
         bottom: GALLERY_FOOTER_HEIGHT + 8,
-        opacity: withTiming(started ? 1 : 0, {duration: 300}),
+        opacity: withTiming(showToast ? 1 : 0, {duration: 300}),
     }));
 
     const copyLink = async () => {
         try {
-            const client = NetworkManager.getClient(serverUrl);
-            const {link} = await client.getFilePublicLink(item.id!);
-            Clipboard.setString(link);
-            setStarted(true);
+            const publicLink = await fetchPublicLink(serverUrl, item.id!);
+            if ('link' in publicLink) {
+                Clipboard.setString(publicLink.link);
+            } else {
+                setError(formatMessage({id: 'gallery.copy_link.failed', defaultMessage: 'Failed to copy link to clipboard'}));
+            }
         } catch {
-            // do nothing
+            setError(formatMessage({id: 'gallery.copy_link.failed', defaultMessage: 'Failed to copy link to clipboard'}));
         } finally {
+            setShowToast(true);
             setTimeout(() => {
                 if (mounted.current) {
-                    setStarted(false);
+                    setShowToast(false);
                 }
             }, 3000);
         }
@@ -62,20 +69,20 @@ const CopyPublicLink = ({item, setAction}: Props) => {
     }, []);
 
     useEffect(() => {
-        if (started === false) {
+        if (showToast === false) {
             setTimeout(() => {
                 if (mounted.current) {
                     setAction('none');
                 }
             }, 350);
         }
-    }, [started]);
+    }, [showToast]);
 
     return (
         <Toast
             animatedStyle={animatedStyle}
-            style={styles.toast}
-            message={formatMessage({id: 'public_link_copied', defaultMessage: 'Link copied to clipboard'})}
+            style={error ? styles.error : styles.toast}
+            message={error || formatMessage({id: 'public_link_copied', defaultMessage: 'Link copied to clipboard'})}
             iconName='check'
         />
     );

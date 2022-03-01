@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback, useEffect, useMemo, useState} from 'react';
+import React, {useCallback, useEffect, useState} from 'react';
 import {DeviceEventEmitter, StyleSheet, View, ViewStyle} from 'react-native';
 import Animated, {AnimatedStyleProp} from 'react-native-reanimated';
 import {SafeAreaView, Edge} from 'react-native-safe-area-context';
@@ -70,21 +70,18 @@ const Footer = ({
 }: Props) => {
     const showActions = !hideActions && Boolean(item.id) && !item.id?.startsWith('uid');
     const [action, setAction] = useState<GalleryAction>('none');
-    const overrideIconUrl = useMemo(() => {
-        if (post?.props?.use_user_icon !== 'true' && post?.props?.override_icon_url) {
-            return post.props.override_icon_url;
-        }
 
-        return undefined;
-    }, [enablePostIconOverride, post?.props]);
+    let overrideIconUrl;
+    if (enablePostIconOverride && post?.props?.use_user_icon !== 'true' && post?.props?.override_icon_url) {
+        overrideIconUrl = post.props.override_icon_url;
+    }
 
-    const userDisplayName = useMemo(() => {
-        if (enablePostIconOverride && post?.props?.override_username) {
-            return post?.props.override_username as string;
-        }
-
-        return displayUsername(author, undefined, teammateNameDisplay);
-    }, [author, post?.props, enablePostUsernameOverride, teammateNameDisplay]);
+    let userDisplayName;
+    if (enablePostUsernameOverride && post?.props?.override_username) {
+        userDisplayName = post?.props.override_username as string;
+    } else {
+        userDisplayName = displayUsername(author, undefined, teammateNameDisplay);
+    }
 
     const handleCopyLink = useCallback(() => {
         setAction('copying');

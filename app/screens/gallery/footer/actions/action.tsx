@@ -4,7 +4,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React from 'react';
+import React, {useCallback} from 'react';
 import {Platform, Pressable, PressableAndroidRippleConfig, PressableStateCallbackType, StyleProp, ViewStyle} from 'react-native';
 
 import CompassIcon from '@components/compass_icon';
@@ -29,16 +29,18 @@ const pressedStyle = ({pressed}: PressableStateCallbackType) => {
 const androidRippleConfig: PressableAndroidRippleConfig = {borderless: true, radius: 24, color: '#FFF'};
 
 const Action = ({disabled, iconName, onPress, style}: Props) => {
+    const pressableStyle = useCallback((pressed: PressableStateCallbackType) => ([
+        pressedStyle(pressed),
+        style,
+    ]), [style]);
+
     return (
         <Pressable
             android_ripple={androidRippleConfig}
             disabled={disabled}
             hitSlop={24}
             onPress={onPress}
-            style={(pressed) => [
-                pressedStyle(pressed),
-                style,
-            ]}
+            style={pressableStyle}
         >
             <CompassIcon
                 color={changeOpacity('#fff', disabled ? 0.4 : 1)}

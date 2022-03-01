@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React from 'react';
+import React, {useMemo} from 'react';
 
 import {PagerProps} from '../pager';
 import {RenderPageProps} from '../pager/page';
@@ -33,11 +33,13 @@ function ImageRenderer({
     pagerRefs,
     width,
 }: ImageRendererProps) {
+    const targetDimensions = useMemo(() => ({height, width}), [height, width]);
+
     return (
         <ImageTransformer
             outerGestureHandlerActive={isPagerInProgress}
             isActive={isPageActive}
-            targetDimensions={{width, height}}
+            targetDimensions={targetDimensions}
             height={item.height}
             onStateChange={onPageStateChange}
             outerGestureHandlerRefs={pagerRefs}

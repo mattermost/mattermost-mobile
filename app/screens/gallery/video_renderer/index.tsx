@@ -62,25 +62,25 @@ const VideoRenderer = ({height, index, initialIndex, item, isPageActive, onShoul
         onShouldHideControls(true);
         setPaused(true);
         videoRef.current?.dismissFullscreenPlayer();
-    }, []);
+    }, [onShouldHideControls]);
 
-    const onError = (error: LoadError) => {
+    const onError = useCallback((error: LoadError) => {
         // eslint-disable-next-line no-console
         console.log(
             'Error loading, figure out what to do here... give the option to download?',
             error,
         );
-    };
+    }, []);
 
     const onFullscreenPlayerWillDismiss = useCallback(() => {
         setFullscreen(false);
         onShouldHideControls(!paused);
-    }, [paused]);
+    }, [paused, onShouldHideControls]);
 
     const onFullscreenPlayerWillPresent = useCallback(() => {
         setFullscreen(true);
         onShouldHideControls(true);
-    }, []);
+    }, [onShouldHideControls]);
 
     const onPlay = useCallback(() => {
         setPaused(false);
@@ -92,7 +92,7 @@ const VideoRenderer = ({height, index, initialIndex, item, isPageActive, onShoul
             onShouldHideControls(isPlaying);
             setPaused(!isPlaying);
         }
-    }, []);
+    }, [onShouldHideControls]);
 
     const onReadyForDisplay = useCallback(() => {
         setVideoReady(true);

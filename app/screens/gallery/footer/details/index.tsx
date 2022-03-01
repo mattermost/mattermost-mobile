@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React from 'react';
+import React, {useMemo} from 'react';
 import {StyleSheet, Text, View} from 'react-native';
 
 import FormattedText from '@components/formatted_text';
@@ -34,6 +34,9 @@ const styles = StyleSheet.create({
 
 const Details = ({channelName, isDirectChannel, ownPost, userDisplayName}: Props) => {
     const prefix = isDirectChannel ? '@' : '~';
+    const displayName = useMemo(() => ({displayName: userDisplayName}), [userDisplayName]);
+    const channelDisplayName = useMemo(() => ({channelName: `${prefix}${channelName}`}), [prefix, channelName]);
+
     let userElement = (
         <Text
             ellipsizeMode='tail'
@@ -52,7 +55,7 @@ const Details = ({channelName, isDirectChannel, ownPost, userDisplayName}: Props
                 ellipsizeMode='tail'
                 numberOfLines={1}
                 style={styles.userText}
-                values={{displayName: userDisplayName}}
+                values={displayName}
             />
         );
     }
@@ -66,7 +69,7 @@ const Details = ({channelName, isDirectChannel, ownPost, userDisplayName}: Props
                 ellipsizeMode='tail'
                 numberOfLines={1}
                 style={styles.chanelText}
-                values={{channelName: `${prefix}${channelName}`}}
+                values={channelDisplayName}
             />
         </View>
     );

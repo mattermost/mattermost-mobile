@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React from 'react';
+import React, {useMemo} from 'react';
 import {StyleSheet, useWindowDimensions, View, ViewStyle} from 'react-native';
 import {TouchableOpacity} from 'react-native-gesture-handler';
 import Animated, {AnimatedStyleProp} from 'react-native-reanimated';
@@ -45,16 +45,20 @@ const AnimatedSafeAreaView = Animated.createAnimatedComponent(SafeAreaView);
 const Header = ({index, onClose, style, total}: Props) => {
     const {width} = useWindowDimensions();
     const height = useDefaultHeaderHeight();
+    const containerStyle = useMemo(() => [styles.container, {height}], [height]);
+    const iconStyle = useMemo(() => [{width: height}, styles.icon], [height]);
+    const titleStyle = useMemo(() => ({width: width - (height * 2)}), [height, width]);
+    const titleValue = useMemo(() => ({index: index + 1, total}), [index, total]);
 
     return (
         <AnimatedSafeAreaView
             edges={edges}
             style={style}
         >
-            <Animated.View style={[styles.container, {height}]}>
+            <Animated.View style={containerStyle}>
                 <TouchableOpacity
                     onPress={onClose}
-                    style={[{width: height}, styles.icon]}
+                    style={iconStyle}
                 >
                     <CompassIcon
                         color='white'
@@ -62,12 +66,12 @@ const Header = ({index, onClose, style, total}: Props) => {
                         size={24}
                     />
                 </TouchableOpacity>
-                <View style={{width: width - (height * 2), alignItems: 'center'}}>
+                <View style={titleStyle}>
                     <FormattedText
                         id='mobile.gallery.title'
                         defaultMessage='{index} of {total}'
                         style={styles.title}
-                        values={{index: index + 1, total}}
+                        values={titleValue}
                     />
                 </View>
             </Animated.View>

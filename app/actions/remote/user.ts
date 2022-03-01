@@ -561,3 +561,14 @@ export const uploadUserProfileImage = async (serverUrl: string, localPath: strin
     }
     return {error: undefined};
 };
+
+export const buildProfileImageUrl = (serverUrl: string, userId: string, timestamp = 0) => {
+    let client: Client;
+    try {
+        client = NetworkManager.getClient(serverUrl);
+    } catch (error) {
+        return '';
+    }
+
+    return client.getProfilePictureUrl(userId, timestamp);
+};

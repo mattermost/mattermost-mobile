@@ -53,28 +53,25 @@ const DocumentRenderer = ({canDownloadFiles, item, onShouldHideControls}: Props)
     const [controls, setControls] = useState(true);
     const [enabled, setEnabled] = useState(true);
     const isSupported = useMemo(() => isDocument(file), [file]);
-    const optionText = useMemo(() => {
-        if (isSupported) {
-            return formatMessage({id: 'gallery.open_file', defaultMessage: 'Open file'});
-        }
-
-        return formatMessage({
-            id: 'gallery.unsupported',
-            defaultMessage: "Preview isn't supported for this file type. Try downloading or sharing to open it in another app.",
-        });
-    }, [isSupported]);
+    const optionText = isSupported ? formatMessage({
+        id: 'gallery.open_file',
+        defaultMessage: 'Open file',
+    }) : formatMessage({
+        id: 'gallery.unsupported',
+        defaultMessage: "Preview isn't supported for this file type. Try downloading or sharing to open it in another app.",
+    });
 
     const handleHideControls = useCallback(() => {
         onShouldHideControls(controls);
         setControls(!controls);
-    }, [controls]);
+    }, [controls, onShouldHideControls]);
 
-    const setGalleryAction = (action: GalleryAction) => {
+    const setGalleryAction = useCallback((action: GalleryAction) => {
         DeviceEventEmitter.emit(Events.GALLERY_ACTIONS, action);
         if (action === 'none') {
             setEnabled(true);
         }
-    };
+    }, []);
 
     const handleOpenFile = useCallback(() => {
         setEnabled(false);

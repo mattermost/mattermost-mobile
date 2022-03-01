@@ -17,15 +17,12 @@ const {CONFIG, LICENSE} = SYSTEM_IDENTIFIERS;
 const {SERVER: {SYSTEM}} = MM_TABLES;
 
 const enhanced = withObservables([], ({database}: WithDatabaseArgs) => {
-    const config = database.get<SystemModel>(SYSTEM).findAndObserve(CONFIG).pipe(
-        switchMap(({value}) => of$(value as ClientConfig)),
+    const enableMobileFileDownload = database.get<SystemModel>(SYSTEM).findAndObserve(CONFIG).pipe(
+        switchMap(({value}) => of$(value.EnableMobileFileDownload !== 'false')),
     );
-    const license = database.get<SystemModel>(SYSTEM).findAndObserve(LICENSE).pipe(
-        switchMap(({value}) => of$(value as ClientLicense)),
+    const complianceDisabled = database.get<SystemModel>(SYSTEM).findAndObserve(LICENSE).pipe(
+        switchMap(({value}) => of$(value.IsLicensed === 'false' || value.Compliance === 'false')),
     );
-
-    const enableMobileFileDownload = config.pipe(switchMap((c) => of$(c.EnableMobileFileDownload !== 'false')));
-    const complianceDisabled = license.pipe(switchMap((l) => of$(l.IsLicensed === 'false' || l.Compliance === 'false')));
     const canDownloadFiles = combineLatest([enableMobileFileDownload, complianceDisabled]).pipe(
         switchMap(([download, compliance]) => of$(compliance || download)),
     );
