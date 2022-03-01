@@ -4,7 +4,7 @@
 /* eslint-disable camelcase, no-console */
 
 const axios = require('axios');
-var ClientOAuth2 = require('client-oauth2');
+const ClientOAuth2 = require('client-oauth2');
 const express = require('express');
 
 const postMessageAs = require('./e2e/plugins/post_message_as');
