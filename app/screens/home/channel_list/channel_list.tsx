@@ -8,6 +8,7 @@ import Animated, {useAnimatedStyle, withTiming} from 'react-native-reanimated';
 import {Edge, SafeAreaView, useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import ChannelList from '@components/channel_list';
+import FreezeScreen from '@components/freeze_screen';
 import TeamSidebar from '@components/team_sidebar';
 import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
@@ -76,7 +77,7 @@ const ChannelListScreen = (props: ChannelProps) => {
         return {height: insets.top, backgroundColor: theme.sidebarBg};
     }, [theme]);
 
-    return (
+    const content = (
         <>
             {<Animated.View style={top}/>}
             <SafeAreaView
@@ -105,6 +106,16 @@ const ChannelListScreen = (props: ChannelProps) => {
             </SafeAreaView>
         </>
     );
+
+    if (isTablet) {
+        return (
+            <FreezeScreen>
+                {content}
+            </FreezeScreen>
+        );
+    }
+
+    return content;
 };
 
 export default ChannelListScreen;

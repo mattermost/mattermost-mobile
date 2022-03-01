@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback, useMemo, useState} from 'react';
-import {LayoutChangeEvent, useWindowDimensions, ScrollView, View} from 'react-native';
+import {LayoutChangeEvent, ScrollView, useWindowDimensions, View} from 'react-native';
 import Animated from 'react-native-reanimated';
 
 import Markdown from '@components/markdown';
@@ -87,6 +87,7 @@ const Message = ({currentUser, highlight, isEdited, isPendingOrFailed, isReplyPo
                             isEdited={isEdited}
                             isReplyPost={isReplyPost}
                             isSearchResult={location === SEARCH}
+                            location={location}
                             postId={post.id}
                             textStyles={textStyles}
                             value={post.message}

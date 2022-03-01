@@ -1,37 +1,32 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {withDatabase} from '@nozbe/watermelondb/DatabaseProvider';
-import withObservables from '@nozbe/with-observables';
-import React, {useEffect, useMemo, useRef, useState} from 'react';
+import React, {useEffect, useMemo, useState} from 'react';
 import {DeviceEventEmitter, StyleProp, StyleSheet, View, ViewStyle} from 'react-native';
-import {combineLatest, of as of$} from 'rxjs';
-import {map, switchMap} from 'rxjs/operators';
+import Animated, {useDerivedValue} from 'react-native-reanimated';
 
-import {MM_TABLES, SYSTEM_IDENTIFIERS} from '@constants/database';
+import {buildFilePreviewUrl, buildFileUrl} from '@actions/remote/file';
+import {GalleryInit} from '@context/gallery';
 import {useServerUrl} from '@context/server';
 import {useIsTablet} from '@hooks/device';
-import NetworkManager from '@init/network_manager';
-import {isGif, isImage} from '@utils/file';
-import {openGalleryAtIndex} from '@utils/gallery';
+import {isGif, isImage, isVideo} from '@utils/file';
+import {fileToGalleryItem, openGalleryAtIndex} from '@utils/gallery';
 import {getViewPortWidth} from '@utils/images';
 import {preventDoubleTap} from '@utils/tap';
 
 import File from './file';
 
-import type {Client} from '@client/rest';
-import type {WithDatabaseArgs} from '@typings/database/database';
 import type FileModel from '@typings/database/models/servers/file';
-import type PostModel from '@typings/database/models/servers/post';
-import type SystemModel from '@typings/database/models/servers/system';
 
 type FilesProps = {
     authorId: string;
     canDownloadFiles: boolean;
     failed?: boolean;
     files: FileModel[];
+    location: string;
     isReplyPost: boolean;
     postId: string;
+    publicLinkEnabled: boolean;
     theme: Theme;
 }
 
@@ -53,61 +48,54 @@ const styles = StyleSheet.create({
     },
 });
 
-const Files = ({authorId, canDownloadFiles, failed, files, isReplyPost, postId, theme}: FilesProps) => {
+const Files = ({authorId, canDownloadFiles, failed, files, isReplyPost, location, postId, publicLinkEnabled, theme}: FilesProps) => {
+    const galleryIdentifier = `${postId}-fileAttachments-${location}`;
     const [inViewPort, setInViewPort] = useState(false);
     const serverUrl = useServerUrl();
     const isTablet = useIsTablet();
-    const imageAttachments = useRef<FileInfo[]>([]).current;
-    const nonImageAttachments = useRef<FileInfo[]>([]).current;
-    const filesInfo: FileInfo[] = useMemo(() => files.map((f) => ({
-        id: f.id,
-        user_id: authorId,
-        post_id: postId,
-        create_at: 0,
-        delete_at: 0,
-        update_at: 0,
-        name: f.name,
-        extension: f.extension,
-        mini_preview: f.imageThumbnail,
-        size: f.size,
-        mime_type: f.mimeType,
-        height: f.height,
-        has_preview_image: Boolean(f.imageThumbnail),
-        localPath: f.localPath,
-        width: f.width,
-    })), [files]);
-    let client: Client | undefined;
-    try {
-        client = NetworkManager.getClient(serverUrl);
-    } catch {
-        // do nothing
-    }
+    const filesInfo: FileInfo[] = useMemo(() => files.map((f) => f.toFileInfo(authorId)), [authorId, files]);
 
-    if (!imageAttachments.length && !nonImageAttachments.length) {
-        filesInfo.reduce((info, file) => {
-            if (isImage(file)) {
+    const {images: imageAttachments, nonImages: nonImageAttachments} = useMemo(() => {
+        return filesInfo.reduce(({images, nonImages}: {images: FileInfo[]; nonImages: FileInfo[]}, file) => {
+            const imageFile = isImage(file);
+            const videoFile = isVideo(file);
+            if (imageFile || (videoFile && publicLinkEnabled)) {
                 let uri;
                 if (file.localPath) {
                     uri = file.localPath;
                 } else {
-                    uri = isGif(file) ? client?.getFileUrl(file.id!, 0) : client?.getFilePreviewUrl(file.id!, 0);
+                    uri = (isGif(file) || videoFile) ? buildFileUrl(serverUrl, file.id!) : buildFilePreviewUrl(serverUrl, file.id!);
                 }
-                info.imageAttachments.push({...file, uri});
+                images.push({...file, uri});
             } else {
-                info.nonImageAttachments.push(file);
-            }
-            return info;
-        }, {imageAttachments, nonImageAttachments});
-    }
+                if (videoFile) {
+                    // fallback if public links are not enabled
+                    file.uri = buildFileUrl(serverUrl, file.id!);
+                }
 
-    const filesForGallery = useRef<FileInfo[]>(imageAttachments.concat(nonImageAttachments)).current;
+                nonImages.push(file);
+            }
+            return {images, nonImages};
+        }, {images: [], nonImages: []});
+    }, [files, publicLinkEnabled, serverUrl]);
+
+    const filesForGallery = useDerivedValue(() => imageAttachments.concat(nonImageAttachments),
+        [imageAttachments, nonImageAttachments]);
+
     const attachmentIndex = (fileId: string) => {
-        return filesForGallery.findIndex((file) => file.id === fileId) || 0;
+        return filesForGallery.value.findIndex((file) => file.id === fileId) || 0;
     };
 
     const handlePreviewPress = preventDoubleTap((idx: number) => {
-        openGalleryAtIndex(idx, filesForGallery);
+        const items = filesForGallery.value.map((f) => fileToGalleryItem(f, authorId));
+        openGalleryAtIndex(galleryIdentifier, idx, items);
     });
+
+    const updateFileForGallery = (idx: number, file: FileInfo) => {
+        'worklet';
+
+        filesForGallery.value[idx] = file;
+    };
 
     const isSingleImage = () => (files.length === 1 && isImage(files[0]));
 
@@ -125,13 +113,13 @@ const Files = ({authorId, canDownloadFiles, failed, files, isReplyPost, postId, 
             if (idx !== 0 && includeGutter) {
                 container = containerWithGutter;
             }
-
             return (
                 <View
                     style={container}
                     key={file.id}
                 >
                     <File
+                        galleryIdentifier={galleryIdentifier}
                         key={file.id}
                         canDownloadFiles={canDownloadFiles}
                         file={file}
@@ -140,6 +128,8 @@ const Files = ({authorId, canDownloadFiles, failed, files, isReplyPost, postId, 
                         theme={theme}
                         isSingleImage={singleImage}
                         nonVisibleImagesCount={nonVisibleImagesCount}
+                        publicLinkEnabled={publicLinkEnabled}
+                        updateFileForGallery={updateFileForGallery}
                         wrapperWidth={getViewPortWidth(isReplyPost, isTablet) - 15}
                         inViewPort={inViewPort}
                     />
@@ -179,30 +169,13 @@ const Files = ({authorId, canDownloadFiles, failed, files, isReplyPost, postId, 
     }, []);
 
     return (
-        <View style={[failed && styles.failed]}>
-            {renderImageRow()}
-            {renderItems(nonImageAttachments)}
-        </View>
+        <GalleryInit galleryIdentifier={galleryIdentifier}>
+            <Animated.View style={[failed && styles.failed]}>
+                {renderImageRow()}
+                {renderItems(nonImageAttachments)}
+            </Animated.View>
+        </GalleryInit>
     );
 };
 
-const withCanDownload = withObservables(['post'], ({database, post}: {post: PostModel} & WithDatabaseArgs) => {
-    const enableMobileFileDownload = database.get<SystemModel>(MM_TABLES.SERVER.SYSTEM).findAndObserve(SYSTEM_IDENTIFIERS.CONFIG).pipe(
-        switchMap(({value}: {value: ClientConfig}) => of$(value.EnableMobileFileDownload !== 'false')),
-    );
-    const complianceDisabled = database.get<SystemModel>(MM_TABLES.SERVER.SYSTEM).findAndObserve(SYSTEM_IDENTIFIERS.LICENSE).pipe(
-        switchMap(({value}: {value: ClientLicense}) => of$(value.IsLicensed === 'false' || value.Compliance === 'false')),
-    );
-
-    const canDownloadFiles = combineLatest([enableMobileFileDownload, complianceDisabled]).pipe(
-        map(([download, compliance]) => compliance || download),
-    );
-
-    return {
-        authorId: of$(post.userId),
-        canDownloadFiles,
-        postId: of$(post.id),
-    };
-});
-
-export default withDatabase(withCanDownload(React.memo(Files)));
+export default React.memo(Files);

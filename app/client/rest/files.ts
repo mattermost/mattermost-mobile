@@ -7,7 +7,7 @@ export interface ClientFilesMix {
     getFileUrl: (fileId: string, timestamp: number) => string;
     getFileThumbnailUrl: (fileId: string, timestamp: number) => string;
     getFilePreviewUrl: (fileId: string, timestamp: number) => string;
-    getFilePublicLink: (fileId: string) => Promise<any>;
+    getFilePublicLink: (fileId: string) => Promise<{link: string}>;
     uploadPostAttachment: (
         file: FileInfo,
         channelId: string,

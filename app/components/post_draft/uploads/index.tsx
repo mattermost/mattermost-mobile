@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback, useEffect} from 'react';
+import React, {useCallback, useEffect, useMemo, useRef} from 'react';
 import {
     ScrollView,
     Text,
@@ -10,9 +10,10 @@ import {
 } from 'react-native';
 import Animated, {useAnimatedStyle, useSharedValue, withTiming} from 'react-native-reanimated';
 
+import {GalleryInit} from '@context/gallery';
 import {useTheme} from '@context/theme';
 import DraftUploadManager from '@init/draft_upload_manager';
-import {openGalleryAtIndex} from '@utils/gallery';
+import {fileToGalleryItem, openGalleryAtIndex} from '@utils/gallery';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 
 import UploadItem from './upload_item';
@@ -23,6 +24,7 @@ const ERROR_HEIGHT_MAX = 20;
 const ERROR_HEIGHT_MIN = 0;
 
 type Props = {
+    currentUserId: string;
     files: FileInfo[];
     uploadFileError: React.ReactNode;
     channelId: string;
@@ -67,16 +69,19 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
 });
 
 export default function Uploads({
+    currentUserId,
     files,
     uploadFileError,
     channelId,
     rootId,
 }: Props) {
+    const galleryIdentifier = `${channelId}-uploadedItems-${rootId}`;
     const theme = useTheme();
     const style = getStyleSheet(theme);
 
     const errorHeight = useSharedValue(ERROR_HEIGHT_MIN);
     const containerHeight = useSharedValue(CONTAINER_HEIGHT_MAX);
+    const filesForGallery = useRef(files.filter((f) => !f.failed && !DraftUploadManager.isUploading(f.clientId!)));
 
     const errorAnimatedStyle = useAnimatedStyle(() => {
         return {
@@ -90,9 +95,13 @@ export default function Uploads({
         };
     });
 
-    const fileContainerStyle = {
+    const fileContainerStyle = useMemo(() => ({
         paddingBottom: files.length ? 5 : 0,
-    };
+    }), [files.length]);
+
+    useEffect(() => {
+        filesForGallery.current = files.filter((f) => !f.failed && !DraftUploadManager.isUploading(f.clientId!));
+    }, [files]);
 
     useEffect(() => {
         if (uploadFileError) {
@@ -111,19 +120,21 @@ export default function Uploads({
     }, [files.length > 0]);
 
     const openGallery = useCallback((file: FileInfo) => {
-        const galleryFiles = files.filter((f) => !f.failed && !DraftUploadManager.isUploading(f.clientId!));
-        const index = galleryFiles.indexOf(file);
-        openGalleryAtIndex(index, galleryFiles);
-    }, [files]);
+        const items = filesForGallery.current.map((f) => fileToGalleryItem(f, currentUserId));
+        const index = filesForGallery.current.findIndex((f) => f.clientId === file.clientId);
+        openGalleryAtIndex(galleryIdentifier, index, items, true);
+    }, [currentUserId, files]);
 
     const buildFilePreviews = () => {
-        return files.map((file) => {
+        return files.map((file, index) => {
             return (
                 <UploadItem
-                    key={file.clientId}
-                    file={file}
-                    openGallery={openGallery}
                     channelId={channelId}
+                    galleryIdentifier={galleryIdentifier}
+                    index={index}
+                    file={file}
+                    key={file.clientId}
+                    openGallery={openGallery}
                     rootId={rootId}
                 />
             );
@@ -131,33 +142,35 @@ export default function Uploads({
     };
 
     return (
-        <View style={style.previewContainer}>
-            <Animated.View
-                style={[style.fileContainer, fileContainerStyle, containerAnimatedStyle]}
-            >
-                <ScrollView
-                    horizontal={true}
-                    style={style.scrollView}
-                    contentContainerStyle={style.scrollViewContent}
-                    keyboardShouldPersistTaps={'handled'}
+        <GalleryInit galleryIdentifier={galleryIdentifier}>
+            <View style={style.previewContainer}>
+                <Animated.View
+                    style={[style.fileContainer, fileContainerStyle, containerAnimatedStyle]}
                 >
-                    {buildFilePreviews()}
-                </ScrollView>
-            </Animated.View>
+                    <ScrollView
+                        horizontal={true}
+                        style={style.scrollView}
+                        contentContainerStyle={style.scrollViewContent}
+                        keyboardShouldPersistTaps={'handled'}
+                    >
+                        {buildFilePreviews()}
+                    </ScrollView>
+                </Animated.View>
 
-            <Animated.View
-                style={[style.errorContainer, errorAnimatedStyle]}
-            >
-                {Boolean(uploadFileError) &&
-                <View style={style.errorTextContainer}>
+                <Animated.View
+                    style={[style.errorContainer, errorAnimatedStyle]}
+                >
+                    {Boolean(uploadFileError) &&
+                    <View style={style.errorTextContainer}>
 
-                    <Text style={style.warning}>
-                        {uploadFileError}
-                    </Text>
+                        <Text style={style.warning}>
+                            {uploadFileError}
+                        </Text>
 
-                </View>
-                }
-            </Animated.View>
-        </View>
+                    </View>
+                    }
+                </Animated.View>
+            </View>
+        </GalleryInit>
     );
 }

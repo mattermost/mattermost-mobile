@@ -3,16 +3,20 @@
 
 import React, {useCallback, useRef, useState} from 'react';
 import {View} from 'react-native';
+import {TapGestureHandler} from 'react-native-gesture-handler';
+import Animated from 'react-native-reanimated';
 
 import FileIcon from '@components/post_list/post/body/files/file_icon';
 import ProgressiveImage from '@components/progressive_image';
-import TouchableWithFeedback from '@components/touchable_with_feedback';
+import {GalleryInit} from '@context/gallery';
 import {useIsTablet} from '@hooks/device';
-import {openGallerWithMockFile} from '@utils/gallery';
+import {useGalleryItem} from '@hooks/gallery';
+import {lookupMimeType} from '@utils/file';
+import {openGalleryAtIndex} from '@utils/gallery';
 import {generateId} from '@utils/general';
 import {isGifTooLarge, calculateDimensions, getViewPortWidth} from '@utils/images';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
-import {isValidUrl} from '@utils/url';
+import {extractFilenameFromUrl, isValidUrl} from '@utils/url';
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     return {
@@ -41,13 +45,15 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
 export type Props = {
     imageMetadata: PostImage;
     imageUrl: string;
+    location: string;
     postId: string;
     theme: Theme;
 }
 
-const AttachmentImage = ({imageUrl, imageMetadata, postId, theme}: Props) => {
+const AttachmentImage = ({imageUrl, imageMetadata, location, postId, theme}: Props) => {
+    const galleryIdentifier = `${postId}-AttachmentImage-${location}`;
     const [error, setError] = useState(false);
-    const fileId = useRef(generateId()).current;
+    const fileId = useRef(generateId('uid')).current;
     const isTablet = useIsTablet();
     const {height, width} = calculateDimensions(imageMetadata.height, imageMetadata.width, getViewPortWidth(false, isTablet));
     const style = getStyleSheet(theme);
@@ -56,9 +62,25 @@ const AttachmentImage = ({imageUrl, imageMetadata, postId, theme}: Props) => {
         setError(true);
     }, []);
 
-    const onPress = useCallback(() => {
-        openGallerWithMockFile(imageUrl, postId, imageMetadata.height, imageMetadata.width);
-    }, [imageUrl]);
+    const onPress = () => {
+        const item: GalleryItemType = {
+            id: fileId,
+            postId,
+            uri: imageUrl,
+            width: imageMetadata.width,
+            height: imageMetadata.height,
+            name: extractFilenameFromUrl(imageUrl) || 'attachmentImage.png',
+            mime_type: lookupMimeType(imageUrl) || 'images/png',
+            type: 'image',
+        };
+        openGalleryAtIndex(galleryIdentifier, 0, [item]);
+    };
+
+    const {ref, onGestureEvent, styles} = useGalleryItem(
+        galleryIdentifier,
+        0,
+        onPress,
+    );
 
     if (error || !isValidUrl(imageUrl) || isGifTooLarge(imageMetadata)) {
         return (
@@ -73,24 +95,23 @@ const AttachmentImage = ({imageUrl, imageMetadata, postId, theme}: Props) => {
     }
 
     return (
-        <TouchableWithFeedback
-            onPress={onPress}
-            style={[style.container, {width}]}
-            type={'none'}
-        >
-            <View
-                style={[style.imageContainer, {width, height}]}
-            >
-                <ProgressiveImage
-                    id={fileId}
-                    imageStyle={style.attachmentMargin}
-                    imageUri={imageUrl}
-                    onError={onError}
-                    resizeMode='contain'
-                    style={{height, width}}
-                />
-            </View>
-        </TouchableWithFeedback>
+        <GalleryInit galleryIdentifier={galleryIdentifier}>
+            <Animated.View style={[styles, style.container, {width}]}>
+                <TapGestureHandler onGestureEvent={onGestureEvent}>
+                    <Animated.View testID={`attachmentImage-${fileId}`}>
+                        <ProgressiveImage
+                            forwardRef={ref}
+                            id={fileId}
+                            imageStyle={style.attachmentMargin}
+                            imageUri={imageUrl}
+                            onError={onError}
+                            resizeMode='contain'
+                            style={{height, width}}
+                        />
+                    </Animated.View>
+                </TapGestureHandler>
+            </Animated.View>
+        </GalleryInit>
     );
 };
 

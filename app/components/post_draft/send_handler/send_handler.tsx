@@ -226,6 +226,7 @@ export default function SendHandler({
         <DraftInput
             testID={testID}
             channelId={channelId}
+            currentUserId={currentUserId}
             rootId={rootId}
             cursorPosition={cursorPosition}
             updateCursorPosition={updateCursorPosition}

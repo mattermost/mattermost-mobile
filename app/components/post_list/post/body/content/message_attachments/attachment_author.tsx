@@ -5,6 +5,7 @@ import React from 'react';
 import {useIntl} from 'react-intl';
 import {Alert, Text, View} from 'react-native';
 import FastImage from 'react-native-fast-image';
+import {TouchableOpacity} from 'react-native-gesture-handler';
 
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {tryOpenURL} from '@utils/url';
@@ -68,13 +69,14 @@ const AttachmentAuthor = ({icon, link, name, theme}: Props) => {
             />
             }
             {Boolean(name) &&
-            <Text
-                key='author_name'
-                style={[style.name, Boolean(link) && style.link]}
-                onPress={openLink}
-            >
-                {name}
-            </Text>
+            <TouchableOpacity onPress={openLink}>
+                <Text
+                    key='author_name'
+                    style={[style.name, Boolean(link) && style.link]}
+                >
+                    {name}
+                </Text>
+            </TouchableOpacity>
             }
         </View>
     );

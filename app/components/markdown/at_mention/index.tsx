@@ -9,6 +9,7 @@ import Clipboard from '@react-native-community/clipboard';
 import React, {useCallback, useMemo} from 'react';
 import {useIntl} from 'react-intl';
 import {GestureResponderEvent, StyleProp, StyleSheet, Text, TextStyle, View} from 'react-native';
+import {TouchableOpacity} from 'react-native-gesture-handler';
 import {combineLatest, of as of$} from 'rxjs';
 import {map, switchMap} from 'rxjs/operators';
 
@@ -172,7 +173,7 @@ const AtMention = ({
     let isMention = false;
     let mention;
     let onLongPress;
-    let onPress;
+    let onPress: (e?: GestureResponderEvent) => void;
     let suffix;
     let suffixElement;
     let styleText;
@@ -204,7 +205,7 @@ const AtMention = ({
 
     if (canPress) {
         onLongPress = handleLongPress;
-        onPress = isSearchResult ? onPostPress : goToUserProfile;
+        onPress = (isSearchResult ? onPostPress : goToUserProfile) as (e?: GestureResponderEvent) => void;
     }
 
     if (suffix) {
@@ -225,16 +226,17 @@ const AtMention = ({
     }
 
     return (
-        <Text
-            style={styleText}
-            onPress={onPress}
+        <TouchableOpacity
+            onPress={onPress!}
             onLongPress={onLongPress}
         >
-            <Text style={mentionTextStyle}>
-                {'@' + mention}
+            <Text style={styleText}>
+                <Text style={mentionTextStyle}>
+                    {'@' + mention}
+                </Text>
+                {suffixElement}
             </Text>
-            {suffixElement}
-        </Text>
+        </TouchableOpacity>
     );
 };
 

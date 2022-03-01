@@ -84,6 +84,9 @@ Navigation.setLazyComponentRegistrator((screenName) => {
     case Screens.FORGOT_PASSWORD:
         screen = withIntl(require('@screens/forgot_password').default);
         break;
+    case Screens.GALLERY:
+        screen = withServerDatabase((require('@screens/gallery').default));
+        break;
     case Screens.IN_APP_NOTIFICATION: {
         const notificationScreen = require('@screens/in_app_notification').default;
         Navigation.registerComponent(Screens.IN_APP_NOTIFICATION, () => Platform.select({
