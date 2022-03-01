@@ -33,9 +33,10 @@ const styles = StyleSheet.create({
 });
 
 const Details = ({channelName, isDirectChannel, ownPost, userDisplayName}: Props) => {
-    const prefix = isDirectChannel ? '@' : '~';
     const displayName = useMemo(() => ({displayName: userDisplayName}), [userDisplayName]);
-    const channelDisplayName = useMemo(() => ({channelName: `${prefix}${channelName}`}), [prefix, channelName]);
+    const channelDisplayName = useMemo(() =>
+        ({channelName: `${isDirectChannel ? '@' : '~'}${channelName}`}),
+    [channelName, isDirectChannel]);
 
     let userElement = (
         <Text
