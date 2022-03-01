@@ -1,10 +1,12 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import CameraRoll from '@react-native-community/cameraroll';
 import * as FileSystem from 'expo-file-system';
-import React, {useEffect, useMemo, useRef, useState} from 'react';
+import React, {useEffect, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
 import {NativeModules, Platform, StyleSheet, Text, View} from 'react-native';
+import DeviceInfo from 'react-native-device-info';
 import FileViewer from 'react-native-file-viewer';
 import {TouchableOpacity} from 'react-native-gesture-handler';
 import {useAnimatedStyle, withTiming} from 'react-native-reanimated';
@@ -19,7 +21,7 @@ import {DOWNLOAD_TIMEOUT} from '@constants/network';
 import {useServerUrl} from '@context/server';
 import NetworkManager from '@init/network_manager';
 import {alertFailedToOpenDocument} from '@utils/document';
-import {fileExists, getLocalFilePathFromFile} from '@utils/file';
+import {fileExists, getLocalFilePathFromFile, hasWriteStoragePermission} from '@utils/file';
 import {galleryItemToFileInfo} from '@utils/gallery';
 
 import type {ClientResponse, ProgressPromise} from '@mattermost/react-native-network-client';
@@ -42,6 +44,9 @@ const styles = StyleSheet.create({
     error: {
         backgroundColor: '#D24B4E',
     },
+    fileSaved: {
+        backgroundColor: '#3DB887',
+    },
     option: {
         alignItems: 'flex-end',
         justifyContent: 'center',
@@ -61,26 +66,52 @@ const styles = StyleSheet.create({
 const DownloadWithAction = ({action, item, setAction}: Props) => {
     const intl = useIntl();
     const serverUrl = useServerUrl();
-    const [started, setStarted] = useState<boolean|undefined>();
+    const [showToast, setShowToast] = useState<boolean|undefined>();
     const [error, setError] = useState('');
+    const [saved, setSaved] = useState(false);
     const [progress, setProgress] = useState(0);
     const mounted = useRef(false);
     const downloadPromise = useRef<ProgressPromise<ClientResponse>>();
-    const title = useMemo(() => {
-        switch (action) {
-            case 'sharing':
-                return intl.formatMessage({id: 'gallery.preparing', defaultMessage: 'Preparing...'});
-            case 'opening':
-                return intl.formatMessage({id: 'gallery.opening', defaultMessage: 'Opening...'});
-            default:
-                return intl.formatMessage({id: 'gallery.downloading', defaultMessage: 'Downloading...'});
+
+    let title;
+    let iconName;
+    let message;
+    let toastStyle = styles.toast;
+
+    switch (action) {
+        case 'sharing':
+            title = intl.formatMessage({id: 'gallery.preparing', defaultMessage: 'Preparing...'});
+            break;
+        case 'opening':
+            title = intl.formatMessage({id: 'gallery.opening', defaultMessage: 'Opening...'});
+            break;
+        default:
+            title = intl.formatMessage({id: 'gallery.downloading', defaultMessage: 'Downloading...'});
+            break;
+    }
+
+    if (error) {
+        iconName = 'alert-circle-outline';
+        message = error;
+        toastStyle = styles.error;
+    } else if (saved) {
+        iconName = 'check';
+        toastStyle = styles.fileSaved;
+
+        switch (item.type) {
+            case 'image':
+                message = intl.formatMessage({id: 'gallery.image_saved', defaultMessage: 'Image saved'});
+                break;
+            case 'video':
+                message = intl.formatMessage({id: 'gallery.video_saved', defaultMessage: 'Video saved'});
+                break;
         }
-    }, [action]);
+    }
 
     const animatedStyle = useAnimatedStyle(() => ({
         position: 'absolute',
         bottom: GALLERY_FOOTER_HEIGHT + 8,
-        opacity: withTiming(started ? 1 : 0, {duration: 300}),
+        opacity: withTiming(showToast ? 1 : 0, {duration: 300}),
     }));
 
     const cancel = async () => {
@@ -94,7 +125,7 @@ const DownloadWithAction = ({action, item, setAction}: Props) => {
             // do nothing
         } finally {
             if (mounted.current) {
-                setStarted(false);
+                setShowToast(false);
             }
         }
     };
@@ -112,32 +143,65 @@ const DownloadWithAction = ({action, item, setAction}: Props) => {
                     alertFailedToOpenDocument(file, intl);
                 });
             }
-            setStarted(false);
+            setShowToast(false);
         }
     };
 
-    const saveFile = async (response: ClientResponse) => {
+    const saveFile = async (path: string) => {
+        if (mounted.current) {
+            if (Platform.OS === 'android') {
+                try {
+                    await NativeModules.MattermostManaged.saveFile(path.replace('file://', '/'));
+                } catch {
+                    // do nothing in case the user decides not to save the file
+                }
+                setAction('none');
+                return;
+            }
+
+            Share.open({
+                url: path,
+                saveToFiles: true,
+            }).catch(() => {
+                // do nothing
+            });
+
+            setAction('none');
+        }
+    };
+
+    const saveImageOrVideo = async (path: string) => {
+        if (mounted.current) {
+            try {
+                const applicationName = DeviceInfo.getApplicationName();
+                await CameraRoll.save(path, {
+                    type: item.type === 'image' ? 'photo' : 'video',
+                    album: applicationName,
+                });
+                setSaved(true);
+            } catch {
+                setError(intl.formatMessage({id: 'gallery.save_failed', defaultMessage: 'Unable to save the file'}));
+            }
+        }
+    };
+
+    const save = async (response: ClientResponse) => {
         if (mounted.current) {
             if (response.data?.path) {
                 const path = response.data.path as string;
-                if (Platform.OS === 'android') {
-                    try {
-                        await NativeModules.MattermostManaged.saveFile(path.replace('file://', '/'));
-                    } catch {
-                        // do nothing in case the user decides not to save the file
-                    }
-                    setAction('none');
-                    return;
-                }
+                const hasPermission = await hasWriteStoragePermission(intl);
 
-                Share.open({
-                    url: path,
-                    saveToFiles: true,
-                }).catch(() => {
-                    // do nothing
-                });
+                if (hasPermission) {
+                    switch (item.type) {
+                        case 'file':
+                            saveFile(path);
+                            break;
+                        default:
+                            saveImageOrVideo(path);
+                            break;
+                    }
+                }
             }
-            setStarted(false);
         }
     };
 
@@ -154,7 +218,7 @@ const DownloadWithAction = ({action, item, setAction}: Props) => {
                     // do nothing
                 });
             }
-            setStarted(false);
+            setShowToast(false);
         }
     };
 
@@ -172,7 +236,7 @@ const DownloadWithAction = ({action, item, setAction}: Props) => {
                         actionToExecute = openFile;
                         break;
                     default:
-                        actionToExecute = saveFile;
+                        actionToExecute = save;
                         break;
                 }
                 if (exists) {
@@ -192,13 +256,13 @@ const DownloadWithAction = ({action, item, setAction}: Props) => {
                 }
             }
         } catch (e) {
-            setStarted(false);
+            setShowToast(false);
         }
     };
 
     useEffect(() => {
         mounted.current = true;
-        setStarted(true);
+        setShowToast(true);
         startDownload();
 
         return () => {
@@ -210,23 +274,37 @@ const DownloadWithAction = ({action, item, setAction}: Props) => {
     }, []);
 
     useEffect(() => {
-        if (started === false) {
-            setTimeout(() => {
+        let t: NodeJS.Timeout;
+        if (error || saved) {
+            t = setTimeout(() => {
+                setShowToast(false);
+            }, 3500);
+        }
+
+        return () => clearTimeout(t);
+    }, [error, saved]);
+
+    useEffect(() => {
+        let t: NodeJS.Timeout;
+        if (showToast === false) {
+            t = setTimeout(() => {
                 if (mounted.current) {
                     setAction('none');
                 }
             }, 350);
         }
-    }, [started]);
+
+        return () => clearTimeout(t);
+    }, [showToast]);
 
     return (
         <Toast
             animatedStyle={animatedStyle}
-            style={error ? styles.error : styles.toast}
-            message={error || undefined}
-            iconName={error ? 'alert-circle-outline' : undefined}
+            style={toastStyle}
+            message={message}
+            iconName={iconName}
         >
-            {!error &&
+            {!error && !saved &&
                 <View style={styles.container}>
                     <View style={styles.progress}>
                         <Text style={styles.title}>{title}</Text>

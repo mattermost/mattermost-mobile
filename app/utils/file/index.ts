@@ -6,9 +6,12 @@ import Model from '@nozbe/watermelondb/Model';
 import * as FileSystem from 'expo-file-system';
 import mimeDB from 'mime-db';
 import {IntlShape} from 'react-intl';
-import {Platform} from 'react-native';
+import {Alert, Platform} from 'react-native';
+import AndroidOpenSettings from 'react-native-android-open-settings';
+import DeviceInfo from 'react-native-device-info';
 import {DocumentPickerResponse} from 'react-native-document-picker';
 import {Asset} from 'react-native-image-picker';
+import Permissions, {PERMISSIONS} from 'react-native-permissions';
 
 import {Files} from '@constants';
 import {generateId} from '@utils/general';
@@ -446,5 +449,54 @@ export const fileExists = async (path: string) => {
         return info.exists;
     } catch {
         return false;
+    }
+};
+
+export const hasWriteStoragePermission = async (intl: IntlShape) => {
+    if (Platform.OS === 'ios') {
+        return true;
+    }
+
+    const storagePermission = PERMISSIONS.ANDROID.WRITE_EXTERNAL_STORAGE;
+    let permissionRequest;
+    const hasPermissionToStorage = await Permissions.check(storagePermission);
+    switch (hasPermissionToStorage) {
+        case Permissions.RESULTS.DENIED:
+            permissionRequest = await Permissions.request(storagePermission);
+            return permissionRequest === Permissions.RESULTS.GRANTED;
+        case Permissions.RESULTS.BLOCKED: {
+            const applicationName = DeviceInfo.getApplicationName();
+            const title = intl.formatMessage(
+                {
+                    id: 'mobile.storage_permission_denied_title',
+                    defaultMessage:
+                        '{applicationName} would like to access your files',
+                },
+                {applicationName},
+            );
+            const text = intl.formatMessage({
+                id: 'mobile.write_storage_permission_denied_description',
+                defaultMessage:
+                    'Save files to your device. Open Settings to grant {applicationName} write access to files on this device.',
+            });
+
+            Alert.alert(title, text, [
+                {
+                    text: intl.formatMessage({
+                        id: 'mobile.permission_denied_dismiss',
+                        defaultMessage: "Don't Allow",
+                    }),
+                },
+                {
+                    text: intl.formatMessage({
+                        id: 'mobile.permission_denied_retry',
+                        defaultMessage: 'Settings',
+                    }),
+                    onPress: () => AndroidOpenSettings.appDetailsSettings(),
+                },
+            ]);
+            return false;
+        }
+        default: return true;
     }
 };
