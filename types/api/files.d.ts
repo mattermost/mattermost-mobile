@@ -5,8 +5,8 @@ type FileInfo = {
     id?: string;
     bytesRead?: number;
     clientId?: string;
-    create_at: number;
-    delete_at: number;
+    create_at?: number;
+    delete_at?: number;
     extension: string;
     failed?: boolean;
     has_preview_image: boolean;
@@ -17,7 +17,7 @@ type FileInfo = {
     name: string;
     post_id: string;
     size: number;
-    update_at: number;
+    update_at?: number;
     uri?: string;
     user_id: string;
     width: number;

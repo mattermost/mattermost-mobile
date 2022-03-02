@@ -6,6 +6,7 @@ import withObservables from '@nozbe/with-observables';
 import React, {ReactNode} from 'react';
 import {useIntl} from 'react-intl';
 import {Text} from 'react-native';
+import {TouchableOpacity} from 'react-native-gesture-handler';
 import {of as of$} from 'rxjs';
 import {switchMap} from 'rxjs/operators';
 
@@ -181,16 +182,14 @@ const AddMembers = ({channelType, currentUser, post, theme}: AddMembersProps) =>
                     defaultMessage={outOfChannelMessageText}
                     style={styles.message}
                 />
-                <Text
-                    style={textStyles.link}
-                    testID='add_channel_member_link'
-                    onPress={handleAddChannelMember}
-                >
+                <TouchableOpacity onPress={handleAddChannelMember}>
                     <FormattedText
                         id={linkId}
                         defaultMessage={linkText}
+                        style={textStyles.link}
+                        testID='add_channel_member_link'
                     />
-                </Text>
+                </TouchableOpacity>
                 <FormattedText
                     id={'post_body.check_for_out_of_channel_mentions.message_last'}
                     defaultMessage={'? They will have access to all message history.'}

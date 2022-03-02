@@ -35,13 +35,11 @@ export const apiUploadFile = async (name, absFilePath, requestOptions = {}) => {
     formData.append(name, fs.createReadStream(absFilePath));
 
     try {
-        const response = await client.request({
+        return await client.request({
             ...requestOptions,
             data: formData,
             headers: formData.getHeaders(),
         });
-
-        return response;
     } catch (err) {
         return getResponseFromError(err);
     }

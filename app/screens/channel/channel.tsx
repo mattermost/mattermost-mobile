@@ -7,6 +7,7 @@ import {DeviceEventEmitter, Keyboard, Platform, View} from 'react-native';
 import {Edge, SafeAreaView, useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import CompassIcon from '@components/compass_icon';
+import FreezeScreen from '@components/freeze_screen';
 import NavigationHeader from '@components/navigation_header';
 import PostDraft from '@components/post_draft';
 import {Navigation} from '@constants';
@@ -106,7 +107,7 @@ const Channel = ({channelId, componentId, displayName, isOwnDirectMessage, membe
     const channelIsSet = Boolean(channelId);
 
     return (
-        <>
+        <FreezeScreen>
             <SafeAreaView
                 style={styles.flex}
                 mode='margin'
@@ -140,7 +141,7 @@ const Channel = ({channelId, componentId, displayName, isOwnDirectMessage, membe
                 </>
                 }
             </SafeAreaView>
-        </>
+        </FreezeScreen>
     );
 };
 
