@@ -13,7 +13,7 @@ import {
 import {getUniqueRawsBy} from '@database/operator/utils/general';
 import {sanitizeThreadParticipants} from '@database/operator/utils/thread';
 
-import type {HandleThreadsArgs, HandleThreadParticipantsArgs, ProcessRecordResults} from '@typings/database/database';
+import type {HandleThreadsArgs, HandleThreadParticipantsArgs} from '@typings/database/database';
 import type ThreadModel from '@typings/database/models/servers/thread';
 import type ThreadParticipantModel from '@typings/database/models/servers/thread_participant';
 
@@ -36,8 +36,6 @@ const ThreadHandler = (superclass: any) => class extends superclass {
      * @returns {Promise<void>}
      */
     handleThreads = async ({threads, prepareRecordsOnly = false}: HandleThreadsArgs): Promise<Model[]> => {
-        const tableName = THREAD;
-
         if (!threads.length) {
             throw new DataOperatorException(
                 'An empty "threads" array has been passed to the handleThreads method',
@@ -63,20 +61,15 @@ const ThreadHandler = (superclass: any) => class extends superclass {
             });
         }
 
-        // Process the threads to get which ones need to be created and which updated
-        const processedThreads = (await this.processRecords({
-            createOrUpdateRawValues: uniqueThreads,
-            tableName,
-            findMatchingRecordBy: isRecordThreadEqualToRaw,
+        // Get thread models to be created and updated
+        const preparedThreads = await this.handleRecords({
             fieldName: 'id',
-        })) as ProcessRecordResults;
-
-        const preparedThreads = (await this.prepareRecords({
-            createRaws: processedThreads.createRaws,
-            updateRaws: processedThreads.updateRaws,
+            findMatchingRecordBy: isRecordThreadEqualToRaw,
             transformer: transformThreadRecord,
-            tableName,
-        })) as ThreadModel[];
+            prepareRecordsOnly: true,
+            createOrUpdateRawValues: uniqueThreads,
+            tableName: THREAD,
+        }) as ThreadModel[];
 
         // Add the models to be batched here
         const batch: Model[] = [...preparedThreads];
