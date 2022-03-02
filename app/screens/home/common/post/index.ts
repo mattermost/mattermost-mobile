@@ -3,10 +3,10 @@
 
 import withObservables from '@nozbe/with-observables';
 
-import Mention from './mention';
+import Post from './post';
 
 const enhance = withObservables(['post'], ({post}) => ({
     post,
 }));
 
-export default enhance(Mention);
+export default enhance(Post);

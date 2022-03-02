@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React from 'react';
+import React, {memo} from 'react';
 import {View, StyleSheet} from 'react-native';
 
 import Avatar from '@components/post_list/post/avatar';
@@ -40,9 +40,12 @@ const styles = StyleSheet.create({
         marginRight: 10,
         marginTop: 10,
     },
+    rightColumn: {
+        flex: 1,
+    },
 });
 
-function Mention({post, currentUser}: Props) {
+function Post({post, currentUser}: Props) {
     const theme = useTheme();
 
     const isAutoResponder = fromAutoResponder(post);
@@ -89,7 +92,7 @@ function Mention({post, currentUser}: Props) {
             <ChannelInfo post={post}/>
             <View style={styles.content}>
                 {postAvatar}
-                <View>
+                <View style={styles.rightColumn}>
                     {header}
                     <View style={styles.message}>
                         <Message
@@ -108,4 +111,4 @@ function Mention({post, currentUser}: Props) {
     );
 }
 
-export default Mention;
+export default memo(Post);

@@ -2,10 +2,13 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback} from 'react';
-import {TextStyle} from 'react-native';
+import {useIntl} from 'react-intl';
+import {DeviceEventEmitter, TextStyle} from 'react-native';
 
 import FormattedText from '@components/formatted_text';
 import MenuItem from '@components/menu_item';
+import {Events, Screens} from '@constants';
+import {showModal} from '@screens/navigation';
 import {preventDoubleTap} from '@utils/tap';
 
 type Props = {
@@ -15,8 +18,16 @@ type Props = {
 }
 
 const SavedMessages = ({isTablet, style, theme}: Props) => {
+    const intl = useIntl();
     const openSavedMessages = useCallback(preventDoubleTap(() => {
-        // TODO: Open Saved messages screen in either a screen or in line for tablets
+        if (isTablet) {
+            DeviceEventEmitter.emit(Events.ACCOUNT_SELECT_TABLET_VIEW, Screens.SAVED_MESSAGES);
+        } else {
+            showModal(
+                Screens.SAVED_MESSAGES,
+                intl.formatMessage({id: 'mobile.screen.saved_messages', defaultMessage: 'Saved Messages'}),
+            );
+        }
     }), [isTablet]);
 
     return (

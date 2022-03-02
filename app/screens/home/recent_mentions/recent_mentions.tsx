@@ -13,14 +13,15 @@ import NavigationHeader from '@components/navigation_header';
 import DateSeparator from '@components/post_list/date_separator';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
-import {UserModel} from '@database/models/server';
 import {useCollapsibleHeader} from '@hooks/header';
 import {getDateForDateLine, isDateLine, selectOrderedPosts} from '@utils/post_list';
 
+import Post from '../common/post';
+
 import EmptyState from './components/empty';
-import Mention from './components/mention';
 
 import type PostModel from '@typings/database/models/servers/post';
+import type UserModel from '@typings/database/models/servers/user';
 
 const AnimatedFlatList = Animated.createAnimatedComponent(FlatList);
 
@@ -122,7 +123,7 @@ const RecentMentionsScreen = ({mentions, currentUser, currentTimezone, isTimezon
         }
 
         return (
-            <Mention
+            <Post
                 currentUser={currentUser}
                 post={item}
             />

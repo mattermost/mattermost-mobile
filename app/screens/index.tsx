@@ -107,6 +107,9 @@ Navigation.setLazyComponentRegistrator((screenName) => {
     case Screens.SSO:
         screen = withIntl(require('@screens/sso').default);
         break;
+    case Screens.SAVED_MESSAGES:
+        screen = withServerDatabase((require('@screens/home/saved_messages').default));
+        break;
     }
 
     if (screen) {
