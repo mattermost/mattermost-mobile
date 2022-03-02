@@ -8,7 +8,7 @@ import DataOperatorException from '@database/exceptions/data_operator_exception'
 import {isRecordThreadEqualToRaw} from '@database/operator/server_data_operator/comparators';
 import {
     transformThreadRecord,
-    transformThreadparticipantRecord,
+    transformThreadParticipantRecord,
 } from '@database/operator/server_data_operator/transformers/thread';
 import {getUniqueRawsBy} from '@database/operator/utils/general';
 import {sanitizeThreadParticipants} from '@database/operator/utils/thread';
@@ -39,7 +39,9 @@ const ThreadHandler = (superclass: any) => class extends superclass {
         const tableName = THREAD;
 
         if (!threads.length) {
-            return [];
+            throw new DataOperatorException(
+                'An empty "threads" array has been passed to the handleThreads method',
+            );
         }
 
         // Get unique threads in case they are duplicated
@@ -92,7 +94,7 @@ const ThreadHandler = (superclass: any) => class extends superclass {
 
     /**
      * handleThreadParticipants: Handler responsible for the Create/Update operations occurring on the ThreadParticipants table from the 'Server' schema
-     * @param {HandleParticipantsArgs} handleThreadParticipants
+     * @param {HandleThreadParticipantsArgs} handleThreadParticipants
      * @param {ParticipantsPerThread[]} handleThreadParticipants.threadsParticipants
      * @param {boolean} handleThreadParticipants.prepareRecordsOnly
      * @throws DataOperatorException
@@ -103,7 +105,7 @@ const ThreadHandler = (superclass: any) => class extends superclass {
 
         if (!threadsParticipants.length) {
             throw new DataOperatorException(
-                'An empty "thead participants" array has been passed to the handleThreadParticipants method',
+                'An empty "thread participants" array has been passed to the handleThreadParticipants method',
             );
         }
 
@@ -123,7 +125,7 @@ const ThreadHandler = (superclass: any) => class extends superclass {
                 // Prepares record for model ThreadParticipants
                 const participantsRecords = (await this.prepareRecords({
                     createRaws: createParticipants,
-                    transformer: transformThreadparticipantRecord,
+                    transformer: transformThreadParticipantRecord,
                     tableName: THREAD_PARTICIPANT,
                 })) as ThreadParticipantModel[];
                 batchRecords.push(...participantsRecords);

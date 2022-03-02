@@ -25,7 +25,7 @@ export default class ThreadModel extends Model {
         /** A THREAD is associated to one POST (relationship is 1:1) */
         [POST]: {type: 'belongs_to', key: 'id'},
 
-        /** A POST can have multiple THREAD_PARTICIPANT. (relationship is 1:N)*/
+        /** A THREAD can have multiple THREAD_PARTICIPANT. (relationship is 1:N)*/
         [THREAD_PARTICIPANT]: {type: 'has_many', foreignKey: 'thread_id'},
     };
 
