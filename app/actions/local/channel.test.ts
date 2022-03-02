@@ -4,13 +4,13 @@
 import {Database} from '@nozbe/watermelondb';
 import {DeviceEventEmitter} from 'react-native';
 
-import {Navigation} from '@app/constants';
-import {SYSTEM_IDENTIFIERS} from '@app/constants/database';
-import {queryMyChannel} from '@app/queries/servers/channel';
-import {queryCommonSystemValues, queryTeamHistory} from '@app/queries/servers/system';
-import {queryChannelHistory} from '@app/queries/servers/team';
+import {Navigation} from '@constants';
+import {SYSTEM_IDENTIFIERS} from '@constants/database';
 import DatabaseManager from '@database/manager';
 import ServerDataOperator from '@database/operator/server_data_operator';
+import {queryMyChannel} from '@queries/servers/channel';
+import {queryCommonSystemValues, queryTeamHistory} from '@queries/servers/system';
+import {queryChannelHistory} from '@queries/servers/team';
 import {dismissAllModalsAndPopToRoot, dismissAllModalsAndPopToScreen} from '@screens/navigation';
 
 import {switchToChannel} from './channel';
