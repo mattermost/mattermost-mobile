@@ -46,7 +46,7 @@ const Channel = ({channelId, componentId, displayName, isOwnDirectMessage, membe
     const isTablet = useIsTablet();
     const insets = useSafeAreaInsets();
     const theme = useTheme();
-    const styles = getStyleSheet(theme);
+    const styles = getStyleSheet();
     const defaultHeight = useDefaultHeaderHeight();
     const rightButtons: HeaderRightButton[] = useMemo(() => ([{
         iconName: 'magnify',

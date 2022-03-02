@@ -49,56 +49,60 @@ exports[`ThreadOverview should match snapshot when post is not saved and 0 repli
       }
     }
   >
-    <View
-      accessible={true}
+    <RNGestureHandlerButton
       collapsable={false}
-      focusable={true}
-      onClick={[Function]}
-      onResponderGrant={[Function]}
-      onResponderMove={[Function]}
-      onResponderRelease={[Function]}
-      onResponderTerminate={[Function]}
-      onResponderTerminationRequest={[Function]}
-      onStartShouldSetResponder={[Function]}
-      style={
-        Object {
-          "marginLeft": 16,
-          "opacity": 1,
-        }
-      }
-      testID="sometestId"
+      exclusive={true}
+      onGestureEvent={[Function]}
+      onGestureHandlerEvent={[Function]}
+      onGestureHandlerStateChange={[Function]}
+      onHandlerStateChange={[Function]}
+      rippleColor={0}
+      testID="thread-overview.save"
     >
-      <Icon
-        color="#386fe5"
-        name="bookmark"
-        size={24}
-      />
-    </View>
-    <View
-      accessible={true}
+      <View
+        accessible={true}
+        collapsable={false}
+        style={
+          Object {
+            "marginLeft": 16,
+            "opacity": 1,
+          }
+        }
+      >
+        <Icon
+          color="#386fe5"
+          name="bookmark"
+          size={24}
+        />
+      </View>
+    </RNGestureHandlerButton>
+    <RNGestureHandlerButton
       collapsable={false}
-      focusable={true}
-      onClick={[Function]}
-      onResponderGrant={[Function]}
-      onResponderMove={[Function]}
-      onResponderRelease={[Function]}
-      onResponderTerminate={[Function]}
-      onResponderTerminationRequest={[Function]}
-      onStartShouldSetResponder={[Function]}
-      style={
-        Object {
-          "marginLeft": 16,
-          "opacity": 1,
-        }
-      }
-      testID="sometestId"
+      exclusive={true}
+      onGestureEvent={[Function]}
+      onGestureHandlerEvent={[Function]}
+      onGestureHandlerStateChange={[Function]}
+      onHandlerStateChange={[Function]}
+      rippleColor={0}
+      testID="thread-overview.options"
     >
-      <Icon
-        color="rgba(63,67,80,0.64)"
-        name="dots-horizontal"
-        size={24}
-      />
-    </View>
+      <View
+        accessible={true}
+        collapsable={false}
+        style={
+          Object {
+            "marginLeft": 16,
+            "opacity": 1,
+          }
+        }
+      >
+        <Icon
+          color="rgba(63,67,80,0.64)"
+          name="dots-horizontal"
+          size={24}
+        />
+      </View>
+    </RNGestureHandlerButton>
   </View>
 </View>
 `;
@@ -149,56 +153,60 @@ exports[`ThreadOverview should match snapshot when post is saved and has replies
       }
     }
   >
-    <View
-      accessible={true}
+    <RNGestureHandlerButton
       collapsable={false}
-      focusable={true}
-      onClick={[Function]}
-      onResponderGrant={[Function]}
-      onResponderMove={[Function]}
-      onResponderRelease={[Function]}
-      onResponderTerminate={[Function]}
-      onResponderTerminationRequest={[Function]}
-      onStartShouldSetResponder={[Function]}
-      style={
-        Object {
-          "marginLeft": 16,
-          "opacity": 1,
-        }
-      }
-      testID="sometestId"
+      exclusive={true}
+      onGestureEvent={[Function]}
+      onGestureHandlerEvent={[Function]}
+      onGestureHandlerStateChange={[Function]}
+      onHandlerStateChange={[Function]}
+      rippleColor={0}
+      testID="thread-overview.save"
     >
-      <Icon
-        color="rgba(63,67,80,0.64)"
-        name="bookmark-outline"
-        size={24}
-      />
-    </View>
-    <View
-      accessible={true}
+      <View
+        accessible={true}
+        collapsable={false}
+        style={
+          Object {
+            "marginLeft": 16,
+            "opacity": 1,
+          }
+        }
+      >
+        <Icon
+          color="rgba(63,67,80,0.64)"
+          name="bookmark-outline"
+          size={24}
+        />
+      </View>
+    </RNGestureHandlerButton>
+    <RNGestureHandlerButton
       collapsable={false}
-      focusable={true}
-      onClick={[Function]}
-      onResponderGrant={[Function]}
-      onResponderMove={[Function]}
-      onResponderRelease={[Function]}
-      onResponderTerminate={[Function]}
-      onResponderTerminationRequest={[Function]}
-      onStartShouldSetResponder={[Function]}
-      style={
-        Object {
-          "marginLeft": 16,
-          "opacity": 1,
-        }
-      }
-      testID="sometestId"
+      exclusive={true}
+      onGestureEvent={[Function]}
+      onGestureHandlerEvent={[Function]}
+      onGestureHandlerStateChange={[Function]}
+      onHandlerStateChange={[Function]}
+      rippleColor={0}
+      testID="thread-overview.options"
     >
-      <Icon
-        color="rgba(63,67,80,0.64)"
-        name="dots-horizontal"
-        size={24}
-      />
-    </View>
+      <View
+        accessible={true}
+        collapsable={false}
+        style={
+          Object {
+            "marginLeft": 16,
+            "opacity": 1,
+          }
+        }
+      >
+        <Icon
+          color="rgba(63,67,80,0.64)"
+          name="dots-horizontal"
+          size={24}
+        />
+      </View>
+    </RNGestureHandlerButton>
   </View>
 </View>
 `;
