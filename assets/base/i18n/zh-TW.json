@@ -18,7 +18,7 @@
   "channel.hasGuests": "此群組訊息有訪客",
   "channel.isGuest": "這個使用者是訪客",
   "channel_header.addMembers": "新增成員",
-  "channel_header.directchannel.you": "{displayname} (你) ",
+  "channel_header.directchannel.you": "{displayName} (你) ",
   "channel_header.manageMembers": "成員管理",
   "channel_header.notificationPreference": "行動推播",
   "channel_header.notificationPreference.all": "全部",

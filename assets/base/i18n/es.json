@@ -18,7 +18,7 @@
   "channel.hasGuests": "Este grupo tiene huéspedes",
   "channel.isGuest": "Esta persona es un huésped",
   "channel_header.addMembers": "Agregar Miembros",
-  "channel_header.directchannel.you": "{displayname} (tu) ",
+  "channel_header.directchannel.you": "{displayName} (tu) ",
   "channel_header.manageMembers": "Administrar Miembros",
   "channel_header.notificationPreference": "Notificaciones Móviles",
   "channel_header.notificationPreference.all": "Todos",

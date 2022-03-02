@@ -249,7 +249,7 @@ export const fetchUsersByIds = async (serverUrl: string, userIds: string[], fetc
         return {error};
     }
     if (!userIds.length) {
-        return {users: []};
+        return {users: [], existingUsers: []};
     }
 
     const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
@@ -258,9 +258,15 @@ export const fetchUsersByIds = async (serverUrl: string, userIds: string[], fetc
     }
 
     try {
-        const currentUserId = await queryCurrentUserId(operator.database);
-        const exisingUsers = await queryUsersById(operator.database, userIds);
-        const usersToLoad = userIds.filter((id) => (id !== currentUserId && !exisingUsers.find((u) => u.id === id)));
+        const currentUser = await queryCurrentUser(operator.database);
+        const existingUsers = await queryUsersById(operator.database, userIds);
+        if (userIds.includes(currentUser!.id)) {
+            existingUsers.push(currentUser!);
+        }
+        const usersToLoad = new Set(userIds.filter((id) => (!existingUsers.find((u) => u.id === id))));
+        if (usersToLoad.size === 0) {
+            return {users: [], existingUsers};
+        }
         const users = await client.getProfilesByIds([...new Set(usersToLoad)]);
         if (!fetchOnly) {
             await operator.handleUsers({
@@ -269,7 +275,7 @@ export const fetchUsersByIds = async (serverUrl: string, userIds: string[], fetc
             });
         }
 
-        return {users};
+        return {users, existingUsers};
     } catch (error) {
         forceLogoutIfNecessary(serverUrl, error as ClientError);
         return {error};

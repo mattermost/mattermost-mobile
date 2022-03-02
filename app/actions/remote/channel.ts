@@ -7,11 +7,13 @@ import {IntlShape} from 'react-intl';
 
 import {storeCategories} from '@actions/local/category';
 import {storeMyChannelsForTeam, switchToChannel} from '@actions/local/channel';
-import {General} from '@constants';
+import {General, Preferences} from '@constants';
 import DatabaseManager from '@database/manager';
 import {privateChannelJoinPrompt} from '@helpers/api/channel';
+import {getTeammateNameDisplaySetting} from '@helpers/api/preference';
 import NetworkManager from '@init/network_manager';
 import {prepareMyChannelsForTeam, queryChannelById, queryChannelByName, queryMyChannel} from '@queries/servers/channel';
+import {queryPreferencesByCategoryAndName} from '@queries/servers/preference';
 import {queryCommonSystemValues, queryCurrentTeamId, queryCurrentUserId} from '@queries/servers/system';
 import {prepareMyTeams, queryNthLastChannelFromTeam, queryMyTeamById, queryTeamById, queryTeamByName} from '@queries/servers/team';
 import {queryCurrentUser} from '@queries/servers/user';
@@ -562,12 +564,20 @@ export const createDirectChannel = async (serverUrl: string, userId: string) => 
     }
 
     try {
-        const currentUserId = await queryCurrentUserId(operator.database);
-        const created = await client.createDirectChannel([userId, currentUserId]);
+        const currentUser = await queryCurrentUser(operator.database);
+        if (!currentUser) {
+            return {error: 'Cannot get the current user'};
+        }
+        const created = await client.createDirectChannel([userId, currentUser.id]);
+
+        const preferences = await queryPreferencesByCategoryAndName(operator.database, Preferences.CATEGORY_DISPLAY_SETTINGS, Preferences.NAME_NAME_FORMAT);
+        const system = await queryCommonSystemValues(operator.database);
+        const teammateDisplayNameSetting = getTeammateNameDisplaySetting(preferences || [], system.config, system.license);
+        const {directChannels} = await fetchMissingSidebarInfo(serverUrl, [created], currentUser.locale, teammateDisplayNameSetting, currentUser.id, true);
 
         const member = {
             channel_id: created.id,
-            user_id: currentUserId,
+            user_id: currentUser.id,
             roles: `${General.CHANNEL_USER_ROLE}`,
             last_viewed_at: 0,
             msg_count: 0,
@@ -579,13 +589,14 @@ export const createDirectChannel = async (serverUrl: string, userId: string) => 
         };
 
         const models = [];
-
-        const channelPromises = await prepareMyChannelsForTeam(operator, '', [created], [member, {...member, user_id: userId}]);
-        if (channelPromises) {
-            const channelModels = await Promise.all(channelPromises);
-            const flattenedChannelModels = channelModels.flat();
-            if (flattenedChannelModels.length) {
-                models.push(...flattenedChannelModels);
+        if (directChannels) {
+            const channelPromises = await prepareMyChannelsForTeam(operator, '', directChannels, [member, {...member, user_id: userId}]);
+            if (channelPromises) {
+                const channelModels = await Promise.all(channelPromises);
+                const flattenedChannelModels = channelModels.flat();
+                if (flattenedChannelModels.length) {
+                    models.push(...flattenedChannelModels);
+                }
             }
         }
 
@@ -675,6 +686,10 @@ export const createGroupChannel = async (serverUrl: string, userIds: string[]) =
         return {error};
     }
     try {
+        const currentUser = await queryCurrentUser(operator.database);
+        if (!currentUser) {
+            return {error: 'Cannot get the current user'};
+        }
         const created = await client.createGroupChannel(userIds);
 
         // Check the channel previous existency: if the channel already have
@@ -682,6 +697,11 @@ export const createGroupChannel = async (serverUrl: string, userIds: string[]) =
         if (created.total_msg_count > 0) {
             return {data: created};
         }
+
+        const preferences = await queryPreferencesByCategoryAndName(operator.database, Preferences.CATEGORY_DISPLAY_SETTINGS, Preferences.NAME_NAME_FORMAT);
+        const system = await queryCommonSystemValues(operator.database);
+        const teammateDisplayNameSetting = getTeammateNameDisplaySetting(preferences || [], system.config, system.license);
+        const {directChannels} = await fetchMissingSidebarInfo(serverUrl, [created], currentUser.locale, teammateDisplayNameSetting, currentUser.id, true);
 
         const member = {
             channel_id: created.id,
@@ -699,12 +719,15 @@ export const createGroupChannel = async (serverUrl: string, userIds: string[]) =
         const members = userIds.map((id) => {
             return {...member, user_id: id};
         });
-        const channelPromises = await prepareMyChannelsForTeam(operator, '', [created], members);
-        if (channelPromises) {
-            const channelModels = await Promise.all(channelPromises);
-            const flattenedChannelModels = channelModels.flat();
-            if (flattenedChannelModels.length) {
-                operator.batchRecords(flattenedChannelModels);
+
+        if (directChannels) {
+            const channelPromises = await prepareMyChannelsForTeam(operator, '', directChannels, members);
+            if (channelPromises) {
+                const channelModels = await Promise.all(channelPromises);
+                const flattenedChannelModels = channelModels.flat();
+                if (flattenedChannelModels.length) {
+                    operator.batchRecords(flattenedChannelModels);
+                }
             }
         }
         fetchRolesIfNeeded(serverUrl, member.roles.split(' '));
