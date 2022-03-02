@@ -1,15 +1,13 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
+import React, {useCallback, useEffect, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
-import {Keyboard, KeyboardType, LayoutChangeEvent, Platform, SafeAreaView, View} from 'react-native';
-import {KeyboardTrackingView} from 'react-native-keyboard-tracking-view';
+import {Keyboard, KeyboardType, Platform, SafeAreaView, View} from 'react-native';
 import {Navigation} from 'react-native-navigation';
 
 import {editPost} from '@actions/remote/post';
 import AutoComplete from '@components/autocomplete';
-import CompassIcon from '@components/compass_icon';
 import Loading from '@components/loading';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
@@ -79,14 +77,13 @@ const EditPost = ({componentId, maxPostSize, post}: EditPostProps) => {
     const serverUrl = useServerUrl();
 
     const styles = getStyleSheet(theme);
-    const closeButtonIcon = useMemo(() => CompassIcon.getImageSourceSync('close', 24, theme.sidebarHeaderTextColor), [theme.sidebarHeaderTextColor]);
 
     useEffect(() => {
         setButtons(componentId, {
-            leftButtons: [{
-                icon: closeButtonIcon,
-                ...LEFT_BUTTON,
-            }],
+
+            // leftButtons: [{
+            //     ...LEFT_BUTTON,
+            // }],
             rightButtons: [{
                 color: theme.sidebarHeaderTextColor,
                 text: intl.formatMessage({id: 'edit_post.save', defaultMessage: 'Save'}),
@@ -129,15 +126,20 @@ const EditPost = ({componentId, maxPostSize, post}: EditPostProps) => {
         setCursorPosition(curPos);
     }, [cursorPosition, postMessage]);
 
-    const updateCanEditPostButton = useCallback((enabled) => {
+    const toggleSaveButton = useCallback((enabled) => {
         if (rightButtonEnabled !== enabled) {
             setRightButtonEnabled(enabled);
             setButtons(componentId, {
-                leftButtons: [{...LEFT_BUTTON, icon: closeButtonIcon}],
-                rightButtons: [{...RIGHT_BUTTON, enabled}],
+                leftButtons: [{...LEFT_BUTTON}],
+                rightButtons: [{
+                    ...RIGHT_BUTTON,
+                    color: theme.sidebarHeaderTextColor,
+                    text: intl.formatMessage({id: 'edit_post.save', defaultMessage: 'Save'}),
+                    enabled,
+                }],
             });
         }
-    }, [closeButtonIcon, rightButtonEnabled, componentId]);
+    }, [rightButtonEnabled, componentId]);
 
     const onPostChangeText = useCallback((message: string) => {
         setPostMessage(message);
@@ -149,16 +151,16 @@ const EditPost = ({componentId, maxPostSize, post}: EditPostProps) => {
             setErrorLine(line);
             setErrorExtra(extra);
         }
-        updateCanEditPostButton(Boolean(message) && !tooLong);
-    }, [intl, maxPostSize, updateCanEditPostButton]);
+        toggleSaveButton(Boolean(message) && !tooLong);
+    }, [intl, maxPostSize, toggleSaveButton]);
 
     const emitEditing = useCallback((loading) => {
         setRightButtonEnabled(!loading);
         setButtons(componentId, {
-            leftButtons: [{...LEFT_BUTTON, icon: closeButtonIcon}],
+            leftButtons: [{...LEFT_BUTTON}],
             rightButtons: [{...RIGHT_BUTTON, enabled: !loading}],
         });
-    }, [closeButtonIcon]);
+    }, []);
 
     const onClose = useCallback(() => {
         Keyboard.dismiss();
@@ -174,7 +176,7 @@ const EditPost = ({componentId, maxPostSize, post}: EditPostProps) => {
 
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-ignore
-        const {error: {status_code, message: errorMessage}} = await editPost(serverUrl, post.id, postMessage);
+        const {error: {status_code, message: errorMessage}} = await editPost(serverUrl, post.id);
         emitEditing(false);
         if (status_code) {
             setIsUpdating(false);
@@ -185,10 +187,6 @@ const EditPost = ({componentId, maxPostSize, post}: EditPostProps) => {
             onClose();
         }
     }, [emitEditing, serverUrl, post.id, postMessage, onClose]);
-
-    const handleLayout = useCallback((e: LayoutChangeEvent) => {
-        setPostInputTop(e.nativeEvent.layout.y);
-    }, []);
 
     if (isUpdating) {
         return (
@@ -221,19 +219,17 @@ const EditPost = ({componentId, maxPostSize, post}: EditPostProps) => {
                     />
                 </View>
             </SafeAreaView>
-            <KeyboardTrackingView onLayout={handleLayout}>
-                <AutoComplete
-                    channelId={post.channelId}
-                    cursorPosition={cursorPosition}
-                    hasFilesAttached={false}
-                    nestedScrollEnabled={true}
-                    offsetY={8}
-                    postInputTop={postInputTop}
-                    rootId={post.rootId}
-                    updateValue={onPostChangeText}
-                    value={postMessage}
-                />
-            </KeyboardTrackingView>
+            <AutoComplete
+                channelId={post.channelId}
+                cursorPosition={cursorPosition}
+                hasFilesAttached={false}
+                nestedScrollEnabled={true}
+                offsetY={8}
+                postInputTop={postInputTop}
+                rootId={post.rootId}
+                updateValue={onPostChangeText}
+                value={postMessage}
+            />
         </>
     );
 };

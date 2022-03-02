@@ -4,9 +4,11 @@
 import React, {useCallback} from 'react';
 import {useIntl} from 'react-intl';
 
+import CompassIcon from '@components/compass_icon';
 import {Screens} from '@constants';
+import {useTheme} from '@context/theme';
 import {t} from '@i18n';
-import {dismissBottomSheet, goToScreen} from '@screens/navigation';
+import {dismissBottomSheet, showModal} from '@screens/navigation';
 import PostModel from '@typings/database/models/servers/post';
 
 import BaseOption from './base_option';
@@ -16,10 +18,17 @@ type Props = {
 }
 const EditOption = ({post}: Props) => {
     const intl = useIntl();
+    const theme = useTheme();
+
     const onPress = useCallback(async () => {
         await dismissBottomSheet(Screens.POST_OPTIONS);
         const title = intl.formatMessage({id: 'mobile.edit_post.title', defaultMessage: 'Editing Message'});
-        goToScreen(Screens.EDIT_POST, title, {post});
+        const closeButtonIcon = CompassIcon.getImageSourceSync('close', 24, theme.centerChannelColor);
+        const passProps = {
+            post,
+            closeButton: closeButtonIcon,
+        };
+        showModal(Screens.EDIT_POST, title, passProps, {modal: {swipeToDismiss: false}});
     }, [post]);
 
     return (
