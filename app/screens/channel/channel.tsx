@@ -3,7 +3,7 @@
 
 import React, {useCallback, useMemo} from 'react';
 import {useIntl} from 'react-intl';
-import {DeviceEventEmitter, Keyboard, Platform, View} from 'react-native';
+import {DeviceEventEmitter, Keyboard, Platform, StyleSheet, View} from 'react-native';
 import {Edge, SafeAreaView, useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import CompassIcon from '@components/compass_icon';
@@ -15,7 +15,7 @@ import {useTheme} from '@context/theme';
 import {useAppState, useIsTablet} from '@hooks/device';
 import {useDefaultHeaderHeight} from '@hooks/header';
 import {popTopScreen} from '@screens/navigation';
-import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
+import {changeOpacity} from '@utils/theme';
 
 import ChannelPostList from './channel_post_list';
 import OtherMentionsBadge from './other_mentions_badge';
@@ -34,7 +34,7 @@ type ChannelProps = {
 
 const edges: Edge[] = ['left', 'right'];
 
-const getStyleSheet = makeStyleSheetFromTheme(() => ({
+const getStyleSheet = StyleSheet.create(() => ({
     flex: {
         flex: 1,
     },

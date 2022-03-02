@@ -1,15 +1,15 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback} from 'react';
+import React, {useCallback, useMemo} from 'react';
 import {useIntl} from 'react-intl';
 import {Keyboard, Platform, View} from 'react-native';
+import {TouchableOpacity} from 'react-native-gesture-handler';
 
 import {deleteSavedPost, savePostPreference} from '@actions/remote/preference';
 import FormattedText from '@app/components/formatted_text';
 import {Screens} from '@app/constants';
 import CompassIcon from '@components/compass_icon';
-import TouchableWithFeedback from '@components/touchable_with_feedback';
 import {useServerUrl} from '@context/server';
 import {useIsTablet} from '@hooks/device';
 import {bottomSheetModalOptions, showModal, showModalOverCurrentContext} from '@screens/navigation';
@@ -25,6 +25,34 @@ type Props = {
     testID: string;
     theme: Theme;
 };
+
+const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
+    return {
+        container: {
+            borderTopWidth: 1,
+            borderBottomWidth: 1,
+            borderColor: changeOpacity(theme.centerChannelColor, 0.1),
+            flexDirection: 'row',
+            marginVertical: 12,
+            paddingHorizontal: 20,
+            paddingVertical: 10,
+        },
+        repliesCountContainer: {
+            flex: 1,
+        },
+        repliesCount: {
+            color: changeOpacity(theme.centerChannelColor, 0.64),
+            marginHorizontal: 4,
+            ...typography('Body', 200, 'Regular'),
+        },
+        optionsContainer: {
+            flexDirection: 'row',
+        },
+        optionContainer: {
+            marginLeft: 16,
+        },
+    };
+});
 
 const ThreadOverview = ({isSaved, repliesCount, rootPost, testID, theme}: Props) => {
     const styles = getStyleSheet(theme);
@@ -50,12 +78,15 @@ const ThreadOverview = ({isSaved, repliesCount, rootPost, testID, theme}: Props)
         }
     }, [rootPost]);
 
-    const containerStyle = [styles.container];
-    if (repliesCount === 0) {
-        containerStyle.push({
-            borderBottomWidth: 0,
-        });
-    }
+    const containerStyle = useMemo(() => {
+        const style = [styles.container];
+        if (repliesCount === 0) {
+            style.push({
+                borderBottomWidth: 0,
+            });
+        }
+        return style;
+    }, [repliesCount]);
 
     return (
         <View
@@ -86,65 +117,31 @@ const ThreadOverview = ({isSaved, repliesCount, rootPost, testID, theme}: Props)
                 }
             </View>
             <View style={styles.optionsContainer}>
-                <TouchableWithFeedback
-                    borderlessRipple={true}
+                <TouchableOpacity
                     onPress={onHandleSavePress}
-                    rippleRadius={20}
                     style={styles.optionContainer}
-                    type={Platform.select({android: 'native', default: 'opacity'})}
-                    testID={'sometestId'}
+                    testID={`${testID}.save`}
                 >
                     <CompassIcon
                         size={24}
                         name={isSaved ? 'bookmark' : 'bookmark-outline'}
                         color={isSaved ? theme.linkColor : changeOpacity(theme.centerChannelColor, 0.64)}
                     />
-                </TouchableWithFeedback>
-                <TouchableWithFeedback
-                    borderlessRipple={true}
+                </TouchableOpacity>
+                <TouchableOpacity
                     onPress={showPostOptions}
-                    rippleRadius={20}
                     style={styles.optionContainer}
-                    type={Platform.select({android: 'native', default: 'opacity'})}
-                    testID={'sometestId'}
+                    testID={`${testID}.options`}
                 >
                     <CompassIcon
                         size={24}
                         name={Platform.select({android: 'dots-vertical', default: 'dots-horizontal'})}
                         color={changeOpacity(theme.centerChannelColor, 0.64)}
                     />
-                </TouchableWithFeedback>
+                </TouchableOpacity>
             </View>
         </View>
     );
 };
-
-const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
-    return {
-        container: {
-            borderTopWidth: 1,
-            borderBottomWidth: 1,
-            borderColor: changeOpacity(theme.centerChannelColor, 0.1),
-            flexDirection: 'row',
-            marginVertical: 12,
-            paddingHorizontal: 20,
-            paddingVertical: 10,
-        },
-        repliesCountContainer: {
-            flex: 1,
-        },
-        repliesCount: {
-            color: changeOpacity(theme.centerChannelColor, 0.64),
-            marginHorizontal: 4,
-            ...typography('Body', 200, 'Regular'),
-        },
-        optionsContainer: {
-            flexDirection: 'row',
-        },
-        optionContainer: {
-            marginLeft: 16,
-        },
-    };
-});
 
 export default ThreadOverview;

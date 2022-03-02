@@ -22,7 +22,13 @@ import type UserModel from '@typings/database/models/servers/user';
 
 const {SERVER: {MY_CHANNEL, POST, POSTS_IN_THREAD, SYSTEM, USER}} = MM_TABLES;
 
-const enhanced = withObservables(['channelId', 'forceQueryAfterAppState', 'rootPost'], ({channelId, database, rootPost}: {channelId: string; forceQueryAfterAppState: AppStateStatus; rootPost: PostModel} & WithDatabaseArgs) => {
+type Props = WithDatabaseArgs & {
+    channelId: string;
+    forceQueryAfterAppState: AppStateStatus;
+    rootPost: PostModel;
+};
+
+const enhanced = withObservables(['channelId', 'forceQueryAfterAppState', 'rootPost'], ({channelId, database, rootPost}: Props) => {
     const currentUser = database.get<SystemModel>(SYSTEM).findAndObserve(SYSTEM_IDENTIFIERS.CURRENT_USER_ID).pipe(
         switchMap((currentUserId) => database.get<UserModel>(USER).findAndObserve(currentUserId.value)),
     );

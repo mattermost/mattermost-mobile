@@ -25,7 +25,9 @@ const enhanced = withObservables(
             rootPost: database.get<PostModel>(POST).query(
                 Q.where('id', rootId),
             ).observe().pipe(
-                switchMap((posts) => of$(posts[0] || undefined)),
+
+                // Root post might not have loaded while the thread screen is opening
+                switchMap((posts) => of$(posts[0] || {id: rootId})),
             ),
             isSaved: database.
                 get<PreferenceModel>(PREFERENCE).

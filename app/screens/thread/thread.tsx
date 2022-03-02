@@ -1,9 +1,9 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback, useEffect} from 'react';
+import React, {useCallback, useEffect, useMemo} from 'react';
 import {useIntl} from 'react-intl';
-import {Keyboard, View} from 'react-native';
+import {Keyboard, StyleSheet, View} from 'react-native';
 import {Edge, SafeAreaView, useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import {fetchPostThread} from '@actions/remote/post';
@@ -11,12 +11,11 @@ import {useServerUrl} from '@app/context/server';
 import NavigationHeader from '@components/navigation_header';
 import PostDraft from '@components/post_draft';
 import {General} from '@constants';
-import {ACCESSORIES_CONTAINER_NATIVE_ID} from '@constants/post_draft';
+import {THREAD_ACCESSORIES_CONTAINER_NATIVE_ID} from '@constants/post_draft';
 import {useTheme} from '@context/theme';
 import {useAppState, useIsTablet} from '@hooks/device';
 import {useDefaultHeaderHeight} from '@hooks/header';
 import {popTopScreen} from '@screens/navigation';
-import {makeStyleSheetFromTheme} from '@utils/theme';
 
 import ThreadPostList from './thread_post_list';
 
@@ -31,7 +30,7 @@ type ThreadProps = {
 
 const edges: Edge[] = ['left', 'right'];
 
-const getStyleSheet = makeStyleSheetFromTheme(() => ({
+const getStyleSheet = StyleSheet.create(() => ({
     flex: {
         flex: 1,
     },
@@ -43,8 +42,7 @@ const Thread = ({channel, componentId, rootPost}: ThreadProps) => {
     const isTablet = useIsTablet();
     const insets = useSafeAreaInsets();
     const serverUrl = useServerUrl();
-    const theme = useTheme();
-    const styles = getStyleSheet(theme);
+    const styles = getStyleSheet();
     const defaultHeight = useDefaultHeaderHeight();
 
     // Get post thread
@@ -72,6 +70,8 @@ const Thread = ({channel, componentId, rootPost}: ThreadProps) => {
     const marginTop = defaultHeight + (isTablet ? insets.top : 0);
     const channelIsSet = Boolean(channel?.id);
 
+    const listContainerStyle = useMemo(() => [styles.flex, {marginTop}], [marginTop]);
+
     return (
         <>
             <SafeAreaView
@@ -88,7 +88,7 @@ const Thread = ({channel, componentId, rootPost}: ThreadProps) => {
                 />
                 {channelIsSet &&
                 <>
-                    <View style={[styles.flex, {marginTop}]}>
+                    <View style={listContainerStyle}>
                         <ThreadPostList
                             channelId={channel.id}
                             forceQueryAfterAppState={appState}
@@ -98,8 +98,8 @@ const Thread = ({channel, componentId, rootPost}: ThreadProps) => {
                     </View>
                     <PostDraft
                         channelId={channel.id}
-                        scrollViewNativeID={channel.id}
-                        accessoriesContainerID={ACCESSORIES_CONTAINER_NATIVE_ID}
+                        scrollViewNativeID={rootPost.id}
+                        accessoriesContainerID={THREAD_ACCESSORIES_CONTAINER_NATIVE_ID}
                         rootId={rootPost.id}
                     />
                 </>
