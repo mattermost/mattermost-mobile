@@ -1,11 +1,11 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React from 'react';
+import React, {useMemo} from 'react';
 import {Text, View} from 'react-native';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
-import CompassIcon from '@components/compass_icon';
+import ChannelIcon from '@app/components/channel_icon';
 import {BotTag, GuestTag} from '@components/tag';
 import TouchableWithFeedback from '@components/touchable_with_feedback';
 import {General} from '@constants';
@@ -15,9 +15,7 @@ import {makeStyleSheetFromTheme, changeOpacity} from '@utils/theme';
 const getStyleFromTheme = makeStyleSheetFromTheme((theme: Theme) => {
     return {
         icon: {
-            fontSize: 18,
             marginRight: 11,
-            color: theme.centerChannelColor,
             opacity: 0.56,
         },
         row: {
@@ -67,14 +65,14 @@ const ChannelMentionItem = ({
     };
 
     const style = getStyleFromTheme(theme);
-    const margins = {marginLeft: insets.left, marginRight: insets.right};
-    let iconName = 'globe';
+    const margins = useMemo(() => {
+        return {marginLeft: insets.left, marginRight: insets.right};
+    }, [insets]);
+    const rowStyle = useMemo(() => {
+        return [style.row, margins];
+    }, [margins, style]);
+
     let component;
-    if (channel.shared) {
-        iconName = channel.type === General.PRIVATE_CHANNEL ? 'circle-multiple-outline-lock' : 'circle-multiple-outline';
-    } else if (channel.type === General.PRIVATE_CHANNEL) {
-        iconName = 'lock';
-    }
 
     if (channel.type === General.DM_CHANNEL || channel.type === General.GM_CHANNEL) {
         if (!displayName) {
@@ -85,7 +83,7 @@ const ChannelMentionItem = ({
             <TouchableWithFeedback
                 key={channel.id}
                 onPress={completeMention}
-                style={[style.row, margins]}
+                style={rowStyle}
                 testID={testID}
                 type={'opacity'}
             >
@@ -109,8 +107,13 @@ const ChannelMentionItem = ({
                 type={'native'}
             >
                 <View style={style.row}>
-                    <CompassIcon
-                        name={iconName}
+                    <ChannelIcon
+                        name={channel.name}
+                        shared={channel.shared}
+                        type={channel.type}
+                        isInfo={true}
+                        isArchived={channel.delete_at > 0}
+                        size={18}
                         style={style.icon}
                     />
                     <Text style={style.rowDisplayName}>{displayName}</Text>

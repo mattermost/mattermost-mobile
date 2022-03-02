@@ -37,4 +37,3 @@ const enhanced = withObservables([], ({database, channel}: WithDatabaseArgs & Ow
 });
 
 export default withDatabase(enhanced(ChannelMentionItem));
-

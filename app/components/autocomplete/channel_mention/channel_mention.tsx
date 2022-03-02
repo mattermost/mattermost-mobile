@@ -77,6 +77,70 @@ const reduceChannelsForAutocomplete = (channels: Channel[], members: MyChannelMo
         return [myC, otherC];
     }, [[], []]);
 };
+
+const makeSections = (channels: Channel[], myMembers: MyChannelModel[], isSearch = false) => {
+    const newSections = [];
+    if (isSearch) {
+        const [publicChannels, privateChannels, directAndGroupMessages] = reduceChannelsForSearch(channels, myMembers);
+        if (publicChannels.length) {
+            newSections.push({
+                id: t('suggestion.search.public'),
+                defaultMessage: 'Public Channels',
+                data: publicChannels,
+                key: 'publicChannels',
+                hideLoadingIndicator: true,
+            });
+        }
+
+        if (privateChannels.length) {
+            newSections.push({
+                id: t('suggestion.search.private'),
+                defaultMessage: 'Private Channels',
+                data: privateChannels,
+                key: 'privateChannels',
+                hideLoadingIndicator: true,
+            });
+        }
+
+        if (directAndGroupMessages.length) {
+            newSections.push({
+                id: t('suggestion.search.direct'),
+                defaultMessage: 'Direct Messages',
+                data: directAndGroupMessages,
+                key: 'directAndGroupMessages',
+                hideLoadingIndicator: true,
+            });
+        }
+    } else {
+        const [myChannels, otherChannels] = reduceChannelsForAutocomplete(channels, myMembers);
+        if (myChannels.length) {
+            newSections.push({
+                id: t('suggestion.mention.channels'),
+                defaultMessage: 'My Channels',
+                data: myChannels,
+                key: 'myChannels',
+                hideLoadingIndicator: true,
+            });
+        }
+
+        if (otherChannels.length) {
+            newSections.push({
+                id: t('suggestion.mention.morechannels'),
+                defaultMessage: 'Other Channels',
+                data: otherChannels,
+                key: 'otherChannels',
+                hideLoadingIndicator: true,
+            });
+        }
+    }
+
+    const nSections = newSections.length;
+    if (nSections) {
+        newSections[nSections - 1].hideLoadingIndicator = false;
+    }
+
+    return newSections;
+};
 type Props = {
     cursorPosition: number;
     isSearch: boolean;
@@ -216,65 +280,8 @@ const ChannelMention = ({
     }, [matchTerm]);
 
     useDidUpdate(() => {
-        const newSections = [];
-        if (isSearch) {
-            const [publicChannels, privateChannels, directAndGroupMessages] = reduceChannelsForSearch(channels, myMembers);
-            if (publicChannels.length) {
-                newSections.push({
-                    id: t('suggestion.search.public'),
-                    defaultMessage: 'Public Channels',
-                    data: publicChannels,
-                    key: 'publicChannels',
-                    hideLoadingIndicator: true,
-                });
-            }
-
-            if (privateChannels.length) {
-                newSections.push({
-                    id: t('suggestion.search.private'),
-                    defaultMessage: 'Private Channels',
-                    data: privateChannels,
-                    key: 'privateChannels',
-                    hideLoadingIndicator: true,
-                });
-            }
-
-            if (directAndGroupMessages.length) {
-                newSections.push({
-                    id: t('suggestion.search.direct'),
-                    defaultMessage: 'Direct Messages',
-                    data: directAndGroupMessages,
-                    key: 'directAndGroupMessages',
-                    hideLoadingIndicator: true,
-                });
-            }
-        } else {
-            const [myChannels, otherChannels] = reduceChannelsForAutocomplete(channels, myMembers);
-            if (myChannels.length) {
-                newSections.push({
-                    id: t('suggestion.mention.channels'),
-                    defaultMessage: 'My Channels',
-                    data: myChannels,
-                    key: 'myChannels',
-                    hideLoadingIndicator: true,
-                });
-            }
-
-            if (otherChannels.length) {
-                newSections.push({
-                    id: t('suggestion.mention.morechannels'),
-                    defaultMessage: 'Other Channels',
-                    data: otherChannels,
-                    key: 'otherChannels',
-                    hideLoadingIndicator: true,
-                });
-            }
-        }
-
+        const newSections = makeSections(channels, myMembers, isSearch);
         const nSections = newSections.length;
-        if (nSections) {
-            newSections[nSections - 1].hideLoadingIndicator = false;
-        }
 
         if (!loading && !nSections && noResultsTerm == null) {
             setNoResultsTerm(matchTerm);
