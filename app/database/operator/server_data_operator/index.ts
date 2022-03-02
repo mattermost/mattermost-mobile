@@ -4,7 +4,6 @@
 import ServerDataOperatorBase from '@database/operator/server_data_operator/handlers';
 import CategoryHandler, {CategoryHandlerMix} from '@database/operator/server_data_operator/handlers/category';
 import ChannelHandler, {ChannelHandlerMix} from '@database/operator/server_data_operator/handlers/channel';
-import GroupHandler, {GroupHandlerMix} from '@database/operator/server_data_operator/handlers/group';
 import PostHandler, {PostHandlerMix} from '@database/operator/server_data_operator/handlers/post';
 import PostsInChannelHandler, {PostsInChannelHandlerMix} from '@database/operator/server_data_operator/handlers/posts_in_channel';
 import PostsInThreadHandler, {PostsInThreadHandlerMix} from '@database/operator/server_data_operator/handlers/posts_in_thread';
@@ -16,12 +15,11 @@ import mix from '@utils/mix';
 import type {Database} from '@nozbe/watermelondb';
 
 interface ServerDataOperator extends ServerDataOperatorBase, PostHandlerMix, PostsInChannelHandlerMix,
-    PostsInThreadHandlerMix, UserHandlerMix, GroupHandlerMix, ChannelHandlerMix, CategoryHandlerMix, TeamHandlerMix, ThreadHandlerMix {}
+    PostsInThreadHandlerMix, UserHandlerMix, ChannelHandlerMix, CategoryHandlerMix, TeamHandlerMix, ThreadHandlerMix {}
 
 class ServerDataOperator extends mix(ServerDataOperatorBase).with(
     CategoryHandler,
     ChannelHandler,
-    GroupHandler,
     PostHandler,
     PostsInChannelHandler,
     PostsInThreadHandler,

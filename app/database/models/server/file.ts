@@ -54,4 +54,19 @@ export default class FileModel extends Model {
 
     /** post : The related Post record for this file */
     @immutableRelation(POST, 'post_id') post!: Relation<PostModel>;
+
+    toFileInfo = (authorId: string): FileInfo => ({
+        id: this.id,
+        user_id: authorId,
+        post_id: this.postId,
+        name: this.name,
+        extension: this.extension,
+        mini_preview: this.imageThumbnail,
+        size: this.size,
+        mime_type: this.mimeType,
+        height: this.height,
+        has_preview_image: Boolean(this.imageThumbnail),
+        localPath: this.localPath,
+        width: this.width,
+    });
 }

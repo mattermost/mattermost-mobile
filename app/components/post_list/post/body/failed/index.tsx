@@ -4,11 +4,11 @@
 import React, {useCallback} from 'react';
 import {useIntl} from 'react-intl';
 import {StyleSheet, View} from 'react-native';
+import {TouchableOpacity} from 'react-native-gesture-handler';
 
 import {removePost} from '@actions/local/post';
 import CompassIcon from '@components/compass_icon';
 import SlideUpPanelItem, {ITEM_HEIGHT} from '@components/slide_up_panel_item';
-import TouchableWithFeedback from '@components/touchable_with_feedback';
 import {useServerUrl} from '@context/server';
 import {bottomSheet, dismissBottomSheet} from '@screens/navigation';
 
@@ -75,17 +75,16 @@ const Failed = ({post, theme}: FailedProps) => {
     }, []);
 
     return (
-        <TouchableWithFeedback
+        <TouchableOpacity
             onPress={onPress}
             style={styles.retry}
-            type={'opacity'}
         >
             <CompassIcon
                 name='information-outline'
                 size={26}
                 color={theme.errorTextColor}
             />
-        </TouchableWithFeedback>
+        </TouchableOpacity>
     );
 };
 

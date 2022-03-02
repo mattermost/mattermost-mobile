@@ -111,7 +111,6 @@ export const prepareDeleteChannel = async (channel: ChannelModel): Promise<Model
     const associatedChildren: Array<Query<any>> = [
         channel.members,
         channel.drafts,
-        channel.groupsChannel,
         channel.postsInChannel,
     ];
     for await (const children of associatedChildren) {

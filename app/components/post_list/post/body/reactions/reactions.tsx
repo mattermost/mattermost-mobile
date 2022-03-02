@@ -4,10 +4,10 @@
 import React, {useRef} from 'react';
 import {useIntl} from 'react-intl';
 import {View} from 'react-native';
+import {TouchableOpacity} from 'react-native-gesture-handler';
 
 import {addReaction, removeReaction} from '@actions/remote/reactions';
 import CompassIcon from '@components/compass_icon';
-import TouchableWithFeedback from '@components/touchable_with_feedback';
 import {MAX_ALLOWED_REACTIONS} from '@constants/emoji';
 import {useServerUrl} from '@context/server';
 import {showModal, showModalOverCurrentContext} from '@screens/navigation';
@@ -131,18 +131,17 @@ const Reactions = ({currentUserId, canAddReaction, canRemoveReaction, disabled, 
     const {reactionsByName, highlightedReactions} = buildReactionsMap();
     if (!disabled && canAddReaction && reactionsByName.size < MAX_ALLOWED_REACTIONS) {
         addMoreReactions = (
-            <TouchableWithFeedback
+            <TouchableOpacity
                 key='addReaction'
                 onPress={handleAddReaction}
-                style={[styles.reaction]}
-                type={'opacity'}
+                style={styles.reaction}
             >
                 <CompassIcon
                     name='emoticon-plus-outline'
                     size={24}
                     style={styles.addReaction}
                 />
-            </TouchableWithFeedback>
+            </TouchableOpacity>
         );
     }
 

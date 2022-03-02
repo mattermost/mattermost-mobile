@@ -1,9 +1,10 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import Model from '@nozbe/watermelondb/Model';
+import {Q} from '@nozbe/watermelondb';
 
-import {ActionType, Database} from '@constants';
+import {ActionType} from '@constants';
+import {MM_TABLES} from '@constants/database';
 import DataOperatorException from '@database/exceptions/data_operator_exception';
 import {isRecordDraftEqualToRaw, isRecordFileEqualToRaw, isRecordPostEqualToRaw} from '@database/operator/server_data_operator/comparators';
 import {
@@ -14,6 +15,8 @@ import {
 import {getUniqueRawsBy} from '@database/operator/utils/general';
 import {createPostsChain} from '@database/operator/utils/post';
 
+import type Database from '@nozbe/watermelondb/Database';
+import type Model from '@nozbe/watermelondb/Model';
 import type {HandleDraftArgs, HandleFilesArgs, HandlePostsArgs, ProcessRecordResults} from '@typings/database/database';
 import type DraftModel from '@typings/database/models/servers/draft';
 import type FileModel from '@typings/database/models/servers/file';
@@ -26,7 +29,7 @@ const {
     DRAFT,
     FILE,
     POST,
-} = Database.MM_TABLES.SERVER;
+} = MM_TABLES.SERVER;
 
 export interface PostHandlerMix {
     handleDraft: ({drafts, prepareRecordsOnly}: HandleDraftArgs) => Promise<DraftModel[]>;
@@ -139,9 +142,28 @@ const PostHandler = (superclass: any) => class extends superclass {
             key: 'id',
         }) as Post[];
 
+        const deletedPostIds = uniquePosts.reduce((result, post) => {
+            if (post.delete_at > 0) {
+                result.add(post.id);
+            }
+
+            return result;
+        }, new Set<string>());
+
+        if (deletedPostIds.size) {
+            const database: Database = this.database;
+            const postsToDelete = await database.get<PostModel>(POST).query(Q.where('id', Q.oneOf(Array.from(deletedPostIds)))).fetch();
+            if (postsToDelete.length) {
+                await database.write(async () => {
+                    const promises = postsToDelete.map((p) => p.destroyPermanently());
+                    await Promise.all(promises);
+                });
+            }
+        }
+
         // Process the posts to get which ones need to be created and which updated
         const processedPosts = (await this.processRecords({
-            createOrUpdateRawValues: uniquePosts,
+            createOrUpdateRawValues: uniquePosts.filter((p) => p.delete_at === 0),
             deleteRawValues: pendingPostsToDelete,
             tableName,
             findMatchingRecordBy: isRecordPostEqualToRaw,

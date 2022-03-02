@@ -10,7 +10,7 @@ import {TeamModel} from '@database/models/server';
 import {renderWithEverything} from '@test/intl-test-helper';
 import TestHelper from '@test/test_helper';
 
-import ChannelsList from './index';
+import ChannelsList from './';
 
 describe('components/channel_list', () => {
     let database: Database;
@@ -26,12 +26,44 @@ describe('components/channel_list', () => {
         });
     });
 
-    it('should match snapshot', () => {
+    it('should render', () => {
         const wrapper = renderWithEverything(
             <SafeAreaProvider>
                 <ChannelsList
                     isTablet={false}
                     teamsCount={1}
+                    currentTeamId={TestHelper.basicTeam!.id}
+                    channelsCount={1}
+                />
+            </SafeAreaProvider>,
+            {database},
+        );
+        expect(wrapper.toJSON()).toBeTruthy();
+    });
+
+    it('should render team error', () => {
+        const wrapper = renderWithEverything(
+            <SafeAreaProvider>
+                <ChannelsList
+                    isTablet={false}
+                    teamsCount={0}
+                    currentTeamId='TestHelper.basicTeam!.id'
+                    channelsCount={1}
+                />
+            </SafeAreaProvider>,
+            {database},
+        );
+        expect(wrapper.toJSON()).toMatchSnapshot();
+    });
+
+    it('should render channels error', () => {
+        const wrapper = renderWithEverything(
+            <SafeAreaProvider>
+                <ChannelsList
+                    isTablet={false}
+                    teamsCount={1}
+                    currentTeamId={TestHelper.basicTeam!.id}
+                    channelsCount={0}
                 />
             </SafeAreaProvider>,
             {database},

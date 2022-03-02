@@ -76,9 +76,6 @@ export default class UserModel extends Model {
     /** channels : All the channels that this user is part of  */
     channels: Query<ChannelMembershipModel>;
 
-    /** groups : All the groups that this user is part of  */
-    groups: Query<GroupMembershipModel>;
-
     /** posts :  All the posts that this user has written*/
     posts: Query<PostModel>;
 

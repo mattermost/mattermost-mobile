@@ -2,6 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {capitalize, getRandomId} from '@support/utils';
+import jestExpect from 'expect';
 
 import client from './client';
 import {getResponseFromError} from './common';
@@ -19,37 +20,17 @@ import {getResponseFromError} from './common';
 // ****************************************************************
 
 /**
- * Create a team.
- * See https://api.mattermost.com/#tag/teams/paths/~1teams/post
- * @param {string} option.type - 'O' (default) for open, 'I' for invite only
- * @param {string} option.prefix - option to add prefix to name and display name
- * @param {Object} team - fix team object to be created
- * @return {Object} returns {team} on success or {error, status} on error
- */
-export const apiCreateTeam = async ({type = 'O', prefix = 'team', team = null} = {}) => {
-    try {
-        const response = await client.post(
-            '/api/v4/teams',
-            team || generateRandomTeam(type, prefix),
-        );
-
-        return {team: response.data};
-    } catch (err) {
-        return getResponseFromError(err);
-    }
-};
-
-/**
  * Add user to team.
- * See https://api.mattermost.com/#tag/teams/paths/~1teams~1{team_id}~1members/post
+ * See https://api.mattermost.com/#operation/AddTeamMember
+ * @param {string} baseUrl - the base server URL
  * @param {string} userId - The ID of user to add into the team
  * @param {string} teamId - The team ID
  * @return {Object} returns {member} on success or {error, status} on error
  */
-export const apiAddUserToTeam = async (userId, teamId) => {
+export const apiAddUserToTeam = async (baseUrl, userId, teamId) => {
     try {
         const response = await client.post(
-            `/api/v4/teams/${teamId}/members`,
+            `${baseUrl}/api/v4/teams/${teamId}/members`,
             {team_id: teamId, user_id: userId},
         );
 
@@ -60,19 +41,162 @@ export const apiAddUserToTeam = async (userId, teamId) => {
 };
 
 /**
- * Get team members for user.
- * See https://api.mattermost.com/#tag/teams/paths/~1users~1{user_id}~1teams~1members/get
- * @param {string} userId
+ * Create a team.
+ * See https://api.mattermost.com/#operation/CreateTeam
+ * @param {string} baseUrl - the base server URL
+ * @param {string} option.type - 'O' (default) for open, 'I' for invite only
+ * @param {string} option.prefix - prefix to name and display name
+ * @param {Object} option.team - team object to be created
+ * @return {Object} returns {team} on success or {error, status} on error
+ */
+export const apiCreateTeam = async (baseUrl, {type = 'O', prefix = 'team', team = null} = {}) => {
+    try {
+        const response = await client.post(
+            `${baseUrl}/api/v4/teams`,
+            team || generateRandomTeam(type, prefix),
+        );
+
+        return {team: response.data};
+    } catch (err) {
+        return getResponseFromError(err);
+    }
+};
+
+/**
+ * Delete a team.
+ * See https://api.mattermost.com/#operation/SoftDeleteTeam
+ * @param {string} baseUrl - the base server URL
+ * @param {string} teamId - The team ID
+ * @return {Object} returns {status} on success or {error, status} on error
+ */
+export const apiDeleteTeam = async (baseUrl, teamId) => {
+    try {
+        const response = await client.delete(
+            `${baseUrl}/api/v4/teams/${teamId}`,
+        );
+
+        return {status: response.status};
+    } catch (err) {
+        return getResponseFromError(err);
+    }
+};
+
+/**
+ * Delete teams.
+ * @param {string} baseUrl - the base server URL
+ * @param {Array} teams - array of teams
+ */
+export const apiDeleteTeams = async (baseUrl, teams = []) => {
+    let teamArray = teams;
+    if (!teamArray.length > 0) {
+        ({teams: teamArray} = await Team.apiGetTeams(baseUrl));
+    }
+
+    teamArray.forEach(async (team) => {
+        const {status} = await Team.apiDeleteTeam(baseUrl, team.id);
+        jestExpect(status).toEqual(200);
+    });
+};
+
+/**
+ * Remove user from team.
+ * See https://api.mattermost.com/#operation/RemoveTeamMember
+ * @param {string} baseUrl - the base server URL
+ * @param {string} teamId - The team ID
+ * @param {string} userId - The user ID to be removed from team
+ * @return {Object} returns {status} on success or {error, status} on error
+ */
+export const apiDeleteUserFromTeam = async (baseUrl, teamId, userId) => {
+    try {
+        const response = await client.delete(
+            `${baseUrl}/api/v4/teams/${teamId}/members/${userId}`,
+        );
+
+        return {status: response.status};
+    } catch (err) {
+        return getResponseFromError(err);
+    }
+};
+
+/**
+ * Get teams.
+ * See https://api.mattermost.com/#operation/GetAllTeams
+ * @param {string} baseUrl - the base server URL
  * @return {Object} returns {teams} on success or {error, status} on error
  */
-export const apiGetTeamMembersForUser = async (userId = 'me') => {
+export const apiGetTeams = async (baseUrl) => {
     try {
-        const response = await client.get(`/api/v4/users/${userId}/teams`);
+        const response = await client.get(`${baseUrl}/api/v4/teams`);
 
         return {teams: response.data};
     } catch (err) {
         return getResponseFromError(err);
     }
+};
+
+/**
+ * Get teams for user.
+ * See https://api.mattermost.com/#operation/GetTeamsForUser
+ * @param {string} baseUrl - the base server URL
+ * @param {string} userId - The user ID
+ * @return {Object} returns {teams} on success or {error, status} on error
+ */
+export const apiGetTeamsForUser = async (baseUrl, userId = 'me') => {
+    try {
+        const response = await client.get(`${baseUrl}/api/v4/users/${userId}/teams`);
+
+        return {teams: response.data};
+    } catch (err) {
+        return getResponseFromError(err);
+    }
+};
+
+/**
+ * Patch a team.
+ * See https://api.mattermost.com/#operation/PatchTeam
+ * @param {string} baseUrl - the base server URL
+ * @param {string} teamId - The team ID
+ * @param {string} patch.display_name - Display name
+ * @param {string} patch.description - Description
+ * @param {string} patch.company_name - Company name
+ * @param {string} patch.allowed_domains - Allowed domains
+ * @param {boolean} patch.allow_open_invite - Allow open invite
+ * @param {boolean} patch.group_constrained - Group constrained
+ * @return {Object} returns {team} on success or {error, status} on error
+ */
+export const apiPatchTeam = async (baseUrl, teamId, teamData) => {
+    try {
+        const response = await client.put(
+            `${baseUrl}/api/v4/teams/${teamId}/patch`,
+            teamData,
+        );
+
+        return {team: response.data};
+    } catch (err) {
+        return getResponseFromError(err);
+    }
+};
+
+/**
+ * Patch teams.
+ * @param {string} baseUrl - the base server URL
+ * @param {string} patch.display_name - Display name
+ * @param {string} patch.description - Description
+ * @param {string} patch.company_name - Company name
+ * @param {string} patch.allowed_domains - Allowed domains
+ * @param {boolean} patch.allow_open_invite - Allow open invite
+ * @param {boolean} patch.group_constrained - Group constrained
+ * @param {Array} teams - array of teams
+ */
+export const apiPatchTeams = async (baseUrl, teamData, teams = []) => {
+    let teamArray = teams;
+    if (!teamArray.length > 0) {
+        ({teams: teamArray} = await Team.apiGetTeams(baseUrl));
+    }
+
+    teamArray.forEach(async (team) => {
+        await Team.apiPatchTeam(baseUrl, team.id, teamData);
+    });
 };
 
 function generateRandomTeam(type, prefix) {
@@ -88,7 +212,13 @@ function generateRandomTeam(type, prefix) {
 export const Team = {
     apiAddUserToTeam,
     apiCreateTeam,
-    apiGetTeamMembersForUser,
+    apiDeleteTeam,
+    apiDeleteTeams,
+    apiDeleteUserFromTeam,
+    apiGetTeams,
+    apiGetTeamsForUser,
+    apiPatchTeam,
+    apiPatchTeams,
 };
 
 export default Team;

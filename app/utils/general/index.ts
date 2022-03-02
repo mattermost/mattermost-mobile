@@ -13,7 +13,7 @@ export function emptyFunction(..._args: any[]) {
 }
 
 // Generates a RFC-4122 version 4 compliant globally unique identifier.
-export const generateId = (): string => {
+export const generateId = (prefix?: string): string => {
     // implementation taken from http://stackoverflow.com/a/2117523
     let id = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx';
     id = id.replace(/[xy]/g, (c) => {
@@ -29,6 +29,11 @@ export const generateId = (): string => {
 
         return v.toString(16);
     });
+
+    if (prefix) {
+        return `${prefix}-${id}`;
+    }
+
     return id;
 };
 
