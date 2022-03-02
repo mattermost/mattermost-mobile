@@ -50,9 +50,6 @@ export default class ChannelModel extends Model {
     /** drafts : All drafts for this channel */
     drafts: Query<DraftModel>;
 
-    /** groupsChannel : Every group contained in this channel */
-    groupsChannel: Query<GroupsChannelModel>;
-
     /** posts : All posts made in the channel */
     posts: Query<PostModel>;
 

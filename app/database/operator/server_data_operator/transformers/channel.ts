@@ -36,7 +36,10 @@ export const transformChannelRecord = ({action, database, value}: TransformerArg
         channel.createAt = raw.create_at;
         channel.creatorId = raw.creator_id;
         channel.deleteAt = raw.delete_at;
-        channel.displayName = raw.display_name;
+
+        // for DM channels do not override the display name
+        // until we get the new info if there is any
+        channel.displayName = raw.display_name || record?.displayName || '';
         channel.isGroupConstrained = Boolean(raw.group_constrained);
         channel.name = raw.name;
         channel.shared = Boolean(raw.shared);

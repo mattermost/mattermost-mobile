@@ -1,7 +1,6 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {Q} from '@nozbe/watermelondb';
 import {withDatabase} from '@nozbe/watermelondb/DatabaseProvider';
 import withObservables from '@nozbe/with-observables';
 import {combineLatest, of as of$, from as from$} from 'rxjs';
@@ -18,11 +17,10 @@ import type {WithDatabaseArgs} from '@typings/database/database';
 import type ChannelModel from '@typings/database/models/servers/channel';
 import type ChannelInfoModel from '@typings/database/models/servers/channel_info';
 import type CustomEmojiModel from '@typings/database/models/servers/custom_emoji';
-import type GroupModel from '@typings/database/models/servers/group';
 import type SystemModel from '@typings/database/models/servers/system';
 import type UserModel from '@typings/database/models/servers/user';
 
-const {SERVER: {SYSTEM, USER, CHANNEL, GROUP, GROUPS_TEAM, GROUPS_CHANNEL, CUSTOM_EMOJI}} = MM_TABLES;
+const {SERVER: {SYSTEM, USER, CHANNEL, CUSTOM_EMOJI}} = MM_TABLES;
 
 type OwnProps = {
     rootId: string;
@@ -75,27 +73,6 @@ const enhanced = withObservables([], (ownProps: WithDatabaseArgs & OwnProps) => 
         }),
     );
 
-    const license = database.get<SystemModel>(SYSTEM).findAndObserve(SYSTEM_IDENTIFIERS.LICENSE).pipe(
-        switchMap(({value}) => of$(value as ClientLicense)),
-    );
-
-    const useGroupMentions = combineLatest([channel, currentUser, license]).pipe(
-        switchMap(([c, u, l]) => {
-            if (!c || l?.IsLicensed !== 'true') {
-                return of$(false);
-            }
-
-            return from$(hasPermissionForChannel(c, u, Permissions.USE_GROUP_MENTIONS, true));
-        }),
-    );
-
-    const groupsWithAllowReference = channel.pipe(switchMap(
-        (c) => database.get<GroupModel>(GROUP).query(
-            Q.experimentalJoinTables([GROUPS_TEAM, GROUPS_CHANNEL]),
-            Q.or(Q.on(GROUPS_TEAM, 'team_id', c.teamId), Q.on(GROUPS_CHANNEL, 'channel_id', c.id)),
-        ).observeWithColumns(['name'])),
-    );
-
     const channelInfo = channel.pipe(switchMap((c) => c.info.observe()));
     const membersCount = channelInfo.pipe(
         switchMap((i: ChannelInfoModel) => of$(i.memberCount)),
@@ -111,8 +88,6 @@ const enhanced = withObservables([], (ownProps: WithDatabaseArgs & OwnProps) => 
         membersCount,
         userIsOutOfOffice,
         useChannelMentions,
-        useGroupMentions,
-        groupsWithAllowReference,
         customEmojis,
     };
 });

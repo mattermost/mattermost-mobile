@@ -2,7 +2,6 @@
 // See LICENSE.txt for license information.
 
 import {fetchChannelStats, fetchMissingSidebarInfo, fetchMyChannelsForTeam, markChannelAsRead, MyChannelsRequest} from '@actions/remote/channel';
-import {fetchGroupsForTeam} from '@actions/remote/group';
 import {fetchPostsForChannel, fetchPostsForUnreadChannels} from '@actions/remote/post';
 import {MyPreferencesRequest, fetchMyPreferences} from '@actions/remote/preference';
 import {fetchConfigAndLicense} from '@actions/remote/systems';
@@ -181,11 +180,6 @@ export const deferredAppEntryActions = async (
 
         // defer fetching posts for unread channels on initial team
         fetchPostsForUnreadChannels(serverUrl, chData.channels, chData.memberships, initialChannelId);
-    }
-
-    // defer groups for team
-    if (initialTeamId) {
-        fetchGroupsForTeam(serverUrl, initialTeamId, since);
     }
 
     // defer fetch channels and unread posts for other teams

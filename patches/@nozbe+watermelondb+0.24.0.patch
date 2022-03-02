@@ -55,6 +55,22 @@ index 075a047..e5e52fa 100644
      (0, _ensureSync.default)(recordUpdater(this));
      this._isEditing = false;
      this._preparedState = 'update'; // TODO: `process.nextTick` doesn't work on React Native
+diff --git a/node_modules/@nozbe/watermelondb/WatermelonDB.podspec b/node_modules/@nozbe/watermelondb/WatermelonDB.podspec
+index 1f3af50..e9fea58 100644
+--- a/node_modules/@nozbe/watermelondb/WatermelonDB.podspec
++++ b/node_modules/@nozbe/watermelondb/WatermelonDB.podspec
+@@ -13,7 +13,10 @@ Pod::Spec.new do |s|
+   s.platforms    = { :ios => "9.0", :tvos => "9.0" }
+   s.source = { :git => "https://github.com/Nozbe/WatermelonDB.git", :tag => "v#{s.version}" }
+   s.source_files = "native/ios/**/*.{h,m,mm,swift,c,cpp}", "native/shared/**/*.{h,c,cpp}"
+-  s.public_header_files = 'native/ios/WatermelonDB/SupportingFiles/Bridging.h'
++  s.public_header_files = [
++    'native/ios/WatermelonDB/SupportingFiles/Bridging.h',
++    'native/ios/WatermelonDB/JSIInstaller.h',
++  ]
+   s.requires_arc = true
+   # simdjson is annoyingly slow without compiler optimization, disable for debugging
+   s.compiler_flags = '-Os'
 diff --git a/node_modules/@nozbe/watermelondb/native/android/src/main/java/com/nozbe/watermelondb/Database.kt b/node_modules/@nozbe/watermelondb/native/android/src/main/java/com/nozbe/watermelondb/Database.kt
 index ca31e20..b45c753 100644
 --- a/node_modules/@nozbe/watermelondb/native/android/src/main/java/com/nozbe/watermelondb/Database.kt
@@ -81,6 +97,23 @@ index ca31e20..b45c753 100644
              } else {
                  // On some systems there is some kind of lock on `/databases` folder ¯\_(ツ)_/¯
                  context.getDatabasePath("$name.db").path.replace("/databases", "")
+diff --git a/node_modules/@nozbe/watermelondb/native/ios/WatermelonDB/SupportingFiles/Bridging.h b/node_modules/@nozbe/watermelondb/native/ios/WatermelonDB/SupportingFiles/Bridging.h
+index 135118d..8324550 100644
+--- a/node_modules/@nozbe/watermelondb/native/ios/WatermelonDB/SupportingFiles/Bridging.h
++++ b/node_modules/@nozbe/watermelondb/native/ios/WatermelonDB/SupportingFiles/Bridging.h
+@@ -6,12 +6,6 @@
+ 
+ #import <React/RCTBridgeModule.h>
+ 
+-#if __has_include("JSIInstaller.h")
+-#import "JSIInstaller.h"
+-#else
+-#import "../JSIInstaller.h"
+-#endif
+-
+ #if __has_include("DatabaseDeleteHelper.h")
+ #import "DatabaseDeleteHelper.h"
+ #else
 diff --git a/node_modules/@nozbe/watermelondb/native/shared/Database.cpp b/node_modules/@nozbe/watermelondb/native/shared/Database.cpp
 index a2bd410..44e1a58 100644
 --- a/node_modules/@nozbe/watermelondb/native/shared/Database.cpp

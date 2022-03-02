@@ -1,115 +1,72 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React from 'react';
-import {StyleProp, ViewStyle} from 'react-native';
-import Animated from 'react-native-reanimated';
-
-import type {IntlShape} from 'react-intl';
-
-export interface CallbackFunctionWithoutArguments {
-    (): void;
+type GalleryManagerSharedValues = {
+    width: Animated.SharedValue<number>;
+    height: Animated.SharedValue<number>;
+    x: Animated.SharedValue<number>;
+    y: Animated.SharedValue<number>;
+    opacity: Animated.SharedValue<number>;
+    activeIndex: Animated.SharedValue<number>;
+    targetWidth: Animated.SharedValue<number>;
+    targetHeight: Animated.SharedValue<number>;
 }
 
-export interface ActionCallback {
-    (callback: CallbackFunctionWithoutArguments): void;
+type Context = { [key: string]: any };
+
+type Handler<T, TContext extends Context> = (
+  event: T,
+  context: TContext,
+) => void;
+
+type onEndHandler<T, TContext extends Context> = (
+  event: T,
+  context: TContext,
+  isCanceled: boolean,
+) => void;
+
+type ReturnHandler<T, TContext extends Context, R> = (
+  event: T,
+  context: TContext,
+) => R;
+
+interface GestureHandlers<T, TContext extends Context> {
+  onInit?: Handler<T, TContext>;
+  onEvent?: Handler<T, TContext>;
+  shouldHandleEvent?: ReturnHandler<T, TContext, boolean>;
+  shouldCancel?: ReturnHandler<T, TContext, boolean>;
+  onGesture?: Handler<T, TContext>;
+  beforeEach?: Handler<T, TContext>;
+  afterEach?: Handler<T, TContext>;
+  onStart?: Handler<T, TContext>;
+  onActive?: Handler<T, TContext>;
+  onEnd?: onEndHandler<T, TContext>;
+  onFail?: Handler<T, TContext>;
+  onCancel?: Handler<T, TContext>;
+  onFinish?: (
+    event: T,
+    context: TContext,
+    isCanceledOrFailed: boolean,
+  ) => void;
 }
 
-export interface ActionProps {
-    action: (callback: CallbackFunctionWithoutArguments) => void;
-    children: React.ReactNode;
-    style?: StyleProp<ViewStyle>;
-    visible: boolean;
-}
+type OnGestureEvent<T extends GestureHandlerGestureEvent> = (
+  event: T,
+) => void;
 
-export interface ActionsProps {
-    canDownloadFiles: boolean;
-    downloadAction: ActionCallback;
-    file: FileInfo;
-    linkAction: ActionCallback;
-}
-
-export interface AvatarProps {
-    avatarUri?: string;
-    theme: Theme;
-}
-
-export interface DetailsProps {
-    channel?: string;
-    isDirect?: boolean;
-    ownPost?: boolean;
-    user?: string;
-}
-
-export interface PrepareFileRef {
-    start(file: FileInfo, share?: boolean): Promise<string | undefined>;
-}
-
-export interface FooterProps {
-    intl: IntlShape;
-    file: FileInfo;
-}
-
-export interface FooterRef {
-    toggle(): boolean;
-    isVisible(): boolean;
-}
-
-export interface GalleryProps {
-    files: FileInfo[];
-    footerVisible: boolean;
-    height: number;
-    initialIndex: number;
-    isLandscape: boolean;
-    onClose: CallbackFunctionWithoutArguments;
-    onPageSelected: (index: number) => void;
-    onTap: CallbackFunctionWithoutArguments;
+type GalleryItemType = {
+    type: 'image' | 'video' | 'file';
+    id: string;
     width: number;
-    theme: Theme;
-}
+    height: number;
+    uri: string;
+    name: string;
+    posterUri?: string;
+    extension?: string;
+    mime_type: string;
+    authorId?: string;
+    size?: number;
+    postId?: string;
+};
 
-export interface GalleryItemProps {
-    file: FileInfo;
-    deviceHeight: number;
-    deviceWidth: number;
-    intl?: IntlShape;
-    isActive?: boolean;
-    onDoubleTap?: CallbackFunctionWithoutArguments;
-    style?: StyleProp<Animated.AnimateStyle>;
-    theme?: Theme;
-}
-
-export interface ManagedConfig {
-    [key: string]: string;
-}
-
-export interface ShowToast {
-    (text: string, duration?: number, callback?: () => void): void;
-}
-
-export interface SummaryProps {
-    avatarUri?: string;
-    channelName?: string;
-    copyPublicLink: ActionCallback;
-    displayName?: string;
-    dowloadFile: ActionCallback;
-    file: FileInfo;
-    isDirectChannel: boolean;
-    isLandscape: boolean;
-    ownPost: boolean;
-    theme: Theme;
-}
-
-export interface ToastProps {
-    theme: Theme;
-}
-
-export interface ToastRef {
-    show: ShowToast;
-}
-
-export interface ToastState {
-    animation?: Animated.CompositeAnimation;
-    duration?: number;
-    callback?: () => void;
-}
+type GalleryAction = 'none' | 'downloading' | 'copying' | 'sharing' | 'opening';
