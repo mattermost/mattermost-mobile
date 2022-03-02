@@ -16,7 +16,7 @@ import type ReactionModel from '@typings/database/models/servers/reaction';
 import type ThreadModel from '@typings/database/models/servers/thread';
 import type UserModel from '@typings/database/models/servers/user';
 
-const {CHANNEL, DRAFT, FILE, POST, POSTS_IN_THREAD, REACTION, USER} = MM_TABLES.SERVER;
+const {CHANNEL, DRAFT, FILE, POST, POSTS_IN_THREAD, REACTION, THREAD, USER} = MM_TABLES.SERVER;
 
 /**
  * The Post model is the building block of communication in the Mattermost app.
@@ -119,7 +119,7 @@ export default class PostModel extends Model {
     /** channel: The channel which is presenting this Post */
     @immutableRelation(CHANNEL, 'channel_id') channel!: Relation<ChannelModel>;
 
-    /** thread : Query returning the thread data for the post */
+    /** thread : The thread data for the post */
     @immutableRelation(THREAD, 'id') thread!: Relation<ThreadModel>;
 
     async destroyPermanently() {
