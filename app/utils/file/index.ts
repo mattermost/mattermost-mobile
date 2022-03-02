@@ -6,15 +6,17 @@ import Model from '@nozbe/watermelondb/Model';
 import * as FileSystem from 'expo-file-system';
 import mimeDB from 'mime-db';
 import {IntlShape} from 'react-intl';
-import {Platform} from 'react-native';
+import {Alert, Platform} from 'react-native';
+import AndroidOpenSettings from 'react-native-android-open-settings';
+import DeviceInfo from 'react-native-device-info';
 import {DocumentPickerResponse} from 'react-native-document-picker';
 import {Asset} from 'react-native-image-picker';
+import Permissions, {PERMISSIONS} from 'react-native-permissions';
 
 import {Files} from '@constants';
 import {generateId} from '@utils/general';
 import {deleteEntititesFile, getIOSAppGroupDetails} from '@utils/mattermost_managed';
 import {hashCode} from '@utils/security';
-import {removeProtocol} from '@utils/url';
 
 import type FileModel from '@typings/database/models/servers/file';
 
@@ -50,7 +52,7 @@ const SUPPORTED_DOCS_FORMAT = Platform.select({
 
 const SUPPORTED_VIDEO_FORMAT = Platform.select({
     ios: ['video/mp4', 'video/x-m4v', 'video/quicktime'],
-    android: ['video/3gpp', 'video/x-matroska', 'video/mp4', 'video/webm'],
+    android: ['video/3gpp', 'video/x-matroska', 'video/mp4', 'video/webm', 'video/quicktime'],
 });
 
 const types: Record<string, string> = {};
@@ -253,10 +255,9 @@ export const isImage = (file?: FileInfo | FileModel) => {
     const fi = file as FileInfo;
     const fm = file as FileModel;
 
-    const hasPreview = Boolean(fi.mini_preview || fm.imageThumbnail);
     const mimeType = fi.mime_type || fm.mimeType || '';
 
-    return (hasPreview || isGif(file) || mimeType.startsWith('image/'));
+    return (isGif(file) || mimeType.startsWith('image/'));
 };
 
 export const isDocument = (file?: FileInfo | FileModel) => {
@@ -338,9 +339,9 @@ export function getFileType(file: FileInfo): string {
     }) || 'other';
 }
 
-export function getLocalFilePathFromFile(dir: string, serverUrl: string, file: FileInfo | FileModel) {
-    if (dir && serverUrl) {
-        const server = removeProtocol(serverUrl);
+export function getLocalFilePathFromFile(serverUrl: string, file: FileInfo | FileModel) {
+    if (serverUrl) {
+        const server = hashCode(serverUrl);
         if (file?.name) {
             let extension: string | undefined = file.extension;
             let filename = file.name;
@@ -361,13 +362,13 @@ export function getLocalFilePathFromFile(dir: string, serverUrl: string, file: F
                 }
             }
 
-            return `${dir}/${server}/${filename}-${hashCode(file.id!)}.${extension}`;
+            return `${FileSystem.cacheDirectory}${server}/${filename}-${hashCode(file.id!)}.${extension}`;
         } else if (file?.id && file?.extension) {
-            return `${dir}/${server}/${file.id}.${file.extension}`;
+            return `${FileSystem.cacheDirectory}${server}/${file.id}.${file.extension}`;
         }
     }
 
-    return undefined;
+    throw new Error('File path could not be set');
 }
 
 export async function extractFileInfo(files: Array<Asset | DocumentPickerResponse | PastedFile>) {
@@ -440,3 +441,62 @@ export function uploadDisabledWarning(intl: IntlShape) {
         defaultMessage: 'File uploads from mobile are disabled.',
     });
 }
+
+export const fileExists = async (path: string) => {
+    try {
+        const filePath = Platform.select({ios: path.replace('file://', ''), default: path});
+        const info = await FileSystem.getInfoAsync(filePath);
+        return info.exists;
+    } catch {
+        return false;
+    }
+};
+
+export const hasWriteStoragePermission = async (intl: IntlShape) => {
+    if (Platform.OS === 'ios') {
+        return true;
+    }
+
+    const storagePermission = PERMISSIONS.ANDROID.WRITE_EXTERNAL_STORAGE;
+    let permissionRequest;
+    const hasPermissionToStorage = await Permissions.check(storagePermission);
+    switch (hasPermissionToStorage) {
+        case Permissions.RESULTS.DENIED:
+            permissionRequest = await Permissions.request(storagePermission);
+            return permissionRequest === Permissions.RESULTS.GRANTED;
+        case Permissions.RESULTS.BLOCKED: {
+            const applicationName = DeviceInfo.getApplicationName();
+            const title = intl.formatMessage(
+                {
+                    id: 'mobile.storage_permission_denied_title',
+                    defaultMessage:
+                        '{applicationName} would like to access your files',
+                },
+                {applicationName},
+            );
+            const text = intl.formatMessage({
+                id: 'mobile.write_storage_permission_denied_description',
+                defaultMessage:
+                    'Save files to your device. Open Settings to grant {applicationName} write access to files on this device.',
+            });
+
+            Alert.alert(title, text, [
+                {
+                    text: intl.formatMessage({
+                        id: 'mobile.permission_denied_dismiss',
+                        defaultMessage: "Don't Allow",
+                    }),
+                },
+                {
+                    text: intl.formatMessage({
+                        id: 'mobile.permission_denied_retry',
+                        defaultMessage: 'Settings',
+                    }),
+                    onPress: () => AndroidOpenSettings.appDetailsSettings(),
+                },
+            ]);
+            return false;
+        }
+        default: return true;
+    }
+};

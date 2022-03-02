@@ -48,6 +48,11 @@ MattermostBucket* bucket = nil;
     bucket = [[MattermostBucket alloc] init];
   }
   
+  if ( UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPad )
+  {
+    _allowRotation = YES;
+  }
+  
   // Clear keychain on first run in case of reinstallation
   if (![[NSUserDefaults standardUserDefaults] objectForKey:@"FirstRun"]) {
 
@@ -207,6 +212,14 @@ RNHWKeyboardEvent *hwKeyEvent = nil;
 
 -(void)applicationWillTerminate:(UIApplication *)application {
   [bucket setPreference:@"ApplicationIsForeground" value:@"false"];
+}
+
+- (UIInterfaceOrientationMask)application:(UIApplication *)application supportedInterfaceOrientationsForWindow:(UIWindow *)window {
+  if (_allowRotation == YES) {
+        return UIInterfaceOrientationMaskAllButUpsideDown;
+    }else{
+        return (UIInterfaceOrientationMaskPortrait);
+    }
 }
 
 @end

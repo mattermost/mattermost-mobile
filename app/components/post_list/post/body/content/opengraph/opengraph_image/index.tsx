@@ -1,21 +1,26 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback, useRef} from 'react';
-import {useWindowDimensions, View} from 'react-native';
+import React, {useMemo, useRef} from 'react';
+import {useWindowDimensions} from 'react-native';
 import FastImage, {Source} from 'react-native-fast-image';
+import {TapGestureHandler} from 'react-native-gesture-handler';
+import Animated from 'react-native-reanimated';
 
-import TouchableWithFeedback from '@components/touchable_with_feedback';
 import {Device as DeviceConstant, View as ViewConstants} from '@constants';
-import {openGallerWithMockFile} from '@utils/gallery';
+import {GalleryInit} from '@context/gallery';
+import {useGalleryItem} from '@hooks/gallery';
+import {lookupMimeType} from '@utils/file';
+import {openGalleryAtIndex} from '@utils/gallery';
 import {generateId} from '@utils/general';
 import {calculateDimensions} from '@utils/images';
 import {BestImage, getNearestPoint} from '@utils/opengraph';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
-import {isValidUrl} from '@utils/url';
+import {extractFilenameFromUrl, isValidUrl} from '@utils/url';
 
 type OpengraphImageProps = {
     isReplyPost: boolean;
+    location: string;
     metadata: PostMetadata;
     openGraphImages: never[];
     postId: string;
@@ -49,14 +54,16 @@ const getViewPostWidth = (isReplyPost: boolean, deviceHeight: number, deviceWidt
     return viewPortWidth - tabletOffset;
 };
 
-const OpengraphImage = ({isReplyPost, metadata, openGraphImages, postId, theme}: OpengraphImageProps) => {
-    const fileId = useRef(generateId()).current;
+const OpengraphImage = ({isReplyPost, location, metadata, openGraphImages, postId, theme}: OpengraphImageProps) => {
+    const fileId = useRef(generateId('uid')).current;
     const dimensions = useWindowDimensions();
     const style = getStyleSheet(theme);
-    const bestDimensions = {
+    const galleryIdentifier = `${postId}-OpenGraphImage-${location}`;
+
+    const bestDimensions = useMemo(() => ({
         height: MAX_IMAGE_HEIGHT,
         width: getViewPostWidth(isReplyPost, dimensions.height, dimensions.width),
-    };
+    }), [isReplyPost, dimensions]);
     const bestImage = getNearestPoint(bestDimensions, openGraphImages, 'width', 'height') as BestImage;
     const imageUrl = (bestImage.secure_url || bestImage.url)!;
     const imagesMetadata = metadata.images;
@@ -81,30 +88,50 @@ const OpengraphImage = ({isReplyPost, metadata, openGraphImages, postId, theme}:
         imageDimensions = calculateDimensions(ogImage.height, ogImage.width, getViewPostWidth(isReplyPost, dimensions.height, dimensions.width));
     }
 
-    const onPress = useCallback(() => {
-        openGallerWithMockFile(imageUrl, postId, imageDimensions.height, imageDimensions.width, fileId);
-    }, []);
+    const onPress = () => {
+        const item: GalleryItemType = {
+            id: fileId,
+            postId,
+            uri: imageUrl,
+            width: imageDimensions.width,
+            height: imageDimensions.height,
+            name: extractFilenameFromUrl(imageUrl) || 'openGraph.png',
+            mime_type: lookupMimeType(imageUrl) || 'images/png',
+            type: 'image',
+        };
+        openGalleryAtIndex(galleryIdentifier, 0, [item]);
+    };
 
     const source: Source = {};
     if (isValidUrl(imageUrl)) {
         source.uri = imageUrl;
     }
 
+    const {ref, onGestureEvent, styles} = useGalleryItem(
+        galleryIdentifier,
+        0,
+        onPress,
+    );
+
     const dimensionsStyle = {width: imageDimensions.width, height: imageDimensions.height};
     return (
-        <View style={[style.imageContainer, dimensionsStyle]}>
-            <TouchableWithFeedback
-                onPress={onPress}
-                type={'none'}
-            >
-                <FastImage
-                    style={[style.image, dimensionsStyle]}
-                    source={source}
-                    resizeMode='contain'
-                    nativeID={`image-${fileId}`}
-                />
-            </TouchableWithFeedback>
-        </View>
+        <GalleryInit galleryIdentifier={galleryIdentifier}>
+            <Animated.View style={[styles, style.imageContainer, dimensionsStyle]}>
+                <TapGestureHandler onGestureEvent={onGestureEvent}>
+                    <Animated.View testID={`OpenGraphImage-${fileId}`}>
+                        <FastImage
+                            style={[style.image, dimensionsStyle]}
+                            source={source}
+
+                            // @ts-expect-error legacy ref
+                            ref={ref}
+                            resizeMode='contain'
+                            nativeID={`OpenGraphImage-${fileId}`}
+                        />
+                    </Animated.View>
+                </TapGestureHandler>
+            </Animated.View>
+        </GalleryInit>
     );
 };
 

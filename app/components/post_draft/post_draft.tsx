@@ -1,10 +1,11 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback, useEffect, useRef} from 'react';
-import {DeviceEventEmitter, Platform} from 'react-native';
+import React, {useCallback, useEffect, useRef, useState} from 'react';
+import {DeviceEventEmitter, Platform, View} from 'react-native';
 import {KeyboardTrackingView, KeyboardTrackingViewRef} from 'react-native-keyboard-tracking-view';
 
+import Autocomplete from '@components/autocomplete';
 import {PostDraft as PostDraftConstants, View as ViewConstants} from '@constants';
 import {useIsTablet} from '@hooks/device';
 
@@ -20,6 +21,9 @@ type Props = {
     channelIsArchived?: boolean;
     channelIsReadOnly: boolean;
     deactivatedChannel: boolean;
+    files?: FileInfo[];
+    isSearch?: boolean;
+    message?: string;
     rootId?: string;
     scrollViewNativeID?: string;
 }
@@ -32,11 +36,17 @@ export default function PostDraft({
     channelIsArchived,
     channelIsReadOnly,
     deactivatedChannel,
-    rootId,
+    files,
+    isSearch,
+    message = '',
+    rootId = '',
     scrollViewNativeID,
 }: Props) {
     const keyboardTracker = useRef<KeyboardTrackingViewRef>(null);
     const resetScrollViewAnimationFrame = useRef<number>();
+    const [value, setValue] = useState(message);
+    const [cursorPosition, setCursorPosition] = useState(message.length);
+    const [postInputTop, setPostInputTop] = useState(0);
     const isTablet = useIsTablet();
 
     const updateNativeScrollView = useCallback((scrollViewNativeIDToUpdate: string) => {
@@ -86,22 +96,52 @@ export default function PostDraft({
         <DraftHandler
             testID={testID}
             channelId={channelId}
+            cursorPosition={cursorPosition}
+            files={files}
             rootId={rootId}
+            updateCursorPosition={setCursorPosition}
+            updatePostInputTop={setPostInputTop}
+            updateValue={setValue}
+            value={value}
+        />
+    );
+
+    const autoComplete = (
+        <Autocomplete
+            postInputTop={postInputTop}
+            updateValue={setValue}
+            rootId={rootId}
+            channelId={channelId}
+            offsetY={0}
+            cursorPosition={cursorPosition}
+            value={value}
+            isSearch={isSearch}
+            hasFilesAttached={Boolean(files?.length)}
         />
     );
 
     if (Platform.OS === 'android') {
-        return draftHandler;
+        return (
+            <>
+                {autoComplete}
+                {draftHandler}
+            </>
+        );
     }
 
     return (
-        <KeyboardTrackingView
-            accessoriesContainerID={accessoriesContainerID}
-            ref={keyboardTracker}
-            scrollViewNativeID={scrollViewNativeID}
-            viewInitialOffsetY={isTablet ? ViewConstants.BOTTOM_TAB_HEIGHT : 0}
-        >
-            {draftHandler}
-        </KeyboardTrackingView>
+        <>
+            <View nativeID={accessoriesContainerID}>
+                {autoComplete}
+            </View>
+            <KeyboardTrackingView
+                accessoriesContainerID={accessoriesContainerID}
+                ref={keyboardTracker}
+                scrollViewNativeID={scrollViewNativeID}
+                viewInitialOffsetY={isTablet ? ViewConstants.BOTTOM_TAB_HEIGHT : 0}
+            >
+                {draftHandler}
+            </KeyboardTrackingView>
+        </>
     );
 }

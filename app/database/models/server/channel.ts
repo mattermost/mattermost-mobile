@@ -10,7 +10,6 @@ import {MM_TABLES} from '@constants/database';
 import type ChannelInfoModel from '@typings/database/models/servers/channel_info';
 import type ChannelMembershipModel from '@typings/database/models/servers/channel_membership';
 import type DraftModel from '@typings/database/models/servers/draft';
-import type GroupsChannelModel from '@typings/database/models/servers/groups_channel';
 import type MyChannelModel from '@typings/database/models/servers/my_channel';
 import type MyChannelSettingsModel from '@typings/database/models/servers/my_channel_settings';
 import type PostModel from '@typings/database/models/servers/post';
@@ -24,7 +23,6 @@ const {
     CHANNEL_INFO,
     CHANNEL_MEMBERSHIP,
     DRAFT,
-    GROUPS_CHANNEL,
     MY_CHANNEL,
     MY_CHANNEL_SETTINGS,
     POSTS_IN_CHANNEL,
@@ -51,9 +49,6 @@ export default class ChannelModel extends Model {
 
         /** A CHANNEL can be associated with multiple DRAFT (relationship is 1:N) */
         [DRAFT]: {type: 'has_many', foreignKey: 'channel_id'},
-
-        /** A CHANNEL can be associated with multiple GROUPS_CHANNEL  (relationship is 1:N) */
-        [GROUPS_CHANNEL]: {type: 'has_many', foreignKey: 'channel_id'},
 
         /** A CHANNEL can be associated with multiple POSTS_IN_CHANNEL (relationship is 1:N) */
         [POSTS_IN_CHANNEL]: {type: 'has_many', foreignKey: 'channel_id'},
@@ -109,9 +104,6 @@ export default class ChannelModel extends Model {
 
     /** drafts : All drafts for this channel */
     @children(DRAFT) drafts!: DraftModel[];
-
-    /** groupsChannel : Every group contained in this channel */
-    @children(GROUPS_CHANNEL) groupsChannel!: GroupsChannelModel[];
 
     /** posts : All posts made in that channel */
     @children(POST) posts!: PostModel[];

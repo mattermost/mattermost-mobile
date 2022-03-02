@@ -6,10 +6,10 @@ import Clipboard from '@react-native-community/clipboard';
 import React, {useCallback} from 'react';
 import {useIntl} from 'react-intl';
 import {Keyboard, StyleSheet, Text, TextStyle, View} from 'react-native';
+import {TouchableOpacity} from 'react-native-gesture-handler';
 
 import FormattedText from '@components/formatted_text';
 import SlideUpPanelItem, {ITEM_HEIGHT} from '@components/slide_up_panel_item';
-import TouchableWithFeedback from '@components/touchable_with_feedback';
 import {useTheme} from '@context/theme';
 import {bottomSheet, dismissBottomSheet, goToScreen} from '@screens/navigation';
 import {getDisplayNameForLanguage} from '@utils/markdown';
@@ -226,10 +226,9 @@ const MarkdownCodeBlock = ({language = '', content, textStyle}: MarkdownCodeBloc
     };
 
     return (
-        <TouchableWithFeedback
+        <TouchableOpacity
             onPress={handlePress}
             onLongPress={handleLongPress}
-            type={'opacity'}
         >
             <View style={style.container}>
                 <View style={style.lineNumbers}>
@@ -245,7 +244,7 @@ const MarkdownCodeBlock = ({language = '', content, textStyle}: MarkdownCodeBloc
                 </View>
                 {renderLanguageBlock()}
             </View>
-        </TouchableWithFeedback>
+        </TouchableOpacity>
     );
 };
 

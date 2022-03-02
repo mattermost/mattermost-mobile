@@ -38,7 +38,8 @@ const Status = ({author, statusSize, statusStyle, theme}: Props) => {
         styles.statusWrapper,
         statusStyle,
         {borderRadius: statusSize / 2},
-    ]), []);
+    ]), [statusStyle]);
+
     if (author?.status && !author.isBot) {
         return (
             <View
