@@ -7,6 +7,7 @@ import Model, {Associations} from '@nozbe/watermelondb/Model';
 
 import {MM_TABLES} from '@constants/database';
 
+import type CategoryChannelModel from '@typings/database/models/servers/category_channel';
 import type ChannelInfoModel from '@typings/database/models/servers/channel_info';
 import type ChannelMembershipModel from '@typings/database/models/servers/channel_membership';
 import type DraftModel from '@typings/database/models/servers/draft';
@@ -126,6 +127,9 @@ export default class ChannelModel extends Model {
 
     /** settings: User specific settings/preferences for this channel */
     @immutableRelation(MY_CHANNEL_SETTINGS, 'id') settings!: Relation<MyChannelSettingsModel>;
+
+    /** categoryChannel : Query returning the membership data for the current user if it belongs to this channel */
+    @immutableRelation(CATEGORY_CHANNEL, 'channel_id') categoryChannel!: Relation<CategoryChannelModel>;
 
     toApi = (): Channel => {
         return {

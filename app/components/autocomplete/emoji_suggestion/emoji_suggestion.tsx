@@ -49,7 +49,7 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
         listView: {
             paddingTop: 16,
             backgroundColor: theme.centerChannelBg,
-            borderRadius: 4,
+            borderRadius: 8,
         },
         row: {
             flexDirection: 'row',
@@ -167,6 +167,7 @@ const EmojiSuggestion = ({
 
     const renderItem = useCallback(({item}: {item: string}) => {
         const completeItemSuggestion = () => completeSuggestion(item);
+
         return (
             <TouchableWithFeedback
                 onPress={completeItemSuggestion}
@@ -201,6 +202,10 @@ const EmojiSuggestion = ({
             search.cancel();
         };
     }, [searchTerm]);
+
+    if (!data.length) {
+        return null;
+    }
 
     return (
         <FlatList
