@@ -3,7 +3,7 @@
 
 import React, {useCallback, useEffect, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
-import {Alert, Keyboard, KeyboardType, Platform, SafeAreaView, View} from 'react-native';
+import {Alert, Keyboard, KeyboardType, Platform, SafeAreaView, useWindowDimensions, View} from 'react-native';
 import {Navigation} from 'react-native-navigation';
 
 import {deletePost, editPost} from '@actions/remote/post';
@@ -71,7 +71,8 @@ const EditPost = ({componentId, maxPostSize, post, closeButton, hasFilesAttached
     const [errorExtra, setErrorExtra] = useState<string | undefined>();
     const [rightButtonEnabled, setRightButtonEnabled] = useState(false);
     const [isUpdating, setIsUpdating] = useState(false);
-    const [postInputTop, setPostInputTop] = useState(0);
+    const {height} = useWindowDimensions();
+
     const postInputRef = useRef<PostInputRef>(null);
     const theme = useTheme();
     const intl = useIntl();
@@ -255,19 +256,23 @@ const EditPost = ({componentId, maxPostSize, post, closeButton, hasFilesAttached
                     />
                 </View>
             </SafeAreaView>
-            <View style={{backgroundColor: 'red'}}>
-                <AutoComplete
-                    channelId={post.channelId}
-                    cursorPosition={cursorPosition}
-                    hasFilesAttached={hasFilesAttached}
-                    nestedScrollEnabled={true}
-                    offsetY={8}
-                    postInputTop={postInputTop}
-                    rootId={post.rootId}
-                    updateValue={onChangeText}
-                    value={postMessage}
-                />
-            </View>
+            <AutoComplete
+                channelId={post.channelId}
+                hasFilesAttached={hasFilesAttached}
+                nestedScrollEnabled={true}
+                rootId={post.rootId}
+                updateValue={onChangeText}
+                value={postMessage}
+                cursorPosition={cursorPosition}
+                postInputTop={Platform.select({
+                    android: height / 4,
+                    ios: height / 3.5,
+                })!}
+                offsetY={Platform.select({
+                    android: 10,
+                    ios: 280,
+                })}
+            />
 
         </>
     );

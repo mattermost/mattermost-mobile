@@ -50,17 +50,16 @@ const PostInput = forwardRef<PostInputRef, PostInputProps>(({keyboardType, messa
 
     const styles = getStyleSheet(theme);
     const placeholder = intl.formatMessage({id: 'edit_post.editPost', defaultMessage: 'Edit the post...'});
-    const inputHeight = Platform.select({
-        android: baseHeight - 10,
-        ios: baseHeight,
-    });
+    const inputHeight = Platform.select({android: baseHeight - 10, ios: baseHeight});
 
     const onSelectionChange = useCallback((event) => {
         onTextSelectionChange(event.nativeEvent.selection.end);
     }, [onTextSelectionChange]);
 
     return (
-        <View style={[styles.inputContainer, {height}, hasError && {marginTop: 0}]}>
+        <View
+            style={[styles.inputContainer, {height: inputHeight}, hasError && {marginTop: 0}]}
+        >
             <TextInput
                 autoFocus={true}
                 blurOnSubmit={false}
@@ -73,7 +72,7 @@ const PostInput = forwardRef<PostInputRef, PostInputProps>(({keyboardType, messa
                 onSelectionChange={onSelectionChange}
                 placeholder={placeholder}
                 placeholderTextColor={changeOpacity(theme.centerChannelColor, 0.4)}
-                style={[styles.input, {inputHeight}]}
+                style={[styles.input, {height: inputHeight}]}
                 testID='edit_post.message.input'
                 underlineColorAndroid='transparent'
                 value={message}
