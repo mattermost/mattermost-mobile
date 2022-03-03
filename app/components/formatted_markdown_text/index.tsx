@@ -40,7 +40,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             opacity: 1,
         },
         touchableStyle: {
-            top: Platform.select({ios: 2, default: 4}),
+            top: Platform.select({ios: 2, default: 6}),
         },
     };
 });
