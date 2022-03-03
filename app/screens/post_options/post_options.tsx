@@ -33,20 +33,10 @@ type PostOptionsProps = {
     location: typeof Screens[keyof typeof Screens];
     post: PostModel;
     thread: Partial<PostModel>;
+    componentId: string;
 };
 
-const PostOptions = ({
-    canAddReaction,
-    canDelete,
-    canEdit,
-    canMarkAsUnread,
-    canPin,
-    canReply,
-    isSaved,
-    location,
-    post,
-    thread,
-}: PostOptionsProps) => {
+const PostOptions = ({canAddReaction, canDelete, canEdit, canMarkAsUnread, canPin, canReply, isSaved, location, post, thread, componentId}: PostOptionsProps) => {
     const managedConfig = useManagedConfig();
     const isSystemPost = isSystemMessage(post);
 
@@ -91,7 +81,12 @@ const PostOptions = ({
                         postId={post.id}
                     />
                 }
-                {canEdit && <EditOption post={post}/>}
+                {canEdit &&
+                    <EditOption
+                        post={post}
+                        componentId={componentId}
+                    />
+                }
                 {canDelete && <DeletePostOption postId={post.id}/>}
             </>
         );
