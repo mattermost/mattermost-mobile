@@ -1,6 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {General} from '@constants';
 import {MM_TABLES} from '@constants/database';
 import {prepareBaseRecord} from '@database/operator/server_data_operator/transformers/index';
 import {OperationType} from '@typings/database/enums';
@@ -8,12 +9,14 @@ import {OperationType} from '@typings/database/enums';
 import type {TransformerArgs} from '@typings/database/database';
 import type ChannelModel from '@typings/database/models/servers/channel';
 import type ChannelInfoModel from '@typings/database/models/servers/channel_info';
+import type ChannelMembershipModel from '@typings/database/models/servers/channel_membership';
 import type MyChannelModel from '@typings/database/models/servers/my_channel';
 import type MyChannelSettingsModel from '@typings/database/models/servers/my_channel_settings';
 
 const {
     CHANNEL,
     CHANNEL_INFO,
+    CHANNEL_MEMBERSHIP,
     MY_CHANNEL,
     MY_CHANNEL_SETTINGS,
 } = MM_TABLES.SERVER;
@@ -37,9 +40,25 @@ export const transformChannelRecord = ({action, database, value}: TransformerArg
         channel.creatorId = raw.creator_id;
         channel.deleteAt = raw.delete_at;
 
-        // for DM channels do not override the display name
+        // for DM & GM's  channels do not override the display name
         // until we get the new info if there is any
-        channel.displayName = raw.display_name || record?.displayName || '';
+        let displayName;
+        if (raw.type === General.DM_CHANNEL && record?.displayName) {
+            displayName = raw.display_name || record?.displayName;
+        } else if (raw.type === General.GM_CHANNEL) {
+            const rawMembers = raw.display_name.split(',').length;
+            const recordMembers = record?.displayName.split(',').length || rawMembers;
+
+            if (recordMembers < rawMembers) {
+                displayName = record.displayName;
+            } else {
+                displayName = raw.display_name;
+            }
+        } else {
+            displayName = raw.display_name;
+        }
+
+        channel.displayName = displayName;
         channel.isGroupConstrained = Boolean(raw.group_constrained);
         channel.name = raw.name;
         channel.shared = Boolean(raw.shared);
@@ -144,3 +163,30 @@ export const transformMyChannelRecord = ({action, database, value}: TransformerA
     }) as Promise<MyChannelModel>;
 };
 
+/**
+ * transformChannelMembershipRecord: Prepares a record of the SERVER database 'ChannelMembership' table for update or create actions.
+ * @param {TransformerArgs} operator
+ * @param {Database} operator.database
+ * @param {RecordPair} operator.value
+ * @returns {Promise<ChannelMembershipModel>}
+ */
+export const transformChannelMembershipRecord = ({action, database, value}: TransformerArgs): Promise<ChannelMembershipModel> => {
+    const raw = value.raw as ChannelMembership;
+    const record = value.record as ChannelMembershipModel;
+    const isCreateAction = action === OperationType.CREATE;
+
+    // If isCreateAction is true, we will use the id (API response) from the RAW, else we shall use the existing record id from the database
+    const fieldsMapper = (channelMember: ChannelMembershipModel) => {
+        channelMember._raw.id = isCreateAction ? (raw?.id ?? channelMember.id) : record.id;
+        channelMember.channelId = raw.channel_id;
+        channelMember.userId = raw.user_id;
+    };
+
+    return prepareBaseRecord({
+        action,
+        database,
+        tableName: CHANNEL_MEMBERSHIP,
+        value,
+        fieldsMapper,
+    }) as Promise<ChannelMembershipModel>;
+};
