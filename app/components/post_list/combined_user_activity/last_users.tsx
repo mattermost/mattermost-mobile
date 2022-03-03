@@ -34,7 +34,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             lineHeight: 20,
         },
         touchableStyle: {
-            top: Platform.select({ios: 3, default: 3}),
+            top: Platform.select({ios: 3, default: 5}),
         },
     };
 });
