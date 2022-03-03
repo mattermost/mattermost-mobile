@@ -61,9 +61,9 @@ type EditPostProps = {
     post: PostModel;
     maxPostSize: number;
     hasFilesAttached: boolean;
-    canEdit: boolean;
+    canDelete: boolean;
 }
-const EditPost = ({componentId, maxPostSize, post, closeButton, hasFilesAttached, canEdit}: EditPostProps) => {
+const EditPost = ({componentId, maxPostSize, post, closeButton, hasFilesAttached, canDelete}: EditPostProps) => {
     const [keyboardType, setKeyboardType] = useState<KeyboardType>('default');
     const [postMessage, setPostMessage] = useState(post.message);
     const [cursorPosition, setCursorPosition] = useState(0);
