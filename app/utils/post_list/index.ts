@@ -326,7 +326,6 @@ export function generateCombinedPost(combinedId: string, systemPosts: PostModel[
         type: Post.POST_TYPES.COMBINED_USER_ACTIVITY as PostType,
         user_id: '',
         metadata: {},
-        participants: null,
     };
 }
 

@@ -36,7 +36,6 @@ export const sendAddToChannelEphemeralPost = async (serverUrl: string, user: Use
             pending_post_id: '',
             reply_count: 0,
             metadata: {},
-            participants: null,
             root_id: postRootId,
             props: {
                 username: user.username,

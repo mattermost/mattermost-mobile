@@ -28,6 +28,8 @@ import {
     TeamSchema,
     TeamSearchHistorySchema,
     TermsOfServiceSchema,
+    ThreadSchema,
+    ThreadParticipantSchema,
     UserSchema,
 } from './table_schemas';
 
@@ -58,6 +60,8 @@ export const serverSchema: AppSchema = appSchema({
         TeamSchema,
         TeamSearchHistorySchema,
         TermsOfServiceSchema,
+        ThreadSchema,
+        ThreadParticipantSchema,
         UserSchema,
     ],
 });
