@@ -11,14 +11,19 @@ import {MM_TABLES, SYSTEM_IDENTIFIERS} from '@constants/database';
 import EditPost from './edit_post';
 
 import type {WithDatabaseArgs} from '@typings/database/database';
+import type PostModel from '@typings/database/models/servers/post';
 import type SystemModel from '@typings/database/models/servers/system';
 
-const enhance = withObservables([], ({database}: WithDatabaseArgs) => {
+const enhance = withObservables([], ({database, post}: WithDatabaseArgs & { post: PostModel}) => {
     const maxPostSize = database.get<SystemModel>(MM_TABLES.SERVER.SYSTEM).findAndObserve(SYSTEM_IDENTIFIERS.CONFIG).pipe(
         switchMap(({value}) => of$(value.MaxPostSize)),
     );
+
+    const hasFilesAttached = post.files.observe().pipe(switchMap((files) => of$(files?.length > 0)));
+
     return {
         maxPostSize,
+        hasFilesAttached,
     };
 });
 

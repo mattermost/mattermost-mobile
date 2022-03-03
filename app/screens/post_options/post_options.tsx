@@ -105,6 +105,7 @@ const PostOptions = ({canAddReaction, canDelete, canEdit, canMarkAsUnread, canPi
                     <EditOption
                         post={post}
                         componentId={componentId}
+                        canEdit={canEdit}
                     />
                 }
                 {canDelete && <DeletePostOption postId={post.id}/>}

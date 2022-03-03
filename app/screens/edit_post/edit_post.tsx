@@ -60,9 +60,10 @@ type EditPostProps = {
     closeButton: string;
     post: PostModel;
     maxPostSize: number;
+    hasFilesAttached: boolean;
+    canEdit: boolean;
 }
-
-const EditPost = ({componentId, maxPostSize, post, closeButton}: EditPostProps) => {
+const EditPost = ({componentId, maxPostSize, post, closeButton, hasFilesAttached, canEdit}: EditPostProps) => {
     const [keyboardType, setKeyboardType] = useState<KeyboardType>('default');
     const [postMessage, setPostMessage] = useState(post.message);
     const [cursorPosition, setCursorPosition] = useState(0);
@@ -71,7 +72,6 @@ const EditPost = ({componentId, maxPostSize, post, closeButton}: EditPostProps) 
     const [rightButtonEnabled, setRightButtonEnabled] = useState(false);
     const [isUpdating, setIsUpdating] = useState(false);
     const [postInputTop, setPostInputTop] = useState(0);
-
     const postInputRef = useRef<PostInputRef>(null);
     const theme = useTheme();
     const intl = useIntl();

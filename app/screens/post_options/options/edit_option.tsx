@@ -18,8 +18,9 @@ import type PostModel from '@typings/database/models/servers/post';
 type Props = {
     post: PostModel;
     componentId: string;
+    canEdit: boolean;
 }
-const EditOption = ({post, componentId}: Props) => {
+const EditOption = ({post, componentId, canEdit}: Props) => {
     const intl = useIntl();
     const theme = useTheme();
     const isTablet = useIsTablet();
@@ -31,7 +32,7 @@ const EditOption = ({post, componentId}: Props) => {
         await dismissBottomSheet(Screens.POST_OPTIONS);
         const title = intl.formatMessage({id: 'mobile.edit_post.title', defaultMessage: 'Editing Message'});
         const closeButton = CompassIcon.getImageSourceSync('close', 24, theme.sidebarHeaderTextColor);
-        const passProps = {post, closeButton};
+        const passProps = {post, closeButton, canEdit};
         const options = {modal: {swipeToDismiss: false}};
         showModal(Screens.EDIT_POST, title, passProps, options);
     }, [post]);
