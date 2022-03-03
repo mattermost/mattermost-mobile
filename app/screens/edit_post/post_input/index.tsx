@@ -33,10 +33,10 @@ type PostInputProps = {
     keyboardType: KeyboardType;
     message: string;
     hasError: boolean;
-    onPostSelectionChange: (curPos: number) => void;
+    onTextSelectionChange: (curPos: number) => void;
     onChangeText: (text: string) => void;
 }
-const PostInput = forwardRef<PostInputRef, PostInputProps>(({keyboardType, message, onChangeText, onPostSelectionChange, hasError}: PostInputProps, ref) => {
+const PostInput = forwardRef<PostInputRef, PostInputProps>(({keyboardType, message, onChangeText, onTextSelectionChange, hasError}: PostInputProps, ref) => {
     const theme = useTheme();
     const intl = useIntl();
     const {height} = useWindowDimensions();
@@ -56,8 +56,8 @@ const PostInput = forwardRef<PostInputRef, PostInputProps>(({keyboardType, messa
     });
 
     const onSelectionChange = useCallback((event) => {
-        onPostSelectionChange(event.nativeEvent.selection.end);
-    }, [onPostSelectionChange]);
+        onTextSelectionChange(event.nativeEvent.selection.end);
+    }, [onTextSelectionChange]);
 
     return (
         <View style={[styles.inputContainer, {height}, hasError && {marginTop: 0}]}>

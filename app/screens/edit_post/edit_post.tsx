@@ -117,11 +117,11 @@ const EditPost = ({componentId, maxPostSize, post, closeButton}: EditPostProps) 
     useDidUpdate(() => {
         // Workaround to avoid iOS emdash autocorrect in Code Blocks
         if (Platform.OS === 'ios') {
-            onPostSelectionChange();
+            onTextSelectionChange();
         }
     }, [postMessage]);
 
-    const onPostSelectionChange = useCallback((curPos: number = cursorPosition) => {
+    const onTextSelectionChange = useCallback((curPos: number = cursorPosition) => {
         if (Platform.OS === 'ios') {
             setKeyboardType(switchKeyboardForCodeBlocks(postMessage, curPos));
         }
@@ -220,7 +220,7 @@ const EditPost = ({componentId, maxPostSize, post, closeButton}: EditPostProps) 
                         keyboardType={keyboardType}
                         message={postMessage}
                         onChangeText={onPostChangeText}
-                        onPostSelectionChange={onPostSelectionChange}
+                        onTextSelectionChange={onTextSelectionChange}
                         ref={postInputRef}
                     />
                 </View>
