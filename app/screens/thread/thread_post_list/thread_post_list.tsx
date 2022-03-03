@@ -27,7 +27,6 @@ const edges: Edge[] = ['bottom'];
 
 const styles = StyleSheet.create({
     flex: {flex: 1},
-    emptyFooter: {height: 200},
 });
 
 const ThreadPostList = ({
@@ -47,9 +46,6 @@ const ThreadPostList = ({
             currentTimezone={currentTimezone}
             currentUsername={currentUsername}
             isTimezoneEnabled={isTimezoneEnabled}
-            footer={
-                <View style={styles.emptyFooter}/>
-            }
             lastViewedAt={lastViewedAt}
             location={Screens.THREAD}
             nativeID={nativeID}

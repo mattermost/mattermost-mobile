@@ -8,7 +8,7 @@ import {Screens} from '@app/constants';
 import CompassIcon from '@components/compass_icon';
 import TouchableWithFeedback from '@components/touchable_with_feedback';
 import {SEARCH} from '@constants/screens';
-import {goToScreen} from '@screens/navigation';
+import {showModal} from '@screens/navigation';
 import {preventDoubleTap} from '@utils/tap';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 
@@ -50,7 +50,7 @@ const HeaderReply = ({commentCount, location, post, theme}: HeaderReplyProps) =>
 
     const onPress = useCallback(preventDoubleTap(() => {
         const rootId = post.rootId || post.id;
-        goToScreen(Screens.THREAD, '', {rootId}, {topBar: {visible: false}});
+        showModal(Screens.THREAD, '', {rootId});
     }), []);
 
     return (

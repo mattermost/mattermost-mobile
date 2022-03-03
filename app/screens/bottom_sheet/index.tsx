@@ -19,24 +19,27 @@ import Indicator from './indicator';
 
 type SlideUpPanelProps = {
     closeButtonId?: string;
+    componentId?: string;
     initialSnapIndex?: number;
     renderContent: () => ReactNode;
     snapPoints?: Array<string | number>;
 }
 
-const BottomSheet = ({closeButtonId, initialSnapIndex = 0, renderContent, snapPoints = ['90%', '50%', 50]}: SlideUpPanelProps) => {
+const BottomSheet = ({closeButtonId, componentId: screenComponentId, initialSnapIndex = 0, renderContent, snapPoints = ['90%', '50%', 50]}: SlideUpPanelProps) => {
     const sheetRef = useRef<RNBottomSheet>(null);
     const dimensions = useWindowDimensions();
     const isTablet = useIsTablet();
     const theme = useTheme();
     const lastSnap = snapPoints.length - 1;
 
+    const componentId = isTablet && screenComponentId ? screenComponentId : Screens.BOTTOM_SHEET;
+
     useEffect(() => {
         const listener = DeviceEventEmitter.addListener(Events.CLOSE_BOTTOM_SHEET, () => {
             if (sheetRef.current) {
                 sheetRef.current.snapTo(lastSnap);
             } else {
-                dismissModal({componentId: Screens.BOTTOM_SHEET});
+                dismissModal({componentId});
             }
         });
 
@@ -48,7 +51,7 @@ const BottomSheet = ({closeButtonId, initialSnapIndex = 0, renderContent, snapPo
             if (sheetRef.current) {
                 sheetRef.current.snapTo(1);
             } else {
-                dismissModal({componentId: Screens.BOTTOM_SHEET});
+                dismissModal({componentId});
             }
             return true;
         });
@@ -65,7 +68,7 @@ const BottomSheet = ({closeButtonId, initialSnapIndex = 0, renderContent, snapPo
     useEffect(() => {
         const navigationEvents = RNN.events().registerNavigationButtonPressedListener(({buttonId}) => {
             if (closeButtonId && buttonId === closeButtonId) {
-                dismissModal({componentId: Screens.BOTTOM_SHEET});
+                dismissModal({componentId});
             }
         });
 

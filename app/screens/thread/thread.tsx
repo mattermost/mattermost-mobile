@@ -3,18 +3,20 @@
 
 import React, {useCallback, useEffect, useMemo} from 'react';
 import {useIntl} from 'react-intl';
-import {Keyboard, StyleSheet, View} from 'react-native';
-import {Edge, SafeAreaView, useSafeAreaInsets} from 'react-native-safe-area-context';
+import {BackHandler, StyleSheet, View} from 'react-native';
+import {Navigation} from 'react-native-navigation';
+import {Edge, SafeAreaView} from 'react-native-safe-area-context';
 
 import {fetchPostThread} from '@actions/remote/post';
 import {useServerUrl} from '@app/context/server';
-import NavigationHeader from '@components/navigation_header';
+import {useTheme} from '@app/context/theme';
+import {changeOpacity} from '@app/utils/theme';
+import CompassIcon from '@components/compass_icon';
 import PostDraft from '@components/post_draft';
 import {General} from '@constants';
 import {THREAD_ACCESSORIES_CONTAINER_NATIVE_ID} from '@constants/post_draft';
 import {useAppState, useIsTablet} from '@hooks/device';
-import {useDefaultHeaderHeight} from '@hooks/header';
-import {popTopScreen} from '@screens/navigation';
+import {dismissModal, mergeNavigationOptions} from '@screens/navigation';
 
 import ThreadPostList from './thread_post_list';
 
@@ -23,7 +25,7 @@ import type PostModel from '@typings/database/models/servers/post';
 
 type ThreadProps = {
     channel: ChannelModel;
-    componentId?: string;
+    componentId: string;
     rootPost: PostModel;
 };
 
@@ -35,41 +37,87 @@ const getStyleSheet = StyleSheet.create(() => ({
     },
 }));
 
+const CLOSE_BUTTON_ID = 'close-threads';
+
 const Thread = ({channel, componentId, rootPost}: ThreadProps) => {
     const {formatMessage} = useIntl();
     const appState = useAppState();
     const isTablet = useIsTablet();
-    const insets = useSafeAreaInsets();
     const serverUrl = useServerUrl();
     const styles = getStyleSheet();
-    const defaultHeight = useDefaultHeaderHeight();
+    const theme = useTheme();
 
     // Get post thread
     useEffect(() => {
         fetchPostThread(serverUrl, rootPost.id);
     }, []);
 
-    const onBackPress = useCallback(() => {
-        Keyboard.dismiss();
-        popTopScreen(componentId);
+    const close = useCallback(() => {
+        dismissModal({componentId});
+        return true;
     }, []);
 
-    let title;
-    if (channel?.type === General.DM_CHANNEL) {
-        title = formatMessage({id: 'thread.header.thread_dm', defaultMessage: 'Direct Message Thread'});
-    } else {
-        title = formatMessage({id: 'thread.header.thread', defaultMessage: 'Thread'});
-    }
+    const leftButton = useMemo(() => {
+        return {
+            id: CLOSE_BUTTON_ID,
+            icon: CompassIcon.getImageSourceSync('close', 24, theme.centerChannelColor),
+            testID: CLOSE_BUTTON_ID,
+        };
+    }, [isTablet, theme.centerChannelColor]);
 
-    let subtitle = '';
-    if (channel?.type !== General.DM_CHANNEL) {
-        subtitle = formatMessage({id: 'thread.header.thread_in', defaultMessage: 'in {channelName}'}, {channelName: channel?.displayName});
-    }
+    useEffect(() => {
+        const unsubscribe = Navigation.events().registerComponentListener({
+            navigationButtonPressed: ({buttonId}: { buttonId: string }) => {
+                switch (buttonId) {
+                    case CLOSE_BUTTON_ID:
+                        close();
+                        break;
+                }
+            },
+        }, componentId);
 
-    const marginTop = defaultHeight + (isTablet ? insets.top : 0);
+        return () => {
+            unsubscribe.remove();
+        };
+    }, []);
+
+    useEffect(() => {
+        const backHandler = BackHandler.addEventListener('hardwareBackPress', close);
+        return () => {
+            backHandler.remove();
+        };
+    }, []);
+
+    useEffect(() => {
+        let title;
+        if (channel?.type === General.DM_CHANNEL) {
+            title = formatMessage({id: 'thread.header.thread_dm', defaultMessage: 'Direct Message Thread'});
+        } else {
+            title = formatMessage({id: 'thread.header.thread', defaultMessage: 'Thread'});
+        }
+
+        let subtitle = '';
+        if (channel?.type !== General.DM_CHANNEL) {
+            subtitle = formatMessage({id: 'thread.header.thread_in', defaultMessage: 'in {channelName}'}, {channelName: channel?.displayName});
+        }
+
+        mergeNavigationOptions(componentId, {
+            topBar: {
+                leftButtons: [leftButton!],
+                title: {
+                    fontFamily: 'OpenSans-SemiBold',
+                    fontSize: 18,
+                    text: title,
+                },
+                subtitle: {
+                    color: changeOpacity(theme.sidebarHeaderTextColor, 0.72),
+                    text: subtitle,
+                },
+            },
+        });
+    }, [componentId, leftButton, theme]);
+
     const channelIsSet = Boolean(channel?.id);
-
-    const listContainerStyle = useMemo(() => [styles.flex, {marginTop}], [marginTop]);
 
     return (
         <>
@@ -78,16 +126,9 @@ const Thread = ({channel, componentId, rootPost}: ThreadProps) => {
                 mode='margin'
                 edges={edges}
             >
-                <NavigationHeader
-                    isLargeTitle={false}
-                    onBackPress={onBackPress}
-                    showBackButton={!isTablet}
-                    subtitle={subtitle}
-                    title={title}
-                />
                 {channelIsSet &&
                 <>
-                    <View style={listContainerStyle}>
+                    <View style={styles.flex}>
                         <ThreadPostList
                             channelId={channel.id}
                             forceQueryAfterAppState={appState}

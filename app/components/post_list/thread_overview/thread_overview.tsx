@@ -9,6 +9,7 @@ import {TouchableOpacity} from 'react-native-gesture-handler';
 import {deleteSavedPost, savePostPreference} from '@actions/remote/preference';
 import FormattedText from '@app/components/formatted_text';
 import {Screens} from '@app/constants';
+import {preventDoubleTap} from '@app/utils/tap';
 import CompassIcon from '@components/compass_icon';
 import {useServerUrl} from '@context/server';
 import {useIsTablet} from '@hooks/device';
@@ -61,12 +62,12 @@ const ThreadOverview = ({isSaved, repliesCount, rootPost, testID, theme}: Props)
     const isTablet = useIsTablet();
     const serverUrl = useServerUrl();
 
-    const onHandleSavePress = useCallback(async () => {
+    const onHandleSavePress = useCallback(preventDoubleTap(() => {
         const remoteAction = isSaved ? deleteSavedPost : savePostPreference;
         remoteAction(serverUrl, rootPost.id);
-    }, [isSaved, rootPost.id, serverUrl]);
+    }), [isSaved, rootPost.id, serverUrl]);
 
-    const showPostOptions = useCallback(() => {
+    const showPostOptions = useCallback(preventDoubleTap(() => {
         Keyboard.dismiss();
         const passProps = {location: Screens.THREAD, post: rootPost, showAddReaction: true};
         const title = isTablet ? intl.formatMessage({id: 'post.options.title', defaultMessage: 'Options'}) : '';
@@ -76,7 +77,7 @@ const ThreadOverview = ({isSaved, repliesCount, rootPost, testID, theme}: Props)
         } else {
             showModalOverCurrentContext(Screens.POST_OPTIONS, passProps);
         }
-    }, [rootPost]);
+    }), [rootPost]);
 
     const containerStyle = useMemo(() => {
         const style = [styles.container];

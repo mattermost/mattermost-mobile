@@ -5,7 +5,7 @@ import React, {useCallback} from 'react';
 
 import {Screens} from '@constants';
 import {t} from '@i18n';
-import {dismissBottomSheet, goToScreen} from '@screens/navigation';
+import {dismissBottomSheet, showModal} from '@screens/navigation';
 
 import BaseOption from './base_option';
 
@@ -18,7 +18,7 @@ const ReplyOption = ({post}: Props) => {
     const handleReply = useCallback(async () => {
         const rootId = post.rootId || post.id;
         await dismissBottomSheet(Screens.POST_OPTIONS);
-        goToScreen(Screens.THREAD, '', {rootId}, {topBar: {visible: false}});
+        showModal(Screens.THREAD, '', {rootId});
     }, [post]);
 
     return (
