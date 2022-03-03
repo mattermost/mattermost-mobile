@@ -5,7 +5,7 @@ import {switchToChannelById} from '@actions/remote/channel';
 import {fetchRoles} from '@actions/remote/role';
 import {fetchConfigAndLicense} from '@actions/remote/systems';
 import {gqlLogin} from '@app/client/graphQL/entry';
-import { GQLToClientChannel, GQLToClientChannelMembership, GQLToClientPreference, GQLToClientRole, GQLToClientSidebarCategory, GQLToClientTeam, GQLToClientTeamMembership, GQLToClientUser } from '@app/client/graphQL/types';
+import {gqlToClientChannel, gqlToClientChannelMembership, gqlToClientPreference, gqlToClientRole, gqlToClientSidebarCategory, gqlToClientTeam, gqlToClientTeamMembership, gqlToClientUser} from '@app/client/graphQL/types';
 import DatabaseManager from '@database/manager';
 import {queryAllChannelsForTeam, queryChannelsById, queryDefaultChannelForTeam} from '@queries/servers/channel';
 import {prepareModels} from '@queries/servers/entry';
@@ -17,49 +17,47 @@ import {isTablet} from '@utils/helpers';
 
 import {AppEntryData, AppEntryError, deferredAppEntryActions, fetchAppEntryData, syncOtherServers} from './common';
 
-export const gqlAppEntry = async(serverUrl: string, since = 0) => {
+export const gqlAppEntry = async (serverUrl: string, since = 0) => {
     const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
     if (!operator) {
         return {error: `${serverUrl} database not found`};
     }
     const {database} = operator;
 
-    const tabletDevice = await isTablet();
-    const currentTeamId = await queryCurrentTeamId(database);
     const lastDisconnectedAt = (await queryWebSocketLastDisconnected(database)) || since;
 
-    const {data: fetchedData, error: fetchedError} = await gqlLogin(serverUrl)
+    const {data: fetchedData, error: fetchedError} = await gqlLogin(serverUrl);
 
     if (!fetchedData) {
         return {error: fetchedError};
     }
 
     const teamData = {
-        teams: fetchedData.teamMembers.map((m) => GQLToClientTeam(m.team!)),
-        memberships: fetchedData.teamMembers.map((m) => GQLToClientTeamMembership(m)),
-    }
+        teams: fetchedData.teamMembers.map((m) => gqlToClientTeam(m.team!)),
+        memberships: fetchedData.teamMembers.map((m) => gqlToClientTeamMembership(m)),
+    };
 
     const chData = {
-        channels: fetchedData.channelMembers?.map((m) => GQLToClientChannel(m.channel!)),
-        memberships: fetchedData.channelMembers?.map((m) => GQLToClientChannelMembership(m)),
-        categories: fetchedData.teamMembers.map((m) => m.sidebarCategories!.map((c) => GQLToClientSidebarCategory(c, m.team!.id!))).flat(),
-    }
+        channels: fetchedData.channelMembers?.map((m) => gqlToClientChannel(m.channel!)),
+        memberships: fetchedData.channelMembers?.map((m) => gqlToClientChannelMembership(m)),
+        categories: fetchedData.teamMembers.map((m) => m.sidebarCategories!.map((c) => gqlToClientSidebarCategory(c, m.team!.id!))).flat(),
+    };
 
     const prefData = {
-        preferences: fetchedData.user?.preferences?.map((p) => GQLToClientPreference(p)),
-    }
+        preferences: fetchedData.user?.preferences?.map((p) => gqlToClientPreference(p)),
+    };
 
     const meData = {
-        user: GQLToClientUser(fetchedData.user!),
-    }
+        user: gqlToClientUser(fetchedData.user!),
+    };
 
     const rolesData = {
         roles: [
-        ...fetchedData.user?.roles || [],
-        ...fetchedData.channelMembers?.map((m) => m.roles).flat() || [],
-        ...fetchedData.teamMembers?.map((m) => m.roles).flat() || [],
-    ].filter((v,i,a) => a.slice(0,i).find((v2) => v?.name === v2?.name)).map((r) => GQLToClientRole(r!)),
-    }
+            ...fetchedData.user?.roles || [],
+            ...fetchedData.channelMembers?.map((m) => m.roles).flat() || [],
+            ...fetchedData.teamMembers?.map((m) => m.roles).flat() || [],
+        ].filter((v, i, a) => a.slice(0, i).find((v2) => v?.name === v2?.name)).map((r) => gqlToClientRole(r!)),
+    };
 
     const removeTeamIds = [];
 
@@ -118,7 +116,7 @@ export const gqlAppEntry = async(serverUrl: string, since = 0) => {
     }
 
     return {userId: meData?.user?.id};
-}
+};
 
 export const appEntry = async (serverUrl: string, since = 0) => {
     const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;

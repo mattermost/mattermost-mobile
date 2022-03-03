@@ -1,6 +1,10 @@
+// Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
+// See LICENSE.txt for license information.
 import NetworkManager from '@init/network_manager';
-import { Client } from '../rest';
-import { GQLQuery } from './types';
+
+import {Client} from '../rest';
+
+import {GQLQuery} from './types';
 
 const doGQLQuery = async (serverUrl: string, query: string) => {
     let client: Client;
@@ -13,15 +17,15 @@ const doGQLQuery = async (serverUrl: string, query: string) => {
     try {
         const data = await client.doFetch('/api/v5/graphql', {method: 'post', body: JSON.stringify({query})}) as GQLQuery;
 
-        return {data}
+        return {data};
     } catch (error) {
-        return {error}
+        return {error};
     }
-}
+};
 
 export const gqlLogin = async (serverUrl: string) => {
     return doGQLQuery(serverUrl, loginQuery);
-}
+};
 
 const loginQuery = `
 {
@@ -100,4 +104,4 @@ const loginQuery = `
         }
     }
 }
-`
+`;
