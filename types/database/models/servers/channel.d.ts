@@ -71,5 +71,8 @@ export default class ChannelModel extends Model {
     /** settings: User specific settings/preferences for this channel */
     settings: Relation<MyChannelSettingsModel>;
 
+    /** categoryChannel: category of this channel */
+    categoryChannel: Relation<CategoryChanelModel>;
+
     toApi = () => Channel;
 }
