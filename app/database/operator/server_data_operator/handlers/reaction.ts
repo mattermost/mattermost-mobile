@@ -20,7 +20,7 @@ const ReactionHandler = (superclass: any) => class extends superclass {
     /**
      * handleReactions: Handler responsible for the Create/Update operations occurring on the Reaction table from the 'Server' schema
      * @param {HandleReactionsArgs} handleReactions
-     * @param {ReactionsPerPost[]} handleReactions.reactions
+     * @param {ReactionsPerPost[]} handleReactions.postsReactions
      * @param {boolean} handleReactions.prepareRecordsOnly
      * @param {boolean} handleReactions.skipSync
      * @throws DataOperatorException
