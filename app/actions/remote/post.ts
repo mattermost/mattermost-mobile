@@ -616,7 +616,7 @@ export const markPostAsUnread = async (serverUrl: string, postId: string) => {
     }
 };
 
-export const editPost = async (serverUrl: string, postId: string) => {
+export const editPost = async (serverUrl: string, postId: string, postMessage: string) => {
     const database = DatabaseManager.serverDatabases[serverUrl]?.database;
     if (!database) {
         return {error: `${serverUrl} database not found`};
@@ -630,9 +630,8 @@ export const editPost = async (serverUrl: string, postId: string) => {
 
     try {
         const post = await queryPostById(database, postId);
-
         if (post) {
-            const {update_at, edit_at, message: updatedMessage} = await client.patchPost({message: post.message, id: postId});
+            const {update_at, edit_at, message: updatedMessage} = await client.patchPost({message: postMessage, id: postId});
             await database.write(async () => {
                 await post.update((p) => {
                     p.updateAt = update_at;

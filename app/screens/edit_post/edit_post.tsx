@@ -182,7 +182,7 @@ const EditPost = ({componentId, maxPostSize, post, closeButton, hasFilesAttached
 
         emitEditing(true);
 
-        const res = await editPost(serverUrl, post.id);
+        const res = await editPost(serverUrl, post.id, postMessage);
         emitEditing(false);
         if (res?.error) {
             setIsUpdating(false);
