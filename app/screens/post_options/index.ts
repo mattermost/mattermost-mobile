@@ -52,7 +52,7 @@ const canEditPost = (isOwner: boolean, post: PostModel, postEditTimeLimit: numbe
 };
 
 const enhanced = withObservables([], ({post, showAddReaction, location, database}: WithDatabaseArgs & { post: PostModel; showAddReaction: boolean; location: string }) => {
-    const channel = post.channel.observe();
+    const channel = post?.channel.observe();
     const channelIsArchived = channel.pipe(switchMap((ch: ChannelModel) => of$(ch.deleteAt !== 0)));
     const currentUser = database.get<SystemModel>(SYSTEM).findAndObserve(CURRENT_USER_ID).pipe(switchMap(({value}) => database.get<UserModel>(USER).findAndObserve(value)));
     const config = database.get<SystemModel>(SYSTEM).findAndObserve(CONFIG).pipe(switchMap(({value}) => of$(value as ClientConfig)));
