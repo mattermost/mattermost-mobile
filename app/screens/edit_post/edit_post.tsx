@@ -13,7 +13,7 @@ import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import useDidUpdate from '@hooks/did_update';
 import PostError from '@screens/edit_post/post_error';
-import {popTopScreen, setButtons} from '@screens/navigation';
+import {dismissModal, setButtons} from '@screens/navigation';
 import PostModel from '@typings/database/models/servers/post';
 import {switchKeyboardForCodeBlocks} from '@utils/markdown';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
@@ -57,11 +57,12 @@ const RIGHT_BUTTON = {
 
 type EditPostProps = {
     componentId: string;
+    closeButton: string;
     post: PostModel;
     maxPostSize: number;
 }
 
-const EditPost = ({componentId, maxPostSize, post}: EditPostProps) => {
+const EditPost = ({componentId, maxPostSize, post, closeButton}: EditPostProps) => {
     const [keyboardType, setKeyboardType] = useState<KeyboardType>('default');
     const [postMessage, setPostMessage] = useState(post.message);
     const [cursorPosition, setCursorPosition] = useState(0);
@@ -80,10 +81,10 @@ const EditPost = ({componentId, maxPostSize, post}: EditPostProps) => {
 
     useEffect(() => {
         setButtons(componentId, {
-
-            // leftButtons: [{
-            //     ...LEFT_BUTTON,
-            // }],
+            leftButtons: [{
+                ...LEFT_BUTTON,
+                icon: closeButton,
+            }],
             rightButtons: [{
                 color: theme.sidebarHeaderTextColor,
                 text: intl.formatMessage({id: 'edit_post.save', defaultMessage: 'Save'}),
@@ -130,7 +131,10 @@ const EditPost = ({componentId, maxPostSize, post}: EditPostProps) => {
         if (rightButtonEnabled !== enabled) {
             setRightButtonEnabled(enabled);
             setButtons(componentId, {
-                leftButtons: [{...LEFT_BUTTON}],
+                leftButtons: [{
+                    ...LEFT_BUTTON,
+                    icon: closeButton,
+                }],
                 rightButtons: [{
                     ...RIGHT_BUTTON,
                     color: theme.sidebarHeaderTextColor,
@@ -157,14 +161,17 @@ const EditPost = ({componentId, maxPostSize, post}: EditPostProps) => {
     const emitEditing = useCallback((loading) => {
         setRightButtonEnabled(!loading);
         setButtons(componentId, {
-            leftButtons: [{...LEFT_BUTTON}],
+            leftButtons: [{
+                ...LEFT_BUTTON,
+                icon: closeButton,
+            }],
             rightButtons: [{...RIGHT_BUTTON, enabled: !loading}],
         });
     }, []);
 
     const onClose = useCallback(() => {
         Keyboard.dismiss();
-        popTopScreen();
+        dismissModal({componentId});
     }, []);
 
     const onSaveEditedPost = useCallback(async () => {
@@ -174,13 +181,11 @@ const EditPost = ({componentId, maxPostSize, post}: EditPostProps) => {
 
         emitEditing(true);
 
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-ignore
-        const {error: {status_code, message: errorMessage}} = await editPost(serverUrl, post.id);
+        const res = await editPost(serverUrl, post.id);
         emitEditing(false);
-        if (status_code) {
+        if (res?.error) {
             setIsUpdating(false);
-            setErrorLine(errorMessage);
+            setErrorLine((res.error as ClientErrorProps).message);
             postInputRef?.current?.focus();
         } else {
             setIsUpdating(false);
@@ -219,17 +224,20 @@ const EditPost = ({componentId, maxPostSize, post}: EditPostProps) => {
                     />
                 </View>
             </SafeAreaView>
-            <AutoComplete
-                channelId={post.channelId}
-                cursorPosition={cursorPosition}
-                hasFilesAttached={false}
-                nestedScrollEnabled={true}
-                offsetY={8}
-                postInputTop={postInputTop}
-                rootId={post.rootId}
-                updateValue={onPostChangeText}
-                value={postMessage}
-            />
+            <View style={{backgroundColor: 'red'}}>
+                <AutoComplete
+                    channelId={post.channelId}
+                    cursorPosition={cursorPosition}
+                    hasFilesAttached={false}
+                    nestedScrollEnabled={true}
+                    offsetY={8}
+                    postInputTop={postInputTop}
+                    rootId={post.rootId}
+                    updateValue={onPostChangeText}
+                    value={postMessage}
+                />
+            </View>
+
         </>
     );
 };

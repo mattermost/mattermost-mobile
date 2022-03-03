@@ -23,12 +23,10 @@ const EditOption = ({post}: Props) => {
     const onPress = useCallback(async () => {
         await dismissBottomSheet(Screens.POST_OPTIONS);
         const title = intl.formatMessage({id: 'mobile.edit_post.title', defaultMessage: 'Editing Message'});
-        const closeButtonIcon = CompassIcon.getImageSourceSync('close', 24, theme.centerChannelColor);
-        const passProps = {
-            post,
-            closeButton: closeButtonIcon,
-        };
-        showModal(Screens.EDIT_POST, title, passProps, {modal: {swipeToDismiss: false}});
+        const closeButton = CompassIcon.getImageSourceSync('close', 24, theme.sidebarHeaderTextColor);
+        const passProps = {post, closeButton};
+        const options = {modal: {swipeToDismiss: false}};
+        showModal(Screens.EDIT_POST, title, passProps, options);
     }, [post]);
 
     return (
