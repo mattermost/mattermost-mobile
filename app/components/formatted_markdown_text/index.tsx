@@ -33,11 +33,14 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     return {
         message: {
             color: changeOpacity(theme.centerChannelColor, 0.8),
-            fontSize: 15,
-            lineHeight: 22,
+            fontSize: 16,
+            lineHeight: 20,
         },
         atMentionOpacity: {
             opacity: 1,
+        },
+        touchableStyle: {
+            top: 5,
         },
     };
 });
@@ -83,6 +86,7 @@ const FormattedMarkdownText = ({baseTextStyle, defaultMessage, id, onPostPress, 
                 mentionName={mentionName}
                 onPostPress={onPostPress}
                 textStyle={[computeTextStyle(baseTextStyle, context), styles.atMentionOpacity]}
+                touchableStyle={styles.touchableStyle}
             />
         );
     };

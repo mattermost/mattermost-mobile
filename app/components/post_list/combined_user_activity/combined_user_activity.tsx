@@ -4,12 +4,12 @@
 import React, {useEffect} from 'react';
 import {useIntl} from 'react-intl';
 import {Keyboard, StyleProp, View, ViewStyle} from 'react-native';
+import {TouchableOpacity} from 'react-native-gesture-handler';
 
 import {fetchMissingProfilesByIds, fetchMissingProfilesByUsernames} from '@actions/remote/user';
 import Markdown from '@components/markdown';
 import SystemAvatar from '@components/system_avatar';
 import SystemHeader from '@components/system_header';
-import TouchableWithFeedback from '@components/touchable_with_feedback';
 import {Post as PostConstants} from '@constants';
 import {useServerUrl} from '@context/server';
 import {showModalOverCurrentContext} from '@screens/navigation';
@@ -208,13 +208,10 @@ const CombinedUserActivity = ({
             style={style}
             testID={testID}
         >
-            <TouchableWithFeedback
+            <TouchableOpacity
                 testID={itemTestID}
                 onPress={emptyFunction}
                 onLongPress={onLongPress}
-                delayLongPress={200}
-                underlayColor={changeOpacity(theme.centerChannelColor, 0.1)}
-                cancelTouchOnPanning={true}
             >
                 <View style={styles.container}>
                     <SystemAvatar theme={theme}/>
@@ -228,7 +225,7 @@ const CombinedUserActivity = ({
                         </View>
                     </View>
                 </View>
-            </TouchableWithFeedback>
+            </TouchableOpacity>
         </View>
     );
 };

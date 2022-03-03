@@ -4,12 +4,13 @@
 import React, {useState} from 'react';
 import {useIntl} from 'react-intl';
 import {Text} from 'react-native';
+import {TouchableOpacity} from 'react-native-gesture-handler';
 
 import FormattedMarkdownText from '@components/formatted_markdown_text';
 import FormattedText from '@components/formatted_text';
 import Markdown from '@components/markdown';
 import {getMarkdownTextStyles} from '@utils/markdown';
-import {makeStyleSheetFromTheme} from '@utils/theme';
+import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 import {postTypeMessages, systemMessages} from './messages';
 
@@ -23,16 +24,17 @@ type LastUsersProps = {
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     return {
         baseText: {
-            color: theme.centerChannelColor,
-            opacity: 0.6,
+            color: changeOpacity(theme.centerChannelColor, 0.6),
             fontSize: 16,
             lineHeight: 20,
         },
         linkText: {
             color: theme.linkColor,
-            opacity: 0.8,
             fontSize: 16,
             lineHeight: 20,
+        },
+        touchableStyle: {
+            top: 5,
         },
     };
 });
@@ -71,7 +73,7 @@ const LastUsers = ({actor, postType, theme, usernames}: LastUsersProps) => {
     const numOthers = usernames.length - 1;
 
     return (
-        <Text>
+        <Text style={{backgroundColor: 'transparent'}}>
             <FormattedMarkdownText
                 id={'last_users_message.first'}
                 defaultMessage={'{firstUser} and '}
@@ -81,16 +83,18 @@ const LastUsers = ({actor, postType, theme, usernames}: LastUsersProps) => {
                 textStyles={textStyles}
             />
             <Text>{' '}</Text>
-            <Text
-                style={style.linkText}
+            <TouchableOpacity
                 onPress={onPress}
+                style={style.touchableStyle}
             >
-                <FormattedText
-                    id={'last_users_message.others'}
-                    defaultMessage={'{numOthers} others '}
-                    values={{numOthers}}
-                />
-            </Text>
+                <Text style={style.linkText}>
+                    <FormattedText
+                        id={'last_users_message.others'}
+                        defaultMessage={'{numOthers} others '}
+                        values={{numOthers}}
+                    />
+                </Text>
+            </TouchableOpacity>
             <FormattedMarkdownText
                 id={systemMessages[postType].id}
                 defaultMessage={systemMessages[postType].defaultMessage}
