@@ -23,22 +23,6 @@ type Draft = {
     root_id: string;
 };
 
-type GroupMembership = {
-    id?: string;
-    user_id: string;
-    group_id: string;
-};
-
-type GroupChannelRelation = {
-    channel_id: string;
-    group_id: string;
-}
-
-type GroupTeamRelation = {
-    group_id: string;
-    team_id: string;
-}
-
 type MyTeam = {
     id: string;
     roles: string;
@@ -104,10 +88,6 @@ type RawValue =
   | CustomEmoji
   | Draft
   | FileInfo
-  | Group
-  | GroupMembership
-  | GroupChannel
-  | GroupTeam
   | IdValue
   | Metadata
   | MyTeam

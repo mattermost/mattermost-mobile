@@ -3,7 +3,6 @@
 
 import {fetchMissingSidebarInfo, switchToChannelById} from '@actions/remote/channel';
 import {AppEntryData, AppEntryError, fetchAppEntryData} from '@actions/remote/entry/common';
-import {fetchGroupsForTeam} from '@actions/remote/group';
 import {fetchPostsForUnreadChannels, fetchPostsSince} from '@actions/remote/post';
 import {fetchRoles} from '@actions/remote/role';
 import {fetchConfigAndLicense} from '@actions/remote/systems';
@@ -179,10 +178,6 @@ async function doReconnect(serverUrl: string) {
         }
     }
 
-    if (initialTeamId) {
-        fetchGroupsForTeam(serverUrl, initialTeamId, lastDisconnectedAt);
-    }
-
     // defer fetch channels and unread posts for other teams
     if (teamData.teams?.length && teamData.memberships?.length) {
         await fetchTeamsChannelsAndUnreadPosts(serverUrl, lastDisconnectedAt, teamData.teams, teamData.memberships, initialTeamId);
@@ -335,11 +330,6 @@ export async function handleEvent(serverUrl: string, msg: WebSocketMessage) {
         case WebsocketEvents.OPEN_DIALOG:
             break;
 
-        // return dispatch(handleOpenDialogEvent(msg));
-        case WebsocketEvents.RECEIVED_GROUP:
-            break;
-
-        // return dispatch(handleGroupUpdatedEvent(msg));
         case WebsocketEvents.THREAD_UPDATED:
             break;
 

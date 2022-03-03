@@ -12,43 +12,61 @@ exports[`renderSystemMessage uses renderer for Channel Display Name update 1`] =
     ]
   }
 >
-  <Text>
-    <Text
+  <RNGestureHandlerButton
+    collapsable={false}
+    exclusive={true}
+    onGestureEvent={[Function]}
+    onGestureHandlerEvent={[Function]}
+    onGestureHandlerStateChange={[Function]}
+    onHandlerStateChange={[Function]}
+    rippleColor={0}
+  >
+    <View
+      accessible={true}
+      collapsable={false}
       style={
-        Array [
-          Object {
-            "color": "rgba(63,67,80,0.6)",
-            "fontFamily": "OpenSans",
-            "fontSize": 16,
-            "fontWeight": "400",
-            "lineHeight": 24,
-          },
-          Object {
-            "opacity": 1,
-          },
-        ]
+        Object {
+          "opacity": 1,
+        }
       }
     >
       <Text
-        style={Array []}
-      >
-        @username
-      </Text>
-    </Text>
-    <Text
-      style={
-        Object {
-          "color": "rgba(63,67,80,0.6)",
-          "fontFamily": "OpenSans",
-          "fontSize": 16,
-          "fontWeight": "400",
-          "lineHeight": 24,
+        style={
+          Array [
+            Object {
+              "color": "rgba(63,67,80,0.6)",
+              "fontFamily": "OpenSans",
+              "fontSize": 16,
+              "fontWeight": "400",
+              "lineHeight": 24,
+            },
+            Object {
+              "opacity": 1,
+            },
+          ]
         }
+      >
+        <Text
+          style={Array []}
+        >
+          @username
+        </Text>
+      </Text>
+    </View>
+  </RNGestureHandlerButton>
+  <Text
+    style={
+      Object {
+        "color": "rgba(63,67,80,0.6)",
+        "fontFamily": "OpenSans",
+        "fontSize": 16,
+        "fontWeight": "400",
+        "lineHeight": 24,
       }
-      testID="markdown_text"
-    >
-       updated the channel display name from: old displayname to: new displayname
-    </Text>
+    }
+    testID="markdown_text"
+  >
+     updated the channel display name from: old displayname to: new displayname
   </Text>
 </View>
 `;
@@ -65,43 +83,61 @@ exports[`renderSystemMessage uses renderer for Channel Header update 1`] = `
     ]
   }
 >
-  <Text>
-    <Text
+  <RNGestureHandlerButton
+    collapsable={false}
+    exclusive={true}
+    onGestureEvent={[Function]}
+    onGestureHandlerEvent={[Function]}
+    onGestureHandlerStateChange={[Function]}
+    onHandlerStateChange={[Function]}
+    rippleColor={0}
+  >
+    <View
+      accessible={true}
+      collapsable={false}
       style={
-        Array [
-          Object {
-            "color": "rgba(63,67,80,0.6)",
-            "fontFamily": "OpenSans",
-            "fontSize": 16,
-            "fontWeight": "400",
-            "lineHeight": 24,
-          },
-          Object {
-            "opacity": 1,
-          },
-        ]
+        Object {
+          "opacity": 1,
+        }
       }
     >
       <Text
-        style={Array []}
-      >
-        @username
-      </Text>
-    </Text>
-    <Text
-      style={
-        Object {
-          "color": "rgba(63,67,80,0.6)",
-          "fontFamily": "OpenSans",
-          "fontSize": 16,
-          "fontWeight": "400",
-          "lineHeight": 24,
+        style={
+          Array [
+            Object {
+              "color": "rgba(63,67,80,0.6)",
+              "fontFamily": "OpenSans",
+              "fontSize": 16,
+              "fontWeight": "400",
+              "lineHeight": 24,
+            },
+            Object {
+              "opacity": 1,
+            },
+          ]
         }
+      >
+        <Text
+          style={Array []}
+        >
+          @username
+        </Text>
+      </Text>
+    </View>
+  </RNGestureHandlerButton>
+  <Text
+    style={
+      Object {
+        "color": "rgba(63,67,80,0.6)",
+        "fontFamily": "OpenSans",
+        "fontSize": 16,
+        "fontWeight": "400",
+        "lineHeight": 24,
       }
-      testID="markdown_text"
-    >
-       updated the channel header from: old header to: new header
-    </Text>
+    }
+    testID="markdown_text"
+  >
+     updated the channel header from: old header to: new header
   </Text>
 </View>
 `;
@@ -134,43 +170,61 @@ exports[`renderSystemMessage uses renderer for Guest added and join to channel 1
     ]
   }
 >
-  <Text>
-    <Text
+  <RNGestureHandlerButton
+    collapsable={false}
+    exclusive={true}
+    onGestureEvent={[Function]}
+    onGestureHandlerEvent={[Function]}
+    onGestureHandlerStateChange={[Function]}
+    onHandlerStateChange={[Function]}
+    rippleColor={0}
+  >
+    <View
+      accessible={true}
+      collapsable={false}
       style={
-        Array [
-          Object {
-            "color": "rgba(63,67,80,0.6)",
-            "fontFamily": "OpenSans",
-            "fontSize": 16,
-            "fontWeight": "400",
-            "lineHeight": 24,
-          },
-          Object {
-            "opacity": 1,
-          },
-        ]
+        Object {
+          "opacity": 1,
+        }
       }
     >
       <Text
-        style={Array []}
-      >
-        @username
-      </Text>
-    </Text>
-    <Text
-      style={
-        Object {
-          "color": "rgba(63,67,80,0.6)",
-          "fontFamily": "OpenSans",
-          "fontSize": 16,
-          "fontWeight": "400",
-          "lineHeight": 24,
+        style={
+          Array [
+            Object {
+              "color": "rgba(63,67,80,0.6)",
+              "fontFamily": "OpenSans",
+              "fontSize": 16,
+              "fontWeight": "400",
+              "lineHeight": 24,
+            },
+            Object {
+              "opacity": 1,
+            },
+          ]
         }
+      >
+        <Text
+          style={Array []}
+        >
+          @username
+        </Text>
+      </Text>
+    </View>
+  </RNGestureHandlerButton>
+  <Text
+    style={
+      Object {
+        "color": "rgba(63,67,80,0.6)",
+        "fontFamily": "OpenSans",
+        "fontSize": 16,
+        "fontWeight": "400",
+        "lineHeight": 24,
       }
-      testID="markdown_text"
-    >
-       joined the channel as a guest.
-    </Text>
+    }
+    testID="markdown_text"
+  >
+     joined the channel as a guest.
   </Text>
 </View>
 `;
@@ -187,66 +241,104 @@ exports[`renderSystemMessage uses renderer for Guest added and join to channel 2
     ]
   }
 >
-  <Text>
-    <Text
-      style={
-        Array [
-          Object {
-            "color": "rgba(63,67,80,0.6)",
-            "fontFamily": "OpenSans",
-            "fontSize": 16,
-            "fontWeight": "400",
-            "lineHeight": 24,
-          },
-          Object {
-            "opacity": 1,
-          },
-        ]
-      }
-    >
-      <Text
-        style={Array []}
-      >
-        @other.user
-      </Text>
-    </Text>
-    <Text
+  <RNGestureHandlerButton
+    collapsable={false}
+    exclusive={true}
+    onGestureEvent={[Function]}
+    onGestureHandlerEvent={[Function]}
+    onGestureHandlerStateChange={[Function]}
+    onHandlerStateChange={[Function]}
+    rippleColor={0}
+  >
+    <View
+      accessible={true}
+      collapsable={false}
       style={
         Object {
-          "color": "rgba(63,67,80,0.6)",
-          "fontFamily": "OpenSans",
-          "fontSize": 16,
-          "fontWeight": "400",
-          "lineHeight": 24,
+          "opacity": 1,
         }
-      }
-      testID="markdown_text"
-    >
-       added to the channel as a guest by 
-    </Text>
-    <Text
-      style={
-        Array [
-          Object {
-            "color": "rgba(63,67,80,0.6)",
-            "fontFamily": "OpenSans",
-            "fontSize": 16,
-            "fontWeight": "400",
-            "lineHeight": 24,
-          },
-          Object {
-            "opacity": 1,
-          },
-        ]
       }
     >
       <Text
-        style={Array []}
+        style={
+          Array [
+            Object {
+              "color": "rgba(63,67,80,0.6)",
+              "fontFamily": "OpenSans",
+              "fontSize": 16,
+              "fontWeight": "400",
+              "lineHeight": 24,
+            },
+            Object {
+              "opacity": 1,
+            },
+          ]
+        }
       >
-        @username.
+        <Text
+          style={Array []}
+        >
+          @other.user
+        </Text>
       </Text>
-    </Text>
+    </View>
+  </RNGestureHandlerButton>
+  <Text
+    style={
+      Object {
+        "color": "rgba(63,67,80,0.6)",
+        "fontFamily": "OpenSans",
+        "fontSize": 16,
+        "fontWeight": "400",
+        "lineHeight": 24,
+      }
+    }
+    testID="markdown_text"
+  >
+     added to the channel as a guest by 
   </Text>
+  <RNGestureHandlerButton
+    collapsable={false}
+    exclusive={true}
+    onGestureEvent={[Function]}
+    onGestureHandlerEvent={[Function]}
+    onGestureHandlerStateChange={[Function]}
+    onHandlerStateChange={[Function]}
+    rippleColor={0}
+  >
+    <View
+      accessible={true}
+      collapsable={false}
+      style={
+        Object {
+          "opacity": 1,
+        }
+      }
+    >
+      <Text
+        style={
+          Array [
+            Object {
+              "color": "rgba(63,67,80,0.6)",
+              "fontFamily": "OpenSans",
+              "fontSize": 16,
+              "fontWeight": "400",
+              "lineHeight": 24,
+            },
+            Object {
+              "opacity": 1,
+            },
+          ]
+        }
+      >
+        <Text
+          style={Array []}
+        >
+          @username.
+        </Text>
+      </Text>
+    </View>
+  </RNGestureHandlerButton>
 </View>
 `;
 
@@ -262,21 +354,19 @@ exports[`renderSystemMessage uses renderer for OLD archived channel without a us
     ]
   }
 >
-  <Text>
-    <Text
-      style={
-        Object {
-          "color": "rgba(63,67,80,0.6)",
-          "fontFamily": "OpenSans",
-          "fontSize": 16,
-          "fontWeight": "400",
-          "lineHeight": 24,
-        }
+  <Text
+    style={
+      Object {
+        "color": "rgba(63,67,80,0.6)",
+        "fontFamily": "OpenSans",
+        "fontSize": 16,
+        "fontWeight": "400",
+        "lineHeight": 24,
       }
-      testID="markdown_text"
-    >
-      archived the channel
-    </Text>
+    }
+    testID="markdown_text"
+  >
+    archived the channel
   </Text>
 </View>
 `;
@@ -293,43 +383,61 @@ exports[`renderSystemMessage uses renderer for archived channel 1`] = `
     ]
   }
 >
-  <Text>
-    <Text
+  <RNGestureHandlerButton
+    collapsable={false}
+    exclusive={true}
+    onGestureEvent={[Function]}
+    onGestureHandlerEvent={[Function]}
+    onGestureHandlerStateChange={[Function]}
+    onHandlerStateChange={[Function]}
+    rippleColor={0}
+  >
+    <View
+      accessible={true}
+      collapsable={false}
       style={
-        Array [
-          Object {
-            "color": "rgba(63,67,80,0.6)",
-            "fontFamily": "OpenSans",
-            "fontSize": 16,
-            "fontWeight": "400",
-            "lineHeight": 24,
-          },
-          Object {
-            "opacity": 1,
-          },
-        ]
+        Object {
+          "opacity": 1,
+        }
       }
     >
       <Text
-        style={Array []}
-      >
-        @username
-      </Text>
-    </Text>
-    <Text
-      style={
-        Object {
-          "color": "rgba(63,67,80,0.6)",
-          "fontFamily": "OpenSans",
-          "fontSize": 16,
-          "fontWeight": "400",
-          "lineHeight": 24,
+        style={
+          Array [
+            Object {
+              "color": "rgba(63,67,80,0.6)",
+              "fontFamily": "OpenSans",
+              "fontSize": 16,
+              "fontWeight": "400",
+              "lineHeight": 24,
+            },
+            Object {
+              "opacity": 1,
+            },
+          ]
         }
+      >
+        <Text
+          style={Array []}
+        >
+          @username
+        </Text>
+      </Text>
+    </View>
+  </RNGestureHandlerButton>
+  <Text
+    style={
+      Object {
+        "color": "rgba(63,67,80,0.6)",
+        "fontFamily": "OpenSans",
+        "fontSize": 16,
+        "fontWeight": "400",
+        "lineHeight": 24,
       }
-      testID="markdown_text"
-    >
-       archived the channel
-    </Text>
+    }
+    testID="markdown_text"
+  >
+     archived the channel
   </Text>
 </View>
 `;
@@ -346,43 +454,61 @@ exports[`renderSystemMessage uses renderer for unarchived channel 1`] = `
     ]
   }
 >
-  <Text>
-    <Text
+  <RNGestureHandlerButton
+    collapsable={false}
+    exclusive={true}
+    onGestureEvent={[Function]}
+    onGestureHandlerEvent={[Function]}
+    onGestureHandlerStateChange={[Function]}
+    onHandlerStateChange={[Function]}
+    rippleColor={0}
+  >
+    <View
+      accessible={true}
+      collapsable={false}
       style={
-        Array [
-          Object {
-            "color": "rgba(63,67,80,0.6)",
-            "fontFamily": "OpenSans",
-            "fontSize": 16,
-            "fontWeight": "400",
-            "lineHeight": 24,
-          },
-          Object {
-            "opacity": 1,
-          },
-        ]
+        Object {
+          "opacity": 1,
+        }
       }
     >
       <Text
-        style={Array []}
-      >
-        @username
-      </Text>
-    </Text>
-    <Text
-      style={
-        Object {
-          "color": "rgba(63,67,80,0.6)",
-          "fontFamily": "OpenSans",
-          "fontSize": 16,
-          "fontWeight": "400",
-          "lineHeight": 24,
+        style={
+          Array [
+            Object {
+              "color": "rgba(63,67,80,0.6)",
+              "fontFamily": "OpenSans",
+              "fontSize": 16,
+              "fontWeight": "400",
+              "lineHeight": 24,
+            },
+            Object {
+              "opacity": 1,
+            },
+          ]
         }
+      >
+        <Text
+          style={Array []}
+        >
+          @username
+        </Text>
+      </Text>
+    </View>
+  </RNGestureHandlerButton>
+  <Text
+    style={
+      Object {
+        "color": "rgba(63,67,80,0.6)",
+        "fontFamily": "OpenSans",
+        "fontSize": 16,
+        "fontWeight": "400",
+        "lineHeight": 24,
       }
-      testID="markdown_text"
-    >
-       unarchived the channel
-    </Text>
+    }
+    testID="markdown_text"
+  >
+     unarchived the channel
   </Text>
 </View>
 `;

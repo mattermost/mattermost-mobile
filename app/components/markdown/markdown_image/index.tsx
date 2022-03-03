@@ -3,11 +3,15 @@
 
 import {useManagedConfig} from '@mattermost/react-native-emm';
 import Clipboard from '@react-native-community/clipboard';
-import React, {useCallback, useRef, useState} from 'react';
+import React, {useCallback, useMemo, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
 import {Alert, Platform, StyleProp, StyleSheet, Text, TextStyle, View} from 'react-native';
+import {LongPressGestureHandler, TapGestureHandler} from 'react-native-gesture-handler';
+import Animated from 'react-native-reanimated';
 import parseUrl from 'url-parse';
 
+import {GalleryInit} from '@app/context/gallery';
+import {useGalleryItem} from '@app/hooks/gallery';
 import CompassIcon from '@components/compass_icon';
 import FormattedText from '@components/formatted_text';
 import ProgressiveImage from '@components/progressive_image';
@@ -17,7 +21,8 @@ import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
 import {bottomSheet, dismissBottomSheet} from '@screens/navigation';
-import {openGallerWithMockFile} from '@utils/gallery';
+import {lookupMimeType} from '@utils/file';
+import {openGalleryAtIndex} from '@utils/gallery';
 import {generateId} from '@utils/general';
 import {calculateDimensions, getViewPortWidth, isGifTooLarge} from '@utils/images';
 import {normalizeProtocol, tryOpenURL} from '@utils/url';
@@ -28,6 +33,7 @@ type MarkdownImageProps = {
     imagesMetadata?: Record<string, PostImage>;
     isReplyPost?: boolean;
     linkDestination?: string;
+    location?: string;
     postId: string;
     source: string;
 }
@@ -50,42 +56,63 @@ const style = StyleSheet.create({
 
 const MarkdownImage = ({
     disabled, errorTextStyle, imagesMetadata, isReplyPost = false,
-    linkDestination, postId, source,
+    linkDestination, location, postId, source,
 }: MarkdownImageProps) => {
     const intl = useIntl();
     const isTablet = useIsTablet();
     const theme = useTheme();
     const managedConfig = useManagedConfig();
-    const genericFileId = useRef(generateId()).current;
+    const genericFileId = useRef(generateId('uid')).current;
+    const tapRef = useRef<TapGestureHandler>();
     const metadata = imagesMetadata?.[source] || Object.values(imagesMetadata || {})[0];
     const [failed, setFailed] = useState(isGifTooLarge(metadata));
     const originalSize = {width: metadata?.width || 0, height: metadata?.height || 0};
     const serverUrl = useServerUrl();
+    const galleryIdentifier = `${postId}-${genericFileId}-${location}`;
+    const uri = useMemo(() => {
+        if (source.startsWith('/')) {
+            return serverUrl + source;
+        }
 
-    let uri = source;
-    if (uri.startsWith('/')) {
-        uri = serverUrl + uri;
-    }
+        return source;
+    }, [source, serverUrl]);
 
-    const link = decodeURIComponent(uri);
-    let filename = parseUrl(link.substr(link.lastIndexOf('/'))).pathname.replace('/', '');
-    let extension = filename.split('.').pop();
-    if (extension === filename) {
-        const ext = filename.indexOf('.') === -1 ? '.png' : filename.substring(filename.lastIndexOf('.'));
-        filename = `${filename}${ext}`;
-        extension = ext;
-    }
+    const fileInfo = useMemo(() => {
+        const link = decodeURIComponent(uri);
+        let filename = parseUrl(link.substr(link.lastIndexOf('/'))).pathname.replace('/', '');
+        let extension = filename.split('.').pop();
+        if (extension === filename) {
+            const ext = filename.indexOf('.') === -1 ? '.png' : filename.substring(filename.lastIndexOf('.'));
+            filename = `${filename}${ext}`;
+            extension = ext;
+        }
 
-    const fileInfo = {
-        id: genericFileId,
-        name: filename,
-        extension,
-        has_preview_image: true,
-        post_id: postId,
-        uri: link,
-        width: originalSize.width,
-        height: originalSize.height,
-    };
+        return {
+            id: genericFileId,
+            name: filename,
+            extension,
+            has_preview_image: true,
+            post_id: postId,
+            uri: link,
+            width: originalSize.width,
+            height: originalSize.height,
+        };
+    }, []);
+
+    const handlePreviewImage = useCallback(() => {
+        const item: GalleryItemType = {
+            ...fileInfo,
+            mime_type: lookupMimeType(fileInfo.name),
+            type: 'image',
+        };
+        openGalleryAtIndex(galleryIdentifier, 0, [item]);
+    }, []);
+
+    const {ref, onGestureEvent, styles} = useGalleryItem(
+        galleryIdentifier,
+        0,
+        handlePreviewImage,
+    );
 
     const {height, width} = calculateDimensions(fileInfo.height, fileInfo.width, getViewPortWidth(isReplyPost, isTablet));
 
@@ -150,10 +177,6 @@ const MarkdownImage = ({
         }
     }, [managedConfig, intl, theme]);
 
-    const handlePreviewImage = useCallback(() => {
-        openGallerWithMockFile(fileInfo.uri, postId, fileInfo.height, fileInfo.width, fileInfo.id);
-    }, []);
-
     const handleOnError = useCallback(() => {
         setFailed(true);
     }, []);
@@ -186,20 +209,30 @@ const MarkdownImage = ({
             );
         } else {
             image = (
-                <TouchableWithFeedback
-                    disabled={disabled}
-                    onLongPress={handleLinkLongPress}
-                    onPress={handlePreviewImage}
-                    style={[{width, height}, style.container]}
+                <LongPressGestureHandler
+                    enabled={!disabled}
+                    onGestureEvent={handleLinkLongPress}
+                    waitFor={tapRef}
                 >
-                    <ProgressiveImage
-                        id={fileInfo.id}
-                        defaultSource={{uri: fileInfo.uri}}
-                        onError={handleOnError}
-                        resizeMode='contain'
-                        style={{width, height}}
-                    />
-                </TouchableWithFeedback>
+                    <Animated.View style={[styles, {width, height}, style.container]}>
+                        <TapGestureHandler
+                            enabled={!disabled}
+                            onGestureEvent={onGestureEvent}
+                            ref={tapRef}
+                        >
+                            <Animated.View testID='markdown_image'>
+                                <ProgressiveImage
+                                    forwardRef={ref}
+                                    id={fileInfo.id}
+                                    defaultSource={{uri: fileInfo.uri}}
+                                    onError={handleOnError}
+                                    resizeMode='contain'
+                                    style={{width, height}}
+                                />
+                            </Animated.View>
+                        </TapGestureHandler>
+                    </Animated.View>
+                </LongPressGestureHandler>
             );
         }
     }
@@ -211,15 +244,23 @@ const MarkdownImage = ({
                 onLongPress={handleLinkLongPress}
                 style={[{width, height}, style.container]}
             >
-                {image}
+                <ProgressiveImage
+                    id={fileInfo.id}
+                    defaultSource={{uri: fileInfo.uri}}
+                    onError={handleOnError}
+                    resizeMode='contain'
+                    style={{width, height}}
+                />
             </TouchableWithFeedback>
         );
     }
 
     return (
-        <View testID='markdown_image'>
-            {image}
-        </View>
+        <GalleryInit galleryIdentifier={galleryIdentifier}>
+            <Animated.View testID='markdown_image'>
+                {image}
+            </Animated.View>
+        </GalleryInit>
     );
 };
 

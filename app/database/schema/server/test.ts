@@ -16,10 +16,6 @@ const {
     CUSTOM_EMOJI,
     DRAFT,
     FILE,
-    GROUP,
-    GROUPS_CHANNEL,
-    GROUPS_TEAM,
-    GROUP_MEMBERSHIP,
     MY_CHANNEL,
     MY_CHANNEL_SETTINGS,
     MY_TEAM,
@@ -289,62 +285,6 @@ describe('*** Test schema for SERVER database ***', () => {
                         {name: 'props', type: 'string'},
                         {name: 'root_id', type: 'string'},
                         {name: 'type', type: 'string'},
-                        {name: 'user_id', type: 'string', isIndexed: true},
-                    ],
-                },
-                [GROUP]: {
-                    name: GROUP,
-                    unsafeSql: undefined,
-                    columns: {
-                        allow_reference: {name: 'allow_reference', type: 'boolean'},
-                        delete_at: {name: 'delete_at', type: 'number'},
-                        display_name: {name: 'display_name', type: 'string'},
-                        name: {name: 'name', type: 'string'},
-                    },
-                    columnArray: [
-                        {name: 'allow_reference', type: 'boolean'},
-                        {name: 'delete_at', type: 'number'},
-                        {name: 'display_name', type: 'string'},
-                        {name: 'name', type: 'string'},
-                    ],
-                },
-                [GROUPS_CHANNEL]: {
-                    name: GROUPS_CHANNEL,
-                    unsafeSql: undefined,
-                    columns: {
-                        channel_id: {name: 'channel_id', type: 'string', isIndexed: true},
-                        group_id: {name: 'group_id', type: 'string', isIndexed: true},
-                        member_count: {name: 'member_count', type: 'number'},
-                        timezone_count: {name: 'timezone_count', type: 'number'},
-                    },
-                    columnArray: [
-                        {name: 'channel_id', type: 'string', isIndexed: true},
-                        {name: 'group_id', type: 'string', isIndexed: true},
-                        {name: 'member_count', type: 'number'},
-                        {name: 'timezone_count', type: 'number'},
-                    ],
-                },
-                [GROUPS_TEAM]: {
-                    name: GROUPS_TEAM,
-                    unsafeSql: undefined,
-                    columns: {
-                        group_id: {name: 'group_id', type: 'string', isIndexed: true},
-                        team_id: {name: 'team_id', type: 'string', isIndexed: true},
-                    },
-                    columnArray: [
-                        {name: 'group_id', type: 'string', isIndexed: true},
-                        {name: 'team_id', type: 'string', isIndexed: true},
-                    ],
-                },
-                [GROUP_MEMBERSHIP]: {
-                    name: GROUP_MEMBERSHIP,
-                    unsafeSql: undefined,
-                    columns: {
-                        group_id: {name: 'group_id', type: 'string', isIndexed: true},
-                        user_id: {name: 'user_id', type: 'string', isIndexed: true},
-                    },
-                    columnArray: [
-                        {name: 'group_id', type: 'string', isIndexed: true},
                         {name: 'user_id', type: 'string', isIndexed: true},
                     ],
                 },

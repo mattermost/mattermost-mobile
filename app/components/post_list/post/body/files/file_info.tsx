@@ -3,8 +3,8 @@
 
 import React from 'react';
 import {Text, View} from 'react-native';
+import {TouchableOpacity} from 'react-native-gesture-handler';
 
-import TouchableWithFeedback from '@components/touchable_with_feedback';
 import {getFormattedFileSize} from '@utils/file';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 
@@ -43,12 +43,8 @@ const FileInfo = ({file, onPress, theme}: FileInfoProps) => {
     const style = getStyleSheet(theme);
 
     return (
-        <TouchableWithFeedback
-            onPress={onPress}
-            type={'opacity'}
-            style={style.attachmentContainer}
-        >
-            <>
+        <View style={style.attachmentContainer}>
+            <TouchableOpacity onPress={onPress}>
                 <Text
                     numberOfLines={1}
                     ellipsizeMode='tail'
@@ -65,8 +61,8 @@ const FileInfo = ({file, onPress, theme}: FileInfoProps) => {
                         {`${getFormattedFileSize(file.size)}`}
                     </Text>
                 </View>
-            </>
-        </TouchableWithFeedback>
+            </TouchableOpacity>
+        </View>
     );
 };
 

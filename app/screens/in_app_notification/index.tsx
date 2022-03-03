@@ -3,7 +3,7 @@
 
 import React, {useEffect, useRef, useState} from 'react';
 import {DeviceEventEmitter, Platform, StyleSheet, Text, TouchableOpacity, View} from 'react-native';
-import {GestureDetector, Gesture} from 'react-native-gesture-handler';
+import {GestureDetector, Gesture, GestureHandlerRootView} from 'react-native-gesture-handler';
 import {Navigation} from 'react-native-navigation';
 import Animated, {runOnJS, useAnimatedStyle, useSharedValue, withTiming} from 'react-native-reanimated';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
@@ -144,43 +144,45 @@ const InAppNotification = ({componentId, serverName, serverUrl, notification}: I
     const gesture = Gesture.Pan().activeOffsetY(-20).onStart(() => runOnJS(animateDismissOverlay)());
 
     return (
-        <GestureDetector gesture={gesture}>
-            <Animated.View
-                style={[styles.container, isTablet ? styles.tablet : undefined, animatedStyle]}
-                testID='in_app_notification.screen'
-            >
-                <View style={styles.flex}>
-                    <TouchableOpacity
-                        style={styles.touchable}
-                        onPress={notificationTapped}
-                        activeOpacity={1}
-                    >
-                        <Icon
-                            database={DatabaseManager.serverDatabases[serverUrl].database}
-                            fromWebhook={notification.payload?.from_webhook === 'true'}
-                            overrideIconUrl={notification.payload?.override_icon_url}
-                            senderId={notification.payload?.sender_id || ''}
-                            serverUrl={serverUrl}
-                            useUserIcon={notification.payload?.use_user_icon === 'true'}
-                        />
-                        <View style={styles.titleContainer}>
-                            <Title channelName={notification.payload?.channel_name || ''}/>
-                            <View style={styles.flex}>
-                                <Text
-                                    numberOfLines={2}
-                                    ellipsizeMode='tail'
-                                    style={styles.message}
-                                    testID='in_app_notification.message'
-                                >
-                                    {message}
-                                </Text>
+        <GestureHandlerRootView>
+            <GestureDetector gesture={gesture}>
+                <Animated.View
+                    style={[styles.container, isTablet ? styles.tablet : undefined, animatedStyle]}
+                    testID='in_app_notification.screen'
+                >
+                    <View style={styles.flex}>
+                        <TouchableOpacity
+                            style={styles.touchable}
+                            onPress={notificationTapped}
+                            activeOpacity={1}
+                        >
+                            <Icon
+                                database={DatabaseManager.serverDatabases[serverUrl].database}
+                                fromWebhook={notification.payload?.from_webhook === 'true'}
+                                overrideIconUrl={notification.payload?.override_icon_url}
+                                senderId={notification.payload?.sender_id || ''}
+                                serverUrl={serverUrl}
+                                useUserIcon={notification.payload?.use_user_icon === 'true'}
+                            />
+                            <View style={styles.titleContainer}>
+                                <Title channelName={notification.payload?.channel_name || ''}/>
+                                <View style={styles.flex}>
+                                    <Text
+                                        numberOfLines={2}
+                                        ellipsizeMode='tail'
+                                        style={styles.message}
+                                        testID='in_app_notification.message'
+                                    >
+                                        {message}
+                                    </Text>
+                                </View>
+                                {Boolean(serverName) && <Server serverName={serverName!}/>}
                             </View>
-                            {Boolean(serverName) && <Server serverName={serverName!}/>}
-                        </View>
-                    </TouchableOpacity>
-                </View>
-            </Animated.View>
-        </GestureDetector>
+                        </TouchableOpacity>
+                    </View>
+                </Animated.View>
+            </GestureDetector>
+        </GestureHandlerRootView>
     );
 };
 
