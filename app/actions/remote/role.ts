@@ -78,6 +78,7 @@ export const fetchRoles = async (serverUrl: string, teamMembership?: TeamMembers
         }
     }
 
+    rolesToFetch.delete('');
     if (rolesToFetch.size > 0) {
         return fetchRolesIfNeeded(serverUrl, Array.from(rolesToFetch), fetchOnly);
     }
