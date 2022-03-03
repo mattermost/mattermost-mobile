@@ -3,7 +3,7 @@
 
 import React, {useCallback, useEffect, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
-import {Keyboard, KeyboardType, Platform, SafeAreaView, View} from 'react-native';
+import {Alert, Keyboard, KeyboardType, Platform, SafeAreaView, View} from 'react-native';
 import {Navigation} from 'react-native-navigation';
 
 import {deletePost, editPost} from '@actions/remote/post';
@@ -103,7 +103,7 @@ const EditPost = ({componentId, maxPostSize, post, closeButton, hasFilesAttached
                         break;
                     }
                     case RIGHT_BUTTON.id:
-                        onSaveEditedPost();
+                        onSavePostMessage();
                         break;
                 }
             },
@@ -121,6 +121,11 @@ const EditPost = ({componentId, maxPostSize, post, closeButton, hasFilesAttached
         }
     }, [postMessage]);
 
+    const onClose = useCallback(() => {
+        Keyboard.dismiss();
+        dismissModal({componentId});
+    }, []);
+
     const onTextSelectionChange = useCallback((curPos: number = cursorPosition) => {
         if (Platform.OS === 'ios') {
             setKeyboardType(switchKeyboardForCodeBlocks(postMessage, curPos));
@@ -128,11 +133,7 @@ const EditPost = ({componentId, maxPostSize, post, closeButton, hasFilesAttached
         setCursorPosition(curPos);
     }, [cursorPosition, postMessage]);
 
-    const toggleSaveButton = useCallback((message: string) => {
-        //todo: might be no need for rightButtonEnabled
-
-        // if (rightButtonEnabled !== enabled) {
-        //     setRightButtonEnabled(enabled);
+    const toggleSaveButton = useCallback(() => {
         setButtons(componentId, {
             leftButtons: [{
                 ...LEFT_BUTTON,
@@ -145,8 +146,6 @@ const EditPost = ({componentId, maxPostSize, post, closeButton, hasFilesAttached
                 enabled: true,
             }],
         });
-
-        // }
     }, [rightButtonEnabled, componentId]);
 
     const onChangeText = useCallback((message: string) => {
@@ -159,10 +158,10 @@ const EditPost = ({componentId, maxPostSize, post, closeButton, hasFilesAttached
             setErrorLine(line);
             setErrorExtra(extra);
         }
-        toggleSaveButton(message);
+        toggleSaveButton();
     }, [intl, maxPostSize, toggleSaveButton]);
 
-    const emitEditing = useCallback((loading) => {
+    const freezeSaveBtn = useCallback((loading) => {
         setRightButtonEnabled(!loading);
         setButtons(componentId, {
             leftButtons: [{
@@ -173,28 +172,47 @@ const EditPost = ({componentId, maxPostSize, post, closeButton, hasFilesAttached
         });
     }, []);
 
-    const onClose = useCallback(() => {
-        Keyboard.dismiss();
-        dismissModal({componentId});
-    }, []);
-
-    const onSaveEditedPost = useCallback(async () => {
+    const onSavePostMessage = useCallback(async () => {
         setIsUpdating(true);
         setErrorLine(undefined);
         setErrorExtra(undefined);
 
-        emitEditing(true);
-        const shouldDeletePost = !postMessage && canDelete && !hasFilesAttached;
+        freezeSaveBtn(true);
+
+        const shouldDelete = !postMessage && canDelete && !hasFilesAttached;
 
         const getRequest = async (url: string, postId: string, msg: string) => {
-            if (shouldDeletePost) {
+            if (shouldDelete) {
                 return deletePost(url, post.id);
             }
             return editPost(url, postId, msg);
         };
 
-        const res = await getRequest(serverUrl, post.id, postMessage);
-        emitEditing(false);
+        let res;
+        if (shouldDelete) {
+            //todo: Confirm if this is the best way of doing things
+            Alert.alert(
+                intl.formatMessage({id: 'mobile.edit_post.delete_title', defaultMessage: 'Confirm Post Delete'}),
+                intl.formatMessage({
+                    id: 'mobile.edit_post.delete_question',
+                    defaultMessage: 'Are you sure you want to delete this Post?',
+                }),
+                [{
+                    text: intl.formatMessage({id: 'mobile.post.cancel', defaultMessage: 'Cancel'}),
+                    style: 'cancel',
+                }, {
+                    text: intl.formatMessage({id: 'post_info.del', defaultMessage: 'Delete'}),
+                    style: 'destructive',
+                    onPress: async () => {
+                        res = await getRequest(serverUrl, post.id, postMessage);
+                    },
+                }],
+            );
+        } else {
+            res = await getRequest(serverUrl, post.id, postMessage);
+        }
+
+        freezeSaveBtn(false);
 
         if (res?.error) {
             setIsUpdating(false);
@@ -204,7 +222,7 @@ const EditPost = ({componentId, maxPostSize, post, closeButton, hasFilesAttached
             setIsUpdating(false);
             onClose();
         }
-    }, [emitEditing, serverUrl, post.id, postMessage, onClose]);
+    }, [freezeSaveBtn, serverUrl, post.id, postMessage, onClose]);
 
     if (isUpdating) {
         return (
