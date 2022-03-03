@@ -6,7 +6,7 @@ import {useIntl} from 'react-intl';
 import {Keyboard, KeyboardType, Platform, SafeAreaView, View} from 'react-native';
 import {Navigation} from 'react-native-navigation';
 
-import {editPost} from '@actions/remote/post';
+import {deletePost, editPost} from '@actions/remote/post';
 import AutoComplete from '@components/autocomplete';
 import Loading from '@components/loading';
 import {useServerUrl} from '@context/server';
@@ -128,25 +128,28 @@ const EditPost = ({componentId, maxPostSize, post, closeButton, hasFilesAttached
         setCursorPosition(curPos);
     }, [cursorPosition, postMessage]);
 
-    const toggleSaveButton = useCallback((enabled) => {
-        if (rightButtonEnabled !== enabled) {
-            setRightButtonEnabled(enabled);
-            setButtons(componentId, {
-                leftButtons: [{
-                    ...LEFT_BUTTON,
-                    icon: closeButton,
-                }],
-                rightButtons: [{
-                    ...RIGHT_BUTTON,
-                    color: theme.sidebarHeaderTextColor,
-                    text: intl.formatMessage({id: 'edit_post.save', defaultMessage: 'Save'}),
-                    enabled,
-                }],
-            });
-        }
+    const toggleSaveButton = useCallback((message: string) => {
+        //todo: might be no need for rightButtonEnabled
+
+        // if (rightButtonEnabled !== enabled) {
+        //     setRightButtonEnabled(enabled);
+        setButtons(componentId, {
+            leftButtons: [{
+                ...LEFT_BUTTON,
+                icon: closeButton,
+            }],
+            rightButtons: [{
+                ...RIGHT_BUTTON,
+                color: theme.sidebarHeaderTextColor,
+                text: intl.formatMessage({id: 'edit_post.save', defaultMessage: 'Save'}),
+                enabled: true,
+            }],
+        });
+
+        // }
     }, [rightButtonEnabled, componentId]);
 
-    const onPostChangeText = useCallback((message: string) => {
+    const onChangeText = useCallback((message: string) => {
         setPostMessage(message);
         const tooLong = message.trim().length > maxPostSize;
 
@@ -156,7 +159,7 @@ const EditPost = ({componentId, maxPostSize, post, closeButton, hasFilesAttached
             setErrorLine(line);
             setErrorExtra(extra);
         }
-        toggleSaveButton(Boolean(message) && !tooLong);
+        toggleSaveButton(message);
     }, [intl, maxPostSize, toggleSaveButton]);
 
     const emitEditing = useCallback((loading) => {
@@ -181,9 +184,18 @@ const EditPost = ({componentId, maxPostSize, post, closeButton, hasFilesAttached
         setErrorExtra(undefined);
 
         emitEditing(true);
+        const shouldDeletePost = !postMessage && canDelete && !hasFilesAttached;
 
-        const res = await editPost(serverUrl, post.id, postMessage);
+        const getRequest = async (url: string, postId: string, msg: string) => {
+            if (shouldDeletePost) {
+                return deletePost(url, post.id);
+            }
+            return editPost(url, postId, msg);
+        };
+
+        const res = await getRequest(serverUrl, post.id, postMessage);
         emitEditing(false);
+
         if (res?.error) {
             setIsUpdating(false);
             setErrorLine((res.error as ClientErrorProps).message);
@@ -219,7 +231,7 @@ const EditPost = ({componentId, maxPostSize, post, closeButton, hasFilesAttached
                         hasError={Boolean(errorLine)}
                         keyboardType={keyboardType}
                         message={postMessage}
-                        onChangeText={onPostChangeText}
+                        onChangeText={onChangeText}
                         onTextSelectionChange={onTextSelectionChange}
                         ref={postInputRef}
                     />
@@ -234,7 +246,7 @@ const EditPost = ({componentId, maxPostSize, post, closeButton, hasFilesAttached
                     offsetY={8}
                     postInputTop={postInputTop}
                     rootId={post.rootId}
-                    updateValue={onPostChangeText}
+                    updateValue={onChangeText}
                     value={postMessage}
                 />
             </View>
