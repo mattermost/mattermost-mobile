@@ -8,12 +8,14 @@ import {getPreferenceValue} from '@helpers/api/preference';
 import {selectDefaultTeam} from '@helpers/api/team';
 import {DEFAULT_LOCALE} from '@i18n';
 
+import {prepareDeleteCategory} from './categories';
 import {prepareDeleteChannel, queryDefaultChannelForTeam} from './channel';
 import {queryPreferencesByCategoryAndName} from './preference';
 import {patchTeamHistory, queryConfig, queryTeamHistory} from './system';
 import {queryCurrentUser} from './user';
 
 import type ServerDataOperator from '@database/operator/server_data_operator';
+import type CategoryModel from '@typings/database/models/servers/category';
 import type ChannelModel from '@typings/database/models/servers/channel';
 import type MyTeamModel from '@typings/database/models/servers/my_team';
 import type TeamModel from '@typings/database/models/servers/team';
@@ -234,6 +236,18 @@ export const prepareDeleteTeam = async (team: TeamModel): Promise<Model[]> => {
                 models?.forEach((model) => preparedModels.push(model.prepareDestroyPermanently()));
             } catch {
                 // Record not found, do nothing
+            }
+        }
+
+        const categories = await team.categories.fetch?.() as CategoryModel[] | undefined;
+        if (categories?.length) {
+            for await (const category of categories) {
+                try {
+                    const preparedCategory = await prepareDeleteCategory(category);
+                    preparedModels.push(...preparedCategory);
+                } catch {
+                    // Record not found, do nothing
+                }
             }
         }
 

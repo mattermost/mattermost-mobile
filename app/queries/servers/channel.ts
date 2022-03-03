@@ -96,7 +96,7 @@ export const prepareMyChannelsForTeam = async (operator: ServerDataOperator, tea
 export const prepareDeleteChannel = async (channel: ChannelModel): Promise<Model[]> => {
     const preparedModels: Model[] = [channel.prepareDestroyPermanently()];
 
-    const relations: Array<Relation<Model>> = [channel.membership, channel.info, channel.settings];
+    const relations: Array<Relation<Model>> = [channel.membership, channel.info, channel.settings, channel.categoryChannel];
     for await (const relation of relations) {
         try {
             const model = await relation?.fetch?.();
