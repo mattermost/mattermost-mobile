@@ -112,7 +112,6 @@ export default function PostDraft({
             updateValue={setValue}
             rootId={rootId}
             channelId={channelId}
-            offsetY={0}
             cursorPosition={cursorPosition}
             value={value}
             isSearch={isSearch}
@@ -123,17 +122,14 @@ export default function PostDraft({
     if (Platform.OS === 'android') {
         return (
             <>
-                {autoComplete}
                 {draftHandler}
+                {autoComplete}
             </>
         );
     }
 
     return (
         <>
-            <View nativeID={accessoriesContainerID}>
-                {autoComplete}
-            </View>
             <KeyboardTrackingView
                 accessoriesContainerID={accessoriesContainerID}
                 ref={keyboardTracker}
@@ -142,6 +138,9 @@ export default function PostDraft({
             >
                 {draftHandler}
             </KeyboardTrackingView>
+            <View nativeID={accessoriesContainerID}>
+                {autoComplete}
+            </View>
         </>
     );
 }
