@@ -229,7 +229,7 @@ const EditPost = ({componentId, maxPostSize, post, closeButton, hasFilesAttached
                 <AutoComplete
                     channelId={post.channelId}
                     cursorPosition={cursorPosition}
-                    hasFilesAttached={false}
+                    hasFilesAttached={hasFilesAttached}
                     nestedScrollEnabled={true}
                     offsetY={8}
                     postInputTop={postInputTop}
