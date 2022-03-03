@@ -95,7 +95,7 @@ export default function DraftInput({
     const theme = useTheme();
 
     const handleLayout = useCallback((e: LayoutChangeEvent) => {
-        updatePostInputTop(e.nativeEvent.layout.y);
+        updatePostInputTop(e.nativeEvent.layout.height);
     }, []);
 
     // Render
