@@ -149,7 +149,7 @@ const withPost = withObservables(
             isConsecutivePost,
             isEphemeral,
             isFirstReply: of$(isFirstReply(post, previousPost)),
-            isFlagged: isSaved,
+            isSaved,
             isJumboEmoji,
             isLastReply,
             isPostAddChannelMember,
