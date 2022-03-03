@@ -3,7 +3,7 @@
 
 import React, {useState} from 'react';
 import {useIntl} from 'react-intl';
-import {Text} from 'react-native';
+import {Platform, Text} from 'react-native';
 import {TouchableOpacity} from 'react-native-gesture-handler';
 
 import FormattedMarkdownText from '@components/formatted_markdown_text';
@@ -34,7 +34,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             lineHeight: 20,
         },
         touchableStyle: {
-            top: 5,
+            top: Platform.select({ios: 3, default: 4}),
         },
     };
 });

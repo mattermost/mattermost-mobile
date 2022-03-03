@@ -5,7 +5,7 @@ import {Parser} from 'commonmark';
 import Renderer from 'commonmark-react-renderer';
 import React, {ReactElement, useRef} from 'react';
 import {useIntl} from 'react-intl';
-import {GestureResponderEvent, StyleProp, Text, TextStyle} from 'react-native';
+import {GestureResponderEvent, Platform, StyleProp, Text, TextStyle} from 'react-native';
 
 import AtMention from '@components/markdown/at_mention';
 import MarkdownLink from '@components/markdown/markdown_link';
@@ -40,7 +40,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             opacity: 1,
         },
         touchableStyle: {
-            top: 5,
+            top: Platform.select({ios: 2, default: 5}),
         },
     };
 });
