@@ -76,7 +76,7 @@
   "combined_system_message.removed_from_team.two": "{firstUser} and {secondUser} were **removed from the team**.",
   "combined_system_message.you": "You",
   "create_post.deactivated": "You are viewing an archived channel with a deactivated user.",
-  "create_post.thread_reply": "Reply to thread",
+  "create_post.thread_reply": "Reply to this thread...",
   "create_post.write": "Write to {channelDisplayName}",
   "custom_status.expiry_dropdown.custom": "Custom",
   "custom_status.expiry_dropdown.date_and_time": "Date and Time",
