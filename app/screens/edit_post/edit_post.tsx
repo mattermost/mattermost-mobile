@@ -68,7 +68,7 @@ const EditPost = ({componentId, maxPostSize, post, closeButton}: EditPostProps) 
     const [cursorPosition, setCursorPosition] = useState(0);
     const [errorLine, setErrorLine] = useState<string | undefined>();
     const [errorExtra, setErrorExtra] = useState<string | undefined>();
-    const [rightButtonEnabled, setRightButtonEnabled] = useState(true);
+    const [rightButtonEnabled, setRightButtonEnabled] = useState(false);
     const [isUpdating, setIsUpdating] = useState(false);
     const [postInputTop, setPostInputTop] = useState(0);
 
@@ -89,6 +89,7 @@ const EditPost = ({componentId, maxPostSize, post, closeButton}: EditPostProps) 
                 color: theme.sidebarHeaderTextColor,
                 text: intl.formatMessage({id: 'edit_post.save', defaultMessage: 'Save'}),
                 ...RIGHT_BUTTON,
+                enabled: false,
             }],
         });
     }, [theme.sidebarHeaderTextColor]);
