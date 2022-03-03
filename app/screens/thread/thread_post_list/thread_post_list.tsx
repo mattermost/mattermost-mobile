@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React, {useMemo} from 'react';
-import {StyleProp, StyleSheet, View, ViewStyle} from 'react-native';
+import {StyleProp, StyleSheet, ViewStyle} from 'react-native';
 import {Edge, SafeAreaView} from 'react-native-safe-area-context';
 
 import PostList from '@components/post_list';
@@ -27,7 +27,6 @@ const edges: Edge[] = ['bottom'];
 
 const styles = StyleSheet.create({
     flex: {flex: 1},
-    emptyFooter: {height: 200},
 });
 
 const ThreadPostList = ({
@@ -47,9 +46,6 @@ const ThreadPostList = ({
             currentTimezone={currentTimezone}
             currentUsername={currentUsername}
             isTimezoneEnabled={isTimezoneEnabled}
-            footer={
-                <View style={styles.emptyFooter}/>
-            }
             lastViewedAt={lastViewedAt}
             location={Screens.THREAD}
             nativeID={nativeID}
