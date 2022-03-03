@@ -48,7 +48,6 @@ const ProfileError = ({error}: DisplayErrorProps) => {
                 name='alert-outline'
             />
             <ErrorTextComponent
-                theme={theme}
                 testID='edit_profile.error.text'
                 error={error}
                 textStyle={style.text}

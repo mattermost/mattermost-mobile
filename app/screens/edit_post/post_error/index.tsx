@@ -5,7 +5,6 @@ import React from 'react';
 import {StyleSheet, useWindowDimensions, View} from 'react-native';
 
 import ErrorText from '@components/error_text';
-import {useTheme} from '@context/theme';
 
 type PostErrorProps = {
     errorLine?: string;
@@ -31,7 +30,6 @@ const styles = StyleSheet.create({
 });
 
 const PostError = ({errorLine, errorExtra}: PostErrorProps) => {
-    const theme = useTheme();
     const {width} = useWindowDimensions();
 
     return (
@@ -46,7 +44,6 @@ const PostError = ({errorLine, errorExtra}: PostErrorProps) => {
                     testID='edit_post.error.text'
                     error={errorLine}
                     textStyle={styles.errorWrap}
-                    theme={theme}
                 />
             )}
             {errorExtra && (
@@ -54,7 +51,6 @@ const PostError = ({errorLine, errorExtra}: PostErrorProps) => {
                     testID='edit_post.error.text.extra'
                     error={errorExtra}
                     textStyle={!errorLine && styles.errorWrapper}
-                    theme={theme}
                 />
             )}
         </View>
