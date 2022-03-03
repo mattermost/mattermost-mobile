@@ -4,16 +4,121 @@
 import {switchToChannelById} from '@actions/remote/channel';
 import {fetchRoles} from '@actions/remote/role';
 import {fetchConfigAndLicense} from '@actions/remote/systems';
+import {gqlLogin} from '@app/client/graphQL/entry';
+import { GQLToClientChannel, GQLToClientChannelMembership, GQLToClientPreference, GQLToClientRole, GQLToClientSidebarCategory, GQLToClientTeam, GQLToClientTeamMembership, GQLToClientUser } from '@app/client/graphQL/types';
 import DatabaseManager from '@database/manager';
-import {queryChannelsById, queryDefaultChannelForTeam} from '@queries/servers/channel';
+import {queryAllChannelsForTeam, queryChannelsById, queryDefaultChannelForTeam} from '@queries/servers/channel';
 import {prepareModels} from '@queries/servers/entry';
 import {prepareCommonSystemValues, queryCommonSystemValues, queryCurrentChannelId, queryCurrentTeamId, queryWebSocketLastDisconnected, setCurrentTeamAndChannelId} from '@queries/servers/system';
-import {deleteMyTeams, queryTeamsById} from '@queries/servers/team';
+import {deleteMyTeams, queryMyTeams, queryTeamsById} from '@queries/servers/team';
 import {queryCurrentUser} from '@queries/servers/user';
 import {deleteV1Data} from '@utils/file';
 import {isTablet} from '@utils/helpers';
 
 import {AppEntryData, AppEntryError, deferredAppEntryActions, fetchAppEntryData, syncOtherServers} from './common';
+
+export const gqlAppEntry = async(serverUrl: string, since = 0) => {
+    const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
+    if (!operator) {
+        return {error: `${serverUrl} database not found`};
+    }
+    const {database} = operator;
+
+    const tabletDevice = await isTablet();
+    const currentTeamId = await queryCurrentTeamId(database);
+    const lastDisconnectedAt = (await queryWebSocketLastDisconnected(database)) || since;
+
+    const {data: fetchedData, error: fetchedError} = await gqlLogin(serverUrl)
+
+    if (!fetchedData) {
+        return {error: fetchedError};
+    }
+
+    const teamData = {
+        teams: fetchedData.teamMembers.map((m) => GQLToClientTeam(m.team!)),
+        memberships: fetchedData.teamMembers.map((m) => GQLToClientTeamMembership(m)),
+    }
+
+    const chData = {
+        channels: fetchedData.channelMembers?.map((m) => GQLToClientChannel(m.channel!)),
+        memberships: fetchedData.channelMembers?.map((m) => GQLToClientChannelMembership(m)),
+        categories: fetchedData.teamMembers.map((m) => m.sidebarCategories!.map((c) => GQLToClientSidebarCategory(c, m.team!.id!))).flat(),
+    }
+
+    const prefData = {
+        preferences: fetchedData.user?.preferences?.map((p) => GQLToClientPreference(p)),
+    }
+
+    const meData = {
+        user: GQLToClientUser(fetchedData.user!),
+    }
+
+    const rolesData = {
+        roles: [
+        ...fetchedData.user?.roles || [],
+        ...fetchedData.channelMembers?.map((m) => m.roles).flat() || [],
+        ...fetchedData.teamMembers?.map((m) => m.roles).flat() || [],
+    ].filter((v,i,a) => a.slice(0,i).find((v2) => v?.name === v2?.name)).map((r) => GQLToClientRole(r!)),
+    }
+
+    const removeTeamIds = [];
+
+    const removedFromTeam = teamData.memberships?.filter((m) => m.delete_at > 0);
+    if (removedFromTeam?.length) {
+        removeTeamIds.push(...removedFromTeam.map((m) => m.team_id));
+    }
+
+    let initialTeamId = await queryCurrentTeamId(database);
+    if (teamData.teams?.length === 0) {
+        // User is no longer a member of any team
+        const myTeams = await queryMyTeams(database);
+        removeTeamIds.push(...(myTeams?.map((myTeam) => myTeam.id) || []));
+        initialTeamId = '';
+    }
+
+    let removeTeams;
+    if (removeTeamIds?.length) {
+        // Immediately delete myTeams so that the UI renders only teams the user is a member of.
+        removeTeams = await queryTeamsById(database, removeTeamIds);
+        await deleteMyTeams(operator, removeTeams!);
+    }
+
+    const removeChannelIds: string[] = [];
+    if (chData?.channels) {
+        const fetchedChannelIds = chData.channels.map((channel) => channel.id);
+
+        const channels = await queryAllChannelsForTeam(database, initialTeamId);
+        for (const channel of channels) {
+            if (!fetchedChannelIds.includes(channel.id)) {
+                removeChannelIds.push(channel.id);
+            }
+        }
+    }
+
+    let removeChannels;
+    if (removeChannelIds?.length) {
+        removeChannels = await queryChannelsById(database, removeChannelIds);
+    }
+
+    const modelPromises = await prepareModels({operator, initialTeamId, removeTeams, removeChannels, teamData, chData, prefData, meData});
+    modelPromises.push(operator.handleRole({roles: rolesData.roles, prepareRecordsOnly: true}));
+
+    const models = await Promise.all(modelPromises);
+    if (models.length) {
+        await operator.batchRecords(models.flat());
+    }
+
+    const {id: currentUserId, locale: currentUserLocale} = meData.user || (await queryCurrentUser(database))!;
+    const {config, license} = await queryCommonSystemValues(database);
+    deferredAppEntryActions(serverUrl, lastDisconnectedAt, currentUserId, currentUserLocale, prefData.preferences, config, license, teamData, chData, initialTeamId);
+
+    if (!since) {
+        // Load data from other servers
+        syncOtherServers(serverUrl);
+    }
+
+    return {userId: meData?.user?.id};
+}
 
 export const appEntry = async (serverUrl: string, since = 0) => {
     const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
