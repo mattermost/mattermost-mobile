@@ -100,7 +100,7 @@ const withPost = withObservables(
         const author = post.author.observe();
         const canDelete = from$(hasPermissionForPost(post, currentUser, isOwner ? Permissions.DELETE_POST : Permissions.DELETE_OTHERS_POSTS, false));
         const isEphemeral = of$(isPostEphemeral(post));
-        const isFlagged = database.get<PreferenceModel>(PREFERENCE).query(
+        const isSaved = database.get<PreferenceModel>(PREFERENCE).query(
             Q.where('category', Preferences.CATEGORY_SAVED_POST),
             Q.where('name', post.id),
         ).observe().pipe(switchMap((pref) => of$(Boolean(pref.length))));
@@ -149,7 +149,7 @@ const withPost = withObservables(
             isConsecutivePost,
             isEphemeral,
             isFirstReply: of$(isFirstReply(post, previousPost)),
-            isFlagged,
+            isSaved,
             isJumboEmoji,
             isLastReply,
             isPostAddChannelMember,

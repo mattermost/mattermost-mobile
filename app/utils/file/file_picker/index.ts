@@ -134,7 +134,7 @@ export default class FilePickerUtil {
                 }
 
                 if (uri) {
-                    files.push({...file, fileName, uri, type});
+                    files.push({...file, fileName, uri, type, width: file.width, height: file.height});
                 }
             }
         })));
@@ -155,10 +155,7 @@ export default class FilePickerUtil {
         switch (hasPhotoLibraryPermission) {
             case Permissions.RESULTS.DENIED:
                 permissionRequest = await Permissions.request(targetSource);
-                if (permissionRequest !== Permissions.RESULTS.GRANTED) {
-                    return false;
-                }
-                break;
+                return permissionRequest === Permissions.RESULTS.GRANTED;
             case Permissions.RESULTS.BLOCKED: {
                 const grantOption = {
                     text: this.intl.formatMessage({
@@ -183,7 +180,6 @@ export default class FilePickerUtil {
             }
             default: return true;
         }
-        return false;
     };
 
     private hasStoragePermission = async () => {
@@ -197,9 +193,7 @@ export default class FilePickerUtil {
         switch (hasPermissionToStorage) {
             case Permissions.RESULTS.DENIED:
                 permissionRequest = await Permissions.request(storagePermission);
-                if (permissionRequest !== Permissions.RESULTS.GRANTED) {
-                    return false;
-                }
+                return permissionRequest === Permissions.RESULTS.GRANTED;
                 break;
             case Permissions.RESULTS.BLOCKED: {
                 const {title, text} = this.getPermissionDeniedMessage();
@@ -223,8 +217,6 @@ export default class FilePickerUtil {
             }
             default: return true;
         }
-
-        return false;
     };
 
     private buildUri = async (doc: DocumentPickerResponse) => {

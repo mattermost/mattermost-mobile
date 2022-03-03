@@ -16,7 +16,7 @@ export const prepareDeletePost = async (post: PostModel): Promise<Model[]> => {
     const relations: Array<Relation<Model> | Query<Model>> = [post.drafts, post.postsInThread];
     for await (const relation of relations) {
         try {
-            const model = await relation.fetch();
+            const model = await relation?.fetch();
             if (model) {
                 if (Array.isArray(model)) {
                     model.forEach((m) => preparedModels.push(m.prepareDestroyPermanently()));
@@ -31,8 +31,8 @@ export const prepareDeletePost = async (post: PostModel): Promise<Model[]> => {
 
     const associatedChildren: Array<Query<any>> = [post.files, post.reactions];
     for await (const children of associatedChildren) {
-        const models = await children.fetch() as Model[];
-        models.forEach((model) => preparedModels.push(model.prepareDestroyPermanently()));
+        const models = await children.fetch?.() as Model[] | undefined;
+        models?.forEach((model) => preparedModels.push(model.prepareDestroyPermanently()));
     }
 
     return preparedModels;

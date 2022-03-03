@@ -1,11 +1,14 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useRef} from 'react';
+import React, {useCallback, useRef} from 'react';
 import {View} from 'react-native';
+import {TapGestureHandler} from 'react-native-gesture-handler';
+import Animated from 'react-native-reanimated';
 
 import TouchableWithFeedback from '@components/touchable_with_feedback';
-import {isDocument, isImage} from '@utils/file';
+import {useGalleryItem} from '@hooks/gallery';
+import {isDocument, isImage, isVideo} from '@utils/file';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 import DocumentFile, {DocumentFileRef} from './document_file';
@@ -13,17 +16,21 @@ import FileIcon from './file_icon';
 import FileInfo from './file_info';
 import ImageFile from './image_file';
 import ImageFileOverlay from './image_file_overlay';
+import VideoFile from './video_file';
 
 type FileProps = {
     canDownloadFiles: boolean;
     file: FileInfo;
+    galleryIdentifier: string;
     index: number;
     inViewPort: boolean;
     isSingleImage: boolean;
     nonVisibleImagesCount: number;
     onPress: (index: number) => void;
+    publicLinkEnabled: boolean;
     theme: Theme;
     wrapperWidth?: number;
+    updateFileForGallery: (idx: number, file: FileInfo) => void;
 };
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
@@ -46,44 +53,73 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
 });
 
 const File = ({
-    canDownloadFiles, file, index = 0, inViewPort = false, isSingleImage = false,
-    nonVisibleImagesCount = 0, onPress, theme, wrapperWidth = 300,
+    canDownloadFiles, file, galleryIdentifier, index, inViewPort = false, isSingleImage = false,
+    nonVisibleImagesCount = 0, onPress, publicLinkEnabled, theme, wrapperWidth = 300, updateFileForGallery,
 }: FileProps) => {
     const document = useRef<DocumentFileRef>(null);
     const style = getStyleSheet(theme);
 
-    const handlePress = () => {
-        onPress(index);
-    };
-
-    const handlePreviewPress = () => {
+    const handlePreviewPress = useCallback(() => {
         if (document.current) {
             document.current.handlePreviewPress();
         } else {
-            handlePress();
+            onPress(index);
         }
-    };
+    }, [index]);
+
+    const {styles, onGestureEvent, ref} = useGalleryItem(galleryIdentifier, index, handlePreviewPress);
+
+    if (isVideo(file) && publicLinkEnabled) {
+        return (
+            <TapGestureHandler
+                onGestureEvent={onGestureEvent}
+                shouldCancelWhenOutside={true}
+            >
+                <Animated.View style={[styles]}>
+                    <VideoFile
+                        file={file}
+                        forwardRef={ref}
+                        inViewPort={inViewPort}
+                        isSingleImage={isSingleImage}
+                        resizeMode={'cover'}
+                        wrapperWidth={wrapperWidth}
+                        updateFileForGallery={updateFileForGallery}
+                        index={index}
+                    />
+                    {Boolean(nonVisibleImagesCount) &&
+                    <ImageFileOverlay
+                        theme={theme}
+                        value={nonVisibleImagesCount}
+                    />
+                    }
+                </Animated.View>
+            </TapGestureHandler>
+        );
+    }
 
     if (isImage(file)) {
         return (
-            <TouchableWithFeedback
-                onPress={handlePreviewPress}
-                type={'opacity'}
+            <TapGestureHandler
+                onGestureEvent={onGestureEvent}
+                shouldCancelWhenOutside={true}
             >
-                <ImageFile
-                    file={file}
-                    inViewPort={inViewPort}
-                    wrapperWidth={wrapperWidth}
-                    isSingleImage={isSingleImage}
-                    resizeMode={'cover'}
-                />
-                {Boolean(nonVisibleImagesCount) &&
-                <ImageFileOverlay
-                    theme={theme}
-                    value={nonVisibleImagesCount}
-                />
-                }
-            </TouchableWithFeedback>
+                <Animated.View style={[styles]}>
+                    <ImageFile
+                        file={file}
+                        forwardRef={ref}
+                        inViewPort={inViewPort}
+                        isSingleImage={isSingleImage}
+                        resizeMode={'cover'}
+                        wrapperWidth={wrapperWidth}
+                    />
+                    {Boolean(nonVisibleImagesCount) &&
+                    <ImageFileOverlay
+                        theme={theme}
+                        value={nonVisibleImagesCount}
+                    />
+                    }
+                </Animated.View>
+            </TapGestureHandler>
         );
     }
 

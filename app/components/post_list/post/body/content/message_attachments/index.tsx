@@ -8,8 +8,9 @@ import MessageAttachment from './message_attachment';
 
 type Props = {
     attachments: MessageAttachment[];
-    postId: string;
+    location: string;
     metadata?: PostMetadata;
+    postId: string;
     theme: Theme;
 }
 
@@ -20,7 +21,7 @@ const styles = StyleSheet.create({
     },
 });
 
-const MessageAttachments = ({attachments, metadata, postId, theme}: Props) => {
+const MessageAttachments = ({attachments, location, metadata, postId, theme}: Props) => {
     const content = [] as React.ReactNode[];
 
     attachments.forEach((attachment, i) => {
@@ -28,6 +29,7 @@ const MessageAttachments = ({attachments, metadata, postId, theme}: Props) => {
             <MessageAttachment
                 attachment={attachment}
                 key={'att_' + i.toString()}
+                location={location}
                 metadata={metadata}
                 postId={postId}
                 theme={theme}

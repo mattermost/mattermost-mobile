@@ -1,6 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {Q} from '@nozbe/watermelondb';
 import {withDatabase} from '@nozbe/watermelondb/DatabaseProvider';
 import withObservables from '@nozbe/with-observables';
 import {combineLatest, of as of$, from as from$} from 'rxjs';
@@ -15,18 +16,28 @@ import PostDraft from './post_draft';
 
 import type {WithDatabaseArgs} from '@typings/database/database';
 import type ChannelModel from '@typings/database/models/servers/channel';
+import type DraftModel from '@typings/database/models/servers/draft';
 import type SystemModel from '@typings/database/models/servers/system';
 import type UserModel from '@typings/database/models/servers/user';
 
-const {SERVER: {SYSTEM, USER, CHANNEL}} = MM_TABLES;
+const {SERVER: {DRAFT, SYSTEM, USER, CHANNEL}} = MM_TABLES;
 
 type OwnProps = {
-    channelId?: string;
+    channelId: string;
     channelIsArchived?: boolean;
+    rootId?: string;
 }
 
 const enhanced = withObservables([], (ownProps: WithDatabaseArgs & OwnProps) => {
-    const database = ownProps.database;
+    const {database, rootId = ''} = ownProps;
+    const draft = database.get<DraftModel>(DRAFT).query(
+        Q.where('channel_id', ownProps.channelId),
+        Q.where('root_id', rootId),
+    ).observeWithColumns(['message', 'files']).pipe(switchMap((v) => of$(v[0])));
+
+    const files = draft.pipe(switchMap((d) => of$(d?.files)));
+    const message = draft.pipe(switchMap((d) => of$(d?.message)));
+
     const currentUser = database.get<SystemModel>(SYSTEM).findAndObserve(SYSTEM_IDENTIFIERS.CURRENT_USER_ID).pipe(
         switchMap(({value}) => database.get<UserModel>(USER).findAndObserve(value)),
     );
@@ -72,6 +83,8 @@ const enhanced = withObservables([], (ownProps: WithDatabaseArgs & OwnProps) => 
         channelIsArchived,
         channelIsReadOnly,
         deactivatedChannel,
+        files,
+        message,
     };
 });
 
