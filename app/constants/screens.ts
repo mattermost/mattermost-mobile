@@ -31,7 +31,7 @@ export const SSO = 'SSO';
 export const THREAD = 'Thread';
 export const USER_PROFILE = 'UserProfile';
 export const POST_OPTIONS = 'PostOptions';
-export const SAVED_MESSAGES = 'SavedMessages';
+export const SAVED_POSTS = 'SavedPosts';
 
 export default {
     ABOUT,
@@ -64,5 +64,5 @@ export default {
     THREAD,
     USER_PROFILE,
     POST_OPTIONS,
-    SAVED_MESSAGES,
+    SAVED_POSTS,
 };

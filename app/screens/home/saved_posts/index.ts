@@ -8,15 +8,16 @@ import compose from 'lodash/fp/compose';
 import {of as of$} from 'rxjs';
 import {switchMap} from 'rxjs/operators';
 
+import {Preferences} from '@app/constants';
 import {SYSTEM_IDENTIFIERS, MM_TABLES} from '@constants/database';
-import {SystemModel, UserModel} from '@database/models/server';
+import {SystemModel, UserModel, PreferenceModel} from '@database/models/server';
 import {getTimezone} from '@utils/user';
 
-import SavedMessagesScreen from './saved_messages';
+import SavedMessagesScreen from './saved_posts';
 
 import type {WithDatabaseArgs} from '@typings/database/database';
 
-const {USER, SYSTEM, POST} = MM_TABLES.SERVER;
+const {USER, SYSTEM, POST, PREFERENCE} = MM_TABLES.SERVER;
 
 const enhance = withObservables([], ({database}: WithDatabaseArgs) => {
     const currentUser = database.get<SystemModel>(SYSTEM).findAndObserve(SYSTEM_IDENTIFIERS.CURRENT_USER_ID).pipe(
@@ -24,17 +25,17 @@ const enhance = withObservables([], ({database}: WithDatabaseArgs) => {
     );
 
     return {
-        posts: database.get<SystemModel>(SYSTEM).query(
-            Q.where('id', SYSTEM_IDENTIFIERS.FLAGGED_POSTS),
-            Q.take(1),
-        ).observeWithColumns(['value']).pipe(
+        posts: database.get<PreferenceModel>(PREFERENCE).query(
+            Q.where('category', Preferences.CATEGORY_SAVED_POST),
+            Q.where('value', 'true'),
+        ).observeWithColumns(['name']).pipe(
             switchMap((rows) => {
-                if (!rows.length || !rows[0].value.length) {
+                if (!rows.length) {
                     return of$([]);
                 }
-                const row = rows[0];
+                const ids = rows.map((preference) => preference.name);
                 return database.get(POST).query(
-                    Q.where('id', Q.oneOf(row.value)),
+                    Q.where('id', Q.oneOf(ids)),
                     Q.sortBy('create_at', Q.asc),
                 ).observe();
             }),

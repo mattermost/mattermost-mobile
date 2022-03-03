@@ -21,11 +21,11 @@ const SavedMessages = ({isTablet, style, theme}: Props) => {
     const intl = useIntl();
     const openSavedMessages = useCallback(preventDoubleTap(() => {
         if (isTablet) {
-            DeviceEventEmitter.emit(Events.ACCOUNT_SELECT_TABLET_VIEW, Screens.SAVED_MESSAGES);
+            DeviceEventEmitter.emit(Events.ACCOUNT_SELECT_TABLET_VIEW, Screens.SAVED_POSTS);
         } else {
             showModal(
-                Screens.SAVED_MESSAGES,
-                intl.formatMessage({id: 'mobile.screen.saved_messages', defaultMessage: 'Saved Messages'}),
+                Screens.SAVED_POSTS,
+                intl.formatMessage({id: 'mobile.screen.saved_posts', defaultMessage: 'Saved Messages'}),
             );
         }
     }), [isTablet]);

@@ -616,7 +616,7 @@ export const markPostAsUnread = async (serverUrl: string, postId: string) => {
     }
 };
 
-export async function getFlaggedPosts(serverUrl: string, teamId?: string, channelId?: string, page?: number, perPage?: number) {
+export async function getSavedPosts(serverUrl: string, teamId?: string, channelId?: string, page?: number, perPage?: number) {
     const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
     if (!operator) {
         return {error: `${serverUrl} database not found`};
@@ -653,15 +653,14 @@ export async function getFlaggedPosts(serverUrl: string, teamId?: string, channe
 
     const promises: Array<Promise<Model[]>> = [];
 
-    const flaggedPosts: IdValue = {
-        id: SYSTEM_IDENTIFIERS.FLAGGED_POSTS,
-        value: JSON.stringify(order),
-    };
-
-    promises.push(operator.handleSystem({
-        systems: [flaggedPosts],
-        prepareRecordsOnly: true,
-    }));
+    promises.push(
+        operator.handleSavedPostsPreference({
+            postIds: order,
+            userId,
+            prepareRecordsOnly: true,
+            sync: true,
+        }),
+    );
 
     try {
         const {authors} = await fetchPostAuthors(serverUrl, postsArray, true);

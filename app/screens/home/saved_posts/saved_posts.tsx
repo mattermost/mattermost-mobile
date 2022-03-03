@@ -5,7 +5,7 @@ import React, {useCallback, useEffect, useMemo, useState} from 'react';
 import {ActivityIndicator, FlatList, StyleSheet, View} from 'react-native';
 import {SafeAreaView} from 'react-native-safe-area-context';
 
-import {getFlaggedPosts} from '@actions/remote/post';
+import {getSavedPosts} from '@actions/remote/post';
 import DateSeparator from '@app/components/post_list/date_separator';
 import {useServerUrl} from '@app/context/server';
 import {useTheme} from '@app/context/theme';
@@ -51,14 +51,14 @@ function SavedMessages({
     const data = useMemo(() => selectOrderedPosts(posts, 0, false, '', false, isTimezoneEnabled, currentTimezone, false).reverse(), [posts]);
 
     useEffect(() => {
-        getFlaggedPosts(serverUrl).finally(() => {
+        getSavedPosts(serverUrl).finally(() => {
             setLoading(false);
         });
     }, []);
 
     const handleRefresh = useCallback(async () => {
         setRefreshing(true);
-        await getFlaggedPosts(serverUrl);
+        await getSavedPosts(serverUrl);
         setRefreshing(false);
     }, [serverUrl]);
 

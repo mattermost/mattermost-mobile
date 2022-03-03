@@ -1,6 +1,9 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {Q} from '@nozbe/watermelondb';
+
+import {Preferences} from '@app/constants';
 import {MM_TABLES} from '@constants/database';
 import DataOperatorException from '@database/exceptions/data_operator_exception';
 import {
@@ -20,6 +23,7 @@ import {sanitizeReactions} from '@database/operator/utils/reaction';
 import type {
     HandleChannelMembershipArgs,
     HandlePreferencesArgs,
+    HandleSavedPostsPreferenceArgs,
     HandleReactionsArgs,
     HandleUsersArgs,
 } from '@typings/database/database';
@@ -74,6 +78,58 @@ const UserHandler = (superclass: any) => class extends superclass {
             createOrUpdateRawValues,
             tableName: CHANNEL_MEMBERSHIP,
         });
+    };
+
+    handleSavedPostsPreference = async ({userId, postIds, prepareRecordsOnly = true, sync = false}: HandleSavedPostsPreferenceArgs): Promise<PreferenceModel[]> => {
+        if (!postIds.length) {
+            throw new DataOperatorException(
+                'An empty "postIds" array has been passed to the handleSavedPostsPreference method',
+            );
+        }
+
+        // WE NEED TO SYNC THE SAVE_POSTS FROM WHAT WE GOT AND WHAT WE HAVE
+        const deleteValues: PreferenceModel[] = [];
+        if (sync) {
+            const stored = await this.database.get(PREFERENCE).query(
+                Q.where('category', Preferences.CATEGORY_SAVED_POST),
+                Q.where('user_id', userId),
+            ).fetch() as PreferenceModel[];
+
+            for (const pref of stored) {
+                if (postIds.indexOf(pref.name) === -1) {
+                    pref.prepareDestroyPermanently();
+                    deleteValues.push(pref);
+                }
+            }
+        }
+
+        const preferences = postIds.map((id) => {
+            return {
+                user_id: userId,
+                category: Preferences.CATEGORY_SAVED_POST,
+                name: id,
+                value: 'true',
+            } as PreferenceType;
+        });
+
+        const records: PreferenceModel[] = await this.handleRecords({
+            fieldName: 'user_id',
+            findMatchingRecordBy: isRecordPreferenceEqualToRaw,
+            transformer: transformPreferenceRecord,
+            prepareRecordsOnly: true,
+            createOrUpdateRawValues: preferences,
+            tableName: PREFERENCE,
+        });
+
+        if (deleteValues.length) {
+            records.push(...deleteValues);
+        }
+
+        if (records.length && !prepareRecordsOnly) {
+            await this.batchRecords(records);
+        }
+
+        return records;
     };
 
     /**

@@ -58,7 +58,6 @@ export const SYSTEM_IDENTIFIERS = {
     RECENT_REACTIONS: 'recentReactions',
     TEAM_HISTORY: 'teamHistory',
     WEBSOCKET: 'WebSocket',
-    FLAGGED_POSTS: 'flaggedPosts',
 };
 
 export const GLOBAL_IDENTIFIERS = {
