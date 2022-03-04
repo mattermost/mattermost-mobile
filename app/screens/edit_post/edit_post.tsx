@@ -268,10 +268,6 @@ const EditPost = ({componentId, maxPostSize, post, closeButton, hasFilesAttached
                     android: height / 4,
                     ios: height / 3.5,
                 })!}
-                offsetY={Platform.select({
-                    android: 10,
-                    ios: 280,
-                })}
             />
 
         </>
