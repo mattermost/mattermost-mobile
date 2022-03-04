@@ -3,10 +3,9 @@
 
 import React, {forwardRef, useCallback, useImperativeHandle, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
-import {KeyboardType, Platform, TextInput, useWindowDimensions, View} from 'react-native';
+import {KeyboardType, TextInput, View} from 'react-native';
 
 import AutoComplete from '@components/autocomplete';
-import {LIST_BOTTOM} from '@constants/autocomplete';
 import {useTheme} from '@context/theme';
 import {changeOpacity, getKeyboardAppearanceFromTheme, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
@@ -16,6 +15,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => ({
         color: theme.centerChannelColor,
         padding: 15,
         textAlignVertical: 'top',
+        height: '45%',
         ...typography(),
     },
     inputContainer: {
@@ -25,6 +25,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => ({
         borderBottomColor: changeOpacity(theme.centerChannelColor, 0.1),
         backgroundColor: theme.centerChannelBg,
         marginTop: 2,
+        height: '45%',
     },
 }));
 
@@ -46,20 +47,17 @@ const PostTextInput = forwardRef<PostInputRef, PostInputProps>(({
     channelId, rootId, hasFilesAttached,
 }: PostInputProps, ref) => {
     const intl = useIntl();
-    const {height} = useWindowDimensions();
     const theme = useTheme();
     const styles = getStyleSheet(theme);
 
     const inputRef = useRef<TextInput>(null);
     const [cursorPosition, setCursorPosition] = useState(0);
-    const [textInputTop, setTextInputTop] = useState(0);
+
+    // const [textInputTop, setTextInputTop] = useState(0);
 
     useImperativeHandle(ref, () => ({ //fixme:  can this be removed ??
         focus: () => inputRef.current?.focus(),
     }), [inputRef]);
-
-    const baseHeight = (height / 2) - 30;
-    const textInputHeight = Platform.select({android: baseHeight - 10, default: baseHeight});
 
     const onSelectionChange = useCallback((event) => {
         const curPos = event.nativeEvent.selection.end;
@@ -67,30 +65,26 @@ const PostTextInput = forwardRef<PostInputRef, PostInputProps>(({
         setCursorPosition(curPos);
     }, [onTextSelectionChange]);
 
-    const onContentSizeChange = useCallback(({nativeEvent: {contentSize: {height: contentHeight}}}) => {
-        const quaterTextInputHeight = textInputHeight / 4;
-        let top: number;
-        console.log('>>>  contentHeight', {contentHeight});
-
-        if (contentHeight < quaterTextInputHeight) {
-            top = contentHeight - (LIST_BOTTOM) - 20;
-            console.log(' SMALLER quaterTextInputHeight', {contentHeight, top, textInputHeight});
-            setTextInputTop(-LIST_BOTTOM - 20);
-        } else {
-            top = -contentHeight - LIST_BOTTOM;
-            console.log('GREATER quaterTextInputHeight', {contentHeight, top, textInputHeight});
-            setTextInputTop(0);
-        }
-    }, []);
+    // const onContentSizeChange = useCallback(({nativeEvent: {contentSize: {height: contentHeight}}}) => {
+    //     const quaterTextInputHeight = textInputHeight / 4;
+    //     let top: number;
+    //     console.log('>>>  contentHeight', {contentHeight});
+    //
+    //     if (contentHeight < quaterTextInputHeight) {
+    //         top = contentHeight - (LIST_BOTTOM) - 20;
+    //         console.log(' SMALLER quaterTextInputHeight', {contentHeight, top, textInputHeight});
+    //         setTextInputTop(-LIST_BOTTOM - 20);
+    //     } else {
+    //         top = -contentHeight - LIST_BOTTOM;
+    //         console.log('GREATER quaterTextInputHeight', {contentHeight, top, textInputHeight});
+    //         setTextInputTop(0);
+    //     }
+    // }, []);
 
     return (
         <View
             style={[
                 styles.inputContainer,
-                {
-                    height: textInputHeight,
-                    backgroundColor: 'red',
-                },
                 hasError && {marginTop: 0},
             ]}
         >
@@ -108,7 +102,7 @@ const PostTextInput = forwardRef<PostInputRef, PostInputProps>(({
                 onSelectionChange={onSelectionChange}
                 placeholder={intl.formatMessage({id: 'edit_post.editPost', defaultMessage: 'Edit the post...'})}
                 placeholderTextColor={changeOpacity(theme.centerChannelColor, 0.4)}
-                style={[styles.input, {height: textInputHeight}]}
+                style={styles.input}
                 testID='edit_post.message.input'
                 underlineColorAndroid='transparent'
                 value={message}
