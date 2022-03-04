@@ -5,6 +5,7 @@ import {children, field, json} from '@nozbe/watermelondb/decorators';
 import Model, {Associations} from '@nozbe/watermelondb/Model';
 
 import {MM_TABLES} from '@constants/database';
+import ThreadParticipantsModel from '@typings/database/models/servers/thread_participant';
 import {safeParseJSON} from '@utils/helpers';
 
 import type ChannelModel from '@typings/database/models/servers/channel';
@@ -22,6 +23,7 @@ const {
     PREFERENCE,
     REACTION,
     TEAM_MEMBERSHIP,
+    THREAD_PARTICIPANT,
     USER,
 } = MM_TABLES.SERVER;
 
@@ -53,6 +55,9 @@ export default class UserModel extends Model {
 
         /** USER has a 1:N relationship with TEAM_MEMBERSHIP.  A user can join multiple teams */
         [TEAM_MEMBERSHIP]: {type: 'has_many', foreignKey: 'user_id'},
+
+        /** USER has a 1:N relationship with THREAD_PARTICIPANT. A user can participante in multiple threads */
+        [THREAD_PARTICIPANT]: {type: 'has_many', foreignKey: 'user_id'},
     };
 
     /** auth_service : The type of authentication service registered to that user */
@@ -128,6 +133,9 @@ export default class UserModel extends Model {
 
     /** teams : All the team that this user is part of  */
     @children(TEAM_MEMBERSHIP) teams!: TeamMembershipModel[];
+
+    /** threadParticipations : All the thread participations this user is part of  */
+    @children(THREAD_PARTICIPANT) threadParticipations!: ThreadParticipantsModel[];
 
     prepareStatus = (status: string) => {
         this.prepareUpdate((u) => {

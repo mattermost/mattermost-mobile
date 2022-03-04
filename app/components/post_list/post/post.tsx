@@ -42,7 +42,7 @@ type PostProps = {
     isConsecutivePost?: boolean;
     isEphemeral: boolean;
     isFirstReply?: boolean;
-    isFlagged?: boolean;
+    isSaved?: boolean;
     isJumboEmoji: boolean;
     isLastReply?: boolean;
     isPostAddChannelMember: boolean;
@@ -52,7 +52,7 @@ type PostProps = {
     reactionsCount: number;
     shouldRenderReplyButton?: boolean;
     showAddReaction?: boolean;
-    skipFlaggedHeader?: boolean;
+    skipSavedHeader?: boolean;
     skipPinnedHeader?: boolean;
     style?: StyleProp<ViewStyle>;
     testID?: string;
@@ -97,8 +97,8 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
 
 const Post = ({
     appsEnabled, canDelete, currentUser, differentThreadSequence, files, hasReplies, highlight, highlightPinnedOrSaved = true, highlightReplyBar,
-    isConsecutivePost, isEphemeral, isFirstReply, isFlagged, isJumboEmoji, isLastReply, isPostAddChannelMember,
-    location, post, reactionsCount, shouldRenderReplyButton, skipFlaggedHeader, skipPinnedHeader, showAddReaction = true, style,
+    isConsecutivePost, isEphemeral, isFirstReply, isSaved, isJumboEmoji, isLastReply, isPostAddChannelMember,
+    location, post, reactionsCount, shouldRenderReplyButton, skipSavedHeader, skipPinnedHeader, showAddReaction = true, style,
     testID, previousPost,
 }: PostProps) => {
     const pressDetected = useRef(false);
@@ -176,7 +176,7 @@ const Post = ({
         }
     };
 
-    const highlightFlagged = isFlagged && !skipFlaggedHeader;
+    const highlightSaved = isSaved && !skipSavedHeader;
     const hightlightPinned = post.isPinned && !skipPinnedHeader;
     const itemTestID = `${testID}.${post.id}`;
     const rightColumnStyle = [styles.rightColumn, (post.rootId && isLastReply && styles.rightColumnPadding)];
@@ -185,7 +185,7 @@ const Post = ({
     let highlightedStyle: StyleProp<ViewStyle>;
     if (highlight) {
         highlightedStyle = styles.highlight;
-    } else if ((highlightFlagged || hightlightPinned) && highlightPinnedOrSaved) {
+    } else if ((highlightSaved || hightlightPinned) && highlightPinnedOrSaved) {
         highlightedStyle = styles.highlightPinnedOrSaved;
     }
 
@@ -279,9 +279,9 @@ const Post = ({
                 <>
                     <PreHeader
                         isConsecutivePost={isConsecutivePost}
-                        isFlagged={isFlagged}
+                        isSaved={isSaved}
                         isPinned={post.isPinned}
-                        skipFlaggedHeader={skipFlaggedHeader}
+                        skipSavedHeader={skipSavedHeader}
                         skipPinnedHeader={skipPinnedHeader}
                     />
                     <View style={[styles.container, consecutiveStyle]}>

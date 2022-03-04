@@ -6,6 +6,7 @@ import {
     transformChannelRecord,
     transformMyChannelRecord,
     transformMyChannelSettingsRecord,
+    transformChannelMembershipRecord,
 } from '@database/operator/server_data_operator/transformers/channel';
 import {createTestConnection} from '@database/operator/utils/create_test_connection';
 import {OperationType} from '@typings/database/enums';
@@ -138,5 +139,41 @@ describe('*** CHANNEL Prepare Records Test ***', () => {
 
         expect(preparedRecords).toBeTruthy();
         expect(preparedRecords!.collection.modelClass.name).toBe('MyChannelModel');
+    });
+
+    it('=> transformChannelMembershipRecord: should return an array of type ChannelMembership', async () => {
+        expect.assertions(3);
+
+        const database = await createTestConnection({databaseName: 'user_prepare_records', setActive: true});
+        expect(database).toBeTruthy();
+
+        const preparedRecords = await transformChannelMembershipRecord({
+            action: OperationType.CREATE,
+            database: database!,
+            value: {
+                record: undefined,
+                raw: {
+                    channel_id: '17bfnb1uwb8epewp4q3x3rx9go',
+                    user_id: '9ciscaqbrpd6d8s68k76xb9bte',
+                    roles: 'wqyby5r5pinxxdqhoaomtacdhc',
+                    last_viewed_at: 1613667352029,
+                    msg_count: 3864,
+                    mention_count: 0,
+                    notify_props: {
+                        desktop: 'default',
+                        email: 'default',
+                        ignore_channel_mentions: 'default',
+                        mark_unread: 'mention',
+                        push: 'default',
+                    },
+                    last_update_at: 1613667352029,
+                    scheme_user: true,
+                    scheme_admin: false,
+                },
+            },
+        });
+
+        expect(preparedRecords).toBeTruthy();
+        expect(preparedRecords!.collection.modelClass.name).toBe('ChannelMembershipModel');
     });
 });
