@@ -7,7 +7,7 @@ import {DeviceEventEmitter} from 'react-native';
 import {markChannelAsUnread, updateLastPostAt} from '@actions/local/channel';
 import {processPostsFetched, removePost} from '@actions/local/post';
 import {addRecentReaction} from '@actions/local/reactions';
-import {ActionType, Events, General, ServerErrors} from '@constants';
+import {ActionType, Events, General, Post, ServerErrors} from '@constants';
 import {SYSTEM_IDENTIFIERS} from '@constants/database';
 import DatabaseManager from '@database/manager';
 import {getNeededAtMentionedUsernames} from '@helpers/api/user';
@@ -23,6 +23,7 @@ import {forceLogoutIfNecessary} from './session';
 
 import type {Client} from '@client/rest';
 import type Model from '@nozbe/watermelondb/Model';
+import type PostModel from '@typings/database/models/servers/post';
 
 type PostsRequest = {
     error?: unknown;
@@ -553,7 +554,7 @@ export const togglePinPost = async (serverUrl: string, postId: string) => {
     }
 };
 
-export const deletePost = async (serverUrl: string, postId: string) => {
+export const deletePost = async (serverUrl: string, postToDelete: PostModel | Post) => {
     const database = DatabaseManager.serverDatabases[serverUrl]?.database;
     if (!database) {
         return {error: `${serverUrl} database not found`};
@@ -567,8 +568,15 @@ export const deletePost = async (serverUrl: string, postId: string) => {
     }
 
     try {
-        await client.deletePost(postId);
-        const post = await removePost(serverUrl, {id: postId} as Post);
+        if (postToDelete.type === Post.POST_TYPES.COMBINED_USER_ACTIVITY && postToDelete.props?.system_post_ids) {
+            const systemPostIds = postToDelete.props.system_post_ids as string[];
+            const promises = systemPostIds.map((id) => client.deletePost(id));
+            await Promise.all(promises);
+        } else {
+            await client.deletePost(postToDelete.id);
+        }
+
+        const post = await removePost(serverUrl, postToDelete);
         return {post};
     } catch (error) {
         forceLogoutIfNecessary(serverUrl, error as ClientErrorProps);

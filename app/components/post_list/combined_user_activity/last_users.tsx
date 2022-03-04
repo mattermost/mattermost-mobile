@@ -73,7 +73,7 @@ const LastUsers = ({actor, postType, theme, usernames}: LastUsersProps) => {
     const numOthers = usernames.length - 1;
 
     return (
-        <Text style={{backgroundColor: 'transparent'}}>
+        <Text>
             <FormattedMarkdownText
                 id={'last_users_message.first'}
                 defaultMessage={'{firstUser} and '}
