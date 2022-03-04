@@ -123,9 +123,10 @@ export const removePost = async (serverUrl: string, post: PostModel | Post) => {
     } else {
         const postModel = await queryPostById(operator.database, post.id);
         if (postModel) {
-            await operator.database.write(async () => {
-                await postModel.destroyPermanently();
-            });
+            const preparedPost = await prepareDeletePost(postModel);
+            if (preparedPost.length) {
+                await operator.batchRecords(preparedPost);
+            }
         }
     }
 
