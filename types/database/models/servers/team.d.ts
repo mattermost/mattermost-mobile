@@ -1,8 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {Query, Relation} from '@nozbe/watermelondb';
-import Model, {Associations} from '@nozbe/watermelondb/Model';
+import type {Query, Relation} from '@nozbe/watermelondb';
+import type Model, {Associations} from '@nozbe/watermelondb/Model';
 
 /**
  * A Team houses and enables communication to happen across channels and users.
@@ -41,11 +41,11 @@ export default class TeamModel extends Model {
     /** allowed_domains : List of domains that can join this team */
     allowedDomains: string;
 
+    /** categories : All the categories associated with this team */
+    categories: Query<CategoryModel>;
+
     /** channels : All the channels associated with this team */
     channels: Query<ChannelModel>;
-
-    /** groupsTeam : All the groups associated with this team */
-    groupsTeam: Query<GroupsTeamModel>;
 
     /** myTeam : Retrieves additional information about the team that this user is possibly part of.  This query might yield no result if the user isn't part of a team. */
     myTeam: Relation<MyTeamModel>;

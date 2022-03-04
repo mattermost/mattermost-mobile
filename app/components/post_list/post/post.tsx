@@ -4,12 +4,12 @@
 import React, {ReactNode, useMemo, useRef} from 'react';
 import {useIntl} from 'react-intl';
 import {Keyboard, Platform, StyleProp, View, ViewStyle} from 'react-native';
+import {TouchableHighlight} from 'react-native-gesture-handler';
 
 import {showPermalink} from '@actions/local/permalink';
 import {removePost} from '@actions/local/post';
 import SystemAvatar from '@components/system_avatar';
 import SystemHeader from '@components/system_header';
-import TouchableWithFeedback from '@components/touchable_with_feedback';
 import * as Screens from '@constants/screens';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
@@ -42,7 +42,7 @@ type PostProps = {
     isConsecutivePost?: boolean;
     isEphemeral: boolean;
     isFirstReply?: boolean;
-    isFlagged?: boolean;
+    isSaved?: boolean;
     isJumboEmoji: boolean;
     isLastReply?: boolean;
     isPostAddChannelMember: boolean;
@@ -52,7 +52,7 @@ type PostProps = {
     reactionsCount: number;
     shouldRenderReplyButton?: boolean;
     showAddReaction?: boolean;
-    skipFlaggedHeader?: boolean;
+    skipSavedHeader?: boolean;
     skipPinnedHeader?: boolean;
     style?: StyleProp<ViewStyle>;
     testID?: string;
@@ -64,7 +64,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
         consecutivePostContainer: {
             marginBottom: 10,
             marginRight: 10,
-            marginLeft: Platform.select({ios: 35, android: 34}),
+            marginLeft: Platform.select({ios: 34, android: 33}),
             marginTop: 10,
         },
         container: {flexDirection: 'row'},
@@ -97,8 +97,8 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
 
 const Post = ({
     appsEnabled, canDelete, currentUser, differentThreadSequence, files, hasReplies, highlight, highlightPinnedOrSaved = true, highlightReplyBar,
-    isConsecutivePost, isEphemeral, isFirstReply, isFlagged, isJumboEmoji, isLastReply, isPostAddChannelMember,
-    location, post, reactionsCount, shouldRenderReplyButton, skipFlaggedHeader, skipPinnedHeader, showAddReaction = true, style,
+    isConsecutivePost, isEphemeral, isFirstReply, isSaved, isJumboEmoji, isLastReply, isPostAddChannelMember,
+    location, post, reactionsCount, shouldRenderReplyButton, skipSavedHeader, skipPinnedHeader, showAddReaction = true, style,
     testID, previousPost,
 }: PostProps) => {
     const pressDetected = useRef(false);
@@ -176,7 +176,7 @@ const Post = ({
         }
     };
 
-    const highlightFlagged = isFlagged && !skipFlaggedHeader;
+    const highlightSaved = isSaved && !skipSavedHeader;
     const hightlightPinned = post.isPinned && !skipPinnedHeader;
     const itemTestID = `${testID}.${post.id}`;
     const rightColumnStyle = [styles.rightColumn, (post.rootId && isLastReply && styles.rightColumnPadding)];
@@ -185,7 +185,7 @@ const Post = ({
     let highlightedStyle: StyleProp<ViewStyle>;
     if (highlight) {
         highlightedStyle = styles.highlight;
-    } else if ((highlightFlagged || hightlightPinned) && highlightPinnedOrSaved) {
+    } else if ((highlightSaved || hightlightPinned) && highlightPinnedOrSaved) {
         highlightedStyle = styles.highlightPinnedOrSaved;
     }
 
@@ -270,20 +270,18 @@ const Post = ({
             testID={testID}
             style={[styles.postStyle, style, highlightedStyle]}
         >
-            <TouchableWithFeedback
+            <TouchableHighlight
                 testID={itemTestID}
                 onPress={handlePress}
                 onLongPress={showPostOptions}
-                delayLongPress={200}
                 underlayColor={changeOpacity(theme.centerChannelColor, 0.1)}
-                cancelTouchOnPanning={true}
             >
                 <>
                     <PreHeader
                         isConsecutivePost={isConsecutivePost}
-                        isFlagged={isFlagged}
+                        isSaved={isSaved}
                         isPinned={post.isPinned}
-                        skipFlaggedHeader={skipFlaggedHeader}
+                        skipSavedHeader={skipSavedHeader}
                         skipPinnedHeader={skipPinnedHeader}
                     />
                     <View style={[styles.container, consecutiveStyle]}>
@@ -294,7 +292,7 @@ const Post = ({
                         </View>
                     </View>
                 </>
-            </TouchableWithFeedback>
+            </TouchableHighlight>
         </View>
     );
 };

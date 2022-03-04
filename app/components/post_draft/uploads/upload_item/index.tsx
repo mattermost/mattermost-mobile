@@ -2,7 +2,9 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
-import {StyleSheet, TouchableOpacity, View} from 'react-native';
+import {StyleSheet, View} from 'react-native';
+import {TapGestureHandler} from 'react-native-gesture-handler';
+import Animated from 'react-native-reanimated';
 
 import {updateDraftFile} from '@actions/local/draft';
 import FileIcon from '@components/post_list/post/body/files/file_icon';
@@ -11,6 +13,7 @@ import ProgressBar from '@components/progress_bar';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import useDidUpdate from '@hooks/did_update';
+import {useGalleryItem} from '@hooks/gallery';
 import DraftUploadManager from '@init/draft_upload_manager';
 import {isImage} from '@utils/file';
 import {changeOpacity} from '@utils/theme';
@@ -19,13 +22,15 @@ import UploadRemove from './upload_remove';
 import UploadRetry from './upload_retry';
 
 type Props = {
-    file: FileInfo;
     channelId: string;
-    rootId: string;
+    galleryIdentifier: string;
+    index: number;
+    file: FileInfo;
     openGallery: (file: FileInfo) => void;
+    rootId: string;
 }
 
-const styles = StyleSheet.create({
+const style = StyleSheet.create({
     preview: {
         paddingTop: 5,
         marginLeft: 12,
@@ -52,10 +57,8 @@ const styles = StyleSheet.create({
 });
 
 export default function UploadItem({
-    file,
-    channelId,
-    rootId,
-    openGallery,
+    channelId, galleryIdentifier, index, file,
+    rootId, openGallery,
 }: Props) {
     const theme = useTheme();
     const serverUrl = useServerUrl();
@@ -101,11 +104,14 @@ export default function UploadItem({
         DraftUploadManager.registerProgressHandler(newFile.clientId!, setProgress);
     }, [serverUrl, channelId, rootId, file]);
 
+    const {styles, onGestureEvent, ref} = useGalleryItem(galleryIdentifier, index, handlePress);
+
     const filePreviewComponent = useMemo(() => {
         if (isImage(file)) {
             return (
                 <ImageFile
                     file={file}
+                    forwardRef={ref}
                     resizeMode='cover'
                 />
             );
@@ -122,21 +128,21 @@ export default function UploadItem({
     return (
         <View
             key={file.clientId}
-            style={styles.preview}
+            style={style.preview}
         >
-            <View style={styles.previewContainer}>
-                <TouchableOpacity onPress={handlePress}>
-                    <View style={styles.filePreview}>
+            <View style={style.previewContainer}>
+                <TapGestureHandler onGestureEvent={onGestureEvent}>
+                    <Animated.View style={[styles, style.filePreview]}>
                         {filePreviewComponent}
-                    </View>
-                </TouchableOpacity>
+                    </Animated.View>
+                </TapGestureHandler>
                 {file.failed &&
                 <UploadRetry
                     onPress={retryFileUpload}
                 />
                 }
                 {loading && !file.failed &&
-                <View style={styles.progress}>
+                <View style={style.progress}>
                     <ProgressBar
                         progress={progress || 0}
                         color={theme.buttonBg}

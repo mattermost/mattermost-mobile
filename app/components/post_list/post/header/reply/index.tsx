@@ -3,10 +3,10 @@
 
 import React, {useCallback} from 'react';
 import {Text, View} from 'react-native';
+import {TouchableOpacity} from 'react-native-gesture-handler';
 
 import {Screens} from '@app/constants';
 import CompassIcon from '@components/compass_icon';
-import TouchableWithFeedback from '@components/touchable_with_feedback';
 import {SEARCH} from '@constants/screens';
 import {showModal} from '@screens/navigation';
 import {preventDoubleTap} from '@utils/tap';
@@ -58,10 +58,9 @@ const HeaderReply = ({commentCount, location, post, theme}: HeaderReplyProps) =>
             testID='post_header.reply'
             style={style.replyWrapper}
         >
-            <TouchableWithFeedback
+            <TouchableOpacity
                 onPress={onPress}
                 style={style.replyIconContainer}
-                type={'opacity'}
             >
                 <CompassIcon
                     name='reply-outline'
@@ -76,7 +75,7 @@ const HeaderReply = ({commentCount, location, post, theme}: HeaderReplyProps) =>
                     {commentCount}
                 </Text>
                 }
-            </TouchableWithFeedback>
+            </TouchableOpacity>
         </View>
     );
 };

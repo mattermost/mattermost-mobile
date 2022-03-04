@@ -43,4 +43,6 @@ export default class FileModel extends Model {
 
     /** post : The related Post record for this file */
     post: Relation<PostModel>;
+
+    toFileInfo: (authorId: string) => FileInfo;
 }

@@ -18,6 +18,7 @@ type Props = {
     testID?: string;
     channelId: string;
     rootId?: string;
+    currentUserId: string;
 
     // Cursor Position Handler
     updateCursorPosition: (pos: number) => void;
@@ -77,6 +78,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
 export default function DraftInput({
     testID,
     channelId,
+    currentUserId,
     files,
     maxMessageLength,
     rootId = '',
@@ -93,7 +95,7 @@ export default function DraftInput({
     const theme = useTheme();
 
     const handleLayout = useCallback((e: LayoutChangeEvent) => {
-        updatePostInputTop(e.nativeEvent.layout.y);
+        updatePostInputTop(e.nativeEvent.layout.height);
     }, []);
 
     // Render
@@ -139,6 +141,7 @@ export default function DraftInput({
                         sendMessage={sendMessage}
                     />
                     <Uploads
+                        currentUserId={currentUserId}
                         files={files}
                         uploadFileError={uploadFileError}
                         channelId={channelId}
