@@ -18,7 +18,7 @@ import PostModel from '@typings/database/models/servers/post';
 import {switchKeyboardForCodeBlocks} from '@utils/markdown';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
-import PostInput, {PostInputRef} from './post_input';
+import PostTextInput, {PostInputRef} from './post_input';
 
 const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     return {
@@ -234,43 +234,30 @@ const EditPost = ({componentId, maxPostSize, post, closeButton, hasFilesAttached
     }
 
     return (
-        <>
-            <SafeAreaView
-                testID='edit_post.screen'
-                style={styles.container}
-            >
-                <View style={styles.scrollView}>
-                    { (errorLine || errorExtra) && (
-                        <PostError
-                            errorExtra={errorExtra}
-                            errorLine={errorLine}
-                        />
-                    ) }
-                    <PostInput
-                        hasError={Boolean(errorLine)}
-                        keyboardType={keyboardType}
-                        message={postMessage}
-                        onChangeText={onChangeText}
-                        onTextSelectionChange={onTextSelectionChange}
-                        ref={postInputRef}
+        <SafeAreaView
+            testID='edit_post.screen'
+            style={styles.container}
+        >
+            <View style={styles.scrollView}>
+                { (errorLine || errorExtra) && (
+                    <PostError
+                        errorExtra={errorExtra}
+                        errorLine={errorLine}
                     />
-                </View>
-            </SafeAreaView>
-            <AutoComplete
-                channelId={post.channelId}
-                hasFilesAttached={hasFilesAttached}
-                nestedScrollEnabled={true}
-                rootId={post.rootId}
-                updateValue={onChangeText}
-                value={postMessage}
-                cursorPosition={cursorPosition}
-                postInputTop={Platform.select({
-                    android: height / 4,
-                    ios: height / 3.5,
-                })!}
-            />
-
-        </>
+                ) }
+                <PostTextInput
+                    hasError={Boolean(errorLine)}
+                    keyboardType={keyboardType}
+                    message={postMessage}
+                    onChangeText={onChangeText}
+                    onTextSelectionChange={onTextSelectionChange}
+                    ref={postInputRef}
+                    channelId={post.channelId}
+                    rootId={post.rootId}
+                    hasFilesAttached={hasFilesAttached}
+                />
+            </View>
+        </SafeAreaView>
     );
 };
 
