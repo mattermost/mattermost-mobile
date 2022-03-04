@@ -146,7 +146,7 @@ const enhanced = withObservables([], ({combinedPost, post, showAddReaction, loca
         canDelete,
         canReply,
         canPin,
-        combinedPost,
+        combinedPost: of$(combinedPost),
         isSaved,
         canEdit,
         post,
