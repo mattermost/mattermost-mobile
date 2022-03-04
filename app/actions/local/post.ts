@@ -4,7 +4,7 @@
 import {postActionWithCookie} from '@actions/remote/post';
 import {ActionType, Post} from '@constants';
 import DatabaseManager from '@database/manager';
-import {queryPostById} from '@queries/servers/post';
+import {prepareDeletePost, queryPostById} from '@queries/servers/post';
 import {queryCurrentUserId} from '@queries/servers/system';
 import {generateId} from '@utils/general';
 import {getPostIdsForCombinedUserActivityPost} from '@utils/post_list';
@@ -108,13 +108,17 @@ export const removePost = async (serverUrl: string, post: PostModel | Post) => {
 
     if (post.type === Post.POST_TYPES.COMBINED_USER_ACTIVITY && post.props?.system_post_ids) {
         const systemPostIds = getPostIdsForCombinedUserActivityPost(post.id);
+        const removeModels = [];
         for await (const id of systemPostIds) {
             const postModel = await queryPostById(operator.database, id);
             if (postModel) {
-                await operator.database.write(async () => {
-                    await postModel.destroyPermanently();
-                });
+                const preparedPost = await prepareDeletePost(postModel);
+                removeModels.push(...preparedPost);
             }
+        }
+
+        if (removeModels.length) {
+            await operator.batchRecords(removeModels);
         }
     } else {
         const postModel = await queryPostById(operator.database, post.id);
