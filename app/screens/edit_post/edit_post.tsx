@@ -3,11 +3,10 @@
 
 import React, {useCallback, useEffect, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
-import {Alert, Keyboard, KeyboardType, Platform, SafeAreaView, useWindowDimensions, View} from 'react-native';
+import {Alert, Keyboard, KeyboardType, Platform, SafeAreaView, View} from 'react-native';
 import {Navigation} from 'react-native-navigation';
 
 import {deletePost, editPost} from '@actions/remote/post';
-import AutoComplete from '@components/autocomplete';
 import Loading from '@components/loading';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
@@ -69,9 +68,7 @@ const EditPost = ({componentId, maxPostSize, post, closeButton, hasFilesAttached
     const [cursorPosition, setCursorPosition] = useState(0);
     const [errorLine, setErrorLine] = useState<string | undefined>();
     const [errorExtra, setErrorExtra] = useState<string | undefined>();
-    const [rightButtonEnabled, setRightButtonEnabled] = useState(false);
     const [isUpdating, setIsUpdating] = useState(false);
-    const {height} = useWindowDimensions();
 
     const postInputRef = useRef<PostInputRef>(null);
     const theme = useTheme();
@@ -134,7 +131,7 @@ const EditPost = ({componentId, maxPostSize, post, closeButton, hasFilesAttached
         setCursorPosition(curPos);
     }, [cursorPosition, postMessage]);
 
-    const toggleSaveButton = useCallback(() => {
+    const toggleSaveButton = useCallback((enabled = true) => {
         setButtons(componentId, {
             leftButtons: [{
                 ...LEFT_BUTTON,
@@ -144,10 +141,10 @@ const EditPost = ({componentId, maxPostSize, post, closeButton, hasFilesAttached
                 ...RIGHT_BUTTON,
                 color: theme.sidebarHeaderTextColor,
                 text: intl.formatMessage({id: 'edit_post.save', defaultMessage: 'Save'}),
-                enabled: true,
+                enabled,
             }],
         });
-    }, [rightButtonEnabled, componentId]);
+    }, [componentId]);
 
     const onChangeText = useCallback((message: string) => {
         setPostMessage(message);
@@ -162,59 +159,7 @@ const EditPost = ({componentId, maxPostSize, post, closeButton, hasFilesAttached
         toggleSaveButton();
     }, [intl, maxPostSize, toggleSaveButton]);
 
-    const freezeSaveBtn = useCallback((loading) => {
-        setRightButtonEnabled(!loading);
-        setButtons(componentId, {
-            leftButtons: [{
-                ...LEFT_BUTTON,
-                icon: closeButton,
-            }],
-            rightButtons: [{...RIGHT_BUTTON, enabled: !loading}],
-        });
-    }, []);
-
-    const onSavePostMessage = useCallback(async () => {
-        setIsUpdating(true);
-        setErrorLine(undefined);
-        setErrorExtra(undefined);
-
-        freezeSaveBtn(true);
-
-        const shouldDelete = !postMessage && canDelete && !hasFilesAttached;
-
-        const getRequest = async (url: string, postId: string, msg: string) => {
-            if (shouldDelete) {
-                return deletePost(url, post.id);
-            }
-            return editPost(url, postId, msg);
-        };
-
-        let res;
-        if (shouldDelete) {
-            //todo: Confirm if this is the best way of doing things
-            Alert.alert(
-                intl.formatMessage({id: 'mobile.edit_post.delete_title', defaultMessage: 'Confirm Post Delete'}),
-                intl.formatMessage({
-                    id: 'mobile.edit_post.delete_question',
-                    defaultMessage: 'Are you sure you want to delete this Post?',
-                }),
-                [{
-                    text: intl.formatMessage({id: 'mobile.post.cancel', defaultMessage: 'Cancel'}),
-                    style: 'cancel',
-                }, {
-                    text: intl.formatMessage({id: 'post_info.del', defaultMessage: 'Delete'}),
-                    style: 'destructive',
-                    onPress: async () => {
-                        res = await getRequest(serverUrl, post.id, postMessage);
-                    },
-                }],
-            );
-        } else {
-            res = await getRequest(serverUrl, post.id, postMessage);
-        }
-
-        freezeSaveBtn(false);
-
+    const handleUIUpdates = useCallback((res) => {
         if (res?.error) {
             setIsUpdating(false);
             setErrorLine((res.error as ClientErrorProps).message);
@@ -223,7 +168,50 @@ const EditPost = ({componentId, maxPostSize, post, closeButton, hasFilesAttached
             setIsUpdating(false);
             onClose();
         }
-    }, [freezeSaveBtn, serverUrl, post.id, postMessage, onClose]);
+    }, []);
+
+    const handleDeletePost = useCallback(async () => {
+        let res;
+        Alert.alert(
+            intl.formatMessage({id: 'mobile.edit_post.delete_title', defaultMessage: 'Confirm Post Delete'}),
+            intl.formatMessage({
+                id: 'mobile.edit_post.delete_question',
+                defaultMessage: 'Are you sure you want to delete this Post?',
+            }),
+            [{
+                text: intl.formatMessage({id: 'mobile.post.cancel', defaultMessage: 'Cancel'}),
+                style: 'cancel',
+                onPress: () => {
+                    setIsUpdating(false);
+                    toggleSaveButton();
+                    setPostMessage(post.message);
+                },
+            }, {
+                text: intl.formatMessage({id: 'post_info.del', defaultMessage: 'Delete'}),
+                style: 'destructive',
+                onPress: async () => {
+                    toggleSaveButton(true);
+                    res = await deletePost(serverUrl, post.id);
+                    handleUIUpdates(res);
+                },
+            }],
+        );
+
+        return res;
+    }, [serverUrl, post.message]);
+
+    const onSavePostMessage = useCallback(async () => {
+        setIsUpdating(true);
+        setErrorLine(undefined);
+        setErrorExtra(undefined);
+
+        if (!postMessage && canDelete && !hasFilesAttached) {
+            return handleDeletePost();
+        }
+        toggleSaveButton(true);
+        const res = await editPost(serverUrl, post.id, postMessage);
+        return handleUIUpdates(res);
+    }, [toggleSaveButton, serverUrl, post.id, postMessage, onClose]);
 
     if (isUpdating) {
         return (
