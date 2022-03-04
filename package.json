@@ -97,7 +97,7 @@
     "serialize-error": "9.0.0",
     "shallow-equals": "1.0.0",
     "tinycolor2": "1.4.2",
-    "url-parse": "1.5.8"
+    "url-parse": "1.5.9"
   },
   "devDependencies": {
     "@babel/cli": "7.16.8",
