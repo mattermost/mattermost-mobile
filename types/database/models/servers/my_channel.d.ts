@@ -29,6 +29,9 @@ export default class MyChannelModel extends Model {
     /** is_unread : Whether the channel has unread posts */
     isUnread: boolean;
 
+    /** is_muted : Whether the channel has been muted */
+    isMuted: boolean;
+
     /** roles : The user's privileges on this channel */
     roles: string;
 

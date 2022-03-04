@@ -1,6 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import assert from 'assert';
+
 import DatabaseManager from '@database/manager';
 import {
     isRecordChannelEqualToRaw,
@@ -199,6 +201,72 @@ describe('*** Operator: Channel Handlers tests ***', () => {
             findMatchingRecordBy: isRecordMyChannelEqualToRaw,
             transformer: transformMyChannelRecord,
         });
+    });
+
+    it('=> HandleMyChannel: should handle is_unread and is_muted', async () => {
+        const channels: Channel[] = [{
+            id: 'c',
+            name: 'channel',
+            display_name: 'Channel',
+            type: 'O',
+            create_at: 1,
+            update_at: 1,
+            delete_at: 0,
+            team_id: '123',
+            header: '',
+            purpose: '',
+            last_post_at: 2,
+            creator_id: 'me',
+            total_msg_count: 20,
+            extra_update_at: 0,
+            shared: false,
+            scheme_id: null,
+            group_constrained: false,
+        }];
+        const myChannels: ChannelMembership[] = [
+            {
+                id: 'c',
+                user_id: 'me',
+                channel_id: 'c',
+                last_post_at: 1617311494451,
+                last_viewed_at: 1617311494451,
+                last_update_at: 1617311494451,
+                mention_count: 3,
+                msg_count: 10,
+                roles: 'guest',
+                notify_props: {
+                    desktop: 'default',
+                    email: 'default',
+                    mark_unread: 'mention',
+                    push: 'mention',
+                    ignore_channel_mentions: 'default',
+                },
+            },
+        ];
+
+        let models = await operator.handleMyChannel({
+            channels,
+            myChannels,
+            prepareRecordsOnly: false,
+        });
+
+        assert.equal(models.length, 1);
+        assert.ok(models[0].isMuted);
+        assert.ok(models[0].isUnread);
+
+        myChannels[0].notify_props.mark_unread = 'all';
+        myChannels[0].msg_count = channels[0].total_msg_count;
+        myChannels[0].mention_count = 0;
+
+        models = await operator.handleMyChannel({
+            channels,
+            myChannels,
+            prepareRecordsOnly: false,
+        });
+
+        assert.equal(models.length, 1);
+        assert.ok(!models[0].isMuted);
+        assert.ok(!models[0].isUnread);
     });
 
     it('=> HandleChannelMembership: should write to the CHANNEL_MEMBERSHIP table', async () => {

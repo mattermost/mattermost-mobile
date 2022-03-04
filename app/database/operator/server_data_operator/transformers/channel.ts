@@ -148,6 +148,7 @@ export const transformMyChannelRecord = ({action, database, value}: TransformerA
         myChannel.roles = raw.roles;
         myChannel.messageCount = raw.msg_count;
         myChannel.isUnread = Boolean(raw.is_unread);
+        myChannel.isMuted = Boolean(raw.is_muted);
         myChannel.mentionsCount = raw.mention_count;
         myChannel.lastPostAt = raw.last_post_at || 0;
         myChannel.lastViewedAt = raw.last_viewed_at;

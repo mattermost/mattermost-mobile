@@ -148,6 +148,7 @@ const ChannelHandler = (superclass: any) => class extends superclass {
                 const msgCount = Math.max(0, channel.total_msg_count - my.msg_count);
                 my.msg_count = msgCount;
                 my.is_unread = msgCount > 0;
+                my.is_muted = my.notify_props?.mark_unread === 'mention';
             }
         });
 
