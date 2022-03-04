@@ -5,7 +5,7 @@ import {fetchChannelStats, fetchMissingSidebarInfo, fetchMyChannelsForTeam, mark
 import {fetchPostsForChannel, fetchPostsForUnreadChannels} from '@actions/remote/post';
 import {MyPreferencesRequest, fetchMyPreferences} from '@actions/remote/preference';
 import {fetchConfigAndLicense} from '@actions/remote/systems';
-import {fetchMyTeams, fetchTeamsChannelsAndUnreadPosts, MyTeamsRequest} from '@actions/remote/team';
+import {fetchAllTeams, fetchMyTeams, fetchTeamsChannelsAndUnreadPosts, MyTeamsRequest} from '@actions/remote/team';
 import {fetchMe, MyUserRequest, updateAllUsersSince} from '@actions/remote/user';
 import {General, Preferences} from '@constants';
 import DatabaseManager from '@database/manager';
@@ -187,6 +187,7 @@ export const deferredAppEntryActions = async (
         await fetchTeamsChannelsAndUnreadPosts(serverUrl, since, teamData.teams, teamData.memberships, initialTeamId);
     }
 
+    fetchAllTeams(serverUrl);
     updateAllUsersSince(serverUrl, since);
 };
 

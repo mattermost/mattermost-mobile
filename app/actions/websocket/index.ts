@@ -15,7 +15,7 @@ import {getTeammateNameDisplaySetting} from '@helpers/api/preference';
 import {queryChannelsById, queryDefaultChannelForTeam} from '@queries/servers/channel';
 import {prepareModels} from '@queries/servers/entry';
 import {queryCommonSystemValues, queryConfig, queryCurrentChannelId, queryWebSocketLastDisconnected, resetWebSocketLastDisconnected, setCurrentTeamAndChannelId} from '@queries/servers/system';
-import {deleteMyTeams, queryTeamsById} from '@queries/servers/team';
+import {deleteMyTeams, queryMyTeamsById, queryTeamsById} from '@queries/servers/team';
 import {isTablet} from '@utils/helpers';
 
 import {handleCategoryCreatedEvent, handleCategoryDeletedEvent, handleCategoryOrderUpdatedEvent, handleCategoryUpdatedEvent} from './category';
@@ -140,8 +140,12 @@ async function doReconnect(serverUrl: string) {
     let removeTeams;
     if (removeTeamIds?.length) {
         // Immediately delete myTeams so that the UI renders only teams the user is a member of.
-        removeTeams = await queryTeamsById(database, removeTeamIds);
-        await deleteMyTeams(operator, removeTeams!);
+        const removeMyTeams = await queryMyTeamsById(database, removeTeamIds);
+        if (removeMyTeams?.length) {
+            await deleteMyTeams(operator, removeMyTeams);
+            const ids = removeMyTeams.map((m) => m.id);
+            removeTeams = await queryTeamsById(database, ids);
+        }
     }
 
     let removeChannels;
