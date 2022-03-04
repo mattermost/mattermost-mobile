@@ -18,6 +18,7 @@ import {queryPostById, queryRecentPostsInChannel} from '@queries/servers/post';
 import {queryCurrentUserId, queryCurrentChannelId} from '@queries/servers/system';
 import {queryAllUsers} from '@queries/servers/user';
 import {getValidEmojis, matchEmoticons} from '@utils/emoji/helpers';
+import {getPostIdsForCombinedUserActivityPost} from '@utils/post_list';
 
 import {forceLogoutIfNecessary} from './session';
 
@@ -569,7 +570,7 @@ export const deletePost = async (serverUrl: string, postToDelete: PostModel | Po
 
     try {
         if (postToDelete.type === Post.POST_TYPES.COMBINED_USER_ACTIVITY && postToDelete.props?.system_post_ids) {
-            const systemPostIds = postToDelete.props.system_post_ids as string[];
+            const systemPostIds = getPostIdsForCombinedUserActivityPost(postToDelete.id);
             const promises = systemPostIds.map((id) => client.deletePost(id));
             await Promise.all(promises);
         } else {
