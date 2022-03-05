@@ -139,7 +139,10 @@ const ChannelListHeader = ({canCreateChannels, canJoinChannels, displayName, ico
                 </TouchableWithFeedback>
             </View>
             }
-            <Text style={styles.subHeadingStyles}>
+            <Text
+                style={styles.subHeadingStyles}
+                testID='channel_list_header.server_display_name'
+            >
                 {serverDisplayName}
             </Text>
         </Animated.View>

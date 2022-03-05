@@ -71,22 +71,24 @@ export default function HomeScreen(props: HomeProps) {
             >
                 <Tab.Screen
                     name={Screens.HOME}
-                    options={{title: 'Channel', unmountOnBlur: false}}
+                    options={{title: 'Channel', unmountOnBlur: false, tabBarTestID: 'tab_bar.home.tab'}}
                 >
                     {() => <ChannelList {...props}/>}
                 </Tab.Screen>
                 <Tab.Screen
                     name={Screens.SEARCH}
                     component={Search}
-                    options={{unmountOnBlur: false}}
+                    options={{unmountOnBlur: false, tabBarTestID: 'tab_bar.search.tab'}}
                 />
                 <Tab.Screen
                     name={Screens.MENTIONS}
                     component={RecentMentions}
+                    options={{tabBarTestID: 'tab_bar.mentions.tab'}}
                 />
                 <Tab.Screen
                     name={Screens.ACCOUNT}
                     component={Account}
+                    options={{tabBarTestID: 'tab_bar.account.tab'}}
                 />
             </Tab.Navigator>
         </NavigationContainer>

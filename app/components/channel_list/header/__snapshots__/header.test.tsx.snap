@@ -127,6 +127,7 @@ exports[`components/channel_list/header Channel List Header Component should mat
         "lineHeight": 16,
       }
     }
+    testID="channel_list_header.server_display_name"
   >
     
   </Text>

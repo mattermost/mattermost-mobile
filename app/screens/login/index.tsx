@@ -83,7 +83,7 @@ const LoginOptions = ({config, extra, hasLoginForm, launchType, launchError, lic
                 <FormattedText
                     style={styles.subheader}
                     id='mobile.login_options.enter_credentials'
-                    testID='mobile.login_options.enter_credentials'
+                    testID='login_options.description.enter_credentials'
                     defaultMessage='Enter your login details below.'
                 />
             );
@@ -92,7 +92,7 @@ const LoginOptions = ({config, extra, hasLoginForm, launchType, launchError, lic
                 <FormattedText
                     style={styles.subheader}
                     id='mobile.login_options.select_option'
-                    testID='mobile.login_options.select_option'
+                    testID='login_options.description.select_option'
                     defaultMessage='Select a login option below.'
                 />
             );
@@ -102,7 +102,7 @@ const LoginOptions = ({config, extra, hasLoginForm, launchType, launchError, lic
             <FormattedText
                 style={styles.subheader}
                 id='mobile.login_options.none'
-                testID='mobile.login_options.none'
+                testID='login_options.description.none'
                 defaultMessage="You can't log in to your account yet. At least one login option must be configured. Contact your System Admin for assistance."
             />
         );
@@ -150,7 +150,7 @@ const LoginOptions = ({config, extra, hasLoginForm, launchType, launchError, lic
             <FormattedText
                 defaultMessage='Log In to Your Account'
                 id={'mobile.login_options.heading'}
-                testID={'mobile.login_options.heading'}
+                testID={'login_options.title.login_to_account'}
                 style={styles.header}
             />
         );
@@ -159,14 +159,17 @@ const LoginOptions = ({config, extra, hasLoginForm, launchType, launchError, lic
             <FormattedText
                 defaultMessage="Can't Log In"
                 id={'mobile.login_options.cant_heading'}
-                testID={'mobile.login_options.cant_heading'}
+                testID={'login_options.title.cant_login'}
                 style={styles.header}
             />
         );
     }
 
     return (
-        <View style={styles.flex}>
+        <View
+            style={styles.flex}
+            testID='login.screen'
+        >
             <Background theme={theme}/>
             <AnimatedSafeArea style={[styles.container, transform]}>
                 <KeyboardAwareScrollView
