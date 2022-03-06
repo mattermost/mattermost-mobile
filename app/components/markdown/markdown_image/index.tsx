@@ -26,6 +26,7 @@ import {lookupMimeType} from '@utils/file';
 import {fileToGalleryItem, openGalleryAtIndex} from '@utils/gallery';
 import {generateId} from '@utils/general';
 import {calculateDimensions, getViewPortWidth, isGifTooLarge} from '@utils/images';
+import {getMarkdownImageSize} from '@utils/markdown';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {normalizeProtocol, tryOpenURL} from '@utils/url';
 
@@ -62,49 +63,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     },
 }));
 
-const getImageRatioSize = (
-    sourceSize: MarkdownImageProps['sourceSize'],
-    metaImage: PostImage,
-    isReplyPost: boolean,
-    isTablet: boolean,
-) => {
-    let ratioW;
-    let ratioH;
-
-    if (sourceSize?.width && sourceSize?.height) {
-        // if the source image is set with HxW
-        return {width: sourceSize.width, height: sourceSize.height};
-    } else if (metaImage.width && metaImage.height) {
-        // If the metadata size is set calculate the ratio
-        ratioW = metaImage.width > 0 ? metaImage.height / metaImage.width : 1;
-        ratioH = metaImage.height > 0 ? metaImage.width / metaImage.height : 1;
-    }
-
-    if (sourceSize?.width && !sourceSize.height && ratioW) {
-        // If source Width is set calculate the height using the ratio
-        return {width: sourceSize.width, height: sourceSize.width * ratioW};
-    } else if (sourceSize?.height && !sourceSize.width && ratioH) {
-        // If source Height is set calculate the width using the ratio
-        return {width: sourceSize.height * ratioH, height: sourceSize.height};
-    }
-
-    if (sourceSize?.width || sourceSize?.height) {
-        // if at least one size is set and we do not have metadata (svg's)
-        const width = sourceSize.width;
-        const height = sourceSize.height;
-        return {width: width || height, height: height || width};
-    }
-
-    if (metaImage.width && metaImage.height) {
-        // When metadata values are set
-        return {width: metaImage.width, height: metaImage.height};
-    }
-
-    // When no metadata and source size is not specified (full size svg's)
-    const width = getViewPortWidth(isReplyPost, isTablet);
-    return {width, height: width};
-};
-
 const MarkdownImage = ({
     disabled, errorTextStyle, imagesMetadata, isReplyPost = false,
     linkDestination, location, postId, source, sourceSize,
@@ -118,7 +76,7 @@ const MarkdownImage = ({
     const tapRef = useRef<TapGestureHandler>();
     const metadata = imagesMetadata?.[source] || Object.values(imagesMetadata || {})?.[0];
     const [failed, setFailed] = useState(isGifTooLarge(metadata));
-    const originalSize = getImageRatioSize(sourceSize, metadata, isReplyPost, isTablet);
+    const originalSize = getMarkdownImageSize(isReplyPost, isTablet, sourceSize, metadata);
     const serverUrl = useServerUrl();
     const galleryIdentifier = `${postId}-${genericFileId}-${location}`;
     const uri = useMemo(() => {
