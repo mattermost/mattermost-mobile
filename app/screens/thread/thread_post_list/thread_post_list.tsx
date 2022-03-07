@@ -53,6 +53,7 @@ const ThreadPostList = ({
             rootId={rootPost.id}
             shouldShowJoinLeaveMessages={false}
             showMoreMessages={false}
+            showNewMessageLine={false}
             testID='thread.post_list'
         />
     );

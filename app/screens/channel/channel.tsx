@@ -35,11 +35,11 @@ type ChannelProps = {
 
 const edges: Edge[] = ['left', 'right'];
 
-const styles = StyleSheet.create(() => ({
+const styles = StyleSheet.create({
     flex: {
         flex: 1,
     },
-}));
+});
 
 const Channel = ({channelId, componentId, displayName, isOwnDirectMessage, memberCount, name, teamId}: ChannelProps) => {
     const {formatMessage} = useIntl();
