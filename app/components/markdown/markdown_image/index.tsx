@@ -223,8 +223,8 @@ const MarkdownImage = ({
                 <SvgUri
                     uri={fileInfo.uri!}
                     style={{flex: 1, backgroundColor: changeOpacity(theme.centerChannelColor, 0.06), borderRadius: 8}}
-                    width={fileInfo.width || Math.min(width, height)}
-                    height={fileInfo.height || Math.min(width, height)}
+                    width={Math.min(fileInfo.width, width, height)}
+                    height={Math.min(fileInfo.height, width, height)}
 
                     // @ts-expect-error onError missing in type definition
                     onError={handleOnError}
