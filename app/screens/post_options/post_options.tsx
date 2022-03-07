@@ -29,6 +29,7 @@ type PostOptionsProps = {
     canMarkAsUnread: boolean;
     canPin: boolean;
     canReply: boolean;
+    combinedPost?: Post;
     isSaved: boolean;
     location: typeof Screens[keyof typeof Screens];
     post: PostModel;
@@ -42,6 +43,7 @@ const PostOptions = ({
     canMarkAsUnread,
     canPin,
     canReply,
+    combinedPost,
     isSaved,
     location,
     post,
@@ -92,7 +94,11 @@ const PostOptions = ({
                     />
                 }
                 {canEdit && <EditOption post={post}/>}
-                {canDelete && <DeletePostOption postId={post.id}/>}
+                {canDelete &&
+                <DeletePostOption
+                    combinedPost={combinedPost}
+                    post={post}
+                />}
             </>
         );
     };
