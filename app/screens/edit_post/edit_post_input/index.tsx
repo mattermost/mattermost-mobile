@@ -1,11 +1,10 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {forwardRef, useCallback, useImperativeHandle, useRef, useState} from 'react';
+import React, {forwardRef, useCallback, useImperativeHandle, useRef} from 'react';
 import {useIntl} from 'react-intl';
 import {KeyboardType, TextInput, View} from 'react-native';
 
-import AutoComplete from '@components/autocomplete';
 import {useTheme} from '@context/theme';
 import {changeOpacity, getKeyboardAppearanceFromTheme, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
@@ -35,25 +34,18 @@ export type PostInputRef = {
 type PostInputProps = {
     keyboardType: KeyboardType;
     message: string;
-    channelId: string;
-    rootId: string;
-    hasFilesAttached: boolean;
     hasError: boolean;
     onTextSelectionChange: (curPos: number) => void;
     onChangeText: (text: string) => void;
 }
-const PostTextInput = forwardRef<PostInputRef, PostInputProps>(({
+const EditPostInput = forwardRef<PostInputRef, PostInputProps>(({
     keyboardType, message, onChangeText, onTextSelectionChange, hasError,
-    channelId, rootId, hasFilesAttached,
 }: PostInputProps, ref) => {
     const intl = useIntl();
     const theme = useTheme();
     const styles = getStyleSheet(theme);
 
     const inputRef = useRef<TextInput>(null);
-    const [cursorPosition, setCursorPosition] = useState(0);
-
-    // const [textInputTop, setTextInputTop] = useState(0);
 
     useImperativeHandle(ref, () => ({ //fixme:  can this be removed ??
         focus: () => inputRef.current?.focus(),
@@ -62,24 +54,7 @@ const PostTextInput = forwardRef<PostInputRef, PostInputProps>(({
     const onSelectionChange = useCallback((event) => {
         const curPos = event.nativeEvent.selection.end;
         onTextSelectionChange(curPos);
-        setCursorPosition(curPos);
     }, [onTextSelectionChange]);
-
-    // const onContentSizeChange = useCallback(({nativeEvent: {contentSize: {height: contentHeight}}}) => {
-    //     const quaterTextInputHeight = textInputHeight / 4;
-    //     let top: number;
-    //     console.log('>>>  contentHeight', {contentHeight});
-    //
-    //     if (contentHeight < quaterTextInputHeight) {
-    //         top = contentHeight - (LIST_BOTTOM) - 20;
-    //         console.log(' SMALLER quaterTextInputHeight', {contentHeight, top, textInputHeight});
-    //         setTextInputTop(-LIST_BOTTOM - 20);
-    //     } else {
-    //         top = -contentHeight - LIST_BOTTOM;
-    //         console.log('GREATER quaterTextInputHeight', {contentHeight, top, textInputHeight});
-    //         setTextInputTop(0);
-    //     }
-    // }, []);
 
     return (
         <View
@@ -89,8 +64,6 @@ const PostTextInput = forwardRef<PostInputRef, PostInputProps>(({
             ]}
         >
             <TextInput
-
-                // onContentSizeChange={onContentSizeChange}
                 autoFocus={true}
                 blurOnSubmit={false}
                 disableFullscreenUI={true}
@@ -107,20 +80,10 @@ const PostTextInput = forwardRef<PostInputRef, PostInputProps>(({
                 underlineColorAndroid='transparent'
                 value={message}
             />
-            <AutoComplete
-                channelId={channelId}
-                hasFilesAttached={hasFilesAttached}
-                nestedScrollEnabled={true}
-                rootId={rootId}
-                updateValue={onChangeText}
-                value={message}
-                cursorPosition={cursorPosition}
-                postInputTop={0}
-            />
         </View>
     );
 });
 
-PostTextInput.displayName = 'PostTextInput';
+EditPostInput.displayName = 'EditPostInput';
 
-export default PostTextInput;
+export default EditPostInput;

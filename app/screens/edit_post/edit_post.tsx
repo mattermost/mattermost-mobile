@@ -4,9 +4,11 @@
 import React, {useCallback, useEffect, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
 import {Alert, Keyboard, KeyboardType, Platform, SafeAreaView, View} from 'react-native';
+import {KeyboardTrackingView} from 'react-native-keyboard-tracking-view';
 import {Navigation} from 'react-native-navigation';
 
 import {deletePost, editPost} from '@actions/remote/post';
+import AutoComplete from '@components/autocomplete';
 import Loading from '@components/loading';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
@@ -17,7 +19,7 @@ import PostModel from '@typings/database/models/servers/post';
 import {switchKeyboardForCodeBlocks} from '@utils/markdown';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
-import PostTextInput, {PostInputRef} from './post_input';
+import EditPostInput, {PostInputRef} from './edit_post_input';
 
 const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     return {
@@ -32,7 +34,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             alignItems: 'center',
             justifyContent: 'center',
         },
-        scrollView: {
+        body: {
             flex: 1,
             backgroundColor: changeOpacity(theme.centerChannelColor, 0.03),
         },
@@ -222,30 +224,42 @@ const EditPost = ({componentId, maxPostSize, post, closeButton, hasFilesAttached
     }
 
     return (
-        <SafeAreaView
-            testID='edit_post.screen'
-            style={styles.container}
-        >
-            <View style={styles.scrollView}>
-                { (errorLine || errorExtra) && (
-                    <PostError
-                        errorExtra={errorExtra}
-                        errorLine={errorLine}
+        <>
+            <SafeAreaView
+                testID='edit_post.screen'
+                style={styles.container}
+            >
+                <View style={styles.body}>
+                    { (errorLine || errorExtra) && (
+                        <PostError
+                            errorExtra={errorExtra}
+                            errorLine={errorLine}
+                        />
+                    ) }
+                    <EditPostInput
+                        hasError={Boolean(errorLine)}
+                        keyboardType={keyboardType}
+                        message={postMessage}
+                        onChangeText={onChangeText}
+                        onTextSelectionChange={onTextSelectionChange}
+                        ref={postInputRef}
                     />
-                ) }
-                <PostTextInput
-                    hasError={Boolean(errorLine)}
-                    keyboardType={keyboardType}
-                    message={postMessage}
-                    onChangeText={onChangeText}
-                    onTextSelectionChange={onTextSelectionChange}
-                    ref={postInputRef}
+                </View>
+            </SafeAreaView>
+            <KeyboardTrackingView style={styles.autocompleteContainer}>
+                <AutoComplete
                     channelId={post.channelId}
-                    rootId={post.rootId}
                     hasFilesAttached={hasFilesAttached}
+                    nestedScrollEnabled={true}
+                    rootId={post.rootId}
+                    updateValue={onChangeText}
+                    value={postMessage}
+                    cursorPosition={cursorPosition}
+                    postInputTop={0}
                 />
-            </View>
-        </SafeAreaView>
+            </KeyboardTrackingView>
+
+        </>
     );
 };
 
