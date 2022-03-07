@@ -9,7 +9,7 @@ function getFullDialog(triggerId, webhookBaseUrl) {
             callback_id: 'somecallbackid',
             title: 'Title for Full Dialog Test',
             icon_url:
-                'http://www.mattermost.org/wp-content/uploads/2016/04/icon.png',
+                'https://mattermost.com/wp-content/uploads/2022/02/icon.png',
             elements: [
                 {
                     display_name: 'Display Name',
@@ -181,7 +181,7 @@ function getSimpleDialog(triggerId, webhookBaseUrl) {
             callback_id: 'somecallbackid',
             title: 'Title for Dialog Test without elements',
             icon_url:
-                'http://www.mattermost.org/wp-content/uploads/2016/04/icon.png',
+                'https://mattermost.com/wp-content/uploads/2022/02/icon.png',
             submit_label: 'Submit Test',
             notify_on_cancel: true,
             state: 'somestate',
@@ -197,7 +197,7 @@ function getUserAndChannelDialog(triggerId, webhookBaseUrl) {
             callback_id: 'somecallbackid',
             title: 'Title for Dialog Test with user and channel element',
             icon_url:
-                'http://www.mattermost.org/wp-content/uploads/2016/04/icon.png',
+                'https://mattermost.com/wp-content/uploads/2022/02/icon.png',
             submit_label: 'Submit Test',
             notify_on_cancel: true,
             state: 'somestate',
@@ -243,7 +243,7 @@ function getBooleanDialog(triggerId, webhookBaseUrl) {
             callback_id: 'somecallbackid',
             title: 'Title for Dialog Test with boolean element',
             icon_url:
-                'http://www.mattermost.org/wp-content/uploads/2016/04/icon.png',
+                'https://mattermost.com/wp-content/uploads/2022/02/icon.png',
             submit_label: 'Submit Test',
             notify_on_cancel: true,
             state: 'somestate',
