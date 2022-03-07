@@ -4,8 +4,6 @@
 import React from 'react';
 import {FlatList, StyleSheet} from 'react-native';
 
-import {List} from '@constants';
-
 import CategoryBody from './body';
 import LoadCategoriesError from './error';
 import CategoryHeader from './header';
@@ -54,7 +52,6 @@ const Categories = (props: Props) => {
             windowSize={15}
             updateCellsBatchingPeriod={10}
             maxToRenderPerBatch={5}
-            viewabilityConfig={List.VISIBILITY_CONFIG_DEFAULTS}
         />
     );
 };

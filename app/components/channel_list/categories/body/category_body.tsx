@@ -4,8 +4,6 @@
 import React, {useMemo} from 'react';
 import {FlatList} from 'react-native';
 
-import {List} from '@constants';
-
 import ChannelListItem from './channel';
 
 import type CategoryModel from '@typings/database/models/servers/category';
@@ -27,6 +25,9 @@ const ChannelItem = ({item}: {item: string}) => {
 };
 
 const extractKey = (item: any) => item;
+const itemLayout = (d: any, index: number) => (
+    {length: 40, offset: 40 * index, index}
+);
 
 const CategoryBody = ({category, categoryChannels, channels, myChannels}: Props) => {
     const data: string[] = useMemo(() => {
@@ -49,11 +50,7 @@ const CategoryBody = ({category, categoryChannels, channels, myChannels}: Props)
             initialNumToRender={20}
             windowSize={15}
             updateCellsBatchingPeriod={10}
-            maxToRenderPerBatch={10}
-            getItemLayout={(d, index) => (
-                {length: 40, offset: 40 * index, index}
-            )}
-            viewabilityConfig={List.VISIBILITY_CONFIG_DEFAULTS}
+            getItemLayout={itemLayout}
         />
     );
 };
