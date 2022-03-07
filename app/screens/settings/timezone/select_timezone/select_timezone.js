@@ -158,7 +158,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             color: theme.centerChannelColor,
             fontSize: 15,
         },
-        
+
         searchBar: {
             height: 38,
             marginVertical: 5,
