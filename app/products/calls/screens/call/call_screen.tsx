@@ -165,7 +165,7 @@ const getStyleSheet = makeStyleSheetFromTheme((props: any) => {
             marginLeft: 10,
             marginRight: 10,
         },
-        speakerphone: {
+        speakerphoneIcon: {
             color: props.speakerphoneOn ? 'black' : props.theme.sidebarText,
             backgroundColor: props.speakerphoneOn ? 'white' : 'rgba(255,255,255,0.12)',
         },
@@ -429,7 +429,7 @@ const CallScreen = (props: Props) => {
                             <CompassIcon
                                 name={'volume-high'}
                                 size={24}
-                                style={{...style.buttonIcon, ...style.speakerphone}}
+                                style={{...style.buttonIcon, ...style.speakerphoneIcon}}
                             />
                             <Text style={style.buttonText}>{'Speaker'}</Text>
                         </Pressable>
