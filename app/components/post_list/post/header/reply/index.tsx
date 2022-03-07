@@ -5,10 +5,10 @@ import React, {useCallback} from 'react';
 import {Text, View} from 'react-native';
 import {TouchableOpacity} from 'react-native-gesture-handler';
 
-import {Screens} from '@app/constants';
+import {fetchAndSwitchToThread} from '@actions/remote/thread';
 import CompassIcon from '@components/compass_icon';
 import {SEARCH} from '@constants/screens';
-import {showModal} from '@screens/navigation';
+import {useServerUrl} from '@context/server';
 import {preventDoubleTap} from '@utils/tap';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 
@@ -47,11 +47,12 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
 
 const HeaderReply = ({commentCount, location, post, theme}: HeaderReplyProps) => {
     const style = getStyleSheet(theme);
+    const serverUrl = useServerUrl();
 
     const onPress = useCallback(preventDoubleTap(() => {
         const rootId = post.rootId || post.id;
-        showModal(Screens.THREAD, '', {rootId});
-    }), []);
+        fetchAndSwitchToThread(serverUrl, rootId);
+    }), [serverUrl]);
 
     return (
         <View

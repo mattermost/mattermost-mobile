@@ -7,12 +7,10 @@ import {BackHandler, StyleSheet, View} from 'react-native';
 import {Navigation} from 'react-native-navigation';
 import {Edge, SafeAreaView} from 'react-native-safe-area-context';
 
-import {fetchPostThread} from '@actions/remote/post';
 import CompassIcon from '@components/compass_icon';
 import PostDraft from '@components/post_draft';
 import {General} from '@constants';
 import {THREAD_ACCESSORIES_CONTAINER_NATIVE_ID} from '@constants/post_draft';
-import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {useAppState, useIsTablet} from '@hooks/device';
 import {dismissModal, mergeNavigationOptions} from '@screens/navigation';
@@ -43,14 +41,8 @@ const Thread = ({channel, componentId, rootPost}: ThreadProps) => {
     const {formatMessage} = useIntl();
     const appState = useAppState();
     const isTablet = useIsTablet();
-    const serverUrl = useServerUrl();
     const styles = getStyleSheet();
     const theme = useTheme();
-
-    // Get post thread
-    useEffect(() => {
-        fetchPostThread(serverUrl, rootPost.id);
-    }, []);
 
     const close = useCallback(() => {
         dismissModal({componentId});

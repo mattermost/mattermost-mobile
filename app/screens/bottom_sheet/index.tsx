@@ -1,14 +1,14 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {ReactNode, useEffect, useRef} from 'react';
+import React, {ReactNode, useCallback, useEffect, useRef} from 'react';
 import {BackHandler, DeviceEventEmitter, Keyboard, StyleSheet, useWindowDimensions, View} from 'react-native';
 import {State, TapGestureHandler} from 'react-native-gesture-handler';
 import {Navigation as RNN} from 'react-native-navigation';
 import Animated from 'react-native-reanimated';
 import RNBottomSheet from 'reanimated-bottom-sheet';
 
-import {Events, Screens} from '@constants';
+import {Events} from '@constants';
 import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
 import {dismissModal} from '@screens/navigation';
@@ -19,45 +19,47 @@ import Indicator from './indicator';
 
 type SlideUpPanelProps = {
     closeButtonId?: string;
-    componentId?: string;
+    componentId: string;
     initialSnapIndex?: number;
     renderContent: () => ReactNode;
     snapPoints?: Array<string | number>;
 }
 
-const BottomSheet = ({closeButtonId, componentId: screenComponentId, initialSnapIndex = 0, renderContent, snapPoints = ['90%', '50%', 50]}: SlideUpPanelProps) => {
+const BottomSheet = ({closeButtonId, componentId, initialSnapIndex = 0, renderContent, snapPoints = ['90%', '50%', 50]}: SlideUpPanelProps) => {
     const sheetRef = useRef<RNBottomSheet>(null);
     const dimensions = useWindowDimensions();
     const isTablet = useIsTablet();
     const theme = useTheme();
     const lastSnap = snapPoints.length - 1;
 
-    const componentId = isTablet && screenComponentId ? screenComponentId : Screens.BOTTOM_SHEET;
+    const close = useCallback(() => {
+        dismissModal({componentId});
+    }, [componentId]);
 
     useEffect(() => {
         const listener = DeviceEventEmitter.addListener(Events.CLOSE_BOTTOM_SHEET, () => {
             if (sheetRef.current) {
                 sheetRef.current.snapTo(lastSnap);
             } else {
-                dismissModal({componentId});
+                close();
             }
         });
 
         return () => listener.remove();
-    }, []);
+    }, [close]);
 
     useEffect(() => {
         const listener = BackHandler.addEventListener('hardwareBackPress', () => {
             if (sheetRef.current) {
                 sheetRef.current.snapTo(1);
             } else {
-                dismissModal({componentId});
+                close();
             }
             return true;
         });
 
         return () => listener.remove();
-    }, []);
+    }, [close]);
 
     useEffect(() => {
         hapticFeedback();
@@ -68,12 +70,12 @@ const BottomSheet = ({closeButtonId, componentId: screenComponentId, initialSnap
     useEffect(() => {
         const navigationEvents = RNN.events().registerNavigationButtonPressedListener(({buttonId}) => {
             if (closeButtonId && buttonId === closeButtonId) {
-                dismissModal({componentId});
+                close();
             }
         });
 
         return () => navigationEvents.remove();
-    }, []);
+    }, [close]);
 
     const renderBackdrop = () => {
         return (
@@ -127,7 +129,7 @@ const BottomSheet = ({closeButtonId, componentId: screenComponentId, initialSnap
                 borderRadius={10}
                 initialSnap={initialSnapIndex}
                 renderContent={renderContainerContent}
-                onCloseEnd={dismissModal}
+                onCloseEnd={close}
                 enabledBottomInitialAnimation={true}
                 renderHeader={Indicator}
                 enabledContentTapInteraction={false}

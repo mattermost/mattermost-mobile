@@ -8,6 +8,7 @@ import {TouchableHighlight} from 'react-native-gesture-handler';
 
 import {showPermalink} from '@actions/local/permalink';
 import {removePost} from '@actions/local/post';
+import {fetchAndSwitchToThread} from '@actions/remote/thread';
 import SystemAvatar from '@components/system_avatar';
 import SystemHeader from '@components/system_header';
 import * as Screens from '@constants/screens';
@@ -138,7 +139,7 @@ const Post = ({
             if (post.deleteAt === 0 && isValidSystemMessage && !isPendingOrFailed) {
                 if ([Screens.CHANNEL, Screens.PERMALINK].includes(location)) {
                     const rootId = post.rootId || post.id;
-                    showModal(Screens.THREAD, '', {rootId});
+                    fetchAndSwitchToThread(serverUrl, rootId);
                 }
             } else if ((isEphemeral || post.deleteAt > 0)) {
                 removePost(serverUrl, post);

@@ -3,9 +3,11 @@
 
 import React, {useCallback} from 'react';
 
+import {fetchAndSwitchToThread} from '@actions/remote/thread';
 import {Screens} from '@constants';
+import {useServerUrl} from '@context/server';
 import {t} from '@i18n';
-import {dismissBottomSheet, showModal} from '@screens/navigation';
+import {dismissBottomSheet} from '@screens/navigation';
 
 import BaseOption from './base_option';
 
@@ -15,10 +17,12 @@ type Props = {
     post: PostModel;
 }
 const ReplyOption = ({post}: Props) => {
+    const serverUrl = useServerUrl();
+
     const handleReply = useCallback(async () => {
         const rootId = post.rootId || post.id;
         await dismissBottomSheet(Screens.POST_OPTIONS);
-        showModal(Screens.THREAD, '', {rootId});
+        fetchAndSwitchToThread(serverUrl, rootId);
     }, [post]);
 
     return (
