@@ -19,7 +19,16 @@ import {deleteMyTeams, queryTeamsById} from '@queries/servers/team';
 import {isTablet} from '@utils/helpers';
 
 import {handleCategoryCreatedEvent, handleCategoryDeletedEvent, handleCategoryOrderUpdatedEvent, handleCategoryUpdatedEvent} from './category';
-import {handleChannelDeletedEvent, handleUserAddedToChannelEvent, handleUserRemovedFromChannelEvent} from './channel';
+import {handleChannelDeletedEvent,
+    handleChannelCreatedEvent,
+    handleChannelUnarchiveEvent,
+    handleChannelConvertedEvent,
+    handleChannelUpdatedEvent,
+    handleChannelViewedEvent,
+    handleChannelMemberUpdatedEvent,
+    handleDirectAddedEvent,
+    handleUserAddedToChannelEvent,
+    handleUserRemovedFromChannelEvent} from './channel';
 import {handleNewPostEvent, handlePostDeleted, handlePostEdited, handlePostUnread} from './posts';
 import {handlePreferenceChangedEvent, handlePreferencesChangedEvent, handlePreferencesDeletedEvent} from './preferences';
 import {handleAddCustomEmoji, handleReactionRemovedFromPostEvent, handleReactionAddedToPostEvent} from './reactions';
@@ -190,6 +199,7 @@ async function doReconnect(serverUrl: string) {
 }
 
 export async function handleEvent(serverUrl: string, msg: WebSocketMessage) {
+    console.log('msg', msg);
     switch (msg.event) {
         case WebsocketEvents.POSTED:
         case WebsocketEvents.EPHEMERAL_MESSAGE:
@@ -253,40 +263,57 @@ export async function handleEvent(serverUrl: string, msg: WebSocketMessage) {
             break;
 
         case WebsocketEvents.CHANNEL_CREATED:
+            console.log('<><> -- handleChannelCreatedEvent -- <><>');
+            console.log('msg', msg);
+            handleChannelCreatedEvent(serverUrl, msg);
             break;
 
-        // return dispatch(handleChannelCreatedEvent(msg));
         case WebsocketEvents.CHANNEL_DELETED:
             handleChannelDeletedEvent(serverUrl, msg);
             break;
         case WebsocketEvents.CHANNEL_UNARCHIVED:
+            handleChannelUnarchiveEvent(serverUrl, msg);
             break;
 
-        // return dispatch(handleChannelUnarchiveEvent(msg));
         case WebsocketEvents.CHANNEL_UPDATED:
+            console.log('<><> -- handleChannelUpdatedEvent -- <><>');
+
+            // console.log('msg', msg);
+            handleChannelUpdatedEvent(serverUrl, msg);
             break;
 
-        // return dispatch(handleChannelUpdatedEvent(msg));
         case WebsocketEvents.CHANNEL_CONVERTED:
+            console.log('<><> -- handleChannelConvertedEvent -- <><>');
+
+            // console.log('msg', msg);
+            handleChannelConvertedEvent(serverUrl, msg);
             break;
 
-        // return dispatch(handleChannelConvertedEvent(msg));
         case WebsocketEvents.CHANNEL_VIEWED:
+            console.log('<><> -- handleChannelViewedEvent -- <><>');
+
+            // console.log('msg', msg);
+            handleChannelViewedEvent(serverUrl, msg);
             break;
 
-        // return dispatch(handleChannelViewedEvent(msg));
         case WebsocketEvents.CHANNEL_MEMBER_UPDATED:
+            console.log('<><> -- handleChannelMemberUpdatedEvent -- <><>');
+
+            // console.log('msg', msg);
+            handleChannelMemberUpdatedEvent(serverUrl, msg);
             break;
 
-        // return dispatch(handleChannelMemberUpdatedEvent(msg));
-        case WebsocketEvents.CHANNEL_SCHEME_UPDATED:
-            break;
+            // case WebsocketEvents.CHANNEL_SCHEME_UPDATED:
+            //     handleChannelSchemeUpdatedEvent(serverUrl, msg);
+            //     break;
 
-        // return dispatch(handleChannelSchemeUpdatedEvent(msg));
         case WebsocketEvents.DIRECT_ADDED:
+            console.log('<><> -- handleDirectAddedEvent -- <><>');
+
+            // console.log('msg', msg);
+            handleDirectAddedEvent(serverUrl, msg);
             break;
 
-        // return dispatch(handleDirectAddedEvent(msg));
         case WebsocketEvents.PREFERENCE_CHANGED:
             handlePreferenceChangedEvent(serverUrl, msg);
             break;

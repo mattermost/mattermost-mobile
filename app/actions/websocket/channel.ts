@@ -4,19 +4,87 @@
 import {Model} from '@nozbe/watermelondb';
 import {DeviceEventEmitter} from 'react-native';
 
-import {removeCurrentUserFromChannel, setChannelDeleteAt, switchToChannel} from '@actions/local/channel';
+import {
+    removeCurrentUserFromChannel,
+    setChannelDeleteAt,
+    switchToChannel} from '@actions/local/channel';
 import {fetchMyChannel} from '@actions/remote/channel';
 import {fetchPostsForChannel} from '@actions/remote/post';
 import {fetchUsersByIds, updateUsersNoLongerVisible} from '@actions/remote/user';
 import Events from '@constants/events';
 import DatabaseManager from '@database/manager';
 import {queryActiveServer} from '@queries/app/servers';
-import {deleteChannelMembership, prepareMyChannelsForTeam, queryChannelsById, queryCurrentChannel} from '@queries/servers/channel';
+import {prepareMyChannelsForTeam, queryChannelsById, queryCurrentChannel} from '@queries/servers/channel';
 import {prepareCommonSystemValues, queryConfig, setCurrentChannelId} from '@queries/servers/system';
 import {queryNthLastChannelFromTeam} from '@queries/servers/team';
 import {queryCurrentUser, queryUserById} from '@queries/servers/user';
 import {dismissAllModals, popToRoot} from '@screens/navigation';
 import {isTablet} from '@utils/helpers';
+
+export async function handleChannelCreatedEvent(serverUrl: string, msg: any) {
+    const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
+    if (!operator) {
+
+    }
+}
+
+// WORKS
+export async function handleChannelUnarchiveEvent(serverUrl: string, msg: any) {
+    // where is the archive WS event
+    const database = DatabaseManager.serverDatabases[serverUrl];
+    if (!database) {
+        return;
+    }
+
+    try {
+        await setChannelDeleteAt(serverUrl, msg.data.channel_id, 0);
+    } catch {
+        // do nothing
+    }
+}
+
+// pinned_post_count, member_count not included with channel updated WS event
+// !! see if this comes from the channelmemberupdatedevent
+export async function handleChannelUpdatedEvent(serverUrl: string, msg: any) {
+    const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
+    if (!operator) {
+        return;
+    }
+
+    // const database = DatabaseManager.serverDatabases[serverUrl]?.database;
+    // if (!database) {
+    //     return;
+    // }
+
+    const updatedChannel = JSON.parse(msg.data.channel);
+    console.log('updatedChannel', updatedChannel);
+    operator.handleChannel({channels: [updatedChannel], prepareRecordsOnly: false});
+
+    const channelInfos: ChannelInfo[] = [];
+
+    channelInfos.push({
+        id: updatedChannel.id,
+        header: updatedChannel.header,
+        purpose: updatedChannel.purpose,
+        guest_count: 0,
+        member_count: 0,
+        pinned_post_count: 0,
+    });
+
+    operator.handleChannelInfo({channelInfos, prepareRecordsOnly: false});
+}
+
+export async function handleChannelConvertedEvent(serverUrl: string, msg: any) {
+}
+
+export async function handleChannelViewedEvent(serverUrl: string, msg: any) {
+}
+
+export async function handleChannelMemberUpdatedEvent(serverUrl: string, msg: any) {
+}
+
+export async function handleDirectAddedEvent(serverUrl: string, msg: any) {
+}
 
 export async function handleUserAddedToChannelEvent(serverUrl: string, msg: any) {
     const database = DatabaseManager.serverDatabases[serverUrl];
@@ -147,6 +215,7 @@ export async function handleUserRemovedFromChannelEvent(serverUrl: string, msg: 
 }
 
 export async function handleChannelDeletedEvent(serverUrl: string, msg: WebSocketMessage) {
+    console.log('msg', msg);
     const database = DatabaseManager.serverDatabases[serverUrl];
     if (!database) {
         return;

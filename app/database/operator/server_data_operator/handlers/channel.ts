@@ -58,7 +58,11 @@ const ChannelHandler = (superclass: any) => class extends superclass {
             );
         }
 
+        // console.log('channels', channels);
+        // console.log('prepareRecordsOnly', prepareRecordsOnly);
         const createOrUpdateRawValues = getUniqueRawsBy({raws: channels, key: 'id'});
+
+        // console.log('createOrUpdateRawValues', createOrUpdateRawValues);
 
         return this.handleRecords({
             fieldName: 'id',
@@ -111,6 +115,8 @@ const ChannelHandler = (superclass: any) => class extends superclass {
                 'An empty "channelInfos" array has been passed to the handleMyChannelSettings method',
             );
         }
+
+        console.log('<><><>------<>prepareRecordsOnly', prepareRecordsOnly);
 
         const createOrUpdateRawValues = getUniqueRawsBy({
             raws: channelInfos,
