@@ -49,7 +49,7 @@ describe('Server Login - Connect to Server', () => {
     it('MM-T4676_2 - should show disabled connect button on empty server url or server display name', async () => {
         // # Attempt to connect with empty server url and non-empty server display name
         await serverUrlInput.replaceText('');
-        await serverDisplayNameInput.replaceText('Local Server');
+        await serverDisplayNameInput.replaceText('Server 1');
 
         // * Verify connect button is disabled
         await expect(connectButtonDisabled).toBeVisible();
@@ -66,7 +66,7 @@ describe('Server Login - Connect to Server', () => {
         // # Connect with invalid server url and non-empty server display name
         const invalidServerUrl = 'invalid';
         await serverUrlInput.replaceText(invalidServerUrl);
-        await serverDisplayNameInput.replaceText('Local Server');
+        await serverDisplayNameInput.replaceText('Server 1');
         await connectButton.tap();
 
         // * Verify invalid url error
@@ -77,7 +77,7 @@ describe('Server Login - Connect to Server', () => {
         // # Connect with invalid ssl and non-empty server display name
         const connectionError = 'Cannot connect to the server.';
         await serverUrlInput.replaceText('expired.badssl.com');
-        await serverDisplayNameInput.replaceText('Local Server');
+        await serverDisplayNameInput.replaceText('Server 1');
         await connectButton.tap();
 
         // * Verify connection error
@@ -85,7 +85,7 @@ describe('Server Login - Connect to Server', () => {
 
         // # Connect with invalid host and valid server display name
         await serverUrlInput.replaceText('wrong.host.badssl.com');
-        await serverDisplayNameInput.replaceText('Local Server');
+        await serverDisplayNameInput.replaceText('Server 1');
         await connectButton.tap();
 
         // * Verify connection error
@@ -95,7 +95,7 @@ describe('Server Login - Connect to Server', () => {
     it('MM-T4676_5 - should show login screen on successful connection to server', async () => {
         // # Connect to server with valid server url and non-empty server display name
         await serverUrlInput.replaceText(serverUrl);
-        await serverDisplayNameInput.replaceText('Local Server');
+        await serverDisplayNameInput.replaceText('Server 1');
         await connectButton.tap();
 
         // * Verify on login screen

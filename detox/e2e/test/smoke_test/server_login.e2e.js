@@ -27,7 +27,7 @@ describe('Server Login', () => {
         signinButton,
         usernameInput,
     } = LoginScreen;
-    const serverDisplayName = 'Local Server';
+    const serverDisplayName = 'Server 1';
 
     afterAll(async () => {
         // # Log out

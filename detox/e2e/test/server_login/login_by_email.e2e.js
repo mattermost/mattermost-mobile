@@ -30,7 +30,7 @@ describe('Server Login - Login by Email', () => {
         signinButtonDisabled,
         usernameInput,
     } = LoginScreen;
-    const serverDisplayName = 'Local Server';
+    const serverDisplayName = 'Server 1';
 
     beforeAll(async () => {
         // * Verify on server screen
