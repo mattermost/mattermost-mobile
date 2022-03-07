@@ -4,6 +4,8 @@
 import React from 'react';
 import {FlatList, StyleSheet} from 'react-native';
 
+import {List} from '@constants';
+
 import CategoryBody from './body';
 import LoadCategoriesError from './error';
 import CategoryHeader from './header';
@@ -19,6 +21,8 @@ const styles = StyleSheet.create({
         flex: 1,
     },
 });
+
+const extractKey = (item: CategoryModel) => item.id;
 
 const renderCategory = (data: {item: CategoryModel}) => {
     return (
@@ -44,6 +48,13 @@ const Categories = (props: Props) => {
             style={styles.flex}
             showsHorizontalScrollIndicator={false}
             showsVerticalScrollIndicator={false}
+            keyExtractor={extractKey}
+            removeClippedSubviews={true}
+            initialNumToRender={5}
+            windowSize={15}
+            updateCellsBatchingPeriod={10}
+            maxToRenderPerBatch={5}
+            viewabilityConfig={List.VISIBILITY_CONFIG_DEFAULTS}
         />
     );
 };
