@@ -35,7 +35,7 @@ type ChannelProps = {
 
 const edges: Edge[] = ['left', 'right'];
 
-const getStyleSheet = StyleSheet.create(() => ({
+const styles = StyleSheet.create(() => ({
     flex: {
         flex: 1,
     },
@@ -47,7 +47,6 @@ const Channel = ({channelId, componentId, displayName, isOwnDirectMessage, membe
     const isTablet = useIsTablet();
     const insets = useSafeAreaInsets();
     const theme = useTheme();
-    const styles = getStyleSheet();
     const defaultHeight = useDefaultHeaderHeight();
     const rightButtons: HeaderRightButton[] = useMemo(() => ([{
         iconName: 'magnify',
