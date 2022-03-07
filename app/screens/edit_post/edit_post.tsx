@@ -193,7 +193,6 @@ const EditPost = ({componentId, maxPostSize, post, closeButton, hasFilesAttached
                 text: intl.formatMessage({id: 'post_info.del', defaultMessage: 'Delete'}),
                 style: 'destructive',
                 onPress: async () => {
-                    toggleSaveButton(true);
                     res = await deletePost(serverUrl, post.id);
                     handleUIUpdates(res);
                 },
@@ -207,11 +206,11 @@ const EditPost = ({componentId, maxPostSize, post, closeButton, hasFilesAttached
         setIsUpdating(true);
         setErrorLine(undefined);
         setErrorExtra(undefined);
-
+        toggleSaveButton(true);
         if (!postMessage && canDelete && !hasFilesAttached) {
             return handleDeletePost();
         }
-        toggleSaveButton(true);
+
         const res = await editPost(serverUrl, post.id, postMessage);
         return handleUIUpdates(res);
     }, [toggleSaveButton, serverUrl, post.id, postMessage, onClose]);
