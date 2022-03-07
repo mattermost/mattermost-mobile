@@ -706,7 +706,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "./bundleReactNative.sh\n";
+			shellScript = "NODE_BINARY=/Users/chris/.nvm/versions/node/v15.14.0/bin/node ./bundleReactNative.sh\n";
 		};
 		484322B86D8320281D95970F /* [CP] Check Pods Manifest.lock */ = {
 			isa = PBXShellScriptBuildPhase;

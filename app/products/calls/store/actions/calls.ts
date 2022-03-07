@@ -149,3 +149,10 @@ export function unmuteMyself(): GenericAction {
     }
     return {type: 'empty'};
 }
+
+export function setSpeakerphoneOn(newState: boolean): GenericAction {
+    return {
+        type: CallsTypes.SET_SPEAKERPHONE,
+        data: newState,
+    };
+}
