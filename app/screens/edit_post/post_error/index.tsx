@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React from 'react';
-import {StyleSheet, useWindowDimensions, View} from 'react-native';
+import {StyleSheet, View} from 'react-native';
 
 import ErrorText from '@components/error_text';
 
@@ -16,9 +16,11 @@ const styles = StyleSheet.create({
         paddingHorizontal: 15,
         flexDirection: 'row',
         justifyContent: 'space-between',
+        width: '100%',
     },
     errorContainer: {
         paddingHorizontal: 10,
+        width: '100%',
     },
     errorWrap: {
         flexShrink: 1,
@@ -30,14 +32,9 @@ const styles = StyleSheet.create({
 });
 
 const PostError = ({errorLine, errorExtra}: PostErrorProps) => {
-    const {width} = useWindowDimensions();
-
     return (
         <View
-            style={[
-                errorExtra ? styles.errorContainerSplit : styles.errorContainer,
-                {width},
-            ]}
+            style={errorExtra ? styles.errorContainerSplit : styles.errorContainer}
         >
             {errorLine && (
                 <ErrorText

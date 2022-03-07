@@ -164,7 +164,8 @@ const EditPost = ({componentId, maxPostSize, post, closeButton, hasFilesAttached
     const handleUIUpdates = useCallback((res) => {
         if (res?.error) {
             setIsUpdating(false);
-            setErrorLine((res.error as ClientErrorProps).message);
+            const errorMessage = intl.formatMessage({id: 'mobile.edit_post.error', defaultMessage: 'There was a problem editing this message. Please try again.'});
+            setErrorLine(errorMessage);
             postInputRef?.current?.focus();
         } else {
             setIsUpdating(false);
