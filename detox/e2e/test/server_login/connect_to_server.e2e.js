@@ -7,7 +7,7 @@
 // - Use element testID when selecting an element. Create one if none.
 // *******************************************************************
 
-import {serverUrl} from '@support/test_config';
+import {serverOneUrl} from '@support/test_config';
 import {
     LoginScreen,
     ServerScreen,
@@ -55,7 +55,7 @@ describe('Server Login - Connect to Server', () => {
         await expect(connectButtonDisabled).toBeVisible();
 
         // # Attempt to connect with valid server url and empty server display name
-        await serverUrlInput.replaceText(serverUrl);
+        await serverUrlInput.replaceText(serverOneUrl);
         await serverDisplayNameInput.replaceText('');
 
         // * Verify connect button is disabled
@@ -94,7 +94,7 @@ describe('Server Login - Connect to Server', () => {
 
     it('MM-T4676_5 - should show login screen on successful connection to server', async () => {
         // # Connect to server with valid server url and non-empty server display name
-        await serverUrlInput.replaceText(serverUrl);
+        await serverUrlInput.replaceText(serverOneUrl);
         await serverDisplayNameInput.replaceText('Server 1');
         await connectButton.tap();
 

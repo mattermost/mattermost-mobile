@@ -8,7 +8,10 @@
 // *******************************************************************
 
 import {Setup} from '@support/server_api';
-import {serverUrl} from '@support/test_config';
+import {
+    serverOneUrl,
+    siteOneUrl,
+} from '@support/test_config';
 import {
     ChannelListScreen,
     LoginScreen,
@@ -30,15 +33,15 @@ describe('Server Login - Login by Email', () => {
         signinButtonDisabled,
         usernameInput,
     } = LoginScreen;
-    const serverDisplayName = 'Server 1';
+    const serverOneDisplayName = 'Server 1';
 
     beforeAll(async () => {
         // * Verify on server screen
         await ServerScreen.toBeVisible();
 
         // # Connect to server
-        await serverUrlInput.replaceText(serverUrl);
-        await serverDisplayNameInput.replaceText(serverDisplayName);
+        await serverUrlInput.replaceText(serverOneUrl);
+        await serverDisplayNameInput.replaceText(serverOneDisplayName);
         await connectButton.tap();
     });
 
@@ -88,13 +91,13 @@ describe('Server Login - Login by Email', () => {
 
     it('MM-T4677_4 - should show channel list screen on successful login', async () => {
         // # Log in to server with correct credentials
-        const {user} = await Setup.apiInit(serverUrl);
+        const {user} = await Setup.apiInit(siteOneUrl);
         await usernameInput.replaceText(user.username);
         await passwordInput.replaceText(user.password);
         await signinButton.tap();
 
         // * Verify on channel list screen and channel list header shows server display name
         await ChannelListScreen.toBeVisible();
-        await expect(ChannelListScreen.headerServerDisplayName).toHaveText(serverDisplayName);
+        await expect(ChannelListScreen.headerServerDisplayName).toHaveText(serverOneDisplayName);
     });
 });

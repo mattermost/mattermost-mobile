@@ -8,7 +8,10 @@
 // *******************************************************************
 
 import {Setup} from '@support/server_api';
-import {serverUrl} from '@support/test_config';
+import {
+    serverOneUrl,
+    siteOneUrl,
+} from '@support/test_config';
 import {
     ChannelListScreen,
     HomeScreen,
@@ -27,11 +30,11 @@ describe('Server Login', () => {
         signinButton,
         usernameInput,
     } = LoginScreen;
-    const serverDisplayName = 'Server 1';
+    const serverOneDisplayName = 'Server 1';
 
     afterAll(async () => {
         // # Log out
-        await HomeScreen.logout(serverDisplayName);
+        await HomeScreen.logout(serverOneDisplayName);
     });
 
     it('MM-T4675 - should be able to connect to a server, log in, and show channel list screen', async () => {
@@ -39,21 +42,21 @@ describe('Server Login', () => {
         await ServerScreen.toBeVisible();
 
         // # Connect to server with valid server url and non-empty server display name
-        await serverUrlInput.replaceText(serverUrl);
-        await serverDisplayNameInput.replaceText(serverDisplayName);
+        await serverUrlInput.replaceText(serverOneUrl);
+        await serverDisplayNameInput.replaceText(serverOneDisplayName);
         await connectButton.tap();
 
         // * Verify on login screen
         await LoginScreen.toBeVisible();
 
         // # Log in to server with correct credentials
-        const {user} = await Setup.apiInit(serverUrl);
+        const {user} = await Setup.apiInit(siteOneUrl);
         await usernameInput.replaceText(user.username);
         await passwordInput.replaceText(user.password);
         await signinButton.tap();
 
         // * Verify on channel list screen and channel list header shows server display name
         await ChannelListScreen.toBeVisible();
-        await expect(ChannelListScreen.headerServerDisplayName).toHaveText(serverDisplayName);
+        await expect(ChannelListScreen.headerServerDisplayName).toHaveText(serverOneDisplayName);
     });
 });
