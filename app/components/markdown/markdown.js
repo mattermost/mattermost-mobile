@@ -146,6 +146,7 @@ export default class Markdown extends PureComponent {
         if (node.type === 'image') {
             extraProps.reactChildren = node.react.children;
             extraProps.linkDestination = node.linkDestination;
+            extraProps.size = node.size;
         }
 
         return extraProps;
@@ -183,7 +184,7 @@ export default class Markdown extends PureComponent {
         return <Text style={this.computeTextStyle([this.props.baseTextStyle, this.props.textStyles.code], context)}>{literal}</Text>;
     };
 
-    renderImage = ({linkDestination, reactChildren, context, src}) => {
+    renderImage = ({linkDestination, reactChildren, context, src, size}) => {
         if (!this.props.imagesMetadata) {
             return null;
         }
@@ -211,6 +212,7 @@ export default class Markdown extends PureComponent {
                 isReplyPost={this.props.isReplyPost}
                 postId={this.props.postId}
                 source={src}
+                sourceSize={size}
             >
                 {reactChildren}
             </MarkdownImage>
