@@ -3,6 +3,7 @@
 
 import {Platform, StyleSheet} from 'react-native';
 
+import {getViewPortWidth} from '@utils/images';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 export function getCodeFont() {
@@ -206,3 +207,41 @@ export function switchKeyboardForCodeBlocks(value, cursorPosition) {
 
     return 'default';
 }
+
+export const getMarkdownImageSize = (isReplyPost, isTablet, sourceSize, knownSize) => {
+    let ratioW;
+    let ratioH;
+
+    if (sourceSize?.width && sourceSize?.height) {
+        // if the source image is set with HxW
+        return {width: sourceSize.width, height: sourceSize.height};
+    } else if (knownSize?.width && knownSize.height) {
+        // If the metadata size is set calculate the ratio
+        ratioW = knownSize.width > 0 ? knownSize.height / knownSize.width : 1;
+        ratioH = knownSize.height > 0 ? knownSize.width / knownSize.height : 1;
+    }
+
+    if (sourceSize?.width && !sourceSize.height && ratioW) {
+        // If source Width is set calculate the height using the ratio
+        return {width: sourceSize.width, height: sourceSize.width * ratioW};
+    } else if (sourceSize?.height && !sourceSize.width && ratioH) {
+        // If source Height is set calculate the width using the ratio
+        return {width: sourceSize.height * ratioH, height: sourceSize.height};
+    }
+
+    if (sourceSize?.width || sourceSize?.height) {
+        // if at least one size is set and we do not have metadata (svg's)
+        const width = sourceSize.width;
+        const height = sourceSize.height;
+        return {width: width || height, height: height || width};
+    }
+
+    if (knownSize?.width && knownSize.height) {
+        // When metadata values are set
+        return {width: knownSize.width, height: knownSize.height};
+    }
+
+    // When no metadata and source size is not specified (full size svg's)
+    const width = getViewPortWidth(isReplyPost, isTablet);
+    return {width, height: width};
+};
