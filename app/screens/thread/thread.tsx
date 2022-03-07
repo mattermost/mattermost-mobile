@@ -2,19 +2,16 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback, useEffect, useMemo} from 'react';
-import {useIntl} from 'react-intl';
 import {BackHandler, StyleSheet, View} from 'react-native';
 import {Navigation} from 'react-native-navigation';
 import {Edge, SafeAreaView} from 'react-native-safe-area-context';
 
 import CompassIcon from '@components/compass_icon';
 import PostDraft from '@components/post_draft';
-import {General} from '@constants';
 import {THREAD_ACCESSORIES_CONTAINER_NATIVE_ID} from '@constants/post_draft';
 import {useTheme} from '@context/theme';
 import {useAppState, useIsTablet} from '@hooks/device';
 import {dismissModal, mergeNavigationOptions} from '@screens/navigation';
-import {changeOpacity} from '@utils/theme';
 
 import ThreadPostList from './thread_post_list';
 
@@ -38,7 +35,6 @@ const getStyleSheet = StyleSheet.create(() => ({
 const CLOSE_BUTTON_ID = 'close-threads';
 
 const Thread = ({channel, componentId, rootPost}: ThreadProps) => {
-    const {formatMessage} = useIntl();
     const appState = useAppState();
     const isTablet = useIsTablet();
     const styles = getStyleSheet();
@@ -81,30 +77,9 @@ const Thread = ({channel, componentId, rootPost}: ThreadProps) => {
     }, []);
 
     useEffect(() => {
-        let title;
-        if (channel?.type === General.DM_CHANNEL) {
-            title = formatMessage({id: 'thread.header.thread_dm', defaultMessage: 'Direct Message Thread'});
-        } else {
-            title = formatMessage({id: 'thread.header.thread', defaultMessage: 'Thread'});
-        }
-
-        let subtitle = '';
-        if (channel?.type !== General.DM_CHANNEL) {
-            subtitle = formatMessage({id: 'thread.header.thread_in', defaultMessage: 'in {channelName}'}, {channelName: channel?.displayName});
-        }
-
         mergeNavigationOptions(componentId, {
             topBar: {
                 leftButtons: [leftButton!],
-                title: {
-                    fontFamily: 'OpenSans-SemiBold',
-                    fontSize: 18,
-                    text: title,
-                },
-                subtitle: {
-                    color: changeOpacity(theme.sidebarHeaderTextColor, 0.72),
-                    text: subtitle,
-                },
             },
         });
     }, [componentId, leftButton, theme]);
