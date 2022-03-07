@@ -49,7 +49,7 @@ const EditPostInput = forwardRef<PostInputRef, PostInputProps>(({
 
     const inputRef = useRef<TextInput>(null);
 
-    useImperativeHandle(ref, () => ({ //fixme:  can this be removed ??
+    useImperativeHandle(ref, () => ({
         focus: () => inputRef.current?.focus(),
     }), [inputRef]);
 
