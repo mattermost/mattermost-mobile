@@ -678,7 +678,7 @@
   "post_body.check_for_out_of_channel_mentions.message.multiple": "említették, de nem résztvevői a beszélgetésnek. Szeretné ",
   "post_body.check_for_out_of_channel_mentions.message.one": "említették, de nem résztvevői a beszélgetésnek. Szeretné ",
   "post_body.check_for_out_of_channel_mentions.message_last": "? Hozzáférhetnek az összes korábbi üzenetekhez.",
-  "post_body.commentedOn": "Hozzászólt a {name} üzenetéhez: ",
+  "post_body.commentedOn": "Hozzászólt {name} üzenetéhez: ",
   "post_body.deleted": "(üzenet törölve)",
   "post_info.auto_responder": "AUTOMATIKUS VÁLASZ",
   "post_info.bot": "BOT",
