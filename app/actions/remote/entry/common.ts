@@ -16,7 +16,7 @@ import NetworkManager from '@init/network_manager';
 import {queryAllServers} from '@queries/app/servers';
 import {queryAllChannelsForTeam} from '@queries/servers/channel';
 import {queryConfig} from '@queries/servers/system';
-import {queryAvailableTeamIds, queryMyTeams} from '@queries/servers/team';
+import {deleteMyTeams, queryAvailableTeamIds, queryMyTeams, queryMyTeamsById, queryTeamsById} from '@queries/servers/team';
 
 import type ClientError from '@client/rest/error';
 
@@ -33,6 +33,27 @@ export type AppEntryData = {
 export type AppEntryError = {
     error?: Error | ClientError | string;
 }
+
+export const teamsToRemove = async (serverUrl: string, removeTeamIds?: string[]) => {
+    const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
+    if (!operator) {
+        return undefined;
+    }
+
+    const {database} = operator;
+    if (removeTeamIds?.length) {
+        // Immediately delete myTeams so that the UI renders only teams the user is a member of.
+        const removeMyTeams = await queryMyTeamsById(database, removeTeamIds);
+        if (removeMyTeams?.length) {
+            await deleteMyTeams(operator, removeMyTeams);
+            const ids = removeMyTeams.map((m) => m.id);
+            const removeTeams = await queryTeamsById(database, ids);
+            return removeTeams;
+        }
+    }
+
+    return undefined;
+};
 
 export const fetchAppEntryData = async (serverUrl: string, since: number, initialTeamId: string): Promise<AppEntryData | AppEntryError> => {
     const database = DatabaseManager.serverDatabases[serverUrl]?.database;
