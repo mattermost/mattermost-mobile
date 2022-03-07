@@ -67,7 +67,7 @@ type EditPostProps = {
 const EditPost = ({componentId, maxPostSize, post, closeButton, hasFilesAttached, canDelete}: EditPostProps) => {
     const [keyboardType, setKeyboardType] = useState<KeyboardType>('default');
     const [postMessage, setPostMessage] = useState(post.message);
-    const [cursorPosition, setCursorPosition] = useState(0);
+    const [cursorPosition, setCursorPosition] = useState(post.message.length);
     const [errorLine, setErrorLine] = useState<string | undefined>();
     const [errorExtra, setErrorExtra] = useState<string | undefined>();
     const [isUpdating, setIsUpdating] = useState(false);

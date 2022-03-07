@@ -3,7 +3,7 @@
 
 import React, {forwardRef, useCallback, useImperativeHandle, useRef} from 'react';
 import {useIntl} from 'react-intl';
-import {KeyboardType, TextInput, View} from 'react-native';
+import {KeyboardType, Platform, TextInput, useWindowDimensions, View} from 'react-native';
 
 import {useTheme} from '@context/theme';
 import {changeOpacity, getKeyboardAppearanceFromTheme, makeStyleSheetFromTheme} from '@utils/theme';
@@ -14,7 +14,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => ({
         color: theme.centerChannelColor,
         padding: 15,
         textAlignVertical: 'top',
-        height: '45%',
         ...typography(),
     },
     inputContainer: {
@@ -24,9 +23,10 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => ({
         borderBottomColor: changeOpacity(theme.centerChannelColor, 0.1),
         backgroundColor: theme.centerChannelBg,
         marginTop: 2,
-        height: '45%',
     },
 }));
+
+const HEIGHT_DIFF = Platform.select({android: 40, default: 30});
 
 export type PostInputRef = {
     focus: () => void;
@@ -44,6 +44,8 @@ const EditPostInput = forwardRef<PostInputRef, PostInputProps>(({
     const intl = useIntl();
     const theme = useTheme();
     const styles = getStyleSheet(theme);
+    const {height} = useWindowDimensions();
+    const textInputHeight = (height / 2) - HEIGHT_DIFF;
 
     const inputRef = useRef<TextInput>(null);
 
@@ -61,6 +63,7 @@ const EditPostInput = forwardRef<PostInputRef, PostInputProps>(({
             style={[
                 styles.inputContainer,
                 hasError && {marginTop: 0},
+                {height: textInputHeight},
             ]}
         >
             <TextInput
@@ -75,7 +78,7 @@ const EditPostInput = forwardRef<PostInputRef, PostInputProps>(({
                 onSelectionChange={onSelectionChange}
                 placeholder={intl.formatMessage({id: 'edit_post.editPost', defaultMessage: 'Edit the post...'})}
                 placeholderTextColor={changeOpacity(theme.centerChannelColor, 0.4)}
-                style={styles.input}
+                style={[styles.input, {height: textInputHeight}]}
                 testID='edit_post.message.input'
                 underlineColorAndroid='transparent'
                 value={message}
