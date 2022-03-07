@@ -91,13 +91,14 @@ describe('Server Login - Login by Email', () => {
 
     it('MM-T4677_4 - should show channel list screen on successful login', async () => {
         // # Log in to server with correct credentials
-        const {user} = await Setup.apiInit(siteOneUrl);
+        const {team, user} = await Setup.apiInit(siteOneUrl);
         await usernameInput.replaceText(user.username);
         await passwordInput.replaceText(user.password);
         await signinButton.tap();
 
-        // * Verify on channel list screen and channel list header shows server display name
+        // * Verify on channel list screen and channel list header shows team display name and server display name
         await ChannelListScreen.toBeVisible();
+        await expect(ChannelListScreen.headerTeamDisplayName).toHaveText(team.display_name);
         await expect(ChannelListScreen.headerServerDisplayName).toHaveText(serverOneDisplayName);
     });
 });

@@ -61,6 +61,7 @@ exports[`components/channel_list/header Channel List Header Component should mat
               "lineHeight": 36,
             }
           }
+          testID="channel_list_header.team_display_name"
         >
           Test!
         </Text>

@@ -7,10 +7,12 @@ import {timeouts} from '@support/utils';
 class ChannelListScreen {
     testID = {
         channelListScreen: 'channel_list.screen',
+        headerTeamDisplayName: 'channel_list_header.team_display_name',
         headerServerDisplayName: 'channel_list_header.server_display_name',
     };
 
     channelListScreen = element(by.id(this.testID.channelListScreen));
+    headerTeamDisplayName = element(by.id(this.testID.headerTeamDisplayName));
     headerServerDisplayName = element(by.id(this.testID.headerServerDisplayName));
 
     toBeVisible = async () => {

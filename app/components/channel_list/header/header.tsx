@@ -116,7 +116,10 @@ const ChannelListHeader = ({canCreateChannels, canJoinChannels, displayName, ico
                     type='opacity'
                 >
                     <View style={styles.headerRow}>
-                        <Text style={styles.headingStyles}>
+                        <Text
+                            style={styles.headingStyles}
+                            testID='channel_list_header.team_display_name'
+                        >
                             {displayName}
                         </Text>
                         <View style={styles.chevronButton}>
