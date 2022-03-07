@@ -100,12 +100,6 @@ export default class Timezone extends PureComponent {
         const {intl} = this.context;
         const style = getStyleSheet(theme);
 
-        const searchBarInput = {
-            backgroundColor: changeOpacity(theme.sidebarHeaderTextColor, 0.2),
-            color: theme.sidebarHeaderTextColor,
-            fontSize: 15,
-        };
-
         return (
             <SafeAreaView
                 testID='settings.select_timezone.screen'
@@ -113,7 +107,7 @@ export default class Timezone extends PureComponent {
                 style={style.container}
             >
                 <StatusBar/>
-                <View style={style.header}>
+                <View style={style.searchBar}>
                     <SearchBar
                         testID='settings.select_timezone.search_bar'
                         ref={this.setSearchBarRef}
@@ -121,12 +115,12 @@ export default class Timezone extends PureComponent {
                         cancelTitle={intl.formatMessage({id: 'mobile.post.cancel', defaultMessage: 'Cancel'})}
                         backgroundColor='transparent'
                         inputHeight={Platform.OS === 'ios' ? 33 : 46}
-                        inputStyle={searchBarInput}
-                        placeholderTextColor={changeOpacity(theme.sidebarHeaderTextColor, 0.5)}
-                        selectionColor={changeOpacity(theme.sidebarHeaderTextColor, 0.5)}
-                        tintColorSearch={changeOpacity(theme.sidebarHeaderTextColor, 0.5)}
-                        tintColorDelete={changeOpacity(theme.sidebarHeaderTextColor, 0.5)}
-                        titleCancelColor={theme.sidebarHeaderTextColor}
+                        inputStyle={style.searchBarInput}
+                        placeholderTextColor={changeOpacity(theme.centerChannelColor, 0.5)}
+                        selectionColor={changeOpacity(theme.centerChannelColor, 0.5)}
+                        tintColorSearch={changeOpacity(theme.centerChannelColor, 0.5)}
+                        tintColorDelete={changeOpacity(theme.centerChannelColor, 0.5)}
+                        titleCancelColor={theme.centerChannelColor}
                         onChangeText={this.handleTextChanged}
                         autoCapitalize='none'
                         value={value}
@@ -158,20 +152,16 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             flex: 1,
             backgroundColor: theme.centerChannelBg,
         },
-        header: {
-            backgroundColor: theme.sidebarHeaderBg,
+
+        searchBarInput: {
+            backgroundColor: changeOpacity(theme.centerChannelColor, 0.2),
+            color: theme.centerChannelColor,
+            fontSize: 15,
+        },
+        
+        searchBar: {
             height: 38,
-            width: '100%',
-            ...Platform.select({
-                android: {
-                    height: 46,
-                    justifyContent: 'center',
-                },
-                ios: {
-                    height: 44,
-                    paddingLeft: 8,
-                },
-            }),
+            marginVertical: 5,
         },
     };
 });
