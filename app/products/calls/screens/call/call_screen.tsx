@@ -13,14 +13,13 @@ import {
     useWindowDimensions,
     DeviceEventEmitter,
 } from 'react-native';
-import InCallManager from 'react-native-incall-manager';
 import {RTCView} from 'react-native-webrtc';
 
 import {showModalOverCurrentContext, mergeNavigationOptions, popTopScreen, goToScreen} from '@actions/navigation';
 import CompassIcon from '@components/compass_icon';
 import {WebsocketEvents} from '@constants';
 import {THREAD} from '@constants/screen';
-import {GenericAction} from '@mm-redux/types/actions';
+import {ActionFunc, GenericAction} from '@mm-redux/types/actions';
 import {displayUsername} from '@mm-redux/utils/user_utils';
 import CallAvatar from '@mmproducts/calls/components/call_avatar';
 import CallDuration from '@mmproducts/calls/components/call_duration';
@@ -35,7 +34,7 @@ type Props = {
         muteMyself: (channelId: string) => GenericAction;
         unmuteMyself: (channelId: string) => GenericAction;
         setSpeakerphoneOn: (newState: boolean) => GenericAction;
-        leaveCall: () => GenericAction;
+        leaveCall: () => ActionFunc;
     };
     theme: Theme;
     call: Call | null;
@@ -297,9 +296,6 @@ const CallScreen = (props: Props) => {
     const toggleSpeakerphoneHandler = () => {
         props.actions.setSpeakerphoneOn(!props.speakerphoneOn);
     };
-    useEffect(() => {
-        InCallManager.setSpeakerphoneOn(props.speakerphoneOn);
-    }, [props.speakerphoneOn]);
 
     const toggleControlsInLandscape = useCallback(() => {
         setShowControlsInLandscape(!showControlsInLandscape);
