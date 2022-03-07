@@ -76,7 +76,7 @@ export function loadConfigAndLicense() {
     };
 }
 
-export function loadFromPushNotification(notification, isInitialNotification) {
+export function loadFromPushNotification(notification, isInitialNotification, skipChannelSwitch = false) {
     return async (dispatch, getState) => {
         const state = getState();
         const {payload} = notification;
@@ -108,12 +108,14 @@ export function loadFromPushNotification(notification, isInitialNotification) {
             await Promise.all(loading);
         }
 
-        dispatch(handleSelectTeamAndChannel(teamId, channelId));
-        dispatch(selectPost(''));
+        if (!skipChannelSwitch) {
+            dispatch(handleSelectTeamAndChannel(teamId, channelId));
+            dispatch(selectPost(''));
 
-        const {root_id: rootId} = notification.payload || {};
-        if (isCollapsedThreadsEnabled(state) && rootId) {
-            dispatch(selectPost(rootId));
+            const {root_id: rootId} = notification.payload || {};
+            if (isCollapsedThreadsEnabled(state) && rootId) {
+                dispatch(selectPost(rootId));
+            }
         }
         return {data: true};
     };

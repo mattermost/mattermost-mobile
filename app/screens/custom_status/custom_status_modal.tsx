@@ -159,9 +159,7 @@ class CustomStatusModal extends NavigationComponent<Props, State> {
                     status.expires_at = this.calculateExpiryTime(duration);
                 }
                 const {error} = await this.props.actions.setCustomStatus(status);
-                if (error) {
-                    EventEmitter.emit(CustomStatus.SET_CUSTOM_STATUS_FAILURE);
-                }
+                EventEmitter.emit(CustomStatus.SET_CUSTOM_STATUS, error);
             }
         } else if (customStatus?.emoji) {
             this.props.actions.unsetCustomStatus();

@@ -1,6 +1,6 @@
 {
   "name": "mattermost-mobile",
-  "version": "1.49.0",
+  "version": "1.49.1",
   "description": "Mattermost Mobile with React Native",
   "repository": "git@github.com:mattermost/mattermost-mobile.git",
   "author": "Mattermost, Inc.",
@@ -97,7 +97,7 @@
     "serialize-error": "9.0.0",
     "shallow-equals": "1.0.0",
     "tinycolor2": "1.4.2",
-    "url-parse": "1.5.4"
+    "url-parse": "1.5.10"
   },
   "devDependencies": {
     "@babel/cli": "7.16.8",
