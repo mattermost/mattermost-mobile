@@ -105,7 +105,6 @@ Object {
     "initialNumToRender": 20,
     "invertStickyHeaders": undefined,
     "keyExtractor": [Function],
-    "maxToRenderPerBatch": 10,
     "onContentSizeChange": [Function],
     "onLayout": [Function],
     "onMomentumScrollBegin": [Function],
@@ -119,10 +118,6 @@ Object {
     "stickyHeaderIndices": Array [],
     "style": undefined,
     "updateCellsBatchingPeriod": 10,
-    "viewabilityConfig": Object {
-      "itemVisiblePercentThreshold": 100,
-      "waitForInteraction": true,
-    },
     "viewabilityConfigCallbackPairs": Array [],
     "windowSize": 15,
   },
