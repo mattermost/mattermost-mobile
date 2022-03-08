@@ -207,7 +207,7 @@ const EditPost = ({componentId, maxPostSize, post, closeButton, hasFilesAttached
                 text: intl.formatMessage({id: 'post_info.del', defaultMessage: 'Delete'}),
                 style: 'destructive',
                 onPress: async () => {
-                    res = await deletePost(serverUrl, post.id);
+                    res = await deletePost(serverUrl, post);
                     handleUIUpdates(res);
                 },
             }],
