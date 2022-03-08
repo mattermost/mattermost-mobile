@@ -80,9 +80,11 @@ const SpecialMentionItem = ({
                         style={style.rowIcon}
                     />
                 </View>
-                <Text style={style.textWrapper}>
-                    <Text style={style.rowUsername}>{`@${completeHandle}`}</Text>
-                    <Text style={style.rowUsername}>{' - '}</Text>
+                <Text
+                    style={style.textWrapper}
+                    numberOfLines={1}
+                >
+                    <Text style={style.rowUsername}>{`@${completeHandle} - `}</Text>
                     <FormattedText
                         id={id}
                         defaultMessage={defaultMessage}

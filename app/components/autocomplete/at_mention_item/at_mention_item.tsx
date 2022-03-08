@@ -65,10 +65,12 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme: Theme) => {
             fontSize: 15,
             color: theme.centerChannelColor,
             paddingLeft: 4,
+            flexShrink: 1,
         },
         rowUsername: {
             color: changeOpacity(theme.centerChannelColor, 0.56),
             fontSize: 15,
+            flexShrink: 5,
         },
         icon: {
             marginLeft: 4,
@@ -126,30 +128,27 @@ const AtMentionItem = ({
                     <GuestTag
                         show={guest}
                     />
-                    <Text
-                        numberOfLines={1}
-                        testID='at_mention_item.text'
-                    >
-                        {Boolean(name.length) && (
-                            <Text
-                                style={style.rowFullname}
-                                testID='at_mention_item.name'
-                            >
-                                {name}
-                            </Text>
-                        )}
+                    {Boolean(name.length) && (
                         <Text
-                            style={style.rowUsername}
-                            testID='at_mention_item.username'
+                            style={style.rowFullname}
+                            numberOfLines={1}
+                            testID='at_mention_item.name'
                         >
-                            {isCurrentUser && (
-                                <FormattedText
-                                    id='suggestion.mention.you'
-                                    defaultMessage='(you)'
-                                />
-                            )}
-                            {` @${user.username}`}
+                            {name}
                         </Text>
+                    )}
+                    <Text
+                        style={style.rowUsername}
+                        numberOfLines={1}
+                        testID='at_mention_item.username'
+                    >
+                        {isCurrentUser && (
+                            <FormattedText
+                                id='suggestion.mention.you'
+                                defaultMessage='(you)'
+                            />
+                        )}
+                        {` @${user.username}`}
                     </Text>
                 </View>
                 {isCustomStatusEnabled && !user.is_bot && customStatus && (

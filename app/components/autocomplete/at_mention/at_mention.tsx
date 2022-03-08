@@ -113,12 +113,13 @@ const AtMention = ({
     const serverUrl = useServerUrl();
     const theme = useTheme();
     const style = getStyleFromTheme(theme);
+
     const [sections, setSections] = useState<UserMentionSections>([]);
     const [usersInChannel, setUsersInChannel] = useState<UserProfile[]>([]);
     const [usersOutOfChannel, setUsersOutOfChannel] = useState<UserProfile[]>([]);
+    const [groups, setGroups] = useState<Group[]>([]);
     const [loading, setLoading] = useState(false);
     const [noResultsTerm, setNoResultsTerm] = useState<string|null>(null);
-    const [groups, setGroups] = useState<Group[]>([]);
 
     const runSearch = useMemo(() => debounce(async (sUrl: string, term: string, cId?: string) => {
         setLoading(true);

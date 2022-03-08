@@ -81,8 +81,7 @@ const GroupMentionItem = ({
                     style={style.rowIcon}
                 />
             </View>
-            <Text style={style.rowUsername}>{`@${completeHandle}`}</Text>
-            <Text style={style.rowUsername}>{' - '}</Text>
+            <Text style={style.rowUsername}>{`@${completeHandle} - `}</Text>
             <Text style={style.rowFullname}>{`${completeHandle}`}</Text>
         </TouchableWithFeedback>
     );
