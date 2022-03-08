@@ -28,7 +28,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => ({
 
 const HEIGHT_DIFF = Platform.select({android: 40, default: 30});
 
-export type PostInputRef = {
+export type EditPostInputRef = {
     focus: () => void;
 }
 
@@ -40,7 +40,7 @@ type PostInputProps = {
     onChangeText: (text: string) => void;
 }
 
-const EditPostInput = forwardRef<PostInputRef, PostInputProps>(({
+const EditPostInput = forwardRef<EditPostInputRef, PostInputProps>(({
     keyboardType, message, onChangeText, onTextSelectionChange, hasError,
 }: PostInputProps, ref) => {
     const intl = useIntl();

@@ -20,7 +20,7 @@ import {dismissModal, setButtons} from '@screens/navigation';
 import {switchKeyboardForCodeBlocks} from '@utils/markdown';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
-import EditPostInput, {PostInputRef} from './edit_post_input';
+import EditPostInput, {EditPostInputRef} from './edit_post_input';
 
 import type PostModel from '@typings/database/models/servers/post';
 
@@ -74,7 +74,7 @@ const EditPost = ({componentId, maxPostSize, post, closeButton, hasFilesAttached
     const [errorExtra, setErrorExtra] = useState<string | undefined>();
     const [isUpdating, setIsUpdating] = useState(false);
 
-    const postInputRef = useRef<PostInputRef>(null);
+    const postInputRef = useRef<EditPostInputRef>(null);
     const theme = useTheme();
     const intl = useIntl();
     const serverUrl = useServerUrl();
