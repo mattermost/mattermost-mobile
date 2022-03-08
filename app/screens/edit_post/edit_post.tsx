@@ -106,7 +106,7 @@ const EditPost = ({componentId, maxPostSize, post, closeButton, hasFilesAttached
                 enabled: false,
             }],
         });
-    }, [theme.sidebarHeaderTextColor]);
+    }, []);
 
     useEffect(() => {
         const unsubscribe = Navigation.events().registerComponentListener({
