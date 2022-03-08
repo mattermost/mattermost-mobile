@@ -94,7 +94,7 @@ const PostOptions = ({canAddReaction, canDelete, canEdit, canMarkAsUnread, canPi
                         postId={post.id}
                     />
                 }
-                {canCopyText && <CopyTextOption postMessage={post.message}/>}
+                {Boolean(canCopyText && post.message) && <CopyTextOption postMessage={post.message}/>}
                 {canPin &&
                     <PinChannelOption
                         isPostPinned={post.isPinned}
