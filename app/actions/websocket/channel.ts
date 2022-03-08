@@ -178,7 +178,6 @@ export async function handleDirectAddedEvent(serverUrl: string, msg: any) {
 }
 
 export async function handleUserAddedToChannelEvent(serverUrl: string, msg: any) {
-    console.log('<><> USER ADDED EVENT <><>');
     const database = DatabaseManager.serverDatabases[serverUrl];
     if (!database) {
         return;
@@ -201,13 +200,8 @@ export async function handleUserAddedToChannelEvent(serverUrl: string, msg: any)
         if (userId === currentUser?.id) {
             const {channels, memberships} = await fetchMyChannel(serverUrl, teamId, channelId, true);
             if (channels && memberships) {
-                console.log('teamId', teamId);
-                console.log('channelId', channelId);
-                console.log('channels', channels);
-                console.log('memberships', memberships);
                 const prepare = await prepareMyChannelsForTeam(database.operator, teamId, channels, memberships);
                 if (prepare) {
-                    console.log('<><> Prepared');
                     const prepareModels = await Promise.all(prepare);
                     const flattenedModels = prepareModels.flat();
                     if (flattenedModels?.length > 0) {
@@ -249,7 +243,6 @@ export async function handleUserAddedToChannelEvent(serverUrl: string, msg: any)
 }
 
 export async function handleUserRemovedFromChannelEvent(serverUrl: string, msg: any) {
-    console.log('<><> USER REMOVED EVENT <><>');
     const database = DatabaseManager.serverDatabases[serverUrl];
     if (!database) {
         return;
@@ -263,13 +256,10 @@ export async function handleUserRemovedFromChannelEvent(serverUrl: string, msg: 
 
     const userId = msg.broadcast.user_id;
     const channelId = msg.data.channel_id;
-    console.log('userId', userId);
-    console.log('channelId', channelId);
 
     const models: Model[] = [];
 
     if (user.isGuest) {
-        console.log('<><>isGuest<><>');
         const {models: updateVisibleModels} = await updateUsersNoLongerVisible(serverUrl, true);
         if (updateVisibleModels) {
             models.push(...updateVisibleModels);
@@ -279,7 +269,6 @@ export async function handleUserRemovedFromChannelEvent(serverUrl: string, msg: 
     if (user.id === userId) {
         const {models: removeUserModels} = await removeCurrentUserFromChannel(serverUrl, channelId, true);
         if (removeUserModels) {
-            // console.log('removeUserModels', removeUserModels);
             models.push(...removeUserModels);
         }
 
