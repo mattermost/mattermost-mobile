@@ -17,11 +17,12 @@ import {useIsTablet} from '@hooks/device';
 import useDidUpdate from '@hooks/did_update';
 import PostError from '@screens/edit_post/post_error';
 import {dismissModal, setButtons} from '@screens/navigation';
-import PostModel from '@typings/database/models/servers/post';
 import {switchKeyboardForCodeBlocks} from '@utils/markdown';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 import EditPostInput, {PostInputRef} from './edit_post_input';
+
+import type PostModel from '@typings/database/models/servers/post';
 
 const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     return {
@@ -159,7 +160,7 @@ const EditPost = ({componentId, maxPostSize, post, closeButton, hasFilesAttached
                 enabled,
             }],
         });
-    }, [componentId]);
+    }, [componentId, theme]);
 
     const onChangeText = useCallback((message: string) => {
         setPostMessage(message);

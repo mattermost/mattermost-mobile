@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {forwardRef, useCallback, useImperativeHandle, useRef} from 'react';
+import React, {forwardRef, useCallback, useImperativeHandle, useMemo, useRef} from 'react';
 import {useIntl} from 'react-intl';
 import {KeyboardType, Platform, TextInput, useWindowDimensions, View} from 'react-native';
 
@@ -31,6 +31,7 @@ const HEIGHT_DIFF = Platform.select({android: 40, default: 30});
 export type PostInputRef = {
     focus: () => void;
 }
+
 type PostInputProps = {
     keyboardType: KeyboardType;
     message: string;
@@ -38,6 +39,7 @@ type PostInputProps = {
     onTextSelectionChange: (curPos: number) => void;
     onChangeText: (text: string) => void;
 }
+
 const EditPostInput = forwardRef<PostInputRef, PostInputProps>(({
     keyboardType, message, onChangeText, onTextSelectionChange, hasError,
 }: PostInputProps, ref) => {
@@ -52,6 +54,10 @@ const EditPostInput = forwardRef<PostInputRef, PostInputProps>(({
     useImperativeHandle(ref, () => ({
         focus: () => inputRef.current?.focus(),
     }), [inputRef]);
+
+    const inputStyle = useMemo(() => {
+        return [styles.input, {height: textInputHeight}];
+    }, [textInputHeight]);
 
     const onSelectionChange = useCallback((event) => {
         const curPos = event.nativeEvent.selection.end;
@@ -78,7 +84,7 @@ const EditPostInput = forwardRef<PostInputRef, PostInputProps>(({
                 onSelectionChange={onSelectionChange}
                 placeholder={intl.formatMessage({id: 'edit_post.editPost', defaultMessage: 'Edit the post...'})}
                 placeholderTextColor={changeOpacity(theme.centerChannelColor, 0.4)}
-                style={[styles.input, {height: textInputHeight}]}
+                style={inputStyle}
                 testID='edit_post.message.input'
                 underlineColorAndroid='transparent'
                 value={message}

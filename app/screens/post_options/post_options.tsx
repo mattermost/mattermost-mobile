@@ -38,7 +38,10 @@ type PostOptionsProps = {
     componentId: string;
 };
 
-const PostOptions = ({canAddReaction, canDelete, canEdit, canMarkAsUnread, canPin, canReply, isSaved, location, post, thread, componentId}: PostOptionsProps) => {
+const PostOptions = ({
+    canAddReaction, canDelete, canEdit, canMarkAsUnread, canPin, canReply,
+    isSaved, location, post, thread, componentId,
+}: PostOptionsProps) => {
     const managedConfig = useManagedConfig();
 
     useEffect(() => {

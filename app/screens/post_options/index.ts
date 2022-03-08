@@ -52,7 +52,7 @@ const canEditPost = (isOwner: boolean, post: PostModel, postEditTimeLimit: numbe
 };
 
 const enhanced = withObservables([], ({post, showAddReaction, location, database}: WithDatabaseArgs & { post: PostModel; showAddReaction: boolean; location: string }) => {
-    const channel = post?.channel.observe();
+    const channel = post.channel.observe();
     const channelIsArchived = channel.pipe(switchMap((ch: ChannelModel) => of$(ch.deleteAt !== 0)));
     const currentUser = database.get<SystemModel>(SYSTEM).findAndObserve(CURRENT_USER_ID).pipe(switchMap(({value}) => database.get<UserModel>(USER).findAndObserve(value)));
     const config = database.get<SystemModel>(SYSTEM).findAndObserve(CONFIG).pipe(switchMap(({value}) => of$(value as ClientConfig)));
@@ -100,8 +100,8 @@ const enhanced = withObservables([], ({post, showAddReaction, location, database
     const canEdit = combineLatest([postEditTimeLimit, isLicensed, channel, currentUser, channelIsArchived, channelIsReadOnly, canEditUntil, canPostPermission]).pipe(switchMap(([lt, ls, c, u, isArchived, isReadOnly, until, canPost]) => {
         const isOwner = u.id === post.userId;
         const canEditPostPermission = canEditPost(isOwner, post, lt, ls, c, u);
-        const timeReached = until === -1 || until > Date.now();
-        return of$(canEditPostPermission && !isArchived && !isReadOnly && timeReached && canPost);
+        const timeNotReached = (until === -1) || (until > Date.now());
+        return of$(canEditPostPermission && !isArchived && !isReadOnly && timeNotReached && canPost);
     }));
 
     const canMarkAsUnread = combineLatest([currentUser, channelIsArchived]).pipe(
