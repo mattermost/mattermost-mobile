@@ -188,16 +188,11 @@ export const prepareMyTeams = (operator: ServerDataOperator, teams: Team[], memb
     }
 };
 
-export const deleteMyTeams = async (operator: ServerDataOperator, teams: TeamModel[]) => {
+export const deleteMyTeams = async (operator: ServerDataOperator, myTeams: MyTeamModel[]) => {
     try {
         const preparedModels: Model[] = [];
-        for await (const team of teams) {
-            try {
-                const myTeam = await team.myTeam.fetch() as MyTeamModel;
-                preparedModels.push(myTeam.prepareDestroyPermanently());
-            } catch {
-                // Record not found, do nothing
-            }
+        for (const myTeam of myTeams) {
+            preparedModels.push(myTeam.prepareDestroyPermanently());
         }
 
         if (preparedModels.length) {
@@ -290,6 +285,15 @@ export const queryTeamById = async (database: Database, teamId: string): Promise
 export const queryTeamsById = async (database: Database, teamIds: string[]): Promise<TeamModel[]|undefined> => {
     try {
         const teams = (await database.get(TEAM).query(Q.where('id', Q.oneOf(teamIds))).fetch()) as TeamModel[];
+        return teams;
+    } catch {
+        return undefined;
+    }
+};
+
+export const queryMyTeamsById = async (database: Database, teamIds: string[]): Promise<MyTeamModel[]|undefined> => {
+    try {
+        const teams = (await database.get<MyTeamModel>(MY_TEAM).query(Q.where('id', Q.oneOf(teamIds))).fetch());
         return teams;
     } catch {
         return undefined;
