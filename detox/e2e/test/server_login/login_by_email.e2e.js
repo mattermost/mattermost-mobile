@@ -20,11 +20,6 @@ import {
 
 describe('Server Login - Login by Email', () => {
     const {
-        connectButton,
-        serverDisplayNameInput,
-        serverUrlInput,
-    } = ServerScreen;
-    const {
         backButton,
         forgotPasswordButton,
         passwordInput,
@@ -36,13 +31,8 @@ describe('Server Login - Login by Email', () => {
     const serverOneDisplayName = 'Server 1';
 
     beforeAll(async () => {
-        // * Verify on server screen
-        await ServerScreen.toBeVisible();
-
         // # Connect to server
-        await serverUrlInput.replaceText(serverOneUrl);
-        await serverDisplayNameInput.replaceText(serverOneDisplayName);
-        await connectButton.tap();
+        await ServerScreen.connectToServer(serverOneUrl, serverOneDisplayName);
     });
 
     beforeEach(async () => {
