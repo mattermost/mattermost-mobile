@@ -31,6 +31,7 @@ type PostOptionsProps = {
     canMarkAsUnread: boolean;
     canPin: boolean;
     canReply: boolean;
+    combinedPost?: Post;
     isSaved: boolean;
     location: typeof Screens[keyof typeof Screens];
     post: PostModel;
@@ -39,8 +40,18 @@ type PostOptionsProps = {
 };
 
 const PostOptions = ({
-    canAddReaction, canDelete, canEdit, canMarkAsUnread, canPin, canReply,
-    isSaved, location, post, thread, componentId,
+    canAddReaction,
+    canDelete,
+    canEdit,
+    canMarkAsUnread,
+    canPin,
+    canReply,
+    combinedPost,
+    componentId,
+    isSaved,
+    location,
+    post,
+    thread,
 }: PostOptionsProps) => {
     const managedConfig = useManagedConfig();
 
@@ -111,7 +122,11 @@ const PostOptions = ({
                         canDelete={canDelete}
                     />
                 }
-                {canDelete && <DeletePostOption postId={post.id}/>}
+                {canDelete &&
+                <DeletePostOption
+                    combinedPost={combinedPost}
+                    post={post}
+                />}
             </>
         );
     };

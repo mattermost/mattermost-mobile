@@ -4,10 +4,10 @@
 import {Q} from '@nozbe/watermelondb';
 import {withDatabase} from '@nozbe/watermelondb/DatabaseProvider';
 import withObservables from '@nozbe/with-observables';
-import {combineLatest, from as from$, of as of$} from 'rxjs';
+import {combineLatest, from as from$, of as of$, Observable} from 'rxjs';
 import {switchMap} from 'rxjs/operators';
 
-import {General, Permissions, Preferences, Screens} from '@constants';
+import {General, Permissions, Post, Preferences, Screens} from '@constants';
 import {MM_TABLES, SYSTEM_IDENTIFIERS} from '@constants/database';
 import {MAX_ALLOWED_REACTIONS} from '@constants/emoji';
 import {isMinimumServerVersion} from '@utils/helpers';
@@ -25,7 +25,14 @@ import type ReactionModel from '@typings/database/models/servers/reaction';
 import type SystemModel from '@typings/database/models/servers/system';
 import type UserModel from '@typings/database/models/servers/user';
 
-const {USER, SYSTEM, PREFERENCE} = MM_TABLES.SERVER;
+type EnhancedProps = WithDatabaseArgs & {
+    combinedPost?: Post;
+    post: PostModel;
+    showAddReaction: boolean;
+    location: string;
+}
+
+const {POST, USER, SYSTEM, PREFERENCE} = MM_TABLES.SERVER;
 const {CURRENT_USER_ID, LICENSE, CONFIG} = SYSTEM_IDENTIFIERS;
 
 const canEditPost = (isOwner: boolean, post: PostModel, postEditTimeLimit: number, isLicensed: boolean, channel: ChannelModel, user: UserModel): boolean => {
@@ -51,7 +58,22 @@ const canEditPost = (isOwner: boolean, post: PostModel, postEditTimeLimit: numbe
     return cep;
 };
 
-const enhanced = withObservables([], ({post, showAddReaction, location, database}: WithDatabaseArgs & { post: PostModel; showAddReaction: boolean; location: string }) => {
+const withPost = withObservables([], ({post, database}: {post: Post | PostModel} & WithDatabaseArgs) => {
+    let id: string | undefined;
+    let combinedPost: Observable<Post | undefined> = of$(undefined);
+    if (post.type === Post.POST_TYPES.COMBINED_USER_ACTIVITY && post.props?.system_post_ids) {
+        const systemPostIds = post.props.system_post_ids as string[];
+        id = systemPostIds?.pop();
+        combinedPost = of$(post as Post);
+    }
+    const thePost = id ? database.get<PostModel>(POST).findAndObserve(id) : post;
+    return {
+        combinedPost,
+        post: thePost,
+    };
+});
+
+const enhanced = withObservables([], ({combinedPost, post, showAddReaction, location, database}: EnhancedProps) => {
     const channel = post.channel.observe();
     const channelIsArchived = channel.pipe(switchMap((ch: ChannelModel) => of$(ch.deleteAt !== 0)));
     const currentUser = database.get<SystemModel>(SYSTEM).findAndObserve(CURRENT_USER_ID).pipe(switchMap(({value}) => database.get<UserModel>(USER).findAndObserve(value)));
@@ -124,11 +146,12 @@ const enhanced = withObservables([], ({post, showAddReaction, location, database
         canDelete,
         canReply,
         canPin,
+        combinedPost: of$(combinedPost),
         isSaved,
         canEdit,
         post,
     };
 });
 
-export default withDatabase(enhanced(PostOptions));
+export default withDatabase(withPost(enhanced(PostOptions)));
 
