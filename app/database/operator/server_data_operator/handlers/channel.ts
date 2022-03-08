@@ -1,8 +1,6 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {inspect} from 'util';
-
 import {MM_TABLES} from '@constants/database';
 import DataOperatorException from '@database/exceptions/data_operator_exception';
 import {
@@ -61,6 +59,7 @@ const ChannelHandler = (superclass: any) => class extends superclass {
         }
 
         const createOrUpdateRawValues = getUniqueRawsBy({raws: channels, key: 'id'});
+
         return this.handleRecords({
             fieldName: 'id',
             findMatchingRecordBy: isRecordChannelEqualToRaw,
