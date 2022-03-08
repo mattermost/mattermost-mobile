@@ -1,8 +1,6 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {inspect} from 'util';
-
 import {Model} from '@nozbe/watermelondb';
 import {DeviceEventEmitter} from 'react-native';
 
@@ -23,14 +21,7 @@ import {queryCurrentUser, queryUserById} from '@queries/servers/user';
 import {dismissAllModals, popToRoot} from '@screens/navigation';
 import {isTablet} from '@utils/helpers';
 
-// WORKS
 export async function handleChannelCreatedEvent(serverUrl: string, msg: any) {
-    // Do we need to fetch the posts for the channel? (should only be a system message)
-    // should we only save channels if we created them??
-    // msg doesn't contain enough data. go get it from the server
-    // msg {"broadcast": {"channel_id": "", "omit_users": null, "team_id": "", "user_id": "34r7zpnjkbgmpez83xkq1a614c"}, "data": {"channel_id": "3hrbp7mu13f59pf18k1oppu7uc", "team_id": "sc4kmws5i38qdm4wpkzkcfiuth"}, "event": "channel_created", "seq": 3}
-    //
-    console.log('\n<><> -- handleChannelCreatedEvent -- <><>');
     const database = DatabaseManager.serverDatabases[serverUrl];
     if (!database) {
         return;
@@ -53,30 +44,7 @@ export async function handleChannelCreatedEvent(serverUrl: string, msg: any) {
     database.operator.batchRecords(models);
 }
 
-// WORKS but just use handleChannelUpdatedEvent
-// export async function handleChannelUnarchiveEvent(serverUrl: string, msg: any) {
-//     console.log('\n<><> -- handleChannelUnarchiveEvent -- <><>');
-//
-//     // where is the archive WS event
-//     const database = DatabaseManager.serverDatabases[serverUrl];
-//     if (!database) {
-//         return;
-//     }
-//
-//     try {
-//         await setChannelDeleteAt(serverUrl, msg.data.channel_id, 0);
-//     } catch {
-//         // do nothing
-//     }
-// }
-
-// WORKS
-// pinned_post_count, member_count not included with channel updated WS event
-// !! see if this comes from the channelmemberupdatedevent
 export async function handleChannelUpdatedEvent(serverUrl: string, msg: any) {
-    console.log('\n<><> -- handleChannelUpdatedEvent -- <><>');
-
-    // console.log('msg', msg);
     const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
     if (!operator) {
         return;
@@ -99,27 +67,10 @@ export async function handleChannelUpdatedEvent(serverUrl: string, msg: any) {
     operator.handleChannelInfo({channelInfos, prepareRecordsOnly: false});
 }
 
-// NOT NEEDED
-// msg {"broadcast": {"channel_id": "", "omit_users": null, "team_id": "sc4kmws5i38qdm4wpkzkcfiuth", "user_id": ""}, "data": {"channel_id": "hdk9xk78pjyutjbm7ca9byyooh"}, "event": "channel_converted", "seq": 35
-// handled by the handleChannelUpdatedEvent handler which is also
-// called when convert priovate <> public
-//
-// export async function handleChannelConvertedEvent(serverUrl: string, msg: any) {
-//     console.log('msg', msg);
-//     const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
-//     if (!operator) {
-//         return;
-//     }
-//
-// }
-
 export async function handleChannelViewedEvent(serverUrl: string, msg: any) {
-    // console.log('\n<><> -- handleChannelViewedEvent -- <><>');
 }
 
-// had to add a group
 export async function handleChannelMemberUpdatedEvent(serverUrl: string, msg: any) {
-    console.log('\n<><> -- handleChannelMemberUpdatedEvent -- <><>');
     const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
     if (!operator) {
         return;
@@ -127,7 +78,6 @@ export async function handleChannelMemberUpdatedEvent(serverUrl: string, msg: an
 
     try {
         const updatedChannelMember = JSON.parse(msg.data.channelMember);
-        console.log('updatedChannelMember = ', inspect(updatedChannelMember, false, null, true /* enable colors */));
         await operator.handleChannelMembership({
             channelMemberships: [updatedChannelMember],
             prepareRecordsOnly: false,
@@ -135,46 +85,9 @@ export async function handleChannelMemberUpdatedEvent(serverUrl: string, msg: an
     } catch {
         // do nothing
     }
-
-    //  msg {"broadcast": {
-    //  "channel_id": "",
-    //  "omit_users": null,
-    //  "team_id": "",
-    //  "user_id": "34r7zpnjkbgmpez83xkq1a614c"
-    //  },
-    //  "data": {
-    //  "channelMember": {
-    //      channel_id:"hdk9xk78pjyutjbm7ca9byyooh",
-    //      user_id:"34r7zpnjkbgmpez83xkq1a614c",
-    //      roles":"channel_user",
-    //      "last_viewed_at":1646691273567,
-    //      "msg_count":129,
-    //      "mention_count":0,
-    //      "mention_count_root":0,
-    //      "msg_count_root":129,
-    //      "notify_props":{
-    //          "desktop":"default",
-    //          "email":"default",
-    //          "ignore_channel_mentions":"default",
-    //          "mark_unread":"all",
-    //          "push":"default"
-    //      },
-    //      "last_update_at":1646691273567,
-    //      "scheme_guest":false,
-    //      "scheme_user":true,
-    //      "scheme_admin":false,
-    //      "explicit_roles":""
-    //      }"
-    //  },
-    //  "event": "channel_member_updated",
-    //  "seq": 60}
 }
 
 export async function handleDirectAddedEvent(serverUrl: string, msg: any) {
-    // what about group messages created??
-    // msg {"broadcast": {"channel_id": "bxxc6aqhxby6dfuobso8fykiqa", "omit_users": null, "team_id": "", "user_id": ""}, "data": {"creator_id": "34r7zpnjkbgmpez83xkq1a614c", "teammate_id": "6wgcb9dkct86tp1p9j3fcab6pa"}, "event": "direct_added", "seq": 1}
-    console.log('msg', msg);
-    console.log('\n<><> -- handleDirectAddedEvent -- <><>');
 }
 
 export async function handleUserAddedToChannelEvent(serverUrl: string, msg: any) {
