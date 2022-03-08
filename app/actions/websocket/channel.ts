@@ -67,7 +67,6 @@ export async function handleChannelUpdatedEvent(serverUrl: string, msg: any) {
     operator.handleChannel({channels: [updatedChannel], prepareRecordsOnly: false});
 
     const channelInfos: ChannelInfo[] = [];
-
     channelInfos.push({
         id: updatedChannel.id,
         header: updatedChannel.header,
