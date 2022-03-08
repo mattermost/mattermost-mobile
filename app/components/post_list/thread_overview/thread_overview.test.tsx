@@ -3,7 +3,6 @@
 
 import React from 'react';
 
-import Preferences from '@constants/preferences';
 import {renderWithIntl} from '@test/intl-test-helper';
 
 import ThreadOverview from './thread_overview';
@@ -17,7 +16,6 @@ describe('ThreadOverview', () => {
             repliesCount: 0,
             rootPost: {} as PostModel,
             testID: 'thread-overview',
-            theme: Preferences.THEMES.denim,
         };
 
         const wrapper = renderWithIntl(<ThreadOverview {...props}/>);
@@ -30,7 +28,6 @@ describe('ThreadOverview', () => {
             repliesCount: 2,
             rootPost: {} as PostModel,
             testID: 'thread-overview',
-            theme: Preferences.THEMES.denim,
         };
 
         const wrapper = renderWithIntl(<ThreadOverview {...props}/>);

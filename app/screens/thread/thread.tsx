@@ -1,17 +1,15 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback, useEffect, useMemo} from 'react';
+import React, {useCallback, useEffect} from 'react';
 import {BackHandler, StyleSheet, View} from 'react-native';
 import {Navigation} from 'react-native-navigation';
 import {Edge, SafeAreaView} from 'react-native-safe-area-context';
 
-import CompassIcon from '@components/compass_icon';
 import PostDraft from '@components/post_draft';
 import {THREAD_ACCESSORIES_CONTAINER_NATIVE_ID} from '@constants/post_draft';
-import {useTheme} from '@context/theme';
-import {useAppState, useIsTablet} from '@hooks/device';
-import {dismissModal, mergeNavigationOptions} from '@screens/navigation';
+import {useAppState} from '@hooks/device';
+import {dismissModal} from '@screens/navigation';
 
 import ThreadPostList from './thread_post_list';
 
@@ -32,26 +30,16 @@ const getStyleSheet = StyleSheet.create(() => ({
     },
 }));
 
-const CLOSE_BUTTON_ID = 'close-threads';
+export const CLOSE_BUTTON_ID = 'close-threads';
 
 const Thread = ({channel, componentId, rootPost}: ThreadProps) => {
     const appState = useAppState();
-    const isTablet = useIsTablet();
     const styles = getStyleSheet();
-    const theme = useTheme();
 
     const close = useCallback(() => {
         dismissModal({componentId});
         return true;
     }, []);
-
-    const leftButton = useMemo(() => {
-        return {
-            id: CLOSE_BUTTON_ID,
-            icon: CompassIcon.getImageSourceSync('close', 24, theme.centerChannelColor),
-            testID: CLOSE_BUTTON_ID,
-        };
-    }, [isTablet, theme.centerChannelColor]);
 
     useEffect(() => {
         const unsubscribe = Navigation.events().registerComponentListener({
@@ -75,14 +63,6 @@ const Thread = ({channel, componentId, rootPost}: ThreadProps) => {
             backHandler.remove();
         };
     }, []);
-
-    useEffect(() => {
-        mergeNavigationOptions(componentId, {
-            topBar: {
-                leftButtons: [leftButton!],
-            },
-        });
-    }, [componentId, leftButton, theme]);
 
     const channelIsSet = Boolean(channel?.id);
 

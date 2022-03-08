@@ -12,6 +12,7 @@ import {Screens} from '@app/constants';
 import {preventDoubleTap} from '@app/utils/tap';
 import CompassIcon from '@components/compass_icon';
 import {useServerUrl} from '@context/server';
+import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
 import {bottomSheetModalOptions, showModal, showModalOverCurrentContext} from '@screens/navigation';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
@@ -24,7 +25,6 @@ type Props = {
     repliesCount: number;
     rootPost: PostModel;
     testID: string;
-    theme: Theme;
 };
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
@@ -55,7 +55,8 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     };
 });
 
-const ThreadOverview = ({isSaved, repliesCount, rootPost, testID, theme}: Props) => {
+const ThreadOverview = ({isSaved, repliesCount, rootPost, testID}: Props) => {
+    const theme = useTheme();
     const styles = getStyleSheet(theme);
 
     const intl = useIntl();
