@@ -6,9 +6,9 @@ import {View} from 'react-native';
 import AnimatedNumbers from 'react-native-animated-numbers';
 import {TouchableOpacity} from 'react-native-gesture-handler';
 
-import {typography} from '@app/utils/typography';
 import Emoji from '@components/emoji';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
+import {typography} from '@utils/typography';
 
 type ReactionProps = {
     count: number;
@@ -25,11 +25,12 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             color: changeOpacity(theme.centerChannelColor, 0.56),
             ...typography('Body', 100, 'SemiBold'),
         },
+        countContainer: {marginRight: 5},
         countHighlight: {
             color: theme.buttonBg,
         },
         customEmojiStyle: {color: '#000'},
-        emoji: {marginRight: 4},
+        emoji: {marginHorizontal: 5},
         highlight: {
             backgroundColor: changeOpacity(theme.buttonBg, 0.08),
             borderColor: theme.buttonBg,
@@ -44,8 +45,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             justifyContent: 'center',
             marginBottom: 12,
             marginRight: 8,
-            minWidth: 48,
-            paddingHorizontal: 8,
+            minWidth: 50,
         },
     };
 });
@@ -72,12 +72,14 @@ const Reaction = ({count, emojiName, highlight, onPress, onLongPress, theme}: Re
                     testID={`reaction.emoji.${emojiName}`}
                 />
             </View>
-            <AnimatedNumbers
-                includeComma={false}
-                fontStyle={[styles.count, (highlight && styles.countHighlight)]}
-                animateToNumber={count}
-                animationDuration={450}
-            />
+            <View style={styles.countContainer}>
+                <AnimatedNumbers
+                    includeComma={false}
+                    fontStyle={[styles.count, (highlight && styles.countHighlight)]}
+                    animateToNumber={count}
+                    animationDuration={450}
+                />
+            </View>
         </TouchableOpacity>
     );
 };
