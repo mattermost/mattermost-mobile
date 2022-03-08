@@ -44,10 +44,8 @@ export const getThreads = async (serverUrl: string, teamId: string, before?: str
         // Mark all fetched threads as following
         threads.forEach((thread: Thread) => {
             thread.is_following = true;
-            if (unread) {
-                thread.loaded_in_unreads_tab = true;
-            } else {
-                thread.loaded_in_all_threads_tab = true;
+            if (!unread) {
+                thread.loaded_in_global_threads = true;
             }
         });
 

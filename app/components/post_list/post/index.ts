@@ -4,12 +4,11 @@
 import {Q} from '@nozbe/watermelondb';
 import {withDatabase} from '@nozbe/watermelondb/DatabaseProvider';
 import withObservables from '@nozbe/with-observables';
-import {combineLatest, from as from$, of as of$} from 'rxjs';
-import {catchError, map, switchMap} from 'rxjs/operators';
+import {from as from$, of as of$} from 'rxjs';
+import {catchError, switchMap} from 'rxjs/operators';
 
 import {Permissions, Preferences} from '@constants';
 import {MM_TABLES, SYSTEM_IDENTIFIERS} from '@constants/database';
-import {getTeammateNameDisplaySetting} from '@helpers/api/preference';
 import {appsEnabled} from '@utils/apps';
 import {hasJumboEmojiOnly} from '@utils/emoji/helpers';
 import {areConsecutivePosts, isPostEphemeral} from '@utils/post';
@@ -141,13 +140,6 @@ const withPost = withObservables(
             FeatureFlagAppsEnabled: featureFlagAppsEnabled,
         };
 
-        const config = database.get<SystemModel>(SYSTEM).findAndObserve(SYSTEM_IDENTIFIERS.CONFIG).pipe(switchMap(({value}) => of$(value as ClientConfig)));
-        const license = database.get<SystemModel>(SYSTEM).findAndObserve(SYSTEM_IDENTIFIERS.LICENSE).pipe(switchMap(({value}) => of$(value as ClientLicense)));
-        const preferences = database.get<PreferenceModel>(PREFERENCE).query(Q.where('category', Preferences.CATEGORY_DISPLAY_SETTINGS)).observe();
-        const teammateNameDisplay = combineLatest([preferences, config, license]).pipe(
-            map(([prefs, cfg, lcs]) => getTeammateNameDisplaySetting(prefs, cfg, lcs)),
-        );
-
         return {
             appsEnabled: of$(appsEnabled(partialConfig)),
             canDelete,
@@ -164,7 +156,6 @@ const withPost = withObservables(
             isLastReply,
             isPostAddChannelMember,
             post: post.observe(),
-            teammateNameDisplay,
             thread: post.thread.observe().pipe(
                 switchMap((row) => of$(row)),
                 catchError(() => of$(undefined)),

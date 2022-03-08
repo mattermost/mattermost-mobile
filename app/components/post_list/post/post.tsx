@@ -62,7 +62,6 @@ type PostProps = {
     skipSavedHeader?: boolean;
     skipPinnedHeader?: boolean;
     style?: StyleProp<ViewStyle>;
-    teammateNameDisplay: string;
     testID?: string;
 };
 
@@ -107,7 +106,7 @@ const Post = ({
     appsEnabled, canDelete, channel, currentUser, differentThreadSequence, files, hasReplies, highlight, highlightPinnedOrSaved = true, highlightReplyBar,
     isCRTEnabled, isConsecutivePost, isEphemeral, isFirstReply, isSaved, isJumboEmoji, isLastReply, isPostAddChannelMember,
     location, post, reactionsCount, shouldRenderReplyButton, skipSavedHeader, skipPinnedHeader, showAddReaction = true, style,
-    teammateNameDisplay, testID, thread, previousPost,
+    testID, thread, previousPost,
 }: PostProps) => {
     const pressDetected = useRef(false);
     const intl = useIntl();
@@ -240,7 +239,6 @@ const Post = ({
                     location={location}
                     post={post}
                     shouldRenderReplyButton={shouldRenderReplyButton}
-                    teammateNameDisplay={teammateNameDisplay}
                 />
             );
         }
@@ -278,17 +276,18 @@ const Post = ({
     let badge;
     let footer;
     if (isCRTEnabled && thread) {
-        footer = (
-            <Footer
-                currentUserId={currentUser.id}
-                serverUrl={serverUrl}
-                teamId={channel?.teamId}
-                testID={`${itemTestID}.footer`}
-                teammateNameDisplay={teammateNameDisplay}
-                theme={theme}
-                thread={thread}
-            />
-        );
+        if (thread.replyCount > 0 || thread.isFollowing) {
+            footer = (
+                <Footer
+                    currentUserId={currentUser.id}
+                    serverUrl={serverUrl}
+                    teamId={channel?.teamId}
+                    testID={`${itemTestID}.footer`}
+                    theme={theme}
+                    thread={thread}
+                />
+            );
+        }
         badge = (
             <Badge
                 testID={`${itemTestID}.badge`}

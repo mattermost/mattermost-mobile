@@ -174,9 +174,9 @@ describe('*** Operator: Channel Handlers tests ***', () => {
                 last_viewed_at: 1617311494451,
                 last_update_at: 1617311494451,
                 mention_count: 3,
-                mention_count_root: 0,
+                mention_count_root: 3,
                 msg_count: 10,
-                msg_count_root: 0,
+                msg_count_root: 8,
                 roles: 'guest',
                 notify_props: {
                     desktop: 'default',
@@ -215,7 +215,9 @@ describe('*** Operator: Channel Handlers tests ***', () => {
                 roles: 'wqyby5r5pinxxdqhoaomtacdhc',
                 last_viewed_at: 1613667352029,
                 msg_count: 3864,
+                msg_count_root: 3600,
                 mention_count: 0,
+                mention_count_root: 0,
                 notify_props: {
                     desktop: 'default',
                     email: 'default',
@@ -234,7 +236,9 @@ describe('*** Operator: Channel Handlers tests ***', () => {
                 roles: 'channel_user',
                 last_viewed_at: 1615300540549,
                 msg_count: 16,
+                msg_count_root: 12,
                 mention_count: 0,
+                mention_count_root: 0,
                 notify_props: {
                     desktop: 'default',
                     email: 'default',
