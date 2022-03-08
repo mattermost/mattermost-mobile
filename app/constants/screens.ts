@@ -23,7 +23,7 @@ export const IN_APP_NOTIFICATION = 'InAppNotification';
 export const LOGIN = 'Login';
 export const MENTIONS = 'Mentions';
 export const MFA = 'MFA';
-export const MORE_DMS = 'MoreDirectMessages';
+export const CREATE_DIRECT_MESSAGE = 'CreateDirectMessage';
 export const PERMALINK = 'Permalink';
 export const SEARCH = 'Search';
 export const SERVER = 'Server';
@@ -56,7 +56,7 @@ export default {
     LOGIN,
     MENTIONS,
     MFA,
-    MORE_DMS,
+    CREATE_DIRECT_MESSAGE,
     PERMALINK,
     SEARCH,
     SERVER,

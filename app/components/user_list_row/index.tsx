@@ -140,7 +140,7 @@ export default function UserListRow({
     let usernameDisplay = `@${username}`;
     if (isMyUser) {
         usernameDisplay = formatMessage({
-            id: 'mobile.more_dms.you',
+            id: 'mobile.create_direct_message.you',
             defaultMessage: '@{username} - you',
         }, {username});
     }

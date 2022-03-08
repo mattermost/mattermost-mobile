@@ -11,7 +11,7 @@ import {General, Preferences} from '@constants';
 import {MM_TABLES, SYSTEM_IDENTIFIERS} from '@constants/database';
 import {getTeammateNameDisplaySetting} from '@helpers/api/preference';
 
-import MoreDirectMessages from './more_dms';
+import CreateDirectMessage from './create_direct_message';
 
 import type {WithDatabaseArgs} from '@typings/database/database';
 import type PreferenceModel from '@typings/database/models/servers/preference';
@@ -48,5 +48,5 @@ const enhanced = withObservables([], ({database}: WithDatabaseArgs) => {
     };
 });
 
-export default withDatabase(enhanced(MoreDirectMessages));
+export default withDatabase(enhanced(CreateDirectMessage));
 

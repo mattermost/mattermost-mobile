@@ -6,8 +6,9 @@ import {View} from 'react-native';
 
 import FormattedText from '@components/formatted_text';
 import {useTheme} from '@context/theme';
-import SelectedUser from '@screens/more_dms/selected_users/selected_user';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
+
+import SelectedUser from './selected_user';
 
 type Props = {
 
@@ -95,7 +96,7 @@ export default function SelectedUsers({
             return (
                 <FormattedText
                     style={style.message}
-                    id='mobile.more_dms.cannot_add_more'
+                    id='mobile.create_direct_message.cannot_add_more'
                     defaultMessage='You cannot add more users'
                 />
             );
@@ -105,7 +106,7 @@ export default function SelectedUsers({
                 return (
                     <FormattedText
                         style={style.message}
-                        id='mobile.more_dms.one_more'
+                        id='mobile.create_direct_message.one_more'
                         defaultMessage='You can add 1 more user'
                     />
                 );
@@ -113,7 +114,7 @@ export default function SelectedUsers({
             return (
                 <FormattedText
                     style={style.message}
-                    id='mobile.more_dms.add_more'
+                    id='mobile.create_direct_message.add_more'
                     defaultMessage='You can add {remaining, number} more users'
                     values={{
                         remaining,

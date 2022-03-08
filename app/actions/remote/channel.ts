@@ -550,7 +550,7 @@ export const switchToChannelByName = async (serverUrl: string, channelName: stri
     }
 };
 
-export const createDirectChannel = async (serverUrl: string, userId: string) => {
+export const createDirectChannel = async (serverUrl: string, userId: string, displayName = '') => {
     const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
     if (!operator) {
         return {error: `${serverUrl} database not found`};
@@ -570,10 +570,15 @@ export const createDirectChannel = async (serverUrl: string, userId: string) => 
         }
         const created = await client.createDirectChannel([userId, currentUser.id]);
 
-        const preferences = await queryPreferencesByCategoryAndName(operator.database, Preferences.CATEGORY_DISPLAY_SETTINGS, Preferences.NAME_NAME_FORMAT);
-        const system = await queryCommonSystemValues(operator.database);
-        const teammateDisplayNameSetting = getTeammateNameDisplaySetting(preferences || [], system.config, system.license);
-        const {directChannels} = await fetchMissingSidebarInfo(serverUrl, [created], currentUser.locale, teammateDisplayNameSetting, currentUser.id, true);
+        if (displayName) {
+            created.display_name = displayName;
+        } else {
+            const preferences = await queryPreferencesByCategoryAndName(operator.database, Preferences.CATEGORY_DISPLAY_SETTINGS, Preferences.NAME_NAME_FORMAT);
+            const system = await queryCommonSystemValues(operator.database);
+            const teammateDisplayNameSetting = getTeammateNameDisplaySetting(preferences || [], system.config, system.license);
+            const {directChannels} = await fetchMissingSidebarInfo(serverUrl, [created], currentUser.locale, teammateDisplayNameSetting, currentUser.id, true);
+            created.display_name = directChannels?.[0].display_name || created.display_name;
+        }
 
         const member = {
             channel_id: created.id,
@@ -589,14 +594,12 @@ export const createDirectChannel = async (serverUrl: string, userId: string) => 
         };
 
         const models = [];
-        if (directChannels) {
-            const channelPromises = await prepareMyChannelsForTeam(operator, '', directChannels, [member, {...member, user_id: userId}]);
-            if (channelPromises) {
-                const channelModels = await Promise.all(channelPromises);
-                const flattenedChannelModels = channelModels.flat();
-                if (flattenedChannelModels.length) {
-                    models.push(...flattenedChannelModels);
-                }
+        const channelPromises = await prepareMyChannelsForTeam(operator, '', [created], [member, {...member, user_id: userId}]);
+        if (channelPromises) {
+            const channelModels = await Promise.all(channelPromises);
+            const flattenedChannelModels = channelModels.flat();
+            if (flattenedChannelModels.length) {
+                models.push(...flattenedChannelModels);
             }
         }
 
@@ -628,7 +631,7 @@ export const fetchChannels = async (serverUrl: string, teamId: string, page = 0,
     }
 };
 
-export const makeDirectChannel = async (serverUrl: string, userId: string, shouldSwitchToChannel = true) => {
+export const makeDirectChannel = async (serverUrl: string, userId: string, displayName = '', shouldSwitchToChannel = true) => {
     const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
     if (!operator) {
         return {error: `${serverUrl} database not found`};
@@ -642,12 +645,12 @@ export const makeDirectChannel = async (serverUrl: string, userId: string, shoul
         if (channel) {
             result = {data: channel};
         } else {
-            result = await createDirectChannel(serverUrl, userId);
+            result = await createDirectChannel(serverUrl, userId, displayName);
             channel = result.data;
         }
 
         if (channel && shouldSwitchToChannel) {
-            switchToChannel(serverUrl, channel.id);
+            switchToChannelById(serverUrl, channel.id);
         }
 
         return result;
@@ -720,7 +723,7 @@ export const createGroupChannel = async (serverUrl: string, userIds: string[]) =
             return {...member, user_id: id};
         });
 
-        if (directChannels) {
+        if (directChannels?.length) {
             const channelPromises = await prepareMyChannelsForTeam(operator, '', directChannels, members);
             if (channelPromises) {
                 const channelModels = await Promise.all(channelPromises);
@@ -766,7 +769,7 @@ export const makeGroupChannel = async (serverUrl: string, userIds: string[], sho
         const channel = result.data;
 
         if (channel && shouldSwitchToChannel) {
-            switchToChannel(serverUrl, channel.id);
+            switchToChannelById(serverUrl, channel.id);
         }
 
         return result;

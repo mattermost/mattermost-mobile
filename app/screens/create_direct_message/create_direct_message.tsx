@@ -9,11 +9,11 @@ import {SafeAreaView} from 'react-native-safe-area-context';
 
 import {makeDirectChannel, makeGroupChannel} from '@actions/remote/channel';
 import {fetchProfiles, fetchProfilesInTeam, searchProfiles} from '@actions/remote/user';
-import CompassIcon from '@app/components/compass_icon';
-import {useServerUrl} from '@app/context/server';
+import CompassIcon from '@components/compass_icon';
 import Loading from '@components/loading';
 import SearchBar from '@components/search_bar';
 import {General} from '@constants';
+import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {debounce} from '@helpers/api/general';
 import {t} from '@i18n';
@@ -82,7 +82,7 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
     };
 });
 
-export default function MoreDirectMessages({
+export default function CreateDirectMessage({
     componentId,
     currentTeamId,
     currentUserId,
@@ -158,7 +158,7 @@ export default function MoreDirectMessages({
 
         const displayName = displayUsername(user, intl.locale, teammateNameDisplay);
 
-        const result = await makeDirectChannel(serverUrl, id);
+        const result = await makeDirectChannel(serverUrl, id, displayName);
 
         if (result.error) {
             alertErrorWithFallback(
@@ -212,9 +212,7 @@ export default function MoreDirectMessages({
         }
 
         if (success) {
-            requestAnimationFrame(() => {
-                close();
-            });
+            close();
         } else {
             setStartingConversation(false);
         }
@@ -296,7 +294,7 @@ export default function MoreDirectMessages({
             rightButtons: [{
                 color: theme.sidebarHeaderTextColor,
                 id: START_BUTTON,
-                text: formatMessage({id: 'mobile.more_dms.start', defaultMessage: 'Start'}),
+                text: formatMessage({id: 'mobile.create_direct_message.start', defaultMessage: 'Start'}),
                 showAsAction: 'always',
                 enabled: startEnabled,
                 testID: 'more_direct_messages.start.button',

@@ -38,9 +38,9 @@ const PlusMenuList = ({canCreateChannels, canJoinChannels}: Props) => {
     const openDirectMessage = useCallback(async () => {
         await dismissBottomSheet();
 
-        const title = intl.formatMessage({id: 'more_dms.title', defaultMessage: 'Create Direct Message'});
+        const title = intl.formatMessage({id: 'create_direct_message.title', defaultMessage: 'Create Direct Message'});
         const closeButton = await CompassIcon.getImageSource('close', 24, theme.sidebarHeaderTextColor);
-        showModal(Screens.MORE_DMS, title, {
+        showModal(Screens.CREATE_DIRECT_MESSAGE, title, {
             closeButton,
         });
     }, [intl, theme]);
