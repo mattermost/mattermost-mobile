@@ -254,6 +254,8 @@ export const fetchMyChannel = async (serverUrl: string, teamId: string, channelI
             client.getChannelMember(channelId, 'me'),
         ]);
 
+        // console.log('member', member);
+
         if (!fetchOnly) {
             storeMyChannelsForTeam(serverUrl, channel.team_id || teamId, [channel], [member]);
         }

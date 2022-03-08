@@ -193,7 +193,7 @@ async function doReconnect(serverUrl: string) {
 }
 
 export async function handleEvent(serverUrl: string, msg: WebSocketMessage) {
-    console.log('msg', msg);
+    // console.log('msg.event', msg.event);
     switch (msg.event) {
         case WebsocketEvents.POSTED:
         case WebsocketEvents.EPHEMERAL_MESSAGE:
@@ -257,8 +257,6 @@ export async function handleEvent(serverUrl: string, msg: WebSocketMessage) {
             break;
 
         case WebsocketEvents.CHANNEL_CREATED:
-            console.log('<><> -- handleChannelCreatedEvent -- <><>');
-            console.log('msg', msg);
             handleChannelCreatedEvent(serverUrl, msg);
             break;
 
@@ -266,34 +264,22 @@ export async function handleEvent(serverUrl: string, msg: WebSocketMessage) {
             handleChannelDeletedEvent(serverUrl, msg);
             break;
         case WebsocketEvents.CHANNEL_UNARCHIVED:
-            handleChannelUnarchiveEvent(serverUrl, msg);
+            // handleChannelUnarchiveEvent(serverUrl, msg);
             break;
 
         case WebsocketEvents.CHANNEL_UPDATED:
-            console.log('<><> -- handleChannelUpdatedEvent -- <><>');
-
-            // console.log('msg', msg);
             handleChannelUpdatedEvent(serverUrl, msg);
             break;
 
         case WebsocketEvents.CHANNEL_CONVERTED:
-            console.log('<><> -- handleChannelConvertedEvent -- <><>');
-
-            // console.log('msg', msg);
-            handleChannelConvertedEvent(serverUrl, msg);
+            // handleChannelConvertedEvent(serverUrl, msg);
             break;
 
         case WebsocketEvents.CHANNEL_VIEWED:
-            console.log('<><> -- handleChannelViewedEvent -- <><>');
-
-            // console.log('msg', msg);
             handleChannelViewedEvent(serverUrl, msg);
             break;
 
         case WebsocketEvents.CHANNEL_MEMBER_UPDATED:
-            console.log('<><> -- handleChannelMemberUpdatedEvent -- <><>');
-
-            // console.log('msg', msg);
             handleChannelMemberUpdatedEvent(serverUrl, msg);
             break;
 
@@ -302,9 +288,6 @@ export async function handleEvent(serverUrl: string, msg: WebSocketMessage) {
             //     break;
 
         case WebsocketEvents.DIRECT_ADDED:
-            console.log('<><> -- handleDirectAddedEvent -- <><>');
-
-            // console.log('msg', msg);
             handleDirectAddedEvent(serverUrl, msg);
             break;
 

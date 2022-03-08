@@ -1,6 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {inspect} from 'util';
+
 import {MM_TABLES} from '@constants/database';
 import DataOperatorException from '@database/exceptions/data_operator_exception';
 import {
@@ -191,9 +193,11 @@ const ChannelHandler = (superclass: any) => class extends superclass {
             id: `${m.channel_id}-${m.user_id}`,
             ...m,
         }));
+        console.log('memberships', memberships);
 
         const createOrUpdateRawValues = getUniqueRawsBy({raws: memberships, key: 'id'});
 
+        // user_id or id?
         return this.handleRecords({
             fieldName: 'user_id',
             findMatchingRecordBy: isRecordChannelMembershipEqualToRaw,
