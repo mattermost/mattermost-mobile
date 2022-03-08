@@ -121,9 +121,6 @@ function joined(state = '', action: GenericAction) {
     case CallsTypes.RECEIVED_MYSELF_JOINED_CALL: {
         return action.data;
     }
-    case CallsTypes.RECEIVED_CALLS: {
-        return '';
-    }
     case CallsTypes.RECEIVED_MYSELF_LEFT_CALL: {
         return '';
     }

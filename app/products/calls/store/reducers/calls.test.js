@@ -219,7 +219,7 @@ describe('Reducers.calls.joined', () => {
             data: {calls: {'channel-1': {}, 'channel-2': {}}, enabled: {'channel-1': true}},
         };
         const state = callsReducer(initialState, testAction);
-        assert.equal(state.joined, '');
+        assert.equal(state.joined, 'test');
     });
 
     it('RECEIVED_MYSELF_JOINED_CALL', async () => {
