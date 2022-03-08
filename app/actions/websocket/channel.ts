@@ -44,6 +44,19 @@ export async function handleChannelCreatedEvent(serverUrl: string, msg: any) {
     database.operator.batchRecords(models);
 }
 
+export async function handleChannelUnarchiveEvent(serverUrl: string, msg: any) {
+    const database = DatabaseManager.serverDatabases[serverUrl];
+    if (!database) {
+        return;
+    }
+
+    try {
+        await setChannelDeleteAt(serverUrl, msg.data.channel_id, 0);
+    } catch {
+        // do nothing
+    }
+}
+
 export async function handleChannelUpdatedEvent(serverUrl: string, msg: any) {
     const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
     if (!operator) {

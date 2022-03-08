@@ -264,7 +264,7 @@ export async function handleEvent(serverUrl: string, msg: WebSocketMessage) {
             handleChannelDeletedEvent(serverUrl, msg);
             break;
         case WebsocketEvents.CHANNEL_UNARCHIVED:
-            // handleChannelUnarchiveEvent(serverUrl, msg);
+            handleChannelUnarchiveEvent(serverUrl, msg);
             break;
 
         case WebsocketEvents.CHANNEL_UPDATED:
