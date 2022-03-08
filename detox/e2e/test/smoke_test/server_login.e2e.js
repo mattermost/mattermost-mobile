@@ -20,16 +20,6 @@ import {
 } from '@support/ui/screen';
 
 describe('Server Login', () => {
-    const {
-        connectButton,
-        serverDisplayNameInput,
-        serverUrlInput,
-    } = ServerScreen;
-    const {
-        passwordInput,
-        signinButton,
-        usernameInput,
-    } = LoginScreen;
     const serverOneDisplayName = 'Server 1';
 
     afterAll(async () => {
@@ -42,18 +32,14 @@ describe('Server Login', () => {
         await ServerScreen.toBeVisible();
 
         // # Connect to server with valid server url and non-empty server display name
-        await serverUrlInput.replaceText(serverOneUrl);
-        await serverDisplayNameInput.replaceText(serverOneDisplayName);
-        await connectButton.tap();
+        await ServerScreen.connectToServer(serverOneUrl, serverOneDisplayName);
 
         // * Verify on login screen
         await LoginScreen.toBeVisible();
 
         // # Log in to server with correct credentials
         const {team, user} = await Setup.apiInit(siteOneUrl);
-        await usernameInput.replaceText(user.username);
-        await passwordInput.replaceText(user.password);
-        await signinButton.tap();
+        await LoginScreen.login(user);
 
         // * Verify on channel list screen and channel list header shows team display name and server display name
         await ChannelListScreen.toBeVisible();
