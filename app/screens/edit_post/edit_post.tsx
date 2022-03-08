@@ -1,17 +1,19 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback, useEffect, useRef, useState} from 'react';
+import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
-import {Alert, Keyboard, KeyboardType, Platform, SafeAreaView, View} from 'react-native';
+import {Alert, Keyboard, KeyboardType, Platform, SafeAreaView, useWindowDimensions, View} from 'react-native';
 import {KeyboardTrackingView} from 'react-native-keyboard-tracking-view';
 import {Navigation} from 'react-native-navigation';
 
 import {deletePost, editPost} from '@actions/remote/post';
 import AutoComplete from '@components/autocomplete';
 import Loading from '@components/loading';
+import {LIST_BOTTOM, OFFSET_TABLET} from '@constants/autocomplete';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
+import {useIsTablet} from '@hooks/device';
 import useDidUpdate from '@hooks/did_update';
 import PostError from '@screens/edit_post/post_error';
 import {dismissModal, setButtons} from '@screens/navigation';
@@ -49,7 +51,6 @@ const LEFT_BUTTON = {
     id: 'close-edit-post',
     testID: 'close.edit_post.button',
 };
-
 const RIGHT_BUTTON = {
     id: 'edit-post',
     testID: 'edit_post.save.button',
@@ -76,8 +77,20 @@ const EditPost = ({componentId, maxPostSize, post, closeButton, hasFilesAttached
     const theme = useTheme();
     const intl = useIntl();
     const serverUrl = useServerUrl();
-
+    const isTablet = useIsTablet();
+    const {width, height} = useWindowDimensions();
+    const isLandscape = width > height;
     const styles = getStyleSheet(theme);
+
+    const postInputTop = useMemo(() => {
+        if (isTablet) {
+            return isLandscape ? -OFFSET_TABLET : (-OFFSET_TABLET * 4);
+        }
+        return Platform.select({
+            ios: -LIST_BOTTOM + 3,
+            default: 10,
+        });
+    }, [isLandscape]);
 
     useEffect(() => {
         setButtons(componentId, {
@@ -236,17 +249,21 @@ const EditPost = ({componentId, maxPostSize, post, closeButton, hasFilesAttached
                             errorLine={errorLine}
                         />
                     ) }
-                    <EditPostInput
-                        hasError={Boolean(errorLine)}
-                        keyboardType={keyboardType}
-                        message={postMessage}
-                        onChangeText={onChangeText}
-                        onTextSelectionChange={onTextSelectionChange}
-                        ref={postInputRef}
-                    />
+                    {postMessage &&
+                        <EditPostInput
+                            hasError={Boolean(errorLine)}
+                            keyboardType={keyboardType}
+                            message={postMessage}
+                            onChangeText={onChangeText}
+                            onTextSelectionChange={onTextSelectionChange}
+                            ref={postInputRef}
+                        />
+                    }
                 </View>
             </SafeAreaView>
-            <KeyboardTrackingView style={styles.autocompleteContainer}>
+            <KeyboardTrackingView
+                style={styles.autocompleteContainer}
+            >
                 <AutoComplete
                     channelId={post.channelId}
                     hasFilesAttached={hasFilesAttached}
@@ -255,7 +272,7 @@ const EditPost = ({componentId, maxPostSize, post, closeButton, hasFilesAttached
                     updateValue={onChangeText}
                     value={postMessage}
                     cursorPosition={cursorPosition}
-                    postInputTop={0}
+                    postInputTop={postInputTop}
                 />
             </KeyboardTrackingView>
 
