@@ -31,12 +31,17 @@ const addOrUpdateCategories = async (serverUrl: string, categories: CategoryWith
 export async function handleCategoryCreatedEvent(serverUrl: string, msg: WebsocketCategoriesMessage) {
     let category;
     try {
-        category = JSON.parse(msg.data.category!);
-        addOrUpdateCategories(serverUrl, [category]);
+        if (msg.data.category) {
+            category = JSON.parse(msg.data.category);
+            addOrUpdateCategories(serverUrl, [category]);
+        }
     } catch (e) {
         // eslint-disable-next-line no-console
         console.log('Category WS: handleCategoryCreatedEvent', e, msg);
-        fetchCategories(serverUrl, msg.broadcast.team_id);
+
+        if (msg.broadcast.team_id) {
+            fetchCategories(serverUrl, msg.broadcast.team_id);
+        }
     }
 }
 
@@ -44,22 +49,30 @@ export async function handleCategoryUpdatedEvent(serverUrl: string, msg: Websock
     let categories;
 
     try {
-        categories = JSON.parse(msg.data.updatedCategories!);
-        addOrUpdateCategories(serverUrl, categories);
+        if (msg?.data?.updatedCategories) {
+            categories = JSON.parse(msg.data.updatedCategories);
+            addOrUpdateCategories(serverUrl, categories);
+        }
     } catch (e) {
         // eslint-disable-next-line no-console
         console.log('Category WS: handleCategoryUpdatedEvent', e, msg);
-        fetchCategories(serverUrl, msg.broadcast.team_id, true);
+        if (msg.broadcast.team_id) {
+            fetchCategories(serverUrl, msg.broadcast.team_id, true);
+        }
     }
 }
 
 export async function handleCategoryDeletedEvent(serverUrl: string, msg: WebsocketCategoriesMessage) {
     try {
-        // Delete the Category
-        await deleteCategory(serverUrl, msg.data.category_id);
+        if (msg.data.category_id) {
+            // Delete the Category
+            await deleteCategory(serverUrl, msg.data.category_id);
+        }
 
-        // Fetch the categories again as channels will have moved
-        fetchCategories(serverUrl, msg.broadcast.team_id);
+        if (msg.broadcast.team_id) {
+            // Fetch the categories again as channels will have moved
+            fetchCategories(serverUrl, msg.broadcast.team_id);
+        }
     } catch (e) {
         // eslint-disable-next-line no-console
         console.log('Category WS: handleCategoryDeletedEvent', e, msg);
@@ -91,6 +104,9 @@ export async function handleCategoryOrderUpdatedEvent(serverUrl: string, msg: We
     } catch (e) {
         // eslint-disable-next-line no-console
         console.log('Category WS: handleCategoryOrderUpdatedEvent', e, msg);
-        fetchCategories(serverUrl, msg.data.team_id);
+
+        if (msg.broadcast.team_id) {
+            fetchCategories(serverUrl, msg.data.team_id);
+        }
     }
 }

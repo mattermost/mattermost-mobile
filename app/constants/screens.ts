@@ -16,6 +16,7 @@ export const CUSTOM_STATUS = 'CustomStatus';
 export const EDIT_PROFILE = 'EditProfile';
 export const EDIT_SERVER = 'EditServer';
 export const FORGOT_PASSWORD = 'ForgotPassword';
+export const GALLERY = 'Gallery';
 export const HOME = 'Home';
 export const INTEGRATION_SELECTOR = 'IntegrationSelector';
 export const IN_APP_NOTIFICATION = 'InAppNotification';
@@ -47,6 +48,7 @@ export default {
     EDIT_PROFILE,
     EDIT_SERVER,
     FORGOT_PASSWORD,
+    GALLERY,
     HOME,
     INTEGRATION_SELECTOR,
     IN_APP_NOTIFICATION,

@@ -5,6 +5,7 @@ import {debounce} from 'lodash';
 import React, {useCallback, useEffect, useMemo, useState} from 'react';
 import {Platform, SectionList, SectionListData, SectionListRenderItemInfo} from 'react-native';
 
+import {getGroupsForAutocomplete} from '@actions/remote/groups';
 import {searchUsers} from '@actions/remote/user';
 import GroupMentionItem from '@components/autocomplete/at_mention_group/at_mention_group';
 import AtMentionItem from '@components/autocomplete/at_mention_item';
@@ -16,15 +17,13 @@ import {useTheme} from '@context/theme';
 import {t} from '@i18n';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 
-import type GroupModel from '@typings/database/models/servers/group';
-
 type SpecialMention = {
     completeHandle: string;
     id: string;
     defaultMessage: string;
 }
 
-type UserMentionSections = Array<SectionListData<UserProfile|GroupModel|SpecialMention>>
+type UserMentionSections = Array<SectionListData<UserProfile|Group|SpecialMention>>
 
 const getMatchTermForAtMention = (() => {
     let lastMatchTerm: string | null = null;
@@ -85,7 +84,7 @@ type Props = {
     value: string;
     nestedScrollEnabled: boolean;
     useChannelMentions: boolean;
-    groups: GroupModel[];
+    useGroupMentions: boolean;
 }
 
 const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
@@ -109,7 +108,7 @@ const AtMention = ({
     value,
     nestedScrollEnabled,
     useChannelMentions,
-    groups,
+    useGroupMentions,
 }: Props) => {
     const serverUrl = useServerUrl();
     const theme = useTheme();
@@ -119,6 +118,7 @@ const AtMention = ({
     const [usersOutOfChannel, setUsersOutOfChannel] = useState<UserProfile[]>([]);
     const [loading, setLoading] = useState(false);
     const [noResultsTerm, setNoResultsTerm] = useState<string|null>(null);
+    const [groups, setGroups] = useState<Group[]>([]);
 
     const runSearch = useMemo(() => debounce(async (sUrl: string, term: string, cId?: string) => {
         setLoading(true);
@@ -167,7 +167,7 @@ const AtMention = ({
         );
     }, [completeMention]);
 
-    const renderGroupMentions = useCallback(({item}: SectionListRenderItemInfo<GroupModel>) => {
+    const renderGroupMentions = useCallback(({item}: SectionListRenderItemInfo<Group>) => {
         return (
             <GroupMentionItem
                 key={`autocomplete-group-${item.name}`}
@@ -188,16 +188,26 @@ const AtMention = ({
     }, [completeMention]);
 
     const renderSectionHeader = useCallback(({section}) => {
-        const isFirstSection = section.id === sections[0].id;
         return (
             <AutocompleteSectionHeader
                 id={section.id}
                 defaultMessage={section.defaultMessage}
                 loading={!section.hideLoadingIndicator && loading}
-                isFirstSection={isFirstSection}
             />
         );
-    }, [sections[0]?.id, loading]);
+    }, [loading]);
+
+    useEffect(() => {
+        if (useGroupMentions) {
+            getGroupsForAutocomplete(serverUrl, channelId || '').then((res) => {
+                setGroups(res);
+            }).catch(() => {
+                setGroups([]);
+            });
+        } else {
+            setGroups([]);
+        }
+    }, [channelId, useGroupMentions]);
 
     useEffect(() => {
         if (matchTerm === null) {

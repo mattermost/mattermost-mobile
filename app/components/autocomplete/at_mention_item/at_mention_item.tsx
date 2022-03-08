@@ -160,6 +160,7 @@ const AtMentionItem = ({
                 )}
                 {shared && (
                     <ChannelIcon
+                        name={name}
                         isActive={false}
                         isArchived={false}
                         isInfo={true}

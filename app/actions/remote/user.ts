@@ -583,3 +583,14 @@ export const searchUsers = async (serverUrl: string, term: string, channelId?: s
         return {error};
     }
 };
+
+export const buildProfileImageUrl = (serverUrl: string, userId: string, timestamp = 0) => {
+    let client: Client;
+    try {
+        client = NetworkManager.getClient(serverUrl);
+    } catch (error) {
+        return '';
+    }
+
+    return client.getProfilePictureUrl(userId, timestamp);
+};

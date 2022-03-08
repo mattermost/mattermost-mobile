@@ -27,6 +27,7 @@ class WebsocketManager {
     private netConnected = false;
     private previousAppState: AppStateStatus;
     private statusUpdatesIntervalIDs: Record<string, NodeJS.Timer> = {};
+    private backgroundIntervalId: number | undefined;
 
     constructor() {
         this.previousAppState = AppState.currentState;
@@ -186,20 +187,23 @@ class WebsocketManager {
         }
 
         this.cancelAllConnections();
-        if (appState === 'background' && !this.isBackgroundTimerRunning) {
+        if (appState !== 'active' && !this.isBackgroundTimerRunning) {
             this.isBackgroundTimerRunning = true;
             this.cancelAllConnections();
-            BackgroundTimer.runBackgroundTimer(() => {
+            this.backgroundIntervalId = BackgroundTimer.setInterval(() => {
                 this.closeAll();
-                BackgroundTimer.stopBackgroundTimer();
+                BackgroundTimer.clearInterval(this.backgroundIntervalId!);
                 this.isBackgroundTimerRunning = false;
             }, WAIT_TO_CLOSE);
+
             this.previousAppState = appState;
             return;
         }
 
         if (appState === 'active' && this.netConnected) { // Reopen the websockets only if there is connection
-            BackgroundTimer.stopBackgroundTimer();
+            if (this.backgroundIntervalId) {
+                BackgroundTimer.clearInterval(this.backgroundIntervalId);
+            }
             this.isBackgroundTimerRunning = false;
             this.openAll();
             this.previousAppState = appState;

@@ -17,7 +17,6 @@ export async function handlePreferenceChangedEvent(serverUrl: string, msg: WebSo
             operator.handlePreferences({
                 prepareRecordsOnly: false,
                 preferences: [preference],
-                sync: true,
             });
         }
     } catch (error) {
@@ -38,7 +37,6 @@ export async function handlePreferencesChangedEvent(serverUrl: string, msg: WebS
             operator.handlePreferences({
                 prepareRecordsOnly: false,
                 preferences,
-                sync: true,
             });
         }
     } catch (error) {

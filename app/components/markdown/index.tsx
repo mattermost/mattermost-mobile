@@ -42,6 +42,7 @@ type MarkdownProps = {
     isEdited?: boolean;
     isReplyPost?: boolean;
     isSearchResult?: boolean;
+    location?: string;
     mentionKeys?: UserMentionKey[];
     minimumHashtagLength?: number;
     onPostPress?: (event: GestureResponderEvent) => void;
@@ -190,8 +191,9 @@ class Markdown extends PureComponent<MarkdownProps> {
             // We have enough problems rendering images as is, so just render a link inside of a table
             return (
                 <MarkdownTableImage
-                    disabled={this.props.disableGallery}
+                    disabled={this.props.disableGallery ?? Boolean(!this.props.location)}
                     imagesMetadata={this.props.imagesMetadata}
+                    location={this.props.location}
                     postId={this.props.postId!}
                     source={src}
                 />
@@ -200,11 +202,12 @@ class Markdown extends PureComponent<MarkdownProps> {
 
         return (
             <MarkdownImage
-                disabled={this.props.disableGallery}
+                disabled={this.props.disableGallery ?? Boolean(!this.props.location)}
                 errorTextStyle={[this.computeTextStyle(this.props.baseTextStyle, context), this.props.textStyles.error]}
                 linkDestination={linkDestination}
                 imagesMetadata={this.props.imagesMetadata}
                 isReplyPost={this.props.isReplyPost}
+                location={this.props.location}
                 postId={this.props.postId!}
                 source={src}
             />
@@ -283,9 +286,7 @@ class Markdown extends PureComponent<MarkdownProps> {
 
         return (
             <View style={blockStyle}>
-                <Text>
-                    {children}
-                </Text>
+                {children}
             </View>
         );
     };

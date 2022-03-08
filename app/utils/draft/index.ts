@@ -5,11 +5,9 @@ import {MessageDescriptor} from '@formatjs/intl/src/types';
 import {Alert, AlertButton} from 'react-native';
 
 import {General} from '@constants';
-import {AT_MENTION_REGEX_GLOBAL, CODE_REGEX} from '@constants/autocomplete';
-import {NOTIFY_ALL_MEMBERS} from '@constants/post_draft';
+import {CODE_REGEX} from '@constants/autocomplete';
 import {t} from '@i18n';
 
-import type GroupModel from '@typings/database/models/servers/group';
 import type {IntlShape} from 'react-intl';
 
 type AlertCallback = (value?: string) => void;
@@ -78,106 +76,6 @@ export const textContainsAtHere = (text: string) => {
     const textWithoutCode = text.replace(CODE_REGEX, '');
     return (/(?:\B|\b_+)@(here)(?!(\.|-|_)*[^\W_])/i).test(textWithoutCode);
 };
-
-export const groupsMentionedInText = (groupsWithAllowReference: GroupModel[], text: string) => {
-    if (!groupsWithAllowReference.length) {
-        return [];
-    }
-    const textWithoutCode = text.replace(CODE_REGEX, '');
-    const mentions = textWithoutCode.match(AT_MENTION_REGEX_GLOBAL) || [];
-    return groupsWithAllowReference.filter((g) => mentions.includes(g.id));
-};
-
-// mapGroupMentions remove duplicates from the groupMentions, and if any of the
-// groups has more members than the NOTIFY_ALL_MEMBERS, return the highest
-// number of notifications and the timezones of that group.
-export const mapGroupMentions = (channelMemberCountsByGroup: ChannelMemberCountByGroup[], groupMentions: GroupModel[]) => {
-    let memberNotifyCount = 0;
-    let channelTimezoneCount = 0;
-    const groupMentionsSet = new Set<string>();
-    const mappedChannelMemberCountsByGroup: ChannelMemberCountsByGroup = {};
-    channelMemberCountsByGroup.forEach((group) => {
-        mappedChannelMemberCountsByGroup[group.group_id] = group;
-    });
-    groupMentions.
-        forEach((group) => {
-            const mappedValue = mappedChannelMemberCountsByGroup[group.id];
-            if (mappedValue?.channel_member_count > NOTIFY_ALL_MEMBERS && mappedValue?.channel_member_count > memberNotifyCount) {
-                memberNotifyCount = mappedValue.channel_member_count;
-                channelTimezoneCount = mappedValue.channel_member_timezones_count;
-            }
-            if (group.name) {
-                groupMentionsSet.add(`@${group.name}`);
-            }
-        });
-    return {groupMentionsSet, memberNotifyCount, channelTimezoneCount};
-};
-
-export function buildGroupMentionsMessage(intl: IntlShape, groupMentions: string[], memberNotifyCount: number, channelTimezoneCount: number) {
-    let notifyAllMessage = '';
-
-    if (groupMentions.length === 1) {
-        if (channelTimezoneCount > 0) {
-            notifyAllMessage = (
-                intl.formatMessage(
-                    {
-                        id: 'mobile.post_textbox.one_group.message.with_timezones',
-                        defaultMessage: 'By using {mention} you are about to send notifications to {totalMembers} people in {timezones, number} {timezones, plural, one {timezone} other {timezones}}. Are you sure you want to do this?',
-                    },
-                    {
-                        mention: groupMentions[0],
-                        totalMembers: memberNotifyCount,
-                        timezones: channelTimezoneCount,
-                    },
-                )
-            );
-        } else {
-            notifyAllMessage = (
-                intl.formatMessage(
-                    {
-                        id: 'mobile.post_textbox.one_group.message.without_timezones',
-                        defaultMessage: 'By using {mention} you are about to send notifications to {totalMembers} people. Are you sure you want to do this?',
-                    },
-                    {
-                        mention: groupMentions[0],
-                        totalMembers: memberNotifyCount,
-                    },
-                )
-            );
-        }
-    } else if (channelTimezoneCount > 0) {
-        notifyAllMessage = (
-            intl.formatMessage(
-                {
-                    id: 'mobile.post_textbox.multi_group.message.with_timezones',
-                    defaultMessage: 'By using {mentions} and {finalMention} you are about to send notifications to at least {totalMembers} people in {timezones, number} {timezones, plural, one {timezone} other {timezones}}. Are you sure you want to do this?',
-                },
-                {
-                    mentions: groupMentions.slice(0, -1).join(', '),
-                    finalMention: groupMentions[groupMentions.length - 1],
-                    totalMembers: memberNotifyCount,
-                    timezones: channelTimezoneCount,
-                },
-            )
-        );
-    } else {
-        notifyAllMessage = (
-            intl.formatMessage(
-                {
-                    id: 'mobile.post_textbox.multi_group.message.without_timezones',
-                    defaultMessage: 'By using {mentions} and {finalMention} you are about to send notifications to at least {totalMembers} people. Are you sure you want to do this?',
-                },
-                {
-                    mentions: groupMentions.slice(0, -1).join(', '),
-                    finalMention: groupMentions[groupMentions.length - 1],
-                    totalMembers: memberNotifyCount,
-                },
-            )
-        );
-    }
-
-    return notifyAllMessage;
-}
 
 export function buildChannelWideMentionMessage(intl: IntlShape, membersCount: number, isTimezoneEnabled: boolean, channelTimezoneCount: number, atHere: boolean) {
     let notifyAllMessage = '';
