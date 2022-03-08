@@ -6,7 +6,7 @@ import {NavigationContainer} from '@react-navigation/native';
 import React, {useEffect} from 'react';
 import {useIntl} from 'react-intl';
 import {DeviceEventEmitter, Platform} from 'react-native';
-import {enableScreens} from 'react-native-screens';
+import {enableFreeze, enableScreens} from 'react-native-screens';
 
 import {Events, Screens} from '@constants';
 import {useTheme} from '@context/theme';
@@ -25,6 +25,8 @@ if (Platform.OS === 'ios') {
     enableScreens(false);
 }
 
+enableFreeze(true);
+
 type HomeProps = LaunchProps & {
     time?: number;
 };
@@ -40,7 +42,9 @@ export default function HomeScreen(props: HomeProps) {
             notificationError(intl, value);
         });
 
-        return () => listener.remove();
+        return () => {
+            listener.remove();
+        };
     }, []);
 
     return (

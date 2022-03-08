@@ -8,6 +8,7 @@ import Clipboard from '@react-native-community/clipboard';
 import React, {Children, ReactElement, useCallback} from 'react';
 import {useIntl} from 'react-intl';
 import {Alert, StyleSheet, Text, View} from 'react-native';
+import {TouchableOpacity} from 'react-native-gesture-handler';
 import {of as of$} from 'rxjs';
 import {switchMap} from 'rxjs/operators';
 import urlParse from 'url-parse';
@@ -164,12 +165,14 @@ const MarkdownLink = ({children, experimentalNormalizeMarkdownLinks, href, siteU
     const renderChildren = experimentalNormalizeMarkdownLinks ? parseChildren() : children;
 
     return (
-        <Text
+        <TouchableOpacity
             onPress={handlePress}
             onLongPress={handleLongPress}
         >
-            {renderChildren}
-        </Text>
+            <Text>
+                {renderChildren}
+            </Text>
+        </TouchableOpacity>
     );
 };
 

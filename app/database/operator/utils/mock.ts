@@ -28,7 +28,6 @@ export const mockedPosts = {
             pending_post_id: '',
             reply_count: 4,
             last_reply_at: 0,
-            participants: null,
             metadata: {},
         },
         '8fcnk3p1jt8mmkaprgajoxz115a': {
@@ -55,7 +54,6 @@ export const mockedPosts = {
             pending_post_id: '',
             reply_count: 0,
             last_reply_at: 0,
-            participants: null,
             metadata: {},
         },
         '3y3w3a6gkbg73bnj3xund9o5ic': {
@@ -77,7 +75,6 @@ export const mockedPosts = {
             pending_post_id: '',
             reply_count: 4,
             last_reply_at: 0,
-            participants: null,
             metadata: {},
         },
         '4btbnmticjgw7ewd3qopmpiwqw': {
@@ -101,7 +98,6 @@ export const mockedPosts = {
             pending_post_id: '',
             reply_count: 0,
             last_reply_at: 0,
-            participants: null,
             metadata: {},
         },
         '4r9jmr7eqt8dxq3f9woypzurry': {
@@ -124,7 +120,6 @@ export const mockedPosts = {
             has_reactions: true,
             reply_count: 7,
             last_reply_at: 0,
-            participants: null,
             metadata: {
                 reactions: [
                     {
@@ -165,7 +160,6 @@ export const mockedPosts = {
             pending_post_id: '',
             reply_count: 7,
             last_reply_at: 0,
-            participants: null,
             metadata: {
                 emojis: [
                     {

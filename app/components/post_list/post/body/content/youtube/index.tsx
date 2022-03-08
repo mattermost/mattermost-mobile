@@ -5,13 +5,13 @@ import {withDatabase} from '@nozbe/watermelondb/DatabaseProvider';
 import withObservables from '@nozbe/with-observables';
 import React, {useCallback} from 'react';
 import {useIntl} from 'react-intl';
-import {Alert, Image, Platform, StatusBar, StyleSheet} from 'react-native';
+import {Alert, Image, Platform, StatusBar, StyleSheet, View} from 'react-native';
+import {TouchableOpacity} from 'react-native-gesture-handler';
 import {YouTubeStandaloneAndroid, YouTubeStandaloneIOS} from 'react-native-youtube';
 import {of as of$} from 'rxjs';
 import {switchMap} from 'rxjs/operators';
 
 import ProgressiveImage from '@components/progressive_image';
-import TouchableWithFeedback from '@components/touchable_with_feedback';
 import {MM_TABLES, SYSTEM_IDENTIFIERS} from '@constants/database';
 import {useIsTablet} from '@hooks/device';
 import {emptyFunction} from '@utils/general';
@@ -157,10 +157,9 @@ const YouTube = ({googleDeveloperKey, isReplyPost, metadata}: YouTubeProps) => {
     }
 
     return (
-        <TouchableWithFeedback
+        <TouchableOpacity
             style={[styles.imageContainer, {height: dimensions.height}]}
             onPress={playYouTubeVideo}
-            type={'opacity'}
         >
             <ProgressiveImage
                 id={imgUrl}
@@ -170,15 +169,11 @@ const YouTube = ({googleDeveloperKey, isReplyPost, metadata}: YouTubeProps) => {
                 resizeMode='cover'
                 onError={emptyFunction}
             >
-                <TouchableWithFeedback
-                    style={styles.playButton}
-                    onPress={playYouTubeVideo}
-                    type={'opacity'}
-                >
+                <View style={styles.playButton}>
                     <Image source={require('@assets/images/icons/youtube-play-icon.png')}/>
-                </TouchableWithFeedback>
+                </View>
             </ProgressiveImage>
-        </TouchableWithFeedback>
+        </TouchableOpacity>
     );
 };
 

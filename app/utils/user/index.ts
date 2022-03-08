@@ -10,8 +10,6 @@ import {UserModel} from '@database/models/server';
 import {DEFAULT_LOCALE, getLocalizedMessage, t} from '@i18n';
 import {toTitleCase} from '@utils/helpers';
 
-import type GroupModel from '@typings/database/models/servers/group';
-import type GroupMembershipModel from '@typings/database/models/servers/group_membership';
 import type {IntlShape} from 'react-intl';
 
 export function displayUsername(user?: UserProfile | UserModel, locale?: string, teammateDisplayNameSetting?: string, useFallbackUsername = true) {
@@ -101,24 +99,6 @@ export const getUsersByUsername = (users: UserModel[]) => {
     }
 
     return usersByUsername;
-};
-
-export const getUserMentionKeys = (user: UserModel, groups: GroupModel[], userGroups: GroupMembershipModel[]) => {
-    const keys = user.mentionKeys;
-
-    if (groups.length && userGroups.length) {
-        const groupMentions = userGroups.reduce((result: Array<{key: string}>, ug: GroupMembershipModel) => {
-            const group = groups.find((g) => ug.groupId === g.id);
-            if (group) {
-                result.push({key: `@${group.name}`});
-            }
-            return result;
-        }, []);
-
-        keys.push(...groupMentions);
-    }
-
-    return keys;
 };
 
 export const getUserTimezone = (user: UserModel) => {
