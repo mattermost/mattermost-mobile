@@ -60,5 +60,4 @@ export default {
         PostTypes.ADD_TO_TEAM,
         PostTypes.REMOVE_FROM_TEAM,
     ],
-    DEFAULT_CHARACTER_LIMIT: 4000,
 };

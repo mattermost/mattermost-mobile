@@ -7,7 +7,7 @@ import {of as of$} from 'rxjs';
 import {switchMap} from 'rxjs/operators';
 
 import {MM_TABLES, SYSTEM_IDENTIFIERS} from '@constants/database';
-import POST from '@constants/post';
+import {MAX_MESSAGE_LENGTH_FALLBACK} from '@constants/post_draft';
 
 import EditPost from './edit_post';
 
@@ -17,7 +17,8 @@ import type SystemModel from '@typings/database/models/servers/system';
 
 const enhance = withObservables([], ({database, post}: WithDatabaseArgs & { post: PostModel}) => {
     const maxPostSize = database.get<SystemModel>(MM_TABLES.SERVER.SYSTEM).findAndObserve(SYSTEM_IDENTIFIERS.CONFIG).pipe(
-        switchMap(({value}) => of$(parseInt(value.MaxPostSize || POST.DEFAULT_CHARACTER_LIMIT, 10))),
+        switchMap(({value}) => of$(parseInt(value.MaxPostSize || '0', 10) || MAX_MESSAGE_LENGTH_FALLBACK)),
+
     );
 
     const hasFilesAttached = post.files.observe().pipe(switchMap((files) => of$(files?.length > 0)));
