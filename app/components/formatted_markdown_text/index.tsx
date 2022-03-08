@@ -5,7 +5,7 @@ import {Parser} from 'commonmark';
 import Renderer from 'commonmark-react-renderer';
 import React, {ReactElement, useRef} from 'react';
 import {useIntl} from 'react-intl';
-import {GestureResponderEvent, StyleProp, Text, TextStyle} from 'react-native';
+import {GestureResponderEvent, Platform, StyleProp, Text, TextStyle} from 'react-native';
 
 import AtMention from '@components/markdown/at_mention';
 import MarkdownLink from '@components/markdown/markdown_link';
@@ -33,11 +33,14 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     return {
         message: {
             color: changeOpacity(theme.centerChannelColor, 0.8),
-            fontSize: 15,
-            lineHeight: 22,
+            fontSize: 16,
+            lineHeight: 20,
         },
         atMentionOpacity: {
             opacity: 1,
+        },
+        touchableStyle: {
+            top: Platform.select({ios: 2, default: 4}),
         },
     };
 });
@@ -83,6 +86,7 @@ const FormattedMarkdownText = ({baseTextStyle, defaultMessage, id, onPostPress, 
                 mentionName={mentionName}
                 onPostPress={onPostPress}
                 textStyle={[computeTextStyle(baseTextStyle, context), styles.atMentionOpacity]}
+                touchableStyle={styles.touchableStyle}
             />
         );
     };

@@ -54,7 +54,7 @@ export const transformThreadRecord = ({action, database, value}: TransformerArgs
  * @param {RecordPair} operator.value
  * @returns {Promise<ThreadParticipantModel>}
  */
-export const transformThreadparticipantRecord = ({action, database, value}: TransformerArgs): Promise<ThreadParticipantModel> => {
+export const transformThreadParticipantRecord = ({action, database, value}: TransformerArgs): Promise<ThreadParticipantModel> => {
     const raw = value.raw as ThreadParticipant;
 
     // id of participant comes from server response

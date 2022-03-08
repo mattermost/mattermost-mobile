@@ -76,9 +76,6 @@ export default class UserModel extends Model {
     /** channels : All the channels that this user is part of  */
     channels: Query<ChannelMembershipModel>;
 
-    /** groups : All the groups that this user is part of  */
-    groups: Query<GroupMembershipModel>;
-
     /** posts :  All the posts that this user has written*/
     posts: Query<PostModel>;
 
@@ -90,6 +87,9 @@ export default class UserModel extends Model {
 
     /** teams : All the team that this user is part of  */
     teams: Query<TeamMembershipModel>;
+
+    /** threadParticipations : All the thread participations this user is part of  */
+    threadParticipations: Query<ThreadParticipantsModel>;
 
     /**  prepareStatus: Prepare the model to update the user status in a batch operation */
     prepareStatus: (status: string) => void;

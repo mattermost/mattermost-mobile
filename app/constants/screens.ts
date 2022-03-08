@@ -16,6 +16,7 @@ export const CUSTOM_STATUS = 'CustomStatus';
 export const EDIT_PROFILE = 'EditProfile';
 export const EDIT_SERVER = 'EditServer';
 export const FORGOT_PASSWORD = 'ForgotPassword';
+export const GALLERY = 'Gallery';
 export const GLOBAL_THREADS = 'GlobalThreads';
 export const HOME = 'Home';
 export const INTEGRATION_SELECTOR = 'IntegrationSelector';
@@ -49,6 +50,7 @@ export default {
     EDIT_PROFILE,
     EDIT_SERVER,
     FORGOT_PASSWORD,
+    GALLERY,
     GLOBAL_THREADS,
     HOME,
     INTEGRATION_SELECTOR,

@@ -3,9 +3,9 @@
 
 import React, {useCallback} from 'react';
 import {Platform, Text} from 'react-native';
+import {TouchableOpacity} from 'react-native-gesture-handler';
 
 import Emoji from '@components/emoji';
-import TouchableWithFeedback from '@components/touchable_with_feedback';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 type ReactionProps = {
@@ -49,12 +49,11 @@ const Reaction = ({count, emojiName, highlight, onPress, onLongPress, theme}: Re
     }, [highlight]);
 
     return (
-        <TouchableWithFeedback
+        <TouchableOpacity
             onPress={handlePress}
             onLongPress={onLongPress}
             delayLongPress={350}
             style={[styles.reaction, (highlight && styles.highlight)]}
-            type={'opacity'}
         >
             <Emoji
                 emojiName={emojiName}
@@ -69,7 +68,7 @@ const Reaction = ({count, emojiName, highlight, onPress, onLongPress, theme}: Re
             >
                 {count}
             </Text>
-        </TouchableWithFeedback>
+        </TouchableOpacity>
     );
 };
 

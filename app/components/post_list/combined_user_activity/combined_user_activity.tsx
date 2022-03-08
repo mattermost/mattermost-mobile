@@ -1,18 +1,19 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useEffect} from 'react';
+import React, {useCallback, useEffect} from 'react';
 import {useIntl} from 'react-intl';
 import {Keyboard, StyleProp, View, ViewStyle} from 'react-native';
+import {TouchableOpacity} from 'react-native-gesture-handler';
 
 import {fetchMissingProfilesByIds, fetchMissingProfilesByUsernames} from '@actions/remote/user';
 import Markdown from '@components/markdown';
 import SystemAvatar from '@components/system_avatar';
 import SystemHeader from '@components/system_header';
-import TouchableWithFeedback from '@components/touchable_with_feedback';
-import {Post as PostConstants} from '@constants';
+import {Post as PostConstants, Screens} from '@constants';
 import {useServerUrl} from '@context/server';
-import {showModalOverCurrentContext} from '@screens/navigation';
+import {useIsTablet} from '@hooks/device';
+import {bottomSheetModalOptions, showModal, showModalOverCurrentContext} from '@screens/navigation';
 import {emptyFunction} from '@utils/general';
 import {getMarkdownTextStyles} from '@utils/markdown';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
@@ -62,6 +63,7 @@ const CombinedUserActivity = ({
     post, showJoinLeave, testID, theme, usernamesById = {}, style,
 }: Props) => {
     const intl = useIntl();
+    const isTablet = useIsTablet();
     const serverUrl = useServerUrl();
     const itemTestID = `${testID}.${post.id}`;
     const textStyles = getMarkdownTextStyles(theme);
@@ -100,22 +102,21 @@ const CombinedUserActivity = ({
         return usernames;
     };
 
-    const onLongPress = () => {
-        if (!canDelete) {
+    const onLongPress = useCallback(() => {
+        if (!canDelete || !post) {
             return;
         }
 
-        const screen = 'PostOptions';
-        const passProps = {
-            canDelete,
-            isSystemMessage: true,
-            post,
-        };
+        const passProps = {post};
         Keyboard.dismiss();
-        requestAnimationFrame(() => {
-            showModalOverCurrentContext(screen, passProps);
-        });
-    };
+        const title = isTablet ? intl.formatMessage({id: 'post.options.title', defaultMessage: 'Options'}) : '';
+
+        if (isTablet) {
+            showModal(Screens.POST_OPTIONS, title, passProps, bottomSheetModalOptions(theme, 'close-post-options'));
+        } else {
+            showModalOverCurrentContext(Screens.POST_OPTIONS, passProps);
+        }
+    }, [post, canDelete, isTablet, intl]);
 
     const renderMessage = (postType: string, userIds: string[], actorId: string) => {
         let actor = '';
@@ -208,13 +209,10 @@ const CombinedUserActivity = ({
             style={style}
             testID={testID}
         >
-            <TouchableWithFeedback
+            <TouchableOpacity
                 testID={itemTestID}
                 onPress={emptyFunction}
                 onLongPress={onLongPress}
-                delayLongPress={200}
-                underlayColor={changeOpacity(theme.centerChannelColor, 0.1)}
-                cancelTouchOnPanning={true}
             >
                 <View style={styles.container}>
                     <SystemAvatar theme={theme}/>
@@ -228,7 +226,7 @@ const CombinedUserActivity = ({
                         </View>
                     </View>
                 </View>
-            </TouchableWithFeedback>
+            </TouchableOpacity>
         </View>
     );
 };

@@ -20,6 +20,9 @@ export default class ThreadParticipantsModel extends Model {
     /** user_id : The user id of the user participating in the thread */
     userId: string;
 
+    /** thread : The related record to the Thread model */
+    thread: Relation<ThreadModel>;
+
     /** user : The related record to the User model */
     user: Relation<UserModel>;
 }

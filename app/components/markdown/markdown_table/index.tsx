@@ -4,11 +4,11 @@
 import React, {PureComponent, ReactNode} from 'react';
 import {injectIntl, IntlShape} from 'react-intl';
 import {Dimensions, EventSubscription, LayoutChangeEvent, Platform, ScaledSize, ScrollView, View} from 'react-native';
+import {TouchableOpacity} from 'react-native-gesture-handler';
 import LinearGradient from 'react-native-linear-gradient';
 
 import CompassIcon from '@components/compass_icon';
 import {CELL_MAX_WIDTH, CELL_MIN_WIDTH} from '@components/markdown/markdown_table_cell';
-import TouchableWithFeedback from '@components/touchable_with_feedback';
 import DeviceTypes from '@constants/device';
 import {goToScreen} from '@screens/navigation';
 import {preventDoubleTap} from '@utils/tap';
@@ -244,8 +244,7 @@ class MarkdownTable extends PureComponent<MarkdownTableProps, MarkdownTableState
         let expandButton = null;
         if (expandButtonOffset > 0) {
             expandButton = (
-                <TouchableWithFeedback
-                    type='opacity'
+                <TouchableOpacity
                     onPress={this.handlePress}
                     style={[style.expandButton, {left: expandButtonOffset}]}
                     testID='markdown_table.expand.button'
@@ -258,15 +257,14 @@ class MarkdownTable extends PureComponent<MarkdownTableProps, MarkdownTableState
                             />
                         </View>
                     </View>
-                </TouchableWithFeedback>
+                </TouchableOpacity>
             );
         }
 
         return (
-            <TouchableWithFeedback
+            <TouchableOpacity
                 style={style.tablePadding}
                 onPress={this.handlePress}
-                type='opacity'
                 testID='markdown_table'
             >
                 <ScrollView
@@ -281,7 +279,7 @@ class MarkdownTable extends PureComponent<MarkdownTableProps, MarkdownTableState
                 {moreRight}
                 {moreBelow}
                 {expandButton}
-            </TouchableWithFeedback>
+            </TouchableOpacity>
         );
     }
 }

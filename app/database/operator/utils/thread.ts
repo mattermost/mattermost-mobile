@@ -10,7 +10,7 @@ import type ThreadParticipantModel from '@typings/database/models/servers/thread
 const {THREAD_PARTICIPANT} = MM_TABLES.SERVER;
 
 /**
- * sanitizeThreadParticipants: Treats thread participants participants in a Thread. For example, a user can participate/not.  Hence, this function
+ * sanitizeThreadParticipants: Treats participants in a Thread. For example, a user can participate/not.  Hence, this function
  * tell us which participants to create/delete in the ThreadParticipants table.
  * @param {SanitizeThreadParticipantsArgs} sanitizeThreadParticipants
  * @param {Database} sanitizeThreadParticipants.database

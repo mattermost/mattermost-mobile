@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {Database, Q} from '@nozbe/watermelondb';
+import {Database, Model, Q, Query} from '@nozbe/watermelondb';
 
 import {MM_TABLES} from '@constants/database';
 
@@ -112,4 +112,18 @@ export const prepareCategoryChannels = (
     } catch (e) {
         return undefined;
     }
+};
+
+export const prepareDeleteCategory = async (category: CategoryModel): Promise<Model[]> => {
+    const preparedModels: Model[] = [category.prepareDestroyPermanently()];
+
+    const associatedChildren: Array<Query<any>> = [
+        category.categoryChannels,
+    ];
+    for await (const children of associatedChildren) {
+        const models = await children?.fetch?.() as Model[] | undefined;
+        models?.forEach((model) => preparedModels.push(model.prepareDestroyPermanently()));
+    }
+
+    return preparedModels;
 };

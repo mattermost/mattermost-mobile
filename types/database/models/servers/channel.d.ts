@@ -50,9 +50,6 @@ export default class ChannelModel extends Model {
     /** drafts : All drafts for this channel */
     drafts: Query<DraftModel>;
 
-    /** groupsChannel : Every group contained in this channel */
-    groupsChannel: Query<GroupsChannelModel>;
-
     /** posts : All posts made in the channel */
     posts: Query<PostModel>;
 
@@ -73,6 +70,9 @@ export default class ChannelModel extends Model {
 
     /** settings: User specific settings/preferences for this channel */
     settings: Relation<MyChannelSettingsModel>;
+
+    /** categoryChannel: category of this channel */
+    categoryChannel: Relation<CategoryChanelModel>;
 
     toApi = () => Channel;
 }
