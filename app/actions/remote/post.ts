@@ -7,7 +7,7 @@ import {DeviceEventEmitter} from 'react-native';
 import {markChannelAsUnread, updateLastPostAt} from '@actions/local/channel';
 import {processPostsFetched, removePost} from '@actions/local/post';
 import {addRecentReaction} from '@actions/local/reactions';
-import {ActionType, Events, General, Post, ServerErrors} from '@constants';
+import {ActionType, Events, General, Post, Preferences, ServerErrors} from '@constants';
 import {SYSTEM_IDENTIFIERS} from '@constants/database';
 import DatabaseManager from '@database/manager';
 import {getNeededAtMentionedUsernames} from '@helpers/api/user';
@@ -644,7 +644,7 @@ export async function getSavedPosts(serverUrl: string, teamId?: string, channelI
     let order: string[] = [];
 
     try {
-        const data = await client.getFlaggedPosts(userId, channelId, teamId, page, perPage);
+        const data = await client.getSavedPosts(userId, channelId, teamId, page, perPage);
         posts = data.posts || {};
         order = data.order || [];
         postsArray = order.map((id) => posts[id]);
@@ -662,12 +662,20 @@ export async function getSavedPosts(serverUrl: string, teamId?: string, channelI
 
     const promises: Array<Promise<Model[]>> = [];
 
+    const preferences = order.map((id) => {
+        return {
+            user_id: userId,
+            category: Preferences.CATEGORY_SAVED_POST,
+            name: id,
+            value: 'true',
+        } as PreferenceType;
+    });
+
     promises.push(
-        operator.handleSavedPostsPreference({
-            postIds: order,
-            userId,
+        operator.handlePreferences({
+            preferences,
             prepareRecordsOnly: true,
-            sync: true,
+            sync: false,
         }),
     );
 
