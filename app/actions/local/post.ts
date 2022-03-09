@@ -174,8 +174,6 @@ export const processPostsFetched = async (serverUrl: string, actionType: string,
                 posts,
                 previousPostId,
             });
-
-            // @todo - extract and handle threads
         }
     }
 

@@ -26,6 +26,7 @@ import {forceLogoutIfNecessary} from './session';
 import type {Client} from '@client/rest';
 import type Model from '@nozbe/watermelondb/Model';
 import type PostModel from '@typings/database/models/servers/post';
+import { processThreadsFromReceivedPosts } from '@actions/local/thread';
 
 type PostsRequest = {
     error?: unknown;
@@ -158,6 +159,7 @@ export const fetchPostsForCurrentChannel = async (serverUrl: string) => {
 };
 
 export const fetchPostsForChannel = async (serverUrl: string, channelId: string, fetchOnly = false) => {
+    console.log('enya', ' >> >> >> >> >> fetchPostsForChannel', serverUrl, channelId);
     const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
     if (!operator) {
         return {error: `${serverUrl} database not found`};
@@ -220,20 +222,8 @@ export const fetchPostsForChannel = async (serverUrl: string, channelId: string,
 
             const isCRTEnabled = await getIsCRTEnabled(operator.database);
             if (isCRTEnabled) {
-                const threads: Thread[] = [];
-                data.posts.forEach((post: Post) => {
-                    if (!post.root_id && post.type === '') {
-                        threads.push({
-                            id: post.id,
-                            participants: post.participants,
-                            reply_count: post.reply_count,
-                            last_reply_at: post.last_reply_at,
-                            is_following: post.is_following,
-                        } as Thread);
-                    }
-                });
-                const threadModels = await operator.handleThreads({threads, prepareRecordsOnly: true});
-                if (threadModels.length) {
+                const {models: threadModels} = await processThreadsFromReceivedPosts(serverUrl, data.posts, true);
+                if (threadModels?.length) {
                     models.push(...threadModels);
                 }
             }
@@ -282,7 +272,24 @@ export const fetchPosts = async (serverUrl: string, channelId: string, page = 0,
     try {
         const isCRTEnabled = await getIsCRTEnabled(operator.database);
         const data = await client.getPosts(channelId, page, perPage, isCRTEnabled, isCRTEnabled);
-        return processPostsFetched(serverUrl, ActionType.POSTS.RECEIVED_IN_CHANNEL, data, fetchOnly);
+        const result = await processPostsFetched(serverUrl, ActionType.POSTS.RECEIVED_IN_CHANNEL, data, true);
+        if (!fetchOnly) {
+            const models = await operator.handlePosts({
+                ...result,
+                actionType: ActionType.POSTS.RECEIVED_SINCE,
+                prepareRecordsOnly: true,
+            });
+            if (isCRTEnabled) {
+                const {models: threadModels} = await processThreadsFromReceivedPosts(serverUrl, result.posts, true);
+                if (threadModels?.length) {
+                    models.push(...threadModels);
+                }
+            }
+            if (models.length) {
+                operator.batchRecords(models);
+            }
+        }
+        return result;
     } catch (error) {
         forceLogoutIfNecessary(serverUrl, error as ClientErrorProps);
         return {error};
@@ -332,6 +339,13 @@ export const fetchPostsBefore = async (serverUrl: string, channelId: string, pos
                     models.push(...userModels);
                 }
 
+                if (isCRTEnabled) {
+                    const {models: threadModels} = await processThreadsFromReceivedPosts(serverUrl, result.posts, true);
+                    if (threadModels?.length) {
+                        models.push(...threadModels);
+                    }
+                }
+
                 await operator.batchRecords(models);
             } catch (error) {
                 // eslint-disable-next-line no-console
@@ -365,7 +379,24 @@ export const fetchPostsSince = async (serverUrl: string, channelId: string, sinc
     try {
         const isCRTEnabled = await getIsCRTEnabled(operator.database);
         const data = await client.getPostsSince(channelId, since, isCRTEnabled, isCRTEnabled);
-        return processPostsFetched(serverUrl, ActionType.POSTS.RECEIVED_SINCE, data, fetchOnly);
+        const result = await processPostsFetched(serverUrl, ActionType.POSTS.RECEIVED_SINCE, data, true);
+        if (!fetchOnly) {
+            const models = await operator.handlePosts({
+                ...result,
+                actionType: ActionType.POSTS.RECEIVED_SINCE,
+                prepareRecordsOnly: true,
+            });
+            if (isCRTEnabled) {
+                const {models: threadModels} = await processThreadsFromReceivedPosts(serverUrl, result.posts, true);
+                if (threadModels?.length) {
+                    models.push(...threadModels);
+                }
+            }
+            if (models.length) {
+                operator.batchRecords(models);
+            }
+        }
+        return result;
     } catch (error) {
         forceLogoutIfNecessary(serverUrl, error as ClientErrorProps);
         return {error};
@@ -516,7 +547,7 @@ export async function getMissingChannelsFromPosts(serverUrl: string, posts: Post
                     return mdls;
                 });
 
-                if (models) {
+                if (models.length) {
                     operator.batchRecords(models);
                 }
             }

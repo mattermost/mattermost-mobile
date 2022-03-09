@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {processThreadsWithPostsFetched, processUpdateTeamThreadsAsRead, processUpdateThreadFollow, processUpdateThreadRead} from '@actions/local/thread';
+import {processReceivedThreads, processUpdateTeamThreadsAsRead, processUpdateThreadFollow, processUpdateThreadRead} from '@actions/local/thread';
 import {General} from '@constants';
 import DatabaseManager from '@database/manager';
 import NetworkManager from '@init/network_manager';
@@ -39,7 +39,7 @@ export const getThreads = async (serverUrl: string, teamId: string, before?: str
 
         const data = await client.getThreads(config.Version, currentUser.id, teamId, before, after, perPage, deleted, unread, since);
 
-        const {threads, ...threadsCountData} = data;
+        const {threads} = data;
 
         // Mark all fetched threads as following
         threads.forEach((thread: Thread) => {
@@ -49,7 +49,7 @@ export const getThreads = async (serverUrl: string, teamId: string, before?: str
             }
         });
 
-        await processThreadsWithPostsFetched(serverUrl, teamId, threads, threadsCountData);
+        await processReceivedThreads(serverUrl, teamId, threads);
 
         return {data};
     } catch (error) {
@@ -80,7 +80,7 @@ export const getThread = async (serverUrl: string, teamId: string, threadId: str
 
         const thread = await client.getThread(currentUser.id, teamId, threadId, extended);
 
-        await processThreadsWithPostsFetched(serverUrl, teamId, [thread]);
+        await processReceivedThreads(serverUrl, teamId, [thread]);
 
         return {data: thread};
     } catch (error) {

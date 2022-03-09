@@ -1,14 +1,14 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {processThreadsWithPostsFetched, processUpdateTeamThreadsAsRead, processUpdateThreadFollow, processUpdateThreadRead} from '@actions/local/thread';
+import {processReceivedThreads, processUpdateTeamThreadsAsRead, processUpdateThreadFollow, processUpdateThreadRead} from '@actions/local/thread';
 import DatabaseManager from '@database/manager';
 
 export async function handleThreadUpdatedEvent(serverUrl: string, msg: WebSocketMessage): Promise<void> {
     try {
         const thread = JSON.parse(msg.data.thread) as Thread;
         thread.is_following = true; // Mark as following
-        processThreadsWithPostsFetched(serverUrl, msg.broadcast.team_id, [thread]);
+        processReceivedThreads(serverUrl, msg.broadcast.team_id, [thread]);
     } catch (error) {
         // Do nothing
     }
