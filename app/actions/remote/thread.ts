@@ -6,6 +6,7 @@ import {fetchPostThread} from '@actions/remote/post';
 
 export const fetchAndSwitchToThread = async (serverUrl: string, rootId: string) => {
     // Load thread before we open to the thread modal
+    // https://mattermost.atlassian.net/browse/MM-42232
     fetchPostThread(serverUrl, rootId);
 
     switchToThread(serverUrl, rootId);
