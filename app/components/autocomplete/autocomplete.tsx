@@ -56,6 +56,7 @@ type Props = {
     postInputTop: number;
     rootId: string;
     channelId: string;
+    fixedBottomPosition?: boolean;
     isSearch?: boolean;
     value: string;
     enableDateSuggestion?: boolean;
@@ -72,6 +73,7 @@ const Autocomplete = ({
 
     //channelId,
     isSearch = false,
+    fixedBottomPosition,
     value,
 
     //enableDateSuggestion = false,
@@ -124,9 +126,11 @@ const Autocomplete = ({
 
     const containerStyles = useMemo(() => {
         const s = [style.borders];
-        if (!isSearch) {
+        if (!isSearch && !fixedBottomPosition) {
             const offset = isTablet ? -OFFSET_TABLET : 0;
             s.push(style.base, {bottom: postInputTop + LIST_BOTTOM + offset});
+        } else if (fixedBottomPosition) {
+            s.push(style.base, {bottom: 0});
         }
         if (!hasElements) {
             s.push(style.hidden);

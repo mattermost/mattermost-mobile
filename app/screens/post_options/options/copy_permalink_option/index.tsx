@@ -24,7 +24,7 @@ const enhanced = withObservables(['post'], ({post, database}: WithDatabaseArgs &
 
     const teamName = combineLatest([channel, currentTeamId]).pipe(
         switchMap(([c, tid]) => {
-            const teamId = c.teamId || tid;
+            const teamId = c.teamId || tid.value;
             return database.
                 get<TeamModel>(TEAM).
                 findAndObserve(teamId).

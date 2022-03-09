@@ -2,6 +2,8 @@
 // See LICENSE.txt for license information.
 //
 
+/* eslint-disable max-lines */
+
 import {DeviceEventEmitter} from 'react-native';
 
 import {markChannelAsUnread, updateLastPostAt} from '@actions/local/channel';

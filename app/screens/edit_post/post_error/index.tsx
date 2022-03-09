@@ -36,17 +36,17 @@ const PostError = ({errorLine, errorExtra}: PostErrorProps) => {
         <View
             style={errorExtra ? styles.errorContainerSplit : styles.errorContainer}
         >
-            {errorLine && (
+            {Boolean(errorLine) && (
                 <ErrorText
                     testID='edit_post.error.text'
-                    error={errorLine}
+                    error={errorLine!}
                     textStyle={styles.errorWrap}
                 />
             )}
-            {errorExtra && (
+            {Boolean(errorExtra) && (
                 <ErrorText
                     testID='edit_post.error.text.extra'
-                    error={errorExtra}
+                    error={errorExtra!}
                     textStyle={!errorLine && styles.errorWrapper}
                 />
             )}

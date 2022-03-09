@@ -34,8 +34,18 @@ const EditOption = ({post, componentId, canDelete}: Props) => {
 
         const title = intl.formatMessage({id: 'mobile.edit_post.title', defaultMessage: 'Editing Message'});
         const closeButton = CompassIcon.getImageSourceSync('close', 24, theme.sidebarHeaderTextColor);
-        const passProps = {post, closeButton, canDelete};
-        const options = {modal: {swipeToDismiss: false}};
+        const closeButtonId = 'close-edit-post';
+        const passProps = {post, closeButtonId, canDelete};
+        const options = {
+            modal: {swipeToDismiss: false},
+            topBar: {
+                leftButtons: [{
+                    id: closeButtonId,
+                    testID: 'close.edit_post.button',
+                    icon: closeButton,
+                }],
+            },
+        };
         showModal(Screens.EDIT_POST, title, passProps, options);
     }, [post]);
 

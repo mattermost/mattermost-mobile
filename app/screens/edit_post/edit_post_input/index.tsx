@@ -57,21 +57,21 @@ const EditPostInput = forwardRef<EditPostInputRef, PostInputProps>(({
 
     const inputStyle = useMemo(() => {
         return [styles.input, {height: textInputHeight}];
-    }, [textInputHeight]);
+    }, [textInputHeight, styles]);
 
     const onSelectionChange = useCallback((event) => {
         const curPos = event.nativeEvent.selection.end;
         onTextSelectionChange(curPos);
     }, [onTextSelectionChange]);
 
+    const containerStyle = useMemo(() => [
+        styles.inputContainer,
+        hasError && {marginTop: 0},
+        {height: textInputHeight},
+    ], [styles, textInputHeight]);
+
     return (
-        <View
-            style={[
-                styles.inputContainer,
-                hasError && {marginTop: 0},
-                {height: textInputHeight},
-            ]}
-        >
+        <View style={containerStyle}>
             <TextInput
                 autoFocus={true}
                 blurOnSubmit={false}
@@ -79,7 +79,6 @@ const EditPostInput = forwardRef<EditPostInputRef, PostInputProps>(({
                 keyboardAppearance={getKeyboardAppearanceFromTheme(theme)}
                 keyboardType={keyboardType}
                 multiline={true}
-                numberOfLines={10}
                 onChangeText={onChangeText}
                 onSelectionChange={onSelectionChange}
                 placeholder={intl.formatMessage({id: 'edit_post.editPost', defaultMessage: 'Edit the post...'})}
