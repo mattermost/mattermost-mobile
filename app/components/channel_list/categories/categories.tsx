@@ -23,7 +23,7 @@ const styles = StyleSheet.create({
 
 const extractKey = (item: CategoryModel) => item.id;
 
-const Categories = (props: Props) => {
+const Categories = ({categories}: Props) => {
     const intl = useIntl();
     const renderCategory = useCallback((data: {item: CategoryModel}) => {
         return (
@@ -35,18 +35,18 @@ const Categories = (props: Props) => {
                 />
             </>
         );
-    }, [props.categories, intl.locale]);
+    }, [categories, intl.locale]);
 
     // Sort Categories
-    props.categories.sort((a, b) => a.sortOrder - b.sortOrder);
+    categories.sort((a, b) => a.sortOrder - b.sortOrder);
 
-    if (!props.categories.length) {
+    if (!categories.length) {
         return <LoadCategoriesError/>;
     }
 
     return (
         <FlatList
-            data={props.categories}
+            data={categories}
             renderItem={renderCategory}
             style={styles.flex}
             showsHorizontalScrollIndicator={false}
