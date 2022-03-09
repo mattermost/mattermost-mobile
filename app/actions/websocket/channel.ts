@@ -6,9 +6,10 @@ import {DeviceEventEmitter} from 'react-native';
 
 import {
     removeCurrentUserFromChannel,
+    markChannelAsViewed,
     setChannelDeleteAt,
     switchToChannel} from '@actions/local/channel';
-import {fetchMyChannel} from '@actions/remote/channel';
+import {fetchMissingSidebarInfo, fetchMyChannel} from '@actions/remote/channel';
 import {fetchPostsForChannel} from '@actions/remote/post';
 import {fetchUsersByIds, updateUsersNoLongerVisible} from '@actions/remote/user';
 import Events from '@constants/events';
@@ -80,6 +81,17 @@ export async function handleChannelUpdatedEvent(serverUrl: string, msg: any) {
 }
 
 export async function handleChannelViewedEvent(serverUrl: string, msg: any) {
+    const database = DatabaseManager.serverDatabases[serverUrl]?.database;
+    if (!database) {
+        return;
+    }
+
+    try {
+        const {channel_id: channelId} = msg.data;
+        await markChannelAsViewed(serverUrl, channelId, false);
+    } catch {
+        // do nothing
+    }
 }
 
 export async function handleChannelMemberUpdatedEvent(serverUrl: string, msg: any) {
@@ -100,6 +112,28 @@ export async function handleChannelMemberUpdatedEvent(serverUrl: string, msg: an
 }
 
 export async function handleDirectAddedEvent(serverUrl: string, msg: any) {
+    const database = DatabaseManager.serverDatabases[serverUrl];
+    if (!database) {
+        return;
+    }
+
+    try {
+        const {channel_id: channelId} = msg.broadcast;
+        const {channels} = await fetchMyChannel(serverUrl, '', channelId, false);
+
+        if (!channels?.[0]) {
+            return;
+        }
+
+        const user = await queryCurrentUser(database.database);
+        if (!user) {
+            return;
+        }
+
+        await fetchMissingSidebarInfo(serverUrl, channels!, user.locale, '', user.id);
+    } catch {
+        // do nothing
+    }
 }
 
 export async function handleUserAddedToChannelEvent(serverUrl: string, msg: any) {
