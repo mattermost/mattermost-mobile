@@ -6,12 +6,11 @@ import {ActivityIndicator, FlatList, StyleSheet, View} from 'react-native';
 import {SafeAreaView} from 'react-native-safe-area-context';
 
 import {getSavedPosts} from '@actions/remote/post';
-import DateSeparator from '@app/components/post_list/date_separator';
-import {useServerUrl} from '@app/context/server';
-import {useTheme} from '@app/context/theme';
 import {isDateLine, getDateForDateLine, selectOrderedPosts} from '@app/utils/post_list';
-
-import Post from '../common/post';
+import Post from '@components/mini_post/post';
+import DateSeparator from '@components/post_list/date_separator';
+import {useServerUrl} from '@context/server';
+import {useTheme} from '@context/theme';
 
 import type PostModel from '@typings/database/models/servers/post';
 import type UserModel from '@typings/database/models/servers/user';

@@ -9,14 +9,13 @@ import Animated, {useAnimatedStyle, useSharedValue, withTiming} from 'react-nati
 import {SafeAreaView, Edge} from 'react-native-safe-area-context';
 
 import {getRecentMentions} from '@actions/remote/search';
+import Post from '@components/mini_post/post';
 import NavigationHeader from '@components/navigation_header';
 import DateSeparator from '@components/post_list/date_separator';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {useCollapsibleHeader} from '@hooks/header';
 import {getDateForDateLine, isDateLine, selectOrderedPosts} from '@utils/post_list';
-
-import Post from '../common/post';
 
 import EmptyState from './components/empty';
 
