@@ -12,6 +12,8 @@ import DateSeparator from '@components/post_list/date_separator';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 
+import EmptyState from './components/empty';
+
 import type PostModel from '@typings/database/models/servers/post';
 import type UserModel from '@typings/database/models/servers/user';
 
@@ -63,11 +65,13 @@ function SavedMessages({
 
     const emptyList = useMemo(() => (
         <View style={styles.empty}>
-            {loading && (
+            {loading ? (
                 <ActivityIndicator
                     color={theme.centerChannelColor}
                     size='large'
                 />
+            ) : (
+                <EmptyState/>
             )}
         </View>
     ), [loading, theme.centerChannelColor]);

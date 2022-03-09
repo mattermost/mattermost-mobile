@@ -105,7 +105,7 @@ const RecentMentionsScreen = ({mentions, currentUser, currentTimezone, isTimezon
                 <EmptyState/>
             )}
         </View>
-    ), [loading]);
+    ), [loading, theme, paddingTop]);
 
     const renderItem = useCallback(({item}) => {
         if (typeof item === 'string') {
