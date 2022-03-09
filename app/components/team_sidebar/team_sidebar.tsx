@@ -4,9 +4,7 @@
 import React, {useEffect} from 'react';
 import Animated, {useAnimatedStyle, useSharedValue, withTiming} from 'react-native-reanimated';
 
-import {fetchAllTeams} from '@actions/remote/team';
 import {TEAM_SIDEBAR_WIDTH} from '@constants/view';
-import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 
@@ -47,7 +45,6 @@ export default function TeamSidebar({canCreateTeams, iconPad, otherTeams, teamsC
     const width = useSharedValue(initialWidth);
     const marginTop = useSharedValue(iconPad ? 44 : 0);
     const theme = useTheme();
-    const serverUrl = useServerUrl();
     const styles = getStyleSheet(theme);
 
     const transform = useAnimatedStyle(() => {
@@ -63,10 +60,6 @@ export default function TeamSidebar({canCreateTeams, iconPad, otherTeams, teamsC
     useEffect(() => {
         marginTop.value = iconPad ? 44 : 0;
     }, [iconPad]);
-
-    useEffect(() => {
-        fetchAllTeams(serverUrl);
-    }, [serverUrl]);
 
     useEffect(() => {
         width.value = teamsCount > 1 ? TEAM_SIDEBAR_WIDTH : 0;

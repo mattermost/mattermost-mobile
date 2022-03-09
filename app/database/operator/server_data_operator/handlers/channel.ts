@@ -6,32 +6,37 @@ import DataOperatorException from '@database/exceptions/data_operator_exception'
 import {
     isRecordChannelEqualToRaw,
     isRecordChannelInfoEqualToRaw,
+    isRecordChannelMembershipEqualToRaw,
     isRecordMyChannelEqualToRaw,
     isRecordMyChannelSettingsEqualToRaw,
 } from '@database/operator/server_data_operator/comparators';
 import {
     transformChannelInfoRecord,
+    transformChannelMembershipRecord,
     transformChannelRecord,
     transformMyChannelRecord,
     transformMyChannelSettingsRecord,
 } from '@database/operator/server_data_operator/transformers/channel';
 import {getUniqueRawsBy} from '@database/operator/utils/general';
 
-import type {HandleChannelArgs, HandleChannelInfoArgs, HandleMyChannelArgs, HandleMyChannelSettingsArgs} from '@typings/database/database';
+import type {HandleChannelArgs, HandleChannelInfoArgs, HandleChannelMembershipArgs, HandleMyChannelArgs, HandleMyChannelSettingsArgs} from '@typings/database/database';
 import type ChannelModel from '@typings/database/models/servers/channel';
 import type ChannelInfoModel from '@typings/database/models/servers/channel_info';
+import type ChannelMembershipModel from '@typings/database/models/servers/channel_membership';
 import type MyChannelModel from '@typings/database/models/servers/my_channel';
 import type MyChannelSettingsModel from '@typings/database/models/servers/my_channel_settings';
 
 const {
     CHANNEL,
     CHANNEL_INFO,
+    CHANNEL_MEMBERSHIP,
     MY_CHANNEL,
     MY_CHANNEL_SETTINGS,
 } = MM_TABLES.SERVER;
 
 export interface ChannelHandlerMix {
   handleChannel: ({channels, prepareRecordsOnly}: HandleChannelArgs) => Promise<ChannelModel[]>;
+  handleChannelMembership: ({channelMemberships, prepareRecordsOnly}: HandleChannelMembershipArgs) => Promise<ChannelMembershipModel[]>;
   handleMyChannelSettings: ({settings, prepareRecordsOnly}: HandleMyChannelSettingsArgs) => Promise<MyChannelSettingsModel[]>;
   handleChannelInfo: ({channelInfos, prepareRecordsOnly}: HandleChannelInfoArgs) => Promise<ChannelInfoModel[]>;
   handleMyChannel: ({channels, myChannels, prepareRecordsOnly}: HandleMyChannelArgs) => Promise<MyChannelModel[]>;
@@ -158,6 +163,38 @@ const ChannelHandler = (superclass: any) => class extends superclass {
             prepareRecordsOnly,
             createOrUpdateRawValues,
             tableName: MY_CHANNEL,
+        });
+    };
+
+    /**
+     * handleChannelMembership: Handler responsible for the Create/Update operations occurring on the CHANNEL_MEMBERSHIP table from the 'Server' schema
+     * @param {HandleChannelMembershipArgs} channelMembershipsArgs
+     * @param {ChannelMembership[]} channelMembershipsArgs.channelMemberships
+     * @param {boolean} channelMembershipsArgs.prepareRecordsOnly
+     * @throws DataOperatorException
+     * @returns {Promise<ChannelMembershipModel[]>}
+     */
+    handleChannelMembership = ({channelMemberships, prepareRecordsOnly = true}: HandleChannelMembershipArgs): Promise<ChannelMembershipModel[]> => {
+        if (!channelMemberships.length) {
+            throw new DataOperatorException(
+                'An empty "channelMemberships" array has been passed to the handleChannelMembership method',
+            );
+        }
+
+        const memberships: ChannelMember[] = channelMemberships.map((m) => ({
+            id: `${m.channel_id}-${m.user_id}`,
+            ...m,
+        }));
+
+        const createOrUpdateRawValues = getUniqueRawsBy({raws: memberships, key: 'id'});
+
+        return this.handleRecords({
+            fieldName: 'user_id',
+            findMatchingRecordBy: isRecordChannelMembershipEqualToRaw,
+            transformer: transformChannelMembershipRecord,
+            prepareRecordsOnly,
+            createOrUpdateRawValues,
+            tableName: CHANNEL_MEMBERSHIP,
         });
     };
 };

@@ -8,7 +8,7 @@ import withObservables from '@nozbe/with-observables';
 import Clipboard from '@react-native-community/clipboard';
 import React, {useCallback, useMemo} from 'react';
 import {useIntl} from 'react-intl';
-import {GestureResponderEvent, StyleProp, StyleSheet, Text, TextStyle, View} from 'react-native';
+import {GestureResponderEvent, StyleProp, StyleSheet, Text, TextStyle, View, ViewStyle} from 'react-native';
 import {TouchableOpacity} from 'react-native-gesture-handler';
 import {combineLatest, of as of$} from 'rxjs';
 import {map, switchMap} from 'rxjs/operators';
@@ -39,6 +39,7 @@ type AtMentionProps = {
     onPostPress?: (e: GestureResponderEvent) => void;
     teammateNameDisplay: string;
     textStyle?: StyleProp<TextStyle>;
+    touchableStyle?: StyleProp<ViewStyle>;
     users: UserModelType[];
 }
 
@@ -61,6 +62,7 @@ const AtMention = ({
     onPostPress,
     teammateNameDisplay,
     textStyle,
+    touchableStyle,
     users,
 }: AtMentionProps) => {
     const intl = useIntl();
@@ -229,6 +231,7 @@ const AtMention = ({
         <TouchableOpacity
             onPress={onPress!}
             onLongPress={onLongPress}
+            style={touchableStyle}
         >
             <Text style={styleText}>
                 <Text style={mentionTextStyle}>

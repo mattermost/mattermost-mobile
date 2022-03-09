@@ -88,12 +88,28 @@ export type HandlePostsArgs = {
   prepareRecordsOnly?: boolean;
 };
 
+export type HandleThreadsArgs = {
+  threads: Thread[];
+  prepareRecordsOnly?: boolean;
+};
+
+export type HandleThreadParticipantsArgs = {
+  prepareRecordsOnly: boolean;
+  threadsParticipants: ParticipantsPerThread[];
+};
+
 export type SanitizeReactionsArgs = {
   database: Database;
   post_id: string;
   rawReactions: Reaction[];
   skipSync?: boolean;
 };
+
+export type SanitizeThreadParticipantsArgs = {
+  database: Database;
+  thread_id: $ID<Thread>;
+  rawParticipants: ThreadParticipant[];
+}
 
 export type ChainPostsArgs = {
   order: string[];

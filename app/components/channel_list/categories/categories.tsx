@@ -20,6 +20,8 @@ const styles = StyleSheet.create({
     },
 });
 
+const extractKey = (item: CategoryModel) => item.id;
+
 const renderCategory = (data: {item: CategoryModel}) => {
     return (
         <>
@@ -44,6 +46,12 @@ const Categories = (props: Props) => {
             style={styles.flex}
             showsHorizontalScrollIndicator={false}
             showsVerticalScrollIndicator={false}
+            keyExtractor={extractKey}
+            removeClippedSubviews={true}
+            initialNumToRender={5}
+            windowSize={15}
+            updateCellsBatchingPeriod={10}
+            maxToRenderPerBatch={5}
         />
     );
 };

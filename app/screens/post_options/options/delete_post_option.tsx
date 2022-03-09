@@ -13,10 +13,13 @@ import {dismissBottomSheet} from '@screens/navigation';
 
 import BaseOption from './base_option';
 
+import type PostModel from '@typings/database/models/servers/post';
+
 type Props = {
-    postId: string ;
+    combinedPost?: Post;
+    post: PostModel;
 }
-const DeletePostOption = ({postId}: Props) => {
+const DeletePostOption = ({combinedPost, post}: Props) => {
     const serverUrl = useServerUrl();
     const {formatMessage} = useIntl();
 
@@ -34,12 +37,12 @@ const DeletePostOption = ({postId}: Props) => {
                 text: formatMessage({id: 'post_info.del', defaultMessage: 'Delete'}),
                 style: 'destructive',
                 onPress: () => {
-                    deletePost(serverUrl, postId);
+                    deletePost(serverUrl, combinedPost || post);
                     dismissBottomSheet(Screens.POST_OPTIONS);
                 },
             }],
         );
-    }, [postId, serverUrl]);
+    }, [post, combinedPost, serverUrl]);
 
     return (
         <BaseOption

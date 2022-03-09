@@ -96,10 +96,10 @@ export const prepareMyChannelsForTeam = async (operator: ServerDataOperator, tea
 export const prepareDeleteChannel = async (channel: ChannelModel): Promise<Model[]> => {
     const preparedModels: Model[] = [channel.prepareDestroyPermanently()];
 
-    const relations: Array<Relation<Model>> = [channel.membership, channel.info, channel.settings];
+    const relations: Array<Relation<Model>> = [channel.membership, channel.info, channel.settings, channel.categoryChannel];
     for await (const relation of relations) {
         try {
-            const model = await relation.fetch();
+            const model = await relation?.fetch?.();
             if (model) {
                 preparedModels.push(model.prepareDestroyPermanently());
             }
@@ -114,14 +114,16 @@ export const prepareDeleteChannel = async (channel: ChannelModel): Promise<Model
         channel.postsInChannel,
     ];
     for await (const children of associatedChildren) {
-        const models = await children.fetch() as Model[];
-        models.forEach((model) => preparedModels.push(model.prepareDestroyPermanently()));
+        const models = await children?.fetch?.() as Model[] | undefined;
+        models?.forEach((model) => preparedModels.push(model.prepareDestroyPermanently()));
     }
 
-    const posts = await channel.posts.fetch() as PostModel[];
-    for await (const post of posts) {
-        const preparedPost = await prepareDeletePost(post);
-        preparedModels.push(...preparedPost);
+    const posts = await channel.posts?.fetch?.() as PostModel[] | undefined;
+    if (posts?.length) {
+        for await (const post of posts) {
+            const preparedPost = await prepareDeletePost(post);
+            preparedModels.push(...preparedPost);
+        }
     }
 
     return preparedModels;

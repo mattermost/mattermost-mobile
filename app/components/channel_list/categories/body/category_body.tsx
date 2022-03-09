@@ -24,6 +24,11 @@ const ChannelItem = ({item}: {item: string}) => {
     );
 };
 
+const extractKey = (item: any) => item;
+const itemLayout = (d: any, index: number) => (
+    {length: 40, offset: 40 * index, index}
+);
+
 const CategoryBody = ({category, categoryChannels, channels, myChannels}: Props) => {
     const data: string[] = useMemo(() => {
         switch (category.sorting) {
@@ -40,6 +45,12 @@ const CategoryBody = ({category, categoryChannels, channels, myChannels}: Props)
         <FlatList
             data={data}
             renderItem={ChannelItem}
+            keyExtractor={extractKey}
+            removeClippedSubviews={true}
+            initialNumToRender={20}
+            windowSize={15}
+            updateCellsBatchingPeriod={10}
+            getItemLayout={itemLayout}
         />
     );
 };

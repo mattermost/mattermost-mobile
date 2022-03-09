@@ -1,19 +1,21 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {Database, Model, Q, Query} from '@nozbe/watermelondb';
+import {Database, Model, Q, Query, Relation} from '@nozbe/watermelondb';
 
 import {Database as DatabaseConstants, Preferences} from '@constants';
 import {getPreferenceValue} from '@helpers/api/preference';
 import {selectDefaultTeam} from '@helpers/api/team';
 import {DEFAULT_LOCALE} from '@i18n';
 
+import {prepareDeleteCategory} from './categories';
 import {prepareDeleteChannel, queryDefaultChannelForTeam} from './channel';
 import {queryPreferencesByCategoryAndName} from './preference';
 import {patchTeamHistory, queryConfig, queryTeamHistory} from './system';
 import {queryCurrentUser} from './user';
 
 import type ServerDataOperator from '@database/operator/server_data_operator';
+import type CategoryModel from '@typings/database/models/servers/category';
 import type ChannelModel from '@typings/database/models/servers/channel';
 import type MyTeamModel from '@typings/database/models/servers/my_team';
 import type TeamModel from '@typings/database/models/servers/team';
@@ -186,16 +188,11 @@ export const prepareMyTeams = (operator: ServerDataOperator, teams: Team[], memb
     }
 };
 
-export const deleteMyTeams = async (operator: ServerDataOperator, teams: TeamModel[]) => {
+export const deleteMyTeams = async (operator: ServerDataOperator, myTeams: MyTeamModel[]) => {
     try {
         const preparedModels: Model[] = [];
-        for await (const team of teams) {
-            try {
-                const myTeam = await team.myTeam.fetch() as MyTeamModel;
-                preparedModels.push(myTeam.prepareDestroyPermanently());
-            } catch {
-                // Record not found, do nothing
-            }
+        for (const myTeam of myTeams) {
+            preparedModels.push(myTeam.prepareDestroyPermanently());
         }
 
         if (preparedModels.length) {
@@ -211,22 +208,16 @@ export const prepareDeleteTeam = async (team: TeamModel): Promise<Model[]> => {
     try {
         const preparedModels: Model[] = [team.prepareDestroyPermanently()];
 
-        try {
-            const model = await team.myTeam.fetch();
-            if (model) {
-                preparedModels.push(model.prepareDestroyPermanently());
+        const relations: Array<Relation<Model>> = [team.myTeam, team.teamChannelHistory];
+        for await (const relation of relations) {
+            try {
+                const model = await relation?.fetch?.();
+                if (model) {
+                    preparedModels.push(model.prepareDestroyPermanently());
+                }
+            } catch {
+                // Record not found, do nothing
             }
-        } catch {
-            // Record not found, do nothing
-        }
-
-        try {
-            const model = await team.teamChannelHistory.fetch();
-            if (model) {
-                preparedModels.push(model.prepareDestroyPermanently());
-            }
-        } catch {
-            // Record not found, do nothing
         }
 
         const associatedChildren: Array<Query<any>> = [
@@ -236,20 +227,34 @@ export const prepareDeleteTeam = async (team: TeamModel): Promise<Model[]> => {
         ];
         for await (const children of associatedChildren) {
             try {
-                const models = await children.fetch() as Model[];
-                models.forEach((model) => preparedModels.push(model.prepareDestroyPermanently()));
+                const models = await children.fetch?.() as Model[] | undefined;
+                models?.forEach((model) => preparedModels.push(model.prepareDestroyPermanently()));
             } catch {
                 // Record not found, do nothing
             }
         }
 
-        const channels = await team.channels.fetch() as ChannelModel[];
-        for await (const channel of channels) {
-            try {
-                const preparedChannel = await prepareDeleteChannel(channel);
-                preparedModels.push(...preparedChannel);
-            } catch {
-                // Record not found, do nothing
+        const categories = await team.categories.fetch?.() as CategoryModel[] | undefined;
+        if (categories?.length) {
+            for await (const category of categories) {
+                try {
+                    const preparedCategory = await prepareDeleteCategory(category);
+                    preparedModels.push(...preparedCategory);
+                } catch {
+                    // Record not found, do nothing
+                }
+            }
+        }
+
+        const channels = await team.channels.fetch?.() as ChannelModel[] | undefined;
+        if (channels?.length) {
+            for await (const channel of channels) {
+                try {
+                    const preparedChannel = await prepareDeleteChannel(channel);
+                    preparedModels.push(...preparedChannel);
+                } catch {
+                    // Record not found, do nothing
+                }
             }
         }
 
@@ -280,6 +285,15 @@ export const queryTeamById = async (database: Database, teamId: string): Promise
 export const queryTeamsById = async (database: Database, teamIds: string[]): Promise<TeamModel[]|undefined> => {
     try {
         const teams = (await database.get(TEAM).query(Q.where('id', Q.oneOf(teamIds))).fetch()) as TeamModel[];
+        return teams;
+    } catch {
+        return undefined;
+    }
+};
+
+export const queryMyTeamsById = async (database: Database, teamIds: string[]): Promise<MyTeamModel[]|undefined> => {
+    try {
+        const teams = (await database.get<MyTeamModel>(MY_TEAM).query(Q.where('id', Q.oneOf(teamIds))).fetch());
         return teams;
     } catch {
         return undefined;
