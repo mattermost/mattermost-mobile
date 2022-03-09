@@ -7,7 +7,7 @@ import {SafeAreaView} from 'react-native-safe-area-context';
 
 import {getSavedPosts} from '@actions/remote/post';
 import {isDateLine, getDateForDateLine, selectOrderedPosts} from '@app/utils/post_list';
-import Post from '@components/mini_post/post';
+import Post from '@components/mini_post';
 import DateSeparator from '@components/post_list/date_separator';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
