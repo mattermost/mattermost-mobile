@@ -1,7 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React from 'react';
+import React, {useCallback} from 'react';
+import {useIntl} from 'react-intl';
 import {FlatList, StyleSheet} from 'react-native';
 
 import CategoryBody from './body';
@@ -20,22 +21,26 @@ const styles = StyleSheet.create({
     },
 });
 
-const renderCategory = (data: {item: CategoryModel}) => {
-    return (
-        <>
-            <CategoryHeader category={data.item}/>
-            <CategoryBody category={data.item}/>
-        </>
-    );
-};
-
 const Categories = (props: Props) => {
-    if (!props.categories.length) {
-        return <LoadCategoriesError/>;
-    }
+    const intl = useIntl();
+    const renderCategory = useCallback((data: {item: CategoryModel}) => {
+        return (
+            <>
+                <CategoryHeader category={data.item}/>
+                <CategoryBody
+                    category={data.item}
+                    locale={intl.locale}
+                />
+            </>
+        );
+    }, [props.categories]);
 
     // Sort Categories
     props.categories.sort((a, b) => a.sortOrder - b.sortOrder);
+
+    if (!props.categories.length) {
+        return <LoadCategoriesError/>;
+    }
 
     return (
         <FlatList

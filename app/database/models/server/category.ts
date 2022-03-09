@@ -78,7 +78,6 @@ export default class CategoryModel extends Model implements CategoryInterface {
         query(
             Q.on(CATEGORY_CHANNEL, 'category_id', this.id),
             Q.where('delete_at', Q.eq(0)),
-            Q.sortBy('display_name'),
         );
 
     /** myChannels : Retrieves all myChannels that are part of this category */
