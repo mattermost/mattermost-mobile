@@ -255,16 +255,14 @@ const EditPost = ({componentId, maxPostSize, post, closeButtonId, hasFilesAttach
                             errorLine={errorLine}
                         />
                     }
-                    {Boolean(postMessage) &&
-                        <EditPostInput
-                            hasError={Boolean(errorLine)}
-                            keyboardType={keyboardType}
-                            message={postMessage}
-                            onChangeText={onChangeText}
-                            onTextSelectionChange={onTextSelectionChange}
-                            ref={postInputRef}
-                        />
-                    }
+                    <EditPostInput
+                        hasError={Boolean(errorLine)}
+                        keyboardType={keyboardType}
+                        message={postMessage}
+                        onChangeText={onChangeText}
+                        onTextSelectionChange={onTextSelectionChange}
+                        ref={postInputRef}
+                    />
                 </View>
             </SafeAreaView>
             <Animated.View style={animatedStyle}>
@@ -278,6 +276,7 @@ const EditPost = ({componentId, maxPostSize, post, closeButtonId, hasFilesAttach
                     cursorPosition={cursorPosition}
                     postInputTop={1}
                     fixedBottomPosition={true}
+                    maxHeightOverride={isTablet && isLandscape ? 200 : undefined}
                 />
             </Animated.View>
 

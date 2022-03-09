@@ -64,6 +64,7 @@ type Props = {
     nestedScrollEnabled?: boolean;
     updateValue: (v: string) => void;
     hasFilesAttached: boolean;
+    maxHeightOverride?: number;
 }
 
 const Autocomplete = ({
@@ -75,6 +76,7 @@ const Autocomplete = ({
     isSearch = false,
     fixedBottomPosition,
     value,
+    maxHeightOverride,
 
     //enableDateSuggestion = false,
     isAppsEnabled,
@@ -99,6 +101,9 @@ const Autocomplete = ({
     const appsTakeOver = false; // showingAppCommand;
 
     const maxListHeight = useMemo(() => {
+        if (maxHeightOverride) {
+            return maxHeightOverride;
+        }
         const isLandscape = dimensions.width > dimensions.height;
         const offset = isTablet && isLandscape ? OFFSET_TABLET : 0;
         let postInputDiff = 0;
@@ -108,7 +113,7 @@ const Autocomplete = ({
             postInputDiff = MAX_LIST_DIFF;
         }
         return MAX_LIST_HEIGHT - postInputDiff - offset;
-    }, [postInputTop, isTablet, dimensions.width]);
+    }, [maxHeightOverride, postInputTop, isTablet, dimensions.width]);
 
     const wrapperStyles = useMemo(() => {
         const s = [];
