@@ -19,6 +19,10 @@ import type {WithDatabaseArgs} from '@typings/database/database';
 
 const {USER, SYSTEM, POST, PREFERENCE} = MM_TABLES.SERVER;
 
+function getPostIDs(preferences: PreferenceModel[]) {
+    return preferences.map((preference) => preference.name);
+}
+
 const enhance = withObservables([], ({database}: WithDatabaseArgs) => {
     const currentUser = database.get<SystemModel>(SYSTEM).findAndObserve(SYSTEM_IDENTIFIERS.CURRENT_USER_ID).pipe(
         switchMap((currentUserId) => database.get<UserModel>(USER).findAndObserve(currentUserId.value)),
@@ -33,7 +37,9 @@ const enhance = withObservables([], ({database}: WithDatabaseArgs) => {
                 if (!rows.length) {
                     return of$([]);
                 }
-                const ids = rows.map((preference) => preference.name);
+                return of$(getPostIDs(rows));
+            }),
+            switchMap((ids) => {
                 return database.get(POST).query(
                     Q.where('id', Q.oneOf(ids)),
                     Q.sortBy('create_at', Q.asc),
