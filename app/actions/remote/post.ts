@@ -7,6 +7,7 @@ import {DeviceEventEmitter} from 'react-native';
 import {markChannelAsUnread, updateLastPostAt} from '@actions/local/channel';
 import {processPostsFetched, removePost} from '@actions/local/post';
 import {addRecentReaction} from '@actions/local/reactions';
+import {processThreadsFromReceivedPosts} from '@actions/local/thread';
 import {getIsCRTEnabled} from '@app/helpers/api/preference';
 import {ActionType, Events, General, Post, ServerErrors} from '@constants';
 import {SYSTEM_IDENTIFIERS} from '@constants/database';
@@ -26,7 +27,6 @@ import {forceLogoutIfNecessary} from './session';
 import type {Client} from '@client/rest';
 import type Model from '@nozbe/watermelondb/Model';
 import type PostModel from '@typings/database/models/servers/post';
-import { processThreadsFromReceivedPosts } from '@actions/local/thread';
 
 type PostsRequest = {
     error?: unknown;
@@ -159,7 +159,6 @@ export const fetchPostsForCurrentChannel = async (serverUrl: string) => {
 };
 
 export const fetchPostsForChannel = async (serverUrl: string, channelId: string, fetchOnly = false) => {
-    console.log('enya', ' >> >> >> >> >> fetchPostsForChannel', serverUrl, channelId);
     const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
     if (!operator) {
         return {error: `${serverUrl} database not found`};

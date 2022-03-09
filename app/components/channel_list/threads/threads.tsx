@@ -30,14 +30,20 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
 
 const textStyle = StyleSheet.create([typography('Body', 200, 'SemiBold')]);
 
-const ThreadsButton = () => {
+type Props = {
+    isCRTEnabled: boolean;
+};
+
+const ThreadsButton = ({isCRTEnabled}: Props) => {
     const theme = useTheme();
     const styles = getStyleSheet(theme);
 
+    if (!isCRTEnabled) {
+        return null;
+    }
+
     /*
      * @to-do:
-     * - Check if there are threads, else return null
-     * - Change to button, navigate to threads view
      * - Add right-side number badge
      */
     return (
