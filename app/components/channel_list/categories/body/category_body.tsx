@@ -16,11 +16,22 @@ const ChannelItem = ({item}: {item: string}) => {
     );
 };
 
+const extractKey = (item: any) => item;
+const itemLayout = (d: any, index: number) => (
+    {length: 40, offset: 40 * index, index}
+);
+
 const CategoryBody = ({sortedIds}: Props) => {
     return (
         <FlatList
             data={sortedIds}
             renderItem={ChannelItem}
+            keyExtractor={extractKey}
+            removeClippedSubviews={true}
+            initialNumToRender={20}
+            windowSize={15}
+            updateCellsBatchingPeriod={10}
+            getItemLayout={itemLayout}
         />
     );
 };

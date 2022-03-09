@@ -21,6 +21,8 @@ const styles = StyleSheet.create({
     },
 });
 
+const extractKey = (item: CategoryModel) => item.id;
+
 const Categories = (props: Props) => {
     const intl = useIntl();
     const renderCategory = useCallback((data: {item: CategoryModel}) => {
@@ -33,7 +35,7 @@ const Categories = (props: Props) => {
                 />
             </>
         );
-    }, [props.categories]);
+    }, [props.categories, intl.locale]);
 
     // Sort Categories
     props.categories.sort((a, b) => a.sortOrder - b.sortOrder);
@@ -49,6 +51,12 @@ const Categories = (props: Props) => {
             style={styles.flex}
             showsHorizontalScrollIndicator={false}
             showsVerticalScrollIndicator={false}
+            keyExtractor={extractKey}
+            removeClippedSubviews={true}
+            initialNumToRender={5}
+            windowSize={15}
+            updateCellsBatchingPeriod={10}
+            maxToRenderPerBatch={5}
         />
     );
 };
