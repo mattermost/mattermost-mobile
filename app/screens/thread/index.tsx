@@ -27,7 +27,7 @@ const enhanced = withObservables(['rootId'], ({database, rootId}: WithDatabaseAr
 
     return {
         rootPost,
-        channel: rootPost.pipe(
+        channel: rootPost?.pipe(
             switchMap((post: PostModel) => {
                 if (post?.channel) {
                     return post.channel.observe();

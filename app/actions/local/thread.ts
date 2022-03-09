@@ -1,6 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {typography} from '@app/utils/typography';
 import CompassIcon from '@components/compass_icon';
 import {General, Screens} from '@constants';
 import DatabaseManager from '@database/manager';
@@ -22,32 +23,30 @@ export const switchToThread = async (serverUrl: string, rootId: string) => {
     try {
         const user = await queryCurrentUser(database);
         if (!user) {
-            return {error: true};
+            return {error: 'User not found'};
         }
 
         const post = await queryPostById(database, rootId);
         if (!post) {
-            return {error: true};
+            return {error: 'Post not found'};
         }
         const channel = await queryChannelById(database, post.channelId);
         if (!channel) {
-            return {error: true};
+            return {error: 'Channel not found'};
         }
 
         const theme = EphemeralStore.theme;
         if (!theme) {
-            return {error: true};
+            return {error: 'Theme not found'};
         }
 
         // Get translation by user locale
         const translations = getTranslations(user.locale);
 
         // Get title translation or default title message
-        let title;
+        let title = translations[t('thread.header.thread')] || 'Thread';
         if (channel.type === General.DM_CHANNEL) {
             title = translations[t('thread.header.thread_dm')] || 'Direct Message Thread';
-        } else {
-            title = translations[t('thread.header.thread')] || 'Thread';
         }
 
         let subtitle = '';
@@ -60,8 +59,7 @@ export const switchToThread = async (serverUrl: string, rootId: string) => {
         showModal(Screens.THREAD, '', {rootId}, {
             topBar: {
                 title: {
-                    fontFamily: 'OpenSans-SemiBold',
-                    fontSize: 18,
+                    ...typography('Heading', 300, 'SemiBold'),
                     text: title,
                 },
                 subtitle: {

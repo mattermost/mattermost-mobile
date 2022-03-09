@@ -23,7 +23,7 @@ const ReplyOption = ({post}: Props) => {
         const rootId = post.rootId || post.id;
         await dismissBottomSheet(Screens.POST_OPTIONS);
         fetchAndSwitchToThread(serverUrl, rootId);
-    }, [post]);
+    }, [post, serverUrl]);
 
     return (
         <BaseOption

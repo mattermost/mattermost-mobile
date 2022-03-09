@@ -64,8 +64,6 @@ const Thread = ({channel, componentId, rootPost}: ThreadProps) => {
         };
     }, []);
 
-    const channelIsSet = Boolean(channel?.id);
-
     return (
         <>
             <SafeAreaView
@@ -73,7 +71,7 @@ const Thread = ({channel, componentId, rootPost}: ThreadProps) => {
                 mode='margin'
                 edges={edges}
             >
-                {channelIsSet &&
+                {Boolean(channel?.id) &&
                 <>
                     <View style={styles.flex}>
                         <ThreadPostList
