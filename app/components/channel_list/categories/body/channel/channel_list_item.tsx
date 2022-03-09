@@ -38,6 +38,9 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     highlight: {
         color: theme.sidebarText,
     },
+    muted: {
+        color: changeOpacity(theme.sidebarText, 0.4),
+    },
 }));
 
 const textStyle = StyleSheet.create({
@@ -48,17 +51,18 @@ const textStyle = StyleSheet.create({
 type Props = {
     channel: Pick<ChannelModel, 'displayName' | 'name' | 'shared' | 'type'>;
     isOwnDirectMessage: boolean;
+    isMuted: boolean;
     myChannel: MyChannelModel;
 }
 
-const ChannelListItem = ({channel, isOwnDirectMessage, myChannel}: Props) => {
+const ChannelListItem = ({channel, isOwnDirectMessage, myChannel, isMuted}: Props) => {
     const {formatMessage} = useIntl();
     const theme = useTheme();
     const styles = getStyleSheet(theme);
     const serverUrl = useServerUrl();
 
-    // Make it brighter if it's highlighted, or has unreads
-    const bright = myChannel.isUnread || myChannel.mentionsCount > 0;
+    // Make it brighter if it's not muted, and highlighted or has unreads
+    const bright = !isMuted && (myChannel.isUnread || myChannel.mentionsCount > 0);
 
     const switchChannels = () => switchToChannelById(serverUrl, myChannel.id);
     const membersCount = useMemo(() => {
@@ -73,7 +77,8 @@ const ChannelListItem = ({channel, isOwnDirectMessage, myChannel}: Props) => {
         bright ? textStyle.bright : textStyle.regular,
         styles.text,
         bright && styles.highlight,
-    ], [bright, styles]);
+        isMuted && styles.muted,
+    ], [bright, styles, isMuted]);
 
     let displayName = channel.displayName;
     if (isOwnDirectMessage) {
@@ -89,6 +94,7 @@ const ChannelListItem = ({channel, isOwnDirectMessage, myChannel}: Props) => {
                     shared={channel.shared}
                     size={24}
                     type={channel.type}
+                    isMuted={isMuted}
                 />
                 <Text
                     ellipsizeMode='tail'

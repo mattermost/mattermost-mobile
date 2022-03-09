@@ -15,6 +15,7 @@ import ChannelListItem from './channel_list_item';
 import type {WithDatabaseArgs} from '@typings/database/database';
 import type ChannelModel from '@typings/database/models/servers/channel';
 import type MyChannelModel from '@typings/database/models/servers/my_channel';
+import type MyChannelSettingsModel from '@typings/database/models/servers/my_channel_settings';
 import type SystemModel from '@typings/database/models/servers/system';
 
 const {SERVER: {MY_CHANNEL, SYSTEM}} = MM_TABLES;
@@ -27,6 +28,8 @@ const enhance = withObservables(['channelId'], ({channelId, database}: {channelI
     );
 
     const channel = myChannel.pipe(switchMap((my) => my.channel.observe()));
+    const settings = channel.pipe(switchMap((c) => c.settings.observe()));
+
     const isOwnDirectMessage = combineLatest([currentUserId, channel]).pipe(
         switchMap(([userId, ch]) => {
             if (ch?.type === General.DM_CHANNEL) {
@@ -39,6 +42,9 @@ const enhance = withObservables(['channelId'], ({channelId, database}: {channelI
     );
     return {
         isOwnDirectMessage,
+        isMuted: settings.pipe(
+            switchMap((s: MyChannelSettingsModel) => of$(s.notifyProps?.mark_unread === 'mention')),
+        ),
         myChannel,
         channel: channel.pipe(
             switchMap((c: ChannelModel) => of$({

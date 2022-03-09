@@ -33,6 +33,7 @@ describe('components/channel_list/categories/body/channel/item', () => {
                 channel={{displayName: 'Hello!', type: 'G', shared: false, name: 'hello'}}
                 isOwnDirectMessage={false}
                 myChannel={myChannel}
+                isMuted={false}
             />,
         );
 
