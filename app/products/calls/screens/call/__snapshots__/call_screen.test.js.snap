@@ -243,6 +243,7 @@ exports[`CallScreen Landscape should match snapshot 1`] = `
           </Text>
         </Pressable>
         <Pressable
+          onPress={[Function]}
           style={
             Object {
               "alignItems": "center",
@@ -250,9 +251,10 @@ exports[`CallScreen Landscape should match snapshot 1`] = `
               "flexDirection": "column",
             }
           }
+          testID="toggle-speakerphone"
         >
           <CompassIcon
-            name="settings-outline"
+            name="volume-high"
             size={24}
             style={
               Object {
@@ -274,7 +276,7 @@ exports[`CallScreen Landscape should match snapshot 1`] = `
               }
             }
           >
-            Settings
+            Speaker
           </Text>
         </Pressable>
         <Pressable
@@ -553,6 +555,7 @@ exports[`CallScreen Landscape should match snapshot with screenshare 1`] = `
           </Text>
         </Pressable>
         <Pressable
+          onPress={[Function]}
           style={
             Object {
               "alignItems": "center",
@@ -560,9 +563,10 @@ exports[`CallScreen Landscape should match snapshot with screenshare 1`] = `
               "flexDirection": "column",
             }
           }
+          testID="toggle-speakerphone"
         >
           <CompassIcon
-            name="settings-outline"
+            name="volume-high"
             size={24}
             style={
               Object {
@@ -584,7 +588,7 @@ exports[`CallScreen Landscape should match snapshot with screenshare 1`] = `
               }
             }
           >
-            Settings
+            Speaker
           </Text>
         </Pressable>
         <Pressable
@@ -938,6 +942,7 @@ exports[`CallScreen Portrait should match snapshot 1`] = `
           </Text>
         </Pressable>
         <Pressable
+          onPress={[Function]}
           style={
             Object {
               "alignItems": "center",
@@ -945,9 +950,10 @@ exports[`CallScreen Portrait should match snapshot 1`] = `
               "flexDirection": "column",
             }
           }
+          testID="toggle-speakerphone"
         >
           <CompassIcon
-            name="settings-outline"
+            name="volume-high"
             size={24}
             style={
               Object {
@@ -969,7 +975,7 @@ exports[`CallScreen Portrait should match snapshot 1`] = `
               }
             }
           >
-            Settings
+            Speaker
           </Text>
         </Pressable>
         <Pressable
@@ -1320,6 +1326,7 @@ exports[`CallScreen Portrait should match snapshot with screenshare 1`] = `
           </Text>
         </Pressable>
         <Pressable
+          onPress={[Function]}
           style={
             Object {
               "alignItems": "center",
@@ -1327,9 +1334,10 @@ exports[`CallScreen Portrait should match snapshot with screenshare 1`] = `
               "flexDirection": "column",
             }
           }
+          testID="toggle-speakerphone"
         >
           <CompassIcon
-            name="settings-outline"
+            name="volume-high"
             size={24}
             style={
               Object {
@@ -1351,7 +1359,7 @@ exports[`CallScreen Portrait should match snapshot with screenshare 1`] = `
               }
             }
           >
-            Settings
+            Speaker
           </Text>
         </Pressable>
         <Pressable
@@ -1593,6 +1601,7 @@ exports[`CallScreen should show controls in landscape view on click the screen s
           </Text>
         </Pressable>
         <Pressable
+          onPress={[Function]}
           style={
             Object {
               "alignItems": "center",
@@ -1600,9 +1609,10 @@ exports[`CallScreen should show controls in landscape view on click the screen s
               "flexDirection": "column",
             }
           }
+          testID="toggle-speakerphone"
         >
           <CompassIcon
-            name="settings-outline"
+            name="volume-high"
             size={24}
             style={
               Object {
@@ -1624,7 +1634,7 @@ exports[`CallScreen should show controls in landscape view on click the screen s
               }
             }
           >
-            Settings
+            Speaker
           </Text>
         </Pressable>
         <Pressable
@@ -1949,6 +1959,7 @@ exports[`CallScreen should show controls in landscape view on click the users li
           </Text>
         </Pressable>
         <Pressable
+          onPress={[Function]}
           style={
             Object {
               "alignItems": "center",
@@ -1956,9 +1967,10 @@ exports[`CallScreen should show controls in landscape view on click the users li
               "flexDirection": "column",
             }
           }
+          testID="toggle-speakerphone"
         >
           <CompassIcon
-            name="settings-outline"
+            name="volume-high"
             size={24}
             style={
               Object {
@@ -1980,7 +1992,7 @@ exports[`CallScreen should show controls in landscape view on click the users li
               }
             }
           >
-            Settings
+            Speaker
           </Text>
         </Pressable>
         <Pressable

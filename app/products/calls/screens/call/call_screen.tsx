@@ -2,14 +2,24 @@
 // See LICENSE.txt for license information.
 
 import React, {useEffect, useCallback, useState} from 'react';
-import {Keyboard, View, Text, Platform, Pressable, SafeAreaView, ScrollView, useWindowDimensions, DeviceEventEmitter} from 'react-native';
+import {
+    Keyboard,
+    View,
+    Text,
+    Platform,
+    Pressable,
+    SafeAreaView,
+    ScrollView,
+    useWindowDimensions,
+    DeviceEventEmitter,
+} from 'react-native';
 import {RTCView} from 'react-native-webrtc';
 
 import {showModalOverCurrentContext, mergeNavigationOptions, popTopScreen, goToScreen} from '@actions/navigation';
 import CompassIcon from '@components/compass_icon';
 import {WebsocketEvents} from '@constants';
 import {THREAD} from '@constants/screen';
-import {GenericAction} from '@mm-redux/types/actions';
+import {ActionFunc, GenericAction} from '@mm-redux/types/actions';
 import {displayUsername} from '@mm-redux/utils/user_utils';
 import CallAvatar from '@mmproducts/calls/components/call_avatar';
 import CallDuration from '@mmproducts/calls/components/call_duration';
@@ -23,13 +33,15 @@ type Props = {
     actions: {
         muteMyself: (channelId: string) => GenericAction;
         unmuteMyself: (channelId: string) => GenericAction;
-        leaveCall: () => GenericAction;
+        setSpeakerphoneOn: (newState: boolean) => GenericAction;
+        leaveCall: () => ActionFunc;
     };
     theme: Theme;
-    call: Call|null;
+    call: Call | null;
     currentParticipant: CallParticipant;
     teammateNameDisplay: string;
     screenShareURL: string;
+    speakerphoneOn: boolean;
 }
 
 const getStyleSheet = makeStyleSheetFromTheme((props: any) => {
@@ -153,6 +165,10 @@ const getStyleSheet = makeStyleSheetFromTheme((props: any) => {
             marginLeft: 10,
             marginRight: 10,
         },
+        speakerphoneIcon: {
+            color: props.speakerphoneOn ? 'black' : props.theme.sidebarText,
+            backgroundColor: props.speakerphoneOn ? 'white' : 'rgba(255,255,255,0.12)',
+        },
         otherButtons: {
             flexDirection: 'row',
             alignItems: 'center',
@@ -208,6 +224,7 @@ const CallScreen = (props: Props) => {
     const [showControlsInLandscape, setShowControlsInLandscape] = useState(false);
 
     const style = getStyleSheet({...props, showControlsInLandscape, isLandscape});
+
     useEffect(() => {
         mergeNavigationOptions('Call', {
             layout: {
@@ -219,7 +236,7 @@ const CallScreen = (props: Props) => {
         });
     }, []);
 
-    const [speaker, setSpeaker] = useState<UserProfile|null>(null);
+    const [speaker, setSpeaker] = useState<UserProfile | null>(null);
     const handleVoiceOn = (data: VoiceEventData) => {
         if (data.channelId === props.call?.channelId) {
             setSpeaker(props.call.participants[data.userId].profile);
@@ -242,8 +259,7 @@ const CallScreen = (props: Props) => {
 
     const showOtherActions = () => {
         const screen = 'CallOtherActions';
-        const passProps = {
-        };
+        const passProps = {};
 
         Keyboard.dismiss();
         const otherActionsRequest = requestAnimationFrame(() => {
@@ -276,6 +292,10 @@ const CallScreen = (props: Props) => {
             }
         }
     }, [props.call?.channelId, props.currentParticipant]);
+
+    const toggleSpeakerphoneHandler = () => {
+        props.actions.setSpeakerphoneOn(!props.speakerphoneOn);
+    };
 
     const toggleControlsInLandscape = useCallback(() => {
         setShowControlsInLandscape(!showControlsInLandscape);
@@ -328,7 +348,9 @@ const CallScreen = (props: Props) => {
                                     muted={user.muted}
                                     size={props.call?.screenOn ? 'm' : 'l'}
                                 />
-                                <Text style={style.username}>{displayUsername(props.call?.participants[user.id].profile, props.teammateNameDisplay)}</Text>
+                                <Text style={style.username}>
+                                    {displayUsername(props.call?.participants[user.id].profile, props.teammateNameDisplay)}
+                                </Text>
                             </View>
                         );
                     })}
@@ -371,13 +393,9 @@ const CallScreen = (props: Props) => {
                                 style={style.muteIcon}
                             />
                             {props.currentParticipant?.muted &&
-                                <Text
-                                    style={style.buttonText}
-                                >{'Unmute'}</Text>}
+                                <Text style={style.buttonText}>{'Unmute'}</Text>}
                             {!props.currentParticipant?.muted &&
-                                <Text
-                                    style={style.buttonText}
-                                >{'Mute'}</Text>}
+                                <Text style={style.buttonText}>{'Mute'}</Text>}
                         </Pressable>}
                     <View style={style.otherButtons}>
                         <Pressable
@@ -390,9 +408,7 @@ const CallScreen = (props: Props) => {
                                 size={24}
                                 style={{...style.buttonIcon, ...style.hangUpIcon}}
                             />
-                            <Text
-                                style={style.buttonText}
-                            >{'Leave'}</Text>
+                            <Text style={style.buttonText}>{'Leave'}</Text>
                         </Pressable>
                         <Pressable
                             style={style.button}
@@ -403,21 +419,19 @@ const CallScreen = (props: Props) => {
                                 size={24}
                                 style={style.buttonIcon}
                             />
-                            <Text
-                                style={style.buttonText}
-                            >{'Chat thread'}</Text>
+                            <Text style={style.buttonText}>{'Chat thread'}</Text>
                         </Pressable>
                         <Pressable
+                            testID={'toggle-speakerphone'}
                             style={style.button}
+                            onPress={toggleSpeakerphoneHandler}
                         >
                             <CompassIcon
-                                name='settings-outline'
+                                name={'volume-high'}
                                 size={24}
-                                style={style.buttonIcon}
+                                style={{...style.buttonIcon, ...style.speakerphoneIcon}}
                             />
-                            <Text
-                                style={style.buttonText}
-                            >{'Settings'}</Text>
+                            <Text style={style.buttonText}>{'Speaker'}</Text>
                         </Pressable>
                         <Pressable
                             style={style.button}

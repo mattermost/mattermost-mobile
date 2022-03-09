@@ -168,9 +168,20 @@ function screenShareURL(state = '', action: GenericAction) {
     }
 }
 
+function speakerphoneOn(state = false, action: GenericAction) {
+    switch (action.type) {
+    case CallsTypes.SET_SPEAKERPHONE: {
+        return action.data;
+    }
+    default:
+        return state;
+    }
+}
+
 export default combineReducers({
     calls,
     enabled,
     joined,
     screenShareURL,
+    speakerphoneOn,
 });
