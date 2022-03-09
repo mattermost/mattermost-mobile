@@ -73,7 +73,7 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
             width: 28,
             borderRadius: 14,
             borderWidth: 3,
-            borderColor: 'rgba(61, 60, 64, 0.32)',
+            borderColor: changeOpacity(theme.centerChannelColor, 0.32),
             alignItems: 'center',
             justifyContent: 'center',
         },
@@ -84,10 +84,10 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
             justifyContent: 'center',
         },
         selectorDisabled: {
-            borderColor: 'rgba(61, 60, 64, 0.16)',
+            borderColor: changeOpacity(theme.centerChannelColor, 0.16),
         },
         selectorFilled: {
-            backgroundColor: '#166DE0',
+            backgroundColor: theme.sidebarBg,
             borderWidth: 0,
         },
     };
@@ -129,7 +129,7 @@ export default function UserListRow({
                         <CompassIcon
                             name='check'
                             size={24}
-                            color='#fff'
+                            color={theme.sidebarText}
                         />
                     }
                 </View>
