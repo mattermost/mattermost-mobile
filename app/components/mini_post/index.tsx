@@ -13,7 +13,7 @@ import {Screens} from '@constants';
 import {useTheme} from '@context/theme';
 import {fromAutoResponder, isFromWebhook, isSystemMessage, isEdited as postEdited} from '@utils/post';
 
-import ChannelInfo from '../channel_info';
+import ChannelInfo from './channel_info';
 
 import type PostModel from '@typings/database/models/servers/post';
 import type UserModel from '@typings/database/models/servers/user';
