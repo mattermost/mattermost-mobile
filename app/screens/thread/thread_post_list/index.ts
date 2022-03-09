@@ -53,10 +53,8 @@ const enhanced = withObservables(['channelId', 'forceQueryAfterAppState', 'rootP
 
                 const {earliest, latest} = postsInThread[0];
                 return database.get<PostModel>(POST).query(
-                    Q.and(
-                        Q.where('root_id', rootPost.id),
-                        Q.where('create_at', Q.between(earliest, latest)),
-                    ),
+                    Q.where('root_id', rootPost.id),
+                    Q.where('create_at', Q.between(earliest, latest)),
                     Q.sortBy('create_at', Q.desc),
                 ).observe();
             }),
