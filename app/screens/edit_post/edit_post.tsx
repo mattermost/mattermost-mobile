@@ -15,7 +15,7 @@ import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
 import useDidUpdate from '@hooks/did_update';
 import PostError from '@screens/edit_post/post_error';
-import {dismissModal, setButtons} from '@screens/navigation';
+import {buildNavigationButton, dismissModal, setButtons} from '@screens/navigation';
 import {switchKeyboardForCodeBlocks} from '@utils/markdown';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
@@ -40,11 +40,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     };
 });
 
-const RIGHT_BUTTON = {
-    id: 'edit-post',
-    testID: 'edit_post.save.button',
-    showAsAction: 'always' as const,
-};
+const RIGHT_BUTTON = buildNavigationButton('edit-post', 'edit_post.save.button');
 
 type EditPostProps = {
     componentId: string;
