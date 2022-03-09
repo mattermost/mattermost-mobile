@@ -61,7 +61,7 @@ function SavedMessages({
         setRefreshing(false);
     }, [serverUrl]);
 
-    const renderEmptyList = useCallback(() => (
+    const emptyList = useMemo(() => (
         <View style={styles.empty}>
             {loading && (
                 <ActivityIndicator
@@ -70,7 +70,7 @@ function SavedMessages({
                 />
             )}
         </View>
-    ), [loading]);
+    ), [loading, theme.centerChannelColor]);
 
     const renderItem = useCallback(({item}) => {
         if (typeof item === 'string') {
@@ -92,13 +92,13 @@ function SavedMessages({
                 post={item}
             />
         );
-    }, []);
+    }, [currentUser, currentTimezone, isTimezoneEnabled, theme]);
 
     return (
         <SafeAreaView style={styles.flex}>
             <FlatList
                 contentContainerStyle={styles.list}
-                ListEmptyComponent={renderEmptyList()}
+                ListEmptyComponent={emptyList}
                 data={data}
                 indicatorStyle='black'
                 onRefresh={handleRefresh}
