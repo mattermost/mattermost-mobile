@@ -30,7 +30,8 @@ describe('components/channel_list/categories/body/channel/item', () => {
     it('should match snapshot', () => {
         const wrapper = renderWithIntlAndTheme(
             <ChannelListItem
-                channel={{displayName: 'Hello!', type: 'G', shared: false, name: 'hello'}}
+                channel={{displayName: 'Hello!', type: 'G', shared: false, name: 'hello', deleteAt: 0}}
+                isActive={false}
                 isOwnDirectMessage={false}
                 myChannel={myChannel}
             />,

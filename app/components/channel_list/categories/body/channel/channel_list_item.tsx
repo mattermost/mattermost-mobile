@@ -46,12 +46,13 @@ const textStyle = StyleSheet.create({
 });
 
 type Props = {
-    channel: Pick<ChannelModel, 'displayName' | 'name' | 'shared' | 'type'>;
+    channel: Pick<ChannelModel, 'deleteAt' | 'displayName' | 'name' | 'shared' | 'type'>;
+    isActive: boolean;
     isOwnDirectMessage: boolean;
     myChannel: MyChannelModel;
 }
 
-const ChannelListItem = ({channel, isOwnDirectMessage, myChannel}: Props) => {
+const ChannelListItem = ({channel, isActive, isOwnDirectMessage, myChannel}: Props) => {
     const {formatMessage} = useIntl();
     const theme = useTheme();
     const styles = getStyleSheet(theme);
@@ -80,10 +81,16 @@ const ChannelListItem = ({channel, isOwnDirectMessage, myChannel}: Props) => {
         displayName = formatMessage({id: 'channel_header.directchannel.you', defaultMessage: '{displayName} (you)'}, {displayName});
     }
 
+    if (channel.deleteAt > 0 && !isActive) {
+        return null;
+    }
+
     return (
         <TouchableOpacity onPress={switchChannels}>
             <View style={styles.container}>
                 <ChannelIcon
+                    isActive={isActive}
+                    isArchived={channel.deleteAt > 0}
                     membersCount={membersCount}
                     name={channel.name}
                     shared={channel.shared}

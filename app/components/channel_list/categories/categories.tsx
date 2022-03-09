@@ -13,6 +13,7 @@ import type {CategoryModel} from '@database/models/server';
 
 type Props = {
     categories: CategoryModel[];
+    currentChannelId: string;
 }
 
 const styles = StyleSheet.create({
@@ -23,7 +24,7 @@ const styles = StyleSheet.create({
 
 const extractKey = (item: CategoryModel) => item.id;
 
-const Categories = ({categories}: Props) => {
+const Categories = ({categories, currentChannelId}: Props) => {
     const intl = useIntl();
     const renderCategory = useCallback((data: {item: CategoryModel}) => {
         return (
@@ -31,11 +32,12 @@ const Categories = ({categories}: Props) => {
                 <CategoryHeader category={data.item}/>
                 <CategoryBody
                     category={data.item}
+                    currentChannelId={currentChannelId}
                     locale={intl.locale}
                 />
             </>
         );
-    }, [categories, intl.locale]);
+    }, [categories, currentChannelId, intl.locale]);
 
     // Sort Categories
     categories.sort((a, b) => a.sortOrder - b.sortOrder);
