@@ -30,11 +30,11 @@ const styles = StyleSheet.create({
     },
     empty: {
         alignItems: 'center',
-        flex: 1,
+        minHeight: '100%',
         justifyContent: 'center',
     },
     list: {
-        paddingTop: 8,
+        paddingVertical: 8,
     },
 });
 
