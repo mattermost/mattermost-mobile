@@ -6,7 +6,6 @@ import {DeviceEventEmitter} from 'react-native';
 
 import {
     removeCurrentUserFromChannel,
-    markChannelAsViewed,
     setChannelDeleteAt,
     switchToChannel} from '@actions/local/channel';
 import {fetchMissingSidebarInfo, fetchMyChannel, fetchChannelStats} from '@actions/remote/channel';
@@ -15,7 +14,7 @@ import {fetchUsersByIds, updateUsersNoLongerVisible} from '@actions/remote/user'
 import Events from '@constants/events';
 import DatabaseManager from '@database/manager';
 import {queryActiveServer} from '@queries/app/servers';
-import {prepareMyChannelsForTeam, queryChannelsById, queryCurrentChannel, deleteChannelMembership} from '@queries/servers/channel';
+import {deleteChannelMembership, prepareMyChannelsForTeam, queryChannelsById, queryCurrentChannel} from '@queries/servers/channel';
 import {prepareCommonSystemValues, queryConfig, setCurrentChannelId} from '@queries/servers/system';
 import {queryNthLastChannelFromTeam} from '@queries/servers/team';
 import {queryCurrentUser, queryUserById} from '@queries/servers/user';
