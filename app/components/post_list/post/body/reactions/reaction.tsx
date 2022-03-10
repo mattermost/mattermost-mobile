@@ -2,8 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback} from 'react';
-import {Platform, Text} from 'react-native';
-import {TouchableOpacity} from 'react-native-gesture-handler';
+import {Platform, Text, TouchableOpacity} from 'react-native';
 
 import Emoji from '@components/emoji';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';

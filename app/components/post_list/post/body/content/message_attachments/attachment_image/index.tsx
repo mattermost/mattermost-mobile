@@ -2,8 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback, useRef, useState} from 'react';
-import {View} from 'react-native';
-import {TapGestureHandler} from 'react-native-gesture-handler';
+import {TouchableWithoutFeedback, View} from 'react-native';
 import Animated from 'react-native-reanimated';
 
 import FileIcon from '@components/post_list/post/body/files/file_icon';
@@ -97,7 +96,7 @@ const AttachmentImage = ({imageUrl, imageMetadata, location, postId, theme}: Pro
     return (
         <GalleryInit galleryIdentifier={galleryIdentifier}>
             <Animated.View style={[styles, style.container, {width}]}>
-                <TapGestureHandler onGestureEvent={onGestureEvent}>
+                <TouchableWithoutFeedback onPress={onGestureEvent}>
                     <Animated.View testID={`attachmentImage-${fileId}`}>
                         <ProgressiveImage
                             forwardRef={ref}
@@ -109,7 +108,7 @@ const AttachmentImage = ({imageUrl, imageMetadata, location, postId, theme}: Pro
                             style={{height, width}}
                         />
                     </Animated.View>
-                </TapGestureHandler>
+                </TouchableWithoutFeedback>
             </Animated.View>
         </GalleryInit>
     );

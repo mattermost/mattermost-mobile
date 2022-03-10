@@ -34,7 +34,7 @@ export const getMarkdownTextStyles = makeStyleSheetFromTheme((theme: Theme) => {
             lineHeight: 25,
         },
         heading1Text: {
-            paddingBottom: 8,
+            paddingVertical: 8,
         },
         heading2: {
             fontFamily: 'OpenSans-Bold',
@@ -42,7 +42,7 @@ export const getMarkdownTextStyles = makeStyleSheetFromTheme((theme: Theme) => {
             lineHeight: 25,
         },
         heading2Text: {
-            paddingBottom: 8,
+            paddingVertical: 6,
         },
         heading3: {
             fontFamily: 'OpenSans-Bold',
@@ -50,7 +50,7 @@ export const getMarkdownTextStyles = makeStyleSheetFromTheme((theme: Theme) => {
             lineHeight: 25,
         },
         heading3Text: {
-            paddingBottom: 8,
+            paddingVertical: 6,
         },
         heading4: {
             fontFamily: 'OpenSans-Bold',
@@ -58,7 +58,7 @@ export const getMarkdownTextStyles = makeStyleSheetFromTheme((theme: Theme) => {
             lineHeight: 25,
         },
         heading4Text: {
-            paddingBottom: 8,
+            paddingVertical: 5,
         },
         heading5: {
             fontFamily: 'OpenSans-Bold',
@@ -66,7 +66,7 @@ export const getMarkdownTextStyles = makeStyleSheetFromTheme((theme: Theme) => {
             lineHeight: 25,
         },
         heading5Text: {
-            paddingBottom: 8,
+            paddingVertical: 5,
         },
         heading6: {
             fontFamily: 'OpenSans-Bold',
@@ -74,7 +74,7 @@ export const getMarkdownTextStyles = makeStyleSheetFromTheme((theme: Theme) => {
             lineHeight: 25,
         },
         heading6Text: {
-            paddingBottom: 8,
+            paddingVertical: 4,
         },
         code: {
             alignSelf: 'center',
