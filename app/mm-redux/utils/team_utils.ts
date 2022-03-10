@@ -5,7 +5,7 @@ import {IDMappedObjects, Dictionary} from '@mm-redux/types/utilities';
 
 import {General} from '../constants';
 
-export function teamListToMap(teamList: Array<Team>): IDMappedObjects<Team> {
+export function teamListToMap(teamList: Team[]): IDMappedObjects<Team> {
     const teams: Dictionary<Team> = {};
     for (let i = 0; i < teamList.length; i++) {
         teams[teamList[i].id] = teamList[i];
@@ -23,7 +23,7 @@ export function sortTeamsWithLocale(locale: string): (a: Team, b: Team) => numbe
     };
 }
 
-export function sortTeamsByUserPreference(teams: Array<Team>, locale: string, teamsOrder = ''): Array<Team> {
+export function sortTeamsByUserPreference(teams: Team[], locale: string, teamsOrder = ''): Team[] {
     if (!teams?.length) {
         return [];
     }

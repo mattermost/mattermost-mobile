@@ -47,7 +47,7 @@ const styles = StyleSheet.create({
 });
 
 const PrepareFile = forwardRef<PrepareFileRef, PrepareFileProps>(({intl, isLandscape, theme}: PrepareFileProps, ref) => {
-    const containerStyles: Array<ViewStyle> = [styles.container];
+    const containerStyles: ViewStyle[] = [styles.container];
     const downloadTask = useRef<StatefulPromise<FetchBlobResponse>>();
     const [canceled, setCanceled] = useState(false);
     const insets = useSafeAreaInsets();

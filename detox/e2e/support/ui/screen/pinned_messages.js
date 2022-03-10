@@ -10,32 +10,32 @@ class PinnedMessagesScreen {
     testID = {
         pinnedMessagesScreen: 'pinned_messages.screen',
         backButton: 'screen.back.button',
-    }
+    };
 
     pinnedMessagesScreen = element(by.id(this.testID.pinnedMessagesScreen));
     backButton = element(by.id(this.testID.backButton));
 
     getSearchResultPostItem = (postId, text, postProfileOptions = {}) => {
         return SearchResultPostScreen.getPost(postId, text, postProfileOptions);
-    }
+    };
 
     toBeVisible = async () => {
         await expect(this.pinnedMessagesScreen).toBeVisible();
 
         return this.pinnedMessagesScreen;
-    }
+    };
 
     open = async () => {
         // # Open pinned messages screen
         await ChannelInfoScreen.pinnedMessagesAction.tap();
 
         return this.toBeVisible();
-    }
+    };
 
     back = async () => {
         await this.backButton.tap();
         await expect(this.pinnedMessagesScreen).not.toBeVisible();
-    }
+    };
 }
 
 const pinnedMessagesScreen = new PinnedMessagesScreen();

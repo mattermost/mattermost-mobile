@@ -106,7 +106,7 @@ export default class AppsFormContainer extends PureComponent<Props, State> {
             )))};
         }
         return res;
-    }
+    };
 
     refreshOnSelect = async (field: AppField, values: AppFormValues): Promise<DoAppCallResult<FormResponseData>> => {
         const intl = this.context.intl;
@@ -200,6 +200,7 @@ export default class AppsFormContainer extends PureComponent<Props, State> {
             ...values,
             [field.name]: userInput,
         });
+
         return this.props.actions.doAppLookup(creq, intl);
     }
 

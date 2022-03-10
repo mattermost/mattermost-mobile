@@ -285,7 +285,7 @@ export class ParsedCommand {
             }
         }
         return this;
-    }
+    };
 
     // parseForm parses the rest of the command using the previously matched form.
     public parseForm = (autocompleteMode = false): ParsedCommand => {
@@ -862,7 +862,7 @@ export class ParsedCommand {
                 }));
             }
         }
-    }
+    };
 }
 
 export class AppCommandParser {
@@ -1054,7 +1054,7 @@ export class AppCommandParser {
         }
 
         return result;
-    }
+    };
 
     // getSuggestions returns suggestions for subcommands and/or form arguments
     public getSuggestions = async (pretext: string): Promise<ExtendedAutocompleteSuggestion[]> => {
@@ -1107,7 +1107,7 @@ export class AppCommandParser {
             suggestions = this.getNoMatchingSuggestion();
         }
         return suggestions.map((suggestion) => this.decorateSuggestionComplete(parsed, suggestion));
-    }
+    };
 
     getNoMatchingSuggestion = () => {
         return [{
@@ -1120,7 +1120,7 @@ export class AppCommandParser {
             IconData: COMMAND_SUGGESTION_ERROR,
             Description: '',
         }];
-    }
+    };
 
     getErrorSuggestion = (parsed: ParsedCommand) => {
         return [{
@@ -1133,7 +1133,7 @@ export class AppCommandParser {
             IconData: COMMAND_SUGGESTION_ERROR,
             Description: parsed.error,
         }];
-    }
+    };
 
     // composeCallRequest creates the form submission call
     private composeCallRequest = async (parsed: ParsedCommand, call: AppCall | undefined): Promise<{creq: AppCallRequest | null; errorMessage?: string}> => {
@@ -1395,7 +1395,7 @@ export class AppCommandParser {
             errorMessage = errorMessage + errors[v] + '\n';
         });
         return {errorMessage};
-    }
+    };
 
     // decorateSuggestionComplete applies the necessary modifications for a suggestion to be processed
     private decorateSuggestionComplete = (parsed: ParsedCommand, choice: AutocompleteSuggestion): AutocompleteSuggestion => {
@@ -1416,7 +1416,7 @@ export class AppCommandParser {
             ...choice,
             Complete: complete,
         };
-    }
+    };
 
     // getCommandBindings returns the commands in the redux store.
     // They are grouped by app id since each app has one base command
@@ -1426,19 +1426,19 @@ export class AppCommandParser {
             return getRHSCommandBindings(state);
         }
         return getCommandBindings(state);
-    }
+    };
 
     // getChannel gets the channel in which the user is typing the command
     private getChannel = (): Channel | null => {
         const state = this.store.getState();
         return selectChannel(state, this.channelID);
-    }
+    };
 
     public setChannelContext = (channelID: string, teamID = '', rootPostID?: string) => {
         this.channelID = channelID;
         this.rootPostID = rootPostID;
         this.teamID = teamID;
-    }
+    };
 
     // isAppCommand determines if subcommand/form suggestions need to be returned.
     // When this returns true, the caller knows that the parser should handle all suggestions for the current command string.
@@ -1460,7 +1460,7 @@ export class AppCommandParser {
             }
         }
         return false;
-    }
+    };
 
     // getAppContext collects post/channel/team info for performing calls
     private getAppContext = (binding: AppBinding): AppContext => {
@@ -1479,7 +1479,7 @@ export class AppCommandParser {
         context.team_id = channel.team_id || getCurrentTeamId(this.store.getState());
 
         return context;
-    }
+    };
 
     // fetchSubmittableForm unconditionaly retrieves the form for the given binding (subcommand)
     private fetchSubmittableForm = async (source: AppCall, context: AppContext): Promise<{form?: AppForm; error?: string} | undefined> => {
@@ -1522,7 +1522,7 @@ export class AppCommandParser {
         }
 
         return {form: callResponse.form};
-    }
+    };
 
     public getSubmittableForm = async (location: string, binding: AppBinding): Promise<{form?: AppForm; error?: string} | undefined> => {
         const rootID = this.rootPostID || '';
@@ -1551,7 +1551,7 @@ export class AppCommandParser {
             });
         }
         return fetched;
-    }
+    };
 
     // getSuggestionsForSubCommands returns suggestions for a subcommand's name
     private getCommandSuggestions = (parsed: ParsedCommand): AutocompleteSuggestion[] => {
@@ -1574,7 +1574,7 @@ export class AppCommandParser {
         });
 
         return result;
-    }
+    };
 
     // getParameterSuggestions computes suggestions for positional argument values, flag names, and flag argument values
     private getParameterSuggestions = async (parsed: ParsedCommand): Promise<ExtendedAutocompleteSuggestion[]> => {
@@ -1628,7 +1628,7 @@ export class AppCommandParser {
         }
         }
         return [];
-    }
+    };
 
     private getMultiselectValueSeparatorSuggestion = (): AutocompleteSuggestion[] => {
         return [
@@ -1667,7 +1667,7 @@ export class AppCommandParser {
         }
 
         return missing;
-    }
+    };
 
     // getFlagNameSuggestions returns suggestions for flag names
     private getFlagNameSuggestions = (parsed: ParsedCommand): AutocompleteSuggestion[] => {
@@ -1699,7 +1699,7 @@ export class AppCommandParser {
         }
 
         return [];
-    }
+    };
 
     // getSuggestionsForField gets suggestions for a positional or flag field value
     private getValueSuggestions = async (parsed: ParsedCommand, delimiter?: string): Promise<ExtendedAutocompleteSuggestion[]> => {
@@ -1740,7 +1740,7 @@ export class AppCommandParser {
             Hint: '',
             IconData: parsed.binding?.icon || '',
         }];
-    }
+    };
 
     // getStaticSelectSuggestions returns suggestions specified in the field's options property
     private getStaticSelectSuggestions = (parsed: ParsedCommand, delimiter?: string): AutocompleteSuggestion[] => {
@@ -1773,7 +1773,7 @@ export class AppCommandParser {
                 IconData: opt.icon_data || parsed.binding?.icon || '',
             };
         });
-    }
+    };
 
     // getDynamicSelectSuggestions fetches and returns suggestions from the server
     private getDynamicSelectSuggestions = async (parsed: ParsedCommand, delimiter?: string): Promise<AutocompleteSuggestion[]> => {
@@ -1864,7 +1864,7 @@ export class AppCommandParser {
                 IconData: s.icon_data || parsed.binding?.icon || '',
             });
         });
-    }
+    };
 
     private makeDynamicSelectSuggestionError = (message: string): AutocompleteSuggestion[] => {
         const errMsg = this.intl.formatMessage({
@@ -1883,7 +1883,7 @@ export class AppCommandParser {
             IconData: COMMAND_SUGGESTION_ERROR,
             Description: errMsg,
         }];
-    }
+    };
 
     private getUserFieldSuggestions = async (parsed: ParsedCommand): Promise<AutocompleteSuggestion[]> => {
         let input = parsed.incomplete.trim();
@@ -1892,7 +1892,7 @@ export class AppCommandParser {
         }
         const {data} = await this.store.dispatch(autocompleteUsersInChannel(input, this.channelID));
         return getUserSuggestions(data);
-    }
+    };
 
     private getChannelFieldSuggestions = async (parsed: ParsedCommand): Promise<AutocompleteSuggestion[]> => {
         let input = parsed.incomplete.trim();
@@ -1901,7 +1901,7 @@ export class AppCommandParser {
         }
         const {data} = await this.store.dispatch(autocompleteChannels(this.teamID, input));
         return getChannelSuggestions(data);
-    }
+    };
 
     // getBooleanSuggestions returns true/false suggestions
     private getBooleanSuggestions = (parsed: ParsedCommand): AutocompleteSuggestion[] => {
@@ -1926,7 +1926,7 @@ export class AppCommandParser {
             });
         }
         return suggestions;
-    }
+    };
 }
 
 function isMultiword(value: string) {

@@ -86,7 +86,7 @@ const MenuBinding = ({binding, handleBindingClick, intl, post, postEphemeralCall
         }
     }, [theme]);
 
-    const options = binding.bindings?.map<PostActionOption>((b:AppBinding) => {
+    const options = binding.bindings?.map<PostActionOption>((b: AppBinding) => {
         return {text: b.label, value: b.location || ''};
     });
 

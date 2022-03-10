@@ -14,7 +14,7 @@ class GeneralSettingsScreen {
         aboutAction: 'general_settings.about.action',
         helpAction: 'general_settings.help.action',
         reportAction: 'general_settings.report.action',
-    }
+    };
 
     generalSettingsScreen = element(by.id(this.testID.generalSettingsScreen));
     closeSettingsButton = element(by.id(this.testID.closeSettingsButton));
@@ -30,19 +30,19 @@ class GeneralSettingsScreen {
         await expect(this.generalSettingsScreen).toBeVisible();
 
         return this.generalSettingsScreen;
-    }
+    };
 
     open = async () => {
         // # Open general settings screen
         await SettingsSidebar.settingsAction.tap();
 
         return this.toBeVisible();
-    }
+    };
 
     close = async () => {
         await this.closeSettingsButton.tap();
         await expect(this.generalSettingsScreen).not.toBeVisible();
-    }
+    };
 }
 
 const generalSettingsScreen = new GeneralSettingsScreen();

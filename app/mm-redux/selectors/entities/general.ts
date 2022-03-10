@@ -22,7 +22,7 @@ export function getLicense(state: GlobalState): any {
     return state.entities.general.license;
 }
 
-export function getSupportedTimezones(state: GlobalState): Array<string> {
+export function getSupportedTimezones(state: GlobalState): string[] {
     return state.entities.general.timezones;
 }
 

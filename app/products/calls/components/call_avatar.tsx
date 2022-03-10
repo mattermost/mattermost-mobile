@@ -8,7 +8,7 @@ import CompassIcon from '@components/compass_icon';
 import ProfilePicture from '@components/profile_picture';
 
 type Props = {
-    userId: string;
+    userId?: string;
     volume: number;
     muted?: boolean;
     size?: 'm' | 'l';
@@ -63,11 +63,17 @@ const CallAvatar = (props: Props) => {
         <View style={style.pictureHalo}>
             <View style={style.pictureHalo2}>
                 <View style={style.picture}>
-                    <ProfilePicture
-                        userId={props.userId}
-                        size={props.size === 'm' || !props.size ? 40 : 72}
-                        showStatus={false}
-                    />
+                    {props.userId ?
+                        <ProfilePicture
+                            userId={props.userId}
+                            size={props.size === 'm' || !props.size ? 40 : 72}
+                            showStatus={false}
+                        /> :
+                        <CompassIcon
+                            name='account-outline'
+                            size={props.size === 'm' || !props.size ? 40 : 72}
+                        />
+                    }
                     {props.muted !== undefined &&
                         <CompassIcon
                             name={props.muted ? 'microphone-off' : 'microphone'}

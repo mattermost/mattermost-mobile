@@ -56,7 +56,8 @@ function makeMapStateToProps() {
             customStatusExpirySupported = customStatusEnabled ? isCustomStatusExpirySupported(state) : false;
         }
 
-        if (currentChannel.type === General.GM_CHANNEL) {
+        const isGroupMessage = currentChannel.type === General.GM_CHANNEL;
+        if (isGroupMessage) {
             currentChannelMemberCount = currentChannel.display_name.split(',').length;
         }
 
@@ -70,6 +71,7 @@ function makeMapStateToProps() {
             currentUserId,
             isTeammateGuest,
             isDirectMessage,
+            isGroupMessage,
             teammateId,
             theme: getTheme(state),
             customStatus,

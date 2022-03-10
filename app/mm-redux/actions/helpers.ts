@@ -74,9 +74,9 @@ export function bindClientFunc({
 }: {
     clientFunc: (...args: any[]) => Promise<any>;
     onRequest?: ActionType;
-    onSuccess?: ActionType | Array<ActionType>;
+    onSuccess?: ActionType | ActionType[];
     onFailure?: ActionType;
-    params?: Array<any>;
+    params?: any[];
 }): ActionFunc {
     return async (dispatch: DispatchFunc, getState: GetStateFunc) => {
         if (onRequest) {
@@ -112,7 +112,7 @@ export function bindClientFunc({
 
 export function debounce(func: (...args: any) => unknown, wait: number, immediate?: boolean, cb?: () => unknown) {
     let timeout: NodeJS.Timeout|null;
-    return function fx(...args: Array<any>) {
+    return function fx(...args: any[]) {
         const runLater = () => {
             timeout = null;
             if (!immediate) {
@@ -136,7 +136,7 @@ export function debounce(func: (...args: any) => unknown, wait: number, immediat
     };
 }
 
-export async function notVisibleUsersActions(state: GlobalState): Promise<Array<GenericAction>> {
+export async function notVisibleUsersActions(state: GlobalState): Promise<GenericAction[]> {
     let knownUsers: Set<string>;
     try {
         const fetchResult = await Client4.getKnownUsers();

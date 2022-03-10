@@ -172,7 +172,7 @@ class Option extends React.PureComponent<OptionProps> {
         return new Promise((resolve) => {
             this.props.closeWithAnimation(resolve);
         });
-    }
+    };
 
     render() {
         const {binding, theme} = this.props;

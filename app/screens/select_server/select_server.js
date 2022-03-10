@@ -362,7 +362,7 @@ export default class SelectServer extends PureComponent {
             preUrl.protocol = 'https:';
         }
         return stripTrailingSlashes(preUrl.protocol + '//' + preUrl.host + preUrl.pathname);
-    }
+    };
 
     scheduleSessionExpiredNotification = () => {
         const {intl} = this.context;

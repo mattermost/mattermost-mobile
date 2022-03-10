@@ -53,7 +53,7 @@ export default class DrawerSwiper extends Component {
         if (this.swiperRef?.current) {
             this.swiperRef.current.scrollToInitial();
         }
-    }
+    };
 
     swiperPageSelected = (index) => {
         this.props.onPageSelected(index);

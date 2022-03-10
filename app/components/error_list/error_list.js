@@ -62,7 +62,7 @@ export default class ErrorList extends PureComponent {
             clearErrors: PropTypes.func.isRequired,
         }).isRequired,
         errors: PropTypes.array.isRequired,
-    }
+    };
 
     renderErrorsList() {
         const {errors} = this.props;

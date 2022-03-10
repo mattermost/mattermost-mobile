@@ -11,7 +11,7 @@ class SelectServerScreen {
         serverUrlInput: 'select_server.server_url.input',
         connectButton: 'select_server.connect.button',
         errorText: 'select_server.error.text',
-    }
+    };
 
     selectServerScreen = element(by.id(this.testID.selectServerScreen));
     headerText = element(by.id(this.testID.headerText));
@@ -23,7 +23,7 @@ class SelectServerScreen {
         await waitFor(this.selectServerScreen).toBeVisible().withTimeout(timeouts.FOUR_SEC);
 
         return this.selectServerScreen;
-    }
+    };
 
     /**
      * connectToServer enters server URL on Select Server screen and then tap connect button.
@@ -37,7 +37,7 @@ class SelectServerScreen {
         await screen.tap({x: 5, y: 10});
 
         await this.connectButton.tap();
-    }
+    };
 }
 
 const selectServerScreen = new SelectServerScreen();

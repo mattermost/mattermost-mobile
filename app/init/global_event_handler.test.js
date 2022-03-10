@@ -147,6 +147,9 @@ describe('GlobalEventHandler', () => {
         const currentUserId = 'current-user-id';
         Store.redux.getState = jest.fn().mockReturnValue({
             entities: {
+                general: {
+                    serverVersion: '',
+                },
                 users: {
                     currentUserId,
                     profiles: {
@@ -164,21 +167,18 @@ describe('GlobalEventHandler', () => {
             const invalidVersion = 'a.b.c';
             await GlobalEventHandler.onServerVersionChanged(invalidVersion);
 
-            expect(dispatch).toHaveBeenCalledTimes(2);
-            expect(dispatch).toHaveBeenCalledWith('setServerVersion');
-            expect(dispatch).toHaveBeenCalledWith('loadConfigAndLicense');
+            expect(dispatch).toHaveBeenCalledTimes(0);
         });
 
         it('should dispatch on gte min server version  with currentUserId', async () => {
             let version = minVersion.version;
             await GlobalEventHandler.onServerVersionChanged(version);
-            expect(dispatch).toHaveBeenCalledTimes(2);
+            expect(dispatch).toHaveBeenCalledTimes(1);
             expect(dispatch).toHaveBeenCalledWith('setServerVersion');
-            expect(dispatch).toHaveBeenCalledWith('loadConfigAndLicense');
 
             version = semver.coerce(minVersion.major + 1).version;
             await GlobalEventHandler.onServerVersionChanged(version);
-            expect(dispatch).toHaveBeenCalledTimes(4);
+            expect(dispatch).toHaveBeenCalledTimes(2);
         });
 
         it('should not dispatch on empty, null, undefined server version', async () => {

@@ -92,7 +92,7 @@ export default class ChannelTitle extends PureComponent {
                 />
             </View>
         );
-    }
+    };
 
     renderChannelDisplayName = () => {
         const {
@@ -118,7 +118,7 @@ export default class ChannelTitle extends PureComponent {
         }
 
         return channelDisplayName;
-    }
+    };
 
     render() {
         const {

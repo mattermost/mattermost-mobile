@@ -230,7 +230,7 @@ class FilteredList extends Component {
         });
 
         return this.filterChannels([...favoriteDms, ...dms, ...groupChannels], term).sort(sortChannelsByDisplayName.bind(null, props.intl.locale));
-    }
+    };
 
     buildMembersForSearch = (props, term) => {
         const {channels, currentUserId, teammateNameDisplay, profiles, teamProfiles, pastDirectMessages, restrictDms} = props;
@@ -266,7 +266,7 @@ class FilteredList extends Component {
         const fakeDms = this.filterChannels([...members], term);
 
         return [...fakeDms].sort(sortChannelsByDisplayName.bind(null, props.intl.locale));
-    }
+    };
 
     buildChannelsForSearch = (props, term) => {
         const {
@@ -281,7 +281,7 @@ class FilteredList extends Component {
 
         return this.filterChannels([...favorites, ...publicChannels, ...privateChannels], term).
             sort(sortChannelsByDisplayName.bind(null, props.intl.locale));
-    }
+    };
 
     buildArchivedForSearch = (props, term) => {
         const {currentChannel, archivedChannels} = props;
@@ -294,7 +294,7 @@ class FilteredList extends Component {
 
             return acc;
         }, []), term);
-    }
+    };
 
     buildOtherMembersForSearch = (props, term) => {
         const {otherChannels} = props;
@@ -307,7 +307,7 @@ class FilteredList extends Component {
         });
 
         return this.filterChannels(notMemberOf, term);
-    }
+    };
 
     buildSectionsForSearch = (props, term) => {
         const sections = [];
