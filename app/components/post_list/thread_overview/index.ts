@@ -37,10 +37,8 @@ const enhanced = withObservables(
                     switchMap((pref) => of$(Boolean(pref[0]?.value === 'true'))),
                 ),
             repliesCount: database.get(POST).query(
-                Q.and(
-                    Q.where('root_id', rootId),
-                    Q.where('delete_at', Q.eq(0)),
-                ),
+                Q.where('root_id', rootId),
+                Q.where('delete_at', Q.eq(0)),
             ).observeCount(),
         };
     });

@@ -90,10 +90,6 @@ const ThreadOverview = ({isSaved, repliesCount, rootPost, testID}: Props) => {
         return style;
     }, [repliesCount]);
 
-    const repliesCountValue = useMemo(() => ({
-        repliesCount,
-    }), [repliesCount]);
-
     return (
         <View
             style={containerStyle}
@@ -106,7 +102,7 @@ const ThreadOverview = ({isSaved, repliesCount, rootPost, testID}: Props) => {
                             style={styles.repliesCount}
                             id='thread.repliesCount'
                             defaultMessage='{repliesCount, number} {repliesCount, plural, one {reply} other {replies}}'
-                            values={repliesCountValue}
+                            values={{repliesCount}}
                         />
                     ) : (
                         <FormattedText
