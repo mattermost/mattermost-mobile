@@ -58,12 +58,14 @@ export const storeCategories = async (serverUrl: string, categories: CategoryWit
         const teamIds = pluckUnique('team_id')(categories) as string[];
         const localCategories = await queryCategoriesByTeamIds(database, teamIds);
 
-        localCategories.forEach((localCategory) => {
-            if (!remoteCategoryIds.includes(localCategory.id)) {
-                localCategory.prepareDestroyPermanently();
-                flattenedModels.push(localCategory);
-            }
-        });
+        localCategories.
+            filter((category) => category.type === 'custom').
+            forEach((localCategory) => {
+                if (!remoteCategoryIds.includes(localCategory.id)) {
+                    localCategory.prepareDestroyPermanently();
+                    flattenedModels.push(localCategory);
+                }
+            });
     }
 
     if (prepareRecordsOnly) {

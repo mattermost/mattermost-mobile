@@ -61,11 +61,9 @@ export const fetchRoles = async (serverUrl: string, teamMembership?: TeamMembers
 
     if (teamMembership?.length) {
         const teamRoles: string[] = [];
-        const teamMembers: string[] = [];
 
         teamMembership?.forEach((tm) => {
             teamRoles.push(...tm.roles.split(' '));
-            teamMembers.push(tm.team_id);
         });
 
         teamRoles.forEach(rolesToFetch.add, rolesToFetch);
@@ -78,6 +76,7 @@ export const fetchRoles = async (serverUrl: string, teamMembership?: TeamMembers
         }
     }
 
+    rolesToFetch.delete('');
     if (rolesToFetch.size > 0) {
         return fetchRolesIfNeeded(serverUrl, Array.from(rolesToFetch), fetchOnly);
     }

@@ -7,6 +7,7 @@ import Model, {Associations} from '@nozbe/watermelondb/Model';
 
 import {MM_TABLES} from '@constants/database';
 
+import type CategoryModel from '@typings/database/models/servers/category';
 import type ChannelModel from '@typings/database/models/servers/channel';
 import type MyTeamModel from '@typings/database/models/servers/my_team';
 import type SlashCommandModel from '@typings/database/models/servers/slash_command';
@@ -15,6 +16,7 @@ import type TeamMembershipModel from '@typings/database/models/servers/team_memb
 import type TeamSearchHistoryModel from '@typings/database/models/servers/team_search_history';
 
 const {
+    CATEGORY,
     CHANNEL,
     TEAM,
     MY_TEAM,
@@ -33,6 +35,9 @@ export default class TeamModel extends Model {
 
     /** associations : Describes every relationship to this table. */
     static associations: Associations = {
+
+        /** A TEAM has a 1:N relationship with CATEGORY. A TEAM can possess multiple categories */
+        [CATEGORY]: {type: 'has_many', foreignKey: 'team_id'},
 
         /** A TEAM has a 1:N relationship with CHANNEL. A TEAM can possess multiple channels */
         [CHANNEL]: {type: 'has_many', foreignKey: 'team_id'},
@@ -76,6 +81,9 @@ export default class TeamModel extends Model {
 
     /** allowed_domains : List of domains that can join this team */
     @field('allowed_domains') allowedDomains!: string;
+
+    /** categories : All the categories associated with this team */
+    @children(CATEGORY) categories!: CategoryModel[];
 
     /** channels : All the channels associated with this team */
     @children(CHANNEL) channels!: ChannelModel[];

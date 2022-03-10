@@ -29,6 +29,7 @@ type PostOptionsProps = {
     canMarkAsUnread: boolean;
     canPin: boolean;
     canReply: boolean;
+    combinedPost?: Post;
     isSaved: boolean;
     location: typeof Screens[keyof typeof Screens];
     post: PostModel;
@@ -42,6 +43,7 @@ const PostOptions = ({
     canMarkAsUnread,
     canPin,
     canReply,
+    combinedPost,
     isSaved,
     location,
     post,
@@ -92,17 +94,25 @@ const PostOptions = ({
                     />
                 }
                 {canEdit && <EditOption post={post}/>}
-                {canDelete && <DeletePostOption postId={post.id}/>}
+                {canDelete &&
+                <DeletePostOption
+                    combinedPost={combinedPost}
+                    post={post}
+                />}
             </>
         );
     };
+
+    // This fixes opening "post options modal" on top of "thread modal"
+    const additionalSnapPoints = location === Screens.THREAD ? 3 : 2;
 
     return (
         <BottomSheet
             renderContent={renderContent}
             closeButtonId='close-post-options'
+            componentId={Screens.POST_OPTIONS}
             initialSnapIndex={0}
-            snapPoints={[((snapPoints + 2) * ITEM_HEIGHT), 10]}
+            snapPoints={[((snapPoints + additionalSnapPoints) * ITEM_HEIGHT), 10]}
         />
     );
 };

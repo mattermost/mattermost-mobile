@@ -4,18 +4,18 @@
 import {switchToChannelById} from '@actions/remote/channel';
 import {fetchRoles} from '@actions/remote/role';
 import {fetchConfigAndLicense} from '@actions/remote/systems';
-import {gqlLogin} from '@app/client/graphQL/entry';
-import {gqlToClientChannel, gqlToClientChannelMembership, gqlToClientPreference, gqlToClientRole, gqlToClientSidebarCategory, gqlToClientTeam, gqlToClientTeamMembership, gqlToClientUser} from '@app/client/graphQL/types';
+import {gqlLogin} from '@client/graphQL/entry';
+import {gqlToClientChannel, gqlToClientChannelMembership, gqlToClientPreference, gqlToClientRole, gqlToClientSidebarCategory, gqlToClientTeam, gqlToClientTeamMembership, gqlToClientUser} from '@client/graphQL/types';
+import { deleteMyTeams, queryMyTeams, queryTeamsById } from '@queries/servers/team';
 import DatabaseManager from '@database/manager';
 import {queryAllChannelsForTeam, queryChannelsById, queryDefaultChannelForTeam} from '@queries/servers/channel';
 import {prepareModels} from '@queries/servers/entry';
 import {prepareCommonSystemValues, queryCommonSystemValues, queryConfig, queryCurrentChannelId, queryCurrentTeamId, queryWebSocketLastDisconnected, setCurrentTeamAndChannelId} from '@queries/servers/system';
-import {deleteMyTeams, queryMyTeams, queryTeamsById} from '@queries/servers/team';
 import {queryCurrentUser} from '@queries/servers/user';
 import {deleteV1Data} from '@utils/file';
 import {isTablet} from '@utils/helpers';
 
-import {AppEntryData, AppEntryError, deferredAppEntryActions, fetchAppEntryData, syncOtherServers} from './common';
+import {AppEntryData, AppEntryError, deferredAppEntryActions, fetchAppEntryData, syncOtherServers, teamsToRemove} from './common';
 
 export const appEntry = async (serverUrl: string, since = 0) => {
     const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
@@ -97,12 +97,7 @@ const gqlAppEntry = async (serverUrl: string, since = 0) => {
         initialTeamId = '';
     }
 
-    let removeTeams;
-    if (removeTeamIds?.length) {
-        // Immediately delete myTeams so that the UI renders only teams the user is a member of.
-        removeTeams = await queryTeamsById(database, removeTeamIds);
-        await deleteMyTeams(operator, removeTeams!);
-    }
+    const removeTeams = await teamsToRemove(serverUrl, removeTeamIds);
 
     const removeChannelIds: string[] = [];
     if (chData?.channels) {
@@ -191,12 +186,7 @@ const restAppEntry = async (serverUrl: string, since = 0) => {
         }
     }
 
-    let removeTeams;
-    if (removeTeamIds?.length) {
-        // Immediately delete myTeams so that the UI renders only teams the user is a member of.
-        removeTeams = await queryTeamsById(database, removeTeamIds);
-        await deleteMyTeams(operator, removeTeams!);
-    }
+    const removeTeams = await teamsToRemove(serverUrl, removeTeamIds);
 
     let removeChannels;
     if (removeChannelIds?.length) {

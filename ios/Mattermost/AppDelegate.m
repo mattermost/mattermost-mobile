@@ -25,6 +25,7 @@
 NSString* const NOTIFICATION_MESSAGE_ACTION = @"message";
 NSString* const NOTIFICATION_CLEAR_ACTION = @"clear";
 NSString* const NOTIFICATION_UPDATE_BADGE_ACTION = @"update_badge";
+NSString* const NOTIFICATION_TEST_ACTION = @"test";
 MattermostBucket* bucket = nil;
 
 -(void)application:(UIApplication *)application handleEventsForBackgroundURLSession:(NSString *)identifier completionHandler:(void (^)(void))completionHandler {
@@ -95,6 +96,12 @@ MattermostBucket* bucket = nil;
   NSString* action = [userInfo objectForKey:@"type"];
   NSString* channelId = [userInfo objectForKey:@"channel_id"];
   BOOL isClearAction = (action && [action isEqualToString: NOTIFICATION_CLEAR_ACTION]);
+  BOOL isTestAction = (action && [action isEqualToString: NOTIFICATION_TEST_ACTION]);
+  
+  if (isTestAction) {
+    completionHandler(UIBackgroundFetchResultNoData);
+    return;
+  }
 
   if (isClearAction) {
     // If received a notification that a channel was read, remove all notifications from that channel (only with app in foreground/background)

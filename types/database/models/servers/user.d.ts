@@ -88,6 +88,9 @@ export default class UserModel extends Model {
     /** teams : All the team that this user is part of  */
     teams: Query<TeamMembershipModel>;
 
+    /** threadParticipations : All the thread participations this user is part of  */
+    threadParticipations: Query<ThreadParticipantsModel>;
+
     /**  prepareStatus: Prepare the model to update the user status in a batch operation */
     prepareStatus: (status: string) => void;
 

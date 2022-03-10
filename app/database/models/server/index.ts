@@ -25,4 +25,6 @@ export {default as TeamMembershipModel} from './team_membership';
 export {default as TeamModel} from './team';
 export {default as TeamSearchHistoryModel} from './team_search_history';
 export {default as TermsOfServiceModel} from './terms_of_service';
+export {default as ThreadModel} from './thread';
+export {default as ThreadParticipantModel} from './thread_participant';
 export {default as UserModel} from './user';

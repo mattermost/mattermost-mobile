@@ -68,7 +68,7 @@ const getPlaceHolder = (rootId?: string) => {
     let placeholder;
 
     if (rootId) {
-        placeholder = {id: t('create_comment.addComment'), defaultMessage: 'Add a comment...'};
+        placeholder = {id: t('create_post.thread_reply'), defaultMessage: 'Reply to this thread...'};
     } else {
         placeholder = {id: t('create_post.write'), defaultMessage: 'Write to {channelDisplayName}'};
     }
@@ -265,7 +265,6 @@ export default function PostInput({
             // May change when we implement Fabric
             input.current?.setNativeProps({
                 text: value,
-                selection: {start: cursorPosition},
             });
             lastNativeValue.current = value;
         }

@@ -8,13 +8,14 @@ import {TouchableHighlight} from 'react-native-gesture-handler';
 
 import {showPermalink} from '@actions/local/permalink';
 import {removePost} from '@actions/local/post';
+import {fetchAndSwitchToThread} from '@actions/remote/thread';
 import SystemAvatar from '@components/system_avatar';
 import SystemHeader from '@components/system_header';
 import * as Screens from '@constants/screens';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
-import {bottomSheetModalOptions, goToScreen, showModal, showModalOverCurrentContext} from '@screens/navigation';
+import {bottomSheetModalOptions, showModal, showModalOverCurrentContext} from '@screens/navigation';
 import {fromAutoResponder, isFromWebhook, isPostPendingOrFailed, isSystemMessage} from '@utils/post';
 import {preventDoubleTap} from '@utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
@@ -42,7 +43,7 @@ type PostProps = {
     isConsecutivePost?: boolean;
     isEphemeral: boolean;
     isFirstReply?: boolean;
-    isFlagged?: boolean;
+    isSaved?: boolean;
     isJumboEmoji: boolean;
     isLastReply?: boolean;
     isPostAddChannelMember: boolean;
@@ -52,7 +53,7 @@ type PostProps = {
     reactionsCount: number;
     shouldRenderReplyButton?: boolean;
     showAddReaction?: boolean;
-    skipFlaggedHeader?: boolean;
+    skipSavedHeader?: boolean;
     skipPinnedHeader?: boolean;
     style?: StyleProp<ViewStyle>;
     testID?: string;
@@ -97,8 +98,8 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
 
 const Post = ({
     appsEnabled, canDelete, currentUser, differentThreadSequence, files, hasReplies, highlight, highlightPinnedOrSaved = true, highlightReplyBar,
-    isConsecutivePost, isEphemeral, isFirstReply, isFlagged, isJumboEmoji, isLastReply, isPostAddChannelMember,
-    location, post, reactionsCount, shouldRenderReplyButton, skipFlaggedHeader, skipPinnedHeader, showAddReaction = true, style,
+    isConsecutivePost, isEphemeral, isFirstReply, isSaved, isJumboEmoji, isLastReply, isPostAddChannelMember,
+    location, post, reactionsCount, shouldRenderReplyButton, skipSavedHeader, skipPinnedHeader, showAddReaction = true, style,
     testID, previousPost,
 }: PostProps) => {
     const pressDetected = useRef(false);
@@ -137,8 +138,8 @@ const Post = ({
             const isValidSystemMessage = isAutoResponder || !isSystemPost;
             if (post.deleteAt === 0 && isValidSystemMessage && !isPendingOrFailed) {
                 if ([Screens.CHANNEL, Screens.PERMALINK].includes(location)) {
-                    // https://mattermost.atlassian.net/browse/MM-39708
-                    goToScreen('THREADS_SCREEN_NOT_IMPLEMENTED_YET', '', {post});
+                    const rootId = post.rootId || post.id;
+                    fetchAndSwitchToThread(serverUrl, rootId);
                 }
             } else if ((isEphemeral || post.deleteAt > 0)) {
                 removePost(serverUrl, post);
@@ -176,7 +177,7 @@ const Post = ({
         }
     };
 
-    const highlightFlagged = isFlagged && !skipFlaggedHeader;
+    const highlightSaved = isSaved && !skipSavedHeader;
     const hightlightPinned = post.isPinned && !skipPinnedHeader;
     const itemTestID = `${testID}.${post.id}`;
     const rightColumnStyle = [styles.rightColumn, (post.rootId && isLastReply && styles.rightColumnPadding)];
@@ -185,7 +186,7 @@ const Post = ({
     let highlightedStyle: StyleProp<ViewStyle>;
     if (highlight) {
         highlightedStyle = styles.highlight;
-    } else if ((highlightFlagged || hightlightPinned) && highlightPinnedOrSaved) {
+    } else if ((highlightSaved || hightlightPinned) && highlightPinnedOrSaved) {
         highlightedStyle = styles.highlightPinnedOrSaved;
     }
 
@@ -279,9 +280,9 @@ const Post = ({
                 <>
                     <PreHeader
                         isConsecutivePost={isConsecutivePost}
-                        isFlagged={isFlagged}
+                        isSaved={isSaved}
                         isPinned={post.isPinned}
-                        skipFlaggedHeader={skipFlaggedHeader}
+                        skipSavedHeader={skipSavedHeader}
                         skipPinnedHeader={skipPinnedHeader}
                     />
                     <View style={[styles.container, consecutiveStyle]}>
