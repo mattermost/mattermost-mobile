@@ -18,6 +18,7 @@ import type PostModel from '@typings/database/models/servers/post';
 
 type ThreadProps = {
     channel: ChannelModel;
+    closeButtonId: string;
     componentId: string;
     rootPost: PostModel;
 };
@@ -30,9 +31,7 @@ const getStyleSheet = StyleSheet.create(() => ({
     },
 }));
 
-export const CLOSE_BUTTON_ID = 'close-threads';
-
-const Thread = ({channel, componentId, rootPost}: ThreadProps) => {
+const Thread = ({channel, closeButtonId, componentId, rootPost}: ThreadProps) => {
     const appState = useAppState();
     const styles = getStyleSheet();
 
@@ -45,7 +44,7 @@ const Thread = ({channel, componentId, rootPost}: ThreadProps) => {
         const unsubscribe = Navigation.events().registerComponentListener({
             navigationButtonPressed: ({buttonId}: { buttonId: string }) => {
                 switch (buttonId) {
-                    case CLOSE_BUTTON_ID:
+                    case closeButtonId:
                         close();
                         break;
                 }

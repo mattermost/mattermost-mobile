@@ -10,7 +10,6 @@ import {queryChannelById} from '@queries/servers/channel';
 import {queryPostById} from '@queries/servers/post';
 import {queryCurrentUser} from '@queries/servers/user';
 import {showModal} from '@screens/navigation';
-import {CLOSE_BUTTON_ID} from '@screens/thread/thread';
 import EphemeralStore from '@store/ephemeral_store';
 import {changeOpacity} from '@utils/theme';
 
@@ -56,7 +55,9 @@ export const switchToThread = async (serverUrl: string, rootId: string) => {
             subtitle = subtitle.replace('{channelName}', channel.displayName);
         }
 
-        showModal(Screens.THREAD, '', {rootId}, {
+        const closeButtonId = 'close-threads';
+
+        showModal(Screens.THREAD, '', {closeButtonId, rootId}, {
             topBar: {
                 title: {
                     ...typography('Heading', 300, 'SemiBold'),
@@ -67,9 +68,9 @@ export const switchToThread = async (serverUrl: string, rootId: string) => {
                     text: subtitle,
                 },
                 leftButtons: [{
-                    id: CLOSE_BUTTON_ID,
+                    id: closeButtonId,
                     icon: CompassIcon.getImageSourceSync('close', 24, theme.centerChannelColor),
-                    testID: CLOSE_BUTTON_ID,
+                    testID: closeButtonId,
                 }],
             },
         });
