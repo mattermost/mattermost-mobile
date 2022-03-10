@@ -120,7 +120,6 @@ export async function handleDirectAddedEvent(serverUrl: string, msg: any) {
     try {
         const {channel_id: channelId} = msg.broadcast;
         const {channels} = await fetchMyChannel(serverUrl, '', channelId, false);
-
         if (!channels?.[0]) {
             return;
         }
@@ -130,7 +129,7 @@ export async function handleDirectAddedEvent(serverUrl: string, msg: any) {
             return;
         }
 
-        await fetchMissingSidebarInfo(serverUrl, channels!, user.locale, '', user.id);
+        await fetchMissingSidebarInfo(serverUrl, channels, user.locale, '', user.id);
     } catch {
         // do nothing
     }
