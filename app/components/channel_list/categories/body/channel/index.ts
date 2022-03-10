@@ -42,6 +42,7 @@ const enhance = withObservables(['channelId'], ({channelId, database}: {channelI
         myChannel,
         channel: channel.pipe(
             switchMap((c: ChannelModel) => of$({
+                deleteAt: c.deleteAt,
                 displayName: c.displayName,
                 name: c.name,
                 shared: c.shared,
