@@ -28,6 +28,100 @@ type Props = {
     thread: ThreadModel;
 };
 
+const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
+    return {
+        container: {
+            paddingTop: 16,
+            paddingRight: 16,
+            flex: 1,
+            flexDirection: 'row',
+            borderBottomColor: changeOpacity(theme.centerChannelColor, 0.08),
+            borderBottomWidth: 1,
+        },
+        badgeContainer: {
+            marginTop: 3,
+            width: 32,
+        },
+        postContainer: {
+            flex: 1,
+        },
+        header: {
+            alignItems: 'center',
+            flex: 1,
+            flexDirection: 'row',
+            marginBottom: 9,
+        },
+        headerInfoContainer: {
+            alignItems: 'center',
+            flex: 1,
+            flexDirection: 'row',
+            marginRight: 12,
+            overflow: 'hidden',
+        },
+        threadDeleted: {
+            color: changeOpacity(theme.centerChannelColor, 0.72),
+            fontStyle: 'italic',
+        },
+        threadStarter: {
+            color: theme.centerChannelColor,
+            fontSize: 15,
+            fontWeight: '600',
+            lineHeight: 22,
+            paddingRight: 8,
+        },
+        channelNameContainer: {
+            backgroundColor: changeOpacity(theme.centerChannelColor, 0.08),
+            borderRadius: 4,
+            maxWidth: '50%',
+        },
+        channelName: {
+            color: theme.centerChannelColor,
+            fontSize: 10,
+            fontWeight: '600',
+            lineHeight: 16,
+            letterSpacing: 0.1,
+            textTransform: 'uppercase',
+            marginLeft: 6,
+            marginRight: 6,
+            marginTop: 2,
+            marginBottom: 2,
+        },
+        date: {
+            color: changeOpacity(theme.centerChannelColor, 0.64),
+            fontSize: 12,
+            fontWeight: '400',
+        },
+        message: {
+            color: theme.centerChannelColor,
+            fontSize: 15,
+            lineHeight: 20,
+        },
+        unreadDot: {
+            width: 8,
+            height: 8,
+            borderRadius: 4,
+            backgroundColor: theme.sidebarTextActiveBorder,
+            alignSelf: 'center',
+            marginTop: 5,
+        },
+        mentionBadge: {
+            width: 18,
+            height: 18,
+            borderRadius: 9,
+            backgroundColor: theme.mentionColor,
+            alignSelf: 'center',
+        },
+        mentionBadgeText: {
+            fontFamily: 'Open Sans',
+            fontSize: 10,
+            lineHeight: 16,
+            fontWeight: '700',
+            alignSelf: 'center',
+            color: theme.centerChannelBg,
+        },
+    };
+});
+
 const Thread = ({author, channel, currentUserId, participants, post, teammateNameDisplay, testID, theme, thread}: Props) => {
     const style = getStyleSheet(theme);
 
@@ -137,99 +231,5 @@ const Thread = ({author, channel, currentUserId, participants, post, teammateNam
         </TouchableHighlight>
     );
 };
-
-const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
-    return {
-        container: {
-            paddingTop: 16,
-            paddingRight: 16,
-            flex: 1,
-            flexDirection: 'row',
-            borderBottomColor: changeOpacity(theme.centerChannelColor, 0.08),
-            borderBottomWidth: 1,
-        },
-        badgeContainer: {
-            marginTop: 3,
-            width: 32,
-        },
-        postContainer: {
-            flex: 1,
-        },
-        header: {
-            alignItems: 'center',
-            flex: 1,
-            flexDirection: 'row',
-            marginBottom: 9,
-        },
-        headerInfoContainer: {
-            alignItems: 'center',
-            flex: 1,
-            flexDirection: 'row',
-            marginRight: 12,
-            overflow: 'hidden',
-        },
-        threadDeleted: {
-            color: changeOpacity(theme.centerChannelColor, 0.72),
-            fontStyle: 'italic',
-        },
-        threadStarter: {
-            color: theme.centerChannelColor,
-            fontSize: 15,
-            fontWeight: '600',
-            lineHeight: 22,
-            paddingRight: 8,
-        },
-        channelNameContainer: {
-            backgroundColor: changeOpacity(theme.centerChannelColor, 0.08),
-            borderRadius: 4,
-            maxWidth: '50%',
-        },
-        channelName: {
-            color: theme.centerChannelColor,
-            fontSize: 10,
-            fontWeight: '600',
-            lineHeight: 16,
-            letterSpacing: 0.1,
-            textTransform: 'uppercase',
-            marginLeft: 6,
-            marginRight: 6,
-            marginTop: 2,
-            marginBottom: 2,
-        },
-        date: {
-            color: changeOpacity(theme.centerChannelColor, 0.64),
-            fontSize: 12,
-            fontWeight: '400',
-        },
-        message: {
-            color: theme.centerChannelColor,
-            fontSize: 15,
-            lineHeight: 20,
-        },
-        unreadDot: {
-            width: 8,
-            height: 8,
-            borderRadius: 4,
-            backgroundColor: theme.sidebarTextActiveBorder,
-            alignSelf: 'center',
-            marginTop: 5,
-        },
-        mentionBadge: {
-            width: 18,
-            height: 18,
-            borderRadius: 9,
-            backgroundColor: theme.mentionColor,
-            alignSelf: 'center',
-        },
-        mentionBadgeText: {
-            fontFamily: 'Open Sans',
-            fontSize: 10,
-            lineHeight: 16,
-            fontWeight: '700',
-            alignSelf: 'center',
-            color: theme.centerChannelBg,
-        },
-    };
-});
 
 export default Thread;

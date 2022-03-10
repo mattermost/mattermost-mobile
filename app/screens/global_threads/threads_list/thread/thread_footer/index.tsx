@@ -21,6 +21,38 @@ export type Props = {
     theme: Theme;
 };
 
+const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
+    return {
+        container: {
+            flexDirection: 'row',
+            alignItems: 'center',
+            minHeight: 40,
+        },
+        avatarsContainer: {
+            marginRight: 12,
+            paddingVertical: 8,
+        },
+        replyIconContainer: {
+            top: -1,
+            marginRight: 5,
+        },
+        replies: {
+            alignSelf: 'center',
+            color: changeOpacity(theme.centerChannelColor, 0.64),
+            fontSize: 12,
+            fontWeight: '600',
+            marginRight: 12,
+        },
+        unreadReplies: {
+            alignSelf: 'center',
+            color: theme.sidebarTextActiveBorder,
+            fontSize: 12,
+            fontWeight: '600',
+            marginRight: 12,
+        },
+    };
+});
+
 const ThreadFooter = ({author, currentUserId, participants, teammateNameDisplay, testID, theme, thread}: Props) => {
     const style = getStyleSheet(theme);
 
@@ -80,37 +112,5 @@ const ThreadFooter = ({author, currentUserId, participants, teammateNameDisplay,
         </View>
     );
 };
-
-const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
-    return {
-        container: {
-            flexDirection: 'row',
-            alignItems: 'center',
-            minHeight: 40,
-        },
-        avatarsContainer: {
-            marginRight: 12,
-            paddingVertical: 8,
-        },
-        replyIconContainer: {
-            top: -1,
-            marginRight: 5,
-        },
-        replies: {
-            alignSelf: 'center',
-            color: changeOpacity(theme.centerChannelColor, 0.64),
-            fontSize: 12,
-            fontWeight: '600',
-            marginRight: 12,
-        },
-        unreadReplies: {
-            alignSelf: 'center',
-            color: theme.sidebarTextActiveBorder,
-            fontSize: 12,
-            fontWeight: '600',
-            marginRight: 12,
-        },
-    };
-});
 
 export default ThreadFooter;

@@ -19,6 +19,33 @@ type Props = {
     theme: Theme;
 }
 
+const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
+    return {
+        container: {
+            alignItems: 'center',
+            flexGrow: 1,
+            justifyContent: 'center',
+        },
+        textContainer: {
+            padding: 32,
+        },
+        title: {
+            color: theme.centerChannelColor,
+            fontSize: 20,
+            fontWeight: '600',
+            textAlign: 'center',
+        },
+        subTitle: {
+            color: theme.centerChannelColor,
+            fontSize: 16,
+            fontWeight: '400',
+            lineHeight: 24,
+            marginTop: 16,
+            textAlign: 'center',
+        },
+    };
+});
+
 function EmptyState({intl, isUnreads, theme}: Props) {
     const style = getStyleSheet(theme);
     let title;
@@ -219,32 +246,5 @@ function EmptyState({intl, isUnreads, theme}: Props) {
         </View>
     );
 }
-
-const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
-    return {
-        container: {
-            alignItems: 'center',
-            flexGrow: 1,
-            justifyContent: 'center',
-        },
-        textContainer: {
-            padding: 32,
-        },
-        title: {
-            color: theme.centerChannelColor,
-            fontSize: 20,
-            fontWeight: '600',
-            textAlign: 'center',
-        },
-        subTitle: {
-            color: theme.centerChannelColor,
-            fontSize: 16,
-            fontWeight: '400',
-            lineHeight: 24,
-            marginTop: 16,
-            textAlign: 'center',
-        },
-    };
-});
 
 export default EmptyState;

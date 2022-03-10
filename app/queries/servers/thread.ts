@@ -10,6 +10,7 @@ const {SERVER: {CHANNEL, POST, THREAD}} = MM_TABLES;
 
 export const queryThreadsInTeam = (database: Database, teamId: string, onlyUnreads?: boolean, sort?: boolean): Query<ThreadModel> => {
     const query: Q.Clause[] = [
+        Q.where('is_following', true),
         Q.experimentalNestedJoin(POST, CHANNEL),
         Q.on(
             POST,

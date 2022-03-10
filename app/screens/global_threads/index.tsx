@@ -4,19 +4,20 @@
 import {withDatabase} from '@nozbe/watermelondb/DatabaseProvider';
 import withObservables from '@nozbe/with-observables';
 import React, {useEffect, useMemo, useState} from 'react';
-import {SafeAreaView} from 'react-native-safe-area-context';
+import {StyleSheet, View} from 'react-native';
+import {Edge, SafeAreaView, useSafeAreaInsets} from 'react-native-safe-area-context';
 import {of as of$} from 'rxjs';
 import {map, switchMap} from 'rxjs/operators';
 
 import {getThreads} from '@actions/remote/thread';
-import ServerVersion from '@components/server_version';
+import NavigationHeader from '@components/navigation_header';
 import {Database} from '@constants';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
-import {useAppState} from '@hooks/device';
-import {makeStyleSheetFromTheme} from '@utils/theme';
+import {useAppState, useIsTablet} from '@hooks/device';
+import {useDefaultHeaderHeight} from '@hooks/header';
 
-import Header from './header';
+// import Header from './header';
 import ThreadsList, {Tab} from './threads_list';
 
 import type {WithDatabaseArgs} from '@typings/database/database';
@@ -29,17 +30,22 @@ type Props = {
     currentTeamId: string;
 };
 
-const getStyleSheet = makeStyleSheetFromTheme(() => ({
+const edges: Edge[] = ['left', 'right'];
+
+const styles = StyleSheet.create({
     flex: {
         flex: 1,
     },
-}));
+});
 
 const GlobalThreads = ({currentTeamId}: Props) => {
-    const theme = useTheme();
-    const styles = getStyleSheet(theme);
     const appState = useAppState();
+    const insets = useSafeAreaInsets();
+    const isTablet = useIsTablet();
     const serverUrl = useServerUrl();
+
+    const theme = useTheme();
+    const defaultHeight = useDefaultHeaderHeight();
 
     const [tab, setTab] = useState<Tab>('all');
 
@@ -50,10 +56,23 @@ const GlobalThreads = ({currentTeamId}: Props) => {
         getThreads(serverUrl, currentTeamId).finally(() => setIsLoading(false));
     }, [serverUrl]);
 
-    const renderComponent = useMemo(() => {
-        return (
-            <>
-                <Header/>
+    const containerStyle = useMemo(() => {
+        const marginTop = defaultHeight + insets.top;
+        return [styles.flex, {marginTop}];
+    }, [defaultHeight, insets.top]);
+
+    return (
+        <SafeAreaView
+            style={styles.flex}
+            mode='margin'
+            edges={edges}
+        >
+            <NavigationHeader
+                isLargeTitle={false}
+                showBackButton={!isTablet}
+                title={'Threads'}
+            />
+            <View style={containerStyle}>
                 <ThreadsList
                     forceQueryAfterAppState={appState}
                     setTab={setTab}
@@ -63,18 +82,7 @@ const GlobalThreads = ({currentTeamId}: Props) => {
                     testID={'undefined'}
                     theme={theme}
                 />
-            </>
-        );
-    }, [isLoading, tab, theme, appState, currentTeamId]);
-
-    return (
-        <SafeAreaView
-            style={styles.flex}
-            mode='margin'
-            edges={['left', 'right']}
-        >
-            <ServerVersion/>
-            {renderComponent}
+            </View>
         </SafeAreaView>
     );
 };

@@ -13,7 +13,6 @@ import {makeStyleSheetFromTheme} from '@utils/theme';
 export type Tab = 'all' | 'unreads';
 
 export type Props = {
-    markAllAsRead: () => void;
     setTab: (tab: Tab) => void;
     tab: Tab;
     teamId: string;
@@ -21,6 +20,65 @@ export type Props = {
     theme: Theme;
     unreadsCount: number;
 };
+
+const getStyle = makeStyleSheetFromTheme((theme) => {
+    return {
+        container: {
+            alignItems: 'center',
+            borderBottomColor: changeOpacity(theme.centerChannelColor, 0.08),
+            borderBottomWidth: 1,
+            flexDirection: 'row',
+        },
+        menuContainer: {
+            alignItems: 'center',
+            flexGrow: 1,
+            flexDirection: 'row',
+            paddingLeft: 12,
+            marginVertical: 12,
+        },
+        menuItemContainer: {
+            paddingVertical: 8,
+            paddingHorizontal: 16,
+        },
+        menuItemContainerSelected: {
+            backgroundColor: changeOpacity(theme.buttonBg, 0.08),
+            borderRadius: 4,
+        },
+        menuItem: {
+            color: changeOpacity(theme.centerChannelColor, 0.56),
+            alignSelf: 'center',
+            fontFamily: 'Open Sans',
+            fontWeight: '600',
+            fontSize: 16,
+            lineHeight: 24,
+        },
+        menuItemSelected: {
+            color: theme.buttonBg,
+        },
+
+        unreadsDot: {
+            position: 'absolute',
+            width: 6,
+            height: 6,
+            borderRadius: 3,
+            backgroundColor: theme.sidebarTextActiveBorder,
+            right: -6,
+            top: 4,
+        },
+
+        markAllReadIconContainer: {
+            paddingHorizontal: 20,
+        },
+        markAllReadIcon: {
+            fontSize: 28,
+            lineHeight: 28,
+            color: changeOpacity(theme.centerChannelColor, 0.56),
+        },
+        markAllReadIconDisabled: {
+            opacity: 0.5,
+        },
+    };
+});
 
 const Header = ({setTab, tab, teamId, testID, theme, unreadsCount}: Props) => {
     const style = getStyle(theme);
@@ -116,64 +174,5 @@ const Header = ({setTab, tab, teamId, testID, theme, unreadsCount}: Props) => {
         </View>
     );
 };
-
-const getStyle = makeStyleSheetFromTheme((theme) => {
-    return {
-        container: {
-            alignItems: 'center',
-            borderBottomColor: changeOpacity(theme.centerChannelColor, 0.08),
-            borderBottomWidth: 1,
-            flexDirection: 'row',
-        },
-        menuContainer: {
-            alignItems: 'center',
-            flexGrow: 1,
-            flexDirection: 'row',
-            paddingLeft: 12,
-            marginVertical: 12,
-        },
-        menuItemContainer: {
-            paddingVertical: 8,
-            paddingHorizontal: 16,
-        },
-        menuItemContainerSelected: {
-            backgroundColor: changeOpacity(theme.buttonBg, 0.08),
-            borderRadius: 4,
-        },
-        menuItem: {
-            color: changeOpacity(theme.centerChannelColor, 0.56),
-            alignSelf: 'center',
-            fontFamily: 'Open Sans',
-            fontWeight: '600',
-            fontSize: 16,
-            lineHeight: 24,
-        },
-        menuItemSelected: {
-            color: theme.buttonBg,
-        },
-
-        unreadsDot: {
-            position: 'absolute',
-            width: 6,
-            height: 6,
-            borderRadius: 3,
-            backgroundColor: theme.sidebarTextActiveBorder,
-            right: -6,
-            top: 4,
-        },
-
-        markAllReadIconContainer: {
-            paddingHorizontal: 20,
-        },
-        markAllReadIcon: {
-            fontSize: 28,
-            lineHeight: 28,
-            color: changeOpacity(theme.centerChannelColor, 0.56),
-        },
-        markAllReadIconDisabled: {
-            opacity: 0.5,
-        },
-    };
-});
 
 export default Header;

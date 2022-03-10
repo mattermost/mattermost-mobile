@@ -167,7 +167,7 @@ const Header = ({
                             {title}
                         </Animated.Text>
                         }
-                        {!isLargeTitle &&
+                        {!isLargeTitle && (subtitle || subtitleCompanion) &&
                         <View style={styles.subtitleContainer}>
                             <Text
                                 ellipsizeMode='tail'

@@ -3,10 +3,9 @@
 
 import React, {useCallback} from 'react';
 import {useIntl} from 'react-intl';
-import {FlatList, Platform} from 'react-native';
+import {FlatList, Platform, StyleSheet} from 'react-native';
 
 import Loading from '@components/loading';
-import {makeStyleSheetFromTheme} from '@utils/theme';
 
 import EmptyState from './empty_state';
 import Header, {Tab} from './header';
@@ -29,10 +28,19 @@ export type Props = {
     unreadsCount: number;
 };
 
+const styles = StyleSheet.create({
+    messagesContainer: {
+        flexGrow: 1,
+    },
+    loadingStyle: {
+        alignItems: 'center',
+        flex: 1,
+        justifyContent: 'center',
+    },
+});
+
 const ThreadsList = ({currentUserId, isLoading, setTab, tab, teamId, teammateNameDisplay, testID, theme, threads, unreadsCount}: Props) => {
     const intl = useIntl();
-
-    const styles = getStyleSheet(theme);
 
     const keyExtractor = useCallback((item: ThreadModel) => item.id, []);
 
@@ -67,7 +75,6 @@ const ThreadsList = ({currentUserId, isLoading, setTab, tab, teamId, teammateNam
     return (
         <>
             <Header
-                markAllAsRead={() => null}
                 setTab={setTab}
                 tab={tab}
                 teamId={teamId}
@@ -87,18 +94,5 @@ const ThreadsList = ({currentUserId, isLoading, setTab, tab, teamId, teammateNam
         </>
     );
 };
-
-const getStyleSheet = makeStyleSheetFromTheme(() => {
-    return {
-        messagesContainer: {
-            flexGrow: 1,
-        },
-        loadingStyle: {
-            alignItems: 'center',
-            flex: 1,
-            justifyContent: 'center',
-        },
-    };
-});
 
 export default ThreadsList;
