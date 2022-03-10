@@ -47,10 +47,6 @@ const EditPostInput = forwardRef<EditPostInputRef, PostInputProps>(({
 
     const inputRef = useRef<TextInput>(null);
 
-    useImperativeHandle(ref, () => ({
-        focus: () => inputRef.current?.focus(),
-    }), [inputRef]);
-
     const inputStyle = useMemo(() => {
         return [styles.input, {height: textInputHeight}];
     }, [textInputHeight, styles]);
@@ -66,10 +62,14 @@ const EditPostInput = forwardRef<EditPostInputRef, PostInputProps>(({
         {height: textInputHeight},
     ], [styles, textInputHeight]);
 
+    useImperativeHandle(ref, () => ({
+        focus: () => inputRef.current?.focus(),
+    }), [inputRef.current]);
+
     return (
         <View style={containerStyle}>
             <TextInput
-                autoFocus={true}
+                ref={inputRef}
                 blurOnSubmit={false}
                 disableFullscreenUI={true}
                 keyboardAppearance={getKeyboardAppearanceFromTheme(theme)}

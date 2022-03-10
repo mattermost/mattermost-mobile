@@ -96,6 +96,16 @@ const EditPost = ({componentId, maxPostSize, post, closeButtonId, hasFilesAttach
     }, []);
 
     useEffect(() => {
+        const t = setTimeout(() => {
+            postInputRef.current?.focus();
+        }, 320);
+
+        return () => {
+            clearTimeout(t);
+        };
+    }, []);
+
+    useEffect(() => {
         const unsubscribe = Navigation.events().registerComponentListener({
             navigationButtonPressed: ({buttonId}: { buttonId: string }) => {
                 switch (buttonId) {
