@@ -13,11 +13,9 @@ import {dismissModal} from '@screens/navigation';
 
 import ThreadPostList from './thread_post_list';
 
-import type ChannelModel from '@typings/database/models/servers/channel';
 import type PostModel from '@typings/database/models/servers/post';
 
 type ThreadProps = {
-    channel: ChannelModel;
     closeButtonId: string;
     componentId: string;
     rootPost: PostModel;
@@ -31,7 +29,7 @@ const getStyleSheet = StyleSheet.create(() => ({
     },
 }));
 
-const Thread = ({channel, closeButtonId, componentId, rootPost}: ThreadProps) => {
+const Thread = ({closeButtonId, componentId, rootPost}: ThreadProps) => {
     const appState = useAppState();
     const styles = getStyleSheet();
 
@@ -70,18 +68,18 @@ const Thread = ({channel, closeButtonId, componentId, rootPost}: ThreadProps) =>
                 mode='margin'
                 edges={edges}
             >
-                {Boolean(channel?.id) &&
+                {Boolean(rootPost?.channelId) &&
                 <>
                     <View style={styles.flex}>
                         <ThreadPostList
-                            channelId={channel.id}
+                            channelId={rootPost.channelId}
                             forceQueryAfterAppState={appState}
                             nativeID={rootPost.id}
                             rootPost={rootPost}
                         />
                     </View>
                     <PostDraft
-                        channelId={channel.id}
+                        channelId={rootPost.channelId}
                         scrollViewNativeID={rootPost.id}
                         accessoriesContainerID={THREAD_ACCESSORIES_CONTAINER_NATIVE_ID}
                         rootId={rootPost.id}

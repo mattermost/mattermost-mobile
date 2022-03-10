@@ -27,7 +27,7 @@ const enhanced = withObservables(
             ).observe().pipe(
 
                 // Root post might not have loaded while the thread screen is opening
-                switchMap((posts) => of$(posts[0] || {id: rootId})),
+                switchMap((posts) => posts[0]?.observe() || of$(undefined)),
             ),
             isSaved: database.
                 get<PreferenceModel>(PREFERENCE).

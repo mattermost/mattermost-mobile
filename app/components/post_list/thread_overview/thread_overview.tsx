@@ -23,7 +23,7 @@ import type PostModel from '@typings/database/models/servers/post';
 type Props = {
     isSaved: boolean;
     repliesCount: number;
-    rootPost: PostModel;
+    rootPost?: PostModel;
     testID: string;
 };
 
@@ -64,19 +64,23 @@ const ThreadOverview = ({isSaved, repliesCount, rootPost, testID}: Props) => {
     const serverUrl = useServerUrl();
 
     const onHandleSavePress = useCallback(preventDoubleTap(() => {
-        const remoteAction = isSaved ? deleteSavedPost : savePostPreference;
-        remoteAction(serverUrl, rootPost.id);
-    }), [isSaved, rootPost.id, serverUrl]);
+        if (rootPost?.id) {
+            const remoteAction = isSaved ? deleteSavedPost : savePostPreference;
+            remoteAction(serverUrl, rootPost.id);
+        }
+    }), [isSaved, rootPost, serverUrl]);
 
     const showPostOptions = useCallback(preventDoubleTap(() => {
         Keyboard.dismiss();
-        const passProps = {location: Screens.THREAD, post: rootPost, showAddReaction: true};
-        const title = isTablet ? intl.formatMessage({id: 'post.options.title', defaultMessage: 'Options'}) : '';
+        if (rootPost?.id) {
+            const passProps = {location: Screens.THREAD, post: rootPost, showAddReaction: true};
+            const title = isTablet ? intl.formatMessage({id: 'post.options.title', defaultMessage: 'Options'}) : '';
 
-        if (isTablet) {
-            showModal(Screens.POST_OPTIONS, title, passProps, bottomSheetModalOptions(theme, 'close-post-options'));
-        } else {
-            showModalOverCurrentContext(Screens.POST_OPTIONS, passProps);
+            if (isTablet) {
+                showModal(Screens.POST_OPTIONS, title, passProps, bottomSheetModalOptions(theme, 'close-post-options'));
+            } else {
+                showModalOverCurrentContext(Screens.POST_OPTIONS, passProps);
+            }
         }
     }), [rootPost]);
 
