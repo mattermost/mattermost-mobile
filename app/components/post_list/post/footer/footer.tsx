@@ -3,7 +3,8 @@
 
 import React from 'react';
 import {useIntl} from 'react-intl';
-import {View, Text, TouchableOpacity} from 'react-native';
+import {View, Text} from 'react-native';
+import {TouchableOpacity} from 'react-native-gesture-handler';
 
 import {updateThreadFollow} from '@actions/remote/thread';
 import AvatarsStack from '@app/components/avatars_stack';

@@ -4,6 +4,7 @@
 import React, {useCallback} from 'react';
 import {useIntl} from 'react-intl';
 import {Platform, StyleProp, Text, View, ViewStyle} from 'react-native';
+import {TouchableOpacity} from 'react-native-gesture-handler';
 
 import FormattedText from '@components/formatted_text';
 import ProfilePicture from '@components/profile_picture';
@@ -65,10 +66,9 @@ const Avatars = ({breakAt = 3, currentUserId, style: baseContainerStyle, teammat
     const style = getStyleSheet(theme);
 
     return (
-        <TouchableWithFeedback
+        <TouchableOpacity
             onPress={showParticipantsList}
             style={baseContainerStyle}
-            type={'opacity'}
         >
             <View style={style.container}>
                 {displayUsers.map((user, index) => (
@@ -94,7 +94,7 @@ const Avatars = ({breakAt = 3, currentUserId, style: baseContainerStyle, teammat
                     </View>
                 )}
             </View>
-        </TouchableWithFeedback>
+        </TouchableOpacity>
     );
 };
 
