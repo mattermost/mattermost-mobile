@@ -9,7 +9,7 @@ import {
     markChannelAsViewed,
     setChannelDeleteAt,
     switchToChannel} from '@actions/local/channel';
-import {fetchMissingSidebarInfo, fetchMyChannel} from '@actions/remote/channel';
+import {fetchMissingSidebarInfo, fetchMyChannel, fetchChannelStats} from '@actions/remote/channel';
 import {fetchPostsForChannel} from '@actions/remote/post';
 import {fetchUsersByIds, updateUsersNoLongerVisible} from '@actions/remote/user';
 import Events from '@constants/events';
@@ -65,19 +65,12 @@ export async function handleChannelUpdatedEvent(serverUrl: string, msg: any) {
     }
 
     const updatedChannel = JSON.parse(msg.data.channel);
-    operator.handleChannel({channels: [updatedChannel], prepareRecordsOnly: false});
-
-    const channelInfos: ChannelInfo[] = [];
-    channelInfos.push({
-        id: updatedChannel.id,
-        header: updatedChannel.header,
-        purpose: updatedChannel.purpose,
-        guest_count: 0,
-        member_count: 0,
-        pinned_post_count: 0,
-    });
-
-    operator.handleChannelInfo({channelInfos, prepareRecordsOnly: false});
+    try {
+        await operator.handleChannel({channels: [updatedChannel], prepareRecordsOnly: false});
+        await fetchChannelStats(serverUrl, updatedChannel.id, true);
+    } catch {
+        // Do nothing
+    }
 }
 
 export async function handleChannelViewedEvent(serverUrl: string, msg: any) {
@@ -88,7 +81,9 @@ export async function handleChannelViewedEvent(serverUrl: string, msg: any) {
 
     try {
         const {channel_id: channelId} = msg.data;
-        await markChannelAsViewed(serverUrl, channelId, false);
+
+        // await markChannelAsViewed(serverUrl, channelId, false);
+        fetchChannelStats(serverUrl, channelId, false);
     } catch {
         // do nothing
     }
@@ -100,12 +95,20 @@ export async function handleChannelMemberUpdatedEvent(serverUrl: string, msg: an
         return;
     }
 
+    const models: Model[] = [];
     try {
         const updatedChannelMember = JSON.parse(msg.data.channelMember);
-        await operator.handleChannelMembership({
+        updatedChannelMember.id = updatedChannelMember.channel_id;
+
+        models.push(...await operator.handleChannelMembership({
             channelMemberships: [updatedChannelMember],
-            prepareRecordsOnly: false,
-        });
+            prepareRecordsOnly: true,
+        }));
+        models.push(...await operator.handleMyChannelSettings({
+            settings: [updatedChannelMember],
+            prepareRecordsOnly: true,
+        }));
+        operator.batchRecords(models);
     } catch {
         // do nothing
     }
@@ -197,6 +200,7 @@ export async function handleUserAddedToChannelEvent(serverUrl: string, msg: any)
         // Do nothing
     }
 
+    await fetchChannelStats(serverUrl, channelId, false);
     database.operator.batchRecords(models);
 }
 
@@ -261,6 +265,7 @@ export async function handleUserRemovedFromChannelEvent(serverUrl: string, msg: 
         }
     }
 
+    await fetchChannelStats(serverUrl, channelId, false);
     database.operator.batchRecords(models);
 }
 
