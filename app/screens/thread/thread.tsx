@@ -18,7 +18,7 @@ import type PostModel from '@typings/database/models/servers/post';
 type ThreadProps = {
     closeButtonId: string;
     componentId: string;
-    rootPost: PostModel;
+    rootPost?: PostModel;
 };
 
 const edges: Edge[] = ['left', 'right'];
@@ -68,21 +68,21 @@ const Thread = ({closeButtonId, componentId, rootPost}: ThreadProps) => {
                 mode='margin'
                 edges={edges}
             >
-                {Boolean(rootPost?.channelId) &&
+                {Boolean(rootPost?.id) &&
                 <>
                     <View style={styles.flex}>
                         <ThreadPostList
-                            channelId={rootPost.channelId}
+                            channelId={rootPost!.channelId}
                             forceQueryAfterAppState={appState}
-                            nativeID={rootPost.id}
-                            rootPost={rootPost}
+                            nativeID={rootPost!.id}
+                            rootPost={rootPost!}
                         />
                     </View>
                     <PostDraft
-                        channelId={rootPost.channelId}
-                        scrollViewNativeID={rootPost.id}
+                        channelId={rootPost!.channelId}
+                        scrollViewNativeID={rootPost!.id}
                         accessoriesContainerID={THREAD_ACCESSORIES_CONTAINER_NATIVE_ID}
-                        rootId={rootPost.id}
+                        rootId={rootPost!.id}
                     />
                 </>
                 }
