@@ -44,6 +44,7 @@ const postTypePriority = {
 export const COMBINED_USER_ACTIVITY = 'user-activity-';
 export const DATE_LINE = 'date-';
 export const START_OF_NEW_MESSAGES = 'start-of-new-messages';
+export const THREAD_OVERVIEW = 'thread-overview';
 export const MAX_COMBINED_SYSTEM_POSTS = 100;
 
 function combineUserActivityPosts(orderedPosts: Array<PostModel | string>) {
@@ -225,6 +226,10 @@ export function selectOrderedPosts(
         }
 
         out.push(post);
+
+        if (isThreadScreen && i === posts.length - 1) {
+            out.push(THREAD_OVERVIEW);
+        }
     }
 
     // Flip it back to newest to oldest
@@ -347,6 +352,10 @@ export function isDateLine(item: string) {
 
 export function isStartOfNewMessages(item: string) {
     return item === START_OF_NEW_MESSAGES;
+}
+
+export function isThreadOverview(item: string) {
+    return item === THREAD_OVERVIEW;
 }
 
 export function preparePostList(
