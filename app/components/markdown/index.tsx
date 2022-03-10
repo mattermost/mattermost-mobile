@@ -26,7 +26,10 @@ import MarkdownTableImage from './markdown_table_image';
 import MarkdownTableRow, {MarkdownTableRowProps} from './markdown_table_row';
 import {addListItemIndices, combineTextNodes, highlightMentions, pullOutImages} from './transform';
 
-import type {MarkdownBlockStyles, MarkdownTextStyles, UserMentionKey} from '@typings/global/markdown';
+import type {
+    MarkdownAtMentionRenderer, MarkdownBaseRenderer, MarkdownBlockStyles, MarkdownChannelMentionRenderer,
+    MarkdownEmojiRenderer, MarkdownImageRenderer, MarkdownTextStyles, UserMentionKey,
+} from '@typings/global/markdown';
 
 type MarkdownProps = {
     autolinkedUrlSchemes?: string[];
@@ -155,7 +158,7 @@ class Markdown extends PureComponent<MarkdownProps> {
         return contextStyles.length ? concatStyles(baseStyle, contextStyles) : baseStyle;
     };
 
-    renderText = ({context, literal}: any) => {
+    renderText = ({context, literal}: MarkdownBaseRenderer) => {
         if (context.indexOf('image') !== -1) {
             // If this text is displayed, it will be styled by the image component
             return (
@@ -178,12 +181,12 @@ class Markdown extends PureComponent<MarkdownProps> {
         );
     };
 
-    renderCodeSpan = ({context, literal}: {context: any; literal: any}) => {
+    renderCodeSpan = ({context, literal}: MarkdownBaseRenderer) => {
         const {baseTextStyle, textStyles: {code}} = this.props;
         return <Text style={this.computeTextStyle([baseTextStyle, code], context)}>{literal}</Text>;
     };
 
-    renderImage = ({linkDestination, context, src, size}: {linkDestination?: string; context: string[]; src: string; size?: {width?: number; height?: number}}) => {
+    renderImage = ({linkDestination, context, src, size}: MarkdownImageRenderer) => {
         if (!this.props.imagesMetadata) {
             return null;
         }
@@ -216,7 +219,7 @@ class Markdown extends PureComponent<MarkdownProps> {
         );
     };
 
-    renderAtMention = ({context, mentionName}: {context: string[]; mentionName: string}) => {
+    renderAtMention = ({context, mentionName}: MarkdownAtMentionRenderer) => {
         if (this.props.disableAtMentions) {
             return this.renderText({context, literal: `@${mentionName}`});
         }
@@ -236,7 +239,7 @@ class Markdown extends PureComponent<MarkdownProps> {
         );
     };
 
-    renderChannelLink = ({context, channelName}: {context: string[]; channelName: string}) => {
+    renderChannelLink = ({context, channelName}: MarkdownChannelMentionRenderer) => {
         if (this.props.disableChannelLink) {
             return this.renderText({context, literal: `~${channelName}`});
         }
@@ -251,7 +254,7 @@ class Markdown extends PureComponent<MarkdownProps> {
         );
     };
 
-    renderEmoji = ({context, emojiName, literal}: {context: string[]; emojiName: string; literal: string}) => {
+    renderEmoji = ({context, emojiName, literal}: MarkdownEmojiRenderer) => {
         return (
             <Emoji
                 emojiName={emojiName}

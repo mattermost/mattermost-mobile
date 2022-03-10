@@ -11,16 +11,16 @@ import Animated from 'react-native-reanimated';
 import {SvgUri} from 'react-native-svg';
 import parseUrl from 'url-parse';
 
-import {GalleryInit} from '@app/context/gallery';
-import {useGalleryItem} from '@app/hooks/gallery';
 import CompassIcon from '@components/compass_icon';
 import FormattedText from '@components/formatted_text';
 import ProgressiveImage from '@components/progressive_image';
 import SlideUpPanelItem, {ITEM_HEIGHT} from '@components/slide_up_panel_item';
 import TouchableWithFeedback from '@components/touchable_with_feedback';
+import {GalleryInit} from '@context/gallery';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
+import {useGalleryItem} from '@hooks/gallery';
 import {bottomSheet, dismissBottomSheet} from '@screens/navigation';
 import {lookupMimeType} from '@utils/file';
 import {fileToGalleryItem, openGalleryAtIndex} from '@utils/gallery';
