@@ -1,7 +1,6 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {typography} from '@app/utils/typography';
 import CompassIcon from '@components/compass_icon';
 import {General, Screens} from '@constants';
 import DatabaseManager from '@database/manager';
@@ -60,7 +59,6 @@ export const switchToThread = async (serverUrl: string, rootId: string) => {
         showModal(Screens.THREAD, '', {closeButtonId, rootId}, {
             topBar: {
                 title: {
-                    ...typography('Heading', 300, 'SemiBold'),
                     text: title,
                 },
                 subtitle: {
