@@ -9,6 +9,7 @@ import ChannelListItem from './channel';
 type Props = {
     currentChannelId: string;
     sortedIds: string[];
+    collapsed: boolean;
 };
 
 const extractKey = (item: any) => item;
