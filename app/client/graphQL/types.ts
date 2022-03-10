@@ -2,8 +2,12 @@
 // See LICENSE.txt for license information.
 import {CustomStatusDuration} from '@app/constants';
 
-export type GQLQuery = {
-	errors?: GQLError[];
+export type GQLResponse = {
+    errors?: GQLError[];
+    data: GQLData;
+}
+
+export type GQLData = {
     user?: Partial<GQLUser>;
     config?: ClientConfig;
     license?: ClientLicense;
@@ -41,6 +45,7 @@ export type GQLUser = {
 	position: string;
 	roles: Array<Partial<GQLRole>>;
 	preferences: Array<Partial<GQLPreference>>;
+    sessions: Array<Partial<GQLSession>>;
 }
 
 export const gqlToClientUser = (m: Partial<GQLUser>): UserProfile => {
@@ -68,6 +73,20 @@ export const gqlToClientUser = (m: Partial<GQLUser>): UserProfile => {
         terms_of_service_create_at: 0,
         terms_of_service_id: '',
         timezone: m.timezone,
+    };
+};
+
+export type GQLSession = {
+    createAt: number;
+    expiresAt: number;
+}
+
+export const gqlToClientSession = (m: Partial<GQLSession>): Session => {
+    return {
+        create_at: m.createAt || 0,
+        expires_at: m.expiresAt || 0,
+        id: '',
+        user_id: '',
     };
 };
 
@@ -103,6 +122,7 @@ export type GQLSidebarCategory = {
 	muted: boolean;
 	collapsed: boolean;
 	channelIds: string[];
+    sortOrder: number;
 }
 
 export const gqlToClientSidebarCategory = (m: Partial<GQLSidebarCategory>, teamId: string): CategoryWithChannels => {
@@ -112,7 +132,7 @@ export const gqlToClientSidebarCategory = (m: Partial<GQLSidebarCategory>, teamI
         display_name: m.displayName || '',
         id: m.id || '',
         muted: m.muted || false,
-        sort_order: 0,
+        sort_order: m.sortOrder || 0,
         sorting: m.sorting || 'alpha',
         team_id: teamId,
         type: m.type || 'channels',
@@ -129,11 +149,15 @@ export type GQLTeam = {
 	companyName: string;
 	allowedDomains: string;
 	inviteId: string;
+    lastTeamIconUpdate: number;
+    groupConstrained: boolean;
+    allowOpenInvite: boolean;
+    updateAt: number;
 }
 
 export const gqlToClientTeam = (m: Partial<GQLTeam>): Team => {
     return {
-        allow_open_invite: false,
+        allow_open_invite: m.allowOpenInvite || false,
         allowed_domains: m.allowedDomains || '',
         company_name: m.companyName || '',
         create_at: 0,
@@ -141,14 +165,14 @@ export const gqlToClientTeam = (m: Partial<GQLTeam>): Team => {
         description: m.description || '',
         display_name: m.displayName || '',
         email: m.email || '',
-        group_constrained: false,
+        group_constrained: m.groupConstrained || false,
         id: m.id || '',
         invite_id: m.inviteId || '',
-        last_team_icon_update: 0,
+        last_team_icon_update: m.lastTeamIconUpdate || 0,
         name: m.name || '',
         scheme_id: '',
         type: m.type || 'I',
-        update_at: 0,
+        update_at: m.updateAt || 0,
     };
 };
 
@@ -233,6 +257,10 @@ export type GQLChannel = {
 	schemeId: string;
 	team: Partial<GQLTeam>;
 	cursor: string;
+    groupConstrained: boolean;
+    shared: boolean;
+    lastPostAt: number;
+    totalMsgCount: number;
 }
 
 export const gqlToClientChannel = (m: Partial<GQLChannel>): Channel => {
@@ -242,16 +270,16 @@ export const gqlToClientChannel = (m: Partial<GQLChannel>): Channel => {
         delete_at: m.deleteAt || 0,
         display_name: m.displayName || '',
         extra_update_at: 0,
-        group_constrained: false,
+        group_constrained: m.groupConstrained || false,
         header: m.header || '',
         id: m.id || '',
-        last_post_at: 0,
+        last_post_at: m.lastPostAt || 0,
         name: m.name || '',
         purpose: m.purpose || '',
         scheme_id: m.schemeId || '',
-        shared: false,
+        shared: m.shared || false,
         team_id: m.team?.id || '',
-        total_msg_count: 0,
+        total_msg_count: m.totalMsgCount || 0,
         type: m.type || 'O',
         update_at: m.updateAt || 0,
         fake: false,

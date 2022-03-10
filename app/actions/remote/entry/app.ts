@@ -9,7 +9,7 @@ import {gqlToClientChannel, gqlToClientChannelMembership, gqlToClientPreference,
 import DatabaseManager from '@database/manager';
 import {queryAllChannelsForTeam, queryChannelsById, queryDefaultChannelForTeam} from '@queries/servers/channel';
 import {prepareModels} from '@queries/servers/entry';
-import {prepareCommonSystemValues, queryCommonSystemValues, queryCurrentChannelId, queryCurrentTeamId, queryWebSocketLastDisconnected, setCurrentTeamAndChannelId} from '@queries/servers/system';
+import {prepareCommonSystemValues, queryCommonSystemValues, queryConfig, queryCurrentChannelId, queryCurrentTeamId, queryWebSocketLastDisconnected, setCurrentTeamAndChannelId} from '@queries/servers/system';
 import {deleteMyTeams, queryMyTeams, queryTeamsById} from '@queries/servers/team';
 import {queryCurrentUser} from '@queries/servers/user';
 import {deleteV1Data} from '@utils/file';
@@ -17,7 +17,24 @@ import {isTablet} from '@utils/helpers';
 
 import {AppEntryData, AppEntryError, deferredAppEntryActions, fetchAppEntryData, syncOtherServers} from './common';
 
-export const gqlAppEntry = async (serverUrl: string, since = 0) => {
+export const appEntry = async (serverUrl: string, since = 0) => {
+    const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
+    if (!operator) {
+        return {error: `${serverUrl} database not found`};
+    }
+    const {database} = operator;
+
+    const config = await queryConfig(database);
+    if (config.FeatureFlagGraphQL === 'true') {
+        return gqlAppEntry(serverUrl, since);
+    }
+
+    return restAppEntry(serverUrl, since);
+};
+
+const gqlAppEntry = async (serverUrl: string, since = 0) => {
+    console.log('using graphQL');
+    const time = Date.now();
     const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
     if (!operator) {
         return {error: `${serverUrl} database not found`};
@@ -26,11 +43,17 @@ export const gqlAppEntry = async (serverUrl: string, since = 0) => {
 
     const lastDisconnectedAt = (await queryWebSocketLastDisconnected(database)) || since;
 
-    const {data: fetchedData, error: fetchedError} = await gqlLogin(serverUrl);
+    const response = await gqlLogin(serverUrl);
 
-    if (!fetchedData) {
-        return {error: fetchedError};
+    if ('error' in response) {
+        return {error: response.error};
     }
+
+    if ('errors' in response && response.errors?.length) {
+        return {error: response.errors[0].message};
+    }
+
+    const fetchedData = response.data;
 
     const teamData = {
         teams: fetchedData.teamMembers.map((m) => gqlToClientTeam(m.team!)),
@@ -108,17 +131,20 @@ export const gqlAppEntry = async (serverUrl: string, since = 0) => {
 
     const {id: currentUserId, locale: currentUserLocale} = meData.user || (await queryCurrentUser(database))!;
     const {config, license} = await queryCommonSystemValues(database);
-    deferredAppEntryActions(serverUrl, lastDisconnectedAt, currentUserId, currentUserLocale, prefData.preferences, config, license, teamData, chData, initialTeamId);
+    deferredAppEntryActions(serverUrl, lastDisconnectedAt, currentUserId, currentUserLocale, prefData.preferences, config, license, teamData, chData, initialTeamId, undefined, true);
 
     if (!since) {
         // Load data from other servers
         syncOtherServers(serverUrl);
     }
 
+    console.log('Time elapsed', Date.now() - time);
     return {userId: meData?.user?.id};
 };
 
-export const appEntry = async (serverUrl: string, since = 0) => {
+const restAppEntry = async (serverUrl: string, since = 0) => {
+    console.log('using rest');
+    const time = Date.now();
     const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
     if (!operator) {
         return {error: `${serverUrl} database not found`};
@@ -196,6 +222,7 @@ export const appEntry = async (serverUrl: string, since = 0) => {
     }
 
     const error = teamData.error || chData?.error || prefData.error || meData.error;
+    console.log('Time elapsed', Date.now() - time);
     return {error, userId: meData?.user?.id};
 };
 

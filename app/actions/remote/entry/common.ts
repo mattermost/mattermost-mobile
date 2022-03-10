@@ -161,7 +161,7 @@ export const fetchAlternateTeamData = async (
 export const deferredAppEntryActions = async (
     serverUrl: string, since: number, currentUserId: string, currentUserLocale: string, preferences: PreferenceType[] | undefined,
     config: ClientConfig, license: ClientLicense, teamData: MyTeamsRequest, chData: MyChannelsRequest | undefined,
-    initialTeamId?: string, initialChannelId?: string) => {
+    initialTeamId?: string, initialChannelId?: string, useGraphQL = false) => {
     // defer fetching posts for initial channel
     if (initialChannelId) {
         fetchPostsForChannel(serverUrl, initialChannelId);
@@ -183,7 +183,7 @@ export const deferredAppEntryActions = async (
     }
 
     // defer fetch channels and unread posts for other teams
-    if (teamData.teams?.length && teamData.memberships?.length) {
+    if (!useGraphQL && teamData.teams?.length && teamData.memberships?.length) {
         await fetchTeamsChannelsAndUnreadPosts(serverUrl, since, teamData.teams, teamData.memberships, initialTeamId);
     }
 

@@ -115,6 +115,7 @@ interface ClientConfig {
     ExperimentalViewArchivedChannels: string;
     ExtendSessionLengthWithActivity: string;
     FeatureFlagAppsEnabled?: string;
+    FeatureFlagGraphQL?: string;
     GfycatApiKey: string;
     GfycatApiSecret: string;
     GoogleDeveloperKey: string;

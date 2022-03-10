@@ -197,7 +197,10 @@ export default class ClientBase {
         return '/plugins/com.mattermost.apps';
     }
 
+    fetchCount = 0;
     doFetch = async (url: string, options: ClientOptions, returnDataOnly = true) => {
+        this.fetchCount++;
+        console.log(this.fetchCount, url);
         let request;
         const method = options.method?.toLowerCase();
         switch (method) {

@@ -4,7 +4,7 @@ import NetworkManager from '@init/network_manager';
 
 import {Client} from '../rest';
 
-import {GQLQuery} from './types';
+import {GQLResponse} from './types';
 
 const doGQLQuery = async (serverUrl: string, query: string) => {
     let client: Client;
@@ -15,9 +15,8 @@ const doGQLQuery = async (serverUrl: string, query: string) => {
     }
 
     try {
-        const data = await client.doFetch('/api/v5/graphql', {method: 'post', body: JSON.stringify({query})}) as GQLQuery;
-
-        return {data};
+        const response = await client.doFetch('/api/v5/graphql', {method: 'post', body: JSON.stringify({query})}) as GQLResponse;
+        return response;
     } catch (error) {
         return {error};
     }
@@ -29,17 +28,42 @@ export const gqlLogin = async (serverUrl: string) => {
 
 const loginQuery = `
 {
-    #session(id:"me") {
-    #  createAt
-    #  expiresAt
-    #}
     config
     license
     user(id:"me") {
+        id
+        authService
+        deleteAt
+        email
+        #updateAt
+        firstName
+        lastName
+        lastPictureUpdateAt
+        locale
+        nickname
+        position
+        roles {
+            id
+            name
+            permissions
+        }
+        username
+        notifyProps
+        props
+        timezone
+        isBot
+        status {
+            status
+        }
         preferences{
             category
             name
             value
+            userId
+        }
+        sessions {
+            createAt
+            expiresAt
         }
     }
     teamMembers(userId:"me") {
@@ -56,10 +80,10 @@ const loginQuery = `
             name
             type
             allowedDomains
-            # lastTeamIconUpdate
-            # groupConstrained
-            # allowOpenInvite
-            # updateAt
+            lastTeamIconUpdate
+            groupConstrained
+            allowOpenInvite
+            updateAt
         }
         sidebarCategories {
             id
@@ -70,6 +94,9 @@ const loginQuery = `
             collapsed
             type
             channelIds
+        }
+        user {
+            id
         }
     }
     channelMembers(userId:"me") {
@@ -91,16 +118,22 @@ const loginQuery = `
             creatorId
             deleteAt
             displayName
-            # groupConstrained
+            groupConstrained
             name
-            # shared
-            # lastPostAt
-            # totalMsgCount
+            shared
+            lastPostAt
+            totalMsgCount
+            team {
+                id
+            }
             # stats {
             #   guestCount
             #   memberCount
             #   pinnedPostCount
             # }
+        }
+        user {
+            id
         }
     }
 }
