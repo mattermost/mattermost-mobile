@@ -18,13 +18,12 @@ import {queryCommonSystemValues, queryConfig, queryCurrentChannelId, queryWebSoc
 import {isTablet} from '@utils/helpers';
 
 import {handleCategoryCreatedEvent, handleCategoryDeletedEvent, handleCategoryOrderUpdatedEvent, handleCategoryUpdatedEvent} from './category';
-import {handleChannelDeletedEvent,
-    handleChannelCreatedEvent,
+import {handleChannelCreatedEvent,
+    handleChannelDeletedEvent,
+    handleChannelMemberUpdatedEvent,
     handleChannelUnarchiveEvent,
-    handleChannelConvertedEvent,
     handleChannelUpdatedEvent,
     handleChannelViewedEvent,
-    handleChannelMemberUpdatedEvent,
     handleDirectAddedEvent,
     handleUserAddedToChannelEvent,
     handleUserRemovedFromChannelEvent} from './channel';
@@ -272,6 +271,7 @@ export async function handleEvent(serverUrl: string, msg: WebSocketMessage) {
             break;
 
         case WebsocketEvents.CHANNEL_CONVERTED:
+            // covered by CHANNEL_UPDATED
             // handleChannelConvertedEvent(serverUrl, msg);
             break;
 
