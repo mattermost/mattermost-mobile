@@ -202,7 +202,7 @@ export default class AppsFormContainer extends PureComponent<Props, State> {
         });
 
         return this.props.actions.doAppLookup(creq, intl);
-    }
+    };
 
     render() {
         const {form} = this.state;

@@ -919,7 +919,7 @@ export class AppCommandParser {
         }
 
         return {creq};
-    }
+    };
 
     public composeFormFromCommand = async (command: string): Promise<{form: AppForm | null; context: AppContext | null; errorMessage?: string}> => {
         let parsed = new ParsedCommand(command, this, this.intl);
@@ -965,7 +965,7 @@ export class AppCommandParser {
 
         const context = this.getAppContext(parsed.binding!);
         return {form, context};
-    }
+    };
 
     private async addDefaultAndReadOnlyValues(parsed: ParsedCommand) {
         if (!parsed.resolvedForm?.fields) {
@@ -1160,7 +1160,7 @@ export class AppCommandParser {
 
         const context = this.getAppContext(parsed.binding);
         return {creq: createCallRequest(call, context, {}, values, parsed.command)};
-    }
+    };
 
     private expandOptions = async (parsed: ParsedCommand, values: AppCallValues): Promise<{errorMessage?: string}> => {
         if (!parsed.resolvedForm?.fields) {
@@ -1647,7 +1647,7 @@ export class AppCommandParser {
                 IconData: '',
             },
         ];
-    }
+    };
 
     // getMissingFields collects the required fields that were not supplied in a submission
     private getMissingFields = (parsed: ParsedCommand): AppField[] => {
