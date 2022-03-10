@@ -29,19 +29,23 @@ export async function handleChannelCreatedEvent(serverUrl: string, msg: any) {
 
     const {team_id: teamId, channel_id: channelId} = msg.data;
 
-    const models: Model[] = [];
-    const {channels, memberships} = await fetchMyChannel(serverUrl, teamId, channelId, true);
-    if (channels && memberships) {
-        const prepare = await prepareMyChannelsForTeam(database.operator, teamId, channels, memberships);
-        if (prepare) {
-            const prepareModels = await Promise.all(prepare);
-            const flattenedModels = prepareModels.flat();
-            if (flattenedModels?.length > 0) {
-                models.push(...flattenedModels);
+    try {
+        const models: Model[] = [];
+        const {channels, memberships} = await fetchMyChannel(serverUrl, teamId, channelId, true);
+        if (channels && memberships) {
+            const prepare = await prepareMyChannelsForTeam(database.operator, teamId, channels, memberships);
+            if (prepare) {
+                const prepareModels = await Promise.all(prepare);
+                const flattenedModels = prepareModels.flat();
+                if (flattenedModels?.length > 0) {
+                    models.push(...flattenedModels);
+                }
             }
         }
+        database.operator.batchRecords(models);
+    } catch {
+        // do nothing
     }
-    database.operator.batchRecords(models);
 }
 
 export async function handleChannelUnarchiveEvent(serverUrl: string, msg: any) {
