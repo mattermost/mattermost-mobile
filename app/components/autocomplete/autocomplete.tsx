@@ -1,14 +1,15 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useEffect, useMemo, useState} from 'react';
-import {Keyboard, KeyboardEvent, Platform, useWindowDimensions, View} from 'react-native';
+import React, {useMemo, useState} from 'react';
+import {Platform, useWindowDimensions, View} from 'react-native';
 
+import {LIST_BOTTOM, MAX_LIST_DIFF, MAX_LIST_HEIGHT, MAX_LIST_TABLET_DIFF, OFFSET_TABLET} from '@constants/autocomplete';
 import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
-import useHeaderHeight from '@hooks/header';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
+import ChannelMention from './channel_mention/';
 import EmojiSuggestion from './emoji_suggestion/';
 
 const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
@@ -22,7 +23,8 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
             borderWidth: 1,
             borderColor: changeOpacity(theme.centerChannelColor, 0.2),
             overflow: 'hidden',
-            borderRadius: 4,
+            borderRadius: 8,
+            elevation: 3,
         },
         hidden: {
             display: 'none',
@@ -40,10 +42,10 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
         shadow: {
             shadowColor: '#000',
             shadowOpacity: 0.12,
-            shadowRadius: 8,
+            shadowRadius: 6,
             shadowOffset: {
                 width: 0,
-                height: 8,
+                height: 6,
             },
         },
     };
@@ -58,14 +60,10 @@ type Props = {
     value: string;
     enableDateSuggestion?: boolean;
     isAppsEnabled: boolean;
-    offsetY?: number;
     nestedScrollEnabled?: boolean;
     updateValue: (v: string) => void;
     hasFilesAttached: boolean;
 }
-
-const OFFSET_IPAD = 60;
-const AUTOCOMPLETE_MARGIN = 20;
 
 const Autocomplete = ({
     cursorPosition,
@@ -78,52 +76,46 @@ const Autocomplete = ({
 
     //enableDateSuggestion = false,
     isAppsEnabled,
-    offsetY = 60,
     nestedScrollEnabled = false,
     updateValue,
     hasFilesAttached,
 }: Props) => {
     const theme = useTheme();
     const isTablet = useIsTablet();
+    const dimensions = useWindowDimensions();
     const style = getStyleFromTheme(theme);
-    const {height: deviceHeight} = useWindowDimensions();
-    const {defaultHeight: headerHeight} = useHeaderHeight(false, true, false);
-    const [keyboardHeight, setKeyboardHeight] = useState(0);
 
     // const [showingAtMention, setShowingAtMention] = useState(false);
-    // const [showingChannelMention, setShowingChannelMention] = useState(false);
+    const [showingChannelMention, setShowingChannelMention] = useState(false);
     const [showingEmoji, setShowingEmoji] = useState(false);
 
     // const [showingCommand, setShowingCommand] = useState(false);
     // const [showingAppCommand, setShowingAppCommand] = useState(false);
     // const [showingDate, setShowingDate] = useState(false);
 
-    const hasElements = showingEmoji; // || showingAtMention || showingChannelMention || showingCommand || showingAppCommand || showingDate;
+    const hasElements = showingChannelMention || showingEmoji; // || showingAtMention || showingCommand || showingAppCommand || showingDate;
     const appsTakeOver = false; // showingAppCommand;
 
     const maxListHeight = useMemo(() => {
-        const postInputHeight = deviceHeight - postInputTop;
-        let offset = 0;
-        if (Platform.OS === 'ios' && isTablet) {
-            offset = OFFSET_IPAD;
+        const isLandscape = dimensions.width > dimensions.height;
+        const offset = isTablet && isLandscape ? OFFSET_TABLET : 0;
+        let postInputDiff = 0;
+        if (isTablet && postInputTop && isLandscape) {
+            postInputDiff = MAX_LIST_TABLET_DIFF;
+        } else if (postInputTop) {
+            postInputDiff = MAX_LIST_DIFF;
         }
-
-        if (keyboardHeight) {
-            return (deviceHeight - (postInputHeight + headerHeight + AUTOCOMPLETE_MARGIN + offset));
-        }
-        return (deviceHeight - (postInputHeight + headerHeight + AUTOCOMPLETE_MARGIN + offset)) / 2;
-    }, [postInputTop, deviceHeight, headerHeight, isTablet]); // We don't depend on keyboardHeight to avoid visual artifacts due to postInputTop and keyboardHeight not being updated in the same render.
+        return MAX_LIST_HEIGHT - postInputDiff - offset;
+    }, [postInputTop, isTablet, dimensions.width]);
 
     const wrapperStyles = useMemo(() => {
         const s = [];
         if (Platform.OS === 'ios') {
             s.push(style.shadow);
         }
-
         if (isSearch) {
             s.push(style.base, style.searchContainer, {height: maxListHeight});
         }
-
         if (!hasElements) {
             s.push(style.hidden);
         }
@@ -133,26 +125,14 @@ const Autocomplete = ({
     const containerStyles = useMemo(() => {
         const s = [style.borders];
         if (!isSearch) {
-            s.push(style.base, {bottom: offsetY});
+            const offset = isTablet ? -OFFSET_TABLET : 0;
+            s.push(style.base, {bottom: postInputTop + LIST_BOTTOM + offset});
         }
         if (!hasElements) {
             s.push(style.hidden);
         }
         return s;
-    }, [!isSearch && offsetY, hasElements]);
-
-    useEffect(() => {
-        const keyboardEvent = (event: KeyboardEvent) => {
-            setKeyboardHeight(event.endCoordinates.height);
-        };
-        const shown = Keyboard.addListener('keyboardDidShow', keyboardEvent);
-        const hidden = Keyboard.addListener('keyboardDidHide', keyboardEvent);
-
-        return () => {
-            shown.remove();
-            hidden.remove();
-        };
-    }, []);
+    }, [!isSearch, isTablet, hasElements, postInputTop]);
 
     return (
         <View
@@ -179,15 +159,16 @@ const Autocomplete = ({
                         onResultCountChange={setShowingAtMention}
                         value={value || ''}
                         nestedScrollEnabled={nestedScrollEnabled}
-                    />
+                    /> */}
                     <ChannelMention
                         cursorPosition={cursorPosition}
                         maxListHeight={maxListHeight}
                         updateValue={updateValue}
-                        onResultCountChange={setShowingChannelMention}
+                        onShowingChange={setShowingChannelMention}
                         value={value || ''}
                         nestedScrollEnabled={nestedScrollEnabled}
-                    /> */}
+                        isSearch={isSearch}
+                    />
                     {!isSearch &&
                     <EmojiSuggestion
                         cursorPosition={cursorPosition}

@@ -2,12 +2,14 @@
 // See LICENSE.txt for license information.
 //
 
+/* eslint-disable max-lines */
+
 import {DeviceEventEmitter} from 'react-native';
 
-import {updateLastPostAt} from '@actions/local/channel';
+import {markChannelAsUnread, updateLastPostAt} from '@actions/local/channel';
 import {processPostsFetched, removePost} from '@actions/local/post';
 import {addRecentReaction} from '@actions/local/reactions';
-import {ActionType, Events, General, ServerErrors} from '@constants';
+import {ActionType, Events, General, Post, ServerErrors} from '@constants';
 import {SYSTEM_IDENTIFIERS} from '@constants/database';
 import DatabaseManager from '@database/manager';
 import {getNeededAtMentionedUsernames} from '@helpers/api/user';
@@ -17,13 +19,14 @@ import {queryAllCustomEmojis} from '@queries/servers/custom_emoji';
 import {queryPostById, queryRecentPostsInChannel} from '@queries/servers/post';
 import {queryCurrentUserId, queryCurrentChannelId} from '@queries/servers/system';
 import {queryAllUsers} from '@queries/servers/user';
-import PostModel from '@typings/database/models/servers/post';
 import {getValidEmojis, matchEmoticons} from '@utils/emoji/helpers';
+import {getPostIdsForCombinedUserActivityPost} from '@utils/post_list';
 
 import {forceLogoutIfNecessary} from './session';
 
 import type {Client} from '@client/rest';
 import type Model from '@nozbe/watermelondb/Model';
+import type PostModel from '@typings/database/models/servers/post';
 
 type PostsRequest = {
     error?: unknown;
@@ -416,6 +419,84 @@ export const fetchPostAuthors = async (serverUrl: string, posts: Post[], fetchOn
     }
 };
 
+export const fetchPostThread = async (serverUrl: string, postId: string, fetchOnly = false): Promise<PostsRequest> => {
+    let client: Client;
+    try {
+        client = NetworkManager.getClient(serverUrl);
+    } catch (error) {
+        return {error};
+    }
+
+    try {
+        const data = await client.getPostThread(postId);
+        return processPostsFetched(serverUrl, ActionType.POSTS.RECEIVED_IN_THREAD, data, fetchOnly);
+    } catch (error) {
+        forceLogoutIfNecessary(serverUrl, error as ClientErrorProps);
+        return {error};
+    }
+};
+
+export async function fetchPostsAround(
+    serverUrl: string,
+    channelId: string,
+    postId: string,
+    perPage = 10,
+) {
+    let client: Client;
+    try {
+        client = NetworkManager.getClient(serverUrl);
+    } catch (error) {
+        return {error};
+    }
+
+    try {
+        const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
+
+        const [after, post, before] = await Promise.all<PostsObjectsRequest>([
+            client.getPostsAfter(channelId, postId, 0, perPage),
+            client.getPostThread(postId),
+            client.getPostsBefore(channelId, postId, 0, perPage),
+        ]);
+
+        const preData: PostResponse = {
+            posts: {
+                ...(after.posts || {}),
+                ...post.posts,
+                ...(before.posts || {}),
+            },
+            order: [
+                ...(after.order || []),
+                postId,
+                ...(before.order || []),
+            ],
+        };
+
+        const data = await processPostsFetched(serverUrl, ActionType.POSTS.RECEIVED_AROUND, preData, true);
+
+        let posts: PostModel[] = [];
+        if (data.posts?.length && data.order?.length) {
+            try {
+                await fetchPostAuthors(serverUrl, data.posts, false);
+            } catch (error) {
+                // eslint-disable-next-line no-console
+                console.error('FETCH AUTHORS ERROR', error);
+            }
+
+            posts = await operator.handlePosts({
+                actionType: ActionType.POSTS.RECEIVED_AROUND,
+                ...data,
+            }) as PostModel[];
+        }
+
+        return {posts};
+    } catch (error) {
+        // eslint-disable-next-line no-console
+        console.error('FETCH POSTS AROUND ERROR', error);
+        forceLogoutIfNecessary(serverUrl, error as ClientErrorProps);
+        return {error};
+    }
+}
+
 export const postActionWithCookie = async (serverUrl: string, postId: string, actionId: string, actionCookie: string, selectedOption = '') => {
     const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
     if (!operator) {
@@ -561,7 +642,12 @@ export const togglePinPost = async (serverUrl: string, postId: string) => {
     }
 };
 
-export async function fetchPostThread(serverUrl: string, postId: string, fetchOnly = false) {
+export const deletePost = async (serverUrl: string, postToDelete: PostModel | Post) => {
+    const database = DatabaseManager.serverDatabases[serverUrl]?.database;
+    if (!database) {
+        return {error: `${serverUrl} database not found`};
+    }
+
     let client: Client;
     try {
         client = NetworkManager.getClient(serverUrl);
@@ -570,71 +656,58 @@ export async function fetchPostThread(serverUrl: string, postId: string, fetchOn
     }
 
     try {
-        const data = await client.getPostThread(postId);
-        return processPostsFetched(serverUrl, ActionType.POSTS.RECEIVED_POST_THREAD, data, fetchOnly);
-    } catch (error) {
-        forceLogoutIfNecessary(serverUrl, error as ClientErrorProps);
-        return {error};
-    }
-}
-
-export async function fetchPostsAround(
-    serverUrl: string,
-    channelId: string,
-    postId: string,
-    perPage = 10,
-) {
-    let client: Client;
-    try {
-        client = NetworkManager.getClient(serverUrl);
-    } catch (error) {
-        return {error};
-    }
-
-    try {
-        const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
-
-        const [after, post, before] = await Promise.all<PostsObjectsRequest>([
-            client.getPostsAfter(channelId, postId, 0, perPage),
-            client.getPostThread(postId),
-            client.getPostsBefore(channelId, postId, 0, perPage),
-        ]);
-
-        const preData: PostResponse = {
-            posts: {
-                ...(after.posts || {}),
-                ...post.posts,
-                ...(before.posts || {}),
-            },
-            order: [
-                ...(after.order || []),
-                postId,
-                ...(before.order || []),
-            ],
-        };
-
-        const data = await processPostsFetched(serverUrl, ActionType.POSTS.RECEIVED_AROUND, preData, true);
-
-        let posts: PostModel[] = [];
-        if (data.posts?.length && data.order?.length) {
-            try {
-                await fetchPostAuthors(serverUrl, data.posts, false);
-            } catch (error) {
-                // eslint-disable-next-line no-console
-                console.error('FETCH AUTHORS ERROR', error);
-            }
-
-            posts = await operator.handlePosts({
-                actionType: ActionType.POSTS.RECEIVED_AROUND,
-                ...data,
-            }) as PostModel[];
+        if (postToDelete.type === Post.POST_TYPES.COMBINED_USER_ACTIVITY && postToDelete.props?.system_post_ids) {
+            const systemPostIds = getPostIdsForCombinedUserActivityPost(postToDelete.id);
+            const promises = systemPostIds.map((id) => client.deletePost(id));
+            await Promise.all(promises);
+        } else {
+            await client.deletePost(postToDelete.id);
         }
 
-        return {posts};
+        const post = await removePost(serverUrl, postToDelete);
+        return {post};
     } catch (error) {
-        // eslint-disable-next-line no-console
-        console.error('FETCH POSTS AROUND ERROR', error);
         forceLogoutIfNecessary(serverUrl, error as ClientErrorProps);
         return {error};
     }
-}
+};
+
+export const markPostAsUnread = async (serverUrl: string, postId: string) => {
+    const database = DatabaseManager.serverDatabases[serverUrl]?.database;
+    if (!database) {
+        return {error: `${serverUrl} database not found`};
+    }
+    let client;
+    try {
+        client = NetworkManager.getClient(serverUrl);
+    } catch (error) {
+        return {error};
+    }
+
+    try {
+        const [userId, post] = await Promise.all([queryCurrentUserId(database), queryPostById(database, postId)]);
+        if (post && userId) {
+            await client.markPostAsUnread(userId, postId);
+            const {channelId} = post;
+
+            const [channel, channelMember] = await Promise.all([
+                client.getChannel(channelId),
+                client.getChannelMember(channelId, userId),
+            ]);
+            if (channel && channelMember) {
+                const messageCount = channel.total_msg_count - channelMember.msg_count;
+                const mentionCount = channelMember.mention_count;
+                await markChannelAsUnread(serverUrl, channelId, messageCount, mentionCount, post.createAt);
+                return {
+                    post,
+                };
+            }
+        }
+        return {
+            post,
+        };
+    } catch (error) {
+        forceLogoutIfNecessary(serverUrl, error as ClientErrorProps);
+        return {error};
+    }
+};

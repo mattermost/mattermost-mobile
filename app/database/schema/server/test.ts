@@ -16,10 +16,6 @@ const {
     CUSTOM_EMOJI,
     DRAFT,
     FILE,
-    GROUP,
-    GROUPS_CHANNEL,
-    GROUPS_TEAM,
-    GROUP_MEMBERSHIP,
     MY_CHANNEL,
     MY_CHANNEL_SETTINGS,
     MY_TEAM,
@@ -36,6 +32,8 @@ const {
     TEAM_MEMBERSHIP,
     TEAM_SEARCH_HISTORY,
     TERMS_OF_SERVICE,
+    THREAD,
+    THREAD_PARTICIPANT,
     USER,
 } = MM_TABLES.SERVER;
 
@@ -292,62 +290,6 @@ describe('*** Test schema for SERVER database ***', () => {
                         {name: 'user_id', type: 'string', isIndexed: true},
                     ],
                 },
-                [GROUP]: {
-                    name: GROUP,
-                    unsafeSql: undefined,
-                    columns: {
-                        allow_reference: {name: 'allow_reference', type: 'boolean'},
-                        delete_at: {name: 'delete_at', type: 'number'},
-                        display_name: {name: 'display_name', type: 'string'},
-                        name: {name: 'name', type: 'string'},
-                    },
-                    columnArray: [
-                        {name: 'allow_reference', type: 'boolean'},
-                        {name: 'delete_at', type: 'number'},
-                        {name: 'display_name', type: 'string'},
-                        {name: 'name', type: 'string'},
-                    ],
-                },
-                [GROUPS_CHANNEL]: {
-                    name: GROUPS_CHANNEL,
-                    unsafeSql: undefined,
-                    columns: {
-                        channel_id: {name: 'channel_id', type: 'string', isIndexed: true},
-                        group_id: {name: 'group_id', type: 'string', isIndexed: true},
-                        member_count: {name: 'member_count', type: 'number'},
-                        timezone_count: {name: 'timezone_count', type: 'number'},
-                    },
-                    columnArray: [
-                        {name: 'channel_id', type: 'string', isIndexed: true},
-                        {name: 'group_id', type: 'string', isIndexed: true},
-                        {name: 'member_count', type: 'number'},
-                        {name: 'timezone_count', type: 'number'},
-                    ],
-                },
-                [GROUPS_TEAM]: {
-                    name: GROUPS_TEAM,
-                    unsafeSql: undefined,
-                    columns: {
-                        group_id: {name: 'group_id', type: 'string', isIndexed: true},
-                        team_id: {name: 'team_id', type: 'string', isIndexed: true},
-                    },
-                    columnArray: [
-                        {name: 'group_id', type: 'string', isIndexed: true},
-                        {name: 'team_id', type: 'string', isIndexed: true},
-                    ],
-                },
-                [GROUP_MEMBERSHIP]: {
-                    name: GROUP_MEMBERSHIP,
-                    unsafeSql: undefined,
-                    columns: {
-                        group_id: {name: 'group_id', type: 'string', isIndexed: true},
-                        user_id: {name: 'user_id', type: 'string', isIndexed: true},
-                    },
-                    columnArray: [
-                        {name: 'group_id', type: 'string', isIndexed: true},
-                        {name: 'user_id', type: 'string', isIndexed: true},
-                    ],
-                },
                 [PREFERENCE]: {
                     name: PREFERENCE,
                     unsafeSql: undefined,
@@ -518,6 +460,40 @@ describe('*** Test schema for SERVER database ***', () => {
                         accepted_at: {name: 'accepted_at', type: 'number'},
                     },
                     columnArray: [{name: 'accepted_at', type: 'number'}],
+                },
+                [THREAD]: {
+                    name: THREAD,
+                    unsafeSql: undefined,
+                    columns: {
+                        last_reply_at: {name: 'last_reply_at', type: 'number'},
+                        last_viewed_at: {name: 'last_viewed_at', type: 'number'},
+                        is_following: {name: 'is_following', type: 'boolean'},
+                        reply_count: {name: 'reply_count', type: 'number'},
+                        unread_replies: {name: 'unread_replies', type: 'number'},
+                        unread_mentions: {name: 'unread_mentions', type: 'number'},
+                        loaded_in_global_threads: {name: 'loaded_in_global_threads', type: 'boolean'},
+                    },
+                    columnArray: [
+                        {name: 'last_reply_at', type: 'number'},
+                        {name: 'last_viewed_at', type: 'number'},
+                        {name: 'is_following', type: 'boolean'},
+                        {name: 'reply_count', type: 'number'},
+                        {name: 'unread_replies', type: 'number'},
+                        {name: 'unread_mentions', type: 'number'},
+                        {name: 'loaded_in_global_threads', type: 'boolean'},
+                    ],
+                },
+                [THREAD_PARTICIPANT]: {
+                    name: THREAD_PARTICIPANT,
+                    unsafeSql: undefined,
+                    columns: {
+                        thread_id: {name: 'thread_id', type: 'string', isIndexed: true},
+                        user_id: {name: 'user_id', type: 'string', isIndexed: true},
+                    },
+                    columnArray: [
+                        {name: 'thread_id', type: 'string', isIndexed: true},
+                        {name: 'user_id', type: 'string', isIndexed: true},
+                    ],
                 },
                 [USER]: {
                     name: USER,

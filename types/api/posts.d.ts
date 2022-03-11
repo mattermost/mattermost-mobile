@@ -47,6 +47,7 @@ type Post = {
     update_at: number;
     edit_at: number;
     delete_at: number;
+    is_following?: boolean;
     is_pinned: boolean;
     user_id: string;
     channel_id: string;
@@ -54,6 +55,7 @@ type Post = {
     original_id: string;
     message: string;
     type: PostType;
+    participants?: null | UserProfile[];
     props: Record<string, any>;
     hashtags: string;
     pending_post_id: string;

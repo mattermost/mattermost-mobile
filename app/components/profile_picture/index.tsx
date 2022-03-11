@@ -21,7 +21,7 @@ const STATUS_BUFFER = Platform.select({
 });
 
 type ProfilePictureProps = {
-    author?: UserModel;
+    author?: UserModel | UserProfile;
     iconSize?: number;
     showStatus?: boolean;
     size: number;
@@ -73,9 +73,10 @@ const ProfilePicture = ({
 
     const style = getStyleSheet(theme);
     const buffer = showStatus ? STATUS_BUFFER || 0 : 0;
+    const isBot = author && (('isBot' in author) ? author.isBot : author.is_bot);
 
     useEffect(() => {
-        if (author && !author.status && showStatus) {
+        if (!isBot && author && !author.status && showStatus) {
             fetchStatusInBatch(serverUrl, author.id);
         }
     }, []);

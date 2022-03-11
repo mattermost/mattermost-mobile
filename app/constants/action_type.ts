@@ -5,6 +5,7 @@ import keyMirror from '@utils/key_mirror';
 
 export const POSTS = keyMirror({
     RECEIVED_IN_CHANNEL: null,
+    RECEIVED_IN_THREAD: null,
     RECEIVED_SINCE: null,
     RECEIVED_AFTER: null,
     RECEIVED_BEFORE: null,

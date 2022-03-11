@@ -2,8 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {fetchMissingSidebarInfo, switchToChannelById} from '@actions/remote/channel';
-import {AppEntryData, AppEntryError, fetchAppEntryData} from '@actions/remote/entry/common';
-import {fetchGroupsForTeam} from '@actions/remote/group';
+import {AppEntryData, AppEntryError, fetchAppEntryData, teamsToRemove} from '@actions/remote/entry/common';
 import {fetchPostsForUnreadChannels, fetchPostsSince} from '@actions/remote/post';
 import {fetchRoles} from '@actions/remote/role';
 import {fetchConfigAndLicense} from '@actions/remote/systems';
@@ -16,7 +15,6 @@ import {getTeammateNameDisplaySetting} from '@helpers/api/preference';
 import {queryChannelsById, queryDefaultChannelForTeam} from '@queries/servers/channel';
 import {prepareModels} from '@queries/servers/entry';
 import {queryCommonSystemValues, queryConfig, queryCurrentChannelId, queryWebSocketLastDisconnected, resetWebSocketLastDisconnected, setCurrentTeamAndChannelId} from '@queries/servers/system';
-import {deleteMyTeams, queryTeamsById} from '@queries/servers/team';
 import {isTablet} from '@utils/helpers';
 
 import {handleCategoryCreatedEvent, handleCategoryDeletedEvent, handleCategoryOrderUpdatedEvent, handleCategoryUpdatedEvent} from './category';
@@ -138,12 +136,7 @@ async function doReconnect(serverUrl: string) {
         }
     }
 
-    let removeTeams;
-    if (removeTeamIds?.length) {
-        // Immediately delete myTeams so that the UI renders only teams the user is a member of.
-        removeTeams = await queryTeamsById(database, removeTeamIds);
-        await deleteMyTeams(operator, removeTeams!);
-    }
+    const removeTeams = await teamsToRemove(serverUrl, removeTeamIds);
 
     let removeChannels;
     if (removeChannelIds?.length) {
@@ -177,10 +170,6 @@ async function doReconnect(serverUrl: string) {
         if (chData?.channels && chData.memberships) {
             fetchPostsForUnreadChannels(serverUrl, chData.channels, chData.memberships, currentChannelId);
         }
-    }
-
-    if (initialTeamId) {
-        fetchGroupsForTeam(serverUrl, initialTeamId, lastDisconnectedAt);
     }
 
     // defer fetch channels and unread posts for other teams
@@ -335,11 +324,6 @@ export async function handleEvent(serverUrl: string, msg: WebSocketMessage) {
         case WebsocketEvents.OPEN_DIALOG:
             break;
 
-        // return dispatch(handleOpenDialogEvent(msg));
-        case WebsocketEvents.RECEIVED_GROUP:
-            break;
-
-        // return dispatch(handleGroupUpdatedEvent(msg));
         case WebsocketEvents.THREAD_UPDATED:
             break;
 

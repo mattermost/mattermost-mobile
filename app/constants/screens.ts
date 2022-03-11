@@ -16,12 +16,14 @@ export const CUSTOM_STATUS = 'CustomStatus';
 export const EDIT_PROFILE = 'EditProfile';
 export const EDIT_SERVER = 'EditServer';
 export const FORGOT_PASSWORD = 'ForgotPassword';
+export const GALLERY = 'Gallery';
 export const HOME = 'Home';
 export const INTEGRATION_SELECTOR = 'IntegrationSelector';
 export const IN_APP_NOTIFICATION = 'InAppNotification';
 export const LOGIN = 'Login';
 export const MENTIONS = 'Mentions';
 export const MFA = 'MFA';
+export const CREATE_DIRECT_MESSAGE = 'CreateDirectMessage';
 export const PERMALINK = 'Permalink';
 export const SEARCH = 'Search';
 export const SERVER = 'Server';
@@ -47,12 +49,14 @@ export default {
     EDIT_PROFILE,
     EDIT_SERVER,
     FORGOT_PASSWORD,
+    GALLERY,
     HOME,
     INTEGRATION_SELECTOR,
     IN_APP_NOTIFICATION,
     LOGIN,
     MENTIONS,
     MFA,
+    CREATE_DIRECT_MESSAGE,
     PERMALINK,
     SEARCH,
     SERVER,

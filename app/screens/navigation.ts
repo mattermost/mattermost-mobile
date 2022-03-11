@@ -57,7 +57,7 @@ export const loginAnimationOptions = () => {
                 alpha,
             },
             push: {
-                waitForRender: true,
+                waitForRender: false,
                 content: {
                     alpha,
                 },
@@ -454,7 +454,7 @@ export function showModalOverCurrentContext(name: string, passProps = {}, option
         case 'android':
             animations = {
                 showModal: {
-                    waitForRender: true,
+                    waitForRender: false,
                     alpha: {
                         from: 0,
                         to: 1,

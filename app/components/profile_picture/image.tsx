@@ -15,7 +15,7 @@ import type {Client} from '@client/rest';
 import type UserModel from '@typings/database/models/servers/user';
 
 type Props = {
-    author?: UserModel;
+    author?: UserModel | UserProfile;
     iconSize?: number;
     size: number;
     source?: Source | string;
@@ -58,7 +58,8 @@ const Image = ({author, iconSize, size, source}: Props) => {
     }
 
     if (author && client) {
-        const pictureUrl = client.getProfilePictureUrl(author.id, author.lastPictureUpdate);
+        const lastPictureUpdate = ('lastPictureUpdate' in author) ? author.lastPictureUpdate : author.last_picture_update;
+        const pictureUrl = client.getProfilePictureUrl(author.id, lastPictureUpdate);
         const imgSource = source ?? {uri: `${serverUrl}${pictureUrl}`};
         return (
             <FastImage

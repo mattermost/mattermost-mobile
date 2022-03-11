@@ -7,16 +7,15 @@ import React, {forwardRef, useImperativeHandle, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
 import {Platform, StatusBar, StatusBarStyle, StyleSheet, View} from 'react-native';
 import FileViewer from 'react-native-file-viewer';
+import {TouchableOpacity} from 'react-native-gesture-handler';
 import tinyColor from 'tinycolor2';
 
 import ProgressBar from '@components/progress_bar';
-import TouchableWithFeedback from '@components/touchable_with_feedback';
-import {Device} from '@constants';
 import {DOWNLOAD_TIMEOUT} from '@constants/network';
 import {useServerUrl} from '@context/server';
 import NetworkManager from '@init/network_manager';
 import {alertDownloadDocumentDisabled, alertDownloadFailed, alertFailedToOpenDocument} from '@utils/document';
-import {getLocalFilePathFromFile} from '@utils/file';
+import {fileExists, getLocalFilePathFromFile} from '@utils/file';
 
 import FileIcon from './file_icon';
 
@@ -33,7 +32,6 @@ type DocumentFileProps = {
     theme: Theme;
 }
 
-const {DOCUMENTS_PATH} = Device;
 const styles = StyleSheet.create({
     progress: {
         justifyContent: 'flex-end',
@@ -67,20 +65,17 @@ const DocumentFile = forwardRef<DocumentFileRef, DocumentFileProps>(({background
     };
 
     const downloadAndPreviewFile = async () => {
-        const path = getLocalFilePathFromFile(DOCUMENTS_PATH, serverUrl, file);
         setDidCancel(false);
+        let path;
 
         try {
-            let exists = false;
-            if (path) {
-                const info = await FileSystem.getInfoAsync(path);
-                exists = info.exists;
-            }
+            path = getLocalFilePathFromFile(serverUrl, file);
+            const exists = await fileExists(path);
             if (exists) {
                 openDocument();
             } else {
                 setDownloading(true);
-                downloadTask.current = client?.apiClient.download(client?.getFileRoute(file.id!), path!, {timeoutInterval: DOWNLOAD_TIMEOUT});
+                downloadTask.current = client?.apiClient.download(client?.getFileRoute(file.id!), path!.replace('file://', ''), {timeoutInterval: DOWNLOAD_TIMEOUT});
                 downloadTask.current?.progress?.(setProgress);
 
                 await downloadTask.current;
@@ -126,7 +121,7 @@ const DocumentFile = forwardRef<DocumentFileRef, DocumentFileProps>(({background
 
     const openDocument = () => {
         if (!didCancel && !preview) {
-            const path = getLocalFilePathFromFile(DOCUMENTS_PATH, serverUrl, file);
+            const path = getLocalFilePathFromFile(serverUrl, file);
             setPreview(true);
             setStatusBarColor('dark-content');
             FileViewer.open(path!, {
@@ -190,12 +185,9 @@ const DocumentFile = forwardRef<DocumentFileRef, DocumentFileProps>(({background
     }
 
     return (
-        <TouchableWithFeedback
-            onPress={handlePreviewPress}
-            type={'opacity'}
-        >
+        <TouchableOpacity onPress={handlePreviewPress}>
             {fileAttachmentComponent}
-        </TouchableWithFeedback>
+        </TouchableOpacity>
     );
 });
 

@@ -5,23 +5,26 @@ import {Q} from '@nozbe/watermelondb';
 import {withDatabase} from '@nozbe/watermelondb/DatabaseProvider';
 import withObservables from '@nozbe/with-observables';
 import React, {useCallback, useEffect, useRef, useState} from 'react';
-import {StyleSheet, View} from 'react-native';
+import {Animated, StyleSheet, View} from 'react-native';
+import {TapGestureHandler} from 'react-native-gesture-handler';
 import {of as of$} from 'rxjs';
 import {switchMap} from 'rxjs/operators';
 
 import {getRedirectLocation} from '@actions/remote/general';
 import FileIcon from '@components/post_list/post/body/files/file_icon';
 import ProgressiveImage from '@components/progressive_image';
-import TouchableWithFeedback from '@components/touchable_with_feedback';
 import {MM_TABLES, SYSTEM_IDENTIFIERS} from '@constants/database';
+import {GalleryInit} from '@context/gallery';
 import {useServerUrl} from '@context/server';
 import {useIsTablet} from '@hooks/device';
 import useDidUpdate from '@hooks/did_update';
-import {openGallerWithMockFile} from '@utils/gallery';
+import {useGalleryItem} from '@hooks/gallery';
+import {lookupMimeType} from '@utils/file';
+import {openGalleryAtIndex} from '@utils/gallery';
 import {generateId} from '@utils/general';
 import {calculateDimensions, getViewPortWidth, isGifTooLarge} from '@utils/images';
 import {changeOpacity} from '@utils/theme';
-import {isImageLink, isValidUrl} from '@utils/url';
+import {extractFilenameFromUrl, isImageLink, isValidUrl} from '@utils/url';
 
 import type {WithDatabaseArgs} from '@typings/database/database';
 import type SystemModel from '@typings/database/models/servers/system';
@@ -30,12 +33,13 @@ type ImagePreviewProps = {
     expandedLink?: string;
     isReplyPost: boolean;
     link: string;
+    location: string;
     metadata: PostMetadata;
     postId: string;
     theme: Theme;
 }
 
-const styles = StyleSheet.create({
+const style = StyleSheet.create({
     imageContainer: {
         alignItems: 'flex-start',
         justifyContent: 'flex-start',
@@ -50,10 +54,11 @@ const styles = StyleSheet.create({
     },
 });
 
-const ImagePreview = ({expandedLink, isReplyPost, link, metadata, postId, theme}: ImagePreviewProps) => {
+const ImagePreview = ({expandedLink, isReplyPost, link, location, metadata, postId, theme}: ImagePreviewProps) => {
+    const galleryIdentifier = `${postId}-ImagePreview-${location}`;
     const [error, setError] = useState(false);
     const serverUrl = useServerUrl();
-    const fileId = useRef(generateId()).current;
+    const fileId = useRef(generateId('uid')).current;
     const [imageUrl, setImageUrl] = useState(expandedLink || link);
     const isTablet = useIsTablet();
     const imageProps = metadata.images![link];
@@ -63,9 +68,25 @@ const ImagePreview = ({expandedLink, isReplyPost, link, metadata, postId, theme}
         setError(true);
     }, []);
 
-    const onPress = useCallback(() => {
-        openGallerWithMockFile(imageUrl, postId, imageProps.height, imageProps.width, fileId);
-    }, [imageUrl]);
+    const onPress = () => {
+        const item: GalleryItemType = {
+            id: fileId,
+            postId,
+            uri: imageUrl,
+            width: imageProps.width,
+            height: imageProps.height,
+            name: extractFilenameFromUrl(imageUrl) || 'imagePreview.png',
+            mime_type: lookupMimeType(imageUrl) || 'images/png',
+            type: 'image',
+        };
+        openGalleryAtIndex(galleryIdentifier, 0, [item]);
+    };
+
+    const {ref, onGestureEvent, styles} = useGalleryItem(
+        galleryIdentifier,
+        0,
+        onPress,
+    );
 
     useEffect(() => {
         if (!isImageLink(link) && expandedLink === undefined) {
@@ -89,8 +110,8 @@ const ImagePreview = ({expandedLink, isReplyPost, link, metadata, postId, theme}
 
     if (error || !isValidUrl(expandedLink || link) || isGifTooLarge(imageProps)) {
         return (
-            <View style={[styles.imageContainer, {height: dimensions.height, borderWidth: 1, borderColor: changeOpacity(theme.centerChannelColor, 0.2)}]}>
-                <View style={[styles.image, {width: dimensions.width, height: dimensions.height}]}>
+            <View style={[style.imageContainer, {height: dimensions.height, borderWidth: 1, borderColor: changeOpacity(theme.centerChannelColor, 0.2)}]}>
+                <View style={[style.image, {width: dimensions.width, height: dimensions.height}]}>
                     <FileIcon
                         failed={true}
                     />
@@ -99,23 +120,23 @@ const ImagePreview = ({expandedLink, isReplyPost, link, metadata, postId, theme}
         );
     }
 
-    // Note that the onPress prop of TouchableWithoutFeedback only works if its child is a View
     return (
-        <TouchableWithFeedback
-            onPress={onPress}
-            style={[styles.imageContainer, {height: dimensions.height}]}
-            type={'none'}
-        >
-            <View>
-                <ProgressiveImage
-                    id={fileId}
-                    style={[styles.image, {width: dimensions.width, height: dimensions.height}]}
-                    imageUri={imageUrl}
-                    resizeMode='contain'
-                    onError={onError}
-                />
-            </View>
-        </TouchableWithFeedback>
+        <GalleryInit galleryIdentifier={galleryIdentifier}>
+            <Animated.View style={[styles, style.imageContainer, {height: dimensions.height}]}>
+                <TapGestureHandler onGestureEvent={onGestureEvent}>
+                    <Animated.View testID={`ImagePreview-${fileId}`}>
+                        <ProgressiveImage
+                            forwardRef={ref}
+                            id={fileId}
+                            imageUri={imageUrl}
+                            onError={onError}
+                            resizeMode='contain'
+                            style={[style.image, {width: dimensions.width, height: dimensions.height}]}
+                        />
+                    </Animated.View>
+                </TapGestureHandler>
+            </Animated.View>
+        </GalleryInit>
     );
 };
 

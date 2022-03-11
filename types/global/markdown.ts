@@ -17,3 +17,32 @@ export type MarkdownBlockStyles = {
 export type MarkdownTextStyles = {
     [key: string]: TextStyle;
 };
+
+export type MarkdownAtMentionRenderer = {
+    context: string[];
+    mentionName: string;
+}
+
+export type MarkdownBaseRenderer = {
+    context: string[];
+    literal: string;
+}
+
+export type MarkdownChannelMentionRenderer = {
+    context: string[];
+    channelName: string;
+}
+
+export type MarkdownEmojiRenderer = MarkdownBaseRenderer & {
+    emojiName: string;
+}
+
+export type MarkdownImageRenderer = {
+    linkDestination?: string;
+    context: string[];
+    src: string;
+    size?: {
+        width?: number;
+        height?: number;
+    };
+}

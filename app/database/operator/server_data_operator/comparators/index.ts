@@ -9,10 +9,6 @@ import type ChannelMembershipModel from '@typings/database/models/servers/channe
 import type CustomEmojiModel from '@typings/database/models/servers/custom_emoji';
 import type DraftModel from '@typings/database/models/servers/draft';
 import type FileModel from '@typings/database/models/servers/file';
-import type GroupModel from '@typings/database/models/servers/group';
-import type GroupMembershipModel from '@typings/database/models/servers/group_membership';
-import type GroupsChannelModel from '@typings/database/models/servers/groups_channel';
-import type GroupsTeamModel from '@typings/database/models/servers/groups_team';
 import type MyChannelModel from '@typings/database/models/servers/my_channel';
 import type MyChannelSettingsModel from '@typings/database/models/servers/my_channel_settings';
 import type MyTeamModel from '@typings/database/models/servers/my_team';
@@ -26,6 +22,7 @@ import type TeamChannelHistoryModel from '@typings/database/models/servers/team_
 import type TeamMembershipModel from '@typings/database/models/servers/team_membership';
 import type TeamSearchHistoryModel from '@typings/database/models/servers/team_search_history';
 import type TermsOfServiceModel from '@typings/database/models/servers/terms_of_service';
+import type ThreadModel from '@typings/database/models/servers/thread';
 import type UserModel from '@typings/database/models/servers/user';
 
 /**
@@ -83,24 +80,8 @@ export const isRecordCustomEmojiEqualToRaw = (record: CustomEmojiModel, raw: Cus
     return raw.id === record.id;
 };
 
-export const isRecordGroupMembershipEqualToRaw = (record: GroupMembershipModel, raw: GroupMembership) => {
-    return raw.user_id === record.userId && raw.group_id === record.groupId;
-};
-
 export const isRecordChannelMembershipEqualToRaw = (record: ChannelMembershipModel, raw: Pick<ChannelMembership, 'user_id' | 'channel_id'>) => {
     return raw.user_id === record.userId && raw.channel_id === record.channelId;
-};
-
-export const isRecordGroupEqualToRaw = (record: GroupModel, raw: Group) => {
-    return raw.id === record.id;
-};
-
-export const isRecordGroupsTeamEqualToRaw = (record: GroupsTeamModel, raw: GroupTeam) => {
-    return raw.team_id === record.teamId && raw.group_id === record.groupId;
-};
-
-export const isRecordGroupsChannelEqualToRaw = (record: GroupsChannelModel, raw: GroupChannel) => {
-    return raw.channel_id === record.channelId && raw.group_id === record.groupId;
 };
 
 export const isRecordTeamEqualToRaw = (record: TeamModel, raw: Team) => {
@@ -140,5 +121,9 @@ export const isRecordMyChannelEqualToRaw = (record: MyChannelModel, raw: Channel
 };
 
 export const isRecordFileEqualToRaw = (record: FileModel, raw: FileInfo) => {
+    return raw.id === record.id;
+};
+
+export const isRecordThreadEqualToRaw = (record: ThreadModel, raw: Thread) => {
     return raw.id === record.id;
 };

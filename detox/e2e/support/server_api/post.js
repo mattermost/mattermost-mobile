@@ -5,8 +5,8 @@ import client from './client';
 import {getResponseFromError} from './common';
 
 // ****************************************************************
-// Channels
-// See https://api.mattermost.com/#tag/channels
+// Posts
+// See https://api.mattermost.com/#tag/posts
 //
 // Exported API function should have the following:
 // - documented using JSDoc
@@ -17,14 +17,43 @@ import {getResponseFromError} from './common';
 // ****************************************************************
 
 /**
+ * Create a new post in a channel. To create the post as a comment on another post, provide root_id.
+ * See https://api.mattermost.com/#operation/CreatePost
+ * @param {string} baseUrl - the base server URL
+ * @param {string} option.channelId - The channel ID to post in
+ * @param {string} option.message - The message contents, can be formatted with Markdown
+ * @param {string} option.rootId - The post ID to comment on
+ * @param {Object} option.props - A general object property bag to attach to the post
+ * @param {Date} option.createAt - The date the post is created at
+ * @return {Object} returns {post} on success or {error, status} on error
+ */
+export const apiCreatePost = async (baseUrl, {channelId, message, rootId, props = {}, createAt = 0}) => {
+    try {
+        const payload = {
+            channel_id: channelId,
+            message,
+            root_id: rootId,
+            props,
+            create_at: createAt,
+        };
+        const response = await client.post(`${baseUrl}/api/v4/posts`, payload);
+
+        return {post: response.data};
+    } catch (err) {
+        return getResponseFromError(err);
+    }
+};
+
+/**
  * Get posts for a channel.
- * See https://api.mattermost.com/#tag/posts/paths/~1channels~1{channel_id}~1posts/get
+ * See https://api.mattermost.com/#operation/GetPostsForChannel
+ * @param {string} baseUrl - the base server URL
  * @param {string} channelId - The channel ID to get the posts for
  * @return {Object} returns {posts} on success or {error, status} on error
  */
-export const apiGetPostsInChannel = async (channelId) => {
+export const apiGetPostsInChannel = async (baseUrl, channelId) => {
     try {
-        const response = await client.get(`/api/v4/channels/${channelId}/posts`);
+        const response = await client.get(`${baseUrl}/api/v4/channels/${channelId}/posts`);
 
         const {order, posts} = response.data;
 
@@ -38,17 +67,41 @@ export const apiGetPostsInChannel = async (channelId) => {
 
 /**
  * Get last post in a channel.
+ * @param {string} baseUrl - the base server URL
  * @param {string} channelId - The channel ID to get the last post
  * @return {Object} returns {post} on success or {error, status} on error
  */
-export const apiGetLastPostInChannel = async (channelId) => {
-    const {posts} = await apiGetPostsInChannel(channelId);
+export const apiGetLastPostInChannel = async (baseUrl, channelId) => {
+    const {posts} = await apiGetPostsInChannel(baseUrl, channelId);
     return {post: posts[0]};
 };
 
+/**
+ * Patch a post.
+ * See https://api.mattermost.com/#operation/PatchPost
+ * @param {string} baseUrl - the base server URL
+ * @param {string} postId - the post ID
+ * @param {Object} postData - data to partially update a post
+ * @return {Object} returns {post} on success or {error, status} on error
+ */
+export const apiPatchPost = async (baseUrl, postId, postData) => {
+    try {
+        const response = await client.put(
+            `${baseUrl}/api/v4/posts/${postId}/patch`,
+            postData,
+        );
+
+        return {post: response.data};
+    } catch (err) {
+        return getResponseFromError(err);
+    }
+};
+
 export const Post = {
+    apiCreatePost,
     apiGetLastPostInChannel,
     apiGetPostsInChannel,
+    apiPatchPost,
 };
 
 export default Post;

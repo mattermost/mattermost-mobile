@@ -109,9 +109,9 @@ export const transformFileRecord = ({action, database, value}: TransformerArgs):
         file.extension = raw.extension;
         file.size = raw.size;
         file.mimeType = raw?.mime_type ?? '';
-        file.width = raw?.width ?? 0;
-        file.height = raw?.height ?? 0;
-        file.imageThumbnail = raw?.mini_preview ?? '';
+        file.width = raw?.width || record?.width || 0;
+        file.height = raw?.height || record?.height || 0;
+        file.imageThumbnail = raw?.mini_preview || record?.imageThumbnail || '';
         file.localPath = raw?.localPath ?? '';
     };
 

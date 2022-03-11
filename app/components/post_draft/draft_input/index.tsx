@@ -18,6 +18,7 @@ type Props = {
     testID?: string;
     channelId: string;
     rootId?: string;
+    currentUserId: string;
 
     // Cursor Position Handler
     updateCursorPosition: (pos: number) => void;
@@ -68,8 +69,10 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             justifyContent: 'center',
             paddingBottom: 2,
             backgroundColor: theme.centerChannelBg,
-            borderTopWidth: 1,
-            borderTopColor: changeOpacity(theme.centerChannelColor, 0.20),
+            borderWidth: 1,
+            borderColor: changeOpacity(theme.centerChannelColor, 0.20),
+            borderTopLeftRadius: 12,
+            borderTopRightRadius: 12,
         },
     };
 });
@@ -77,6 +80,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
 export default function DraftInput({
     testID,
     channelId,
+    currentUserId,
     files,
     maxMessageLength,
     rootId = '',
@@ -93,7 +97,7 @@ export default function DraftInput({
     const theme = useTheme();
 
     const handleLayout = useCallback((e: LayoutChangeEvent) => {
-        updatePostInputTop(e.nativeEvent.layout.y);
+        updatePostInputTop(e.nativeEvent.layout.height);
     }, []);
 
     // Render
@@ -139,6 +143,7 @@ export default function DraftInput({
                         sendMessage={sendMessage}
                     />
                     <Uploads
+                        currentUserId={currentUserId}
                         files={files}
                         uploadFileError={uploadFileError}
                         channelId={channelId}
