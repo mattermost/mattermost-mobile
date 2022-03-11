@@ -101,7 +101,7 @@ export default class Gallery extends PureComponent {
         };
 
         mergeNavigationOptions(this.props.componentId, options);
-    }
+    };
 
     close = () => {
         const {componentId} = this.props;

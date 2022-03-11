@@ -24,7 +24,7 @@ export default class TextInputWithLocalizedPlaceholder extends PureComponent {
 
     setInputRef = (ref) => {
         this.inputRef = ref;
-    }
+    };
 
     blur = () => {
         this.inputRef.blur();

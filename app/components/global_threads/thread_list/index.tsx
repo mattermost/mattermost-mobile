@@ -29,7 +29,7 @@ export type Props = {
     onRefresh: () => void;
     testID: string;
     theme: Theme;
-    threadIds: $ID<UserThread>[];
+    threadIds: Array<$ID<UserThread>>;
     viewAllThreads: () => void;
     viewUnreadThreads: () => void;
     viewingUnreads: boolean;

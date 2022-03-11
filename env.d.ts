@@ -3,7 +3,5 @@
 
 // So that typescript doesn't complain about importing `@env` through react-native-dotenv
 declare module '@env' {
-  export const STORYBOOK_HOST: string;
-  export const STORYBOOK_PORT: number;
   export const RUNNING_E2E: string;
 }

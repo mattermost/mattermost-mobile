@@ -23,7 +23,7 @@ export default class ReactionButton extends PureComponent {
         emoji: PropTypes.string.isRequired,
         iconSize: PropTypes.number,
         containerSize: PropTypes.number,
-    }
+    };
 
     static defaultProps = {
         iconSize: LARGE_ICON_SIZE,
@@ -42,7 +42,7 @@ export default class ReactionButton extends PureComponent {
         this.setState({isSelected: true}, () => {
             this.props.addReaction(this.props.emoji);
         });
-    }
+    };
 
     render() {
         const {

@@ -13,6 +13,7 @@ import {
     Text,
     View,
 } from 'react-native';
+import {SvgUri} from 'react-native-svg';
 import parseUrl from 'url-parse';
 
 import CompassIcon from '@components/compass_icon';
@@ -21,15 +22,24 @@ import ImageViewPort from '@components/image_viewport';
 import ProgressiveImage from '@components/progressive_image';
 import TouchableWithFeedback from '@components/touchable_with_feedback';
 import mattermostManaged from '@mattermost-managed';
+import {changeOpacity, makeStyleFromTheme} from '@mm-redux/utils/theme_utils';
 import EphemeralStore from '@store/ephemeral_store';
 import BottomSheet from '@utils/bottom_sheet';
 import {generateId} from '@utils/file';
 import {openGalleryAtIndex} from '@utils/gallery';
 import {calculateDimensions, getViewPortWidth, isGifTooLarge} from '@utils/images';
+import {getMarkdownImageSize} from '@utils/markdown';
 import {normalizeProtocol, tryOpenURL} from '@utils/url';
 
 const ANDROID_MAX_HEIGHT = 4096;
 const ANDROID_MAX_WIDTH = 4096;
+const getStyleSheet = makeStyleFromTheme((theme) => ({
+    svg: {
+        backgroundColor: changeOpacity(theme.centerChannelColor, 0.06),
+        borderRadius: 8,
+        flex: 1,
+    },
+}));
 
 export default class MarkdownImage extends ImageViewPort {
     static propTypes = {
@@ -41,6 +51,8 @@ export default class MarkdownImage extends ImageViewPort {
         linkDestination: PropTypes.string,
         postId: PropTypes.string,
         source: PropTypes.string.isRequired,
+        sourceSize: PropTypes.object,
+        theme: PropTypes.object,
     };
 
     static contextTypes = {
@@ -50,18 +62,21 @@ export default class MarkdownImage extends ImageViewPort {
     constructor(props) {
         super(props);
 
-        const metadata = props.imagesMetadata?.[props.source] || Object.values(props.imagesMetadata || {})[0];
+        const metadata = props.imagesMetadata?.[props.source] || Object.values(props.imagesMetadata || {})?.[0];
+        const size = getMarkdownImageSize(props.isReplyPost, this.hasPermanentSidebar(), props.sourceSize, metadata);
+
         this.fileId = generateId();
         this.state = {
-            originalHeight: metadata?.height || 0,
-            originalWidth: metadata?.width || 0,
+            originalHeight: size.height,
+            originalWidth: size.width,
             failed: isGifTooLarge(metadata),
+            format: metadata?.format,
             uri: null,
         };
     }
 
     getFileInfo = () => {
-        const {originalHeight, originalWidth} = this.state;
+        const {format, originalHeight, originalWidth} = this.state;
         const link = decodeURIComponent(this.getSource());
         let filename = parseUrl(link.substr(link.lastIndexOf('/'))).pathname.replace('/', '');
         let extension = filename.split('.').pop();
@@ -76,6 +91,7 @@ export default class MarkdownImage extends ImageViewPort {
             id: this.fileId,
             name: filename,
             extension,
+            format,
             has_preview_image: true,
             post_id: this.props.postId,
             uri: link,
@@ -175,13 +191,14 @@ export default class MarkdownImage extends ImageViewPort {
     render() {
         let image = null;
         const fileInfo = this.getFileInfo();
-        const {height, width} = calculateDimensions(fileInfo.height, fileInfo.width, getViewPortWidth(this.props.isReplyPost, this.hasPermanentSidebar()));
+        const {height, width} = calculateDimensions(fileInfo?.height, fileInfo?.width, getViewPortWidth(this.props.isReplyPost, this.hasPermanentSidebar()));
 
         if (this.state.failed) {
             image = (
                 <CompassIcon
-                    name='jumbo-attachment-image-broken'
+                    name='file-image-broken-outline-large'
                     size={24}
+                    color={this.props.theme?.centerChannelColor}
                 />
             );
         } else if (width && height) {
@@ -202,13 +219,21 @@ export default class MarkdownImage extends ImageViewPort {
                         {this.props.children}
                     </Text>
                 );
+            } else if (fileInfo?.format === 'svg') {
+                const style = getStyleSheet(this.props.theme);
+
+                image = (
+                    <SvgUri
+                        uri={fileInfo.uri}
+                        style={style.svg}
+                        width={width}
+                        height={height}
+                        onError={this.handleSizeFailed}
+                    />
+                );
             } else {
                 // React Native complains if we try to pass resizeMode as a style
-                let source = null;
-                if (fileInfo.uri) {
-                    source = {uri: fileInfo.uri};
-                }
-
+                const source = fileInfo.uri ? {uri: fileInfo.uri} : null;
                 image = (
                     <TouchableWithFeedback
                         onLongPress={this.handleLinkLongPress}

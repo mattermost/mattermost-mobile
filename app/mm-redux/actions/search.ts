@@ -23,7 +23,7 @@ export function getMissingChannelsFromPosts(posts: RelationOneToOne<Post, Post>)
             membersInChannel,
             myMembers,
         } = getState().entities.channels;
-        const promises: Promise<ActionResult>[] = [];
+        const promises: Array<Promise<ActionResult>> = [];
         Object.values(posts).forEach((post) => {
             const id = post.channel_id;
 

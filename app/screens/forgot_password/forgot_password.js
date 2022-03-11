@@ -28,7 +28,7 @@ export default class ForgotPassword extends PureComponent {
         actions: PropTypes.shape({
             sendPasswordResetEmail: PropTypes.func.isRequired,
         }),
-    }
+    };
 
     static contextTypes = {
         intl: intlShape.isRequired,
@@ -48,7 +48,7 @@ export default class ForgotPassword extends PureComponent {
         this.setState({
             email,
         });
-    }
+    };
 
     submitResetPassword = async () => {
         if (!this.state.email || !isEmail(this.state.email)) {
@@ -68,7 +68,7 @@ export default class ForgotPassword extends PureComponent {
         if (data) {
             this.setState({sentPasswordLink: true});
         }
-    }
+    };
 
     emailIdRef = (ref) => {
         this.emailId = ref;
@@ -78,7 +78,7 @@ export default class ForgotPassword extends PureComponent {
         if (this.emailId) {
             this.emailId.blur();
         }
-    }
+    };
 
     render() {
         const {formatMessage} = this.context.intl;

@@ -24,7 +24,7 @@ class JavascriptAndNativeErrorHandler {
         initializeSentry();
         setJSExceptionHandler(this.errorHandler, false);
         setNativeExceptionHandler(this.nativeErrorHandler, false);
-    }
+    };
 
     nativeErrorHandler = (e) => {
         console.warn('Handling native error ' + JSON.stringify(e)); // eslint-disable-line no-console

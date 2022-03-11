@@ -8,7 +8,6 @@ import nock from 'nock';
 import Config from '@assets/config.json';
 import {Client} from '@client/rest';
 import {DEFAULT_LOCALE} from '@mm-redux/constants/general';
-import {generateId} from '@mm-redux/utils/helpers';
 
 const PASSWORD = 'password1';
 
@@ -36,10 +35,6 @@ class TestHelper {
     assertStatusOkay = (data) => {
         assert(data);
         assert(data.status === 'OK');
-    };
-
-    generateId = () => {
-        return generateId();
     };
 
     createClient = () => {
@@ -85,7 +80,7 @@ class TestHelper {
             id: this.generateId(),
             delete_at: 0,
         };
-    }
+    };
 
     fakeChannelMember = (userId, channelId) => {
         return {
@@ -244,7 +239,7 @@ class TestHelper {
             update_at: 1507840900004,
             delete_at: 0,
         };
-    }
+    };
 
     generateId = () => {
         // Implementation taken from http://stackoverflow.com/a/2117523
@@ -286,7 +281,7 @@ class TestHelper {
         nock(this.basicClient4.getBaseRoute()).
             get('/users/me/preferences').
             reply(200, [{user_id: this.basicUser.id, category: 'tutorial_step', name: this.basicUser.id, value: '999'}]);
-    }
+    };
 
     initMockEntities = () => {
         this.basicUser = this.fakeUserWithId();
@@ -365,7 +360,7 @@ class TestHelper {
             },
         };
         this.basicScheme = this.mockSchemeWithId();
-    }
+    };
 
     initBasic = async (client = this.createClient()) => {
         client.setUrl(Config.TestServerUrl || Config.DefaultServerUrl);
@@ -436,7 +431,7 @@ class TestHelper {
             description: '',
             content_type: 'application/x-www-form-urlencoded',
         };
-    }
+    };
 
     testCommand = (teamId) => {
         return {
@@ -469,9 +464,9 @@ class TestHelper {
         this.basicChannel = null;
         this.basicChannelMember = null;
         this.basicPost = null;
-    }
+    };
 
-    wait = (time) => new Promise((resolve) => setTimeout(resolve, time))
+    wait = (time) => new Promise((resolve) => setTimeout(resolve, time));
 }
 
 export default new TestHelper();

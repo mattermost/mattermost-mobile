@@ -24,9 +24,9 @@ export type OutgoingWebhook = {
     creator_id: string;
     channel_id: string;
     team_id: string;
-    trigger_words: Array<string>;
+    trigger_words: string[];
     trigger_when: number;
-    callback_urls: Array<string>;
+    callback_urls: string[];
     display_name: string;
     description: string;
     content_type: string;
@@ -71,7 +71,7 @@ export type OAuthApp = {
     'name': string;
     'description': string;
     'icon_url': string;
-    'callback_urls': Array<string>;
+    'callback_urls': string[];
     'homepage': string;
     'is_trusted': boolean;
 };
@@ -81,7 +81,7 @@ export type IntegrationsState = {
     oauthApps: IDMappedObjects<OAuthApp>;
     systemCommands: IDMappedObjects<Command>;
     commands: IDMappedObjects<Command>;
-    commandAutocompleteSuggestions: Array<AutocompleteSuggestion>;
+    commandAutocompleteSuggestions: AutocompleteSuggestion[];
 };
 export type DialogSubmission = {
     url: string;
@@ -111,7 +111,7 @@ export type DialogElement = {
     min_length: number;
     max_length: number;
     data_source: string;
-    options: Array<DialogOption>;
+    options: DialogOption[];
 };
 export type InteractiveDialogConfig = {
     app_id: string;

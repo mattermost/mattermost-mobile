@@ -169,7 +169,7 @@ class EMMProvider {
                 {cancelable: false, onDismiss: resolve},
             );
         });
-    }
+    };
 }
 
 export default new EMMProvider();

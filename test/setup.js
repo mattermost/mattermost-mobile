@@ -275,8 +275,6 @@ jest.mock('react-native-share', () => ({
     default: jest.fn(),
 }));
 
-jest.mock('react-native-dev-menu');
-
 jest.mock('app/actions/navigation', () => ({
     resetToChannel: jest.fn(),
     resetToSelectServer: jest.fn(),

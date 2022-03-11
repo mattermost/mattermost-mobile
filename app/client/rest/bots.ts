@@ -19,21 +19,21 @@ const ClientBots = (superclass: any) => class extends superclass {
             `${this.getBotRoute(botUserId)}`,
             {method: 'get'},
         );
-    }
+    };
 
     getBots = async (page = 0, perPage = PER_PAGE_DEFAULT) => {
         return this.doFetch(
             `${this.getBotsRoute()}${buildQueryString({page, per_page: perPage})}`,
             {method: 'get'},
         );
-    }
+    };
 
     getBotsIncludeDeleted = async (page = 0, perPage = PER_PAGE_DEFAULT) => {
         return this.doFetch(
             `${this.getBotsRoute()}${buildQueryString({include_deleted: true, page, per_page: perPage})}`,
             {method: 'get'},
         );
-    }
+    };
 };
 
 export default ClientBots;

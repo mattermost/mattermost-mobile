@@ -13,6 +13,7 @@ import ClientError from '@client/rest/error';
 import mattermostManaged from '@mattermost-managed';
 import {General} from '@mm-redux/constants';
 import EventEmitter from '@mm-redux/utils/event_emitter';
+import {semverFromServerVersion} from '@utils/general';
 import {t} from '@utils/i18n';
 
 import mattermostBucket from 'app/mattermost_bucket';
@@ -116,7 +117,7 @@ Client4.doFetchWithResponse = async (url, options) => {
         Client4.setToken(token);
     }
 
-    const serverVersion = headers[HEADER_X_VERSION_ID] || headers[HEADER_X_VERSION_ID.toLowerCase()];
+    const serverVersion = semverFromServerVersion(headers[HEADER_X_VERSION_ID] || headers[HEADER_X_VERSION_ID.toLowerCase()]);
     if (serverVersion && !headers['Cache-Control'] && Client4.serverVersion !== serverVersion) {
         Client4.serverVersion = serverVersion; /* eslint-disable-line require-atomic-updates */
         EventEmitter.emit(General.SERVER_VERSION_CHANGED, serverVersion);

@@ -77,7 +77,7 @@ export function canEditPost(state: GlobalState, config: any, license: any, teamI
     return canEdit;
 }
 
-export function getLastCreateAt(postsArray: Array<Post>): number {
+export function getLastCreateAt(postsArray: Post[]): number {
     const createAt = postsArray.map((p) => p.create_at);
 
     if (createAt.length) {

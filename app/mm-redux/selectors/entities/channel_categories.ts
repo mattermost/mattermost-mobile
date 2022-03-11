@@ -91,7 +91,7 @@ export const getCategoriesWithFilteredChannelIds: (state: GlobalState) => Channe
     },
 );
 
-export function makeFilterUnreadChannels():(state: GlobalState, channels: Channel[]) => Channel[] {
+export function makeFilterUnreadChannels(): (state: GlobalState, channels: Channel[]) => Channel[] {
     return createSelector(
         (state: GlobalState, channels: Channel[]) => channels,
         getMyChannelMemberships,

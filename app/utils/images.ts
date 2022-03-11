@@ -16,8 +16,8 @@ import {PostImage} from '@mm-redux/types/posts';
 export const calculateDimensions = (height: number, width: number, viewPortWidth = 0, viewPortHeight = 0) => {
     if (!height || !width) {
         return {
-            height: 0,
-            width: 0,
+            height: viewPortHeight,
+            width: viewPortWidth,
         };
     }
 

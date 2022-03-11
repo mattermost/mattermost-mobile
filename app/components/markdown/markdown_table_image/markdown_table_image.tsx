@@ -3,6 +3,7 @@
 
 import React, {useCallback, useRef, useState} from 'react';
 import {StyleSheet, View} from 'react-native';
+import {SvgUri} from 'react-native-svg';
 import parseUrl from 'url-parse';
 
 import CompassIcon from '@components/compass_icon';
@@ -15,6 +16,7 @@ import {openGalleryAtIndex} from '@utils/gallery';
 import {calculateDimensions, isGifTooLarge} from '@utils/images';
 
 import type {PostImage} from '@mm-redux/types/posts';
+import type {Theme} from '@mm-redux/types/theme';
 
 type MarkdownTableImageProps = {
     disable: boolean;
@@ -22,6 +24,7 @@ type MarkdownTableImageProps = {
     postId: string;
     serverURL?: string;
     source: string;
+    theme: Theme;
 }
 
 const styles = StyleSheet.create({
@@ -31,8 +34,8 @@ const styles = StyleSheet.create({
     },
 });
 
-const MarkTableImage = ({disable, imagesMetadata, postId, serverURL, source}: MarkdownTableImageProps) => {
-    const metadata = imagesMetadata[source];
+const MarkTableImage = ({disable, imagesMetadata, postId, serverURL, source, theme}: MarkdownTableImageProps) => {
+    const metadata = imagesMetadata[source] || Object.values(imagesMetadata || {})?.[0];
     const fileId = useRef(generateId()).current;
     const [failed, setFailed] = useState(isGifTooLarge(metadata));
 
@@ -95,17 +98,30 @@ const MarkTableImage = ({disable, imagesMetadata, postId, serverURL, source}: Ma
     if (failed) {
         image = (
             <CompassIcon
-                name='jumbo-attachment-image-broken'
+                name='file-image-broken-outline-large'
                 size={24}
+                color={theme.centerChannelColor}
             />
         );
     } else {
-        const {height, width} = calculateDimensions(metadata.height, metadata.width, 100, 100);
-        image = (
-            <TouchableWithFeedback
-                onPress={handlePreviewImage}
-                style={{width, height}}
-            >
+        const {height, width} = calculateDimensions(metadata?.height, metadata?.width, 100, 100);
+        let imageComponent;
+        if (metadata?.format === 'svg') {
+            imageComponent = (
+                <View style={{height: 100}}>
+                    <SvgUri
+                        uri={source}
+                        style={styles.container}
+                        width={width}
+                        height={height}
+
+                        //@ts-expect-error onError not defined in the types
+                        onError={onLoadFailed}
+                    />
+                </View>
+            );
+        } else {
+            imageComponent = (
                 <ProgressiveImage
                     id={fileId}
                     defaultSource={{uri: source}}
@@ -113,6 +129,16 @@ const MarkTableImage = ({disable, imagesMetadata, postId, serverURL, source}: Ma
                     resizeMode='contain'
                     style={{width, height}}
                 />
+            );
+        }
+
+        image = (
+            <TouchableWithFeedback
+                onPress={handlePreviewImage}
+                style={{width, height}}
+            >
+
+                {imageComponent}
             </TouchableWithFeedback>
         );
     }

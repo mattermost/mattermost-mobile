@@ -8,7 +8,7 @@
 // Definitions: https://github.com/DefinitelyTyped/DefinitelyTyped
 // TypeScript Version: 2.8
 
-declare module 'react-native-webrtc2' {
+declare module 'react-native-webrtc' {
     export const RTCView: any;
     export type RTCSignalingState =
         | 'stable'
@@ -161,6 +161,8 @@ declare module 'react-native-webrtc2' {
         constructor(configuration: RTCPeerConnectionConfiguration);
 
         addStream(stream: MediaStream): void;
+
+        addTrack(track: MediaStreamTrack): void;
 
         addTransceiver(kind: 'audio'|'video'|MediaStreamTrack, init: any): void;
 

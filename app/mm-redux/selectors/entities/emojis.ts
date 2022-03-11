@@ -38,9 +38,9 @@ export const getCustomEmojisByName: (state: GlobalState) => Map<string, CustomEm
     },
 );
 
-export const getCustomEmojiIdsSortedByName: (state: GlobalState) => Array<string> = createIdsSelector(
+export const getCustomEmojiIdsSortedByName: (state: GlobalState) => string[] = createIdsSelector(
     (state) => state.entities.emojis.customEmoji,
-    (emojis: IDMappedObjects<CustomEmoji>): Array<string> => {
+    (emojis: IDMappedObjects<CustomEmoji>): string[] => {
         return Object.keys(emojis).sort(
             (a: string, b: string): number => emojis[a].name.localeCompare(emojis[b].name),
         );

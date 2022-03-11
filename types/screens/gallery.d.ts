@@ -59,7 +59,7 @@ export interface FooterRef {
 }
 
 export interface GalleryProps {
-    files: Array<FileInfo>;
+    files: FileInfo[];
     footerVisible: boolean;
     height: number;
     initialIndex: number;
