@@ -8,7 +8,6 @@ import {TouchableOpacity} from 'react-native-gesture-handler';
 
 import FormattedText from '@components/formatted_text';
 import ProfilePicture from '@components/profile_picture';
-import TouchableWithFeedback from '@components/touchable_with_feedback';
 import {useTheme} from '@context/theme';
 import {bottomSheet} from '@screens/navigation';
 import {preventDoubleTap} from '@utils/tap';

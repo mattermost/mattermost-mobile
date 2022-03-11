@@ -7,9 +7,9 @@ import {View, Text} from 'react-native';
 import {TouchableOpacity} from 'react-native-gesture-handler';
 
 import {updateThreadFollow} from '@actions/remote/thread';
-import AvatarsStack from '@app/components/avatars_stack';
-import CompassIcon from '@app/components/compass_icon';
-import {preventDoubleTap} from '@app/utils/tap';
+import AvatarsStack from '@components/avatars_stack';
+import CompassIcon from '@components/compass_icon';
+import {preventDoubleTap} from '@utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 import type ThreadModel from '@typings/database/models/servers/thread';

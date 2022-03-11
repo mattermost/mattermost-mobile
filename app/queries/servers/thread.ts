@@ -3,10 +3,21 @@
 
 import {Database, Q, Query} from '@nozbe/watermelondb';
 
-import {MM_TABLES} from '@constants/database';
-import ThreadModel from '@typings/database/models/servers/thread';
+import {Preferences} from '@constants';
+import {MM_TABLES, SYSTEM_IDENTIFIERS} from '@constants/database';
+import {processIsCRTEnabled} from '@helpers/api/preference';
 
-const {SERVER: {CHANNEL, POST, THREAD}} = MM_TABLES;
+import type PreferenceModel from '@typings/database/models/servers/preference';
+import type SystemModel from '@typings/database/models/servers/system';
+import type ThreadModel from '@typings/database/models/servers/thread';
+
+const {SERVER: {CHANNEL, POST, PREFERENCE, SYSTEM, THREAD}} = MM_TABLES;
+
+export async function getIsCRTEnabled(database: Database): Promise<boolean> {
+    const {value: config} = await database.get<SystemModel>(SYSTEM).find(SYSTEM_IDENTIFIERS.CONFIG);
+    const preferences = await database.get<PreferenceModel>(PREFERENCE).query(Q.where('category', Preferences.CATEGORY_DISPLAY_SETTINGS)).fetch();
+    return processIsCRTEnabled(preferences, config);
+}
 
 export const queryThreadsInTeam = (database: Database, teamId: string, onlyUnreads?: boolean, sort?: boolean): Query<ThreadModel> => {
     const query: Q.Clause[] = [

@@ -1,14 +1,9 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
-import {Database, Q} from '@nozbe/watermelondb';
 
 import {General, Preferences} from '@constants';
-import {MM_TABLES, SYSTEM_IDENTIFIERS} from '@constants/database';
 
 import type PreferenceModel from '@typings/database/models/servers/preference';
-import type SystemModel from '@typings/database/models/servers/system';
-
-const {SERVER: {PREFERENCE, SYSTEM}} = MM_TABLES;
 
 export function getPreferenceValue(preferences: PreferenceType[] | PreferenceModel[], category: string, name: string, defaultValue: unknown = '') {
     const pref = (preferences as PreferenceType[]).find((p) => p.category === category && p.name === name);
@@ -57,10 +52,4 @@ export function processIsCRTEnabled(preferences: PreferenceModel[], config?: Cli
     const isAllowed = config?.FeatureFlagCollapsedThreads === 'true' && config?.CollapsedThreads !== 'disabled';
 
     return isAllowed && (preference === Preferences.COLLAPSED_REPLY_THREADS_ON || config?.CollapsedThreads === 'always_on');
-}
-
-export async function getIsCRTEnabled(database: Database): Promise<boolean> {
-    const {value: config} = await database.get<SystemModel>(SYSTEM).find(SYSTEM_IDENTIFIERS.CONFIG);
-    const preferences = await database.get<PreferenceModel>(PREFERENCE).query(Q.where('category', Preferences.CATEGORY_DISPLAY_SETTINGS)).fetch();
-    return processIsCRTEnabled(preferences, config);
 }

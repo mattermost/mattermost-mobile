@@ -1,14 +1,14 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {MM_TABLES} from '@app/constants/database';
-import {queryThreadsInTeam} from '@app/queries/servers/thread';
 import CompassIcon from '@components/compass_icon';
 import {ActionType, General, Screens} from '@constants';
+import {MM_TABLES} from '@constants/database';
 import DatabaseManager from '@database/manager';
 import {getTranslations, t} from '@i18n';
 import {queryChannelById} from '@queries/servers/channel';
 import {queryPostById} from '@queries/servers/post';
+import {queryThreadsInTeam} from '@queries/servers/thread';
 import {queryCurrentUser} from '@queries/servers/user';
 import {showModal} from '@screens/navigation';
 import EphemeralStore from '@store/ephemeral_store';
@@ -82,7 +82,6 @@ export const switchToThread = async (serverUrl: string, rootId: string) => {
         return {error};
     }
 };
-
 
 // On receiving "posts", Save the "root posts" as "threads"
 export const processThreadsFromReceivedPosts = async (serverUrl: string, posts: Post[], prepareRecordsOnly = false) => {
@@ -179,9 +178,9 @@ export const processUpdateTeamThreadsAsRead = async (serverUrl: string, teamId: 
     try {
         const {database} = operator;
         const threads = await queryThreadsInTeam(database, teamId).fetch();
-        const models = threads.map((thread) => thread.prepareUpdate((t) => {
-            t.unreadMentions = 0;
-            t.unreadReplies = 0;
+        const models = threads.map((thread) => thread.prepareUpdate((record) => {
+            record.unreadMentions = 0;
+            record.unreadReplies = 0;
         }));
         if (!prepareRecordsOnly) {
             await operator.batchRecords(models);

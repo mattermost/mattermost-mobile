@@ -8,10 +8,10 @@ import {AppStateStatus} from 'react-native';
 import {combineLatest, of as of$} from 'rxjs';
 import {map, switchMap} from 'rxjs/operators';
 
-import {queryThreadsInTeam} from '@app/queries/servers/thread';
 import {Preferences} from '@constants';
 import {MM_TABLES, SYSTEM_IDENTIFIERS} from '@constants/database';
 import {getTeammateNameDisplaySetting} from '@helpers/api/preference';
+import {queryThreadsInTeam} from '@queries/servers/thread';
 
 import ThreadsList, {Tab} from './threads_list';
 

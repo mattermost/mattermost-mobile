@@ -4,7 +4,7 @@
 import React from 'react';
 import {View} from 'react-native';
 
-import AvatarsStack from '@app/components/avatars_stack';
+import AvatarsStack from '@components/avatars_stack';
 import FormattedText from '@components/formatted_text';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 

@@ -5,10 +5,9 @@ import {useIntl} from 'react-intl';
 import {Alert, Text, TouchableOpacity, View} from 'react-native';
 
 import {updateTeamThreadsAsRead} from '@actions/remote/thread';
-import {changeOpacity} from '@app/utils/theme';
 import CompassIcon from '@components/compass_icon';
 import {useServerUrl} from '@context/server';
-import {makeStyleSheetFromTheme} from '@utils/theme';
+import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 export type Tab = 'all' | 'unreads';
 

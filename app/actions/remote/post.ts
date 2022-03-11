@@ -8,7 +8,6 @@ import {markChannelAsUnread, updateLastPostAt} from '@actions/local/channel';
 import {processPostsFetched, removePost} from '@actions/local/post';
 import {addRecentReaction} from '@actions/local/reactions';
 import {processThreadsFromReceivedPosts} from '@actions/local/thread';
-import {getIsCRTEnabled} from '@app/helpers/api/preference';
 import {ActionType, Events, General, Post, ServerErrors} from '@constants';
 import {SYSTEM_IDENTIFIERS} from '@constants/database';
 import DatabaseManager from '@database/manager';
@@ -18,6 +17,7 @@ import {prepareMissingChannelsForAllTeams, queryAllMyChannelIds} from '@queries/
 import {queryAllCustomEmojis} from '@queries/servers/custom_emoji';
 import {queryPostById, queryRecentPostsInChannel} from '@queries/servers/post';
 import {queryCurrentUserId, queryCurrentChannelId} from '@queries/servers/system';
+import {getIsCRTEnabled} from '@queries/servers/thread';
 import {queryAllUsers} from '@queries/servers/user';
 import {getValidEmojis, matchEmoticons} from '@utils/emoji/helpers';
 import {getPostIdsForCombinedUserActivityPost} from '@utils/post_list';

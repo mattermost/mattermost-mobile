@@ -1,11 +1,14 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React from 'react';
-import {Text, TouchableHighlight, View} from 'react-native';
+import React, {useCallback} from 'react';
+import {Text, View} from 'react-native';
+import {TouchableHighlight} from 'react-native-gesture-handler';
 
+import {fetchAndSwitchToThread} from '@actions/remote/thread';
 import FormattedText from '@components/formatted_text';
 import FriendlyDate from '@components/friendly_date';
+import {useServerUrl} from '@context/server';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {displayUsername} from '@utils/user';
 
@@ -124,17 +127,17 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
 
 const Thread = ({author, channel, currentUserId, participants, post, teammateNameDisplay, testID, theme, thread}: Props) => {
     const style = getStyleSheet(theme);
+    const serverUrl = useServerUrl();
 
-    const threadStarterName = displayUsername(author, undefined, teammateNameDisplay);
-
-    const showThread = () => {
-        //@todo
-    };
+    const showThread = useCallback(() => {
+        fetchAndSwitchToThread(serverUrl, thread.id);
+    }, [serverUrl, thread.id]);
 
     const showThreadOptions = () => {
         //@todo
     };
 
+    const threadStarterName = displayUsername(author, undefined, teammateNameDisplay);
     const testIDPrefix = `${testID}.${thread.id}`;
 
     const needBadge = thread.unreadMentions || thread.unreadReplies;

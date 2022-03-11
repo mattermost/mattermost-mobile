@@ -3,8 +3,8 @@
 
 import {withDatabase} from '@nozbe/watermelondb/DatabaseProvider';
 import withObservables from '@nozbe/with-observables';
-import React, {useEffect, useMemo, useState} from 'react';
-import {StyleSheet, View} from 'react-native';
+import React, {useCallback, useEffect, useMemo, useState} from 'react';
+import {Keyboard, StyleSheet, View} from 'react-native';
 import {Edge, SafeAreaView, useSafeAreaInsets} from 'react-native-safe-area-context';
 import {of as of$} from 'rxjs';
 import {map, switchMap} from 'rxjs/operators';
@@ -16,6 +16,7 @@ import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {useAppState, useIsTablet} from '@hooks/device';
 import {useDefaultHeaderHeight} from '@hooks/header';
+import {popTopScreen} from '@screens/navigation';
 
 // import Header from './header';
 import ThreadsList, {Tab} from './threads_list';
@@ -27,6 +28,7 @@ const {MM_TABLES, SYSTEM_IDENTIFIERS} = Database;
 const {SERVER: {SYSTEM}} = MM_TABLES;
 
 type Props = {
+    componentId?: string;
     currentTeamId: string;
 };
 
@@ -38,7 +40,7 @@ const styles = StyleSheet.create({
     },
 });
 
-const GlobalThreads = ({currentTeamId}: Props) => {
+const GlobalThreads = ({componentId, currentTeamId}: Props) => {
     const appState = useAppState();
     const insets = useSafeAreaInsets();
     const isTablet = useIsTablet();
@@ -61,6 +63,11 @@ const GlobalThreads = ({currentTeamId}: Props) => {
         return [styles.flex, {marginTop}];
     }, [defaultHeight, insets.top]);
 
+    const onBackPress = useCallback(() => {
+        Keyboard.dismiss();
+        popTopScreen(componentId);
+    }, []);
+
     return (
         <SafeAreaView
             style={styles.flex}
@@ -69,6 +76,7 @@ const GlobalThreads = ({currentTeamId}: Props) => {
         >
             <NavigationHeader
                 isLargeTitle={false}
+                onBackPress={onBackPress}
                 showBackButton={!isTablet}
                 title={'Threads'}
             />
