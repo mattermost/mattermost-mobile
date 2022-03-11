@@ -436,12 +436,12 @@ export const fetchPostThread = async (serverUrl: string, postId: string, fetchOn
     }
 };
 
-export async function fetchPostsAround(
-    serverUrl: string,
-    channelId: string,
-    postId: string,
-    perPage = 10,
-) {
+export async function fetchPostsAround(serverUrl: string, channelId: string, postId: string, perPage = General.POST_AROUND_CHUNK_SIZE) {
+    const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
+    if (!operator) {
+        return {error: `${serverUrl} database not found`};
+    }
+
     let client: Client;
     try {
         client = NetworkManager.getClient(serverUrl);
@@ -450,8 +450,6 @@ export async function fetchPostsAround(
     }
 
     try {
-        const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
-
         const [after, post, before] = await Promise.all<PostsObjectsRequest>([
             client.getPostsAfter(channelId, postId, 0, perPage),
             client.getPostThread(postId),
@@ -474,9 +472,17 @@ export async function fetchPostsAround(
         const data = await processPostsFetched(serverUrl, ActionType.POSTS.RECEIVED_AROUND, preData, true);
 
         let posts: PostModel[] = [];
+        const models: Model[] = [];
         if (data.posts?.length && data.order?.length) {
             try {
-                await fetchPostAuthors(serverUrl, data.posts, false);
+                const {authors} = await fetchPostAuthors(serverUrl, data.posts, true);
+                if (authors?.length) {
+                    const userModels = await operator.handleUsers({
+                        users: authors,
+                        prepareRecordsOnly: true,
+                    });
+                    models.push(...userModels);
+                }
             } catch (error) {
                 // eslint-disable-next-line no-console
                 console.error('FETCH AUTHORS ERROR', error);
@@ -485,7 +491,11 @@ export async function fetchPostsAround(
             posts = await operator.handlePosts({
                 actionType: ActionType.POSTS.RECEIVED_AROUND,
                 ...data,
+                prepareRecordsOnly: true,
             }) as PostModel[];
+
+            models.push(...posts);
+            await operator.batchRecords(models);
         }
 
         return {posts};

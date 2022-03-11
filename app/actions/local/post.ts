@@ -162,7 +162,7 @@ export const markPostAsDeleted = async (serverUrl: string, post: Post) => {
 
 export const processPostsFetched = async (serverUrl: string, actionType: string, data: PostResponse, fetchOnly = false) => {
     const order = data.order;
-    const posts = data.order.map((id) => data.posts[id]);
+    const posts = Object.values(data.posts) as Post[];
     const previousPostId = data.prev_post_id;
 
     if (!fetchOnly) {
