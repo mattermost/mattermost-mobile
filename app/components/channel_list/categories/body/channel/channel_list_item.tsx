@@ -5,7 +5,7 @@ import React, {useEffect, useMemo} from 'react';
 import {useIntl} from 'react-intl';
 import {StyleSheet, Text, View} from 'react-native';
 import {TouchableOpacity} from 'react-native-gesture-handler';
-import Animated, {useAnimatedStyle, useSharedValue, withSpring, withTiming} from 'react-native-reanimated';
+import Animated, {Easing, useAnimatedStyle, useSharedValue, withTiming} from 'react-native-reanimated';
 
 import {switchToChannelById} from '@actions/remote/channel';
 import ChannelIcon from '@components/channel_icon';
@@ -65,15 +65,14 @@ const ChannelListItem = ({channel, isActive, isOwnDirectMessage, myChannel, coll
 
     const sharedValue = useSharedValue(collapsed && !bright);
 
-    // console.log('--- collapsed', collapsed);
     useEffect(() => {
         sharedValue.value = collapsed && !bright;
     }, [collapsed, bright]);
 
     const animatedStyle = useAnimatedStyle(() => {
         return {
-            height: withTiming(sharedValue.value ? 0 : 40, {duration: 100}),
-            opacity: withTiming(sharedValue.value ? 0 : 1, {duration: 100}),
+            height: withTiming(sharedValue.value ? 0 : 40, {duration: 500}),
+            opacity: withTiming(sharedValue.value ? 0 : 1, {duration: 500, easing: Easing.inOut(Easing.exp)}),
         };
     });
 

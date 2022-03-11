@@ -83,15 +83,9 @@ const getSortedIds = (database: Database, category: CategoryModel, locale: strin
 
 const enhance = withObservables(['category'], ({category, locale, database}: {category: CategoryModel; locale: string} & WithDatabaseArgs) => {
     const observedCategory = category.observe();
-
-    // const collapsed = observedCategory.pipe(
-    //     switchMap((c) => of$(c.collapsed)),
-    // );
     const sortedIds = observedCategory.pipe(
         switchMap((c) => getSortedIds(database, c, locale)),
     );
-
-    // console.log('collapsed in witobserv', collapsed);
 
     return {
         sortedIds,

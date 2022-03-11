@@ -5,95 +5,114 @@ Object {
   "children": Array [
     <View>
       <View
+        onLayout={[Function]}
         style={null}
       >
-        <RNGestureHandlerButton
-          collapsable={false}
-          exclusive={true}
-          onGestureEvent={[Function]}
-          onGestureHandlerEvent={[Function]}
-          onGestureHandlerStateChange={[Function]}
-          onHandlerStateChange={[Function]}
-          rippleColor={0}
-        >
-          <View
-            accessible={true}
-            collapsable={false}
-            style={
-              Object {
+        <View
+          animatedStyle={
+            Object {
+              "value": Object {
+                "height": 40,
                 "opacity": 1,
-              }
+              },
             }
+          }
+          collapsable={false}
+          style={
+            Object {
+              "height": 40,
+              "opacity": 1,
+            }
+          }
+        >
+          <RNGestureHandlerButton
+            collapsable={false}
+            exclusive={true}
+            onGestureEvent={[Function]}
+            onGestureHandlerEvent={[Function]}
+            onGestureHandlerStateChange={[Function]}
+            onHandlerStateChange={[Function]}
+            rippleColor={0}
           >
             <View
+              accessible={true}
+              collapsable={false}
               style={
                 Object {
-                  "flexDirection": "row",
-                  "marginBottom": 8,
-                  "paddingLeft": 2,
-                  "paddingVertical": 4,
+                  "opacity": 1,
                 }
               }
             >
               <View
                 style={
-                  Array [
-                    Object {
-                      "alignItems": "center",
-                      "justifyContent": "center",
-                    },
-                    Object {
-                      "height": 24,
-                      "width": 24,
-                    },
-                    undefined,
-                  ]
+                  Object {
+                    "flexDirection": "row",
+                    "marginBottom": 8,
+                    "paddingLeft": 2,
+                    "paddingVertical": 4,
+                  }
                 }
               >
-                <Icon
-                  name="globe"
+                <View
                   style={
                     Array [
                       Object {
-                        "color": "rgba(255,255,255,0.4)",
+                        "alignItems": "center",
+                        "justifyContent": "center",
                       },
-                      undefined,
-                      undefined,
                       Object {
-                        "fontSize": 24,
-                        "left": 1,
+                        "height": 24,
+                        "width": 24,
                       },
+                      undefined,
                     ]
                   }
-                  testID="undefined.public"
-                />
+                >
+                  <Icon
+                    name="globe"
+                    style={
+                      Array [
+                        Object {
+                          "color": "rgba(255,255,255,0.4)",
+                        },
+                        undefined,
+                        undefined,
+                        Object {
+                          "fontSize": 24,
+                          "left": 1,
+                        },
+                      ]
+                    }
+                    testID="undefined.public"
+                  />
+                </View>
+                <Text
+                  ellipsizeMode="tail"
+                  numberOfLines={1}
+                  style={
+                    Array [
+                      Object {
+                        "fontFamily": "OpenSans",
+                        "fontSize": 16,
+                        "fontWeight": "400",
+                        "lineHeight": 24,
+                      },
+                      Object {
+                        "color": "rgba(255,255,255,0.72)",
+                        "flex": 1,
+                        "marginTop": -1,
+                        "paddingLeft": 12,
+                      },
+                      false,
+                    ]
+                  }
+                >
+                  Channel
+                </Text>
               </View>
-              <Text
-                ellipsizeMode="tail"
-                numberOfLines={1}
-                style={
-                  Array [
-                    Object {
-                      "fontFamily": "OpenSans",
-                      "fontSize": 16,
-                      "fontWeight": "400",
-                      "lineHeight": 24,
-                    },
-                    Object {
-                      "color": "rgba(255,255,255,0.72)",
-                      "flex": 1,
-                      "marginTop": -1,
-                      "paddingLeft": 12,
-                    },
-                    false,
-                  ]
-                }
-              >
-                Channel
-              </Text>
             </View>
-          </View>
-        </RNGestureHandlerButton>
+          </RNGestureHandlerButton>
+        </View>
       </View>
     </View>,
   ],
@@ -101,7 +120,6 @@ Object {
     "data": Anything,
     "getItem": [Function],
     "getItemCount": [Function],
-    "getItemLayout": [Function],
     "initialNumToRender": 20,
     "invertStickyHeaders": undefined,
     "keyExtractor": [Function],
