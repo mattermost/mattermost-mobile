@@ -204,12 +204,14 @@ const PostHandler = (superclass: any) => class extends superclass {
             batch.push(...postEmojis);
         }
 
-        // link the newly received posts
-        const linkedPosts = createPostsChain({order, posts, previousPostId});
-        if (linkedPosts.length) {
-            const postsInChannel = await this.handlePostsInChannel(linkedPosts, actionType as never, true);
-            if (postsInChannel.length) {
-                batch.push(...postsInChannel);
+        if (actionType !== ActionType.POSTS.RECEIVED_IN_THREAD) {
+            // link the newly received posts
+            const linkedPosts = createPostsChain({order, posts, previousPostId});
+            if (linkedPosts.length) {
+                const postsInChannel = await this.handlePostsInChannel(linkedPosts, actionType as never, true);
+                if (postsInChannel.length) {
+                    batch.push(...postsInChannel);
+                }
             }
         }
 
@@ -275,6 +277,7 @@ const PostHandler = (superclass: any) => class extends superclass {
         }
         switch (actionType) {
             case ActionType.POSTS.RECEIVED_IN_CHANNEL:
+            case ActionType.POSTS.RECEIVED_IN_THREAD:
             case ActionType.POSTS.RECEIVED_SINCE:
             case ActionType.POSTS.RECEIVED_AFTER:
             case ActionType.POSTS.RECEIVED_BEFORE:

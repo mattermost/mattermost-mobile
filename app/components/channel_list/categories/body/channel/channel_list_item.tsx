@@ -1,10 +1,11 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useMemo} from 'react';
+import React, {useEffect, useMemo} from 'react';
 import {useIntl} from 'react-intl';
 import {StyleSheet, Text, View} from 'react-native';
 import {TouchableOpacity} from 'react-native-gesture-handler';
+import Animated, {Easing, useAnimatedStyle, useSharedValue, withTiming} from 'react-native-reanimated';
 
 import {switchToChannelById} from '@actions/remote/channel';
 import ChannelIcon from '@components/channel_icon';
@@ -49,13 +50,15 @@ const textStyle = StyleSheet.create({
 });
 
 type Props = {
-    channel: Pick<ChannelModel, 'displayName' | 'name' | 'shared' | 'type'>;
+    channel: Pick<ChannelModel, 'deleteAt' | 'displayName' | 'name' | 'shared' | 'type'>;
+    isActive: boolean;
     isOwnDirectMessage: boolean;
     isMuted: boolean;
     myChannel: MyChannelModel;
+    collapsed: boolean;
 }
 
-const ChannelListItem = ({channel, isOwnDirectMessage, myChannel, isMuted}: Props) => {
+const ChannelListItem = ({channel, isActive, isOwnDirectMessage, isMuted, myChannel, collapsed}: Props) => {
     const {formatMessage} = useIntl();
     const theme = useTheme();
     const styles = getStyleSheet(theme);
@@ -63,6 +66,19 @@ const ChannelListItem = ({channel, isOwnDirectMessage, myChannel, isMuted}: Prop
 
     // Make it brighter if it's not muted, and highlighted or has unreads
     const bright = !isMuted && (myChannel.isUnread || myChannel.mentionsCount > 0);
+
+    const sharedValue = useSharedValue(collapsed && !bright);
+
+    useEffect(() => {
+        sharedValue.value = collapsed && !bright;
+    }, [collapsed, bright]);
+
+    const animatedStyle = useAnimatedStyle(() => {
+        return {
+            height: withTiming(sharedValue.value ? 0 : 40, {duration: 500}),
+            opacity: withTiming(sharedValue.value ? 0 : 1, {duration: 500, easing: Easing.inOut(Easing.exp)}),
+        };
+    });
 
     const switchChannels = () => switchToChannelById(serverUrl, myChannel.id);
     const membersCount = useMemo(() => {
@@ -85,27 +101,34 @@ const ChannelListItem = ({channel, isOwnDirectMessage, myChannel, isMuted}: Prop
         displayName = formatMessage({id: 'channel_header.directchannel.you', defaultMessage: '{displayName} (you)'}, {displayName});
     }
 
-    return (
-        <TouchableOpacity onPress={switchChannels}>
-            <View style={styles.container}>
-                <ChannelIcon
-                    membersCount={membersCount}
-                    name={channel.name}
-                    shared={channel.shared}
-                    size={24}
-                    type={channel.type}
-                    isMuted={isMuted}
-                />
-                <Text
-                    ellipsizeMode='tail'
-                    numberOfLines={1}
-                    style={textStyles}
-                >
-                    {displayName}
-                </Text>
+    if (channel.deleteAt > 0 && !isActive) {
+        return null;
+    }
 
-            </View>
-        </TouchableOpacity>
+    return (
+        <Animated.View style={animatedStyle}>
+            <TouchableOpacity onPress={switchChannels}>
+                <View style={styles.container}>
+                    <ChannelIcon
+                        isActive={isActive}
+                        isArchived={channel.deleteAt > 0}
+                        membersCount={membersCount}
+                        name={channel.name}
+                        shared={channel.shared}
+                        size={24}
+                        type={channel.type}
+                    />
+                    <Text
+                        ellipsizeMode='tail'
+                        numberOfLines={1}
+                        style={textStyles}
+                    >
+                        {displayName}
+                    </Text>
+
+                </View>
+            </TouchableOpacity>
+        </Animated.View>
     );
 };
 

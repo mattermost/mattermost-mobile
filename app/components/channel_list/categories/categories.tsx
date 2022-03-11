@@ -13,6 +13,7 @@ import type {CategoryModel} from '@database/models/server';
 
 type Props = {
     categories: CategoryModel[];
+    currentChannelId: string;
 }
 
 const styles = StyleSheet.create({
@@ -21,7 +22,9 @@ const styles = StyleSheet.create({
     },
 });
 
-const Categories = (props: Props) => {
+const extractKey = (item: CategoryModel) => item.id;
+
+const Categories = ({categories, currentChannelId}: Props) => {
     const intl = useIntl();
     const renderCategory = useCallback((data: {item: CategoryModel}) => {
         return (
@@ -29,26 +32,33 @@ const Categories = (props: Props) => {
                 <CategoryHeader category={data.item}/>
                 <CategoryBody
                     category={data.item}
+                    currentChannelId={currentChannelId}
                     locale={intl.locale}
                 />
             </>
         );
-    }, [props.categories]);
+    }, [categories, currentChannelId, intl.locale]);
 
     // Sort Categories
-    props.categories.sort((a, b) => a.sortOrder - b.sortOrder);
+    categories.sort((a, b) => a.sortOrder - b.sortOrder);
 
-    if (!props.categories.length) {
+    if (!categories.length) {
         return <LoadCategoriesError/>;
     }
 
     return (
         <FlatList
-            data={props.categories}
+            data={categories}
             renderItem={renderCategory}
             style={styles.flex}
             showsHorizontalScrollIndicator={false}
             showsVerticalScrollIndicator={false}
+            keyExtractor={extractKey}
+            removeClippedSubviews={true}
+            initialNumToRender={5}
+            windowSize={15}
+            updateCellsBatchingPeriod={10}
+            maxToRenderPerBatch={5}
         />
     );
 };
