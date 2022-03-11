@@ -65,6 +65,7 @@ Object {
                         "width": 24,
                       },
                       undefined,
+                      undefined,
                     ]
                   }
                 >
@@ -103,6 +104,7 @@ Object {
                         "marginTop": -1,
                         "paddingLeft": 12,
                       },
+                      false,
                       false,
                     ]
                   }

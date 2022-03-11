@@ -58,6 +58,7 @@ exports[`components/channel_list/categories/body/channel/item should match snaps
                 "width": 24,
               },
               undefined,
+              undefined,
             ]
           }
         >
@@ -119,6 +120,7 @@ exports[`components/channel_list/categories/body/channel/item should match snaps
                 "marginTop": -1,
                 "paddingLeft": 12,
               },
+              false,
               false,
             ]
           }
