@@ -103,12 +103,16 @@ const PostOptions = ({
         );
     };
 
+    // This fixes opening "post options modal" on top of "thread modal"
+    const additionalSnapPoints = location === Screens.THREAD ? 3 : 2;
+
     return (
         <BottomSheet
             renderContent={renderContent}
             closeButtonId='close-post-options'
+            componentId={Screens.POST_OPTIONS}
             initialSnapIndex={0}
-            snapPoints={[((snapPoints + 2) * ITEM_HEIGHT), 10]}
+            snapPoints={[((snapPoints + additionalSnapPoints) * ITEM_HEIGHT), 10]}
         />
     );
 };

@@ -18,7 +18,7 @@
   "channel.hasGuests": "Ten czat grupowy zawiera gości.",
   "channel.isGuest": "Ta osoba jest gościem",
   "channel_header.addMembers": "Dodaj Użytkowników",
-  "channel_header.directchannel.you": "{displayname} (Ty) ",
+  "channel_header.directchannel.you": "{displayName} (Ty) ",
   "channel_header.manageMembers": "Zarządzaj użytkownikami",
   "channel_header.notificationPreference": "Powiadomienia mobilne push",
   "channel_header.notificationPreference.all": "Wszystko",

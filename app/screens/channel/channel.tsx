@@ -3,7 +3,7 @@
 
 import React, {useCallback, useMemo} from 'react';
 import {useIntl} from 'react-intl';
-import {DeviceEventEmitter, Keyboard, Platform, View} from 'react-native';
+import {DeviceEventEmitter, Keyboard, Platform, StyleSheet, View} from 'react-native';
 import {Edge, SafeAreaView, useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import CompassIcon from '@components/compass_icon';
@@ -16,7 +16,7 @@ import {useTheme} from '@context/theme';
 import {useAppState, useIsTablet} from '@hooks/device';
 import {useDefaultHeaderHeight} from '@hooks/header';
 import {popTopScreen} from '@screens/navigation';
-import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
+import {changeOpacity} from '@utils/theme';
 
 import ChannelPostList from './channel_post_list';
 import OtherMentionsBadge from './other_mentions_badge';
@@ -35,20 +35,11 @@ type ChannelProps = {
 
 const edges: Edge[] = ['left', 'right'];
 
-const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
+const styles = StyleSheet.create({
     flex: {
         flex: 1,
     },
-    sectionContainer: {
-        marginTop: 10,
-        paddingHorizontal: 24,
-    },
-    sectionTitle: {
-        fontSize: 16,
-        fontFamily: 'OpenSans-SemiBold',
-        color: theme.centerChannelColor,
-    },
-}));
+});
 
 const Channel = ({channelId, componentId, displayName, isOwnDirectMessage, memberCount, name, teamId}: ChannelProps) => {
     const {formatMessage} = useIntl();
@@ -56,7 +47,6 @@ const Channel = ({channelId, componentId, displayName, isOwnDirectMessage, membe
     const isTablet = useIsTablet();
     const insets = useSafeAreaInsets();
     const theme = useTheme();
-    const styles = getStyleSheet(theme);
     const defaultHeight = useDefaultHeaderHeight();
     const rightButtons: HeaderRightButton[] = useMemo(() => ([{
         iconName: 'magnify',
