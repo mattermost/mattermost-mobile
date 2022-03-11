@@ -118,7 +118,6 @@ const PostOptions = ({
                 {canEdit &&
                     <EditOption
                         post={post}
-                        componentId={componentId}
                         canDelete={canDelete}
                     />
                 }
