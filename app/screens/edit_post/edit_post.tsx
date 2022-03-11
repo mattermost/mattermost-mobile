@@ -4,6 +4,7 @@
 import React, {useCallback, useEffect, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
 import {Alert, Keyboard, KeyboardType, LayoutChangeEvent, Platform, SafeAreaView, useWindowDimensions, View} from 'react-native';
+import DeviceInfo from 'react-native-device-info';
 import {Navigation} from 'react-native-navigation';
 import Animated, {useAnimatedStyle, useSharedValue, withTiming} from 'react-native-reanimated';
 
@@ -233,7 +234,15 @@ const EditPost = ({componentId, maxPostSize, post, closeButtonId, hasFilesAttach
         if (isTablet) {
             // 60 is the size of the navigation header
             const offset = isLandscape ? 60 : 0;
-            bottom = keyboardHeight.value - ((height - (layoutHeight.value + offset)) / 2);
+
+            const hasHWKeyboard = DeviceInfo.isKeyboardConnectedSync();
+
+            let offsetHWKeyboard = 0;
+            if (hasHWKeyboard) {
+                offsetHWKeyboard = isLandscape ? 70 : -80;
+            }
+
+            bottom = keyboardHeight.value - ((height - (layoutHeight.value + offset)) / 2) - offsetHWKeyboard;
         } else {
             bottom = keyboardHeight.value;
         }
