@@ -1,45 +1,41 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useMemo} from 'react';
+import React, {useCallback} from 'react';
 import {FlatList} from 'react-native';
 
 import ChannelListItem from './channel';
 
 import type CategoryModel from '@typings/database/models/servers/category';
-import type CategoryChannelModel from '@typings/database/models/servers/category_channel';
-import type ChannelModel from '@typings/database/models/servers/channel';
-import type MyChannelModel from '@typings/database/models/servers/my_channel';
 
 type Props = {
+    currentChannelId: string;
+    sortedIds: string[];
     category: CategoryModel;
-    channels: ChannelModel[];
-    myChannels: MyChannelModel[];
-    categoryChannels: CategoryChannelModel[];
 };
 
-const ChannelItem = ({item}: {item: string}) => {
-    return (
-        <ChannelListItem channelId={item}/>
-    );
-};
+const extractKey = (item: string) => item;
 
-const CategoryBody = ({category, categoryChannels, channels, myChannels}: Props) => {
-    const data: string[] = useMemo(() => {
-        switch (category.sorting) {
-            case 'alpha':
-                return channels.map((c) => c.id);
-            case 'manual':
-                return categoryChannels.map((cc) => cc.channelId);
-            default:
-                return myChannels.map((m) => m.id);
-        }
-    }, [category.sorting, categoryChannels, channels, myChannels]);
+const CategoryBody = ({currentChannelId, sortedIds, category}: Props) => {
+    const ChannelItem = useCallback(({item}: {item: string}) => {
+        return (
+            <ChannelListItem
+                channelId={item}
+                isActive={item === currentChannelId}
+                collapsed={category.collapsed}
+            />
+        );
+    }, [currentChannelId]);
 
     return (
         <FlatList
-            data={data}
+            data={sortedIds}
             renderItem={ChannelItem}
+            keyExtractor={extractKey}
+            removeClippedSubviews={true}
+            initialNumToRender={20}
+            windowSize={15}
+            updateCellsBatchingPeriod={10}
         />
     );
 };
