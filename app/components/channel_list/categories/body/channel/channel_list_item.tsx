@@ -1,10 +1,11 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useMemo} from 'react';
+import React, {useEffect, useMemo} from 'react';
 import {useIntl} from 'react-intl';
 import {StyleSheet, Text, View} from 'react-native';
 import {TouchableOpacity} from 'react-native-gesture-handler';
+import Animated, {Easing, useAnimatedStyle, useSharedValue, withTiming} from 'react-native-reanimated';
 
 import {switchToChannelById} from '@actions/remote/channel';
 import ChannelIcon from '@components/channel_icon';
@@ -50,9 +51,10 @@ type Props = {
     isActive: boolean;
     isOwnDirectMessage: boolean;
     myChannel: MyChannelModel;
+    collapsed: boolean;
 }
 
-const ChannelListItem = ({channel, isActive, isOwnDirectMessage, myChannel}: Props) => {
+const ChannelListItem = ({channel, isActive, isOwnDirectMessage, myChannel, collapsed}: Props) => {
     const {formatMessage} = useIntl();
     const theme = useTheme();
     const styles = getStyleSheet(theme);
@@ -60,6 +62,19 @@ const ChannelListItem = ({channel, isActive, isOwnDirectMessage, myChannel}: Pro
 
     // Make it brighter if it's highlighted, or has unreads
     const bright = myChannel.isUnread || myChannel.mentionsCount > 0;
+
+    const sharedValue = useSharedValue(collapsed && !bright);
+
+    useEffect(() => {
+        sharedValue.value = collapsed && !bright;
+    }, [collapsed, bright]);
+
+    const animatedStyle = useAnimatedStyle(() => {
+        return {
+            height: withTiming(sharedValue.value ? 0 : 40, {duration: 500}),
+            opacity: withTiming(sharedValue.value ? 0 : 1, {duration: 500, easing: Easing.inOut(Easing.exp)}),
+        };
+    });
 
     const switchChannels = () => switchToChannelById(serverUrl, myChannel.id);
     const membersCount = useMemo(() => {
@@ -86,27 +101,29 @@ const ChannelListItem = ({channel, isActive, isOwnDirectMessage, myChannel}: Pro
     }
 
     return (
-        <TouchableOpacity onPress={switchChannels}>
-            <View style={styles.container}>
-                <ChannelIcon
-                    isActive={isActive}
-                    isArchived={channel.deleteAt > 0}
-                    membersCount={membersCount}
-                    name={channel.name}
-                    shared={channel.shared}
-                    size={24}
-                    type={channel.type}
-                />
-                <Text
-                    ellipsizeMode='tail'
-                    numberOfLines={1}
-                    style={textStyles}
-                >
-                    {displayName}
-                </Text>
+        <Animated.View style={animatedStyle}>
+            <TouchableOpacity onPress={switchChannels}>
+                <View style={styles.container}>
+                    <ChannelIcon
+                        isActive={isActive}
+                        isArchived={channel.deleteAt > 0}
+                        membersCount={membersCount}
+                        name={channel.name}
+                        shared={channel.shared}
+                        size={24}
+                        type={channel.type}
+                    />
+                    <Text
+                        ellipsizeMode='tail'
+                        numberOfLines={1}
+                        style={textStyles}
+                    >
+                        {displayName}
+                    </Text>
 
-            </View>
-        </TouchableOpacity>
+                </View>
+            </TouchableOpacity>
+        </Animated.View>
     );
 };
 

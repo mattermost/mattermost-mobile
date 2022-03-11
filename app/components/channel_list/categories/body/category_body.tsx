@@ -6,22 +6,23 @@ import {FlatList} from 'react-native';
 
 import ChannelListItem from './channel';
 
+import type CategoryModel from '@typings/database/models/servers/category';
+
 type Props = {
     currentChannelId: string;
     sortedIds: string[];
+    category: CategoryModel;
 };
 
 const extractKey = (item: any) => item;
-const itemLayout = (d: any, index: number) => (
-    {length: 40, offset: 40 * index, index}
-);
 
-const CategoryBody = ({currentChannelId, sortedIds}: Props) => {
+const CategoryBody = ({currentChannelId, sortedIds, category}: Props) => {
     const ChannelItem = useCallback(({item}: {item: string}) => {
         return (
             <ChannelListItem
                 channelId={item}
                 isActive={item === currentChannelId}
+                collapsed={category.collapsed}
             />
         );
     }, [currentChannelId]);
@@ -35,7 +36,6 @@ const CategoryBody = ({currentChannelId, sortedIds}: Props) => {
             initialNumToRender={20}
             windowSize={15}
             updateCellsBatchingPeriod={10}
-            getItemLayout={itemLayout}
         />
     );
 };

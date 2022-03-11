@@ -82,12 +82,14 @@ const getSortedIds = (database: Database, category: CategoryModel, locale: strin
 };
 
 const enhance = withObservables(['category'], ({category, locale, database}: {category: CategoryModel; locale: string} & WithDatabaseArgs) => {
-    const sortedIds = category.observe().pipe(
+    const observedCategory = category.observe();
+    const sortedIds = observedCategory.pipe(
         switchMap((c) => getSortedIds(database, c, locale)),
     );
 
     return {
         sortedIds,
+        category: observedCategory,
     };
 });
 
