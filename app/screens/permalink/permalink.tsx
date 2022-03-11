@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useEffect, useState} from 'react';
+import React, {useCallback, useEffect, useState} from 'react';
 import {TouchableOpacity, Text, View, BackHandler, ActivityIndicator} from 'react-native';
 import Animated from 'react-native-reanimated';
 import {SafeAreaView} from 'react-native-safe-area-context';
@@ -22,7 +22,7 @@ import {closePermalink} from '@utils/permalink';
 type Props = {
     currentUsername: UserProfile['username'];
     postId: PostModel['id'];
-    channel: ChannelModel;
+    channel?: ChannelModel;
 }
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
@@ -122,18 +122,20 @@ function Permalink({channel, postId, currentUsername}: Props) {
 
     useEffect(() => {
         (async () => {
-            const data = await fetchPostsAround(serverUrl, channel.id, postId);
-            if (data?.posts) {
-                setLoading(false);
-                setPosts(data.posts);
+            if (channel?.id) {
+                const data = await fetchPostsAround(serverUrl, channel.id, postId, 5);
+                if (data?.posts) {
+                    setLoading(false);
+                    setPosts(data.posts);
+                }
             }
         })();
-    }, []);
+    }, [channel?.id]);
 
-    const handleClose = () => {
-        dismissModal();
+    const handleClose = useCallback(() => {
+        dismissModal({componentId: Screens.PERMALINK});
         closePermalink();
-    };
+    }, []);
 
     useEffect(() => {
         const listener = BackHandler.addEventListener('hardwareBackPress', () => {
@@ -144,11 +146,11 @@ function Permalink({channel, postId, currentUsername}: Props) {
         return () => {
             listener.remove();
         };
-    });
+    }, []);
 
-    const handlePress = () => {
+    const handlePress = useCallback(() => {
         return null;
-    };
+    }, []);
 
     return (
         <SafeAreaView
@@ -172,7 +174,7 @@ function Permalink({channel, postId, currentUsername}: Props) {
                             numberOfLines={1}
                             style={style.title}
                         >
-                            {channel.displayName}
+                            {channel?.displayName}
                         </Text>
                     </View>
                 </View>
@@ -197,7 +199,7 @@ function Permalink({channel, postId, currentUsername}: Props) {
                             shouldShowJoinLeaveMessages={false}
                             currentTimezone={null}
                             currentUsername={currentUsername}
-                            channelId={channel.id}
+                            channelId={channel!.id}
                             testID='permalink.post_list'
                             nativeID={Screens.PERMALINK}
                         />

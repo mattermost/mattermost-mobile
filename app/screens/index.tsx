@@ -102,7 +102,7 @@ Navigation.setLazyComponentRegistrator((screenName) => {
         screen = withIntl(require('@screens/mfa').default);
         break;
     case Screens.PERMALINK:
-        screen = require('@screens/permalink').default;
+        screen = withServerDatabase(require('@screens/permalink').default);
         break;
     case Screens.MENTIONS:
         screen = require('@screens/home/recent_mentions').default;

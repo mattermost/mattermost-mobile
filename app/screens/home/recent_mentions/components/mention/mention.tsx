@@ -1,11 +1,11 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useRef} from 'react';
+import React, {useCallback, useRef} from 'react';
 import {useIntl} from 'react-intl';
 import {View, StyleSheet} from 'react-native';
 
-import {showPermalink} from '@actions/local/permalink';
+import {showPermalink} from '@actions/remote/permalink';
 import Avatar from '@components/post_list/post/avatar';
 import Message from '@components/post_list/post/body/message';
 import Header from '@components/post_list/post/header';
@@ -97,7 +97,7 @@ function Mention({post, currentUser}: Props) {
         />
     );
 
-    const handlePress = preventDoubleTap(() => {
+    const handlePress = useCallback(preventDoubleTap(() => {
         pressDetected.current = true;
 
         showPermalink(serverUrl, '', post.id, intl);
@@ -106,7 +106,7 @@ function Mention({post, currentUser}: Props) {
             pressDetected.current = false;
             clearTimeout(pressTimeout);
         }, 300);
-    });
+    }), [serverUrl, post.id, intl]);
 
     return (
         <TouchableWithFeedback
@@ -115,26 +115,24 @@ function Mention({post, currentUser}: Props) {
             cancelTouchOnPanning={true}
         >
             <View style={styles.container}>
-                <>
-                    <ChannelInfo post={post}/>
-                    <View style={styles.content}>
-                        {postAvatar}
-                        <View style={styles.rightColumn}>
-                            {header}
-                            <View style={styles.message}>
-                                <Message
-                                    highlight={false}
-                                    isEdited={isEdited}
-                                    isPendingOrFailed={false}
-                                    isReplyPost={false}
-                                    location={Screens.MENTIONS}
-                                    post={post}
-                                    theme={theme}
-                                />
-                            </View>
+                <ChannelInfo post={post}/>
+                <View style={styles.content}>
+                    {postAvatar}
+                    <View style={styles.rightColumn}>
+                        {header}
+                        <View style={styles.message}>
+                            <Message
+                                highlight={false}
+                                isEdited={isEdited}
+                                isPendingOrFailed={false}
+                                isReplyPost={false}
+                                location={Screens.MENTIONS}
+                                post={post}
+                                theme={theme}
+                            />
                         </View>
                     </View>
-                </>
+                </View>
             </View>
         </TouchableWithFeedback>
     );
