@@ -1,7 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {processReceivedThreads, processUpdateTeamThreadsAsRead, processUpdateThreadFollow, processUpdateThreadRead} from '@actions/local/thread';
+import {processReceivedThreads, processUpdateTeamThreadsAsRead, processUpdateThreadFollow, processUpdateThreadRead, switchToThread} from '@actions/local/thread';
+import {fetchPostThread} from '@actions/remote/post';
 import {General} from '@constants';
 import DatabaseManager from '@database/manager';
 import NetworkManager from '@init/network_manager';
@@ -14,6 +15,14 @@ export type GetThreadsRequest = {
     error?: unknown;
 } | {
     data: GetUserThreadsResponse;
+};
+
+export const fetchAndSwitchToThread = async (serverUrl: string, rootId: string) => {
+    // Load thread before we open to the thread modal
+    // @Todo: https://mattermost.atlassian.net/browse/MM-42232
+    fetchPostThread(serverUrl, rootId);
+
+    switchToThread(serverUrl, rootId);
 };
 
 export const getThreads = async (serverUrl: string, teamId: string, before?: string, after?: string, perPage = General.CRT_CHUNK_SIZE, deleted = false, unread = false, since = 0): Promise<GetThreadsRequest> => {

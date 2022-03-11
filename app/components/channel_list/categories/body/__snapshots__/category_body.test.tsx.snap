@@ -5,7 +5,6 @@ Object {
   "children": Array [
     <View>
       <View
-        onLayout={[Function]}
         style={null}
       >
         <RNGestureHandlerButton
@@ -102,6 +101,8 @@ Object {
     "data": Anything,
     "getItem": [Function],
     "getItemCount": [Function],
+    "getItemLayout": [Function],
+    "initialNumToRender": 20,
     "invertStickyHeaders": undefined,
     "keyExtractor": [Function],
     "onContentSizeChange": [Function],
@@ -111,12 +112,14 @@ Object {
     "onScroll": [Function],
     "onScrollBeginDrag": [Function],
     "onScrollEndDrag": [Function],
-    "removeClippedSubviews": false,
+    "removeClippedSubviews": true,
     "renderItem": [Function],
     "scrollEventThrottle": 50,
     "stickyHeaderIndices": Array [],
     "style": undefined,
+    "updateCellsBatchingPeriod": 10,
     "viewabilityConfigCallbackPairs": Array [],
+    "windowSize": 15,
   },
   "type": "RCTScrollView",
 }
