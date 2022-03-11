@@ -25,7 +25,30 @@ export const fetchAndSwitchToThread = async (serverUrl: string, rootId: string) 
     switchToThread(serverUrl, rootId);
 };
 
-export const getThreads = async (serverUrl: string, teamId: string, before?: string, after?: string, perPage = General.CRT_CHUNK_SIZE, deleted = false, unread = false, since = 0): Promise<GetThreadsRequest> => {
+export const getThreads = async (
+    serverUrl: string,
+    teamId: string,
+    {
+        before,
+        after,
+        perPage = General.CRT_CHUNK_SIZE,
+        deleted = false,
+        unread = false,
+        since = 0,
+    }: {
+        before?: string;
+        after?: string;
+        perPage?: number;
+        deleted?: boolean;
+        unread?: boolean;
+        since?: number;
+    } = {
+        perPage: General.CRT_CHUNK_SIZE,
+        deleted: false,
+        unread: false,
+        since: 0,
+    },
+): Promise<GetThreadsRequest> => {
     const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
     if (!operator) {
         return {error: `${serverUrl} database not found`};
