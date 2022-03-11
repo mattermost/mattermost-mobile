@@ -80,7 +80,13 @@ export default class CategoryModel extends Model implements CategoryInterface {
     @lazy channels = this.collections.
         get<ChannelModel>(CHANNEL).
         query(
-            Q.on(CATEGORY_CHANNEL, 'category_id', this.id),
+            Q.experimentalJoinTables([MY_CHANNEL, CATEGORY_CHANNEL]),
+            Q.on(CATEGORY_CHANNEL,
+                Q.and(
+                    Q.on(MY_CHANNEL, Q.where('id', Q.notEq(''))),
+                    Q.where('category_id', this.id),
+                ),
+            ),
         );
 
     /** myChannels : Retrieves all myChannels that are part of this category */

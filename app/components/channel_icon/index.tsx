@@ -18,6 +18,7 @@ type ChannelIconProps = {
     isArchived?: boolean;
     isInfo?: boolean;
     isUnread?: boolean;
+    isMuted?: boolean;
     membersCount?: number;
     name: string;
     shared: boolean;
@@ -73,6 +74,9 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
         groupInfo: {
             color: theme.centerChannelColor,
         },
+        muted: {
+            opacity: 0.4,
+        },
     };
 });
 
@@ -82,6 +86,7 @@ const ChannelIcon = ({
     isArchived = false,
     isInfo = false,
     isUnread = false,
+    isMuted = false,
     membersCount = 0,
     name,
     shared,
@@ -99,6 +104,7 @@ const ChannelIcon = ({
     let unreadGroupBox;
     let activeGroup;
     let unreadGroup;
+    let mutedStyle;
 
     if (isUnread) {
         unreadIcon = styles.iconUnread;
@@ -116,6 +122,10 @@ const ChannelIcon = ({
         activeIcon = styles.iconInfo;
         activeGroupBox = styles.groupBoxInfo;
         activeGroup = styles.groupInfo;
+    }
+
+    if (isMuted) {
+        mutedStyle = styles.muted;
     }
 
     let icon;
@@ -180,7 +190,7 @@ const ChannelIcon = ({
     }
 
     return (
-        <View style={[styles.container, {width: size, height: size}, style]}>
+        <View style={[styles.container, {width: size, height: size}, style, mutedStyle]}>
             {icon}
         </View>
     );

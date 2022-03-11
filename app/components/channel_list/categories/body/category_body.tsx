@@ -14,7 +14,7 @@ type Props = {
     category: CategoryModel;
 };
 
-const extractKey = (item: any) => item;
+const extractKey = (item: string) => item;
 
 const CategoryBody = ({currentChannelId, sortedIds, category}: Props) => {
     const ChannelItem = useCallback(({item}: {item: string}) => {
