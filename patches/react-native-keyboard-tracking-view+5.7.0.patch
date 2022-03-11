@@ -389,10 +389,10 @@ index af15edf..20b6ab6 100644
    scrollToStart() {}
  }
 diff --git a/node_modules/react-native-keyboard-tracking-view/src/KeyboardTrackingView.ios.js b/node_modules/react-native-keyboard-tracking-view/src/KeyboardTrackingView.ios.js
-index 5e2c207..2a8342c 100644
+index 5e2c207..07c8257 100644
 --- a/node_modules/react-native-keyboard-tracking-view/src/KeyboardTrackingView.ios.js
 +++ b/node_modules/react-native-keyboard-tracking-view/src/KeyboardTrackingView.ios.js
-@@ -25,6 +25,25 @@ export default class KeyboardTrackingView extends PureComponent {
+@@ -25,6 +25,24 @@ export default class KeyboardTrackingView extends PureComponent {
      return {};
    }
  
@@ -404,7 +404,6 @@ index 5e2c207..2a8342c 100644
 +
 +  pauseTracking(scrollViewNativeID) {
 +    if (this.ref && KeyboardTrackingViewManager && KeyboardTrackingViewManager.pauseTracking) {
-+      console.log('PAUSING')
 +      KeyboardTrackingViewManager.pauseTracking(ReactNative.findNodeHandle(this.ref), scrollViewNativeID);
 +    }
 +  }

@@ -3,6 +3,7 @@
 
 import React, {useCallback, useEffect, useRef} from 'react';
 import {BackHandler, StyleSheet, View} from 'react-native';
+import {KeyboardTrackingViewRef} from 'react-native-keyboard-tracking-view';
 import {Navigation} from 'react-native-navigation';
 import {Edge, SafeAreaView} from 'react-native-safe-area-context';
 
@@ -14,7 +15,6 @@ import {dismissModal} from '@screens/navigation';
 import ThreadPostList from './thread_post_list';
 
 import type PostModel from '@typings/database/models/servers/post';
-import { KeyboardTrackingViewRef } from 'react-native-keyboard-tracking-view';
 
 type ThreadProps = {
     closeButtonId: string;
