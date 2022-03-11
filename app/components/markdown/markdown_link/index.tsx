@@ -13,8 +13,8 @@ import {of as of$} from 'rxjs';
 import {switchMap} from 'rxjs/operators';
 import urlParse from 'url-parse';
 
-import {showPermalink} from '@actions/local/permalink';
 import {switchToChannelByName} from '@actions/remote/channel';
+import {showPermalink} from '@actions/remote/permalink';
 import SlideUpPanelItem, {ITEM_HEIGHT} from '@components/slide_up_panel_item';
 import {MM_TABLES, SYSTEM_IDENTIFIERS} from '@constants/database';
 import DeepLinkTypes from '@constants/deep_linking';

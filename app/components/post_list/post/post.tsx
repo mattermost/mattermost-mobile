@@ -6,8 +6,8 @@ import {useIntl} from 'react-intl';
 import {Keyboard, Platform, StyleProp, View, ViewStyle} from 'react-native';
 import {TouchableHighlight} from 'react-native-gesture-handler';
 
-import {showPermalink} from '@actions/local/permalink';
 import {removePost} from '@actions/local/post';
+import {showPermalink} from '@actions/remote/permalink';
 import {fetchAndSwitchToThread} from '@actions/remote/thread';
 import SystemAvatar from '@components/system_avatar';
 import SystemHeader from '@components/system_header';

@@ -6,7 +6,6 @@ import {TouchableOpacity, Text, View, BackHandler, ActivityIndicator} from 'reac
 import Animated from 'react-native-reanimated';
 import {SafeAreaView} from 'react-native-safe-area-context';
 
-import {closePermalink} from '@actions/local/permalink';
 import {fetchPostsAround} from '@actions/remote/post';
 import {Screens} from '@app/constants';
 import {changeOpacity, makeStyleSheetFromTheme} from '@app/utils/theme';
@@ -18,6 +17,7 @@ import {useTheme} from '@context/theme';
 import {dismissModal} from '@screens/navigation';
 import ChannelModel from '@typings/database/models/servers/channel';
 import PostModel from '@typings/database/models/servers/post';
+import {closePermalink} from '@utils/permalink';
 
 type Props = {
     currentUsername: UserProfile['username'];
