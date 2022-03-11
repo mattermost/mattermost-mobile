@@ -4,7 +4,7 @@
 import moment from 'moment-timezone';
 import {Alert} from 'react-native';
 
-import {Permissions, Preferences} from '@constants';
+import {General, Permissions, Preferences} from '@constants';
 import {CustomStatusDuration} from '@constants/custom_status';
 import {UserModel} from '@database/models/server';
 import {DEFAULT_LOCALE, getLocalizedMessage, t} from '@i18n';
@@ -190,4 +190,90 @@ export function confirmOutOfOfficeDisabled(intl: IntlShape, status: string, upda
             onPress: () => updateStatus(status),
         }],
     );
+}
+
+export function isShared(user: UserProfile): boolean {
+    return Boolean(user.remote_id);
+}
+
+export function removeUserFromList(userId: string, originalList: UserProfile[]): UserProfile[] {
+    const list = [...originalList];
+    for (let i = list.length - 1; i >= 0; i--) {
+        if (list[i].id === userId) {
+            list.splice(i, 1);
+            return list;
+        }
+    }
+
+    return list;
+}
+
+// Splits the term by a splitStr and composes a list of the parts of
+// the split concatenated with the rest, forming a set of suggesitons
+// matchable with startsWith
+//
+// E.g.: for "one.two.three" by "." it would yield
+// ["one.two.three", ".two.three", "two.three", ".three", "three"]
+export function getSuggestionsSplitBy(term: string, splitStr: string): string[] {
+    const splitTerm = term.split(splitStr);
+    const initialSuggestions = splitTerm.map((st, i) => splitTerm.slice(i).join(splitStr));
+    let suggestions: string[] = [];
+
+    if (splitStr === ' ') {
+        suggestions = initialSuggestions;
+    } else {
+        suggestions = initialSuggestions.reduce((acc, val) => {
+            if (acc.length === 0) {
+                acc.push(val);
+            } else {
+                acc.push(splitStr + val, val);
+            }
+            return acc;
+        }, [] as string[]);
+    }
+    return suggestions;
+}
+
+export function getSuggestionsSplitByMultiple(term: string, splitStrs: string[]): string[] {
+    const suggestions = splitStrs.reduce((acc, val) => {
+        getSuggestionsSplitBy(term, val).forEach((suggestion) => acc.add(suggestion));
+        return acc;
+    }, new Set<string>());
+
+    return [...suggestions];
+}
+
+export function filterProfilesMatchingTerm(users: UserProfile[], term: string): UserProfile[] {
+    const lowercasedTerm = term.toLowerCase();
+    let trimmedTerm = lowercasedTerm;
+    if (trimmedTerm.startsWith('@')) {
+        trimmedTerm = trimmedTerm.substring(1);
+    }
+
+    return users.filter((user: UserProfile) => {
+        if (!user) {
+            return false;
+        }
+
+        const profileSuggestions: string[] = [];
+        const usernameSuggestions = getSuggestionsSplitByMultiple((user.username || '').toLowerCase(), General.AUTOCOMPLETE_SPLIT_CHARACTERS);
+        profileSuggestions.push(...usernameSuggestions);
+        const first = (user.first_name || '').toLowerCase();
+        const last = (user.last_name || '').toLowerCase();
+        const full = first + ' ' + last;
+        profileSuggestions.push(first, last, full);
+        profileSuggestions.push((user.nickname || '').toLowerCase());
+        const email = (user.email || '').toLowerCase();
+        profileSuggestions.push(email);
+        profileSuggestions.push((user.nickname || '').toLowerCase());
+
+        const split = email.split('@');
+        if (split.length > 1) {
+            profileSuggestions.push(split[1]);
+        }
+
+        return profileSuggestions.
+            filter((suggestion) => suggestion !== '').
+            some((suggestion) => suggestion.startsWith(trimmedTerm));
+    });
 }

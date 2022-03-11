@@ -110,6 +110,9 @@ Navigation.setLazyComponentRegistrator((screenName) => {
     case Screens.SSO:
         screen = withIntl(require('@screens/sso').default);
         break;
+    case Screens.CREATE_DIRECT_MESSAGE:
+        screen = withServerDatabase((require('@screens/create_direct_message').default));
+        break;
     case Screens.THREAD:
         screen = withServerDatabase(require('@screens/thread').default);
         break;

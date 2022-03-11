@@ -3,7 +3,7 @@
 
 import React, {useCallback, useEffect} from 'react';
 import {useIntl} from 'react-intl';
-import {Text, View} from 'react-native';
+import {Platform, Text, View} from 'react-native';
 import Animated, {useAnimatedStyle, useSharedValue, withTiming} from 'react-native-reanimated';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
@@ -101,7 +101,7 @@ const ChannelListHeader = ({canCreateChannels, canJoinChannels, displayName, ico
         bottomSheet({
             closeButtonId,
             renderContent,
-            snapPoints: [(items * ITEM_HEIGHT) + (insets.bottom * 2), 10],
+            snapPoints: [((items + Platform.select({android: 1, default: 0})) * ITEM_HEIGHT) + (insets.bottom * 2), 10],
             theme,
             title: intl.formatMessage({id: 'home.header.plus_menu', defaultMessage: 'Options'}),
         });
