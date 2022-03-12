@@ -2,6 +2,8 @@
 // See LICENSE.txt for license information.
 //
 
+/* eslint-disable max-lines */
+
 import {DeviceEventEmitter} from 'react-native';
 
 import {markChannelAsUnread, updateLastPostAt} from '@actions/local/channel';
@@ -529,7 +531,24 @@ export const fetchPostById = async (serverUrl: string, postId: string, fetchOnly
     try {
         const post = await client.getPost(postId);
         if (!fetchOnly) {
-            operator.handlePosts({actionType: ActionType.POSTS.RECEIVED_NEW, order: [post.id], posts: [post]});
+            const models: Model[] = [];
+            const {authors} = await fetchPostAuthors(serverUrl, [post], true);
+            const posts = await operator.handlePosts({
+                actionType: ActionType.POSTS.RECEIVED_NEW,
+                order: [post.id],
+                posts: [post],
+                prepareRecordsOnly: true,
+            });
+            models.push(...posts);
+            if (authors?.length) {
+                const users = await operator.handleUsers({
+                    users: authors,
+                    prepareRecordsOnly: false,
+                });
+                models.push(...users);
+            }
+
+            await operator.batchRecords(models);
         }
 
         return {post};
