@@ -248,12 +248,6 @@ export type HandlePreferencesArgs = PrepareOnly & {
   sync?: boolean;
 };
 
-export type HandleSavedPostsPreferenceArgs = PrepareOnly & {
-  postIds: Array<Post['id']>;
-  userId: UserProfile['id'];
-  sync?: boolean;
-};
-
 export type HandleUsersArgs = PrepareOnly & {
     users: UserProfile[];
  };
