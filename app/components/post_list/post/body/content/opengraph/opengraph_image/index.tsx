@@ -86,7 +86,7 @@ const OpengraphImage = ({isReplyPost, layoutWidth, location, metadata, openGraph
 
     let imageDimensions = bestDimensions;
     if (ogImage?.width && ogImage?.height) {
-        imageDimensions = calculateDimensions(ogImage.height, ogImage.width, layoutWidth || getViewPostWidth(isReplyPost, dimensions.height, dimensions.width));
+        imageDimensions = calculateDimensions(ogImage.height, ogImage.width, (layoutWidth || getViewPostWidth(isReplyPost, dimensions.height, dimensions.width) - 10));
     }
 
     const onPress = () => {
