@@ -9,7 +9,7 @@ import {DeviceEventEmitter} from 'react-native';
 import {markChannelAsUnread, updateLastPostAt} from '@actions/local/channel';
 import {processPostsFetched, removePost} from '@actions/local/post';
 import {addRecentReaction} from '@actions/local/reactions';
-import {ActionType, Events, General, Post, Preferences, ServerErrors} from '@constants';
+import {ActionType, Events, General, Post, ServerErrors} from '@constants';
 import {SYSTEM_IDENTIFIERS} from '@constants/database';
 import DatabaseManager from '@database/manager';
 import {getNeededAtMentionedUsernames} from '@helpers/api/user';
@@ -461,7 +461,7 @@ export const postActionWithCookie = async (serverUrl: string, postId: string, ac
     }
 };
 
-export async function getMissingChannelsFromPosts(serverUrl: string, posts: Post[], fetchOnly = false) {
+export async function fetchMissingChannelsFromPosts(serverUrl: string, posts: Post[], fetchOnly = false) {
     const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
     if (!operator) {
         return {error: `${serverUrl} database not found`};
@@ -474,45 +474,50 @@ export async function getMissingChannelsFromPosts(serverUrl: string, posts: Post
         return {error};
     }
 
-    const channelIds = await queryAllMyChannelIds(operator.database);
-    const channelPromises: Array<Promise<Channel>> = [];
-    const userPromises: Array<Promise<ChannelMembership>> = [];
+    try {
+        const channelIds = await queryAllMyChannelIds(operator.database);
+        const channelPromises: Array<Promise<Channel>> = [];
+        const userPromises: Array<Promise<ChannelMembership>> = [];
 
-    posts.forEach((post) => {
-        const id = post.channel_id;
+        posts.forEach((post) => {
+            const id = post.channel_id;
 
-        if (channelIds.indexOf(id) === -1) {
-            channelPromises.push(client.getChannel(id));
-            userPromises.push(client.getMyChannelMember(id));
-        }
-    });
+            if (channelIds.indexOf(id) === -1) {
+                channelPromises.push(client.getChannel(id));
+                userPromises.push(client.getMyChannelMember(id));
+            }
+        });
 
-    const channels = await Promise.all(channelPromises);
-    const channelMemberships = await Promise.all(userPromises);
+        const channels = await Promise.all(channelPromises);
+        const channelMemberships = await Promise.all(userPromises);
 
-    if (!fetchOnly && channels.length && channelMemberships.length) {
-        const modelPromises = prepareMissingChannelsForAllTeams(operator, channels, channelMemberships) as Array<Promise<Model[]>>;
-        if (modelPromises && modelPromises.length) {
-            const channelModelsArray = await Promise.all(modelPromises);
-            if (channelModelsArray.length) {
-                const models = channelModelsArray.flatMap((mdls) => {
-                    if (!mdls || mdls.length) {
-                        return [];
+        if (!fetchOnly && channels.length && channelMemberships.length) {
+            const modelPromises = prepareMissingChannelsForAllTeams(operator, channels, channelMemberships) as Array<Promise<Model[]>>;
+            if (modelPromises && modelPromises.length) {
+                const channelModelsArray = await Promise.all(modelPromises);
+                if (channelModelsArray.length) {
+                    const models = channelModelsArray.flatMap((mdls) => {
+                        if (!mdls || mdls.length) {
+                            return [];
+                        }
+                        return mdls;
+                    });
+
+                    if (models) {
+                        operator.batchRecords(models);
                     }
-                    return mdls;
-                });
-
-                if (models) {
-                    operator.batchRecords(models);
                 }
             }
         }
-    }
 
-    return {
-        channels,
-        channelMemberships,
-    };
+        return {
+            channels,
+            channelMemberships,
+        };
+    } catch (error) {
+        forceLogoutIfNecessary(serverUrl, error as ClientErrorProps);
+        return {error};
+    }
 }
 
 export const fetchPostById = async (serverUrl: string, postId: string, fetchOnly = false) => {
@@ -661,7 +666,7 @@ export const markPostAsUnread = async (serverUrl: string, postId: string) => {
     }
 };
 
-export async function getSavedPosts(serverUrl: string, teamId?: string, channelId?: string, page?: number, perPage?: number) {
+export async function fetchSavedPosts(serverUrl: string, teamId?: string, channelId?: string, page?: number, perPage?: number) {
     const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
     if (!operator) {
         return {error: `${serverUrl} database not found`};
@@ -673,51 +678,24 @@ export async function getSavedPosts(serverUrl: string, teamId?: string, channelI
         return {error};
     }
 
-    const userId = await queryCurrentUserId(operator.database);
-
-    let posts: Record<string, Post> = {};
-    let postsArray: Post[] = [];
-    let order: string[] = [];
-
     try {
+        const userId = await queryCurrentUserId(operator.database);
         const data = await client.getSavedPosts(userId, channelId, teamId, page, perPage);
-        posts = data.posts || {};
-        order = data.order || [];
-        postsArray = order.map((id) => posts[id]);
-    } catch (error) {
-        forceLogoutIfNecessary(serverUrl, error as ClientErrorProps);
-        return {error};
-    }
+        const posts = data.posts || {};
+        const order = data.order || [];
+        const postsArray = order.map((id) => posts[id]);
 
-    if (!postsArray.length) {
-        return {
-            order,
-            posts: postsArray,
-        };
-    }
+        if (!postsArray.length) {
+            return {
+                order,
+                posts: postsArray,
+            };
+        }
 
-    const promises: Array<Promise<Model[]>> = [];
+        const promises: Array<Promise<Model[]>> = [];
 
-    const preferences = order.map((id) => {
-        return {
-            user_id: userId,
-            category: Preferences.CATEGORY_SAVED_POST,
-            name: id,
-            value: 'true',
-        } as PreferenceType;
-    });
-
-    promises.push(
-        operator.handlePreferences({
-            preferences,
-            prepareRecordsOnly: true,
-            sync: false,
-        }),
-    );
-
-    try {
         const {authors} = await fetchPostAuthors(serverUrl, postsArray, true);
-        const {channels, channelMemberships} = await getMissingChannelsFromPosts(serverUrl, postsArray, true) as {channels: Channel[]; channelMemberships: ChannelMembership[]};
+        const {channels, channelMemberships} = await fetchMissingChannelsFromPosts(serverUrl, postsArray, true) as {channels: Channel[]; channelMemberships: ChannelMembership[]};
 
         if (authors?.length) {
             promises.push(
@@ -756,12 +734,13 @@ export async function getSavedPosts(serverUrl: string, teamId?: string, channelI
         if (models.length) {
             await operator.batchRecords(models);
         }
+
+        return {
+            order,
+            posts: postsArray,
+        };
     } catch (error) {
+        forceLogoutIfNecessary(serverUrl, error as ClientErrorProps);
         return {error};
     }
-
-    return {
-        order,
-        posts: postsArray,
-    };
 }

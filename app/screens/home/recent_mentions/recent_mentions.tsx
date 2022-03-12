@@ -8,7 +8,7 @@ import {StyleSheet, View, ActivityIndicator, FlatList} from 'react-native';
 import Animated, {useAnimatedStyle, useSharedValue, withTiming} from 'react-native-reanimated';
 import {SafeAreaView, Edge} from 'react-native-safe-area-context';
 
-import {getRecentMentions} from '@actions/remote/search';
+import {fetchRecentMentions} from '@actions/remote/search';
 import Post from '@components/mini_post';
 import NavigationHeader from '@components/navigation_header';
 import DateSeparator from '@components/post_list/date_separator';
@@ -65,7 +65,7 @@ const RecentMentionsScreen = ({mentions, currentUser, currentTimezone, isTimezon
 
     useEffect(() => {
         setLoading(true);
-        getRecentMentions(serverUrl).finally(() => {
+        fetchRecentMentions(serverUrl).finally(() => {
             setLoading(false);
         });
     }, [serverUrl]);
@@ -78,7 +78,7 @@ const RecentMentionsScreen = ({mentions, currentUser, currentTimezone, isTimezon
 
     const handleRefresh = useCallback(async () => {
         setRefreshing(true);
-        await getRecentMentions(serverUrl);
+        await fetchRecentMentions(serverUrl);
         setRefreshing(false);
     }, [serverUrl]);
 
