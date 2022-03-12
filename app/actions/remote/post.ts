@@ -667,6 +667,39 @@ export const markPostAsUnread = async (serverUrl: string, postId: string) => {
     }
 };
 
+export const editPost = async (serverUrl: string, postId: string, postMessage: string) => {
+    const database = DatabaseManager.serverDatabases[serverUrl]?.database;
+    if (!database) {
+        return {error: `${serverUrl} database not found`};
+    }
+    let client;
+    try {
+        client = NetworkManager.getClient(serverUrl);
+    } catch (error) {
+        return {error};
+    }
+
+    try {
+        const post = await queryPostById(database, postId);
+        if (post) {
+            const {update_at, edit_at, message: updatedMessage} = await client.patchPost({message: postMessage, id: postId});
+            await database.write(async () => {
+                await post.update((p) => {
+                    p.updateAt = update_at;
+                    p.editAt = edit_at;
+                    p.message = updatedMessage;
+                });
+            });
+        }
+        return {
+            post,
+        };
+    } catch (error) {
+        forceLogoutIfNecessary(serverUrl, error as ClientErrorProps);
+        return {error};
+    }
+};
+
 export async function fetchSavedPosts(serverUrl: string, teamId?: string, channelId?: string, page?: number, perPage?: number) {
     const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
     if (!operator) {

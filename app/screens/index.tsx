@@ -13,9 +13,6 @@ import {Screens} from '@constants';
 import {withServerDatabase} from '@database/components';
 import {DEFAULT_LOCALE, getTranslations} from '@i18n';
 
-// TODO: Remove this and uncomment screens as they get added
-/* eslint-disable */
-
 const withGestures = (Screen: React.ComponentType, styles: StyleProp<ViewStyle>) => {
     return function gestureHoc(props: any) {
         if (Platform.OS === 'android') {
@@ -23,11 +20,11 @@ const withGestures = (Screen: React.ComponentType, styles: StyleProp<ViewStyle>)
                 <GestureHandlerRootView style={[{flex: 1}, styles]}>
                     <Screen {...props}/>
                 </GestureHandlerRootView>
-            )
+            );
         }
 
         return <Screen {...props}/>;
-    }
+    };
 };
 
 const withIntl = (Screen: React.ComponentType) => {
@@ -39,86 +36,103 @@ const withIntl = (Screen: React.ComponentType) => {
             >
                 <Screen {...props}/>
             </IntlProvider>
-    );
-        }
-}
+        );
+    };
+};
 
 const withSafeAreaInsets = (Screen: React.ComponentType) => {
-    return function SafeAreaInsets(props: any){
+    return function SafeAreaInsets(props: any) {
         return (
             <SafeAreaProvider>
-                <Screen {...props} />
+                <Screen {...props}/>
             </SafeAreaProvider>
-        )
-    }
-}
+        );
+    };
+};
 
 Navigation.setLazyComponentRegistrator((screenName) => {
     let screen: any|undefined;
     let extraStyles: StyleProp<ViewStyle>;
     switch (screenName) {
-    case Screens.ABOUT:
-        screen =  withServerDatabase(require('@screens/about').default);
-        break;
-    case Screens.BOTTOM_SHEET:
-        screen = withServerDatabase(require('@screens/bottom_sheet').default);
-        break;
-    case Screens.CHANNEL:
-        screen = withServerDatabase(require('@screens/channel').default);
-        break;
-    case Screens.CUSTOM_STATUS:
-        screen = withServerDatabase(require('@screens/custom_status').default);
-        break;
-    case Screens.CUSTOM_STATUS_CLEAR_AFTER:
-        screen = withServerDatabase(require('@screens/custom_status_clear_after').default);
-        break;
-    case Screens.EMOJI_PICKER:
-        screen = withServerDatabase(require('@screens/emoji_picker').default);
-        break;
-    case Screens.EDIT_PROFILE:
-        screen = withServerDatabase((require('@screens/edit_profile').default));
-        break;
-    case Screens.EDIT_SERVER:
-        screen = withIntl(require('@screens/edit_server').default);
-        break;
-    case Screens.FORGOT_PASSWORD:
-        screen = withIntl(require('@screens/forgot_password').default);
-        break;
-    case Screens.GALLERY:
-        screen = withServerDatabase((require('@screens/gallery').default));
-        break;
-    case Screens.IN_APP_NOTIFICATION: {
-        const notificationScreen = require('@screens/in_app_notification').default;
-        Navigation.registerComponent(Screens.IN_APP_NOTIFICATION, () => Platform.select({
-            default: notificationScreen,
-            ios: withSafeAreaInsets(notificationScreen),
-        }));
-        return;
-    }
-    case Screens.LOGIN:
-        screen = withIntl(require('@screens/login').default);
-        break;
-    case Screens.MFA:
-        screen = withIntl(require('@screens/mfa').default);
-        break;
-    case Screens.BROWSE_CHANNELS:
-        screen = withServerDatabase(require('@screens/browse_channels').default);
-        break;
-    case Screens.POST_OPTIONS:
-        screen = withServerDatabase(require('@screens/post_options').default);
-        break;
-    case Screens.SSO:
-        screen = withIntl(require('@screens/sso').default);
-        break;
-    case Screens.SAVED_POSTS:
-        screen = withServerDatabase((require('@screens/home/saved_posts').default));
-        break;
-    case Screens.CREATE_DIRECT_MESSAGE:
-        screen = withServerDatabase((require('@screens/create_direct_message').default));
-        break;
-    case Screens.THREAD:
-        screen = withServerDatabase(require('@screens/thread').default);
-        break;
+        case Screens.ABOUT:
+            screen = withServerDatabase(require('@screens/about').default);
+            break;
+        case Screens.BOTTOM_SHEET:
+            screen = withServerDatabase(
+                require('@screens/bottom_sheet').default,
+            );
+            break;
+        case Screens.CHANNEL:
+            screen = withServerDatabase(require('@screens/channel').default);
+            break;
+        case Screens.CUSTOM_STATUS:
+            screen = withServerDatabase(
+                require('@screens/custom_status').default,
+            );
+            break;
+        case Screens.CUSTOM_STATUS_CLEAR_AFTER:
+            screen = withServerDatabase(
+                require('@screens/custom_status_clear_after').default,
+            );
+            break;
+        case Screens.EDIT_POST:
+            screen = withServerDatabase(require('@screens/edit_post').default);
+            break;
+        case Screens.EDIT_PROFILE:
+            screen = withServerDatabase(
+                require('@screens/edit_profile').default,
+            );
+            break;
+        case Screens.EDIT_SERVER:
+            screen = withIntl(require('@screens/edit_server').default);
+            break;
+        case Screens.EMOJI_PICKER:
+            screen = withServerDatabase(
+                require('@screens/emoji_picker').default,
+            );
+            break;
+        case Screens.FORGOT_PASSWORD:
+            screen = withIntl(require('@screens/forgot_password').default);
+            break;
+        case Screens.GALLERY:
+            screen = withServerDatabase(require('@screens/gallery').default);
+            break;
+        case Screens.IN_APP_NOTIFICATION: {
+            const notificationScreen =
+                require('@screens/in_app_notification').default;
+            Navigation.registerComponent(Screens.IN_APP_NOTIFICATION, () =>
+                Platform.select({
+                    default: notificationScreen,
+                    ios: withSafeAreaInsets(notificationScreen),
+                }),
+            );
+            return;
+        }
+        case Screens.LOGIN:
+            screen = withIntl(require('@screens/login').default);
+            break;
+        case Screens.MFA:
+            screen = withIntl(require('@screens/mfa').default);
+            break;
+        case Screens.BROWSE_CHANNELS:
+            screen = withServerDatabase(
+                require('@screens/browse_channels').default,
+            );
+            break;
+        case Screens.POST_OPTIONS:
+            screen = withServerDatabase(
+                require('@screens/post_options').default,
+            );
+            break;
+        case Screens.SAVED_POSTS:
+            screen = withServerDatabase((require('@screens/home/saved_posts').default));
+            break;
+        case Screens.SSO:
+            screen = withIntl(require('@screens/sso').default);
+            break;
+        case Screens.THREAD:
+            screen = withServerDatabase(require('@screens/thread').default);
+            break;
     }
 
     if (screen) {
