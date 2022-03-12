@@ -13,11 +13,10 @@ import {getTeammateNameDisplaySetting} from '@helpers/api/preference';
 import WebsocketManager from '@init/websocket_manager';
 import {queryPreferencesByCategoryAndName} from '@queries/servers/preference';
 import {queryCommonSystemValues} from '@queries/servers/system';
-import {queryCurrentUser, queryUserById} from '@queries/servers/user';
+import {queryCurrentUser} from '@queries/servers/user';
 import {displayUsername} from '@utils/user';
 
 import type ChannelModel from '@typings/database/models/servers/channel';
-import type UserModel from '@typings/database/models/servers/user';
 
 const {SERVER: {CHANNEL, CHANNEL_MEMBERSHIP}} = MM_TABLES;
 
@@ -94,11 +93,9 @@ export async function handleUserTypingEvent(serverUrl: string, msg: WebSocketMes
 
         const {config, license} = await queryCommonSystemValues(database);
 
-        let user: UserModel | UserProfile | undefined = await queryUserById(database, msg.data.user_id);
-        if (!user) {
-            const {users} = await fetchUsersByIds(serverUrl, [msg.data.user_id]);
-            user = users?.[0];
-        }
+        const {users, existingUsers} = await fetchUsersByIds(serverUrl, [msg.data.user_id]);
+        const user = users?.[0] || existingUsers?.[0];
+
         const namePreference = await queryPreferencesByCategoryAndName(database, Preferences.CATEGORY_DISPLAY_SETTINGS, Preferences.NAME_NAME_FORMAT);
         const teammateDisplayNameSetting = getTeammateNameDisplaySetting(namePreference, config, license);
         const currentUser = await queryCurrentUser(database);

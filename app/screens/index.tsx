@@ -75,10 +75,8 @@ Navigation.setLazyComponentRegistrator((screenName) => {
                 require('@screens/custom_status_clear_after').default,
             );
             break;
-        case Screens.EMOJI_PICKER:
-            screen = withServerDatabase(
-                require('@screens/emoji_picker').default,
-            );
+        case Screens.EDIT_POST:
+            screen = withServerDatabase(require('@screens/edit_post').default);
             break;
         case Screens.EDIT_PROFILE:
             screen = withServerDatabase(
@@ -87,6 +85,11 @@ Navigation.setLazyComponentRegistrator((screenName) => {
             break;
         case Screens.EDIT_SERVER:
             screen = withIntl(require('@screens/edit_server').default);
+            break;
+        case Screens.EMOJI_PICKER:
+            screen = withServerDatabase(
+                require('@screens/emoji_picker').default,
+            );
             break;
         case Screens.FORGOT_PASSWORD:
             screen = withIntl(require('@screens/forgot_password').default);
@@ -121,8 +124,8 @@ Navigation.setLazyComponentRegistrator((screenName) => {
                 require('@screens/post_options').default,
             );
             break;
-        case Screens.EDIT_POST:
-            screen = withServerDatabase(require('@screens/edit_post').default);
+        case Screens.SAVED_POSTS:
+            screen = withServerDatabase((require('@screens/home/saved_posts').default));
             break;
         case Screens.SSO:
             screen = withIntl(require('@screens/sso').default);
