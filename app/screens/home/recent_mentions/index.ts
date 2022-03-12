@@ -39,7 +39,6 @@ const enhance = withObservables([], ({database}: WithDatabaseArgs) => {
                 ).observe();
             }),
         ),
-        currentUser,
         currentTimezone: currentUser.pipe((switchMap((user) => of$(getTimezone(user.timezone))))),
         isTimezoneEnabled: database.get<SystemModel>(SYSTEM).findAndObserve(SYSTEM_IDENTIFIERS.CONFIG).pipe(
             switchMap((config) => of$(config.value.ExperimentalTimezone === 'true')),

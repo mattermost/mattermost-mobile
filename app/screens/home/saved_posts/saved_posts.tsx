@@ -3,15 +3,16 @@
 
 import React, {useCallback, useEffect, useMemo, useState} from 'react';
 import {useIntl} from 'react-intl';
-import {FlatList, StyleSheet, View} from 'react-native';
+import {DeviceEventEmitter, FlatList, StyleSheet, View} from 'react-native';
 import {EventSubscription, Navigation} from 'react-native-navigation';
 import {Edge, SafeAreaView} from 'react-native-safe-area-context';
 
 import {fetchSavedPosts} from '@actions/remote/post';
 import Loading from '@components/loading';
-import Post from '@components/mini_post';
 import DateSeparator from '@components/post_list/date_separator';
+import PostWithChannelInfo from '@components/post_with_channel_info';
 import TabletTitle from '@components/tablet_title';
+import {Events, Screens} from '@constants';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {dismissModal} from '@screens/navigation';
@@ -19,14 +20,13 @@ import {isDateLine, getDateForDateLine, selectOrderedPosts} from '@utils/post_li
 
 import EmptyState from './components/empty';
 
+import type {ViewableItemsChanged} from '@typings/components/post_list';
 import type PostModel from '@typings/database/models/servers/post';
-import type UserModel from '@typings/database/models/servers/user';
 
 type Props = {
     componentId?: string;
     closeButtonId?: string;
     currentTimezone: string | null;
-    currentUser: UserModel;
     isTimezoneEnabled: boolean;
     isTablet?: boolean;
     posts: PostModel[];
@@ -56,7 +56,6 @@ const styles = StyleSheet.create({
 function SavedMessages({
     componentId,
     closeButtonId,
-    currentUser,
     posts,
     currentTimezone,
     isTimezoneEnabled,
@@ -95,6 +94,21 @@ function SavedMessages({
         };
     }, [componentId, closeButtonId]);
 
+    const onViewableItemsChanged = useCallback(({viewableItems}: ViewableItemsChanged) => {
+        if (!viewableItems.length) {
+            return;
+        }
+
+        const viewableItemsMap = viewableItems.reduce((acc: Record<string, boolean>, {item, isViewable}) => {
+            if (isViewable) {
+                acc[`${Screens.SAVED_POSTS}-${item.id}`] = true;
+            }
+            return acc;
+        }, {});
+
+        DeviceEventEmitter.emit(Events.ITEM_IN_VIEWPORT, viewableItemsMap);
+    }, []);
+
     const handleRefresh = useCallback(async () => {
         setRefreshing(true);
         await fetchSavedPosts(serverUrl);
@@ -129,12 +143,12 @@ function SavedMessages({
         }
 
         return (
-            <Post
-                currentUser={currentUser}
+            <PostWithChannelInfo
+                location={Screens.SAVED_POSTS}
                 post={item}
             />
         );
-    }, [currentUser, currentTimezone, isTimezoneEnabled, theme]);
+    }, [currentTimezone, isTimezoneEnabled, theme]);
 
     return (
         <>
@@ -156,6 +170,7 @@ function SavedMessages({
                     refreshing={refreshing}
                     renderItem={renderItem}
                     scrollToOverflowEnabled={true}
+                    onViewableItemsChanged={onViewableItemsChanged}
                 />
             </SafeAreaView>
         </>
