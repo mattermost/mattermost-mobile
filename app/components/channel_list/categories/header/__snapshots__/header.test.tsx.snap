@@ -2,26 +2,76 @@
 
 exports[`components/channel_list/categories/header should match snapshot 1`] = `
 <View
+  accessible={true}
+  collapsable={false}
+  focusable={true}
+  onClick={[Function]}
+  onResponderGrant={[Function]}
+  onResponderMove={[Function]}
+  onResponderRelease={[Function]}
+  onResponderTerminate={[Function]}
+  onResponderTerminationRequest={[Function]}
+  onStartShouldSetResponder={[Function]}
   style={
     Object {
-      "marginTop": 12,
-      "paddingLeft": 2,
-      "paddingVertical": 8,
+      "opacity": 1,
     }
   }
 >
-  <Text
+  <View
     style={
       Object {
-        "color": "rgba(255,255,255,0.64)",
-        "fontFamily": "OpenSans-SemiBold",
-        "fontSize": 12,
-        "fontWeight": "600",
-        "lineHeight": 16,
+        "alignItems": "flex-start",
+        "flexDirection": "row",
+        "marginTop": 12,
+        "paddingLeft": 2,
+        "paddingVertical": 8,
       }
     }
   >
-    TEST CATEGORY
-  </Text>
+    <Icon
+      animatedStyle={
+        Object {
+          "value": Object {
+            "transform": Array [
+              Object {
+                "rotate": "0deg",
+              },
+            ],
+          },
+        }
+      }
+      collapsable={false}
+      name="chevron-down"
+      size={20}
+      style={
+        Object {
+          "color": "rgba(255,255,255,0.64)",
+          "height": 20,
+          "marginRight": 2,
+          "marginTop": -2,
+          "transform": Array [
+            Object {
+              "rotate": "0deg",
+            },
+          ],
+          "width": 20,
+        }
+      }
+    />
+    <Text
+      style={
+        Object {
+          "color": "rgba(255,255,255,0.64)",
+          "fontFamily": "OpenSans-SemiBold",
+          "fontSize": 12,
+          "fontWeight": "600",
+          "lineHeight": 16,
+        }
+      }
+    >
+      TEST CATEGORY
+    </Text>
+  </View>
 </View>
 `;

@@ -2,22 +2,44 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback} from 'react';
+import {useIntl} from 'react-intl';
 
+import CompassIcon from '@components/compass_icon';
 import {Screens} from '@constants';
+import {useTheme} from '@context/theme';
 import {t} from '@i18n';
-import {dismissBottomSheet, goToScreen} from '@screens/navigation';
-import PostModel from '@typings/database/models/servers/post';
+import {dismissBottomSheet, showModal} from '@screens/navigation';
 
 import BaseOption from './base_option';
 
+import type PostModel from '@typings/database/models/servers/post';
+
 type Props = {
     post: PostModel;
+    canDelete: boolean;
 }
-const EditOption = ({post}: Props) => {
+const EditOption = ({post, canDelete}: Props) => {
+    const intl = useIntl();
+    const theme = useTheme();
+
     const onPress = useCallback(async () => {
-        // https://mattermost.atlassian.net/browse/MM-41991
         await dismissBottomSheet(Screens.POST_OPTIONS);
-        goToScreen('EDIT_SCREEN_NOT_IMPLEMENTED_YET', '', {post});
+
+        const title = intl.formatMessage({id: 'mobile.edit_post.title', defaultMessage: 'Editing Message'});
+        const closeButton = CompassIcon.getImageSourceSync('close', 24, theme.sidebarHeaderTextColor);
+        const closeButtonId = 'close-edit-post';
+        const passProps = {post, closeButtonId, canDelete};
+        const options = {
+            modal: {swipeToDismiss: false},
+            topBar: {
+                leftButtons: [{
+                    id: closeButtonId,
+                    testID: 'close.edit_post.button',
+                    icon: closeButton,
+                }],
+            },
+        };
+        showModal(Screens.EDIT_POST, title, passProps, options);
     }, [post]);
 
     return (

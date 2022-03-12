@@ -12,6 +12,7 @@ import OpengraphImage from './opengraph_image';
 
 type OpengraphProps = {
     isReplyPost: boolean;
+    layoutWidth?: number;
     location: string;
     metadata: PostMetadata;
     postId: string;
@@ -58,7 +59,7 @@ const selectOpenGraphData = (url: string, metadata: PostMetadata) => {
     })?.data;
 };
 
-const Opengraph = ({isReplyPost, location, metadata, postId, showLinkPreviews, theme}: OpengraphProps) => {
+const Opengraph = ({isReplyPost, layoutWidth, location, metadata, postId, showLinkPreviews, theme}: OpengraphProps) => {
     const intl = useIntl();
     const link = metadata.embeds![0]!.url;
     const openGraphData = selectOpenGraphData(link, metadata);
@@ -150,6 +151,7 @@ const Opengraph = ({isReplyPost, location, metadata, postId, showLinkPreviews, t
             {hasImage &&
             <OpengraphImage
                 isReplyPost={isReplyPost}
+                layoutWidth={layoutWidth}
                 location={location}
                 openGraphImages={openGraphData.images as never[]}
                 metadata={metadata}

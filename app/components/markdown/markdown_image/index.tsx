@@ -35,6 +35,7 @@ type MarkdownImageProps = {
     imagesMetadata: Record<string, PostImage>;
     isReplyPost?: boolean;
     linkDestination?: string;
+    layoutWidth?: number;
     location?: string;
     postId: string;
     source: string;
@@ -64,7 +65,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
 
 const MarkdownImage = ({
     disabled, errorTextStyle, imagesMetadata, isReplyPost = false,
-    linkDestination, location, postId, source, sourceSize,
+    layoutWidth, linkDestination, location, postId, source, sourceSize,
 }: MarkdownImageProps) => {
     const intl = useIntl();
     const isTablet = useIsTablet();
@@ -74,7 +75,7 @@ const MarkdownImage = ({
     const genericFileId = useRef(generateId('uid')).current;
     const metadata = imagesMetadata?.[source] || Object.values(imagesMetadata || {})[0];
     const [failed, setFailed] = useState(isGifTooLarge(metadata));
-    const originalSize = getMarkdownImageSize(isReplyPost, isTablet, sourceSize, metadata);
+    const originalSize = getMarkdownImageSize(isReplyPost, isTablet, sourceSize, metadata, layoutWidth);
     const serverUrl = useServerUrl();
     const galleryIdentifier = `${postId}-${genericFileId}-${location}`;
     const uri = useMemo(() => {
@@ -123,7 +124,7 @@ const MarkdownImage = ({
         handlePreviewImage,
     );
 
-    const {height, width} = calculateDimensions(fileInfo.height, fileInfo.width, getViewPortWidth(isReplyPost, isTablet));
+    const {height, width} = calculateDimensions(fileInfo.height, fileInfo.width, layoutWidth || getViewPortWidth(isReplyPost, isTablet));
 
     const handleLinkPress = useCallback(() => {
         if (linkDestination) {

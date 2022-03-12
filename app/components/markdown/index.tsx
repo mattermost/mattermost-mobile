@@ -45,6 +45,7 @@ type MarkdownProps = {
     isEdited?: boolean;
     isReplyPost?: boolean;
     isSearchResult?: boolean;
+    layoutWidth?: number;
     location?: string;
     mentionKeys?: UserMentionKey[];
     minimumHashtagLength?: number;
@@ -92,6 +93,7 @@ class Markdown extends PureComponent<MarkdownProps> {
         disableAtChannelMentionHighlight: false,
         disableChannelLink: false,
         disableGallery: false,
+        layoutWidth: undefined,
         value: '',
         minimumHashtagLength: 3,
     };
@@ -236,6 +238,7 @@ class Markdown extends PureComponent<MarkdownProps> {
             <MarkdownImage
                 disabled={this.props.disableGallery ?? Boolean(!this.props.location)}
                 errorTextStyle={[this.computeTextStyle(this.props.baseTextStyle, context), this.props.textStyles.error]}
+                layoutWidth={this.props.layoutWidth}
                 linkDestination={linkDestination}
                 imagesMetadata={this.props.imagesMetadata}
                 isReplyPost={this.props.isReplyPost}

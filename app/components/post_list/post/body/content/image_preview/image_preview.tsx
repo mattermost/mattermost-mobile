@@ -23,6 +23,7 @@ type ImagePreviewProps = {
     expandedLink?: string;
     isReplyPost: boolean;
     link: string;
+    layoutWidth?: number;
     location: string;
     metadata: PostMetadata;
     postId: string;
@@ -44,7 +45,7 @@ const style = StyleSheet.create({
     },
 });
 
-const ImagePreview = ({expandedLink, isReplyPost, link, location, metadata, postId, theme}: ImagePreviewProps) => {
+const ImagePreview = ({expandedLink, isReplyPost, layoutWidth, link, location, metadata, postId, theme}: ImagePreviewProps) => {
     const galleryIdentifier = `${postId}-ImagePreview-${location}`;
     const [error, setError] = useState(false);
     const serverUrl = useServerUrl();
@@ -52,7 +53,7 @@ const ImagePreview = ({expandedLink, isReplyPost, link, location, metadata, post
     const [imageUrl, setImageUrl] = useState(expandedLink || link);
     const isTablet = useIsTablet();
     const imageProps = metadata.images![link];
-    const dimensions = calculateDimensions(imageProps.height, imageProps.width, getViewPortWidth(isReplyPost, isTablet));
+    const dimensions = calculateDimensions(imageProps.height, imageProps.width, layoutWidth || getViewPortWidth(isReplyPost, isTablet));
 
     const onError = useCallback(() => {
         setError(true);

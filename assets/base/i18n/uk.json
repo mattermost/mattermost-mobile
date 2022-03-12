@@ -17,7 +17,7 @@
   "channel.channelHasGuests": "This channel has guests",
   "channel.hasGuests": "This group message has guests",
   "channel_header.addMembers": "Додати учасників",
-  "channel_header.directchannel.you": "{displayname} (ви)",
+  "channel_header.directchannel.you": "{displayName} (ви)",
   "channel_header.manageMembers": "Управління учасниками",
   "channel_header.notificationPreference": "Надіслати sms повідомлення",
   "channel_header.notificationPreference.all": "All",

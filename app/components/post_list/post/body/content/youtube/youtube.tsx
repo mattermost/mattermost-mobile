@@ -15,6 +15,7 @@ import {getYouTubeVideoId, tryOpenURL} from '@utils/url';
 type YouTubeProps = {
     googleDeveloperKey?: string;
     isReplyPost: boolean;
+    layoutWidth?: number;
     metadata: PostMetadata;
 }
 
@@ -42,7 +43,7 @@ const styles = StyleSheet.create({
     },
 });
 
-const YouTube = ({googleDeveloperKey, isReplyPost, metadata}: YouTubeProps) => {
+const YouTube = ({googleDeveloperKey, isReplyPost, layoutWidth, metadata}: YouTubeProps) => {
     const intl = useIntl();
     const isTablet = useIsTablet();
     const link = metadata.embeds![0].url;
@@ -50,7 +51,7 @@ const YouTube = ({googleDeveloperKey, isReplyPost, metadata}: YouTubeProps) => {
     const dimensions = calculateDimensions(
         MAX_YOUTUBE_IMAGE_HEIGHT,
         MAX_YOUTUBE_IMAGE_WIDTH,
-        getViewPortWidth(isReplyPost, isTablet),
+        layoutWidth || getViewPortWidth(isReplyPost, isTablet),
     );
 
     const getYouTubeTime = () => {

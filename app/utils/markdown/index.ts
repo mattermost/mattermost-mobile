@@ -219,6 +219,7 @@ export const getMarkdownImageSize = (
     isTablet: boolean,
     sourceSize?: SourceSize,
     knownSize?: PostImage,
+    layoutWidth?: number,
 ) => {
     let ratioW;
     let ratioH;
@@ -253,6 +254,6 @@ export const getMarkdownImageSize = (
     }
 
     // When no metadata and source size is not specified (full size svg's)
-    const width = getViewPortWidth(isReplyPost, isTablet);
+    const width = layoutWidth || getViewPortWidth(isReplyPost, isTablet);
     return {width, height: width};
 };

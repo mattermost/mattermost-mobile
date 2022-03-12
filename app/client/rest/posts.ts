@@ -17,7 +17,7 @@ export interface ClientPostsMix {
     getPostsBefore: (channelId: string, postId: string, page?: number, perPage?: number) => Promise<PostResponse>;
     getPostsAfter: (channelId: string, postId: string, page?: number, perPage?: number) => Promise<PostResponse>;
     getFileInfosForPost: (postId: string) => Promise<FileInfo[]>;
-    getSavedPosts: (userId: string, channelId?: string, teamId?: string, page?: number, perPage?: number) => Promise<any>;
+    getSavedPosts: (userId: string, channelId?: string, teamId?: string, page?: number, perPage?: number) => Promise<PostResponse>;
     getPinnedPosts: (channelId: string) => Promise<any>;
     markPostAsUnread: (userId: string, postId: string) => Promise<any>;
     pinPost: (postId: string) => Promise<any>;
