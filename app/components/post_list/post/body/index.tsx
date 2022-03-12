@@ -111,7 +111,7 @@ const Body = ({
 
     const onLayout = useCallback((e: LayoutChangeEvent) => {
         if (location === Screens.SAVED_POSTS) {
-            setLayoutWidth(e.nativeEvent.layout.width - 20);
+            setLayoutWidth(e.nativeEvent.layout.width);
         }
     }, [location]);
 
