@@ -45,17 +45,18 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
 export type Props = {
     imageMetadata: PostImage;
     imageUrl: string;
+    layoutWidth?: number;
     location: string;
     postId: string;
     theme: Theme;
 }
 
-const AttachmentImage = ({imageUrl, imageMetadata, location, postId, theme}: Props) => {
+const AttachmentImage = ({imageUrl, imageMetadata, layoutWidth, location, postId, theme}: Props) => {
     const galleryIdentifier = `${postId}-AttachmentImage-${location}`;
     const [error, setError] = useState(false);
     const fileId = useRef(generateId('uid')).current;
     const isTablet = useIsTablet();
-    const {height, width} = calculateDimensions(imageMetadata.height, imageMetadata.width, getViewPortWidth(false, isTablet));
+    const {height, width} = calculateDimensions(imageMetadata.height, imageMetadata.width, layoutWidth || getViewPortWidth(false, isTablet));
     const style = getStyleSheet(theme);
 
     const onError = useCallback(() => {
