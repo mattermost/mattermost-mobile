@@ -2,13 +2,16 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback, useEffect, useMemo, useState} from 'react';
-import {ActivityIndicator, FlatList, StyleSheet, View} from 'react-native';
+import {useIntl} from 'react-intl';
+import {FlatList, StyleSheet, View} from 'react-native';
 import {EventSubscription, Navigation} from 'react-native-navigation';
-import {SafeAreaView} from 'react-native-safe-area-context';
+import {Edge, SafeAreaView} from 'react-native-safe-area-context';
 
 import {fetchSavedPosts} from '@actions/remote/post';
+import Loading from '@components/loading';
 import Post from '@components/mini_post';
 import DateSeparator from '@components/post_list/date_separator';
+import TabletTitle from '@components/tablet_title';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {dismissModal} from '@screens/navigation';
@@ -25,8 +28,11 @@ type Props = {
     currentTimezone: string | null;
     currentUser: UserModel;
     isTimezoneEnabled: boolean;
+    isTablet?: boolean;
     posts: PostModel[];
 }
+
+const edges: Edge[] = ['bottom', 'left', 'right'];
 
 const styles = StyleSheet.create({
     flex: {
@@ -40,6 +46,11 @@ const styles = StyleSheet.create({
     list: {
         paddingVertical: 8,
     },
+    loading: {
+        height: 40,
+        width: 40,
+        justifyContent: 'center' as const,
+    },
 });
 
 function SavedMessages({
@@ -49,7 +60,9 @@ function SavedMessages({
     posts,
     currentTimezone,
     isTimezoneEnabled,
+    isTablet,
 }: Props) {
+    const intl = useIntl();
     const [loading, setLoading] = useState(!posts.length);
     const [refreshing, setRefreshing] = useState(false);
     const theme = useTheme();
@@ -91,9 +104,9 @@ function SavedMessages({
     const emptyList = useMemo(() => (
         <View style={styles.empty}>
             {loading ? (
-                <ActivityIndicator
-                    color={theme.centerChannelColor}
-                    size='large'
+                <Loading
+                    color={theme.buttonBg}
+                    style={styles.loading}
                 />
             ) : (
                 <EmptyState/>
@@ -124,17 +137,28 @@ function SavedMessages({
     }, [currentUser, currentTimezone, isTimezoneEnabled, theme]);
 
     return (
-        <SafeAreaView style={styles.flex}>
-            <FlatList
-                contentContainerStyle={styles.list}
-                ListEmptyComponent={emptyList}
-                data={data}
-                onRefresh={handleRefresh}
-                refreshing={refreshing}
-                renderItem={renderItem}
-                scrollToOverflowEnabled={true}
+        <>
+            {isTablet &&
+            <TabletTitle
+                testID='custom_status.done.button'
+                title={intl.formatMessage({id: 'mobile.screen.saved_posts', defaultMessage: 'Saved Messages'})}
             />
-        </SafeAreaView>
+            }
+            <SafeAreaView
+                edges={edges}
+                style={styles.flex}
+            >
+                <FlatList
+                    contentContainerStyle={styles.list}
+                    ListEmptyComponent={emptyList}
+                    data={data}
+                    onRefresh={handleRefresh}
+                    refreshing={refreshing}
+                    renderItem={renderItem}
+                    scrollToOverflowEnabled={true}
+                />
+            </SafeAreaView>
+        </>
     );
 }
 
