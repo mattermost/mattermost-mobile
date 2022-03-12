@@ -53,7 +53,7 @@ export const createPost = async (serverUrl: string, post: Partial<Post>, files: 
         return {error};
     }
 
-    const currentUserId = queryCurrentUserId(operator.database);
+    const currentUserId = await queryCurrentUserId(operator.database);
     const timestamp = Date.now();
     const pendingPostId = post.pending_post_id || `${currentUserId}:${timestamp}`;
 
@@ -68,6 +68,7 @@ export const createPost = async (serverUrl: string, post: Partial<Post>, files: 
         pending_post_id: pendingPostId,
         create_at: timestamp,
         update_at: timestamp,
+        delete_at: 0,
     } as Post;
 
     if (files.length) {
