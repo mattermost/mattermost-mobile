@@ -105,6 +105,7 @@ const AccountScreen = ({currentUser, enableCustomUserStatuses, customStatusExpir
         <SafeAreaView
             edges={edges}
             style={styles.container}
+            testID='account.screen'
         >
             <View style={[{height: insets.top, flexDirection: 'row'}]}>
                 <View style={[styles.container, tabletSidebarStyle]}/>
