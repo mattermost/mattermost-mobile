@@ -3,14 +3,16 @@
 
 import React, {useCallback, useEffect, useMemo, useState} from 'react';
 import {ActivityIndicator, FlatList, StyleSheet, View} from 'react-native';
+import {EventSubscription, Navigation} from 'react-native-navigation';
 import {SafeAreaView} from 'react-native-safe-area-context';
 
 import {fetchSavedPosts} from '@actions/remote/post';
-import {isDateLine, getDateForDateLine, selectOrderedPosts} from '@app/utils/post_list';
 import Post from '@components/mini_post';
 import DateSeparator from '@components/post_list/date_separator';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
+import {dismissModal} from '@screens/navigation';
+import {isDateLine, getDateForDateLine, selectOrderedPosts} from '@utils/post_list';
 
 import EmptyState from './components/empty';
 
@@ -18,6 +20,8 @@ import type PostModel from '@typings/database/models/servers/post';
 import type UserModel from '@typings/database/models/servers/user';
 
 type Props = {
+    componentId?: string;
+    closeButtonId?: string;
     currentTimezone: string | null;
     currentUser: UserModel;
     isTimezoneEnabled: boolean;
@@ -39,6 +43,8 @@ const styles = StyleSheet.create({
 });
 
 function SavedMessages({
+    componentId,
+    closeButtonId,
     currentUser,
     posts,
     currentTimezone,
@@ -56,6 +62,25 @@ function SavedMessages({
             setLoading(false);
         });
     }, []);
+
+    useEffect(() => {
+        let unsubscribe: EventSubscription | undefined;
+        if (componentId && closeButtonId) {
+            unsubscribe = Navigation.events().registerComponentListener({
+                navigationButtonPressed: ({buttonId}: { buttonId: string }) => {
+                    switch (buttonId) {
+                        case closeButtonId:
+                            dismissModal({componentId});
+                            break;
+                    }
+                },
+            }, componentId);
+        }
+
+        return () => {
+            unsubscribe?.remove();
+        };
+    }, [componentId, closeButtonId]);
 
     const handleRefresh = useCallback(async () => {
         setRefreshing(true);
@@ -104,12 +129,10 @@ function SavedMessages({
                 contentContainerStyle={styles.list}
                 ListEmptyComponent={emptyList}
                 data={data}
-                indicatorStyle='black'
                 onRefresh={handleRefresh}
                 refreshing={refreshing}
                 renderItem={renderItem}
                 scrollToOverflowEnabled={true}
-                showsVerticalScrollIndicator={false}
             />
         </SafeAreaView>
     );

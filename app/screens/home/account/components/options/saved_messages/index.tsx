@@ -5,6 +5,7 @@ import React, {useCallback} from 'react';
 import {useIntl} from 'react-intl';
 import {DeviceEventEmitter, TextStyle} from 'react-native';
 
+import CompassIcon from '@components/compass_icon';
 import FormattedText from '@components/formatted_text';
 import MenuItem from '@components/menu_item';
 import {Events, Screens} from '@constants';
@@ -23,9 +24,22 @@ const SavedMessages = ({isTablet, style, theme}: Props) => {
         if (isTablet) {
             DeviceEventEmitter.emit(Events.ACCOUNT_SELECT_TABLET_VIEW, Screens.SAVED_POSTS);
         } else {
+            const closeButtonId = 'close-saved-posts';
+            const icon = CompassIcon.getImageSourceSync('close', 24, theme.centerChannelColor);
+            const options = {
+                topBar: {
+                    leftButtons: [{
+                        id: closeButtonId,
+                        testID: closeButtonId,
+                        icon,
+                    }],
+                },
+            };
             showModal(
                 Screens.SAVED_POSTS,
                 intl.formatMessage({id: 'mobile.screen.saved_posts', defaultMessage: 'Saved Messages'}),
+                {closeButtonId},
+                options,
             );
         }
     }), [isTablet]);
