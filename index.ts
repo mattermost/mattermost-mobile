@@ -80,7 +80,7 @@ const registerNavigationListeners = () => {
 function componentWillAppear({componentId}: ComponentDidAppearEvent) {
     if (componentId === Screens.HOME) {
         DeviceEventEmitter.emit(Events.TAB_BAR_VISIBLE, true);
-    } else if (componentId === Screens.THREAD) {
+    } else if ([Screens.EDIT_POST, Screens.THREAD].includes(componentId)) {
         DeviceEventEmitter.emit(Events.PAUSE_KEYBOARD_TRACKING_VIEW, true);
     }
 }
@@ -95,7 +95,7 @@ function componentDidDisappearListener({componentId}: ComponentDidDisappearEvent
     if (componentId !== Screens.HOME) {
         EphemeralStore.removeNavigationComponentId(componentId);
 
-        if (componentId === Screens.THREAD) {
+        if ([Screens.EDIT_POST, Screens.THREAD].includes(componentId)) {
             DeviceEventEmitter.emit(Events.PAUSE_KEYBOARD_TRACKING_VIEW, false);
         }
 
