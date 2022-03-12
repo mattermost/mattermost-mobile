@@ -2,6 +2,8 @@
 // See LICENSE.txt for license information.
 //
 
+/* eslint-disable max-lines */
+
 import {DeviceEventEmitter} from 'react-native';
 
 import {markChannelAsUnread, updateLastPostAt} from '@actions/local/channel';
@@ -459,7 +461,7 @@ export const postActionWithCookie = async (serverUrl: string, postId: string, ac
     }
 };
 
-export async function getMissingChannelsFromPosts(serverUrl: string, posts: Post[], fetchOnly = false) {
+export async function fetchMissingChannelsFromPosts(serverUrl: string, posts: Post[], fetchOnly = false) {
     const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
     if (!operator) {
         return {error: `${serverUrl} database not found`};
@@ -472,45 +474,50 @@ export async function getMissingChannelsFromPosts(serverUrl: string, posts: Post
         return {error};
     }
 
-    const channelIds = await queryAllMyChannelIds(operator.database);
-    const channelPromises: Array<Promise<Channel>> = [];
-    const userPromises: Array<Promise<ChannelMembership>> = [];
+    try {
+        const channelIds = await queryAllMyChannelIds(operator.database);
+        const channelPromises: Array<Promise<Channel>> = [];
+        const userPromises: Array<Promise<ChannelMembership>> = [];
 
-    posts.forEach((post) => {
-        const id = post.channel_id;
+        posts.forEach((post) => {
+            const id = post.channel_id;
 
-        if (channelIds.indexOf(id) === -1) {
-            channelPromises.push(client.getChannel(id));
-            userPromises.push(client.getMyChannelMember(id));
-        }
-    });
+            if (channelIds.indexOf(id) === -1) {
+                channelPromises.push(client.getChannel(id));
+                userPromises.push(client.getMyChannelMember(id));
+            }
+        });
 
-    const channels = await Promise.all(channelPromises);
-    const channelMemberships = await Promise.all(userPromises);
+        const channels = await Promise.all(channelPromises);
+        const channelMemberships = await Promise.all(userPromises);
 
-    if (!fetchOnly && channels.length && channelMemberships.length) {
-        const modelPromises = prepareMissingChannelsForAllTeams(operator, channels, channelMemberships) as Array<Promise<Model[]>>;
-        if (modelPromises && modelPromises.length) {
-            const channelModelsArray = await Promise.all(modelPromises);
-            if (channelModelsArray.length) {
-                const models = channelModelsArray.flatMap((mdls) => {
-                    if (!mdls || mdls.length) {
-                        return [];
+        if (!fetchOnly && channels.length && channelMemberships.length) {
+            const modelPromises = prepareMissingChannelsForAllTeams(operator, channels, channelMemberships) as Array<Promise<Model[]>>;
+            if (modelPromises && modelPromises.length) {
+                const channelModelsArray = await Promise.all(modelPromises);
+                if (channelModelsArray.length) {
+                    const models = channelModelsArray.flatMap((mdls) => {
+                        if (!mdls || mdls.length) {
+                            return [];
+                        }
+                        return mdls;
+                    });
+
+                    if (models) {
+                        operator.batchRecords(models);
                     }
-                    return mdls;
-                });
-
-                if (models) {
-                    operator.batchRecords(models);
                 }
             }
         }
-    }
 
-    return {
-        channels,
-        channelMemberships,
-    };
+        return {
+            channels,
+            channelMemberships,
+        };
+    } catch (error) {
+        forceLogoutIfNecessary(serverUrl, error as ClientErrorProps);
+        return {error};
+    }
 }
 
 export const fetchPostById = async (serverUrl: string, postId: string, fetchOnly = false) => {
@@ -529,7 +536,24 @@ export const fetchPostById = async (serverUrl: string, postId: string, fetchOnly
     try {
         const post = await client.getPost(postId);
         if (!fetchOnly) {
-            operator.handlePosts({actionType: ActionType.POSTS.RECEIVED_NEW, order: [post.id], posts: [post]});
+            const models: Model[] = [];
+            const {authors} = await fetchPostAuthors(serverUrl, [post], true);
+            const posts = await operator.handlePosts({
+                actionType: ActionType.POSTS.RECEIVED_NEW,
+                order: [post.id],
+                posts: [post],
+                prepareRecordsOnly: true,
+            });
+            models.push(...posts);
+            if (authors?.length) {
+                const users = await operator.handleUsers({
+                    users: authors,
+                    prepareRecordsOnly: false,
+                });
+                models.push(...users);
+            }
+
+            await operator.batchRecords(models);
         }
 
         return {post};
@@ -641,3 +665,82 @@ export const markPostAsUnread = async (serverUrl: string, postId: string) => {
         return {error};
     }
 };
+
+export async function fetchSavedPosts(serverUrl: string, teamId?: string, channelId?: string, page?: number, perPage?: number) {
+    const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
+    if (!operator) {
+        return {error: `${serverUrl} database not found`};
+    }
+    let client;
+    try {
+        client = NetworkManager.getClient(serverUrl);
+    } catch (error) {
+        return {error};
+    }
+
+    try {
+        const userId = await queryCurrentUserId(operator.database);
+        const data = await client.getSavedPosts(userId, channelId, teamId, page, perPage);
+        const posts = data.posts || {};
+        const order = data.order || [];
+        const postsArray = order.map((id) => posts[id]);
+
+        if (!postsArray.length) {
+            return {
+                order,
+                posts: postsArray,
+            };
+        }
+
+        const promises: Array<Promise<Model[]>> = [];
+
+        const {authors} = await fetchPostAuthors(serverUrl, postsArray, true);
+        const {channels, channelMemberships} = await fetchMissingChannelsFromPosts(serverUrl, postsArray, true) as {channels: Channel[]; channelMemberships: ChannelMembership[]};
+
+        if (authors?.length) {
+            promises.push(
+                operator.handleUsers({
+                    users: authors,
+                    prepareRecordsOnly: true,
+                }),
+            );
+        }
+
+        if (channels?.length && channelMemberships?.length) {
+            const channelPromises = prepareMissingChannelsForAllTeams(operator, channels, channelMemberships) as Array<Promise<Model[]>>;
+            if (channelPromises && channelPromises.length) {
+                promises.push(...channelPromises);
+            }
+        }
+
+        promises.push(
+            operator.handlePosts({
+                actionType: '',
+                order: [],
+                posts: postsArray,
+                previousPostId: '',
+                prepareRecordsOnly: true,
+            }),
+        );
+
+        const modelArrays = await Promise.all(promises);
+        const models = modelArrays.flatMap((mdls) => {
+            if (!mdls || !mdls.length) {
+                return [];
+            }
+            return mdls;
+        });
+
+        if (models.length) {
+            await operator.batchRecords(models);
+        }
+
+        return {
+            order,
+            posts: postsArray,
+        };
+    } catch (error) {
+        forceLogoutIfNecessary(serverUrl, error as ClientErrorProps);
+        return {error};
+    }
+}

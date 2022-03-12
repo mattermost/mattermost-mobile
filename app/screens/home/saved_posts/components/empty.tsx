@@ -8,7 +8,7 @@ import {useTheme} from '@context/theme';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
-import Mention from './mention_icon';
+import SavedPostsIcon from './saved_posts_icon';
 
 const getStyleSheet = makeStyleSheetFromTheme((theme) => ({
     container: {
@@ -33,27 +33,27 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => ({
     },
 }));
 
-function EmptyMentions() {
+function EmptySavedPosts() {
     const theme = useTheme();
     const styles = getStyleSheet(theme);
 
     return (
         <View style={styles.container}>
-            <Mention style={styles.icon}/>
+            <SavedPostsIcon style={styles.icon}/>
             <FormattedText
-                defaultMessage='No Mentions yet'
-                id='mentions.empty.title'
+                defaultMessage='No saved messages yet'
+                id='saved_posts.empty.title'
                 style={styles.title}
-                testID='empty.mentions.title'
+                testID='saved_posts.empty.title'
             />
             <FormattedText
-                defaultMessage={'You\'ll see messages here when someone mentions you or uses terms you\'re monitoring.'}
-                id='mentions.empty.paragraph'
+                defaultMessage={'To save something for later, long-press on a message and choose Save from the menu. Saved messages are only visible to you.'}
+                id='saved_posts.empty.paragraph'
                 style={styles.paragraph}
-                testID='mentions.empty.paragraph'
+                testID='saved_posts.empty.paragraph'
             />
         </View>
     );
 }
 
-export default EmptyMentions;
+export default EmptySavedPosts;
