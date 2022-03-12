@@ -4,7 +4,6 @@
 import {Q} from '@nozbe/watermelondb';
 import {withDatabase} from '@nozbe/watermelondb/DatabaseProvider';
 import withObservables from '@nozbe/with-observables';
-import compose from 'lodash/fp/compose';
 import {of as of$} from 'rxjs';
 import {switchMap} from 'rxjs/operators';
 
@@ -54,7 +53,4 @@ const enhance = withObservables([], ({database}: WithDatabaseArgs) => {
     };
 });
 
-export default compose(
-    withDatabase,
-    enhance,
-)(SavedMessagesScreen);
+export default withDatabase(enhance(SavedMessagesScreen));
