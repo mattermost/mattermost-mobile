@@ -7,6 +7,7 @@ export const ICON_SIZE = 24;
 export const UPDATE_NATIVE_SCROLLVIEW = 'onUpdateNativeScrollView';
 export const TYPING_HEIGHT = 26;
 export const ACCESSORIES_CONTAINER_NATIVE_ID = 'channelAccessoriesContainer';
+export const THREAD_ACCESSORIES_CONTAINER_NATIVE_ID = 'threadAccessoriesContainer';
 
 export const NOTIFY_ALL_MEMBERS = 5;
 

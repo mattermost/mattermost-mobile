@@ -113,6 +113,12 @@ Navigation.setLazyComponentRegistrator((screenName) => {
     case Screens.SAVED_POSTS:
         screen = withServerDatabase((require('@screens/home/saved_posts').default));
         break;
+    case Screens.CREATE_DIRECT_MESSAGE:
+        screen = withServerDatabase((require('@screens/create_direct_message').default));
+        break;
+    case Screens.THREAD:
+        screen = withServerDatabase(require('@screens/thread').default);
+        break;
     }
 
     if (screen) {

@@ -18,7 +18,7 @@
   "channel.hasGuests": "В этом групповом сообщении есть гости",
   "channel.isGuest": "Этот человек гость",
   "channel_header.addMembers": "Добавить участников",
-  "channel_header.directchannel.you": "{displayname} (это вы) ",
+  "channel_header.directchannel.you": "{displayName} (это вы) ",
   "channel_header.manageMembers": "Управление участниками",
   "channel_header.notificationPreference": "Мобильные уведомления",
   "channel_header.notificationPreference.all": "Все",

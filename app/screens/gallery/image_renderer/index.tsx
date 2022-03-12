@@ -41,6 +41,7 @@ function ImageRenderer({
             isActive={isPageActive}
             targetDimensions={targetDimensions}
             height={item.height}
+            isSvg={item.extension === 'svg'}
             onStateChange={onPageStateChange}
             outerGestureHandlerRefs={pagerRefs}
             source={item.uri}

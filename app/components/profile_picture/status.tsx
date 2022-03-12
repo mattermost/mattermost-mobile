@@ -10,7 +10,7 @@ import {makeStyleSheetFromTheme} from '@utils/theme';
 import type UserModel from '@typings/database/models/servers/user';
 
 type Props = {
-    author?: UserModel;
+    author?: UserModel | UserProfile;
     statusSize: number;
     statusStyle?: StyleProp<ViewProps>;
     theme: Theme;
@@ -39,8 +39,8 @@ const Status = ({author, statusSize, statusStyle, theme}: Props) => {
         statusStyle,
         {borderRadius: statusSize / 2},
     ]), [statusStyle]);
-
-    if (author?.status && !author.isBot) {
+    const isBot = author && (('isBot' in author) ? author.isBot : author.is_bot);
+    if (author?.status && !isBot) {
         return (
             <View
                 style={containerStyle}

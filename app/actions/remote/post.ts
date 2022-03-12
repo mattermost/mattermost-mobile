@@ -410,6 +410,23 @@ export const fetchPostAuthors = async (serverUrl: string, posts: Post[], fetchOn
     }
 };
 
+export const fetchPostThread = async (serverUrl: string, postId: string, fetchOnly = false): Promise<PostsRequest> => {
+    let client: Client;
+    try {
+        client = NetworkManager.getClient(serverUrl);
+    } catch (error) {
+        return {error};
+    }
+
+    try {
+        const data = await client.getPostThread(postId);
+        return processPostsFetched(serverUrl, ActionType.POSTS.RECEIVED_IN_THREAD, data, fetchOnly);
+    } catch (error) {
+        forceLogoutIfNecessary(serverUrl, error as ClientErrorProps);
+        return {error};
+    }
+};
+
 export const postActionWithCookie = async (serverUrl: string, postId: string, actionId: string, actionCookie: string, selectedOption = '') => {
     const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
     if (!operator) {
