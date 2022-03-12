@@ -3,7 +3,7 @@
 
 import {FlatList} from '@stream-io/flat-list-mvcp';
 import React, {ReactElement, useCallback, useEffect, useMemo, useRef, useState} from 'react';
-import {DeviceEventEmitter, NativeScrollEvent, NativeSyntheticEvent, Platform, StyleProp, StyleSheet, ViewStyle, ViewToken} from 'react-native';
+import {DeviceEventEmitter, NativeScrollEvent, NativeSyntheticEvent, Platform, StyleProp, StyleSheet, ViewStyle} from 'react-native';
 import Animated from 'react-native-reanimated';
 
 import {fetchPosts, fetchPostThread} from '@actions/remote/post';
@@ -21,6 +21,7 @@ import {INITIAL_BATCH_TO_RENDER, SCROLL_POSITION_CONFIG, VIEWABILITY_CONFIG} fro
 import MoreMessages from './more_messages';
 import PostListRefreshControl from './refresh_control';
 
+import type {ViewableItemsChanged, ViewableItemsChangedListenerEvent} from '@typings/components/post_list';
 import type PostModel from '@typings/database/models/servers/post';
 
 type Props = {
@@ -44,13 +45,7 @@ type Props = {
     testID: string;
 }
 
-type ViewableItemsChanged = {
-    viewableItems: ViewToken[];
-    changed: ViewToken[];
-}
-
 type onScrollEndIndexListenerEvent = (endIndex: number) => void;
-type ViewableItemsChangedListenerEvent = (viewableItms: ViewToken[]) => void;
 
 type ScrollIndexFailed = {
     index: number;
@@ -170,17 +165,17 @@ const PostList = ({
 
         const viewableItemsMap = viewableItems.reduce((acc: Record<string, boolean>, {item, isViewable}) => {
             if (isViewable) {
-                acc[item.id] = true;
+                acc[`${location}-${item.id}`] = true;
             }
             return acc;
         }, {});
 
-        DeviceEventEmitter.emit('scrolled', viewableItemsMap);
+        DeviceEventEmitter.emit(Events.ITEM_IN_VIEWPORT, viewableItemsMap);
 
         if (onViewableItemsChangedListener.current) {
             onViewableItemsChangedListener.current(viewableItems);
         }
-    }, []);
+    }, [location]);
 
     const registerScrollEndIndexListener = useCallback((listener) => {
         onScrollEndIndexListener.current = listener;
@@ -285,7 +280,7 @@ const PostList = ({
         }
 
         // Skip rendering Flag for the root post in the thread as it is visible in the `Thread Overview`
-        const skipFlaggedHeader = (
+        const skipSaveddHeader = (
             location === Screens.THREAD &&
             item.id === rootId
         );
@@ -296,7 +291,7 @@ const PostList = ({
             nextPost,
             previousPost,
             shouldRenderReplyButton,
-            skipFlaggedHeader,
+            skipSaveddHeader,
         };
 
         return (

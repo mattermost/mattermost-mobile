@@ -311,7 +311,10 @@ const Server = ({
     }, []);
 
     return (
-        <View style={styles.flex}>
+        <View
+            style={styles.flex}
+            testID='server.screen'
+        >
             <Background theme={theme}/>
             <AnimatedSafeArea
                 key={'server_content'}

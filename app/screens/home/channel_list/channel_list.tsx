@@ -83,6 +83,7 @@ const ChannelListScreen = (props: ChannelProps) => {
             <SafeAreaView
                 style={styles.content}
                 edges={edges}
+                testID='channel_list.screen'
             >
                 {canAddOtherServers && <Servers/>}
                 <Animated.View

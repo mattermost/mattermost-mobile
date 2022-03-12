@@ -116,6 +116,7 @@ class TestHelper {
             patch: jest.fn(),
             post: jest.fn(),
             put: jest.fn(),
+            upload: jest.fn(),
         };
 
         return new Client(mockApiClient, mockApiClient.baseUrl);

@@ -6,6 +6,7 @@ import {DeviceEventEmitter, StyleProp, StyleSheet, View, ViewStyle} from 'react-
 import Animated, {useDerivedValue} from 'react-native-reanimated';
 
 import {buildFilePreviewUrl, buildFileUrl} from '@actions/remote/file';
+import {Events} from '@constants';
 import {GalleryInit} from '@context/gallery';
 import {useServerUrl} from '@context/server';
 import {useIsTablet} from '@hooks/device';
@@ -23,6 +24,7 @@ type FilesProps = {
     canDownloadFiles: boolean;
     failed?: boolean;
     files: FileModel[];
+    layoutWidth?: number;
     location: string;
     isReplyPost: boolean;
     postId: string;
@@ -48,7 +50,7 @@ const styles = StyleSheet.create({
     },
 });
 
-const Files = ({authorId, canDownloadFiles, failed, files, isReplyPost, location, postId, publicLinkEnabled, theme}: FilesProps) => {
+const Files = ({authorId, canDownloadFiles, failed, files, isReplyPost, layoutWidth, location, postId, publicLinkEnabled, theme}: FilesProps) => {
     const galleryIdentifier = `${postId}-fileAttachments-${location}`;
     const [inViewPort, setInViewPort] = useState(false);
     const serverUrl = useServerUrl();
@@ -130,7 +132,7 @@ const Files = ({authorId, canDownloadFiles, failed, files, isReplyPost, location
                         nonVisibleImagesCount={nonVisibleImagesCount}
                         publicLinkEnabled={publicLinkEnabled}
                         updateFileForGallery={updateFileForGallery}
-                        wrapperWidth={getViewPortWidth(isReplyPost, isTablet) - 15}
+                        wrapperWidth={layoutWidth || (getViewPortWidth(isReplyPost, isTablet) - 15)}
                         inViewPort={inViewPort}
                     />
                 </View>
@@ -144,7 +146,7 @@ const Files = ({authorId, canDownloadFiles, failed, files, isReplyPost, location
         }
 
         const visibleImages = imageAttachments.slice(0, MAX_VISIBLE_ROW_IMAGES);
-        const portraitPostWidth = getViewPortWidth(isReplyPost, isTablet) - 15;
+        const portraitPostWidth = layoutWidth || (getViewPortWidth(isReplyPost, isTablet) - 15);
 
         let nonVisibleImagesCount;
         if (imageAttachments.length > MAX_VISIBLE_ROW_IMAGES) {
@@ -159,8 +161,8 @@ const Files = ({authorId, canDownloadFiles, failed, files, isReplyPost, location
     };
 
     useEffect(() => {
-        const onScrollEnd = DeviceEventEmitter.addListener('scrolled', (viewableItems) => {
-            if (postId in viewableItems) {
+        const onScrollEnd = DeviceEventEmitter.addListener(Events.ITEM_IN_VIEWPORT, (viewableItems) => {
+            if (`${location}-${postId}` in viewableItems) {
                 setInViewPort(true);
             }
         });

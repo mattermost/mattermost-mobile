@@ -18,7 +18,7 @@
   "channel.hasGuests": "Este grupo de mensagem tem convidados",
   "channel.isGuest": "Esta pessoa é um convidado",
   "channel_header.addMembers": "Adicionar Membros",
-  "channel_header.directchannel.you": "{displayname} (você) ",
+  "channel_header.directchannel.you": "{displayName} (você) ",
   "channel_header.manageMembers": "Gerenciar Membros",
   "channel_header.notificationPreference": "Notificações Móvel",
   "channel_header.notificationPreference.all": "Todos",

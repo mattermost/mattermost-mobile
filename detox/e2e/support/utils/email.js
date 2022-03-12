@@ -35,20 +35,19 @@ export const getEmailResetEmailTemplate = (userEmail) => {
 
 /**
  * Get join email template.
+ * @param {string} siteUrl - the site url
  * @param {string} sender - the email sender
  * @param {string} userEmail - the destination user email
  * @param {Object} team - the team to join
  * @param {boolean} isGuest - true if guest; otherwise false
  * @returns {string} email template
  */
-export const getJoinEmailTemplate = (sender, userEmail, team, isGuest = false) => {
-    const baseUrl = testConfig.siteUrl;
-
+export const getJoinEmailTemplate = (siteUrl, sender, userEmail, team, isGuest = false) => {
     return [
         `${sender} invited you to join the ${team.display_name} team.`,
         `${isGuest ? 'You were invited as a guest to collaborate with the team' : 'Start collaborating with your team on Mattermost'}`,
         '',
-        `<join-link-check> Join now ( ${baseUrl}/signup_user_complete/?d=${encodeURIComponent(JSON.stringify({display_name: team.display_name.replace(' ', '+'), email: userEmail, name: team.name}))}&t=<actual-token> )`,
+        `<join-link-check> Join now ( ${siteUrl}/signup_user_complete/?d=${encodeURIComponent(JSON.stringify({display_name: team.display_name.replace(' ', '+'), email: userEmail, name: team.name}))}&t=<actual-token> )`,
         '',
         'What is Mattermost?',
         'Mattermost is a flexible, open source messaging platform that enables secure team collaboration.',
@@ -60,6 +59,7 @@ export const getJoinEmailTemplate = (sender, userEmail, team, isGuest = false) =
 
 /**
  * Get mention email template.
+ * @param {string} siteUrl - the site url
  * @param {string} sender - the email sender
  * @param {string} message - the email message
  * @param {string} postId - the post id where user is mentioned
@@ -68,14 +68,12 @@ export const getJoinEmailTemplate = (sender, userEmail, team, isGuest = false) =
  * @param {string} channelDisplayName - the channel display name where user is mentioned
  * @@returns {string} email template
  */
-export const getMentionEmailTemplate = (sender, message, postId, siteName, teamName, channelDisplayName) => {
-    const baseUrl = testConfig.siteUrl;
-
+export const getMentionEmailTemplate = (siteUrl, sender, message, postId, siteName, teamName, channelDisplayName) => {
     return [
         `@${sender} mentioned you in a message`,
         `While you were away, @${sender} mentioned you in the ${channelDisplayName} channel.`,
         '',
-        `View Message ( ${baseUrl}/landing#/${teamName}/pl/${postId} )`,
+        `View Message ( ${siteUrl}/landing#/${teamName}/pl/${postId} )`,
         '',
         `@${sender}`,
         '<skip-local-time-check>',
@@ -84,7 +82,7 @@ export const getMentionEmailTemplate = (sender, message, postId, siteName, teamN
         message,
         '',
         'Want to change your notifications settings?',
-        `Login to ${siteName} ( ${baseUrl} ) and go to Settings > Notifications`,
+        `Login to ${siteName} ( ${siteUrl} ) and go to Settings > Notifications`,
         '',
         '© 2021 Mattermost, Inc. 530 Lytton Avenue, Second floor, Palo Alto, CA, 94301',
     ];
@@ -92,16 +90,15 @@ export const getMentionEmailTemplate = (sender, message, postId, siteName, teamN
 
 /**
  * Get password reset email template.
+ * @param {string} siteUrl - the site url
  * @returns {string} email template
  */
-export const getPasswordResetEmailTemplate = () => {
-    const baseUrl = testConfig.siteUrl;
-
+export const getPasswordResetEmailTemplate = (siteUrl) => {
     return [
         'Reset Your Password',
         'Click the button below to reset your password. If you didn’t request this, you can safely ignore this email.',
         '',
-        `<reset-password-link-check> Reset Password ( http://${baseUrl}/reset_password_complete?token=<actual-token> )`,
+        `<reset-password-link-check> Reset Password ( http://${siteUrl}/reset_password_complete?token=<actual-token> )`,
         '',
         'The password reset link expires in 24 hours.',
         '',
@@ -111,18 +108,17 @@ export const getPasswordResetEmailTemplate = () => {
 
 /**
  * Get email verify email template.
+ * @param {string} siteUrl - the site url
  * @param {string} userEmail - the destination user email
  * @returns {string} email template
  */
-export const getEmailVerifyEmailTemplate = (userEmail) => {
-    const baseUrl = testConfig.siteUrl;
-
+export const getEmailVerifyEmailTemplate = (siteUrl, userEmail) => {
     return [
         'Verify your email address',
-        `Thanks for joining ${baseUrl.split('/')[2]}. ( ${baseUrl} )`,
+        `Thanks for joining ${siteUrl.split('/')[2]}. ( ${siteUrl} )`,
         'Click below to verify your email address.',
         '',
-        `<email-verify-link-check> Verify Email ( ${baseUrl}/do_verify_email?token=<actual-token>&email=${encodeURIComponent(userEmail)} )`,
+        `<email-verify-link-check> Verify Email ( ${siteUrl}/do_verify_email?token=<actual-token>&email=${encodeURIComponent(userEmail)} )`,
         '',
         'This email address was used to create an account with Mattermost.',
         'If it was not you, you can safely ignore this email.',
@@ -133,20 +129,19 @@ export const getEmailVerifyEmailTemplate = (userEmail) => {
 
 /**
  * Get welcome email template.
+ * @param {string} siteUrl - the site url
  * @param {string} userEmail - the destination user email
  * @param {string} siteName - the site name
  * @param {string} teamName - the team name where user is welcome
  * @returns {string} email template
  */
-export const getWelcomeEmailTemplate = (userEmail, siteName, teamName) => {
-    const baseUrl = testConfig.siteUrl;
-
+export const getWelcomeEmailTemplate = (siteUrl, userEmail, siteName, teamName) => {
     return [
         'Welcome to the team',
-        `Thanks for joining ${baseUrl.split('/')[2]}. ( ${baseUrl} )`,
+        `Thanks for joining ${siteUrl.split('/')[2]}. ( ${siteUrl} )`,
         'Click below to verify your email address.',
         '',
-        `<email-verify-link-check> Verify Email ( ${baseUrl}/do_verify_email?token=<actual-token>&email=${encodeURIComponent(userEmail)}&redirect_to=/${teamName} )`,
+        `<email-verify-link-check> Verify Email ( ${siteUrl}/do_verify_email?token=<actual-token>&email=${encodeURIComponent(userEmail)}&redirect_to=/${teamName} )`,
         '',
         `This email address was used to create an account with ${siteName}.`,
         'If it was not you, you can safely ignore this email.',
