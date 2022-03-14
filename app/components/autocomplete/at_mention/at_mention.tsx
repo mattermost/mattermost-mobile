@@ -17,6 +17,12 @@ import {useTheme} from '@context/theme';
 import {t} from '@i18n';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 
+const SECTION_KEY_TEAM_MEMBERS = 'teamMembers'
+const SECTION_KEY_IN_CHANNEL = 'inChannel'
+const SECTION_KEY_OUT_OF_CHANNEL = 'outChannel'
+const SECTION_KEY_SPECIAL = 'special'
+const SECTION_KEY_GROUPS = 'groups'
+
 type SpecialMention = {
     completeHandle: string;
     id: string;
@@ -74,6 +80,56 @@ const keyExtractor = (item: UserProfile) => {
     return item.id;
 };
 
+const makeSections = (teamMembers: UserProfile[], usersInChannel: UserProfile[], usersOutOfChannel: UserProfile[], groups: Group[], showSpecialMentions: boolean, isSearch = false) => {
+    const newSections: UserMentionSections = [];
+
+        if (isSearch) {
+            newSections.push({
+                id: t('mobile.suggestion.members'),
+                defaultMessage: 'Members',
+                data: teamMembers,
+                key: SECTION_KEY_TEAM_MEMBERS,
+            });
+        } else {
+            if (usersInChannel.length) {
+                newSections.push({
+                    id: t('suggestion.mention.members'),
+                    defaultMessage: 'Channel Members',
+                    data: usersInChannel,
+                    key: SECTION_KEY_IN_CHANNEL,
+                });
+            }
+
+            if (groups.length) {
+                newSections.push({
+                    id: t('suggestion.mention.groups'),
+                    defaultMessage: 'Group Mentions',
+                    data: groups,
+                    key: SECTION_KEY_GROUPS,
+                });
+            }
+
+            if (showSpecialMentions) {
+                newSections.push({
+                    id: t('suggestion.mention.special'),
+                    defaultMessage: 'Special Mentions',
+                    data: getSpecialMentions(),
+                    key: SECTION_KEY_SPECIAL,
+                });
+            }
+
+            if (usersOutOfChannel.length) {
+                newSections.push({
+                    id: t('suggestion.mention.nonmembers'),
+                    defaultMessage: 'Not in Channel',
+                    data: usersOutOfChannel,
+                    key: SECTION_KEY_OUT_OF_CHANNEL,
+                });
+            }
+        }
+        return newSections
+}
+
 type Props = {
     channelId?: string;
     cursorPosition: number;
@@ -120,13 +176,14 @@ const AtMention = ({
     const [groups, setGroups] = useState<Group[]>([]);
     const [loading, setLoading] = useState(false);
     const [noResultsTerm, setNoResultsTerm] = useState<string|null>(null);
+    const [localCursorPosition, setLocalCursorPosition] = useState(cursorPosition); // To avoid errors due to delay between value changes and cursor position changes.
 
     const runSearch = useMemo(() => debounce(async (sUrl: string, term: string, cId?: string) => {
         setLoading(true);
-        const {users: receivedChannels, error} = await searchUsers(sUrl, term, cId);
+        const {users: receivedUsers, error} = await searchUsers(sUrl, term, cId);
         if (!error) {
-            setUsersInChannel(receivedChannels!.users);
-            setUsersOutOfChannel(receivedChannels!.out_of_channel || emptyList);
+            setUsersInChannel(receivedUsers!.users);
+            setUsersOutOfChannel(receivedUsers!.out_of_channel || emptyList);
         }
         setLoading(false);
     }, 200), []);
@@ -136,10 +193,16 @@ const AtMention = ({
         [usersInChannel, usersOutOfChannel],
     );
 
-    const matchTerm = getMatchTermForAtMention(value.substring(0, cursorPosition), isSearch);
+    const matchTerm = getMatchTermForAtMention(value.substring(0, localCursorPosition), isSearch);
+    const resetState = () => {
+        setUsersInChannel(emptyList);
+        setUsersOutOfChannel(emptyList);
+        setSections([]);
+        runSearch.cancel();
+    };
 
     const completeMention = useCallback((mention) => {
-        const mentionPart = value.substring(0, cursorPosition);
+        const mentionPart = value.substring(0, localCursorPosition);
 
         let completedDraft;
         if (isSearch) {
@@ -147,17 +210,23 @@ const AtMention = ({
         } else {
             completedDraft = mentionPart.replace(AT_MENTION_REGEX, `@${mention} `);
         }
+
+        const newCursorPosition = completedDraft.length - 1;
+
         if (value.length > cursorPosition) {
             completedDraft += value.substring(cursorPosition);
         }
+        
 
         updateValue(completedDraft);
+        setLocalCursorPosition(newCursorPosition);
 
         onShowingChange(false);
         setNoResultsTerm(mention);
-    }, [value, cursorPosition, isSearch]);
+        setSections([]);
+    }, [value, localCursorPosition, isSearch]);
 
-    const renderSpecialMentions = useCallback(({item}: SectionListRenderItemInfo<SpecialMention>) => {
+    const renderSpecialMentions = useCallback((item: SpecialMention) => {
         return (
             <SpecialMentionItem
                 completeHandle={item.completeHandle}
@@ -168,7 +237,7 @@ const AtMention = ({
         );
     }, [completeMention]);
 
-    const renderGroupMentions = useCallback(({item}: SectionListRenderItemInfo<Group>) => {
+    const renderGroupMentions = useCallback((item: Group) => {
         return (
             <GroupMentionItem
                 key={`autocomplete-group-${item.name}`}
@@ -178,7 +247,7 @@ const AtMention = ({
         );
     }, [completeMention]);
 
-    const renderItem = useCallback(({item}) => {
+    const renderAtMentions = useCallback((item: UserProfile) => {
         return (
             <AtMentionItem
                 testID={`autocomplete.at_mention.item.${item}`}
@@ -187,6 +256,17 @@ const AtMention = ({
             />
         );
     }, [completeMention]);
+
+    const renderItem = useCallback(({item, section}: SectionListRenderItemInfo<SpecialMention | Group | UserProfile>) => {
+        switch (section.key) {
+            case SECTION_KEY_SPECIAL:
+                return renderSpecialMentions(item as SpecialMention);
+            case SECTION_KEY_GROUPS:
+                return renderGroupMentions(item as Group);
+            default:
+                return renderAtMentions(item as UserProfile);
+        }
+    }, [renderSpecialMentions, renderGroupMentions, renderAtMentions])
 
     const renderSectionHeader = useCallback(({section}) => {
         return (
@@ -197,6 +277,12 @@ const AtMention = ({
             />
         );
     }, [loading]);
+
+    useEffect(() => {
+        if (localCursorPosition !== cursorPosition) {
+            setLocalCursorPosition(cursorPosition);
+        }
+    }, [cursorPosition]);
 
     useEffect(() => {
         if (useGroupMentions) {
@@ -212,8 +298,7 @@ const AtMention = ({
 
     useEffect(() => {
         if (matchTerm === null) {
-            setSections([]);
-            setNoResultsTerm(null);
+            resetState();
             onShowingChange(false);
             return;
         }
@@ -227,65 +312,16 @@ const AtMention = ({
     }, [matchTerm]);
 
     useEffect(() => {
-        if (matchTerm === null) {
-            return;
-        }
+        const showSpecialMentions = useChannelMentions && matchTerm != null && checkSpecialMentions(matchTerm);
+        const newSections = makeSections(teamMembers, usersInChannel, usersOutOfChannel, groups, showSpecialMentions, isSearch)
+        const nSections = newSections.length;
 
-        const newSections: UserMentionSections = [];
-
-        if (isSearch) {
-            newSections.push({
-                id: t('mobile.suggestion.members'),
-                defaultMessage: 'Members',
-                data: teamMembers,
-                key: 'teamMembers',
-            });
-        } else {
-            if (usersInChannel.length) {
-                newSections.push({
-                    id: t('suggestion.mention.members'),
-                    defaultMessage: 'Channel Members',
-                    data: usersInChannel,
-                    key: 'inChannel',
-                });
-            }
-
-            if (groups.length) {
-                newSections.push({
-                    id: t('suggestion.mention.groups'),
-                    defaultMessage: 'Group Mentions',
-                    data: groups,
-                    key: 'groups',
-                    renderItem: renderGroupMentions,
-                });
-            }
-
-            if (useChannelMentions && matchTerm != null && checkSpecialMentions(matchTerm)) {
-                newSections.push({
-                    id: t('suggestion.mention.special'),
-                    defaultMessage: 'Special Mentions',
-                    data: getSpecialMentions(),
-                    key: 'special',
-                    renderItem: renderSpecialMentions,
-                });
-            }
-
-            if (usersOutOfChannel.length) {
-                newSections.push({
-                    id: t('suggestion.mention.nonmembers'),
-                    defaultMessage: 'Not in Channel',
-                    data: usersOutOfChannel,
-                    key: 'outChannel',
-                });
-            }
-        }
-
-        if (!loading && !newSections.length && noResultsTerm == null) {
+        if (!loading && !nSections && noResultsTerm == null) {
             setNoResultsTerm(matchTerm);
         }
         setSections(newSections);
-        onShowingChange(Boolean(newSections.length));
-    }, [usersInChannel, usersOutOfChannel, teamMembers, groups]);
+        onShowingChange(Boolean(nSections));
+    }, [usersInChannel, usersOutOfChannel, teamMembers, groups, loading]);
 
     if (sections.length === 0 || noResultsTerm != null) {
         // If we are not in an active state or the mention has been completed return null so nothing is rendered
