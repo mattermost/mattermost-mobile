@@ -1,16 +1,17 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback, useMemo} from 'react';
+import React, {useCallback, useEffect, useMemo, useRef} from 'react';
 import {useIntl} from 'react-intl';
 import {DeviceEventEmitter, Keyboard, Platform, StyleSheet, View} from 'react-native';
+import {KeyboardTrackingViewRef} from 'react-native-keyboard-tracking-view';
 import {Edge, SafeAreaView, useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import CompassIcon from '@components/compass_icon';
 import FreezeScreen from '@components/freeze_screen';
 import NavigationHeader from '@components/navigation_header';
 import PostDraft from '@components/post_draft';
-import {Navigation} from '@constants';
+import {Events, Navigation} from '@constants';
 import {ACCESSORIES_CONTAINER_NATIVE_ID} from '@constants/post_draft';
 import {useTheme} from '@context/theme';
 import {useAppState, useIsTablet} from '@hooks/device';
@@ -48,6 +49,7 @@ const Channel = ({channelId, componentId, displayName, isOwnDirectMessage, membe
     const insets = useSafeAreaInsets();
     const theme = useTheme();
     const defaultHeight = useDefaultHeaderHeight();
+    const postDraftRef = useRef<KeyboardTrackingViewRef>(null);
     const rightButtons: HeaderRightButton[] = useMemo(() => ([{
         iconName: 'magnify',
         onPress: () => {
@@ -88,6 +90,19 @@ const Channel = ({channelId, componentId, displayName, isOwnDirectMessage, membe
         console.log('Title Press go to Channel Info', displayName);
     }, [channelId]);
 
+    useEffect(() => {
+        const listener = DeviceEventEmitter.addListener(Events.PAUSE_KEYBOARD_TRACKING_VIEW, (pause: boolean) => {
+            if (pause) {
+                postDraftRef.current?.pauseTracking(channelId);
+                return;
+            }
+
+            postDraftRef.current?.resumeTracking(channelId);
+        });
+
+        return () => listener.remove();
+    }, []);
+
     let title = displayName;
     if (isOwnDirectMessage) {
         title = formatMessage({id: 'channel_header.directchannel.you', defaultMessage: '{displayName} (you)'}, {displayName});
@@ -125,6 +140,7 @@ const Channel = ({channelId, componentId, displayName, isOwnDirectMessage, membe
                     </View>
                     <PostDraft
                         channelId={channelId}
+                        keyboardTracker={postDraftRef}
                         scrollViewNativeID={channelId}
                         accessoriesContainerID={ACCESSORIES_CONTAINER_NATIVE_ID}
                     />
