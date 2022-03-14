@@ -3,7 +3,7 @@
 
 import React from 'react';
 import {IntlShape, useIntl} from 'react-intl';
-import {StyleProp, Text, TextStyle, ViewStyle} from 'react-native';
+import {StyleProp, Text, TextStyle, View, ViewStyle} from 'react-native';
 
 import Markdown from '@components/markdown';
 import {Post} from '@constants';
@@ -25,6 +25,7 @@ type SystemMessageProps = {
 type RenderersProps = SystemMessageProps & {
     intl: IntlShape;
     styles: {
+        containerStyle: StyleProp<ViewStyle>;
         messageStyle: StyleProp<ViewStyle>;
         textStyles: {
             [key: string]: TextStyle;
@@ -45,6 +46,9 @@ type RenderMessageProps = RenderersProps & {
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     return {
+        container: {
+            marginBottom: 5,
+        },
         systemMessage: {
             color: changeOpacity(theme.centerChannelColor, 0.6),
             ...typography('Body', 200, 'Regular'),
@@ -61,7 +65,7 @@ const renderUsername = (value = '') => {
 };
 
 const renderMessage = ({styles, intl, localeHolder, theme, values, skipMarkdown = false}: RenderMessageProps) => {
-    const {messageStyle, textStyles} = styles;
+    const {containerStyle, messageStyle, textStyles} = styles;
 
     if (skipMarkdown) {
         return (
@@ -72,13 +76,15 @@ const renderMessage = ({styles, intl, localeHolder, theme, values, skipMarkdown 
     }
 
     return (
-        <Markdown
-            baseTextStyle={messageStyle}
-            disableGallery={true}
-            textStyles={textStyles}
-            value={intl.formatMessage(localeHolder, values)}
-            theme={theme}
-        />
+        <View style={containerStyle}>
+            <Markdown
+                baseTextStyle={messageStyle}
+                disableGallery={true}
+                textStyles={textStyles}
+                value={intl.formatMessage(localeHolder, values)}
+                theme={theme}
+            />
+        </View>
     );
 };
 
@@ -259,7 +265,7 @@ export const SystemMessage = ({post, author}: SystemMessageProps) => {
     const theme = useTheme();
     const style = getStyleSheet(theme);
     const textStyles = getMarkdownTextStyles(theme);
-    const styles = {messageStyle: style.systemMessage, textStyles};
+    const styles = {messageStyle: style.systemMessage, textStyles, containerStyle: style.container};
 
     const renderer = systemMessageRenderers[post.type];
     if (!renderer) {
@@ -272,7 +278,6 @@ export const SystemMessage = ({post, author}: SystemMessageProps) => {
                 theme={theme}
             />
         );
-        return null;
     }
 
     return renderer({post, author, styles, intl, theme});

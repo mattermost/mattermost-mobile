@@ -307,7 +307,7 @@ export function goToScreen(name: string, title: string, passProps = {}, options 
     const theme = getThemeFromState();
     const isDark = tinyColor(theme.sidebarBg).isDark();
     const componentId = EphemeralStore.getNavigationTopComponentId();
-    DeviceEventEmitter.emit('tabBarVisible', false);
+    DeviceEventEmitter.emit(Events.TAB_BAR_VISIBLE, false);
     const defaultOptions: Options = {
         layout: {
             componentBackgroundColor: theme.centerChannelBg,
@@ -613,6 +613,7 @@ export function showOverlay(name: string, passProps = {}, options = {}) {
 
     Navigation.showOverlay({
         component: {
+            id: name,
             name,
             passProps,
             options: merge(defaultOptions, options),

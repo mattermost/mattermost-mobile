@@ -2,30 +2,20 @@
 // See LICENSE.txt for license information.
 
 import {useManagedConfig} from '@mattermost/react-native-emm';
-import {Database, Q} from '@nozbe/watermelondb';
-import {withDatabase} from '@nozbe/watermelondb/DatabaseProvider';
-import withObservables from '@nozbe/with-observables';
+import {Database} from '@nozbe/watermelondb';
 import Clipboard from '@react-native-community/clipboard';
 import React, {useCallback, useMemo} from 'react';
 import {useIntl} from 'react-intl';
-import {GestureResponderEvent, StyleProp, StyleSheet, Text, TextStyle, View, ViewStyle} from 'react-native';
-import {TouchableOpacity} from 'react-native-gesture-handler';
-import {combineLatest, of as of$} from 'rxjs';
-import {map, switchMap} from 'rxjs/operators';
+import {GestureResponderEvent, StyleProp, StyleSheet, Text, TextStyle, View} from 'react-native';
 
 import CompassIcon from '@components/compass_icon';
 import SlideUpPanelItem, {ITEM_HEIGHT} from '@components/slide_up_panel_item';
-import {Preferences} from '@constants';
-import {MM_TABLES, SYSTEM_IDENTIFIERS} from '@constants/database';
+import {MM_TABLES} from '@constants/database';
 import {useTheme} from '@context/theme';
 import UserModel from '@database/models/server/user';
-import {getTeammateNameDisplaySetting} from '@helpers/api/preference';
 import {bottomSheet, dismissBottomSheet, showModal} from '@screens/navigation';
 import {displayUsername, getUsersByUsername} from '@utils/user';
 
-import type {WithDatabaseArgs} from '@typings/database/database';
-import type PreferenceModel from '@typings/database/models/servers/preference';
-import type SystemModel from '@typings/database/models/servers/system';
 import type UserModelType from '@typings/database/models/servers/user';
 
 type AtMentionProps = {
@@ -39,16 +29,13 @@ type AtMentionProps = {
     onPostPress?: (e: GestureResponderEvent) => void;
     teammateNameDisplay: string;
     textStyle?: StyleProp<TextStyle>;
-    touchableStyle?: StyleProp<ViewStyle>;
     users: UserModelType[];
 }
 
-const {SERVER: {PREFERENCE, SYSTEM, USER}} = MM_TABLES;
+const {SERVER: {USER}} = MM_TABLES;
 
 const style = StyleSheet.create({
-    bottomSheet: {
-        flex: 1,
-    },
+    bottomSheet: {flex: 1},
 });
 
 const AtMention = ({
@@ -62,7 +49,6 @@ const AtMention = ({
     onPostPress,
     teammateNameDisplay,
     textStyle,
-    touchableStyle,
     users,
 }: AtMentionProps) => {
     const intl = useIntl();
@@ -228,48 +214,17 @@ const AtMention = ({
     }
 
     return (
-        <TouchableOpacity
+        <Text
             onPress={onPress!}
             onLongPress={onLongPress}
-            style={touchableStyle}
+            style={styleText}
         >
-            <Text style={styleText}>
-                <Text style={mentionTextStyle}>
-                    {'@' + mention}
-                </Text>
-                {suffixElement}
+            <Text style={mentionTextStyle}>
+                {'@' + mention}
             </Text>
-        </TouchableOpacity>
+            {suffixElement}
+        </Text>
     );
 };
 
-const withAtMention = withObservables(['mentionName'], ({database, mentionName}: {mentionName: string} & WithDatabaseArgs) => {
-    const config = database.get<SystemModel>(SYSTEM).findAndObserve(SYSTEM_IDENTIFIERS.CONFIG);
-    const license = database.get<SystemModel>(SYSTEM).findAndObserve(SYSTEM_IDENTIFIERS.LICENSE);
-    const preferences = database.get<PreferenceModel>(PREFERENCE).query(Q.where('category', Preferences.CATEGORY_DISPLAY_SETTINGS)).observe();
-    const currentUserId = database.get<SystemModel>(SYSTEM).findAndObserve(SYSTEM_IDENTIFIERS.CURRENT_USER_ID).pipe(
-        switchMap(({value}) => of$(value)),
-    );
-    const teammateNameDisplay = combineLatest([config, license, preferences]).pipe(
-        map(
-            ([{value: cfg}, {value: lcs}, prefs]) => getTeammateNameDisplaySetting(prefs, cfg, lcs),
-        ),
-    );
-
-    let mn = mentionName.toLowerCase();
-    if ((/[._-]$/).test(mn)) {
-        mn = mn.substring(0, mn.length - 1);
-    }
-
-    return {
-        currentUserId,
-        teammateNameDisplay,
-        users: database.get(USER).query(
-            Q.where('username', Q.like(
-                `%${Q.sanitizeLikeString(mn)}%`,
-            )),
-        ).observeWithColumns(['username']),
-    };
-});
-
-export default withDatabase(withAtMention(React.memo(AtMention)));
+export default React.memo(AtMention);

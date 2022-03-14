@@ -3,8 +3,7 @@
 
 import React, {PureComponent, ReactNode} from 'react';
 import {injectIntl, IntlShape} from 'react-intl';
-import {Dimensions, EventSubscription, LayoutChangeEvent, Platform, ScaledSize, ScrollView, View} from 'react-native';
-import {TouchableOpacity} from 'react-native-gesture-handler';
+import {Dimensions, EventSubscription, LayoutChangeEvent, Platform, ScaledSize, ScrollView, TouchableOpacity, View} from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 
 import CompassIcon from '@components/compass_icon';
@@ -33,6 +32,80 @@ type MarkdownTableProps = MarkdownTableInputProps & {
     intl: IntlShape;
     theme: Theme;
 }
+
+const getStyleSheet = makeStyleSheetFromTheme((theme) => {
+    return {
+        container: {
+            maxHeight: MAX_HEIGHT,
+        },
+        expandButton: {
+            height: 34,
+            width: 34,
+        },
+        iconContainer: {
+            maxWidth: '100%',
+            alignItems: 'flex-end',
+            paddingTop: 8,
+            paddingBottom: 4,
+            ...Platform.select({
+                ios: {
+                    paddingRight: 14,
+                },
+            }),
+        },
+        iconButton: {
+            backgroundColor: theme.centerChannelBg,
+            marginTop: -32,
+            marginRight: -6,
+            borderWidth: 1,
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            borderRadius: 50,
+            borderColor: changeOpacity(theme.centerChannelColor, 0.2),
+            width: 34,
+            height: 34,
+        },
+        icon: {
+            fontSize: 14,
+            color: theme.linkColor,
+            ...Platform.select({
+                ios: {
+                    fontSize: 13,
+                },
+            }),
+        },
+        displayFlex: {
+            flex: 1,
+        },
+        table: {
+            width: '100%',
+            borderColor: changeOpacity(theme.centerChannelColor, 0.2),
+            borderWidth: 1,
+        },
+        tablePadding: {
+            paddingRight: 10,
+        },
+        moreBelow: {
+            bottom: Platform.select({
+                ios: 34,
+                android: 33.75,
+            }),
+            height: 20,
+            position: 'absolute',
+            left: 0,
+            borderColor: changeOpacity(theme.centerChannelColor, 0.2),
+        },
+        moreRight: {
+            maxHeight: MAX_HEIGHT,
+            position: 'absolute',
+            top: 0,
+            width: 20,
+            borderColor: changeOpacity(theme.centerChannelColor, 0.2),
+            borderRightWidth: 1,
+        },
+    };
+});
 
 class MarkdownTable extends PureComponent<MarkdownTableProps, MarkdownTableState> {
     private rowsSliced: boolean | undefined;
@@ -283,79 +356,5 @@ class MarkdownTable extends PureComponent<MarkdownTableProps, MarkdownTableState
         );
     }
 }
-
-const getStyleSheet = makeStyleSheetFromTheme((theme) => {
-    return {
-        container: {
-            maxHeight: MAX_HEIGHT,
-        },
-        expandButton: {
-            height: 34,
-            width: 34,
-        },
-        iconContainer: {
-            maxWidth: '100%',
-            alignItems: 'flex-end',
-            paddingTop: 8,
-            paddingBottom: 4,
-            ...Platform.select({
-                ios: {
-                    paddingRight: 14,
-                },
-            }),
-        },
-        iconButton: {
-            backgroundColor: theme.centerChannelBg,
-            marginTop: -32,
-            marginRight: -6,
-            borderWidth: 1,
-            display: 'flex',
-            justifyContent: 'center',
-            alignItems: 'center',
-            borderRadius: 50,
-            borderColor: changeOpacity(theme.centerChannelColor, 0.2),
-            width: 34,
-            height: 34,
-        },
-        icon: {
-            fontSize: 14,
-            color: theme.linkColor,
-            ...Platform.select({
-                ios: {
-                    fontSize: 13,
-                },
-            }),
-        },
-        displayFlex: {
-            flex: 1,
-        },
-        table: {
-            width: '100%',
-            borderColor: changeOpacity(theme.centerChannelColor, 0.2),
-            borderWidth: 1,
-        },
-        tablePadding: {
-            paddingRight: 10,
-        },
-        moreBelow: {
-            bottom: Platform.select({
-                ios: 34,
-                android: 33.75,
-            }),
-            height: 20,
-            position: 'absolute',
-            left: 0,
-            borderColor: changeOpacity(theme.centerChannelColor, 0.2),
-        },
-        moreRight: {
-            maxHeight: MAX_HEIGHT,
-            position: 'absolute',
-            top: 0,
-            width: 20,
-            borderColor: changeOpacity(theme.centerChannelColor, 0.2),
-            borderRightWidth: 1,
-        },
-    };
-});
 
 export default injectIntl(MarkdownTable);

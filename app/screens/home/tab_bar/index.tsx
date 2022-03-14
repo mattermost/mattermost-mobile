@@ -7,7 +7,7 @@ import {Shadow} from 'react-native-neomorph-shadows';
 import Animated, {useAnimatedStyle, withTiming} from 'react-native-reanimated';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
-import {Navigation as NavigationConstants, Screens, View as ViewConstants} from '@constants';
+import {Events, Navigation as NavigationConstants, Screens, View as ViewConstants} from '@constants';
 import EphemeralStore from '@store/ephemeral_store';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
@@ -66,7 +66,7 @@ function TabBar({state, descriptors, navigation, theme}: BottomTabBarProps & {th
     const safeareaInsets = useSafeAreaInsets();
 
     useEffect(() => {
-        const event = DeviceEventEmitter.addListener('tabBarVisible', (show) => {
+        const event = DeviceEventEmitter.addListener(Events.TAB_BAR_VISIBLE, (show) => {
             setVisible(show);
         });
 
