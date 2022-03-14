@@ -202,6 +202,7 @@ function Permalink({channel, postId, currentUsername}: Props) {
                             channelId={channel!.id}
                             testID='permalink.post_list'
                             nativeID={Screens.PERMALINK}
+                            highlightPinnedOrSaved={false}
                         />
                     </View>
                 )}
