@@ -9,6 +9,7 @@ import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
+import AtMention from './at_mention/';
 import ChannelMention from './channel_mention/';
 import EmojiSuggestion from './emoji_suggestion/';
 
@@ -71,8 +72,7 @@ const Autocomplete = ({
     cursorPosition,
     postInputTop,
     rootId,
-
-    //channelId,
+    channelId,
     isSearch = false,
     fixedBottomPosition,
     value,
@@ -89,7 +89,7 @@ const Autocomplete = ({
     const dimensions = useWindowDimensions();
     const style = getStyleFromTheme(theme);
 
-    // const [showingAtMention, setShowingAtMention] = useState(false);
+    const [showingAtMention, setShowingAtMention] = useState(false);
     const [showingChannelMention, setShowingChannelMention] = useState(false);
     const [showingEmoji, setShowingEmoji] = useState(false);
 
@@ -97,7 +97,7 @@ const Autocomplete = ({
     // const [showingAppCommand, setShowingAppCommand] = useState(false);
     // const [showingDate, setShowingDate] = useState(false);
 
-    const hasElements = showingChannelMention || showingEmoji; // || showingAtMention || showingCommand || showingAppCommand || showingDate;
+    const hasElements = showingChannelMention || showingEmoji || showingAtMention; // || showingCommand || showingAppCommand || showingDate;
     const appsTakeOver = false; // showingAppCommand;
 
     const maxListHeight = useMemo(() => {
@@ -161,14 +161,16 @@ const Autocomplete = ({
                     />
                 )} */}
                 {(!appsTakeOver || !isAppsEnabled) && (<>
-                    {/* <AtMention
+                    <AtMention
                         cursorPosition={cursorPosition}
                         maxListHeight={maxListHeight}
                         updateValue={updateValue}
-                        onResultCountChange={setShowingAtMention}
+                        onShowingChange={setShowingAtMention}
                         value={value || ''}
                         nestedScrollEnabled={nestedScrollEnabled}
-                    /> */}
+                        isSearch={isSearch}
+                        channelId={channelId}
+                    />
                     <ChannelMention
                         cursorPosition={cursorPosition}
                         maxListHeight={maxListHeight}
