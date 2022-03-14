@@ -1,10 +1,10 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback, useEffect, useState} from 'react';
+import React, {useCallback, useEffect, useMemo, useState} from 'react';
 import {TouchableOpacity, Text, View, BackHandler, ActivityIndicator} from 'react-native';
 import Animated from 'react-native-reanimated';
-import {SafeAreaView} from 'react-native-safe-area-context';
+import {SafeAreaView, useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import {fetchPostsAround} from '@actions/remote/post';
 import {Screens} from '@app/constants';
@@ -117,8 +117,12 @@ function Permalink({channel, postId, currentUsername}: Props) {
     const [loading, setLoading] = useState(true);
     const theme = useTheme();
     const serverUrl = useServerUrl();
-
+    const insets = useSafeAreaInsets();
     const style = getStyleSheet(theme);
+
+    const containerStyle = useMemo(() =>
+        [style.container, {marginBottom: insets.bottom}],
+    [style, insets.bottom]);
 
     useEffect(() => {
         (async () => {
@@ -153,9 +157,7 @@ function Permalink({channel, postId, currentUsername}: Props) {
     }, []);
 
     return (
-        <SafeAreaView
-            style={style.container}
-        >
+        <SafeAreaView style={containerStyle}>
             <Animated.View style={style.wrapper}>
                 <View style={style.header}>
                     <TouchableOpacity
