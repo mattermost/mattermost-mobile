@@ -3,23 +3,25 @@
 
 import {FlatList} from '@stream-io/flat-list-mvcp';
 import React, {ReactElement, useCallback, useEffect, useMemo, useRef, useState} from 'react';
-import {DeviceEventEmitter, NativeScrollEvent, NativeSyntheticEvent, Platform, StyleProp, StyleSheet, ViewStyle, ViewToken} from 'react-native';
+import {DeviceEventEmitter, NativeScrollEvent, NativeSyntheticEvent, Platform, StyleProp, StyleSheet, ViewStyle} from 'react-native';
 import Animated from 'react-native-reanimated';
 
-import {fetchPosts} from '@actions/remote/post';
+import {fetchPosts, fetchPostThread} from '@actions/remote/post';
 import CombinedUserActivity from '@components/post_list/combined_user_activity';
 import DateSeparator from '@components/post_list/date_separator';
 import NewMessagesLine from '@components/post_list/new_message_line';
 import Post from '@components/post_list/post';
+import ThreadOverview from '@components/post_list/thread_overview';
 import {Events, Screens} from '@constants';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
-import {getDateForDateLine, isCombinedUserActivityPost, isDateLine, isStartOfNewMessages, preparePostList, START_OF_NEW_MESSAGES} from '@utils/post_list';
+import {getDateForDateLine, isCombinedUserActivityPost, isDateLine, isStartOfNewMessages, isThreadOverview, preparePostList, START_OF_NEW_MESSAGES} from '@utils/post_list';
 
 import {INITIAL_BATCH_TO_RENDER, SCROLL_POSITION_CONFIG, VIEWABILITY_CONFIG} from './config';
 import MoreMessages from './more_messages';
 import PostListRefreshControl from './refresh_control';
 
+import type {ViewableItemsChanged, ViewableItemsChangedListenerEvent} from '@typings/components/post_list';
 import type PostModel from '@typings/database/models/servers/post';
 
 type Props = {
@@ -43,13 +45,7 @@ type Props = {
     testID: string;
 }
 
-type ViewableItemsChanged = {
-    viewableItems: ViewToken[];
-    changed: ViewToken[];
-}
-
 type onScrollEndIndexListenerEvent = (endIndex: number) => void;
-type ViewableItemsChangedListenerEvent = (viewableItms: ViewToken[]) => void;
 
 type ScrollIndexFailed = {
     index: number;
@@ -138,7 +134,7 @@ const PostList = ({
         if (location === Screens.CHANNEL && channelId) {
             await fetchPosts(serverUrl, channelId);
         } else if (location === Screens.THREAD && rootId) {
-            // await getPostThread(rootId);
+            await fetchPostThread(serverUrl, rootId);
         }
         setRefreshing(false);
     }, [channelId, location, rootId]);
@@ -169,17 +165,17 @@ const PostList = ({
 
         const viewableItemsMap = viewableItems.reduce((acc: Record<string, boolean>, {item, isViewable}) => {
             if (isViewable) {
-                acc[item.id] = true;
+                acc[`${location}-${item.id}`] = true;
             }
             return acc;
         }, {});
 
-        DeviceEventEmitter.emit('scrolled', viewableItemsMap);
+        DeviceEventEmitter.emit(Events.ITEM_IN_VIEWPORT, viewableItemsMap);
 
         if (onViewableItemsChangedListener.current) {
             onViewableItemsChangedListener.current(viewableItems);
         }
-    }, []);
+    }, [location]);
 
     const registerScrollEndIndexListener = useCallback((listener) => {
         onScrollEndIndexListener.current = listener;
@@ -228,6 +224,13 @@ const PostList = ({
                         timezone={isTimezoneEnabled ? currentTimezone : null}
                     />
                 );
+            } else if (isThreadOverview(item)) {
+                return (
+                    <ThreadOverview
+                        rootId={rootId!}
+                        testID={`${testID}.thread_overview`}
+                    />
+                );
             }
 
             if (isCombinedUserActivityPost(item)) {
@@ -246,9 +249,23 @@ const PostList = ({
 
         let previousPost: PostModel|undefined;
         let nextPost: PostModel|undefined;
-        const prev = orderedPosts.slice(index + 1).find((v) => typeof v !== 'string');
-        if (prev) {
-            previousPost = prev as PostModel;
+
+        const lastPosts = orderedPosts.slice(index + 1);
+        const immediateLastPost = lastPosts[0];
+
+        // Post after `Thread Overview` should show user avatar irrespective of being the consecutive post
+        // So we skip sending previous post to avoid the check for consecutive post
+        const skipFindingPreviousPost = (
+            location === Screens.THREAD &&
+            typeof immediateLastPost === 'string' &&
+            isThreadOverview(immediateLastPost)
+        );
+
+        if (!skipFindingPreviousPost) {
+            const prev = lastPosts.find((v) => typeof v !== 'string');
+            if (prev) {
+                previousPost = prev as PostModel;
+            }
         }
 
         if (index > 0) {
@@ -262,12 +279,19 @@ const PostList = ({
             }
         }
 
+        // Skip rendering Flag for the root post in the thread as it is visible in the `Thread Overview`
+        const skipSaveddHeader = (
+            location === Screens.THREAD &&
+            item.id === rootId
+        );
+
         const postProps = {
             highlightPinnedOrSaved,
             location,
             nextPost,
             previousPost,
             shouldRenderReplyButton,
+            skipSaveddHeader,
         };
 
         return (

@@ -7,6 +7,7 @@ import {switchMap} from 'rxjs/operators';
 
 import {General, Permissions} from '@constants';
 import {MM_TABLES} from '@constants/database';
+import MyChannelSettingsModel from '@typings/database/models/servers/my_channel_settings';
 import UserModel from '@typings/database/models/servers/user';
 import {hasPermission} from '@utils/role';
 
@@ -19,7 +20,7 @@ import type ChannelModel from '@typings/database/models/servers/channel';
 import type ChannelInfoModel from '@typings/database/models/servers/channel_info';
 import type MyChannelModel from '@typings/database/models/servers/my_channel';
 import type PostModel from '@typings/database/models/servers/post';
-const {SERVER: {CHANNEL, MY_CHANNEL, CHANNEL_MEMBERSHIP, USER, CHANNEL_INFO}} = MM_TABLES;
+const {SERVER: {CHANNEL, MY_CHANNEL, CHANNEL_MEMBERSHIP, USER, CHANNEL_INFO, MY_CHANNEL_SETTINGS}} = MM_TABLES;
 
 export function prepareMissingChannelsForAllTeams(operator: ServerDataOperator, channels: Channel[], channelMembers: ChannelMembership[]): Array<Promise<Model[]>> | undefined {
     const channelInfos: ChannelInfo[] = [];
@@ -98,10 +99,10 @@ export const prepareMyChannelsForTeam = async (operator: ServerDataOperator, tea
 export const prepareDeleteChannel = async (channel: ChannelModel): Promise<Model[]> => {
     const preparedModels: Model[] = [channel.prepareDestroyPermanently()];
 
-    const relations: Array<Relation<Model>> = [channel.membership, channel.info, channel.settings];
+    const relations: Array<Relation<Model>> = [channel.membership, channel.info, channel.settings, channel.categoryChannel];
     for await (const relation of relations) {
         try {
-            const model = await relation.fetch();
+            const model = await relation?.fetch?.();
             if (model) {
                 preparedModels.push(model.prepareDestroyPermanently());
             }
@@ -113,18 +114,19 @@ export const prepareDeleteChannel = async (channel: ChannelModel): Promise<Model
     const associatedChildren: Array<Query<any>> = [
         channel.members,
         channel.drafts,
-        channel.groupsChannel,
         channel.postsInChannel,
     ];
     for await (const children of associatedChildren) {
-        const models = await children.fetch() as Model[];
-        models.forEach((model) => preparedModels.push(model.prepareDestroyPermanently()));
+        const models = await children?.fetch?.() as Model[] | undefined;
+        models?.forEach((model) => preparedModels.push(model.prepareDestroyPermanently()));
     }
 
-    const posts = await channel.posts.fetch() as PostModel[];
-    for await (const post of posts) {
-        const preparedPost = await prepareDeletePost(post);
-        preparedModels.push(...preparedPost);
+    const posts = await channel.posts?.fetch?.() as PostModel[] | undefined;
+    if (posts?.length) {
+        for await (const post of posts) {
+            const preparedPost = await prepareDeletePost(post);
+            preparedModels.push(...preparedPost);
+        }
     }
 
     return preparedModels;
@@ -290,4 +292,11 @@ export const observeChannelInfo = (database: Database, channelId: string) => {
     return database.get<ChannelInfoModel>(CHANNEL_INFO).query(Q.where('id', channelId), Q.take(1)).observe().pipe(
         switchMap((result) => (result.length ? result[0].observe() : of$(undefined))),
     );
+};
+
+export const queryMyChannelSettingsByIds = (database: Database, ids: string[]) => {
+    return database.get<MyChannelSettingsModel>(MY_CHANNEL_SETTINGS).
+        query(
+            Q.where('id', Q.oneOf(ids)),
+        );
 };

@@ -30,6 +30,7 @@ const Preferences: Record<string, any> = {
     DISPLAY_PREFER_FULL_NAME: 'full_name',
     DISPLAY_PREFER_USERNAME: 'username',
     EMOJI_SKINTONE: 'emoji_skintone',
+    LINK_PREVIEW_DISPLAY: 'link_previews',
     MENTION_KEYS: 'mention_keys',
     USE_MILITARY_TIME: 'use_military_time',
     CATEGORY_SIDEBAR_SETTINGS: 'sidebar_settings',

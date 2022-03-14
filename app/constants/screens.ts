@@ -13,15 +13,18 @@ export const CHANNEL_DETAILS = 'ChannelDetails';
 export const CHANNEL_EDIT = 'ChannelEdit';
 export const CUSTOM_STATUS_CLEAR_AFTER = 'CustomStatusClearAfter';
 export const CUSTOM_STATUS = 'CustomStatus';
+export const EDIT_POST = 'EditPost';
 export const EDIT_PROFILE = 'EditProfile';
 export const EDIT_SERVER = 'EditServer';
 export const FORGOT_PASSWORD = 'ForgotPassword';
+export const GALLERY = 'Gallery';
 export const HOME = 'Home';
 export const INTEGRATION_SELECTOR = 'IntegrationSelector';
 export const IN_APP_NOTIFICATION = 'InAppNotification';
 export const LOGIN = 'Login';
 export const MENTIONS = 'Mentions';
 export const MFA = 'MFA';
+export const CREATE_DIRECT_MESSAGE = 'CreateDirectMessage';
 export const PERMALINK = 'Permalink';
 export const SEARCH = 'Search';
 export const SERVER = 'Server';
@@ -30,6 +33,7 @@ export const SSO = 'SSO';
 export const THREAD = 'Thread';
 export const USER_PROFILE = 'UserProfile';
 export const POST_OPTIONS = 'PostOptions';
+export const SAVED_POSTS = 'SavedPosts';
 
 export default {
     ABOUT,
@@ -44,15 +48,18 @@ export default {
     CHANNEL_DETAILS,
     CUSTOM_STATUS_CLEAR_AFTER,
     CUSTOM_STATUS,
+    EDIT_POST,
     EDIT_PROFILE,
     EDIT_SERVER,
     FORGOT_PASSWORD,
+    GALLERY,
     HOME,
     INTEGRATION_SELECTOR,
     IN_APP_NOTIFICATION,
     LOGIN,
     MENTIONS,
     MFA,
+    CREATE_DIRECT_MESSAGE,
     PERMALINK,
     SEARCH,
     SERVER,
@@ -61,4 +68,5 @@ export default {
     THREAD,
     USER_PROFILE,
     POST_OPTIONS,
+    SAVED_POSTS,
 };

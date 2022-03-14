@@ -2,11 +2,13 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback} from 'react';
-import {DeviceEventEmitter, Text, View} from 'react-native';
+import {Text, View} from 'react-native';
+import {TouchableOpacity} from 'react-native-gesture-handler';
 
+import {fetchAndSwitchToThread} from '@actions/remote/thread';
 import CompassIcon from '@components/compass_icon';
-import TouchableWithFeedback from '@components/touchable_with_feedback';
 import {SEARCH} from '@constants/screens';
+import {useServerUrl} from '@context/server';
 import {preventDoubleTap} from '@utils/tap';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 
@@ -45,20 +47,21 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
 
 const HeaderReply = ({commentCount, location, post, theme}: HeaderReplyProps) => {
     const style = getStyleSheet(theme);
+    const serverUrl = useServerUrl();
 
     const onPress = useCallback(preventDoubleTap(() => {
-        DeviceEventEmitter.emit('goToThread', post);
-    }), []);
+        const rootId = post.rootId || post.id;
+        fetchAndSwitchToThread(serverUrl, rootId);
+    }), [serverUrl]);
 
     return (
         <View
             testID='post_header.reply'
             style={style.replyWrapper}
         >
-            <TouchableWithFeedback
+            <TouchableOpacity
                 onPress={onPress}
                 style={style.replyIconContainer}
-                type={'opacity'}
             >
                 <CompassIcon
                     name='reply-outline'
@@ -73,7 +76,7 @@ const HeaderReply = ({commentCount, location, post, theme}: HeaderReplyProps) =>
                     {commentCount}
                 </Text>
                 }
-            </TouchableWithFeedback>
+            </TouchableOpacity>
         </View>
     );
 };

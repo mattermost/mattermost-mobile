@@ -3,36 +3,40 @@
 
 import React, {memo, useCallback, useRef, useState} from 'react';
 import {StyleSheet, View} from 'react-native';
+import {TapGestureHandler} from 'react-native-gesture-handler';
+import Animated from 'react-native-reanimated';
 import parseUrl from 'url-parse';
 
 import CompassIcon from '@components/compass_icon';
 import ProgressiveImage from '@components/progressive_image';
-import TouchableWithFeedback from '@components/touchable_with_feedback';
 import {useServerUrl} from '@context/server';
-import {openGallerWithMockFile} from '@utils/gallery';
+import {useGalleryItem} from '@hooks/gallery';
+import {fileToGalleryItem, openGalleryAtIndex} from '@utils/gallery';
 import {generateId} from '@utils/general';
 import {calculateDimensions, isGifTooLarge} from '@utils/images';
 
 type MarkdownTableImageProps = {
     disabled?: boolean;
     imagesMetadata: Record<string, PostImage>;
+    location?: string;
     postId: string;
     serverURL?: string;
     source: string;
 }
 
-const styles = StyleSheet.create({
+const style = StyleSheet.create({
     container: {
         alignItems: 'center',
         flex: 1,
     },
 });
 
-const MarkTableImage = ({disabled, imagesMetadata, postId, serverURL, source}: MarkdownTableImageProps) => {
+const MarkTableImage = ({disabled, imagesMetadata, location, postId, serverURL, source}: MarkdownTableImageProps) => {
     const metadata = imagesMetadata[source];
-    const fileId = useRef(generateId()).current;
+    const fileId = useRef(generateId('uid')).current;
     const [failed, setFailed] = useState(isGifTooLarge(metadata));
     const currentServerUrl = useServerUrl();
+    const galleryIdentifier = `${postId}-${fileId}-${location}`;
 
     const getImageSource = () => {
         let uri = source;
@@ -78,8 +82,18 @@ const MarkTableImage = ({disabled, imagesMetadata, postId, serverURL, source}: M
         if (!file?.uri) {
             return;
         }
-        openGallerWithMockFile(file.uri, file.post_id, file.height, file.width, file.id);
+        const item: GalleryItemType = {
+            ...fileToGalleryItem(file),
+            type: 'image',
+        };
+        openGalleryAtIndex(galleryIdentifier, 0, [item]);
     }, []);
+
+    const {ref, onGestureEvent, styles} = useGalleryItem(
+        galleryIdentifier,
+        0,
+        handlePreviewImage,
+    );
 
     const onLoadFailed = useCallback(() => {
         setFailed(true);
@@ -96,24 +110,29 @@ const MarkTableImage = ({disabled, imagesMetadata, postId, serverURL, source}: M
     } else {
         const {height, width} = calculateDimensions(metadata.height, metadata.width, 100, 100);
         image = (
-            <TouchableWithFeedback
-                disabled={disabled}
-                onPress={handlePreviewImage}
-                style={{width, height}}
+            <TapGestureHandler
+                enabled={!disabled}
+                onGestureEvent={onGestureEvent}
             >
-                <ProgressiveImage
-                    id={fileId}
-                    defaultSource={{uri: source}}
-                    onError={onLoadFailed}
-                    resizeMode='contain'
-                    style={{width, height}}
-                />
-            </TouchableWithFeedback>
+                <Animated.View
+                    style={[styles, {width, height}]}
+                    testID='markdown_table_image'
+                >
+                    <ProgressiveImage
+                        id={fileId}
+                        defaultSource={{uri: source}}
+                        forwardRef={ref}
+                        onError={onLoadFailed}
+                        resizeMode='contain'
+                        style={{width, height}}
+                    />
+                </Animated.View>
+            </TapGestureHandler>
         );
     }
 
     return (
-        <View style={styles.container}>
+        <View style={style.container}>
             {image}
         </View>
     );

@@ -3,11 +3,12 @@
 
 import {withDatabase} from '@nozbe/watermelondb/DatabaseProvider';
 import withObservables from '@nozbe/with-observables';
-import {combineLatest, from as from$, of as of$} from 'rxjs';
+import {combineLatest, from as from$, of as of$, Observable} from 'rxjs';
 import {switchMap} from 'rxjs/operators';
 
-import {General, Permissions, Preferences, Screens} from '@constants';
+import {General, Permissions, Post, Preferences, Screens} from '@constants';
 import {MAX_ALLOWED_REACTIONS} from '@constants/emoji';
+import {observePost} from '@queries/servers/post';
 import {queryPreferencesByCategoryAndName} from '@queries/servers/preference';
 import {observeConfig, observeLicense} from '@queries/servers/system';
 import {observeCurrentUser} from '@queries/servers/user';
@@ -23,6 +24,13 @@ import type ChannelModel from '@typings/database/models/servers/channel';
 import type PostModel from '@typings/database/models/servers/post';
 import type ReactionModel from '@typings/database/models/servers/reaction';
 import type UserModel from '@typings/database/models/servers/user';
+
+type EnhancedProps = WithDatabaseArgs & {
+    combinedPost?: Post;
+    post: PostModel;
+    showAddReaction: boolean;
+    location: string;
+}
 
 const canEditPost = (isOwner: boolean, post: PostModel, postEditTimeLimit: number, isLicensed: boolean, channel: ChannelModel, user: UserModel): boolean => {
     if (!post || isSystemMessage(post)) {
@@ -47,7 +55,22 @@ const canEditPost = (isOwner: boolean, post: PostModel, postEditTimeLimit: numbe
     return cep;
 };
 
-const enhanced = withObservables([], ({post, showAddReaction, location, database}: WithDatabaseArgs & { post: PostModel; showAddReaction: boolean; location: string }) => {
+const withPost = withObservables([], ({post, database}: {post: Post | PostModel} & WithDatabaseArgs) => {
+    let id: string | undefined;
+    let combinedPost: Observable<Post | undefined> = of$(undefined);
+    if (post.type === Post.POST_TYPES.COMBINED_USER_ACTIVITY && post.props?.system_post_ids) {
+        const systemPostIds = post.props.system_post_ids as string[];
+        id = systemPostIds?.pop();
+        combinedPost = of$(post as Post);
+    }
+    const thePost = id ? observePost(database, id) : post;
+    return {
+        combinedPost,
+        post: thePost,
+    };
+});
+
+const enhanced = withObservables([], ({combinedPost, post, showAddReaction, location, database}: EnhancedProps) => {
     const channel = post.channel.observe();
     const channelIsArchived = channel.pipe(switchMap((ch: ChannelModel) => of$(ch.deleteAt !== 0)));
     const currentUser = observeCurrentUser(database);
@@ -96,8 +119,8 @@ const enhanced = withObservables([], ({post, showAddReaction, location, database
     const canEdit = combineLatest([postEditTimeLimit, isLicensed, channel, currentUser, channelIsArchived, channelIsReadOnly, canEditUntil, canPostPermission]).pipe(switchMap(([lt, ls, c, u, isArchived, isReadOnly, until, canPost]) => {
         const isOwner = u?.id === post.userId;
         const canEditPostPermission = u ? canEditPost(isOwner, post, lt, ls, c, u) : false;
-        const timeReached = until === -1 || until > Date.now();
-        return of$(canEditPostPermission && isSystemMessage(post) && !isArchived && !isReadOnly && !timeReached && canPost);
+        const timeNotReached = (until === -1) || (until > Date.now());
+        return of$(canEditPostPermission && !isArchived && !isReadOnly && timeNotReached && canPost);
     }));
 
     const canMarkAsUnread = combineLatest([currentUser, channelIsArchived]).pipe(
@@ -120,11 +143,12 @@ const enhanced = withObservables([], ({post, showAddReaction, location, database
         canDelete,
         canReply,
         canPin,
+        combinedPost: of$(combinedPost),
         isSaved,
         canEdit,
         post,
     };
 });
 
-export default withDatabase(enhanced(PostOptions));
+export default withDatabase(withPost(enhanced(PostOptions)));
 

@@ -8,12 +8,11 @@ import DatabaseManager from '@database/manager';
 import {queryChannelsById, getDefaultChannelForTeam} from '@queries/servers/channel';
 import {prepareModels} from '@queries/servers/entry';
 import {prepareCommonSystemValues, getCommonSystemValues, getCurrentChannelId, getCurrentTeamId, getWebSocketLastDisconnected, setCurrentTeamAndChannelId} from '@queries/servers/system';
-import {deleteMyTeams, queryTeamsById} from '@queries/servers/team';
 import {getCurrentUser} from '@queries/servers/user';
 import {deleteV1Data} from '@utils/file';
 import {isTablet} from '@utils/helpers';
 
-import {AppEntryData, AppEntryError, deferredAppEntryActions, fetchAppEntryData, syncOtherServers} from './common';
+import {AppEntryData, AppEntryError, deferredAppEntryActions, fetchAppEntryData, syncOtherServers, teamsToRemove} from './common';
 
 export const appEntry = async (serverUrl: string, since = 0) => {
     const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
@@ -62,12 +61,7 @@ export const appEntry = async (serverUrl: string, since = 0) => {
         }
     }
 
-    let removeTeams;
-    if (removeTeamIds?.length) {
-        // Immediately delete myTeams so that the UI renders only teams the user is a member of.
-        removeTeams = await queryTeamsById(database, removeTeamIds).fetch();
-        await deleteMyTeams(operator, removeTeams);
-    }
+    const removeTeams = await teamsToRemove(serverUrl, removeTeamIds);
 
     let removeChannels;
     if (removeChannelIds?.length) {

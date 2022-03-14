@@ -5,11 +5,11 @@ import {withDatabase} from '@nozbe/watermelondb/DatabaseProvider';
 import withObservables from '@nozbe/with-observables';
 import React, {useCallback} from 'react';
 import {useIntl} from 'react-intl';
-import {Alert, Image, Platform, StatusBar, StyleSheet} from 'react-native';
+import {Alert, Image, Platform, StatusBar, StyleSheet, View} from 'react-native';
+import {TouchableOpacity} from 'react-native-gesture-handler';
 import {YouTubeStandaloneAndroid, YouTubeStandaloneIOS} from 'react-native-youtube';
 
 import ProgressiveImage from '@components/progressive_image';
-import TouchableWithFeedback from '@components/touchable_with_feedback';
 import {useIsTablet} from '@hooks/device';
 import {observeConfigValue} from '@queries/servers/system';
 import {emptyFunction} from '@utils/general';
@@ -21,6 +21,7 @@ import type {WithDatabaseArgs} from '@typings/database/database';
 type YouTubeProps = {
     googleDeveloperKey?: string;
     isReplyPost: boolean;
+    layoutWidth?: number;
     metadata: PostMetadata;
 }
 
@@ -48,7 +49,7 @@ const styles = StyleSheet.create({
     },
 });
 
-const YouTube = ({googleDeveloperKey, isReplyPost, metadata}: YouTubeProps) => {
+const YouTube = ({googleDeveloperKey, isReplyPost, layoutWidth, metadata}: YouTubeProps) => {
     const intl = useIntl();
     const isTablet = useIsTablet();
     const link = metadata.embeds![0].url;
@@ -56,7 +57,7 @@ const YouTube = ({googleDeveloperKey, isReplyPost, metadata}: YouTubeProps) => {
     const dimensions = calculateDimensions(
         MAX_YOUTUBE_IMAGE_HEIGHT,
         MAX_YOUTUBE_IMAGE_WIDTH,
-        getViewPortWidth(isReplyPost, isTablet),
+        layoutWidth || getViewPortWidth(isReplyPost, isTablet),
     );
 
     const getYouTubeTime = () => {
@@ -154,10 +155,9 @@ const YouTube = ({googleDeveloperKey, isReplyPost, metadata}: YouTubeProps) => {
     }
 
     return (
-        <TouchableWithFeedback
+        <TouchableOpacity
             style={[styles.imageContainer, {height: dimensions.height}]}
             onPress={playYouTubeVideo}
-            type={'opacity'}
         >
             <ProgressiveImage
                 id={imgUrl}
@@ -167,15 +167,11 @@ const YouTube = ({googleDeveloperKey, isReplyPost, metadata}: YouTubeProps) => {
                 resizeMode='cover'
                 onError={emptyFunction}
             >
-                <TouchableWithFeedback
-                    style={styles.playButton}
-                    onPress={playYouTubeVideo}
-                    type={'opacity'}
-                >
+                <View style={styles.playButton}>
                     <Image source={require('@assets/images/icons/youtube-play-icon.png')}/>
-                </TouchableWithFeedback>
+                </View>
             </ProgressiveImage>
-        </TouchableWithFeedback>
+        </TouchableOpacity>
     );
 };
 

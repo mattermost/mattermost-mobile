@@ -4,6 +4,7 @@
 import {withDatabase} from '@nozbe/watermelondb/DatabaseProvider';
 import withObservables from '@nozbe/with-observables';
 
+import {queryAllMyChannel} from '@queries/servers/channel';
 import {observeCurrentTeamId} from '@queries/servers/system';
 import {queryMyTeams} from '@queries/servers/team';
 
@@ -14,6 +15,7 @@ import type {WithDatabaseArgs} from '@typings/database/database';
 const enhanced = withObservables([], ({database}: WithDatabaseArgs) => ({
     currentTeamId: observeCurrentTeamId(database),
     teamsCount: queryMyTeams(database).observeCount(),
+    channelsCount: queryAllMyChannel(database).observeCount(),
 }));
 
 export default withDatabase(enhanced(ChannelsList));

@@ -7,11 +7,11 @@ import React, {ReactNode, useRef} from 'react';
 import {useIntl} from 'react-intl';
 import {Keyboard, Platform, StyleSheet, View} from 'react-native';
 import FastImage from 'react-native-fast-image';
+import {TouchableOpacity} from 'react-native-gesture-handler';
 
 import CompassIcon from '@components/compass_icon';
 import ProfilePicture from '@components/profile_picture';
 import SystemAvatar from '@components/system_avatar';
-import TouchableWithFeedback from '@components/touchable_with_feedback';
 import {View as ViewConstant} from '@constants';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
@@ -137,12 +137,9 @@ const Avatar = ({author, enablePostIconOverride, isAutoReponse, isSystemPost, po
 
     if (!fromWebHook) {
         component = (
-            <TouchableWithFeedback
-                onPress={onViewUserProfile}
-                type={'opacity'}
-            >
+            <TouchableOpacity onPress={onViewUserProfile}>
                 {component}
-            </TouchableWithFeedback>
+            </TouchableOpacity>
         );
     }
 

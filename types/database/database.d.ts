@@ -88,12 +88,28 @@ export type HandlePostsArgs = {
   prepareRecordsOnly?: boolean;
 };
 
+export type HandleThreadsArgs = {
+  threads: Thread[];
+  prepareRecordsOnly?: boolean;
+};
+
+export type HandleThreadParticipantsArgs = {
+  prepareRecordsOnly: boolean;
+  threadsParticipants: ParticipantsPerThread[];
+};
+
 export type SanitizeReactionsArgs = {
   database: Database;
   post_id: string;
   rawReactions: Reaction[];
   skipSync?: boolean;
 };
+
+export type SanitizeThreadParticipantsArgs = {
+  database: Database;
+  thread_id: $ID<Thread>;
+  rawParticipants: ThreadParticipant[];
+}
 
 export type ChainPostsArgs = {
   order: string[];
@@ -219,24 +235,8 @@ export type HandleTeamArgs = PrepareOnly & {
     teams: Team[];
 };
 
-export type HandleGroupsChannelArgs = PrepareOnly & {
-  groupsChannels: GroupChannelRelation[];
-};
-
-export type HandleGroupsTeamArgs = PrepareOnly &{
-  groupsTeams: GroupTeamRelation[];
-};
-
-export type HandleGroupArgs = PrepareOnly & {
-  groups: Group[];
-};
-
 export type HandleChannelMembershipArgs = PrepareOnly & {
   channelMemberships: Array<Pick<ChannelMembership, 'user_id' | 'channel_id'>>;
-};
-
-export type HandleGroupMembershipArgs = PrepareOnly & {
-  groupMemberships: GroupMembership[];
 };
 
 export type HandleTeamMembershipArgs = PrepareOnly & {

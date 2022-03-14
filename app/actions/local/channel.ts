@@ -10,7 +10,7 @@ import {getTeammateNameDisplaySetting} from '@helpers/api/preference';
 import {prepareDeleteChannel, prepareMyChannelsForTeam, queryAllMyChannel, getMyChannel, getChannelById, queryUsersOnChannel} from '@queries/servers/channel';
 import {queryPreferencesByCategoryAndName} from '@queries/servers/preference';
 import {prepareCommonSystemValues, PrepareCommonSystemValuesArgs, getCommonSystemValues, getCurrentTeamId, setCurrentChannelId} from '@queries/servers/system';
-import {addChannelToTeamHistory, addTeamToTeamHistory, removeChannelFromTeamHistory} from '@queries/servers/team';
+import {addChannelToTeamHistory, addTeamToTeamHistory, getTeamById, removeChannelFromTeamHistory} from '@queries/servers/team';
 import {getCurrentUser} from '@queries/servers/user';
 import {dismissAllModalsAndPopToRoot, dismissAllModalsAndPopToScreen} from '@screens/navigation';
 import {isTablet} from '@utils/helpers';
@@ -35,31 +35,38 @@ export const switchToChannel = async (serverUrl: string, channelId: string, team
 
         if (member) {
             const channel: ChannelModel = await member.channel.fetch();
-            const commonValues: PrepareCommonSystemValuesArgs = {};
-            if (system.currentChannelId !== channelId) {
-                commonValues.currentChannelId = channelId;
+            if (!channel.teamId && teamId) {
+                const team = await getTeamById(database, teamId);
+                if (!team) {
+                    return {error: `team with id ${teamId} not found`};
+                }
             }
+            const toTeamId = channel.teamId || teamId || system.currentTeamId;
+
             if (isTabletDevice && system.currentChannelId !== channelId) {
                 // On tablet, the channel is being rendered, by setting the channel to empty first we speed up
                 // the switch by ~3x
                 await setCurrentChannelId(operator, '');
             }
 
-            if (teamId && system.currentTeamId !== teamId) {
-                commonValues.currentTeamId = teamId;
-                const history = await addTeamToTeamHistory(operator, teamId, true);
+            if (system.currentTeamId !== toTeamId) {
+                const history = await addTeamToTeamHistory(operator, toTeamId, true);
                 models.push(...history);
             }
 
-            if (Object.keys(commonValues).length) {
+            if ((system.currentTeamId !== toTeamId) || (system.currentChannelId !== channelId)) {
+                const commonValues: PrepareCommonSystemValuesArgs = {
+                    currentChannelId: system.currentChannelId === channelId ? undefined : channelId,
+                    currentTeamId: system.currentTeamId === toTeamId ? undefined : toTeamId,
+                };
                 const common = await prepareCommonSystemValues(operator, commonValues);
                 if (common) {
                     models.push(...common);
                 }
             }
 
-            if (system.currentChannelId !== channelId) {
-                const history = await addChannelToTeamHistory(operator, channel.teamId || system.currentTeamId, channelId, true);
+            if (system.currentChannelId !== channelId || system.currentTeamId !== toTeamId) {
+                const history = await addChannelToTeamHistory(operator, toTeamId, channelId, true);
                 models.push(...history);
             }
 
@@ -185,7 +192,7 @@ export const markChannelAsViewed = async (serverUrl: string, channelId: string, 
     }
 };
 
-export const markChannelAsUnread = async (serverUrl: string, channelId: string, messageCount: number, mentionsCount: number, manuallyUnread: boolean, lastViewed: number, prepareRecordsOnly = false) => {
+export const markChannelAsUnread = async (serverUrl: string, channelId: string, messageCount: number, mentionsCount: number, lastViewed: number, prepareRecordsOnly = false) => {
     const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
     if (!operator) {
         return {error: `${serverUrl} database not found`};
@@ -197,11 +204,12 @@ export const markChannelAsUnread = async (serverUrl: string, channelId: string, 
     }
 
     member.prepareUpdate((m) => {
-        m.viewedAt = lastViewed;
+        m.viewedAt = lastViewed - 1;
         m.lastViewedAt = lastViewed;
         m.messageCount = messageCount;
         m.mentionsCount = mentionsCount;
-        m.manuallyUnread = manuallyUnread;
+        m.manuallyUnread = true;
+        m.isUnread = true;
     });
 
     try {

@@ -2,6 +2,8 @@
 // See LICENSE.txt for license information.
 
 import {Database, Model, Q, Query, Relation} from '@nozbe/watermelondb';
+import {of as of$} from 'rxjs';
+import {switchMap} from 'rxjs/operators';
 
 import {MM_TABLES} from '@constants/database';
 
@@ -16,7 +18,7 @@ export const prepareDeletePost = async (post: PostModel): Promise<Model[]> => {
     const relations: Array<Relation<Model> | Query<Model>> = [post.drafts, post.postsInThread];
     for await (const relation of relations) {
         try {
-            const model = await relation.fetch();
+            const model = await relation?.fetch();
             if (model) {
                 if (Array.isArray(model)) {
                     model.forEach((m) => preparedModels.push(m.prepareDestroyPermanently()));
@@ -31,8 +33,8 @@ export const prepareDeletePost = async (post: PostModel): Promise<Model[]> => {
 
     const associatedChildren: Array<Query<any>> = [post.files, post.reactions];
     for await (const children of associatedChildren) {
-        const models = await children.fetch() as Model[];
-        models.forEach((model) => preparedModels.push(model.prepareDestroyPermanently()));
+        const models = await children.fetch?.() as Model[] | undefined;
+        models?.forEach((model) => preparedModels.push(model.prepareDestroyPermanently()));
     }
 
     return preparedModels;
@@ -40,11 +42,17 @@ export const prepareDeletePost = async (post: PostModel): Promise<Model[]> => {
 
 export const getPostById = async (database: Database, postId: string) => {
     try {
-        const postModel = await database.collections.get<PostModel>(MM_TABLES.SERVER.POST).find(postId);
+        const postModel = await database.get<PostModel>(POST).find(postId);
         return postModel;
     } catch {
         return undefined;
     }
+};
+
+export const observePost = (database: Database, postId: string) => {
+    return database.get<PostModel>(POST).query(Q.where('id', postId), Q.take(1)).observe().pipe(
+        switchMap((result) => (result.length ? result[0].observe() : of$(undefined))),
+    );
 };
 
 export const queryPostsInChannel = (database: Database, channelId: string) => {
@@ -78,10 +86,14 @@ export const getRecentPostsInThread = async (database: Database, rootId: string)
     return [];
 };
 
-export const queryPostsChunk = (database: Database, channelId: string, earliest: number, latest: number) => {
+export const queryPostsChunk = (database: Database, id: string, earliest: number, latest: number, inThread = false) => {
+    let condition = Q.where('channel_id', id);
+    if (inThread) {
+        condition = Q.where('root_id', id);
+    }
     return database.get<PostModel>(POST).query(
         Q.and(
-            Q.where('channel_id', channelId),
+            condition,
             Q.where('create_at', Q.between(earliest, latest)),
             Q.where('delete_at', Q.eq(0)),
         ),

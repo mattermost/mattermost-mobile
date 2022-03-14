@@ -8,6 +8,8 @@ export default keyMirror({
     CHANNEL_DELETED: null,
     CLOSE_BOTTOM_SHEET: null,
     CONFIG_CHANGED: null,
+    FREEZE_SCREEN: null,
+    GALLERY_ACTIONS: null,
     LEAVE_CHANNEL: null,
     LEAVE_TEAM: null,
     LOADING_CHANNEL_POSTS: null,
@@ -19,4 +21,5 @@ export default keyMirror({
     USER_STOP_TYPING: null,
     POST_LIST_SCROLL_TO_BOTTOM: null,
     SWIPEABLE: null,
+    ITEM_IN_VIEWPORT: null,
 });

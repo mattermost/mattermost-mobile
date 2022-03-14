@@ -13,10 +13,8 @@ import WebsocketManager from '@init/websocket_manager';
 import {queryChannelsByTypes, queryUserChannelsByTypes} from '@queries/servers/channel';
 import {queryPreferencesByCategoryAndName} from '@queries/servers/preference';
 import {getCommonSystemValues} from '@queries/servers/system';
-import {getCurrentUser, getUserById} from '@queries/servers/user';
+import {getCurrentUser} from '@queries/servers/user';
 import {displayUsername} from '@utils/user';
-
-import type UserModel from '@typings/database/models/servers/user';
 
 export async function handleUserUpdatedEvent(serverUrl: string, msg: WebSocketMessage) {
     const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
@@ -88,11 +86,9 @@ export async function handleUserTypingEvent(serverUrl: string, msg: WebSocketMes
 
         const {config, license} = await getCommonSystemValues(database);
 
-        let user: UserModel | UserProfile | undefined = await getUserById(database, msg.data.user_id);
-        if (!user) {
-            const {users} = await fetchUsersByIds(serverUrl, [msg.data.user_id]);
-            user = users?.[0];
-        }
+        const {users, existingUsers} = await fetchUsersByIds(serverUrl, [msg.data.user_id]);
+        const user = users?.[0] || existingUsers?.[0];
+
         const namePreference = await queryPreferencesByCategoryAndName(database, Preferences.CATEGORY_DISPLAY_SETTINGS, Preferences.NAME_NAME_FORMAT).fetch();
         const teammateDisplayNameSetting = getTeammateNameDisplaySetting(namePreference, config, license);
         const currentUser = await getCurrentUser(database);

@@ -1,7 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {getOrCreateWebSocketClient, WebSocketClientInterface} from '@mattermost/react-native-network-client';
+import {ClientHeaders, getOrCreateWebSocketClient, WebSocketClientInterface, WebSocketReadyState} from '@mattermost/react-native-network-client';
+import {Platform} from 'react-native';
 
 import {WebsocketEvents} from '@constants';
 import DatabaseManager from '@database/manager';
@@ -37,6 +38,7 @@ export default class WebSocketClient {
     private stop: boolean;
     private lastConnect: number;
     private lastDisconnect: number;
+    private url = '';
 
     private serverUrl: string;
 
@@ -63,7 +65,7 @@ export default class WebSocketClient {
             this.stop = false;
         }
 
-        if (this.conn) {
+        if (this.conn && this.conn.readyState !== WebSocketReadyState.CLOSED) {
             return;
         }
 
@@ -92,30 +94,36 @@ export default class WebSocketClient {
             return;
         }
 
-        let url = connectionUrl;
+        this.url = connectionUrl;
 
         const reliableWebSockets = system.config.EnableReliableWebSockets === 'true';
         if (reliableWebSockets) {
             // Add connection id, and last_sequence_number to the query param.
             // We cannot also send it as part of the auth_challenge, because the session cookie is already sent with the request.
-            url = `${connectionUrl}?connection_id=${this.connectionId}&sequence_number=${this.serverSequence}`;
+            this.url = `${connectionUrl}?connection_id=${this.connectionId}&sequence_number=${this.serverSequence}`;
         }
 
         // Manually changing protocol since getOrCreateWebsocketClient does not accept http/s
-        if (url.startsWith('https:')) {
-            url = 'wss:' + url.substr('https:'.length);
+        if (this.url.startsWith('https:')) {
+            this.url = 'wss:' + this.url.substr('https:'.length);
         }
 
-        if (url.startsWith('http:')) {
-            url = 'ws:' + url.substr('http:'.length);
+        if (this.url.startsWith('http:')) {
+            this.url = 'ws:' + this.url.substr('http:'.length);
         }
 
         if (this.connectFailCount === 0) {
-            console.log('websocket connecting to ' + url); //eslint-disable-line no-console
+            console.log('websocket connecting to ' + this.url); //eslint-disable-line no-console
         }
 
         try {
-            const {client} = await getOrCreateWebSocketClient(url, {headers: {origin}});
+            const headers: ClientHeaders = {origin};
+            if (Platform.OS === 'android') {
+                // Required to properly handled the reliableWebsocket reconnection
+                // iOS is using he underlying cookieJar
+                headers.Authorization = `Bearer ${this.token}`;
+            }
+            const {client} = await getOrCreateWebSocketClient(this.url, {headers});
             this.conn = client;
         } catch (error) {
             return;
@@ -136,14 +144,14 @@ export default class WebSocketClient {
             }
 
             if (this.connectFailCount > 0) {
-                console.log('websocket re-established connection to', url); //eslint-disable-line no-console
+                console.log('websocket re-established connection to', this.url); //eslint-disable-line no-console
                 if (!reliableWebSockets && this.reconnectCallback) {
                     this.reconnectCallback();
                 } else if (reliableWebSockets && this.serverSequence && this.missedEventsCallback) {
                     this.missedEventsCallback();
                 }
             } else if (this.firstConnectCallback) {
-                console.log('websocket connected to', url); //eslint-disable-line no-console
+                console.log('websocket connected to', this.url); //eslint-disable-line no-console
                 this.firstConnectCallback();
             }
 
@@ -160,7 +168,7 @@ export default class WebSocketClient {
             this.responseSequence = 1;
 
             if (this.connectFailCount === 0) {
-                console.log('websocket closed', url); //eslint-disable-line no-console
+                console.log('websocket closed', this.url); //eslint-disable-line no-console
             }
 
             this.connectFailCount++;
@@ -200,13 +208,15 @@ export default class WebSocketClient {
         });
 
         this.conn!.onError((evt: any) => {
-            if (this.connectFailCount <= 1) {
-                console.log('websocket error', url); //eslint-disable-line no-console
-                console.log(evt); //eslint-disable-line no-console
-            }
+            if (evt.url === this.url) {
+                if (this.connectFailCount <= 1) {
+                    console.log('websocket error', this.url); //eslint-disable-line no-console
+                    console.log('WEBSOCKET ERROR EVENT', evt); //eslint-disable-line no-console
+                }
 
-            if (this.errorCallback) {
-                this.errorCallback(evt);
+                if (this.errorCallback) {
+                    this.errorCallback(evt);
+                }
             }
         });
 
@@ -225,14 +235,14 @@ export default class WebSocketClient {
                     // We check the hello packet, which is always the first packet in a stream.
                     if (msg.event === WebsocketEvents.HELLO && this.reconnectCallback) {
                         //eslint-disable-next-line no-console
-                        console.log(url, 'got connection id ', msg.data.connection_id);
+                        console.log(this.url, 'got connection id ', msg.data.connection_id);
 
                         // If we already have a connectionId present, and server sends a different one,
                         // that means it's either a long timeout, or server restart, or sequence number is not found.
                         // Then we do the sync calls, and reset sequence number to 0.
                         if (this.connectionId !== '' && this.connectionId !== msg.data.connection_id) {
                             //eslint-disable-next-line no-console
-                            console.log(url, 'long timeout, or server restart, or sequence number is not found.');
+                            console.log(this.url, 'long timeout, or server restart, or sequence number is not found.');
                             this.reconnectCallback();
                             this.serverSequence = 0;
                         }
@@ -246,7 +256,7 @@ export default class WebSocketClient {
                     // we just disconnect and reconnect.
                     if (msg.seq !== this.serverSequence) {
                         // eslint-disable-next-line no-console
-                        console.log(url, 'missed websocket event, act_seq=' + msg.seq + ' exp_seq=' + this.serverSequence);
+                        console.log(this.url, 'missed websocket event, act_seq=' + msg.seq + ' exp_seq=' + this.serverSequence);
 
                         // We are not calling this.close() because we need to auto-restart.
                         this.connectFailCount = 0;
@@ -256,7 +266,7 @@ export default class WebSocketClient {
                     }
                 } else if (msg.seq !== this.serverSequence && this.reconnectCallback) {
                     // eslint-disable-next-line no-console
-                    console.log(url, 'missed websocket event, act_seq=' + msg.seq + ' exp_seq=' + this.serverSequence);
+                    console.log(this.url, 'missed websocket event, act_seq=' + msg.seq + ' exp_seq=' + this.serverSequence);
                     this.reconnectCallback();
                 }
 
@@ -301,7 +311,7 @@ export default class WebSocketClient {
         this.connectFailCount = 0;
         this.responseSequence = 1;
 
-        if (this.conn && this.conn.readyState === WebSocket.OPEN) {
+        if (this.conn && this.conn.readyState === WebSocketReadyState.OPEN) {
             this.conn.close();
         }
     }
@@ -318,9 +328,9 @@ export default class WebSocketClient {
             data,
         };
 
-        if (this.conn && this.conn.readyState === WebSocket.OPEN) {
+        if (this.conn && this.conn.readyState === WebSocketReadyState.OPEN) {
             this.conn.send(JSON.stringify(msg));
-        } else if (!this.conn || this.conn.readyState === WebSocket.CLOSED) {
+        } else if (!this.conn || this.conn.readyState === WebSocketReadyState.CLOSED) {
             this.conn = undefined;
             this.initialize(this.token);
         }
@@ -334,6 +344,6 @@ export default class WebSocketClient {
     }
 
     public isConnected(): boolean {
-        return this.conn?.readyState === WebSocket.OPEN; //|| (!this.stop && this.connectFailCount <= 2);
+        return this.conn?.readyState === WebSocketReadyState.OPEN; //|| (!this.stop && this.connectFailCount <= 2);
     }
 }

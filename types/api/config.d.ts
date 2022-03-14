@@ -22,6 +22,7 @@ interface ClientConfig {
     BuildHashEnterprise: string;
     BuildNumber: string;
     CloseUnusedDirectMessages: string;
+    CollapsedThreads: string;
     CustomBrandText: string;
     CustomDescriptionText: string;
     CustomTermsOfServiceId: string;
@@ -115,6 +116,7 @@ interface ClientConfig {
     ExperimentalViewArchivedChannels: string;
     ExtendSessionLengthWithActivity: string;
     FeatureFlagAppsEnabled?: string;
+    FeatureFlagCollapsedThreads?: string;
     GfycatApiKey: string;
     GfycatApiSecret: string;
     GoogleDeveloperKey: string;

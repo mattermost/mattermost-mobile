@@ -24,10 +24,13 @@ export const prepareMyPreferences = (operator: ServerDataOperator, preferences: 
     }
 };
 
-export const queryPreferencesByCategoryAndName = (database: Database, category: string, name?: string) => {
+export const queryPreferencesByCategoryAndName = (database: Database, category: string, name?: string, value?: string) => {
     const clauses = [Q.where('category', category)];
     if (name != null) {
         clauses.push(Q.where('name', name));
+    }
+    if (value != null) {
+        clauses.push(Q.where('value', value));
     }
     return database.get<PreferenceModel>(MM_TABLES.SERVER.PREFERENCE).query(...clauses);
 };

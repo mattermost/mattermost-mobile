@@ -5,11 +5,13 @@ import DatabaseManager from '@database/manager';
 import {
     isRecordChannelEqualToRaw,
     isRecordChannelInfoEqualToRaw,
+    isRecordChannelMembershipEqualToRaw,
     isRecordMyChannelEqualToRaw,
     isRecordMyChannelSettingsEqualToRaw,
 } from '@database/operator/server_data_operator/comparators';
 import {
     transformChannelInfoRecord,
+    transformChannelMembershipRecord,
     transformChannelRecord,
     transformMyChannelRecord,
     transformMyChannelSettingsRecord,
@@ -196,6 +198,67 @@ describe('*** Operator: Channel Handlers tests ***', () => {
             prepareRecordsOnly: false,
             findMatchingRecordBy: isRecordMyChannelEqualToRaw,
             transformer: transformMyChannelRecord,
+        });
+    });
+
+    it('=> HandleChannelMembership: should write to the CHANNEL_MEMBERSHIP table', async () => {
+        expect.assertions(2);
+        const channelMemberships: ChannelMembership[] = [
+            {
+                id: '17bfnb1uwb8epewp4q3x3rx9go-9ciscaqbrpd6d8s68k76xb9bte',
+                channel_id: '17bfnb1uwb8epewp4q3x3rx9go',
+                user_id: '9ciscaqbrpd6d8s68k76xb9bte',
+                roles: 'wqyby5r5pinxxdqhoaomtacdhc',
+                last_viewed_at: 1613667352029,
+                msg_count: 3864,
+                mention_count: 0,
+                notify_props: {
+                    desktop: 'default',
+                    email: 'default',
+                    ignore_channel_mentions: 'default',
+                    mark_unread: 'mention',
+                    push: 'default',
+                },
+                last_update_at: 1613667352029,
+                scheme_user: true,
+                scheme_admin: false,
+            },
+            {
+                id: '1yw6gxfr4bn1jbyp9nr7d53yew-9ciscaqbrpd6d8s68k76xb9bte',
+                channel_id: '1yw6gxfr4bn1jbyp9nr7d53yew',
+                user_id: '9ciscaqbrpd6d8s68k76xb9bte',
+                roles: 'channel_user',
+                last_viewed_at: 1615300540549,
+                msg_count: 16,
+                mention_count: 0,
+                notify_props: {
+                    desktop: 'default',
+                    email: 'default',
+                    ignore_channel_mentions: 'default',
+                    mark_unread: 'all',
+                    push: 'default',
+                },
+                last_update_at: 1615300540549,
+                scheme_user: true,
+                scheme_admin: false,
+            },
+        ];
+
+        const spyOnHandleRecords = jest.spyOn(operator, 'handleRecords');
+
+        await operator.handleChannelMembership({
+            channelMemberships,
+            prepareRecordsOnly: false,
+        });
+
+        expect(spyOnHandleRecords).toHaveBeenCalledTimes(1);
+        expect(spyOnHandleRecords).toHaveBeenCalledWith({
+            fieldName: 'user_id',
+            createOrUpdateRawValues: channelMemberships,
+            tableName: 'ChannelMembership',
+            prepareRecordsOnly: false,
+            findMatchingRecordBy: isRecordChannelMembershipEqualToRaw,
+            transformer: transformChannelMembershipRecord,
         });
     });
 });

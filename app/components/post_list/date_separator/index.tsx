@@ -22,17 +22,16 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             alignItems: 'center',
             flexDirection: 'row',
             marginVertical: 8,
-            paddingHorizontal: 20,
         },
         line: {
             flex: 1,
             height: 1,
             backgroundColor: theme.centerChannelColor,
-            opacity: 0.2,
+            opacity: 0.1,
         },
         date: {
             color: theme.centerChannelColor,
-            marginHorizontal: 4,
+            marginHorizontal: 16,
             ...typography('Body', 75, 'SemiBold'),
         },
     };

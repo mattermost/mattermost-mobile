@@ -134,9 +134,16 @@ export const observeConfigValue = (database: Database, key: keyof ClientConfig) 
         switchMap((cfg) => of$(cfg?.[key])),
     );
 };
+
 export const observeConfigBooleanValue = (database: Database, key: keyof ClientConfig) => {
     return observeConfig(database).pipe(
         switchMap((cfg) => of$(cfg?.[key] === 'true')),
+    );
+};
+
+export const observeConfigIntValue = (database: Database, key: keyof ClientConfig, defaultValue = 0) => {
+    return observeConfig(database).pipe(
+        switchMap((cfg) => of$((parseInt(cfg?.[key] || '0', 10) || defaultValue))),
     );
 };
 

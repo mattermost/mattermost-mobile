@@ -6,6 +6,7 @@ import withObservables from '@nozbe/with-observables';
 import React, {useCallback} from 'react';
 import {useIntl} from 'react-intl';
 import {StyleProp, Text, TextStyle} from 'react-native';
+import {TouchableOpacity} from 'react-native-gesture-handler';
 import {switchMap} from 'rxjs/operators';
 
 import {joinChannel, switchToChannelById} from '@actions/remote/channel';
@@ -109,15 +110,14 @@ const ChannelMention = ({
     }
 
     return (
-        <Text style={textStyle}>
-            <Text
-                onPress={handlePress}
-                style={linkStyle}
-            >
-                {`~${channel.display_name}`}
+        <TouchableOpacity onPress={handlePress}>
+            <Text style={textStyle}>
+                <Text style={linkStyle}>
+                    {`~${channel.display_name}`}
+                </Text>
+                {suffix}
             </Text>
-            {suffix}
-        </Text>
+        </TouchableOpacity>
     );
 };
 

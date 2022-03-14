@@ -10,8 +10,7 @@ import {General, Permissions} from '@constants';
 import {MAX_MESSAGE_LENGTH_FALLBACK} from '@constants/post_draft';
 import {observeChannel, observeCurrentChannel} from '@queries/servers/channel';
 import {queryAllCustomEmojis} from '@queries/servers/custom_emoji';
-import {queryGroupsForTeamAndChannel} from '@queries/servers/groups';
-import {observeConfig, observeCurrentUserId, observeLicense} from '@queries/servers/system';
+import {observeConfig, observeCurrentUserId} from '@queries/servers/system';
 import {observeUser} from '@queries/servers/user';
 import {hasPermissionForChannel} from '@utils/role';
 
@@ -65,25 +64,8 @@ const enhanced = withObservables([], (ownProps: WithDatabaseArgs & OwnProps) => 
         }),
     );
 
-    const license = observeLicense(database);
-
-    const useGroupMentions = combineLatest([channel, currentUser, license]).pipe(
-        switchMap(([c, u, l]) => {
-            if (!c || l?.IsLicensed !== 'true') {
-                return of$(false);
-            }
-
-            return u ? from$(hasPermissionForChannel(c, u, Permissions.USE_GROUP_MENTIONS, true)) : of$(false);
-        }),
-    );
-
-    const groupsWithAllowReference = channel.pipe(switchMap(
-        (c) => (c ? queryGroupsForTeamAndChannel(database, c.teamId, c.id).observeWithColumns(['name']) : of$([]))),
-    );
-
-    const membersCount = channel.pipe(
-        switchMap((c) => (c ? c.info.observe() : of$({memberCount: 0}))),
-    ).pipe(
+    const channelInfo = channel.pipe(switchMap((c) => (c ? c.info.observe() : of$(undefined))));
+    const membersCount = channelInfo.pipe(
         switchMap((i: ChannelInfoModel) => of$(i.memberCount)),
     );
 
@@ -97,8 +79,6 @@ const enhanced = withObservables([], (ownProps: WithDatabaseArgs & OwnProps) => 
         membersCount,
         userIsOutOfOffice,
         useChannelMentions,
-        useGroupMentions,
-        groupsWithAllowReference,
         customEmojis,
     };
 });

@@ -8,6 +8,9 @@ import CompassIcon from '@components/compass_icon';
 import General from '@constants/general';
 import {useTheme} from '@context/theme';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
+import {typography} from '@utils/typography';
+
+import DmAvatar from './dm_avatar';
 
 type ChannelIconProps = {
     hasDraft?: boolean;
@@ -15,7 +18,9 @@ type ChannelIconProps = {
     isArchived?: boolean;
     isInfo?: boolean;
     isUnread?: boolean;
+    isMuted?: boolean;
     membersCount?: number;
+    name: string;
     shared: boolean;
     size?: number;
     style?: StyleProp<ViewStyle>;
@@ -58,8 +63,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
         },
         group: {
             color: theme.sidebarText,
-            fontSize: 10,
-            fontFamily: 'OpenSans-SemiBold',
+            ...typography('Body', 75, 'SemiBold'),
         },
         groupActive: {
             color: theme.sidebarTextActiveColor,
@@ -70,6 +74,9 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
         groupInfo: {
             color: theme.centerChannelColor,
         },
+        muted: {
+            opacity: 0.4,
+        },
     };
 });
 
@@ -79,7 +86,9 @@ const ChannelIcon = ({
     isArchived = false,
     isInfo = false,
     isUnread = false,
+    isMuted = false,
     membersCount = 0,
+    name,
     shared,
     size = 12,
     style,
@@ -95,6 +104,7 @@ const ChannelIcon = ({
     let unreadGroupBox;
     let activeGroup;
     let unreadGroup;
+    let mutedStyle;
 
     if (isUnread) {
         unreadIcon = styles.iconUnread;
@@ -112,6 +122,10 @@ const ChannelIcon = ({
         activeIcon = styles.iconInfo;
         activeGroupBox = styles.groupBoxInfo;
         activeGroup = styles.groupInfo;
+    }
+
+    if (isMuted) {
+        mutedStyle = styles.muted;
     }
 
     let icon;
@@ -159,10 +173,9 @@ const ChannelIcon = ({
         );
     } else if (type === General.GM_CHANNEL) {
         const fontSize = size - 12;
-        const boxSize = size - 4;
         icon = (
             <View
-                style={[styles.groupBox, unreadGroupBox, activeGroupBox, {width: boxSize, height: boxSize}]}
+                style={[styles.groupBox, unreadGroupBox, activeGroupBox, {width: size, height: size}]}
             >
                 <Text
                     style={[styles.group, unreadGroup, activeGroup, {fontSize}]}
@@ -173,11 +186,11 @@ const ChannelIcon = ({
             </View>
         );
     } else if (type === General.DM_CHANNEL) {
-        //todo: Implement ProfilePicture component
+        icon = (<DmAvatar channelName={name}/>);
     }
 
     return (
-        <View style={[styles.container, {width: size, height: size}, style]}>
+        <View style={[styles.container, {width: size, height: size}, style, mutedStyle]}>
             {icon}
         </View>
     );

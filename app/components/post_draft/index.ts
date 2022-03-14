@@ -8,6 +8,7 @@ import {switchMap} from 'rxjs/operators';
 
 import {General, Permissions} from '@constants';
 import {observeChannel} from '@queries/servers/channel';
+import {queryDraft} from '@queries/servers/drafts';
 import {observeConfigBooleanValue, observeCurrentChannelId} from '@queries/servers/system';
 import {observeCurrentUser, observeUser} from '@queries/servers/user';
 import {hasPermissionForChannel} from '@utils/role';
@@ -16,20 +17,33 @@ import {isSystemAdmin, getUserIdFromChannelName} from '@utils/user';
 import PostDraft from './post_draft';
 
 import type {WithDatabaseArgs} from '@typings/database/database';
+import type DraftModel from '@typings/database/models/servers/draft';
 
 type OwnProps = {
-    channelId?: string;
+    channelId: string;
     channelIsArchived?: boolean;
+    rootId?: string;
 }
 
-const enhanced = withObservables([], (ownProps: WithDatabaseArgs & OwnProps) => {
-    const database = ownProps.database;
-    const currentUser = observeCurrentUser(database);
+const observeFirst = (v: DraftModel[]) => v[0]?.observe();
 
+const enhanced = withObservables([], (ownProps: WithDatabaseArgs & OwnProps) => {
+    const {database, rootId = ''} = ownProps;
     let channelId = of$(ownProps.channelId);
     if (!ownProps.channelId) {
         channelId = observeCurrentChannelId(database);
     }
+
+    const draft = channelId.pipe(
+        switchMap((cId) => queryDraft(database, cId, rootId).observeWithColumns(['message', 'files']).pipe(
+            switchMap(observeFirst),
+        )),
+    );
+
+    const files = draft.pipe(switchMap((d) => of$(d?.files)));
+    const message = draft.pipe(switchMap((d) => of$(d?.message)));
+
+    const currentUser = observeCurrentUser(database);
 
     const channel = channelId.pipe(
         switchMap((id) => observeChannel(database, id!)),
@@ -66,6 +80,8 @@ const enhanced = withObservables([], (ownProps: WithDatabaseArgs & OwnProps) => 
         channelIsArchived,
         channelIsReadOnly,
         deactivatedChannel,
+        files,
+        message,
     };
 });
 

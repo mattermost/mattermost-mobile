@@ -5,7 +5,7 @@
 
 import merge from 'deepmerge';
 import {Appearance, DeviceEventEmitter, NativeModules, StatusBar, Platform, Alert} from 'react-native';
-import {Navigation, Options, OptionsModalPresentationStyle} from 'react-native-navigation';
+import {ImageResource, Navigation, Options, OptionsModalPresentationStyle, OptionsTopBarButton} from 'react-native-navigation';
 import tinyColor from 'tinycolor2';
 
 import CompassIcon from '@components/compass_icon';
@@ -57,7 +57,7 @@ export const loginAnimationOptions = () => {
                 alpha,
             },
             push: {
-                waitForRender: true,
+                waitForRender: false,
                 content: {
                     alpha,
                 },
@@ -104,6 +104,18 @@ export const bottomSheetModalOptions = (theme: Theme, closeButtonId: string) => 
 Navigation.setDefaultOptions({
     layout: {
         orientation: Device.IS_TABLET ? undefined : ['portrait'],
+    },
+    topBar: {
+        title: {
+            fontFamily: 'Metropolis-SemiBold',
+            fontSize: 18,
+            fontWeight: '600',
+        },
+        subtitle: {
+            fontFamily: 'OpenSans',
+            fontSize: 12,
+            fontWeight: '500',
+        },
     },
 });
 
@@ -454,7 +466,7 @@ export function showModalOverCurrentContext(name: string, passProps = {}, option
         case 'android':
             animations = {
                 showModal: {
-                    waitForRender: true,
+                    waitForRender: false,
                     alpha: {
                         from: 0,
                         to: 1,
@@ -555,6 +567,16 @@ export async function dismissAllModals(options: Options = {}) {
         // dismiss. We'll do nothing in this case.
     }
 }
+
+export const buildNavigationButton = (id: string, testID: string, icon?: ImageResource): OptionsTopBarButton => ({
+    fontSize: 16,
+    fontFamily: 'OpenSans-SemiBold',
+    fontWeight: '600',
+    id,
+    icon,
+    showAsAction: 'always',
+    testID,
+});
 
 export function setButtons(componentId: string, buttons: NavButtons = {leftButtons: [], rightButtons: []}) {
     const options = {

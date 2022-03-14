@@ -20,14 +20,13 @@ import {getResponseFromError} from './common';
 
 /**
  * Synchronize any user attribute changes in the configured AD/LDAP server with Mattermost.
- * See https://api.mattermost.com/#tag/LDAP/paths/~1ldap~1sync/post
- * @return {string} returns {status} on success or {error, status} on error
+ * See https://api.mattermost.com/#operation/SyncLdap
+ * @param {string} baseUrl - the base server URL
+ * @return {string} returns response on success or {error, status} on error
  */
-export const apiLDAPSync = async () => {
+export const apiLDAPSync = async (baseUrl) => {
     try {
-        const response = await client.post('/api/v4/ldap/sync');
-
-        return response;
+        return await client.post(`${baseUrl}/api/v4/ldap/sync`);
     } catch (err) {
         return getResponseFromError(err);
     }
@@ -35,14 +34,15 @@ export const apiLDAPSync = async () => {
 
 /**
  * Test the current AD/LDAP configuration to see if the AD/LDAP server can be contacted successfully.
- * See https://api.mattermost.com/#tag/LDAP/paths/~1ldap~1test/post
- * @return {string} returns {status} on success or {error, status} on error
+ * See https://api.mattermost.com/#operation/TestLdap
+ * @param {string} baseUrl - the base server URL
+ * @return {Object} returns {status} on success or {error, status} on error
  */
-export const apiLDAPTest = async () => {
+export const apiLDAPTest = async (baseUrl) => {
     try {
-        const response = await client.post('/api/v4/ldap/test');
+        const response = await client.post(`${baseUrl}/api/v4/ldap/test`);
 
-        return response.data;
+        return {status: response.status};
     } catch (err) {
         return getResponseFromError(err);
     }
@@ -50,12 +50,13 @@ export const apiLDAPTest = async () => {
 
 /**
  * Check that LDAP server can connect and is synchronized with Mattermost server.
+ * @param {string} baseUrl - the base server URL
  */
-export const apiRequireLDAPServer = async () => {
-    const {error: testError} = await apiLDAPTest();
+export const apiRequireLDAPServer = async (baseUrl) => {
+    const {error: testError} = await apiLDAPTest(baseUrl);
     jestExpect(testError).toBeUndefined();
 
-    const {error: syncError} = await apiLDAPSync();
+    const {error: syncError} = await apiLDAPSync(baseUrl);
     jestExpect(syncError).toBeUndefined();
 };
 

@@ -6,7 +6,7 @@ import {NavigationContainer} from '@react-navigation/native';
 import React, {useEffect} from 'react';
 import {useIntl} from 'react-intl';
 import {DeviceEventEmitter, Platform} from 'react-native';
-import {enableScreens} from 'react-native-screens';
+import {enableFreeze, enableScreens} from 'react-native-screens';
 
 import {Events, Screens} from '@constants';
 import {useTheme} from '@context/theme';
@@ -25,6 +25,8 @@ if (Platform.OS === 'ios') {
     enableScreens(false);
 }
 
+enableFreeze(true);
+
 type HomeProps = LaunchProps & {
     time?: number;
 };
@@ -40,7 +42,9 @@ export default function HomeScreen(props: HomeProps) {
             notificationError(intl, value);
         });
 
-        return () => listener.remove();
+        return () => {
+            listener.remove();
+        };
     }, []);
 
     return (
@@ -67,22 +71,24 @@ export default function HomeScreen(props: HomeProps) {
             >
                 <Tab.Screen
                     name={Screens.HOME}
-                    options={{title: 'Channel', unmountOnBlur: false}}
+                    options={{title: 'Channel', unmountOnBlur: false, tabBarTestID: 'tab_bar.home.tab'}}
                 >
                     {() => <ChannelList {...props}/>}
                 </Tab.Screen>
                 <Tab.Screen
                     name={Screens.SEARCH}
                     component={Search}
-                    options={{unmountOnBlur: false}}
+                    options={{unmountOnBlur: false, tabBarTestID: 'tab_bar.search.tab'}}
                 />
                 <Tab.Screen
                     name={Screens.MENTIONS}
                     component={RecentMentions}
+                    options={{tabBarTestID: 'tab_bar.mentions.tab'}}
                 />
                 <Tab.Screen
                     name={Screens.ACCOUNT}
                     component={Account}
+                    options={{tabBarTestID: 'tab_bar.account.tab'}}
                 />
             </Tab.Navigator>
         </NavigationContainer>

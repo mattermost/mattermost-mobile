@@ -6,13 +6,11 @@ import {prepareBaseRecord} from '@database/operator/server_data_operator/transfo
 import {OperationType} from '@typings/database/enums';
 
 import type {TransformerArgs} from '@typings/database/database';
-import type ChannelMembershipModel from '@typings/database/models/servers/channel_membership';
 import type PreferenceModel from '@typings/database/models/servers/preference';
 import type ReactionModel from '@typings/database/models/servers/reaction';
 import type UserModel from '@typings/database/models/servers/user';
 
 const {
-    CHANNEL_MEMBERSHIP,
     PREFERENCE,
     REACTION,
     USER,
@@ -124,30 +122,3 @@ export const transformPreferenceRecord = ({action, database, value}: Transformer
     }) as Promise<PreferenceModel>;
 };
 
-/**
- * transformChannelMembershipRecord: Prepares a record of the SERVER database 'ChannelMembership' table for update or create actions.
- * @param {TransformerArgs} operator
- * @param {Database} operator.database
- * @param {RecordPair} operator.value
- * @returns {Promise<ChannelMembershipModel>}
- */
-export const transformChannelMembershipRecord = ({action, database, value}: TransformerArgs): Promise<ChannelMembershipModel> => {
-    const raw = value.raw as ChannelMembership;
-    const record = value.record as ChannelMembershipModel;
-    const isCreateAction = action === OperationType.CREATE;
-
-    // If isCreateAction is true, we will use the id (API response) from the RAW, else we shall use the existing record id from the database
-    const fieldsMapper = (channelMember: ChannelMembershipModel) => {
-        channelMember._raw.id = isCreateAction ? (raw?.id ?? channelMember.id) : record.id;
-        channelMember.channelId = raw.channel_id;
-        channelMember.userId = raw.user_id;
-    };
-
-    return prepareBaseRecord({
-        action,
-        database,
-        tableName: CHANNEL_MEMBERSHIP,
-        value,
-        fieldsMapper,
-    }) as Promise<ChannelMembershipModel>;
-};

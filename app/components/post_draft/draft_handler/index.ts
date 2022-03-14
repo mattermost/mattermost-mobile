@@ -7,7 +7,6 @@ import {combineLatest, of as of$} from 'rxjs';
 import {switchMap} from 'rxjs/operators';
 
 import {DEFAULT_SERVER_MAX_FILE_SIZE} from '@constants/post_draft';
-import {queryDraft} from '@queries/servers/drafts';
 import {observeConfig, observeLicense} from '@queries/servers/system';
 import {isMinimumServerVersion} from '@utils/helpers';
 
@@ -15,16 +14,7 @@ import DraftHandler from './draft_handler';
 
 import type {WithDatabaseArgs} from '@typings/database/database';
 
-type OwnProps = {
-    channelId: string;
-    rootId?: string;
-}
-const enhanced = withObservables([], ({database, channelId, rootId = ''}: WithDatabaseArgs & OwnProps) => {
-    const draft = queryDraft(database, channelId, rootId).observeWithColumns(['message', 'files']).pipe(switchMap((v) => of$(v[0])));
-
-    const files = draft.pipe(switchMap((d) => of$(d?.files)));
-    const message = draft.pipe(switchMap((d) => of$(d?.message)));
-
+const enhanced = withObservables([], ({database}: WithDatabaseArgs) => {
     const config = observeConfig(database);
 
     const license = observeLicense(database);
@@ -46,8 +36,6 @@ const enhanced = withObservables([], ({database, channelId, rootId = ''}: WithDa
     );
 
     return {
-        files,
-        message,
         maxFileSize,
         maxFileCount,
         canUploadFiles,

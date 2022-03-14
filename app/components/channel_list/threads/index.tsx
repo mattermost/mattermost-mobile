@@ -1,24 +1,16 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {withDatabase} from '@nozbe/watermelondb/DatabaseProvider';
-import withObservables from '@nozbe/with-observables';
 import React from 'react';
 import {StyleSheet, Text, View} from 'react-native';
-import {of as of$} from 'rxjs';
-import {switchMap} from 'rxjs/operators';
 
-import {switchToChannelById} from '@actions/remote/channel';
 import CompassIcon from '@components/compass_icon';
 import TouchableWithFeedback from '@components/touchable_with_feedback';
-import {useServerUrl} from '@context/server';
+import {Screens} from '@constants';
 import {useTheme} from '@context/theme';
-import {queryTeamDefaultChannel} from '@queries/servers/channel';
-import {observeCurrentTeamId} from '@queries/servers/system';
+import {goToScreen} from '@screens/navigation';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
-
-import type {WithDatabaseArgs} from '@typings/database/database';
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     container: {
@@ -38,19 +30,18 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
 
 const textStyle = StyleSheet.create([typography('Body', 200, 'SemiBold')]);
 
-const ThreadsButton = ({channelId}: {channelId?: string}) => {
+const ThreadsButton = () => {
     const theme = useTheme();
-    const serverUrl = useServerUrl();
     const styles = getStyleSheet(theme);
 
     /*
      * @to-do:
-     * - Check if there are threads, else return null (think of doing this before mounting this component)
-     * - Change to button, navigate to threads view instead of the current team Town Square
+     * - Check if there are threads, else return null
+     * - Change to button, navigate to threads view
      * - Add right-side number badge
      */
     return (
-        <TouchableWithFeedback onPress={() => (channelId ? switchToChannelById(serverUrl, channelId) : true)} >
+        <TouchableWithFeedback onPress={() => goToScreen(Screens.CHANNEL, 'Channel', {}, {topBar: {visible: false}})} >
             <View style={styles.container}>
                 <CompassIcon
                     name='message-text-outline'
@@ -62,16 +53,4 @@ const ThreadsButton = ({channelId}: {channelId?: string}) => {
     );
 };
 
-const enhanced = withObservables([], ({database}: WithDatabaseArgs) => {
-    const currentTeamId = observeCurrentTeamId(database);
-    const channelId = currentTeamId.pipe(
-        switchMap((id) => queryTeamDefaultChannel(database, id).observe().pipe(
-            // eslint-disable-next-line max-nested-callbacks
-            switchMap((channels) => (channels.length ? of$(channels[0].id) : of$(undefined))),
-        )),
-    );
-
-    return {channelId};
-});
-
-export default withDatabase(enhanced(ThreadsButton));
+export default ThreadsButton;

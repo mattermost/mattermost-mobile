@@ -2,6 +2,7 @@
 // See LICENSE.txt for license information.
 
 import emojiRegex from 'emoji-regex';
+import Fuse from 'fuse.js';
 
 import SystemModel from '@database/models/server/system';
 
@@ -192,12 +193,12 @@ export function doesMatchNamedEmoji(emojiName: string) {
     return false;
 }
 
-export function getEmojiByName(emojiName: string) {
+export function getEmojiByName(emojiName: string, customEmojis: CustomEmojiModel[]) {
     if (EmojiIndicesByAlias.has(emojiName)) {
         return Emojis[EmojiIndicesByAlias.get(emojiName)!];
     }
 
-    return null;
+    return customEmojis.find((e) => e.name === emojiName);
 }
 
 // Since there is no shared logic between the web and mobile app
@@ -311,3 +312,45 @@ export function getSkin(emoji: any) {
     }
     return null;
 }
+
+export const getEmojis = (skinTone: string, customEmojis: CustomEmojiModel[]) => {
+    const emoticons = new Set<string>();
+    for (const [key, index] of EmojiIndicesByAlias.entries()) {
+        const skin = getSkin(Emojis[index]);
+        if (!skin || skin === skinTone) {
+            emoticons.add(key);
+        }
+    }
+
+    for (const custom of customEmojis) {
+        emoticons.add(custom.name);
+    }
+
+    return Array.from(emoticons);
+};
+
+export const searchEmojis = (fuse: Fuse<string>, searchTerm: string) => {
+    const searchTermLowerCase = searchTerm.toLowerCase();
+
+    const sorter = (a: string, b: string) => {
+        return compareEmojis(a, b, searchTermLowerCase);
+    };
+
+    const fuzz = fuse.search(searchTermLowerCase);
+
+    if (fuzz) {
+        const results = fuzz.reduce((values, r) => {
+            const score = r?.score === undefined ? 1 : r.score;
+            const v = r?.matches?.[0]?.value;
+            if (score < 0.2 && v) {
+                values.push(v);
+            }
+
+            return values;
+        }, [] as string[]);
+
+        return results.sort(sorter);
+    }
+
+    return [];
+};

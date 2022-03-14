@@ -6,10 +6,10 @@ import withObservables from '@nozbe/with-observables';
 import React from 'react';
 import {useIntl} from 'react-intl';
 import {Alert, Text, View} from 'react-native';
+import {TouchableOpacity} from 'react-native-gesture-handler';
 import {of as of$, combineLatest} from 'rxjs';
 import {switchMap} from 'rxjs/operators';
 
-import TouchableWithFeedback from '@components/touchable_with_feedback';
 import {Preferences} from '@constants';
 import {getPreferenceAsBool} from '@helpers/api/preference';
 import {queryPreferencesByCategoryAndName} from '@queries/servers/preference';
@@ -23,6 +23,8 @@ import type {WithDatabaseArgs} from '@typings/database/database';
 
 type OpengraphProps = {
     isReplyPost: boolean;
+    layoutWidth?: number;
+    location: string;
     metadata: PostMetadata;
     postId: string;
     showLinkPreviews: boolean;
@@ -68,7 +70,7 @@ const selectOpenGraphData = (url: string, metadata: PostMetadata) => {
     })?.data;
 };
 
-const Opengraph = ({isReplyPost, metadata, postId, showLinkPreviews, theme}: OpengraphProps) => {
+const Opengraph = ({isReplyPost, layoutWidth, location, metadata, postId, showLinkPreviews, theme}: OpengraphProps) => {
     const intl = useIntl();
     const link = metadata.embeds![0]!.url;
     const openGraphData = selectOpenGraphData(link, metadata);
@@ -121,10 +123,9 @@ const Opengraph = ({isReplyPost, metadata, postId, showLinkPreviews, theme}: Ope
     if (title) {
         siteTitle = (
             <View style={style.wrapper}>
-                <TouchableWithFeedback
+                <TouchableOpacity
                     style={style.flex}
                     onPress={goToLink}
-                    type={'opacity'}
                 >
                     <Text
                         style={[style.siteTitle, {marginRight: isReplyPost ? 10 : 0}]}
@@ -133,7 +134,7 @@ const Opengraph = ({isReplyPost, metadata, postId, showLinkPreviews, theme}: Ope
                     >
                         {title as string}
                     </Text>
-                </TouchableWithFeedback>
+                </TouchableOpacity>
             </View>
         );
     }
@@ -161,6 +162,8 @@ const Opengraph = ({isReplyPost, metadata, postId, showLinkPreviews, theme}: Ope
             {hasImage &&
             <OpengraphImage
                 isReplyPost={isReplyPost}
+                layoutWidth={layoutWidth}
+                location={location}
                 openGraphImages={openGraphData.images as never[]}
                 metadata={metadata}
                 postId={postId}
@@ -171,7 +174,7 @@ const Opengraph = ({isReplyPost, metadata, postId, showLinkPreviews, theme}: Ope
     );
 };
 
-const withOpenGraphInput = withObservables(
+const enhanced = withObservables(
     ['removeLinkPreview'], ({database, removeLinkPreview}: WithDatabaseArgs & {removeLinkPreview: boolean}) => {
         if (removeLinkPreview) {
             return {showLinkPreviews: of$(false)};
@@ -191,4 +194,4 @@ const withOpenGraphInput = withObservables(
         return {showLinkPreviews};
     });
 
-export default withDatabase(withOpenGraphInput(React.memo(Opengraph)));
+export default withDatabase(enhanced(React.memo(Opengraph)));

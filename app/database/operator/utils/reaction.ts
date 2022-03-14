@@ -20,19 +20,17 @@ const {REACTION} = MM_TABLES.SERVER;
  * @returns {Promise<{createReactions: RawReaction[],  deleteReactions: Reaction[]}>}
  */
 export const sanitizeReactions = async ({database, post_id, rawReactions, skipSync}: SanitizeReactionsArgs) => {
-    const reactions = (await database.collections.
-        get(REACTION).
+    const reactions = (await database.
+        get<ReactionModel>(REACTION).
         query(Q.where('post_id', post_id)).
-        fetch()) as ReactionModel[];
+        fetch());
 
     // similarObjects: Contains objects that are in both the RawReaction array and in the Reaction table
     const similarObjects: ReactionModel[] = [];
 
     const createReactions: RecordPair[] = [];
 
-    for (let i = 0; i < rawReactions.length; i++) {
-        const raw = rawReactions[i];
-
+    for (const raw of rawReactions) {
         // If the reaction is not present let's add it to the db
         const exists = reactions.find((r) => (
             r.userId === raw.user_id &&
@@ -49,7 +47,7 @@ export const sanitizeReactions = async ({database, post_id, rawReactions, skipSy
         return {createReactions, deleteReactions: []};
     }
 
-    // finding out elements to delete using array subtract
+    // finding out elements to delete
     const deleteReactions = reactions.
         filter((reaction) => !similarObjects.includes(reaction));
 

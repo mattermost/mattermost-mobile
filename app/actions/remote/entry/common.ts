@@ -2,11 +2,10 @@
 // See LICENSE.txt for license information.
 
 import {fetchChannelStats, fetchMissingSidebarInfo, fetchMyChannelsForTeam, markChannelAsRead, MyChannelsRequest} from '@actions/remote/channel';
-import {fetchGroupsForTeam} from '@actions/remote/group';
 import {fetchPostsForChannel, fetchPostsForUnreadChannels} from '@actions/remote/post';
 import {MyPreferencesRequest, fetchMyPreferences} from '@actions/remote/preference';
 import {fetchConfigAndLicense} from '@actions/remote/systems';
-import {fetchMyTeams, fetchTeamsChannelsAndUnreadPosts, MyTeamsRequest} from '@actions/remote/team';
+import {fetchAllTeams, fetchMyTeams, fetchTeamsChannelsAndUnreadPosts, MyTeamsRequest} from '@actions/remote/team';
 import {fetchMe, MyUserRequest, updateAllUsersSince} from '@actions/remote/user';
 import {General, Preferences} from '@constants';
 import DatabaseManager from '@database/manager';
@@ -17,7 +16,7 @@ import NetworkManager from '@init/network_manager';
 import {queryAllServers} from '@queries/app/servers';
 import {queryAllChannelsForTeam} from '@queries/servers/channel';
 import {getConfig} from '@queries/servers/system';
-import {getAvailableTeamIds, queryMyTeams} from '@queries/servers/team';
+import {deleteMyTeams, getAvailableTeamIds, queryMyTeams, queryMyTeamsByIds, queryTeamsById} from '@queries/servers/team';
 
 import type ClientError from '@client/rest/error';
 
@@ -34,6 +33,27 @@ export type AppEntryData = {
 export type AppEntryError = {
     error?: Error | ClientError | string;
 }
+
+export const teamsToRemove = async (serverUrl: string, removeTeamIds?: string[]) => {
+    const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
+    if (!operator) {
+        return undefined;
+    }
+
+    const {database} = operator;
+    if (removeTeamIds?.length) {
+        // Immediately delete myTeams so that the UI renders only teams the user is a member of.
+        const removeMyTeams = await queryMyTeamsByIds(database, removeTeamIds).fetch();
+        if (removeMyTeams?.length) {
+            await deleteMyTeams(operator, removeMyTeams);
+            const ids = removeMyTeams.map((m) => m.id);
+            const removeTeams = await queryTeamsById(database, ids).fetch();
+            return removeTeams;
+        }
+    }
+
+    return undefined;
+};
 
 export const fetchAppEntryData = async (serverUrl: string, since: number, initialTeamId: string): Promise<AppEntryData | AppEntryError> => {
     const database = DatabaseManager.serverDatabases[serverUrl]?.database;
@@ -183,16 +203,12 @@ export const deferredAppEntryActions = async (
         fetchPostsForUnreadChannels(serverUrl, chData.channels, chData.memberships, initialChannelId);
     }
 
-    // defer groups for team
-    if (initialTeamId) {
-        fetchGroupsForTeam(serverUrl, initialTeamId, since);
-    }
-
     // defer fetch channels and unread posts for other teams
     if (teamData.teams?.length && teamData.memberships?.length) {
         await fetchTeamsChannelsAndUnreadPosts(serverUrl, since, teamData.teams, teamData.memberships, initialTeamId);
     }
 
+    fetchAllTeams(serverUrl);
     updateAllUsersSince(serverUrl, since);
 };
 

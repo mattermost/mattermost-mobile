@@ -1,13 +1,15 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {System, User} from '@support/server_api';
+import {Plugin, System, User} from '@support/server_api';
+import {siteOneUrl} from '@support/test_config';
 
 beforeAll(async () => {
     // Login as sysadmin and reset server configuration
-    await System.apiCheckSystemHealth();
-    await User.apiAdminLogin();
-    await System.apiUpdateConfig();
+    await System.apiCheckSystemHealth(siteOneUrl);
+    await User.apiAdminLogin(siteOneUrl);
+    await System.apiUpdateConfig(siteOneUrl);
+    await Plugin.apiDisableNonPrepackagedPlugins(siteOneUrl);
 
     await device.launchApp({
         newInstance: false,

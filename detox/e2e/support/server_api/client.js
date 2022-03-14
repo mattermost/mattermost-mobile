@@ -3,10 +3,7 @@
 
 import axios from 'axios';
 
-import testConfig from '../test_config';
-
 export const client = axios.create({
-    baseURL: testConfig.siteUrl,
     headers: {'X-Requested-With': 'XMLHttpRequest'},
 });
 

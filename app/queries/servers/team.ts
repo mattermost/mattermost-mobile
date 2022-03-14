@@ -10,12 +10,14 @@ import {getPreferenceValue} from '@helpers/api/preference';
 import {selectDefaultTeam} from '@helpers/api/team';
 import {DEFAULT_LOCALE} from '@i18n';
 
+import {prepareDeleteCategory} from './categories';
 import {prepareDeleteChannel, getDefaultChannelForTeam} from './channel';
 import {queryPreferencesByCategoryAndName} from './preference';
 import {patchTeamHistory, getConfig, getTeamHistory, observeCurrentTeamId} from './system';
 import {getCurrentUser} from './user';
 
 import type ServerDataOperator from '@database/operator/server_data_operator';
+import type CategoryModel from '@typings/database/models/servers/category';
 import type ChannelModel from '@typings/database/models/servers/channel';
 import type MyTeamModel from '@typings/database/models/servers/my_team';
 import type TeamModel from '@typings/database/models/servers/team';
@@ -200,15 +202,16 @@ export const prepareMyTeams = (operator: ServerDataOperator, teams: Team[], memb
     }
 };
 
-export const deleteMyTeams = async (operator: ServerDataOperator, teams: TeamModel[]) => {
+export const deleteMyTeams = async (operator: ServerDataOperator, myTeams: MyTeamModel[]) => {
     try {
         const preparedModels: Model[] = [];
-        for await (const team of teams) {
-            const myTeam = await team.myTeam.fetch() as MyTeamModel;
+        for (const myTeam of myTeams) {
             preparedModels.push(myTeam.prepareDestroyPermanently());
         }
 
-        await operator.batchRecords(preparedModels);
+        if (preparedModels.length) {
+            await operator.batchRecords(preparedModels);
+        }
         return {};
     } catch (error) {
         return {error};
@@ -216,38 +219,63 @@ export const deleteMyTeams = async (operator: ServerDataOperator, teams: TeamMod
 };
 
 export const prepareDeleteTeam = async (team: TeamModel): Promise<Model[]> => {
-    const preparedModels: Model[] = [team.prepareDestroyPermanently()];
+    try {
+        const preparedModels: Model[] = [team.prepareDestroyPermanently()];
 
-    const relations: Array<Relation<Model>> = [team.myTeam, team.teamChannelHistory];
-    for await (const relation of relations) {
-        try {
-            const model = await relation.fetch();
-            if (model) {
-                preparedModels.push(model.prepareDestroyPermanently());
+        const relations: Array<Relation<Model>> = [team.myTeam, team.teamChannelHistory];
+        for await (const relation of relations) {
+            try {
+                const model = await relation?.fetch?.();
+                if (model) {
+                    preparedModels.push(model.prepareDestroyPermanently());
+                }
+            } catch {
+                // Record not found, do nothing
             }
-        } catch {
-            // Record not found, do nothing
         }
-    }
 
-    const associatedChildren: Array<Query<any>> = [
-        team.members,
-        team.groupsTeam,
-        team.slashCommands,
-        team.teamSearchHistories,
-    ];
-    for await (const children of associatedChildren) {
-        const models = await children.fetch() as Model[];
-        models.forEach((model) => preparedModels.push(model.prepareDestroyPermanently()));
-    }
+        const associatedChildren: Array<Query<any>> = [
+            team.members,
+            team.slashCommands,
+            team.teamSearchHistories,
+        ];
+        for await (const children of associatedChildren) {
+            try {
+                const models = await children.fetch?.() as Model[] | undefined;
+                models?.forEach((model) => preparedModels.push(model.prepareDestroyPermanently()));
+            } catch {
+                // Record not found, do nothing
+            }
+        }
 
-    const channels = await team.channels.fetch() as ChannelModel[];
-    for await (const channel of channels) {
-        const preparedChannel = await prepareDeleteChannel(channel);
-        preparedModels.push(...preparedChannel);
-    }
+        const categories = await team.categories.fetch?.() as CategoryModel[] | undefined;
+        if (categories?.length) {
+            for await (const category of categories) {
+                try {
+                    const preparedCategory = await prepareDeleteCategory(category);
+                    preparedModels.push(...preparedCategory);
+                } catch {
+                    // Record not found, do nothing
+                }
+            }
+        }
 
-    return preparedModels;
+        const channels = await team.channels.fetch?.() as ChannelModel[] | undefined;
+        if (channels?.length) {
+            for await (const channel of channels) {
+                try {
+                    const preparedChannel = await prepareDeleteChannel(channel);
+                    preparedModels.push(...preparedChannel);
+                } catch {
+                    // Record not found, do nothing
+                }
+            }
+        }
+
+        return preparedModels;
+    } catch (error) {
+        return [];
+    }
 };
 
 export const getMyTeamById = async (database: Database, teamId: string) => {
@@ -278,6 +306,10 @@ export const queryTeamsById = (database: Database, teamIds: string[]) => {
     return database.get<TeamModel>(TEAM).query(Q.where('id', Q.oneOf(teamIds)));
 };
 
+export const queryTeamByName = async (database: Database, teamName: string) => {
+    return database.get<TeamModel>(TEAM).query(Q.where('name', teamName));
+};
+
 export const queryOtherTeams = (database: Database, teamIds: string[]) => {
     return database.get<TeamModel>(TEAM).query(Q.where('id', Q.notIn(teamIds)));
 };
@@ -300,6 +332,10 @@ export const getTeamByName = async (database: Database, teamName: string) => {
 
 export const queryMyTeams = (database: Database) => {
     return database.get<MyTeamModel>(MY_TEAM).query();
+};
+
+export const queryMyTeamsByIds = (database: Database, teamIds: string[]) => {
+    return database.get<MyTeamModel>(MY_TEAM).query(Q.where('id', Q.oneOf(teamIds)));
 };
 
 export const getAvailableTeamIds = async (database: Database, excludeTeamId: string, teams?: Team[], preferences?: PreferenceType[], locale?: string): Promise<string[]> => {

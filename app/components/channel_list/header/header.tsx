@@ -3,7 +3,7 @@
 
 import React, {useCallback, useEffect} from 'react';
 import {useIntl} from 'react-intl';
-import {Text, View} from 'react-native';
+import {Platform, Text, View} from 'react-native';
 import Animated, {useAnimatedStyle, useSharedValue, withTiming} from 'react-native-reanimated';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
@@ -101,7 +101,7 @@ const ChannelListHeader = ({canCreateChannels, canJoinChannels, displayName, ico
         bottomSheet({
             closeButtonId,
             renderContent,
-            snapPoints: [(items * ITEM_HEIGHT) + (insets.bottom * 2), 10],
+            snapPoints: [((items + Platform.select({android: 1, default: 0})) * ITEM_HEIGHT) + (insets.bottom * 2), 10],
             theme,
             title: intl.formatMessage({id: 'home.header.plus_menu', defaultMessage: 'Options'}),
         });
@@ -116,7 +116,10 @@ const ChannelListHeader = ({canCreateChannels, canJoinChannels, displayName, ico
                     type='opacity'
                 >
                     <View style={styles.headerRow}>
-                        <Text style={styles.headingStyles}>
+                        <Text
+                            style={styles.headingStyles}
+                            testID='channel_list_header.team_display_name'
+                        >
                             {displayName}
                         </Text>
                         <View style={styles.chevronButton}>
@@ -139,7 +142,10 @@ const ChannelListHeader = ({canCreateChannels, canJoinChannels, displayName, ico
                 </TouchableWithFeedback>
             </View>
             }
-            <Text style={styles.subHeadingStyles}>
+            <Text
+                style={styles.subHeadingStyles}
+                testID='channel_list_header.server_display_name'
+            >
                 {serverDisplayName}
             </Text>
         </Animated.View>
