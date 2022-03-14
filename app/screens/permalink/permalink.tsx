@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback, useEffect, useMemo, useState} from 'react';
-import {TouchableOpacity, Text, View, BackHandler, ActivityIndicator} from 'react-native';
+import {BackHandler, Text, TouchableOpacity, View} from 'react-native';
 import Animated from 'react-native-reanimated';
 import {SafeAreaView, useSafeAreaInsets} from 'react-native-safe-area-context';
 
@@ -11,6 +11,7 @@ import {Screens} from '@app/constants';
 import {changeOpacity, makeStyleSheetFromTheme} from '@app/utils/theme';
 import CompassIcon from '@components/compass_icon';
 import FormattedText from '@components/formatted_text';
+import Loading from '@components/loading';
 import PostList from '@components/post_list';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
@@ -185,9 +186,8 @@ function Permalink({channel, postId, currentUsername}: Props) {
                 </View>
                 {loading ? (
                     <View style={style.loading}>
-                        <ActivityIndicator
-                            color={theme.centerChannelColor}
-                            size='large'
+                        <Loading
+                            color={theme.buttonBg}
                         />
                     </View>
                 ) : (
