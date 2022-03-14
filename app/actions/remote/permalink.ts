@@ -1,21 +1,16 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {Keyboard} from 'react-native';
-
 import {fetchMyChannelsForTeam} from '@actions/remote/channel';
 import DatabaseManager from '@database/manager';
 import {queryCommonSystemValues} from '@queries/servers/system';
 import {queryTeamById, queryTeamByName} from '@queries/servers/team';
-import {dismissAllModals, showModalOverCurrentContext} from '@screens/navigation';
 import {permalinkBadTeam} from '@utils/draft';
-import {changeOpacity} from '@utils/theme';
+import {displayPermalink} from '@utils/permalink';
 import {PERMALINK_GENERIC_TEAM_NAME_REDIRECT} from '@utils/url';
 
 import type TeamModel from '@typings/database/models/servers/team';
 import type {IntlShape} from 'react-intl';
-
-let showingPermalink = false;
 
 export const showPermalink = async (serverUrl: string, teamName: string, postId: string, intl: IntlShape, openAsPermalink = true) => {
     const database = DatabaseManager.serverDatabases[serverUrl]?.database;
@@ -49,33 +44,10 @@ export const showPermalink = async (serverUrl: string, teamName: string, postId:
             }
         }
 
-        Keyboard.dismiss();
-        if (showingPermalink) {
-            await dismissAllModals();
-        }
-
-        const screen = 'Permalink';
-        const passProps = {
-            isPermalink: openAsPermalink,
-            teamName,
-            postId,
-        };
-
-        const options = {
-            layout: {
-                componentBackgroundColor: changeOpacity('#000', 0.2),
-            },
-        };
-
-        showingPermalink = true;
-        showModalOverCurrentContext(screen, passProps, options);
+        await displayPermalink(team.name, postId, openAsPermalink);
 
         return {error: undefined};
     } catch (error) {
         return {error};
     }
-};
-
-export const closePermalink = () => {
-    showingPermalink = false;
 };

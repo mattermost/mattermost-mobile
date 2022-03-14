@@ -337,6 +337,7 @@
   "mobile.routes.user_profile": "Profile",
   "mobile.screen.saved_posts": "Saved Messages",
   "mobile.screen.your_profile": "Your Profile",
+  "mobile.search.jump": "Jump to recent messages",
   "mobile.server_identifier.exists": "You are already connected to this server.",
   "mobile.server_link.error.text": "The link could not be found on this server.",
   "mobile.server_link.error.title": "Link Error",

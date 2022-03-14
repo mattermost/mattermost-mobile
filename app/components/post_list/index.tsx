@@ -29,6 +29,7 @@ type Props = {
     contentContainerStyle?: StyleProp<ViewStyle>;
     currentTimezone: string | null;
     currentUsername: string;
+    highlightedId?: PostModel['id'];
     highlightPinnedOrSaved?: boolean;
     isTimezoneEnabled: boolean;
     lastViewedAt: number;
@@ -79,6 +80,7 @@ const PostList = ({
     currentTimezone,
     currentUsername,
     footer,
+    highlightedId,
     highlightPinnedOrSaved = true,
     isTimezoneEnabled,
     lastViewedAt,
@@ -96,6 +98,7 @@ const PostList = ({
     const listRef = useRef<FlatList>(null);
     const onScrollEndIndexListener = useRef<onScrollEndIndexListenerEvent>();
     const onViewableItemsChangedListener = useRef<ViewableItemsChangedListenerEvent>();
+    const scrolledToHighlighted = useRef(false);
     const [offsetY, setOffsetY] = useState(0);
     const [refreshing, setRefreshing] = useState(false);
     const theme = useTheme();
@@ -152,11 +155,14 @@ const PostList = ({
 
     const onScrollToIndexFailed = useCallback((info: ScrollIndexFailed) => {
         const index = Math.min(info.highestMeasuredFrameIndex, info.index);
-        if (onScrollEndIndexListener.current) {
-            onScrollEndIndexListener.current(index);
+
+        if (!highlightedId) {
+            if (onScrollEndIndexListener.current) {
+                onScrollEndIndexListener.current(index);
+            }
+            scrollToIndex(index);
         }
-        scrollToIndex(index);
-    }, []);
+    }, [highlightedId]);
 
     const onViewableItemsChanged = useCallback(({viewableItems}: ViewableItemsChanged) => {
         if (!viewableItems.length) {
@@ -286,6 +292,7 @@ const PostList = ({
         );
 
         const postProps = {
+            highlight: highlightedId === item.id,
             highlightPinnedOrSaved,
             location,
             nextPost,
@@ -313,6 +320,21 @@ const PostList = ({
             viewPosition: 1, // 0 is at bottom
         });
     }, []);
+
+    useEffect(() => {
+        const t = setTimeout(() => {
+            if (highlightedId && orderedPosts && !scrolledToHighlighted.current) {
+                scrolledToHighlighted.current = true;
+                // eslint-disable-next-line max-nested-callbacks
+                const index = orderedPosts.findIndex((p) => typeof p !== 'string' && p.id === highlightedId);
+                if (index >= 0) {
+                    scrollToIndex(index, true);
+                }
+            }
+        }, 500);
+
+        return () => clearTimeout(t);
+    }, [orderedPosts, highlightedId]);
 
     return (
         <>

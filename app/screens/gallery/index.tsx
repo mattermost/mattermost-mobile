@@ -6,10 +6,9 @@ import {NativeModules, useWindowDimensions, Platform} from 'react-native';
 import {Navigation} from 'react-native-navigation';
 
 import {Screens} from '@constants';
-import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
 import {useGalleryControls} from '@hooks/gallery';
-import {dismissModal} from '@screens/navigation';
+import {dismissOverlay} from '@screens/navigation';
 import {freezeOtherScreens} from '@utils/gallery';
 
 import Footer from './footer';
@@ -26,7 +25,6 @@ type Props = {
 const GalleryScreen = ({galleryIdentifier, hideActions, initialIndex, items}: Props) => {
     const dim = useWindowDimensions();
     const isTablet = useIsTablet();
-    const theme = useTheme();
     const [localIndex, setLocalIndex] = useState(initialIndex);
     const {setControlsHidden, headerStyles, footerStyles} = useGalleryControls();
     const dimensions = useMemo(() => ({width: dim.width, height: dim.height}), [dim.width]);
@@ -55,16 +53,7 @@ const GalleryScreen = ({galleryIdentifier, hideActions, initialIndex, items}: Pr
         }
         freezeOtherScreens(false);
         requestAnimationFrame(async () => {
-            dismissModal({
-                componentId: Screens.GALLERY,
-                layout: {
-                    orientation: isTablet ? undefined : ['portrait'],
-                },
-                statusBar: {
-                    visible: true,
-                    backgroundColor: theme.sidebarBg,
-                },
-            });
+            dismissOverlay(Screens.GALLERY);
         });
     }, [isTablet]);
 

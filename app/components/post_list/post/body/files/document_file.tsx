@@ -5,9 +5,8 @@ import {ClientResponse, ProgressPromise} from '@mattermost/react-native-network-
 import * as FileSystem from 'expo-file-system';
 import React, {forwardRef, useImperativeHandle, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
-import {Platform, StatusBar, StatusBarStyle, StyleSheet, View} from 'react-native';
+import {Platform, StatusBar, StatusBarStyle, StyleSheet, TouchableOpacity, View} from 'react-native';
 import FileViewer from 'react-native-file-viewer';
-import {TouchableOpacity} from 'react-native-gesture-handler';
 import tinyColor from 'tinycolor2';
 
 import ProgressBar from '@components/progress_bar';

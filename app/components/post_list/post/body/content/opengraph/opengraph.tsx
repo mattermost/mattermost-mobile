@@ -1,27 +1,14 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {Q} from '@nozbe/watermelondb';
-import {withDatabase} from '@nozbe/watermelondb/DatabaseProvider';
-import withObservables from '@nozbe/with-observables';
 import React from 'react';
 import {useIntl} from 'react-intl';
-import {Alert, Text, View} from 'react-native';
-import {TouchableOpacity} from 'react-native-gesture-handler';
-import {of as of$} from 'rxjs';
-import {switchMap} from 'rxjs/operators';
+import {Alert, Text, TouchableOpacity, View} from 'react-native';
 
-import {Preferences} from '@constants';
-import {MM_TABLES, SYSTEM_IDENTIFIERS} from '@constants/database';
-import {getPreferenceAsBool} from '@helpers/api/preference';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {tryOpenURL} from '@utils/url';
 
 import OpengraphImage from './opengraph_image';
-
-import type {WithDatabaseArgs} from '@typings/database/database';
-import type PreferenceModel from '@typings/database/models/servers/preference';
-import type SystemModel from '@typings/database/models/servers/system';
 
 type OpengraphProps = {
     isReplyPost: boolean;
@@ -176,29 +163,4 @@ const Opengraph = ({isReplyPost, layoutWidth, location, metadata, postId, showLi
     );
 };
 
-const enhanced = withObservables(
-    ['removeLinkPreview'], ({database, removeLinkPreview}: WithDatabaseArgs & {removeLinkPreview: boolean}) => {
-        if (removeLinkPreview) {
-            return {showLinkPreviews: of$(false)};
-        }
-
-        const showLinkPreviews = database.get(MM_TABLES.SERVER.PREFERENCE).query(
-            Q.where('category', Preferences.CATEGORY_DISPLAY_SETTINGS),
-            Q.where('name', Preferences.LINK_PREVIEW_DISPLAY),
-        ).observe().pipe(
-            switchMap(
-                (preferences: PreferenceModel[]) => database.get(MM_TABLES.SERVER.SYSTEM).findAndObserve(SYSTEM_IDENTIFIERS.CONFIG).pipe(
-                    // eslint-disable-next-line max-nested-callbacks
-                    switchMap((config: SystemModel) => {
-                        const cfg: ClientConfig = config.value;
-                        const previewsEnabled = getPreferenceAsBool(preferences, Preferences.CATEGORY_DISPLAY_SETTINGS, Preferences.LINK_PREVIEW_DISPLAY, true);
-                        return of$(previewsEnabled && cfg.EnableLinkPreviews === 'true');
-                    }),
-                ),
-            ),
-        );
-
-        return {showLinkPreviews};
-    });
-
-export default withDatabase(enhanced(React.memo(Opengraph)));
+export default React.memo(Opengraph);
