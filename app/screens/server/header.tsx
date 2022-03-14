@@ -53,7 +53,7 @@ const ServerHeader = ({additionalServer, theme}: Props) => {
                 defaultMessage='Add a server'
                 id='servers.create_button'
                 style={[styles.connect, isTablet ? styles.connectTablet : undefined]}
-                testID='mobile.components.select_server_view.add_server'
+                testID='server_header.title.add_server'
             />
         );
     } else {
@@ -62,7 +62,7 @@ const ServerHeader = ({additionalServer, theme}: Props) => {
                 defaultMessage='Let’s Connect to a Server'
                 id='mobile.components.select_server_view.msg_connect'
                 style={[styles.connect, isTablet ? styles.connectTablet : undefined]}
-                testID='mobile.components.select_server_view.msg_connect'
+                testID='server_header.title.connect_to_server'
             />
         );
     }
@@ -73,7 +73,7 @@ const ServerHeader = ({additionalServer, theme}: Props) => {
             <FormattedText
                 defaultMessage='Welcome'
                 id='mobile.components.select_server_view.msg_welcome'
-                testID='mobile.components.select_server_view.msg_welcome'
+                testID='server_header.welcome'
                 style={styles.welcome}
             />
             }
@@ -82,7 +82,7 @@ const ServerHeader = ({additionalServer, theme}: Props) => {
                 defaultMessage="A Server is your team's communication hub which is accessed through a unique URL"
                 id='mobile.components.select_server_view.msg_description'
                 style={styles.description}
-                testID='mobile.components.select_server_view.msg_description'
+                testID='server_header.description'
             />
         </View>
     );

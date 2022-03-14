@@ -11,7 +11,7 @@ import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 type Props = {
     action?: string;
     enabled?: boolean;
-    onPress: () => void;
+    onPress?: () => void;
     title: string;
     testID: string;
 }

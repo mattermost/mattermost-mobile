@@ -310,12 +310,14 @@ const LoginForm = ({config, extra, keyboardAwareRef, numberSSOs, serverDisplayNa
             );
         }
 
+        const signinButtonTestId = buttonDisabled ? 'login_form.signin.button.disabled' : 'login_form.signin.button';
+
         return (
             <Button
-                testID='login.signin.button'
                 disabled={buttonDisabled}
                 onPress={onLogin}
                 containerStyle={[styles.loginButton, styleButtonBackground]}
+                testID={signinButtonTestId}
             >
                 {buttonIcon}
                 <FormattedText
@@ -347,7 +349,7 @@ const LoginForm = ({config, extra, keyboardAwareRef, numberSSOs, serverDisplayNa
                 returnKeyType='next'
                 showErrorIcon={false}
                 spellCheck={false}
-                testID='login.username.input'
+                testID='login_form.username.input'
                 theme={theme}
                 value={loginId}
             />
@@ -369,7 +371,7 @@ const LoginForm = ({config, extra, keyboardAwareRef, numberSSOs, serverDisplayNa
                 returnKeyType='join'
                 spellCheck={false}
                 secureTextEntry={true}
-                testID='login.password.input'
+                testID='login_form.password.input'
                 theme={theme}
                 value={password}
             />
@@ -378,12 +380,12 @@ const LoginForm = ({config, extra, keyboardAwareRef, numberSSOs, serverDisplayNa
                 <Button
                     onPress={onPressForgotPassword}
                     containerStyle={[styles.forgotPasswordBtn, error ? styles.forgotPasswordError : undefined]}
+                    testID='login_form.forgot_password.button'
                 >
                     <FormattedText
                         id='login.forgot'
                         defaultMessage='Forgot your password?'
                         style={styles.forgotPasswordTxt}
-                        testID={'login.forgot'}
                     />
                 </Button>
             )}
