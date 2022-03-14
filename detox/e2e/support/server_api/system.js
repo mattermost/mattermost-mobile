@@ -209,13 +209,13 @@ async function getClientLicense(baseUrl) {
     return {license: out.license};
 }
 
-function getDefaultConfig() {
+function getDefaultConfig(siteUrl) {
     const fromEnv = {
         LdapSettings: {
             LdapServer: testConfig.ldapServer,
             LdapPort: testConfig.ldapPort,
         },
-        ServiceSettings: {SiteURL: testConfig.siteUrl},
+        ServiceSettings: {SiteURL: siteUrl},
     };
 
     return merge(defaultServerConfig, fromEnv);

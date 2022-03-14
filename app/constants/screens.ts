@@ -10,9 +10,11 @@ export const BROWSE_CHANNELS = 'BrowseChannels';
 export const CHANNEL = 'Channel';
 export const CHANNEL_ADD_PEOPLE = 'ChannelAddPeople';
 export const CHANNEL_DETAILS = 'ChannelDetails';
+export const CREATE_DIRECT_MESSAGE = 'CreateDirectMessage';
 export const CHANNEL_EDIT = 'ChannelEdit';
 export const CUSTOM_STATUS_CLEAR_AFTER = 'CustomStatusClearAfter';
 export const CUSTOM_STATUS = 'CustomStatus';
+export const EDIT_POST = 'EditPost';
 export const EDIT_PROFILE = 'EditProfile';
 export const EDIT_SERVER = 'EditServer';
 export const FORGOT_PASSWORD = 'ForgotPassword';
@@ -33,6 +35,7 @@ export const SSO = 'SSO';
 export const THREAD = 'Thread';
 export const USER_PROFILE = 'UserProfile';
 export const POST_OPTIONS = 'PostOptions';
+export const SAVED_POSTS = 'SavedPosts';
 
 export default {
     ABOUT,
@@ -45,8 +48,10 @@ export default {
     CHANNEL_ADD_PEOPLE,
     CHANNEL_EDIT,
     CHANNEL_DETAILS,
+    CREATE_DIRECT_MESSAGE,
     CUSTOM_STATUS_CLEAR_AFTER,
     CUSTOM_STATUS,
+    EDIT_POST,
     EDIT_PROFILE,
     EDIT_SERVER,
     FORGOT_PASSWORD,
@@ -67,4 +72,5 @@ export default {
     THREAD,
     USER_PROFILE,
     POST_OPTIONS,
+    SAVED_POSTS,
 };

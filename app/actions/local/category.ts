@@ -84,3 +84,28 @@ export const storeCategories = async (serverUrl: string, categories: CategoryWit
 
     return {models: flattenedModels};
 };
+
+export const toggleCollapseCategory = async (serverUrl: string, categoryId: string) => {
+    const database = DatabaseManager.serverDatabases[serverUrl].database;
+    if (!database) {
+        return {error: `${serverUrl} database not found`};
+    }
+
+    try {
+        const category = await queryCategoryById(database, categoryId);
+
+        if (category) {
+            await database.write(async () => {
+                await category.update(() => {
+                    category.collapsed = !category.collapsed;
+                });
+            });
+        }
+
+        return {category};
+    } catch (error) {
+        // eslint-disable-next-line no-console
+        console.log('FAILED TO COLLAPSE CATEGORY', categoryId, error);
+        return {error};
+    }
+};

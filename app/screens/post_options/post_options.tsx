@@ -2,11 +2,13 @@
 // See LICENSE.txt for license information.
 
 import {useManagedConfig} from '@mattermost/react-native-emm';
-import React from 'react';
+import React, {useEffect} from 'react';
+import {Navigation} from 'react-native-navigation';
 
 import {ITEM_HEIGHT} from '@components/menu_item';
 import {Screens} from '@constants';
 import BottomSheet from '@screens/bottom_sheet';
+import {dismissModal} from '@screens/navigation';
 import {isSystemMessage} from '@utils/post';
 
 import CopyLinkOption from './options/copy_permalink_option';
@@ -34,6 +36,7 @@ type PostOptionsProps = {
     location: typeof Screens[keyof typeof Screens];
     post: PostModel;
     thread: Partial<PostModel>;
+    componentId: string;
 };
 
 const PostOptions = ({
@@ -44,12 +47,31 @@ const PostOptions = ({
     canPin,
     canReply,
     combinedPost,
+    componentId,
     isSaved,
     location,
     post,
     thread,
 }: PostOptionsProps) => {
     const managedConfig = useManagedConfig();
+
+    useEffect(() => {
+        const unsubscribe = Navigation.events().registerComponentListener({
+            navigationButtonPressed: ({buttonId}: { buttonId: string }) => {
+                switch (buttonId) {
+                    case 'close-post-options': {
+                        dismissModal({componentId});
+                        break;
+                    }
+                }
+            },
+        }, componentId);
+
+        return () => {
+            unsubscribe.remove();
+        };
+    }, []);
+
     const isSystemPost = isSystemMessage(post);
 
     const canCopyPermalink = !isSystemPost && managedConfig?.copyAndPasteProtection !== 'true';
@@ -86,14 +108,19 @@ const PostOptions = ({
                         postId={post.id}
                     />
                 }
-                {canCopyText && <CopyTextOption postMessage={post.message}/>}
+                {Boolean(canCopyText && post.message) && <CopyTextOption postMessage={post.message}/>}
                 {canPin &&
                     <PinChannelOption
                         isPostPinned={post.isPinned}
                         postId={post.id}
                     />
                 }
-                {canEdit && <EditOption post={post}/>}
+                {canEdit &&
+                    <EditOption
+                        post={post}
+                        canDelete={canDelete}
+                    />
+                }
                 {canDelete &&
                 <DeletePostOption
                     combinedPost={combinedPost}

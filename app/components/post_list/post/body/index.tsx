@@ -1,11 +1,12 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback} from 'react';
-import {StyleProp, View, ViewStyle} from 'react-native';
+import React, {useCallback, useState} from 'react';
+import {LayoutChangeEvent, StyleProp, View, ViewStyle} from 'react-native';
 
 import FormattedText from '@components/formatted_text';
 import JumboEmoji from '@components/jumbo_emoji';
+import {Screens} from '@constants';
 import {THREAD} from '@constants/screens';
 import {isEdited as postEdited} from '@utils/post';
 import {makeStyleSheetFromTheme} from '@utils/theme';
@@ -78,6 +79,7 @@ const Body = ({
 }: BodyProps) => {
     const style = getStyleSheet(theme);
     const isEdited = postEdited(post);
+    const [layoutWidth, setLayoutWidth] = useState(0);
     const hasBeenDeleted = Boolean(post.deleteAt);
     let body;
     let message;
@@ -106,6 +108,12 @@ const Body = ({
 
         return barStyle;
     }, []);
+
+    const onLayout = useCallback((e: LayoutChangeEvent) => {
+        if (location === Screens.SAVED_POSTS) {
+            setLayoutWidth(e.nativeEvent.layout.width);
+        }
+    }, [location]);
 
     if (hasBeenDeleted) {
         body = (
@@ -137,6 +145,7 @@ const Body = ({
                 isEdited={isEdited}
                 isPendingOrFailed={isPendingOrFailed}
                 isReplyPost={isReplyPost}
+                layoutWidth={layoutWidth}
                 location={location}
                 post={post}
                 theme={theme}
@@ -151,6 +160,7 @@ const Body = ({
                 {hasContent &&
                 <Content
                     isReplyPost={isReplyPost}
+                    layoutWidth={layoutWidth}
                     location={location}
                     post={post}
                     theme={theme}
@@ -160,6 +170,7 @@ const Body = ({
                 <Files
                     failed={post.props?.failed}
                     files={files}
+                    layoutWidth={layoutWidth}
                     location={location}
                     post={post}
                     isReplyPost={isReplyPost}
@@ -177,7 +188,10 @@ const Body = ({
     }
 
     return (
-        <View style={style.messageContainerWithReplyBar}>
+        <View
+            style={style.messageContainerWithReplyBar}
+            onLayout={onLayout}
+        >
             <View style={replyBarStyle()}/>
             {body}
             {post.props?.failed &&

@@ -18,7 +18,7 @@
   "channel.hasGuests": "Acest mesaj de grup are oaspeți",
   "channel.isGuest": "Această persoană este invitat",
   "channel_header.addMembers": "Adăugați membri",
-  "channel_header.directchannel.you": "{displayname} (tine) ",
+  "channel_header.directchannel.you": "{displayName} (tine) ",
   "channel_header.manageMembers": "Gestioneaza membri",
   "channel_header.notificationPreference": "Notificări pe mobil",
   "channel_header.notificationPreference.all": "Toate",

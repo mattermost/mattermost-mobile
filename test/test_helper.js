@@ -28,6 +28,7 @@ class TestHelper {
         this.basicChannel = null;
         this.basicChannelMember = null;
         this.basicMyChannel = null;
+        this.basicMyChannelSettings = null;
         this.basicPost = null;
         this.basicRoles = null;
         this.basicScheme = null;
@@ -74,6 +75,10 @@ class TestHelper {
             channels: [this.basicChannel],
             myChannels: [this.basicMyChannel],
         });
+        await operator.handleMyChannelSettings({
+            prepareRecordsOnly: false,
+            settings: [this.basicMyChannelSettings],
+        });
 
         const systems = await prepareCommonSystemValues(operator, {
             config: {},
@@ -111,6 +116,7 @@ class TestHelper {
             patch: jest.fn(),
             post: jest.fn(),
             put: jest.fn(),
+            upload: jest.fn(),
         };
 
         return new Client(mockApiClient, mockApiClient.baseUrl);
@@ -219,6 +225,20 @@ class TestHelper {
             is_unread: false,
             roles: '',
             viewed_at: 0,
+        };
+    };
+
+    fakeMyChannelSettings = (channelId) => {
+        return {
+            id: channelId,
+            channel_id: channelId,
+            notify_props: JSON.stringify({
+                desktop: 'default',
+                email: 'default',
+                mark_unread: 'all',
+                push: 'default',
+                ignore_channel_mentions: 'default',
+            }),
         };
     };
 
@@ -401,6 +421,7 @@ class TestHelper {
         this.basicCategoryChannel = this.fakeCategoryChannelWithId(this.basicTeam.id, this.basicCategory.id, this.basicChannel.id);
         this.basicChannelMember = this.fakeChannelMember(this.basicUser.id, this.basicChannel.id);
         this.basicMyChannel = this.fakeMyChannel(this.basicChannel.id);
+        this.basicMyChannelSettings = this.fakeMyChannelSettings(this.basicChannel.id);
         this.basicPost = {...this.fakePostWithId(this.basicChannel.id), create_at: 1507841118796};
         this.basicRoles = {
             system_admin: {

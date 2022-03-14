@@ -106,6 +106,7 @@ type FloatingTextInputProps = TextInputProps & {
     onPress?: (e: GestureResponderEvent) => void;
     showErrorIcon?: boolean;
     theme: Theme;
+    testID?: string;
     value: string;
 }
 
@@ -124,6 +125,7 @@ const FloatingTextInput = forwardRef<FloatingTextInputRef, FloatingTextInputProp
     value = '',
     textInputStyle,
     labelTextStyle,
+    testID,
     ...props
 }: FloatingTextInputProps, ref) => {
     const [focusedLabel, setIsFocusLabel] = useState<boolean | undefined>();
@@ -255,6 +257,7 @@ const FloatingTextInput = forwardRef<FloatingTextInputRef, FloatingTextInputProp
                     onBlur={onTextInputBlur}
                     ref={inputRef}
                     underlineColorAndroid='transparent'
+                    testID={testID}
                 />
                 {Boolean(error) && (
                     <View style={styles.errorContainer}>
@@ -264,7 +267,12 @@ const FloatingTextInput = forwardRef<FloatingTextInputRef, FloatingTextInputProp
                             style={styles.errorIcon}
                         />
                         }
-                        <Text style={styles.errorText}>{error}</Text>
+                        <Text
+                            style={styles.errorText}
+                            testID={`${testID}.error`}
+                        >
+                            {error}
+                        </Text>
                     </View>
                 )}
             </View>

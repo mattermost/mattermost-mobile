@@ -34,6 +34,8 @@ describe('components/channel_list/categories/body/channel/item', () => {
                 isActive={false}
                 isOwnDirectMessage={false}
                 myChannel={myChannel}
+                isMuted={false}
+                collapsed={false}
             />,
         );
 

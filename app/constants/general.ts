@@ -33,4 +33,9 @@ export default {
     DISABLED: 'disabled',
     DEFAULT_ON: 'default_on',
     DEFAULT_OFF: 'default_off',
+    PROFILE_CHUNK_SIZE: 100,
+    SEARCH_TIMEOUT_MILLISECONDS: 100,
+    AUTOCOMPLETE_SPLIT_CHARACTERS: ['.', '-', '_'],
+    CHANNEL_USER_ROLE: 'channel_user',
+    RESTRICT_DIRECT_MESSAGE_ANY: 'any',
 };
