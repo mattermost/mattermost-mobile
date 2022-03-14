@@ -168,17 +168,23 @@ class DraftUploadManager {
 
     private onAppStateChange = async (appState: AppStateStatus) => {
         if (appState !== 'active' && this.previousAppState === 'active') {
-            this.storeProgress();
+            await this.storeProgress();
         }
 
         this.previousAppState = appState;
     };
 
-    private storeProgress = () => {
+    private storeProgress = async () => {
         for (const h of Object.values(this.handlers)) {
-            updateDraftFile(h.serverUrl, h.channelId, h.rootId, h.fileInfo);
+            // eslint-disable-next-line no-await-in-loop
+            await updateDraftFile(h.serverUrl, h.channelId, h.rootId, h.fileInfo);
+            h.lastTimeStored = Date.now();
         }
     };
 }
 
 export default new DraftUploadManager();
+
+export const exportedForTesting = {
+    DraftUploadManager,
+};

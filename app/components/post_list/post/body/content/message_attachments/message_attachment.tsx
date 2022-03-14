@@ -21,6 +21,7 @@ import AttachmentTitle from './attachment_title';
 
 type Props = {
     attachment: MessageAttachment;
+    layoutWidth?: number;
     location: string;
     metadata?: PostMetadata;
     postId: string;
@@ -51,7 +52,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     };
 });
 
-export default function MessageAttachment({attachment, location, metadata, postId, theme}: Props) {
+export default function MessageAttachment({attachment, layoutWidth, location, metadata, postId, theme}: Props) {
     const style = getStyleSheet(theme);
     const blockStyles = getMarkdownBlockStyles(theme);
     const textStyles = getMarkdownTextStyles(theme);
@@ -133,6 +134,7 @@ export default function MessageAttachment({attachment, location, metadata, postI
                     <AttachmentImage
                         imageUrl={attachment.image_url}
                         imageMetadata={metadata!.images![attachment.image_url]}
+                        layoutWidth={layoutWidth}
                         location={location}
                         postId={postId}
                         theme={theme}

@@ -20,6 +20,7 @@ import {extractFilenameFromUrl, isValidUrl} from '@utils/url';
 
 type OpengraphImageProps = {
     isReplyPost: boolean;
+    layoutWidth?: number;
     location: string;
     metadata: PostMetadata;
     openGraphImages: never[];
@@ -54,7 +55,7 @@ const getViewPostWidth = (isReplyPost: boolean, deviceHeight: number, deviceWidt
     return viewPortWidth - tabletOffset;
 };
 
-const OpengraphImage = ({isReplyPost, location, metadata, openGraphImages, postId, theme}: OpengraphImageProps) => {
+const OpengraphImage = ({isReplyPost, layoutWidth, location, metadata, openGraphImages, postId, theme}: OpengraphImageProps) => {
     const fileId = useRef(generateId('uid')).current;
     const dimensions = useWindowDimensions();
     const style = getStyleSheet(theme);
@@ -62,7 +63,7 @@ const OpengraphImage = ({isReplyPost, location, metadata, openGraphImages, postI
 
     const bestDimensions = useMemo(() => ({
         height: MAX_IMAGE_HEIGHT,
-        width: getViewPostWidth(isReplyPost, dimensions.height, dimensions.width),
+        width: layoutWidth || getViewPostWidth(isReplyPost, dimensions.height, dimensions.width),
     }), [isReplyPost, dimensions]);
     const bestImage = getNearestPoint(bestDimensions, openGraphImages, 'width', 'height') as BestImage;
     const imageUrl = (bestImage.secure_url || bestImage.url)!;
@@ -85,7 +86,7 @@ const OpengraphImage = ({isReplyPost, location, metadata, openGraphImages, postI
 
     let imageDimensions = bestDimensions;
     if (ogImage?.width && ogImage?.height) {
-        imageDimensions = calculateDimensions(ogImage.height, ogImage.width, getViewPostWidth(isReplyPost, dimensions.height, dimensions.width));
+        imageDimensions = calculateDimensions(ogImage.height, ogImage.width, (layoutWidth || getViewPostWidth(isReplyPost, dimensions.height, dimensions.width)) - 20);
     }
 
     const onPress = () => {

@@ -130,7 +130,7 @@ const Post = ({
         if (post) {
             if (location === Screens.THREAD) {
                 Keyboard.dismiss();
-            } else if (location === Screens.SEARCH) {
+            } else if ([Screens.SAVED_POSTS, Screens.MENTIONS, Screens.SEARCH].includes(location)) {
                 showPermalink(serverUrl, '', post.id, intl);
                 return;
             }

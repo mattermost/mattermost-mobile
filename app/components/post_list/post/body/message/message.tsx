@@ -22,6 +22,7 @@ type MessageProps = {
     isEdited: boolean;
     isPendingOrFailed: boolean;
     isReplyPost: boolean;
+    layoutWidth?: number;
     location: string;
     post: PostModel;
     theme: Theme;
@@ -49,7 +50,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     };
 });
 
-const Message = ({currentUser, highlight, isEdited, isPendingOrFailed, isReplyPost, location, post, theme}: MessageProps) => {
+const Message = ({currentUser, highlight, isEdited, isPendingOrFailed, isReplyPost, layoutWidth, location, post, theme}: MessageProps) => {
     const [open, setOpen] = useState(false);
     const [height, setHeight] = useState<number|undefined>();
     const dimensions = useWindowDimensions();
@@ -87,6 +88,7 @@ const Message = ({currentUser, highlight, isEdited, isPendingOrFailed, isReplyPo
                             isEdited={isEdited}
                             isReplyPost={isReplyPost}
                             isSearchResult={location === SEARCH}
+                            layoutWidth={layoutWidth}
                             location={location}
                             postId={post.id}
                             textStyles={textStyles}

@@ -8,8 +8,7 @@ import {useTheme} from '@context/theme';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
-// @ts-expect-error svg extension
-import Mention from './mention_icon.svg';
+import Mention from './mention_icon';
 
 const getStyleSheet = makeStyleSheetFromTheme((theme) => ({
     container: {
