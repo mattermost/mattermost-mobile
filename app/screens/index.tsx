@@ -62,6 +62,11 @@ Navigation.setLazyComponentRegistrator((screenName) => {
                 require('@screens/bottom_sheet').default,
             );
             break;
+        case Screens.BROWSE_CHANNELS:
+            screen = withServerDatabase(
+                require('@screens/browse_channels').default,
+            );
+            break;
         case Screens.CHANNEL:
             screen = withServerDatabase(require('@screens/channel').default);
             break;
@@ -114,10 +119,8 @@ Navigation.setLazyComponentRegistrator((screenName) => {
         case Screens.MFA:
             screen = withIntl(require('@screens/mfa').default);
             break;
-        case Screens.BROWSE_CHANNELS:
-            screen = withServerDatabase(
-                require('@screens/browse_channels').default,
-            );
+        case Screens.PERMALINK:
+            screen = withServerDatabase(require('@screens/permalink').default);
             break;
         case Screens.POST_OPTIONS:
             screen = withServerDatabase(

@@ -554,13 +554,17 @@ export async function dismissModal(options?: Options & { componentId: string}) {
     }
 }
 
-export async function dismissAllModals(options: Options = {}) {
+export async function dismissAllModals() {
     if (!EphemeralStore.hasModalsOpened()) {
         return;
     }
 
     try {
-        await Navigation.dismissAllModals(options);
+        const modals = EphemeralStore.navigationModalStack;
+        for await (const modal of modals) {
+            await Navigation.dismissModal(modal, {animations: {dismissModal: {enabled: false}}});
+        }
+
         EphemeralStore.clearNavigationModals();
     } catch (error) {
         // RNN returns a promise rejection if there are no modals to

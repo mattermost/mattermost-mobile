@@ -10,9 +10,11 @@ import {markChannelAsUnread, updateLastPostAt} from '@actions/local/channel';
 import {processPostsFetched, removePost} from '@actions/local/post';
 import {addRecentReaction} from '@actions/local/reactions';
 import {ActionType, Events, General, Post, ServerErrors} from '@constants';
-import {SYSTEM_IDENTIFIERS} from '@constants/database';
+import {MM_TABLES, SYSTEM_IDENTIFIERS} from '@constants/database';
 import DatabaseManager from '@database/manager';
+import {filterPostsInOrderedArray} from '@helpers/api/post';
 import {getNeededAtMentionedUsernames} from '@helpers/api/user';
+import {extractRecordsForTable} from '@helpers/database';
 import NetworkManager from '@init/network_manager';
 import {prepareMissingChannelsForAllTeams, queryAllMyChannelIds} from '@queries/servers/channel';
 import {queryAllCustomEmojis} from '@queries/servers/custom_emoji';
@@ -32,6 +34,13 @@ type PostsRequest = {
     error?: unknown;
     order?: string[];
     posts?: Post[];
+    previousPostId?: string;
+}
+
+type PostsObjectsRequest = {
+    error?: unknown;
+    order?: string[];
+    posts?: IDMappedObjects<Post>;
     previousPostId?: string;
 }
 
@@ -429,6 +438,73 @@ export const fetchPostThread = async (serverUrl: string, postId: string, fetchOn
         return {error};
     }
 };
+
+export async function fetchPostsAround(serverUrl: string, channelId: string, postId: string, perPage = General.POST_AROUND_CHUNK_SIZE) {
+    const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
+    if (!operator) {
+        return {error: `${serverUrl} database not found`};
+    }
+
+    let client: Client;
+    try {
+        client = NetworkManager.getClient(serverUrl);
+    } catch (error) {
+        return {error};
+    }
+
+    try {
+        const [after, post, before] = await Promise.all<PostsObjectsRequest>([
+            client.getPostsAfter(channelId, postId, 0, perPage),
+            client.getPostThread(postId),
+            client.getPostsBefore(channelId, postId, 0, perPage),
+        ]);
+
+        const preData: PostResponse = {
+            posts: {
+                ...filterPostsInOrderedArray(after.posts, after.order),
+                postId: post.posts![postId],
+                ...filterPostsInOrderedArray(before.posts, before.order),
+            },
+            order: [],
+        };
+
+        const data = await processPostsFetched(serverUrl, ActionType.POSTS.RECEIVED_AROUND, preData, true);
+
+        let posts: Model[] = [];
+        const models: Model[] = [];
+        if (data.posts?.length) {
+            try {
+                const {authors} = await fetchPostAuthors(serverUrl, data.posts, true);
+                if (authors?.length) {
+                    const userModels = await operator.handleUsers({
+                        users: authors,
+                        prepareRecordsOnly: true,
+                    });
+                    models.push(...userModels);
+                }
+            } catch (error) {
+                // eslint-disable-next-line no-console
+                console.error('FETCH AUTHORS ERROR', error);
+            }
+
+            posts = await operator.handlePosts({
+                actionType: ActionType.POSTS.RECEIVED_AROUND,
+                ...data,
+                prepareRecordsOnly: true,
+            });
+
+            models.push(...posts);
+            await operator.batchRecords(models);
+        }
+
+        return {posts: extractRecordsForTable<PostModel>(posts, MM_TABLES.SERVER.POST)};
+    } catch (error) {
+        // eslint-disable-next-line no-console
+        console.error('FETCH POSTS AROUND ERROR', error);
+        forceLogoutIfNecessary(serverUrl, error as ClientErrorProps);
+        return {error};
+    }
+}
 
 export const postActionWithCookie = async (serverUrl: string, postId: string, actionId: string, actionCookie: string, selectedOption = '') => {
     const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;

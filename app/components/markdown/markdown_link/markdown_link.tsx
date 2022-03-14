@@ -8,8 +8,8 @@ import {useIntl} from 'react-intl';
 import {Alert, StyleSheet, Text, View} from 'react-native';
 import urlParse from 'url-parse';
 
-import {showPermalink} from '@actions/local/permalink';
 import {switchToChannelByName} from '@actions/remote/channel';
+import {showPermalink} from '@actions/remote/permalink';
 import SlideUpPanelItem, {ITEM_HEIGHT} from '@components/slide_up_panel_item';
 import DeepLinkTypes from '@constants/deep_linking';
 import {useServerUrl} from '@context/server';
