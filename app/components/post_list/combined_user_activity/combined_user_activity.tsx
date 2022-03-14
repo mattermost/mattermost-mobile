@@ -3,8 +3,7 @@
 
 import React, {useCallback, useEffect} from 'react';
 import {useIntl} from 'react-intl';
-import {Keyboard, StyleProp, View, ViewStyle} from 'react-native';
-import {TouchableOpacity} from 'react-native-gesture-handler';
+import {Keyboard, StyleProp, TouchableHighlight, View, ViewStyle} from 'react-native';
 
 import {fetchMissingProfilesByIds, fetchMissingProfilesByUsernames} from '@actions/remote/user';
 import Markdown from '@components/markdown';
@@ -209,10 +208,11 @@ const CombinedUserActivity = ({
             style={style}
             testID={testID}
         >
-            <TouchableOpacity
+            <TouchableHighlight
                 testID={itemTestID}
                 onPress={emptyFunction}
                 onLongPress={onLongPress}
+                underlayColor={changeOpacity(theme.centerChannelColor, 0.1)}
             >
                 <View style={styles.container}>
                     <SystemAvatar theme={theme}/>
@@ -226,7 +226,7 @@ const CombinedUserActivity = ({
                         </View>
                     </View>
                 </View>
-            </TouchableOpacity>
+            </TouchableHighlight>
         </View>
     );
 };

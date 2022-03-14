@@ -56,6 +56,34 @@ type MarkdownProps = {
     value: string | number;
 }
 
+const getStyleSheet = makeStyleSheetFromTheme((theme) => {
+    // Android has trouble giving text transparency depending on how it's nested,
+    // so we calculate the resulting colour manually
+    const editedOpacity = Platform.select({
+        ios: 0.3,
+        android: 1.0,
+    });
+    const editedColor = Platform.select({
+        ios: theme.centerChannelColor,
+        android: blendColors(theme.centerChannelBg, theme.centerChannelColor, 0.3),
+    });
+
+    return {
+        block: {
+            alignItems: 'flex-start',
+            flexDirection: 'row',
+            flexWrap: 'wrap',
+        },
+        editedIndicatorText: {
+            color: editedColor,
+            opacity: editedOpacity,
+        },
+        atMentionOpacity: {
+            opacity: 1,
+        },
+    };
+});
+
 class Markdown extends PureComponent<MarkdownProps> {
     static defaultProps = {
         textStyles: {},
@@ -294,7 +322,9 @@ class Markdown extends PureComponent<MarkdownProps> {
 
         return (
             <View style={blockStyle}>
-                {children}
+                <Text>
+                    {children}
+                </Text>
             </View>
         );
     };
@@ -475,33 +505,5 @@ class Markdown extends PureComponent<MarkdownProps> {
         return this.renderer.render(ast);
     }
 }
-
-const getStyleSheet = makeStyleSheetFromTheme((theme) => {
-    // Android has trouble giving text transparency depending on how it's nested,
-    // so we calculate the resulting colour manually
-    const editedOpacity = Platform.select({
-        ios: 0.3,
-        android: 1.0,
-    });
-    const editedColor = Platform.select({
-        ios: theme.centerChannelColor,
-        android: blendColors(theme.centerChannelBg, theme.centerChannelColor, 0.3),
-    });
-
-    return {
-        block: {
-            alignItems: 'flex-start',
-            flexDirection: 'row',
-            flexWrap: 'wrap',
-        },
-        editedIndicatorText: {
-            color: editedColor,
-            opacity: editedOpacity,
-        },
-        atMentionOpacity: {
-            opacity: 1,
-        },
-    };
-});
 
 export default Markdown;

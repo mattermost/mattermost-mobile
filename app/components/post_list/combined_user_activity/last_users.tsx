@@ -3,8 +3,7 @@
 
 import React, {useState} from 'react';
 import {useIntl} from 'react-intl';
-import {Platform, Text} from 'react-native';
-import {TouchableOpacity} from 'react-native-gesture-handler';
+import {Text} from 'react-native';
 
 import FormattedMarkdownText from '@components/formatted_markdown_text';
 import FormattedText from '@components/formatted_text';
@@ -32,9 +31,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             color: theme.linkColor,
             fontSize: 16,
             lineHeight: 20,
-        },
-        touchableStyle: {
-            top: Platform.select({ios: 3, default: 5}),
         },
     };
 });
@@ -83,18 +79,16 @@ const LastUsers = ({actor, postType, theme, usernames}: LastUsersProps) => {
                 textStyles={textStyles}
             />
             <Text>{' '}</Text>
-            <TouchableOpacity
+            <Text
                 onPress={onPress}
-                style={style.touchableStyle}
+                style={style.linkText}
             >
-                <Text style={style.linkText}>
-                    <FormattedText
-                        id={'last_users_message.others'}
-                        defaultMessage={'{numOthers} others '}
-                        values={{numOthers}}
-                    />
-                </Text>
-            </TouchableOpacity>
+                <FormattedText
+                    id={'last_users_message.others'}
+                    defaultMessage={'{numOthers} others '}
+                    values={{numOthers}}
+                />
+            </Text>
             <FormattedMarkdownText
                 id={systemMessages[postType].id}
                 defaultMessage={systemMessages[postType].defaultMessage}

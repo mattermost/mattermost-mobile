@@ -3,8 +3,7 @@
 
 import React, {ReactNode, useMemo, useRef} from 'react';
 import {useIntl} from 'react-intl';
-import {Keyboard, Platform, StyleProp, View, ViewStyle} from 'react-native';
-import {TouchableHighlight} from 'react-native-gesture-handler';
+import {Keyboard, Platform, StyleProp, View, ViewStyle, TouchableHighlight} from 'react-native';
 
 import {showPermalink} from '@actions/local/permalink';
 import {removePost} from '@actions/local/post';

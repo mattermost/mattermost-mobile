@@ -1,25 +1,16 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {withDatabase} from '@nozbe/watermelondb/DatabaseProvider';
-import withObservables from '@nozbe/with-observables';
 import React, {useCallback} from 'react';
 import {useIntl} from 'react-intl';
-import {Alert, Image, Platform, StatusBar, StyleSheet, View} from 'react-native';
-import {TouchableOpacity} from 'react-native-gesture-handler';
+import {Alert, Image, Platform, StatusBar, StyleSheet, TouchableOpacity, View} from 'react-native';
 import {YouTubeStandaloneAndroid, YouTubeStandaloneIOS} from 'react-native-youtube';
-import {of as of$} from 'rxjs';
-import {switchMap} from 'rxjs/operators';
 
 import ProgressiveImage from '@components/progressive_image';
-import {MM_TABLES, SYSTEM_IDENTIFIERS} from '@constants/database';
 import {useIsTablet} from '@hooks/device';
 import {emptyFunction} from '@utils/general';
 import {calculateDimensions, getViewPortWidth} from '@utils/images';
 import {getYouTubeVideoId, tryOpenURL} from '@utils/url';
-
-import type {WithDatabaseArgs} from '@typings/database/database';
-import type SystemModel from '@typings/database/models/servers/system';
 
 type YouTubeProps = {
     googleDeveloperKey?: string;
@@ -178,12 +169,4 @@ const YouTube = ({googleDeveloperKey, isReplyPost, layoutWidth, metadata}: YouTu
     );
 };
 
-const withGoogleKey = withObservables([], ({database}: WithDatabaseArgs) => ({
-    googleDeveloperKey: database.get<SystemModel>(MM_TABLES.SERVER.SYSTEM).findAndObserve(SYSTEM_IDENTIFIERS.CONFIG).pipe(
-        switchMap(({value}: {value: ClientConfig}) => {
-            return of$(value.GoogleDeveloperKey);
-        }),
-    ),
-}));
-
-export default withDatabase(withGoogleKey(React.memo(YouTube)));
+export default React.memo(YouTube);
