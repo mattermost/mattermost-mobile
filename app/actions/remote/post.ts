@@ -10,9 +10,11 @@ import {markChannelAsUnread, updateLastPostAt} from '@actions/local/channel';
 import {processPostsFetched, removePost} from '@actions/local/post';
 import {addRecentReaction} from '@actions/local/reactions';
 import {ActionType, Events, General, Post, ServerErrors} from '@constants';
-import {SYSTEM_IDENTIFIERS} from '@constants/database';
+import {MM_TABLES, SYSTEM_IDENTIFIERS} from '@constants/database';
 import DatabaseManager from '@database/manager';
+import {filterPostsInOrderedArray} from '@helpers/api/post';
 import {getNeededAtMentionedUsernames} from '@helpers/api/user';
+import {extractRecordsForTable} from '@helpers/database';
 import NetworkManager from '@init/network_manager';
 import {prepareMissingChannelsForAllTeams, queryAllMyChannelIds} from '@queries/servers/channel';
 import {queryAllCustomEmojis} from '@queries/servers/custom_emoji';
@@ -459,22 +461,18 @@ export async function fetchPostsAround(serverUrl: string, channelId: string, pos
 
         const preData: PostResponse = {
             posts: {
-                ...(after.posts || {}),
-                ...post.posts,
-                ...(before.posts || {}),
+                ...filterPostsInOrderedArray(after.posts, after.order),
+                postId: post.posts![postId],
+                ...filterPostsInOrderedArray(before.posts, before.order),
             },
-            order: [
-                ...(after.order || []),
-                postId,
-                ...(before.order || []),
-            ],
+            order: [],
         };
 
         const data = await processPostsFetched(serverUrl, ActionType.POSTS.RECEIVED_AROUND, preData, true);
 
-        let posts: PostModel[] = [];
+        let posts: Model[] = [];
         const models: Model[] = [];
-        if (data.posts?.length && data.order?.length) {
+        if (data.posts?.length) {
             try {
                 const {authors} = await fetchPostAuthors(serverUrl, data.posts, true);
                 if (authors?.length) {
@@ -493,13 +491,13 @@ export async function fetchPostsAround(serverUrl: string, channelId: string, pos
                 actionType: ActionType.POSTS.RECEIVED_AROUND,
                 ...data,
                 prepareRecordsOnly: true,
-            }) as PostModel[];
+            });
 
             models.push(...posts);
             await operator.batchRecords(models);
         }
 
-        return {posts};
+        return {posts: extractRecordsForTable<PostModel>(posts, MM_TABLES.SERVER.POST)};
     } catch (error) {
         // eslint-disable-next-line no-console
         console.error('FETCH POSTS AROUND ERROR', error);
