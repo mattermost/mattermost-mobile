@@ -137,17 +137,18 @@ const AtMentionItem = ({
                             {name}
                         </Text>
                     )}
+                    {isCurrentUser && (
+                        <FormattedText
+                            id='suggestion.mention.you'
+                            defaultMessage=' (you)'
+                            style={style.rowUsername}
+                        />
+                    )}
                     <Text
                         style={style.rowUsername}
                         numberOfLines={1}
                         testID='at_mention_item.username'
                     >
-                        {isCurrentUser && (
-                            <FormattedText
-                                id='suggestion.mention.you'
-                                defaultMessage='(you)'
-                            />
-                        )}
                         {` @${user.username}`}
                     </Text>
                 </View>

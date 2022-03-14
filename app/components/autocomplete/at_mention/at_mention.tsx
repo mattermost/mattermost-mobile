@@ -17,11 +17,11 @@ import {useTheme} from '@context/theme';
 import {t} from '@i18n';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 
-const SECTION_KEY_TEAM_MEMBERS = 'teamMembers'
-const SECTION_KEY_IN_CHANNEL = 'inChannel'
-const SECTION_KEY_OUT_OF_CHANNEL = 'outChannel'
-const SECTION_KEY_SPECIAL = 'special'
-const SECTION_KEY_GROUPS = 'groups'
+const SECTION_KEY_TEAM_MEMBERS = 'teamMembers';
+const SECTION_KEY_IN_CHANNEL = 'inChannel';
+const SECTION_KEY_OUT_OF_CHANNEL = 'outChannel';
+const SECTION_KEY_SPECIAL = 'special';
+const SECTION_KEY_GROUPS = 'groups';
 
 type SpecialMention = {
     completeHandle: string;
@@ -83,52 +83,52 @@ const keyExtractor = (item: UserProfile) => {
 const makeSections = (teamMembers: UserProfile[], usersInChannel: UserProfile[], usersOutOfChannel: UserProfile[], groups: Group[], showSpecialMentions: boolean, isSearch = false) => {
     const newSections: UserMentionSections = [];
 
-        if (isSearch) {
+    if (isSearch) {
+        newSections.push({
+            id: t('mobile.suggestion.members'),
+            defaultMessage: 'Members',
+            data: teamMembers,
+            key: SECTION_KEY_TEAM_MEMBERS,
+        });
+    } else {
+        if (usersInChannel.length) {
             newSections.push({
-                id: t('mobile.suggestion.members'),
-                defaultMessage: 'Members',
-                data: teamMembers,
-                key: SECTION_KEY_TEAM_MEMBERS,
+                id: t('suggestion.mention.members'),
+                defaultMessage: 'Channel Members',
+                data: usersInChannel,
+                key: SECTION_KEY_IN_CHANNEL,
             });
-        } else {
-            if (usersInChannel.length) {
-                newSections.push({
-                    id: t('suggestion.mention.members'),
-                    defaultMessage: 'Channel Members',
-                    data: usersInChannel,
-                    key: SECTION_KEY_IN_CHANNEL,
-                });
-            }
-
-            if (groups.length) {
-                newSections.push({
-                    id: t('suggestion.mention.groups'),
-                    defaultMessage: 'Group Mentions',
-                    data: groups,
-                    key: SECTION_KEY_GROUPS,
-                });
-            }
-
-            if (showSpecialMentions) {
-                newSections.push({
-                    id: t('suggestion.mention.special'),
-                    defaultMessage: 'Special Mentions',
-                    data: getSpecialMentions(),
-                    key: SECTION_KEY_SPECIAL,
-                });
-            }
-
-            if (usersOutOfChannel.length) {
-                newSections.push({
-                    id: t('suggestion.mention.nonmembers'),
-                    defaultMessage: 'Not in Channel',
-                    data: usersOutOfChannel,
-                    key: SECTION_KEY_OUT_OF_CHANNEL,
-                });
-            }
         }
-        return newSections
-}
+
+        if (groups.length) {
+            newSections.push({
+                id: t('suggestion.mention.groups'),
+                defaultMessage: 'Group Mentions',
+                data: groups,
+                key: SECTION_KEY_GROUPS,
+            });
+        }
+
+        if (showSpecialMentions) {
+            newSections.push({
+                id: t('suggestion.mention.special'),
+                defaultMessage: 'Special Mentions',
+                data: getSpecialMentions(),
+                key: SECTION_KEY_SPECIAL,
+            });
+        }
+
+        if (usersOutOfChannel.length) {
+            newSections.push({
+                id: t('suggestion.mention.nonmembers'),
+                defaultMessage: 'Not in Channel',
+                data: usersOutOfChannel,
+                key: SECTION_KEY_OUT_OF_CHANNEL,
+            });
+        }
+    }
+    return newSections;
+};
 
 type Props = {
     channelId?: string;
@@ -216,7 +216,6 @@ const AtMention = ({
         if (value.length > cursorPosition) {
             completedDraft += value.substring(cursorPosition);
         }
-        
 
         updateValue(completedDraft);
         setLocalCursorPosition(newCursorPosition);
@@ -266,7 +265,7 @@ const AtMention = ({
             default:
                 return renderAtMentions(item as UserProfile);
         }
-    }, [renderSpecialMentions, renderGroupMentions, renderAtMentions])
+    }, [renderSpecialMentions, renderGroupMentions, renderAtMentions]);
 
     const renderSectionHeader = useCallback(({section}) => {
         return (
@@ -313,7 +312,7 @@ const AtMention = ({
 
     useEffect(() => {
         const showSpecialMentions = useChannelMentions && matchTerm != null && checkSpecialMentions(matchTerm);
-        const newSections = makeSections(teamMembers, usersInChannel, usersOutOfChannel, groups, showSpecialMentions, isSearch)
+        const newSections = makeSections(teamMembers, usersInChannel, usersOutOfChannel, groups, showSpecialMentions, isSearch);
         const nSections = newSections.length;
 
         if (!loading && !nSections && noResultsTerm == null) {
