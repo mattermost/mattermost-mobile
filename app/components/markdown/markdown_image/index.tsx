@@ -107,7 +107,7 @@ const MarkdownImage = ({
             width: originalSize.width,
             height: originalSize.height,
         } as FileInfo;
-    }, []);
+    }, [originalSize, metadata]);
 
     const handlePreviewImage = useCallback(() => {
         const item: GalleryItemType = {
