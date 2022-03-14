@@ -73,15 +73,17 @@ export const getThreads = async (
 
         const {threads} = data;
 
-        // Mark all fetched threads as following
-        threads.forEach((thread: Thread) => {
-            thread.is_following = true;
-            if (!unread) {
-                thread.loaded_in_global_threads = true;
-            }
-        });
+        if (threads.length) {
+            // Mark all fetched threads as following
+            threads.forEach((thread: Thread) => {
+                thread.is_following = true;
+                if (!unread) {
+                    thread.loaded_in_global_threads = true;
+                }
+            });
 
-        await processReceivedThreads(serverUrl, teamId, threads);
+            await processReceivedThreads(serverUrl, threads);
+        }
 
         return {data};
     } catch (error) {
@@ -112,7 +114,7 @@ export const getThread = async (serverUrl: string, teamId: string, threadId: str
 
         const thread = await client.getThread(currentUser.id, teamId, threadId, extended);
 
-        await processReceivedThreads(serverUrl, teamId, [thread]);
+        await processReceivedThreads(serverUrl, [thread]);
 
         return {data: thread};
     } catch (error) {

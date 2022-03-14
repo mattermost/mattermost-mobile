@@ -104,9 +104,11 @@ export const processThreadsFromReceivedPosts = async (serverUrl: string, posts: 
             } as Thread);
         }
     });
-    const threadModels = await operator.handleThreads({threads, prepareRecordsOnly: true});
-    if (threadModels.length) {
-        models.push(...threadModels);
+    if (threads.length) {
+        const threadModels = await operator.handleThreads({threads, prepareRecordsOnly: true});
+        if (threadModels.length) {
+            models.push(...threadModels);
+        }
     }
 
     if (models.length && !prepareRecordsOnly) {
@@ -117,7 +119,7 @@ export const processThreadsFromReceivedPosts = async (serverUrl: string, posts: 
 };
 
 // On receiving threads, Along with the "threads" & "thread participants", extract and save "posts" & "users"
-export const processReceivedThreads = async (serverUrl: string, teamId: string, threads: Thread[], prepareRecordsOnly = false) => {
+export const processReceivedThreads = async (serverUrl: string, threads: Thread[], prepareRecordsOnly = false) => {
     const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
     if (!operator) {
         return {error: `${serverUrl} database not found`};

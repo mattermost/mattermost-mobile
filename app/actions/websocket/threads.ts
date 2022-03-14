@@ -8,7 +8,7 @@ export async function handleThreadUpdatedEvent(serverUrl: string, msg: WebSocket
     try {
         const thread = JSON.parse(msg.data.thread) as Thread;
         thread.is_following = true; // Mark as following
-        processReceivedThreads(serverUrl, msg.broadcast.team_id, [thread]);
+        processReceivedThreads(serverUrl, [thread]);
     } catch (error) {
         // Do nothing
     }

@@ -39,7 +39,7 @@ const enhanced = withObservables(
             repliesCount: database.get(POST).query(
                 Q.where('root_id', rootId),
                 Q.where('delete_at', Q.eq(0)),
-            ).observeCount(),
+            ).observeCount(false),
         };
     });
 
