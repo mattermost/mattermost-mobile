@@ -6,6 +6,7 @@ import {BackHandler, Text, TouchableOpacity, View} from 'react-native';
 import Animated from 'react-native-reanimated';
 import {SafeAreaView, useSafeAreaInsets} from 'react-native-safe-area-context';
 
+import {switchToChannelById} from '@actions/remote/channel';
 import {fetchPostsAround} from '@actions/remote/post';
 import {Screens} from '@app/constants';
 import {changeOpacity, makeStyleSheetFromTheme} from '@app/utils/theme';
@@ -19,6 +20,7 @@ import {dismissModal} from '@screens/navigation';
 import ChannelModel from '@typings/database/models/servers/channel';
 import PostModel from '@typings/database/models/servers/post';
 import {closePermalink} from '@utils/permalink';
+import {preventDoubleTap} from '@utils/tap';
 
 type Props = {
     currentUsername: UserProfile['username'];
@@ -153,9 +155,11 @@ function Permalink({channel, postId, currentUsername}: Props) {
         };
     }, []);
 
-    const handlePress = useCallback(() => {
-        return null;
-    }, []);
+    const handlePress = useCallback(preventDoubleTap(() => {
+        if (channel) {
+            switchToChannelById(serverUrl, channel?.id, channel?.teamId);
+        }
+    }), []);
 
     return (
         <SafeAreaView style={containerStyle}>
