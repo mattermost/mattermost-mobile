@@ -122,12 +122,8 @@ const AtMentionItem = ({
                 <View
                     style={[style.rowInfo, {maxWidth: shared ? '75%' : '80%'}]}
                 >
-                    <BotTag
-                        show={user.is_bot}
-                    />
-                    <GuestTag
-                        show={guest}
-                    />
+                    {Boolean(user.is_bot) && (<BotTag/>)}
+                    {guest && (<GuestTag/>)}
                     {Boolean(name.length) && (
                         <Text
                             style={style.rowFullname}
