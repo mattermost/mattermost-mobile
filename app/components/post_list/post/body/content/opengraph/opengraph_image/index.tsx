@@ -2,9 +2,8 @@
 // See LICENSE.txt for license information.
 
 import React, {useMemo, useRef} from 'react';
-import {useWindowDimensions} from 'react-native';
+import {TouchableWithoutFeedback, useWindowDimensions} from 'react-native';
 import FastImage, {Source} from 'react-native-fast-image';
-import {TapGestureHandler} from 'react-native-gesture-handler';
 import Animated from 'react-native-reanimated';
 
 import {Device as DeviceConstant, View as ViewConstants} from '@constants';
@@ -118,7 +117,7 @@ const OpengraphImage = ({isReplyPost, layoutWidth, location, metadata, openGraph
     return (
         <GalleryInit galleryIdentifier={galleryIdentifier}>
             <Animated.View style={[styles, style.imageContainer, dimensionsStyle]}>
-                <TapGestureHandler onGestureEvent={onGestureEvent}>
+                <TouchableWithoutFeedback onPress={onGestureEvent}>
                     <Animated.View testID={`OpenGraphImage-${fileId}`}>
                         <FastImage
                             style={[style.image, dimensionsStyle]}
@@ -130,7 +129,7 @@ const OpengraphImage = ({isReplyPost, layoutWidth, location, metadata, openGraph
                             nativeID={`OpenGraphImage-${fileId}`}
                         />
                     </Animated.View>
-                </TapGestureHandler>
+                </TouchableWithoutFeedback>
             </Animated.View>
         </GalleryInit>
     );

@@ -5,8 +5,7 @@ import {useManagedConfig} from '@mattermost/react-native-emm';
 import Clipboard from '@react-native-community/clipboard';
 import React, {useCallback} from 'react';
 import {useIntl} from 'react-intl';
-import {Keyboard, StyleSheet, Text, TextStyle, View} from 'react-native';
-import {TouchableOpacity} from 'react-native-gesture-handler';
+import {Keyboard, StyleSheet, Text, TextStyle, TouchableOpacity, View} from 'react-native';
 
 import FormattedText from '@components/formatted_text';
 import SlideUpPanelItem, {ITEM_HEIGHT} from '@components/slide_up_panel_item';

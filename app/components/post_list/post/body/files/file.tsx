@@ -2,8 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback, useRef} from 'react';
-import {View} from 'react-native';
-import {TapGestureHandler} from 'react-native-gesture-handler';
+import {View, TouchableWithoutFeedback} from 'react-native';
 import Animated from 'react-native-reanimated';
 
 import TouchableWithFeedback from '@components/touchable_with_feedback';
@@ -71,10 +70,7 @@ const File = ({
 
     if (isVideo(file) && publicLinkEnabled) {
         return (
-            <TapGestureHandler
-                onGestureEvent={onGestureEvent}
-                shouldCancelWhenOutside={true}
-            >
+            <TouchableWithoutFeedback onPress={onGestureEvent}>
                 <Animated.View style={[styles]}>
                     <VideoFile
                         file={file}
@@ -93,16 +89,13 @@ const File = ({
                     />
                     }
                 </Animated.View>
-            </TapGestureHandler>
+            </TouchableWithoutFeedback>
         );
     }
 
     if (isImage(file)) {
         return (
-            <TapGestureHandler
-                onGestureEvent={onGestureEvent}
-                shouldCancelWhenOutside={true}
-            >
+            <TouchableWithoutFeedback onPress={onGestureEvent}>
                 <Animated.View style={[styles]}>
                     <ImageFile
                         file={file}
@@ -119,7 +112,7 @@ const File = ({
                     />
                     }
                 </Animated.View>
-            </TapGestureHandler>
+            </TouchableWithoutFeedback>
         );
     }
 

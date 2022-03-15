@@ -7,7 +7,7 @@ import {Navigation, Options, OptionsLayout} from 'react-native-navigation';
 import {measure} from 'react-native-reanimated';
 
 import {Events, Screens} from '@constants';
-import {showModalOverCurrentContext} from '@screens/navigation';
+import {showOverlay} from '@screens/navigation';
 import {isImage, isVideo} from '@utils/file';
 import {generateId} from '@utils/general';
 
@@ -154,7 +154,7 @@ export function openGalleryAtIndex(galleryIdentifier: string, initialIndex: numb
         Navigation.setDefaultOptions({layout});
         NativeModules.MattermostManaged.unlockOrientation();
     }
-    showModalOverCurrentContext(Screens.GALLERY, props, options);
+    showOverlay(Screens.GALLERY, props, options);
 
     setTimeout(() => {
         freezeOtherScreens(true);
