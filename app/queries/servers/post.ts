@@ -29,11 +29,11 @@ export const prepareDeletePost = async (post: PostModel): Promise<Model[]> => {
         }
     }
 
-    const associatedChildren: Array<Query<any>> = [post.files, post.reactions];
-    for await (const children of associatedChildren) {
-        const models = await children.fetch?.() as Model[] | undefined;
+    const associatedChildren: Array<Query<Model>|undefined> = [post.files, post.reactions];
+    await Promise.all(associatedChildren.map(async (children) => {
+        const models = await children?.fetch();
         models?.forEach((model) => preparedModels.push(model.prepareDestroyPermanently()));
-    }
+    }));
 
     return preparedModels;
 };
