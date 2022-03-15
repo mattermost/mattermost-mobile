@@ -4,7 +4,7 @@
 import {IntlShape} from 'react-intl';
 import {Alert} from 'react-native';
 
-import {showPermalink} from '@actions/local/permalink';
+import {showPermalink} from '@actions/remote/permalink';
 import {Client} from '@client/rest';
 import {SYSTEM_IDENTIFIERS} from '@constants/database';
 import DeepLinkTypes from '@constants/deep_linking';

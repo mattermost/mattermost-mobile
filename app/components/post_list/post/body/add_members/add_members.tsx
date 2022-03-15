@@ -1,14 +1,9 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {withDatabase} from '@nozbe/watermelondb/DatabaseProvider';
-import withObservables from '@nozbe/with-observables';
 import React, {ReactNode} from 'react';
 import {useIntl} from 'react-intl';
 import {Text} from 'react-native';
-import {TouchableOpacity} from 'react-native-gesture-handler';
-import {of as of$} from 'rxjs';
-import {switchMap} from 'rxjs/operators';
 
 import {removePost, sendAddToChannelEphemeralPost} from '@actions/local/post';
 import {addMembersToChannel} from '@actions/remote/channel';
@@ -17,12 +12,9 @@ import AtMention from '@components/markdown/at_mention';
 import {General} from '@constants';
 import {useServerUrl} from '@context/server';
 import {t} from '@i18n';
-import {observeCurrentUser} from '@queries/servers/user';
 import {getMarkdownTextStyles} from '@utils/markdown';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
-import type {WithDatabaseArgs} from '@typings/database/database';
-import type ChannelModel from '@typings/database/models/servers/channel';
 import type PostModel from '@typings/database/models/servers/post';
 import type UserModel from '@typings/database/models/servers/user';
 
@@ -179,14 +171,16 @@ const AddMembers = ({channelType, currentUser, post, theme}: AddMembersProps) =>
                     defaultMessage={outOfChannelMessageText}
                     style={styles.message}
                 />
-                <TouchableOpacity onPress={handleAddChannelMember}>
+                <Text
+                    style={textStyles.link}
+                    testID='add_channel_member_link'
+                    onPress={handleAddChannelMember}
+                >
                     <FormattedText
                         id={linkId}
                         defaultMessage={linkText}
-                        style={textStyles.link}
-                        testID='add_channel_member_link'
                     />
-                </TouchableOpacity>
+                </Text>
                 <FormattedText
                     id={'post_body.check_for_out_of_channel_mentions.message_last'}
                     defaultMessage={'? They will have access to all message history.'}
@@ -219,13 +213,4 @@ const AddMembers = ({channelType, currentUser, post, theme}: AddMembersProps) =>
     );
 };
 
-const withChannelType = withObservables(['post'], ({database, post}: WithDatabaseArgs & {post: PostModel}) => ({
-    currentUser: observeCurrentUser(database),
-    channelType: post.channel.observe().pipe(
-        switchMap(
-            (channel: ChannelModel) => (channel ? of$(channel.type) : of$(null)),
-        ),
-    ),
-}));
-
-export default withDatabase(withChannelType(AddMembers));
+export default AddMembers;

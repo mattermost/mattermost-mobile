@@ -14,6 +14,7 @@ import {observeConfig, observeLicense} from '@queries/servers/system';
 import {observeCurrentUser} from '@queries/servers/user';
 import {isMinimumServerVersion} from '@utils/helpers';
 import {isSystemMessage} from '@utils/post';
+import {getPostIdsForCombinedUserActivityPost} from '@utils/post_list';
 import {hasPermissionForChannel, hasPermissionForPost} from '@utils/role';
 import {isSystemAdmin} from '@utils/user';
 
@@ -59,7 +60,7 @@ const withPost = withObservables([], ({post, database}: {post: Post | PostModel}
     let id: string | undefined;
     let combinedPost: Observable<Post | undefined> = of$(undefined);
     if (post.type === Post.POST_TYPES.COMBINED_USER_ACTIVITY && post.props?.system_post_ids) {
-        const systemPostIds = post.props.system_post_ids as string[];
+        const systemPostIds = getPostIdsForCombinedUserActivityPost(post.id);
         id = systemPostIds?.pop();
         combinedPost = of$(post as Post);
     }

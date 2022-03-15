@@ -123,7 +123,7 @@ export const getTimezone = (timezone: UserTimezone | null) => {
     return timezone.manualTimezone;
 };
 
-export const getUserCustomStatus = (user: UserModel): UserCustomStatus | undefined => {
+export const getUserCustomStatus = (user: UserModel | UserProfile): UserCustomStatus | undefined => {
     try {
         if (typeof user.props?.customStatus === 'string') {
             return JSON.parse(user.props.customStatus) as UserCustomStatus;

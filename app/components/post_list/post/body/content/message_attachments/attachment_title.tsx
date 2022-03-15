@@ -4,7 +4,6 @@
 import React from 'react';
 import {useIntl} from 'react-intl';
 import {Alert, Text, View} from 'react-native';
-import {TouchableOpacity} from 'react-native-gesture-handler';
 
 import Markdown from '@components/markdown';
 import {makeStyleSheetFromTheme} from '@utils/theme';
@@ -60,11 +59,12 @@ const AttachmentTitle = ({link, theme, value}: Props) => {
     let title;
     if (link) {
         title = (
-            <TouchableOpacity onPress={openLink}>
-                <Text style={[style.title, Boolean(link) && style.link]}>
-                    {value}
-                </Text>
-            </TouchableOpacity>
+            <Text
+                onPress={openLink}
+                style={[style.title, Boolean(link) && style.link]}
+            >
+                {value}
+            </Text>
         );
     } else {
         title = (

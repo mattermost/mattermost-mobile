@@ -9,7 +9,9 @@ export const POSTS = keyMirror({
     RECEIVED_SINCE: null,
     RECEIVED_AFTER: null,
     RECEIVED_BEFORE: null,
+    RECEIVED_AROUND: null,
     RECEIVED_NEW: null,
+    RECEIVED_POST_THREAD: null,
 });
 
 export default {

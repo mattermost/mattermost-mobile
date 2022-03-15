@@ -1,25 +1,17 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {withDatabase} from '@nozbe/watermelondb/DatabaseProvider';
-import withObservables from '@nozbe/with-observables';
 import React, {useCallback} from 'react';
 import {useIntl} from 'react-intl';
 import {StyleProp, Text, TextStyle} from 'react-native';
-import {TouchableOpacity} from 'react-native-gesture-handler';
-import {switchMap} from 'rxjs/operators';
 
 import {joinChannel, switchToChannelById} from '@actions/remote/channel';
 import {useServerUrl} from '@context/server';
 import {t} from '@i18n';
-import {queryAllChannelsForTeam} from '@queries/servers/channel';
-import {observeCurrentTeamId, observeCurrentUserId} from '@queries/servers/system';
-import {observeTeam} from '@queries/servers/team';
 import {dismissAllModals, popToRoot} from '@screens/navigation';
 import {alertErrorWithFallback} from '@utils/draft';
 import {preventDoubleTap} from '@utils/tap';
 
-import type {WithDatabaseArgs} from '@typings/database/database';
 import type ChannelModel from '@typings/database/models/servers/channel';
 import type TeamModel from '@typings/database/models/servers/team';
 
@@ -110,33 +102,16 @@ const ChannelMention = ({
     }
 
     return (
-        <TouchableOpacity onPress={handlePress}>
-            <Text style={textStyle}>
-                <Text style={linkStyle}>
-                    {`~${channel.display_name}`}
-                </Text>
-                {suffix}
+        <Text style={textStyle}>
+            <Text
+                onPress={handlePress}
+                style={linkStyle}
+            >
+                {`~${channel.display_name}`}
             </Text>
-        </TouchableOpacity>
+            {suffix}
+        </Text>
     );
 };
 
-const withChannelsForTeam = withObservables([], ({database}: WithDatabaseArgs) => {
-    const currentTeamId = observeCurrentTeamId(database);
-    const currentUserId = observeCurrentUserId(database);
-    const channels = currentTeamId.pipe(
-        switchMap((id) => queryAllChannelsForTeam(database, id).observeWithColumns(['display_name'])),
-    );
-    const team = currentTeamId.pipe(
-        switchMap((id) => observeTeam(database, id)),
-    );
-
-    return {
-        channels,
-        currentTeamId,
-        currentUserId,
-        team,
-    };
-});
-
-export default withDatabase(withChannelsForTeam(ChannelMention));
+export default ChannelMention;

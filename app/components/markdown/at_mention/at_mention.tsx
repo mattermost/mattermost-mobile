@@ -3,25 +3,19 @@
 
 import {useManagedConfig} from '@mattermost/react-native-emm';
 import {Database} from '@nozbe/watermelondb';
-import {withDatabase} from '@nozbe/watermelondb/DatabaseProvider';
-import withObservables from '@nozbe/with-observables';
 import Clipboard from '@react-native-community/clipboard';
 import React, {useCallback, useMemo} from 'react';
 import {useIntl} from 'react-intl';
-import {GestureResponderEvent, StyleProp, StyleSheet, Text, TextStyle, View, ViewStyle} from 'react-native';
-import {TouchableOpacity} from 'react-native-gesture-handler';
+import {GestureResponderEvent, StyleProp, StyleSheet, Text, TextStyle, View} from 'react-native';
 
 import CompassIcon from '@components/compass_icon';
 import SlideUpPanelItem, {ITEM_HEIGHT} from '@components/slide_up_panel_item';
 import {MM_TABLES} from '@constants/database';
 import {useTheme} from '@context/theme';
 import UserModel from '@database/models/server/user';
-import {observeCurrentUserId} from '@queries/servers/system';
-import {observeTeammateNameDisplay, queryUsersLike} from '@queries/servers/user';
 import {bottomSheet, dismissBottomSheet, showModal} from '@screens/navigation';
 import {displayUsername, getUsersByUsername} from '@utils/user';
 
-import type {WithDatabaseArgs} from '@typings/database/database';
 import type UserModelType from '@typings/database/models/servers/user';
 
 type AtMentionProps = {
@@ -35,16 +29,13 @@ type AtMentionProps = {
     onPostPress?: (e: GestureResponderEvent) => void;
     teammateNameDisplay: string;
     textStyle?: StyleProp<TextStyle>;
-    touchableStyle?: StyleProp<ViewStyle>;
     users: UserModelType[];
 }
 
 const {SERVER: {USER}} = MM_TABLES;
 
 const style = StyleSheet.create({
-    bottomSheet: {
-        flex: 1,
-    },
+    bottomSheet: {flex: 1},
 });
 
 const AtMention = ({
@@ -58,7 +49,6 @@ const AtMention = ({
     onPostPress,
     teammateNameDisplay,
     textStyle,
-    touchableStyle,
     users,
 }: AtMentionProps) => {
     const intl = useIntl();
@@ -224,35 +214,17 @@ const AtMention = ({
     }
 
     return (
-        <TouchableOpacity
+        <Text
             onPress={onPress!}
             onLongPress={onLongPress}
-            style={touchableStyle}
+            style={styleText}
         >
-            <Text style={styleText}>
-                <Text style={mentionTextStyle}>
-                    {'@' + mention}
-                </Text>
-                {suffixElement}
+            <Text style={mentionTextStyle}>
+                {'@' + mention}
             </Text>
-        </TouchableOpacity>
+            {suffixElement}
+        </Text>
     );
 };
 
-const withAtMention = withObservables(['mentionName'], ({database, mentionName}: {mentionName: string} & WithDatabaseArgs) => {
-    const currentUserId = observeCurrentUserId(database);
-    const teammateNameDisplay = observeTeammateNameDisplay(database);
-
-    let mn = mentionName.toLowerCase();
-    if ((/[._-]$/).test(mn)) {
-        mn = mn.substring(0, mn.length - 1);
-    }
-
-    return {
-        currentUserId,
-        teammateNameDisplay,
-        users: queryUsersLike(database, mn).observeWithColumns(['username']),
-    };
-});
-
-export default withDatabase(withAtMention(React.memo(AtMention)));
+export default React.memo(AtMention);

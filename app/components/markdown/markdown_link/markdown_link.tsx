@@ -2,30 +2,23 @@
 // See LICENSE.txt for license information.
 
 import {useManagedConfig} from '@mattermost/react-native-emm';
-import {withDatabase} from '@nozbe/watermelondb/DatabaseProvider';
-import withObservables from '@nozbe/with-observables';
 import Clipboard from '@react-native-community/clipboard';
 import React, {Children, ReactElement, useCallback} from 'react';
 import {useIntl} from 'react-intl';
 import {Alert, StyleSheet, Text, View} from 'react-native';
-import {TouchableOpacity} from 'react-native-gesture-handler';
-import {of as of$} from 'rxjs';
-import {switchMap} from 'rxjs/operators';
 import urlParse from 'url-parse';
 
-import {showPermalink} from '@actions/local/permalink';
 import {switchToChannelByName} from '@actions/remote/channel';
+import {showPermalink} from '@actions/remote/permalink';
 import SlideUpPanelItem, {ITEM_HEIGHT} from '@components/slide_up_panel_item';
 import DeepLinkTypes from '@constants/deep_linking';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
-import {observeConfig} from '@queries/servers/system';
 import {bottomSheet, dismissAllModals, dismissBottomSheet, popToRoot} from '@screens/navigation';
 import {errorBadChannel} from '@utils/draft';
 import {preventDoubleTap} from '@utils/tap';
 import {matchDeepLink, normalizeProtocol, tryOpenURL} from '@utils/url';
 
-import type {WithDatabaseArgs} from '@typings/database/database';
 import type {DeepLinkChannel, DeepLinkPermalink, DeepLinkWithData} from '@typings/launch';
 
 type MarkdownLinkProps = {
@@ -164,30 +157,13 @@ const MarkdownLink = ({children, experimentalNormalizeMarkdownLinks, href, siteU
     const renderChildren = experimentalNormalizeMarkdownLinks ? parseChildren() : children;
 
     return (
-        <TouchableOpacity
+        <Text
             onPress={handlePress}
             onLongPress={handleLongPress}
         >
-            <Text>
-                {renderChildren}
-            </Text>
-        </TouchableOpacity>
+            {renderChildren}
+        </Text>
     );
 };
 
-const withConfigValues = withObservables([], ({database}: WithDatabaseArgs) => {
-    const config = observeConfig(database);
-    const experimentalNormalizeMarkdownLinks = config.pipe(
-        switchMap((cfg) => of$(cfg?.ExperimentalNormalizeMarkdownLinks)),
-    );
-    const siteURL = config.pipe(
-        switchMap((cfg) => of$(cfg?.SiteURL)),
-    );
-
-    return {
-        experimentalNormalizeMarkdownLinks,
-        siteURL,
-    };
-});
-
-export default withDatabase(withConfigValues(MarkdownLink));
+export default MarkdownLink;

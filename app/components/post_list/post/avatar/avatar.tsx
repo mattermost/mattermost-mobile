@@ -1,13 +1,10 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {withDatabase} from '@nozbe/watermelondb/DatabaseProvider';
-import withObservables from '@nozbe/with-observables';
 import React, {ReactNode, useRef} from 'react';
 import {useIntl} from 'react-intl';
-import {Keyboard, Platform, StyleSheet, View} from 'react-native';
+import {Keyboard, Platform, StyleSheet, TouchableOpacity, View} from 'react-native';
 import FastImage from 'react-native-fast-image';
-import {TouchableOpacity} from 'react-native-gesture-handler';
 
 import CompassIcon from '@components/compass_icon';
 import ProfilePicture from '@components/profile_picture';
@@ -16,12 +13,10 @@ import {View as ViewConstant} from '@constants';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import NetworkManager from '@init/network_manager';
-import {observeConfigBooleanValue} from '@queries/servers/system';
 import {showModal} from '@screens/navigation';
 import {preventDoubleTap} from '@utils/tap';
 
 import type {Client} from '@client/rest';
-import type {WithDatabaseArgs} from '@typings/database/database';
 import type PostModel from '@typings/database/models/servers/post';
 import type UserModel from '@typings/database/models/servers/user';
 import type {ImageSource} from 'react-native-vector-icons/Icon';
@@ -146,13 +141,4 @@ const Avatar = ({author, enablePostIconOverride, isAutoReponse, isSystemPost, po
     return component;
 };
 
-const withPost = withObservables(['post'], ({database, post}: {post: PostModel} & WithDatabaseArgs) => {
-    const enablePostIconOverride = observeConfigBooleanValue(database, 'EnablePostIconOverride');
-
-    return {
-        author: post.author.observe(),
-        enablePostIconOverride,
-    };
-});
-
-export default withDatabase(withPost(Avatar));
+export default Avatar;

@@ -1,22 +1,16 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {withDatabase} from '@nozbe/watermelondb/DatabaseProvider';
-import withObservables from '@nozbe/with-observables';
 import React, {useCallback} from 'react';
 import {useIntl} from 'react-intl';
-import {Alert, Image, Platform, StatusBar, StyleSheet, View} from 'react-native';
-import {TouchableOpacity} from 'react-native-gesture-handler';
+import {Alert, Image, Platform, StatusBar, StyleSheet, TouchableOpacity, View} from 'react-native';
 import {YouTubeStandaloneAndroid, YouTubeStandaloneIOS} from 'react-native-youtube';
 
 import ProgressiveImage from '@components/progressive_image';
 import {useIsTablet} from '@hooks/device';
-import {observeConfigValue} from '@queries/servers/system';
 import {emptyFunction} from '@utils/general';
 import {calculateDimensions, getViewPortWidth} from '@utils/images';
 import {getYouTubeVideoId, tryOpenURL} from '@utils/url';
-
-import type {WithDatabaseArgs} from '@typings/database/database';
 
 type YouTubeProps = {
     googleDeveloperKey?: string;
@@ -175,8 +169,4 @@ const YouTube = ({googleDeveloperKey, isReplyPost, layoutWidth, metadata}: YouTu
     );
 };
 
-const withGoogleKey = withObservables([], ({database}: WithDatabaseArgs) => ({
-    googleDeveloperKey: observeConfigValue(database, 'GoogleDeveloperKey'),
-}));
-
-export default withDatabase(withGoogleKey(React.memo(YouTube)));
+export default React.memo(YouTube);

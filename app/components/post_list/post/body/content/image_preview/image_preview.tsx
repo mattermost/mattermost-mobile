@@ -1,13 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {withDatabase} from '@nozbe/watermelondb/DatabaseProvider';
-import withObservables from '@nozbe/with-observables';
 import React, {useCallback, useEffect, useRef, useState} from 'react';
-import {Animated, StyleSheet, View} from 'react-native';
-import {TapGestureHandler} from 'react-native-gesture-handler';
-import {of as of$} from 'rxjs';
-import {switchMap} from 'rxjs/operators';
+import {Animated, StyleSheet, TouchableWithoutFeedback, View} from 'react-native';
 
 import {getRedirectLocation} from '@actions/remote/general';
 import FileIcon from '@components/post_list/post/body/files/file_icon';
@@ -17,15 +12,12 @@ import {useServerUrl} from '@context/server';
 import {useIsTablet} from '@hooks/device';
 import useDidUpdate from '@hooks/did_update';
 import {useGalleryItem} from '@hooks/gallery';
-import {observeExpandedLinks} from '@queries/servers/system';
 import {lookupMimeType} from '@utils/file';
 import {openGalleryAtIndex} from '@utils/gallery';
 import {generateId} from '@utils/general';
 import {calculateDimensions, getViewPortWidth, isGifTooLarge} from '@utils/images';
 import {changeOpacity} from '@utils/theme';
 import {extractFilenameFromUrl, isImageLink, isValidUrl} from '@utils/url';
-
-import type {WithDatabaseArgs} from '@typings/database/database';
 
 type ImagePreviewProps = {
     expandedLink?: string;
@@ -122,7 +114,7 @@ const ImagePreview = ({expandedLink, isReplyPost, layoutWidth, link, location, m
     return (
         <GalleryInit galleryIdentifier={galleryIdentifier}>
             <Animated.View style={[styles, style.imageContainer, {height: dimensions.height}]}>
-                <TapGestureHandler onGestureEvent={onGestureEvent}>
+                <TouchableWithoutFeedback onPress={onGestureEvent}>
                     <Animated.View testID={`ImagePreview-${fileId}`}>
                         <ProgressiveImage
                             forwardRef={ref}
@@ -133,23 +125,10 @@ const ImagePreview = ({expandedLink, isReplyPost, layoutWidth, link, location, m
                             style={[style.image, {width: dimensions.width, height: dimensions.height}]}
                         />
                     </Animated.View>
-                </TapGestureHandler>
+                </TouchableWithoutFeedback>
             </Animated.View>
         </GalleryInit>
     );
 };
 
-const withExpandedLink = withObservables(['metadata'], ({database, metadata}: WithDatabaseArgs & {metadata: PostMetadata}) => {
-    const link = metadata.embeds?.[0].url;
-
-    return {
-        expandedLink: observeExpandedLinks(database).pipe(
-            switchMap((value) => (
-                (link && value) ? of$(value[link]) : of$(undefined)),
-            ),
-        ),
-        link: of$(link),
-    };
-});
-
-export default withDatabase(withExpandedLink(React.memo(ImagePreview)));
+export default React.memo(ImagePreview);
