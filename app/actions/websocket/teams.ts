@@ -28,15 +28,16 @@ export async function handleLeaveTeamEvent(serverUrl: string, msg: WebSocketMess
         return;
     }
 
-    if (user.id === msg.data.user_id) {
-        await removeUserFromTeam(serverUrl, msg.data.team_id);
+    const {user_id: userId, team_id: teamId} = msg.data;
+    if (user.id === userId) {
+        await removeUserFromTeam(serverUrl, teamId);
         fetchAllTeams(serverUrl);
 
         if (user.isGuest) {
             updateUsersNoLongerVisible(serverUrl);
         }
 
-        if (currentTeamId === msg.data.team_id) {
+        if (currentTeamId === teamId) {
             const currentServer = await queryActiveServer(DatabaseManager.appDatabase!.database);
 
             if (currentServer?.url === serverUrl) {
@@ -70,13 +71,26 @@ export async function handleUpdateTeamEvent(serverUrl: string, msg: WebSocketMes
     }
 }
 
+// As of today, the server sends a duplicated event to add the user to the team.
+// If we do not handle this, this ends up showing some errors in the database, apart
+// of the extra computation time. We use this to track the events that are being handled
+// and make sure we only handle one.
+const addingTeam: {[id: string]: boolean} = {};
+
 export async function handleUserAddedToTeamEvent(serverUrl: string, msg: WebSocketMessage) {
     const database = DatabaseManager.serverDatabases[serverUrl];
     if (!database) {
         return;
     }
+    const {team_id: teamId} = msg.data;
 
-    const {teams, memberships: teamMemberships} = await fetchMyTeam(serverUrl, msg.data.team_id, true);
+    // Ignore duplicated team join events sent by the server
+    if (addingTeam[teamId]) {
+        return;
+    }
+    addingTeam[teamId] = true;
+
+    const {teams, memberships: teamMemberships} = await fetchMyTeam(serverUrl, teamId, true);
 
     const modelPromises: Array<Promise<Model[]>> = [];
     if (teams?.length && teamMemberships?.length) {
@@ -108,4 +122,6 @@ export async function handleUserAddedToTeamEvent(serverUrl: string, msg: WebSock
         const models = await Promise.all(modelPromises);
         await database.operator.batchRecords(models.flat());
     }
+
+    delete addingTeam[teamId];
 }

@@ -209,32 +209,32 @@ export const prepareDeleteTeam = async (team: TeamModel): Promise<Model[]> => {
         const preparedModels: Model[] = [team.prepareDestroyPermanently()];
 
         const relations: Array<Relation<Model>> = [team.myTeam, team.teamChannelHistory];
-        for await (const relation of relations) {
+        await Promise.all(relations.map(async (relation) => {
             try {
-                const model = await relation?.fetch?.();
+                const model = await relation?.fetch();
                 if (model) {
                     preparedModels.push(model.prepareDestroyPermanently());
                 }
-            } catch {
+            } catch (error) {
                 // Record not found, do nothing
             }
-        }
+        }));
 
-        const associatedChildren: Array<Query<any>> = [
+        const associatedChildren: Array<Query<Model>|undefined> = [
             team.members,
             team.slashCommands,
             team.teamSearchHistories,
         ];
-        for await (const children of associatedChildren) {
+        await Promise.all(associatedChildren.map(async (children) => {
             try {
-                const models = await children.fetch?.() as Model[] | undefined;
+                const models = await children?.fetch();
                 models?.forEach((model) => preparedModels.push(model.prepareDestroyPermanently()));
             } catch {
                 // Record not found, do nothing
             }
-        }
+        }));
 
-        const categories = await team.categories.fetch?.() as CategoryModel[] | undefined;
+        const categories = await team.categories?.fetch() as CategoryModel[] | undefined;
         if (categories?.length) {
             for await (const category of categories) {
                 try {
@@ -246,7 +246,7 @@ export const prepareDeleteTeam = async (team: TeamModel): Promise<Model[]> => {
             }
         }
 
-        const channels = await team.channels.fetch?.() as ChannelModel[] | undefined;
+        const channels = await team.channels?.fetch() as ChannelModel[] | undefined;
         if (channels?.length) {
             for await (const channel of channels) {
                 try {

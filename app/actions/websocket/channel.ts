@@ -24,7 +24,8 @@ export async function handleUserAddedToChannelEvent(serverUrl: string, msg: any)
         return;
     }
     const currentUser = await queryCurrentUser(database.database);
-    const {team_id: teamId, channel_id: channelId, user_id: userId} = msg.data;
+    const {team_id: teamId, user_id: userId} = msg.data;
+    const {channel_id: channelId} = msg.broadcast;
     const models: Model[] = [];
 
     try {
@@ -64,8 +65,6 @@ export async function handleUserAddedToChannelEvent(serverUrl: string, msg: any)
             if (authors?.length) {
                 models.push(...await database.operator.handleUsers({users: authors, prepareRecordsOnly: true}));
             }
-
-            database.operator.batchRecords(models);
         } else {
             const channels = await queryChannelsById(database.database, [channelId]);
             if (channels?.[0]) {
@@ -94,8 +93,9 @@ export async function handleUserRemovedFromChannelEvent(serverUrl: string, msg: 
         return;
     }
 
-    const userId = msg.data.user_id;
-    const channelId = msg.data.channel_id;
+    // Depending on who was removed, the ids may come from one place dataset or the other.
+    const userId = msg.data.user_id || msg.broadcast.user_id;
+    const channelId = msg.data.channel_id || msg.broadcast.channel_id;
 
     const models: Model[] = [];
 
@@ -158,18 +158,20 @@ export async function handleChannelDeletedEvent(serverUrl: string, msg: WebSocke
         return;
     }
 
+    const {channel_id: channelId, delete_at: deleteAt} = msg.data;
+
     const config = await queryConfig(database.database);
 
-    await setChannelDeleteAt(serverUrl, msg.data.channel_id, msg.data.delete_at);
+    await setChannelDeleteAt(serverUrl, channelId, deleteAt);
 
     if (user.isGuest) {
         updateUsersNoLongerVisible(serverUrl);
     }
 
     if (config?.ExperimentalViewArchivedChannels !== 'true') {
-        removeCurrentUserFromChannel(serverUrl, msg.data.channel_id);
+        removeCurrentUserFromChannel(serverUrl, channelId);
 
-        if (currentChannel && currentChannel.id === msg.data.channel_id) {
+        if (currentChannel && currentChannel.id === channelId) {
             const currentServer = await queryActiveServer(DatabaseManager.appDatabase!.database);
 
             if (currentServer?.url === serverUrl) {
