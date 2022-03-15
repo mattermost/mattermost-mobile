@@ -279,11 +279,14 @@ export const queryTeamDefaultChannel = (database: Database, teamId: string) => {
     );
 };
 
-export const queryMyChannelsByTeam = (database: Database, teamId: string) => {
+export const queryMyChannelsByTeam = (database: Database, teamId: string, includeDeleted = false) => {
+    const conditions: Q.Condition[] = [Q.where('team_id', Q.eq(teamId))];
+    if (!includeDeleted) {
+        conditions.push(Q.where('delete_at', Q.eq(0)));
+    }
     return database.get<MyChannelModel>(MY_CHANNEL).query(
         Q.on(CHANNEL, Q.and(
-            Q.where('delete_at', Q.eq(0)),
-            Q.where('team_id', Q.eq(teamId)),
+            ...conditions,
         )),
     );
 };

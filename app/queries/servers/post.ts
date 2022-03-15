@@ -64,12 +64,12 @@ export const queryPostsInChannel = (database: Database, channelId: string) => {
 
 export const queryPostsInThread = (database: Database, rootId: string, sorted = false, includeDeleted = false) => {
     const clauses: Q.Clause[] = [Q.where('root_id', rootId)];
-    if (sorted) {
-        clauses.push(Q.sortBy('latest', Q.desc));
+    if (!includeDeleted) {
+        clauses.push(Q.where('delete_at', Q.eq(0)));
     }
 
-    if (includeDeleted) {
-        clauses.push(Q.where('delete_at', Q.eq(0)));
+    if (sorted) {
+        clauses.push(Q.sortBy('latest', Q.desc));
     }
     return database.get<PostsInThreadModel>(POSTS_IN_THREAD).query(...clauses);
 };
@@ -86,16 +86,21 @@ export const getRecentPostsInThread = async (database: Database, rootId: string)
     return [];
 };
 
-export const queryPostsChunk = (database: Database, id: string, earliest: number, latest: number, inThread = false) => {
-    let condition = Q.where('channel_id', id);
+export const queryPostsChunk = (database: Database, id: string, earliest: number, latest: number, inThread = false, includeDeleted = false) => {
+    const conditions: Q.Condition[] = [Q.where('create_at', Q.between(earliest, latest))];
     if (inThread) {
-        condition = Q.where('root_id', id);
+        conditions.push(Q.where('root_id', id));
+    } else {
+        conditions.push(Q.where('channel_id', id));
     }
+
+    if (!includeDeleted) {
+        conditions.push(Q.where('delete_at', Q.eq(0)));
+    }
+
     return database.get<PostModel>(POST).query(
         Q.and(
-            condition,
-            Q.where('create_at', Q.between(earliest, latest)),
-            Q.where('delete_at', Q.eq(0)),
+            ...conditions,
         ),
         Q.sortBy('create_at', Q.desc),
     );
