@@ -145,6 +145,8 @@ export default class AppsFormContainer extends PureComponent<Props, State> {
         }
 
         const creq = createCallRequest(form.source, this.props.context, {}, values);
+        creq.selected_field = field.name;
+
         const res = await this.props.actions.doAppFetchForm(creq, intl);
 
         if (res.error) {
@@ -196,10 +198,9 @@ export default class AppsFormContainer extends PureComponent<Props, State> {
             return {error: makeCallErrorResponse('unreachable: empty context')};
         }
 
-        const creq = createCallRequest(field.lookup, this.props.context, {}, {
-            ...values,
-            [field.name]: userInput,
-        });
+        const creq = createCallRequest(field.lookup, this.props.context, {}, values);
+        creq.selected_field = field.name;
+        creq.query = userInput;
 
         return this.props.actions.doAppLookup(creq, intl);
     };
