@@ -15,6 +15,7 @@ import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
 import Channel from '@screens/channel';
 import {showOverlay} from '@screens/navigation';
+import {SNACK_BAR_TYPE} from '@screens/snack_bar/constants';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 
 import Servers from './servers';
@@ -59,15 +60,20 @@ const ChannelListScreen = (props: ChannelProps) => {
     const canAddOtherServers = managedConfig?.allowOtherServers !== 'false';
 
     useEffect(() => { //fixme: remove this effect - part of testing the notification toasts/snack bar
-        // DeviceEventEmitter.emit(Navigation.NAVIGATION_SHOW_OVERLAY);
-
         const screen = Screens.SNACK_BAR;
         const passProps = {
-            message: 'Link copied to clipboard',
-            iconName: 'check',
+            barType: SNACK_BAR_TYPE.LINK_COPIED,
         };
-
-        showOverlay(screen, passProps);
+        const defaultOptions = {
+            layout: {
+                backgroundColor: 'transparent',
+                componentBackgroundColor: 'transparent',
+            },
+            overlay: {
+                interceptTouchOutside: false,
+            },
+        };
+        showOverlay(screen, passProps, defaultOptions);
     }, []);
 
     const animated = useAnimatedStyle(() => {

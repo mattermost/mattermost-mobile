@@ -10,15 +10,14 @@ import {useAnimatedStyle, withTiming} from 'react-native-reanimated';
 
 import Toast from '@components/toast';
 import {BOTTOM_TAB_HEIGHT} from '@constants/view';
+import {SNACK_BAR_CONFIG, SNACK_BAR_TYPE} from '@screens/snack_bar/constants';
 
 type SnackBarProps = {
-    iconName: string;
     componentId: string;
     isDismissible: boolean;
-    message: string;
     style: StyleProp<ViewProps>;
-    onPress: () => void;
-    barType: string; // connection lost, reconnected, etc..
+    onPress?: () => void;
+    barType: keyof typeof SNACK_BAR_TYPE; // connection lost, reconnected, etc..
 }
 
 //todo: add method to dismiss the overlay  => Navigation.dismissOverlay(componentId)
@@ -36,28 +35,29 @@ const styles = StyleSheet.create({
 });
 
 const SnackBar = ({
-    iconName,
-    message,
-    style,
-    componentId,
     barType,
-    isDismissible = false,
+    componentId,
+    isDismissible = true,
     onPress,
 }: SnackBarProps) => {
     const intl = useIntl();
     const [showToast, setShowToast] = useState<boolean|undefined>(true);
 
+    const config = SNACK_BAR_CONFIG[barType];
+
     useEffect(() => {
         if (showToast && isDismissible) {
-            setTimeout(() => {
+            const t = setTimeout(() => {
                 setShowToast(false);
                 Navigation.dismissOverlay(componentId);
+                clearTimeout(t);
             }, 3000);
         }
     }, [showToast]);
 
     const onPressHandler = useCallback(() => {
         Navigation.dismissOverlay(componentId);
+        onPress?.();
     }, [onPress, componentId]);
 
     const animatedStyle = useAnimatedStyle(() => ({
@@ -69,20 +69,14 @@ const SnackBar = ({
     return (
         <Toast
             animatedStyle={animatedStyle}
-            style={[styles.toast, style]}
-            message={message}
-            iconName={iconName}
+            style={styles.toast}
+            message={intl.formatMessage({id: config.id, defaultMessage: config.defaultMessage})}
+            iconName={config.iconName}
         >
             {
-                Boolean(onPress) && (
+                config.canUndo && onPress && (
                     <TouchableOpacity
                         onPress={onPressHandler}
-                        style={{
-                            alignItems: 'flex-end',
-                            justifyContent: 'center',
-                            flex: 1,
-                            marginTop: 8,
-                        }}
                     >
                         <Text>{intl.formatMessage({id: 'snack.bar.undo', defaultMessage: 'Undo'})}</Text>
                     </TouchableOpacity>
