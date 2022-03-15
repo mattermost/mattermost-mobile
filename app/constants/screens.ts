@@ -34,6 +34,7 @@ export const THREAD = 'Thread';
 export const USER_PROFILE = 'UserProfile';
 export const POST_OPTIONS = 'PostOptions';
 export const SAVED_POSTS = 'SavedPosts';
+export const SNACK_BAR = 'SnackBar';
 
 export default {
     ABOUT,
@@ -69,4 +70,5 @@ export default {
     USER_PROFILE,
     POST_OPTIONS,
     SAVED_POSTS,
+    SNACK_BAR,
 };

@@ -3,16 +3,19 @@
 
 import {useManagedConfig} from '@mattermost/react-native-emm';
 import {useIsFocused, useRoute} from '@react-navigation/native';
-import React from 'react';
+import React, {useEffect} from 'react';
+import {DeviceEventEmitter} from 'react-native';
 import Animated, {useAnimatedStyle, withTiming} from 'react-native-reanimated';
 import {Edge, SafeAreaView, useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import ChannelList from '@components/channel_list';
 import FreezeScreen from '@components/freeze_screen';
 import TeamSidebar from '@components/team_sidebar';
+import {Navigation, Screens} from '@constants';
 import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
 import Channel from '@screens/channel';
+import {showOverlay} from '@screens/navigation';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 
 import Servers from './servers';
@@ -55,6 +58,24 @@ const ChannelListScreen = (props: ChannelProps) => {
     const insets = useSafeAreaInsets();
     const params = route.params as {direction: string};
     const canAddOtherServers = managedConfig?.allowOtherServers !== 'false';
+
+    useEffect(() => { //fixme: remove this effect - part of testing the notification toasts/snack bar
+        // DeviceEventEmitter.emit(Navigation.NAVIGATION_SHOW_OVERLAY);
+
+        const screen = Screens.SNACK_BAR;
+        const passProps = {
+            overlay: true,
+            message: 'Link copied to clipboard',
+            iconName: 'check',
+        };
+        const options = {
+            overlay: {
+                interceptTouchOutside: true,
+            },
+        };
+        console.log('>>>  here');
+        showOverlay(screen, passProps, options);
+    }, []);
 
     const animated = useAnimatedStyle(() => {
         if (!isFocused) {

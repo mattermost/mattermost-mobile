@@ -133,6 +133,11 @@ Navigation.setLazyComponentRegistrator((screenName) => {
         case Screens.THREAD:
             screen = withServerDatabase(require('@screens/thread').default);
             break;
+        case Screens.SNACK_BAR: {
+            const snackBarScreen = withIntl(require('@screens/snack_bar').default);
+            Navigation.registerComponent(Screens.SNACK_BAR, () => snackBarScreen);
+            break;
+        }
     }
 
     if (screen) {
