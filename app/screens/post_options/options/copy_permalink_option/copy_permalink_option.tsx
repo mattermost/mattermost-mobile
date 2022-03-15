@@ -8,6 +8,8 @@ import {Screens} from '@constants';
 import {useServerUrl} from '@context/server';
 import {t} from '@i18n';
 import {dismissBottomSheet} from '@screens/navigation';
+import {showToast} from '@screens/post_options/helper';
+import {SNACK_BAR_TYPE} from '@screens/snack_bar/constants';
 
 import BaseOption from '../base_option';
 
@@ -24,6 +26,7 @@ const CopyPermalinkOption = ({teamName, post}: Props) => {
         const permalink = `${serverUrl}/${teamName}/pl/${post.id}`;
         Clipboard.setString(permalink);
         dismissBottomSheet(Screens.POST_OPTIONS);
+        showToast(SNACK_BAR_TYPE.LINK_COPIED);
     }, [teamName, post.id]);
 
     return (

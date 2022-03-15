@@ -1,10 +1,12 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React from 'react';
+import React, {useCallback} from 'react';
 
 import {Screens} from '@constants';
 import {t} from '@i18n';
+import {showToast} from '@screens/post_options/helper';
+import {SNACK_BAR_TYPE} from '@screens/snack_bar/constants';
 
 import BaseOption from './base_option';
 
@@ -40,8 +42,15 @@ const FollowThreadOption = ({thread}: FollowThreadOptionProps) => {
         }
     }
 
+    const unFollowThread = useCallback(() => {
+        // eslint-disable-next-line no-console
+        console.log('TO IMPLEMENT UNFOLLOW THREAD');
+    }, []);
+
     const handleToggleFollow = () => {
         //todo:
+
+        showToast(SNACK_BAR_TYPE.FOLLOW_THREAD, unFollowThread);
     };
 
     return (

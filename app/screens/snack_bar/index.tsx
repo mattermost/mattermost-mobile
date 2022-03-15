@@ -3,36 +3,26 @@
 
 import React, {useCallback, useEffect, useState} from 'react';
 import {useIntl} from 'react-intl';
-import {Text, StyleProp, StyleSheet, ViewProps} from 'react-native';
+import {Text} from 'react-native';
 import {TouchableOpacity} from 'react-native-gesture-handler';
 import {Navigation} from 'react-native-navigation';
 import {useAnimatedStyle, withTiming} from 'react-native-reanimated';
 
 import Toast from '@components/toast';
 import {BOTTOM_TAB_HEIGHT} from '@constants/view';
+import {useTheme} from '@context/theme';
 import {SNACK_BAR_CONFIG, SNACK_BAR_TYPE} from '@screens/snack_bar/constants';
+import {typography} from '@utils/typography';
 
 type SnackBarProps = {
     componentId: string;
     isDismissible: boolean;
-    style: StyleProp<ViewProps>;
     onPress?: () => void;
     barType: keyof typeof SNACK_BAR_TYPE; // connection lost, reconnected, etc..
 }
 
-//todo: add method to dismiss the overlay  => Navigation.dismissOverlay(componentId)
-
 //todo: think of how to prevent the overlay from being dismissed => e.g. prevent it from being dismissed if no connection,
 // but if you get connection, then remove the toast....add connection listener?
-
-const styles = StyleSheet.create({
-    error: {
-        backgroundColor: '#D24B4E',
-    },
-    toast: {
-        backgroundColor: '#3DB887', // intended hardcoded color
-    },
-});
 
 const SnackBar = ({
     barType,
@@ -41,6 +31,7 @@ const SnackBar = ({
     onPress,
 }: SnackBarProps) => {
     const intl = useIntl();
+    const theme = useTheme();
     const [showToast, setShowToast] = useState<boolean|undefined>(true);
 
     const config = SNACK_BAR_CONFIG[barType];
@@ -69,7 +60,9 @@ const SnackBar = ({
     return (
         <Toast
             animatedStyle={animatedStyle}
-            style={styles.toast}
+            style={{
+                backgroundColor: theme[config.backgroundColor],
+            }}
             message={intl.formatMessage({id: config.id, defaultMessage: config.defaultMessage})}
             iconName={config.iconName}
         >
@@ -78,7 +71,12 @@ const SnackBar = ({
                     <TouchableOpacity
                         onPress={onPressHandler}
                     >
-                        <Text>{intl.formatMessage({id: 'snack.bar.undo', defaultMessage: 'Undo'})}</Text>
+                        <Text
+                            style={{
+                                color: theme.centerChannelBg,
+                                ...typography(),
+                            }}
+                        >{intl.formatMessage({id: 'snack.bar.undo', defaultMessage: 'Undo'})}</Text>
                     </TouchableOpacity>
                 )
             }
