@@ -141,8 +141,6 @@ export const apiGetUserByUsername = async (baseUrl: string, username: string): P
  */
 export const apiLogin = async (baseUrl: string, user: any): Promise<any> => {
     try {
-        client.defaults.withCredentials = true;
-
         const response = await client.post(
             `${baseUrl}/api/v4/users/login`,
             {login_id: user.username, password: user.password},
@@ -167,8 +165,6 @@ export const apiLogin = async (baseUrl: string, user: any): Promise<any> => {
  */
 export const apiLogout = async (baseUrl: string): Promise<any> => {
     const response = await client.post(`${baseUrl}/api/v4/users/logout`);
-
-    client.defaults.withCredentials = false;
 
     return {status: response.status};
 };
