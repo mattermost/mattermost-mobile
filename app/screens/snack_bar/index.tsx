@@ -1,13 +1,14 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback} from 'react';
+import React, {useCallback, useMemo} from 'react';
 import {useIntl} from 'react-intl';
+import {useWindowDimensions} from 'react-native';
 import {Navigation} from 'react-native-navigation';
 import {useAnimatedStyle, withTiming} from 'react-native-reanimated';
 
 import Toast from '@components/toast';
-import {BOTTOM_TAB_HEIGHT} from '@constants/view';
+import {BOTTOM_TAB_HEIGHT, TABLET_SIDEBAR_WIDTH} from '@constants/view';
 import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
 import {SNACK_BAR_CONFIG, SNACK_BAR_TYPE} from '@screens/snack_bar/constants';
@@ -35,7 +36,7 @@ const SnackBar = ({
     const theme = useTheme();
     const showToast = useToastToggler(componentId, isDismissible);
     const isTablet = useIsTablet();
-
+    const {width} = useWindowDimensions();
     const config = SNACK_BAR_CONFIG[barType];
 
     const onPressHandler = useCallback(() => {
@@ -49,17 +50,21 @@ const SnackBar = ({
         opacity: withTiming(showToast ? 1 : 0, {duration: 300}),
     }));
 
-    //fixme: add proper styling for when it is opened on Tablets
+    const toastStyle = useMemo(() => {
+        return [
+            {backgroundColor: theme[config.backgroundColor]},
+            isTablet && {
+                width: 0.96 * (width - TABLET_SIDEBAR_WIDTH),
+                marginLeft: TABLET_SIDEBAR_WIDTH,
+                marginBottom: 65,
+            },
+        ];
+    }, [theme, barType]);
+
     return (
         <Toast
             animatedStyle={animatedStyle}
-            style={[
-                {backgroundColor: theme[config.backgroundColor]},
-                isTablet && {
-                    backgroundColor: 'red',
-                    width: '100%',
-                },
-            ]}
+            style={toastStyle}
             message={intl.formatMessage({id: config.id, defaultMessage: config.defaultMessage})}
             iconName={config.iconName}
         >
