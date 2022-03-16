@@ -1,18 +1,19 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback, useEffect, useState} from 'react';
+import React, {useCallback} from 'react';
 import {useIntl} from 'react-intl';
-import {Text} from 'react-native';
-import {TouchableOpacity} from 'react-native-gesture-handler';
 import {Navigation} from 'react-native-navigation';
 import {useAnimatedStyle, withTiming} from 'react-native-reanimated';
 
 import Toast from '@components/toast';
 import {BOTTOM_TAB_HEIGHT} from '@constants/view';
 import {useTheme} from '@context/theme';
+import {useIsTablet} from '@hooks/device';
 import {SNACK_BAR_CONFIG, SNACK_BAR_TYPE} from '@screens/snack_bar/constants';
-import {typography} from '@utils/typography';
+import useToastToggler from '@screens/snack_bar/useToastToggler';
+
+import Undo from './undo';
 
 type SnackBarProps = {
     componentId: string;
@@ -32,19 +33,10 @@ const SnackBar = ({
 }: SnackBarProps) => {
     const intl = useIntl();
     const theme = useTheme();
-    const [showToast, setShowToast] = useState<boolean|undefined>(true);
+    const showToast = useToastToggler(componentId, isDismissible);
+    const isTablet = useIsTablet();
 
     const config = SNACK_BAR_CONFIG[barType];
-
-    useEffect(() => {
-        if (showToast && isDismissible) {
-            const t = setTimeout(() => {
-                setShowToast(false);
-                Navigation.dismissOverlay(componentId);
-                clearTimeout(t);
-            }, 3000);
-        }
-    }, [showToast]);
 
     const onPressHandler = useCallback(() => {
         Navigation.dismissOverlay(componentId);
@@ -57,27 +49,27 @@ const SnackBar = ({
         opacity: withTiming(showToast ? 1 : 0, {duration: 300}),
     }));
 
+    //fixme: add proper styling for when it is opened on Tablets
     return (
         <Toast
             animatedStyle={animatedStyle}
-            style={{
-                backgroundColor: theme[config.backgroundColor],
-            }}
+            style={[
+                {backgroundColor: theme[config.backgroundColor]},
+                isTablet && {
+                    backgroundColor: 'red',
+                    width: '100%',
+                },
+            ]}
             message={intl.formatMessage({id: config.id, defaultMessage: config.defaultMessage})}
             iconName={config.iconName}
         >
             {
                 config.canUndo && onPress && (
-                    <TouchableOpacity
+                    <Undo
                         onPress={onPressHandler}
-                    >
-                        <Text
-                            style={{
-                                color: theme.centerChannelBg,
-                                ...typography(),
-                            }}
-                        >{intl.formatMessage({id: 'snack.bar.undo', defaultMessage: 'Undo'})}</Text>
-                    </TouchableOpacity>
+                        theme={theme}
+                        intl={intl}
+                    />
                 )
             }
         </Toast>
