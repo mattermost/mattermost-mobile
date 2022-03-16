@@ -18,7 +18,7 @@ module.exports = {
     },
     moduleDirectories: [
         'node_modules',
-        'e2e'
+        'e2e',
     ],
     transformIgnorePatterns: [
     ],
