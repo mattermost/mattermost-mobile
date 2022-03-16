@@ -2,10 +2,10 @@
 // See LICENSE.txt for license information.
 
 import React from 'react';
-import {IntlShape} from 'react-intl';
-import {Text} from 'react-native';
-import {TouchableOpacity} from 'react-native-gesture-handler';
+import {useIntl} from 'react-intl';
+import {Text, TouchableOpacity} from 'react-native';
 
+import {useTheme} from '@context/theme';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
@@ -13,17 +13,17 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     return {
         text: {
             color: theme.centerChannelBg,
-            ...typography(),
+            ...typography('Body', 100, 'SemiBold'),
         },
     };
 });
 
 type UndoProps = {
     onPress: () => void;
-    theme: Theme;
-    intl: IntlShape;
 };
-const Index = ({onPress, theme, intl}: UndoProps) => {
+const Undo = ({onPress}: UndoProps) => {
+    const theme = useTheme();
+    const intl = useIntl();
     const styles = getStyleSheet(theme);
     return (
         <TouchableOpacity onPress={onPress}>
@@ -39,4 +39,4 @@ const Index = ({onPress, theme, intl}: UndoProps) => {
     );
 };
 
-export default Index;
+export default Undo;

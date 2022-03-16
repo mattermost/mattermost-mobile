@@ -4,22 +4,23 @@
 import Clipboard from '@react-native-community/clipboard';
 import React, {useCallback} from 'react';
 
-import {Screens} from '@constants';
+import {Screens, SnackBar} from '@constants';
 import {t} from '@i18n';
 import {dismissBottomSheet} from '@screens/navigation';
-import {SNACK_BAR_TYPE} from '@screens/snack_bar/constants';
-import {showToast} from '@utils/toast';
+import {showSnackBar} from '@utils/snack_bar';
 
 import BaseOption from './base_option';
 
 type Props = {
     postMessage: string;
 }
+const {SNACK_BAR_TYPE} = SnackBar;
+
 const CopyTextOption = ({postMessage}: Props) => {
-    const handleCopyText = useCallback(() => {
+    const handleCopyText = useCallback(async () => {
         Clipboard.setString(postMessage);
-        dismissBottomSheet(Screens.POST_OPTIONS);
-        showToast(SNACK_BAR_TYPE.MESSAGE_COPIED);
+        await dismissBottomSheet(Screens.POST_OPTIONS);
+        showSnackBar(SNACK_BAR_TYPE.MESSAGE_COPIED);
     }, [postMessage]);
 
     return (

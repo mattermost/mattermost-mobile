@@ -3,10 +3,9 @@
 
 import React, {useCallback} from 'react';
 
-import {Screens} from '@constants';
+import {Screens, SnackBar} from '@constants';
 import {t} from '@i18n';
-import {SNACK_BAR_TYPE} from '@screens/snack_bar/constants';
-import {showToast} from '@utils/toast';
+import {showSnackBar} from '@utils/snack_bar';
 
 import BaseOption from './base_option';
 
@@ -16,6 +15,8 @@ type FollowThreadOptionProps = {
 };
 
 //todo: to implement CRT follow thread
+
+const {SNACK_BAR_TYPE} = SnackBar;
 
 const FollowThreadOption = ({thread}: FollowThreadOptionProps) => {
     let id: string;
@@ -42,15 +43,26 @@ const FollowThreadOption = ({thread}: FollowThreadOptionProps) => {
         }
     }
 
-    const unFollowThread = useCallback(() => {
-        // eslint-disable-next-line no-console
-        console.log('TO IMPLEMENT UNFOLLOW THREAD');
+    const undo = useCallback(() => {
+        // https://mattermost.atlassian.net/browse/MM-42565
+        if (thread.is_following) {
+            // eslint-disable-next-line no-console
+            console.log('TO IMPLEMENT UNFOLLOW THREAD');
+        } else {
+            // eslint-disable-next-line no-console
+            console.log('TO IMPLEMENT FOLLOW THREAD');
+        }
     }, []);
 
     const handleToggleFollow = () => {
-        //todo:
-
-        showToast(SNACK_BAR_TYPE.FOLLOW_THREAD, unFollowThread);
+        // https://mattermost.atlassian.net/browse/MM-42565
+        if (thread.is_following) {
+            // eslint-disable-next-line no-console
+            showSnackBar(SNACK_BAR_TYPE.FOLLOW_THREAD, undo);
+        } else {
+            // eslint-disable-next-line no-console
+            console.log('TO IMPLEMENT FOLLOW THREAD, VALIDATE FROM UX IF A SNACK BAR IS REQUIRED FOR THIS CASE AS WELL');
+        }
     };
 
     return (
