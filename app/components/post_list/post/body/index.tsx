@@ -18,12 +18,11 @@ import Files from './files';
 import Message from './message';
 import Reactions from './reactions';
 
-import type FileModel from '@typings/database/models/servers/file';
 import type PostModel from '@typings/database/models/servers/post';
 
 type BodyProps = {
     appsEnabled: boolean;
-    files: FileModel[];
+    filesCount: number;
     hasReactions: boolean;
     highlight: boolean;
     highlightReplyBar: boolean;
@@ -73,7 +72,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
 });
 
 const Body = ({
-    appsEnabled, files, hasReactions, highlight, highlightReplyBar,
+    appsEnabled, filesCount, hasReactions, highlight, highlightReplyBar,
     isEphemeral, isFirstReply, isJumboEmoji, isLastReply, isPendingOrFailed, isPostAddChannelMember,
     location, post, showAddReaction, theme,
 }: BodyProps) => {
@@ -166,10 +165,9 @@ const Body = ({
                     theme={theme}
                 />
                 }
-                {files.length > 0 &&
+                {filesCount > 0 &&
                 <Files
                     failed={post.props?.failed}
-                    files={files}
                     layoutWidth={layoutWidth}
                     location={location}
                     post={post}

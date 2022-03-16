@@ -29,6 +29,7 @@ type Props = {
     action: GalleryAction;
     item: GalleryItemType;
     setAction: (action: GalleryAction) => void;
+    onDownloadSuccess?: (path: string) => void;
 }
 
 const styles = StyleSheet.create({
@@ -62,7 +63,7 @@ const styles = StyleSheet.create({
     },
 });
 
-const DownloadWithAction = ({action, item, setAction}: Props) => {
+const DownloadWithAction = ({action, item, onDownloadSuccess, setAction}: Props) => {
     const intl = useIntl();
     const serverUrl = useServerUrl();
     const [showToast, setShowToast] = useState<boolean|undefined>();
@@ -127,6 +128,13 @@ const DownloadWithAction = ({action, item, setAction}: Props) => {
                 setShowToast(false);
             }
         }
+    };
+
+    const onDownload = async (response: ClientResponse) => {
+        if (response.data?.path && onDownloadSuccess) {
+            onDownloadSuccess(response.data.path as string);
+        }
+        setShowToast(false);
     };
 
     const openFile = async (response: ClientResponse) => {
@@ -224,13 +232,16 @@ const DownloadWithAction = ({action, item, setAction}: Props) => {
             const path = getLocalFilePathFromFile(serverUrl, galleryItemToFileInfo(item));
             if (path) {
                 const exists = await fileExists(path);
-                let actionToExecute: (request: ClientResponse) => Promise<void>;
+                let actionToExecute: (response: ClientResponse) => Promise<void>;
                 switch (action) {
                     case 'sharing':
                         actionToExecute = shareFile;
                         break;
                     case 'opening':
                         actionToExecute = openFile;
+                        break;
+                    case 'other':
+                        actionToExecute = onDownload;
                         break;
                     default:
                         actionToExecute = save;

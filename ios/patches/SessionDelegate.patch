@@ -1,10 +1,11 @@
---- SessionDelegate.swifts	2021-08-10 16:26:55.000000000 -0400
-+++ SessionDelegate.swift	2021-08-10 16:27:33.000000000 -0400
-@@ -286,6 +286,15 @@
+--- SessionDelegate.swift.orig	2022-03-12 17:34:07.000000000 -0300
++++ SessionDelegate.swift	2022-03-16 15:51:22.000000000 -0300
+@@ -292,6 +292,16 @@
              return
          }
  
-+        let sizeString = ((downloadTask.response as? HTTPURLResponse)?.allHeaderFields["X-Uncompressed-Content-Length"]) as? String
++        let allHeaders = (downloadRequest.response)?.allHeaderFields as? NSDictionary ?? NSDictionary()
++        let sizeString = (allHeaders["X-Uncompressed-Content-Length"] ?? allHeaders["x-uncompressed-content-length"]) as? String
 +        if (sizeString != nil) {
 +            let size = Int64(sizeString!)
 +            downloadRequest.updateDownloadProgress(bytesWritten: bytesWritten,
