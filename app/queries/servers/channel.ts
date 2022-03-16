@@ -7,8 +7,6 @@ import {switchMap} from 'rxjs/operators';
 
 import {General, Permissions} from '@constants';
 import {MM_TABLES} from '@constants/database';
-import MyChannelSettingsModel from '@typings/database/models/servers/my_channel_settings';
-import UserModel from '@typings/database/models/servers/user';
 import {hasPermission} from '@utils/role';
 
 import {prepareDeletePost} from './post';
@@ -19,8 +17,10 @@ import type ServerDataOperator from '@database/operator/server_data_operator';
 import type ChannelModel from '@typings/database/models/servers/channel';
 import type ChannelInfoModel from '@typings/database/models/servers/channel_info';
 import type MyChannelModel from '@typings/database/models/servers/my_channel';
-import type PostModel from '@typings/database/models/servers/post';
-const {SERVER: {CHANNEL, MY_CHANNEL, CHANNEL_MEMBERSHIP, USER, CHANNEL_INFO, MY_CHANNEL_SETTINGS}} = MM_TABLES;
+import type MyChannelSettingsModel from '@typings/database/models/servers/my_channel_settings';
+import type UserModel from '@typings/database/models/servers/user';
+
+const {SERVER: {CHANNEL, MY_CHANNEL, CHANNEL_MEMBERSHIP, MY_CHANNEL_SETTINGS, CHANNEL_INFO, USER}} = MM_TABLES;
 
 export function prepareMissingChannelsForAllTeams(operator: ServerDataOperator, channels: Channel[], channelMembers: ChannelMembership[]): Array<Promise<Model[]>> | undefined {
     const channelInfos: ChannelInfo[] = [];
@@ -99,29 +99,29 @@ export const prepareMyChannelsForTeam = async (operator: ServerDataOperator, tea
 export const prepareDeleteChannel = async (channel: ChannelModel): Promise<Model[]> => {
     const preparedModels: Model[] = [channel.prepareDestroyPermanently()];
 
-    const relations: Array<Relation<Model>> = [channel.membership, channel.info, channel.settings, channel.categoryChannel];
-    for await (const relation of relations) {
+    const relations: Array<Relation<Model> | undefined> = [channel.membership, channel.info, channel.settings, channel.categoryChannel];
+    await Promise.all(relations.map(async (relation) => {
         try {
-            const model = await relation?.fetch?.();
+            const model = await relation?.fetch();
             if (model) {
                 preparedModels.push(model.prepareDestroyPermanently());
             }
         } catch {
             // Record not found, do nothing
         }
-    }
+    }));
 
-    const associatedChildren: Array<Query<any>> = [
+    const associatedChildren: Array<Query<Model> | undefined> = [
         channel.members,
         channel.drafts,
         channel.postsInChannel,
     ];
-    for await (const children of associatedChildren) {
-        const models = await children?.fetch?.() as Model[] | undefined;
+    await Promise.all(associatedChildren.map(async (children) => {
+        const models = await children?.fetch();
         models?.forEach((model) => preparedModels.push(model.prepareDestroyPermanently()));
-    }
+    }));
 
-    const posts = await channel.posts?.fetch?.() as PostModel[] | undefined;
+    const posts = await channel.posts?.fetch();
     if (posts?.length) {
         for await (const post of posts) {
             const preparedPost = await prepareDeletePost(post);

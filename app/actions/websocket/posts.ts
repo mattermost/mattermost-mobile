@@ -213,9 +213,11 @@ export function handlePostDeleted(serverUrl: string, msg: WebSocketMessage) {
 }
 
 export async function handlePostUnread(serverUrl: string, msg: WebSocketMessage) {
-    const {channels} = await fetchMyChannel(serverUrl, msg.broadcast.team_id, msg.broadcast.channel_id, true);
+    const {team_id: teamId, channel_id: channelId} = msg.broadcast;
+    const {mention_count: mentionCount, msg_count: msgCount, last_viewed_at: lastViewedAt} = msg.data;
+    const {channels} = await fetchMyChannel(serverUrl, teamId, channelId, true);
     const channel = channels?.[0];
     const postNumber = channel?.total_msg_count;
-    const delta = postNumber ? postNumber - msg.data.msg_count : msg.data.msg_count;
-    markChannelAsUnread(serverUrl, msg.broadcast.channel_id, delta, msg.data.mention_count, msg.data.last_viewed_at);
+    const delta = postNumber ? postNumber - msgCount : msgCount;
+    markChannelAsUnread(serverUrl, channelId, delta, mentionCount, lastViewedAt);
 }
