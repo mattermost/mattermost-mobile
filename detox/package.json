@@ -42,10 +42,5 @@
     "lint": "eslint --ignore-path .gitignore --ignore-pattern node_modules --quiet .",
     "start:webhook": "node webhook_server.js",
     "tsc": "NODE_OPTIONS=--max_old_space_size=12000 tsc --noEmit"
-  },
-  "jest": {
-    "transform": {
-      "^.+\\.[jt]s?$": "babel-jest"
-    }
   }
 }
