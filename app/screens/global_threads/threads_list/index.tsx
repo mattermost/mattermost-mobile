@@ -31,10 +31,10 @@ const enhanced = withObservables(['tab', 'teamId', 'forceQueryAfterAppState'], (
     const getOnlyUnreads = tab !== 'all';
 
     // Get all/unread threads
-    const threads = queryThreadsInTeam(database, teamId, getOnlyUnreads, true).observe();
+    const threads = queryThreadsInTeam({database, teamId, onlyUnreads: getOnlyUnreads, sort: true}).observe();
 
     // Get unreads count
-    const unreadsCount = queryThreadsInTeam(database, teamId, true).observeCount(false);
+    const unreadsCount = queryThreadsInTeam({database, teamId, onlyUnreads: true}).observeCount(false);
 
     // Get team name display setting
     const config = database.get<SystemModel>(SYSTEM).findAndObserve(SYSTEM_IDENTIFIERS.CONFIG);

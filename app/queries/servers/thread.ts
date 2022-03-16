@@ -21,32 +21,56 @@ export async function getIsCRTEnabled(database: Database): Promise<boolean> {
     return processIsCRTEnabled(preferences, config);
 }
 
-export const queryThreadsInTeam = (database: Database, teamId: string, onlyUnreads?: boolean, sort?: boolean): Query<ThreadModel> => {
-    const query: Q.Clause[] = [
-        Q.where('is_following', true),
-        Q.experimentalNestedJoin(POST, CHANNEL),
-        Q.on(
-            POST,
+type QueryThreadsInTeamArgs = {
+    database: Database;
+    hasReplies?: boolean;
+    isFollowing?: boolean;
+    onlyUnreads?: boolean;
+    sort?: boolean;
+    teamId?: string;
+};
+export const queryThreadsInTeam = ({database, hasReplies = true, isFollowing = true, onlyUnreads, sort, teamId}: QueryThreadsInTeamArgs): Query<ThreadModel> => {
+    const query: Q.Clause[] = [];
+
+    if (isFollowing) {
+        query.push(Q.where('is_following', true));
+    }
+
+    // Posts can be followed even without replies, they shouldn't be displayed in global threads
+    if (hasReplies) {
+        query.push(Q.where('reply_count', Q.gt(0)));
+    }
+
+    // If teamId is specified, only get threads in that team and DM
+    if (teamId) {
+        query.push(
+            Q.experimentalNestedJoin(POST, CHANNEL),
             Q.on(
-                CHANNEL,
-                Q.or(
-                    Q.where('team_id', teamId),
-                    Q.where('team_id', ''),
+                POST,
+                Q.on(
+                    CHANNEL,
+                    Q.or(
+                        Q.where('team_id', teamId),
+                        Q.where('team_id', ''),
+                    ),
                 ),
             ),
-        ),
-    ];
+        );
+    }
+
     if (onlyUnreads) {
         query.push(Q.where('unread_replies', Q.gt(0)));
     }
+
     if (sort) {
         query.push(Q.sortBy('last_reply_at', Q.desc));
     }
+
     return database.get<ThreadModel>(THREAD).query(...query);
 };
 
 export const queryUnreadsAndMentionsInTeam = (database: Database, teamId: string) => {
-    return queryThreadsInTeam(database, teamId, true, true).observeWithColumns(['unread_replies', 'unread_mentions']).pipe(
+    return queryThreadsInTeam({database, teamId, onlyUnreads: true}).observeWithColumns(['unread_replies', 'unread_mentions']).pipe(
         switchMap((threads) => {
             let unreads = 0;
             let mentions = 0;
