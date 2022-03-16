@@ -27,7 +27,7 @@ import {getResponseFromError} from './common';
  * @param {Date} option.createAt - The date the post is created at
  * @return {Object} returns {post} on success or {error, status} on error
  */
-export const apiCreatePost = async (baseUrl, {channelId, message, rootId, props = {}, createAt = 0}) => {
+export const apiCreatePost = async (baseUrl: string, {channelId, message, rootId, props = {}, createAt = 0}: any): Promise<any> => {
     try {
         const payload = {
             channel_id: channelId,
@@ -51,13 +51,13 @@ export const apiCreatePost = async (baseUrl, {channelId, message, rootId, props 
  * @param {string} channelId - The channel ID to get the posts for
  * @return {Object} returns {posts} on success or {error, status} on error
  */
-export const apiGetPostsInChannel = async (baseUrl, channelId) => {
+export const apiGetPostsInChannel = async (baseUrl: string, channelId: string): Promise<any> => {
     try {
         const response = await client.get(`${baseUrl}/api/v4/channels/${channelId}/posts`);
 
         const {order, posts} = response.data;
 
-        const orderedPosts = order.map((postId) => posts[postId]);
+        const orderedPosts = order.map((postId: string) => posts[postId]);
 
         return {posts: orderedPosts};
     } catch (err) {
@@ -71,7 +71,7 @@ export const apiGetPostsInChannel = async (baseUrl, channelId) => {
  * @param {string} channelId - The channel ID to get the last post
  * @return {Object} returns {post} on success or {error, status} on error
  */
-export const apiGetLastPostInChannel = async (baseUrl, channelId) => {
+export const apiGetLastPostInChannel = async (baseUrl: string, channelId: string): Promise<any> => {
     const {posts} = await apiGetPostsInChannel(baseUrl, channelId);
     return {post: posts[0]};
 };
@@ -84,7 +84,7 @@ export const apiGetLastPostInChannel = async (baseUrl, channelId) => {
  * @param {Object} postData - data to partially update a post
  * @return {Object} returns {post} on success or {error, status} on error
  */
-export const apiPatchPost = async (baseUrl, postId, postData) => {
+export const apiPatchPost = async (baseUrl: string, postId: string, postData: string): Promise<any> => {
     try {
         const response = await client.put(
             `${baseUrl}/api/v4/posts/${postId}/patch`,

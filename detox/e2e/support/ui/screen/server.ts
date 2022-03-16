@@ -39,7 +39,7 @@ class ServerScreen {
         return this.serverScreen;
     };
 
-    connectToServer = async (serverUrl, serverDisplayName) => {
+    connectToServer = async (serverUrl: string, serverDisplayName: string) => {
         await this.toBeVisible();
         await this.serverUrlInput.replaceText(serverUrl);
         await this.serverDisplayNameInput.replaceText(serverDisplayName);

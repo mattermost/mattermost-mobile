@@ -4,6 +4,7 @@
 import {Alert} from '@support/ui/component';
 import {HomeScreen} from '@support/ui/screen';
 import {timeouts} from '@support/utils';
+import {expect} from 'detox';
 
 class AccountScreen {
     testID = {
@@ -27,7 +28,7 @@ class AccountScreen {
         return this.toBeVisible();
     };
 
-    logout = async (serverDisplayName = null) => {
+    logout = async (serverDisplayName: string | null = null) => {
         await this.logoutAction.tap();
         if (serverDisplayName) {
             await expect(Alert.logoutTitle(serverDisplayName)).toBeVisible();

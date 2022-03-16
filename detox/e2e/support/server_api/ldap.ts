@@ -24,7 +24,7 @@ import {getResponseFromError} from './common';
  * @param {string} baseUrl - the base server URL
  * @return {string} returns response on success or {error, status} on error
  */
-export const apiLDAPSync = async (baseUrl) => {
+export const apiLDAPSync = async (baseUrl: string): Promise<any> => {
     try {
         return await client.post(`${baseUrl}/api/v4/ldap/sync`);
     } catch (err) {
@@ -38,7 +38,7 @@ export const apiLDAPSync = async (baseUrl) => {
  * @param {string} baseUrl - the base server URL
  * @return {Object} returns {status} on success or {error, status} on error
  */
-export const apiLDAPTest = async (baseUrl) => {
+export const apiLDAPTest = async (baseUrl: string): Promise<any> => {
     try {
         const response = await client.post(`${baseUrl}/api/v4/ldap/test`);
 
@@ -52,7 +52,7 @@ export const apiLDAPTest = async (baseUrl) => {
  * Check that LDAP server can connect and is synchronized with Mattermost server.
  * @param {string} baseUrl - the base server URL
  */
-export const apiRequireLDAPServer = async (baseUrl) => {
+export const apiRequireLDAPServer = async (baseUrl: string): Promise<any> => {
     const {error: testError} = await apiLDAPTest(baseUrl);
     jestExpect(testError).toBeUndefined();
 

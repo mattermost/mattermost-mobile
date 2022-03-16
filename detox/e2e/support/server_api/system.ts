@@ -3,7 +3,7 @@
 
 import path from 'path';
 
-import testConfig from '@support/test_config';
+import {ldapPort, ldapServer} from '@support/test_config';
 import merge from 'deepmerge';
 import jestExpect from 'expect';
 
@@ -29,7 +29,7 @@ import defaultServerConfig from './default_config.json';
  * Check system health.
  * @param {string} baseUrl - the base server URL
  */
-export const apiCheckSystemHealth = async (baseUrl) => {
+export const apiCheckSystemHealth = async (baseUrl: string): Promise<any> => {
     const {data} = await apiPingServerStatus(baseUrl);
     jestExpect(data.status).toEqual('OK');
     jestExpect(data.database_status).toEqual('OK');
@@ -42,7 +42,7 @@ export const apiCheckSystemHealth = async (baseUrl) => {
  * @param {string} baseUrl - the base server URL
  * @return {Object} returns response on success or {error, status} on error
  */
-export const apiEmailTest = async (baseUrl) => {
+export const apiEmailTest = async (baseUrl: string): Promise<any> => {
     try {
         return await client.post(`${baseUrl}/api/v4/email/test`);
     } catch (err) {
@@ -56,7 +56,7 @@ export const apiEmailTest = async (baseUrl) => {
  * @param {string} baseUrl - the base server URL
  * @return {Object} returns {license} on success or {error, status} on error
  */
-export const apiGetClientLicense = async (baseUrl) => {
+export const apiGetClientLicense = async (baseUrl: string): Promise<any> => {
     try {
         const response = await client.get(`${baseUrl}/api/v4/license/client?format=old`);
 
@@ -72,7 +72,7 @@ export const apiGetClientLicense = async (baseUrl) => {
  * @param {string} baseUrl - the base server URL
  * @return {Object} returns {config} on success or {error, status} on error
  */
-export const apiGetConfig = async (baseUrl) => {
+export const apiGetConfig = async (baseUrl: string): Promise<any> => {
     try {
         const response = await client.get(`${baseUrl}/api/v4/config`);
 
@@ -88,7 +88,7 @@ export const apiGetConfig = async (baseUrl) => {
  * @param {string} baseUrl - the base server URL
  * @return {Object} returns {data} on success or {error, status} on error
  */
-export const apiPingServerStatus = async (baseUrl) => {
+export const apiPingServerStatus = async (baseUrl: string): Promise<any> => {
     try {
         const response = await client.get(`${baseUrl}/api/v4/system/ping?get_server_status=true`);
         return {data: response.data};
@@ -102,7 +102,7 @@ export const apiPingServerStatus = async (baseUrl) => {
  * @param {string} baseUrl - the base server URL
  * @return {Object} returns {license} on success or fail when no license
  */
-export const apiRequireLicense = async (baseUrl) => {
+export const apiRequireLicense = async (baseUrl: string): Promise<any> => {
     const {license} = await getClientLicense(baseUrl);
 
     if (license.IsLicensed !== 'true') {
@@ -119,7 +119,7 @@ export const apiRequireLicense = async (baseUrl) => {
  * @param {string} key - feature, e.g. LDAP
  * @return {Object} returns {license} on success or fail when no license or no license to specific feature.
  */
-export const apiRequireLicenseForFeature = async (baseUrl, key = '') => {
+export const apiRequireLicenseForFeature = async (baseUrl: string, key = ''): Promise<any> => {
     const {license} = await getClientLicense(baseUrl);
 
     if (license.IsLicensed !== 'true') {
@@ -147,7 +147,7 @@ export const apiRequireLicenseForFeature = async (baseUrl, key = '') => {
  * Require SMTP server to be running.
  * @param {string} baseUrl - the base server URL
  */
-export const apiRequireSMTPServer = async (baseUrl) => {
+export const apiRequireSMTPServer = async (baseUrl: string) => {
     const {status} = await apiEmailTest(baseUrl);
     jestExpect(status).toEqual(200);
 };
@@ -159,10 +159,10 @@ export const apiRequireSMTPServer = async (baseUrl) => {
  * @param {Object} newConfig - specific config to update
  * @return {Object} returns {config} on success or {error, status} on error
  */
-export const apiUpdateConfig = async (baseUrl, newConfig = {}) => {
+export const apiUpdateConfig = async (baseUrl: string, newConfig: any = {}): Promise<any> => {
     try {
         const {config: currentConfig} = await apiGetConfig(baseUrl);
-        const config = merge.all([currentConfig, getDefaultConfig(), newConfig]);
+        const config = merge.all([currentConfig, getDefaultConfig(baseUrl), newConfig]);
 
         const response = await client.put(
             `${baseUrl}/api/v4/config`,
@@ -181,7 +181,7 @@ export const apiUpdateConfig = async (baseUrl, newConfig = {}) => {
  * @param {string} baseUrl - the base server URL
  * @return {Object} returns response on success or {error, status} on error
  */
-export const apiUploadLicense = async (baseUrl) => {
+export const apiUploadLicense = async (baseUrl: string): Promise<any> => {
     const absFilePath = path.resolve(__dirname, '../../support/fixtures/mattermost-license.txt');
     return apiUploadFile('license', absFilePath, {url: `${baseUrl}/api/v4/license`, method: 'POST'});
 };
@@ -191,7 +191,7 @@ export const apiUploadLicense = async (baseUrl) => {
  * If no license, try to upload if license file is available at "/support/fixtures/mattermost-license.txt".
  * @return {Object} returns {license} on success or upload when no license or get updated license.
  */
-async function getClientLicense(baseUrl) {
+export const getClientLicense = async (baseUrl: string): Promise<any> => {
     const {license} = await apiGetClientLicense(baseUrl);
     if (license.IsLicensed === 'true') {
         return {license};
@@ -207,19 +207,19 @@ async function getClientLicense(baseUrl) {
     // Get an updated client license
     const out = await apiGetClientLicense(baseUrl);
     return {license: out.license};
-}
+};
 
-function getDefaultConfig(siteUrl) {
+export const getDefaultConfig = (siteUrl: string) => {
     const fromEnv = {
         LdapSettings: {
-            LdapServer: testConfig.ldapServer,
-            LdapPort: testConfig.ldapPort,
+            LdapServer: ldapServer,
+            LdapPort: ldapPort,
         },
         ServiceSettings: {SiteURL: siteUrl},
     };
 
     return merge(defaultServerConfig, fromEnv);
-}
+};
 
 export const System = {
     apiCheckSystemHealth,
@@ -232,6 +232,8 @@ export const System = {
     apiRequireSMTPServer,
     apiUpdateConfig,
     apiUploadLicense,
+    getClientLicense,
+    getDefaultConfig,
 };
 
 export default System;

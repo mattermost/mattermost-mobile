@@ -11,6 +11,7 @@ type Props = {
     borderColor?: string;
     color?: string;
     style?: Animated.WithAnimatedValue<StyleProp<TextStyle>>;
+    testID?: string;
     type?: 'Normal' | 'Small';
 
     /**
@@ -27,6 +28,7 @@ export default function Badge({
     type = 'Normal',
     value,
     style,
+    testID,
     ...rest
 }: Props) {
     const [opacity] = React.useState(() => new Animated.Value(visible ? 1 : 0));
@@ -114,6 +116,7 @@ export default function Badge({
                 additionalStyle,
                 restStyle,
             ]}
+            testID={testID}
             {...rest}
         >
             {badge}
