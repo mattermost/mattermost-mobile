@@ -1795,10 +1795,8 @@ export class AppCommandParser {
                 errorMessage,
             }));
         }
-        creq.values = {
-            ...creq.values,
-            [f.name]: parsed.incomplete,
-        };
+        creq.query = parsed.incomplete;
+        creq.selected_field = parsed.field?.name;
 
         const res = await this.store.dispatch(doAppLookup(creq, this.intl)) as DoAppCallResult<AppLookupResponse>;
 
