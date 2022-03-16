@@ -16,3 +16,12 @@ export const showToast = (
     };
     showOverlay(screen, passProps);
 };
+
+export const showToastInternet = () => {
+    const screen = Screens.SNACK_BAR;
+    const passProps = {
+        barType: SNACK_BAR_TYPE.LINK_COPIED, // fixme: create a new one for internet connection
+        isDismissible: false,
+    };
+    showOverlay(screen, passProps);
+};

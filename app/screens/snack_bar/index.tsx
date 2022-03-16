@@ -23,9 +23,6 @@ type SnackBarProps = {
     barType: keyof typeof SNACK_BAR_TYPE; // connection lost, reconnected, etc..
 }
 
-//todo: think of how to prevent the overlay from being dismissed => e.g. prevent it from being dismissed if no connection,
-// but if you get connection, then remove the toast....add connection listener?
-
 const SnackBar = ({
     barType,
     componentId,

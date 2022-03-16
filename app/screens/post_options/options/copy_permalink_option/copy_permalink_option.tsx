@@ -8,8 +8,8 @@ import {Screens} from '@constants';
 import {useServerUrl} from '@context/server';
 import {t} from '@i18n';
 import {dismissBottomSheet} from '@screens/navigation';
-import {showToast} from '@screens/post_options/helper';
 import {SNACK_BAR_TYPE} from '@screens/snack_bar/constants';
+import {showToast} from '@utils/toast';
 
 import BaseOption from '../base_option';
 
