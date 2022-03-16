@@ -117,13 +117,13 @@ export const prepareCategoryChannels = (
 export const prepareDeleteCategory = async (category: CategoryModel): Promise<Model[]> => {
     const preparedModels: Model[] = [category.prepareDestroyPermanently()];
 
-    const associatedChildren: Array<Query<any>> = [
+    const associatedChildren: Array<Query<Model>|undefined> = [
         category.categoryChannels,
     ];
-    for await (const children of associatedChildren) {
-        const models = await children?.fetch?.() as Model[] | undefined;
+    await Promise.all(associatedChildren.map(async (children) => {
+        const models = await children?.fetch();
         models?.forEach((model) => preparedModels.push(model.prepareDestroyPermanently()));
-    }
+    }));
 
     return preparedModels;
 };

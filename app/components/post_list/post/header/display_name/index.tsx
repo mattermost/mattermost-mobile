@@ -3,8 +3,7 @@
 
 import React, {useCallback, useRef} from 'react';
 import {useIntl} from 'react-intl';
-import {Keyboard, Text, useWindowDimensions, View} from 'react-native';
-import {TouchableOpacity} from 'react-native-gesture-handler';
+import {Keyboard, Text, TouchableOpacity, useWindowDimensions, View} from 'react-native';
 
 import CompassIcon from '@components/compass_icon';
 import FormattedText from '@components/formatted_text';

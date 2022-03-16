@@ -4,6 +4,8 @@
 declare module 'react-native-keyboard-tracking-view' {
     import {ViewProps} from 'react-native';
     export interface KeyboardTrackingViewRef {
+        pauseTracking: (id: string) => void;
+        resumeTracking: (id: string) => void;
         resetScrollView: (id: string) => void;
         setNativeProps(nativeProps: object): void;
     }

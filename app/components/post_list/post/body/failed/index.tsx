@@ -3,8 +3,7 @@
 
 import React, {useCallback} from 'react';
 import {useIntl} from 'react-intl';
-import {StyleSheet, View} from 'react-native';
-import {TouchableOpacity} from 'react-native-gesture-handler';
+import {StyleSheet, TouchableOpacity, View} from 'react-native';
 
 import {removePost} from '@actions/local/post';
 import CompassIcon from '@components/compass_icon';

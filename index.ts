@@ -5,7 +5,7 @@ import {DeviceEventEmitter, Platform} from 'react-native';
 import 'react-native-gesture-handler';
 import {ComponentDidAppearEvent, ComponentDidDisappearEvent, Navigation} from 'react-native-navigation';
 
-import {Screens} from './app/constants';
+import {Events, Screens} from './app/constants';
 import DatabaseManager from './app/database/manager';
 import {getAllServerCredentials} from './app/init/credentials';
 import GlobalEventHandler from './app/init/global_event_handler';
@@ -79,7 +79,9 @@ const registerNavigationListeners = () => {
 
 function componentWillAppear({componentId}: ComponentDidAppearEvent) {
     if (componentId === Screens.HOME) {
-        DeviceEventEmitter.emit('tabBarVisible', true);
+        DeviceEventEmitter.emit(Events.TAB_BAR_VISIBLE, true);
+    } else if ([Screens.EDIT_POST, Screens.THREAD].includes(componentId)) {
+        DeviceEventEmitter.emit(Events.PAUSE_KEYBOARD_TRACKING_VIEW, true);
     }
 }
 
@@ -93,8 +95,12 @@ function componentDidDisappearListener({componentId}: ComponentDidDisappearEvent
     if (componentId !== Screens.HOME) {
         EphemeralStore.removeNavigationComponentId(componentId);
 
+        if ([Screens.EDIT_POST, Screens.THREAD].includes(componentId)) {
+            DeviceEventEmitter.emit(Events.PAUSE_KEYBOARD_TRACKING_VIEW, false);
+        }
+
         if (EphemeralStore.getNavigationTopComponentId() === Screens.HOME) {
-            DeviceEventEmitter.emit('tabBarVisible', true);
+            DeviceEventEmitter.emit(Events.TAB_BAR_VISIBLE, true);
         }
     }
 }

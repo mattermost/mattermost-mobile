@@ -2,8 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React, {memo, useCallback, useRef, useState} from 'react';
-import {StyleSheet, View} from 'react-native';
-import {TapGestureHandler} from 'react-native-gesture-handler';
+import {StyleSheet, TouchableWithoutFeedback, View} from 'react-native';
 import Animated from 'react-native-reanimated';
 import parseUrl from 'url-parse';
 
@@ -110,9 +109,9 @@ const MarkTableImage = ({disabled, imagesMetadata, location, postId, serverURL, 
     } else {
         const {height, width} = calculateDimensions(metadata.height, metadata.width, 100, 100);
         image = (
-            <TapGestureHandler
-                enabled={!disabled}
-                onGestureEvent={onGestureEvent}
+            <TouchableWithoutFeedback
+                disabled={disabled}
+                onPress={onGestureEvent}
             >
                 <Animated.View
                     style={[styles, {width, height}]}
@@ -127,7 +126,7 @@ const MarkTableImage = ({disabled, imagesMetadata, location, postId, serverURL, 
                         style={{width, height}}
                     />
                 </Animated.View>
-            </TapGestureHandler>
+            </TouchableWithoutFeedback>
         );
     }
 

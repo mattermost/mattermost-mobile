@@ -5,8 +5,7 @@ import {useManagedConfig} from '@mattermost/react-native-emm';
 import Clipboard from '@react-native-community/clipboard';
 import React, {useCallback, useMemo, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
-import {Alert, Platform, StyleProp, Text, TextStyle, View} from 'react-native';
-import {LongPressGestureHandler, TapGestureHandler} from 'react-native-gesture-handler';
+import {Alert, Platform, StyleProp, Text, TextStyle, TouchableWithoutFeedback, View} from 'react-native';
 import Animated from 'react-native-reanimated';
 import {SvgUri} from 'react-native-svg';
 import parseUrl from 'url-parse';
@@ -74,8 +73,7 @@ const MarkdownImage = ({
     const style = getStyleSheet(theme);
     const managedConfig = useManagedConfig();
     const genericFileId = useRef(generateId('uid')).current;
-    const tapRef = useRef<TapGestureHandler>();
-    const metadata = imagesMetadata?.[source] || Object.values(imagesMetadata || {})?.[0];
+    const metadata = imagesMetadata?.[source] || Object.values(imagesMetadata || {})[0];
     const [failed, setFailed] = useState(isGifTooLarge(metadata));
     const originalSize = getMarkdownImageSize(isReplyPost, isTablet, sourceSize, metadata, layoutWidth);
     const serverUrl = useServerUrl();
@@ -109,11 +107,12 @@ const MarkdownImage = ({
             width: originalSize.width,
             height: originalSize.height,
         } as FileInfo;
-    }, [uri, originalSize, metadata, isReplyPost, isTablet]);
+    }, [originalSize, metadata]);
 
     const handlePreviewImage = useCallback(() => {
         const item: GalleryItemType = {
             ...fileToGalleryItem(fileInfo),
+            mime_type: lookupMimeType(fileInfo.name),
             type: 'image',
         };
         openGalleryAtIndex(galleryIdentifier, 0, [item]);
@@ -233,28 +232,43 @@ const MarkdownImage = ({
             );
         } else {
             image = (
+                <TouchableWithoutFeedback
+                    disabled={disabled}
+                    onLongPress={handleLinkLongPress}
+                    onPress={onGestureEvent}
+                >
+                    <Animated.View
+                        style={[styles, {width, height}, style.container]}
+                        testID='markdown_image'
+                    >
+                        <ProgressiveImage
+                            forwardRef={ref}
+                            id={fileInfo.id!}
+                            defaultSource={{uri: fileInfo.uri!}}
+                            onError={handleOnError}
+                            resizeMode='contain'
+                            style={{width, height}}
+                        />
+                    </Animated.View>
+                </TouchableWithoutFeedback>
+            );
+        }
+    }
+
+    if (image && linkDestination && !disabled) {
+        image = (
+            <TouchableWithFeedback
+                onPress={handleLinkPress}
+                onLongPress={handleLinkLongPress}
+                style={[{width, height}, style.container]}
+            >
                 <ProgressiveImage
-                    forwardRef={ref}
                     id={fileInfo.id!}
                     defaultSource={{uri: fileInfo.uri!}}
                     onError={handleOnError}
                     resizeMode='contain'
                     style={{width, height}}
                 />
-
-            );
-        }
-    }
-
-    if (image && linkDestination && !disabled) {
-        return (
-            <TouchableWithFeedback
-                onPress={handleLinkPress}
-                onLongPress={handleLinkLongPress}
-                style={[{width, height}, style.container]}
-                testID='markdown_image_link'
-            >
-                {image}
             </TouchableWithFeedback>
         );
     }
@@ -262,23 +276,7 @@ const MarkdownImage = ({
     return (
         <GalleryInit galleryIdentifier={galleryIdentifier}>
             <Animated.View testID='markdown_image'>
-                <LongPressGestureHandler
-                    enabled={!disabled}
-                    onGestureEvent={handleLinkLongPress}
-                    waitFor={tapRef}
-                >
-                    <Animated.View style={[styles, {width, height}, style.container]}>
-                        <TapGestureHandler
-                            enabled={!disabled}
-                            onGestureEvent={onGestureEvent}
-                            ref={tapRef}
-                        >
-                            <Animated.View>
-                                {image}
-                            </Animated.View>
-                        </TapGestureHandler>
-                    </Animated.View>
-                </LongPressGestureHandler>
+                {image}
             </Animated.View>
         </GalleryInit>
     );

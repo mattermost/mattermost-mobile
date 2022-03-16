@@ -2,8 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
-import {StyleSheet, View} from 'react-native';
-import {TapGestureHandler} from 'react-native-gesture-handler';
+import {StyleSheet, TouchableWithoutFeedback, View} from 'react-native';
 import Animated from 'react-native-reanimated';
 
 import {updateDraftFile} from '@actions/local/draft';
@@ -131,11 +130,11 @@ export default function UploadItem({
             style={style.preview}
         >
             <View style={style.previewContainer}>
-                <TapGestureHandler onGestureEvent={onGestureEvent}>
+                <TouchableWithoutFeedback onPress={onGestureEvent}>
                     <Animated.View style={[styles, style.filePreview]}>
                         {filePreviewComponent}
                     </Animated.View>
-                </TapGestureHandler>
+                </TouchableWithoutFeedback>
                 {file.failed &&
                 <UploadRetry
                     onPress={retryFileUpload}
