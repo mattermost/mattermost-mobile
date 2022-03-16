@@ -16,7 +16,6 @@ import type ThreadModel from '@typings/database/models/servers/thread';
 export type {Tab};
 
 export type Props = {
-    currentUserId: string;
     isLoading: boolean;
     setTab: (tab: Tab) => void;
     tab: Tab;
@@ -39,32 +38,13 @@ const styles = StyleSheet.create({
     },
 });
 
-const ThreadsList = ({currentUserId, isLoading, setTab, tab, teamId, teammateNameDisplay, testID, theme, threads, unreadsCount}: Props) => {
+const ThreadsList = ({isLoading, setTab, tab, teamId, teammateNameDisplay, testID, theme, threads, unreadsCount}: Props) => {
     const intl = useIntl();
 
     const keyExtractor = useCallback((item: ThreadModel) => item.id, []);
 
-    const renderEmptyList = () => {
-        if (isLoading) {
-            return (
-                <Loading
-                    color={theme.buttonBg}
-                    containerStyle={styles.loadingStyle}
-                />
-            );
-        }
-        return (
-            <EmptyState
-                intl={intl}
-                isUnreads={tab === 'unreads'}
-                theme={theme}
-            />
-        );
-    };
-
     const renderItem = useCallback(({item}) => (
         <Thread
-            currentUserId={currentUserId}
             testID={testID}
             teammateNameDisplay={teammateNameDisplay}
             thread={item}
@@ -72,13 +52,31 @@ const ThreadsList = ({currentUserId, isLoading, setTab, tab, teamId, teammateNam
         />
     ), [theme]);
 
+    let listEmptyComponent;
+    if (isLoading) {
+        listEmptyComponent = (
+            <Loading
+                color={theme.buttonBg}
+                containerStyle={styles.loadingStyle}
+            />
+        );
+    } else {
+        listEmptyComponent = (
+            <EmptyState
+                intl={intl}
+                isUnreads={tab === 'unreads'}
+                theme={theme}
+            />
+        );
+    }
+
     return (
         <>
             <Header
                 setTab={setTab}
                 tab={tab}
                 teamId={teamId}
-                testID='TODO'
+                testID={testID}
                 theme={theme}
                 unreadsCount={unreadsCount}
             />
@@ -86,7 +84,7 @@ const ThreadsList = ({currentUserId, isLoading, setTab, tab, teamId, teammateNam
                 contentContainerStyle={styles.messagesContainer}
                 data={threads}
                 keyExtractor={keyExtractor}
-                ListEmptyComponent={renderEmptyList()}
+                ListEmptyComponent={listEmptyComponent}
                 maxToRenderPerBatch={Platform.select({android: 5})}
                 removeClippedSubviews={true}
                 renderItem={renderItem}

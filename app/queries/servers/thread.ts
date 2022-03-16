@@ -2,6 +2,8 @@
 // See LICENSE.txt for license information.
 
 import {Database, Q, Query} from '@nozbe/watermelondb';
+import {of as of$} from 'rxjs';
+import {switchMap} from 'rxjs/operators';
 
 import {Preferences} from '@constants';
 import {MM_TABLES, SYSTEM_IDENTIFIERS} from '@constants/database';
@@ -41,4 +43,18 @@ export const queryThreadsInTeam = (database: Database, teamId: string, onlyUnrea
         query.push(Q.sortBy('last_reply_at', Q.desc));
     }
     return database.get<ThreadModel>(THREAD).query(...query);
+};
+
+export const queryUnreadsAndMentionsInTeam = (database: Database, teamId: string) => {
+    return queryThreadsInTeam(database, teamId, true, true).observeWithColumns(['unread_replies', 'unread_mentions']).pipe(
+        switchMap((threads) => {
+            let unreads = 0;
+            let mentions = 0;
+            threads.forEach((thread) => {
+                unreads += thread.unreadReplies;
+                mentions += thread.unreadMentions;
+            });
+            return of$({unreads, mentions});
+        }),
+    );
 };

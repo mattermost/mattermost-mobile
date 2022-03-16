@@ -9,6 +9,7 @@ import {fetchAndSwitchToThread} from '@actions/remote/thread';
 import FormattedText from '@components/formatted_text';
 import FriendlyDate from '@components/friendly_date';
 import {useServerUrl} from '@context/server';
+import {preventDoubleTap} from '@utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {displayUsername} from '@utils/user';
 
@@ -20,10 +21,8 @@ import type ThreadModel from '@typings/database/models/servers/thread';
 import type UserModel from '@typings/database/models/servers/user';
 
 type Props = {
-    author: UserModel;
-    channel: ChannelModel | undefined;
-    currentUserId: string;
-    participants: UserModel[];
+    author?: UserModel;
+    channel?: ChannelModel;
     post: PostModel;
     teammateNameDisplay: string;
     testID: string;
@@ -125,16 +124,16 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     };
 });
 
-const Thread = ({author, channel, currentUserId, participants, post, teammateNameDisplay, testID, theme, thread}: Props) => {
-    const style = getStyleSheet(theme);
+const Thread = ({author, channel, post, teammateNameDisplay, testID, theme, thread}: Props) => {
+    const styles = getStyleSheet(theme);
     const serverUrl = useServerUrl();
 
-    const showThread = useCallback(() => {
+    const showThread = useCallback(preventDoubleTap(() => {
         fetchAndSwitchToThread(serverUrl, thread.id);
-    }, [serverUrl, thread.id]);
+    }), [serverUrl, thread.id]);
 
     const showThreadOptions = () => {
-        //@todo
+        //@todo: https://mattermost.atlassian.net/browse/MM-40078
     };
 
     const threadStarterName = displayUsername(author, undefined, teammateNameDisplay);
@@ -146,16 +145,16 @@ const Thread = ({author, channel, currentUserId, participants, post, teammateNam
         if (thread.unreadMentions && thread.unreadMentions > 0) {
             badgeComponent = (
                 <View
-                    style={style.mentionBadge}
+                    style={styles.mentionBadge}
                     testID={`${testIDPrefix}.unread_mentions`}
                 >
-                    <Text style={style.mentionBadgeText}>{thread.unreadMentions > 99 ? '99+' : thread.unreadMentions}</Text>
+                    <Text style={styles.mentionBadgeText}>{thread.unreadMentions > 99 ? '99+' : thread.unreadMentions}</Text>
                 </View>
             );
         } else if (thread.unreadReplies && thread.unreadReplies > 0) {
             badgeComponent = (
                 <View
-                    style={style.unreadDot}
+                    style={styles.unreadDot}
                     testID={`${testIDPrefix}.unread_dot`}
                 />
             );
@@ -167,22 +166,22 @@ const Thread = ({author, channel, currentUserId, participants, post, teammateNam
     if (post.deleteAt > 0) {
         name = (
             <FormattedText
-                id={'threads.deleted'}
-                defaultMessage={'Original Message Deleted'}
-                style={[style.threadStarter, style.threadDeleted]}
+                id='threads.deleted'
+                defaultMessage='Original Message Deleted'
+                style={[styles.threadStarter, styles.threadDeleted]}
                 numberOfLines={1}
             />
         );
     } else {
         name = (
             <Text
-                style={style.threadStarter}
+                style={styles.threadStarter}
                 numberOfLines={1}
             >{threadStarterName}</Text>
         );
         postBody = (
             <Text
-                style={style.message}
+                style={styles.message}
                 numberOfLines={2}
             >
                 {post?.message}
@@ -197,18 +196,18 @@ const Thread = ({author, channel, currentUserId, participants, post, teammateNam
             onPress={showThread}
             testID={`${testIDPrefix}.item`}
         >
-            <View style={style.container}>
-                <View style={style.badgeContainer}>
+            <View style={styles.container}>
+                <View style={styles.badgeContainer}>
                     {badgeComponent}
                 </View>
-                <View style={style.postContainer}>
-                    <View style={style.header}>
-                        <View style={style.headerInfoContainer}>
+                <View style={styles.postContainer}>
+                    <View style={styles.header}>
+                        <View style={styles.headerInfoContainer}>
                             {name}
                             {threadStarterName !== channel?.displayName && (
-                                <View style={style.channelNameContainer}>
+                                <View style={styles.channelNameContainer}>
                                     <Text
-                                        style={style.channelName}
+                                        style={styles.channelName}
                                         numberOfLines={1}
                                     >{channel?.displayName}</Text>
                                 </View>
@@ -216,14 +215,12 @@ const Thread = ({author, channel, currentUserId, participants, post, teammateNam
                         </View>
                         <FriendlyDate
                             value={thread.lastReplyAt}
-                            style={style.date}
+                            style={styles.date}
                         />
                     </View>
                     {postBody}
                     <ThreadFooter
                         author={author}
-                        currentUserId={currentUserId}
-                        participants={participants}
                         teammateNameDisplay={teammateNameDisplay}
                         testID={`${testIDPrefix}.footer`}
                         thread={thread}

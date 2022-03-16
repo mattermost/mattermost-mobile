@@ -3,7 +3,7 @@
 
 import React from 'react';
 
-import Row from './user';
+import Row from './row';
 
 import type UserModel from '@typings/database/models/servers/user';
 

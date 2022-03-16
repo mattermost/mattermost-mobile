@@ -2,61 +2,59 @@
 
 exports[`Threads Component should match snapshot 1`] = `
 <View
-  onMoveShouldSetResponder={[Function]}
-  onMoveShouldSetResponderCapture={[Function]}
-  onResponderEnd={[Function]}
+  accessible={true}
+  collapsable={false}
+  focusable={true}
+  onClick={[Function]}
   onResponderGrant={[Function]}
   onResponderMove={[Function]}
-  onResponderReject={[Function]}
   onResponderRelease={[Function]}
-  onResponderStart={[Function]}
   onResponderTerminate={[Function]}
   onResponderTerminationRequest={[Function]}
   onStartShouldSetResponder={[Function]}
-  onStartShouldSetResponderCapture={[Function]}
+  style={
+    Object {
+      "opacity": 1,
+    }
+  }
 >
   <View
-    accessible={true}
-    focusable={true}
-    onClick={[Function]}
-    onResponderGrant={[Function]}
-    onResponderMove={[Function]}
-    onResponderRelease={[Function]}
-    onResponderTerminate={[Function]}
-    onResponderTerminationRequest={[Function]}
-    onStartShouldSetResponder={[Function]}
+    style={
+      Object {
+        "display": "flex",
+        "flexDirection": "row",
+        "paddingLeft": 3,
+      }
+    }
   >
+    <Icon
+      name="message-text-outline"
+      style={
+        Array [
+          Object {
+            "color": "rgba(255,255,255,0.72)",
+            "fontSize": 24,
+            "lineHeight": 28,
+          },
+        ]
+      }
+    />
     <View
       style={
         Object {
-          "display": "flex",
-          "flexDirection": "row",
+          "flex": 1,
         }
       }
     >
-      <Icon
-        name="message-text-outline"
-        style={
-          Object {
-            "color": "#ffffff",
-            "fontSize": 24,
-            "lineHeight": 28,
-          }
-        }
-      />
       <Text
         style={
           Array [
-            Array [
-              Object {
-                "fontFamily": "OpenSans-SemiBold",
-                "fontSize": 16,
-                "fontWeight": "600",
-                "lineHeight": 24,
-              },
-            ],
             Object {
-              "color": "#ffffff",
+              "color": "rgba(255,255,255,0.72)",
+              "fontFamily": "OpenSans-SemiBold",
+              "fontSize": 16,
+              "fontWeight": "600",
+              "lineHeight": 24,
               "paddingLeft": 12,
             },
           ]

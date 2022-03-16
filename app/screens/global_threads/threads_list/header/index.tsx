@@ -2,10 +2,11 @@
 // See LICENSE.txt for license information.
 import React from 'react';
 import {useIntl} from 'react-intl';
-import {Alert, Text, TouchableOpacity, View} from 'react-native';
+import {Alert, TouchableOpacity, View} from 'react-native';
 
 import {updateTeamThreadsAsRead} from '@actions/remote/thread';
 import CompassIcon from '@components/compass_icon';
+import FormattedText from '@components/formatted_text';
 import {useServerUrl} from '@context/server';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
@@ -20,7 +21,7 @@ export type Props = {
     unreadsCount: number;
 };
 
-const getStyle = makeStyleSheetFromTheme((theme) => {
+const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     return {
         container: {
             alignItems: 'center',
@@ -80,7 +81,7 @@ const getStyle = makeStyleSheetFromTheme((theme) => {
 });
 
 const Header = ({setTab, tab, teamId, testID, theme, unreadsCount}: Props) => {
-    const style = getStyle(theme);
+    const styles = getStyleSheet(theme);
     const intl = useIntl();
     const serverUrl = useServerUrl();
 
@@ -116,57 +117,53 @@ const Header = ({setTab, tab, teamId, testID, theme, unreadsCount}: Props) => {
         );
     };
 
+    const testIDPrefix = `${testID}.header`;
+
     return (
-        <View style={style.container}>
-            <View style={style.menuContainer}>
+        <View style={styles.container}>
+            <View style={styles.menuContainer}>
                 <TouchableOpacity
                     onPress={() => setTab('all')}
-                    testID={`${testID}.all_threads`}
+                    testID={`${testIDPrefix}.all_threads`}
                 >
-                    <View style={[style.menuItemContainer, viewingUnreads ? undefined : style.menuItemContainerSelected]}>
-                        <Text style={[style.menuItem, viewingUnreads ? {} : style.menuItemSelected]}>
-                            {
-                                intl.formatMessage({
-                                    id: 'global_threads.allThreads',
-                                    defaultMessage: 'All your threads',
-                                })
-                            }
-                        </Text>
+                    <View style={[styles.menuItemContainer, viewingUnreads ? undefined : styles.menuItemContainerSelected]}>
+                        <FormattedText
+                            id='global_threads.allThreads'
+                            defaultMessage='All your threads'
+                            style={[styles.menuItem, viewingUnreads ? {} : styles.menuItemSelected]}
+                        />
                     </View>
                 </TouchableOpacity>
                 <TouchableOpacity
                     onPress={() => setTab('unreads')}
-                    testID={`${testID}.unread_threads`}
+                    testID={`${testIDPrefix}.unread_threads`}
                 >
-                    <View style={[style.menuItemContainer, viewingUnreads ? style.menuItemContainerSelected : undefined]}>
+                    <View style={[styles.menuItemContainer, viewingUnreads ? styles.menuItemContainerSelected : undefined]}>
                         <View>
-                            <Text style={[style.menuItem, viewingUnreads ? style.menuItemSelected : {}]}>
-                                {
-                                    intl.formatMessage({
-                                        id: 'global_threads.unreads',
-                                        defaultMessage: 'Unreads',
-                                    })
-                                }
-                            </Text>
+                            <FormattedText
+                                id='global_threads.unreads'
+                                defaultMessage='Unreads'
+                                style={[styles.menuItem, viewingUnreads ? styles.menuItemSelected : {}]}
+                            />
                             {hasUnreads ? (
                                 <View
-                                    style={style.unreadsDot}
-                                    testID={`${testID}.unreads_dot`}
+                                    style={styles.unreadsDot}
+                                    testID={`${testIDPrefix}.unreads_dot`}
                                 />
                             ) : null}
                         </View>
                     </View>
                 </TouchableOpacity>
             </View>
-            <View style={style.markAllReadIconContainer}>
+            <View style={styles.markAllReadIconContainer}>
                 <TouchableOpacity
                     disabled={!hasUnreads}
                     onPress={handleMarkAllAsRead}
-                    testID={`${testID}.mark_all_read`}
+                    testID={`${testIDPrefix}.mark_all_read`}
                 >
                     <CompassIcon
                         name='playlist-check'
-                        style={[style.markAllReadIcon, hasUnreads ? undefined : style.markAllReadIconDisabled]}
+                        style={[styles.markAllReadIcon, hasUnreads ? undefined : styles.markAllReadIconDisabled]}
                     />
                 </TouchableOpacity>
             </View>

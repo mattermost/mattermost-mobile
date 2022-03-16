@@ -1,6 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {updateThreadRead} from '@actions/remote/thread';
 import CompassIcon from '@components/compass_icon';
 import {ActionType, General, Screens} from '@constants';
 import {MM_TABLES} from '@constants/database';
@@ -8,7 +9,7 @@ import DatabaseManager from '@database/manager';
 import {getTranslations, t} from '@i18n';
 import {queryChannelById} from '@queries/servers/channel';
 import {queryPostById} from '@queries/servers/post';
-import {queryThreadsInTeam} from '@queries/servers/thread';
+import {getIsCRTEnabled, queryThreadsInTeam} from '@queries/servers/thread';
 import {queryCurrentUser} from '@queries/servers/user';
 import {showModal} from '@screens/navigation';
 import EphemeralStore from '@store/ephemeral_store';
@@ -41,6 +42,18 @@ export const switchToThread = async (serverUrl: string, rootId: string) => {
         const theme = EphemeralStore.theme;
         if (!theme) {
             return {error: 'Theme not found'};
+        }
+
+        // Mark thread as read if we have unreads
+        const isCRTEnabled = await getIsCRTEnabled(database);
+        if (isCRTEnabled) {
+            const thread = await post.thread.fetch();
+            if (!thread) {
+                return {error: 'Thread not found'};
+            }
+            if (thread.unreadReplies || thread.unreadMentions) {
+                updateThreadRead(serverUrl, channel.teamId, thread.id, Date.now());
+            }
         }
 
         // Get translation by user locale

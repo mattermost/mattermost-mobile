@@ -4,23 +4,23 @@
 import {withDatabase} from '@nozbe/watermelondb/DatabaseProvider';
 import withObservables from '@nozbe/with-observables';
 import React, {useCallback, useEffect, useMemo, useState} from 'react';
+import {useIntl} from 'react-intl';
 import {Keyboard, StyleSheet, View} from 'react-native';
 import {Edge, SafeAreaView, useSafeAreaInsets} from 'react-native-safe-area-context';
-import {of as of$} from 'rxjs';
-import {map, switchMap} from 'rxjs/operators';
+import {map} from 'rxjs/operators';
 
 import {getThreads} from '@actions/remote/thread';
 import NavigationHeader from '@components/navigation_header';
 import {Database} from '@constants';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
-import {useAppState, useIsTablet} from '@hooks/device';
+import {useAppState} from '@hooks/device';
 import {useDefaultHeaderHeight} from '@hooks/header';
 import {popTopScreen} from '@screens/navigation';
 
-// import Header from './header';
-import ThreadsList, {Tab} from './threads_list';
+import ThreadsList from './threads_list';
 
+import type {Tab} from './threads_list/threads_list';
 import type {WithDatabaseArgs} from '@typings/database/database';
 import type SystemModel from '@typings/database/models/servers/system';
 
@@ -42,8 +42,8 @@ const styles = StyleSheet.create({
 
 const GlobalThreads = ({componentId, currentTeamId}: Props) => {
     const appState = useAppState();
+    const intl = useIntl();
     const insets = useSafeAreaInsets();
-    const isTablet = useIsTablet();
     const serverUrl = useServerUrl();
 
     const theme = useTheme();
@@ -51,7 +51,6 @@ const GlobalThreads = ({componentId, currentTeamId}: Props) => {
 
     const [tab, setTab] = useState<Tab>('all');
 
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const [isLoading, setIsLoading] = useState(true);
     useEffect(() => {
         setIsLoading(true);
@@ -70,15 +69,20 @@ const GlobalThreads = ({componentId, currentTeamId}: Props) => {
 
     return (
         <SafeAreaView
-            style={styles.flex}
-            mode='margin'
             edges={edges}
+            mode='margin'
+            style={styles.flex}
+            testID='global_threads'
         >
             <NavigationHeader
                 isLargeTitle={false}
                 onBackPress={onBackPress}
-                showBackButton={!isTablet}
-                title={'Threads'}
+                title={
+                    intl.formatMessage({
+                        id: 'threads',
+                        defaultMessage: 'Threads',
+                    })
+                }
             />
             <View style={containerStyle}>
                 <ThreadsList
@@ -87,7 +91,7 @@ const GlobalThreads = ({componentId, currentTeamId}: Props) => {
                     isLoading={isLoading}
                     tab={tab}
                     teamId={currentTeamId}
-                    testID={'undefined'}
+                    testID={'global_threads.list'}
                     theme={theme}
                 />
             </View>
@@ -99,8 +103,6 @@ const enhanced = withObservables([], ({database}: WithDatabaseArgs) => ({
     currentTeamId: database.collections.get<SystemModel>(SYSTEM).findAndObserve(SYSTEM_IDENTIFIERS.CURRENT_TEAM_ID).pipe(
         map(({value}: {value: string}) => value),
     ),
-    currentUserId: database.get<SystemModel>(SYSTEM).findAndObserve(SYSTEM_IDENTIFIERS.CURRENT_USER_ID).pipe(
-        switchMap((currentUserId) => of$(currentUserId.value))),
 }));
 
 export default withDatabase(enhanced(GlobalThreads));

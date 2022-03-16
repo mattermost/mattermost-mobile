@@ -5,8 +5,8 @@ import {Q} from '@nozbe/watermelondb';
 import {withDatabase} from '@nozbe/watermelondb/DatabaseProvider';
 import withObservables from '@nozbe/with-observables';
 import {AppStateStatus} from 'react-native';
-import {combineLatest, of as of$} from 'rxjs';
-import {map, switchMap} from 'rxjs/operators';
+import {combineLatest} from 'rxjs';
+import {map} from 'rxjs/operators';
 
 import {Preferences} from '@constants';
 import {MM_TABLES, SYSTEM_IDENTIFIERS} from '@constants/database';
@@ -19,23 +19,22 @@ import type {WithDatabaseArgs} from '@typings/database/database';
 import type PreferenceModel from '@typings/database/models/servers/preference';
 import type SystemModel from '@typings/database/models/servers/system';
 
-export type {Tab};
-
 const {SERVER: {PREFERENCE, SYSTEM}} = MM_TABLES;
 
-const enhanced = withObservables(['tab', 'teamId', 'forceQueryAfterAppState'], ({database, tab, teamId}: {tab: Tab; teamId: string; forceQueryAfterAppState: AppStateStatus} & WithDatabaseArgs) => {
-    // Get current user
-    const currentUserId = database.get<SystemModel>(SYSTEM).findAndObserve(SYSTEM_IDENTIFIERS.CURRENT_USER_ID).pipe(
-        switchMap(({value}) => of$(value)),
-    );
+type Props = {
+    tab: Tab;
+    teamId: string;
+    forceQueryAfterAppState: AppStateStatus;
+} & WithDatabaseArgs;
 
+const enhanced = withObservables(['tab', 'teamId', 'forceQueryAfterAppState'], ({database, tab, teamId}: Props) => {
     const getOnlyUnreads = tab !== 'all';
 
     // Get all/unread threads
     const threads = queryThreadsInTeam(database, teamId, getOnlyUnreads, true).observe();
 
     // Get unreads count
-    const unreadsCount = queryThreadsInTeam(database, teamId, true).observeCount();
+    const unreadsCount = queryThreadsInTeam(database, teamId, true).observeCount(false);
 
     // Get team name display setting
     const config = database.get<SystemModel>(SYSTEM).findAndObserve(SYSTEM_IDENTIFIERS.CONFIG);
@@ -48,7 +47,6 @@ const enhanced = withObservables(['tab', 'teamId', 'forceQueryAfterAppState'], (
     );
 
     return {
-        currentUserId,
         unreadsCount,
         teammateNameDisplay,
         threads,

@@ -4,12 +4,13 @@
 import {Q} from '@nozbe/watermelondb';
 import {withDatabase} from '@nozbe/watermelondb/DatabaseProvider';
 import withObservables from '@nozbe/with-observables';
-import {combineLatest} from 'rxjs';
-import {map} from 'rxjs/operators';
+import {combineLatest, of as of$} from 'rxjs';
+import {map, switchMap} from 'rxjs/operators';
 
 import {Preferences} from '@constants';
 import {MM_TABLES, SYSTEM_IDENTIFIERS} from '@constants/database';
 import {processIsCRTEnabled} from '@helpers/api/preference';
+import {queryUnreadsAndMentionsInTeam} from '@queries/servers/thread';
 
 import Threads from './threads';
 
@@ -19,17 +20,32 @@ import type SystemModel from '@typings/database/models/servers/system';
 
 const {SERVER: {PREFERENCE, SYSTEM}} = MM_TABLES;
 
-const enhanced = withObservables([], ({database}: WithDatabaseArgs) => {
+const withIsCRTEnabled = withObservables([], ({database}: WithDatabaseArgs) => {
     const config = database.get<SystemModel>(SYSTEM).findAndObserve(SYSTEM_IDENTIFIERS.CONFIG);
     const preferences = database.get<PreferenceModel>(PREFERENCE).query(Q.where('category', Preferences.CATEGORY_DISPLAY_SETTINGS)).observe();
+    const isCRTEnabled = combineLatest([config, preferences]).pipe(
+        map(
+            ([{value: cfg}, prefs]) => processIsCRTEnabled(prefs, cfg),
+        ),
+    );
+
+    const currentTeamId = database.collections.get<SystemModel>(SYSTEM).findAndObserve(SYSTEM_IDENTIFIERS.CURRENT_TEAM_ID).pipe(
+        map(({value}: {value: string}) => value),
+    );
 
     return {
-        isCRTEnabled: combineLatest([config, preferences]).pipe(
-            map(
-                ([{value: cfg}, prefs]) => processIsCRTEnabled(prefs, cfg),
+        isCRTEnabled,
+        unreadsAndMentions: combineLatest([isCRTEnabled, currentTeamId]).pipe(
+            switchMap(
+                ([iCE, teamId]) => {
+                    if (!iCE) {
+                        return of$({unreads: 0, mentions: 0});
+                    }
+                    return queryUnreadsAndMentionsInTeam(database, teamId);
+                },
             ),
         ),
     };
 });
 
-export default withDatabase(enhanced(Threads));
+export default withDatabase(withIsCRTEnabled(Threads));

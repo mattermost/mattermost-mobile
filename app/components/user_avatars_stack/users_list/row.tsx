@@ -1,6 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import withObservables from '@nozbe/with-observables';
 import React, {useCallback} from 'react';
 import {Text, TouchableOpacity, View} from 'react-native';
 
@@ -19,28 +20,45 @@ type Props = {
     user: UserModel;
 }
 
+const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
+    return {
+        container: {
+            flexDirection: 'row',
+            justifyContent: 'flex-start',
+            height: 40,
+            width: '100%',
+            alignItems: 'center',
+        },
+        profile: {
+            alignItems: 'center',
+            justifyContent: 'center',
+            borderWidth: 1,
+            borderRadius: 12.5,
+            width: 25,
+            height: 25,
+            borderColor: changeOpacity(theme.centerChannelColor, 0.08),
+        },
+        textContainer: {
+            flexDirection: 'row',
+            marginLeft: 12,
+            marginRight: 24,
+        },
+        displayName: {
+            fontSize: 15,
+            fontWeight: '400',
+            color: theme.centerChannelColor,
+        },
+        username: {
+            fontSize: 15,
+            fontWeight: '400',
+            color: changeOpacity(theme.centerChannelColor, 0.56),
+        },
+    };
+});
+
 const Row = ({currentUserId, teammateNameDisplay, theme, user}: Props) => {
     const goToUserProfile = useCallback(preventDoubleTap(async () => {
-        // @todo
-        // const {formatMessage} = intl;
-        // const screen = 'UserProfile';
-        // const title = formatMessage({id: 'mobile.routes.user_profile', defaultMessage: 'Profile'});
-        // const passProps = {
-        //     userId: user.id,
-        // };
-
-        // const closeButton = await CompassIcon.getImageSource('close', 24, theme.sidebarHeaderTextColor);
-
-        // const options = {
-        //     topBar: {
-        //         leftButtons: [{
-        //             id: 'close-settings',
-        //             icon: closeButton,
-        //         }],
-        //     },
-        // };
-
-        // showModal(screen, title, passProps, options);
+        // @todo: Navigate to User Profile
     }), []);
 
     if (!user.id) {
@@ -94,40 +112,10 @@ const Row = ({currentUserId, teammateNameDisplay, theme, user}: Props) => {
     );
 };
 
-const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
+const enhanced = withObservables([], ({user}: {user: UserModel}) => {
     return {
-        container: {
-            flexDirection: 'row',
-            justifyContent: 'flex-start',
-            height: 40,
-            width: '100%',
-            alignItems: 'center',
-        },
-        profile: {
-            alignItems: 'center',
-            justifyContent: 'center',
-            borderWidth: 1,
-            borderRadius: 12.5,
-            width: 25,
-            height: 25,
-            borderColor: changeOpacity(theme.centerChannelColor, 0.08),
-        },
-        textContainer: {
-            flexDirection: 'row',
-            marginLeft: 12,
-            marginRight: 24,
-        },
-        displayName: {
-            fontSize: 15,
-            fontWeight: '400',
-            color: theme.centerChannelColor,
-        },
-        username: {
-            fontSize: 15,
-            fontWeight: '400',
-            color: changeOpacity(theme.centerChannelColor, 0.56),
-        },
+        user: user.observe(),
     };
 });
 
-export default Row;
+export default enhanced(Row);

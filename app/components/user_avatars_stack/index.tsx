@@ -7,12 +7,13 @@ import {Platform, StyleProp, Text, View, ViewStyle} from 'react-native';
 import {TouchableOpacity} from 'react-native-gesture-handler';
 
 import FormattedText from '@components/formatted_text';
-import ProfilePicture from '@components/profile_picture';
 import {useTheme} from '@context/theme';
+import {useIsTablet} from '@hooks/device';
 import {bottomSheet} from '@screens/navigation';
 import {preventDoubleTap} from '@utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
+import UserAvatar from './user_avatar';
 import UsersList from './users_list';
 
 import type UserModel from '@typings/database/models/servers/user';
@@ -26,76 +27,6 @@ type Props = {
     style?: StyleProp<ViewStyle>;
     teammateNameDisplay: string;
 }
-
-const Avatars = ({breakAt = 3, currentUserId, style: baseContainerStyle, teammateNameDisplay, users}: Props) => {
-    const theme = useTheme();
-    const intl = useIntl();
-
-    const showParticipantsList = useCallback(preventDoubleTap(() => {
-        const renderContent = () => (
-            <>
-                <View style={style.listHeader}>
-                    <FormattedText
-                        id='mobile.participants.header'
-                        defaultMessage={'THREAD PARTICIPANTS'}
-                        style={style.listHeaderText}
-                    />
-                </View>
-                <UsersList
-                    currentUserId={currentUserId}
-                    teammateNameDisplay={teammateNameDisplay}
-                    theme={theme}
-                    users={users}
-                />
-            </>
-        );
-
-        bottomSheet({
-            closeButtonId: 'close-set-user-status',
-            renderContent,
-            snapPoints: [(Math.min(14, users.length) + 3) * 40, 10],
-            title: intl.formatMessage({id: 'mobile.participants.header', defaultMessage: 'THREAD PARTICIPANTS'}),
-            theme,
-        });
-    }), [teammateNameDisplay, theme, users]);
-
-    const displayUsers = users.slice(0, breakAt);
-    const overflowUsersCount = Math.min(users.length - displayUsers.length, OVERFLOW_DISPLAY_LIMIT);
-
-    const style = getStyleSheet(theme);
-
-    return (
-        <TouchableOpacity
-            onPress={showParticipantsList}
-            style={baseContainerStyle}
-        >
-            <View style={style.container}>
-                {displayUsers.map((user, index) => (
-                    <View
-                        key={user.id}
-                        style={index === 0 ? style.firstAvatar : style.notFirstAvatars}
-                    >
-                        <ProfilePicture
-                            author={user}
-                            size={24}
-                            showStatus={false}
-                            testID='avatars.profile_picture'
-                        />
-                    </View>
-                ))}
-                {Boolean(overflowUsersCount) && (
-                    <View style={style.overflowContainer}>
-                        <View style={style.overflowItem}>
-                            <Text style={style.overflowText} >
-                                {'+' + overflowUsersCount.toString()}
-                            </Text>
-                        </View>
-                    </View>
-                )}
-            </View>
-        </TouchableOpacity>
-    );
-};
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     const size = 24;
@@ -169,5 +100,72 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
         },
     };
 });
+
+const Avatars = ({breakAt = 3, currentUserId, style: baseContainerStyle, teammateNameDisplay, users}: Props) => {
+    const theme = useTheme();
+    const intl = useIntl();
+    const isTablet = useIsTablet();
+
+    const showParticipantsList = useCallback(preventDoubleTap(() => {
+        const renderContent = () => (
+            <>
+                {!isTablet && (
+                    <View style={style.listHeader}>
+                        <FormattedText
+                            id='mobile.participants.header'
+                            defaultMessage={'THREAD PARTICIPANTS'}
+                            style={style.listHeaderText}
+                        />
+                    </View>
+                )}
+                <UsersList
+                    currentUserId={currentUserId}
+                    teammateNameDisplay={teammateNameDisplay}
+                    theme={theme}
+                    users={users}
+                />
+            </>
+        );
+
+        bottomSheet({
+            closeButtonId: 'close-set-user-status',
+            renderContent,
+            snapPoints: [(Math.min(14, users.length) + 3) * 40, 10],
+            title: intl.formatMessage({id: 'mobile.participants.header', defaultMessage: 'THREAD PARTICIPANTS'}),
+            theme,
+        });
+    }), [isTablet, teammateNameDisplay, theme, users]);
+
+    const displayUsers = users.slice(0, breakAt);
+    const overflowUsersCount = Math.min(users.length - displayUsers.length, OVERFLOW_DISPLAY_LIMIT);
+
+    const style = getStyleSheet(theme);
+
+    return (
+        <TouchableOpacity
+            onPress={showParticipantsList}
+            style={baseContainerStyle}
+        >
+            <View style={style.container}>
+                {displayUsers.map((user, index) => (
+                    <UserAvatar
+                        key={user.id}
+                        style={index === 0 ? style.firstAvatar : style.notFirstAvatars}
+                        user={user}
+                    />
+                ))}
+                {Boolean(overflowUsersCount) && (
+                    <View style={style.overflowContainer}>
+                        <View style={style.overflowItem}>
+                            <Text style={style.overflowText} >
+                                {'+' + overflowUsersCount.toString()}
+                            </Text>
+                        </View>
+                    </View>
+                )}
+            </View>
+        </TouchableOpacity>
+    );
+};
 
 export default Avatars;
