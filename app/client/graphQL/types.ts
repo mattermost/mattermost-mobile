@@ -1,6 +1,6 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
-import {CustomStatusDuration} from '@app/constants';
+import {CustomStatusDuration} from '@constants';
 
 export type GQLResponse = {
     errors?: GQLError[];
@@ -268,7 +268,7 @@ export const gqlToClientChannel = (m: Partial<GQLChannel>): Channel => {
         create_at: m.createAt || 0,
         creator_id: m.creatorId || '',
         delete_at: m.deleteAt || 0,
-        display_name: m.displayName || '',
+        display_name: m.prettyDisplayName || m.displayName || '',
         extra_update_at: 0,
         group_constrained: m.groupConstrained || false,
         header: m.header || '',

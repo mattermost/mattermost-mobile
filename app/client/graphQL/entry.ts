@@ -1,5 +1,6 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
+import {MEMBERS_PER_PAGE} from '@constants/graphql';
 import NetworkManager from '@init/network_manager';
 
 import {Client} from '../rest';
@@ -23,7 +24,36 @@ const doGQLQuery = async (serverUrl: string, query: string) => {
 };
 
 export const gqlLogin = async (serverUrl: string) => {
-    return doGQLQuery(serverUrl, loginQuery);
+    const response = await doGQLQuery(serverUrl, loginQuery);
+
+    if ('error' in response) {
+        return response;
+    }
+
+    let members = response.data.channelMembers;
+
+    while (members?.length === MEMBERS_PER_PAGE) {
+        let pageResponse;
+        try {
+            // eslint-disable-next-line no-await-in-loop
+            pageResponse = await gqlLoginNextPage(serverUrl, members[members.length - 1].cursor!);
+        } catch {
+            break;
+        }
+
+        if ('error' in pageResponse) {
+            break;
+        }
+
+        members = pageResponse.data.channelMembers!;
+        response.data.channelMembers?.push(...members);
+    }
+
+    return response;
+};
+
+export const gqlLoginNextPage = async (serverUrl: string, cursor: string) => {
+    return doGQLQuery(serverUrl, nextPageLoginQuery(cursor));
 };
 
 const loginQuery = `
@@ -99,7 +129,8 @@ const loginQuery = `
             id
         }
     }
-    channelMembers(userId:"me") {
+    channelMembers(userId:"me", first:PER_PAGE) {
+        cursor
         msgCount
         mentionCount
         lastViewedAt
@@ -118,6 +149,7 @@ const loginQuery = `
             creatorId
             deleteAt
             displayName
+            prettyDisplayName
             groupConstrained
             name
             shared
@@ -137,4 +169,51 @@ const loginQuery = `
         }
     }
 }
-`;
+`.replace('PER_PAGE', `${MEMBERS_PER_PAGE}`);
+
+const nextPageLoginQuery = (cursor: string) => {
+    return `
+{
+    channelMembers(userId:"me", first:PER_PAGE, after:"CURSOR") {
+        cursor
+        msgCount
+        mentionCount
+        lastViewedAt
+        notifyProps
+        roles {
+            id
+            name
+            permissions
+        }
+        channel {
+            id
+            header
+            purpose
+            type
+            createAt
+            creatorId
+            deleteAt
+            displayName
+            prettyDisplayName
+            groupConstrained
+            name
+            shared
+            lastPostAt
+            totalMsgCount
+            team {
+                id
+            }
+            # stats {
+            #   guestCount
+            #   memberCount
+            #   pinnedPostCount
+            # }
+        }
+        user {
+            id
+        }
+    }
+}
+`.replace('PER_PAGE', `${MEMBERS_PER_PAGE}`).
+        replace('CURSOR', cursor);
+};

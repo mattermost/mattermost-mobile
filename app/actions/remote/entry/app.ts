@@ -6,11 +6,12 @@ import {fetchRoles} from '@actions/remote/role';
 import {fetchConfigAndLicense} from '@actions/remote/systems';
 import {gqlLogin} from '@client/graphQL/entry';
 import {gqlToClientChannel, gqlToClientChannelMembership, gqlToClientPreference, gqlToClientRole, gqlToClientSidebarCategory, gqlToClientTeam, gqlToClientTeamMembership, gqlToClientUser} from '@client/graphQL/types';
-import { deleteMyTeams, queryMyTeams, queryTeamsById } from '@queries/servers/team';
+import ClientError from '@client/rest/error';
 import DatabaseManager from '@database/manager';
 import {queryAllChannelsForTeam, queryChannelsById, queryDefaultChannelForTeam} from '@queries/servers/channel';
 import {prepareModels} from '@queries/servers/entry';
 import {prepareCommonSystemValues, queryCommonSystemValues, queryConfig, queryCurrentChannelId, queryCurrentTeamId, queryWebSocketLastDisconnected, setCurrentTeamAndChannelId} from '@queries/servers/system';
+import {queryMyTeams} from '@queries/servers/team';
 import {queryCurrentUser} from '@queries/servers/user';
 import {deleteV1Data} from '@utils/file';
 import {isTablet} from '@utils/helpers';
@@ -43,7 +44,12 @@ const gqlAppEntry = async (serverUrl: string, since = 0) => {
 
     const lastDisconnectedAt = (await queryWebSocketLastDisconnected(database)) || since;
 
-    const response = await gqlLogin(serverUrl);
+    let response;
+    try {
+        response = await gqlLogin(serverUrl);
+    } catch (error) {
+        return {error: (error as ClientError).message};
+    }
 
     if ('error' in response) {
         return {error: response.error};
