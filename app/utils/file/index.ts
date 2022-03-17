@@ -362,7 +362,7 @@ export function getLocalFilePathFromFile(serverUrl: string, file: FileInfo | Fil
                 }
             }
 
-            return `${FileSystem.cacheDirectory}${server}/${filename.replace(/ /g, '-')}-${hashCode(file.id!)}.${extension}`;
+            return `${FileSystem.cacheDirectory}${server}/${filename}-${hashCode(file.id!)}.${extension}`;
         } else if (file?.id && file?.extension) {
             return `${FileSystem.cacheDirectory}${server}/${file.id}.${file.extension}`;
         }
