@@ -3,7 +3,7 @@
 
 import React, {useCallback} from 'react';
 
-import {Screens, SnackBar} from '@constants';
+import {SnackBar} from '@constants';
 import {t} from '@i18n';
 import {showSnackBar} from '@utils/snack_bar';
 
@@ -11,7 +11,6 @@ import BaseOption from './base_option';
 
 type FollowThreadOptionProps = {
     thread?: any;
-    location?: typeof Screens[keyof typeof Screens];
 };
 
 //todo: to implement CRT follow thread
@@ -58,7 +57,7 @@ const FollowThreadOption = ({thread}: FollowThreadOptionProps) => {
         // https://mattermost.atlassian.net/browse/MM-42565
         if (thread.is_following) {
             // eslint-disable-next-line no-console
-            showSnackBar(SNACK_BAR_TYPE.FOLLOW_THREAD, undo);
+            showSnackBar({barType: SNACK_BAR_TYPE.FOLLOW_THREAD, onPress: undo});
         } else {
             // eslint-disable-next-line no-console
             console.log('TO IMPLEMENT FOLLOW THREAD, VALIDATE FROM UX IF A SNACK BAR IS REQUIRED FOR THIS CASE AS WELL');

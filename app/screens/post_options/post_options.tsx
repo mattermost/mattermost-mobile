@@ -37,6 +37,7 @@ type PostOptionsProps = {
     post: PostModel;
     thread: Partial<PostModel>;
     componentId: string;
+    postInputTop: number;
 };
 
 const PostOptions = ({
@@ -52,9 +53,9 @@ const PostOptions = ({
     location,
     post,
     thread,
+    postInputTop,
 }: PostOptionsProps) => {
     const managedConfig = useManagedConfig();
-
     useEffect(() => {
         const unsubscribe = Navigation.events().registerComponentListener({
             navigationButtonPressed: ({buttonId}: { buttonId: string }) => {
@@ -94,21 +95,32 @@ const PostOptions = ({
                 {canReply && <ReplyOption post={post}/>}
                 {shouldRenderFollow &&
                     <FollowThreadOption
-                        location={location}
                         thread={thread}
                     />
                 }
                 {canMarkAsUnread && !isSystemPost &&
                     <MarkAsUnreadOption postId={post.id}/>
                 }
-                {canCopyPermalink && <CopyLinkOption post={post}/>}
+                {canCopyPermalink &&
+                    <CopyLinkOption
+                        post={post}
+                        location={location}
+                        postInputTop={postInputTop}
+                    />
+                }
                 {!isSystemPost &&
                     <SaveOption
                         isSaved={isSaved}
                         postId={post.id}
                     />
                 }
-                {Boolean(canCopyText && post.message) && <CopyTextOption postMessage={post.message}/>}
+                {Boolean(canCopyText && post.message) &&
+                    <CopyTextOption
+                        postMessage={post.message}
+                        location={location}
+                        postInputTop={postInputTop}
+                    />
+                }
                 {canPin &&
                     <PinChannelOption
                         isPostPinned={post.isPinned}

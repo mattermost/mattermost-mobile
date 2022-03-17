@@ -17,18 +17,20 @@ import type PostModel from '@typings/database/models/servers/post';
 type Props = {
     teamName: string;
     post: PostModel;
+    location: typeof Screens[keyof typeof Screens];
+    postInputTop: number;
 }
 
 const {SNACK_BAR_TYPE} = SnackBar;
 
-const CopyPermalinkOption = ({teamName, post}: Props) => {
+const CopyPermalinkOption = ({teamName, post, location, postInputTop}: Props) => {
     const serverUrl = useServerUrl();
 
     const handleCopyLink = useCallback(async () => {
         const permalink = `${serverUrl}/${teamName}/pl/${post.id}`;
         Clipboard.setString(permalink);
         await dismissBottomSheet(Screens.POST_OPTIONS);
-        showSnackBar(SNACK_BAR_TYPE.LINK_COPIED);
+        showSnackBar({barType: SNACK_BAR_TYPE.LINK_COPIED, location, postInputTop});
     }, [teamName, post.id]);
 
     return (

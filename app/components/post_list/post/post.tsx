@@ -1,6 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {usePostInputTop} from '@screens/../../../context/context/post_input_top';
 import React, {ReactNode, useMemo, useRef} from 'react';
 import {useIntl} from 'react-intl';
 import {Keyboard, Platform, StyleProp, View, ViewStyle, TouchableHighlight} from 'react-native';
@@ -111,6 +112,8 @@ const Post = ({
     const isPendingOrFailed = isPostPendingOrFailed(post);
     const isSystemPost = isSystemMessage(post);
     const isWebHook = isFromWebhook(post);
+    const postInputTop = usePostInputTop();
+
     const hasSameRoot = useMemo(() => {
         if (isFirstReply) {
             return false;
@@ -166,7 +169,7 @@ const Post = ({
         }
 
         Keyboard.dismiss();
-        const passProps = {location, post, showAddReaction};
+        const passProps = {location, post, showAddReaction, postInputTop};
         const title = isTablet ? intl.formatMessage({id: 'post.options.title', defaultMessage: 'Options'}) : '';
 
         if (isTablet) {

@@ -7,20 +7,14 @@ import {useWindowDimensions} from 'react-native';
 import {useAnimatedStyle, withTiming} from 'react-native-reanimated';
 
 import Toast from '@components/toast';
+import {Screens, View} from '@constants';
 import {SNACK_BAR_CONFIG, SNACK_BAR_TYPE} from '@constants/snack_bar';
-import {BOTTOM_TAB_HEIGHT, TABLET_SIDEBAR_WIDTH} from '@constants/view';
 import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
 import {dismissOverlay} from '@screens/navigation';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 
 import Undo from './undo';
-
-type SnackBarProps = {
-    componentId: string;
-    onPress?: () => void;
-    barType: keyof typeof SNACK_BAR_TYPE;
-}
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     return {
@@ -30,10 +24,19 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     };
 });
 
+const {BOTTOM_TAB_HEIGHT, TABLET_SIDEBAR_WIDTH} = View;
+
+type SnackBarProps = {
+    componentId: string;
+    onPress?: () => void;
+    barType: keyof typeof SNACK_BAR_TYPE;
+    location: typeof Screens[keyof typeof Screens];
+}
 const SnackBar = ({
     barType,
     componentId,
     onPress,
+    location,
 }: SnackBarProps) => {
     const intl = useIntl();
     const theme = useTheme();
@@ -61,6 +64,10 @@ const SnackBar = ({
                 width: 0.96 * (width - TABLET_SIDEBAR_WIDTH),
                 marginLeft: TABLET_SIDEBAR_WIDTH,
                 marginBottom: 65,
+            },
+            isTablet && location === Screens.THREAD && {
+                backgroundColor: 'red',
+                marginLeft: 0,
             },
         ];
     }, [theme, barType]);
@@ -97,7 +104,7 @@ const SnackBar = ({
             iconName={config.iconName}
             textStyle={styles.text}
         >
-            {true && (<Undo onPress={onPressHandler}/>)}
+            {config.canUndo && onPress && (<Undo onPress={onPressHandler}/>)}
         </Toast>
     );
 };

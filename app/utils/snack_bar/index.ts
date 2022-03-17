@@ -1,19 +1,16 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
-
-import {Screens, SnackBar} from '@constants';
+import {Screens} from '@constants';
+import {SNACK_BAR_TYPE} from '@constants/snack_bar';
 import {showOverlay} from '@screens/navigation';
 
-const {SNACK_BAR_TYPE} = SnackBar;
-
-export const showSnackBar = (
-    barType: keyof typeof SNACK_BAR_TYPE,
-    onPress?: () => void,
-) => {
+type ShowSnackBarArgs = {
+    barType: keyof typeof SNACK_BAR_TYPE;
+    onPress?: () => void;
+    location?: typeof Screens[keyof typeof Screens];
+    postInputTop?: number;
+};
+export const showSnackBar = (passProps: ShowSnackBarArgs) => {
     const screen = Screens.SNACK_BAR;
-    const passProps = {
-        barType,
-        onPress,
-    };
     showOverlay(screen, passProps);
 };
