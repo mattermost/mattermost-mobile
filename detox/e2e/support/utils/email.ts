@@ -5,6 +5,8 @@ import {smtpUrl} from '@support/test_config';
 import axios from 'axios';
 import jestExpect from 'expect';
 
+const currentYear = new Date().getFullYear();
+
 /**
  * Get email url.
  * @returns {string} email url
@@ -53,7 +55,7 @@ export const getJoinEmailTemplate = (siteUrl: string, sender: string, userEmail:
         'Mattermost is a flexible, open source messaging platform that enables secure team collaboration.',
         'Learn more ( mattermost.com )',
         '',
-        '© 2022 Mattermost, Inc. 530 Lytton Avenue, Second floor, Palo Alto, CA, 94301',
+        `© ${currentYear} Mattermost, Inc. 530 Lytton Avenue, Second floor, Palo Alto, CA, 94301`,
     ];
 };
 
@@ -84,7 +86,7 @@ export const getMentionEmailTemplate = (siteUrl: string, sender: string, message
         'Want to change your notifications settings?',
         `Login to ${siteName} ( ${siteUrl} ) and go to Settings > Notifications`,
         '',
-        '© 2022 Mattermost, Inc. 530 Lytton Avenue, Second floor, Palo Alto, CA, 94301',
+        `© ${currentYear} Mattermost, Inc. 530 Lytton Avenue, Second floor, Palo Alto, CA, 94301`,
     ];
 };
 
@@ -102,7 +104,7 @@ export const getPasswordResetEmailTemplate = (siteUrl: string): string[] => {
         '',
         'The password reset link expires in 24 hours.',
         '',
-        '© 2022 Mattermost, Inc. 530 Lytton Avenue, Second floor, Palo Alto, CA, 94301',
+        `© ${currentYear} Mattermost, Inc. 530 Lytton Avenue, Second floor, Palo Alto, CA, 94301`,
     ];
 };
 
@@ -123,7 +125,7 @@ export const getEmailVerifyEmailTemplate = (siteUrl: string, userEmail: string):
         'This email address was used to create an account with Mattermost.',
         'If it was not you, you can safely ignore this email.',
         '',
-        '© 2022 Mattermost, Inc. 530 Lytton Avenue, Second floor, Palo Alto, CA, 94301',
+        `© ${currentYear} Mattermost, Inc. 530 Lytton Avenue, Second floor, Palo Alto, CA, 94301`,
     ];
 };
 
@@ -151,7 +153,7 @@ export const getWelcomeEmailTemplate = (siteUrl: string, userEmail: string, site
         '',
         'Download ( https://mattermost.com/download/#mattermostApps )',
         '',
-        '© 2022 Mattermost, Inc. 530 Lytton Avenue, Second floor, Palo Alto, CA, 94301',
+        `© ${currentYear} Mattermost, Inc. 530 Lytton Avenue, Second floor, Palo Alto, CA, 94301`,
     ];
 };
 
