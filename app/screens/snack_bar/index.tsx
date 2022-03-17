@@ -49,32 +49,46 @@ const SnackBar = ({barType, componentId, onPress, location, postInputTop}: Snack
         onPress?.();
     }, [onPress, componentId]);
 
-    const animatedStyle = useAnimatedStyle(() => ({
-        position: 'absolute',
-        bottom: BOTTOM_TAB_HEIGHT + 50,
-        opacity: withTiming(showToast ? 1 : 0, {duration: 300}),
-    }));
+    const animatedStyle = useAnimatedStyle(() => {
+        let diff = 50;
+        const screens = [Screens.PERMALINK, Screens.MENTIONS, Screens.SAVED_POSTS];
+        if (!isTablet && screens.includes(location)) {
+            diff = 7;
+        }
+
+        return {
+            position: 'absolute',
+            bottom: BOTTOM_TAB_HEIGHT + diff,
+            opacity: withTiming(showToast ? 1 : 0, {duration: 300}),
+        };
+    });
 
     const toastStyle = useMemo(() => {
         const diffWidth = windowWidth - TABLET_SIDEBAR_WIDTH;
         const ratio = isLandscape ? 0.62 : 0.96;
         let tabletStyle = {
-            width: 0.96 * diffWidth,
-            marginLeft: TABLET_SIDEBAR_WIDTH,
             marginBottom: 65,
+            marginLeft: TABLET_SIDEBAR_WIDTH,
+            width: 0.96 * diffWidth,
         };
 
         if (location === Screens.THREAD) {
             tabletStyle = {
-                marginLeft: 0,
                 marginBottom: (windowHeight - postInputTop) / 2,
+                marginLeft: 0,
                 width: ratio * diffWidth,
             };
         } else if ([Screens.PERMALINK, Screens.MENTIONS].includes(location)) {
             tabletStyle = {
-                marginLeft: 0,
                 marginBottom: 0,
+                marginLeft: 0,
                 width: 0.96 * windowWidth,
+            };
+        } else if (location === Screens.SAVED_POSTS) {
+            tabletStyle = {
+                marginBottom: 0,
+                marginLeft: TABLET_SIDEBAR_WIDTH,
+                width: 0.96 * diffWidth,
             };
         }
 
