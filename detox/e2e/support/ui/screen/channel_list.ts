@@ -18,7 +18,7 @@ class ChannelListScreen {
     headerServerDisplayName = element(by.id(this.testID.headerServerDisplayName));
 
     toBeVisible = async () => {
-        await waitFor(this.channelListScreen).toBeVisible().withTimeout(timeouts.TEN_SEC);
+        await waitFor(this.channelListScreen).toExist().withTimeout(timeouts.TEN_SEC);
 
         return this.channelListScreen;
     };

@@ -49,7 +49,7 @@ class ServerListScreen {
     };
 
     toBeVisible = async () => {
-        await waitFor(this.serverListScreen).toBeVisible().withTimeout(timeouts.TEN_SEC);
+        await waitFor(this.serverListScreen).toExist().withTimeout(timeouts.TEN_SEC);
 
         return this.serverListScreen;
     };

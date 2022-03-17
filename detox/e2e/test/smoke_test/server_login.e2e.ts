@@ -17,7 +17,6 @@ import {
     HomeScreen,
     LoginScreen,
     ServerScreen,
-    ServerListScreen,
 } from '@support/ui/screen';
 import {expect} from 'detox';
 
@@ -47,10 +46,5 @@ describe('Server Login', () => {
         await ChannelListScreen.toBeVisible();
         await expect(ChannelListScreen.headerTeamDisplayName).toHaveText(team.display_name);
         await expect(ChannelListScreen.headerServerDisplayName).toHaveText(serverOneDisplayName);
-    });
-
-    it('should be able add a new server, log in to new server, and switch back to existing server', async () => {
-        // # Open server list screen
-        await ServerListScreen.open();
     });
 });

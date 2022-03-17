@@ -33,7 +33,7 @@ class ServerScreen {
     connectButtonDisabled = element(by.id(this.testID.connectButtonDisabled));
 
     toBeVisible = async () => {
-        await waitFor(this.serverScreen).toBeVisible().withTimeout(timeouts.TEN_SEC);
+        await waitFor(this.serverScreen).toExist().withTimeout(timeouts.TEN_SEC);
         await waitFor(this.serverUrlInput).toBeVisible().withTimeout(timeouts.TEN_SEC);
 
         return this.serverScreen;

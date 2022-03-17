@@ -16,7 +16,7 @@ class AccountScreen {
     logoutAction = element(by.id(this.testID.logoutAction));
 
     toBeVisible = async () => {
-        await waitFor(this.accountScreen).toBeVisible().withTimeout(timeouts.TEN_SEC);
+        await waitFor(this.accountScreen).toExist().withTimeout(timeouts.TEN_SEC);
 
         return this.accountScreen;
     };
