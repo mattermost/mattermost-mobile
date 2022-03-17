@@ -8,7 +8,7 @@ type ShowSnackBarArgs = {
     barType: keyof typeof SNACK_BAR_TYPE;
     onPress?: () => void;
     location?: typeof Screens[keyof typeof Screens];
-    postInputTop?: number;
+    offsetY?: number;
 };
 export const showSnackBar = (passProps: ShowSnackBarArgs) => {
     const screen = Screens.SNACK_BAR;

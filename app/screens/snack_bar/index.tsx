@@ -31,9 +31,9 @@ type SnackBarProps = {
     onPress?: () => void;
     barType: keyof typeof SNACK_BAR_TYPE;
     location: typeof Screens[keyof typeof Screens];
-    postInputTop: number;
+    offsetY: number;
 }
-const SnackBar = ({barType, componentId, onPress, location, postInputTop}: SnackBarProps) => {
+const SnackBar = ({barType, componentId, onPress, location, offsetY}: SnackBarProps) => {
     const intl = useIntl();
     const theme = useTheme();
     const isTablet = useIsTablet();
@@ -74,7 +74,7 @@ const SnackBar = ({barType, componentId, onPress, location, postInputTop}: Snack
 
         if (location === Screens.THREAD) {
             tabletStyle = {
-                marginBottom: (windowHeight - postInputTop) / 2,
+                marginBottom: (windowHeight - offsetY) / 2,
                 marginLeft: 0,
                 width: ratio * diffWidth,
             };

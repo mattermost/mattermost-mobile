@@ -37,7 +37,7 @@ type PostOptionsProps = {
     post: PostModel;
     thread: Partial<PostModel>;
     componentId: string;
-    postInputTop: number;
+    offsetY: number;
 };
 
 const PostOptions = ({
@@ -53,7 +53,7 @@ const PostOptions = ({
     location,
     post,
     thread,
-    postInputTop,
+    offsetY,
 }: PostOptionsProps) => {
     const managedConfig = useManagedConfig();
     useEffect(() => {
@@ -105,7 +105,7 @@ const PostOptions = ({
                     <CopyLinkOption
                         post={post}
                         location={location}
-                        postInputTop={postInputTop}
+                        offsetY={offsetY}
                     />
                 }
                 {!isSystemPost &&
@@ -118,7 +118,7 @@ const PostOptions = ({
                     <CopyTextOption
                         postMessage={post.message}
                         location={location}
-                        postInputTop={postInputTop}
+                        offsetY={offsetY}
                     />
                 }
                 {canPin &&

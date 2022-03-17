@@ -18,19 +18,19 @@ type Props = {
     teamName: string;
     post: PostModel;
     location: typeof Screens[keyof typeof Screens];
-    postInputTop: number;
+    offsetY: number;
 }
 
 const {SNACK_BAR_TYPE} = SnackBar;
 
-const CopyPermalinkOption = ({teamName, post, location, postInputTop}: Props) => {
+const CopyPermalinkOption = ({teamName, post, location, offsetY}: Props) => {
     const serverUrl = useServerUrl();
 
     const handleCopyLink = useCallback(async () => {
         const permalink = `${serverUrl}/${teamName}/pl/${post.id}`;
         Clipboard.setString(permalink);
         await dismissBottomSheet(Screens.POST_OPTIONS);
-        showSnackBar({barType: SNACK_BAR_TYPE.LINK_COPIED, location, postInputTop});
+        showSnackBar({barType: SNACK_BAR_TYPE.LINK_COPIED, location, offsetY});
     }, [teamName, post.id]);
 
     return (

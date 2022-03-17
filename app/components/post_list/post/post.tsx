@@ -111,7 +111,7 @@ const Post = ({
     const isPendingOrFailed = isPostPendingOrFailed(post);
     const isSystemPost = isSystemMessage(post);
     const isWebHook = isFromWebhook(post);
-    const postInputTop = useSnackBar();
+    const offsetY = useSnackBar();
 
     const hasSameRoot = useMemo(() => {
         if (isFirstReply) {
@@ -168,7 +168,7 @@ const Post = ({
         }
 
         Keyboard.dismiss();
-        const passProps = {location, post, showAddReaction, postInputTop};
+        const passProps = {location, post, showAddReaction, offsetY};
         const title = isTablet ? intl.formatMessage({id: 'post.options.title', defaultMessage: 'Options'}) : '';
 
         if (isTablet) {
