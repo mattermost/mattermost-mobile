@@ -3,8 +3,6 @@
 
 /* eslint-disable max-lines */
 
-//import {getChannelSuggestions, getUserSuggestions, inTextMentionSuggestions} from '../mentions';
-
 import {
     AppsTypes,
     AppCallRequest,
@@ -20,8 +18,7 @@ import {
     AutocompleteSuggestion,
     AutocompleteStaticSelect,
     Channel,
-    DispatchFunc,
-    GlobalState,
+    Store,
 
     AppBindingLocations,
     AppCallResponseTypes,
@@ -48,6 +45,8 @@ import {
     filterEmptyOptions,
     autocompleteUsersInChannel,
     autocompleteChannels,
+    getOpenInModalSuggestion,
+    OPEN_COMMAND_IN_MODAL_ITEM_ID,
     getChannelSuggestions,
     getUserSuggestions,
     inTextMentionSuggestions,
@@ -56,11 +55,6 @@ import {
     getAppRHSCommandForm,
     makeRHSAppBindingSelector,
 } from './app_command_parser_dependencies';
-
-export interface Store {
-    dispatch: DispatchFunc;
-    getState: () => GlobalState;
-}
 
 export enum ParseState {
     Start = 'Start',
@@ -873,7 +867,7 @@ export class AppCommandParser {
     private intl: Intl;
 
     constructor(store: Store|null, intl: Intl, channelID: string, teamID = '', rootPostID = '') {
-        this.store = store || getStore() as Store;
+        this.store = store || getStore();
         this.channelID = channelID;
         this.rootPostID = rootPostID;
         this.teamID = teamID;
@@ -1094,6 +1088,17 @@ export class AppCommandParser {
             ParseState.EndValue,
             ParseState.Rest,
         ];
+
+        const modalStates: string[] = [
+            ParseState.StartParameter,
+            ParseState.Error,
+            ParseState.TickValue,
+            ParseState.QuotedValue,
+            ParseState.EndValue,
+            ParseState.Rest,
+            ParseState.Flag,
+            ParseState.FlagValueSeparator,
+        ];
         const call = parsed.resolvedForm?.submit || parsed.binding?.form?.submit;
         const hasRequired = this.getMissingFields(parsed).length === 0;
         const hasValue = (parsed.state !== ParseState.EndValue || (parsed.field && parsed.values[parsed.field.name] !== undefined));
@@ -1106,8 +1111,16 @@ export class AppCommandParser {
         } else if (suggestions.length === 0 && (parsed.field?.type !== AppFieldTypes.USER && parsed.field?.type !== AppFieldTypes.CHANNEL)) {
             suggestions = this.getNoMatchingSuggestion();
         }
+
+        if (modalStates.includes(parsed.state) && call && parsed.resolvedForm?.fields?.length) {
+            const open = getOpenInModalSuggestion(parsed);
+            if (open) {
+                suggestions = [...suggestions, open];
+            }
+        }
+
         return suggestions.map((suggestion) => this.decorateSuggestionComplete(parsed, suggestion));
-    };
+    }
 
     getNoMatchingSuggestion = () => {
         return [{
@@ -1243,7 +1256,7 @@ export class AppCommandParser {
                 break;
             }
             case AppFieldTypes.USER: {
-                const getFieldUser = async (userName: string) => {
+                const getUser = async (userName: string) => {
                     let user = selectUserByUsername(this.store.getState(), userName);
                     if (!user) {
                         const dispatchResult = await this.store.dispatch(getUserByUsername(userName) as any);
@@ -1274,7 +1287,7 @@ export class AppCommandParser {
                         if (userName[0] === '@') {
                             userName = userName.substr(1);
                         }
-                        const user = await getFieldUser(userName);
+                        const user = await getUser(userName);
                         if (!user) {
                             setUserError(userName);
                             return;
@@ -1300,7 +1313,7 @@ export class AppCommandParser {
                 if (userName[0] === '@') {
                     userName = userName.substr(1);
                 }
-                const user = await getFieldUser(userName);
+                const user = await getUser(userName);
                 if (!user) {
                     setUserError(userName);
                     return;
@@ -1309,7 +1322,7 @@ export class AppCommandParser {
                 break;
             }
             case AppFieldTypes.CHANNEL: {
-                const getFieldChannel = async (channelName: string) => {
+                const getChannel = async (channelName: string) => {
                     let channel = selectChannelByName(this.store.getState(), channelName);
                     if (!channel) {
                         const dispatchResult = await this.store.dispatch(getChannelByNameAndTeamName(getCurrentTeam(this.store.getState()).name, channelName) as any);
@@ -1340,7 +1353,7 @@ export class AppCommandParser {
                         if (channelName[0] === '~') {
                             channelName = channelName.substr(1);
                         }
-                        const channel = await getFieldChannel(channelName);
+                        const channel = await getChannel(channelName);
                         if (!channel) {
                             setChannelError(channelName);
                             return;
@@ -1367,7 +1380,7 @@ export class AppCommandParser {
                 if (channelName[0] === '~') {
                     channelName = channelName.substr(1);
                 }
-                const channel = await getFieldChannel(channelName);
+                const channel = await getChannel(channelName);
                 if (!channel) {
                     setChannelError(channelName);
                     return;
@@ -1399,7 +1412,9 @@ export class AppCommandParser {
 
     // decorateSuggestionComplete applies the necessary modifications for a suggestion to be processed
     private decorateSuggestionComplete = (parsed: ParsedCommand, choice: AutocompleteSuggestion): AutocompleteSuggestion => {
-        if (choice.Complete && choice.Complete.endsWith(EXECUTE_CURRENT_COMMAND_ITEM_ID)) {
+        if (choice.Complete && (
+            choice.Complete.endsWith(EXECUTE_CURRENT_COMMAND_ITEM_ID) ||
+            choice.Complete.endsWith(OPEN_COMMAND_IN_MODAL_ITEM_ID))) {
             return choice as AutocompleteSuggestion;
         }
 

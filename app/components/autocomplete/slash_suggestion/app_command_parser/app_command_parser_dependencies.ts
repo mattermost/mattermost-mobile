@@ -3,13 +3,12 @@
 
 import {intlShape} from 'react-intl';
 
-import {getUserByUsername, getUser, autocompleteUsers} from '@mm-redux/actions/users';
+import {getUserByUsername, getUser, autocompleteUsers, autocompleteUsersInChannel} from '@mm-redux/actions/users';
 import {getCurrentTeamId, getCurrentTeam} from '@mm-redux/selectors/entities/teams';
 import {
-    ActionFunc,
     DispatchFunc,
 } from '@mm-redux/types/actions';
-import Store from '@store/store';
+import ReduxStore from '@store/store';
 
 import type {ParsedCommand} from './app_command_parser';
 import type {AutocompleteSuggestion} from '@mm-redux/types/integrations';
@@ -30,7 +29,6 @@ export type {
     AutocompleteUserSelect,
     AutocompleteChannelSelect,
     AppLookupResponse,
-    UserAutocomplete,
 } from '@mm-redux/types/apps';
 
 export type {
@@ -45,17 +43,14 @@ export type {
     Channel,
 } from '@mm-redux/types/channels';
 
-export type {
+import type {
     GlobalState,
 } from '@mm-redux/types/store';
 
 export type {
     DispatchFunc,
+    GlobalState,
 };
-
-export type {
-    UserProfile,
-} from '@mm-redux/types/users';
 
 export {
     AppBindingLocations,
@@ -82,6 +77,7 @@ export {
     getUserByUsername,
     getUser,
     autocompleteUsers,
+    autocompleteUsersInChannel,
 };
 
 export {getChannelByNameAndTeamName, getChannel, autocompleteChannels} from '@mm-redux/actions/channels';
@@ -92,17 +88,20 @@ export {
     filterEmptyOptions,
 } from '@utils/apps';
 
-export const getStore = () => Store.redux;
+export interface Store {
+    dispatch: DispatchFunc;
+    getState: () => GlobalState;
+}
 
-export const autocompleteUsersInChannel = (prefix: string, channelID: string): ActionFunc => {
-    return async (dispatch, getState) => {
-        const state = getState();
-        const currentTeamID = getCurrentTeamId(state);
-        return dispatch(autocompleteUsers(prefix, currentTeamID, channelID));
-    };
-};
+export const getStore = () => ReduxStore.redux as Store;
 
 export const EXECUTE_CURRENT_COMMAND_ITEM_ID = '_execute_current_command';
+export const OPEN_COMMAND_IN_MODAL_ITEM_ID = '_open_command_in_modal';
+
+export const getOpenInModalSuggestion = (_: ParsedCommand): AutocompleteSuggestion | null => {
+    // Not supported on mobile yet
+    return null;
+};
 
 export type ExtendedAutocompleteSuggestion = AutocompleteSuggestion & {
     type?: string;
