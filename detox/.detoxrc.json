@@ -7,9 +7,6 @@
       "type": "ios.simulator",
       "device": {
         "type": "iPhone 13"
-      },
-      "artifacts": {
-        "pathBuilder": "./e2e/detox.pathbuilder.ios.js"
       }
     },
     "ios.sim.release": {
@@ -18,9 +15,6 @@
       "build": "cd ../fastlane && NODE_ENV=production bundle exec fastlane ios simulator && cd ../detox",
       "device": {
         "type": "iPhone 13"
-      },
-      "artifacts": {
-        "pathBuilder": "./e2e/detox.pathbuilder.ios.js"
       }
     },
     "android.emu.debug": {
@@ -29,9 +23,6 @@
       "build": "cd .. && ./node_modules/.bin/jetify && cd android && ./gradlew clean && ./gradlew assembleDebug assembleAndroidTest -DtestBuildType=debug && cd ../detox",
       "device": {
         "avdName": "detox_pixel_4_xl_api_30"
-      },
-      "artifacts": {
-        "pathBuilder": "./e2e/detox.pathbuilder.android.js"
       }
     },
     "android.emu.release": {
@@ -40,11 +31,11 @@
       "build": "cd .. && ./node_modules/.bin/jetify && cd android && ./gradlew clean && ./gradlew assembleRelease assembleAndroidTest -DtestBuildType=release && cd ../detox",
       "device": {
         "avdName": "detox_pixel_4_xl_api_30"
-      },
-      "artifacts": {
-        "pathBuilder": "./e2e/detox.pathbuilder.android.js"
       }
     }
+  },
+  "artifacts": {
+    "pathBuilder": "./e2e/path_builder.js"
   },
   "behavior": {
     "init": {
