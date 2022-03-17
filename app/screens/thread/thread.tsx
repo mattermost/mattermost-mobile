@@ -1,7 +1,6 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {PostInputTopProvider} from '@screens/../../context/context/post_input_top';
 import React, {useCallback, useEffect, useRef, useState} from 'react';
 import {BackHandler, LayoutChangeEvent, StyleSheet, View} from 'react-native';
 import {KeyboardTrackingViewRef} from 'react-native-keyboard-tracking-view';
@@ -10,6 +9,7 @@ import {Edge, SafeAreaView} from 'react-native-safe-area-context';
 
 import PostDraft from '@components/post_draft';
 import {THREAD_ACCESSORIES_CONTAINER_NATIVE_ID} from '@constants/post_draft';
+import {PostInputTopProvider} from '@context/post_input_top';
 import {useAppState} from '@hooks/device';
 import {dismissModal} from '@screens/navigation';
 

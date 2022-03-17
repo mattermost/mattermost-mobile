@@ -1,7 +1,6 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {usePostInputTop} from '@screens/../../../context/context/post_input_top';
 import React, {ReactNode, useMemo, useRef} from 'react';
 import {useIntl} from 'react-intl';
 import {Keyboard, Platform, StyleProp, View, ViewStyle, TouchableHighlight} from 'react-native';
@@ -12,6 +11,7 @@ import {fetchAndSwitchToThread} from '@actions/remote/thread';
 import SystemAvatar from '@components/system_avatar';
 import SystemHeader from '@components/system_header';
 import * as Screens from '@constants/screens';
+import {usePostInputTop} from '@context/post_input_top';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
