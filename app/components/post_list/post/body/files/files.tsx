@@ -17,13 +17,10 @@ import {preventDoubleTap} from '@utils/tap';
 
 import File from './file';
 
-import type FileModel from '@typings/database/models/servers/file';
-
 type FilesProps = {
-    authorId: string;
     canDownloadFiles: boolean;
     failed?: boolean;
-    files: FileModel[];
+    filesInfo: FileInfo[];
     layoutWidth?: number;
     location: string;
     isReplyPost: boolean;
@@ -50,12 +47,11 @@ const styles = StyleSheet.create({
     },
 });
 
-const Files = ({authorId, canDownloadFiles, failed, files, isReplyPost, layoutWidth, location, postId, publicLinkEnabled, theme}: FilesProps) => {
+const Files = ({canDownloadFiles, failed, filesInfo, isReplyPost, layoutWidth, location, postId, publicLinkEnabled, theme}: FilesProps) => {
     const galleryIdentifier = `${postId}-fileAttachments-${location}`;
     const [inViewPort, setInViewPort] = useState(false);
     const serverUrl = useServerUrl();
     const isTablet = useIsTablet();
-    const filesInfo: FileInfo[] = useMemo(() => files.map((f) => f.toFileInfo(authorId)), [authorId, files]);
 
     const {images: imageAttachments, nonImages: nonImageAttachments} = useMemo(() => {
         return filesInfo.reduce(({images, nonImages}: {images: FileInfo[]; nonImages: FileInfo[]}, file) => {
@@ -79,7 +75,7 @@ const Files = ({authorId, canDownloadFiles, failed, files, isReplyPost, layoutWi
             }
             return {images, nonImages};
         }, {images: [], nonImages: []});
-    }, [files, publicLinkEnabled, serverUrl]);
+    }, [filesInfo, publicLinkEnabled, serverUrl]);
 
     const filesForGallery = useDerivedValue(() => imageAttachments.concat(nonImageAttachments),
         [imageAttachments, nonImageAttachments]);
@@ -89,7 +85,7 @@ const Files = ({authorId, canDownloadFiles, failed, files, isReplyPost, layoutWi
     };
 
     const handlePreviewPress = preventDoubleTap((idx: number) => {
-        const items = filesForGallery.value.map((f) => fileToGalleryItem(f, authorId));
+        const items = filesForGallery.value.map((f) => fileToGalleryItem(f, f.user_id));
         openGalleryAtIndex(galleryIdentifier, idx, items);
     });
 
@@ -99,7 +95,7 @@ const Files = ({authorId, canDownloadFiles, failed, files, isReplyPost, layoutWi
         filesForGallery.value[idx] = file;
     };
 
-    const isSingleImage = () => (files.length === 1 && isImage(files[0]));
+    const isSingleImage = () => (filesInfo.length === 1 && isImage(filesInfo[0]));
 
     const renderItems = (items: FileInfo[], moreImagesCount = 0, includeGutter = false) => {
         const singleImage = isSingleImage();

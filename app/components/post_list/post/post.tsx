@@ -26,7 +26,6 @@ import Header from './header';
 import PreHeader from './pre_header';
 import SystemMessage from './system_message';
 
-import type FileModel from '@typings/database/models/servers/file';
 import type PostModel from '@typings/database/models/servers/post';
 import type UserModel from '@typings/database/models/servers/user';
 
@@ -35,7 +34,7 @@ type PostProps = {
     canDelete: boolean;
     currentUser: UserModel;
     differentThreadSequence: boolean;
-    files: FileModel[];
+    filesCount: number;
     hasReplies: boolean;
     highlight?: boolean;
     highlightPinnedOrSaved?: boolean;
@@ -97,7 +96,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
 });
 
 const Post = ({
-    appsEnabled, canDelete, currentUser, differentThreadSequence, files, hasReplies, highlight, highlightPinnedOrSaved = true, highlightReplyBar,
+    appsEnabled, canDelete, currentUser, differentThreadSequence, filesCount, hasReplies, highlight, highlightPinnedOrSaved = true, highlightReplyBar,
     isConsecutivePost, isEphemeral, isFirstReply, isSaved, isJumboEmoji, isLastReply, isPostAddChannelMember,
     location, post, reactionsCount, shouldRenderReplyButton, skipSavedHeader, skipPinnedHeader, showAddReaction = true, style,
     testID, previousPost,
@@ -250,7 +249,7 @@ const Post = ({
         body = (
             <Body
                 appsEnabled={appsEnabled}
-                files={files}
+                filesCount={filesCount}
                 hasReactions={reactionsCount > 0}
                 highlight={Boolean(highlightedStyle)}
                 highlightReplyBar={highlightReplyBar}

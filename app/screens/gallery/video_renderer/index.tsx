@@ -2,16 +2,22 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback, useEffect, useMemo, useState} from 'react';
-import {Platform, StyleSheet, useWindowDimensions} from 'react-native';
+import {useIntl} from 'react-intl';
+import {Alert, DeviceEventEmitter, Platform, StyleSheet, useWindowDimensions} from 'react-native';
 import Animated, {Easing, useAnimatedRef, useAnimatedStyle, useSharedValue, withTiming, WithTimingConfig} from 'react-native-reanimated';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
-import Video, {LoadError, OnPlaybackRateData} from 'react-native-video';
+import Video, {OnPlaybackRateData} from 'react-native-video';
 
+import {updateLocalFilePath} from '@actions/local/file';
 import CompassIcon from '@components/compass_icon';
+import {Events} from '@constants';
 import {GALLERY_FOOTER_HEIGHT, VIDEO_INSET} from '@constants/gallery';
+import {useServerUrl} from '@context/server';
 import {changeOpacity} from '@utils/theme';
 
-import {ImageRendererProps} from '../image_renderer';
+import DownloadWithAction from '../footer/download_with_action';
+
+import type {ImageRendererProps} from '../image_renderer';
 
 interface VideoRendererProps extends ImageRendererProps {
     index: number;
@@ -50,13 +56,22 @@ const VideoRenderer = ({height, index, initialIndex, item, isPageActive, onShoul
     const dimensions = useWindowDimensions();
     const fullscreen = useSharedValue(false);
     const {bottom} = useSafeAreaInsets();
+    const {formatMessage} = useIntl();
+    const serverUrl = useServerUrl();
     const videoRef = useAnimatedRef<Video>();
     const [paused, setPaused] = useState(!(initialIndex === index));
     const [videoReady, setVideoReady] = useState(false);
-    const source = useMemo(() => ({uri: item.uri}), [item.uri]);
+    const [videoUri, setVideoUri] = useState(item.uri);
+    const [downloading, setDownloading] = useState(false);
+    const source = useMemo(() => ({uri: videoUri}), [videoUri]);
 
     const setFullscreen = (value: boolean) => {
         fullscreen.value = value;
+    };
+
+    const onDownloadSuccess = (path: string) => {
+        setVideoUri(path);
+        updateLocalFilePath(serverUrl, item.id, path);
     };
 
     const onEnd = useCallback(() => {
@@ -66,11 +81,18 @@ const VideoRenderer = ({height, index, initialIndex, item, isPageActive, onShoul
         videoRef.current?.dismissFullscreenPlayer();
     }, [onShouldHideControls]);
 
-    const onError = useCallback((error: LoadError) => {
-        // eslint-disable-next-line no-console
-        console.log(
-            'Error loading, figure out what to do here... give the option to download?',
-            error,
+    const onError = useCallback(() => {
+        Alert.alert(
+            formatMessage({id: 'video.failed_title', defaultMessage: 'Video playback failed'}),
+            formatMessage({id: 'video.failed_description', defaultMessage: 'An error occurred while trying to play the video.\n'}),
+            [{
+                text: formatMessage({id: 'video.download', defaultMessage: 'Download video'}),
+                onPress: () => {
+                    setDownloading(true);
+                },
+            }, {
+                text: formatMessage({id: 'mobile.post.cancel', defaultMessage: 'Cancel'}),
+            }],
         );
     }, []);
 
@@ -98,6 +120,13 @@ const VideoRenderer = ({height, index, initialIndex, item, isPageActive, onShoul
 
     const onReadyForDisplay = useCallback(() => {
         setVideoReady(true);
+    }, []);
+
+    const setGalleryAction = useCallback((action: GalleryAction) => {
+        DeviceEventEmitter.emit(Events.GALLERY_ACTIONS, action);
+        if (action === 'none') {
+            setDownloading(false);
+        }
     }, []);
 
     const animatedStyle = useAnimatedStyle(() => {
@@ -155,6 +184,14 @@ const VideoRenderer = ({height, index, initialIndex, item, isPageActive, onShoul
                         size={80}
                     />
                 </Animated.View>
+            }
+            {downloading &&
+            <DownloadWithAction
+                action='external'
+                setAction={setGalleryAction}
+                onDownloadSuccess={onDownloadSuccess}
+                item={item}
+            />
             }
         </>
     );
