@@ -6,7 +6,7 @@ import {Model} from '@nozbe/watermelondb';
 import {addRecentReaction} from '@actions/local/reactions';
 import DatabaseManager from '@database/manager';
 import NetworkManager from '@init/network_manager';
-import {queryRecentPostsInChannel, getRecentPostsInThread} from '@queries/servers/post';
+import {getRecentPostsInChannel, getRecentPostsInThread} from '@queries/servers/post';
 import {queryReaction} from '@queries/servers/reactions';
 import {getCurrentChannelId, getCurrentUserId} from '@queries/servers/system';
 
@@ -104,7 +104,7 @@ export const handleReactionToLatestPost = async (serverUrl: string, emojiName: s
             posts = await getRecentPostsInThread(operator.database, rootId);
         } else {
             const channelId = await getCurrentChannelId(operator.database);
-            posts = await queryRecentPostsInChannel(operator.database, channelId);
+            posts = await getRecentPostsInChannel(operator.database, channelId);
         }
 
         if (add) {

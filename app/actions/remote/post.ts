@@ -18,7 +18,7 @@ import {extractRecordsForTable} from '@helpers/database';
 import NetworkManager from '@init/network_manager';
 import {prepareMissingChannelsForAllTeams, queryAllMyChannel} from '@queries/servers/channel';
 import {queryAllCustomEmojis} from '@queries/servers/custom_emoji';
-import {getPostById, queryRecentPostsInChannel} from '@queries/servers/post';
+import {getPostById, getRecentPostsInChannel} from '@queries/servers/post';
 import {getCurrentUserId, getCurrentChannelId} from '@queries/servers/system';
 import {queryAllUsers} from '@queries/servers/user';
 import {getValidEmojis, matchEmoticons} from '@utils/emoji/helpers';
@@ -176,7 +176,7 @@ export const fetchPostsForChannel = async (serverUrl: string, channelId: string,
 
     let postAction: Promise<PostsRequest>|undefined;
     let actionType: string|undefined;
-    const postsInChannel = await queryRecentPostsInChannel(operator.database, channelId);
+    const postsInChannel = await getRecentPostsInChannel(operator.database, channelId);
     if (!postsInChannel || postsInChannel.length < General.POST_CHUNK_SIZE) {
         postAction = fetchPosts(serverUrl, channelId, 0, General.POST_CHUNK_SIZE, true);
         actionType = ActionType.POSTS.RECEIVED_IN_CHANNEL;

@@ -65,7 +65,8 @@ export const queryPostsInChannel = (database: Database, channelId: string) => {
 export const queryPostsInThread = (database: Database, rootId: string, sorted = false, includeDeleted = false) => {
     const clauses: Q.Clause[] = [Q.where('root_id', rootId)];
     if (!includeDeleted) {
-        clauses.push(Q.where('delete_at', Q.eq(0)));
+        clauses.unshift(Q.experimentalJoinTables([POST]));
+        clauses.push(Q.on(POST, 'delete_at', Q.eq(0)));
     }
 
     if (sorted) {
@@ -106,11 +107,11 @@ export const queryPostsChunk = (database: Database, id: string, earliest: number
     );
 };
 
-export const queryRecentPostsInChannel = async (database: Database, channelId: string) => {
+export const getRecentPostsInChannel = async (database: Database, channelId: string, includeDeleted = false) => {
     const chunks = await queryPostsInChannel(database, channelId).fetch();
     if (chunks.length) {
         const recent = chunks[0];
-        return queryPostsChunk(database, channelId, recent.earliest, recent.latest).fetch();
+        return queryPostsChunk(database, channelId, recent.earliest, recent.latest, false, includeDeleted).fetch();
     }
     return [];
 };
