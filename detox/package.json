@@ -9,6 +9,7 @@
     "@babel/plugin-transform-runtime": "7.17.0",
     "@babel/preset-env": "7.16.11",
     "@types/jest": "27.4.1",
+    "@types/tough-cookie": "4.0.1",
     "@types/uuid": "8.3.4",
     "axios": "0.26.1",
     "axios-cookiejar-support": "2.0.4",
