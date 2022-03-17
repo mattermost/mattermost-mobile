@@ -4,9 +4,9 @@ import React from 'react';
 
 export const SnackBarContext = React.createContext(0);
 
-export const SnackBarProvider = ({postInputTop, children}: any) => {
+export const SnackBarProvider = ({offsetY, children}: any) => {
     return (
-        <SnackBarContext.Provider value={postInputTop}>
+        <SnackBarContext.Provider value={offsetY}>
             {children}
         </SnackBarContext.Provider>
     );

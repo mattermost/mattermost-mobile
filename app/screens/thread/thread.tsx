@@ -36,7 +36,7 @@ const Thread = ({closeButtonId, componentId, rootPost}: ThreadProps) => {
     const styles = getStyleSheet();
     const postDraftRef = useRef<KeyboardTrackingViewRef>(null);
 
-    const [postInputTop, setPostInputTop] = useState(0);
+    const [offsetY, setOffsetY] = useState(0);
 
     const close = useCallback(() => {
         dismissModal({componentId});
@@ -68,7 +68,7 @@ const Thread = ({closeButtonId, componentId, rootPost}: ThreadProps) => {
 
     const onLayout = useCallback((layoutEvent: LayoutChangeEvent) => {
         const {layout} = layoutEvent.nativeEvent;
-        setPostInputTop(layout.y);
+        setOffsetY(layout.y);
     }, []);
 
     return (
@@ -81,7 +81,7 @@ const Thread = ({closeButtonId, componentId, rootPost}: ThreadProps) => {
                 {Boolean(rootPost?.id) &&
                 <>
                     <View style={styles.flex}>
-                        <SnackBarProvider postInputTop={postInputTop}>
+                        <SnackBarProvider offsetY={offsetY}>
                             <ThreadPostList
                                 channelId={rootPost!.channelId}
                                 forceQueryAfterAppState={appState}
