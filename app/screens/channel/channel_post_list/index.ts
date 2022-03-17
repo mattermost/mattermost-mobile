@@ -6,11 +6,12 @@ import {withDatabase} from '@nozbe/watermelondb/DatabaseProvider';
 import withObservables from '@nozbe/with-observables';
 import {AppStateStatus} from 'react-native';
 import {combineLatest, of as of$} from 'rxjs';
-import {map, switchMap} from 'rxjs/operators';
+import {switchMap} from 'rxjs/operators';
 
 import {Preferences} from '@constants';
 import {MM_TABLES, SYSTEM_IDENTIFIERS} from '@constants/database';
-import {processIsCRTEnabled, getPreferenceAsBool} from '@helpers/api/preference';
+import {getPreferenceAsBool} from '@helpers/api/preference';
+import {observeIsCRTEnabled} from '@queries/servers/thread';
 import {getTimezone} from '@utils/user';
 
 import ChannelPostList from './channel_post_list';
@@ -30,12 +31,12 @@ const enhanced = withObservables(['channelId', 'forceQueryAfterAppState'], ({dat
     const currentUser = database.get<SystemModel>(SYSTEM).findAndObserve(SYSTEM_IDENTIFIERS.CURRENT_USER_ID).pipe(
         switchMap((currentUserId) => database.get<UserModel>(USER).findAndObserve(currentUserId.value)),
     );
-    const preferences = database.get<PreferenceModel>(PREFERENCE).query(Q.where('category', Preferences.CATEGORY_DISPLAY_SETTINGS)).observe();
-    const isCRTEnabled = combineLatest([config, preferences]).pipe(
-        map(
-            ([{value: cfg}, prefs]) => processIsCRTEnabled(prefs, cfg),
-        ),
-    );
+
+    const isCRTEnabled = observeIsCRTEnabled(database);
+    const posts = database.get<PostsInChannelModel>(POSTS_IN_CHANNEL).query(
+        Q.where('channel_id', channelId),
+        Q.sortBy('latest', Q.desc),
+    ).observeWithColumns(['earliest', 'latest']);
 
     return {
         currentTimezone: currentUser.pipe((switchMap((user) => of$(getTimezone(user.timezone))))),
@@ -47,11 +48,8 @@ const enhanced = withObservables(['channelId', 'forceQueryAfterAppState'], ({dat
         lastViewedAt: database.get<MyChannelModel>(MY_CHANNEL).findAndObserve(channelId).pipe(
             switchMap((myChannel) => of$(myChannel.viewedAt)),
         ),
-        posts: database.get<PostsInChannelModel>(POSTS_IN_CHANNEL).query(
-            Q.where('channel_id', channelId),
-            Q.sortBy('latest', Q.desc),
-        ).observeWithColumns(['earliest', 'latest']).pipe(
-            switchMap((postsInChannel) => {
+        posts: combineLatest([isCRTEnabled, posts]).pipe(
+            switchMap(([iCE, postsInChannel]) => {
                 if (!postsInChannel.length) {
                     return of$([]);
                 }
@@ -61,7 +59,7 @@ const enhanced = withObservables(['channelId', 'forceQueryAfterAppState'], ({dat
                     Q.where('channel_id', channelId),
                     Q.where('create_at', Q.between(earliest, latest)),
                 ];
-                if (isCRTEnabled) {
+                if (iCE) {
                     matchPostsConditions.push(Q.where('root_id', ''));
                 }
                 return database.get<PostModel>(POST).query(

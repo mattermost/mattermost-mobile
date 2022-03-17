@@ -74,7 +74,6 @@ const Thread = ({closeButtonId, componentId, rootPost}: ThreadProps) => {
                 <>
                     <View style={styles.flex}>
                         <ThreadPostList
-                            channelId={rootPost!.channelId}
                             forceQueryAfterAppState={appState}
                             nativeID={rootPost!.id}
                             rootPost={rootPost!}

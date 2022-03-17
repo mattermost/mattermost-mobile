@@ -44,16 +44,33 @@ export const switchToThread = async (serverUrl: string, rootId: string) => {
             return {error: 'Theme not found'};
         }
 
-        // Mark thread as read if we have unreads
+        // Modal right buttons
+        const rightButtons = [];
+
         const isCRTEnabled = await getIsCRTEnabled(database);
         if (isCRTEnabled) {
             const thread = await post.thread.fetch();
             if (!thread) {
                 return {error: 'Thread not found'};
             }
+
+            // CRT: Mark thread as read if we have unreads
             if (thread.unreadReplies || thread.unreadMentions) {
                 updateThreadRead(serverUrl, channel.teamId, thread.id, Date.now());
             }
+
+            // CRT: Add follow/following button
+            rightButtons.push({
+                id: 1,
+                component: {
+                    id: thread.id,
+                    name: 'ThreadFollow',
+                    passProps: {
+                        teamId: channel.teamId,
+                        threadId: thread.id,
+                    },
+                },
+            });
         }
 
         // Get translation by user locale
@@ -88,6 +105,7 @@ export const switchToThread = async (serverUrl: string, rootId: string) => {
                     icon: CompassIcon.getImageSourceSync('close', 24, theme.centerChannelColor),
                     testID: closeButtonId,
                 }],
+                rightButtons,
             },
         });
         return {};

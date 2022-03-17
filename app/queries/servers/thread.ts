@@ -2,8 +2,8 @@
 // See LICENSE.txt for license information.
 
 import {Database, Q, Query} from '@nozbe/watermelondb';
-import {of as of$} from 'rxjs';
-import {switchMap} from 'rxjs/operators';
+import {combineLatest, of as of$} from 'rxjs';
+import {map, switchMap} from 'rxjs/operators';
 
 import {Preferences} from '@constants';
 import {MM_TABLES, SYSTEM_IDENTIFIERS} from '@constants/database';
@@ -15,11 +15,21 @@ import type ThreadModel from '@typings/database/models/servers/thread';
 
 const {SERVER: {CHANNEL, POST, PREFERENCE, SYSTEM, THREAD}} = MM_TABLES;
 
-export async function getIsCRTEnabled(database: Database): Promise<boolean> {
+export const getIsCRTEnabled = async (database: Database): Promise<boolean> => {
     const {value: config} = await database.get<SystemModel>(SYSTEM).find(SYSTEM_IDENTIFIERS.CONFIG);
     const preferences = await database.get<PreferenceModel>(PREFERENCE).query(Q.where('category', Preferences.CATEGORY_DISPLAY_SETTINGS)).fetch();
     return processIsCRTEnabled(preferences, config);
-}
+};
+
+export const observeIsCRTEnabled = (database: Database) => {
+    const config = database.get<SystemModel>(SYSTEM).findAndObserve(SYSTEM_IDENTIFIERS.CONFIG);
+    const preferences = database.get<PreferenceModel>(PREFERENCE).query(Q.where('category', Preferences.CATEGORY_DISPLAY_SETTINGS)).observe();
+    return combineLatest([config, preferences]).pipe(
+        map(
+            ([{value: cfg}, prefs]) => processIsCRTEnabled(prefs, cfg),
+        ),
+    );
+};
 
 type QueryThreadsInTeamArgs = {
     database: Database;
