@@ -9,7 +9,7 @@ import {Edge, SafeAreaView} from 'react-native-safe-area-context';
 
 import PostDraft from '@components/post_draft';
 import {THREAD_ACCESSORIES_CONTAINER_NATIVE_ID} from '@constants/post_draft';
-import {PostInputTopProvider} from '@context/post_input_top';
+import {SnackBarProvider} from '@context/snack_bar';
 import {useAppState} from '@hooks/device';
 import {dismissModal} from '@screens/navigation';
 
@@ -81,14 +81,14 @@ const Thread = ({closeButtonId, componentId, rootPost}: ThreadProps) => {
                 {Boolean(rootPost?.id) &&
                 <>
                     <View style={styles.flex}>
-                        <PostInputTopProvider postInputTop={postInputTop}>
+                        <SnackBarProvider postInputTop={postInputTop}>
                             <ThreadPostList
                                 channelId={rootPost!.channelId}
                                 forceQueryAfterAppState={appState}
                                 nativeID={rootPost!.id}
                                 rootPost={rootPost!}
                             />
-                        </PostInputTopProvider>
+                        </SnackBarProvider>
                     </View>
                     <View onLayout={onLayout}>
                         <PostDraft
@@ -99,7 +99,6 @@ const Thread = ({closeButtonId, componentId, rootPost}: ThreadProps) => {
                             keyboardTracker={postDraftRef}
                         />
                     </View>
-
                 </>
                 }
             </SafeAreaView>

@@ -11,8 +11,8 @@ import {fetchAndSwitchToThread} from '@actions/remote/thread';
 import SystemAvatar from '@components/system_avatar';
 import SystemHeader from '@components/system_header';
 import * as Screens from '@constants/screens';
-import {usePostInputTop} from '@context/post_input_top';
 import {useServerUrl} from '@context/server';
+import {useSnackBar} from '@context/snack_bar';
 import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
 import {bottomSheetModalOptions, showModal, showModalOverCurrentContext} from '@screens/navigation';
@@ -111,7 +111,7 @@ const Post = ({
     const isPendingOrFailed = isPostPendingOrFailed(post);
     const isSystemPost = isSystemMessage(post);
     const isWebHook = isFromWebhook(post);
-    const postInputTop = usePostInputTop();
+    const postInputTop = useSnackBar();
 
     const hasSameRoot = useMemo(() => {
         if (isFirstReply) {
