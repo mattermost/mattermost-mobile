@@ -483,5 +483,8 @@
   "user.settings.general.nickname": "Nickname",
   "user.settings.general.position": "Position",
   "user.settings.general.username": "Username",
+  "video.download": "Download video",
+  "video.failed_description": "An error occurred while trying to play the video.\n",
+  "video.failed_title": "Video playback failed",
   "your.servers": "Your servers"
 }
