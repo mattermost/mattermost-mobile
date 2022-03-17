@@ -6,13 +6,16 @@ import {DeviceEventEmitter} from 'react-native';
 
 import {storeMyChannelsForTeam, markChannelAsUnread, markChannelAsViewed, updateLastPostAt} from '@actions/local/channel';
 import {markPostAsDeleted} from '@actions/local/post';
+import {processThreadsFromReceivedPosts, processUpdateThreadReplyCount} from '@actions/local/thread';
 import {fetchMyChannel, markChannelAsRead} from '@actions/remote/channel';
 import {fetchPostAuthors, fetchPostById} from '@actions/remote/post';
+import {getThread} from '@actions/remote/thread';
 import {ActionType, Events} from '@constants';
 import DatabaseManager from '@database/manager';
-import {queryMyChannel} from '@queries/servers/channel';
+import {queryChannelById, queryMyChannel} from '@queries/servers/channel';
 import {queryPostById} from '@queries/servers/post';
 import {queryCurrentChannelId, queryCurrentUserId} from '@queries/servers/system';
+import {getIsCRTEnabled} from '@queries/servers/thread';
 import {isFromWebhook, isSystemMessage, shouldIgnorePost} from '@utils/post';
 
 import type MyChannelModel from '@typings/database/models/servers/my_channel';
@@ -31,15 +34,17 @@ export async function handleNewPostEvent(serverUrl: string, msg: WebSocketMessag
         return;
     }
 
+    const {database} = operator;
+
     let post: Post;
     try {
         post = JSON.parse(msg.data.post);
     } catch {
         return;
     }
-    const currentUserId = await queryCurrentUserId(operator.database);
+    const currentUserId = await queryCurrentUserId(database);
 
-    const existing = await queryPostById(operator.database, post.pending_post_id);
+    const existing = await queryPostById(database, post.pending_post_id);
 
     if (existing) {
         return;
@@ -58,8 +63,34 @@ export async function handleNewPostEvent(serverUrl: string, msg: WebSocketMessag
         models.push(...postModels);
     }
 
+    const isCRTEnabled = await getIsCRTEnabled(database);
+    if (isCRTEnabled) {
+        if (post.root_id) {
+            // If the post is a reply, we need to update the thread data: `reply_count`
+            const {model: threadModel} = await processUpdateThreadReplyCount(serverUrl, post.root_id, post.reply_count, true);
+            if (threadModel) {
+                models.push(threadModel);
+            }
+
+            // Add current user as a participant to the thread
+            const threadParticipantModels = await operator.handleAddThreadParticipants({
+                threadId: post.root_id,
+                participants: [post.user_id],
+                prepareRecordsOnly: true,
+            });
+            if (threadParticipantModels?.length) {
+                models.push(...threadParticipantModels);
+            }
+        } else { // If the post is a root post, then we need to add it to the thread table
+            const {models: threadModels} = await processThreadsFromReceivedPosts(serverUrl, [post], true);
+            if (threadModels?.length) {
+                models.push(...threadModels);
+            }
+        }
+    }
+
     // Ensure the channel membership
-    let myChannel = await queryMyChannel(operator.database, post.channel_id);
+    let myChannel = await queryMyChannel(database, post.channel_id);
     if (myChannel) {
         const {member} = await updateLastPostAt(serverUrl, post.channel_id, post.create_at, false);
         if (member) {
@@ -77,7 +108,7 @@ export async function handleNewPostEvent(serverUrl: string, msg: WebSocketMessag
             return;
         }
 
-        myChannel = await queryMyChannel(operator.database, post.channel_id);
+        myChannel = await queryMyChannel(database, post.channel_id);
         if (!myChannel) {
             return;
         }
@@ -85,14 +116,14 @@ export async function handleNewPostEvent(serverUrl: string, msg: WebSocketMessag
 
     // If we don't have the root post for this post, fetch it from the server
     if (post.root_id) {
-        const rootPost = await queryPostById(operator.database, post.root_id);
+        const rootPost = await queryPostById(database, post.root_id);
 
         if (!rootPost) {
             fetchPostById(serverUrl, post.root_id);
         }
     }
 
-    const currentChannelId = await queryCurrentChannelId(operator.database);
+    const currentChannelId = await queryCurrentChannelId(database);
 
     if (post.channel_id === currentChannelId) {
         const data = {
@@ -111,11 +142,6 @@ export async function handleNewPostEvent(serverUrl: string, msg: WebSocketMessag
             models.push(...authorsModels);
         }
     }
-
-    // TODO Thread related functionality: https://mattermost.atlassian.net/browse/MM-41084
-    //const viewingGlobalThreads = getViewingGlobalThreads(state);
-    // const collapsedThreadsEnabled = isCollapsedThreadsEnabled(state);
-    // actions.push(receivedNewPost(post, collapsedThreadsEnabled));
 
     if (!shouldIgnorePost(post)) {
         let markAsViewed = false;
@@ -203,10 +229,44 @@ export async function handlePostEdited(serverUrl: string, msg: WebSocketMessage)
     }
 }
 
-export function handlePostDeleted(serverUrl: string, msg: WebSocketMessage) {
+export async function handlePostDeleted(serverUrl: string, msg: WebSocketMessage) {
+    const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
+    if (!operator) {
+        return;
+    }
     try {
-        const data: Post = JSON.parse(msg.data.post);
-        markPostAsDeleted(serverUrl, data);
+        const {database} = operator;
+
+        const post: Post = JSON.parse(msg.data.post);
+
+        const models: Model[] = [];
+
+        const {model: deleteModel} = await markPostAsDeleted(serverUrl, post, true);
+        if (deleteModel) {
+            models.push(deleteModel);
+        }
+
+        // update thread when a reply is deleted and CRT is enabled
+        if (post.root_id) {
+            const isCRTEnabled = await getIsCRTEnabled(database);
+            if (isCRTEnabled) {
+                // Update reply_count of the thread;
+                // Note: reply_count includes current deleted count, So subtract 1 from reply_count
+                const {model: threadModel} = await processUpdateThreadReplyCount(serverUrl, post.root_id, post.reply_count - 1, true);
+                if (threadModel) {
+                    models.push(threadModel);
+                }
+
+                const channel = await queryChannelById(database, post.channel_id);
+                if (channel) {
+                    getThread(serverUrl, channel.teamId, post.root_id);
+                }
+            }
+        }
+
+        if (models.length) {
+            operator.batchRecords(models);
+        }
     } catch {
         // Do nothing
     }

@@ -2,8 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback} from 'react';
-import {Text, View} from 'react-native';
-import {TouchableHighlight} from 'react-native-gesture-handler';
+import {Text, TouchableHighlight, View} from 'react-native';
 
 import {fetchAndSwitchToThread} from '@actions/remote/thread';
 import FormattedText from '@components/formatted_text';

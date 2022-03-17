@@ -117,6 +117,7 @@ export const getThread = async (serverUrl: string, teamId: string, threadId: str
         await processReceivedThreads(serverUrl, [thread]);
 
         return {data: thread};
+        return {};
     } catch (error) {
         forceLogoutIfNecessary(serverUrl, error as ClientErrorProps);
         return {error};

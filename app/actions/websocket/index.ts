@@ -337,7 +337,6 @@ export async function handleEvent(serverUrl: string, msg: WebSocketMessage) {
             handleThreadFollowChangedEvent(serverUrl, msg);
             break;
 
-        // return dispatch(handleThreadFollowChanged(msg));
         case WebsocketEvents.APPS_FRAMEWORK_REFRESH_BINDINGS:
             break;
 

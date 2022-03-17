@@ -193,8 +193,8 @@ export default class ClientBase {
         return `${this.urlVersion}/redirect_location`;
     }
 
-    getThreadsRoute(userID: string, teamID: string): string {
-        return `${this.getUserRoute(userID)}/teams/${teamID}/threads`;
+    getThreadsRoute(userId: string, teamId: string): string {
+        return `${this.getUserRoute(userId)}/teams/${teamId}/threads`;
     }
 
     getThreadRoute(userId: string, teamId: string, threadId: string): string {

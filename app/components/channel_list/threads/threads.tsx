@@ -36,10 +36,11 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     text: {
         color: changeOpacity(theme.sidebarText, 0.72),
         paddingLeft: 12,
-        ...typography('Body', 200, 'SemiBold'),
+        ...typography('Body', 200, 'Regular'),
     },
     highlight: {
         color: theme.sidebarText,
+        ...typography('Body', 200, 'SemiBold'),
     },
 }));
 

@@ -2,8 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback, useMemo} from 'react';
-import {View} from 'react-native';
-import {TouchableOpacity} from 'react-native-gesture-handler';
+import {TouchableOpacity, View} from 'react-native';
 
 import {updateThreadFollow} from '@actions/remote/thread';
 import CompassIcon from '@components/compass_icon';
@@ -142,7 +141,7 @@ const Footer = ({currentUserId, participants, serverUrl, teamId, teammateNameDis
                     <FormattedText
                         id='threads.follow'
                         defaultMessage='Follow'
-                        style={styles.notFollow}
+                        style={styles.notFollowing}
                     />
                 </TouchableOpacity>
             </>

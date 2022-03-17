@@ -94,9 +94,8 @@ function ThreadFollow({teamId, thread}: Props) {
 }
 
 const enhanced = withObservables(['threadId'], ({threadId, database}: {threadId: string} & WithDatabaseArgs) => {
-    const thread = database.get<ThreadModel>(THREAD).findAndObserve(threadId);
     return {
-        thread,
+        thread: database.get<ThreadModel>(THREAD).findAndObserve(threadId),
     };
 });
 

@@ -21,6 +21,15 @@ export const getIsCRTEnabled = async (database: Database): Promise<boolean> => {
     return processIsCRTEnabled(preferences, config);
 };
 
+export const getThreadById = async (database: Database, threadId: string) => {
+    try {
+        const thread = await database.get<ThreadModel>(THREAD).find(threadId);
+        return thread;
+    } catch {
+        return undefined;
+    }
+};
+
 export const observeIsCRTEnabled = (database: Database) => {
     const config = database.get<SystemModel>(SYSTEM).findAndObserve(SYSTEM_IDENTIFIERS.CONFIG);
     const preferences = database.get<PreferenceModel>(PREFERENCE).query(Q.where('category', Preferences.CATEGORY_DISPLAY_SETTINGS)).observe();
@@ -39,6 +48,7 @@ type QueryThreadsInTeamArgs = {
     sort?: boolean;
     teamId?: string;
 };
+
 export const queryThreadsInTeam = ({database, hasReplies = true, isFollowing = true, onlyUnreads, sort, teamId}: QueryThreadsInTeamArgs): Query<ThreadModel> => {
     const query: Q.Clause[] = [];
 
