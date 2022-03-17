@@ -31,20 +31,18 @@ type SnackBarProps = {
     onPress?: () => void;
     barType: keyof typeof SNACK_BAR_TYPE;
     location: typeof Screens[keyof typeof Screens];
+    postInputTop: number;
 }
-const SnackBar = ({
-    barType,
-    componentId,
-    onPress,
-    location,
-}: SnackBarProps) => {
+const SnackBar = ({barType, componentId, onPress, location, postInputTop}: SnackBarProps) => {
     const intl = useIntl();
     const theme = useTheme();
     const isTablet = useIsTablet();
-    const {width} = useWindowDimensions();
+    const [showToast, setShowToast] = useState<boolean | undefined>();
+    const {width: windowWidth, height: windowHeight} = useWindowDimensions();
+
+    const isLandscape = windowWidth > windowHeight;
     const config = SNACK_BAR_CONFIG[barType];
     const styles = getStyleSheet(theme);
-    const [showToast, setShowToast] = useState<boolean | undefined>();
 
     const onPressHandler = useCallback(() => {
         dismissOverlay(componentId);
@@ -58,16 +56,20 @@ const SnackBar = ({
     }));
 
     const toastStyle = useMemo(() => {
+        const diffWidth = windowWidth - TABLET_SIDEBAR_WIDTH;
+        const ratio = isLandscape ? 0.62 : 0.96;
+
         return [
             {backgroundColor: theme[config.themeColor]},
-            isTablet && {
-                width: 0.96 * (width - TABLET_SIDEBAR_WIDTH),
+            isTablet && location === Screens.CHANNEL && {
+                width: 0.96 * diffWidth,
                 marginLeft: TABLET_SIDEBAR_WIDTH,
                 marginBottom: 65,
             },
             isTablet && location === Screens.THREAD && {
-                backgroundColor: 'red',
                 marginLeft: 0,
+                marginBottom: (windowHeight - postInputTop) / 2,
+                width: ratio * diffWidth,
             },
         ];
     }, [theme, barType]);
