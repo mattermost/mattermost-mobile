@@ -130,7 +130,7 @@ const DownloadWithAction = ({action, item, onDownloadSuccess, setAction}: Props)
         }
     };
 
-    const onDownload = async (response: ClientResponse) => {
+    const externalAction = async (response: ClientResponse) => {
         if (response.data?.path && onDownloadSuccess) {
             onDownloadSuccess(response.data.path as string);
         }
@@ -141,6 +141,7 @@ const DownloadWithAction = ({action, item, onDownloadSuccess, setAction}: Props)
         if (mounted.current) {
             if (response.data?.path) {
                 const path = response.data.path as string;
+                onDownloadSuccess?.(path);
                 FileViewer.open(path, {
                     displayName: item.name,
                     showAppsSuggestions: true,
@@ -195,6 +196,7 @@ const DownloadWithAction = ({action, item, onDownloadSuccess, setAction}: Props)
     const save = async (response: ClientResponse) => {
         if (response.data?.path) {
             const path = response.data.path as string;
+            onDownloadSuccess?.(path);
             const hasPermission = await hasWriteStoragePermission(intl);
 
             if (hasPermission) {
@@ -214,6 +216,7 @@ const DownloadWithAction = ({action, item, onDownloadSuccess, setAction}: Props)
         if (mounted.current) {
             if (response.data?.path) {
                 const path = response.data.path as string;
+                onDownloadSuccess?.(path);
                 Share.open({
                     message: '',
                     title: '',
@@ -240,8 +243,8 @@ const DownloadWithAction = ({action, item, onDownloadSuccess, setAction}: Props)
                     case 'opening':
                         actionToExecute = openFile;
                         break;
-                    case 'other':
-                        actionToExecute = onDownload;
+                    case 'external':
+                        actionToExecute = externalAction;
                         break;
                     default:
                         actionToExecute = save;

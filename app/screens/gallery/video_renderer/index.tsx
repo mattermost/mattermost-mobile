@@ -187,7 +187,7 @@ const VideoRenderer = ({height, index, initialIndex, item, isPageActive, onShoul
             }
             {downloading &&
             <DownloadWithAction
-                action='other'
+                action='external'
                 setAction={setGalleryAction}
                 onDownloadSuccess={onDownloadSuccess}
                 item={item}
