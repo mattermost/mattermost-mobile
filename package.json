@@ -132,7 +132,7 @@
     "babel-plugin-module-resolver": "4.1.0",
     "babel-plugin-transform-remove-console": "6.9.4",
     "deep-freeze": "0.0.1",
-    "detox": "19.5.1",
+    "detox": "19.5.7",
     "eslint": "8.10.0",
     "eslint-plugin-header": "3.1.1",
     "eslint-plugin-import": "2.25.4",
