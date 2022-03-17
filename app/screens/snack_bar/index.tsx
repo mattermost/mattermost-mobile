@@ -58,19 +58,29 @@ const SnackBar = ({barType, componentId, onPress, location, postInputTop}: Snack
     const toastStyle = useMemo(() => {
         const diffWidth = windowWidth - TABLET_SIDEBAR_WIDTH;
         const ratio = isLandscape ? 0.62 : 0.96;
+        let tabletStyle = {
+            width: 0.96 * diffWidth,
+            marginLeft: TABLET_SIDEBAR_WIDTH,
+            marginBottom: 65,
+        };
 
-        return [
-            {backgroundColor: theme[config.themeColor]},
-            isTablet && location === Screens.CHANNEL && {
-                width: 0.96 * diffWidth,
-                marginLeft: TABLET_SIDEBAR_WIDTH,
-                marginBottom: 65,
-            },
-            isTablet && location === Screens.THREAD && {
+        if (location === Screens.THREAD) {
+            tabletStyle = {
                 marginLeft: 0,
                 marginBottom: (windowHeight - postInputTop) / 2,
                 width: ratio * diffWidth,
-            },
+            };
+        } else if ([Screens.PERMALINK, Screens.MENTIONS].includes(location)) {
+            tabletStyle = {
+                marginLeft: 0,
+                marginBottom: 0,
+                width: 0.96 * windowWidth,
+            };
+        }
+
+        return [
+            {backgroundColor: theme[config.themeColor]},
+            isTablet && tabletStyle,
         ];
     }, [theme, barType]);
 
