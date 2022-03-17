@@ -36,7 +36,6 @@ const Thread = ({closeButtonId, componentId, rootPost}: ThreadProps) => {
     const styles = getStyleSheet();
     const postDraftRef = useRef<KeyboardTrackingViewRef>(null);
 
-    // const postInputTopRef = useRef<number>(0);
     const [postInputTop, setPostInputTop] = useState(0);
 
     const close = useCallback(() => {
@@ -70,7 +69,7 @@ const Thread = ({closeButtonId, componentId, rootPost}: ThreadProps) => {
     const onLayout = useCallback((layoutEvent: LayoutChangeEvent) => {
         const {layout} = layoutEvent.nativeEvent;
         setPostInputTop(layout.y);
-    }, [postInputTop]);
+    }, []);
 
     return (
         <>
