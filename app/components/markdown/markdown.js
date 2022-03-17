@@ -90,7 +90,7 @@ export default class Markdown extends PureComponent {
     urlFilter = (url) => {
         const scheme = getScheme(url);
 
-        return !scheme || this.props.autolinkedUrlSchemes.indexOf(scheme) !== -1;
+        return !scheme || this.props.autolinkedUrlSchemes.indexOf(scheme.toLowerCase()) !== -1;
     };
 
     createRenderer = () => {

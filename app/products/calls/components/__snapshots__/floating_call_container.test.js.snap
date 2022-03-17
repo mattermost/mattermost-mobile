@@ -1,21 +1,43 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`FloatingCallContainer should match snapshot 1`] = `
-<View
+<RNCSafeAreaProvider
+  onInsetsChange={[Function]}
   style={
     Array [
       Object {
-        "position": "absolute",
-        "top": 91,
-        "width": "100%",
-        "zIndex": 9,
+        "flex": 1,
       },
       undefined,
     ]
   }
 >
-  <Text>
-    test
-  </Text>
-</View>
+  <Context.Provider
+    value={
+      Object {
+        "height": 0,
+        "width": 0,
+        "x": 0,
+        "y": 0,
+      }
+    }
+  >
+    <Context.Provider
+      value={
+        Object {
+          "bottom": 0,
+          "left": 0,
+          "right": 0,
+          "top": 0,
+        }
+      }
+    >
+      <FloatingCallContainer>
+        <Text>
+          test
+        </Text>
+      </FloatingCallContainer>
+    </Context.Provider>
+  </Context.Provider>
+</RNCSafeAreaProvider>
 `;
