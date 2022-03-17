@@ -16,8 +16,10 @@ import {useTheme} from '@context/theme';
 import {makeStyleSheetFromTheme, changeOpacity} from '@utils/theme';
 import {getUserCustomStatus, isGuest, isShared} from '@utils/user';
 
+import type UserModel from '@typings/database/models/servers/user';
+
 type AtMentionItemProps = {
-    user: UserProfile;
+    user: UserProfile | UserModel;
     currentUserId: string;
     onPress: (username: string) => void;
     showFullName: boolean;
@@ -25,12 +27,13 @@ type AtMentionItemProps = {
     isCustomStatusEnabled: boolean;
 }
 
-const getName = (user: UserProfile, showFullName: boolean, isCurrentUser: boolean) => {
+const getName = (user: UserProfile | UserModel, showFullName: boolean, isCurrentUser: boolean) => {
     let name = '';
     const hasNickname = user.nickname.length > 0;
-
+    const firstName = 'first_name' in user ? user.first_name : user.firstName;
+    const lastName = 'last_name' in user ? user.last_name : user.lastName;
     if (showFullName) {
-        name += `${user.first_name} ${user.last_name} `;
+        name += `${firstName} ${lastName} `;
     }
 
     if (hasNickname && !isCurrentUser) {
@@ -100,7 +103,7 @@ const AtMentionItem = ({
     const isCurrentUser = currentUserId === user.id;
     const name = getName(user, showFullName, isCurrentUser);
     const customStatus = getUserCustomStatus(user);
-
+    const isBot = Boolean('is_bot' in user ? user.is_bot : user.isBot);
     return (
         <TouchableWithFeedback
             testID={testID}
@@ -122,7 +125,7 @@ const AtMentionItem = ({
                 <View
                     style={[style.rowInfo, {maxWidth: shared ? '75%' : '80%'}]}
                 >
-                    {Boolean(user.is_bot) && (<BotTag/>)}
+                    {isBot && (<BotTag/>)}
                     {guest && (<GuestTag/>)}
                     {Boolean(name.length) && (
                         <Text
@@ -148,7 +151,7 @@ const AtMentionItem = ({
                         {` @${user.username}`}
                     </Text>
                 </View>
-                {isCustomStatusEnabled && !user.is_bot && customStatus && (
+                {isCustomStatusEnabled && !isBot && customStatus && (
                     <CustomStatusEmoji
                         customStatus={customStatus}
                         style={style.icon}

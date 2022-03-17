@@ -12,22 +12,25 @@ import {MM_TABLES} from '@constants/database';
 import ChannelMentionItem from './channel_mention_item';
 
 import type {WithDatabaseArgs} from '@typings/database/database';
+import type ChannelModel from '@typings/database/models/servers/channel';
 import type UserModel from '@typings/database/models/servers/user';
 
 type OwnProps = {
-    channel: Channel;
+    channel: Channel | ChannelModel;
 }
 
 const {SERVER: {USER}} = MM_TABLES;
 const enhanced = withObservables([], ({database, channel}: WithDatabaseArgs & OwnProps) => {
     let user = of$<UserModel | undefined>(undefined);
-    if (channel.type === General.DM_CHANNEL) {
-        user = database.get<UserModel>(USER).findAndObserve(channel.teammate_id!);
+    const teammateId = 'teammate_id' in channel ? channel.teammate_id : '';
+    const channelDisplayName = 'display_name' in channel ? channel.display_name : channel.displayName;
+    if (channel.type === General.DM_CHANNEL && teammateId) {
+        user = database.get<UserModel>(USER).findAndObserve(teammateId!);
     }
 
     const isBot = user.pipe(switchMap((u) => of$(u ? u.isBot : false)));
     const isGuest = user.pipe(switchMap((u) => of$(u ? u.isGuest : false)));
-    const displayName = user.pipe(switchMap((u) => of$(u ? u.username : channel.display_name)));
+    const displayName = user.pipe(switchMap((u) => of$(u ? u.username : channelDisplayName)));
 
     return {
         isBot,

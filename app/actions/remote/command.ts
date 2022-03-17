@@ -200,3 +200,23 @@ export const handleGotoLocation = async (serverUrl: string, intl: IntlShape, loc
     }
     return {data: true};
 };
+
+export const fetchCommands = async (serverUrl: string, teamId: string) => {
+    let client: Client;
+    try {
+        client = NetworkManager.getClient(serverUrl);
+        return {commands: await client.getCommandsList(teamId)};
+    } catch (error) {
+        return {error: error as ClientErrorProps};
+    }
+};
+
+export const fetchSuggestions = async (serverUrl: string, term: string, teamId: string, channelId: string, rootId?: string) => {
+    let client: Client;
+    try {
+        client = NetworkManager.getClient(serverUrl);
+        return {suggestions: await client.getCommandAutocompleteSuggestionsList(term, teamId, channelId, rootId)};
+    } catch (error) {
+        return {error: error as ClientErrorProps};
+    }
+};

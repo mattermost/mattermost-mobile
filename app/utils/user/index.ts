@@ -192,8 +192,8 @@ export function confirmOutOfOfficeDisabled(intl: IntlShape, status: string, upda
     );
 }
 
-export function isShared(user: UserProfile): boolean {
-    return Boolean(user.remote_id);
+export function isShared(user: UserProfile | UserModel): boolean {
+    return 'remote_id' in user ? Boolean(user.remote_id) : false;
 }
 
 export function removeUserFromList(userId: string, originalList: UserProfile[]): UserProfile[] {

@@ -175,3 +175,5 @@ export const makeCallErrorResponse = (errMessage: string) => {
         error: errMessage,
     };
 };
+
+export const filterEmptyOptions = (option: AppSelectOption): boolean => Boolean(option.value && !option.value.match(/^[ \t]+$/));
