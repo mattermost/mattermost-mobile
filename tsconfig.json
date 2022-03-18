@@ -53,7 +53,6 @@
             "@share/*": ["share_extension/*"],
             "@store": ["app/store/index"],
             "@store/*": ["app/store/*"],
-            "@support/*": ["detox/e2e/support/*"],
             "@telemetry/*": ["/app/telemetry/*"],
             "@typings/*": ["types/*"],
             "@test/*": ["test/*"],
@@ -65,12 +64,13 @@
             ]
         }
     },
-    "include": ["app/**/*", "share_extensionn/**/*", "test/**/*", "detox/**/*", "types/**/*"],
+    "include": ["app/**/*", "share_extensionn/**/*", "test/**/*", "types/**/*"],
     "exclude": [
         "node_modules",
         "build",
         "babel.config.js",
         "metro.config.js",
         "jest.config.js",
+        "detox/**/*",
     ],
 }
