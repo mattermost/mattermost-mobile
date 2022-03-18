@@ -23,7 +23,7 @@ import {getResponseFromError} from './common';
  * @param {string} channelId - the channel id to be favorited
  * @return {string} returns {status} on success or {error, status} on error
  */
-export const apiSaveFavoriteChannelPreference = (baseUrl, userId, channelId) => {
+export const apiSaveFavoriteChannelPreference = (baseUrl: string, userId: string, channelId: string): any => {
     const preference = {
         user_id: userId,
         category: 'favorite_channel',
@@ -41,7 +41,7 @@ export const apiSaveFavoriteChannelPreference = (baseUrl, userId, channelId) => 
  * @param {string} nameFormat - one of "username" (default), "nickname_full_name" or "full_name"
  * @returns
  */
-export const apiSaveTeammateNameDisplayPreference = (baseUrl, userId, nameFormat = 'username') => {
+export const apiSaveTeammateNameDisplayPreference = (baseUrl: string, userId: string, nameFormat = 'username'): any => {
     const preference = {
         user_id: userId,
         category: 'display_settings',
@@ -59,7 +59,7 @@ export const apiSaveTeammateNameDisplayPreference = (baseUrl, userId, nameFormat
  * @param {Array} orderedTeamIds - ordered array of team IDs
  * @return {string} returns {status} on success or {error, status} on error
  */
-export const apiSaveTeamsOrderPreference = (baseUrl, userId, orderedTeamIds = []) => {
+export const apiSaveTeamsOrderPreference = (baseUrl: string, userId: string, orderedTeamIds: string[] = []): any => {
     const preference = {
         user_id: userId,
         category: 'teams_order',
@@ -78,7 +78,7 @@ export const apiSaveTeamsOrderPreference = (baseUrl, userId, orderedTeamIds = []
  * @param {Array} preferences - a list of user's preferences
  * @return {string} returns {status} on success or {error, status} on error
  */
-export const apiSaveUserPreferences = async (baseUrl, userId, preferences = []) => {
+export const apiSaveUserPreferences = async (baseUrl: string, userId: string, preferences: any[] = []): Promise<any> => {
     try {
         const response = await client.put(
             `${baseUrl}/api/v4/users/${userId}/preferences`,

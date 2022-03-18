@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import testConfig from '@support/test_config';
+import {adminPassword, adminUsername} from '@support/test_config';
 import {getRandomId} from '@support/utils';
 
 import client from './client';
@@ -24,10 +24,10 @@ import {getResponseFromError} from './common';
  * @param {string} baseUrl - the base server URL
  * @return {Object} returns {user, status} on success or {error, status} on error
  */
-export const apiAdminLogin = (baseUrl) => {
+export const apiAdminLogin = (baseUrl: string): any => {
     return apiLogin(baseUrl, {
-        username: testConfig.adminUsername,
-        password: testConfig.adminPassword,
+        username: adminUsername,
+        password: adminPassword,
     });
 };
 
@@ -39,7 +39,7 @@ export const apiAdminLogin = (baseUrl) => {
  * @param {Object} option.user - user object to be created
  * @return {Object} returns {user} on success or {error, status} on error
  */
-export const apiCreateUser = async (baseUrl, {prefix = 'user', user = null} = {}) => {
+export const apiCreateUser = async (baseUrl: string, {prefix = 'user', user = null}: any = {}): Promise<any> => {
     try {
         const newUser = user || generateRandomUser({prefix});
 
@@ -61,7 +61,7 @@ export const apiCreateUser = async (baseUrl, {prefix = 'user', user = null} = {}
  * @param {string} userId - the user ID
  * @return {Object} returns {status} on success or {error, status} on error
  */
-export const apiDeactivateUser = async (baseUrl, userId) => {
+export const apiDeactivateUser = async (baseUrl: string, userId: string): Promise<any> => {
     try {
         const response = await client.delete(`${baseUrl}/api/v4/users/${userId}`);
 
@@ -78,7 +78,7 @@ export const apiDeactivateUser = async (baseUrl, userId) => {
  * @param {string} userId - the user ID
  * @return {Object} returns {status} on success or {error, status} on error
  */
-export const apiDemoteUserToGuest = async (baseUrl, userId) => {
+export const apiDemoteUserToGuest = async (baseUrl: string, userId: string): Promise<any> => {
     try {
         const response = await client.post(`${baseUrl}/api/v4/users/${userId}/demote`);
 
@@ -93,7 +93,7 @@ export const apiDemoteUserToGuest = async (baseUrl, userId) => {
  * @param {string} baseUrl - the base server URL
  * @return {Object} returns {user} on success or {error, status} on error
  */
-export const apiGetMe = (baseUrl) => {
+export const apiGetMe = (baseUrl: string): any => {
     return apiGetUserById(baseUrl, 'me');
 };
 
@@ -104,7 +104,7 @@ export const apiGetMe = (baseUrl) => {
  * @param {string} userId - the user ID
  * @return {Object} returns {user} on success or {error, status} on error
  */
-export const apiGetUserById = async (baseUrl, userId) => {
+export const apiGetUserById = async (baseUrl: string, userId: string): Promise<any> => {
     try {
         const response = await client.get(`${baseUrl}/api/v4/users/${userId}`);
 
@@ -121,7 +121,7 @@ export const apiGetUserById = async (baseUrl, userId) => {
  * @param {string} username - the username
  * @return {Object} returns {user} on success or {error, status} on error
  */
-export const apiGetUserByUsername = async (baseUrl, username) => {
+export const apiGetUserByUsername = async (baseUrl: string, username: string): Promise<any> => {
     try {
         const response = await client.get(`${baseUrl}/api/v4/users/username/${username}`);
 
@@ -139,18 +139,14 @@ export const apiGetUserByUsername = async (baseUrl, username) => {
  * @param {string} user.password - password of a user
  * @return {Object} returns {user, status} on success or {error, status} on error
  */
-export const apiLogin = async (baseUrl, user) => {
+export const apiLogin = async (baseUrl: string, user: any): Promise<any> => {
     try {
         const response = await client.post(
             `${baseUrl}/api/v4/users/login`,
             {login_id: user.username, password: user.password},
         );
 
-        const {data, headers, status} = response;
-
-        // Get MMAUTHTOKEN cookie and attach to the client instance
-        const [mmAuthToken] = headers['set-cookie'];
-        client.defaults.headers.Cookie = mmAuthToken;
+        const {data, status} = response;
 
         return {
             status,
@@ -167,10 +163,8 @@ export const apiLogin = async (baseUrl, user) => {
  * @param {string} baseUrl - the base server URL
  * @return {Object} returns {status} on success
  */
-export const apiLogout = async (baseUrl) => {
+export const apiLogout = async (baseUrl: string): Promise<any> => {
     const response = await client.post(`${baseUrl}/api/v4/users/logout`);
-
-    client.defaults.headers.Cookie = '';
 
     return {status: response.status};
 };
@@ -181,7 +175,7 @@ export const apiLogout = async (baseUrl) => {
  * @param {Object} userData - data to partially update a user
  * @return {Object} returns {user} on success or {error, status} on error
  */
-export const apiPatchMe = (baseUrl, userData) => {
+export const apiPatchMe = (baseUrl: string, userData: string): any => {
     return apiPatchUser(baseUrl, 'me', userData);
 };
 
@@ -193,7 +187,7 @@ export const apiPatchMe = (baseUrl, userData) => {
  * @param {Object} userData - data to partially update a user
  * @return {Object} returns {user} on success or {error, status} on error
  */
-export const apiPatchUser = async (baseUrl, userId, userData) => {
+export const apiPatchUser = async (baseUrl: string, userId: string, userData: any): Promise<any> => {
     try {
         const response = await client.put(
             `${baseUrl}/api/v4/users/${userId}/patch`,
@@ -214,7 +208,7 @@ export const apiPatchUser = async (baseUrl, userId, userData) => {
  * @param {boolean} active - use true to set the user active, false for inactive
  * @return {Object} returns {status} on success or {error, status} on error
  */
-export const apiUpdateUserActiveStatus = async (baseUrl, userId, active) => {
+export const apiUpdateUserActiveStatus = async (baseUrl: string, userId: string, active: boolean): Promise<any> => {
     try {
         const response = await client.put(
             `${baseUrl}/api/v4/users/${userId}/active`,

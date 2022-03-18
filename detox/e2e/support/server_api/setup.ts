@@ -11,11 +11,11 @@ import User from './user';
  * @param {Object} options - may pass options to predefine channel, team and user creation
  * @return {Object} returns {channel, team, user} on success or {error, status} on error
  */
-export const apiInit = async (baseUrl, {
+export const apiInit = async (baseUrl: string, {
     channelOptions = {type: 'O', prefix: 'channel'},
     teamOptions = {type: 'O', prefix: 'team'},
     userOptions = {prefix: 'user'},
-} = {}) => {
+}: any = {}): Promise<any> => {
     const {team} = await Team.apiCreateTeam(baseUrl, teamOptions);
     const {channel} = await Channel.apiCreateChannel(baseUrl, {...channelOptions, teamId: team.id});
     const {user} = await User.apiCreateUser(baseUrl, userOptions);

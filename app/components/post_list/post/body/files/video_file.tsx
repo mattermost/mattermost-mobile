@@ -89,13 +89,14 @@ const VideoFile = ({
                 // library
                 const publicUri = await fetchPublicLink(serverUrl, data.id!);
                 if (('link') in publicUri) {
-                    const {uri, height, width} = await getThumbnailAsync(publicUri.link, {time: 2000});
+                    const {uri, height, width} = await getThumbnailAsync(data.localPath || publicUri.link, {time: 2000});
                     data.mini_preview = uri;
                     data.height = height;
                     data.width = width;
                     updateLocalFile(serverUrl, data);
                     if (mounted.current) {
                         setVideo(data);
+                        setFailed(false);
                     }
                 }
             }

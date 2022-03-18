@@ -112,7 +112,7 @@ export const transformFileRecord = ({action, database, value}: TransformerArgs):
         file.width = raw?.width || record?.width || 0;
         file.height = raw?.height || record?.height || 0;
         file.imageThumbnail = raw?.mini_preview || record?.imageThumbnail || '';
-        file.localPath = raw?.localPath ?? '';
+        file.localPath = raw?.localPath || record?.localPath || '';
     };
 
     return prepareBaseRecord({

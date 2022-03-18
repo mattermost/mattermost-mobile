@@ -7,7 +7,7 @@ import FormData from 'form-data';
 
 import client from './client';
 
-export const getResponseFromError = (err) => {
+export const getResponseFromError = (err: any) => {
     const {response} = err;
     if (!response) {
         const message = `No response from server at "${err.config.baseURL}".
@@ -26,7 +26,7 @@ If testing against a server other than the default local instance, you may set t
     return {error: data, status};
 };
 
-export const apiUploadFile = async (name, absFilePath, requestOptions = {}) => {
+export const apiUploadFile = async (name: string, absFilePath: string, requestOptions = {}): Promise<any> => {
     if (!fs.existsSync(absFilePath)) {
         return {error: {message: `File upload error. "${name}" file does not exist at ${absFilePath}`}};
     }

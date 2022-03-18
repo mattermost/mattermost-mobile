@@ -126,7 +126,7 @@ const withPost = withObservables(
             appsEnabled: of$(appsEnabled),
             canDelete,
             differentThreadSequence: of$(differentThreadSequence),
-            files: post.files.observe(),
+            filesCount: post.files.observeCount(),
             hasReplies,
             highlightReplyBar,
             isConsecutivePost,
