@@ -73,7 +73,11 @@ const SnackBar = ({barType, componentId, onPress, location, offsetY}: SnackBarPr
         };
 
         if (location === Screens.THREAD) {
-            const marginBottom = Math.abs((windowHeight / 2) - offsetY) + 10;
+            const OFFSET = 10;
+            const bottomPortrait = Math.abs((windowHeight / 2) - offsetY) + OFFSET;
+            const bottomLandscape = OFFSET * 4;
+            const marginBottom = isLandscape ? bottomLandscape : bottomPortrait;
+
             tabletStyle = {
                 marginBottom,
                 marginLeft: 0,
