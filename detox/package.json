@@ -5,23 +5,31 @@
   "author": "Mattermost, Inc.",
   "devDependencies": {
     "@babel/plugin-proposal-class-properties": "7.16.7",
-    "@babel/plugin-transform-modules-commonjs": "7.16.8",
+    "@babel/plugin-transform-modules-commonjs": "7.17.7",
     "@babel/plugin-transform-runtime": "7.17.0",
     "@babel/preset-env": "7.16.11",
-    "axios": "0.26.0",
+    "@types/jest": "27.4.1",
+    "@types/tough-cookie": "4.0.1",
+    "@types/uuid": "8.3.4",
+    "axios": "0.26.1",
+    "axios-cookiejar-support": "2.0.4",
     "babel-jest": "27.5.1",
     "babel-plugin-module-resolver": "4.1.0",
     "client-oauth2": "4.3.3",
     "deepmerge": "4.2.2",
-    "detox": "19.4.5",
+    "detox": "19.5.7",
     "form-data": "4.0.0",
     "jest": "27.5.1",
     "jest-circus": "27.5.1",
     "jest-cli": "27.5.1",
-    "jest-html-reporters": "3.0.5",
+    "jest-html-reporters": "3.0.6",
     "jest-junit": "13.0.0",
     "moment-timezone": "0.5.34",
     "sanitize-filename": "1.6.3",
+    "tough-cookie": "4.0.0",
+    "ts-jest": "27.1.3",
+    "tslib": "2.3.1",
+    "typescript": "4.6.2",
     "uuid": "8.3.2"
   },
   "scripts": {
@@ -33,11 +41,9 @@
     "e2e:ios-test": "IOS=true detox test -c ios.sim.debug",
     "e2e:ios-build-release": "detox build -c ios.sim.release",
     "e2e:ios-test-release": "IOS=true detox test -c ios.sim.release --record-logs failing --take-screenshots failing",
-    "start:webhook": "node webhook_server.js"
-  },
-  "jest": {
-    "transform": {
-      "^.+\\.js?$": "babel-jest"
-    }
+    "check": "npm run lint && npm run tsc",
+    "lint": "eslint --ignore-path .gitignore --ignore-pattern node_modules --quiet .",
+    "start:webhook": "node webhook_server.js",
+    "tsc": "NODE_OPTIONS=--max_old_space_size=12000 tsc --noEmit"
   }
 }

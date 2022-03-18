@@ -1,18 +1,20 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import testConfig from '@support/test_config';
+import {smtpUrl} from '@support/test_config';
 import axios from 'axios';
 import jestExpect from 'expect';
+
+const currentYear = new Date().getFullYear();
 
 /**
  * Get email url.
  * @returns {string} email url
  */
-export const getEmailUrl = () => {
-    const smtpUrl = testConfig.smtpUrl || 'http://localhost:9001';
+export const getEmailUrl = (): string => {
+    const smtpUrlBase = smtpUrl || 'http://localhost:9001';
 
-    return `${smtpUrl}/api/v1/mailbox`;
+    return `${smtpUrlBase}/api/v1/mailbox`;
 };
 
 /**
@@ -20,7 +22,7 @@ export const getEmailUrl = () => {
  * @param {string} userEmail - the destination user email
  * @returns {string} email template
  */
-export const getEmailResetEmailTemplate = (userEmail) => {
+export const getEmailResetEmailTemplate = (userEmail: string): string[] => {
     return [
         '----------------------',
         'You updated your email',
@@ -42,7 +44,7 @@ export const getEmailResetEmailTemplate = (userEmail) => {
  * @param {boolean} isGuest - true if guest; otherwise false
  * @returns {string} email template
  */
-export const getJoinEmailTemplate = (siteUrl, sender, userEmail, team, isGuest = false) => {
+export const getJoinEmailTemplate = (siteUrl: string, sender: string, userEmail: string, team: any, isGuest = false): string[] => {
     return [
         `${sender} invited you to join the ${team.display_name} team.`,
         `${isGuest ? 'You were invited as a guest to collaborate with the team' : 'Start collaborating with your team on Mattermost'}`,
@@ -53,7 +55,7 @@ export const getJoinEmailTemplate = (siteUrl, sender, userEmail, team, isGuest =
         'Mattermost is a flexible, open source messaging platform that enables secure team collaboration.',
         'Learn more ( mattermost.com )',
         '',
-        '© 2021 Mattermost, Inc. 530 Lytton Avenue, Second floor, Palo Alto, CA, 94301',
+        `© ${currentYear} Mattermost, Inc. 530 Lytton Avenue, Second floor, Palo Alto, CA, 94301`,
     ];
 };
 
@@ -68,7 +70,7 @@ export const getJoinEmailTemplate = (siteUrl, sender, userEmail, team, isGuest =
  * @param {string} channelDisplayName - the channel display name where user is mentioned
  * @@returns {string} email template
  */
-export const getMentionEmailTemplate = (siteUrl, sender, message, postId, siteName, teamName, channelDisplayName) => {
+export const getMentionEmailTemplate = (siteUrl: string, sender: string, message: string, postId: string, siteName: string, teamName: string, channelDisplayName: string): string[] => {
     return [
         `@${sender} mentioned you in a message`,
         `While you were away, @${sender} mentioned you in the ${channelDisplayName} channel.`,
@@ -84,7 +86,7 @@ export const getMentionEmailTemplate = (siteUrl, sender, message, postId, siteNa
         'Want to change your notifications settings?',
         `Login to ${siteName} ( ${siteUrl} ) and go to Settings > Notifications`,
         '',
-        '© 2021 Mattermost, Inc. 530 Lytton Avenue, Second floor, Palo Alto, CA, 94301',
+        `© ${currentYear} Mattermost, Inc. 530 Lytton Avenue, Second floor, Palo Alto, CA, 94301`,
     ];
 };
 
@@ -93,7 +95,7 @@ export const getMentionEmailTemplate = (siteUrl, sender, message, postId, siteNa
  * @param {string} siteUrl - the site url
  * @returns {string} email template
  */
-export const getPasswordResetEmailTemplate = (siteUrl) => {
+export const getPasswordResetEmailTemplate = (siteUrl: string): string[] => {
     return [
         'Reset Your Password',
         'Click the button below to reset your password. If you didn’t request this, you can safely ignore this email.',
@@ -102,7 +104,7 @@ export const getPasswordResetEmailTemplate = (siteUrl) => {
         '',
         'The password reset link expires in 24 hours.',
         '',
-        '© 2021 Mattermost, Inc. 530 Lytton Avenue, Second floor, Palo Alto, CA, 94301',
+        `© ${currentYear} Mattermost, Inc. 530 Lytton Avenue, Second floor, Palo Alto, CA, 94301`,
     ];
 };
 
@@ -112,7 +114,7 @@ export const getPasswordResetEmailTemplate = (siteUrl) => {
  * @param {string} userEmail - the destination user email
  * @returns {string} email template
  */
-export const getEmailVerifyEmailTemplate = (siteUrl, userEmail) => {
+export const getEmailVerifyEmailTemplate = (siteUrl: string, userEmail: string): string[] => {
     return [
         'Verify your email address',
         `Thanks for joining ${siteUrl.split('/')[2]}. ( ${siteUrl} )`,
@@ -123,7 +125,7 @@ export const getEmailVerifyEmailTemplate = (siteUrl, userEmail) => {
         'This email address was used to create an account with Mattermost.',
         'If it was not you, you can safely ignore this email.',
         '',
-        '© 2021 Mattermost, Inc. 530 Lytton Avenue, Second floor, Palo Alto, CA, 94301',
+        `© ${currentYear} Mattermost, Inc. 530 Lytton Avenue, Second floor, Palo Alto, CA, 94301`,
     ];
 };
 
@@ -135,7 +137,7 @@ export const getEmailVerifyEmailTemplate = (siteUrl, userEmail) => {
  * @param {string} teamName - the team name where user is welcome
  * @returns {string} email template
  */
-export const getWelcomeEmailTemplate = (siteUrl, userEmail, siteName, teamName) => {
+export const getWelcomeEmailTemplate = (siteUrl: string, userEmail: string, siteName: string, teamName: string): string[] => {
     return [
         'Welcome to the team',
         `Thanks for joining ${siteUrl.split('/')[2]}. ( ${siteUrl} )`,
@@ -151,7 +153,7 @@ export const getWelcomeEmailTemplate = (siteUrl, userEmail, siteName, teamName) 
         '',
         'Download ( https://mattermost.com/download/#mattermostApps )',
         '',
-        '© 2021 Mattermost, Inc. 530 Lytton Avenue, Second floor, Palo Alto, CA, 94301',
+        `© ${currentYear} Mattermost, Inc. 530 Lytton Avenue, Second floor, Palo Alto, CA, 94301`,
     ];
 };
 
@@ -160,27 +162,27 @@ export const getWelcomeEmailTemplate = (siteUrl, userEmail, siteName, teamName) 
  * @param {string} expectedBody - expected email body
  * @param {*} actualBody - actual email body
  */
-export const verifyEmailBody = (expectedBody, actualBody) => {
+export const verifyEmailBody = (expectedBody: string[], actualBody: string[]) => {
     jestExpect(expectedBody.length).toEqual(actualBody.length);
 
     for (let i = 0; i < expectedBody.length; i++) {
-        if (expectedBody[i].includes('skip-local-time-check')) {
+        if (expectedBody[i]?.includes('skip-local-time-check')) {
             continue;
         }
 
-        if (expectedBody[i].includes('email-verify-link-check')) {
+        if (expectedBody[i]?.includes('email-verify-link-check')) {
             jestExpect(actualBody[i]).toContain('Verify Email');
             jestExpect(actualBody[i]).toContain('do_verify_email?token=');
             continue;
         }
 
-        if (expectedBody[i].includes('join-link-check')) {
+        if (expectedBody[i]?.includes('join-link-check')) {
             jestExpect(actualBody[i]).toContain('Join now');
             jestExpect(actualBody[i]).toContain('signup_user_complete/?d=');
             continue;
         }
 
-        if (expectedBody[i].includes('reset-password-link-check')) {
+        if (expectedBody[i]?.includes('reset-password-link-check')) {
             jestExpect(actualBody[i]).toContain('Reset Password');
             jestExpect(actualBody[i]).toContain('reset_password_complete?token=');
             continue;
@@ -195,7 +197,7 @@ export const verifyEmailBody = (expectedBody, actualBody) => {
  * @param {string} username - username of email recipient
  * @param {string} mailUrl - url of email
  */
-export const getRecentEmail = async (username, mailUrl = getEmailUrl()) => {
+export const getRecentEmail = async (username: string, mailUrl: string = getEmailUrl()): Promise<any> => {
     const mailboxUrl = `${mailUrl}/${username}`;
     let response;
     let recentEmail;
@@ -203,7 +205,7 @@ export const getRecentEmail = async (username, mailUrl = getEmailUrl()) => {
     try {
         response = await axios({url: mailboxUrl, method: 'get'});
         recentEmail = response.data[response.data.length - 1];
-    } catch (error) {
+    } catch (error: any) {
         return {status: error.status, data: null};
     }
 
@@ -216,7 +218,7 @@ export const getRecentEmail = async (username, mailUrl = getEmailUrl()) => {
     try {
         response = await axios({url: mailMessageUrl, method: 'get'});
         recentEmailMessage = response.data;
-    } catch (error) {
+    } catch (error: any) {
         return {status: error.status, data: null};
     }
 
@@ -228,6 +230,6 @@ export const getRecentEmail = async (username, mailUrl = getEmailUrl()) => {
  * @param {string} text
  * @return {string} split text
  */
-export const splitEmailBodyText = (text) => {
+export const splitEmailBodyText = (text: string): string[] => {
     return text.split('\n').map((d) => d.trim());
 };

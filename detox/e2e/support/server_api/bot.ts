@@ -26,7 +26,7 @@ import {getResponseFromError} from './common';
  * @param {Object} option.bot - bot object to be created
  * @return {Object} returns {bot} on success or {error, status} on error
  */
-export const apiCreateBot = async (baseUrl, {prefix = 'bot', bot = null} = {}) => {
+export const apiCreateBot = async (baseUrl: string, {prefix = 'bot', bot = null}: any = {}): Promise<any> => {
     try {
         const newBot = bot || generateRandomBot({prefix});
 

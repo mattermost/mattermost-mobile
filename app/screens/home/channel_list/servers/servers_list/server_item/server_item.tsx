@@ -290,6 +290,9 @@ const ServerItem = ({highlight, isActive, server, tutorialWatched}: Props) => {
         return () => clearTimeout(time);
     }, [highlight, tutorialWatched]);
 
+    const serverItem = `server_list.server_item.${server.displayName.replace(/ /g, '_').toLocaleLowerCase()}`;
+    const serverItemTestId = isActive ? `${serverItem}.active` : `${serverItem}.inactive`;
+
     return (
         <>
             <Swipeable
@@ -304,6 +307,7 @@ const ServerItem = ({highlight, isActive, server, tutorialWatched}: Props) => {
                 <View
                     style={containerStyle}
                     ref={viewRef}
+                    testID={serverItemTestId}
                 >
                     <RectButton
                         onPress={onServerPressed}
@@ -323,6 +327,7 @@ const ServerItem = ({highlight, isActive, server, tutorialWatched}: Props) => {
                                 size={36}
                                 unreadStyle={styles.unread}
                                 style={styles.serverIcon}
+                                testID={`${serverItem}}.server_icon`}
                             />
                             }
                             {switching &&

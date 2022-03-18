@@ -23,7 +23,7 @@ import {getResponseFromError} from './common';
  * @param {string} userId - the user ID
  * @return {Object} returns {userStatus} on success or {error, status} on error
  */
-export const apiGetUserStatus = async (baseUrl, userId) => {
+export const apiGetUserStatus = async (baseUrl: string, userId: string): Promise<any> => {
     try {
         const response = await client.get(`${baseUrl}/api/v4/users/${userId}/status`);
 
@@ -41,7 +41,7 @@ export const apiGetUserStatus = async (baseUrl, userId) => {
  * @param {string} status - the user status, can be online, away, offline and dnd
  * @return {Object} returns {userStatus} on success or {error, status} on error
  */
-export const apiUpdateUserStatus = async (baseUrl, userId, status = 'online') => {
+export const apiUpdateUserStatus = async (baseUrl: string, userId: string, status = 'online'): Promise<any> => {
     try {
         const response = await client.put(
             `${baseUrl}/api/v4/users/${userId}/status`,

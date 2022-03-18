@@ -38,12 +38,12 @@ const prepackagedPlugins = [
  * Disable non-prepackaged plugins.
  * @param {string} baseUrl - the base server URL
  */
-export const apiDisableNonPrepackagedPlugins = async (baseUrl) => {
+export const apiDisableNonPrepackagedPlugins = async (baseUrl: string): Promise<any> => {
     const {plugins} = await apiGetAllPlugins(baseUrl);
     if (!plugins) {
         return;
     }
-    plugins.active.forEach(async (plugin) => {
+    plugins.active.forEach(async (plugin: any) => {
         if (!prepackagedPlugins.includes(plugin.id)) {
             await apiDisablePluginById(baseUrl, plugin.id);
         }
@@ -57,7 +57,7 @@ export const apiDisableNonPrepackagedPlugins = async (baseUrl) => {
  * @param {string} pluginId - the plugin ID
  * @return {Object} returns response on success or {error, status} on error
  */
-export const apiDisablePluginById = async (baseUrl, pluginId) => {
+export const apiDisablePluginById = async (baseUrl: string, pluginId: string): Promise<any> => {
     try {
         return await client.post(`${baseUrl}/api/v4/plugins/${encodeURIComponent(pluginId)}/disable`);
     } catch (err) {
@@ -72,7 +72,7 @@ export const apiDisablePluginById = async (baseUrl, pluginId) => {
  * @param {string} pluginId - the plugin ID
  * @return {Object} returns response on success or {error, status} on error
  */
-export const apiEnablePluginById = async (baseUrl, pluginId) => {
+export const apiEnablePluginById = async (baseUrl: string, pluginId: string): Promise<any> => {
     try {
         return await client.post(`${baseUrl}/api/v4/plugins/${encodeURIComponent(pluginId)}/enable`);
     } catch (err) {
@@ -86,7 +86,7 @@ export const apiEnablePluginById = async (baseUrl, pluginId) => {
  * @param {string} baseUrl - the base server URL
  * @return {Object} returns {plugins} on success or {error, status} on error
  */
-export const apiGetAllPlugins = async (baseUrl) => {
+export const apiGetAllPlugins = async (baseUrl: string): Promise<any> => {
     try {
         const response = await client.get(`${baseUrl}/api/v4/plugins`);
 
@@ -104,7 +104,7 @@ export const apiGetAllPlugins = async (baseUrl) => {
  * @param {string} force - Set to 'true' to overwrite a previously installed plugin with the same ID, if any
  * @return {Object} returns {plugin} on success or {error, status} on error
  */
-export const apiInstallPluginFromUrl = async (baseUrl, pluginDownloadUrl, force = false) => {
+export const apiInstallPluginFromUrl = async (baseUrl: string, pluginDownloadUrl: string, force = false): Promise<any> => {
     try {
         const response = await client.post(`${baseUrl}/api/v4/plugins/install_from_url?plugin_download_url=${encodeURIComponent(pluginDownloadUrl)}&force=${force}`);
 
@@ -121,7 +121,7 @@ export const apiInstallPluginFromUrl = async (baseUrl, pluginDownloadUrl, force 
  * @param {string} pluginId - the plugin ID
  * @return {Object} returns response on success or {error, status} on error
  */
-export const apiRemovePluginById = async (baseUrl, pluginId) => {
+export const apiRemovePluginById = async (baseUrl: string, pluginId: string): Promise<any> => {
     try {
         return await client.delete(`${baseUrl}/api/v4/plugins/${encodeURIComponent(pluginId)}`);
     } catch (err) {
@@ -136,7 +136,7 @@ export const apiRemovePluginById = async (baseUrl, pluginId) => {
  * @param {string} filename - the filename of plugin to be uploaded
  * @return {Object} returns response on success or {error, status} on error
  */
-export const apiUploadPlugin = async (baseUrl, filename) => {
+export const apiUploadPlugin = async (baseUrl: string, filename: string): Promise<any> => {
     try {
         const absFilePath = path.resolve(__dirname, `../../support/fixtures/${filename}`);
         return await apiUploadFile('plugin', absFilePath, {url: `${baseUrl}/api/v4/plugins`, method: 'POST'});

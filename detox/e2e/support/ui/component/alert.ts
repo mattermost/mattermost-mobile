@@ -5,7 +5,7 @@ import {isAndroid} from '@support/utils';
 
 class Alert {
     // alert titles
-    logoutTitle = (serverDisplayName) => {
+    logoutTitle = (serverDisplayName: string) => {
         const title = `Are you sure you want to log out of ${serverDisplayName}?`;
 
         return isAndroid() ? element(by.text(title)) : element(by.label(title)).atIndex(0);
