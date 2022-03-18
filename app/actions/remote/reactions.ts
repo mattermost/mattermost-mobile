@@ -1,14 +1,15 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {Model, Q} from '@nozbe/watermelondb';
+import {Model} from '@nozbe/watermelondb';
 
 import {addRecentReaction} from '@actions/local/reactions';
-import {MM_TABLES} from '@constants/database';
 import DatabaseManager from '@database/manager';
 import NetworkManager from '@init/network_manager';
 import {queryRecentPostsInChannel, queryRecentPostsInThread} from '@queries/servers/post';
+import {queryReaction} from '@queries/servers/reaction';
 import {queryCurrentChannelId, queryCurrentUserId} from '@queries/servers/system';
+import {getEmojiFirstAlias} from '@utils/emoji/helpers';
 
 import {forceLogoutIfNecessary} from './session';
 
@@ -30,29 +31,41 @@ export const addReaction = async (serverUrl: string, postId: string, emojiName: 
 
     try {
         const currentUserId = await queryCurrentUserId(operator.database);
-        const reaction = await client.addReaction(currentUserId, postId, emojiName);
-        const models: Model[] = [];
+        const emojiAlias = getEmojiFirstAlias(emojiName);
+        const reacted = await queryReaction(operator.database, emojiAlias, postId, currentUserId).fetchCount() > 0;
+        if (!reacted) {
+            const reaction = await client.addReaction(currentUserId, postId, emojiAlias);
+            const models: Model[] = [];
 
-        const reactions = await operator.handleReactions({
-            postsReactions: [{
+            const reactions = await operator.handleReactions({
+                postsReactions: [{
+                    post_id: postId,
+                    reactions: [reaction],
+                }],
+                prepareRecordsOnly: true,
+                skipSync: true, // this prevents the handler from deleting previous reactions
+            });
+            models.push(...reactions);
+
+            const recent = await addRecentReaction(serverUrl, [emojiName], true);
+            if (Array.isArray(recent)) {
+                models.push(...recent);
+            }
+
+            if (models.length) {
+                await operator.batchRecords(models);
+            }
+
+            return {reaction};
+        }
+        return {
+            reaction: {
+                user_id: currentUserId,
                 post_id: postId,
-                reactions: [reaction],
-            }],
-            prepareRecordsOnly: true,
-            skipSync: true, // this prevents the handler from deleting previous reactions
-        });
-        models.push(...reactions);
-
-        const recent = await addRecentReaction(serverUrl, [emojiName], true);
-        if (Array.isArray(recent)) {
-            models.push(...recent);
-        }
-
-        if (models.length) {
-            await operator.batchRecords(models);
-        }
-
-        return {reaction};
+                emoji_name: emojiAlias,
+                create_at: Date.now(),
+            } as Reaction,
+        };
     } catch (error) {
         forceLogoutIfNecessary(serverUrl, error as ClientErrorProps);
         return {error};
@@ -74,14 +87,11 @@ export const removeReaction = async (serverUrl: string, postId: string, emojiNam
 
     try {
         const currentUserId = await queryCurrentUserId(database);
-        await client.removeReaction(currentUserId, postId, emojiName);
+        const emojiAlias = getEmojiFirstAlias(emojiName);
+        await client.removeReaction(currentUserId, postId, emojiAlias);
 
         // should return one or no reaction
-        const reaction = await database.get(MM_TABLES.SERVER.REACTION).query(
-            Q.where('emoji_name', emojiName),
-            Q.where('post_id', postId),
-            Q.where('user_id', currentUserId),
-        ).fetch();
+        const reaction = await queryReaction(database, emojiAlias, postId, currentUserId).fetch();
 
         if (reaction.length) {
             await database.write(async () => {

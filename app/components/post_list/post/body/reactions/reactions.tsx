@@ -10,6 +10,7 @@ import CompassIcon from '@components/compass_icon';
 import {MAX_ALLOWED_REACTIONS} from '@constants/emoji';
 import {useServerUrl} from '@context/server';
 import {showModal, showModalOverCurrentContext} from '@screens/navigation';
+import {getEmojiFirstAlias} from '@utils/emoji/helpers';
 import {preventDoubleTap} from '@utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
@@ -59,12 +60,12 @@ const Reactions = ({currentUserId, canAddReaction, canRemoveReaction, disabled, 
     const intl = useIntl();
     const serverUrl = useServerUrl();
     const pressed = useRef(false);
-    const [sortedReactions, setSortedReactions] = useState(new Set(reactions.map((r) => r.emojiName)));
+    const [sortedReactions, setSortedReactions] = useState(new Set(reactions.map((r) => getEmojiFirstAlias(r.emojiName))));
     const styles = getStyleSheet(theme);
 
     useEffect(() => {
         // This helps keep the reactions in the same position at all times until unmounted
-        const rs = reactions.map((r) => r.emojiName);
+        const rs = reactions.map((r) => getEmojiFirstAlias(r.emojiName));
         const sorted = new Set([...sortedReactions]);
         const added = rs.filter((r) => !sorted.has(r));
         added.forEach(sorted.add, sorted);
@@ -78,14 +79,20 @@ const Reactions = ({currentUserId, canAddReaction, canRemoveReaction, disabled, 
 
         const reactionsByName = reactions.reduce((acc, reaction) => {
             if (reaction) {
-                if (acc.has(reaction.emojiName)) {
-                    acc.get(reaction.emojiName)!.push(reaction);
+                const emojiAlias = getEmojiFirstAlias(reaction.emojiName);
+                if (acc.has(emojiAlias)) {
+                    const rs = acc.get(emojiAlias);
+                    // eslint-disable-next-line max-nested-callbacks
+                    const present = rs!.findIndex((r) => r.userId === reaction.userId) > -1;
+                    if (!present) {
+                        rs!.push(reaction);
+                    }
                 } else {
-                    acc.set(reaction.emojiName, [reaction]);
+                    acc.set(emojiAlias, [reaction]);
                 }
 
                 if (reaction.userId === currentUserId) {
-                    highlightedReactions.push(reaction.emojiName);
+                    highlightedReactions.push(emojiAlias);
                 }
             }
 
