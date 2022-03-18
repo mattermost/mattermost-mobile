@@ -17,11 +17,13 @@ export const updatePostSinceCache = async (serverUrl: string, notification: Noti
             if (chunks.length) {
                 const recent = chunks[0];
                 const lastPost = await getPostById(database, notification.payload.post_id);
-                await operator.database.write(async () => {
-                    await recent.update(() => {
-                        recent.latest = lastPost!.createAt;
+                if (lastPost) {
+                    await operator.database.write(async () => {
+                        await recent.update(() => {
+                            recent.latest = lastPost.createAt;
+                        });
                     });
-                });
+                }
             }
         }
         return {};

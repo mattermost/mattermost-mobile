@@ -339,7 +339,8 @@ export const joinChannel = async (serverUrl: string, userId: string, teamId: str
             channel = await client.getChannel(channelId);
         } else if (channelName) {
             channel = await client.getChannelByName(teamId, channelName, true);
-            if ([General.GM_CHANNEL, General.DM_CHANNEL].includes(channel.type as any)) {
+            const directTypes: string[] = [General.GM_CHANNEL, General.DM_CHANNEL];
+            if (directTypes.includes(channel.type)) {
                 member = await client.getChannelMember(channel.id, userId);
             } else {
                 member = await client.addToChannel(userId, channel.id);
