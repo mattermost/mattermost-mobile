@@ -101,6 +101,7 @@ exports[`CallScreen Landscape should match snapshot 1`] = `
         >
           <CallAvatar
             muted={false}
+            raisedHand={false}
             size="l"
             userId="user-1-id"
             volume={0}
@@ -130,6 +131,7 @@ exports[`CallScreen Landscape should match snapshot 1`] = `
         >
           <CallAvatar
             muted={true}
+            raisedHand={false}
             size="l"
             userId="user-2-id"
             volume={0}
@@ -215,42 +217,6 @@ exports[`CallScreen Landscape should match snapshot 1`] = `
               "flexDirection": "column",
             }
           }
-        >
-          <CompassIcon
-            name="message-text-outline"
-            size={24}
-            style={
-              Object {
-                "backgroundColor": "rgba(255,255,255,0.12)",
-                "borderRadius": 34,
-                "color": "#ffffff",
-                "height": 68,
-                "margin": 10,
-                "overflow": "hidden",
-                "padding": 22,
-                "width": 68,
-              }
-            }
-          />
-          <Text
-            style={
-              Object {
-                "color": "#ffffff",
-              }
-            }
-          >
-            Chat thread
-          </Text>
-        </Pressable>
-        <Pressable
-          onPress={[Function]}
-          style={
-            Object {
-              "alignItems": "center",
-              "flex": 1,
-              "flexDirection": "column",
-            }
-          }
           testID="toggle-speakerphone"
         >
           <CompassIcon
@@ -277,6 +243,50 @@ exports[`CallScreen Landscape should match snapshot 1`] = `
             }
           >
             Speaker
+          </Text>
+        </Pressable>
+        <Pressable
+          onPress={[Function]}
+          style={
+            Object {
+              "alignItems": "center",
+              "flex": 1,
+              "flexDirection": "column",
+            }
+          }
+        >
+          <RaisedHandIcon
+            fill="#ffffff"
+            height={24}
+            style={
+              Object {
+                "backgroundColor": "rgba(255,255,255,0.12)",
+                "borderRadius": 34,
+                "color": "#ffffff",
+                "height": 68,
+                "margin": 10,
+                "overflow": "hidden",
+                "padding": 34,
+                "width": 68,
+              }
+            }
+            svgStyle={
+              Object {
+                "position": "relative",
+                "right": 13,
+                "top": -12,
+              }
+            }
+            width={24}
+          />
+          <Text
+            style={
+              Object {
+                "color": "#ffffff",
+              }
+            }
+          >
+            Raise hand
           </Text>
         </Pressable>
         <Pressable
@@ -527,42 +537,6 @@ exports[`CallScreen Landscape should match snapshot with screenshare 1`] = `
               "flexDirection": "column",
             }
           }
-        >
-          <CompassIcon
-            name="message-text-outline"
-            size={24}
-            style={
-              Object {
-                "backgroundColor": "rgba(255,255,255,0.12)",
-                "borderRadius": 34,
-                "color": "#ffffff",
-                "height": 68,
-                "margin": 10,
-                "overflow": "hidden",
-                "padding": 22,
-                "width": 68,
-              }
-            }
-          />
-          <Text
-            style={
-              Object {
-                "color": "#ffffff",
-              }
-            }
-          >
-            Chat thread
-          </Text>
-        </Pressable>
-        <Pressable
-          onPress={[Function]}
-          style={
-            Object {
-              "alignItems": "center",
-              "flex": 1,
-              "flexDirection": "column",
-            }
-          }
           testID="toggle-speakerphone"
         >
           <CompassIcon
@@ -589,6 +563,50 @@ exports[`CallScreen Landscape should match snapshot with screenshare 1`] = `
             }
           >
             Speaker
+          </Text>
+        </Pressable>
+        <Pressable
+          onPress={[Function]}
+          style={
+            Object {
+              "alignItems": "center",
+              "flex": 1,
+              "flexDirection": "column",
+            }
+          }
+        >
+          <RaisedHandIcon
+            fill="#ffffff"
+            height={24}
+            style={
+              Object {
+                "backgroundColor": "rgba(255,255,255,0.12)",
+                "borderRadius": 34,
+                "color": "#ffffff",
+                "height": 68,
+                "margin": 10,
+                "overflow": "hidden",
+                "padding": 34,
+                "width": 68,
+              }
+            }
+            svgStyle={
+              Object {
+                "position": "relative",
+                "right": 13,
+                "top": -12,
+              }
+            }
+            width={24}
+          />
+          <Text
+            style={
+              Object {
+                "color": "#ffffff",
+              }
+            }
+          >
+            Raise hand
           </Text>
         </Pressable>
         <Pressable
@@ -767,6 +785,7 @@ exports[`CallScreen Portrait should match snapshot 1`] = `
         >
           <CallAvatar
             muted={false}
+            raisedHand={false}
             size="l"
             userId="user-1-id"
             volume={0}
@@ -796,6 +815,7 @@ exports[`CallScreen Portrait should match snapshot 1`] = `
         >
           <CallAvatar
             muted={true}
+            raisedHand={false}
             size="l"
             userId="user-2-id"
             volume={0}
@@ -914,42 +934,6 @@ exports[`CallScreen Portrait should match snapshot 1`] = `
               "flexDirection": "column",
             }
           }
-        >
-          <CompassIcon
-            name="message-text-outline"
-            size={24}
-            style={
-              Object {
-                "backgroundColor": "rgba(255,255,255,0.12)",
-                "borderRadius": 34,
-                "color": "#ffffff",
-                "height": 68,
-                "margin": 10,
-                "overflow": "hidden",
-                "padding": 22,
-                "width": 68,
-              }
-            }
-          />
-          <Text
-            style={
-              Object {
-                "color": "#ffffff",
-              }
-            }
-          >
-            Chat thread
-          </Text>
-        </Pressable>
-        <Pressable
-          onPress={[Function]}
-          style={
-            Object {
-              "alignItems": "center",
-              "flex": 1,
-              "flexDirection": "column",
-            }
-          }
           testID="toggle-speakerphone"
         >
           <CompassIcon
@@ -976,6 +960,50 @@ exports[`CallScreen Portrait should match snapshot 1`] = `
             }
           >
             Speaker
+          </Text>
+        </Pressable>
+        <Pressable
+          onPress={[Function]}
+          style={
+            Object {
+              "alignItems": "center",
+              "flex": 1,
+              "flexDirection": "column",
+            }
+          }
+        >
+          <RaisedHandIcon
+            fill="#ffffff"
+            height={24}
+            style={
+              Object {
+                "backgroundColor": "rgba(255,255,255,0.12)",
+                "borderRadius": 34,
+                "color": "#ffffff",
+                "height": 68,
+                "margin": 10,
+                "overflow": "hidden",
+                "padding": 34,
+                "width": 68,
+              }
+            }
+            svgStyle={
+              Object {
+                "position": "relative",
+                "right": 13,
+                "top": -12,
+              }
+            }
+            width={24}
+          />
+          <Text
+            style={
+              Object {
+                "color": "#ffffff",
+              }
+            }
+          >
+            Raise hand
           </Text>
         </Pressable>
         <Pressable
@@ -1117,6 +1145,7 @@ exports[`CallScreen Portrait should match snapshot with screenshare 1`] = `
         >
           <CallAvatar
             muted={false}
+            raisedHand={false}
             size="m"
             userId="user-1-id"
             volume={0}
@@ -1146,6 +1175,7 @@ exports[`CallScreen Portrait should match snapshot with screenshare 1`] = `
         >
           <CallAvatar
             muted={true}
+            raisedHand={false}
             size="m"
             userId="user-2-id"
             volume={0}
@@ -1298,42 +1328,6 @@ exports[`CallScreen Portrait should match snapshot with screenshare 1`] = `
               "flexDirection": "column",
             }
           }
-        >
-          <CompassIcon
-            name="message-text-outline"
-            size={24}
-            style={
-              Object {
-                "backgroundColor": "rgba(255,255,255,0.12)",
-                "borderRadius": 34,
-                "color": "#ffffff",
-                "height": 68,
-                "margin": 10,
-                "overflow": "hidden",
-                "padding": 22,
-                "width": 68,
-              }
-            }
-          />
-          <Text
-            style={
-              Object {
-                "color": "#ffffff",
-              }
-            }
-          >
-            Chat thread
-          </Text>
-        </Pressable>
-        <Pressable
-          onPress={[Function]}
-          style={
-            Object {
-              "alignItems": "center",
-              "flex": 1,
-              "flexDirection": "column",
-            }
-          }
           testID="toggle-speakerphone"
         >
           <CompassIcon
@@ -1360,6 +1354,50 @@ exports[`CallScreen Portrait should match snapshot with screenshare 1`] = `
             }
           >
             Speaker
+          </Text>
+        </Pressable>
+        <Pressable
+          onPress={[Function]}
+          style={
+            Object {
+              "alignItems": "center",
+              "flex": 1,
+              "flexDirection": "column",
+            }
+          }
+        >
+          <RaisedHandIcon
+            fill="#ffffff"
+            height={24}
+            style={
+              Object {
+                "backgroundColor": "rgba(255,255,255,0.12)",
+                "borderRadius": 34,
+                "color": "#ffffff",
+                "height": 68,
+                "margin": 10,
+                "overflow": "hidden",
+                "padding": 34,
+                "width": 68,
+              }
+            }
+            svgStyle={
+              Object {
+                "position": "relative",
+                "right": 13,
+                "top": -12,
+              }
+            }
+            width={24}
+          />
+          <Text
+            style={
+              Object {
+                "color": "#ffffff",
+              }
+            }
+          >
+            Raise hand
           </Text>
         </Pressable>
         <Pressable
@@ -1573,42 +1611,6 @@ exports[`CallScreen should show controls in landscape view on click the screen s
               "flexDirection": "column",
             }
           }
-        >
-          <CompassIcon
-            name="message-text-outline"
-            size={24}
-            style={
-              Object {
-                "backgroundColor": "rgba(255,255,255,0.12)",
-                "borderRadius": 34,
-                "color": "#ffffff",
-                "height": 68,
-                "margin": 10,
-                "overflow": "hidden",
-                "padding": 22,
-                "width": 68,
-              }
-            }
-          />
-          <Text
-            style={
-              Object {
-                "color": "#ffffff",
-              }
-            }
-          >
-            Chat thread
-          </Text>
-        </Pressable>
-        <Pressable
-          onPress={[Function]}
-          style={
-            Object {
-              "alignItems": "center",
-              "flex": 1,
-              "flexDirection": "column",
-            }
-          }
           testID="toggle-speakerphone"
         >
           <CompassIcon
@@ -1635,6 +1637,50 @@ exports[`CallScreen should show controls in landscape view on click the screen s
             }
           >
             Speaker
+          </Text>
+        </Pressable>
+        <Pressable
+          onPress={[Function]}
+          style={
+            Object {
+              "alignItems": "center",
+              "flex": 1,
+              "flexDirection": "column",
+            }
+          }
+        >
+          <RaisedHandIcon
+            fill="#ffffff"
+            height={24}
+            style={
+              Object {
+                "backgroundColor": "rgba(255,255,255,0.12)",
+                "borderRadius": 34,
+                "color": "#ffffff",
+                "height": 68,
+                "margin": 10,
+                "overflow": "hidden",
+                "padding": 34,
+                "width": 68,
+              }
+            }
+            svgStyle={
+              Object {
+                "position": "relative",
+                "right": 13,
+                "top": -12,
+              }
+            }
+            width={24}
+          />
+          <Text
+            style={
+              Object {
+                "color": "#ffffff",
+              }
+            }
+          >
+            Raise hand
           </Text>
         </Pressable>
         <Pressable
@@ -1817,6 +1863,7 @@ exports[`CallScreen should show controls in landscape view on click the users li
         >
           <CallAvatar
             muted={false}
+            raisedHand={false}
             size="l"
             userId="user-1-id"
             volume={0}
@@ -1846,6 +1893,7 @@ exports[`CallScreen should show controls in landscape view on click the users li
         >
           <CallAvatar
             muted={true}
+            raisedHand={false}
             size="l"
             userId="user-2-id"
             volume={0}
@@ -1931,42 +1979,6 @@ exports[`CallScreen should show controls in landscape view on click the users li
               "flexDirection": "column",
             }
           }
-        >
-          <CompassIcon
-            name="message-text-outline"
-            size={24}
-            style={
-              Object {
-                "backgroundColor": "rgba(255,255,255,0.12)",
-                "borderRadius": 34,
-                "color": "#ffffff",
-                "height": 68,
-                "margin": 10,
-                "overflow": "hidden",
-                "padding": 22,
-                "width": 68,
-              }
-            }
-          />
-          <Text
-            style={
-              Object {
-                "color": "#ffffff",
-              }
-            }
-          >
-            Chat thread
-          </Text>
-        </Pressable>
-        <Pressable
-          onPress={[Function]}
-          style={
-            Object {
-              "alignItems": "center",
-              "flex": 1,
-              "flexDirection": "column",
-            }
-          }
           testID="toggle-speakerphone"
         >
           <CompassIcon
@@ -1993,6 +2005,50 @@ exports[`CallScreen should show controls in landscape view on click the users li
             }
           >
             Speaker
+          </Text>
+        </Pressable>
+        <Pressable
+          onPress={[Function]}
+          style={
+            Object {
+              "alignItems": "center",
+              "flex": 1,
+              "flexDirection": "column",
+            }
+          }
+        >
+          <RaisedHandIcon
+            fill="#ffffff"
+            height={24}
+            style={
+              Object {
+                "backgroundColor": "rgba(255,255,255,0.12)",
+                "borderRadius": 34,
+                "color": "#ffffff",
+                "height": 68,
+                "margin": 10,
+                "overflow": "hidden",
+                "padding": 34,
+                "width": 68,
+              }
+            }
+            svgStyle={
+              Object {
+                "position": "relative",
+                "right": 13,
+                "top": -12,
+              }
+            }
+            width={24}
+          />
+          <Text
+            style={
+              Object {
+                "color": "#ffffff",
+              }
+            }
+          >
+            Raise hand
           </Text>
         </Pressable>
         <Pressable
