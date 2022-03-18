@@ -23,6 +23,7 @@ import SaveOption from './options/save_option';
 import ReactionBar from './reaction_bar';
 
 import type PostModel from '@typings/database/models/servers/post';
+import type ThreadModel from '@typings/database/models/servers/thread';
 
 type PostOptionsProps = {
     canAddReaction: boolean;
@@ -35,7 +36,7 @@ type PostOptionsProps = {
     isSaved: boolean;
     location: typeof Screens[keyof typeof Screens];
     post: PostModel;
-    thread: Partial<PostModel>;
+    thread?: ThreadModel;
     componentId: string;
 };
 
@@ -96,6 +97,7 @@ const PostOptions = ({
                     <FollowThreadOption
                         location={location}
                         thread={thread}
+                        channelId={post.channelId}
                     />
                 }
                 {canMarkAsUnread && !isSystemPost &&

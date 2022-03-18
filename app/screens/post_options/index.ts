@@ -10,6 +10,7 @@ import {switchMap} from 'rxjs/operators';
 import {General, Permissions, Post, Preferences, Screens} from '@constants';
 import {MM_TABLES, SYSTEM_IDENTIFIERS} from '@constants/database';
 import {MAX_ALLOWED_REACTIONS} from '@constants/emoji';
+import {observeIsCRTEnabled} from '@queries/servers/thread';
 import {isMinimumServerVersion} from '@utils/helpers';
 import {isSystemMessage} from '@utils/post';
 import {getPostIdsForCombinedUserActivityPost} from '@utils/post_list';
@@ -24,6 +25,7 @@ import type PostModel from '@typings/database/models/servers/post';
 import type PreferenceModel from '@typings/database/models/servers/preference';
 import type ReactionModel from '@typings/database/models/servers/reaction';
 import type SystemModel from '@typings/database/models/servers/system';
+import type ThreadModel from '@typings/database/models/servers/thread';
 import type UserModel from '@typings/database/models/servers/user';
 
 type EnhancedProps = WithDatabaseArgs & {
@@ -33,7 +35,7 @@ type EnhancedProps = WithDatabaseArgs & {
     location: string;
 }
 
-const {POST, USER, SYSTEM, PREFERENCE} = MM_TABLES.SERVER;
+const {POST, USER, SYSTEM, PREFERENCE, THREAD} = MM_TABLES.SERVER;
 const {CURRENT_USER_ID, LICENSE, CONFIG} = SYSTEM_IDENTIFIERS;
 
 const canEditPost = (isOwner: boolean, post: PostModel, postEditTimeLimit: number, isLicensed: boolean, channel: ChannelModel, user: UserModel): boolean => {
@@ -141,6 +143,19 @@ const enhanced = withObservables([], ({combinedPost, post, showAddReaction, loca
         return of$(permission && !isArchived && !isReadOnly && canPost);
     }));
 
+    const getThread = (enabled: boolean) => {
+        if (enabled) {
+            return database.get<ThreadModel>(THREAD).query(Q.where('id', post.id)).observe().pipe(
+                switchMap((threads) => threads[0]?.observe() || of$(undefined)));
+        }
+
+        return of$(undefined);
+    };
+
+    const thread = observeIsCRTEnabled(database).pipe(
+        switchMap(getThread),
+    );
+
     return {
         canMarkAsUnread,
         canAddReaction,
@@ -151,8 +166,8 @@ const enhanced = withObservables([], ({combinedPost, post, showAddReaction, loca
         isSaved,
         canEdit,
         post,
+        thread,
     };
 });
 
 export default withDatabase(withPost(enhanced(PostOptions)));
-
