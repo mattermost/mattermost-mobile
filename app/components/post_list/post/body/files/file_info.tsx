@@ -2,9 +2,8 @@
 // See LICENSE.txt for license information.
 
 import React from 'react';
-import {Text, View} from 'react-native';
+import {Text, TouchableOpacity, View} from 'react-native';
 
-import TouchableWithFeedback from '@components/touchable_with_feedback';
 import {getFormattedFileSize} from '@utils/file';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 
@@ -32,7 +31,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             flexDirection: 'column',
             flexWrap: 'wrap',
             fontSize: 14,
-            fontFamily: 'OpenSans-Semibold',
+            fontFamily: 'OpenSans-SemiBold',
             color: theme.centerChannelColor,
             paddingRight: 10,
         },
@@ -43,12 +42,8 @@ const FileInfo = ({file, onPress, theme}: FileInfoProps) => {
     const style = getStyleSheet(theme);
 
     return (
-        <TouchableWithFeedback
-            onPress={onPress}
-            type={'opacity'}
-            style={style.attachmentContainer}
-        >
-            <>
+        <View style={style.attachmentContainer}>
+            <TouchableOpacity onPress={onPress}>
                 <Text
                     numberOfLines={1}
                     ellipsizeMode='tail'
@@ -62,11 +57,11 @@ const FileInfo = ({file, onPress, theme}: FileInfoProps) => {
                         ellipsizeMode='tail'
                         style={style.fileInfo}
                     >
-                        {`${getFormattedFileSize(file)}`}
+                        {`${getFormattedFileSize(file.size)}`}
                     </Text>
                 </View>
-            </>
-        </TouchableWithFeedback>
+            </TouchableOpacity>
+        </View>
     );
 };
 

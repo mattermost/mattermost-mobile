@@ -2,11 +2,14 @@
 // See LICENSE.txt for license information.
 
 import {Dimensions} from 'react-native';
+import 'react-native-reanimated';
 
 import {View} from '@constants';
 import {IMAGE_MAX_HEIGHT, IMAGE_MIN_DIMENSION, MAX_GIF_SIZE, VIEWPORT_IMAGE_OFFSET, VIEWPORT_IMAGE_REPLY_OFFSET} from '@constants/image';
 
 export const calculateDimensions = (height: number, width: number, viewPortWidth = 0, viewPortHeight = 0) => {
+    'worklet';
+
     if (!height || !width) {
         return {
             height: 0,
@@ -20,7 +23,7 @@ export const calculateDimensions = (height: number, width: number, viewPortWidth
     let imageWidth = width;
     let imageHeight = height;
 
-    if (width > viewPortWidth) {
+    if (width >= viewPortWidth) {
         imageWidth = viewPortWidth;
         imageHeight = imageWidth * ratio;
     } else if (width < IMAGE_MIN_DIMENSION) {

@@ -1,22 +1,16 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {Q} from '@nozbe/watermelondb';
 import React, {useEffect, useState} from 'react';
 import {StyleSheet, View} from 'react-native';
 
 import Badge from '@components/badge';
-import {MM_TABLES} from '@constants/database';
-import DatabaseManager from '@database/manager';
+import {subscribeAllServers} from '@database/subscription/servers';
+import {subscribeMentionsByServer} from '@database/subscription/unreads';
 
 import type ServersModel from '@typings/database/models/app/servers';
 import type MyChannelModel from '@typings/database/models/servers/my_channel';
-import type {Subscription} from 'rxjs';
-
-type UnreadSubscription = {
-    mentions: number;
-    subscription?: Subscription;
-}
+import type {UnreadSubscription} from '@typings/database/subscriptions';
 
 type Props = {
     channelId: string;
@@ -30,12 +24,9 @@ const styles = StyleSheet.create({
     },
 });
 
-const {SERVERS} = MM_TABLES.APP;
-const {CHANNEL, MY_CHANNEL} = MM_TABLES.SERVER;
 const subscriptions: Map<string, UnreadSubscription> = new Map();
 
 const OtherMentionsBadge = ({channelId}: Props) => {
-    const db = DatabaseManager.appDatabase?.database;
     const [count, setCount] = useState(0);
 
     const updateCount = () => {
@@ -50,11 +41,11 @@ const OtherMentionsBadge = ({channelId}: Props) => {
         const unreads = subscriptions.get(serverUrl);
         if (unreads) {
             let mentions = 0;
-            myChannels.forEach((myChannel) => {
+            for (const myChannel of myChannels) {
                 if (channelId !== myChannel.id) {
                     mentions += myChannel.mentionsCount;
                 }
-            });
+            }
 
             unreads.mentions = mentions;
             subscriptions.set(serverUrl, unreads);
@@ -63,38 +54,32 @@ const OtherMentionsBadge = ({channelId}: Props) => {
     };
 
     const serversObserver = async (servers: ServersModel[]) => {
-        servers.forEach((server) => {
-            const serverUrl = server.url;
-            if (server.lastActiveAt) {
-                const sdb = DatabaseManager.serverDatabases[serverUrl];
-                if (sdb?.database) {
-                    if (!subscriptions.has(serverUrl)) {
-                        const unreads: UnreadSubscription = {
-                            mentions: 0,
-                        };
-                        subscriptions.set(serverUrl, unreads);
-                        unreads.subscription = sdb.database.
-                            get(MY_CHANNEL).
-                            query(Q.on(CHANNEL, Q.where('delete_at', Q.eq(0)))).
-                            observeWithColumns(['mentions_count']).
-                            subscribe(unreadsSubscription.bind(undefined, serverUrl));
-                    }
-                }
+        // unsubscribe mentions from servers that were removed
+        const allUrls = servers.map((s) => s.url);
+        const subscriptionsToRemove = [...subscriptions].filter(([key]) => allUrls.indexOf(key) === -1);
+        for (const [key, map] of subscriptionsToRemove) {
+            map.subscription?.unsubscribe();
+            subscriptions.delete(key);
+        }
 
-                // subscribe and listen for mentions
+        for (const server of servers) {
+            const serverUrl = server.url;
+            if (server.lastActiveAt && !subscriptions.has(serverUrl)) {
+                const unreads: UnreadSubscription = {
+                    mentions: 0,
+                    unread: false,
+                };
+                subscriptions.set(serverUrl, unreads);
+                unreads.subscription = subscribeMentionsByServer(serverUrl, unreadsSubscription);
             } else if (subscriptions.has(serverUrl)) {
-                // logout from server, remove the subscription
+                subscriptions.get(serverUrl)?.subscription?.unsubscribe();
                 subscriptions.delete(serverUrl);
             }
-        });
+        }
     };
 
     useEffect(() => {
-        const subscription = db?.
-            get(SERVERS).
-            query().
-            observeWithColumns(['last_active_at']).
-            subscribe(serversObserver);
+        const subscription = subscribeAllServers(serversObserver);
 
         return () => {
             subscription?.unsubscribe();

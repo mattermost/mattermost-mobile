@@ -15,7 +15,6 @@ import type ServerDataOperator from '@database/operator/server_data_operator';
 import type ChannelModel from '@typings/database/models/servers/channel';
 import type ChannelInfoModel from '@typings/database/models/servers/channel_info';
 import type MyChannelModel from '@typings/database/models/servers/my_channel';
-import type PostModel from '@typings/database/models/servers/post';
 
 const {SERVER: {CHANNEL, CHANNEL_INFO, MY_CHANNEL, CHANNEL_MEMBERSHIP}} = MM_TABLES;
 
@@ -65,6 +64,11 @@ export const prepareMyChannelsForTeam = async (operator: ServerDataOperator, tea
             pinned_post_count = storedInfo.pinnedPostCount;
         }
 
+        const member = memberships.find((m) => m.channel_id === c.id);
+        if (member) {
+            member.last_post_at = c.last_post_at;
+        }
+
         channelInfos.push({
             id: c.id,
             header: c.header,
@@ -91,33 +95,34 @@ export const prepareMyChannelsForTeam = async (operator: ServerDataOperator, tea
 export const prepareDeleteChannel = async (channel: ChannelModel): Promise<Model[]> => {
     const preparedModels: Model[] = [channel.prepareDestroyPermanently()];
 
-    const relations: Array<Relation<Model>> = [channel.membership, channel.info, channel.settings];
-    for await (const relation of relations) {
+    const relations: Array<Relation<Model> | undefined> = [channel.membership, channel.info, channel.settings, channel.categoryChannel];
+    await Promise.all(relations.map(async (relation) => {
         try {
-            const model = await relation.fetch();
+            const model = await relation?.fetch();
             if (model) {
                 preparedModels.push(model.prepareDestroyPermanently());
             }
         } catch {
             // Record not found, do nothing
         }
-    }
+    }));
 
-    const associatedChildren: Array<Query<any>> = [
+    const associatedChildren: Array<Query<Model> | undefined> = [
         channel.members,
         channel.drafts,
-        channel.groupsChannel,
         channel.postsInChannel,
     ];
-    for await (const children of associatedChildren) {
-        const models = await children.fetch() as Model[];
-        models.forEach((model) => preparedModels.push(model.prepareDestroyPermanently()));
-    }
+    await Promise.all(associatedChildren.map(async (children) => {
+        const models = await children?.fetch();
+        models?.forEach((model) => preparedModels.push(model.prepareDestroyPermanently()));
+    }));
 
-    const posts = await channel.posts.fetch() as PostModel[];
-    for await (const post of posts) {
-        const preparedPost = await prepareDeletePost(post);
-        preparedModels.push(...preparedPost);
+    const posts = await channel.posts?.fetch();
+    if (posts?.length) {
+        for await (const post of posts) {
+            const preparedPost = await prepareDeletePost(post);
+            preparedModels.push(...preparedPost);
+        }
     }
 
     return preparedModels;
@@ -235,14 +240,25 @@ export const queryCurrentChannelInfo = async (database: Database) => {
     return undefined;
 };
 
-export const deleteChannelMembership = async (operator: ServerDataOperator, userId: string, channelId: string) => {
+export const deleteChannelMembership = async (operator: ServerDataOperator, userId: string, channelId: string, prepareRecordsOnly = false) => {
     try {
         const channelMembership = await operator.database.get(CHANNEL_MEMBERSHIP).query(Q.where('user_id', Q.eq(userId)), Q.where('channel_id', Q.eq(channelId))).fetch();
         const models: Model[] = [];
         for (const membership of channelMembership) {
             models.push(membership.prepareDestroyPermanently());
         }
-        await operator.batchRecords(models);
+        if (models.length && !prepareRecordsOnly) {
+            await operator.batchRecords(models);
+        }
+        return {models};
+    } catch (error) {
+        return {error};
+    }
+};
+
+export const addChannelMembership = async (operator: ServerDataOperator, userId: string, channelId: string) => {
+    try {
+        await operator.handleChannelMembership({channelMemberships: [{channel_id: channelId, user_id: userId}], prepareRecordsOnly: false});
         return {};
     } catch (error) {
         return {error};

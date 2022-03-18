@@ -1,37 +1,25 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {Q} from '@nozbe/watermelondb';
 import React, {useEffect, useState} from 'react';
 import {StyleSheet, View} from 'react-native';
 
 import Badge from '@components/badge';
 import CompassIcon from '@components/compass_icon';
-import {MM_TABLES} from '@constants/database';
 import {BOTTOM_TAB_ICON_SIZE} from '@constants/view';
-import DatabaseManager from '@database/manager';
+import {subscribeAllServers} from '@database/subscription/servers';
+import {subscribeUnreadAndMentionsByServer} from '@database/subscription/unreads';
 import {changeOpacity} from '@utils/theme';
 
 import type ServersModel from '@typings/database/models/app/servers';
 import type MyChannelModel from '@typings/database/models/servers/my_channel';
-import type {Subscription} from 'rxjs';
+import type {UnreadMessages, UnreadSubscription} from '@typings/database/subscriptions';
 
 type Props = {
     isFocused: boolean;
     theme: Theme;
 }
 
-type UnreadMessages = {
-    mentions: number;
-    unread: boolean;
-};
-
-type UnreadSubscription = UnreadMessages & {
-    subscription?: Subscription;
-}
-
-const {SERVERS} = MM_TABLES.APP;
-const {CHANNEL, MY_CHANNEL} = MM_TABLES.SERVER;
 const subscriptions: Map<string, UnreadSubscription> = new Map();
 
 const style = StyleSheet.create({
@@ -51,7 +39,6 @@ const style = StyleSheet.create({
 });
 
 const Home = ({isFocused, theme}: Props) => {
-    const db = DatabaseManager.appDatabase?.database;
     const [total, setTotal] = useState<UnreadMessages>({mentions: 0, unread: false});
 
     const updateTotal = () => {
@@ -69,10 +56,10 @@ const Home = ({isFocused, theme}: Props) => {
         if (unreads) {
             let mentions = 0;
             let unread = false;
-            myChannels.forEach((myChannel) => {
+            for (const myChannel of myChannels) {
                 mentions += myChannel.mentionsCount;
                 unread = unread || myChannel.isUnread;
-            });
+            }
 
             unreads.mentions = mentions;
             unreads.unread = unread;
@@ -82,45 +69,41 @@ const Home = ({isFocused, theme}: Props) => {
     };
 
     const serversObserver = async (servers: ServersModel[]) => {
-        servers.forEach((server) => {
-            const serverUrl = server.url;
-            if (server.lastActiveAt) {
-                const sdb = DatabaseManager.serverDatabases[serverUrl];
-                if (sdb?.database) {
-                    if (!subscriptions.has(serverUrl)) {
-                        const unreads: UnreadSubscription = {
-                            mentions: 0,
-                            unread: false,
-                        };
-                        subscriptions.set(serverUrl, unreads);
-                        unreads.subscription = sdb.database.
-                            get(MY_CHANNEL).
-                            query(Q.on(CHANNEL, Q.where('delete_at', Q.eq(0)))).
-                            observeWithColumns(['mentions_count', 'has_unreads']).
-                            subscribe(unreadsSubscription.bind(undefined, serverUrl));
-                    }
-                }
+        // unsubscribe mentions from servers that were removed
+        const allUrls = servers.map((s) => s.url);
+        const subscriptionsToRemove = [...subscriptions].filter(([key]) => allUrls.indexOf(key) === -1);
+        for (const [key, map] of subscriptionsToRemove) {
+            map.subscription?.unsubscribe();
+            subscriptions.delete(key);
+            updateTotal();
+        }
 
-                // subscribe and listen for unreads and mentions
-            } else if (subscriptions.has(serverUrl)) {
-                // logout from server, remove the subscription
-                subscriptions.delete(serverUrl);
+        for (const server of servers) {
+            const {lastActiveAt, url} = server;
+            if (lastActiveAt && !subscriptions.has(url)) {
+                const unreads: UnreadSubscription = {
+                    mentions: 0,
+                    unread: false,
+                };
+                subscriptions.set(url, unreads);
+                unreads.subscription = subscribeUnreadAndMentionsByServer(url, unreadsSubscription);
+            } else if (!lastActiveAt && subscriptions.has(url)) {
+                subscriptions.get(url)?.subscription?.unsubscribe();
+                subscriptions.delete(url);
+                updateTotal();
             }
-        });
+        }
     };
 
     useEffect(() => {
-        const subscription = db?.
-            get(SERVERS).
-            query().
-            observeWithColumns(['last_active_at']).
-            subscribe(serversObserver);
+        const subscription = subscribeAllServers(serversObserver);
 
         return () => {
             subscription?.unsubscribe();
             subscriptions.forEach((unreads) => {
                 unreads.subscription?.unsubscribe();
             });
+            subscriptions.clear();
         };
     }, []);
 

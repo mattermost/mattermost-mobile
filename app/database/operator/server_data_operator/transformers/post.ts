@@ -42,7 +42,7 @@ export const transformPostRecord = ({action, database, value}: TransformerArgs):
         post.updateAt = raw.update_at;
         post.isPinned = Boolean(raw.is_pinned);
         post.message = raw.message;
-        post.metadata = Object.keys(raw.metadata).length ? raw.metadata : null;
+        post.metadata = raw.metadata && Object.keys(raw.metadata).length ? raw.metadata : null;
         post.userId = raw.user_id;
         post.originalId = raw.original_id;
         post.pendingPostId = raw.pending_post_id;
@@ -109,10 +109,10 @@ export const transformFileRecord = ({action, database, value}: TransformerArgs):
         file.extension = raw.extension;
         file.size = raw.size;
         file.mimeType = raw?.mime_type ?? '';
-        file.width = raw?.width ?? 0;
-        file.height = raw?.height ?? 0;
-        file.imageThumbnail = raw?.mini_preview ?? '';
-        file.localPath = raw?.localPath ?? '';
+        file.width = raw?.width || record?.width || 0;
+        file.height = raw?.height || record?.height || 0;
+        file.imageThumbnail = raw?.mini_preview || record?.imageThumbnail || '';
+        file.localPath = raw?.localPath || record?.localPath || '';
     };
 
     return prepareBaseRecord({

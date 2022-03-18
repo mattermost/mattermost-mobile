@@ -26,7 +26,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
         title: {
             color: theme.centerChannelColor,
             fontSize: 14,
-            fontFamily: 'OpenSans-Semibold',
+            fontFamily: 'OpenSans-SemiBold',
             lineHeight: 20,
             marginBottom: 5,
         },
@@ -60,8 +60,8 @@ const AttachmentTitle = ({link, theme, value}: Props) => {
     if (link) {
         title = (
             <Text
-                style={[style.title, Boolean(link) && style.link]}
                 onPress={openLink}
+                style={[style.title, Boolean(link) && style.link]}
             >
                 {value}
             </Text>

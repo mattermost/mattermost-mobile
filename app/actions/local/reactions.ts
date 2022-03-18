@@ -9,10 +9,14 @@ import type SystemModel from '@typings/database/models/servers/system';
 
 const MAXIMUM_RECENT_EMOJI = 27;
 
-export const addRecentReaction = async (serverUrl: string, emojiName: string, prepareRecordsOnly = false) => {
+export const addRecentReaction = async (serverUrl: string, emojiNames: string[], prepareRecordsOnly = false) => {
     const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
     if (!operator) {
         return {error: `${serverUrl} database not found`};
+    }
+
+    if (!emojiNames.length) {
+        return [];
     }
 
     let recent: string[] = [];
@@ -25,11 +29,17 @@ export const addRecentReaction = async (serverUrl: string, emojiName: string, pr
 
     try {
         const recentEmojis = new Set(recent);
-        if (recentEmojis.has(emojiName)) {
-            recentEmojis.delete(emojiName);
+        for (const name of emojiNames) {
+            if (recentEmojis.has(name)) {
+                recentEmojis.delete(name);
+            }
         }
+
         recent = Array.from(recentEmojis);
-        recent.unshift(emojiName);
+
+        for (const name of emojiNames) {
+            recent.unshift(name);
+        }
         return operator.handleSystem({
             systems: [{
                 id: SYSTEM_IDENTIFIERS.RECENT_REACTIONS,

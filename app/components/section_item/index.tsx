@@ -22,8 +22,7 @@ const ActionTypes = {
 type Props = {
         testID?: string;
 
-        // action: (value: string | boolean) => void;
-        action: () => void;
+        action: (value: string | boolean) => void;
         actionType: string;
         actionValue?: string;
         label: ReactElement;
@@ -95,7 +94,7 @@ const SectionItem = ({testID, action, actionType, actionValue, label, selected, 
 
     if (actionType === ActionTypes.DEFAULT || actionType === ActionTypes.SELECT || actionType === ActionTypes.ARROW) {
         return (
-            <TouchableOpacity onPress={() => action(actionValue)}>
+            <TouchableOpacity onPress={() => action(actionValue || '')}>
                 {component}
             </TouchableOpacity>
         );

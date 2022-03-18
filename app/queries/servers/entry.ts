@@ -3,6 +3,7 @@
 
 import ServerDataOperator from '@database/operator/server_data_operator';
 
+import {prepareCategories, prepareCategoryChannels} from './categories';
 import {prepareDeleteChannel, prepareMyChannelsForTeam} from './channel';
 import {prepareMyPreferences} from './preference';
 import {prepareDeleteTeam, prepareMyTeams} from './team';
@@ -46,6 +47,18 @@ export const prepareModels = async ({operator, initialTeamId, removeTeams, remov
         const teamModels = prepareMyTeams(operator, teamData.teams, teamData.memberships || []);
         if (teamModels) {
             modelPromises.push(...teamModels);
+        }
+    }
+
+    if (chData?.categories?.length) {
+        const categoryModels = prepareCategories(operator, chData.categories);
+        if (categoryModels) {
+            modelPromises.push(...categoryModels);
+        }
+
+        const categoryChannelModels = prepareCategoryChannels(operator, chData.categories);
+        if (categoryChannelModels) {
+            modelPromises.push(...categoryChannelModels);
         }
     }
 

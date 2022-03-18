@@ -22,8 +22,8 @@ const Hashtag = ({hashtag, linkStyle}: HashtagProps) => {
 
     return (
         <Text
-            style={linkStyle}
             onPress={handlePress}
+            style={linkStyle}
         >
             {`#${hashtag}`}
         </Text>

@@ -8,14 +8,18 @@ import Animated, {useAnimatedStyle, withTiming} from 'react-native-reanimated';
 import {Edge, SafeAreaView, useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import ChannelList from '@components/channel_list';
+import FreezeScreen from '@components/freeze_screen';
 import TeamSidebar from '@components/team_sidebar';
 import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
 import Channel from '@screens/channel';
-import ServerIcon from '@screens/home/channel_list/server_icon/server_icon';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 
+import Servers from './servers';
+
 type ChannelProps = {
+    channelsCount: number;
+    currentTeamId?: string;
     teamsCount: number;
     time?: number;
 };
@@ -35,7 +39,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     },
     sectionTitle: {
         fontSize: 24,
-        fontFamily: 'OpenSans-Semibold',
+        fontFamily: 'OpenSans-SemiBold',
         color: theme.centerChannelColor,
     },
 }));
@@ -73,14 +77,15 @@ const ChannelListScreen = (props: ChannelProps) => {
         return {height: insets.top, backgroundColor: theme.sidebarBg};
     }, [theme]);
 
-    return (
+    const content = (
         <>
             {<Animated.View style={top}/>}
             <SafeAreaView
                 style={styles.content}
                 edges={edges}
+                testID='channel_list.screen'
             >
-                {canAddOtherServers && <ServerIcon/>}
+                {canAddOtherServers && <Servers/>}
                 <Animated.View
                     style={[styles.content, animated]}
                 >
@@ -92,14 +97,26 @@ const ChannelListScreen = (props: ChannelProps) => {
                         iconPad={canAddOtherServers && props.teamsCount <= 1}
                         isTablet={isTablet}
                         teamsCount={props.teamsCount}
+                        channelsCount={props.channelsCount}
+                        currentTeamId={props.currentTeamId}
                     />
-                    {isTablet &&
+                    {isTablet && Boolean(props.currentTeamId) &&
                         <Channel/>
                     }
                 </Animated.View>
             </SafeAreaView>
         </>
     );
+
+    if (isTablet) {
+        return (
+            <FreezeScreen>
+                {content}
+            </FreezeScreen>
+        );
+    }
+
+    return content;
 };
 
 export default ChannelListScreen;

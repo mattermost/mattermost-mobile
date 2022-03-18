@@ -11,11 +11,11 @@ import {MIGRATION_EVENTS, MM_TABLES} from '@constants/database';
 import AppDatabaseMigrations from '@database/migration/app';
 import ServerDatabaseMigrations from '@database/migration/server';
 import {InfoModel, GlobalModel, ServersModel} from '@database/models/app';
-import {ChannelModel, ChannelInfoModel, ChannelMembershipModel, CustomEmojiModel, DraftModel, FileModel,
-    GroupModel, GroupMembershipModel, GroupsChannelModel, GroupsTeamModel, MyChannelModel, MyChannelSettingsModel, MyTeamModel,
+import {CategoryModel, CategoryChannelModel, ChannelModel, ChannelInfoModel, ChannelMembershipModel, CustomEmojiModel, DraftModel, FileModel,
+    MyChannelModel, MyChannelSettingsModel, MyTeamModel,
     PostModel, PostsInChannelModel, PostsInThreadModel, PreferenceModel, ReactionModel, RoleModel,
     SlashCommandModel, SystemModel, TeamModel, TeamChannelHistoryModel, TeamMembershipModel, TeamSearchHistoryModel,
-    TermsOfServiceModel, UserModel,
+    TermsOfServiceModel, ThreadModel, ThreadParticipantModel, UserModel,
 } from '@database/models/server';
 import AppDataOperator from '@database/operator/app_data_operator';
 import ServerDataOperator from '@database/operator/server_data_operator';
@@ -47,11 +47,11 @@ class DatabaseManager {
     constructor() {
         this.appModels = [InfoModel, GlobalModel, ServersModel];
         this.serverModels = [
-            ChannelModel, ChannelInfoModel, ChannelMembershipModel, CustomEmojiModel, DraftModel, FileModel,
-            GroupModel, GroupMembershipModel, GroupsChannelModel, GroupsTeamModel, MyChannelModel, MyChannelSettingsModel, MyTeamModel,
+            CategoryModel, CategoryChannelModel, ChannelModel, ChannelInfoModel, ChannelMembershipModel, CustomEmojiModel, DraftModel, FileModel,
+            MyChannelModel, MyChannelSettingsModel, MyTeamModel,
             PostModel, PostsInChannelModel, PostsInThreadModel, PreferenceModel, ReactionModel, RoleModel,
             SlashCommandModel, SystemModel, TeamModel, TeamChannelHistoryModel, TeamMembershipModel, TeamSearchHistoryModel,
-            TermsOfServiceModel, UserModel,
+            TermsOfServiceModel, ThreadModel, ThreadParticipantModel, UserModel,
         ];
         this.databaseDirectory = '';
     }
@@ -203,6 +203,16 @@ class DatabaseManager {
         if (database) {
             const server = await queryActiveServer(database);
             return server?.url;
+        }
+
+        return null;
+    };
+
+    public getActiveServerDisplayName = async (): Promise<string|null|undefined> => {
+        const database = this.appDatabase?.database;
+        if (database) {
+            const server = await queryActiveServer(database);
+            return server?.displayName;
         }
 
         return null;

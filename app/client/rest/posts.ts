@@ -17,7 +17,7 @@ export interface ClientPostsMix {
     getPostsBefore: (channelId: string, postId: string, page?: number, perPage?: number) => Promise<PostResponse>;
     getPostsAfter: (channelId: string, postId: string, page?: number, perPage?: number) => Promise<PostResponse>;
     getFileInfosForPost: (postId: string) => Promise<FileInfo[]>;
-    getFlaggedPosts: (userId: string, channelId?: string, teamId?: string, page?: number, perPage?: number) => Promise<any>;
+    getSavedPosts: (userId: string, channelId?: string, teamId?: string, page?: number, perPage?: number) => Promise<PostResponse>;
     getPinnedPosts: (channelId: string) => Promise<any>;
     markPostAsUnread: (userId: string, postId: string) => Promise<any>;
     pinPost: (postId: string) => Promise<any>;
@@ -41,7 +41,7 @@ const ClientPosts = (superclass: any) => class extends superclass {
 
         return this.doFetch(
             `${this.getPostsRoute()}`,
-            {method: 'post', body: post},
+            {method: 'post', body: post, noRetry: true},
         );
     };
 
@@ -125,7 +125,7 @@ const ClientPosts = (superclass: any) => class extends superclass {
         );
     };
 
-    getFlaggedPosts = async (userId: string, channelId = '', teamId = '', page = 0, perPage = PER_PAGE_DEFAULT) => {
+    getSavedPosts = async (userId: string, channelId = '', teamId = '', page = 0, perPage = PER_PAGE_DEFAULT) => {
         this.analytics.trackAPI('api_posts_get_flagged', {team_id: teamId});
 
         return this.doFetch(

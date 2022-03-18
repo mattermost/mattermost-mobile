@@ -13,9 +13,10 @@ import type DraftModel from '@typings/database/models/servers/draft';
 import type FileModel from '@typings/database/models/servers/file';
 import type PostInThreadModel from '@typings/database/models/servers/posts_in_thread';
 import type ReactionModel from '@typings/database/models/servers/reaction';
+import type ThreadModel from '@typings/database/models/servers/thread';
 import type UserModel from '@typings/database/models/servers/user';
 
-const {CHANNEL, DRAFT, FILE, POST, POSTS_IN_THREAD, REACTION, USER} = MM_TABLES.SERVER;
+const {CHANNEL, DRAFT, FILE, POST, POSTS_IN_THREAD, REACTION, THREAD, USER} = MM_TABLES.SERVER;
 
 /**
  * The Post model is the building block of communication in the Mattermost app.
@@ -41,6 +42,9 @@ export default class PostModel extends Model {
 
         /** A POST can have multiple REACTION. (relationship is 1:N)*/
         [REACTION]: {type: 'has_many', foreignKey: 'post_id'},
+
+        /** A POST can have an associated thread. (relationship is 1:1) */
+        [THREAD]: {type: 'has_many', foreignKey: 'id'},
 
         /** A USER can have multiple POST.  A user can author several posts. (relationship is 1:N)*/
         [USER]: {type: 'belongs_to', key: 'user_id'},
@@ -115,6 +119,9 @@ export default class PostModel extends Model {
     /** channel: The channel which is presenting this Post */
     @immutableRelation(CHANNEL, 'channel_id') channel!: Relation<ChannelModel>;
 
+    /** thread : The thread data for the post */
+    @immutableRelation(THREAD, 'id') thread!: Relation<ThreadModel>;
+
     async destroyPermanently() {
         await this.reactions.destroyAllPermanently();
         await this.files.destroyAllPermanently();
@@ -122,6 +129,11 @@ export default class PostModel extends Model {
         await this.collections.get(POSTS_IN_THREAD).query(
             Q.where('root_id', this.id),
         ).destroyAllPermanently();
+        try {
+            (await this.thread.fetch())?.destroyPermanently();
+        } catch {
+            // there is no thread record for this post
+        }
         super.destroyPermanently();
     }
 

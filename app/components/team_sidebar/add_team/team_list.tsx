@@ -3,7 +3,7 @@
 
 import React from 'react';
 import {ListRenderItemInfo, View} from 'react-native';
-import {FlatList} from 'react-native-gesture-handler';
+import {FlatList} from 'react-native-gesture-handler'; // Keep the FlatList from gesture handler so it works well with bottom sheet
 
 import FormattedText from '@components/formatted_text';
 import {useTheme} from '@context/theme';

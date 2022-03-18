@@ -41,6 +41,9 @@ type UserProfile = {
     timezone?: UserTimezone;
     is_bot: boolean;
     last_picture_update: number;
+    remote_id?: string;
+    status?: string;
+    remote_id?: string;
 };
 
 type UsersState = {

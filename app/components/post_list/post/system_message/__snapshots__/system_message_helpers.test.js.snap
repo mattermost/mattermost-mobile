@@ -3,106 +3,122 @@
 exports[`renderSystemMessage uses renderer for Channel Display Name update 1`] = `
 <View
   style={
-    Array [
-      Object {
-        "alignItems": "flex-start",
-        "flexDirection": "row",
-        "flexWrap": "wrap",
-      },
-    ]
+    Object {
+      "marginBottom": 5,
+    }
   }
 >
-  <Text>
-    <Text
-      style={
-        Array [
+  <View
+    style={
+      Array [
+        Object {
+          "alignItems": "flex-start",
+          "flexDirection": "row",
+          "flexWrap": "wrap",
+        },
+      ]
+    }
+  >
+    <Text>
+      <Text
+        style={
+          Array [
+            Object {
+              "color": "rgba(63,67,80,0.6)",
+              "fontFamily": "OpenSans",
+              "fontSize": 16,
+              "fontWeight": "400",
+              "lineHeight": 24,
+            },
+            Object {
+              "opacity": 1,
+            },
+          ]
+        }
+      >
+        <Text
+          style={Array []}
+        >
+          @username
+        </Text>
+      </Text>
+      <Text
+        style={
           Object {
             "color": "rgba(63,67,80,0.6)",
             "fontFamily": "OpenSans",
             "fontSize": 16,
             "fontWeight": "400",
             "lineHeight": 24,
-          },
-          Object {
-            "opacity": 1,
-          },
-        ]
-      }
-    >
-      <Text
-        style={Array []}
+          }
+        }
+        testID="markdown_text"
       >
-        @username
+         updated the channel display name from: old displayname to: new displayname
       </Text>
     </Text>
-    <Text
-      style={
-        Object {
-          "color": "rgba(63,67,80,0.6)",
-          "fontFamily": "OpenSans",
-          "fontSize": 16,
-          "fontWeight": "400",
-          "lineHeight": 24,
-        }
-      }
-      testID="markdown_text"
-    >
-       updated the channel display name from: old displayname to: new displayname
-    </Text>
-  </Text>
+  </View>
 </View>
 `;
 
 exports[`renderSystemMessage uses renderer for Channel Header update 1`] = `
 <View
   style={
-    Array [
-      Object {
-        "alignItems": "flex-start",
-        "flexDirection": "row",
-        "flexWrap": "wrap",
-      },
-    ]
+    Object {
+      "marginBottom": 5,
+    }
   }
 >
-  <Text>
-    <Text
-      style={
-        Array [
+  <View
+    style={
+      Array [
+        Object {
+          "alignItems": "flex-start",
+          "flexDirection": "row",
+          "flexWrap": "wrap",
+        },
+      ]
+    }
+  >
+    <Text>
+      <Text
+        style={
+          Array [
+            Object {
+              "color": "rgba(63,67,80,0.6)",
+              "fontFamily": "OpenSans",
+              "fontSize": 16,
+              "fontWeight": "400",
+              "lineHeight": 24,
+            },
+            Object {
+              "opacity": 1,
+            },
+          ]
+        }
+      >
+        <Text
+          style={Array []}
+        >
+          @username
+        </Text>
+      </Text>
+      <Text
+        style={
           Object {
             "color": "rgba(63,67,80,0.6)",
             "fontFamily": "OpenSans",
             "fontSize": 16,
             "fontWeight": "400",
             "lineHeight": 24,
-          },
-          Object {
-            "opacity": 1,
-          },
-        ]
-      }
-    >
-      <Text
-        style={Array []}
+          }
+        }
+        testID="markdown_text"
       >
-        @username
+         updated the channel header from: old header to: new header
       </Text>
     </Text>
-    <Text
-      style={
-        Object {
-          "color": "rgba(63,67,80,0.6)",
-          "fontFamily": "OpenSans",
-          "fontSize": 16,
-          "fontWeight": "400",
-          "lineHeight": 24,
-        }
-      }
-      testID="markdown_text"
-    >
-       updated the channel header from: old header to: new header
-    </Text>
-  </Text>
+  </View>
 </View>
 `;
 
@@ -125,264 +141,304 @@ exports[`renderSystemMessage uses renderer for Channel Purpose update 1`] = `
 exports[`renderSystemMessage uses renderer for Guest added and join to channel 1`] = `
 <View
   style={
-    Array [
-      Object {
-        "alignItems": "flex-start",
-        "flexDirection": "row",
-        "flexWrap": "wrap",
-      },
-    ]
+    Object {
+      "marginBottom": 5,
+    }
   }
 >
-  <Text>
-    <Text
-      style={
-        Array [
+  <View
+    style={
+      Array [
+        Object {
+          "alignItems": "flex-start",
+          "flexDirection": "row",
+          "flexWrap": "wrap",
+        },
+      ]
+    }
+  >
+    <Text>
+      <Text
+        style={
+          Array [
+            Object {
+              "color": "rgba(63,67,80,0.6)",
+              "fontFamily": "OpenSans",
+              "fontSize": 16,
+              "fontWeight": "400",
+              "lineHeight": 24,
+            },
+            Object {
+              "opacity": 1,
+            },
+          ]
+        }
+      >
+        <Text
+          style={Array []}
+        >
+          @username
+        </Text>
+      </Text>
+      <Text
+        style={
           Object {
             "color": "rgba(63,67,80,0.6)",
             "fontFamily": "OpenSans",
             "fontSize": 16,
             "fontWeight": "400",
             "lineHeight": 24,
-          },
-          Object {
-            "opacity": 1,
-          },
-        ]
-      }
-    >
-      <Text
-        style={Array []}
+          }
+        }
+        testID="markdown_text"
       >
-        @username
+         joined the channel as a guest.
       </Text>
     </Text>
-    <Text
-      style={
-        Object {
-          "color": "rgba(63,67,80,0.6)",
-          "fontFamily": "OpenSans",
-          "fontSize": 16,
-          "fontWeight": "400",
-          "lineHeight": 24,
-        }
-      }
-      testID="markdown_text"
-    >
-       joined the channel as a guest.
-    </Text>
-  </Text>
+  </View>
 </View>
 `;
 
 exports[`renderSystemMessage uses renderer for Guest added and join to channel 2`] = `
 <View
   style={
-    Array [
-      Object {
-        "alignItems": "flex-start",
-        "flexDirection": "row",
-        "flexWrap": "wrap",
-      },
-    ]
+    Object {
+      "marginBottom": 5,
+    }
   }
 >
-  <Text>
-    <Text
-      style={
-        Array [
-          Object {
-            "color": "rgba(63,67,80,0.6)",
-            "fontFamily": "OpenSans",
-            "fontSize": 16,
-            "fontWeight": "400",
-            "lineHeight": 24,
-          },
-          Object {
-            "opacity": 1,
-          },
-        ]
-      }
-    >
-      <Text
-        style={Array []}
-      >
-        @other.user
-      </Text>
-    </Text>
-    <Text
-      style={
+  <View
+    style={
+      Array [
         Object {
-          "color": "rgba(63,67,80,0.6)",
-          "fontFamily": "OpenSans",
-          "fontSize": 16,
-          "fontWeight": "400",
-          "lineHeight": 24,
+          "alignItems": "flex-start",
+          "flexDirection": "row",
+          "flexWrap": "wrap",
+        },
+      ]
+    }
+  >
+    <Text>
+      <Text
+        style={
+          Array [
+            Object {
+              "color": "rgba(63,67,80,0.6)",
+              "fontFamily": "OpenSans",
+              "fontSize": 16,
+              "fontWeight": "400",
+              "lineHeight": 24,
+            },
+            Object {
+              "opacity": 1,
+            },
+          ]
         }
-      }
-      testID="markdown_text"
-    >
-       added to the channel as a guest by 
-    </Text>
-    <Text
-      style={
-        Array [
+      >
+        <Text
+          style={Array []}
+        >
+          @other.user
+        </Text>
+      </Text>
+      <Text
+        style={
           Object {
             "color": "rgba(63,67,80,0.6)",
             "fontFamily": "OpenSans",
             "fontSize": 16,
             "fontWeight": "400",
             "lineHeight": 24,
-          },
-          Object {
-            "opacity": 1,
-          },
-        ]
-      }
-    >
-      <Text
-        style={Array []}
+          }
+        }
+        testID="markdown_text"
       >
-        @username.
+         added to the channel as a guest by 
+      </Text>
+      <Text
+        style={
+          Array [
+            Object {
+              "color": "rgba(63,67,80,0.6)",
+              "fontFamily": "OpenSans",
+              "fontSize": 16,
+              "fontWeight": "400",
+              "lineHeight": 24,
+            },
+            Object {
+              "opacity": 1,
+            },
+          ]
+        }
+      >
+        <Text
+          style={Array []}
+        >
+          @username.
+        </Text>
       </Text>
     </Text>
-  </Text>
+  </View>
 </View>
 `;
 
 exports[`renderSystemMessage uses renderer for OLD archived channel without a username 1`] = `
 <View
   style={
-    Array [
-      Object {
-        "alignItems": "flex-start",
-        "flexDirection": "row",
-        "flexWrap": "wrap",
-      },
-    ]
+    Object {
+      "marginBottom": 5,
+    }
   }
 >
-  <Text>
-    <Text
-      style={
+  <View
+    style={
+      Array [
         Object {
-          "color": "rgba(63,67,80,0.6)",
-          "fontFamily": "OpenSans",
-          "fontSize": 16,
-          "fontWeight": "400",
-          "lineHeight": 24,
+          "alignItems": "flex-start",
+          "flexDirection": "row",
+          "flexWrap": "wrap",
+        },
+      ]
+    }
+  >
+    <Text>
+      <Text
+        style={
+          Object {
+            "color": "rgba(63,67,80,0.6)",
+            "fontFamily": "OpenSans",
+            "fontSize": 16,
+            "fontWeight": "400",
+            "lineHeight": 24,
+          }
         }
-      }
-      testID="markdown_text"
-    >
-      archived the channel
+        testID="markdown_text"
+      >
+        archived the channel
+      </Text>
     </Text>
-  </Text>
+  </View>
 </View>
 `;
 
 exports[`renderSystemMessage uses renderer for archived channel 1`] = `
 <View
   style={
-    Array [
-      Object {
-        "alignItems": "flex-start",
-        "flexDirection": "row",
-        "flexWrap": "wrap",
-      },
-    ]
+    Object {
+      "marginBottom": 5,
+    }
   }
 >
-  <Text>
-    <Text
-      style={
-        Array [
+  <View
+    style={
+      Array [
+        Object {
+          "alignItems": "flex-start",
+          "flexDirection": "row",
+          "flexWrap": "wrap",
+        },
+      ]
+    }
+  >
+    <Text>
+      <Text
+        style={
+          Array [
+            Object {
+              "color": "rgba(63,67,80,0.6)",
+              "fontFamily": "OpenSans",
+              "fontSize": 16,
+              "fontWeight": "400",
+              "lineHeight": 24,
+            },
+            Object {
+              "opacity": 1,
+            },
+          ]
+        }
+      >
+        <Text
+          style={Array []}
+        >
+          @username
+        </Text>
+      </Text>
+      <Text
+        style={
           Object {
             "color": "rgba(63,67,80,0.6)",
             "fontFamily": "OpenSans",
             "fontSize": 16,
             "fontWeight": "400",
             "lineHeight": 24,
-          },
-          Object {
-            "opacity": 1,
-          },
-        ]
-      }
-    >
-      <Text
-        style={Array []}
+          }
+        }
+        testID="markdown_text"
       >
-        @username
+         archived the channel
       </Text>
     </Text>
-    <Text
-      style={
-        Object {
-          "color": "rgba(63,67,80,0.6)",
-          "fontFamily": "OpenSans",
-          "fontSize": 16,
-          "fontWeight": "400",
-          "lineHeight": 24,
-        }
-      }
-      testID="markdown_text"
-    >
-       archived the channel
-    </Text>
-  </Text>
+  </View>
 </View>
 `;
 
 exports[`renderSystemMessage uses renderer for unarchived channel 1`] = `
 <View
   style={
-    Array [
-      Object {
-        "alignItems": "flex-start",
-        "flexDirection": "row",
-        "flexWrap": "wrap",
-      },
-    ]
+    Object {
+      "marginBottom": 5,
+    }
   }
 >
-  <Text>
-    <Text
-      style={
-        Array [
+  <View
+    style={
+      Array [
+        Object {
+          "alignItems": "flex-start",
+          "flexDirection": "row",
+          "flexWrap": "wrap",
+        },
+      ]
+    }
+  >
+    <Text>
+      <Text
+        style={
+          Array [
+            Object {
+              "color": "rgba(63,67,80,0.6)",
+              "fontFamily": "OpenSans",
+              "fontSize": 16,
+              "fontWeight": "400",
+              "lineHeight": 24,
+            },
+            Object {
+              "opacity": 1,
+            },
+          ]
+        }
+      >
+        <Text
+          style={Array []}
+        >
+          @username
+        </Text>
+      </Text>
+      <Text
+        style={
           Object {
             "color": "rgba(63,67,80,0.6)",
             "fontFamily": "OpenSans",
             "fontSize": 16,
             "fontWeight": "400",
             "lineHeight": 24,
-          },
-          Object {
-            "opacity": 1,
-          },
-        ]
-      }
-    >
-      <Text
-        style={Array []}
+          }
+        }
+        testID="markdown_text"
       >
-        @username
+         unarchived the channel
       </Text>
     </Text>
-    <Text
-      style={
-        Object {
-          "color": "rgba(63,67,80,0.6)",
-          "fontFamily": "OpenSans",
-          "fontSize": 16,
-          "fontWeight": "400",
-          "lineHeight": 24,
-        }
-      }
-      testID="markdown_text"
-    >
-       unarchived the channel
-    </Text>
-  </Text>
+  </View>
 </View>
 `;

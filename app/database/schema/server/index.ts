@@ -4,16 +4,14 @@
 import {AppSchema, appSchema} from '@nozbe/watermelondb';
 
 import {
+    CategorySchema,
+    CategoryChannelSchema,
     ChannelInfoSchema,
     ChannelMembershipSchema,
     ChannelSchema,
     CustomEmojiSchema,
     DraftSchema,
     FileSchema,
-    GroupMembershipSchema,
-    GroupSchema,
-    GroupsChannelSchema,
-    GroupsTeamSchema,
     MyChannelSchema,
     MyChannelSettingsSchema,
     MyTeamSchema,
@@ -30,22 +28,22 @@ import {
     TeamSchema,
     TeamSearchHistorySchema,
     TermsOfServiceSchema,
+    ThreadSchema,
+    ThreadParticipantSchema,
     UserSchema,
 } from './table_schemas';
 
 export const serverSchema: AppSchema = appSchema({
     version: 1,
     tables: [
+        CategorySchema,
+        CategoryChannelSchema,
         ChannelInfoSchema,
         ChannelMembershipSchema,
         ChannelSchema,
         CustomEmojiSchema,
         DraftSchema,
         FileSchema,
-        GroupMembershipSchema,
-        GroupSchema,
-        GroupsChannelSchema,
-        GroupsTeamSchema,
         MyChannelSchema,
         MyChannelSettingsSchema,
         MyTeamSchema,
@@ -62,6 +60,8 @@ export const serverSchema: AppSchema = appSchema({
         TeamSchema,
         TeamSearchHistorySchema,
         TermsOfServiceSchema,
+        ThreadSchema,
+        ThreadParticipantSchema,
         UserSchema,
     ],
 });

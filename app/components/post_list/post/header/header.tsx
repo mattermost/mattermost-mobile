@@ -4,13 +4,13 @@
 import React from 'react';
 import {View} from 'react-native';
 
-import {typography} from '@app/utils/typography';
 import CustomStatusEmoji from '@components/custom_status/custom_status_emoji';
 import FormattedTime from '@components/formatted_time';
 import {CHANNEL, THREAD} from '@constants/screens';
 import {useTheme} from '@context/theme';
 import {postUserDisplayName} from '@utils/post';
 import {makeStyleSheetFromTheme} from '@utils/theme';
+import {typography} from '@utils/typography';
 import {displayUsername, getUserCustomStatus, getUserTimezone, isCustomStatusExpired} from '@utils/user';
 
 import HeaderCommentedOn from './commented_on';
@@ -79,7 +79,7 @@ const Header = (props: HeaderProps) => {
     const style = getStyleSheet(theme);
     const pendingPostStyle = isPendingOrFailed ? style.pendingPost : undefined;
     const isReplyPost = Boolean(post.rootId && !isEphemeral);
-    const showReply = !isReplyPost && (location !== THREAD) && (shouldRenderReplyButton || (!rootPostAuthor && commentCount > 0));
+    const showReply = !isReplyPost && (location !== THREAD) && (shouldRenderReplyButton && (!rootPostAuthor && commentCount > 0));
     const displayName = postUserDisplayName(post, author, teammateNameDisplay, enablePostUsernameOverride);
     const rootAuthorDisplayName = rootPostAuthor ? displayUsername(rootPostAuthor, currentUser.locale, teammateNameDisplay, true) : undefined;
     const customStatus = getUserCustomStatus(author);
@@ -145,4 +145,4 @@ const Header = (props: HeaderProps) => {
     );
 };
 
-export default React.memo(Header);
+export default Header;

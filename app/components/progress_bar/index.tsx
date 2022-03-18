@@ -1,8 +1,9 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback, useEffect, useRef, useState} from 'react';
-import {Animated, LayoutChangeEvent, StyleSheet, StyleProp, View, ViewStyle} from 'react-native';
+import React, {useCallback, useEffect, useState} from 'react';
+import {LayoutChangeEvent, StyleSheet, StyleProp, View, ViewStyle} from 'react-native';
+import Animated, {useAnimatedStyle, useSharedValue, withTiming} from 'react-native-reanimated';
 
 type ProgressBarProps = {
     color: string;
@@ -24,34 +25,26 @@ const styles = StyleSheet.create({
 });
 
 const ProgressBar = ({color, progress, style}: ProgressBarProps) => {
-    const timer = useRef(new Animated.Value(progress)).current;
     const [width, setWidth] = useState(0);
 
+    const progressValue = useSharedValue(progress);
+
+    const progressAnimatedStyle = useAnimatedStyle(() => {
+        return {
+            transform: [
+                {translateX: withTiming(((progressValue.value * 0.5) - 0.5) * width, {duration: 200})},
+                {scaleX: withTiming(progressValue.value ? progressValue.value : 0.0001, {duration: 200})},
+            ],
+        };
+    }, [width]);
+
     useEffect(() => {
-        const animation = Animated.timing(timer, {
-            duration: 200,
-            useNativeDriver: true,
-            isInteraction: false,
-            toValue: progress,
-        });
-
-        animation.start();
-
-        return animation.stop;
+        progressValue.value = progress;
     }, [progress]);
 
     const onLayout = useCallback((e: LayoutChangeEvent) => {
         setWidth(e.nativeEvent.layout.width);
     }, []);
-
-    const translateX = timer.interpolate({
-        inputRange: [0, 1],
-        outputRange: [(-0.5 * width), 0],
-    });
-    const scaleX = timer.interpolate({
-        inputRange: [0, 1],
-        outputRange: [0.0001, 1],
-    });
 
     return (
         <View
@@ -60,14 +53,12 @@ const ProgressBar = ({color, progress, style}: ProgressBarProps) => {
         >
             <Animated.View
                 style={[
-                    styles.progressBar, {
+                    styles.progressBar,
+                    {
                         backgroundColor: color,
                         width,
-                        transform: [
-                            {translateX},
-                            {scaleX},
-                        ],
                     },
+                    progressAnimatedStyle,
                 ]}
             />
         </View>

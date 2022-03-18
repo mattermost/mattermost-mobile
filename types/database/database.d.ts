@@ -72,6 +72,7 @@ export type CreateServerDatabaseArgs = {
 export type HandleReactionsArgs = {
   prepareRecordsOnly: boolean;
   postsReactions: ReactionsPerPost[];
+  skipSync?: boolean;
 };
 
 export type HandleFilesArgs = {
@@ -87,11 +88,28 @@ export type HandlePostsArgs = {
   prepareRecordsOnly?: boolean;
 };
 
+export type HandleThreadsArgs = {
+  threads: Thread[];
+  prepareRecordsOnly?: boolean;
+};
+
+export type HandleThreadParticipantsArgs = {
+  prepareRecordsOnly: boolean;
+  threadsParticipants: ParticipantsPerThread[];
+};
+
 export type SanitizeReactionsArgs = {
   database: Database;
   post_id: string;
   rawReactions: Reaction[];
+  skipSync?: boolean;
 };
+
+export type SanitizeThreadParticipantsArgs = {
+  database: Database;
+  thread_id: $ID<Thread>;
+  rawParticipants: ThreadParticipant[];
+}
 
 export type ChainPostsArgs = {
   order: string[];
@@ -189,6 +207,14 @@ export type HandleChannelArgs = PrepareOnly & {
   channels: Channel[];
 };
 
+export type HandleCategoryArgs = PrepareOnly & {
+  categories: Category[];
+};
+
+export type HandleCategoryChannelArgs = PrepareOnly & {
+  categoryChannels: CategoryChannel[];
+};
+
 export type HandleMyTeamArgs = PrepareOnly & {
   myTeams: MyTeam[];
 };
@@ -209,24 +235,8 @@ export type HandleTeamArgs = PrepareOnly & {
     teams: Team[];
 };
 
-export type HandleGroupsChannelArgs = PrepareOnly & {
-  groupsChannels: GroupChannelRelation[];
-};
-
-export type HandleGroupsTeamArgs = PrepareOnly &{
-  groupsTeams: GroupTeamRelation[];
-};
-
-export type HandleGroupArgs = PrepareOnly & {
-  groups: Group[];
-};
-
 export type HandleChannelMembershipArgs = PrepareOnly & {
-  channelMemberships: ChannelMember[];
-};
-
-export type HandleGroupMembershipArgs = PrepareOnly & {
-  groupMemberships: GroupMembership[];
+  channelMemberships: Array<Pick<ChannelMembership, 'user_id' | 'channel_id'>>;
 };
 
 export type HandleTeamMembershipArgs = PrepareOnly & {

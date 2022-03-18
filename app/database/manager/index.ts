@@ -12,11 +12,11 @@ import {MIGRATION_EVENTS, MM_TABLES} from '@constants/database';
 import AppDatabaseMigrations from '@database/migration/app';
 import ServerDatabaseMigrations from '@database/migration/server';
 import {InfoModel, GlobalModel, ServersModel} from '@database/models/app';
-import {ChannelModel, ChannelInfoModel, ChannelMembershipModel, CustomEmojiModel, DraftModel, FileModel,
-    GroupModel, GroupMembershipModel, GroupsChannelModel, GroupsTeamModel, MyChannelModel, MyChannelSettingsModel, MyTeamModel,
+import {CategoryModel, CategoryChannelModel, ChannelModel, ChannelInfoModel, ChannelMembershipModel, CustomEmojiModel, DraftModel, FileModel,
+    MyChannelModel, MyChannelSettingsModel, MyTeamModel,
     PostModel, PostsInChannelModel, PostsInThreadModel, PreferenceModel, ReactionModel, RoleModel,
     SlashCommandModel, SystemModel, TeamModel, TeamChannelHistoryModel, TeamMembershipModel, TeamSearchHistoryModel,
-    TermsOfServiceModel, UserModel,
+    TermsOfServiceModel, ThreadModel, ThreadParticipantModel, UserModel,
 } from '@database/models/server';
 import AppDataOperator from '@database/operator/app_data_operator';
 import ServerDataOperator from '@database/operator/server_data_operator';
@@ -42,11 +42,11 @@ class DatabaseManager {
     constructor() {
         this.appModels = [InfoModel, GlobalModel, ServersModel];
         this.serverModels = [
-            ChannelModel, ChannelInfoModel, ChannelMembershipModel, CustomEmojiModel, DraftModel, FileModel,
-            GroupModel, GroupMembershipModel, GroupsChannelModel, GroupsTeamModel, MyChannelModel, MyChannelSettingsModel, MyTeamModel,
+            CategoryModel, CategoryChannelModel, ChannelModel, ChannelInfoModel, ChannelMembershipModel, CustomEmojiModel, DraftModel, FileModel,
+            MyChannelModel, MyChannelSettingsModel, MyTeamModel,
             PostModel, PostsInChannelModel, PostsInThreadModel, PreferenceModel, ReactionModel, RoleModel,
             SlashCommandModel, SystemModel, TeamModel, TeamChannelHistoryModel, TeamMembershipModel, TeamSearchHistoryModel,
-            TermsOfServiceModel, UserModel,
+            TermsOfServiceModel, ThreadModel, ThreadParticipantModel, UserModel,
         ];
 
         this.databaseDirectory = Platform.OS === 'ios' ? getIOSAppGroupDetails().appGroupDatabase : `${FileSystem.documentDirectory}databases/`;
@@ -202,7 +202,7 @@ class DatabaseManager {
                         });
                     });
                 } else if (identifier) {
-                    await this.updateServerIdentifier(serverUrl, identifier);
+                    await this.updateServerIdentifier(serverUrl, identifier, displayName);
                 }
             }
         } catch (e) {
@@ -210,13 +210,16 @@ class DatabaseManager {
         }
     };
 
-    public updateServerIdentifier = async (serverUrl: string, identifier: string) => {
+    public updateServerIdentifier = async (serverUrl: string, identifier: string, displayName?: string) => {
         const appDatabase = this.appDatabase?.database;
         if (appDatabase) {
             const server = await queryServer(appDatabase, serverUrl);
             await appDatabase.write(async () => {
                 await server.update((record) => {
                     record.identifier = identifier;
+                    if (displayName) {
+                        record.displayName = displayName;
+                    }
                 });
             });
         }
@@ -249,7 +252,7 @@ class DatabaseManager {
     };
 
     /**
-    * getActiveServerUrl: Get the record for active server database.
+    * getActiveServerUrl: Get the server url for active server database.
     * @returns {Promise<string|null|undefined>}
     */
     public getActiveServerUrl = async (): Promise<string|null|undefined> => {
@@ -257,6 +260,20 @@ class DatabaseManager {
         if (database) {
             const server = await queryActiveServer(database);
             return server?.url;
+        }
+
+        return null;
+    };
+
+    /**
+    * getActiveServerDisplayName: Get the server display name for active server database.
+    * @returns {Promise<string|null|undefined>}
+    */
+    public getActiveServerDisplayName = async (): Promise<string|null|undefined> => {
+        const database = this.appDatabase?.database;
+        if (database) {
+            const server = await queryActiveServer(database);
+            return server?.displayName;
         }
 
         return null;
@@ -373,9 +390,9 @@ class DatabaseManager {
         const databaseShm = `${androidFilesDir}${databaseName}.db-shm`;
         const databaseWal = `${androidFilesDir}${databaseName}.db-wal`;
 
-        FileSystem.deleteAsync(databaseFile);
-        FileSystem.deleteAsync(databaseShm);
-        FileSystem.deleteAsync(databaseWal);
+        FileSystem.deleteAsync(databaseFile, {idempotent: true});
+        FileSystem.deleteAsync(databaseShm, {idempotent: true});
+        FileSystem.deleteAsync(databaseWal, {idempotent: true});
     };
 
     /**

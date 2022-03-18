@@ -11,7 +11,7 @@ import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 type Props = {
     action?: string;
     enabled?: boolean;
-    onPress: () => void;
+    onPress?: () => void;
     title: string;
     testID: string;
 }
@@ -26,7 +26,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     },
     action: {
         color: changeOpacity(theme.centerChannelColor, 0.7),
-        fontFamily: 'OpenSans-Semibold',
+        fontFamily: 'OpenSans-SemiBold',
         fontSize: 16,
         lineHeight: 24,
     },
@@ -50,7 +50,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     },
     title: {
         color: theme.centerChannelColor,
-        fontFamily: 'OpenSans-Semibold',
+        fontFamily: 'OpenSans-SemiBold',
         fontSize: 18,
         lineHeight: 24,
     },

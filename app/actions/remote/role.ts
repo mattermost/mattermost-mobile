@@ -12,7 +12,7 @@ export type RolesRequest = {
     roles?: Role[];
 }
 
-export const fetchRolesIfNeeded = async (serverUrl: string, updatedRoles: string[]): Promise<RolesRequest> => {
+export const fetchRolesIfNeeded = async (serverUrl: string, updatedRoles: string[], fetchOnly = false): Promise<RolesRequest> => {
     if (!updatedRoles.length) {
         return {roles: []};
     }
@@ -42,8 +42,7 @@ export const fetchRolesIfNeeded = async (serverUrl: string, updatedRoles: string
 
     try {
         const roles = await client.getRolesByNames(newRoles);
-
-        if (roles.length) {
+        if (!fetchOnly && roles.length) {
             await operator.handleRole({
                 roles,
                 prepareRecordsOnly: false,
@@ -57,16 +56,14 @@ export const fetchRolesIfNeeded = async (serverUrl: string, updatedRoles: string
     }
 };
 
-export const fetchRoles = async (serverUrl: string, teamMembership?: TeamMembership[], channelMembership?: ChannelMembership[], user?: UserProfile) => {
+export const fetchRoles = async (serverUrl: string, teamMembership?: TeamMembership[], channelMembership?: ChannelMembership[], user?: UserProfile, fetchOnly = false) => {
     const rolesToFetch = new Set<string>(user?.roles.split(' ') || []);
 
     if (teamMembership?.length) {
         const teamRoles: string[] = [];
-        const teamMembers: string[] = [];
 
         teamMembership?.forEach((tm) => {
             teamRoles.push(...tm.roles.split(' '));
-            teamMembers.push(tm.team_id);
         });
 
         teamRoles.forEach(rolesToFetch.add, rolesToFetch);
@@ -79,7 +76,10 @@ export const fetchRoles = async (serverUrl: string, teamMembership?: TeamMembers
         }
     }
 
+    rolesToFetch.delete('');
     if (rolesToFetch.size > 0) {
-        fetchRolesIfNeeded(serverUrl, Array.from(rolesToFetch));
+        return fetchRolesIfNeeded(serverUrl, Array.from(rolesToFetch), fetchOnly);
     }
+
+    return {roles: []};
 };

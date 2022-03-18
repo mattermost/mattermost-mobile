@@ -5,6 +5,7 @@ interface ClientConfig {
     AboutLink: string;
     AllowBannerDismissal: string;
     AllowCustomThemes: string;
+    AllowEditPost: string;
     AllowedThemes: string;
     AndroidAppDownloadLink: string;
     AndroidLatestVersion: string;
@@ -21,6 +22,7 @@ interface ClientConfig {
     BuildHashEnterprise: string;
     BuildNumber: string;
     CloseUnusedDirectMessages: string;
+    CollapsedThreads: string;
     CustomBrandText: string;
     CustomDescriptionText: string;
     CustomTermsOfServiceId: string;
@@ -108,11 +110,13 @@ interface ClientConfig {
     ExperimentalHideTownSquareinLHS: string;
     ExperimentalNormalizeMarkdownLinks: string;
     ExperimentalPrimaryTeam: string;
+    ExperimentalSharedChannels: string;
     ExperimentalTimezone: string;
     ExperimentalTownSquareIsReadOnly: string;
     ExperimentalViewArchivedChannels: string;
     ExtendSessionLengthWithActivity: string;
     FeatureFlagAppsEnabled?: string;
+    FeatureFlagCollapsedThreads?: string;
     GfycatApiKey: string;
     GfycatApiSecret: string;
     GoogleDeveloperKey: string;
@@ -133,6 +137,7 @@ interface ClientConfig {
     LdapPositionAttributeSet: string;
     LockTeammateNameDisplay: string;
     MaxFileSize: string;
+    MaxPostSize: string;
     MaxNotificationsPerChannel: string;
     MinimumHashtagLength: string;
     OpenIdButtonColor: string;

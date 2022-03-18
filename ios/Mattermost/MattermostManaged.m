@@ -6,6 +6,7 @@
 // See License.txt for license information.
 //
 
+#import "AppDelegate.h"
 #import "MattermostManaged.h"
 
 @implementation MattermostManaged
@@ -116,6 +117,38 @@ RCT_EXPORT_METHOD(addListener:(NSString *)eventName) {
 
 RCT_EXPORT_METHOD(removeListeners:(double)count) {
   // Keep: Required for RN built in Event Emitter Calls.
+}
+
+RCT_EXPORT_METHOD(unlockOrientation)
+{
+  dispatch_async(dispatch_get_main_queue(), ^{
+      AppDelegate * appDelegate = (AppDelegate *)[UIApplication sharedApplication].delegate;
+
+      appDelegate.allowRotation = YES;
+         NSNumber *resetOrientationTarget = [NSNumber numberWithInt:UIInterfaceOrientationUnknown];
+
+           [[UIDevice currentDevice] setValue:resetOrientationTarget forKey:@"orientation"];
+   });
+
+}
+
+RCT_EXPORT_METHOD(lockPortrait)
+{
+  dispatch_async(dispatch_get_main_queue(), ^{
+      AppDelegate * appDelegate = (AppDelegate *)[UIApplication sharedApplication].delegate;
+
+      appDelegate.allowRotation = NO;
+           NSNumber *resetOrientationTarget = [NSNumber numberWithInt:UIInterfaceOrientationUnknown];
+
+                [[UIDevice currentDevice] setValue:resetOrientationTarget forKey:@"orientation"];
+
+         
+
+                NSNumber *orientationTarget = [NSNumber numberWithInt:UIInterfaceOrientationPortrait];
+
+                [[UIDevice currentDevice] setValue:orientationTarget forKey:@"orientation"];
+   });
+
 }
 
 @end

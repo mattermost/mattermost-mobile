@@ -1,13 +1,12 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useRef} from 'react';
+import React, {useCallback, useEffect, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
-import {View} from 'react-native';
+import {TouchableOpacity, View} from 'react-native';
 
 import {addReaction, removeReaction} from '@actions/remote/reactions';
 import CompassIcon from '@components/compass_icon';
-import TouchableWithFeedback from '@components/touchable_with_feedback';
 import {MAX_ALLOWED_REACTIONS} from '@constants/emoji';
 import {useServerUrl} from '@context/server';
 import {showModal, showModalOverCurrentContext} from '@screens/navigation';
@@ -36,23 +35,22 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
         reaction: {
             alignItems: 'center',
             justifyContent: 'center',
-            borderRadius: 2,
-            borderColor: changeOpacity(theme.centerChannelColor, 0.3),
-            borderWidth: 1,
+            borderRadius: 4,
+            backgroundColor: changeOpacity(theme.centerChannelColor, 0.08),
             flexDirection: 'row',
-            height: 30,
+            height: 32,
+            marginBottom: 12,
             marginRight: 6,
-            marginBottom: 5,
-            marginTop: 10,
-            paddingVertical: 2,
+            paddingVertical: 4,
             paddingHorizontal: 6,
-            width: 40,
+            width: 36,
         },
         reactionsContainer: {
             flex: 1,
             flexDirection: 'row',
             flexWrap: 'wrap',
             alignContent: 'flex-start',
+            marginTop: 12,
         },
     };
 });
@@ -61,12 +59,21 @@ const Reactions = ({currentUserId, canAddReaction, canRemoveReaction, disabled, 
     const intl = useIntl();
     const serverUrl = useServerUrl();
     const pressed = useRef(false);
-    if (!reactions) {
-        return null;
-    }
+    const [sortedReactions, setSortedReactions] = useState(new Set(reactions.map((r) => r.emojiName)));
     const styles = getStyleSheet(theme);
 
-    const buildReactionsMap = () => {
+    useEffect(() => {
+        // This helps keep the reactions in the same position at all times until unmounted
+        const rs = reactions.map((r) => r.emojiName);
+        const sorted = new Set([...sortedReactions]);
+        const added = rs.filter((r) => !sorted.has(r));
+        added.forEach(sorted.add, sorted);
+        const removed = [...sorted].filter((s) => !rs.includes(s));
+        removed.forEach(sorted.delete, sorted);
+        setSortedReactions(sorted);
+    }, [reactions]);
+
+    const buildReactionsMap = useCallback(() => {
         const highlightedReactions: string[] = [];
 
         const reactionsByName = reactions.reduce((acc, reaction) => {
@@ -86,7 +93,7 @@ const Reactions = ({currentUserId, canAddReaction, canRemoveReaction, disabled, 
         }, new Map<string, ReactionModel[]>());
 
         return {reactionsByName, highlightedReactions};
-    };
+    }, [sortedReactions]);
 
     const handleAddReactionToPost = (emoji: string) => {
         addReaction(serverUrl, postId, emoji);
@@ -131,29 +138,29 @@ const Reactions = ({currentUserId, canAddReaction, canRemoveReaction, disabled, 
     const {reactionsByName, highlightedReactions} = buildReactionsMap();
     if (!disabled && canAddReaction && reactionsByName.size < MAX_ALLOWED_REACTIONS) {
         addMoreReactions = (
-            <TouchableWithFeedback
+            <TouchableOpacity
                 key='addReaction'
                 onPress={handleAddReaction}
-                style={[styles.reaction]}
-                type={'opacity'}
+                style={styles.reaction}
             >
                 <CompassIcon
                     name='emoticon-plus-outline'
                     size={24}
                     style={styles.addReaction}
                 />
-            </TouchableWithFeedback>
+            </TouchableOpacity>
         );
     }
 
     return (
         <View style={styles.reactionsContainer}>
             {
-                Array.from(reactionsByName.keys()).map((r) => {
+                Array.from(sortedReactions).map((r) => {
+                    const reaction = reactionsByName.get(r);
                     return (
                         <Reaction
                             key={r}
-                            count={reactionsByName.get(r)!.length}
+                            count={reaction!.length}
                             emojiName={r}
                             highlight={highlightedReactions.includes(r)}
                             onPress={handleReactionPress}

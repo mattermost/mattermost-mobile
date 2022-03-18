@@ -70,8 +70,8 @@ const AttachmentAuthor = ({icon, link, name, theme}: Props) => {
             {Boolean(name) &&
             <Text
                 key='author_name'
-                style={[style.name, Boolean(link) && style.link]}
                 onPress={openLink}
+                style={[style.name, Boolean(link) && style.link]}
             >
                 {name}
             </Text>

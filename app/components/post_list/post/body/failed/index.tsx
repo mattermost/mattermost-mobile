@@ -3,15 +3,13 @@
 
 import React, {useCallback} from 'react';
 import {useIntl} from 'react-intl';
-import {DeviceEventEmitter, StyleSheet, View} from 'react-native';
+import {StyleSheet, TouchableOpacity, View} from 'react-native';
 
 import {removePost} from '@actions/local/post';
 import CompassIcon from '@components/compass_icon';
 import SlideUpPanelItem, {ITEM_HEIGHT} from '@components/slide_up_panel_item';
-import TouchableWithFeedback from '@components/touchable_with_feedback';
-import Navigation from '@constants/navigation';
 import {useServerUrl} from '@context/server';
-import {showModalOverCurrentContext} from '@screens/navigation';
+import {bottomSheet, dismissBottomSheet} from '@screens/navigation';
 
 import type PostModel from '@typings/database/models/servers/post';
 
@@ -46,7 +44,7 @@ const Failed = ({post, theme}: FailedProps) => {
                     <SlideUpPanelItem
                         icon='send-outline'
                         onPress={() => {
-                            DeviceEventEmitter.emit(Navigation.NAVIGATION_CLOSE_MODAL);
+                            dismissBottomSheet();
                             retryPost(serverUrl, post);
                         }}
                         testID='post.failed.retry'
@@ -56,7 +54,7 @@ const Failed = ({post, theme}: FailedProps) => {
                         destructive={true}
                         icon='close-circle-outline'
                         onPress={() => {
-                            DeviceEventEmitter.emit(Navigation.NAVIGATION_CLOSE_MODAL);
+                            dismissBottomSheet();
                             removePost(serverUrl, post);
                         }}
                         testID='post.failed.delete'
@@ -66,24 +64,26 @@ const Failed = ({post, theme}: FailedProps) => {
             );
         };
 
-        showModalOverCurrentContext('BottomSheet', {
+        bottomSheet({
+            closeButtonId: 'close-post-failed',
             renderContent,
             snapPoints: [3 * ITEM_HEIGHT, 10],
+            title: intl.formatMessage({id: 'post.options.title', defaultMessage: 'Options'}),
+            theme,
         });
     }, []);
 
     return (
-        <TouchableWithFeedback
+        <TouchableOpacity
             onPress={onPress}
             style={styles.retry}
-            type={'opacity'}
         >
             <CompassIcon
                 name='information-outline'
                 size={26}
                 color={theme.errorTextColor}
             />
-        </TouchableWithFeedback>
+        </TouchableOpacity>
     );
 };
 

@@ -6,7 +6,6 @@ import {useIntl} from 'react-intl';
 import {
     LayoutChangeEvent,
     TextInput,
-    TouchableOpacity,
     TouchableWithoutFeedback,
     StatusBar,
     View,
@@ -14,7 +13,6 @@ import {
 import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
 import {SafeAreaView} from 'react-native-safe-area-context';
 
-import CompassIcon from '@components/compass_icon';
 import ErrorText from '@components/error_text';
 import FloatingTextInput from '@components/floating_text_input_label';
 import FormattedText from '@components/formatted_text';
@@ -30,15 +28,6 @@ import {
 } from '@utils/theme';
 
 const getStyleSheet = makeStyleSheetFromTheme((theme) => ({
-    autocomplete: {
-        position: undefined,
-    },
-    autocompleteContainer: {
-        position: 'absolute',
-        width: '100%',
-        flex: 1,
-        justifyContent: 'flex-end',
-    },
     container: {
         flex: 1,
     },
@@ -55,10 +44,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => ({
         justifyContent: 'center',
         alignItems: 'center',
     },
-    inputContainer: {
-        marginTop: 10,
-        backgroundColor: theme.centerChannelBg,
-    },
     input: {
         color: theme.centerChannelColor,
         fontSize: 14,
@@ -74,20 +59,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => ({
         flexDirection: 'row',
         marginTop: 30,
     },
-    titleContainer15: {
-        flexDirection: 'row',
-        marginTop: 15,
-    },
-    title: {
-        fontSize: 14,
-        color: theme.centerChannelColor,
-        marginLeft: 15,
-    },
-    optional: {
-        color: changeOpacity(theme.centerChannelColor, 0.5),
-        fontSize: 14,
-        marginLeft: 5,
-    },
     helpText: {
         fontSize: 14,
         color: changeOpacity(theme.centerChannelColor, 0.5),
@@ -97,53 +68,22 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => ({
     headerHelpText: {
         zIndex: -1,
     },
-    divider: {
-        borderBottomColor: changeOpacity(theme.centerChannelColor, 0.1),
-        borderBottomWidth: 1,
-        marginHorizontal: 15,
-        height: 0,
-    },
-    touchable: {
-        flex: 1,
-        flexDirection: 'row',
-        width: '100%',
-        justifyContent: 'space-between',
-        alignItems: 'flex-start',
-    },
-    touchableText: {
-        flex: 1,
-        flexGrow: 1,
-        fontSize: 16,
-        lineHeight: 24,
-        color: theme.centerChannelColor,
-        paddingVertical: 10,
-        marginLeft: 15,
-    },
-    touchableIcon: {
-        flex: 1,
-        padding: 10,
-        textAlign: 'right',
-    },
 }));
 
 type Props = {
-        channelType?: string;
-        displayName: string;
-        onDisplayNameChange: (text: string) => void;
-        editing: boolean;
-        enableRightButton: (enable: boolean) => void;
-        error?: string | object;
-        header: string;
-        onHeaderChange: (text: string) => void;
-        onTypeChange: (type: ChannelType) => void;
-        oldDisplayName?: string;
-        oldHeader?: string;
-        oldPurpose?: string;
-        purpose: string;
-        onPurposeChange: (text: string) => void;
-        saving: boolean;
-        testID?: string;
-        type?: string;
+    channelType?: string;
+    displayName: string;
+    onDisplayNameChange: (text: string) => void;
+    editing: boolean;
+    error?: string | object;
+    header: string;
+    onHeaderChange: (text: string) => void;
+    onTypeChange: (type: ChannelType) => void;
+    purpose: string;
+    onPurposeChange: (text: string) => void;
+    saving: boolean;
+    testID?: string;
+    type?: string;
 }
 
 export default function ChannelInfoForm({
@@ -151,14 +91,10 @@ export default function ChannelInfoForm({
     displayName,
     onDisplayNameChange,
     editing,
-    enableRightButton,
     error,
     header,
     onHeaderChange,
     onTypeChange,
-    oldDisplayName,
-    oldHeader,
-    oldPurpose,
     purpose,
     onPurposeChange,
     saving,
@@ -175,12 +111,10 @@ export default function ChannelInfoForm({
 
     const scrollViewRef = useRef<KeyboardAwareScrollView>();
 
-    // const [keyboardPosition, setKeyBoardPosition] = useState<number>(0);
     const [keyboardVisible, setKeyBoardVisible] = useState<boolean>(false);
 
     const [headerHasFocus, setHeaderHasFocus] = useState<boolean>(false);
     const [headerPosition, setHeaderPosition] = useState<number>();
-    const [isPrivate, setIsPrivate] = useState<boolean>(false);
 
     const optionalText = formatMessage({id: t('channel_modal.optional'), defaultMessage: '(optional)'});
     const labelDisplayName = formatMessage({id: t('channel_modal.name'), defaultMessage: 'Name'});
@@ -196,13 +130,14 @@ export default function ChannelInfoForm({
     const displayHeaderOnly = channelType === General.DM_CHANNEL || channelType === General.GM_CHANNEL;
     const showSelector = !displayHeaderOnly && !editing;
 
+    const isPrivate = type === General.PRIVATE_CHANNEL;
+
     const handlePress = () => {
-        setIsPrivate(!isPrivate);
         const chtype = isPrivate ? General.OPEN_CHANNEL : General.PRIVATE_CHANNEL;
-        onTypeSelect(chtype as ChannelType);
+        onTypeChange(chtype);
     };
 
-    const blur = () => {
+    const blur = useCallback(() => {
         if (nameInput?.current) {
             nameInput.current.blur();
         }
@@ -217,52 +152,19 @@ export default function ChannelInfoForm({
         if (scrollViewRef?.current) {
             scrollViewRef.current?.scrollToPosition(0, 0, true);
         }
-    };
+    }, []);
 
-    const canUpdate = (currentDisplayName?: string, currentPurpose?: string, currentHeader?: string) => {
-        return currentDisplayName !== oldDisplayName ||
-            currentPurpose !== oldPurpose || currentHeader !== oldHeader;
-    };
-
-    const onDisplayNameChangeText = useCallback((text: string) => {
-        onDisplayNameChange(text);
-        if (editing) {
-            enableRightButton(canUpdate(text, purpose, header));
-            return;
-        }
-        const displayNameExists = text?.length >= 2;
-        enableRightButton(displayNameExists);
-    }, [purpose, header]);
-
-    const onPurposeChangeText = useCallback((text: string) => {
-        onPurposeChange(text);
-        if (editing) {
-            enableRightButton(canUpdate(displayName, text, header));
-        }
-    }, [displayName, header]);
-
-    const onHeaderChangeText = useCallback((text: string) => {
-        onHeaderChange(text);
-        if (editing) {
-            enableRightButton(canUpdate(displayName, purpose, text));
-        }
-    }, [displayName, purpose]);
-
-    const onTypeSelect = (text: ChannelType) => {
-        onTypeChange(text);
-    };
-
-    const onHeaderLayout = ({nativeEvent}: LayoutChangeEvent) => {
+    const onHeaderLayout = useCallback(({nativeEvent}: LayoutChangeEvent) => {
         setHeaderPosition(nativeEvent.layout.y);
-    };
+    }, []);
 
-    const scrollHeaderToTop = () => {
+    const scrollHeaderToTop = useCallback(() => {
         if (scrollViewRef?.current) {
             scrollViewRef.current?.scrollToPosition(0, headerPosition as number);
         }
-    };
+    }, []);
 
-    const onKeyboardDidShow = () => {
+    const onKeyboardDidShow = useCallback(() => {
         setKeyBoardVisible(true);
 
         if (headerHasFocus) {
@@ -270,19 +172,11 @@ export default function ChannelInfoForm({
             setHeaderHasFocus(false);
             scrollHeaderToTop();
         }
-    };
+    }, [scrollHeaderToTop]);
 
-    const onKeyboardDidHide = () => {
+    const onKeyboardDidHide = useCallback(() => {
         setKeyBoardVisible(false);
-    };
-
-    const onHeaderFocus = () => {
-        if (keyboardVisible) {
-            scrollHeaderToTop();
-        } else {
-            setHeaderHasFocus(true);
-        }
-    };
+    }, []);
 
     if (saving) {
         return (
@@ -304,7 +198,6 @@ export default function ChannelInfoForm({
             >
                 <View style={styles.errorWrapper}>
                     <ErrorText
-                        theme={theme}
                         testID='edit_channel_info.error.text'
                         error={error}
                     />
@@ -365,7 +258,7 @@ export default function ChannelInfoForm({
                                     enablesReturnKeyAutomatically={true}
                                     label={labelDisplayName}
                                     placeholder={placeholderDisplayName}
-                                    onChangeText={onDisplayNameChangeText}
+                                    onChangeText={onDisplayNameChange}
                                     maxLength={Channel.MAX_CHANNELNAME_LENGTH}
                                     keyboardAppearance={getKeyboardAppearanceFromTheme(theme)}
                                     returnKeyType='next'
@@ -385,7 +278,7 @@ export default function ChannelInfoForm({
                                     enablesReturnKeyAutomatically={true}
                                     label={labelPurpose}
                                     placeholder={placeholderPurpose}
-                                    onChangeText={onPurposeChangeText}
+                                    onChangeText={onPurposeChange}
                                     maxLength={Channel.MAX_CHANNELNAME_LENGTH}
                                     keyboardAppearance={getKeyboardAppearanceFromTheme(theme)}
                                     returnKeyType='next'
@@ -416,7 +309,7 @@ export default function ChannelInfoForm({
                                 enablesReturnKeyAutomatically={true}
                                 label={labelHeader}
                                 placeholder={placeholderHeader}
-                                onChangeText={onHeaderChangeText}
+                                onChangeText={onHeaderChange}
                                 maxLength={Channel.MAX_CHANNELNAME_LENGTH}
                                 multiline={true}
                                 keyboardAppearance={getKeyboardAppearanceFromTheme(theme)}

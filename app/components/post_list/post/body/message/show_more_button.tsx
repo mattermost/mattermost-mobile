@@ -2,11 +2,10 @@
 // See LICENSE.txt for license information.
 
 import React from 'react';
-import {View} from 'react-native';
+import {TouchableOpacity, View} from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 
 import CompassIcon from '@components/compass_icon';
-import TouchableWithFeedback from '@components/touchable_with_feedback';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 type ShowMoreButtonProps = {
@@ -100,10 +99,9 @@ const ShowMoreButton = ({highlight, onPress, showMore = true, theme}: ShowMoreBu
             }
             <View style={style.container}>
                 <View style={style.dividerLeft}/>
-                <TouchableWithFeedback
+                <TouchableOpacity
                     onPress={onPress}
                     style={style.buttonContainer}
-                    type={'opacity'}
                 >
                     <View
                         style={style.button}
@@ -115,7 +113,7 @@ const ShowMoreButton = ({highlight, onPress, showMore = true, theme}: ShowMoreBu
                             style={style.sign}
                         />
                     </View>
-                </TouchableWithFeedback>
+                </TouchableOpacity>
                 <View style={style.dividerRight}/>
             </View>
         </View>

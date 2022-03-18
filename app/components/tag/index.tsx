@@ -33,7 +33,7 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme: Theme) => {
         },
         text: {
             color: theme.centerChannelColor,
-            fontFamily: 'OpenSans-Semibold',
+            fontFamily: 'OpenSans-SemiBold',
             fontSize: 10,
         },
         title: {

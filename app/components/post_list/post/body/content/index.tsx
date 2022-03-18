@@ -15,6 +15,8 @@ import type PostModel from '@typings/database/models/servers/post';
 
 type ContentProps = {
     isReplyPost: boolean;
+    layoutWidth?: number;
+    location: string;
     post: PostModel;
     theme: Theme;
 }
@@ -27,7 +29,7 @@ const contentType: Record<string, string> = {
     youtube: 'youtube',
 };
 
-const Content = ({isReplyPost, post, theme}: ContentProps) => {
+const Content = ({isReplyPost, layoutWidth, location, post, theme}: ContentProps) => {
     let type: string = post.metadata?.embeds?.[0].type as string;
     if (!type && post.props?.attachments?.length) {
         type = contentType.app_bindings;
@@ -42,6 +44,8 @@ const Content = ({isReplyPost, post, theme}: ContentProps) => {
             return (
                 <ImagePreview
                     isReplyPost={isReplyPost}
+                    layoutWidth={layoutWidth}
+                    location={location}
                     metadata={post.metadata!}
                     postId={post.id}
                     theme={theme}
@@ -52,6 +56,7 @@ const Content = ({isReplyPost, post, theme}: ContentProps) => {
                 return (
                     <YouTube
                         isReplyPost={isReplyPost}
+                        layoutWidth={layoutWidth}
                         metadata={post.metadata!}
                     />
                 );
@@ -60,6 +65,8 @@ const Content = ({isReplyPost, post, theme}: ContentProps) => {
             return (
                 <Opengraph
                     isReplyPost={isReplyPost}
+                    layoutWidth={layoutWidth}
+                    location={location}
                     metadata={post.metadata!}
                     postId={post.id}
                     removeLinkPreview={post.props?.remove_link_preview === 'true'}
@@ -71,6 +78,8 @@ const Content = ({isReplyPost, post, theme}: ContentProps) => {
                 return (
                     <MessageAttachments
                         attachments={post.props.attachments}
+                        layoutWidth={layoutWidth}
+                        location={location}
                         metadata={post.metadata!}
                         postId={post.id}
                         theme={theme}

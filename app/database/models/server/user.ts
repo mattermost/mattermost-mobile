@@ -5,11 +5,11 @@ import {children, field, json} from '@nozbe/watermelondb/decorators';
 import Model, {Associations} from '@nozbe/watermelondb/Model';
 
 import {MM_TABLES} from '@constants/database';
+import ThreadParticipantsModel from '@typings/database/models/servers/thread_participant';
 import {safeParseJSON} from '@utils/helpers';
 
 import type ChannelModel from '@typings/database/models/servers/channel';
 import type ChannelMembershipModel from '@typings/database/models/servers/channel_membership';
-import type GroupMembershipModel from '@typings/database/models/servers/group_membership';
 import type PostModel from '@typings/database/models/servers/post';
 import type PreferenceModel from '@typings/database/models/servers/preference';
 import type ReactionModel from '@typings/database/models/servers/reaction';
@@ -19,11 +19,11 @@ import type {UserMentionKey} from '@typings/global/markdown';
 const {
     CHANNEL,
     CHANNEL_MEMBERSHIP,
-    GROUP_MEMBERSHIP,
     POST,
     PREFERENCE,
     REACTION,
     TEAM_MEMBERSHIP,
+    THREAD_PARTICIPANT,
     USER,
 } = MM_TABLES.SERVER;
 
@@ -44,9 +44,6 @@ export default class UserModel extends Model {
         /** USER has a 1:N relationship with CHANNEL_MEMBERSHIP.  A user can be part of multiple channels */
         [CHANNEL_MEMBERSHIP]: {type: 'has_many', foreignKey: 'user_id'},
 
-        /** USER has a 1:N relationship with GROUP_MEMBERSHIP.  A user can be part of multiple groups */
-        [GROUP_MEMBERSHIP]: {type: 'has_many', foreignKey: 'user_id'},
-
         /** USER has a 1:N relationship with POST.  A user can author multiple posts */
         [POST]: {type: 'has_many', foreignKey: 'user_id'},
 
@@ -58,6 +55,9 @@ export default class UserModel extends Model {
 
         /** USER has a 1:N relationship with TEAM_MEMBERSHIP.  A user can join multiple teams */
         [TEAM_MEMBERSHIP]: {type: 'has_many', foreignKey: 'user_id'},
+
+        /** USER has a 1:N relationship with THREAD_PARTICIPANT. A user can participante in multiple threads */
+        [THREAD_PARTICIPANT]: {type: 'has_many', foreignKey: 'user_id'},
     };
 
     /** auth_service : The type of authentication service registered to that user */
@@ -122,9 +122,6 @@ export default class UserModel extends Model {
     /** channels : All the channels that this user is part of  */
     @children(CHANNEL_MEMBERSHIP) channels!: ChannelMembershipModel[];
 
-    /** groups : All the groups that this user is part of  */
-    @children(GROUP_MEMBERSHIP) groups!: GroupMembershipModel[];
-
     /** posts :  All the posts that this user has written*/
     @children(POST) posts!: PostModel[];
 
@@ -136,6 +133,9 @@ export default class UserModel extends Model {
 
     /** teams : All the team that this user is part of  */
     @children(TEAM_MEMBERSHIP) teams!: TeamMembershipModel[];
+
+    /** threadParticipations : All the thread participations this user is part of  */
+    @children(THREAD_PARTICIPANT) threadParticipations!: ThreadParticipantsModel[];
 
     prepareStatus = (status: string) => {
         this.prepareUpdate((u) => {

@@ -2,10 +2,13 @@
 // See LICENSE.txt for license information.
 
 import emojiRegex from 'emoji-regex';
+import Fuse from 'fuse.js';
 
 import SystemModel from '@database/models/server/system';
 
-import {Emojis, EmojiIndicesByAlias} from './';
+import {Emojis, EmojiIndicesByAlias, EmojiIndicesByUnicode} from './';
+
+import type CustomEmojiModel from '@typings/database/models/servers/custom_emoji';
 
 const RE_NAMED_EMOJI = /(:([a-zA-Z0-9_+-]+):)/g;
 
@@ -32,6 +35,9 @@ const RE_EMOTICON: Record<string, RegExp> = {
     broken_heart: /(^|\s)(<\/3|&lt;&#x2F;3)(?=$|\s)/g, // </3
 };
 
+// TODO This only check for named emojis: https://mattermost.atlassian.net/browse/MM-41505
+const RE_REACTION = /^(\+|-):([^:\s]+):\s*$/;
+
 const MAX_JUMBO_EMOJIS = 8;
 
 function isEmoticon(text: string) {
@@ -48,6 +54,95 @@ function isEmoticon(text: string) {
 
 export function getEmoticonName(value: string) {
     return Object.keys(RE_EMOTICON).find((key) => value.match(RE_EMOTICON[key]) !== null);
+}
+
+export function matchEmoticons(text: string): string[] {
+    let emojis: string[] = text.match(RE_NAMED_EMOJI) || [];
+
+    for (const name of Object.keys(RE_EMOTICON)) {
+        const pattern = RE_EMOTICON[name];
+
+        const matches = text.match(pattern);
+        if (matches) {
+            emojis = emojis.concat(matches);
+        }
+    }
+
+    const matchUnicodeEmoji = text.match(RE_UNICODE_EMOJI);
+    if (matchUnicodeEmoji) {
+        emojis = emojis.concat(matchUnicodeEmoji);
+    }
+
+    return emojis;
+}
+
+export function getValidEmojis(emojis: string[], customEmojis: CustomEmojiModel[]) {
+    const emojiNames = new Set<string>();
+    const customEmojiNames = customEmojis.map((v) => v.name);
+
+    for (const emoji of emojis) {
+        const emojiName = getEmojiName(emoji, customEmojiNames);
+        if (emojiName) {
+            emojiNames.add(emojiName);
+        }
+    }
+
+    return Array.from(emojiNames);
+}
+
+export function getEmojiName(emoji: string, customEmojiNames: string[]) {
+    if (doesMatchNamedEmoji(emoji)) {
+        const emojiName = emoji.substring(1, emoji.length - 1);
+        if (isValidNamedEmoji(emojiName, customEmojiNames)) {
+            return emojiName;
+        }
+    }
+
+    const matchUnicodeEmoji = emoji.match(RE_UNICODE_EMOJI);
+    if (matchUnicodeEmoji) {
+        const index = EmojiIndicesByUnicode.get(matchUnicodeEmoji[0]);
+        if (index != null) {
+            return fillEmoji(Emojis[index]).name;
+        }
+        return undefined;
+    }
+
+    const emojiName = getEmoticonName(emoji);
+    if (emojiName) {
+        return emojiName;
+    }
+
+    return undefined;
+}
+
+export function isReactionMatch(value: string, customEmojis: CustomEmojiModel[]) {
+    const customEmojiNames = customEmojis.map((v) => v.name);
+
+    const match = value.match(RE_REACTION);
+    if (!match) {
+        return null;
+    }
+
+    if (!isValidNamedEmoji(match[2], customEmojiNames)) {
+        return null;
+    }
+
+    return {
+        add: match[1] === '+',
+        emoji: match[2],
+    };
+}
+
+export function isValidNamedEmoji(emojiName: string, customEmojiNames: string[]) {
+    if (EmojiIndicesByAlias.has(emojiName)) {
+        return true;
+    }
+
+    if (customEmojiNames.includes(emojiName)) {
+        return true;
+    }
+
+    return false;
 }
 
 export function hasJumboEmojiOnly(message: string, customEmojis: string[]) {
@@ -98,12 +193,12 @@ export function doesMatchNamedEmoji(emojiName: string) {
     return false;
 }
 
-export function getEmojiByName(emojiName: string) {
+export function getEmojiByName(emojiName: string, customEmojis: CustomEmojiModel[]) {
     if (EmojiIndicesByAlias.has(emojiName)) {
         return Emojis[EmojiIndicesByAlias.get(emojiName)!];
     }
 
-    return null;
+    return customEmojis.find((e) => e.name === emojiName);
 }
 
 // Since there is no shared logic between the web and mobile app
@@ -217,3 +312,45 @@ export function getSkin(emoji: any) {
     }
     return null;
 }
+
+export const getEmojis = (skinTone: string, customEmojis: CustomEmojiModel[]) => {
+    const emoticons = new Set<string>();
+    for (const [key, index] of EmojiIndicesByAlias.entries()) {
+        const skin = getSkin(Emojis[index]);
+        if (!skin || skin === skinTone) {
+            emoticons.add(key);
+        }
+    }
+
+    for (const custom of customEmojis) {
+        emoticons.add(custom.name);
+    }
+
+    return Array.from(emoticons);
+};
+
+export const searchEmojis = (fuse: Fuse<string>, searchTerm: string) => {
+    const searchTermLowerCase = searchTerm.toLowerCase();
+
+    const sorter = (a: string, b: string) => {
+        return compareEmojis(a, b, searchTermLowerCase);
+    };
+
+    const fuzz = fuse.search(searchTermLowerCase);
+
+    if (fuzz) {
+        const results = fuzz.reduce((values, r) => {
+            const score = r?.score === undefined ? 1 : r.score;
+            const v = r?.matches?.[0]?.value;
+            if (score < 0.2 && v) {
+                values.push(v);
+            }
+
+            return values;
+        }, [] as string[]);
+
+        return results.sort(sorter);
+    }
+
+    return [];
+};

@@ -1,11 +1,12 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback} from 'react';
-import {StyleProp, View, ViewStyle} from 'react-native';
+import React, {useCallback, useState} from 'react';
+import {LayoutChangeEvent, StyleProp, View, ViewStyle} from 'react-native';
 
 import FormattedText from '@components/formatted_text';
 import JumboEmoji from '@components/jumbo_emoji';
+import {Screens} from '@constants';
 import {THREAD} from '@constants/screens';
 import {isEdited as postEdited} from '@utils/post';
 import {makeStyleSheetFromTheme} from '@utils/theme';
@@ -17,12 +18,11 @@ import Files from './files';
 import Message from './message';
 import Reactions from './reactions';
 
-import type FileModel from '@typings/database/models/servers/file';
 import type PostModel from '@typings/database/models/servers/post';
 
 type BodyProps = {
     appsEnabled: boolean;
-    files: FileModel[];
+    filesCount: number;
     hasReactions: boolean;
     highlight: boolean;
     highlightReplyBar: boolean;
@@ -72,12 +72,13 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
 });
 
 const Body = ({
-    appsEnabled, files, hasReactions, highlight, highlightReplyBar,
+    appsEnabled, filesCount, hasReactions, highlight, highlightReplyBar,
     isEphemeral, isFirstReply, isJumboEmoji, isLastReply, isPendingOrFailed, isPostAddChannelMember,
     location, post, showAddReaction, theme,
 }: BodyProps) => {
     const style = getStyleSheet(theme);
     const isEdited = postEdited(post);
+    const [layoutWidth, setLayoutWidth] = useState(0);
     const hasBeenDeleted = Boolean(post.deleteAt);
     let body;
     let message;
@@ -106,6 +107,12 @@ const Body = ({
 
         return barStyle;
     }, []);
+
+    const onLayout = useCallback((e: LayoutChangeEvent) => {
+        if (location === Screens.SAVED_POSTS) {
+            setLayoutWidth(e.nativeEvent.layout.width);
+        }
+    }, [location]);
 
     if (hasBeenDeleted) {
         body = (
@@ -137,6 +144,7 @@ const Body = ({
                 isEdited={isEdited}
                 isPendingOrFailed={isPendingOrFailed}
                 isReplyPost={isReplyPost}
+                layoutWidth={layoutWidth}
                 location={location}
                 post={post}
                 theme={theme}
@@ -151,14 +159,17 @@ const Body = ({
                 {hasContent &&
                 <Content
                     isReplyPost={isReplyPost}
+                    layoutWidth={layoutWidth}
+                    location={location}
                     post={post}
                     theme={theme}
                 />
                 }
-                {files.length > 0 &&
+                {filesCount > 0 &&
                 <Files
                     failed={post.props?.failed}
-                    files={files}
+                    layoutWidth={layoutWidth}
+                    location={location}
                     post={post}
                     isReplyPost={isReplyPost}
                     theme={theme}
@@ -175,7 +186,10 @@ const Body = ({
     }
 
     return (
-        <View style={style.messageContainerWithReplyBar}>
+        <View
+            style={style.messageContainerWithReplyBar}
+            onLayout={onLayout}
+        >
             <View style={replyBarStyle()}/>
             {body}
             {post.props?.failed &&

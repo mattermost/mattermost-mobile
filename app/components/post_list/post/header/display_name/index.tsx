@@ -3,11 +3,10 @@
 
 import React, {useCallback, useRef} from 'react';
 import {useIntl} from 'react-intl';
-import {Keyboard, Text, useWindowDimensions, View} from 'react-native';
+import {Keyboard, Text, TouchableOpacity, useWindowDimensions, View} from 'react-native';
 
 import CompassIcon from '@components/compass_icon';
 import FormattedText from '@components/formatted_text';
-import TouchableWithFeedback from '@components/touchable_with_feedback';
 import {showModal} from '@screens/navigation';
 import {preventDoubleTap} from '@utils/tap';
 import {makeStyleSheetFromTheme} from '@utils/theme';
@@ -114,20 +113,18 @@ const HeaderDisplayName = ({
         );
     } else if (displayName) {
         return (
-            <TouchableWithFeedback
-                onPress={onPress}
-                style={displayNameStyle}
-                type={'opacity'}
-            >
-                <Text
-                    style={style.displayName}
-                    ellipsizeMode={'tail'}
-                    numberOfLines={1}
-                    testID='post_header.display_name'
-                >
-                    {displayName}
-                </Text>
-            </TouchableWithFeedback>
+            <View style={displayNameStyle}>
+                <TouchableOpacity onPress={onPress}>
+                    <Text
+                        style={style.displayName}
+                        ellipsizeMode={'tail'}
+                        numberOfLines={1}
+                        testID='post_header.display_name'
+                    >
+                        {displayName}
+                    </Text>
+                </TouchableOpacity>
+            </View>
         );
     }
 

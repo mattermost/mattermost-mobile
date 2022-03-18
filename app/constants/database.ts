@@ -10,16 +10,14 @@ export const MM_TABLES = {
         SERVERS: 'Servers',
     },
     SERVER: {
+        CATEGORY: 'Category',
+        CATEGORY_CHANNEL: 'CategoryChannel',
         CHANNEL: 'Channel',
         CHANNEL_INFO: 'ChannelInfo',
         CHANNEL_MEMBERSHIP: 'ChannelMembership',
         CUSTOM_EMOJI: 'CustomEmoji',
         DRAFT: 'Draft',
         FILE: 'File',
-        GROUP: 'Group',
-        GROUPS_CHANNEL: 'GroupsChannel',
-        GROUPS_TEAM: 'GroupsTeam',
-        GROUP_MEMBERSHIP: 'GroupMembership',
         MY_CHANNEL: 'MyChannel',
         MY_CHANNEL_SETTINGS: 'MyChannelSettings',
         MY_TEAM: 'MyTeam',
@@ -36,6 +34,8 @@ export const MM_TABLES = {
         TEAM_MEMBERSHIP: 'TeamMembership',
         TEAM_SEARCH_HISTORY: 'TeamSearchHistory',
         TERMS_OF_SERVICE: 'TermsOfService',
+        THREAD: 'Thread',
+        THREAD_PARTICIPANT: 'ThreadParticipant',
         USER: 'User',
     },
 };
@@ -64,6 +64,7 @@ export const SYSTEM_IDENTIFIERS = {
 
 export const GLOBAL_IDENTIFIERS = {
     DEVICE_TOKEN: 'deviceToken',
+    MULTI_SERVER_TUTORIAL: 'multiServerTutorial',
 };
 
 export default {

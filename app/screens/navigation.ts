@@ -4,22 +4,22 @@
 /* eslint-disable max-lines */
 
 import merge from 'deepmerge';
-import {Appearance, DeviceEventEmitter, NativeModules, StatusBar, Platform} from 'react-native';
-import {Navigation, Options, OptionsModalPresentationStyle} from 'react-native-navigation';
+import {Appearance, DeviceEventEmitter, NativeModules, StatusBar, Platform, Alert} from 'react-native';
+import {ImageResource, Navigation, Options, OptionsModalPresentationStyle, OptionsTopBarButton} from 'react-native-navigation';
 import tinyColor from 'tinycolor2';
 
 import CompassIcon from '@components/compass_icon';
-import {Device, Preferences, Screens} from '@constants';
+import {Device, Events, Screens} from '@constants';
 import NavigationConstants from '@constants/navigation';
+import {getDefaultThemeByAppearance} from '@context/theme';
 import EphemeralStore from '@store/ephemeral_store';
+import {LaunchProps, LaunchType} from '@typings/launch';
 import {NavButtons} from '@typings/screens/navigation';
 import {changeOpacity, setNavigatorStyles} from '@utils/theme';
 
-import type {LaunchProps} from '@typings/launch';
-
 const {MattermostManaged} = NativeModules;
 const isRunningInSplitView = MattermostManaged.isRunningInSplitView;
-const appearanceControlledScreens = [Screens.SERVER, Screens.LOGIN, Screens.FORGOT_PASSWORD, Screens.MFA];
+export const appearanceControlledScreens = [Screens.SERVER, Screens.LOGIN, Screens.FORGOT_PASSWORD, Screens.MFA, Screens.SSO];
 
 const alpha = {
     from: 0,
@@ -30,6 +30,10 @@ const alpha = {
 export const loginAnimationOptions = () => {
     const theme = getThemeFromState();
     return {
+        layout: {
+            backgroundColor: theme.centerChannelBg,
+            componentBackgroundColor: theme.centerChannelBg,
+        },
         topBar: {
             visible: true,
             drawBehind: true,
@@ -53,7 +57,7 @@ export const loginAnimationOptions = () => {
                 alpha,
             },
             push: {
-                waitForRender: true,
+                waitForRender: false,
                 content: {
                     alpha,
                 },
@@ -71,11 +75,47 @@ export const loginAnimationOptions = () => {
     };
 };
 
+export const bottomSheetModalOptions = (theme: Theme, closeButtonId: string) => {
+    const closeButton = CompassIcon.getImageSourceSync('close', 24, theme.centerChannelColor);
+    return {
+        modalPresentationStyle: OptionsModalPresentationStyle.formSheet,
+        modal: {
+            swipeToDismiss: true,
+        },
+        topBar: {
+            leftButtons: [{
+                id: closeButtonId,
+                icon: closeButton,
+                testID: closeButtonId,
+            }],
+            leftButtonColor: changeOpacity(theme.centerChannelColor, 0.56),
+            background: {
+                color: theme.centerChannelBg,
+            },
+            title: {
+                color: theme.centerChannelColor,
+            },
+        },
+    };
+};
+
+// This locks phones to portrait for all screens while keeps
+// all orientations available for Tablets.
 Navigation.setDefaultOptions({
     layout: {
-
-        //@ts-expect-error all not defined in type definition
-        orientation: [Device.IS_TABLET ? 'all' : 'portrait'],
+        orientation: Device.IS_TABLET ? undefined : ['portrait'],
+    },
+    topBar: {
+        title: {
+            fontFamily: 'Metropolis-SemiBold',
+            fontSize: 18,
+            fontWeight: '600',
+        },
+        subtitle: {
+            fontFamily: 'OpenSans',
+            fontSize: 12,
+            fontWeight: '500',
+        },
     },
 });
 
@@ -96,16 +136,36 @@ function getThemeFromState(): Theme {
     if (EphemeralStore.theme) {
         return EphemeralStore.theme;
     }
-    if (Appearance.getColorScheme() === 'dark') {
-        return Preferences.THEMES.onyx;
-    }
-    return Preferences.THEMES.denim;
+
+    return getDefaultThemeByAppearance();
 }
 
-export function resetToHome(passProps = {}) {
+// This is a temporary helper function to avoid
+// crashes when trying to load a screen that does
+// NOT exists, this should be removed for GA
+function isScreenRegistered(screen: string) {
+    const exists = Object.values(Screens).includes(screen);
+
+    if (!exists) {
+        Alert.alert(
+            'Temporary error ' + screen,
+            'The functionality you are trying to use has not been implemented yet',
+        );
+    }
+
+    return exists;
+}
+
+export function resetToHome(passProps: LaunchProps = {launchType: LaunchType.Normal}) {
     const theme = getThemeFromState();
     const isDark = tinyColor(theme.sidebarBg).isDark();
     StatusBar.setBarStyle(isDark ? 'light-content' : 'dark-content');
+
+    if (passProps.launchType === LaunchType.AddServer) {
+        dismissModal({componentId: Screens.SERVER});
+        dismissModal({componentId: Screens.BOTTOM_SHEET});
+        return;
+    }
 
     EphemeralStore.clearNavigationComponents();
 
@@ -145,7 +205,7 @@ export function resetToHome(passProps = {}) {
 }
 
 export function resetToSelectServer(passProps: LaunchProps) {
-    const theme = getThemeFromState();
+    const theme = getDefaultThemeByAppearance();
     const isDark = tinyColor(theme.centerChannelBg).isDark();
     StatusBar.setBarStyle(isDark ? 'light-content' : 'dark-content');
 
@@ -240,10 +300,14 @@ export function resetToTeams(name: string, title: string, passProps = {}, option
 }
 
 export function goToScreen(name: string, title: string, passProps = {}, options = {}) {
+    if (!isScreenRegistered(name)) {
+        return;
+    }
+
     const theme = getThemeFromState();
     const isDark = tinyColor(theme.sidebarBg).isDark();
     const componentId = EphemeralStore.getNavigationTopComponentId();
-    DeviceEventEmitter.emit('tabBarVisible', false);
+    DeviceEventEmitter.emit(Events.TAB_BAR_VISIBLE, false);
     const defaultOptions: Options = {
         layout: {
             componentBackgroundColor: theme.centerChannelBg,
@@ -344,6 +408,10 @@ export async function dismissAllModalsAndPopToScreen(screenId: string, title: st
 }
 
 export function showModal(name: string, title: string, passProps = {}, options = {}) {
+    if (!isScreenRegistered(name)) {
+        return;
+    }
+
     const theme = getThemeFromState();
     const modalPresentationStyle: OptionsModalPresentationStyle = Platform.OS === 'ios' ? OptionsModalPresentationStyle.pageSheet : OptionsModalPresentationStyle.none;
     const defaultOptions: Options = {
@@ -398,7 +466,7 @@ export function showModalOverCurrentContext(name: string, passProps = {}, option
         case 'android':
             animations = {
                 showModal: {
-                    waitForRender: true,
+                    waitForRender: false,
                     alpha: {
                         from: 0,
                         to: 1,
@@ -417,11 +485,10 @@ export function showModalOverCurrentContext(name: string, passProps = {}, option
         default:
             animations = {
                 showModal: {
-                    enter: {
-                        enabled: false,
-                    },
-                    exit: {
-                        enabled: false,
+                    alpha: {
+                        from: 0,
+                        to: 1,
+                        duration: 250,
                     },
                 },
                 dismissModal: {
@@ -487,19 +554,33 @@ export async function dismissModal(options?: Options & { componentId: string}) {
     }
 }
 
-export async function dismissAllModals(options: Options = {}) {
+export async function dismissAllModals() {
     if (!EphemeralStore.hasModalsOpened()) {
         return;
     }
 
     try {
-        await Navigation.dismissAllModals(options);
+        const modals = EphemeralStore.navigationModalStack;
+        for await (const modal of modals) {
+            await Navigation.dismissModal(modal, {animations: {dismissModal: {enabled: false}}});
+        }
+
         EphemeralStore.clearNavigationModals();
     } catch (error) {
         // RNN returns a promise rejection if there are no modals to
         // dismiss. We'll do nothing in this case.
     }
 }
+
+export const buildNavigationButton = (id: string, testID: string, icon?: ImageResource): OptionsTopBarButton => ({
+    fontSize: 16,
+    fontFamily: 'OpenSans-SemiBold',
+    fontWeight: '600',
+    id,
+    icon,
+    showAsAction: 'always',
+    testID,
+});
 
 export function setButtons(componentId: string, buttons: NavButtons = {leftButtons: [], rightButtons: []}) {
     const options = {
@@ -516,6 +597,10 @@ export function mergeNavigationOptions(componentId: string, options: Options) {
 }
 
 export function showOverlay(name: string, passProps = {}, options = {}) {
+    if (!isScreenRegistered(name)) {
+        return;
+    }
+
     const defaultOptions = {
         layout: {
             backgroundColor: 'transparent',
@@ -528,6 +613,7 @@ export function showOverlay(name: string, passProps = {}, options = {}) {
 
     Navigation.showOverlay({
         component: {
+            id: name,
             name,
             passProps,
             options: merge(defaultOptions, options),
@@ -546,44 +632,34 @@ export async function dismissOverlay(componentId: string) {
 
 type BottomSheetArgs = {
     closeButtonId: string;
+    initialSnapIndex?: number;
     renderContent: () => JSX.Element;
-    snapPoints: number[];
+    snapPoints: Array<number | string>;
     theme: Theme;
     title: string;
 }
 
-export async function bottomSheet({title, renderContent, snapPoints, theme, closeButtonId}: BottomSheetArgs) {
+export async function bottomSheet({title, renderContent, snapPoints, initialSnapIndex = 0, theme, closeButtonId}: BottomSheetArgs) {
     const {isSplitView} = await isRunningInSplitView();
     const isTablet = Device.IS_TABLET && !isSplitView;
 
     if (isTablet) {
-        const closeButton = CompassIcon.getImageSourceSync('close', 24, theme.centerChannelColor);
         showModal(Screens.BOTTOM_SHEET, title, {
             closeButtonId,
+            initialSnapIndex,
             renderContent,
             snapPoints,
-        }, {
-            modalPresentationStyle: OptionsModalPresentationStyle.formSheet,
-            swipeToDismiss: true,
-            topBar: {
-                leftButtons: [{
-                    id: closeButtonId,
-                    icon: closeButton,
-                    testID: closeButtonId,
-                }],
-                leftButtonColor: changeOpacity(theme.centerChannelColor, 0.56),
-                background: {
-                    color: theme.centerChannelBg,
-                },
-                title: {
-                    color: theme.centerChannelColor,
-                },
-            },
-        });
+        }, bottomSheetModalOptions(theme, closeButtonId));
     } else {
         showModalOverCurrentContext(Screens.BOTTOM_SHEET, {
+            initialSnapIndex,
             renderContent,
             snapPoints,
-        }, {swipeToDismiss: true});
+        }, {modal: {swipeToDismiss: true}});
     }
+}
+
+export async function dismissBottomSheet(alternativeScreen = Screens.BOTTOM_SHEET) {
+    DeviceEventEmitter.emit(Events.CLOSE_BOTTOM_SHEET);
+    await EphemeralStore.waitUntilScreensIsRemoved(alternativeScreen);
 }

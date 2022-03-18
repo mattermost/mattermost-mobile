@@ -2,29 +2,27 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback, useMemo, useState} from 'react';
-import {LayoutChangeEvent, useWindowDimensions, ScrollView, View} from 'react-native';
+import {LayoutChangeEvent, ScrollView, useWindowDimensions, View} from 'react-native';
 import Animated from 'react-native-reanimated';
 
 import Markdown from '@components/markdown';
 import {SEARCH} from '@constants/screens';
 import {useShowMoreAnimatedStyle} from '@hooks/show_more';
 import {getMarkdownTextStyles, getMarkdownBlockStyles} from '@utils/markdown';
-import {getMentionKeysForPost} from '@utils/post';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 
 import ShowMoreButton from './show_more_button';
 
-import type GroupModel from '@typings/database/models/servers/group';
 import type PostModel from '@typings/database/models/servers/post';
 import type UserModel from '@typings/database/models/servers/user';
 
 type MessageProps = {
     currentUser: UserModel;
-    groupsForPosts: GroupModel[];
     highlight: boolean;
     isEdited: boolean;
     isPendingOrFailed: boolean;
     isReplyPost: boolean;
+    layoutWidth?: number;
     location: string;
     post: PostModel;
     theme: Theme;
@@ -52,7 +50,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     };
 });
 
-const Message = ({currentUser, groupsForPosts, highlight, isEdited, isPendingOrFailed, isReplyPost, location, post, theme}: MessageProps) => {
+const Message = ({currentUser, highlight, isEdited, isPendingOrFailed, isReplyPost, layoutWidth, location, post, theme}: MessageProps) => {
     const [open, setOpen] = useState(false);
     const [height, setHeight] = useState<number|undefined>();
     const dimensions = useWindowDimensions();
@@ -61,9 +59,10 @@ const Message = ({currentUser, groupsForPosts, highlight, isEdited, isPendingOrF
     const style = getStyleSheet(theme);
     const blockStyles = getMarkdownBlockStyles(theme);
     const textStyles = getMarkdownTextStyles(theme);
+
     const mentionKeys = useMemo(() => {
-        return getMentionKeysForPost(currentUser, post, groupsForPosts);
-    }, [currentUser, post.message, groupsForPosts]);
+        return currentUser.mentionKeys;
+    }, [currentUser]);
 
     const onLayout = useCallback((event: LayoutChangeEvent) => setHeight(event.nativeEvent.layout.height), []);
     const onPress = () => setOpen(!open);
@@ -89,6 +88,8 @@ const Message = ({currentUser, groupsForPosts, highlight, isEdited, isPendingOrF
                             isEdited={isEdited}
                             isReplyPost={isReplyPost}
                             isSearchResult={location === SEARCH}
+                            layoutWidth={layoutWidth}
+                            location={location}
                             postId={post.id}
                             textStyles={textStyles}
                             value={post.message}
@@ -110,4 +111,4 @@ const Message = ({currentUser, groupsForPosts, highlight, isEdited, isPendingOrF
     );
 };
 
-export default React.memo(Message);
+export default Message;

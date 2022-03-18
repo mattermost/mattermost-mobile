@@ -3,17 +3,18 @@
 
 import React, {ReactNode, useMemo, useRef} from 'react';
 import {useIntl} from 'react-intl';
-import {DeviceEventEmitter, Keyboard, Platform, StyleProp, View, ViewStyle} from 'react-native';
+import {Keyboard, Platform, StyleProp, View, ViewStyle, TouchableHighlight} from 'react-native';
 
-import {showPermalink} from '@actions/local/permalink';
 import {removePost} from '@actions/local/post';
+import {showPermalink} from '@actions/remote/permalink';
+import {fetchAndSwitchToThread} from '@actions/remote/thread';
 import SystemAvatar from '@components/system_avatar';
 import SystemHeader from '@components/system_header';
-import TouchableWithFeedback from '@components/touchable_with_feedback';
 import * as Screens from '@constants/screens';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
-import {showModalOverCurrentContext} from '@screens/navigation';
+import {useIsTablet} from '@hooks/device';
+import {bottomSheetModalOptions, showModal, showModalOverCurrentContext} from '@screens/navigation';
 import {fromAutoResponder, isFromWebhook, isPostPendingOrFailed, isSystemMessage} from '@utils/post';
 import {preventDoubleTap} from '@utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
@@ -24,7 +25,6 @@ import Header from './header';
 import PreHeader from './pre_header';
 import SystemMessage from './system_message';
 
-import type FileModel from '@typings/database/models/servers/file';
 import type PostModel from '@typings/database/models/servers/post';
 import type UserModel from '@typings/database/models/servers/user';
 
@@ -33,7 +33,7 @@ type PostProps = {
     canDelete: boolean;
     currentUser: UserModel;
     differentThreadSequence: boolean;
-    files: FileModel[];
+    filesCount: number;
     hasReplies: boolean;
     highlight?: boolean;
     highlightPinnedOrSaved?: boolean;
@@ -41,7 +41,7 @@ type PostProps = {
     isConsecutivePost?: boolean;
     isEphemeral: boolean;
     isFirstReply?: boolean;
-    isFlagged?: boolean;
+    isSaved?: boolean;
     isJumboEmoji: boolean;
     isLastReply?: boolean;
     isPostAddChannelMember: boolean;
@@ -51,7 +51,7 @@ type PostProps = {
     reactionsCount: number;
     shouldRenderReplyButton?: boolean;
     showAddReaction?: boolean;
-    skipFlaggedHeader?: boolean;
+    skipSavedHeader?: boolean;
     skipPinnedHeader?: boolean;
     style?: StyleProp<ViewStyle>;
     testID?: string;
@@ -63,7 +63,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
         consecutivePostContainer: {
             marginBottom: 10,
             marginRight: 10,
-            marginLeft: Platform.select({ios: 35, android: 34}),
+            marginLeft: Platform.select({ios: 34, android: 33}),
             marginTop: 10,
         },
         container: {flexDirection: 'row'},
@@ -95,15 +95,16 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
 });
 
 const Post = ({
-    appsEnabled, canDelete, currentUser, differentThreadSequence, files, hasReplies, highlight, highlightPinnedOrSaved = true, highlightReplyBar,
-    isConsecutivePost, isEphemeral, isFirstReply, isFlagged, isJumboEmoji, isLastReply, isPostAddChannelMember,
-    location, post, reactionsCount, shouldRenderReplyButton, skipFlaggedHeader, skipPinnedHeader, showAddReaction = true, style,
+    appsEnabled, canDelete, currentUser, differentThreadSequence, filesCount, hasReplies, highlight, highlightPinnedOrSaved = true, highlightReplyBar,
+    isConsecutivePost, isEphemeral, isFirstReply, isSaved, isJumboEmoji, isLastReply, isPostAddChannelMember,
+    location, post, reactionsCount, shouldRenderReplyButton, skipSavedHeader, skipPinnedHeader, showAddReaction = true, style,
     testID, previousPost,
 }: PostProps) => {
     const pressDetected = useRef(false);
     const intl = useIntl();
     const serverUrl = useServerUrl();
     const theme = useTheme();
+    const isTablet = useIsTablet();
     const styles = getStyleSheet(theme);
     const isAutoResponder = fromAutoResponder(post);
     const isPendingOrFailed = isPostPendingOrFailed(post);
@@ -127,15 +128,16 @@ const Post = ({
         if (post) {
             if (location === Screens.THREAD) {
                 Keyboard.dismiss();
-            } else if (location === Screens.SEARCH) {
+            } else if ([Screens.SAVED_POSTS, Screens.MENTIONS, Screens.SEARCH].includes(location)) {
                 showPermalink(serverUrl, '', post.id, intl);
                 return;
             }
 
             const isValidSystemMessage = isAutoResponder || !isSystemPost;
-            if (post.deleteAt !== 0 && isValidSystemMessage && !isPendingOrFailed) {
+            if (post.deleteAt === 0 && isValidSystemMessage && !isPendingOrFailed) {
                 if ([Screens.CHANNEL, Screens.PERMALINK].includes(location)) {
-                    DeviceEventEmitter.emit('goToThread', post);
+                    const rootId = post.rootId || post.id;
+                    fetchAndSwitchToThread(serverUrl, rootId);
                 }
             } else if ((isEphemeral || post.deleteAt > 0)) {
                 removePost(serverUrl, post);
@@ -162,21 +164,18 @@ const Post = ({
             return;
         }
 
-        const screen = 'PostOptions';
-        const passProps = {
-            location,
-            post,
-            showAddReaction,
-        };
-
         Keyboard.dismiss();
-        const postOptionsRequest = requestAnimationFrame(() => {
-            showModalOverCurrentContext(screen, passProps);
-            cancelAnimationFrame(postOptionsRequest);
-        });
+        const passProps = {location, post, showAddReaction};
+        const title = isTablet ? intl.formatMessage({id: 'post.options.title', defaultMessage: 'Options'}) : '';
+
+        if (isTablet) {
+            showModal(Screens.POST_OPTIONS, title, passProps, bottomSheetModalOptions(theme, 'close-post-options'));
+        } else {
+            showModalOverCurrentContext(Screens.POST_OPTIONS, passProps);
+        }
     };
 
-    const highlightFlagged = isFlagged && !skipFlaggedHeader;
+    const highlightSaved = isSaved && !skipSavedHeader;
     const hightlightPinned = post.isPinned && !skipPinnedHeader;
     const itemTestID = `${testID}.${post.id}`;
     const rightColumnStyle = [styles.rightColumn, (post.rootId && isLastReply && styles.rightColumnPadding)];
@@ -185,7 +184,7 @@ const Post = ({
     let highlightedStyle: StyleProp<ViewStyle>;
     if (highlight) {
         highlightedStyle = styles.highlight;
-    } else if ((highlightFlagged || hightlightPinned) && highlightPinnedOrSaved) {
+    } else if ((highlightSaved || hightlightPinned) && highlightPinnedOrSaved) {
         highlightedStyle = styles.highlightPinnedOrSaved;
     }
 
@@ -247,7 +246,7 @@ const Post = ({
         body = (
             <Body
                 appsEnabled={appsEnabled}
-                files={files}
+                filesCount={filesCount}
                 hasReactions={reactionsCount > 0}
                 highlight={Boolean(highlightedStyle)}
                 highlightReplyBar={highlightReplyBar}
@@ -270,20 +269,18 @@ const Post = ({
             testID={testID}
             style={[styles.postStyle, style, highlightedStyle]}
         >
-            <TouchableWithFeedback
+            <TouchableHighlight
                 testID={itemTestID}
                 onPress={handlePress}
                 onLongPress={showPostOptions}
-                delayLongPress={200}
                 underlayColor={changeOpacity(theme.centerChannelColor, 0.1)}
-                cancelTouchOnPanning={true}
             >
                 <>
                     <PreHeader
                         isConsecutivePost={isConsecutivePost}
-                        isFlagged={isFlagged}
+                        isSaved={isSaved}
                         isPinned={post.isPinned}
-                        skipFlaggedHeader={skipFlaggedHeader}
+                        skipSavedHeader={skipSavedHeader}
                         skipPinnedHeader={skipPinnedHeader}
                     />
                     <View style={[styles.container, consecutiveStyle]}>
@@ -294,9 +291,9 @@ const Post = ({
                         </View>
                     </View>
                 </>
-            </TouchableWithFeedback>
+            </TouchableHighlight>
         </View>
     );
 };
 
-export default React.memo(Post);
+export default Post;

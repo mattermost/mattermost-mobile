@@ -10,7 +10,7 @@ import {GestureResponderEvent, StyleProp, Text, TextStyle} from 'react-native';
 import AtMention from '@components/markdown/at_mention';
 import MarkdownLink from '@components/markdown/markdown_link';
 import {useTheme} from '@context/theme';
-import {getMarkdownTextStyles} from '@utils/markdown';
+import {getMarkdownBlockStyles, getMarkdownTextStyles} from '@utils/markdown';
 import {concatStyles, changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 import type {PrimitiveType} from 'intl-messageformat';
@@ -31,10 +31,15 @@ const TARGET_BLANK_URL_PREFIX = '!';
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     return {
+        block: {
+            alignItems: 'flex-start',
+            flexDirection: 'row',
+            flexWrap: 'wrap',
+        },
         message: {
             color: changeOpacity(theme.centerChannelColor, 0.8),
-            fontSize: 15,
-            lineHeight: 22,
+            fontSize: 16,
+            lineHeight: 20,
         },
         atMentionOpacity: {
             opacity: 1,
@@ -106,8 +111,18 @@ const FormattedMarkdownText = ({baseTextStyle, defaultMessage, id, onPostPress, 
         return <MarkdownLink href={url}>{children}</MarkdownLink>;
     };
 
-    const renderParagraph = ({children}: {children: ReactElement}) => {
-        return <Text>{children}</Text>;
+    const renderParagraph = ({children, first}: {children: ReactElement; first: boolean}) => {
+        const blockStyle = [styles.block];
+        if (!first) {
+            const blockS = getMarkdownBlockStyles(theme);
+            blockStyle.push(blockS.adjacentParagraph);
+        }
+
+        return (
+            <Text style={blockStyle}>
+                {children}
+            </Text>
+        );
     };
 
     const renderText = ({context, literal}: {context: string[]; literal: string}) => {

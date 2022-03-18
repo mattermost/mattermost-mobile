@@ -3,9 +3,11 @@
 
 import {useManagedConfig} from '@mattermost/react-native-emm';
 import Clipboard from '@react-native-community/clipboard';
-import React, {useCallback, useRef, useState} from 'react';
+import React, {useCallback, useMemo, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
-import {Alert, DeviceEventEmitter, Platform, StyleProp, StyleSheet, Text, TextStyle, View} from 'react-native';
+import {Alert, Platform, StyleProp, Text, TextStyle, TouchableWithoutFeedback, View} from 'react-native';
+import Animated from 'react-native-reanimated';
+import {SvgUri} from 'react-native-svg';
 import parseUrl from 'url-parse';
 
 import CompassIcon from '@components/compass_icon';
@@ -13,29 +15,37 @@ import FormattedText from '@components/formatted_text';
 import ProgressiveImage from '@components/progressive_image';
 import SlideUpPanelItem, {ITEM_HEIGHT} from '@components/slide_up_panel_item';
 import TouchableWithFeedback from '@components/touchable_with_feedback';
-import {Navigation} from '@constants';
+import {GalleryInit} from '@context/gallery';
 import {useServerUrl} from '@context/server';
+import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
-import {showModalOverCurrentContext} from '@screens/navigation';
-import {openGallerWithMockFile} from '@utils/gallery';
+import {useGalleryItem} from '@hooks/gallery';
+import {bottomSheet, dismissBottomSheet} from '@screens/navigation';
+import {lookupMimeType} from '@utils/file';
+import {fileToGalleryItem, openGalleryAtIndex} from '@utils/gallery';
 import {generateId} from '@utils/general';
 import {calculateDimensions, getViewPortWidth, isGifTooLarge} from '@utils/images';
+import {getMarkdownImageSize} from '@utils/markdown';
+import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {normalizeProtocol, tryOpenURL} from '@utils/url';
 
 type MarkdownImageProps = {
     disabled?: boolean;
     errorTextStyle: StyleProp<TextStyle>;
-    imagesMetadata?: Record<string, PostImage>;
+    imagesMetadata: Record<string, PostImage>;
     isReplyPost?: boolean;
     linkDestination?: string;
+    layoutWidth?: number;
+    location?: string;
     postId: string;
     source: string;
+    sourceSize?: {width?: number; height?: number};
 }
 
 const ANDROID_MAX_HEIGHT = 4096;
 const ANDROID_MAX_WIDTH = 4096;
 
-const style = StyleSheet.create({
+const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     bottomSheet: {
         flex: 1,
     },
@@ -46,47 +56,75 @@ const style = StyleSheet.create({
     container: {
         marginBottom: 5,
     },
-});
+    svg: {
+        backgroundColor: changeOpacity(theme.centerChannelColor, 0.06),
+        borderRadius: 8,
+        flex: 1,
+    },
+}));
 
 const MarkdownImage = ({
     disabled, errorTextStyle, imagesMetadata, isReplyPost = false,
-    linkDestination, postId, source,
+    layoutWidth, linkDestination, location, postId, source, sourceSize,
 }: MarkdownImageProps) => {
     const intl = useIntl();
     const isTablet = useIsTablet();
+    const theme = useTheme();
+    const style = getStyleSheet(theme);
     const managedConfig = useManagedConfig();
-    const genericFileId = useRef(generateId()).current;
+    const genericFileId = useRef(generateId('uid')).current;
     const metadata = imagesMetadata?.[source] || Object.values(imagesMetadata || {})[0];
     const [failed, setFailed] = useState(isGifTooLarge(metadata));
-    const originalSize = {width: metadata?.width || 0, height: metadata?.height || 0};
+    const originalSize = getMarkdownImageSize(isReplyPost, isTablet, sourceSize, metadata, layoutWidth);
     const serverUrl = useServerUrl();
+    const galleryIdentifier = `${postId}-${genericFileId}-${location}`;
+    const uri = useMemo(() => {
+        if (source.startsWith('/')) {
+            return serverUrl + source;
+        }
 
-    let uri = source;
-    if (uri.startsWith('/')) {
-        uri = serverUrl + uri;
-    }
+        return source;
+    }, [source, serverUrl]);
 
-    const link = decodeURIComponent(uri);
-    let filename = parseUrl(link.substr(link.lastIndexOf('/'))).pathname.replace('/', '');
-    let extension = filename.split('.').pop();
-    if (extension === filename) {
-        const ext = filename.indexOf('.') === -1 ? '.png' : filename.substring(filename.lastIndexOf('.'));
-        filename = `${filename}${ext}`;
-        extension = ext;
-    }
+    const fileInfo = useMemo(() => {
+        const link = decodeURIComponent(uri);
+        let filename = parseUrl(link.substr(link.lastIndexOf('/'))).pathname.replace('/', '');
+        let extension = metadata.format || filename.split('.').pop();
+        if (extension === filename) {
+            const ext = filename.indexOf('.') === -1 ? '.png' : filename.substring(filename.lastIndexOf('.'));
+            filename = `${filename}${ext}`;
+            extension = ext;
+        }
 
-    const fileInfo = {
-        id: genericFileId,
-        name: filename,
-        extension,
-        has_preview_image: true,
-        post_id: postId,
-        uri: link,
-        width: originalSize.width,
-        height: originalSize.height,
-    };
+        return {
+            id: genericFileId,
+            name: filename,
+            extension,
+            has_preview_image: true,
+            mime_type: lookupMimeType(filename),
+            post_id: postId,
+            uri: link,
+            width: originalSize.width,
+            height: originalSize.height,
+        } as FileInfo;
+    }, [originalSize, metadata]);
 
-    const {height, width} = calculateDimensions(fileInfo.height, fileInfo.width, getViewPortWidth(isReplyPost, isTablet));
+    const handlePreviewImage = useCallback(() => {
+        const item: GalleryItemType = {
+            ...fileToGalleryItem(fileInfo),
+            mime_type: lookupMimeType(fileInfo.name),
+            type: 'image',
+        };
+        openGalleryAtIndex(galleryIdentifier, 0, [item]);
+    }, []);
+
+    const {ref, onGestureEvent, styles} = useGalleryItem(
+        galleryIdentifier,
+        0,
+        handlePreviewImage,
+    );
+
+    const {height, width} = calculateDimensions(fileInfo.height, fileInfo.width, layoutWidth || getViewPortWidth(isReplyPost, isTablet));
 
     const handleLinkPress = useCallback(() => {
         if (linkDestination) {
@@ -120,7 +158,7 @@ const MarkdownImage = ({
                         <SlideUpPanelItem
                             icon='content-copy'
                             onPress={() => {
-                                DeviceEventEmitter.emit(Navigation.NAVIGATION_CLOSE_MODAL);
+                                dismissBottomSheet();
                                 Clipboard.setString(linkDestination || source);
                             }}
                             testID='at_mention.bottom_sheet.copy_url'
@@ -130,7 +168,7 @@ const MarkdownImage = ({
                             destructive={true}
                             icon='cancel'
                             onPress={() => {
-                                DeviceEventEmitter.emit(Navigation.NAVIGATION_CLOSE_MODAL);
+                                dismissBottomSheet();
                             }}
                             testID='at_mention.bottom_sheet.cancel'
                             text={intl.formatMessage({id: 'mobile.post.cancel', defaultMessage: 'Cancel'})}
@@ -139,16 +177,15 @@ const MarkdownImage = ({
                 );
             };
 
-            showModalOverCurrentContext('BottomSheet', {
+            bottomSheet({
+                closeButtonId: 'close-mardown-image',
                 renderContent,
                 snapPoints: [3 * ITEM_HEIGHT, 10],
+                title: intl.formatMessage({id: 'post.options.title', defaultMessage: 'Options'}),
+                theme,
             });
         }
-    }, [managedConfig]);
-
-    const handlePreviewImage = useCallback(() => {
-        openGallerWithMockFile(fileInfo.uri, postId, fileInfo.height, fileInfo.width, fileInfo.id);
-    }, []);
+    }, [managedConfig, intl, theme]);
 
     const handleOnError = useCallback(() => {
         setFailed(true);
@@ -157,6 +194,7 @@ const MarkdownImage = ({
     if (failed) {
         return (
             <CompassIcon
+                color={theme.centerChannelColor}
                 name='file-image-broken-outline-large'
                 size={24}
             />
@@ -167,7 +205,7 @@ const MarkdownImage = ({
     if (height && width) {
         if (Platform.OS === 'android' && (height > ANDROID_MAX_HEIGHT || width > ANDROID_MAX_WIDTH)) {
             // Android has a cap on the max image size that can be displayed
-            image = (
+            return (
                 <Text style={[errorTextStyle, style.container]}>
                     <FormattedText
                         id='mobile.markdown.image.too_large'
@@ -180,22 +218,39 @@ const MarkdownImage = ({
                     {' '}
                 </Text>
             );
+        } else if (fileInfo.extension === 'svg') {
+            image = (
+                <SvgUri
+                    uri={fileInfo.uri!}
+                    style={{flex: 1, backgroundColor: changeOpacity(theme.centerChannelColor, 0.06), borderRadius: 8}}
+                    width={width}
+                    height={height}
+
+                    // @ts-expect-error onError missing in type definition
+                    onError={handleOnError}
+                />
+            );
         } else {
             image = (
-                <TouchableWithFeedback
+                <TouchableWithoutFeedback
                     disabled={disabled}
                     onLongPress={handleLinkLongPress}
-                    onPress={handlePreviewImage}
-                    style={[{width, height}, style.container]}
+                    onPress={onGestureEvent}
                 >
-                    <ProgressiveImage
-                        id={fileInfo.id}
-                        defaultSource={{uri: fileInfo.uri}}
-                        onError={handleOnError}
-                        resizeMode='contain'
-                        style={{width, height}}
-                    />
-                </TouchableWithFeedback>
+                    <Animated.View
+                        style={[styles, {width, height}, style.container]}
+                        testID='markdown_image'
+                    >
+                        <ProgressiveImage
+                            forwardRef={ref}
+                            id={fileInfo.id!}
+                            defaultSource={{uri: fileInfo.uri!}}
+                            onError={handleOnError}
+                            resizeMode='contain'
+                            style={{width, height}}
+                        />
+                    </Animated.View>
+                </TouchableWithoutFeedback>
             );
         }
     }
@@ -207,15 +262,23 @@ const MarkdownImage = ({
                 onLongPress={handleLinkLongPress}
                 style={[{width, height}, style.container]}
             >
-                {image}
+                <ProgressiveImage
+                    id={fileInfo.id!}
+                    defaultSource={{uri: fileInfo.uri!}}
+                    onError={handleOnError}
+                    resizeMode='contain'
+                    style={{width, height}}
+                />
             </TouchableWithFeedback>
         );
     }
 
     return (
-        <View testID='markdown_image'>
-            {image}
-        </View>
+        <GalleryInit galleryIdentifier={galleryIdentifier}>
+            <Animated.View testID='markdown_image'>
+                {image}
+            </Animated.View>
+        </GalleryInit>
     );
 };
 

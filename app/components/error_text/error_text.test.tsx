@@ -6,7 +6,7 @@ import React from 'react';
 
 import {Preferences} from '@constants';
 
-import ErrorText from './index';
+import ErrorTextComponent from './index';
 
 describe('ErrorText', () => {
     const baseProps = {
@@ -21,7 +21,7 @@ describe('ErrorText', () => {
 
     test('should match snapshot', () => {
         const wrapper = render(
-            <ErrorText {...baseProps}/>,
+            <ErrorTextComponent {...baseProps}/>,
         );
 
         expect(wrapper.toJSON()).toMatchSnapshot();

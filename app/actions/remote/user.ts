@@ -2,20 +2,25 @@
 // See LICENSE.txt for license information.
 
 import {Model, Q} from '@nozbe/watermelondb';
+import {chunk} from 'lodash';
 
+import {updateChannelsDisplayName} from '@actions/local/channel';
 import {updateRecentCustomStatuses, updateLocalUser} from '@actions/local/user';
 import {fetchRolesIfNeeded} from '@actions/remote/role';
+import {removeUserFromList} from '@app/utils/user';
 import {Database, General} from '@constants';
+import {MM_TABLES} from '@constants/database';
 import DatabaseManager from '@database/manager';
 import {debounce} from '@helpers/api/general';
 import NetworkManager from '@init/network_manager';
-import {queryCurrentUserId, queryWebSocketLastDisconnected} from '@queries/servers/system';
+import {queryCurrentTeamId, queryCurrentUserId} from '@queries/servers/system';
 import {prepareUsers, queryAllUsers, queryCurrentUser, queryUsersById, queryUsersByUsername} from '@queries/servers/user';
 
 import {forceLogoutIfNecessary} from './session';
 
 import type {Client} from '@client/rest';
 import type ClientError from '@client/rest/error';
+import type ChannelModel from '@typings/database/models/servers/channel';
 import type UserModel from '@typings/database/models/servers/user';
 
 export type MyUserRequest = {
@@ -34,6 +39,8 @@ export type ProfilesInChannelRequest = {
     error?: unknown;
 }
 
+const {SERVER: {CHANNEL}} = MM_TABLES;
+
 export const fetchMe = async (serverUrl: string, fetchOnly = false): Promise<MyUserRequest> => {
     let client;
     try {
@@ -43,7 +50,12 @@ export const fetchMe = async (serverUrl: string, fetchOnly = false): Promise<MyU
     }
 
     try {
-        const user = await client.getMe();
+        const [user, userStatus] = await Promise.all<[Promise<UserProfile>, Promise<UserStatus>]>([
+            client.getMe(),
+            client.getStatus('me'),
+        ]);
+
+        user.status = userStatus.status;
 
         if (!fetchOnly) {
             const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
@@ -104,8 +116,14 @@ export const fetchProfilesInChannel = async (serverUrl: string, channelId: strin
 
 export const fetchProfilesPerChannels = async (serverUrl: string, channelIds: string[], excludeUserId?: string, fetchOnly = false): Promise<ProfilesPerChannelRequest> => {
     try {
-        const requests = channelIds.map((id) => fetchProfilesInChannel(serverUrl, id, excludeUserId, true));
-        const data = await Promise.all(requests);
+        // Batch fetching profiles per channel by chunks of 50
+        const channels = chunk(channelIds, 50);
+        const data: ProfilesInChannelRequest[] = [];
+        for await (const cIds of channels) {
+            const requests = cIds.map((id) => fetchProfilesInChannel(serverUrl, id, excludeUserId, true));
+            const response = await Promise.all(requests);
+            data.push(...response);
+        }
 
         if (!fetchOnly) {
             const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
@@ -231,7 +249,7 @@ export const fetchUsersByIds = async (serverUrl: string, userIds: string[], fetc
         return {error};
     }
     if (!userIds.length) {
-        return {users: []};
+        return {users: [], existingUsers: []};
     }
 
     const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
@@ -240,9 +258,15 @@ export const fetchUsersByIds = async (serverUrl: string, userIds: string[], fetc
     }
 
     try {
-        const currentUserId = await queryCurrentUserId(operator.database);
-        const exisingUsers = await queryUsersById(operator.database, userIds);
-        const usersToLoad = userIds.filter((id) => (id !== currentUserId && !exisingUsers.find((u) => u.id === id)));
+        const currentUser = await queryCurrentUser(operator.database);
+        const existingUsers = await queryUsersById(operator.database, userIds);
+        if (userIds.includes(currentUser!.id)) {
+            existingUsers.push(currentUser!);
+        }
+        const usersToLoad = new Set(userIds.filter((id) => (!existingUsers.find((u) => u.id === id))));
+        if (usersToLoad.size === 0) {
+            return {users: [], existingUsers};
+        }
         const users = await client.getProfilesByIds([...new Set(usersToLoad)]);
         if (!fetchOnly) {
             await operator.handleUsers({
@@ -251,7 +275,7 @@ export const fetchUsersByIds = async (serverUrl: string, userIds: string[], fetc
             });
         }
 
-        return {users};
+        return {users, existingUsers};
     } catch (error) {
         forceLogoutIfNecessary(serverUrl, error as ClientError);
         return {error};
@@ -288,6 +312,103 @@ export const fetchUsersByUsernames = async (serverUrl: string, usernames: string
         }
 
         return {users};
+    } catch (error) {
+        forceLogoutIfNecessary(serverUrl, error as ClientError);
+        return {error};
+    }
+};
+
+export const fetchProfiles = async (serverUrl: string, page = 0, perPage: number = General.PROFILE_CHUNK_SIZE, options: any = {}, fetchOnly = false) => {
+    let client: Client;
+    try {
+        client = NetworkManager.getClient(serverUrl);
+    } catch (error) {
+        return {error};
+    }
+
+    const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
+    if (!operator) {
+        return {error: `${serverUrl} database not found`};
+    }
+
+    try {
+        const users = await client.getProfiles(page, perPage, options);
+
+        if (!fetchOnly) {
+            const currentUserId = await queryCurrentUserId(operator.database);
+            const toStore = removeUserFromList(currentUserId, users);
+            await operator.handleUsers({
+                users: toStore,
+                prepareRecordsOnly: false,
+            });
+        }
+
+        return {users};
+    } catch (error) {
+        forceLogoutIfNecessary(serverUrl, error as ClientError);
+        return {error};
+    }
+};
+
+export const fetchProfilesInTeam = async (serverUrl: string, teamId: string, page = 0, perPage: number = General.PROFILE_CHUNK_SIZE, sort = '', options: any = {}, fetchOnly = false) => {
+    let client: Client;
+    try {
+        client = NetworkManager.getClient(serverUrl);
+    } catch (error) {
+        return {error};
+    }
+
+    const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
+    if (!operator) {
+        return {error: `${serverUrl} database not found`};
+    }
+
+    try {
+        const users = await client.getProfilesInTeam(teamId, page, perPage, sort, options);
+
+        if (!fetchOnly) {
+            const currentUserId = await queryCurrentUserId(operator.database);
+            const toStore = removeUserFromList(currentUserId, users);
+
+            await operator.handleUsers({
+                users: toStore,
+                prepareRecordsOnly: false,
+            });
+        }
+
+        return {users};
+    } catch (error) {
+        forceLogoutIfNecessary(serverUrl, error as ClientError);
+        return {error};
+    }
+};
+
+export const searchProfiles = async (serverUrl: string, term: string, options: any = {}, fetchOnly = false) => {
+    let client: Client;
+    try {
+        client = NetworkManager.getClient(serverUrl);
+    } catch (error) {
+        return {error};
+    }
+
+    const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
+    if (!operator) {
+        return {error: `${serverUrl} database not found`};
+    }
+
+    try {
+        const currentUserId = await queryCurrentUserId(operator.database);
+        const users = await client.searchUsers(term, options);
+
+        if (!fetchOnly) {
+            const toStore = removeUserFromList(currentUserId, users);
+            await operator.handleUsers({
+                users: toStore,
+                prepareRecordsOnly: false,
+            });
+        }
+
+        return {data: users};
     } catch (error) {
         forceLogoutIfNecessary(serverUrl, error as ClientError);
         return {error};
@@ -332,35 +453,53 @@ export const fetchMissingProfilesByUsernames = async (serverUrl: string, usernam
     }
 };
 
-export const updateAllUsersSinceLastDisconnect = async (serverUrl: string) => {
-    const database = DatabaseManager.serverDatabases[serverUrl];
-    if (!database) {
+export const updateAllUsersSince = async (serverUrl: string, since: number, fetchOnly = false) => {
+    if (!since) {
+        return {users: []};
+    }
+
+    const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
+    if (!operator) {
         return {error: `${serverUrl} database not found`};
     }
 
-    const lastDisconnectedAt = await queryWebSocketLastDisconnected(database.database);
-
-    if (!lastDisconnectedAt) {
-        return {users: []};
+    let client: Client;
+    try {
+        client = NetworkManager.getClient(serverUrl);
+    } catch (error) {
+        return {error};
     }
-    const currentUserId = await queryCurrentUserId(database.database);
-    const users = await queryAllUsers(database.database);
+
+    const currentUserId = await queryCurrentUserId(operator.database);
+    const users = await queryAllUsers(operator.database);
     const userIds = users.map((u) => u.id).filter((id) => id !== currentUserId);
     let userUpdates: UserProfile[] = [];
     try {
-        userUpdates = await NetworkManager.getClient(serverUrl).getProfilesByIds(userIds, {since: lastDisconnectedAt});
+        userUpdates = await client.getProfilesByIds(userIds, {since});
+        if (userUpdates.length && !fetchOnly) {
+            const modelsToBatch: Model[] = [];
+            const userModels = await operator.handleUsers({users: userUpdates, prepareRecordsOnly: true});
+            modelsToBatch.push(...userModels);
+            const directChannels = await operator.database.get<ChannelModel>(CHANNEL).
+                query(Q.where('type', Q.oneOf([General.DM_CHANNEL, General.GM_CHANNEL]))).
+                fetch();
+            const {models} = await updateChannelsDisplayName(serverUrl, directChannels, userUpdates, true);
+            if (models?.length) {
+                modelsToBatch.push(...models);
+            }
+
+            if (modelsToBatch.length) {
+                await operator.batchRecords(modelsToBatch);
+            }
+        }
     } catch {
         // Do nothing
-    }
-
-    if (userUpdates.length) {
-        database.operator.handleUsers({users: userUpdates, prepareRecordsOnly: false});
     }
 
     return {users: userUpdates};
 };
 
-export const updateUsersNoLongerVisible = async (serverUrl: string): Promise<{error?: unknown}> => {
+export const updateUsersNoLongerVisible = async (serverUrl: string, prepareRecordsOnly = false): Promise<{error?: unknown; models?: Model[]}> => {
     let client: Client;
     try {
         client = NetworkManager.getClient(serverUrl);
@@ -373,12 +512,12 @@ export const updateUsersNoLongerVisible = async (serverUrl: string): Promise<{er
         return {error: `${serverUrl} database not found`};
     }
 
+    const models: Model[] = [];
     try {
         const knownUsers = new Set(await client.getKnownUsers());
         const currentUserId = await queryCurrentUserId(serverDatabase.database);
         knownUsers.add(currentUserId);
 
-        const models: Model[] = [];
         const allUsers = await queryAllUsers(serverDatabase.database);
         for (const user of allUsers) {
             if (!knownUsers.has(user.id)) {
@@ -386,7 +525,7 @@ export const updateUsersNoLongerVisible = async (serverUrl: string): Promise<{er
                 models.push(user);
             }
         }
-        if (models.length) {
+        if (models.length && !prepareRecordsOnly) {
             serverDatabase.operator.batchRecords(models);
         }
     } catch (error) {
@@ -394,7 +533,7 @@ export const updateUsersNoLongerVisible = async (serverUrl: string): Promise<{er
         return {error};
     }
 
-    return {};
+    return {models};
 };
 
 export const setStatus = async (serverUrl: string, status: UserStatus) => {
@@ -474,4 +613,88 @@ export const unsetCustomStatus = async (serverUrl: string) => {
     }
 
     return {data: true};
+};
+
+export const setDefaultProfileImage = async (serverUrl: string, userId: string) => {
+    let client: Client;
+
+    try {
+        client = NetworkManager.getClient(serverUrl);
+    } catch (error) {
+        return {error};
+    }
+
+    try {
+        await client.setDefaultProfileImage(userId);
+        updateLocalUser(serverUrl, {last_picture_update: Date.now()});
+    } catch (error) {
+        return {error};
+    }
+
+    return {data: true};
+};
+
+export const uploadUserProfileImage = async (serverUrl: string, localPath: string) => {
+    const database = DatabaseManager.serverDatabases[serverUrl]?.database;
+    if (!database) {
+        return {error: `${serverUrl} database not found`};
+    }
+
+    let client: Client;
+    try {
+        client = NetworkManager.getClient(serverUrl);
+    } catch (error) {
+        return {error};
+    }
+
+    try {
+        const currentUser = await queryCurrentUser(database);
+        if (currentUser) {
+            const endpoint = `${client.getUserRoute(currentUser.id)}/image`;
+
+            await client.apiClient.upload(endpoint, localPath, {
+                skipBytes: 0,
+                method: 'POST',
+                multipart: {
+                    fileKey: 'image',
+                },
+            });
+        }
+    } catch (e) {
+        return {error: e};
+    }
+    return {error: undefined};
+};
+
+export const searchUsers = async (serverUrl: string, term: string, channelId?: string) => {
+    const database = DatabaseManager.serverDatabases[serverUrl]?.database;
+    if (!database) {
+        return {error: `${serverUrl} database not found`};
+    }
+
+    let client: Client;
+    try {
+        client = NetworkManager.getClient(serverUrl);
+    } catch (error) {
+        return {error};
+    }
+
+    try {
+        const currentTeamId = await queryCurrentTeamId(database);
+        const users = await client.autocompleteUsers(term, currentTeamId, channelId);
+        return {users};
+    } catch (error) {
+        return {error};
+    }
+};
+
+export const buildProfileImageUrl = (serverUrl: string, userId: string, timestamp = 0) => {
+    let client: Client;
+    try {
+        client = NetworkManager.getClient(serverUrl);
+    } catch (error) {
+        return '';
+    }
+
+    return client.getProfilePictureUrl(userId, timestamp);
 };

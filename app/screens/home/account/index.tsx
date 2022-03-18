@@ -71,6 +71,7 @@ const AccountScreen = ({currentUser, enableCustomUserStatuses, customStatusExpir
     const route = useRoute();
     const insets = useSafeAreaInsets();
     const isTablet = useIsTablet();
+
     let tabletSidebarStyle;
     if (isTablet) {
         const {TABLET_SIDEBAR_WIDTH} = ViewConstants;
@@ -104,6 +105,7 @@ const AccountScreen = ({currentUser, enableCustomUserStatuses, customStatusExpir
         <SafeAreaView
             edges={edges}
             style={styles.container}
+            testID='account.screen'
         >
             <View style={[{height: insets.top, flexDirection: 'row'}]}>
                 <View style={[styles.container, tabletSidebarStyle]}/>

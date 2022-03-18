@@ -23,22 +23,6 @@ type Draft = {
     root_id: string;
 };
 
-type GroupMembership = {
-    id?: string;
-    user_id: string;
-    group_id: string;
-};
-
-type GroupChannelRelation = {
-    channel_id: string;
-    group_id: string;
-}
-
-type GroupTeamRelation = {
-    group_id: string;
-    team_id: string;
-}
-
 type MyTeam = {
     id: string;
     roles: string;
@@ -73,6 +57,11 @@ type IdValue = {
     value: unknown;
 };
 
+type ParticipantsPerThread = {
+    thread_id: string;
+    participants: ThreadParticipant[];
+};
+
 type TeamChannelHistory = {
     id: string;
     channel_ids: string[];
@@ -95,6 +84,8 @@ type TermsOfService = {
 
 type RawValue =
   | AppInfo
+  | Category
+  | CategoryChannel
   | Channel
   | ChannelInfo
   | ChannelMember
@@ -102,10 +93,6 @@ type RawValue =
   | CustomEmoji
   | Draft
   | FileInfo
-  | Group
-  | GroupMembership
-  | GroupChannel
-  | GroupTeam
   | IdValue
   | Metadata
   | MyTeam
@@ -121,4 +108,7 @@ type RawValue =
   | TeamMembership
   | TeamSearchHistory
   | TermsOfService
+  | Thread
+  | ThreadParticipant
   | UserProfile
+  | Pick<ChannelMembership, 'channel_id' | 'user_id'>

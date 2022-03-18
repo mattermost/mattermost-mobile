@@ -9,7 +9,7 @@ import FormattedMarkdownText from '@components/formatted_markdown_text';
 import FormattedText from '@components/formatted_text';
 import Markdown from '@components/markdown';
 import {getMarkdownTextStyles} from '@utils/markdown';
-import {makeStyleSheetFromTheme} from '@utils/theme';
+import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 import {postTypeMessages, systemMessages} from './messages';
 
@@ -23,14 +23,12 @@ type LastUsersProps = {
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     return {
         baseText: {
-            color: theme.centerChannelColor,
-            opacity: 0.6,
+            color: changeOpacity(theme.centerChannelColor, 0.6),
             fontSize: 16,
             lineHeight: 20,
         },
         linkText: {
             color: theme.linkColor,
-            opacity: 0.8,
             fontSize: 16,
             lineHeight: 20,
         },
@@ -82,8 +80,8 @@ const LastUsers = ({actor, postType, theme, usernames}: LastUsersProps) => {
             />
             <Text>{' '}</Text>
             <Text
-                style={style.linkText}
                 onPress={onPress}
+                style={style.linkText}
             >
                 <FormattedText
                     id={'last_users_message.others'}

@@ -8,9 +8,9 @@ import compose from 'lodash/fp/compose';
 import {of as of$} from 'rxjs';
 import {switchMap} from 'rxjs/operators';
 
-import {SystemModel, UserModel} from '@app/database/models/server';
-import {getTimezone} from '@app/utils/user';
 import {SYSTEM_IDENTIFIERS, MM_TABLES} from '@constants/database';
+import {SystemModel, UserModel} from '@database/models/server';
+import {getTimezone} from '@utils/user';
 
 import RecentMentionsScreen from './recent_mentions';
 
@@ -39,7 +39,6 @@ const enhance = withObservables([], ({database}: WithDatabaseArgs) => {
                 ).observe();
             }),
         ),
-        currentUser,
         currentTimezone: currentUser.pipe((switchMap((user) => of$(getTimezone(user.timezone))))),
         isTimezoneEnabled: database.get<SystemModel>(SYSTEM).findAndObserve(SYSTEM_IDENTIFIERS.CONFIG).pipe(
             switchMap((config) => of$(config.value.ExperimentalTimezone === 'true')),
