@@ -35,7 +35,7 @@ import {
     handleCallChannelEnabled,
     handleCallChannelDisabled,
     handleCallScreenOn,
-    handleCallScreenOff,
+    handleCallScreenOff, handleCallUserRaiseHand, handleCallUserUnraiseHand,
 } from '@mmproducts/calls/store/actions/websockets';
 import {getChannelSinceValue} from '@utils/channels';
 import {semverFromServerVersion} from '@utils/general';
@@ -467,6 +467,10 @@ function handleEvent(msg: WebSocketMessage) {
                 return dispatch(handleCallScreenOn(msg));
             case WebsocketEvents.CALLS_SCREEN_OFF:
                 return dispatch(handleCallScreenOff(msg));
+            case WebsocketEvents.CALLS_USER_RAISE_HAND:
+                return dispatch(handleCallUserRaiseHand(msg));
+            case WebsocketEvents.CALLS_USER_UNRAISE_HAND:
+                return dispatch(handleCallUserUnraiseHand(msg));
             }
         }
 

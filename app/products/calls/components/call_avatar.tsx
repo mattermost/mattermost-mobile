@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React from 'react';
-import {View, StyleSheet} from 'react-native';
+import {View, StyleSheet, Text, Platform} from 'react-native';
 
 import CompassIcon from '@components/compass_icon';
 import ProfilePicture from '@components/profile_picture';
@@ -11,6 +11,7 @@ type Props = {
     userId?: string;
     volume: number;
     muted?: boolean;
+    raisedHand?: boolean;
     size?: 'm' | 'l';
 }
 
@@ -54,6 +55,28 @@ const getStyleSheet = (props: Props) => {
             textAlignVertical: 'center',
             overflow: 'hidden',
         },
+        raisedHand: {
+            position: 'absolute',
+            overflow: 'hidden',
+            top: 0,
+            right: -5,
+            backgroundColor: 'black',
+            borderColor: 'black',
+            borderRadius: 12,
+            padding: 2,
+            borderWidth: 2,
+            width: 24,
+            height: 24,
+            fontSize: 12,
+            ...Platform.select(
+                {
+                    android: {
+                        padding: 4,
+                        color: 'rgb(255, 188, 66)',
+                    },
+                },
+            ),
+        },
     });
 };
 
@@ -80,6 +103,12 @@ const CallAvatar = (props: Props) => {
                             size={16}
                             style={style.mute}
                         />}
+                    {
+                        props.raisedHand &&
+                        <Text style={style.raisedHand}>
+                            {'✋'}
+                        </Text>
+                    }
                 </View>
             </View>
         </View>

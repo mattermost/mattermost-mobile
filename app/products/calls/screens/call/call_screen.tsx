@@ -15,14 +15,15 @@ import {
 } from 'react-native';
 import {RTCView} from 'react-native-webrtc';
 
-import {showModalOverCurrentContext, mergeNavigationOptions, popTopScreen, goToScreen} from '@actions/navigation';
+import {showModalOverCurrentContext, mergeNavigationOptions, popTopScreen} from '@actions/navigation';
 import CompassIcon from '@components/compass_icon';
 import {WebsocketEvents} from '@constants';
-import {THREAD} from '@constants/screen';
 import {ActionFunc, GenericAction} from '@mm-redux/types/actions';
 import {displayUsername} from '@mm-redux/utils/user_utils';
 import CallAvatar from '@mmproducts/calls/components/call_avatar';
 import CallDuration from '@mmproducts/calls/components/call_duration';
+import RaisedHandIcon from '@mmproducts/calls/components/raised_hand_icon';
+import UnraisedHandIcon from '@mmproducts/calls/components/unraised_hand_icon';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 
 import type {Theme} from '@mm-redux/types/theme';
@@ -35,6 +36,8 @@ type Props = {
         unmuteMyself: (channelId: string) => GenericAction;
         setSpeakerphoneOn: (newState: boolean) => GenericAction;
         leaveCall: () => ActionFunc;
+        raiseHand: () => GenericAction;
+        unraiseHand: () => GenericAction;
     };
     theme: Theme;
     call: Call | null;
@@ -165,6 +168,18 @@ const getStyleSheet = makeStyleSheetFromTheme((props: any) => {
             marginLeft: 10,
             marginRight: 10,
         },
+        handIcon: {
+            borderRadius: 34,
+            padding: 34,
+            margin: 10,
+            overflow: 'hidden',
+            backgroundColor: props.currentParticipant?.raisedHand ? 'rgba(255, 188, 66, 0.16)' : 'rgba(255,255,255,0.12)',
+        },
+        handIconSvgStyle: {
+            position: 'relative',
+            top: -12,
+            right: 13,
+        },
         speakerphoneIcon: {
             color: props.speakerphoneOn ? 'black' : props.theme.sidebarText,
             backgroundColor: props.speakerphoneOn ? 'white' : 'rgba(255,255,255,0.12)',
@@ -259,7 +274,11 @@ const CallScreen = (props: Props) => {
 
     const showOtherActions = () => {
         const screen = 'CallOtherActions';
-        const passProps = {};
+        const passProps = {
+            theme: props.theme,
+            channelId: props.call?.channelId,
+            rootId: props.call?.threadId,
+        };
 
         Keyboard.dismiss();
         const otherActionsRequest = requestAnimationFrame(() => {
@@ -275,14 +294,6 @@ const CallScreen = (props: Props) => {
         props.actions.leaveCall();
     }, [props.actions.leaveCall]);
 
-    const openThreadHandler = useCallback(() => {
-        const passProps = {
-            channelId: props.call?.channelId,
-            rootId: props.call?.threadId,
-        };
-        goToScreen(THREAD, '', passProps);
-    }, [props.call]);
-
     const muteUnmuteHandler = useCallback(() => {
         if (props.call) {
             if (props.currentParticipant?.muted) {
@@ -295,6 +306,14 @@ const CallScreen = (props: Props) => {
 
     const toggleSpeakerphoneHandler = () => {
         props.actions.setSpeakerphoneOn(!props.speakerphoneOn);
+    };
+
+    const toggleRaiseHand = () => {
+        if (props.currentParticipant?.raisedHand > 0) {
+            props.actions.unraiseHand();
+        } else {
+            props.actions.raiseHand();
+        }
     };
 
     const toggleControlsInLandscape = useCallback(() => {
@@ -346,6 +365,7 @@ const CallScreen = (props: Props) => {
                                     userId={user.id}
                                     volume={speaker && speaker.id === user.id ? 1 : 0}
                                     muted={user.muted}
+                                    raisedHand={Boolean(user.raisedHand)}
                                     size={props.call?.screenOn ? 'm' : 'l'}
                                 />
                                 <Text style={style.username}>
@@ -358,6 +378,8 @@ const CallScreen = (props: Props) => {
             </ScrollView>
         );
     }
+
+    const HandIcon = props.currentParticipant?.raisedHand ? UnraisedHandIcon : RaisedHandIcon;
 
     return (
         <SafeAreaView style={style.wrapper}>
@@ -411,17 +433,6 @@ const CallScreen = (props: Props) => {
                             <Text style={style.buttonText}>{'Leave'}</Text>
                         </Pressable>
                         <Pressable
-                            style={style.button}
-                            onPress={openThreadHandler}
-                        >
-                            <CompassIcon
-                                name='message-text-outline'
-                                size={24}
-                                style={style.buttonIcon}
-                            />
-                            <Text style={style.buttonText}>{'Chat thread'}</Text>
-                        </Pressable>
-                        <Pressable
                             testID={'toggle-speakerphone'}
                             style={style.button}
                             onPress={toggleSpeakerphoneHandler}
@@ -432,6 +443,21 @@ const CallScreen = (props: Props) => {
                                 style={{...style.buttonIcon, ...style.speakerphoneIcon}}
                             />
                             <Text style={style.buttonText}>{'Speaker'}</Text>
+                        </Pressable>
+                        <Pressable
+                            style={style.button}
+                            onPress={toggleRaiseHand}
+                        >
+                            <HandIcon
+                                fill={props.currentParticipant?.raisedHand ? 'rgb(255, 188, 66)' : props.theme.sidebarText}
+                                height={24}
+                                width={24}
+                                style={{...style.buttonIcon, ...style.handIcon}}
+                                svgStyle={style.handIconSvgStyle}
+                            />
+                            <Text style={style.buttonText}>
+                                {props.currentParticipant?.raisedHand ? 'Lower hand' : 'Raise hand'}
+                            </Text>
                         </Pressable>
                         <Pressable
                             style={style.button}

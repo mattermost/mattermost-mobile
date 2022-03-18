@@ -5,7 +5,14 @@ import {bindActionCreators, Dispatch} from 'redux';
 
 import {getTheme, getTeammateNameDisplaySetting} from '@mm-redux/selectors/entities/preferences';
 import {getCurrentUserId} from '@mm-redux/selectors/entities/users';
-import {muteMyself, unmuteMyself, leaveCall, setSpeakerphoneOn} from '@mmproducts/calls//store/actions/calls';
+import {
+    muteMyself,
+    unmuteMyself,
+    leaveCall,
+    setSpeakerphoneOn,
+    raiseHand,
+    unraiseHand,
+} from '@mmproducts/calls//store/actions/calls';
 import {getCurrentCall, getScreenShareURL, isSpeakerphoneOn} from '@mmproducts/calls/store/selectors/calls';
 
 import CallScreen from './call_screen';
@@ -32,6 +39,8 @@ function mapDispatchToProps(dispatch: Dispatch) {
             unmuteMyself,
             setSpeakerphoneOn,
             leaveCall,
+            raiseHand,
+            unraiseHand,
         }, dispatch),
     };
 }

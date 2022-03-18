@@ -62,5 +62,7 @@ const WebsocketEvents = {
     CALLS_CALL_START: 'custom_com.mattermost.calls_call_start',
     CALLS_SCREEN_ON: 'custom_com.mattermost.calls_user_screen_on',
     CALLS_SCREEN_OFF: 'custom_com.mattermost.calls_user_screen_off',
+    CALLS_USER_RAISE_HAND: 'custom_com.mattermost.calls_user_raise_hand',
+    CALLS_USER_UNRAISE_HAND: 'custom_com.mattermost.calls_user_unraise_hand',
 };
 export default WebsocketEvents;

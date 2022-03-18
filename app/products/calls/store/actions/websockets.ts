@@ -81,3 +81,17 @@ export function handleCallScreenOff(msg: WebSocketMessage): GenericAction {
         data: {channelId: msg.broadcast.channel_id, userId: msg.data.userID},
     };
 }
+
+export function handleCallUserRaiseHand(msg: WebSocketMessage): GenericAction {
+    return {
+        type: CallsTypes.RECEIVED_RAISE_HAND,
+        data: {channelId: msg.broadcast.channel_id, userId: msg.data.userID, ts: msg.data.raised_hand},
+    };
+}
+
+export function handleCallUserUnraiseHand(msg: WebSocketMessage): GenericAction {
+    return {
+        type: CallsTypes.RECEIVED_UNRAISE_HAND,
+        data: {channelId: msg.broadcast.channel_id, userId: msg.data.userID, ts: msg.data.raised_hand},
+    };
+}
