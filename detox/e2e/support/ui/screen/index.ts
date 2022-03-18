@@ -6,6 +6,7 @@ import ChannelListScreen from './channel_list';
 import HomeScreen from './home';
 import LoginScreen from './login';
 import ServerScreen from './server';
+import ServerListScreen from './server_list';
 
 export {
     AccountScreen,
@@ -13,4 +14,5 @@ export {
     HomeScreen,
     LoginScreen,
     ServerScreen,
+    ServerListScreen,
 };

@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import testConfig from '@support/test_config';
+import {adminEmail, adminPassword, adminUsername} from '@support/test_config';
 import {v4 as uuidv4} from 'uuid';
 
 export * from './email';
@@ -11,7 +11,7 @@ export * from './email';
  * @param {number} ms - duration in millisecond
  * @return {Promise} promise with timeout
  */
-export const wait = async (ms) => {
+export const wait = async (ms: number): Promise<any> => {
     return new Promise((resolve) => setTimeout(resolve, ms));
 };
 
@@ -19,7 +19,7 @@ export const wait = async (ms) => {
  * Check if android.
  * @return {boolean} true if android
  */
-export const isAndroid = () => {
+export const isAndroid = (): boolean => {
     return device.getPlatform() === 'android';
 };
 
@@ -27,7 +27,7 @@ export const isAndroid = () => {
  * Check if ios.
  * @return {boolean} true if ios
  */
-export const isIos = () => {
+export const isIos = (): boolean => {
     return device.getPlatform() === 'ios';
 };
 
@@ -36,7 +36,7 @@ export const isIos = () => {
  * @param {number} length - length on random string to return, e.g. 6 (default)
  * @return {string} random string
  */
-export const getRandomId = (length = 6) => {
+export const getRandomId = (length = 6): string => {
     const MAX_SUBSTRING_INDEX = 27;
 
     return uuidv4().replace(/-/g, '').substring(MAX_SUBSTRING_INDEX - length, MAX_SUBSTRING_INDEX);
@@ -47,7 +47,7 @@ export const getRandomId = (length = 6) => {
  * @param {string} text
  * @return {string} capitalized text
  */
-export const capitalize = (text) => {
+export const capitalize = (text: string): string => {
     return text.charAt(0).toUpperCase() + text.slice(1);
 };
 
@@ -56,9 +56,9 @@ export const capitalize = (text) => {
  */
 export const getAdminAccount = () => {
     return {
-        username: testConfig.adminUsername,
-        password: testConfig.adminPassword,
-        email: testConfig.adminEmail,
+        username: adminUsername,
+        password: adminPassword,
+        email: adminEmail,
     };
 };
 

@@ -53,6 +53,7 @@
             "@share/*": ["share_extension/*"],
             "@store": ["app/store/index"],
             "@store/*": ["app/store/*"],
+            "@support/*": ["detox/e2e/support/*"],
             "@telemetry/*": ["/app/telemetry/*"],
             "@typings/*": ["types/*"],
             "@test/*": ["test/*"],

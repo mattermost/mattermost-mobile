@@ -26,7 +26,7 @@ import {getResponseFromError} from './common';
  * @param {string} channelId - The channel ID
  * @return {Object} returns {member} on success or {error, status} on error
  */
-export const apiAddUserToChannel = async (baseUrl, userId, channelId) => {
+export const apiAddUserToChannel = async (baseUrl: string, userId: string, channelId: string): Promise<any> => {
     try {
         const response = await client.post(
             `${baseUrl}/api/v4/channels/${channelId}/members`,
@@ -49,7 +49,7 @@ export const apiAddUserToChannel = async (baseUrl, userId, channelId) => {
  * @param {Object} option.channel - channel object to be created
  * @return {Object} returns {channel} on success or {error, status} on error
  */
-export const apiCreateChannel = async (baseUrl, {teamId = null, type = 'O', prefix = 'channel', channel = null} = {}) => {
+export const apiCreateChannel = async (baseUrl: string, {teamId = null, type = 'O', prefix = 'channel', channel = null}: any = {}): Promise<any> => {
     try {
         const response = await client.post(
             `${baseUrl}/api/v4/channels`,
@@ -69,7 +69,7 @@ export const apiCreateChannel = async (baseUrl, {teamId = null, type = 'O', pref
  * @param {Array} userIds - the two user IDs to be in the direct message
  * @return {Object} returns {channel} on success or {error, status} on error
  */
-export const apiCreateDirectChannel = async (baseUrl, userIds = []) => {
+export const apiCreateDirectChannel = async (baseUrl: string, userIds: string[] = []): Promise<any> => {
     try {
         const response = await client.post(
             `${baseUrl}/api/v4/channels/direct`,
@@ -89,7 +89,7 @@ export const apiCreateDirectChannel = async (baseUrl, userIds = []) => {
  * @param {Array} userIds - user IDs to be in the group message channel
  * @return {Object} returns {channel} on success or {error, status} on error
  */
-export const apiCreateGroupChannel = async (baseUrl, userIds = []) => {
+export const apiCreateGroupChannel = async (baseUrl: string, userIds: string[] = []): Promise<any> => {
     try {
         const response = await client.post(
             `${baseUrl}/api/v4/channels/group`,
@@ -110,7 +110,7 @@ export const apiCreateGroupChannel = async (baseUrl, userIds = []) => {
  * @param {string} channelName - channel name
  * @return {Object} returns {channel} on success or {error, status} on error
  */
-export const apiGetChannelByName = async (baseUrl, teamId, channelName) => {
+export const apiGetChannelByName = async (baseUrl: string, teamId: string, channelName: string): Promise<any> => {
     try {
         const response = await client.get(`${baseUrl}/api/v4/teams/${teamId}/channels/name/${channelName}`);
 
@@ -128,7 +128,7 @@ export const apiGetChannelByName = async (baseUrl, teamId, channelName) => {
  * @param {string} channelName - channel name
  * @return {Object} returns {channel} on success or {error, status} on error
  */
-export const apiGetChannelByNameAndTeamName = async (baseUrl, teamName, channelName) => {
+export const apiGetChannelByNameAndTeamName = async (baseUrl: string, teamName: string, channelName: string): Promise<any> => {
     try {
         const response = await client.get(`${baseUrl}/api/v4/teams/name/${teamName}/channels/name/${channelName}`);
 
@@ -146,7 +146,7 @@ export const apiGetChannelByNameAndTeamName = async (baseUrl, teamName, channelN
  * @param {string} teamId - The team ID the user belongs to
  * @return {Object} returns {channels} on success or {error, status} on error
  */
-export const apiGetChannelsForUser = async (baseUrl, userId, teamId) => {
+export const apiGetChannelsForUser = async (baseUrl: string, userId: string, teamId: string): Promise<any> => {
     try {
         const response = await client.get(`${baseUrl}/api/v4/users/${userId}/teams/${teamId}/channels`);
 
@@ -164,7 +164,7 @@ export const apiGetChannelsForUser = async (baseUrl, userId, teamId) => {
  * @param {string} channelId - The channel ID that is being viewed
  * @return {Object} returns response on success or {error, status} on error
  */
-export const apiGetUnreadMessages = async (baseUrl, userId, channelId) => {
+export const apiGetUnreadMessages = async (baseUrl: string, userId: string, channelId: string): Promise<any> => {
     try {
         return await client.get(`${baseUrl}/api/v4/users/${userId}/channels/${channelId}/unread`);
     } catch (err) {
@@ -180,7 +180,7 @@ export const apiGetUnreadMessages = async (baseUrl, userId, channelId) => {
  * @param {string} userId - The user ID to be removed from channel
  * @return {Object} returns {status} on success or {error, status} on error
  */
-export const apiRemoveUserFromChannel = async (baseUrl, channelId, userId) => {
+export const apiRemoveUserFromChannel = async (baseUrl: string, channelId: string, userId: string): Promise<any> => {
     try {
         const response = await client.delete(
             `${baseUrl}/api/v4/channels/${channelId}/members/${userId}`,
@@ -200,7 +200,7 @@ export const apiRemoveUserFromChannel = async (baseUrl, channelId, userId) => {
  * @param {string} channelId - The channel ID that is being viewed
  * @return {Object} returns {viewed} on success or {error, status} on error
  */
-export const apiViewChannel = async (baseUrl, userId, channelId) => {
+export const apiViewChannel = async (baseUrl: string, userId: string, channelId: string): Promise<any> => {
     try {
         const response = await client.post(
             `${baseUrl}/api/v4/channels/members/${userId}/view`,
@@ -213,7 +213,7 @@ export const apiViewChannel = async (baseUrl, userId, channelId) => {
     }
 };
 
-function generateRandomChannel(teamId, type, prefix) {
+export const generateRandomChannel = (teamId: string, type: string, prefix: string) => {
     const randomId = getRandomId();
 
     return {
@@ -224,7 +224,7 @@ function generateRandomChannel(teamId, type, prefix) {
         purpose: `Channel purpose: ${prefix} ${randomId}`,
         header: `Channel header: ${prefix} ${randomId}`,
     };
-}
+};
 
 export const Channel = {
     apiAddUserToChannel,
@@ -236,6 +236,7 @@ export const Channel = {
     apiGetUnreadMessages,
     apiRemoveUserFromChannel,
     apiViewChannel,
+    generateRandomChannel,
 };
 
 export default Channel;

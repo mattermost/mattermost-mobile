@@ -12,6 +12,7 @@ import {
     LoginScreen,
     ServerScreen,
 } from '@support/ui/screen';
+import {expect} from 'detox';
 
 describe('Server Login - Connect to Server', () => {
     const {
