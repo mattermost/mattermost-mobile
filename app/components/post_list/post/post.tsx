@@ -57,6 +57,8 @@ type PostProps = {
     testID?: string;
 };
 
+const TIME_TO_FAIL = 10000;
+
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     return {
         consecutive: {marginTop: 0},
@@ -108,6 +110,7 @@ const Post = ({
     const styles = getStyleSheet(theme);
     const isAutoResponder = fromAutoResponder(post);
     const isPendingOrFailed = isPostPendingOrFailed(post);
+    const isFailed = post.props?.failed || ((post.pendingPostId === post.id) && (Date.now() > post.createAt + TIME_TO_FAIL));
     const isSystemPost = isSystemMessage(post);
     const isWebHook = isFromWebhook(post);
     const hasSameRoot = useMemo(() => {
@@ -179,7 +182,7 @@ const Post = ({
     const hightlightPinned = post.isPinned && !skipPinnedHeader;
     const itemTestID = `${testID}.${post.id}`;
     const rightColumnStyle = [styles.rightColumn, (post.rootId && isLastReply && styles.rightColumnPadding)];
-    const pendingPostStyle: StyleProp<ViewStyle> | undefined = isPendingOrFailed ? styles.pendingPost : undefined;
+    const failedPostStyle: StyleProp<ViewStyle> | undefined = isFailed ? styles.pendingPost : undefined;
 
     let highlightedStyle: StyleProp<ViewStyle>;
     if (highlight) {
@@ -197,7 +200,7 @@ const Post = ({
         postAvatar = <View style={styles.consecutivePostContainer}/>;
     } else {
         postAvatar = (
-            <View style={[styles.profilePictureContainer, pendingPostStyle]}>
+            <View style={[styles.profilePictureContainer, failedPostStyle]}>
                 {isAutoResponder ? (
                     <SystemAvatar theme={theme}/>
                 ) : (
@@ -224,7 +227,7 @@ const Post = ({
                     differentThreadSequence={differentThreadSequence}
                     isAutoResponse={isAutoResponder}
                     isEphemeral={isEphemeral}
-                    isPendingOrFailed={isPendingOrFailed}
+                    isFailed={isFailed}
                     isSystemPost={isSystemPost}
                     isWebHook={isWebHook}
                     location={location}
@@ -254,7 +257,7 @@ const Post = ({
                 isFirstReply={isFirstReply}
                 isJumboEmoji={isJumboEmoji}
                 isLastReply={isLastReply}
-                isPendingOrFailed={isPendingOrFailed}
+                isFailed={isFailed}
                 isPostAddChannelMember={isPostAddChannelMember}
                 location={location}
                 post={post}

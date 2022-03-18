@@ -49,6 +49,24 @@ type AuthorsRequest = {
     error?: unknown;
 }
 
+export const retryPost = async (serverUrl: string, post: PostModel) => {
+    const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
+    if (!operator) {
+        return {error: `${serverUrl} database not found`};
+    }
+
+    const newPost = {
+        user_id: post.userId,
+        channel_id: post.channelId,
+        root_id: post.rootId,
+        message: post.message,
+        pending_post_id: post.pendingPostId,
+        file_ids: await post.files.fetchIds(),
+    };
+
+    return createPost(serverUrl, newPost, []);
+};
+
 export const createPost = async (serverUrl: string, post: Partial<Post>, files: FileInfo[] = []): Promise<{data?: boolean; error?: any}> => {
     const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
     if (!operator) {

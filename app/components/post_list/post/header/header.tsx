@@ -30,7 +30,7 @@ type HeaderProps = {
     isCustomStatusEnabled: boolean;
     isEphemeral: boolean;
     isMilitaryTime: boolean;
-    isPendingOrFailed: boolean;
+    isFailed: boolean;
     isSystemPost: boolean;
     isTimezoneEnabled: boolean;
     isWebHook: boolean;
@@ -72,12 +72,12 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
 const Header = (props: HeaderProps) => {
     const {
         author, commentCount = 0, currentUser, enablePostUsernameOverride, isAutoResponse, isCustomStatusEnabled,
-        isEphemeral, isMilitaryTime, isPendingOrFailed, isSystemPost, isTimezoneEnabled, isWebHook,
+        isEphemeral, isMilitaryTime, isFailed, isSystemPost, isTimezoneEnabled, isWebHook,
         location, post, rootPostAuthor, shouldRenderReplyButton, teammateNameDisplay,
     } = props;
     const theme = useTheme();
     const style = getStyleSheet(theme);
-    const pendingPostStyle = isPendingOrFailed ? style.pendingPost : undefined;
+    const pendingPostStyle = isFailed ? style.pendingPost : undefined;
     const isReplyPost = Boolean(post.rootId && !isEphemeral);
     const showReply = !isReplyPost && (location !== THREAD) && (shouldRenderReplyButton && (!rootPostAuthor && commentCount > 0));
     const displayName = postUserDisplayName(post, author, teammateNameDisplay, enablePostUsernameOverride);

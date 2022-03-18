@@ -30,7 +30,7 @@ type BodyProps = {
     isFirstReply?: boolean;
     isJumboEmoji: boolean;
     isLastReply?: boolean;
-    isPendingOrFailed: boolean;
+    isFailed: boolean;
     isPostAddChannelMember: boolean;
     location: string;
     post: PostModel;
@@ -73,7 +73,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
 
 const Body = ({
     appsEnabled, filesCount, hasReactions, highlight, highlightReplyBar,
-    isEphemeral, isFirstReply, isJumboEmoji, isLastReply, isPendingOrFailed, isPostAddChannelMember,
+    isEphemeral, isFirstReply, isJumboEmoji, isLastReply, isFailed, isPostAddChannelMember,
     location, post, showAddReaction, theme,
 }: BodyProps) => {
     const style = getStyleSheet(theme);
@@ -142,7 +142,7 @@ const Body = ({
             <Message
                 highlight={highlight}
                 isEdited={isEdited}
-                isPendingOrFailed={isPendingOrFailed}
+                isPendingOrFailed={isFailed}
                 isReplyPost={isReplyPost}
                 layoutWidth={layoutWidth}
                 location={location}
@@ -192,7 +192,7 @@ const Body = ({
         >
             <View style={replyBarStyle()}/>
             {body}
-            {post.props?.failed &&
+            {isFailed &&
             <Failed
                 post={post}
                 theme={theme}

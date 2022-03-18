@@ -6,6 +6,7 @@ import {useIntl} from 'react-intl';
 import {StyleSheet, TouchableOpacity, View} from 'react-native';
 
 import {removePost} from '@actions/local/post';
+import {retryPost} from '@actions/remote/post';
 import CompassIcon from '@components/compass_icon';
 import SlideUpPanelItem, {ITEM_HEIGHT} from '@components/slide_up_panel_item';
 import {useServerUrl} from '@context/server';
@@ -27,9 +28,6 @@ const styles = StyleSheet.create({
         marginLeft: 10,
     },
 });
-
-// TODO: Add Create post local action
-const retryPost = (serverUrl: string, post: PostModel) => post;
 
 const Failed = ({post, theme}: FailedProps) => {
     const intl = useIntl();
