@@ -59,11 +59,11 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme: Theme) => {
 
 type Props = {
     complete: string;
-    description?: string;
-    hint?: string;
+    description: string;
+    hint: string;
     onPress: (complete: string) => void;
-    suggestion?: string;
-    icon?: string;
+    suggestion: string;
+    icon: string;
 }
 
 const SlashSuggestionItem = ({
@@ -112,15 +112,16 @@ const SlashSuggestionItem = ({
                 source={bangIcon}
             />
         );
-    } else if (icon && icon.startsWith('http')) {
+    } else if (icon.startsWith('http')) {
         image = (
             <FastImage
                 source={{uri: icon}}
                 style={style.uriIcon}
             />
         );
-    } else if (icon && icon.startsWith('data:')) {
+    } else if (icon.startsWith('data:')) {
         if (icon.startsWith('data:image/svg+xml')) {
+            // TODO: What base64 library should we use? Security implications on doing things like this?
             const xml = ''; // base64.decode(icon.substring('data:image/svg+xml;base64,'.length));
             image = (
                 <SvgXml

@@ -1,7 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useEffect, useRef, useState} from 'react';
+import {debounce} from 'lodash';
+import React, {useEffect, useMemo, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
 import {
     FlatList,
@@ -25,16 +26,16 @@ export type Props = {
     currentTeamId: string;
     isSearch?: boolean;
     maxListHeight?: number;
-    onChangeText: (text: string) => void;
-    onResultCountChange: (count: number) => void;
+    updateValue: (text: string) => void;
+    onShowingChange: (c: boolean) => void;
     value: string;
     nestedScrollEnabled?: boolean;
     rootId?: string;
     channelId: string;
-    appsEnabled: boolean;
+    isAppsEnabled: boolean;
 };
 
-const keyExtractor = (item: ExtendedAutocompleteSuggestion): string => (item.suggestion || '') + item.type + item.item;
+const keyExtractor = (item: ExtendedAutocompleteSuggestion): string => item.Suggestion + item.type + item.item;
 
 const getStyleFromTheme = makeStyleSheetFromTheme((theme: Theme) => {
     return {
@@ -47,28 +48,40 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme: Theme) => {
     };
 });
 
+const emptySuggestonList: AutocompleteSuggestion[] = [];
+
 const AppSlashSuggestion = ({
     channelId,
     currentTeamId,
     rootId,
     value = '',
-    appsEnabled,
+    isAppsEnabled,
     maxListHeight,
     nestedScrollEnabled,
-    onChangeText,
-    onResultCountChange,
+    updateValue,
+    onShowingChange,
 }: Props) => {
     const intl = useIntl();
     const theme = useTheme();
     const serverUrl = useServerUrl();
     const appCommandParser = useRef<AppCommandParser>(new AppCommandParser(serverUrl, intl, channelId, currentTeamId, rootId, theme));
-    const [dataSource, setDataSource] = useState<AutocompleteSuggestion[]>([]);
-    const active = appsEnabled && Boolean(dataSource.length);
+    const [dataSource, setDataSource] = useState<AutocompleteSuggestion[]>(emptySuggestonList);
+    const active = isAppsEnabled && Boolean(dataSource.length);
     const style = getStyleFromTheme(theme);
+    const mounted = useRef(false);
+
+    const fetchAndShowAppCommandSuggestions = useMemo(() => debounce(async (pretext: string, cId: string, tId = '', rId?: string) => {
+        appCommandParser.current.setChannelContext(cId, tId, rId);
+        const suggestions = await appCommandParser.current.getSuggestions(pretext);
+        if (!mounted.current) {
+            return;
+        }
+        updateSuggestions(suggestions);
+    }), []);
 
     const updateSuggestions = (matches: ExtendedAutocompleteSuggestion[]) => {
         setDataSource(matches);
-        onResultCountChange(matches.length);
+        onShowingChange(Boolean(matches.length));
     };
 
     const completeSuggestion = (command: string) => {
@@ -81,13 +94,13 @@ const AppSlashSuggestion = ({
             completedDraft = `//${command} `;
         }
 
-        onChangeText(completedDraft);
+        updateValue(completedDraft);
 
         if (Platform.OS === 'ios') {
             // This is the second part of the hack were we replace the double / with just one
             // after the auto correct vanished
             setTimeout(() => {
-                onChangeText(completedDraft.replace(`//${command} `, `/${command} `));
+                updateValue(completedDraft.replace(`//${command} `, `/${command} `));
             });
         }
     };
@@ -113,7 +126,7 @@ const AppSlashSuggestion = ({
                 return (
                     <AtMentionItem
                         user={item.item as UserProfile | UserModel}
-                        onPress={completeUserSuggestion(item.complete)}
+                        onPress={completeUserSuggestion(item.Complete)}
                         testID={`autocomplete.at_mention.item.${item.item}`}
                     />
                 );
@@ -124,19 +137,19 @@ const AppSlashSuggestion = ({
                 return (
                     <ChannelMentionItem
                         channel={item.item as Channel | ChannelModel}
-                        onPress={completeChannelMention(item.complete)}
+                        onPress={completeChannelMention(item.Complete)}
                         testID={`autocomplete.channel_mention.item.${item.item}`}
                     />
                 );
             default:
                 return (
                     <SlashSuggestionItem
-                        description={item.description}
-                        hint={item.hint}
+                        description={item.Description}
+                        hint={item.Hint}
                         onPress={completeSuggestion}
-                        suggestion={item.suggestion}
-                        complete={item.complete}
-                        icon={item.iconData}
+                        suggestion={item.Suggestion}
+                        complete={item.Complete}
+                        icon={item.IconData}
                     />
                 );
         }
@@ -147,30 +160,34 @@ const AppSlashSuggestion = ({
         return appCommandParser.current.isAppCommand(pretext);
     };
 
-    const fetchAndShowAppCommandSuggestions = async (pretext: string, channelID: string, teamID = '', rootID?: string) => {
-        appCommandParser.current.setChannelContext(channelID, teamID, rootID);
-        const suggestions = await appCommandParser.current.getSuggestions(pretext);
-        updateSuggestions(suggestions);
-    };
-
     useEffect(() => {
         if (value[0] !== '/') {
-            setDataSource([]);
-            onResultCountChange(0);
+            fetchAndShowAppCommandSuggestions.cancel();
+            updateSuggestions(emptySuggestonList);
             return;
         }
 
         if (value.indexOf(' ') === -1) {
-            setDataSource([]);
+            // Let slash command suggestions handle base commands.
+            fetchAndShowAppCommandSuggestions.cancel();
+            updateSuggestions(emptySuggestonList);
             return;
         }
 
         if (!isAppCommand(value, channelId, currentTeamId, rootId)) {
-            setDataSource([]);
+            fetchAndShowAppCommandSuggestions.cancel();
+            updateSuggestions(emptySuggestonList);
             return;
         }
         fetchAndShowAppCommandSuggestions(value, channelId, currentTeamId, rootId);
     }, [value]);
+
+    useEffect(() => {
+        mounted.current = true;
+        return () => {
+            mounted.current = false;
+        };
+    }, []);
 
     if (!active) {
         // If we are not in an active state return null so nothing is rendered

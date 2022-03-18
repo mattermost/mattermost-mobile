@@ -47,30 +47,29 @@ const filterCommands = (matchTerm: string, commands: Command[]): AutocompleteSug
 
         return command.display_name.startsWith(matchTerm) || command.trigger.startsWith(matchTerm);
     });
-    return data.map((item) => {
+    return data.map((command) => {
         return {
-            complete: item.trigger,
-            suggestion: '/' + item.trigger,
-            hint: item.auto_complete_hint,
-            description: item.auto_complete_desc,
-            iconData: item.icon_url || item.autocomplete_icon_data || '',
+            Complete: command.trigger,
+            Suggestion: '/' + command.trigger,
+            Hint: command.auto_complete_hint,
+            Description: command.auto_complete_desc,
+            IconData: command.icon_url || command.autocomplete_icon_data || '',
         };
     });
 };
 
-const keyExtractor = (item: Command & AutocompleteSuggestion): string => item.id || item.suggestion || '';
+const keyExtractor = (item: Command & AutocompleteSuggestion): string => item.id || item.Suggestion;
 
 type Props = {
     currentTeamId: string;
-    commands: Command[];
     maxListHeight?: number;
-    onChangeText: (text: string) => void;
-    onResultCountChange: (count: number) => void;
+    updateValue: (text: string) => void;
+    onShowingChange: (c: boolean) => void;
     value: string;
     nestedScrollEnabled?: boolean;
     rootId?: string;
     channelId: string;
-    appsEnabled: boolean;
+    isAppsEnabled: boolean;
 };
 
 const emptyCommandList: Command[] = [];
@@ -80,11 +79,11 @@ const SlashSuggestion = ({
     channelId,
     currentTeamId,
     rootId,
-    onResultCountChange,
-    appsEnabled,
+    onShowingChange,
+    isAppsEnabled,
     maxListHeight,
     nestedScrollEnabled,
-    onChangeText,
+    updateValue,
     value = '',
 }: Props) => {
     const intl = useIntl();
@@ -92,6 +91,7 @@ const SlashSuggestion = ({
     const style = getStyleFromTheme(theme);
     const serverUrl = useServerUrl();
     const appCommandParser = useRef<AppCommandParser>(new AppCommandParser(serverUrl, intl, channelId, currentTeamId, rootId, theme));
+    const mounted = useRef(false);
 
     const [dataSource, setDataSource] = useState<AutocompleteSuggestion[]>(emptySuggestionList);
     const [commands, setCommands] = useState<Command[]>();
@@ -100,12 +100,15 @@ const SlashSuggestion = ({
 
     const updateSuggestions = useCallback((matches: AutocompleteSuggestion[]) => {
         setDataSource(matches);
-        onResultCountChange(matches.length);
-    }, [onResultCountChange]);
+        onShowingChange(Boolean(matches.length));
+    }, [onShowingChange]);
 
     const runFetch = useMemo(() => debounce(async (sUrl: string, term: string, tId: string, cId: string, rId?: string) => {
         try {
             const res = await fetchSuggestions(sUrl, term, tId, cId, rId);
+            if (!mounted.current) {
+                return;
+            }
             if (res.error) {
                 updateSuggestions(emptySuggestionList);
             } else if (res.suggestions.length === 0) {
@@ -127,7 +130,7 @@ const SlashSuggestion = ({
     const showBaseCommands = (text: string) => {
         let matches: AutocompleteSuggestion[] = [];
 
-        if (appsEnabled) {
+        if (isAppsEnabled) {
             const appCommands = getAppBaseCommandSuggestions(text);
             matches = matches.concat(appCommands);
         }
@@ -135,10 +138,10 @@ const SlashSuggestion = ({
         matches = matches.concat(filterCommands(text.substring(1), commands!));
 
         matches.sort((match1, match2) => {
-            if (match1.suggestion === match2.suggestion) {
+            if (match1.Suggestion === match2.Suggestion) {
                 return 0;
             }
-            return match1.suggestion > match2.suggestion ? 1 : -1;
+            return match1.Suggestion > match2.Suggestion ? 1 : -1;
         });
 
         updateSuggestions(matches);
@@ -154,30 +157,31 @@ const SlashSuggestion = ({
             completedDraft = `//${command} `;
         }
 
-        onChangeText(completedDraft);
+        updateValue(completedDraft);
 
         if (Platform.OS === 'ios') {
             // This is the second part of the hack were we replace the double / with just one
             // after the auto correct vanished
             setTimeout(() => {
-                onChangeText(completedDraft.replace(`//${command} `, `/${command} `));
+                updateValue(completedDraft.replace(`//${command} `, `/${command} `));
             });
         }
-    }, [onChangeText, serverUrl]);
+    }, [updateValue, serverUrl]);
 
     const renderItem = useCallback(({item}: {item: AutocompleteSuggestion}) => (
         <SlashSuggestionItem
-            description={item.description}
-            hint={item.hint}
+            description={item.Description}
+            hint={item.Hint}
             onPress={completeSuggestion}
-            suggestion={item.suggestion}
-            complete={item.complete}
-            icon={item.iconData}
+            suggestion={item.Suggestion}
+            complete={item.Complete}
+            icon={item.IconData}
         />
     ), [completeSuggestion]);
 
     useEffect(() => {
         if (value[0] !== '/') {
+            runFetch.cancel();
             updateSuggestions(emptySuggestionList);
             return;
         }
@@ -194,12 +198,20 @@ const SlashSuggestion = ({
         }
 
         if (value.indexOf(' ') === -1) {
+            runFetch.cancel();
             showBaseCommands(value);
             return;
         }
 
         runFetch(serverUrl, value, currentTeamId, channelId, rootId);
     }, [value, commands]);
+
+    useEffect(() => {
+        mounted.current = true;
+        return () => {
+            mounted.current = false;
+        };
+    }, []);
 
     if (!active) {
         // If we are not in an active state return null so nothing is rendered
