@@ -70,6 +70,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             paddingBottom: 2,
             backgroundColor: theme.centerChannelBg,
             borderWidth: 1,
+            borderBottomWidth: 0,
             borderColor: changeOpacity(theme.centerChannelColor, 0.20),
             borderTopLeftRadius: 12,
             borderTopRightRadius: 12,
