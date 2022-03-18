@@ -73,8 +73,9 @@ const SnackBar = ({barType, componentId, onPress, location, offsetY}: SnackBarPr
         };
 
         if (location === Screens.THREAD) {
+            const marginBottom = Math.abs((windowHeight / 2) - offsetY) + 10;
             tabletStyle = {
-                marginBottom: (windowHeight - offsetY) / 2,
+                marginBottom,
                 marginLeft: 0,
                 width: ratio * diffWidth,
             };
