@@ -108,6 +108,7 @@ export default class Markdown extends PureComponent {
                 channelLink: this.renderChannelLink,
                 emoji: this.renderEmoji,
                 hashtag: this.renderHashtag,
+                latexinline: this.renderParagraph,
 
                 paragraph: this.renderParagraph,
                 heading: this.renderHeading,
@@ -146,7 +147,7 @@ export default class Markdown extends PureComponent {
         if (node.type === 'image') {
             extraProps.reactChildren = node.react.children;
             extraProps.linkDestination = node.linkDestination;
-            extraProps.size = node.size;
+            extraProps.size = (typeof node.size === 'object') ? node.size : undefined;
         }
 
         return extraProps;
