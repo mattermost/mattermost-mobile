@@ -12,11 +12,14 @@ type Props = {
     currentChannelId: string;
     sortedIds: string[];
     category: CategoryModel;
+    limit: string;
 };
 
 const extractKey = (item: string) => item;
 
-const CategoryBody = ({currentChannelId, sortedIds, category}: Props) => {
+const CategoryBody = ({currentChannelId, sortedIds, category, limit}: Props) => {
+    let ids = sortedIds;
+
     const ChannelItem = useCallback(({item}: {item: string}) => {
         return (
             <ChannelListItem
@@ -27,9 +30,14 @@ const CategoryBody = ({currentChannelId, sortedIds, category}: Props) => {
         );
     }, [currentChannelId]);
 
+    if (category.type === 'direct_messages') {
+        const dmsCount = parseInt(limit, 10);
+        ids = sortedIds.slice(0, dmsCount - 1);
+    }
+
     return (
         <FlatList
-            data={sortedIds}
+            data={ids}
             renderItem={ChannelItem}
             keyExtractor={extractKey}
             removeClippedSubviews={true}
