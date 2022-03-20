@@ -88,7 +88,7 @@ const enhance = withObservables(['category'], ({category, locale, database}: {ca
         switchMap((c) => getSortedIds(database, c, locale)),
     );
 
-    let limit = of$('');
+    let limit = of$(0);
     if (category.type === 'direct_messages') {
         limit = database.get<PreferenceModel>(PREFERENCE).
             query(
@@ -96,7 +96,13 @@ const enhance = withObservables(['category'], ({category, locale, database}: {ca
                 Q.where('name', 'limit_visible_dms_gms'),
             ).observe().pipe(
                 switchMap(
-                    (val) => of$(val[0].value),
+                    (val) => {
+                        if (val[0]) {
+                            return of$(parseInt(val[0].value, 10));
+                        }
+
+                        return of$(0);
+                    },
                 ),
             );
     }

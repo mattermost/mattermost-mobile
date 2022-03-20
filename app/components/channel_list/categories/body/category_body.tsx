@@ -12,7 +12,7 @@ type Props = {
     currentChannelId: string;
     sortedIds: string[];
     category: CategoryModel;
-    limit: string;
+    limit: number;
 };
 
 const extractKey = (item: string) => item;
@@ -30,9 +30,8 @@ const CategoryBody = ({currentChannelId, sortedIds, category, limit}: Props) => 
         );
     }, [currentChannelId]);
 
-    if (category.type === 'direct_messages') {
-        const dmsCount = parseInt(limit, 10);
-        ids = sortedIds.slice(0, dmsCount - 1);
+    if (category.type === 'direct_messages' && limit > 0) {
+        ids = sortedIds.slice(0, limit - 1);
     }
 
     return (
