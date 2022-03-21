@@ -25,6 +25,7 @@ import {handleAddCustomEmoji, handleReactionRemovedFromPostEvent, handleReaction
 import {handleUserRoleUpdatedEvent, handleTeamMemberRoleUpdatedEvent, handleRoleUpdatedEvent} from './roles';
 import {handleLicenseChangedEvent, handleConfigChangedEvent} from './system';
 import {handleLeaveTeamEvent, handleUserAddedToTeamEvent, handleUpdateTeamEvent} from './teams';
+import {handleThreadUpdatedEvent, handleThreadReadChangedEvent, handleThreadFollowChangedEvent} from './threads';
 import {handleUserUpdatedEvent, handleUserTypingEvent} from './users';
 
 // ESR: 5.37
@@ -325,17 +326,17 @@ export async function handleEvent(serverUrl: string, msg: WebSocketMessage) {
             break;
 
         case WebsocketEvents.THREAD_UPDATED:
+            handleThreadUpdatedEvent(serverUrl, msg);
             break;
 
-        // return dispatch(handleThreadUpdated(msg));
         case WebsocketEvents.THREAD_READ_CHANGED:
+            handleThreadReadChangedEvent(serverUrl, msg);
             break;
 
-        // return dispatch(handleThreadReadChanged(msg));
         case WebsocketEvents.THREAD_FOLLOW_CHANGED:
+            handleThreadFollowChangedEvent(serverUrl, msg);
             break;
 
-        // return dispatch(handleThreadFollowChanged(msg));
         case WebsocketEvents.APPS_FRAMEWORK_REFRESH_BINDINGS:
             break;
 

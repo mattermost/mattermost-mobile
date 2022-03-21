@@ -7,14 +7,13 @@ import withObservables from '@nozbe/with-observables';
 import {of as of$} from 'rxjs';
 import {switchMap} from 'rxjs/operators';
 
-import {Database} from '@constants';
+import {MM_TABLES} from '@constants/database';
 
 import Thread from './thread';
 
 import type {WithDatabaseArgs} from '@typings/database/database';
 import type PostModel from '@typings/database/models/servers/post';
 
-const {MM_TABLES} = Database;
 const {SERVER: {POST}} = MM_TABLES;
 
 const enhanced = withObservables(['rootId'], ({database, rootId}: WithDatabaseArgs & {rootId: string}) => {

@@ -93,6 +93,12 @@ export type HandleThreadsArgs = {
   prepareRecordsOnly?: boolean;
 };
 
+export type HandleAddThreadParticipantsArgs = {
+  prepareRecordsOnly: boolean;
+  threadId: string;
+  participants: string[];
+};
+
 export type HandleThreadParticipantsArgs = {
   prepareRecordsOnly: boolean;
   threadsParticipants: ParticipantsPerThread[];
@@ -104,6 +110,12 @@ export type SanitizeReactionsArgs = {
   rawReactions: Reaction[];
   skipSync?: boolean;
 };
+
+export type SanitizeAddThreadParticipantsArgs = {
+  database: Database;
+  thread_id: $ID<Thread>;
+  rawParticipants: string[];
+}
 
 export type SanitizeThreadParticipantsArgs = {
   database: Database;

@@ -137,7 +137,7 @@ export const selectAttachmentMenuAction = (serverUrl: string, postId: string, ac
     return postActionWithCookie(serverUrl, postId, actionId, '', selectedOption);
 };
 
-export const markPostAsDeleted = async (serverUrl: string, post: Post) => {
+export const markPostAsDeleted = async (serverUrl: string, post: Post, prepareRecordsOnly = false) => {
     const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
     if (!operator) {
         return {error: `${serverUrl} database not found`};
@@ -145,19 +145,20 @@ export const markPostAsDeleted = async (serverUrl: string, post: Post) => {
 
     const dbPost = await queryPostById(operator.database, post.id);
     if (!dbPost) {
-        return {};
+        return {error: 'Post not found'};
     }
 
-    dbPost.prepareUpdate((p) => {
+    const model = dbPost.prepareUpdate((p) => {
         p.deleteAt = Date.now();
         p.message = '';
         p.metadata = null;
         p.props = undefined;
     });
 
-    operator.batchRecords([dbPost]);
-
-    return {post: dbPost};
+    if (!prepareRecordsOnly) {
+        operator.batchRecords([dbPost]);
+    }
+    return {model};
 };
 
 export const processPostsFetched = async (serverUrl: string, actionType: string, data: PostResponse, fetchOnly = false) => {

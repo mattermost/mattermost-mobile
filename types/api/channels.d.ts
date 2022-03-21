@@ -55,7 +55,9 @@ type ChannelMembership = {
     roles: string;
     last_viewed_at: number;
     msg_count: number;
+    msg_count_root?: number;
     mention_count: number;
+    mention_count_root?: number;
     notify_props: Partial<ChannelNotifyProps>;
     last_post_at?: number;
     last_update_at: number;
