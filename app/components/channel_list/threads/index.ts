@@ -21,14 +21,14 @@ const enhanced = withObservables([], ({database}: WithDatabaseArgs) => {
         map(({value}: {value: string}) => value),
     );
 
-    const isCRTEnabled = observeIsCRTEnabled(database);
+    const isCRTEnabledObserver = observeIsCRTEnabled(database);
 
     return {
-        isCRTEnabled,
-        unreadsAndMentions: combineLatest([isCRTEnabled, currentTeamId]).pipe(
+        isCRTEnabled: isCRTEnabledObserver,
+        unreadsAndMentions: combineLatest([isCRTEnabledObserver, currentTeamId]).pipe(
             switchMap(
-                ([iCE, teamId]) => {
-                    if (!iCE) {
+                ([isCRTEnabled, teamId]) => {
+                    if (!isCRTEnabled) {
                         return of$({unreads: 0, mentions: 0});
                     }
                     return queryUnreadsAndMentionsInTeam(database, teamId);
