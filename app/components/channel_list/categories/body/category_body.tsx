@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback} from 'react';
+import React, {useCallback, useMemo} from 'react';
 import {FlatList} from 'react-native';
 
 import ChannelListItem from './channel';
@@ -18,7 +18,12 @@ type Props = {
 const extractKey = (item: string) => item;
 
 const CategoryBody = ({currentChannelId, sortedIds, category, limit}: Props) => {
-    let ids = sortedIds;
+    const ids = useMemo(() => {
+        if (category.type === 'direct_messages' && limit > 0) {
+            return sortedIds.slice(0, limit - 1);
+        }
+        return sortedIds;
+    }, [category.type, limit]);
 
     const ChannelItem = useCallback(({item}: {item: string}) => {
         return (
@@ -29,10 +34,6 @@ const CategoryBody = ({currentChannelId, sortedIds, category, limit}: Props) => 
             />
         );
     }, [currentChannelId]);
-
-    if (category.type === 'direct_messages' && limit > 0) {
-        ids = sortedIds.slice(0, limit - 1);
-    }
 
     return (
         <FlatList
