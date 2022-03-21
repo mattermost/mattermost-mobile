@@ -58,7 +58,7 @@ export const switchToThread = async (serverUrl: string, rootId: string) => {
 
             // CRT: Add follow/following button
             rightButtons.push({
-                id: 1,
+                id: 'thread-follow-button',
                 component: {
                     id: thread.id,
                     name: 'ThreadFollow',
