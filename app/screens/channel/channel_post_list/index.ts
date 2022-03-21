@@ -32,8 +32,8 @@ const enhanced = withObservables(['channelId', 'forceQueryAfterAppState'], ({dat
         switchMap((currentUserId) => database.get<UserModel>(USER).findAndObserve(currentUserId.value)),
     );
 
-    const isCRTEnabled = observeIsCRTEnabled(database);
-    const posts = database.get<PostsInChannelModel>(POSTS_IN_CHANNEL).query(
+    const isCRTEnabledObserver = observeIsCRTEnabled(database);
+    const postsInChannelObserver = database.get<PostsInChannelModel>(POSTS_IN_CHANNEL).query(
         Q.where('channel_id', channelId),
         Q.sortBy('latest', Q.desc),
     ).observeWithColumns(['earliest', 'latest']);
@@ -41,15 +41,15 @@ const enhanced = withObservables(['channelId', 'forceQueryAfterAppState'], ({dat
     return {
         currentTimezone: currentUser.pipe((switchMap((user) => of$(getTimezone(user.timezone))))),
         currentUsername: currentUser.pipe((switchMap((user) => of$(user.username)))),
-        isCRTEnabled,
+        isCRTEnabled: isCRTEnabledObserver,
         isTimezoneEnabled: config.pipe(
             switchMap((cfg) => of$(cfg.value.ExperimentalTimezone === 'true')),
         ),
         lastViewedAt: database.get<MyChannelModel>(MY_CHANNEL).findAndObserve(channelId).pipe(
             switchMap((myChannel) => of$(myChannel.viewedAt)),
         ),
-        posts: combineLatest([isCRTEnabled, posts]).pipe(
-            switchMap(([iCE, postsInChannel]) => {
+        posts: combineLatest([isCRTEnabledObserver, postsInChannelObserver]).pipe(
+            switchMap(([isCRTEnabled, postsInChannel]) => {
                 if (!postsInChannel.length) {
                     return of$([]);
                 }
@@ -59,7 +59,7 @@ const enhanced = withObservables(['channelId', 'forceQueryAfterAppState'], ({dat
                     Q.where('channel_id', channelId),
                     Q.where('create_at', Q.between(earliest, latest)),
                 ];
-                if (iCE) {
+                if (isCRTEnabled) {
                     matchPostsConditions.push(Q.where('root_id', ''));
                 }
                 return database.get<PostModel>(POST).query(
