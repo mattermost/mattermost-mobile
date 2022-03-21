@@ -2,7 +2,6 @@
 // See LICENSE.txt for license information.
 
 import {updateThreadRead} from '@actions/remote/thread';
-import CompassIcon from '@components/compass_icon';
 import {ActionType, General, Screens} from '@constants';
 import DatabaseManager from '@database/manager';
 import {getTranslations, t} from '@i18n';
@@ -96,11 +95,6 @@ export const switchToThread = async (serverUrl: string, rootId: string) => {
                     color: changeOpacity(theme.sidebarHeaderTextColor, 0.72),
                     text: subtitle,
                 },
-                leftButtons: [{
-                    id: closeButtonId,
-                    icon: CompassIcon.getImageSourceSync('close', 24, theme.centerChannelColor),
-                    testID: closeButtonId,
-                }],
                 rightButtons,
             },
         });

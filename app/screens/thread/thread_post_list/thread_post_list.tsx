@@ -15,7 +15,7 @@ import type ChannelModel from '@typings/database/models/servers/channel';
 import type PostModel from '@typings/database/models/servers/post';
 
 type Props = {
-    channelId: string;
+    channel: ChannelModel;
     currentTimezone: string | null;
     currentUsername: string;
     isCRTEnabled: boolean;
@@ -34,8 +34,8 @@ const styles = StyleSheet.create({
 });
 
 const ThreadPostList = ({
-    channelId, currentTimezone, currentUsername,
-    isTimezoneEnabled, lastViewedAt, nativeID, posts, rootPost,
+    channel, currentTimezone, currentUsername,
+    isCRTEnabled, isTimezoneEnabled, lastViewedAt, nativeID, posts, rootPost,
 }: Props) => {
     const isTablet = useIsTablet();
     const serverUrl = useServerUrl();
@@ -55,7 +55,7 @@ const ThreadPostList = ({
 
     const postList = (
         <PostList
-            channelId={channelId}
+            channelId={channel.id}
             contentContainerStyle={styles.container}
             currentTimezone={currentTimezone}
             currentUsername={currentUsername}
