@@ -1003,7 +1003,7 @@ describe('AppCommandParser', () => {
                 path: '/create-issue-lookup',
                 query: 'special',
                 raw_command: '/jira issue create --summary "The summary" --epic epic1 --project special',
-                selected_field: "project",
+                selected_field: 'project',
                 values: {
                     summary: 'The summary',
                     epic: {
