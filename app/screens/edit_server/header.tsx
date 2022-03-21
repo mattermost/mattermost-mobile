@@ -40,13 +40,13 @@ const EditServerHeader = ({theme}: Props) => {
                 defaultMessage='Edit server name'
                 id='edit_server.title'
                 style={styles.title}
-                testID='edit_server.title'
+                testID='edit_server_header.title'
             />
             <FormattedText
                 defaultMessage='Specify a display name for this server'
                 id='edit_server.description'
                 style={styles.description}
-                testID='edit_server.description'
+                testID='edit_server_header.description'
             />
         </View>
     );
