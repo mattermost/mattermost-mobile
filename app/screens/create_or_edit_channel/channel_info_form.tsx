@@ -30,14 +30,12 @@ import {
 const getStyleSheet = makeStyleSheetFromTheme((theme) => ({
     container: {
         flex: 1,
+        backgroundColor: changeOpacity(theme.centerChannelColor, 0.06),
     },
     scrollView: {
-        flex: 1,
-        backgroundColor: changeOpacity(theme.centerChannelColor, 0.06),
         paddingTop: 30,
     },
     errorContainer: {
-        backgroundColor: changeOpacity(theme.centerChannelColor, 0.06),
         width: '100%',
     },
     errorWrapper: {
@@ -55,8 +53,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => ({
         width: 20,
         color: theme.centerChannelBg,
     },
-    titleContainer30: {
-        flexDirection: 'row',
+    textInput: {
         marginTop: 30,
     },
     helpText: {
@@ -217,39 +214,38 @@ export default function ChannelInfoForm({
 
                 // @ts-expect-error legacy ref
                 ref={scrollViewRef}
-                style={styles.container}
                 keyboardShouldPersistTaps={'always'}
                 onKeyboardDidShow={onKeyboardDidShow}
                 onKeyboardDidHide={onKeyboardDidHide}
                 enableAutomaticScroll={!keyboardVisible}
+                contentContainerStyle={styles.scrollView}
             >
                 {displayError}
-                <TouchableWithoutFeedback onPress={blur}>
-                    <View style={styles.scrollView}>
+                <TouchableWithoutFeedback
+                    onPress={blur}
+                >
+                    <View>
                         {showSelector && (
-                            <View>
-                                <SectionItem
-                                    label={(
-                                        <FormattedText
-                                            id='channel_modal.makePrivate.'
-                                            defaultMessage={'Make Private'}
-                                        />
-                                    )}
-                                    description={(
-                                        <FormattedText
-                                            id='channel_modal.makePrivate.description'
-                                            defaultMessage={'When a channel is set to private, only invited team members can access and participate in that channel'}
-                                        />
-                                    )}
-                                    action={handlePress}
-                                    actionType={'toggle'}
-                                    selected={isPrivate}
-                                />
-                            </View>
+                            <SectionItem
+                                label={(
+                                    <FormattedText
+                                        id='channel_modal.makePrivate.'
+                                        defaultMessage={'Make Private'}
+                                    />
+                                )}
+                                description={(
+                                    <FormattedText
+                                        id='channel_modal.makePrivate.description'
+                                        defaultMessage={'When a channel is set to private, only invited team members can access and participate in that channel'}
+                                    />
+                                )}
+                                action={handlePress}
+                                actionType={'toggle'}
+                                selected={isPrivate}
+                            />
                         )}
                         {!displayHeaderOnly && (
-                            <View>
-                                <View style={styles.titleContainer30}/>
+                            <>
                                 <FloatingTextInput
                                     autoCorrect={false}
                                     autoCapitalize={'none'}
@@ -265,11 +261,10 @@ export default function ChannelInfoForm({
                                     showErrorIcon={false}
                                     spellCheck={false}
                                     testID='edit_channel_info.displayname.input'
-                                    theme={theme}
                                     value={displayName}
+                                    ref={nameInput}
+                                    containerStyle={styles.textInput}
                                 />
-                                <View style={styles.titleContainer30}/>
-
                                 <FloatingTextInput
                                     autoCorrect={false}
                                     autoCapitalize={'none'}
@@ -279,56 +274,47 @@ export default function ChannelInfoForm({
                                     label={labelPurpose}
                                     placeholder={placeholderPurpose}
                                     onChangeText={onPurposeChange}
-                                    maxLength={Channel.MAX_CHANNELNAME_LENGTH}
                                     keyboardAppearance={getKeyboardAppearanceFromTheme(theme)}
                                     returnKeyType='next'
                                     showErrorIcon={false}
                                     spellCheck={false}
                                     testID='edit_channel_info.purpose.input'
-                                    theme={theme}
                                     value={purpose}
+                                    ref={purposeInput}
+                                    containerStyle={styles.textInput}
                                 />
-                                <View>
-                                    <FormattedText
-                                        style={styles.helpText}
-                                        id='channel_modal.descriptionHelp'
-                                        defaultMessage='Describe how this channel should be used.'
-                                    />
-                                </View>
-                            </View>
+                                <FormattedText
+                                    style={styles.helpText}
+                                    id='channel_modal.descriptionHelp'
+                                    defaultMessage='Describe how this channel should be used.'
+                                />
+                            </>
                         )}
-                        <View
+                        <FloatingTextInput
+                            autoCorrect={false}
+                            autoCapitalize={'none'}
+                            blurOnSubmit={false}
+                            disableFullscreenUI={true}
+                            enablesReturnKeyAutomatically={true}
+                            label={labelHeader}
+                            placeholder={placeholderHeader}
+                            onChangeText={onHeaderChange}
+                            multiline={true}
+                            keyboardAppearance={getKeyboardAppearanceFromTheme(theme)}
+                            returnKeyType='next'
+                            showErrorIcon={false}
+                            spellCheck={false}
+                            testID='edit_channel_info.header.input'
+                            value={header}
                             onLayout={onHeaderLayout}
-                            style={styles.titleContainer30}
-                        >
-                            <FloatingTextInput
-                                autoCorrect={false}
-                                autoCapitalize={'none'}
-                                blurOnSubmit={false}
-                                disableFullscreenUI={true}
-                                enablesReturnKeyAutomatically={true}
-                                label={labelHeader}
-                                placeholder={placeholderHeader}
-                                onChangeText={onHeaderChange}
-                                maxLength={Channel.MAX_CHANNELNAME_LENGTH}
-                                multiline={true}
-                                keyboardAppearance={getKeyboardAppearanceFromTheme(theme)}
-                                returnKeyType='next'
-                                showErrorIcon={false}
-                                style={styles.input}
-                                spellCheck={false}
-                                testID='edit_channel_info.header.input'
-                                theme={theme}
-                                value={header}
-                            />
-                        </View>
-                        <View style={styles.headerHelpText}>
-                            <FormattedText
-                                style={styles.helpText}
-                                id='channel_modal.headerHelp'
-                                defaultMessage={'Specify text to appear in the channel header beside the channel name. For example, include frequently used links by typing link text [Link Title](http://example.com).'}
-                            />
-                        </View>
+                            ref={headerInput}
+                            containerStyle={styles.textInput}
+                        />
+                        <FormattedText
+                            style={styles.helpText}
+                            id='channel_modal.headerHelp'
+                            defaultMessage={'Specify text to appear in the channel header beside the channel name. For example, include frequently used links by typing link text [Link Title](http://example.com).'}
+                        />
                     </View>
                 </TouchableWithoutFeedback>
             </KeyboardAwareScrollView>

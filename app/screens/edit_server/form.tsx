@@ -165,7 +165,6 @@ const EditServerForm = ({
                     returnKeyType='done'
                     spellCheck={false}
                     testID='select_server.server_display_name.input'
-                    theme={theme}
                     value={displayName}
                 />
             </View>

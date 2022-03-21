@@ -116,7 +116,7 @@ export function generateChannelNameFromDisplayName(displayName: string) {
     return name;
 }
 
-export const handleCreateChannel = async (serverUrl: string, displayName: string, purpose: string, header: string, type: ChannelType) => {
+export const createChannel = async (serverUrl: string, displayName: string, purpose: string, header: string, type: ChannelType) => {
     const {database, operator} = DatabaseManager.serverDatabases[serverUrl];
     if (!database) {
         return {error: `${serverUrl} database not found`};
@@ -143,16 +143,12 @@ export const handleCreateChannel = async (serverUrl: string, displayName: string
         } as Channel;
 
         const channelData = await client.createChannel(channel);
-        await client.addToChannel(currentUserId, channelData.id);
 
-        if (channelData?.id) {
-            const chData = await fetchMyChannelsForTeam(serverUrl, currentTeamId, false, 0, false);
-            const channelModels = await prepareMyChannelsForTeam(operator, channelData.team_id, chData!.channels!, chData!.memberships!);
-            if (channelModels) {
-                const models = await Promise.all(channelModels);
-                await operator.batchRecords(models.flat());
-            }
-            await switchToChannelById(serverUrl, channelData.id, channelData.team_id);
+        const member = await client.getChannelMember(channelData.id, currentUserId);
+        const channelModels = await prepareMyChannelsForTeam(operator, channelData.team_id, [channelData], [member]);
+        if (channelModels?.length) {
+            const models = await Promise.all(channelModels);
+            await operator.batchRecords(models.flat());
         }
         return {channel: channelData};
     } catch (error) {
@@ -160,9 +156,9 @@ export const handleCreateChannel = async (serverUrl: string, displayName: string
     }
 };
 
-export const handlePatchChannel = async (serverUrl: string, channelPatch: Partial<Channel> & {id: string}) => {
-    const database = DatabaseManager.serverDatabases[serverUrl]?.database;
-    if (!database) {
+export const patchChannel = async (serverUrl: string, channelPatch: Partial<Channel> & {id: string}) => {
+    const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
+    if (!operator) {
         return {error: `${serverUrl} database not found`};
     }
 
@@ -174,7 +170,14 @@ export const handlePatchChannel = async (serverUrl: string, channelPatch: Partia
     }
 
     try {
+        const currentUserId = await queryCurrentUserId(operator.database);
         const channelData = await client.patchChannel(channelPatch.id, channelPatch);
+        const member = await client.getChannelMember(channelData.id, currentUserId);
+        const channelModels = await prepareMyChannelsForTeam(operator, channelData.team_id, [channelData], [member]);
+        if (channelModels?.length) {
+            const models = await Promise.all(channelModels);
+            await operator.batchRecords(models.flat());
+        }
         return {channel: channelData};
     } catch (error) {
         return {error};

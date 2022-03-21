@@ -8,7 +8,7 @@ import {
 } from 'react-native';
 import {Navigation} from 'react-native-navigation';
 
-import {handlePatchChannel, handleCreateChannel} from '@actions/remote/channel';
+import {patchChannel as handlePatchChannel, createChannel, switchToChannelById} from '@actions/remote/channel';
 import ChannelInfoForm from '@app/screens/create_or_edit_channel/channel_info_form';
 import {General} from '@constants';
 import {useServerUrl} from '@context/server';
@@ -151,7 +151,7 @@ const CreateOrEditChannel = ({
         }
 
         setCanSave(false);
-        const createdChannel = await handleCreateChannel(serverUrl, displayName, purpose, header, type);
+        const createdChannel = await createChannel(serverUrl, displayName, purpose, header, type);
         if (createdChannel.error) {
             dispatch({
                 type: RequestActions.FAILURE,
@@ -162,6 +162,7 @@ const CreateOrEditChannel = ({
 
         dispatch({type: RequestActions.COMPLETE});
         close(componentId);
+        switchToChannelById(serverUrl, createdChannel.channel!.id, createdChannel.channel!.team_id);
     }, [serverUrl, type, displayName, header, purpose, isValidDisplayName]);
 
     const onUpdateChannel = useCallback(async () => {

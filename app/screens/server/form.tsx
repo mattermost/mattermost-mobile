@@ -184,7 +184,6 @@ const ServerForm = ({
                     returnKeyType='next'
                     spellCheck={false}
                     testID='server_form.server_url.input'
-                    theme={theme}
                     value={url}
                 />
             </View>
@@ -206,7 +205,6 @@ const ServerForm = ({
                     returnKeyType='done'
                     spellCheck={false}
                     testID='server_form.server_display_name.input'
-                    theme={theme}
                     value={displayName}
                 />
             </View>

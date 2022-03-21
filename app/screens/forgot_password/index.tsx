@@ -230,7 +230,6 @@ const ForgotPassword = ({serverUrl, theme}: Props) => {
                             returnKeyType='next'
                             spellCheck={false}
                             testID='forgot.password.email'
-                            theme={theme}
                             value={email}
                         />
                         <Button

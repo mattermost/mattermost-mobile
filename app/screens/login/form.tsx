@@ -350,7 +350,6 @@ const LoginForm = ({config, extra, keyboardAwareRef, numberSSOs, serverDisplayNa
                 showErrorIcon={false}
                 spellCheck={false}
                 testID='login_form.username.input'
-                theme={theme}
                 value={loginId}
             />
             <FloatingTextInput
@@ -372,7 +371,6 @@ const LoginForm = ({config, extra, keyboardAwareRef, numberSSOs, serverDisplayNa
                 spellCheck={false}
                 secureTextEntry={true}
                 testID='login_form.password.input'
-                theme={theme}
                 value={password}
             />
 

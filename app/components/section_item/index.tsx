@@ -20,14 +20,14 @@ const ActionTypes = {
 };
 
 type Props = {
-        testID?: string;
+    testID?: string;
 
-        action: (value: string | boolean) => void;
-        actionType: string;
-        actionValue?: string;
-        label: ReactElement;
-        selected: boolean;
-        description: ReactElement;
+    action: (value: string | boolean) => void;
+    actionType: string;
+    actionValue?: string;
+    label: ReactElement;
+    selected: boolean;
+    description: ReactElement;
 }
 
 const SectionItem = ({testID, action, actionType, actionValue, label, selected, description}: Props) => {
