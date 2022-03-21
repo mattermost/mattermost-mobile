@@ -26,19 +26,21 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         left: 0,
     },
     icon: {
-        color: changeOpacity(theme.sidebarText, 0.72),
+        color: changeOpacity(theme.sidebarText, 0.5),
         fontSize: 24,
-        lineHeight: 28,
+    },
+    iconHighlight: {
+        color: theme.sidebarText,
     },
     textContainer: {
         flex: 1,
     },
     text: {
         color: changeOpacity(theme.sidebarText, 0.72),
-        paddingLeft: 12,
+        paddingLeft: 9,
         ...typography('Body', 200, 'Regular'),
     },
-    highlight: {
+    textHighlight: {
         color: theme.sidebarText,
         ...typography('Body', 200, 'SemiBold'),
     },
@@ -66,8 +68,8 @@ const ThreadsButton = ({isCRTEnabled, unreadsAndMentions}: Props) => {
         const icon = [styles.icon];
         const text = [styles.text];
         if (unreads) {
-            icon.push(styles.highlight);
-            text.push(styles.highlight);
+            icon.push(styles.iconHighlight);
+            text.push(styles.textHighlight);
         }
         return [icon, text];
     }, [styles, unreads]);
@@ -91,6 +93,7 @@ const ThreadsButton = ({isCRTEnabled, unreadsAndMentions}: Props) => {
                     />
                 </View>
                 <Badge
+                    borderColor='transparent'
                     value={mentions}
                     style={styles.badge}
                     visible={mentions > 0}
