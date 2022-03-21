@@ -6,7 +6,7 @@ import {DeviceEventEmitter} from 'react-native';
 
 import {storeMyChannelsForTeam, markChannelAsUnread, markChannelAsViewed, updateLastPostAt} from '@actions/local/channel';
 import {markPostAsDeleted} from '@actions/local/post';
-import {processThreadsFromReceivedPosts, processUpdateThreadReplyCount} from '@actions/local/thread';
+import {processThreadFromNewPost, processUpdateThreadReplyCount} from '@actions/local/thread';
 import {fetchMyChannel, markChannelAsRead} from '@actions/remote/channel';
 import {fetchPostAuthors, fetchPostById} from '@actions/remote/post';
 import {getThread} from '@actions/remote/thread';
@@ -65,27 +65,9 @@ export async function handleNewPostEvent(serverUrl: string, msg: WebSocketMessag
 
     const isCRTEnabled = await getIsCRTEnabled(database);
     if (isCRTEnabled) {
-        if (post.root_id) {
-            // If the post is a reply, we need to update the thread data: `reply_count`
-            const {model: threadModel} = await processUpdateThreadReplyCount(serverUrl, post.root_id, post.reply_count, true);
-            if (threadModel) {
-                models.push(threadModel);
-            }
-
-            // Add current user as a participant to the thread
-            const threadParticipantModels = await operator.handleAddThreadParticipants({
-                threadId: post.root_id,
-                participants: [post.user_id],
-                prepareRecordsOnly: true,
-            });
-            if (threadParticipantModels?.length) {
-                models.push(...threadParticipantModels);
-            }
-        } else { // If the post is a root post, then we need to add it to the thread table
-            const {models: threadModels} = await processThreadsFromReceivedPosts(serverUrl, [post], true);
-            if (threadModels?.length) {
-                models.push(...threadModels);
-            }
+        const {models: threadModels} = await processThreadFromNewPost(serverUrl, post, true);
+        if (threadModels?.length) {
+            models.push(...threadModels);
         }
     }
 

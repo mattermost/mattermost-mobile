@@ -5,8 +5,9 @@ import {Q} from '@nozbe/watermelondb';
 import {withDatabase} from '@nozbe/watermelondb/DatabaseProvider';
 import withObservables from '@nozbe/with-observables';
 import {from as from$, of as of$} from 'rxjs';
-import {catchError, switchMap} from 'rxjs/operators';
+import {switchMap} from 'rxjs/operators';
 
+import {queryThreadById} from '@app/queries/servers/thread';
 import {Permissions, Preferences} from '@constants';
 import {MM_TABLES, SYSTEM_IDENTIFIERS} from '@constants/database';
 import {appsEnabled} from '@utils/apps';
@@ -156,10 +157,7 @@ const withPost = withObservables(
             isLastReply,
             isPostAddChannelMember,
             post: post.observe(),
-            thread: post.thread.observe().pipe(
-                switchMap((row) => of$(row)),
-                catchError(() => of$(undefined)),
-            ),
+            thread: queryThreadById(database, post.id),
             reactionsCount: post.reactions.observeCount(),
         };
     });

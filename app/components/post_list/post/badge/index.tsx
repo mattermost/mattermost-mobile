@@ -14,21 +14,6 @@ type Props = {
     thread: ThreadModel;
 };
 
-const Badge = ({testID, theme, thread}: Props) => {
-    if (thread.unreadMentions || thread.unreadReplies) {
-        const styles = getStyleSheet(theme);
-        return (
-            <View
-                style={styles.badgeContainer}
-                testID={testID}
-            >
-                <View style={styles.unreadDot}/>
-            </View>
-        );
-    }
-    return null;
-};
-
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     return {
         badgeContainer: {
@@ -47,5 +32,20 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
         },
     };
 });
+
+const Badge = ({testID, theme, thread}: Props) => {
+    if (thread.unreadMentions || thread.unreadReplies) {
+        const styles = getStyleSheet(theme);
+        return (
+            <View
+                style={styles.badgeContainer}
+                testID={testID}
+            >
+                <View style={styles.unreadDot}/>
+            </View>
+        );
+    }
+    return null;
+};
 
 export default Badge;

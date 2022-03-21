@@ -148,7 +148,6 @@ const Footer = ({currentUserId, participants, serverUrl, teamId, teammateNameDis
         );
     }
 
-    // threadstarter should be the first one in the avatars list
     const participantsList = useMemo(() => {
         if (participants?.length) {
             const filteredParticipantsList = [...participants].reverse();

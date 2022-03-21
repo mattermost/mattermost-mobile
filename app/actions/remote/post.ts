@@ -9,7 +9,7 @@ import {DeviceEventEmitter} from 'react-native';
 import {markChannelAsUnread, updateLastPostAt} from '@actions/local/channel';
 import {processPostsFetched, removePost} from '@actions/local/post';
 import {addRecentReaction} from '@actions/local/reactions';
-import {processThreadsFromReceivedPosts} from '@actions/local/thread';
+import {processThreadFromNewPost, processThreadsFromReceivedPosts} from '@actions/local/thread';
 import {ActionType, Events, General, Post, ServerErrors} from '@constants';
 import {MM_TABLES, SYSTEM_IDENTIFIERS} from '@constants/database';
 import DatabaseManager from '@database/manager';
@@ -64,11 +64,13 @@ export const createPost = async (serverUrl: string, post: Partial<Post>, files: 
         return {error};
     }
 
-    const currentUserId = await queryCurrentUserId(operator.database);
+    const {database} = operator;
+
+    const currentUserId = await queryCurrentUserId(database);
     const timestamp = Date.now();
     const pendingPostId = post.pending_post_id || `${currentUserId}:${timestamp}`;
 
-    const existing = await queryPostById(operator.database, pendingPostId);
+    const existing = await queryPostById(database, pendingPostId);
     if (existing && !existing.props.failed) {
         return {data: false};
     }
@@ -113,7 +115,7 @@ export const createPost = async (serverUrl: string, post: Partial<Post>, files: 
         initialPostModels.push(...postModels);
     }
 
-    const customEmojis = await queryAllCustomEmojis(operator.database);
+    const customEmojis = await queryAllCustomEmojis(database);
     const emojisInMessage = matchEmoticons(newPost.message);
     const reactionModels = await addRecentReaction(serverUrl, getValidEmojis(emojisInMessage, customEmojis), true);
     if (!('error' in reactionModels) && reactionModels.length) {
@@ -122,13 +124,24 @@ export const createPost = async (serverUrl: string, post: Partial<Post>, files: 
 
     operator.batchRecords(initialPostModels);
 
+    const isCRTEnabled = await getIsCRTEnabled(database);
+
     try {
         const created = await client.createPost(newPost);
-        await operator.handlePosts({
+        const models: Model[] = await operator.handlePosts({
             actionType: ActionType.POSTS.RECEIVED_NEW,
             order: [created.id],
             posts: [created],
+            prepareRecordsOnly: true,
         });
+        if (isCRTEnabled) {
+            const {models: threadModels} = await processThreadFromNewPost(serverUrl, created, true);
+            if (threadModels?.length) {
+                models.push(...threadModels);
+            }
+        }
+        operator.batchRecords(models);
+
         newPost = created;
     } catch (error: any) {
         const errorPost = {
@@ -149,11 +162,19 @@ export const createPost = async (serverUrl: string, post: Partial<Post>, files: 
         ) {
             await removePost(serverUrl, databasePost);
         } else {
-            await operator.handlePosts({
+            const models: Model[] = await operator.handlePosts({
                 actionType: ActionType.POSTS.RECEIVED_NEW,
                 order: [errorPost.id],
                 posts: [errorPost],
+                prepareRecordsOnly: true,
             });
+            if (isCRTEnabled) {
+                const {models: threadModels} = await processThreadFromNewPost(serverUrl, errorPost, true);
+                if (threadModels?.length) {
+                    models.push(...threadModels);
+                }
+            }
+            operator.batchRecords(models);
         }
     }
 

@@ -40,6 +40,14 @@ export const observeIsCRTEnabled = (database: Database) => {
     );
 };
 
+export const queryThreadById = (database: Database, threadId: string) => {
+    return database.get<ThreadModel>(THREAD).query(
+        Q.where('id', threadId),
+    ).observe().pipe(
+        switchMap((threads) => threads[0]?.observe() || of$(undefined)),
+    );
+};
+
 type QueryThreadsInTeamArgs = {
     database: Database;
     hasReplies?: boolean;

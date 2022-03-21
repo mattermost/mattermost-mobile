@@ -112,6 +112,46 @@ export const switchToThread = async (serverUrl: string, rootId: string) => {
     }
 };
 
+// When new post arrives:
+// 1. If a reply, then update the reply_count, add user as the participant
+// 2. Else add the post as a thread
+export const processThreadFromNewPost = async (serverUrl: string, post: Post, prepareRecordsOnly = false) => {
+    const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
+    if (!operator) {
+        return {error: `${serverUrl} database not found`};
+    }
+
+    const models: Model[] = [];
+    if (post.root_id) {
+        // Update the thread data: `reply_count`
+        const {model: threadModel} = await processUpdateThreadReplyCount(serverUrl, post.root_id, post.reply_count, true);
+        if (threadModel) {
+            models.push(threadModel);
+        }
+
+        // Add current user as a participant to the thread
+        const threadParticipantModels = await operator.handleAddThreadParticipants({
+            threadId: post.root_id,
+            participants: [post.user_id],
+            prepareRecordsOnly: true,
+        });
+        if (threadParticipantModels?.length) {
+            models.push(...threadParticipantModels);
+        }
+    } else { // If the post is a root post, then we need to add it to the thread table
+        const {models: threadModels} = await processThreadsFromReceivedPosts(serverUrl, [post], true);
+        if (threadModels?.length) {
+            models.push(...threadModels);
+        }
+    }
+
+    if (models.length && !prepareRecordsOnly) {
+        await operator.batchRecords(models);
+    }
+
+    return {models};
+};
+
 // On receiving "posts", Save the "root posts" as "threads"
 export const processThreadsFromReceivedPosts = async (serverUrl: string, posts: Post[], prepareRecordsOnly = false) => {
     const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;

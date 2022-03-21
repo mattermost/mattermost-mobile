@@ -23,7 +23,6 @@ const UserAvatar = ({style, user}: Props) => {
                 author={user}
                 size={24}
                 showStatus={false}
-                testID='avatars.profile_picture'
             />
         </View>
     );
