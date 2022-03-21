@@ -73,5 +73,9 @@ describe('Server Login', () => {
         // * Verify on channel list screen of the second server
         await ChannelListScreen.toBeVisible();
         await expect(ChannelListScreen.headerServerDisplayName).toHaveText(serverTwoDisplayName);
+
+        // # Go back to first server
+        await ServerListScreen.open();
+        await ServerListScreen.getServerItemInactive(serverOneDisplayName).tap();
     });
 });
